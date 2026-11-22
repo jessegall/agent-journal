@@ -474,8 +474,8 @@ const BODY={
   helpers:()=>PEOPLE().map(([ref,n,t,s])=>row(ref,`<span class="t">${n}<span style="color:var(--text-3)"> · ${t}</span></span>${ST[s]}`)).join('')+`<div style="padding:8px 12px;color:var(--text-4);font-size:11.5px">Right-click a row to chat with it.</div>`,
   reminders:()=>`<div style="padding:26px 16px;text-align:center;color:var(--text-3);font-size:12.5px">No reminders.<br><span style="color:var(--text-4)">Ask the agent to remind you of something.</span></div>`,
   runtimes:()=>[['This Mac','2 agents',1],['Build box','idle',0]].map(([n,t,on])=>`<div class="lrow"><span class="t">${n}<span style="color:var(--text-3)"> · ${t}</span></span>${on?'<span class="st"><span class="dot solid"></span>Connected</span>':'<span class="st"><span class="dot hollow"></span>Idle</span>'}</div>`).join(''),
-  activity:()=>`<div class="act">${[['14:05','Helper 262 asked a question in its chat'],['14:01','Agent 1 started Helper 262: designing the notifications bell'],['13:50','Worker 3 finished step 2 of task 1702'],['13:47','Agent 1 started Worker 3 on task 1702'],['13:44','Agent 1 asked you: which save behaviour for the name?'],['13:42','Doc 85 revised to revision 2']].map(([t,x])=>`<div><time>${t}</time><span>${x}</span></div>`).join('')}</div>`,
-  project:()=>treeHtml(),
+  activity:()=>`<div class="act">${ACT.map(([t,x])=>`<div><time>${t}</time><span>${x}</span></div>`).join('')}</div>`,
+  project:()=>`<div class="pseg" role="tablist" aria-label="Project view"><button data-pview="files" role="tab" aria-pressed="${PVIEW==='files'}">Files</button><button data-pview="journal" role="tab" aria-pressed="${PVIEW==='journal'}">Journal</button></div>`+treeHtml(),
 };
 /* One thing a row stands for, shown alone in its own window or an editor tab. */
 function itemOf(ref){const [k,id]=ref.split(':'),n=+id;
@@ -487,14 +487,73 @@ function itemOf(ref){const [k,id]=ref.split(':'),n=+id;
 
 /* The Project tree: the journal's things as folders, like an IDE's file browser. */
 let TREE_OPEN=new Set(), TREE_SEL=null;
-function treeNodes(){return [
+const folder=(id,label,kids=[])=>({id,label,ic:'folder',kids});
+function fileNodes(){const f=p=>({id:'f:'+p,label:base(p),ic:'docs',open:'file:'+p});
+  return [folder('fd:app','app'),folder('fd:domain','domain',['Chat','Documents','Helpers','Plans','Tasks'].map(n=>folder('fd:domain/'+n,n))),
+    folder('fd:resources','resources',[folder('fd:css','css'),folder('fd:js','js',[folder('fd:components','components',[folder('fd:home','home'),folder('fd:panes','panes',Object.keys(FILES).filter(p=>p.includes('/panes/')).map(f))])])]),
+    folder('fd:routes','routes'),folder('fd:tests','tests')]}
+function treeNodes(){if(PVIEW==='files')return fileNodes();return [
   {id:'conv',label:'Conversations',ic:'folder',kids:activeConvs().map(c=>({id:'c:'+c,label:CONV[c].name,ic:c==='main'?'ask':'users',open:'conv:'+c}))},
   ...PLANS.map(([n,t,,ph])=>({id:'plan:'+n,label:'Plan '+n+' · '+t,ic:'plan',ref:'plan:'+n,kids:ph.map(([a,,ts],i)=>({id:'plan:'+n+'/'+i,label:a,ic:'folder',kids:ts.map(tn=>({id:'t:'+tn,label:'Task '+tn+' · '+TASKS.find(x=>x[0]===tn)[1],ic:'todos',ref:'task:'+tn,open:'item:task:'+tn}))}))})),
   {id:'docs',label:'Documents',ic:'folder',kids:DOCS.map(([n,t])=>({id:'d:'+n,label:n+' · '+t,ic:'docs',ref:'doc:'+n,open:'item:doc:'+n}))}]}
 function treeHtml(){let h='';const walk=(ns,d)=>ns.forEach(n=>{const open=TREE_OPEN.has(n.id),kids=n.kids&&n.kids.length;
   h+=`<div class="tr ${TREE_SEL===n.id?'sel':''}" tabindex="0" style="padding-left:${8+d*14}px" data-tnode="${n.id}" ${n.ref?`data-item="${n.ref}"`:''} ${n.open?`data-topen="${n.open}"`:''} role="treeitem" ${kids?`aria-expanded="${open}"`:''}>${kids?`<svg class="i cv ${open?'open':''}" aria-hidden="true"><use href="#chev"/></svg>`:'<span class="sp"></span>'}${I(n.ic,'s14')}<span class="lb">${n.label}</span></div>`;
   if(kids&&open)walk(n.kids,d+1)});walk(treeNodes(),0);return `<div class="tree" role="tree">${h}</div>`}
-const openSpec=s=>s.startsWith('conv:')?{k:'hchat',conv:s.slice(5)}:{k:'item',ref:s.slice(5)};
+const openSpec=s=>s.startsWith('conv:')?{k:'hchat',conv:s.slice(5)}:s.startsWith('file:')?{k:'file',path:s.slice(5)}:{k:'item',ref:s.slice(5)};
+
+/* ---------- the code browser ---------- */
+const FILES={};document.querySelectorAll('.srcfile').forEach(t=>FILES[t.dataset.path]={lang:t.dataset.lang,text:t.value.replace(/\n$/,'')});
+const base=p=>p.split('/').pop();
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const KW=/^(import|from|export|type|function|const|return|let|if|else|true|false|null|new|of|in|is|setup|lang)$/;
+/* One line of code to HTML, carrying whether a block comment is still open into the next line. */
+function hlLine(src,st,lang){let out='',last=0;
+  if(st.inBlock){const end=src.indexOf('*/');if(end<0)return `<span class="cm">${esc(src)||' '}</span>`;out=`<span class="cm">${esc(src.slice(0,end+2))}</span>`;last=end+2;st.inBlock=false}
+  const re=lang==='vue'?/(\/\/.*$)|(\/\*)|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")|(<\/?[A-Za-z][\w-]*|\/?>)|([A-Za-z_$][\w$]*)|(\d+)/g:/(\/\/.*$)|(\/\*)|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")|(@@@)|([A-Za-z_$][\w$]*)|(\d+)/g;
+  re.lastIndex=last;let m;
+  while((m=re.exec(src))){out+=esc(src.slice(last,m.index));
+    if(m[1])out+=`<span class="cm">${esc(m[1])}</span>`;
+    else if(m[2]){const end=src.indexOf('*/',m.index+2);if(end<0){out+=`<span class="cm">${esc(src.slice(m.index))}</span>`;st.inBlock=true;last=src.length;break}
+      out+=`<span class="cm">${esc(src.slice(m.index,end+2))}</span>`;re.lastIndex=last=end+2;continue}
+    else if(m[3])out+=`<span class="s">${esc(m[3])}</span>`;
+    else if(m[4])out+=`<span class="tg">${esc(m[4])}</span>`;
+    else if(m[5])out+=KW.test(m[5])?`<span class="k">${m[5]}</span>`:/^[A-Z]/.test(m[5])?`<span class="ty">${m[5]}</span>`:m[5];
+    else if(m[6])out+=`<span class="nu">${m[6]}</span>`;
+    last=re.lastIndex}
+  out+=esc(src.slice(last));return out||' '}
+let CODESEL=null, COMPOSE=null, COMMENTS=[], ACT=[], PVIEW='files';
+const REPLY={main:'Noted. I\'ll fold that into task 1702 when Worker 3 reaches the layout step.',
+  h262:'Good point. A snapped window gets its own zone next to the floating box, so restore has something to return to.',
+  w3:'Understood; I\'ll cover that in the test for Enter.'};
+const lines=(a,b)=>a===b?'line '+a:'lines '+a+'–'+b;
+function codeView(path){const f=FILES[path];if(!f)return `<div class="emptydesk"><span>${esc(path)} is not included in this design.</span></div>`;
+  const st={inBlock:false},ls=f.text.split('\n');let h=`<div class="code" data-code="${path}" role="region" aria-label="${base(path)}">`;
+  ls.forEach((ln,ix)=>{const n=ix+1,sel=CODESEL&&CODESEL.path===path&&n>=CODESEL.a&&n<=CODESEL.b,has=COMMENTS.some(c=>c.path===path&&n>=c.a&&n<=c.b);
+    h+=`<div class="lnr ${sel?'sel':''}" data-ln="${n}"><span class="gut ${has?'has':''}" data-gut="${n}" title="Select line ${n} · shift-click to extend">${n}</span><span class="src">${hlLine(ln,st,f.lang)}</span>${sel&&n===CODESEL.b&&!COMPOSE?`<button class="btn sm primary cbtn" data-comment>${I('ask','s14')}Comment</button>`:''}</div>`;
+    if(COMPOSE&&COMPOSE.path===path&&n===COMPOSE.b)h+=cbarHtml();
+    COMMENTS.filter(c=>c.path===path&&c.b===n).forEach(c=>h+=threadHtml(c))});
+  return h+`<div class="codefoot">The first ${ls.length} lines of ${esc(path)}. Click or drag line numbers, or select text, then press Comment.</div></div>`}
+/* The comment bar under a selection: the main agent by default, any running helper or worker by the picker. */
+function cbarHtml(){const c=COMPOSE,to=CONV[c.to],th=c.thread&&COMMENTS.find(x=>x.id===c.thread);
+  return `<div class="cbar" data-cbar><div class="cbh">${th?'Reply about':'Comment on'} ${lines(c.a,c.b)}${c.quote?` · “${esc(c.quote.length>70?c.quote.slice(0,70)+'…':c.quote)}”`:''}</div>
+    <textarea id="ctext" placeholder="Ask or tell ${to.name} about ${lines(c.a,c.b)}…" aria-label="Comment">${esc(c.text)}</textarea>
+    <div class="cbf"><span class="cbf small" style="color:var(--text-3);font-size:11.5px">To</span>${th?`<span class="chip">${to.name}</span>`:`<button class="convbtn" data-cto aria-haspopup="menu" title="Send to another agent">${c.to==='main'?CLAUDE('s14'):I('users','s14')}${to.name}${I('caret','s14')}</button>`}
+    <small>${c.to==='main'?'the main agent':'Agent 1 keeps working meanwhile'}</small><span style="flex:1"></span><button class="btn sm" data-ccancel>Cancel</button><button class="btn sm primary" data-csend>Send<kbd style="margin-left:2px;border-color:currentColor;opacity:.7">⌘↩</kbd></button></div></div>`}
+function threadHtml(c){const n=CONV[c.to].name;
+  return `<div class="cthread" data-thread="${c.id}"><div class="cth">You → ${n} · ${lines(c.a,c.b)}<span style="flex:1"></span>${c.read?`<span class="st">${I('tick','s14')}Read by ${n}</span>`:'<span class="st"><span class="spin"></span>Sending</span>'}</div>
+    <div class="ctq">${esc(c.text)}</div>${c.replies.map(r=>`<div class="crep"><b>${r.from==='you'?'You':CONV[r.from].name}</b> ${esc(r.text)}</div>`).join('')}
+    <div class="cta"><button class="btn sm" data-creply="${c.id}">Reply</button><button class="btn sm" data-copenchat="${c.to}">${I('ask','s14')}${n}'s chat</button></div></div>`}
+/* In the agent's chat the comment arrives as the user's own message, with the file and lines it is about. */
+function codeCardHtml(id){const c=COMMENTS.find(x=>x.id===id);if(!c)return '';
+  return `<div class="me"><div class="codeq">${I('docs','s14')}${base(c.path)} · ${lines(c.a,c.b)} · <a class="lk" data-showcode="${c.id}">Show in file</a></div>${esc(c.text)}</div>`}
+function sendComment(){const c=COMPOSE,ta=document.getElementById('ctext'),text=(ta?ta.value:c.text).trim();if(!text){ta&&ta.focus();return}
+  let t;if(c.thread){t=COMMENTS.find(x=>x.id===c.thread);t.replies.push({from:'you',text});CONV[t.to].msgs.push(['me',esc(text)])}
+  else{t={id:'cm'+(++seq),path:c.path,a:c.a,b:c.b,to:c.to,text,quote:c.quote,replies:[],read:false};COMMENTS.push(t);CONV[c.to].msgs.push(['code',t.id])}
+  ACT.unshift(['now',`You commented on ${base(t.path)} ${lines(t.a,t.b)} for ${CONV[t.to].name}`]);
+  const n=CONV[t.to].name;COMPOSE=null;CODESEL=null;changed();toast(`Sent to ${n}`+(t.to==='main'?'':' · Agent 1 keeps working'));
+  setTimeout(()=>{t.read=true;t.replies.push({from:t.to,text:REPLY[t.to]});CONV[t.to].msgs.push(['ag','now',REPLY[t.to]]);ACT.unshift(['now',`${n} read your comment and answered`]);render()},1600)}
+function openFile(path,sel){const spec={k:'file',path};if(sel)CODESEL={path,...sel};
+  if(!openInEditor(spec))openAt('editor',{x:Math.max(20,W()/2-350),y:30},{tabs:[spec],act:0})}
 
 /* Conversations: the main agent's, and each helper's or worker's. */
 const BASE=()=>[['day','Today'],['me','Can you tidy up the account settings dialog? The Save button is in the way.'],
@@ -537,14 +596,14 @@ const newWin=(type,extra={})=>({id:type+'-'+(++seq),type,z:++zc,...extra});
 const hasChat=a=>a.wins.some(w=>w.type==='chat');
 const editor=()=>A.wins.find(w=>w.type==='editor');
 function centred(left,right,top=0,bottom=H()){const room=right-left,w=Math.min(readW,room-48);return {x:left+(room-w)/2,y:top,w,h:bottom-top}}
-function tabMeta(t){return t.k==='hchat'?{t:t.conv==='main'?'Chat':'Chat · '+CONV[t.conv].name,ic:t.conv==='main'?'ask':'users'}:{t:itemOf(t.ref).t,ic:itemOf(t.ref).ic}}
+function tabMeta(t){if(t.k==='file')return {t:base(t.path),ic:'docs'};return t.k==='hchat'?{t:t.conv==='main'?'Chat':'Chat · '+CONV[t.conv].name,ic:t.conv==='main'?'ask':'users'}:{t:itemOf(t.ref).t,ic:itemOf(t.ref).ic}}
 function meta(w){if(w.type==='hchat'){const c=CONV[w.conv];return {t:'Chat · '+c.name,ic:'users',w:440,h:520,gw:4,gh:9}}
   if(w.type==='item'){const it=itemOf(w.ref);return {t:it.t,ic:it.ic,w:360,h:260,gw:3,gh:5}}
   if(w.type==='editor')return {t:'Editor',ic:'docs',w:700,h:480,gw:6,gh:9};
   if(w.type==='chat'){const k=A&&A.mainConv||'main';return {...CAT.chat,t:activeConvs().length>1?'Chat · '+CONV[k].name:'Chat'}}
   return CAT[w.type]}
 function bodyOf(w,limit){if(w.type==='chat')return chatView(A.mainConv,'main',limit);if(w.type==='hchat')return chatView(w.conv,w.id,limit);if(w.type==='item')return itemOf(w.ref).body;
-  if(w.type==='editor'){const t=w.tabs[w.act]||w.tabs[0];if(!t)return `<div class="emptydesk"><span>No tabs. Double-click something in Project to open it here.</span></div>`;return t.k==='hchat'?chatView(t.conv,'tab:'+w.id+':'+w.act,true):itemOf(t.ref).body}
+  if(w.type==='editor'){const t=w.tabs[w.act]||w.tabs[0];if(!t)return `<div class="emptydesk"><span>No tabs. Double-click something in Project to open it here.</span></div>`;return t.k==='file'?codeView(t.path):t.k==='hchat'?chatView(t.conv,'tab:'+w.id+':'+w.act,true):itemOf(t.ref).body}
   return BODY[w.type]()}
 const sameKind=(a,b)=>a.type===b.type&&a.conv===b.conv&&a.ref===b.ref;
 
@@ -586,7 +645,7 @@ V.float={name:'A · Floating desk',line:'Windows float over Home, or snap flush 
     if(s==='desk')ws.push(chat,snapped('asks','tr'),snapped('tasks','br'));
     if(s==='bare')ws.push(snapped('tasks','left'),snapped('plans','tr'),snapped('asks','br'));
     if(s==='ide')ws.push(snapped('project','tile',{},[0,0,.2,1]),
-      snapped('editor','tile',{tabs:[{k:'hchat',conv:'main'},{k:'hchat',conv:'h262'},{k:'item',ref:'task:1702'},{k:'item',ref:'doc:101'}],act:0},[.2,0,.8,.72]),
+      snapped('editor','tile',{tabs:[{k:'hchat',conv:'main'},{k:'file',path:'resources/js/components/panes/arrangement.ts'},{k:'hchat',conv:'h262'},{k:'item',ref:'task:1702'}],act:1},[.2,0,.8,.72]),
       snapped('activity','tile',{},[.2,.72,.8,.28]));
     return {wins:ws}},
   menuPoint:q=>({x:q.x,y:q.y}),
@@ -742,7 +801,9 @@ function render(){
   if(hm){hmItems=homeItems();h+=menuHtml('hm','hm',hmItems)}
   if(ctx)h+=menuHtml('ctx','ctx',ctx.items,`left:${ctx.x}px;top:${ctx.y}px`);
   if(keysOpen)h+=keysHtml();
+  const scrolls={};desk.querySelectorAll('[data-w]>.wbody').forEach(b=>scrolls[b.parentElement.dataset.w]=[b.scrollTop,b.scrollLeft]);
   desk.innerHTML=h;
+  desk.querySelectorAll('[data-w]>.wbody').forEach(b=>{const s=scrolls[b.parentElement.dataset.w];if(s){b.scrollTop=s[0];b.scrollLeft=s[1]}});
   /* Motion: windows glide from where they were (FLIP), new ones grow in; the sidebar and agent bar ease to their size. */
   if(!quiet&&!CALM.matches){desk.querySelectorAll('[data-flip]').forEach(e=>{const p=prev[e.dataset.flip],r={x:e.offsetLeft,y:e.offsetTop,w:e.offsetWidth,h:e.offsetHeight};
       if(p){const dx=p.x-r.x,dy=p.y-r.y,sx=p.w/r.w,sy=p.h/r.h;if(Math.abs(dx)>1||Math.abs(dy)>1||Math.abs(sx-1)>.01||Math.abs(sy-1)>.01)
@@ -765,6 +826,7 @@ function render(){
   wire();
   if(ctx)placeCtx();
   if(qm){const i=document.getElementById('qin');i.focus();i.setSelectionRange(i.value.length,i.value.length)}
+  else if(COMPOSE&&COMPOSE.focus){COMPOSE.focus=false;const c=document.getElementById('ctext');if(c){c.focus();c.setSelectionRange(c.value.length,c.value.length)}}
   desk.querySelectorAll('.chat,.chatcol .scroll').forEach(c=>c.scrollTop=c.scrollHeight);
 }
 /* A context menu opens where it fits: flipped left or up near the desk's edges. */
@@ -772,10 +834,16 @@ function placeCtx(){const d=document.getElementById('desk'),m=document.getElemen
   if(x+m.offsetWidth>d.clientWidth-4)x=Math.max(4,x-m.offsetWidth);if(y+m.offsetHeight>d.scrollTop+d.clientHeight-4)y=Math.max(4,y-m.offsetHeight);
   x=Math.max(4,x);y=Math.max(4,y);m.style.left=x+'px';m.style.top=y+'px';const f=m.querySelector('button:not([disabled])');if(f)f.focus()}
 function load(){own=false;qm=null;hm=false;ctx=null;keysOpen=false;zc=10;quiet=true;freshConvs();freshDocs();helpersOn=step==='helper'||step==='ide';SUGG={};NOTES=[];BAL=[];
-  ui={rail:false,barHidden:false,status:false,...STEP_UI[step]};TREE_OPEN=new Set(['conv','plan:56','plan:56/0','docs']);TREE_SEL=null;
+  ui={rail:false,barHidden:false,status:false,...STEP_UI[step]};TREE_SEL=null;PVIEW='files';CODESEL=null;COMPOSE=null;COMMENTS=[];
+  TREE_OPEN=new Set(['conv','plan:56','plan:56/0','docs','fd:resources','fd:js','fd:components','fd:panes']);
+  ACT=[['14:01','Agent 1 started Helper 262: designing the notifications bell'],['13:50','Worker 3 finished step 2 of task 1702'],['13:47','Agent 1 started Worker 3 on task 1702'],['13:44','Agent 1 asked you: which save behaviour for the name?'],['13:42','Doc 85 revised to revision 2']];
   const p=V[vkey].preset(step);A={wins:p.wins,drawer:p.drawer||{side:'right',pw:400,active:null},mainConv:'main'};
   if(step==='helper'||step==='ide')startHelperScript(false);
-  if(step==='ide'){SUGG.h262='accepted';NOTES=[{t:'Helper 262 asked you a question',sub:'In its chat · 14:05',read:false,run:()=>openInEditor({k:'hchat',conv:'h262'})}]}
+  if(step==='ide'){SUGG.h262='accepted';NOTES=[{t:'Helper 262 answered your comment',sub:'arrangement.ts · lines 19–26 · 14:07',read:false,run:()=>openFile('resources/js/components/panes/arrangement.ts',{a:19,b:26})}];
+    /* One comment already sent from the code to a helper, read and answered, as the IDE step's example. */
+    COMMENTS=[{id:'cm0',path:'resources/js/components/panes/arrangement.ts',a:19,b:26,to:'h262',text:'Should a snapped window keep these fields, or does its snap zone need a type of its own?',replies:[{from:'h262',text:REPLY.h262}],read:true}];
+    CONV.h262.msgs.push(['code','cm0'],['ag','14:07',REPLY.h262]);
+    ACT.unshift(['14:07','Helper 262 read your comment on arrangement.ts lines 19–26 and answered'],['14:06','You commented on arrangement.ts lines 19–26 for Helper 262'])}
   render()}
 function changed(){own=true;render()}
 function toast(t,undoFn,ms){const e=document.getElementById('toast');e.innerHTML=t+(undoFn?' · <a class="lk" id="undo">Undo</a>':'');e.classList.add('on');e.style.pointerEvents=undoFn?'auto':'none';
@@ -788,7 +856,7 @@ function front(w){w.z=++zc}
 
 /* ---------- actions ---------- */
 /* Opens a thing as a tab in the editor when there is one; answers whether it did. */
-function openInEditor(spec){const e=editor();if(!e)return false;let i=e.tabs.findIndex(t=>t.k===spec.k&&t.conv===spec.conv&&t.ref===spec.ref);
+function openInEditor(spec){const e=editor();if(!e)return false;let i=e.tabs.findIndex(t=>t.k===spec.k&&t.conv===spec.conv&&t.ref===spec.ref&&t.path===spec.path);
   if(i<0){e.tabs.push(spec);i=e.tabs.length-1}e.act=i;front(e);changed();flash(e.id);return true}
 function openAt(type,p,extra={},opts={}){qm=null;ctx=null;
   if(type==='chat'&&chatTab()&&!hasChat(A)){const e=editor();e.act=e.tabs.findIndex(t=>t.k==='hchat'&&t.conv==='main');front(e);changed();flash(e.id);return e}
@@ -893,6 +961,29 @@ function wire(){
       (dx,dy,ev)=>{if(!out){t.onclick();return}const p=deskPoint(ev),z=vkey==='float'?zoneAt(p):null;ed.tabs.splice(+i,1);ed.act=Math.max(0,Math.min(ed.act,ed.tabs.length-1));
         if(spec.type==='chat'&&hasChat(A)){changed();return}openAt(spec.type,{x:p.x-40,y:p.y-14},spec.extra,{snap:z})})}});
   on('[data-eclose]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=ev=>{ev.stopPropagation();const [id,i]=b.dataset.eclose.split(':');const e=A.wins.find(w=>w.id===id);e.tabs.splice(+i,1);e.act=Math.max(0,Math.min(e.act,e.tabs.length-1));changed()}});
+  /* Code: pick lines by their numbers (click, shift-click, or drag down the gutter) or by selecting text. */
+  on('[data-pview]',b=>b.onclick=()=>{PVIEW=b.dataset.pview;render()});
+  on('[data-gut]',g=>g.onpointerdown=e=>{if(e.button!==0)return;e.stopPropagation();const code=g.closest('[data-code]'),path=code.dataset.code,n=+g.dataset.gut;
+    if(COMPOSE&&COMPOSE.path===path&&!COMPOSE.text.trim())COMPOSE=null;
+    const a=e.shiftKey&&CODESEL&&CODESEL.path===path?CODESEL.a:n;CODESEL={path,a:Math.min(a,n),b:Math.max(a,n)};const anchor=a;
+    const paint=()=>code.querySelectorAll('.lnr').forEach(r=>r.classList.toggle('sel',+r.dataset.ln>=CODESEL.a&&+r.dataset.ln<=CODESEL.b));paint();
+    drag(e,(dx,dy,ev)=>{const el=document.elementFromPoint(ev.clientX,ev.clientY),r=el&&el.closest('[data-code="'+path+'"] .lnr');if(!r)return;const m=+r.dataset.ln;CODESEL={path,a:Math.min(anchor,m),b:Math.max(anchor,m)};paint()},()=>render())});
+  on('[data-code]',c=>c.onmouseup=ev=>{if(ev.target.closest('.gut,.cbar,.cthread,button'))return;const s=getSelection();if(!s||s.isCollapsed)return;
+    const row=nd=>{const el=nd&&(nd.nodeType===1?nd:nd.parentElement);return el&&el.closest('.lnr')};const r1=row(s.anchorNode),r2=row(s.focusNode);
+    if(!r1||!r2||!c.contains(r1)||!c.contains(r2))return;const x=+r1.dataset.ln,y=+r2.dataset.ln;
+    CODESEL={path:c.dataset.code,a:Math.min(x,y),b:Math.max(x,y),quote:s.toString().trim()};if(COMPOSE&&!COMPOSE.text.trim())COMPOSE=null;render()});
+  on('[data-comment]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=()=>{COMPOSE={...CODESEL,to:'main',text:'',focus:true};render()}});
+  const ct=document.getElementById('ctext');
+  if(ct){ct.oninput=()=>{COMPOSE.text=ct.value};ct.onkeydown=ev=>{if(ev.key==='Enter'&&(ev.metaKey||ev.ctrlKey)){ev.preventDefault();sendComment()}}}
+  on('[data-csend]',b=>b.onclick=sendComment);
+  on('[data-ccancel]',b=>b.onclick=()=>{COMPOSE=null;render()});
+  on('[data-cto]',b=>b.onclick=ev=>{ev.stopPropagation();const r=b.getBoundingClientRect(),d=desk.getBoundingClientRect();
+    ctx={x:r.left-d.left,y:r.bottom-d.top+4,items:[{head:'Send this comment to'},...activeConvs().map(c=>({label:CONV[c].name,sub:c==='main'?'the main agent':CONV[c].sub,ic:c==='main'?'ask':'users',tick:COMPOSE.to===c,run:()=>{COMPOSE.to=c;COMPOSE.focus=true}})),
+      ...(activeConvs().length<2?[{label:'No helper or worker is running',disabled:true}]:[])]};render()});
+  on('[data-creply]',b=>b.onclick=()=>{const t=COMMENTS.find(x=>x.id===b.dataset.creply);CODESEL=null;COMPOSE={path:t.path,a:t.a,b:t.b,to:t.to,text:'',thread:t.id,focus:true};render()});
+  on('[data-copenchat]',b=>b.onclick=()=>{const conv=b.dataset.copenchat;if(conv==='main'){A.mainConv='main';if(!openInEditor({k:'hchat',conv:'main'})&&!hasChat(A))openAt('chat',{x:W()/2-240,y:12});else changed();return}
+    if(!openInEditor({k:'hchat',conv}))openAt('hchat',helperPoint(),{conv},{snap:'right'})});
+  on('[data-showcode]',b=>b.onclick=ev=>{ev.preventDefault();const t=COMMENTS.find(x=>x.id===b.dataset.showcode);if(t)openFile(t.path,{a:t.a,b:t.b})});
   on('[data-sugg]',b=>b.onclick=()=>{const [k,conv]=b.dataset.sugg.split(':');
     if(k==='accept')acceptSugg(conv);
     if(k==='dismiss'){SUGG[conv]='dismissed';changed()}
@@ -912,7 +1003,7 @@ function wire(){
     if(scope==='main'&&vkey==='float'&&pc)items.push({sep:1},pc.plain?{label:'Make the chat a window',ic:'layout',run:()=>chatToWindow(pc)}:{label:'Chat back into the middle',ic:'ask',run:()=>{restoreWin(pc);pc.plain=true}});
     ctx={x:r.left-d.left,y:r.bottom-d.top+4,items};hm=false;render()}});
   on('[data-tnode]',n=>{n.onclick=()=>{const id=n.dataset.tnode;TREE_SEL=id;if(n.hasAttribute('aria-expanded')){TREE_OPEN.has(id)?TREE_OPEN.delete(id):TREE_OPEN.add(id)}render()};
-    n.ondblclick=()=>{if(n.dataset.topen){const s=openSpec(n.dataset.topen);if(!openInEditor(s))s.k==='hchat'?openAt('hchat',helperPoint(),{conv:s.conv}):openAt('item',{x:W()/2-180,y:60},{ref:s.ref})}};
+    n.ondblclick=()=>{if(n.dataset.topen){const s=openSpec(n.dataset.topen);if(s.k==='file'){openFile(s.path);return}if(!openInEditor(s))s.k==='hchat'?openAt('hchat',helperPoint(),{conv:s.conv}):openAt('item',{x:W()/2-180,y:60},{ref:s.ref})}};
     n.onkeydown=ev=>{if(ev.key==='Enter')n.ondblclick();if(ev.key===' '){ev.preventDefault();ev.stopPropagation();n.onclick()}}});
   on('.lrow[data-item]',r=>r.ondblclick=()=>openItem(r.dataset.item,{x:W()/2-180,y:60}));
   on('.win[data-w]',el=>el.addEventListener('pointerdown',()=>{const w=A.wins.find(x=>x.id===el.dataset.w);if(w&&v.free&&w.z!==zc){w.z=++zc;el.style.zIndex=zc}}));
@@ -998,7 +1089,8 @@ addEventListener('keydown',ev=>{const t=ev.target,inField=t.closest&&t.closest('
   if(mod&&ev.key==='2'){ev.preventDefault();toggleTool('activity',[.2,.72,.8,.28]);return}
   if(ev.key==='?'&&!inField){ev.preventDefault();keysOpen=!keysOpen;render();return}
   if(ev.key===' '&&!inField&&!mod&&!ev.altKey&&!qm&&!hm&&!ctx&&!(t.closest&&t.closest('button,[data-tnode]'))){ev.preventDefault();openMenu()}
-  if(ev.key==='Escape'&&(hm||ctx||keysOpen)){hm=false;ctx=null;keysOpen=false;render()}});
+  if(ev.key==='Escape'&&(hm||ctx||keysOpen)){hm=false;ctx=null;keysOpen=false;render();return}
+  if(ev.key==='Escape'&&(COMPOSE||CODESEL)&&(!inField||t.id==='ctext')){COMPOSE=null;CODESEL=null;render()}});
 document.addEventListener('pointerdown',ev=>{const d=document.getElementById('desk');
   if(ctx&&!ev.target.closest('#ctx')){ctx=null;if(!ev.target.closest('[data-convmenu],[data-bell]'))render()}
   else if(hm&&!ev.target.closest('#hm,#homeBtn')){hm=false;render()}
