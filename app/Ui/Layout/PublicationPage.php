@@ -20,12 +20,12 @@ final readonly class PublicationPage
      * @param  list<LayoutPartData>  $standing  shown on every tab under the header, so a tab change keeps them mounted
      */
     private function __construct(
-        private string $title,
-        private array $metadata,
-        private string $summary,
-        private Closure $body,
-        private array $tabs,
-        private array $standing = [],
+        public string $title,
+        public array $metadata,
+        public string $summary,
+        public Closure $body,
+        public array $tabs,
+        public array $standing = [],
     ) {}
 
     /**
@@ -71,6 +71,7 @@ final readonly class PublicationPage
         }
 
         $shown = $this->chosenTab($chosen);
+
         $tabs = array_map(
             fn (PublicationTab $tab) => new LayoutTabData($tab->key, $tab->label, $tab->key === $shown->key),
             $this->tabs,

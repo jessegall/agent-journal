@@ -71,7 +71,8 @@ final class PageChangeTest extends TestCase
         $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 0, 'Done.'));
 
         $this->assertSame([$plan->id], $progress);
-        Event::assertDispatchedTimes(PageChanged::class, 1);
+        // One change for the finished task (the Tasks pages) and one for the plan it moved.
+        Event::assertDispatchedTimes(PageChanged::class, 2);
     }
 
     public function test_choosing_an_account_changes_the_accounts_page_once(): void
@@ -84,13 +85,13 @@ final class PageChangeTest extends TestCase
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
 
-    public function test_a_task_outside_every_plan_changes_no_page(): void
+    public function test_a_task_outside_every_plan_changes_only_the_task_pages(): void
     {
         $this->app->make(CommandBus::class)->run(
             new CancelTask(Task::factory()->create(['title' => 'Loose task'])->id, 'Dropped.'),
         );
 
-        Event::assertNotDispatched(PageChanged::class);
+        Event::assertDispatchedTimes(PageChanged::class, 1);
     }
 
     public function test_a_rolled_back_change_sends_nothing(): void

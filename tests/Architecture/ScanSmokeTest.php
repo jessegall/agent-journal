@@ -19,7 +19,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 /**
  * Proves the scans survive real code; what the checker permits is proven elsewhere.
  */
-#[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
+#[TimeLimit(seconds: 30, reason: 'It parses every PHP file of the project, once per scan.')]
 final class ScanSmokeTest extends TestCase
 {
     /**

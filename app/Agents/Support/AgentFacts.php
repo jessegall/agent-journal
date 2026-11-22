@@ -39,6 +39,7 @@ final readonly class AgentFacts
     {
         $session = $this->session;
         $isOwnerStart = $session?->parent_session_id !== null;
+
         $launchInProgress = $this->launch?->disposition === StartDisposition::Accepted
             || in_array($this->start?->state, ProcessStartState::unresolved(), true);
 

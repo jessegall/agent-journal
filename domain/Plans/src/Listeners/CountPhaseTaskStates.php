@@ -8,6 +8,7 @@ use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanProgressCount;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
@@ -24,6 +25,12 @@ final readonly class CountPhaseTaskStates implements Listener
 {
     public function handle(TaskStarted|TaskFinished|TaskBlocked|TaskCancelled $event): void
     {
+        $enteredState = self::enteredStateOf($event);
+
+        if ($event->previousState === $enteredState) {
+            return;
+        }
+
         $planId = Phase::query()->holdingTask($event->taskId)->value('plan_id');
 
         if ($planId === null) {
@@ -32,10 +39,9 @@ final readonly class CountPhaseTaskStates implements Listener
 
         $plan = Plan::lockStructure((string) $planId);
         $phase = Phase::query()->holdingTask($event->taskId)->sole();
-        $enteredState = self::enteredStateOf($event);
 
-        $phase->recordProgress($phase->progress->withMove($event->previousState, $enteredState));
-        $plan->recordProgress($plan->progress->withMove($event->previousState, $enteredState));
+        $phase->recordProgress(PlanProgressCount::afterMove($phase->progress, $event->previousState, $enteredState));
+        $plan->recordProgress(PlanProgressCount::afterMove($plan->progress, $event->previousState, $enteredState));
     }
 
     private static function enteredStateOf(TaskStarted|TaskFinished|TaskBlocked|TaskCancelled $event): TaskState

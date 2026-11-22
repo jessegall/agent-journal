@@ -104,6 +104,7 @@ final readonly class ReportWindowResolver implements PageResolver
             'target' => $label,
             'reads' => $this->reads->of($identity),
         ]);
+
         $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('documents/RecordComments', $comments));
 
         return LayoutPartData::box('text', 'stack', ...$parts);

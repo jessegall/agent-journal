@@ -64,7 +64,7 @@ final class TaskWaitHistory extends Model implements ReadableModel
     /**
      * Keeps the change of the wait, made by the actor, with its reason when it has one.
      */
-    public static function record(
+    public static function create(
         TaskWait $wait,
         TaskWaitChange $change,
         ActorIdentity $actor,

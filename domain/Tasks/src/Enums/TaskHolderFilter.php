@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Api;
+namespace Domain\Tasks\Enums;
 
 /**
  * Which tasks a list keeps by who holds them: any task, the tasks nobody holds, or the tasks the caller holds.

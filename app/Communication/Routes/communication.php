@@ -70,9 +70,13 @@ Route::middleware(['web', 'auth', 'journal.user'])
         Route::get('notifications', NotificationPageController::class)->name('notifications');
         Route::get('notifications/changes', NotificationChangesController::class)->name('notifications.changes');
         Route::post('notifications/read', MarkNotificationReadController::class)->name('notifications.read');
-        Route::post('notifications/read-all', MarkAllNotificationsReadController::class)->name('notifications.read-all');
+
+        Route::post('notifications/read-all', MarkAllNotificationsReadController::class)
+            ->name('notifications.read-all');
+
         Route::post('notifications/read-question', MarkQuestionNotificationReadController::class)
             ->name('notifications.read-question');
+
         Route::post('notifications/read-target', MarkTargetNotificationReadController::class)
             ->name('notifications.read-target');
     });

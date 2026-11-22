@@ -26,4 +26,12 @@ enum ProcessStartState: string
     {
         return [self::Pending, self::Starting, self::Running];
     }
+
+    /**
+     * Whether the process is not running yet: registered and waiting for its host, or claimed and being started.
+     */
+    public function isStarting(): bool
+    {
+        return $this === self::Pending || $this === self::Starting;
+    }
 }

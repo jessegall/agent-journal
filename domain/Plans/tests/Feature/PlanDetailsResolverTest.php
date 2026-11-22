@@ -116,7 +116,7 @@ final class PlanDetailsResolverTest extends TestCase
         $read = $this->app->make(PlanDetailsResolver::class)->phase($phase->id);
 
         $this->assertSame([$second->id, $first->id], $read->taskIds);
-        $this->assertSame([$plan->id, 'Work', 1], [$read->planId, $read->title, $read->revision]);
+        $this->assertSame([$plan->id, 'Work', 2], [$read->planId, $read->title, $read->revision]);
     }
 
     private function planStructure(): PlanStructure

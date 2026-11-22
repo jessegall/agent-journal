@@ -6,7 +6,6 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Support\PoolMembers;
-use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Commands\AddTaskWait;
 use Domain\Tasks\Commands\BlockTask;
@@ -16,9 +15,9 @@ use Domain\Tasks\Commands\WaiveTaskWait;
 use Domain\Tasks\Exceptions\TaskWaitsUnmet;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
-use Illuminate\Support\Str;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 
 /**
@@ -30,6 +29,7 @@ final class TaskStartWaitsTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use StartsAgentRequests;
 
     private const array TABLES = [
@@ -62,7 +62,7 @@ final class TaskStartWaitsTest extends TestCase
 
     public function test_an_unmet_wait_keeps_the_task_out_of_starts_and_the_pool_until_its_prerequisite_finishes(): void
     {
-        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id, self::key()));
+        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id));
 
         $this->assertThrows(fn () => $this->runCommand(new StartTask($this->dependent->id)), TaskWaitsUnmet::class);
         $this->assertNotContains($this->dependent->id, $this->pooled());
@@ -76,9 +76,10 @@ final class TaskStartWaitsTest extends TestCase
 
     public function test_a_waiver_makes_the_task_startable(): void
     {
-        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id, self::key()));
+        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id));
+
         $this->runCommand(
-            new WaiveTaskWait($this->dependent->id, $this->prerequisite->id, self::key(), 'Done by hand.'),
+            new WaiveTaskWait($this->dependent->id, $this->prerequisite->id, 'Done by hand.'),
         );
 
         $this->assertContains($this->dependent->id, $this->pooled());
@@ -91,7 +92,7 @@ final class TaskStartWaitsTest extends TestCase
         $this->assertSame(1, $this->runCommand(new StartTask($this->dependent->id)));
 
         $this->runCommand(new BlockTask($this->dependent->id, 1, 'Waits for records.'));
-        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id, self::key()));
+        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id));
 
         $this->assertThrows(fn () => $this->runCommand(new StartTask($this->dependent->id)), TaskWaitsUnmet::class);
     }
@@ -110,11 +111,6 @@ final class TaskStartWaitsTest extends TestCase
 
     private function runCommand(object $command): mixed
     {
-        return $this->app->make(CommandBus::class)->run($command);
-    }
-
-    private static function key(): string
-    {
-        return (string) Str::uuid();
+        return $this->runOnBus($command);
     }
 }

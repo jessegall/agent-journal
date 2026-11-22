@@ -69,8 +69,9 @@ final class TableModelTest extends TestCase
     }
 
     /**
-     * A table whose columns, besides its key, timestamps and an ordering column, are the references to the two records
-     * it joins: two id columns, each with its type column when that side is polymorphic.
+     * A table whose columns, besides its key, timestamps and an ordering column, are the required references to the two
+     * records it joins: two id columns, each with its type column when that side is polymorphic. A row with a side that
+     * may be empty joins nothing, so it is a record of its own.
      */
     private function isPivotTable(string $table): bool
     {
@@ -82,7 +83,13 @@ final class TableModelTest extends TestCase
             fn (string $type) => in_array(substr($type, 0, -5).'_id', $references, true),
         );
 
+        $optional = array_column(
+            array_filter(Schema::getColumns($table), fn (array $column) => $column['nullable']),
+            'name',
+        );
+
         return count($references) === 2
+            && array_intersect($optional, [...$references, ...$types]) === []
             && count($matchedTypes) === count($types)
             && count($references) + count($types) === count($columns);
     }

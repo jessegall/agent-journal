@@ -42,10 +42,12 @@ final readonly class TaskStream
                 $lines['entries'],
             ),
         ];
+
         usort(
             $entries,
             fn (array $first, array $second) => [$second['at'], $second['id']] <=> [$first['at'], $first['id']],
         );
+
         $shown = array_slice($entries, 0, self::PAGE);
 
         $historyNext = self::nextOf($historyBefore, $changes, array_column($shown, 'change'));

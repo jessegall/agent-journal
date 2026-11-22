@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Requests;
 
-use App\Http\Requests\Sharing\Concerns\ReadsIdempotencyKey;
+use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use Domain\Plans\Models\Plan;
 use Illuminate\Foundation\Http\FormRequest;

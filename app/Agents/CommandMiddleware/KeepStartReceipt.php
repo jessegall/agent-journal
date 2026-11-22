@@ -72,7 +72,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         try {
             return $start();
         } catch (StartRefusal $refusal) {
-            StartRecord::keepRefusal($request, $requester, $replyInboxId, $refusal);
+            $intent->refuse($refusal);
 
             throw $refusal;
         } catch (Throwable $failure) {
@@ -95,7 +95,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         try {
             return $start();
         } catch (StartRefusal $refusal) {
-            StartRecord::keepRefusal($request, $requester, $replyInboxId, $refusal);
+            StartRecord::accept($request, $requester, $replyInboxId)->refuse($refusal);
             $this->heldRefusals->hold($request, $requester, $replyInboxId, $refusal);
 
             throw $refusal;

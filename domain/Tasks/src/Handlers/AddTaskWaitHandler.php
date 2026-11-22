@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace Domain\Tasks\Handlers;
 
 use App\Actors\Support\ActorIdentity;
-use App\Contracts\CommandHandler;
 use Domain\Tasks\Commands\AddTaskWait;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
+use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Support\TaskGraphLock;
 use Domain\Tasks\Support\TaskWaitGraph;
 
-final readonly class AddTaskWaitHandler implements CommandHandler
+final readonly class AddTaskWaitHandler extends TaskCommandHandler
 {
     public function __construct(
         private TaskResolver $tasks,
@@ -60,8 +60,8 @@ final readonly class AddTaskWaitHandler implements CommandHandler
 
         $this->graph->assertNoCycle($dependent, $prerequisite);
         $actor = ActorIdentity::of($command->dispatchedBy());
-        $wait = TaskWait::add($dependent, $prerequisite, $actor);
-        TaskWaitHistory::record($wait, TaskWaitChange::Added, $actor, null);
+        $wait = TaskWait::create($dependent, $prerequisite, $actor);
+        TaskWaitHistory::create($wait, TaskWaitChange::Added, $actor, null);
 
         return $wait->id;
     }

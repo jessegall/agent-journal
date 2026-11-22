@@ -22,7 +22,5 @@ final readonly class AddTaskWait extends Command
     public function __construct(
         public string $dependentTaskId,
         public string $prerequisiteTaskId,
-        public string $requestKey,
     ) {}
-
 }

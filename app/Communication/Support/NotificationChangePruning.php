@@ -31,6 +31,7 @@ final readonly class NotificationChangePruning
                     ->limit(self::BATCH)
                     ->select('id'))
                 ->delete();
+
             $deleted += $batch;
         } while ($batch === self::BATCH);
 

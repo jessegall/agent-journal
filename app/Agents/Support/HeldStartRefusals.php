@@ -20,7 +20,7 @@ use PhpOption\Option;
 final class HeldStartRefusals
 {
     /**
-     * @var list<Closure(): StartRecord>
+     * @var list<Closure(): void>
      */
     private array $refusals = [];
 
@@ -33,7 +33,7 @@ final class HeldStartRefusals
         Option $replyInboxId,
         StartRefusal $refusal,
     ): void {
-        $this->refusals[] = fn () => StartRecord::keepRefusal($request, $requester, $replyInboxId, $refusal);
+        $this->refusals[] = fn () => StartRecord::accept($request, $requester, $replyInboxId)->refuse($refusal);
     }
 
     /**

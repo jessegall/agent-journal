@@ -40,6 +40,7 @@ final class TaskPlanSectionTest extends TestCase
             [(string) $plan->number, 'Build the release page', '2', 'Write'],
             [$inPlan->planNumber, $inPlan->planTitle, $inPlan->phaseNumber, $inPlan->phaseTitle],
         );
+
         $this->assertInstanceOf(Optional::class, $outside->planNumber);
     }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Sharing\Concerns;
+namespace App\Http\Requests\Concerns;
 
 use App\Bus\Support\RequestKey;
 

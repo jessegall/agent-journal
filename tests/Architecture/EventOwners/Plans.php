@@ -8,9 +8,9 @@ use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\Events\PlanReviewDecided;
 use Domain\Plans\Api\Events\PlanReviewRequested;
-use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Api\Events\PlanReviewWithdrawn;
 use Domain\Plans\Api\Events\PlanStarted;
+use Domain\Plans\Enums\PlanReviewState;
 use Tests\Architecture\Support\EventRole;
 
 /**

@@ -31,7 +31,7 @@ final readonly class PlanReviewFreezer
      */
     public function freeze(Plan $plan, ActorIdentity $actor): PlanReviewEdition
     {
-        $edition = PlanReviewEdition::open($plan, $actor);
+        $edition = PlanReviewEdition::create($plan, $actor);
         $hash = hash_init('sha256');
         hash_update($hash, (string) json_encode([$plan->title, $plan->brief, $plan->type->value]));
         $position = 0;
@@ -43,7 +43,7 @@ final readonly class PlanReviewFreezer
             foreach ($phases as $phase) {
                 $position++;
                 $afterNumber = $phase->number;
-                PlanReviewPhase::record($edition, $position, $phase);
+                PlanReviewPhase::create($edition, $position, $phase);
                 hash_update($hash, (string) json_encode(['phase', $position, $phase->number, $phase->title]));
                 $this->freezeMembers($edition, $position, $phase, $hash);
             }
@@ -68,7 +68,8 @@ final readonly class PlanReviewFreezer
 
             foreach ($this->texts->textsOf(array_values($page)) as $text) {
                 $memberPosition++;
-                PlanReviewMember::record($edition, $phasePosition, $memberPosition, $text);
+                PlanReviewMember::create($edition, $phasePosition, $memberPosition, $text);
+
                 hash_update($hash, (string) json_encode([
                     'task',
                     $phasePosition,

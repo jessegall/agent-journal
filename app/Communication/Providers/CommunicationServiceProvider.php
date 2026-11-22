@@ -111,6 +111,7 @@ final class CommunicationServiceProvider extends ServiceProvider
                 ->call(fn (NotificationChangePruning $pruning) => $pruning->prune(CarbonImmutable::now()))
                 ->hourly(),
         );
+
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/communication.php');
         $incoming->register(MessageAnswerActivation::class);

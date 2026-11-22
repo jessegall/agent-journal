@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sharing;
 
-use App\Http\Requests\Sharing\Concerns\ReadsIdempotencyKey;
+use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Gateways\Support\GatewaySecrets;
 use App\Sharing\Gateways\Support\TypedSecret;

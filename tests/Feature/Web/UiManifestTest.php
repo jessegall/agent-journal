@@ -7,6 +7,7 @@ namespace Tests\Feature\Web;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Files\Contracts\Files;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\Page;
 use App\Ui\Enums\Icon;
@@ -179,7 +180,11 @@ final class UiManifestTest extends TestCase
         return new UiManifest(
             $declarations,
             $this->app->make('view'),
-            new PagePropTypes($declarations, TypeOwners::of($this->app->make(DomainRegistry::class), $declarations)),
+            new PagePropTypes(
+                $declarations,
+                TypeOwners::of($this->app->make(DomainRegistry::class), $declarations),
+                $this->app->make(ReflectorFactory::class),
+            ),
             $this->app->make(Files::class),
         );
     }

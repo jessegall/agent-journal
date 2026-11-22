@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Requests;
 
-use Domain\Tasks\Api\TaskHolderFilter;
+use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Http\Data\TaskFiltersData;
 use Illuminate\Foundation\Http\FormRequest;

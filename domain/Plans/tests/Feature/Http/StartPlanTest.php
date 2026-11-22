@@ -64,6 +64,7 @@ final class StartPlanTest extends TestCase
         $this->actingAs($this->owner)->from('/plans')->post("/plans/{$this->plan->number}/start")
             ->assertStatus(303)
             ->assertSessionHasNoErrors();
+
         $this->actingAs($this->owner)->from('/plans')->post("/plans/{$this->plan->number}/start")
             ->assertStatus(303)
             ->assertSessionHasNoErrors();

@@ -187,6 +187,7 @@ final readonly class LibraryWindowResolver implements PageResolver
         if ($rows === [] && $filter !== null) {
             $lower = strtolower($heading);
             $parts[] = LayoutPartData::notice('empty', 'empty', "No {$lower} match {$filter}.");
+
             $parts[] = LayoutPartData::action(
                 'clear',
                 'Clear filter',
@@ -212,6 +213,7 @@ final readonly class LibraryWindowResolver implements PageResolver
             'action' => "/documents/{$path}",
             'label' => $label === 'doc' ? 'File document' : 'File report',
         ]);
+
         $parts[] = LayoutPartData::native('create', LayoutNativeData::of('documents/CreateRecordForm', $form));
 
         return LayoutPartData::box($key, 'section', ...$parts);

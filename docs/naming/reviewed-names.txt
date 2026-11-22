@@ -1593,6 +1593,7 @@ class	AgentState
 class	AgentStateMachine
 class	AgentStatus
 class	AgentStatusData
+class	AgentStatusRules
 class	AgentVisibility
 class	AgentWakes
 class	AgentWorkStack
@@ -4017,6 +4018,7 @@ class	PlanPolicy
 class	PlanPoolRefused
 class	PlanProgress
 class	PlanProgressChanged
+class	PlanProgressCount
 class	PlanReadResult
 class	PlanReadTool
 class	PlanReaderData
@@ -8996,24 +8998,24 @@ method	AgentState::workPermission()
 method	AgentStateMachine::__construct()
 method	AgentStateMachine::answer()
 method	AgentStatus::__construct()
-method	AgentStatus::commandOutcomeOf()
-method	AgentStatus::failedRequest()
-method	AgentStatus::held()
-method	AgentStatus::isWakeRefused()
-method	AgentStatus::labelled()
-method	AgentStatus::live()
-method	AgentStatus::of()
-method	AgentStatus::operationOf()
-method	AgentStatus::plain()
-method	AgentStatus::refused()
-method	AgentStatus::starting()
-method	AgentStatus::stopping()
-method	AgentStatus::switching()
-method	AgentStatus::underWay()
-method	AgentStatus::unknown()
-method	AgentStatus::withoutSession()
 method	AgentStatusData::__construct()
 method	AgentStatusData::fromAgentStatus()
+method	AgentStatusRules::commandOutcomeOf()
+method	AgentStatusRules::failedRequest()
+method	AgentStatusRules::held()
+method	AgentStatusRules::isWakeRefused()
+method	AgentStatusRules::labelled()
+method	AgentStatusRules::live()
+method	AgentStatusRules::of()
+method	AgentStatusRules::operationOf()
+method	AgentStatusRules::plain()
+method	AgentStatusRules::refused()
+method	AgentStatusRules::starting()
+method	AgentStatusRules::stopping()
+method	AgentStatusRules::switching()
+method	AgentStatusRules::underWay()
+method	AgentStatusRules::unknown()
+method	AgentStatusRules::withoutSession()
 method	AgentVisibility::ownRead()
 method	AgentVisibility::ownRows()
 method	AgentVisibility::readAcrossOwners()
@@ -14701,7 +14703,6 @@ method	LaunchLimits::stopOverdue()
 method	LaunchOutcome::__construct()
 method	LaunchOutcome::key()
 method	LaunchOutcome::keyOf()
-method	LaunchOutcome::of()
 method	LaunchOutcome::version()
 method	LaunchOutcomeDismissal::dismiss()
 method	LaunchOutcomeDismissal::dismissedBy()
@@ -14745,6 +14746,7 @@ method	LayoutPartData::native()
 method	LayoutPartData::notice()
 method	LayoutPartData::tabs()
 method	LayoutPartData::text()
+method	LayoutPartData::time()
 method	LayoutRefused::bindingMismatch()
 method	LayoutRefused::childrenNotAllowed()
 method	LayoutRefused::emptyKey()
@@ -16867,16 +16869,16 @@ method	PlanPoolRefused::idsGiven()
 method	PlanPoolRefused::noPlanTarget()
 method	PlanPoolRefused::otherPool()
 method	PlanProgress::__construct()
-method	PlanProgress::fromTaskProgress()
 method	PlanProgress::isComplete()
 method	PlanProgress::none()
 method	PlanProgress::plus()
 method	PlanProgress::unfinished()
-method	PlanProgress::withChange()
-method	PlanProgress::withMove()
 method	PlanProgressChanged::__construct()
 method	PlanProgressChanged::dockId()
 method	PlanProgressChanged::dockType()
+method	PlanProgressCount::afterMove()
+method	PlanProgressCount::of()
+method	PlanProgressCount::withChange()
 method	PlanReadResult::__construct()
 method	PlanReadResult::first()
 method	PlanReadResult::nextPhases()
@@ -16922,13 +16924,13 @@ method	PlanReviewDecision::__construct()
 method	PlanReviewDecision::certified()
 method	PlanReviewEdition::approve()
 method	PlanReviewEdition::casts()
+method	PlanReviewEdition::create()
 method	PlanReviewEdition::currentApprovalOf()
 method	PlanReviewEdition::decide()
 method	PlanReviewEdition::latestApprovalOf()
 method	PlanReviewEdition::latestOf()
 method	PlanReviewEdition::markHistorical()
 method	PlanReviewEdition::numberedIn()
-method	PlanReviewEdition::open()
 method	PlanReviewEdition::requestChanges()
 method	PlanReviewEdition::requestedOf()
 method	PlanReviewEdition::seal()
@@ -16939,13 +16941,13 @@ method	PlanReviewFreezer::freeze()
 method	PlanReviewFreezer::freezeMembers()
 method	PlanReviewMember::briefSliceOf()
 method	PlanReviewMember::casts()
+method	PlanReviewMember::create()
 method	PlanReviewMember::firstOf()
 method	PlanReviewMember::pageOf()
-method	PlanReviewMember::record()
 method	PlanReviewMemberData::__construct()
 method	PlanReviewPhase::casts()
+method	PlanReviewPhase::create()
 method	PlanReviewPhase::pageOf()
-method	PlanReviewPhase::record()
 method	PlanReviewPhaseData::__construct()
 method	PlanReviewReceiptData::__construct()
 method	PlanReviewRefused::alreadyDecided()
@@ -17344,6 +17346,7 @@ method	ProcessStart::unresolvedSessionIdsOf()
 method	ProcessStart::unresolvedSessionIdsOn()
 method	ProcessStartScope::__construct()
 method	ProcessStartScope::apply()
+method	ProcessStartState::isStarting()
 method	ProcessStartState::unresolved()
 method	ProcessStartUnknown::for()
 method	ProcessStartUnknown::refusalCode()
@@ -22287,7 +22290,6 @@ method	StartRecord::conversationTargetOf()
 method	StartRecord::forAgent()
 method	StartRecord::forOwnerReference()
 method	StartRecord::forgetIntent()
-method	StartRecord::keepRefusal()
 method	StartRecord::latestOf()
 method	StartRecord::ownerStartOf()
 method	StartRecord::ownerWork()
@@ -23222,8 +23224,8 @@ method	TaskChangedSinceRead::refusalCode()
 method	TaskChangedSinceRead::status()
 method	TaskCheck::bind()
 method	TaskCheck::casts()
+method	TaskCheck::create()
 method	TaskCheck::defaultReadOrder()
-method	TaskCheck::invoke()
 method	TaskCheck::isBound()
 method	TaskCheck::ofProcessRun()
 method	TaskCheck::pageOf()
@@ -23263,10 +23265,10 @@ method	TaskFinished::dockId()
 method	TaskFinished::dockType()
 method	TaskGraphLock::lock()
 method	TaskHistoryEntry::casts()
+method	TaskHistoryEntry::create()
 method	TaskHistoryEntry::defaultReadOrder()
 method	TaskHistoryEntry::lastSequenceOf()
 method	TaskHistoryEntry::pageOf()
-method	TaskHistoryEntry::recordChange()
 method	TaskHistoryEntry::transition()
 method	TaskHistoryPage::__construct()
 method	TaskHistoryRecords::__construct()
@@ -23281,11 +23283,11 @@ method	TaskListTool::read()
 method	TaskListTool::schema()
 method	TaskListTool::tasks()
 method	TaskLogEntry::casts()
+method	TaskLogEntry::create()
 method	TaskLogEntry::defaultReadOrder()
 method	TaskLogEntry::line()
 method	TaskLogEntry::pageAfter()
 method	TaskLogEntry::pageBefore()
-method	TaskLogEntry::record()
 method	TaskLogLine::__construct()
 method	TaskLogPage::__construct()
 method	TaskLogRecords::__construct()
@@ -23436,9 +23438,9 @@ method	TaskStreamPageData::__construct()
 method	TaskSummary::__construct()
 method	TaskText::__construct()
 method	TaskTransition::__construct()
-method	TaskWait::add()
 method	TaskWait::between()
 method	TaskWait::casts()
+method	TaskWait::create()
 method	TaskWait::dependentIdsAmong()
 method	TaskWait::holdersOf()
 method	TaskWait::isSatisfiedBy()
@@ -23455,7 +23457,7 @@ method	TaskWaitChoiceData::__construct()
 method	TaskWaitChoiceData::ofCard()
 method	TaskWaitGraph::assertNoCycle()
 method	TaskWaitHistory::casts()
-method	TaskWaitHistory::record()
+method	TaskWaitHistory::create()
 method	TaskWaitItemData::__construct()
 method	TaskWaitItemData::ofLink()
 method	TaskWaitLink::__construct()
@@ -25548,7 +25550,6 @@ parameter	$imports
 parameter	$inStates
 parameter	$inbox
 parameter	$inboxId
-parameter	$inboxIds
 parameter	$inboxes
 parameter	$incoming
 parameter	$incomingWork
@@ -25691,7 +25692,7 @@ parameter	$item	app/Agents/Data/ProtectionReportData.php
 parameter	$item	app/Agents/Values/ProtectedItem.php
 parameter	$item	app/Agents/Values/ProtectionReport.php
 parameter	$item	app/Communication/Data/NotificationChangeItem.php
-parameter	$item	app/Communication/Resolvers/NotificationFeed.php
+parameter	$item	app/Communication/Resolvers/Support/NotificationFeed.php
 parameter	$item	app/Ui/Declarations/RegisteredNavigation.php
 parameter	$itemValue
 parameter	$items	app/Agents/Data/ProtectionReportData.php
@@ -26483,6 +26484,7 @@ parameter	$reference
 parameter	$references
 parameter	$reflection
 parameter	$reflections
+parameter	$reflector
 parameter	$reflectorOf
 parameter	$reflectors
 parameter	$refreshAt
@@ -27574,7 +27576,6 @@ property	AddPhaseTasksHandler::$structure
 property	AddPhaseTasksHandler::$tasks
 property	AddTaskWait::$dependentTaskId
 property	AddTaskWait::$prerequisiteTaskId
-property	AddTaskWait::$requestKey
 property	AddTaskWaitHandler::$graph
 property	AddTaskWaitHandler::$lock
 property	AddTaskWaitHandler::$tasks
@@ -32065,6 +32066,7 @@ property	PageController::$declarations
 property	PageController::$inertia
 property	PagePropTypes::$declarations
 property	PagePropTypes::$owners
+property	PagePropTypes::$reflector
 property	PageProps::$contexts
 property	PageProps::$declarations
 property	PageProps::$inertia
@@ -33894,7 +33896,6 @@ property	RemoveMemoryCall::$requestKey
 property	RemoveRule::$ruleId
 property	RemoveTaskWait::$dependentTaskId
 property	RemoveTaskWait::$prerequisiteTaskId
-property	RemoveTaskWait::$requestKey
 property	RemoveTaskWaitHandler::$lock
 property	RenameAccount::$accountId
 property	RenameAccount::$label
@@ -37069,7 +37070,6 @@ property	WaitingPlansSection::$sessions
 property	WaiveTaskWait::$dependentTaskId
 property	WaiveTaskWait::$prerequisiteTaskId
 property	WaiveTaskWait::$reason
-property	WaiveTaskWait::$requestKey
 property	WaiveTaskWaitHandler::$lock
 property	WakeAgent::$agentId
 property	WakeAgent::$idempotencyKey
@@ -37493,6 +37493,7 @@ variable	$chat
 variable	$check
 variable	$checkClass
 variable	$checkId
+variable	$checkStatus
 variable	$checked
 variable	$checkedOut
 variable	$checkout
@@ -37539,6 +37540,7 @@ variable	$columns
 variable	$combination
 variable	$command
 variable	$commandClasses
+variable	$commandOutcome
 variable	$commandOwner
 variable	$commandOwners
 variable	$commandReply
@@ -38116,9 +38118,9 @@ variable	$issuedHere
 variable	$issuerIsOwner
 variable	$item
 variable	$item	app/Bus/Support/CommandGrammar.php
-variable	$item	app/Communication/Resolvers/NotificationChanges.php
-variable	$items	app/Communication/Resolvers/NotificationChanges.php
-variable	$items	app/Communication/Resolvers/NotificationFeed.php
+variable	$item	app/Communication/Resolvers/Support/NotificationChanges.php
+variable	$items	app/Communication/Resolvers/Support/NotificationChanges.php
+variable	$items	app/Communication/Resolvers/Support/NotificationFeed.php
 variable	$job
 variable	$jobId
 variable	$jobs
@@ -38664,6 +38666,7 @@ variable	$release
 variable	$released
 variable	$reloadsAtNewSession
 variable	$remaining
+variable	$remedy
 variable	$reminder
 variable	$reminders
 variable	$remote

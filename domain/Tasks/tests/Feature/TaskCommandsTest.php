@@ -11,6 +11,7 @@ use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
@@ -55,8 +56,9 @@ final class TaskCommandsTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         [$finished, $blocked, $cancelled] = [$this->task('Finish'), $this->task('Block'), $this->task('Cancel')];
 
+        $bus->run(new StartTask($blocked->id));
         $bus->run(new FinishTask($finished->id, 0, 'Done.'));
-        $bus->run(new BlockTask($blocked->id, 0, 'Waits.'));
+        $bus->run(new BlockTask($blocked->id, $blocked->refresh()->run_number, 'Waits.'));
         $bus->run(new CancelTask($cancelled->id, 'Dropped.'));
 
         $this->assertSame(

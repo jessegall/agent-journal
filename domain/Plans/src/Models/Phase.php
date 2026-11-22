@@ -141,7 +141,7 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     public static function headingsIn(string $planId, int $after, int $limit): EloquentCollection
     {
         return self::query()->where('plan_id', $planId)->where('number', '>', $after)
-            ->orderBy('number')->orderBy('id')->limit($limit)->get();
+            ->orderBy('number')->orderBy('id')->readUpTo($limit)->get();
     }
 
     // ----------[ Mutations ]----------

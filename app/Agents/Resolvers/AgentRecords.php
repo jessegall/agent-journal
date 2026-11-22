@@ -27,7 +27,7 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\AgentFacts;
 use App\Agents\Support\AgentInspection;
 use App\Agents\Support\AgentOption;
-use App\Agents\Support\AgentStatus;
+use App\Agents\Support\AgentStatusRules;
 use App\Agents\Support\LaunchOutcome;
 use App\Agents\Support\ResumableConversation;
 use App\Agents\Support\StartRemedyWords;
@@ -160,7 +160,14 @@ final readonly class AgentRecords implements AgentDirectory
      */
     private function launchOutcomesOf(array $ids): array
     {
-        $launches = StartRecord::latestOf($ids)->map(fn (StartRecord $record) => LaunchOutcome::of($record));
+        $launches = StartRecord::latestOf($ids)->map(fn (StartRecord $record) => new LaunchOutcome(
+            $record->agent_id,
+            $record->request_id,
+            $record->disposition,
+            $record->session_id,
+            $record->refusal_reason,
+        ));
+
         $dismissed = LaunchOutcomeDismissal::dismissedKeysOf(
             ActorIdentity::of($this->actors->actor()),
             array_values($launches->map(fn (LaunchOutcome $launch) => $launch->requestId)->all()),
@@ -182,6 +189,7 @@ final readonly class AgentRecords implements AgentDirectory
         $session = $facts->session;
         $runtime = $facts->runtime;
         $switch = $facts->switch;
+
         $resumable = array_values($conversations->take(self::CONVERSATIONS_SHOWN)->map(
             fn (DriverConversation $conversation) => new ResumableConversation(
                 $conversation->id,
@@ -212,7 +220,7 @@ final readonly class AgentRecords implements AgentDirectory
             $resumable,
             $startRefusal,
             $facts->launch,
-            AgentStatus::of(
+            AgentStatusRules::of(
                 $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $this->clock->now()),
                 $this->remedyWords,
             ),

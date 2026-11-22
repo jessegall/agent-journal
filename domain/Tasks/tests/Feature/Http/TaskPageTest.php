@@ -7,7 +7,6 @@ namespace Domain\Tasks\Tests\Feature\Http;
 use App\Assignments\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\AddTaskWait;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
@@ -15,7 +14,8 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\AssignmentWriterInTransaction;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
@@ -25,8 +25,23 @@ use Tests\Support\TestIds;
  */
 final class TaskPageTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+    use RunsKeyedCommands;
     use StartsAgentRequests;
+
+    private const array TABLES = [
+        'users',
+        'tasks',
+        'task_waits',
+        'task_wait_history',
+        'task_history',
+        'task_runs',
+        'task_log_entries',
+        'task_checks',
+        'assignments',
+        'agents',
+        'command_receipts',
+    ];
 
     private User $owner;
 
@@ -42,12 +57,14 @@ final class TaskPageTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Prepare records', 'brief' => "First part.\n\nSecond part."]);
         $this->startUserRequestAs($this->owner->id);
+
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $task->assignmentIdentity(),
             AssigneeIdentity::of($this->owner),
         );
 
         $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
+
         $taskPage->assertInertia(fn (AssertableInertia $page) => $page
             ->component('tasks/TaskWindow')
             ->where('page.data.number', (string) $task->number)
@@ -64,9 +81,10 @@ final class TaskPageTest extends TestCase
         $first = Task::factory()->create(['title' => 'Prepare records']);
         $second = Task::factory()->create(['title' => 'Publish records']);
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new AddTaskWait($second->id, $first->id, self::key()));
+        $this->runOnBus(new AddTaskWait($second->id, $first->id));
 
         $waiting = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
+
         $waiting->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.waits.waitsFor.0.number', (string) $first->number)
             ->where('page.data.waits.waitsFor.0.state', 'open')
@@ -74,6 +92,7 @@ final class TaskPageTest extends TestCase
             ->count('page.data.waits.holdsUp', 0));
 
         $holding = $this->actingAs($this->owner)->get("/tasks/{$first->number}?section=waits")->assertOk();
+
         $holding->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.waits.holdsUp.0.number', (string) $second->number));
     }
@@ -84,6 +103,7 @@ final class TaskPageTest extends TestCase
         $second = Task::factory()->create(['title' => 'Publish records']);
 
         $offered = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
+
         $offered->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.waitActions.mayEdit', true)
             ->where('page.data.waitActions.mayWaive', true));
@@ -95,6 +115,7 @@ final class TaskPageTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $holding = $this->actingAs($this->owner)->get("/tasks/{$first->number}?section=waits");
+
         $holding->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.waits.holdsUp.0.number', (string) $second->number));
 
@@ -109,8 +130,11 @@ final class TaskPageTest extends TestCase
             ->post("/tasks/{$second->number}/waits/waive", ['prerequisite' => (string) $first->number, 'reason' => ' '])
             ->assertSessionHasErrors();
 
+        $this->app->make('auth')->forgetGuards();
+
         $this->post("/tasks/{$second->number}/waits/remove", ['prerequisite' => (string) $first->number])
             ->assertRedirect('/login');
+
         $this->assertSame(1, TaskWait::query()->count());
     }
 

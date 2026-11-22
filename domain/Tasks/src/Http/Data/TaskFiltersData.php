@@ -6,7 +6,7 @@ namespace Domain\Tasks\Http\Data;
 
 use App\Assignments\Support\NumberedPage;
 use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Api\TaskHolderFilter;
+use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Enums\TaskState;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Regex;

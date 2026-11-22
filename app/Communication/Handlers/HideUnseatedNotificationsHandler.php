@@ -51,6 +51,7 @@ final readonly class HideUnseatedNotificationsHandler implements CommandHandler
             Message::idsOutsideInboxes($this->inboxes->inboxIdsOf($recipient)),
             HideUnseatedNotifications::BATCH,
         );
+
         $at = CarbonImmutable::now();
 
         foreach ($receipts as $receipt) {

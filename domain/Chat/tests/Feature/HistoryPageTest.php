@@ -67,8 +67,9 @@ final class HistoryPageTest extends TestCase
         $this->actingAs($owner)
             ->get('/chat/history?inbox='.$builderInboxId)
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.isInspection', true)
-                ->where('page.data.page.messages.0.id', $questionId));
+                ->where('page.data.root.children.0.key', 'inspection')
+                ->where('page.data.root.children.1.children.0.key', $questionId)
+                ->where('page.data.root.children.1.children.0.children.2.form.fixed.messageId', $questionId));
 
         $this->assertNull($this->stored($questionId)->read_at);
 

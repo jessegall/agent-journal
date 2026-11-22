@@ -104,6 +104,7 @@ final class LibraryPageTest extends TestCase
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
+
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "Text\n"));
         $this->app->make(CommandBus::class)->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
         $this->app->make(CurrentActorSetter::class)->clear();

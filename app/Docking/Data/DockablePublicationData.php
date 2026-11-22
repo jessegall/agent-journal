@@ -10,6 +10,7 @@ use App\Ui\Contracts\PresentsLayout;
 use App\Ui\Layout\DeclaredLayoutData;
 use PhpOption\Option;
 use PhpOption\Some;
+use Spatie\LaravelData\Attributes\Hidden;
 use Spatie\LaravelData\Data;
 
 /**
@@ -19,8 +20,10 @@ use Spatie\LaravelData\Data;
 final class DockablePublicationData extends Data implements DockableWindow, PresentsLayout
 {
     private function __construct(
-        private readonly DeclaredLayoutData $shown,
-        private readonly DockIdentity $source,
+        #[Hidden]
+        public readonly DeclaredLayoutData $shown,
+        #[Hidden]
+        public readonly DockIdentity $source,
     ) {}
 
     public static function of(DeclaredLayoutData $layout, DockIdentity $source): self

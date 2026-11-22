@@ -70,7 +70,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
     /**
      * The check of the task run the caller asked for, bound to the process run it opened.
      */
-    public static function invoke(
+    public static function create(
         TaskRun $run,
         string $operation,
         ActorIdentity $caller,
@@ -85,6 +85,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
             'caller_id' => $caller->id,
             'process_run_id' => $processRunId,
         ]);
+
         $check->assertSaved($check->save());
 
         return $check;

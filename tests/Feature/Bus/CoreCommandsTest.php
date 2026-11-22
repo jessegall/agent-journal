@@ -25,6 +25,11 @@ use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Communication\Commands\HideUnseatedNotifications;
+use App\Communication\Commands\MarkAllNotificationsRead;
+use App\Communication\Commands\MarkNotificationRead;
+use App\Communication\Commands\MarkQuestionNotificationRead;
+use App\Communication\Commands\MarkTargetNotificationRead;
 use App\CoreCommands;
 use App\Hooks\Commands\RecordStopResults;
 use App\Processes\Commands\ApproveRuleBundle;
@@ -48,6 +53,7 @@ use App\Processes\Commands\RestoreCommandRule;
 use App\Processes\Commands\RetireCommandRule;
 use App\Processes\Commands\RetryProcessRun;
 use App\Processes\Commands\ReviseRuleProposal;
+use App\Processes\Commands\RevokeRunOutcomeAccess;
 use App\Processes\Commands\SaveCommandRule;
 use App\Processes\Commands\SettleSample;
 use App\Processes\Commands\StartSample;
@@ -239,6 +245,12 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReturnCodeReview::class,
             RouteAsk::class,
             WithdrawAsk::class,
+            HideUnseatedNotifications::class,
+            MarkAllNotificationsRead::class,
+            MarkNotificationRead::class,
+            MarkQuestionNotificationRead::class,
+            MarkTargetNotificationRead::class,
+            RevokeRunOutcomeAccess::class,
         ], CoreCommands::privateCommands());
     }
 

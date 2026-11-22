@@ -94,10 +94,12 @@ final class FocusedQuestionTest extends TestCase
         $reviewerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $reviewer[0]))->inboxId();
         $this->app->forgetScopedInstances();
         $this->startRequestAs($reviewer[0], $reviewer[1]);
+
         $this->questions = [
             $this->runOnBus(new AskMessage($reviewerInboxId, $this->team->inboxId(), 'Which port?')),
             $this->runOnBus(new AskMessage($reviewerInboxId, $this->team->inboxId(), 'Which branch?')),
         ];
+
         $this->asOwner();
     }
 
