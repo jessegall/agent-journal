@@ -113,7 +113,7 @@ final class BindingRevocationTest extends TestCase
     {
         $this->issueByOwner('action-1');
         $line = $this->issueByOwner('action-1');
-        preg_match('#/install/([A-Za-z0-9_-]+) #', (string) $line->json('installLine'), $match);
+        preg_match('#/install/([A-Za-z0-9_-]+) #', (string) $line['installLine'], $match);
         $binding = $this->redeemLine($match[1], 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
         $this->recoverBinding('nonce-aaaaaaaaaaaaaaaa')->assertOk();
         $this->actingAs($this->owner)->deleteJson("/project-connections/bindings/{$binding}")->assertOk();
@@ -136,11 +136,12 @@ final class BindingRevocationTest extends TestCase
         $this->assertStringNotContainsString('/Users/owner/shop', $stored);
     }
 
-    private function issueByOwner(string $issuanceKey): TestResponse
+    /**
+     * @return array<string, mixed>
+     */
+    private function issueByOwner(string $issuanceKey): array
     {
-        return $this->actingAs($this->owner)
-            ->postJson('/project-connections/invitations', ['issuanceKey' => $issuanceKey])
-            ->assertCreated();
+        return $this->issuedLine(['issuanceKey' => $issuanceKey]);
     }
 
     private function relayClaim(string $nonce): TestResponse

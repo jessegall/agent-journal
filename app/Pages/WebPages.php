@@ -131,7 +131,7 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                 ->slots(Slot::make('bar', SlotContextType::Nothing))
                 ->actions(
                     ActionRoute::get('drafts/{noun}/questions', DraftQuestionsController::class, 'draft-questions'),
-                    ActionRoute::post('drafts/{noun}', DraftRecordController::class, 'draft-record'),
+                    ActionRoute::get('drafts/{noun}/record', DraftRecordController::class, 'draft-record'),
                     ActionRoute::get('profiles/starts/{request}', StartReceiptController::class, 'start-receipt'),
                     ActionRoute::get('agents/{agent}/capacity', CheckCapacityController::class, 'capacity'),
                 ),

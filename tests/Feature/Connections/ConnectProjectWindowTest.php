@@ -39,9 +39,7 @@ final class ConnectProjectWindowTest extends TestCase
     {
         $this->issueLine('the-ticket');
         $this->redeemLine('the-ticket', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated();
-        $issued = $this->actingAs($this->owner)
-            ->postJson('/project-connections/invitations', ['issuanceKey' => 'action-1'])
-            ->assertCreated();
+        $issued = $this->issuedLine(['issuanceKey' => 'action-1']);
 
         $page = $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (
             AssertableInertia $page,
@@ -65,7 +63,7 @@ final class ConnectProjectWindowTest extends TestCase
             ->where('page.data.bindings.rows.0.stateText', 'Waiting for first contact.')
             ->where('page.data.bindings.rows.0.state', 'pending'));
 
-        $this->assertStringNotContainsString((string) $issued->json('installLine'), (string) $page->getContent());
+        $this->assertStringNotContainsString((string) $issued['installLine'], (string) $page->getContent());
         $this->assertStringNotContainsString('/Users/owner/shop', (string) $page->getContent());
     }
 

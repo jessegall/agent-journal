@@ -9,6 +9,7 @@ use App\Contracts\CurrentActorSetter;
 use App\Enums\ActorType;
 use App\Enums\GatewayOperationType;
 use App\Enums\ShareState;
+use App\Http\Controllers\RevealShareLinkController;
 use App\Models\Link;
 use App\Models\Share;
 use App\Models\ShareGatewayConfiguration;
@@ -27,6 +28,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Inertia\Support\SessionKey;
 use Inertia\Testing\AssertableInertia;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;
@@ -126,10 +128,10 @@ final class ShareManagementPagesTest extends TestCase
             ->where('page.data.root.children.3.children.0.children.2.rows.0.key', $this->document->id));
         $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) $detail->getContent());
 
-        $this->actingAs($this->owner)->postJson("/sharing/shares/{$share->id}/link")
-            ->assertOk()
-            ->assertJsonPath(
-                'url',
+        $this->actingAs($this->owner)->from("/sharing/shares/{$share->id}")->post("/sharing/shares/{$share->id}/link")
+            ->assertRedirect("/sharing/shares/{$share->id}")
+            ->assertSessionHas(
+                SessionKey::FLASH_DATA.'.'.RevealShareLinkController::REVEALED_LINK,
                 FakeShareGateway::PUBLIC_ORIGIN.'/s/'.Share::query()->findOrFail($share->id)->token_ciphertext,
             );
     }

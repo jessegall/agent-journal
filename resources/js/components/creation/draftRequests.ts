@@ -1,47 +1,27 @@
-import { draftQuestions, draftRecord } from '@generated/routes/web';
-import { xsrfToken } from '@/echo';
 import type { DraftedRecordData, DraftQuestionsData } from '@/generated/types/core';
+import { readPage } from '@kit/pageReads';
 
 /**
  * Why a guided draft request did not give its answer: the server refused it, or no answer came.
  */
 export class DraftRequestFailed extends Error {}
 
-async function request<T>(url: string, init: RequestInit): Promise<T> {
-    let response: Response;
-
-    try {
-        response = await fetch(url, {
-            credentials: 'same-origin',
-            ...init,
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-XSRF-TOKEN': xsrfToken(),
-            },
-        });
-    } catch {
-        throw new DraftRequestFailed('lost');
-    }
-
-    if (!response.ok) {
-        throw new DraftRequestFailed(String(response.status));
-    }
-
-    return (await response.json()) as T;
+function read<T>(routeName: string, query: Record<string, string | string[]>): Promise<T> {
+    return readPage<T>(routeName, query).catch((failure: Error) => {
+        throw new DraftRequestFailed(failure.message);
+    });
 }
 
 /**
  * The questions the draft producer of a noun asks.
  */
 export function readQuestions(noun: string): Promise<DraftQuestionsData> {
-    return request<DraftQuestionsData>(draftQuestions(noun).url, { method: 'GET' });
+    return read<DraftQuestionsData>('web.draft-questions', { noun });
 }
 
 /**
  * The record the draft producer of a noun makes from the answers; nothing is saved.
  */
 export function draftFrom(noun: string, answers: string[]): Promise<DraftedRecordData> {
-    return request<DraftedRecordData>(draftRecord(noun).url, { method: 'POST', body: JSON.stringify({ answers }) });
+    return read<DraftedRecordData>('web.draft-record', { noun, answers });
 }

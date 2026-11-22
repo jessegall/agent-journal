@@ -28,6 +28,8 @@ use Illuminate\Testing\TestResponse;
  */
 trait ConnectsProjects
 {
+    use IssuesInstallLines;
+
     private User $owner;
 
     protected function setUpConnectsProjects(): void

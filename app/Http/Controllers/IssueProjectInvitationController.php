@@ -9,13 +9,12 @@ use App\Http\Requests\Connections\IssueProjectInvitationRequest;
 use App\Http\Responses\PageActionAnswers;
 use App\Support\InstallLine;
 use App\Values\InstallTicket;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
 /**
  * Issues an install line through the bus and answers it once. The ticket is made here, so the command, its receipt
  * and every log hold only its digest. The window's form gets it as a one-time flash beside the page, never in the
- * page's props or history; a JSON caller reads it from an answer that is never cached.
+ * page's props or history.
  */
 final readonly class IssueProjectInvitationController
 {
@@ -29,7 +28,7 @@ final readonly class IssueProjectInvitationController
         CommandBus $commands,
         InstallLine $line,
         PageActionAnswers $answers,
-    ): JsonResponse|RedirectResponse {
+    ): RedirectResponse {
         $ticket = InstallTicket::generate();
         $issued = $commands->run($request->commandFor($ticket));
 
@@ -41,10 +40,6 @@ final readonly class IssueProjectInvitationController
             'attemptVersion' => $issued->attemptVersion,
         ];
 
-        if (! $request->expectsJson()) {
-            return $answers->backWith(self::ISSUED_LINE, $answer);
-        }
-
-        return new JsonResponse($answer, JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store, private']);
+        return $answers->backWith(self::ISSUED_LINE, $answer);
     }
 }

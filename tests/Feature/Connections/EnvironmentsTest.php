@@ -95,12 +95,12 @@ final class EnvironmentsTest extends TestCase
 
     private function joinTicket(string $projectId, string $environmentId): string
     {
-        $issued = $this->actingAs($this->owner)->postJson('/project-connections/invitations', [
+        $issued = $this->issuedLine([
             'issuanceKey' => 'join-'.Str::random(6),
             'projectId' => $projectId,
             'environmentId' => $environmentId,
-        ])->assertCreated();
-        preg_match('#/install/([A-Za-z0-9_-]+)#', (string) $issued->json('installLine'), $ticket);
+        ]);
+        preg_match('#/install/([A-Za-z0-9_-]+)#', (string) $issued['installLine'], $ticket);
 
         return $ticket[1];
     }

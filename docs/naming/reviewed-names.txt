@@ -17602,6 +17602,8 @@ method	PageReadProps::formRequestOf()
 method	PageReadProps::of()
 method	PageReadProps::propName()
 method	PageReadProps::queryOf()
+method	PageReadProps::routeOf()
+method	PageReadProps::routeParameterOf()
 method	PageResolver::read()
 method	PageSize::__construct()
 method	PageSize::from()
@@ -41793,6 +41795,7 @@ variable	$value
 variable	$value	app/Support/Logging/InstallSecretRedaction.php
 variable	$value	app/Support/ObjectReader.php
 variable	$value	app/Support/SettingsValues.php
+variable	$value	app/Support/Web/PageReadProps.php
 variable	$value	app/Support/Wire/Fields/DestinationField.php
 variable	$value	app/Support/Wire/Fields/EnumField.php
 variable	$value	app/Support/Wire/Fields/FlagField.php
