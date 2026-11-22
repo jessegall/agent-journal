@@ -97,9 +97,11 @@ php -r '
     file_put_contents($path, json_encode($record, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL);
 ' "$architecture" "$digest" "$name" "$claude_code" "$codex"
 
-# The agent daemon loads the archive, so the build's own tag is only a second copy of it on this machine's disk; the
-# build cache the next build reuses stays.
-docker image rm "$tag" >/dev/null
+# Only the agent daemon runs the agent image, from the archive, so its build tag is a second copy on this machine's
+# disk; the runner stays, since compose runs it here as the agent host by its digest. The build cache stays.
+if [ "$name" = agent ]; then
+    docker image rm "$tag" >/dev/null
+fi
 
 # Every build cleans up after itself, keeping the cache the next build reuses.
 sh .docker/helper/prune.sh
