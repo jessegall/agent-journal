@@ -47,6 +47,10 @@ export type TerminalScreen = {
     frame: ScreenFrameData | null;
     // The session and generation the shown screen belongs to, for actions that must name them, such as Stop.
     identity: TerminalScreenIdentityData | null;
+    // Whether reads stopped arriving; the last screen stays with its age until its proof runs out.
+    reconnecting: boolean;
+    // Whether this screen follows a restart of the same session, which the view marks between the screens.
+    restarted: boolean;
     refusal: string;
     receivedAt: number;
     endedAt: string;
@@ -58,7 +62,16 @@ export type TerminalScreen = {
 export const WAKE_GAP_MILLISECONDS = 3_000;
 
 function blank(state: TerminalScreenState, receivedAt: number): TerminalScreen {
-    return { state, frame: null, identity: null, refusal: '', receivedAt, endedAt: '' };
+    return {
+        state,
+        frame: null,
+        identity: null,
+        reconnecting: false,
+        restarted: false,
+        refusal: '',
+        receivedAt,
+        endedAt: '',
+    };
 }
 
 function isSameStream(first: TerminalScreenIdentityData, second: TerminalScreenIdentityData): boolean {
@@ -82,6 +95,9 @@ export class TerminalSubscription {
     private opening = false;
     private reading = false;
     private stopped = false;
+    // lost is a subscription whose reads stopped arriving; its next answer opens afresh, so inspect is checked again.
+    private lost = false;
+    private restarted = false;
     private identity: TerminalScreenIdentityData | null = null;
     private liveUntil = 0;
     private lastTick: number;
@@ -116,6 +132,7 @@ export class TerminalSubscription {
     open(): void {
         this.retire();
         this.stopped = false;
+        this.restarted = false;
         const nonce = this.nonce;
         this.opening = true;
         this.publish(blank('opening', this.now()));
@@ -220,8 +237,16 @@ export class TerminalSubscription {
     }
 
     private accept(answer: TerminalFrameData): void {
+        if (this.lost) {
+            this.lost = false;
+            this.open();
+
+            return;
+        }
         if (answer.state === 'restarted') {
             this.open();
+            this.restarted = true;
+            this.publish(this.current);
 
             return;
         }
@@ -276,6 +301,9 @@ export class TerminalSubscription {
         }
         const reason = this.failureOf(failure);
         if (reason.kind === 'lost') {
+            this.lost = true;
+            this.publish({ ...this.current, reconnecting: true });
+
             return;
         }
         this.retire();
@@ -301,7 +329,7 @@ export class TerminalSubscription {
     }
 
     private publish(screen: TerminalScreen): void {
-        this.current = screen;
+        this.current = { ...screen, restarted: this.restarted };
         this.show(screen);
     }
 }

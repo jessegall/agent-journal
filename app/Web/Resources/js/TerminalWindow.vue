@@ -46,7 +46,7 @@ const backToChat = {
                     :identity="presentation.screen.identity"
                     @owner="(label: string) => (ownerLabel = label)"
                 />
-                <template v-if="state === 'not_reporting'">
+                <template v-if="state === 'not_reporting' || state === 'refused'">
                     <Button variant="bordered" size="sm" @click="retry">Retry</Button>
                 </template>
             </template>

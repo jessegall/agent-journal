@@ -70,6 +70,10 @@ function clockTime(milliseconds: number): string {
 function stateLineOf(screen: TerminalScreen, ageSeconds: number): string {
     const lastUpdate = clockTime(screen.receivedAt);
 
+    if (screen.reconnecting && screen.state !== 'refused') {
+        return `Reconnecting · last screen ${seconds(ageSeconds)} old`;
+    }
+
     return {
         opening: 'Opening the terminal…',
         refused: screen.refusal,

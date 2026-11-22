@@ -50,7 +50,7 @@ useTerminalResize(area, control);
                     :identity="presentation.screen.identity"
                     @owner="(label: string) => emit('owner', label)"
                 />
-                <template v-if="state === 'not_reporting'">
+                <template v-if="state === 'not_reporting' || state === 'refused'">
                     <Button variant="bordered" size="sm" @click="retry">Retry</Button>
                 </template>
                 <template v-if="presentation.screen.frame?.noTerminal">

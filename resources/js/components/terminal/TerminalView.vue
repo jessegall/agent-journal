@@ -42,16 +42,23 @@ const announcement = computed(
         ({
             opening: '',
             refused: '',
-            live: 'Watching the terminal',
+            live: screen.value.reconnecting ? '' : 'Watching the terminal',
             last_reported: 'The terminal shows its last reported screen',
             preview_unavailable: 'Terminal preview unavailable',
             not_reporting: '',
             ended: 'The session ended',
         })[screen.value.state],
 );
-const alert = computed(() =>
-    screen.value.state === 'refused' || screen.value.state === 'not_reporting' ? props.presentation.stateLine : '',
-);
+const alert = computed(() => {
+    if (screen.value.state === 'refused') {
+        return screen.value.refusal;
+    }
+    if (screen.value.state === 'not_reporting') {
+        return "The agent's host stopped reporting";
+    }
+
+    return screen.value.reconnecting ? 'The terminal is reconnecting' : '';
+});
 
 const cursorStyle = computed(() => {
     const cursor = drawn.value?.cursor;
@@ -91,6 +98,9 @@ const cursorStyle = computed(() => {
                     aria-label="Terminal screen as text"
                 ></textarea>
             </section>
+        </template>
+        <template v-if="screen.restarted">
+            <p class="border-t border-border-2 pt-1 text-small text-text-3" role="separator">Restarted</p>
         </template>
         <template v-if="drawn !== null">
             <div class="terminal max-h-[70vh] max-w-full overflow-auto rounded">

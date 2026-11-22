@@ -105,6 +105,14 @@ export function useTerminalControl(
             }
         },
     );
+    watch(
+        () => screen.value.reconnecting,
+        (reconnecting) => {
+            if (reconnecting) {
+                control.retire('Input stopped while the terminal reconnects.');
+            }
+        },
+    );
 
     function stopWhenHidden(): void {
         if (document.visibilityState === 'hidden') {
@@ -138,6 +146,18 @@ export function useTerminalControl(
         promptRevision,
         deleteSavedDraft: (index: number) => control.deleteSavedDraft(index),
         holdsGrant: () => control.holdsGrant(),
+        mayTake: () => {
+            const frame = screen.value.frame;
+
+            return (
+                screen.value.state === 'live' &&
+                !screen.value.reconnecting &&
+                frame !== null &&
+                !frame.tooLarge &&
+                !frame.unreadable &&
+                !frame.noTerminal
+            );
+        },
     };
 }
 

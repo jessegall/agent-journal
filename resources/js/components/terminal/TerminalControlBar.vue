@@ -175,7 +175,7 @@ async function copy(text: string): Promise<void> {
     <div class="flex flex-col gap-1.5" aria-label="Terminal controls" role="group">
         <div class="flex flex-wrap items-center gap-1.5">
             <span ref="controlsButton" tabindex="-1" class="text-small text-text-2">{{ ownerLabel }}</span>
-            <template v-if="view.state === 'watching' && !otherViewControls">
+            <template v-if="view.state === 'watching' && !otherViewControls && control.mayTake()">
                 <Button variant="primary" size="sm" @click="control.take()">Take control</Button>
             </template>
             <template v-if="view.state === 'requesting'">
