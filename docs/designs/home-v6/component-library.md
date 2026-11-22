@@ -384,7 +384,7 @@ In short:
 
 ### DriverMark and Logo
 
-- **DriverMark:** the agent's program. Claude is a spark in --mark-claude; Codex is a knot in --text; anything else is the users icon. Sizes 11 (in a small avatar), 16 (rows, large avatar).
+- **DriverMark:** the agent's driver. Claude is a spark in --mark-claude; Codex is a knot in --text; anything else is the users icon. Sizes 11 (in a small avatar), 16 (rows, large avatar).
 - **Logo:** a 20px square, radius 6, --brand fill, a "J" in --on-brand at --text-meta. It appears only in the BrandRow.
 - **Used:** Avatar, AccountRow, BrandRow.
 
