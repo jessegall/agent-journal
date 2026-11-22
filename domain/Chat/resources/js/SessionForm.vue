@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { dateTime } from '@kit/format';
-import { Link, router, useHttp, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import Button from '@kit/Button';
 import Field from '@kit/Field';
 import Dialog from '@kit/Dialog';
 import { followPage } from '@kit/followPage';
 import { keyedPost } from '@kit/keyedPost';
+import { sendPageAction } from '@kit/pageActions';
+import { readPage } from '@kit/pageReads';
 import { newRequestId } from '@kit/requestId';
 import { useStartRestoration } from './composables/useStartRestoration';
 import { useSwitchOperation } from './composables/useSwitchOperation';
@@ -18,7 +20,6 @@ import {
     cancelLaunch,
     recheck,
     startMain,
-    startReceipt,
     switchMethod,
     type EligibleAccountData,
     type EligibleAccountsData,
@@ -117,8 +118,6 @@ type StartReceiptAnswer = {
     remedy?: string;
 };
 
-const receipts = useHttp<{ requestId: string }, StartReceiptAnswer>({ requestId: '' });
-
 if (restored !== null) {
     model.value = restored.model;
     accountId.value = restored.accountId;
@@ -166,8 +165,8 @@ function close(): void {
  * session it started is then followed, a refusal shown, and a start still pending is followed from the page.
  */
 function readReceipt(): void {
-    receipts.get(startReceipt.url(requestId), {
-        onSuccess: (answer) => {
+    readPage<StartReceiptAnswer>('web.start-receipt', { request: requestId }).then(
+        (answer) => {
             if (answer.state === 'refused') {
                 progress.value = null;
                 refusal.value = [answer.explanation, answer.remedy].filter(Boolean).join(' ');
@@ -178,11 +177,11 @@ function readReceipt(): void {
             startedSessionId = answer.sessionId ?? startedSessionId;
             followStart();
         },
-        onError: () => {
+        () => {
             progress.value = null;
             refusal.value = 'This start could not be read; check the agent before starting again.';
         },
-    });
+    );
 }
 
 const canCancelStart = computed(
@@ -194,8 +193,8 @@ function cancelStart(): void {
     }
 
     isCancelling.value = true;
-    receipts.requestId = newRequestId();
-    receipts.post(cancelLaunch.url({ agent: props.agent.id, session: props.agent.sessionId }), {
+    sendPageAction(cancelLaunch({ agent: props.agent.id, session: props.agent.sessionId }), { requestId: newRequestId() }, {
+        only: [chatProp],
         onSuccess: () => {
             following?.stop();
             progress.value = 'Cancelled';

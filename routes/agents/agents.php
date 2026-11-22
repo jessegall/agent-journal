@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Agents\CancelLaunchController;
-use App\Http\Controllers\Agents\CheckCapacityController;
 use App\Http\Controllers\Agents\ContinueStartController;
 use App\Http\Controllers\Agents\DismissLaunchOutcomeController;
 use App\Http\Controllers\Agents\InterruptAgentController;
@@ -34,11 +33,6 @@ Route::post('/agents/{agent}/interrupt', InterruptAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->whereUlid('agent')
     ->name('agents.interrupt');
-
-Route::get('/agents/{agent}/capacity', CheckCapacityController::class)
-    ->middleware(['web', 'auth', 'journal.user'])
-    ->whereUlid('agent')
-    ->name('agents.capacity');
 
 Route::post('/agents/{agent}/launch-outcome/dismiss', DismissLaunchOutcomeController::class)
     ->middleware(['web', 'auth', 'journal.user'])

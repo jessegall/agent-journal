@@ -7,13 +7,11 @@ namespace App\Http\Controllers\Profiles;
 use App\Contracts\CommandBus;
 use App\Http\Requests\Profiles\StartProfileMainRequest;
 use App\Http\Responses\PageActionAnswers;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
 /**
  * Starts a main agent from a profile that coordinates the journal's work. A page's form returns to that page with the
- * started session's id flashed, so the form waits for that session; a JSON caller reads the session, driver and
- * model.
+ * started session's id flashed, so the form waits for that session.
  */
 final readonly class StartProfileMainController
 {
@@ -26,17 +24,9 @@ final readonly class StartProfileMainController
         StartProfileMainRequest $request,
         CommandBus $commands,
         PageActionAnswers $answers,
-    ): JsonResponse|RedirectResponse {
+    ): RedirectResponse {
         $receipt = $commands->run($request->command());
 
-        if (! $request->expectsJson()) {
-            return $answers->backWith(self::STARTED_SESSION, $receipt->sessionId);
-        }
-
-        return new JsonResponse([
-            'sessionId' => $receipt->sessionId,
-            'newSession' => $receipt->newSession,
-            'driverArguments' => $receipt->driverArguments,
-        ]);
+        return $answers->backWith(self::STARTED_SESSION, $receipt->sessionId);
     }
 }

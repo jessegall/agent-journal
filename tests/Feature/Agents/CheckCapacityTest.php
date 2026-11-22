@@ -45,7 +45,7 @@ final class CheckCapacityTest extends TestCase
     public function test_a_container_start_that_does_not_fit_names_the_resource_and_reserves_nothing(): void
     {
         $this->actingAs($this->owner)
-            ->getJson(route('agents.capacity', [
+            ->getJson(route('web.capacity', [
                 'agent' => $this->agent->id,
                 'mode' => ExecutionModeType::RequiredContainer->value,
             ]))
@@ -63,7 +63,7 @@ final class CheckCapacityTest extends TestCase
     public function test_a_start_on_the_host_is_not_held_to_container_capacity(): void
     {
         $this->actingAs($this->owner)
-            ->getJson(route('agents.capacity', [
+            ->getJson(route('web.capacity', [
                 'agent' => $this->agent->id,
                 'mode' => ExecutionModeType::ProtectedHost->value,
             ]))

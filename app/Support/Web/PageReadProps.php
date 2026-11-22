@@ -11,7 +11,9 @@ use App\Support\ReflectedParameter;
 use App\Support\Reflector;
 use App\Support\UiDeclarations;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Inertia\ResponseFactory;
 use Spatie\LaravelData\Data;
 
@@ -57,19 +59,20 @@ final readonly class PageReadProps
             }
 
             $prop = self::propName($action->routeName);
-            $props[$prop] = $this->inertia->optional(fn () => $this->answer($action, $this->queryOf($request, $prop)));
+            $props[$prop] = $this->inertia->optional(fn () => $this->answer($action, $request, $this->queryOf($request, $prop)));
         }
 
         return $props;
     }
 
     /**
-     * What the read's controller answers for the query: its input Data built and validated from the query, a plain
-     * parameter taken from the query by its name, and everything else from the container.
+     * What the read's controller answers for the query: its input Data or form request built and validated from the
+     * query, a plain parameter taken from the query by its name, and everything else from the container.
      *
      * @param  array<string, mixed>  $query
+     * @return Data|array<string, mixed>
      */
-    private function answer(RegisteredAction $action, array $query): Data
+    private function answer(RegisteredAction $action, Request $request, array $query): Data|array
     {
         $this->visibility->assertVisible($action->guard->key);
 
@@ -77,7 +80,7 @@ final readonly class PageReadProps
         $arguments = [];
 
         foreach (Reflector::of($controller)->method('__invoke')->parameters() as $parameter) {
-            $arguments = [...$arguments, ...$this->argumentFor($parameter, $query)];
+            $arguments = [...$arguments, ...$this->argumentFor($parameter, $request, $query)];
         }
 
         return $this->container->call([$controller, '__invoke'], $arguments);
@@ -87,7 +90,7 @@ final readonly class PageReadProps
      * @param  array<string, mixed>  $query
      * @return array<string, mixed>
      */
-    private function argumentFor(ReflectedParameter $parameter, array $query): array
+    private function argumentFor(ReflectedParameter $parameter, Request $request, array $query): array
     {
         $type = $parameter->type()->map(fn ($declared) => $declared->name())->getOrElse('');
 
@@ -95,7 +98,29 @@ final readonly class PageReadProps
             return [$parameter->name() => $type::validateAndCreate($query)];
         }
 
+        if (is_subclass_of($type, FormRequest::class)) {
+            return [$parameter->name() => $this->formRequestOf($type, $request, $query)];
+        }
+
         return array_key_exists($parameter->name(), $query) ? [$parameter->name() => $query[$parameter->name()]] : [];
+    }
+
+    /**
+     * The read's form request over its own query, validated as a route would validate it.
+     *
+     * @template T of FormRequest
+     *
+     * @param  class-string<T>  $type
+     * @param  array<string, mixed>  $query
+     * @return T
+     */
+    private function formRequestOf(string $type, Request $request, array $query): FormRequest
+    {
+        $form = $type::createFrom($request->duplicate($query));
+        $form->setContainer($this->container)->setRedirector($this->container->make(Redirector::class));
+        $form->validateResolved();
+
+        return $form;
     }
 
     /**

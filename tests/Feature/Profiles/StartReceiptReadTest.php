@@ -54,7 +54,7 @@ final class StartReceiptReadTest extends TestCase
             CapacityUnavailable::because(CapacityResource::Memory, 'its memory does not fit.'),
         );
 
-        $this->actingAs($this->owner)->getJson(route('profiles.start-receipt', $request->requestId))
+        $this->actingAs($this->owner)->getJson(route('web.start-receipt', $request->requestId))
             ->assertOk()
             ->assertExactJson([
                 'requestId' => $request->requestId,
@@ -74,7 +74,7 @@ final class StartReceiptReadTest extends TestCase
             ->session;
         $record->startedAs($session);
 
-        $this->actingAs($this->owner)->getJson(route('profiles.start-receipt', $request->requestId))
+        $this->actingAs($this->owner)->getJson(route('web.start-receipt', $request->requestId))
             ->assertOk()
             ->assertJsonPath('state', 'accepted')
             ->assertJsonPath('sessionId', $session->id);
@@ -86,7 +86,7 @@ final class StartReceiptReadTest extends TestCase
         StartRecord::accept($request, TestSelections::pinOf($request), $this->ownerIdentity(), None::create());
         $member = User::factory()->create();
 
-        $this->actingAs($member)->getJson(route('profiles.start-receipt', $request->requestId))
+        $this->actingAs($member)->getJson(route('web.start-receipt', $request->requestId))
             ->assertForbidden()
             ->assertDontSee($request->requestId);
     }

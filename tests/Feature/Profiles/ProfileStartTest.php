@@ -205,7 +205,7 @@ final class ProfileStartTest extends TestCase
         $this->assertSame($old->sessionId, $this->main->refresh()->current_session_id);
     }
 
-    public function test_the_switch_route_answers_a_repeat_with_the_same_switch_and_its_stage_is_read_back(): void
+    public function test_a_repeated_switch_makes_one_switch_and_its_stage_is_read_back(): void
     {
         $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $old = $this->start('default', null);
@@ -223,13 +223,14 @@ final class ProfileStartTest extends TestCase
             'model' => 'default',
         ];
 
-        $first = $this->actingAs($this->owner)->postJson(route('profiles.switch', 'journal-main'), $switch);
-        $repeat = $this->actingAs($this->owner)->postJson(route('profiles.switch', 'journal-main'), $switch);
+        $this->actingAs($this->owner)->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
+            ->assertRedirect('/');
+        $this->actingAs($this->owner)->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
+            ->assertRedirect('/');
 
-        $first->assertOk()->assertJsonPath('stage', DriverSwitchStage::Refused->value);
-        $this->assertSame($first->json('switchId'), $repeat->json('switchId'));
+        $made = DriverSwitch::query()->where('request_id', $switch['requestId'])->sole();
         $this->actingAs($this->owner)->getJson(route('profiles.switch-stage', $switch['requestId']))
-            ->assertJsonPath('switchId', $first->json('switchId'))
+            ->assertJsonPath('switchId', $made->id)
             ->assertJsonPath('stage', DriverSwitchStage::Refused->value);
     }
 

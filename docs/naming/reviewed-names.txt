@@ -7007,6 +7007,7 @@ constant	CallRetries::WAITS_MILLISECONDS
 constant	CallRoutes::CALL_DEFAULT
 constant	CallTooLarge::CODE
 constant	CallbackEnvelope::DEADLINE_SECONDS
+constant	CancelLaunchController::STOPPED
 constant	CanonicalRenderer::MOST_BYTES
 constant	CanonicalRenderer::MOST_DESCRIPTION_BYTES
 constant	CanonicalRenderer::MOST_SECTIONS
@@ -17595,6 +17596,7 @@ method	PageProvider::pages()
 method	PageReadProps::__construct()
 method	PageReadProps::answer()
 method	PageReadProps::argumentFor()
+method	PageReadProps::formRequestOf()
 method	PageReadProps::of()
 method	PageReadProps::propName()
 method	PageReadProps::queryOf()

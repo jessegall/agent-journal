@@ -2,7 +2,8 @@ import type {
     SignInAttemptData,
     SignInReceiptData,
 } from '@generated/types/accounts';
-import { challenge, signInReceipt } from '@generated/routes/accounts';
+import { challenge } from '@generated/routes/accounts';
+import { readPage } from '@kit/pageReads';
 import { xsrfToken } from '@kit/xsrfToken';
 
 /**
@@ -105,7 +106,8 @@ export type ChallengeRead =
     | { status: 'failed' };
 
 /**
- * Reads the sign-in's challenge over its own no-store request; it is never part of the page.
+ * Reads the sign-in's challenge over its own no-store request; it is never part of the page, so no page prop and no
+ * browser history entry ever holds it.
  */
 export async function readChallenge(attemptId: string): Promise<ChallengeRead> {
     const response = await fetch(challenge({ attempt: attemptId }).url, {
@@ -146,23 +148,8 @@ export type ReceiptTarget = { driver: string } | { account: string };
  * What became of a sign-in start under its request key; nothing when the read itself failed, so the caller asks
  * again.
  */
-export async function readReceipt(
-    key: string,
-    target: ReceiptTarget,
-): Promise<SignInReceiptData | null> {
-    const response = await fetch(
-        signInReceipt({ query: { key, ...target } }).url,
-        {
-            credentials: 'same-origin',
-            cache: 'no-store',
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        },
-    );
-
-    return response.ok ? ((await response.json()) as SignInReceiptData) : null;
+export function readReceipt(key: string, target: ReceiptTarget): Promise<SignInReceiptData | null> {
+    return readPage<SignInReceiptData>('accounts.sign-in-receipt', { key, ...target }).catch(() => null);
 }
 
 /**

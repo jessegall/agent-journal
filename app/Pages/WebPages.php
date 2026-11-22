@@ -35,9 +35,11 @@ use App\Declarations\Slot;
 use App\Enums\Icon;
 use App\Enums\SlotContextType;
 use App\Enums\WindowState;
+use App\Http\Controllers\Agents\CheckCapacityController;
 use App\Http\Controllers\Asks\ApproveMergeAskPageController;
 use App\Http\Controllers\Drafts\DraftQuestionsController;
 use App\Http\Controllers\Drafts\DraftRecordController;
+use App\Http\Controllers\Profiles\StartReceiptController;
 use App\Http\Controllers\Runtimes\CancelRuntimeRequestController;
 use App\Http\Controllers\Runtimes\CancelScriptRuntimeRequestController;
 use App\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
@@ -130,6 +132,8 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                 ->actions(
                     ActionRoute::get('drafts/{noun}/questions', DraftQuestionsController::class, 'draft-questions'),
                     ActionRoute::post('drafts/{noun}', DraftRecordController::class, 'draft-record'),
+                    ActionRoute::get('profiles/starts/{request}', StartReceiptController::class, 'start-receipt'),
+                    ActionRoute::get('agents/{agent}/capacity', CheckCapacityController::class, 'capacity'),
                 ),
             Page::make('asks', 'Asks', Icon::Chat, AskInboxResolver::class, 'Asks.vue')->at('asks'),
             Page::make('ask', 'Ask', Icon::Chat, AskDetailResolver::class, 'AskDetail.vue')

@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { router, useHttp, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
 import { newRequestId } from '@kit/requestId';
 import type { AgentOptionData, StatusActionData } from '@generated/types/chat';
 import {
     accountsPage,
     cancelLaunch,
-    capacity,
     dismissLaunchOutcome,
     recheck,
     retry,
@@ -15,6 +14,8 @@ import {
     terminalPage,
 } from '@kit/sessionStarts';
 import { keyedPost } from '@kit/keyedPost';
+import { sendPageAction } from '@kit/pageActions';
+import { readPage } from '@kit/pageReads';
 import { useOpenSessionDialog } from './composables/useChosenAgent';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import { openTerminalBesideChat } from './composables/useTerminalDock';
@@ -49,7 +50,6 @@ let opener: HTMLElement | null = null;
 const notice = ref<string | null>(null);
 const pendingType = ref<string | null>(null);
 const switching = useSwitchOperation(() => props.agent);
-const http = useHttp<{ requestId: string; version: string }, CapacityAnswer>({ requestId: '', version: '' });
 
 watch([formMode, isStopAsked], ([mode, isAsked]) => emit('dialog', mode !== null || isAsked));
 watch(formMode, (mode) => (mode === null ? openDialog?.forget() : openDialog?.keep(mode)));
@@ -87,12 +87,11 @@ function readAgain(): void {
 
 function checkCapacity(): void {
     pendingType.value = 'check-capacity';
-    http.get(capacity.url(props.agent.id, { query: { mode: 'required_container' } }), {
-        onSuccess: (answer) => {
+    readPage<CapacityAnswer>('web.capacity', { agent: props.agent.id, mode: 'required_container' })
+        .then((answer) => {
             notice.value = answer.fits ? 'The host has room for this start now.' : (answer.explanation ?? null);
-        },
-        onFinish: () => (pendingType.value = null),
-    });
+        })
+        .finally(() => (pendingType.value = null));
 }
 
 function dismiss(): void {
@@ -103,9 +102,11 @@ function dismiss(): void {
     }
 
     pendingType.value = 'dismiss';
-    http.requestId = operation.id;
-    http.version = operation.stage;
-    http.post(dismissLaunchOutcome.url(props.agent.id), { onSuccess: readAgain, onError: readAgain });
+    sendPageAction(
+        dismissLaunchOutcome(props.agent.id),
+        { requestId: operation.id, version: operation.stage },
+        { only: [], onFinish: () => (pendingType.value = null) },
+    );
 }
 
 function cancelStart(): void {
@@ -114,11 +115,11 @@ function cancelStart(): void {
     }
 
     pendingType.value = 'cancel-start';
-    http.requestId = newRequestId();
-    http.post(cancelLaunch.url({ agent: props.agent.id, session: props.agent.sessionId }), {
-        onSuccess: readAgain,
-        onError: readAgain,
-    });
+    sendPageAction(
+        cancelLaunch({ agent: props.agent.id, session: props.agent.sessionId }),
+        { requestId: newRequestId() },
+        { only: [], onFinish: () => (pendingType.value = null) },
+    );
 }
 
 /**

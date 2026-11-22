@@ -9,7 +9,8 @@ import { formSendingHooks } from '@kit/usePageChanges';
 export type PageActionMethod = 'post' | 'put' | 'patch' | 'delete';
 
 /**
- * What a page action may add to its visit: the props it changes, which reload alone, and its own hooks.
+ * What a page action may add to its visit: the props it changes, which reload alone (none reads the whole page
+ * again), and its own hooks.
  */
 export type PageActionOptions = Omit<
     VisitOptions,
