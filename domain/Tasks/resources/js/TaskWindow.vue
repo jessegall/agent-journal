@@ -7,7 +7,8 @@ import { keyedPost } from '@kit/keyedPost';
 import CommentsPanel from '@kit/CommentsPanel';
 import { commentThreadOf } from '@kit/commentThreads';
 import { useHostProp } from '@kit/hostProp';
-import FactsList from '@kit/FactsList';
+import FactItem from '@kit/FactItem';
+import FactList from '@kit/FactList';
 import Reader from '@kit/Reader';
 import SlotSections from '@kit/SlotSections';
 import StateBadge from '@kit/StateBadge';
@@ -195,7 +196,15 @@ function back(): void {
                         />
                     </p>
                 </template>
-                <FactsList :facts="facts" />
+                <FactList>
+                    <FactItem
+                        v-for="fact in facts"
+                        :key="fact.label"
+                        :term="fact.label"
+                    >
+                        {{ fact.value }}
+                    </FactItem>
+                </FactList>
                 <SlotSections :sections="data.sections" />
                 <Tabs v-model="section" :tabs="tabs">
                     <template #brief>

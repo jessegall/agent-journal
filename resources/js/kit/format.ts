@@ -95,6 +95,15 @@ export function elapsed(milliseconds: number): string {
 }
 
 /**
+ * A running time as a clock, minutes and two-digit seconds: 0:07, 12:40.
+ */
+export function clock(totalSeconds: number): string {
+    const whole = Math.max(0, Math.floor(totalSeconds));
+
+    return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
+}
+
+/**
  * Seconds with one decimal, for a reading that changes every moment: 2.4 s.
  */
 export function seconds(value: number): string {
