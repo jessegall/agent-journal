@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import AgentTerminal from '@kit/AgentTerminal';
 import Button from '@kit/Button';
+import TerminalControlBar from '@kit/TerminalControlBar';
 import TerminalHeader from '@kit/TerminalHeader';
 import { useTerminalController } from '@kit/terminalController';
 import type { TerminalWindowData } from '@/types/generated';
@@ -15,7 +16,8 @@ import { ref, toRef } from 'vue';
  */
 const props = defineProps<{ data: TerminalWindowData }>();
 
-const { presentation, retry } = useTerminalController(toRef(() => props.data.agentId), ref(true));
+const { presentation, retry, control } = useTerminalController(toRef(() => props.data.agentId), ref(true));
+const ownerLabel = ref('Watching');
 
 const backToChat = {
     key: 'back',
@@ -30,13 +32,18 @@ const backToChat = {
         <TerminalHeader
             agent-name="Terminal"
             :driver="null"
-            owner="Watching"
+            :owner="ownerLabel"
             placement="Own page"
             :main="backToChat"
             :secondary="[]"
         />
         <AgentTerminal :presentation="presentation">
             <template #actions="{ state }">
+                <TerminalControlBar
+                    :control="control"
+                    :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.holdsGrant()"
+                    @owner="(label: string) => (ownerLabel = label)"
+                />
                 <template v-if="state === 'not_reporting'">
                     <Button variant="bordered" size="sm" @click="retry">Retry</Button>
                 </template>

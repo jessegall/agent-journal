@@ -33,6 +33,8 @@ const chatPanel = ref<HTMLElement | null>(null);
 const header = ref<HTMLElement | null>(null);
 const terminalPanel = ref<HTMLElement | null>(null);
 const isHelpShown = ref(false);
+const ownerLabel = ref('Watching');
+const docked = ref<InstanceType<typeof DockedTerminal> | null>(null);
 const width = ref(0);
 const chatShare = ref(readStoredJson('local', SPLIT_STORAGE_KEY, storedShare) ?? DEFAULT_CHAT_SHARE);
 const isFullScreen = ref(false);
@@ -179,6 +181,10 @@ function pickTab(key: string): void {
 }
 
 async function close(): Promise<void> {
+    if (docked.value?.holdsCloseForDraft()) {
+        return;
+    }
+
     isFullScreen.value = false;
     closeTerminalBesideChat();
     await nextTick();
@@ -253,7 +259,7 @@ onBeforeUnmount(() => {
                 <TerminalHeader
                 :agent-name="agent.name"
                 :driver="agent.sessionDriver"
-                owner="Watching"
+                :owner="ownerLabel"
                 :placement="placementLabel"
                 :main="mainAction"
                 :secondary="secondaryActions"
@@ -300,7 +306,13 @@ onBeforeUnmount(() => {
                     :aria-label="terminalLabel"
                     :role="panelRole"
                 >
-                    <DockedTerminal :agent-id="agent.id" :is-shown="showsTerminal" @back-to-chat="close" />
+                    <DockedTerminal
+                        ref="docked"
+                        :agent-id="agent.id"
+                        :is-shown="showsTerminal"
+                        @back-to-chat="close"
+                        @owner="(label: string) => (ownerLabel = label)"
+                    />
                 </div>
             </template>
         </div>
