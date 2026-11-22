@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support\Compatibility;
 
+use App\Contracts\AccountSettingsFiller;
 use App\Enums\AuthenticationArrangement;
 use App\Enums\DriverEvidence;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Support\Compatibility\Exceptions\DriverUnstartableInContainer;
 use App\Support\DefaultDrivers;
+use App\Support\Drivers\ClaudeAccountSettings;
+use App\Support\Drivers\CodexAccountSettings;
 
 /**
  * What start preparation may rely on for one pinned driver: its version and binary digest, the flags and
@@ -21,6 +24,7 @@ final readonly class DriverCompatibility
     /**
      * @param  list<string>  $startFlags  the checked flags every account start passes
      * @param  array<string, string>  $settings  the checked settings each account's own configuration holds
+     * @param  class-string<AccountSettingsFiller>  $accountSettings  what fills the family's account start settings
      * @param  string|null  $containedShortfall  what keeps a contained start back; null where starts are not contained
      * @param  bool  $awaitsContainedReport  whether the shortfall is only that no contained host reported yet, which
      *                                       a later report may lift, rather than a report this build fails
@@ -34,6 +38,7 @@ final readonly class DriverCompatibility
         public AuthenticationArrangement $arrangement,
         public DriverEvidence $arrangementEvidence,
         public string $evidenceOwner,
+        public string $accountSettings,
         public string|null $containedShortfall = null,
         public bool $awaitsContainedReport = false,
     ) {}
@@ -58,6 +63,7 @@ final readonly class DriverCompatibility
                 AuthenticationArrangement::DirectProcesses,
                 DriverEvidence::PrerequisiteMissing,
                 'the signed-in procedure of docs/accounts/claude-native-evidence.md',
+                ClaudeAccountSettings::class,
             ),
             DefaultDrivers::CODEX => new self(
                 $driver,
@@ -68,6 +74,7 @@ final readonly class DriverCompatibility
                 AuthenticationArrangement::SharedOwner,
                 DriverEvidence::PrerequisiteMissing,
                 'the signed-in procedure of docs/accounts/codex-native-evidence.md',
+                CodexAccountSettings::class,
             ),
             default => throw DriverFamilyUnknown::for($driver),
         };

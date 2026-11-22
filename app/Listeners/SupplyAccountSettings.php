@@ -8,11 +8,8 @@ use App\Contracts\DriverCatalogue;
 use App\Contracts\DriverCompatibilities;
 use App\Contracts\Listener;
 use App\Events\AccountSettingsRequested;
-use App\Exceptions\DriverFamilyUnknown;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\ClaudeAccountSettings;
-use App\Support\Drivers\CodexAccountSettings;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Fills in a claimed start's account settings for a driver the journal runs, from its pinned compatibility; a build
@@ -23,6 +20,7 @@ final class SupplyAccountSettings implements Listener
     public function __construct(
         private DriverCompatibilities $compatibilities,
         private Repository $config,
+        private Container $container,
         private DriverCatalogue $drivers,
     ) {}
 
@@ -43,21 +41,11 @@ final class SupplyAccountSettings implements Listener
             $compatibility->arrangement->value,
         );
 
-        match ($driver) {
-            DefaultDrivers::CLAUDE_CODE => ClaudeAccountSettings::fill(
-                $event->settings,
-                $event->directory,
-                $this->config->string('accounts.root'),
-                $compatibility->startFlags,
-            ),
-            DefaultDrivers::CODEX => CodexAccountSettings::fill(
-                $event->settings,
-                $event->directory,
-                $this->config->string('accounts.root'),
-                $compatibility->startFlags,
-                $compatibility->settings,
-            ),
-            default => throw DriverFamilyUnknown::for($driver),
-        };
+        $this->container->make($compatibility->accountSettings)->fill(
+            $event->settings,
+            $event->directory,
+            $this->config->string('accounts.root'),
+            $compatibility,
+        );
     }
 }

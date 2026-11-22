@@ -303,3 +303,23 @@ func codexHooks(hookFile, command string) ([]byte, string, error) {
 
 	return hooks, trust.String(), err
 }
+
+// OffersTerminal: Codex has no terminal the host attaches a person to.
+func (Codex) OffersTerminal() bool {
+	return false
+}
+
+// KeepsToolsFromSignIn: Codex's sandbox limits writes only, so its tools could read its sign-in (doc 61, decision 8).
+func (Codex) KeepsToolsFromSignIn() bool {
+	return false
+}
+
+// ReportsTurnResults: Codex reports its turns through its app-server, not on its output.
+func (Codex) ReportsTurnResults() bool {
+	return false
+}
+
+// ReportsLimitWindows: Codex has no status line with limit windows.
+func (Codex) ReportsLimitWindows() bool {
+	return false
+}

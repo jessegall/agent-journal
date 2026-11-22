@@ -8561,6 +8561,7 @@ enum	WorkRepairOutcome
 enum	WorkspaceUse
 interface	AccountFolders
 interface	AccountOwnerDrain
+interface	AccountSettingsFiller
 interface	AccountUses
 interface	ActiveAccountReader
 interface	ActiveActorCounter
@@ -9189,6 +9190,7 @@ method	AccountSelectionData::__construct()
 method	AccountSelectionData::fromSelection()
 method	AccountSessions::__construct()
 method	AccountSessions::all()
+method	AccountSettingsFiller::fill()
 method	AccountSettingsRequested::__construct()
 method	AccountSignedIn::__construct()
 method	AccountSignedIn::driver()
@@ -27624,6 +27626,7 @@ parameter	$communication
 parameter	$compaction
 parameter	$compactionId
 parameter	$compatibilities
+parameter	$compatibility
 parameter	$compiled
 parameter	$compiler
 parameter	$completed
@@ -33184,6 +33187,7 @@ property	DriverChoiceData::$key
 property	DriverChoiceData::$label
 property	DriverChoiceData::$mode
 property	DriverChoiceData::$unavailableReason
+property	DriverCompatibility::$accountSettings
 property	DriverCompatibility::$arrangement
 property	DriverCompatibility::$arrangementEvidence
 property	DriverCompatibility::$awaitsContainedReport
@@ -40323,6 +40327,7 @@ property	SupervisorTimer::$intervalSeconds
 property	SupervisorTimer::$work
 property	SupplyAccountSettings::$compatibilities
 property	SupplyAccountSettings::$config
+property	SupplyAccountSettings::$container
 property	SupplyAccountSettings::$drivers
 property	SupplyHelperContext::$jobs
 property	SupplyHookContext::$rules

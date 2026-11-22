@@ -100,6 +100,20 @@ type DriverProfile interface {
 	// RejectContrary refuses extra arguments that would undo the profile, such as re-enabling a delegation tool.
 	RejectContrary(extraArguments []string) error
 
+	// OffersTerminal says whether the program has an interactive terminal a person can attach to.
+	OffersTerminal() bool
+
+	// KeepsToolsFromSignIn says whether the program's sandbox keeps its tools from reading its own sign-in, as a
+	// contained host needs before it starts the program.
+	KeepsToolsFromSignIn() bool
+
+	// ReportsTurnResults says whether a headless turn prints its result and usage for the host to read, and its
+	// account's sign-in can be checked in its own folder before the first turn.
+	ReportsTurnResults() bool
+
+	// ReportsLimitWindows says whether the program's status line gives its subscription's limit windows.
+	ReportsLimitWindows() bool
+
 	// Screens is how the build draws its terminal: its composer, menus and other regions, measured from its
 	// recordings.
 	Screens() screen.Layout

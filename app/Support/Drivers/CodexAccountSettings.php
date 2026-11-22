@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
+use App\Contracts\AccountSettingsFiller;
 use App\Support\AccountStartSettings;
+use App\Support\Compatibility\DriverCompatibility;
 
 /**
  * Codex on a saved account: the account folder as CODEX_HOME with its sign-in kept in its own file, no other
@@ -12,20 +14,15 @@ use App\Support\AccountStartSettings;
  * private protection settings; the accounts folder is named to the hook relay so it refuses it while the journal is
  * away.
  */
-final readonly class CodexAccountSettings
+final readonly class CodexAccountSettings implements AccountSettingsFiller
 {
     private const array OTHER_CREDENTIALS = ['OPENAI_API_KEY', 'CODEX_API_KEY'];
 
-    /**
-     * @param  list<string>  $startFlags
-     * @param  array<string, string>  $accountSettings
-     */
-    public static function fill(
+    public function fill(
         AccountStartSettings $settings,
         string $directory,
         string $root,
-        array $startFlags,
-        array $accountSettings,
+        DriverCompatibility $compatibility,
     ): void {
         $settings->setVariable('CODEX_HOME', $directory);
         $settings->setVariable('JOURNAL_ACCOUNTS_ROOT', $root);
@@ -35,11 +32,11 @@ final readonly class CodexAccountSettings
             $settings->removeVariable($variable);
         }
 
-        foreach ($startFlags as $flag) {
+        foreach ($compatibility->startFlags as $flag) {
             $settings->passFlag($flag);
         }
 
-        foreach ($accountSettings as $name => $setting) {
+        foreach ($compatibility->settings as $name => $setting) {
             $settings->keepAccountSetting($name, $setting);
         }
     }

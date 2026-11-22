@@ -285,7 +285,7 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 // claudeAccountStart is whether the runtime runs Claude Code on a saved account, whose sign-in and turn results the
 // driver checks itself.
 func (driver *HeadlessDriver) claudeAccountStart() bool {
-	return driver.runtime.Account != nil && driver.runtime.Profile.Driver() == "claude"
+	return driver.runtime.Account != nil && driver.runtime.Profile.ReportsTurnResults()
 }
 
 // checkSignIn refuses the first turn of a Claude account start whose account is not signed in to claude.ai in its
@@ -328,7 +328,7 @@ func (driver *HeadlessDriver) resultOf(command *exec.Cmd) (<-chan error, error) 
 // containedClaudeStart is whether the runtime runs Claude Code in its session's container, where the container
 // process holds the account.
 func (driver *HeadlessDriver) containedClaudeStart() bool {
-	return driver.runtime.Container != nil && driver.runtime.Profile.Driver() == "claude"
+	return driver.runtime.Container != nil && driver.runtime.Profile.ReportsTurnResults()
 }
 
 // usage is the observer of the start's usage; a start nobody reads usage of has one that ignores it.

@@ -4,25 +4,24 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
+use App\Contracts\AccountSettingsFiller;
 use App\Support\AccountStartSettings;
+use App\Support\Compatibility\DriverCompatibility;
 
 /**
  * Claude Code on a saved account: the account folder as CLAUDE_CONFIG_DIR, an empty Anthropic folder, no other
  * credential, the restricted, explicitly configured invocation the account-free capture checked, and the private
  * protection settings; the accounts folder is named to the hook relay so it refuses it while the journal is away.
  */
-final readonly class ClaudeAccountSettings
+final readonly class ClaudeAccountSettings implements AccountSettingsFiller
 {
     private const array OTHER_CREDENTIALS = ['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN'];
 
-    /**
-     * @param  list<string>  $startFlags
-     */
-    public static function fill(
+    public function fill(
         AccountStartSettings $settings,
         string $directory,
         string $root,
-        array $startFlags,
+        DriverCompatibility $compatibility,
     ): void {
         $settings->setVariable('CLAUDE_CONFIG_DIR', $directory);
         $settings->setVariable('JOURNAL_ACCOUNTS_ROOT', $root);
@@ -33,7 +32,7 @@ final readonly class ClaudeAccountSettings
             $settings->removeVariable($variable);
         }
 
-        foreach ($startFlags as $flag) {
+        foreach ($compatibility->startFlags as $flag) {
             $settings->passFlag($flag);
         }
     }

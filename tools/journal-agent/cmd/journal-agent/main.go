@@ -113,7 +113,7 @@ func record(arguments []string) (int, error) {
 	}
 
 	command := flags.Args()
-	if *driver != "claude" && *driver != "codex" {
+	if _, known := profileFor[*driver]; !known {
 		return 2, errors.New("--driver must be claude or codex")
 	}
 	if *folder != "" {

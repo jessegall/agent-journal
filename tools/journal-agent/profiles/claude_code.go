@@ -358,3 +358,23 @@ func (ClaudeCode) RejectContrary(extraArguments []string) error {
 
 	return nil
 }
+
+// OffersTerminal: Claude Code has terminal the host attaches a person to.
+func (ClaudeCode) OffersTerminal() bool {
+	return true
+}
+
+// KeepsToolsFromSignIn: Claude Code's sandbox keeps its tools from its sign-in.
+func (ClaudeCode) KeepsToolsFromSignIn() bool {
+	return true
+}
+
+// ReportsTurnResults: Claude Code prints each headless turn as stream-json with its usage.
+func (ClaudeCode) ReportsTurnResults() bool {
+	return true
+}
+
+// ReportsLimitWindows: Claude Code gives its limit windows through its status line.
+func (ClaudeCode) ReportsLimitWindows() bool {
+	return true
+}

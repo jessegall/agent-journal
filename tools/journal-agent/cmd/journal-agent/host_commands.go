@@ -799,7 +799,7 @@ func openMainRuntime(
 	if !known || agentID == "" || folder == "" {
 		return host.AttachRequest{}, errors.New("attach needs --agent, --folder and --driver claude or codex")
 	}
-	if profile.Driver() == "codex" {
+	if !profile.OffersTerminal() {
 		return host.AttachRequest{}, errCodexHasNoTerminal
 	}
 	enrollment, err := (host.State{Folder: stateFolder}).Load()
@@ -981,7 +981,7 @@ func (opener runtimeOpener) statusLineOf(
 	prepared host.PreparedStart,
 	profile contracts.DriverProfile,
 ) string {
-	if profile.Driver() != "claude" || prepared.Claim.SignInMethod != oauthSignIn || opener.statusLines == nil {
+	if !profile.ReportsLimitWindows() || prepared.Claim.SignInMethod != oauthSignIn || opener.statusLines == nil {
 		return ""
 	}
 	program, err := os.Executable()

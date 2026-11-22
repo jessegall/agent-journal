@@ -50,17 +50,18 @@ func TestAContainedHostNamesBothImagesByDigest(t *testing.T) {
 	}
 }
 
-func TestOnlyACodexStartOnAContainedHostIsRefused(t *testing.T) {
-	if err := Contained.AssertContainable("codex"); !errors.Is(err, ErrDriverNotContainable) {
-		t.Fatalf("a contained Codex start gave %v", err)
+func TestOnlyADriverThatCannotKeepToolsFromItsSignInIsRefusedOnAContainedHost(t *testing.T) {
+	if err := Contained.AssertContainable(false); !errors.Is(err, ErrDriverNotContainable) {
+		t.Fatalf("a contained start of a driver that cannot keep its tools from its sign-in gave %v", err)
 	}
 
 	for _, admitted := range []struct {
-		arrangement Arrangement
-		program     string
-	}{{Contained, "claude-code"}, {Local, "codex"}, {Local, "claude-code"}} {
-		if err := admitted.arrangement.AssertContainable(admitted.program); err != nil {
-			t.Fatalf("%s on a %s host was refused: %v", admitted.program, admitted.arrangement, err)
+		arrangement          Arrangement
+		keepsToolsFromSignIn bool
+	}{{Contained, true}, {Local, false}, {Local, true}} {
+		if err := admitted.arrangement.AssertContainable(admitted.keepsToolsFromSignIn); err != nil {
+			t.Fatalf("a driver keeping its tools from its sign-in (%v) on a %s host was refused: %v",
+				admitted.keepsToolsFromSignIn, admitted.arrangement, err)
 		}
 	}
 }

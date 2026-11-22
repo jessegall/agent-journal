@@ -52,8 +52,8 @@ var ErrDriverNotContainable = errors.New("Codex's sandbox does not keep tools fr
 	"wait for the provider transport")
 
 // AssertContainable refuses, on a contained host, a program whose sandbox does not keep its tools from its sign-in.
-func (arrangement Arrangement) AssertContainable(program string) error {
-	if arrangement.IsContained() && program == "codex" {
+func (arrangement Arrangement) AssertContainable(keepsToolsFromSignIn bool) error {
+	if arrangement.IsContained() && !keepsToolsFromSignIn {
 		return ErrDriverNotContainable
 	}
 
