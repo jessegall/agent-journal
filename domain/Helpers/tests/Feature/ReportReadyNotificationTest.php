@@ -50,6 +50,7 @@ final class ReportReadyNotificationTest extends TestCase
         $this->assertSame(2, NotificationOccurrence::query()
             ->whereIn('occurrence_key', ["report:{$first->reportId}", "report:{$linked->reportId}"])
             ->count());
+
         $this->assertSame(['12'], $this->targetsOf($atlas));
         $this->assertSame(['13'], $this->targetsOf($jo));
     }
