@@ -38,6 +38,21 @@ final class SearchStatesTest extends TestCase
         $this->assertSame('first-state', $states->resume(self::owner(self::OWNER_ID), $handle)->state);
     }
 
+    public function test_a_search_resumes_from_a_cache_that_serializes_what_it_keeps(): void
+    {
+        $this->app->make('config')->set('cache.stores.array.serialize', true);
+        $this->app->make('cache')->forgetDriver('array');
+        $states = $this->app->make(SearchStates::class);
+        $owner = self::owner(self::OWNER_ID);
+        $handle = $states->start($owner, 'first-state');
+
+        $successor = $states->advance($owner, $handle, 'first-page', 'second-state')->successor;
+
+        $this->assertNotNull($successor);
+        $this->assertSame('first-page', $states->resume($owner, $handle)->page);
+        $this->assertSame('second-state', $states->resume($owner, $successor)->state);
+    }
+
     public function test_a_changed_handle_is_refused(): void
     {
         $states = $this->app->make(SearchStates::class);

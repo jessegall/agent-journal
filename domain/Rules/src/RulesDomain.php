@@ -7,10 +7,12 @@ namespace Domain\Rules;
 use App\Concerns\HasLinkRecords;
 use App\Contracts\CommandProvider;
 use App\Contracts\LinkRecordProvider;
+use App\Contracts\NavigationProvider;
 use App\Contracts\PageProvider;
 use App\Contracts\PolicyProvider;
 use App\Contracts\SkillProvider;
 use App\Declarations\ActionRoute;
+use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\AccessType;
 use App\Enums\Icon;
@@ -55,6 +57,7 @@ final class RulesDomain extends Domain implements
     CommandProvider,
     LinkRecordProvider,
     McpToolProvider,
+    NavigationProvider,
     PageProvider,
     PolicyProvider,
     SkillProvider
@@ -135,6 +138,14 @@ final class RulesDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [ActiveRulesOverview::class];
+    }
+
+    /**
+     * Rules are found in the command palette; the sidebar draws only the design's pages.
+     */
+    public function navigation(): array
+    {
+        return [NavigationItem::page('list', 'Rules', Icon::Rules, position: 30)->offSidebar()];
     }
 
     public function linkRecords(): array

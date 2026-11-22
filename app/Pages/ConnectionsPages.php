@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Contracts\NavigationProvider;
 use App\Contracts\PageProvider;
 use App\Contracts\TypeProvider;
 use App\Data\Connections\BindingListData;
@@ -20,6 +21,7 @@ use App\Data\Connections\ReleaseTargetData;
 use App\Data\Connections\SupportRecordRowData;
 use App\Data\Connections\TerminalSignInRowData;
 use App\Declarations\DomainUi;
+use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\BindingReadiness;
 use App\Enums\ChildRole;
@@ -38,7 +40,7 @@ use App\Support\ConnectionsOwnerCheck;
 /**
  * The pages Core's Connections declares, for the owner alone, under /connections: the Connect a project window.
  */
-final class ConnectionsPages implements PageProvider, TypeProvider
+final class ConnectionsPages implements NavigationProvider, PageProvider, TypeProvider
 {
     public function pages(): array
     {
@@ -62,6 +64,14 @@ final class ConnectionsPages implements PageProvider, TypeProvider
                 ->at('devices/{code}')
                 ->visibleWhen(ConnectionsOwnerCheck::class),
         ];
+    }
+
+    /**
+     * Connect a project is found in the command palette and from Settings; the sidebar draws only the design's pages.
+     */
+    public function navigation(): array
+    {
+        return [NavigationItem::page('connect', 'Connect a project', Icon::Connections, position: 50)->offSidebar()];
     }
 
     /**

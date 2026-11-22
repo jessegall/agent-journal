@@ -46,7 +46,14 @@ const pages = computed<Entry[]>(() =>
     flatten(page.props.navigation?.items ?? []).flatMap((item) =>
         item.url === undefined
             ? []
-            : [{ id: `page-${item.key}`, group: 'Pages' as const, label: item.label, run: () => router.visit(item.url as string) }],
+            : [
+                  {
+                      id: `page-${item.key}`,
+                      group: item.inSidebar ? ('Pages' as const) : ('Commands' as const),
+                      label: item.inSidebar ? item.label : `Open ${item.label}`,
+                      run: () => router.visit(item.url as string),
+                  },
+              ],
     ),
 );
 

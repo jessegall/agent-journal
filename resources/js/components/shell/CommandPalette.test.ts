@@ -10,8 +10,9 @@ const page = reactive({
         name: 'Journal',
         navigation: {
             items: [
-                { key: 'home', label: 'Home', url: '/', children: [], atFoot: false, counted: false },
-                { key: 'plans', label: 'Plans', url: '/plans', children: [], atFoot: false, counted: false },
+                { key: 'home', label: 'Home', url: '/', children: [], atFoot: false, counted: false, inSidebar: true },
+                { key: 'plans', label: 'Plans', url: '/plans', children: [], atFoot: false, counted: false, inSidebar: true },
+                { key: 'rules', label: 'Rules', url: '/rules', children: [], atFoot: false, counted: false, inSidebar: false },
             ],
             groups: [],
             current: [],
@@ -48,6 +49,21 @@ describe('the command palette', () => {
 
         expect([...document.body.querySelectorAll('[role="option"]')].map((option) => option.textContent?.trim())).toEqual(['Plans']);
         expect(input.getAttribute('aria-activedescendant')).toBe(document.body.querySelector('[role="option"]')?.id);
+        view.unmount();
+    });
+
+    it('finds a page kept off the sidebar among the commands', async () => {
+        const view = open();
+        await view.vm.$nextTick();
+        const input = document.body.querySelector('input') as HTMLInputElement;
+
+        input.value = 'rules';
+        input.dispatchEvent(new Event('input'));
+        await view.vm.$nextTick();
+        expect(document.body.querySelectorAll('[role="option"]')).toHaveLength(1);
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+        expect(router.visit).toHaveBeenCalledWith('/rules');
         view.unmount();
     });
 

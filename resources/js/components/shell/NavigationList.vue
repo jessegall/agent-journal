@@ -21,10 +21,11 @@ const navigation = computed(() => page.props.navigation);
 const counts = computed(() => page.props.navigationCounts?.counts ?? {});
 const currentKey = computed(() => navigation.value.current.at(-1) ?? null);
 // The items above the foot in the server's order, one plain list as the design draws it.
-const mainItems = computed(() => navigation.value.items.filter((root) => !root.atFoot));
+const sidebarItems = computed(() => navigation.value.items.filter((root) => root.inSidebar));
+const mainItems = computed(() => sidebarItems.value.filter((root) => !root.atFoot));
 
 const footItems = computed(() =>
-    navigation.value.items.filter((root) => root.atFoot),
+    sidebarItems.value.filter((root) => root.atFoot),
 );
 </script>
 

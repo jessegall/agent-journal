@@ -12,7 +12,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One visible navigation item with its visible children: where it links (its page, or for an item without a page its
- * first visible descendant), its group and whether it sits at the foot, and whether a count may follow for it.
+ * first visible descendant), its group, whether it sits at the foot or only in the command palette, and whether a
+ * count may follow for it.
  */
 #[TypeScript]
 final class NavigationItemData extends Data
@@ -27,6 +28,7 @@ final class NavigationItemData extends Data
         public readonly array $children,
         public readonly bool $atFoot,
         public readonly bool $counted,
+        public readonly bool $inSidebar,
         public readonly Icon|Optional $icon = new Optional(),
         public readonly string|Optional $url = new Optional(),
         public readonly string|Optional $group = new Optional(),

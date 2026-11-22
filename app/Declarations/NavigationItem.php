@@ -25,6 +25,7 @@ final class NavigationItem
      * @param  string|null  $group  the full key of a root item's sidebar group, such as web.agents, or null for none
      * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone who sees its page sees the item
      * @param  class-string<CountResolver>|null  $count  null when the item shows no count
+     * @param  bool  $inSidebar  false for a page the command palette finds but the sidebar does not draw
      */
     private function __construct(
         public readonly string $key,
@@ -40,6 +41,7 @@ final class NavigationItem
         public readonly bool $atFoot = false,
         public readonly string|null $visibility = null,
         public readonly string|null $count = null,
+        public readonly bool $inSidebar = true,
     ) {}
 
     /**
@@ -128,6 +130,15 @@ final class NavigationItem
     public function atFoot(): self
     {
         return clone ($this, ['atFoot' => true]);
+    }
+
+    /**
+     * The item stays out of the sidebar, which draws only the design's pages, and is still found in the command
+     * palette.
+     */
+    public function offSidebar(): self
+    {
+        return clone ($this, ['inSidebar' => false]);
     }
 
     /**

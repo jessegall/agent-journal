@@ -10743,8 +10743,8 @@ method	AwaitingSkillsStateFactory::statesFor()
 method	AwaitingSkillsStateReference::forPublication()
 method	BaseOverride::__construct()
 method	BatchOutcome::canCarryHits()
-method	BatchOutcome::exhaustsSource()
-method	BatchOutcome::failsSource()
+method	BatchOutcome::isFailure()
+method	BatchOutcome::isLastBatch()
 method	BatchOutcome::name()
 method	BatchOutcome::nextPosition()
 method	BeginSignInAgainCommand::__construct()
@@ -12513,6 +12513,7 @@ method	ConnectionsHostOperatorAccess::isGranted()
 method	ConnectionsOwnerCheck::__construct()
 method	ConnectionsOwnerCheck::allows()
 method	ConnectionsPages::declarations()
+method	ConnectionsPages::navigation()
 method	ConnectionsPages::pages()
 method	ConnectionsPages::types()
 method	ConnectionsPolicy::model()
@@ -14587,8 +14588,8 @@ method	ExecutionPolicyInvalid::imageMissing()
 method	ExecutionReceipt::__construct()
 method	ExecutionReference::__construct()
 method	ExhaustedOutcome::canCarryHits()
-method	ExhaustedOutcome::exhaustsSource()
-method	ExhaustedOutcome::failsSource()
+method	ExhaustedOutcome::isFailure()
+method	ExhaustedOutcome::isLastBatch()
 method	ExhaustedOutcome::name()
 method	ExhaustedOutcome::nextPosition()
 method	ExitBranch::__construct()
@@ -14666,8 +14667,8 @@ method	FailSkillPublicationCommand::__construct()
 method	FailSkillPublicationHandler::handle()
 method	FailedOutcome::__construct()
 method	FailedOutcome::canCarryHits()
-method	FailedOutcome::exhaustsSource()
-method	FailedOutcome::failsSource()
+method	FailedOutcome::isFailure()
+method	FailedOutcome::isLastBatch()
 method	FailedOutcome::name()
 method	FailedOutcome::nextPosition()
 method	FailedWindow::__construct()
@@ -17175,8 +17176,8 @@ method	MonotonicStopTimes::at()
 method	MonthCost::__construct()
 method	MoreOutcome::__construct()
 method	MoreOutcome::canCarryHits()
-method	MoreOutcome::exhaustsSource()
-method	MoreOutcome::failsSource()
+method	MoreOutcome::isFailure()
+method	MoreOutcome::isLastBatch()
 method	MoreOutcome::name()
 method	MoreOutcome::nextPosition()
 method	MountRules::__construct()
@@ -17302,6 +17303,7 @@ method	NavigationItem::children()
 method	NavigationItem::childrenFrom()
 method	NavigationItem::count()
 method	NavigationItem::heading()
+method	NavigationItem::offSidebar()
 method	NavigationItem::page()
 method	NavigationItem::visibleWhen()
 method	NavigationItem::withChildren()
@@ -20617,8 +20619,8 @@ method	RefreshSkillsHandler::generationEntries()
 method	RefreshSkillsHandler::handle()
 method	RefreshSkillsHandler::intendPublications()
 method	RefreshedOutcome::canCarryHits()
-method	RefreshedOutcome::exhaustsSource()
-method	RefreshedOutcome::failsSource()
+method	RefreshedOutcome::isFailure()
+method	RefreshedOutcome::isLastBatch()
 method	RefreshedOutcome::name()
 method	RefreshedOutcome::nextPosition()
 method	Refusal::__construct()
@@ -21780,6 +21782,7 @@ method	RulesDomain::exports()
 method	RulesDomain::linkRecords()
 method	RulesDomain::mcpResources()
 method	RulesDomain::mcpTools()
+method	RulesDomain::navigation()
 method	RulesDomain::overviewContributions()
 method	RulesDomain::pages()
 method	RulesDomain::policies()
@@ -22080,8 +22083,8 @@ method	ScanTokens::handle()
 method	ScannedSource::__construct()
 method	ScanningOutcome::__construct()
 method	ScanningOutcome::canCarryHits()
-method	ScanningOutcome::exhaustsSource()
-method	ScanningOutcome::failsSource()
+method	ScanningOutcome::isFailure()
+method	ScanningOutcome::isLastBatch()
 method	ScanningOutcome::name()
 method	ScanningOutcome::nextPosition()
 method	ScopeAnswer::canSearch()
@@ -25056,7 +25059,6 @@ method	StoredSearchPage::__construct()
 method	StoredSearchPage::fromAnswer()
 method	StoredSearchPosition::__construct()
 method	StoredSearchPosition::answered()
-method	StoredSearchPosition::hasAnswered()
 method	StoredSearchProgress::__construct()
 method	StoredSearchProgress::fromSearchProgress()
 method	StoredSelectedTargetData::__construct()
@@ -28152,6 +28154,7 @@ parameter	$implementation
 parameter	$import
 parameter	$importRef
 parameter	$imports
+parameter	$inSidebar
 parameter	$inStates
 parameter	$inbox
 parameter	$inboxId
@@ -34903,6 +34906,7 @@ property	NavigationItem::$childrenResolver
 property	NavigationItem::$count
 property	NavigationItem::$group
 property	NavigationItem::$icon
+property	NavigationItem::$inSidebar
 property	NavigationItem::$key
 property	NavigationItem::$label
 property	NavigationItem::$page
@@ -34915,6 +34919,7 @@ property	NavigationItemData::$children
 property	NavigationItemData::$counted
 property	NavigationItemData::$group
 property	NavigationItemData::$icon
+property	NavigationItemData::$inSidebar
 property	NavigationItemData::$key
 property	NavigationItemData::$label
 property	NavigationItemData::$url
@@ -42801,6 +42806,7 @@ variable	$stands
 variable	$start
 variable	$startKey
 variable	$startReason
+variable	$startRefusal
 variable	$started
 variable	$startedAt
 variable	$startedDigest

@@ -125,6 +125,9 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => [
+        App\Support\Stored\StoredSearch::class,
+        App\Support\Stored\StoredSearchPosition::class,
+    ],
 
 ];

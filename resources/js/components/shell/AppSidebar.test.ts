@@ -33,7 +33,7 @@ const { default: AppSidebar } = await import('./AppSidebar.vue');
 function item(
     fields: Partial<NavigationItemData> & Pick<NavigationItemData, 'key' | 'label'>,
 ): NavigationItemData {
-    return { children: [], atFoot: false, counted: false, ...fields };
+    return { children: [], atFoot: false, counted: false, inSidebar: true, ...fields };
 }
 
 describe('the sidebar', () => {
@@ -73,6 +73,22 @@ describe('the sidebar', () => {
         expect(view.find('a[href="/plans?state=waiting"]').text()).toBe('Waiting');
         expect(view.find('nav[aria-label="More pages"]').text()).toContain('Help');
         expect(view.find('nav[aria-label="Pages"]').text()).not.toContain('Help');
+    });
+
+    it('leaves out a page kept for the command palette alone', () => {
+        page.props.navigation = {
+            items: [
+                item({ key: 'web.home', label: 'Home', url: '/', icon: 'home' }),
+                item({ key: 'rules.list', label: 'Rules', url: '/rules', inSidebar: false }),
+            ],
+            groups: [],
+            current: ['web.home'],
+        };
+
+        const view = mount(AppSidebar);
+
+        expect(view.find('a[href="/"]').exists()).toBe(true);
+        expect(view.find('a[href="/rules"]').exists()).toBe(false);
     });
 
     it('is 216 px wide, marks the current page with a bar as well as its colour, and folds to a 56 px rail', async () => {

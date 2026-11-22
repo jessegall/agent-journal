@@ -66,6 +66,18 @@ final class PlansPageTest extends TestCase
             ->where('page.data.root.children.1.children.1.key', 'nothing-selected'));
     }
 
+    public function test_the_sidebar_keeps_rules_and_connect_a_project_for_the_command_palette_alone(): void
+    {
+        $this->actingAs($this->owner)->get('/plans')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('navigation.items', function ($items): bool {
+                $inSidebar = collect($items)->mapWithKeys(fn (array $item) => [$item['key'] => $item['inSidebar']]);
+
+                return $inSidebar['plans.list'] === true
+                    && $inSidebar['rules.list'] === false
+                    && $inSidebar['connections.connect'] === false;
+            }));
+    }
+
     public function test_search_survives_in_the_query_and_a_plan_opens_beside_the_list_with_its_start(): void
     {
         $this->actingAs($this->owner)->get('/plans?q=release')->assertInertia(fn (AssertableInertia $page) => $page

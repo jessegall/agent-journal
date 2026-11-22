@@ -19,6 +19,7 @@ use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Search\CollectingLogger;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -31,6 +32,7 @@ use Tests\TestCase;
 final class TaskSearchMeasurement extends TestCase
 {
     use RefreshHookDatabase;
+    use StartsAgentRequests;
 
     private const array SCENARIOS = [
         'rare late hit' => 'zephyr audit',
@@ -51,6 +53,7 @@ final class TaskSearchMeasurement extends TestCase
         }
 
         DB::statement('ANALYZE tasks');
+        $this->startTestAgentRequest(1, 1);
         $measurements = [];
 
         foreach (self::SCENARIOS as $name => $words) {

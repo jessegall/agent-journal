@@ -86,6 +86,7 @@ final readonly class WebNavigationRecords implements NavigationRecordsContract
             'children' => $children,
             'atFoot' => $navigation->navigationItem->atFoot,
             'counted' => $navigation->navigationItem->count !== null,
+            'inSidebar' => $navigation->navigationItem->inSidebar,
             'icon' => $navigation->navigationItem->icon,
             'url' => $navigation->page === null ? $firstChildUrl : $this->urlOf($candidate),
             'group' => $navigation->navigationItem->group,
