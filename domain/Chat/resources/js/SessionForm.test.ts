@@ -123,6 +123,7 @@ const idle: AgentOptionData = {
     conversations: [],
     startRefusal: null,
     sessionDriver: null,
+    sessionDriverLabel: null,
     needsAttention: false,
     status: {
         sessionState: 'stopped',

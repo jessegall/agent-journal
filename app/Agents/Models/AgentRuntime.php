@@ -39,7 +39,7 @@ use PhpOption\Option;
  * @property bool $remember
  * @property string $driver_key
  * @property string $family
- * @property string|null $driver_label
+ * @property string $driver_label
  * @property bool $has_screen
  * @property string $driver_build
  * @property string $profile

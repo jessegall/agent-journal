@@ -111,6 +111,10 @@ final readonly class StartSessions
         $token = $this->credentials->issue($session);
         [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
 
+        if ($runtime !== null) {
+            $session->keepDriverLabel($runtime->driver_label);
+        }
+
         $this->facts->publishAfterCommit(new SessionOpened($agent->id, $session->id, $authorizedSource));
         $this->facts->applyRequired();
 

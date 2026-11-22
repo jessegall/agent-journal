@@ -47,7 +47,7 @@ use PhpOption\Option;
  * @property string $actor_id
  * @property string $driver_key
  * @property string $family
- * @property string|null $driver_label
+ * @property string $driver_label
  * @property int|null $protocol_version
  * @property int|null $catalogue_revision
  * @property string $model

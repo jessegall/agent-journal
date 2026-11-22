@@ -42,6 +42,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $parent_session_id
  * @property string|null $driver_key
  * @property string|null $current_conversation_id
+ * @property string|null $driver_label
  * @property string $model
  * @property ModelSelectionType $requested_model_type
  * @property string|null $requested_model
@@ -321,6 +322,16 @@ final class AgentSession extends Model implements ReadableModel
     public function enterConversation(DriverConversation $conversation): void
     {
         $this->current_conversation_id = $conversation->id;
+        $this->save();
+    }
+
+    /**
+     * Keeps the label of the driver the session was pinned to at launch, which it shows for good, even after that
+     * registration is gone.
+     */
+    public function keepDriverLabel(string $label): void
+    {
+        $this->driver_label = $label;
         $this->save();
     }
 

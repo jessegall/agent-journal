@@ -40,6 +40,8 @@ final readonly class AgentOption
         public LaunchOutcome|null $launchOutcome,
         public AgentStatus $status,
         public string|null $sessionDriver = null,
+        // The label of the driver the session was launched on, as stored then.
+        public string|null $sessionDriverLabel = null,
         // What holds the current runtime now, with the session and generation above it belongs to.
         public HoldReason $hold = HoldReason::None,
     ) {}

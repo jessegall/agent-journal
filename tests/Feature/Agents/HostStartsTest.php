@@ -190,6 +190,7 @@ final class HostStartsTest extends TestCase
             ['claude-code-headless', 'claude-code', 'Claude Code headless', '2.1.323'],
             [$runtime->driver_key, $runtime->family, $runtime->driver_label, $runtime->driver_build],
         );
+        $this->assertSame($runtime->driver_label, AgentSession::query()->findOrFail($opened->sessionId)->driver_label);
     }
 
     public function test_only_a_runtime_whose_driver_can_be_watched_has_a_screen(): void

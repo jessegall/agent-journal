@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('actor_type', 16);
             $table->string('actor_id', 64);
             $table->string('driver_key', 128);
-            $table->string('driver_label', 64)->nullable();
+            $table->string('driver_label', 64);
             $table->string('family', 64);
             $table->unsignedInteger('protocol_version')->nullable();
             $table->string('driver_build', 64)->nullable();

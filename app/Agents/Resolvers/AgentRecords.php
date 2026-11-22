@@ -225,6 +225,7 @@ final readonly class AgentRecords implements AgentDirectory
                 $this->remedyWords,
             ),
             $session?->driver_key,
+            $session?->driver_label,
             $runtime === null ? HoldReason::None : $runtime->hold_reason,
         );
     }

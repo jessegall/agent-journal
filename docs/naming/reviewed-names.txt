@@ -9455,6 +9455,7 @@ method	AgentSession::isActive()
 method	AgentSession::isRunningFor()
 method	AgentSession::jobSourceMessage()
 method	AgentSession::jobSourceMessageIds()
+method	AgentSession::keepDriverLabel()
 method	AgentSession::latestOf()
 method	AgentSession::liveOf()
 method	AgentSession::lockRunningTarget()
@@ -28570,6 +28571,7 @@ parameter	$serverTime
 parameter	$service
 parameter	$session
 parameter	$sessionDriver
+parameter	$sessionDriverLabel
 parameter	$sessionGeneration
 parameter	$sessionId
 parameter	$sessionIds
@@ -29583,6 +29585,7 @@ property	AgentOption::$presence
 property	AgentOption::$profileKey
 property	AgentOption::$retired
 property	AgentOption::$sessionDriver
+property	AgentOption::$sessionDriverLabel
 property	AgentOption::$sessionGeneration
 property	AgentOption::$sessionId
 property	AgentOption::$startRefusal
@@ -29601,6 +29604,7 @@ property	AgentOptionData::$presenceLabel
 property	AgentOptionData::$profileKey
 property	AgentOptionData::$retired
 property	AgentOptionData::$sessionDriver
+property	AgentOptionData::$sessionDriverLabel
 property	AgentOptionData::$sessionGeneration
 property	AgentOptionData::$sessionId
 property	AgentOptionData::$startRefusal

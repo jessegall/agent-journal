@@ -120,6 +120,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $this->hostRuntimeOf($request),
         );
 
+        $started->session->keepDriverLabel($record->driver_label);
         $this->pendingStarts->register($started->session, $account);
         $this->wakeOnHost($started);
         SessionPolicy::create($started->session, $request->policy);
