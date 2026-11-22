@@ -312,6 +312,8 @@ onBeforeUnmount(() => {
                         ref="docked"
                         :agent-id="agent.id"
                         :is-shown="showsTerminal"
+                        :expected="terminalDock.expected"
+                        :waits-for-choice="agent.needsAttention"
                         @back-to-chat="close"
                         @owner="(label: string) => (ownerLabel = label)"
                         @location="(label: string) => (locationLabel = label)"

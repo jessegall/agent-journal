@@ -172,7 +172,7 @@ function interrupt(): void {
  * Opens the agent's terminal beside the chat; with no chat window to take it, its own page opens instead.
  */
 function openTerminal(): void {
-    if (!openTerminalBesideChat(props.agent.id)) {
+    if (!openTerminalBesideChat(props.agent.id, props.agent.sessionId, props.agent.sessionGeneration)) {
         router.visit(terminalPage.url(props.agent.id));
     }
 }
@@ -231,6 +231,12 @@ const handlers: Record<StatusActionData['type'], () => void> = {
                 @click="openTerminalFromLink"
                 >Terminal</a
             >
+        </template>
+        <template v-if="agent.needsAttention && agent.hasTerminal && agent.sessionId !== null">
+            <p class="flex items-center gap-1.5 text-small text-text-2" role="status">
+                The driver needs your attention.
+                <button type="button" class="underline" @click="openTerminal">Open terminal</button>
+            </p>
         </template>
         <template v-for="(action, index) in agent.status.actions" :key="action.type">
             <SessionAction

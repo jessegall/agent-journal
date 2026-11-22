@@ -4,6 +4,7 @@ import Button from '@kit/Button';
 import TerminalControlBar from '@kit/TerminalControlBar';
 import { useTerminalController } from '@kit/terminalController';
 import { useTerminalResize } from '@kit/terminalResize';
+import { router } from '@inertiajs/vue3';
 import { ref, toRef, watch } from 'vue';
 
 /**
@@ -11,7 +12,15 @@ import { ref, toRef, watch } from 'vue';
  * and the shared terminal drawing, with the control bar, Retry for a host that stopped reporting and Back to chat
  * when the agent's terminal does not run. Unmounting it closes its read and drops its control.
  */
-const props = defineProps<{ agentId: string; isShown: boolean }>();
+const props = defineProps<{
+    agentId: string;
+    isShown: boolean;
+    // The session and generation the opener saw, and whether it waited at a driver menu then.
+    expected: { sessionId: string; generation: number } | null;
+    waitsForChoice: boolean;
+}>();
+
+const sessionChanged = ref(false);
 
 const emit = defineEmits<{ backToChat: []; owner: [label: string]; location: [label: string] }>();
 
@@ -35,6 +44,22 @@ function holdsCloseForDraft(): boolean {
 
 defineExpose({ holdsCloseForDraft });
 
+// An opener's notice for another session than the one the terminal shows is outdated: the agent is read again.
+watch(
+    () => presentation.value.screen.identity,
+    (identity) => {
+        const expected = props.expected;
+
+        if (identity === null || expected === null || sessionChanged.value) {
+            return;
+        }
+        if (identity.sessionId !== expected.sessionId || identity.processGeneration !== expected.generation) {
+            sessionChanged.value = true;
+            router.reload();
+        }
+    },
+);
+
 watch(
     () => presentation.value.screen.identity?.containerInstance,
     (instance) => emit('location', instance ? 'Contained session' : 'This Mac'),
@@ -56,6 +81,12 @@ useTerminalResize(area, control);
                     :identity="presentation.screen.identity"
                     @owner="(label: string) => emit('owner', label)"
                 />
+                <template v-if="sessionChanged">
+                    <p class="text-small text-warn" role="status">This session changed.</p>
+                </template>
+                <template v-if="waitsForChoice && state === 'live' && !sessionChanged">
+                    <p class="text-small text-text-2">Waiting for your choice</p>
+                </template>
                 <template v-if="state === 'not_reporting' || state === 'refused' || state === 'connection_lost'">
                     <Button variant="bordered" size="sm" @click="retry">Retry</Button>
                 </template>
