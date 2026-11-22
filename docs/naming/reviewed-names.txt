@@ -7409,6 +7409,7 @@ constant	ProcessEvent::OPERATIONAL_ERROR
 constant	ProcessRun::DOCK_PART_LIMIT
 constant	ProcessRun::DOCK_TYPE
 constant	Profile::LINK_TYPE
+constant	ProfileActivateCommand::NO_OWNER_YET
 constant	ProfileBases::TYPE
 constant	ProfileBases::VERSION
 constant	ProfileDraft::LINK_TYPE

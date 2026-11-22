@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Console;
 
+use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
 use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
@@ -19,13 +20,27 @@ use Illuminate\Contracts\Config\Repository;
  */
 final class ProfileActivateCommand extends Command
 {
+    /**
+     * A journal whose owner has not signed up yet has nobody to activate the profiles as: the install goes on, says
+     * so, and the first install after the owner signs up activates them.
+     */
+    public const string NO_OWNER_YET = 'No owner has signed up yet, so the profiles are activated by the first install '
+        .'after the owner signs up.';
+
     protected $signature = 'profile:activate {--draft=* : Expected revisions as profile=revision}';
 
     protected $description = 'Activate the built-in profiles and the profile proposal in config/profiles.php';
 
     public function handle(ConsoleOwner $owner, CommandBus $commands, Repository $config): int
     {
-        $owner->actAsOwner();
+        try {
+            $owner->actAsOwner();
+        } catch (ConsoleOwnerMissing) {
+            $this->warn(self::NO_OWNER_YET);
+
+            return self::SUCCESS;
+        }
+
         $proposal = ProfileProposal::fromConfiguration((array) $config->get('profiles', []))->withBuiltIns();
         $drafts = DraftExpectations::fromOptions(array_values(array_filter($this->option('draft'), is_string(...))));
         $activation = $commands->run(new ActivateProfilesCommand($proposal, $drafts));
