@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Engine\Support;
 
 use App\Bus\Contracts\CommandBus;
-use App\Engine\Commands\EndTerminalViews;
+use App\Engine\Commands\EndTerminalViews\EndTerminalViewsCommand;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
 
@@ -19,11 +19,11 @@ final readonly class EndTerminalViewsOnTick implements EngineListener
 
     public function maintenanceScope(): string
     {
-        return EndTerminalViews::MAINTENANCE_SCOPE;
+        return EndTerminalViewsCommand::MAINTENANCE_SCOPE;
     }
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->commands->run(new EndTerminalViews());
+        $this->commands->run(new EndTerminalViewsCommand());
     }
 }

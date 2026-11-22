@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\MarkNotificationRead;
+use App\Communication\Commands\MarkNotificationRead\MarkNotificationReadCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class MarkNotificationReadRequest extends FormRequest
@@ -19,8 +19,8 @@ final class MarkNotificationReadRequest extends FormRequest
         ];
     }
 
-    public function command(): MarkNotificationRead
+    public function command(): MarkNotificationReadCommand
     {
-        return new MarkNotificationRead($this->string('receiptId')->toString());
+        return new MarkNotificationReadCommand($this->string('receiptId')->toString());
     }
 }

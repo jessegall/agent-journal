@@ -6,8 +6,8 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Api\TaskTransition;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\TaskHistoryResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
@@ -44,9 +44,9 @@ final class TaskHistoryTest extends TestCase
         $task = Task::factory()->create();
         $this->startUserRequestAs($this->owner->id);
 
-        $this->runCommand(new StartTask($task->id));
-        $this->runCommand(new BlockTask($task->id, 1, 'Waits for the schema.'));
-        $this->runCommand(new StartTask($task->id));
+        $this->runCommand(new StartTaskCommand($task->id));
+        $this->runCommand(new BlockTaskCommand($task->id, 1, 'Waits for the schema.'));
+        $this->runCommand(new StartTaskCommand($task->id));
 
         $history = $this->app->make(TaskHistoryResolver::class)->historyOf($task->id, null, 10);
 
@@ -69,9 +69,9 @@ final class TaskHistoryTest extends TestCase
     {
         $task = Task::factory()->create();
         $this->startUserRequestAs($this->owner->id);
-        $this->runCommand(new StartTask($task->id));
-        $this->runCommand(new BlockTask($task->id, 1, 'Waits.'));
-        $this->runCommand(new StartTask($task->id));
+        $this->runCommand(new StartTaskCommand($task->id));
+        $this->runCommand(new BlockTaskCommand($task->id, 1, 'Waits.'));
+        $this->runCommand(new StartTaskCommand($task->id));
 
         $history = $this->app->make(TaskHistoryResolver::class);
         $first = $history->historyOf($task->id, null, 2);

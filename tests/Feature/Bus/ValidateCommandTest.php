@@ -12,8 +12,8 @@ use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Exceptions\OperationUnavailable;
 use App\Bus\Support\RequestKey;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote;
-use Tests\Fixtures\Modules\Notes\Commands\LimitNote;
+use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote\CopyLimitNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\LimitNote\LimitNoteCommand;
 use Tests\Support\ClearsStartRows;
 
 /**
@@ -40,7 +40,7 @@ final class ValidateCommandTest extends CommandBusTestCase
     public function test_a_value_over_its_limit_is_refused_before_the_handler(): void
     {
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new LimitNote('sixsix')),
+            fn () => $this->app->make(CommandBus::class)->run(new LimitNoteCommand('sixsix')),
             CommandInputInvalid::class,
             self::TEXT_TOO_LONG,
         );
@@ -49,7 +49,7 @@ final class ValidateCommandTest extends CommandBusTestCase
 
     public function test_a_value_within_its_limit_runs_unchanged(): void
     {
-        $id = $this->app->make(CommandBus::class)->run(new LimitNote('five5', 'label'));
+        $id = $this->app->make(CommandBus::class)->run(new LimitNoteCommand('five5', 'label'));
 
         $this->assertSame('five5', $this->rowText($id));
     }
@@ -58,16 +58,16 @@ final class ValidateCommandTest extends CommandBusTestCase
     {
         $bus = $this->app->make(CommandBus::class);
 
-        $id = $bus->run(new LimitNote('note'));
+        $id = $bus->run(new LimitNoteCommand('note'));
 
         $this->assertSame('note', $this->rowText($id));
-        $this->assertThrows(fn () => $bus->run(new LimitNote('note', 'labels')), CommandInputInvalid::class, 'label:');
+        $this->assertThrows(fn () => $bus->run(new LimitNoteCommand('note', 'labels')), CommandInputInvalid::class, 'label:');
     }
 
     public function test_a_nested_command_with_bad_input_fails_its_outer_command(): void
     {
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new CopyLimitNote('sixsix')),
+            fn () => $this->app->make(CommandBus::class)->run(new CopyLimitNoteCommand('sixsix')),
             CommandInputInvalid::class,
         );
         $this->assertSame(0, $this->rowCount());
@@ -78,20 +78,20 @@ final class ValidateCommandTest extends CommandBusTestCase
         $this->app->make(RequestKey::class)->set(self::KEY);
         $bus = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $bus->run(new LimitNote('sixsix')), CommandInputInvalid::class);
+        $this->assertThrows(fn () => $bus->run(new LimitNoteCommand('sixsix')), CommandInputInvalid::class);
         $this->assertThrows(
             fn () => $this->app->make(OperationResolver::class)->operation(self::KEY),
             OperationUnavailable::class,
         );
 
-        $id = $bus->run(new LimitNote('fixed'));
+        $id = $bus->run(new LimitNoteCommand('fixed'));
 
         $this->assertSame('fixed', $this->rowText($id));
     }
 
     public function test_an_actor_the_command_does_not_admit_gets_its_refusal_before_the_input_is_read(): void
     {
-        $run = fn () => $this->app->make(CommandBus::class)->run(new LimitNote('sixsix'));
+        $run = fn () => $this->app->make(CommandBus::class)->run(new LimitNoteCommand('sixsix'));
 
         $this->assertThrows(
             fn () => $this->app->make(ActorStore::class)->actAsSystem('test', $run),

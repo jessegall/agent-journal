@@ -6,7 +6,7 @@ namespace App\Profiles\Jobs;
 
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Profiles\Commands\ExpireSignInAttempt;
+use App\Profiles\Commands\ExpireSignInAttempt\ExpireSignInAttemptCommand;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -27,7 +27,7 @@ final class SignInDeadline implements ShouldQueue
         $dispatchers->runAsJournal(
             CommandEntry::AccountMaintenance,
             'sign-in deadline',
-            new ExpireSignInAttempt($this->attemptId),
+            new ExpireSignInAttemptCommand($this->attemptId),
         );
     }
 }

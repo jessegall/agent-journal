@@ -9,7 +9,7 @@ use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordResolver;
 use Domain\Documents\Calls\MakeDocumentCall;
 use Domain\Documents\Calls\RecordFiled;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 
 /**
  * Files a document and answers its number and label.
@@ -23,7 +23,7 @@ final readonly class MakeDocumentController
             $call->relatedRecords,
         );
 
-        $created = $commands->run(new CreateDocument(
+        $created = $commands->run(new CreateDocumentCommand(
             $call->title,
             $call->abstract,
             $call->body,

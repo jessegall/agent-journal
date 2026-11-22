@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp;
 
-use App\Communication\Commands\SelectMessage;
+use App\Communication\Commands\SelectMessage\SelectMessageCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('messages_select')]
-#[Dispatches(SelectMessage::class)]
+#[Dispatches(SelectMessageCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Select a visible message as the active request for this session.')]
 final class SelectMessageTool extends JournalWriteTool
@@ -30,9 +30,9 @@ final class SelectMessageTool extends JournalWriteTool
         return ['message_id' => $schema->string()->max(26)->required()];
     }
 
-    protected function command(ToolArguments $arguments): SelectMessage
+    protected function command(ToolArguments $arguments): SelectMessageCommand
     {
-        return new SelectMessage($arguments->ulid('message_id'));
+        return new SelectMessageCommand($arguments->ulid('message_id'));
     }
 
     protected function present(mixed $messageId): ToolResult

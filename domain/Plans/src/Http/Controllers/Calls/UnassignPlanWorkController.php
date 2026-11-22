@@ -8,7 +8,7 @@ use App\Assignments\Contracts\AssigneeResolver;
 use App\Bus\Contracts\CommandBus;
 use App\Records\Contracts\RecordResolver;
 use Domain\Plans\Calls\UnassignPlanWorkCall;
-use Domain\Plans\Commands\UnassignPlanWork;
+use Domain\Plans\Commands\UnassignPlanWork\UnassignPlanWorkCommand;
 use Domain\Plans\Http\Data\PlanWorkResultData;
 
 /**
@@ -23,7 +23,7 @@ final readonly class UnassignPlanWorkController
         AssigneeResolver $assignees,
     ): PlanWorkResultData {
         $root = $call->rootRecord($records);
-        $assignmentResult = $commands->run(new UnassignPlanWork($root, $call->expected()));
+        $assignmentResult = $commands->run(new UnassignPlanWorkCommand($root, $call->expected()));
 
         return PlanWorkResultData::of(
             $root,

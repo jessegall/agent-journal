@@ -13,13 +13,13 @@ use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Values\HostCapacity;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Values\ProfileBase;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Helpers\Commands\StartHelper;
+use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Tests\Fixtures\Agents\TestStart;
@@ -28,7 +28,7 @@ use Tests\Support\WithActiveAccount;
 
 /**
  * A parent session with an activated read-only helper profile on a host that supports containers, and the start of a
- * helper job through StartHelper, for the tests that dispatch helpers.
+ * helper job through StartHelperCommand, for the tests that dispatch helpers.
  */
 trait DispatchesHelpers
 {
@@ -43,7 +43,7 @@ trait DispatchesHelpers
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->supportContainers();
 
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile('plan-reviewer', ProfileBase::readOnlyHelper()),
             TestProposals::profile('journal-main', ProfileBase::mainAgent()),
             TestProposals::profile('lone-reviewer', ProfileBase::readOnlyHelper(), instances: InstancePolicy::Single),
@@ -61,7 +61,7 @@ trait DispatchesHelpers
         string $brief = 'Review it.',
         string $profileKey = 'plan-reviewer',
     ): HelperReceipt {
-        return $this->app->make(CommandBus::class)->run(new StartHelper(
+        return $this->app->make(CommandBus::class)->run(new StartHelperCommand(
             $requestId,
             $profileKey,
             'default',

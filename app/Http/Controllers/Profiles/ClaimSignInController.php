@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Profiles;
 
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ClaimSignIn;
+use App\Profiles\Commands\ClaimSignIn\ClaimSignInCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
@@ -18,7 +18,7 @@ final readonly class ClaimSignInController
 {
     public function __invoke(HostContext $host, CommandBus $commands): JsonResponse|Response
     {
-        $claimed = $commands->run(new ClaimSignIn($host->hostId));
+        $claimed = $commands->run(new ClaimSignInCommand($host->hostId));
 
         return $claimed === null
             ? new Response(status: Response::HTTP_NO_CONTENT)

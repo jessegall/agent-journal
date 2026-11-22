@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Commands\CancelTask;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive]
 #[Name('tasks_cancel')]
-#[Dispatches(CancelTask::class)]
+#[Dispatches(CancelTaskCommand::class)]
 #[Description('Cancel a task with a reason.')]
 final class CancelTaskTool extends TaskWriteTool
 {
@@ -31,9 +31,9 @@ final class CancelTaskTool extends TaskWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CancelTask
+    protected function command(ToolArguments $arguments): CancelTaskCommand
     {
-        return new CancelTask($arguments->ulid('task_id'), $arguments->text('reason'));
+        return new CancelTaskCommand($arguments->ulid('task_id'), $arguments->text('reason'));
     }
 
     protected function present(mixed $commandResult): ToolResult

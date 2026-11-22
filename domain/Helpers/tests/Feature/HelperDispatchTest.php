@@ -21,8 +21,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Drivers\Enums\HookDriver;
 use App\Profiles\Values\ProfileBase;
 use Carbon\CarbonImmutable;
-use Domain\Helpers\Commands\SendHelper;
-use Domain\Helpers\Commands\StartHelper;
+use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
+use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
@@ -44,7 +44,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A parent dispatches its helpers through StartHelper and SendHelper: a start names the resolved model, revision and
+ * A parent dispatches its helpers through StartHelperCommand and SendHelperCommand: a start names the resolved model, revision and
  * type; a send keeps the identity it names; busy, unfinished, retired and foreign helpers refuse with their own
  * refusal; a main or missing profile refuses before anything is written; a repeat finds the same job; a nested
  * refusal rolls everything back; and two starts never both hold one helper's reservation.
@@ -239,7 +239,7 @@ final class HelperDispatchTest extends TestCase
 
     private function send(string $requestId, string $identityId, string $purpose): HelperReceipt
     {
-        return $this->app->make(CommandBus::class)->run(new SendHelper(
+        return $this->app->make(CommandBus::class)->run(new SendHelperCommand(
             $requestId,
             $identityId,
             'plan-reviewer',

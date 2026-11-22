@@ -6,7 +6,7 @@ namespace App\Http\Data\Agents;
 
 use App\Bus\Support\Command;
 use App\Http\Enums\UsageMeasurementType;
-use App\Profiles\Commands\RecordUsageWindow;
+use App\Profiles\Commands\RecordUsageWindow\RecordUsageWindowCommand;
 use App\Profiles\Enums\UsageWindowSlot;
 use App\Profiles\Values\ReportedStart;
 use App\Profiles\Values\UsageSource;
@@ -49,6 +49,6 @@ final class UsageWindowData extends UsageMeasurementData
             $source,
         );
 
-        return new RecordUsageWindow($start, $reading);
+        return new RecordUsageWindowCommand($start, $reading);
     }
 }

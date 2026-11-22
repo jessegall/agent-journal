@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Bus\Contracts\CommandBus;
-use App\Processes\Commands\ApproveRuleProposal;
-use App\Processes\Commands\ApproveSample;
-use App\Processes\Commands\OpenCommandRequest;
-use App\Processes\Commands\ProposeCommandRule;
-use App\Processes\Commands\ProposeReader;
-use App\Processes\Commands\ProveReader;
-use App\Processes\Commands\RecordEvidenceReads;
-use App\Processes\Commands\SettleSample;
-use App\Processes\Commands\StartSample;
+use App\Processes\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\Processes\Commands\ApproveSample\ApproveSampleCommand;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Processes\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Processes\Commands\ProposeReader\ProposeReaderCommand;
+use App\Processes\Commands\ProveReader\ProveReaderCommand;
+use App\Processes\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
+use App\Processes\Commands\SettleSample\SettleSampleCommand;
+use App\Processes\Commands\StartSample\StartSampleCommand;
 use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\EvidenceSource;
 use App\Processes\Enums\OutputStream;
@@ -83,7 +83,7 @@ final readonly class ShippedReaderInstaller
     {
         $core = $this->coreRule($reader);
 
-        $requestId = $this->commands->run(new OpenCommandRequest(
+        $requestId = $this->commands->run(new OpenCommandRequestCommand(
             $reader->invocation,
             hash('sha256', $reader->invocation),
             $reader->invocation,
@@ -98,7 +98,7 @@ final readonly class ShippedReaderInstaller
         );
 
         $draftKey = "shipped-{$reader->tool}-{$reader->version}";
-        $this->commands->run(new ProposeCommandRule($requestId, $draftKey, $proposed));
+        $this->commands->run(new ProposeCommandRuleCommand($requestId, $draftKey, $proposed));
         $runs = [];
 
         foreach ($reader->samples() as $sample) {
@@ -107,11 +107,11 @@ final readonly class ShippedReaderInstaller
             }
         }
 
-        $readerId = $this->commands->run(new ProposeReader($requestId, 1, $reader->reader));
-        $proofId = $this->commands->run(new ProveReader($requestId, $readerId, $runs));
+        $readerId = $this->commands->run(new ProposeReaderCommand($requestId, 1, $reader->reader));
+        $proofId = $this->commands->run(new ProveReaderCommand($requestId, $readerId, $runs));
         $approval = new OwnerApproval(1, 0, [new ReaderApproval($readerId, $proofId)], 'Core ships this reader.');
         $proposal = RuleProposal::query()->where('command_request_id', $requestId)->sole();
-        $this->commands->run(new ApproveRuleProposal($proposal->id, $approval));
+        $this->commands->run(new ApproveRuleProposalCommand($proposal->id, $approval));
     }
 
     private function coreRule(ShippedReader $reader): CommandRule
@@ -151,8 +151,8 @@ final readonly class ShippedReaderInstaller
     private function recordSample(string $requestId, ShippedReader $reader, ProofSample $sample): string
     {
         $request = CommandRequest::query()->findOrFail($requestId);
-        $permit = $this->commands->run(new ApproveSample($requestId, 1, $request->source_digest));
-        $runId = $this->commands->run(new StartSample($requestId, $permit, "shipped-{$reader->tool}-{$sample->file}"));
+        $permit = $this->commands->run(new ApproveSampleCommand($requestId, 1, $request->source_digest));
+        $runId = $this->commands->run(new StartSampleCommand($requestId, $permit, "shipped-{$reader->tool}-{$sample->file}"));
         $run = ProcessRun::ofAnyActor($runId);
         $part = PartRun::create($run, new PartKey(1, 1, $reader->invocation));
         $part->start('shipped');
@@ -163,8 +163,8 @@ final readonly class ShippedReaderInstaller
         $this->recorder->finish($part, $sample->end());
         $this->summaries->of($run);
         $read = EvidenceRange::bytes($part->id, EvidenceSource::of(OutputStream::Stdout), 0, strlen($bytes));
-        $this->commands->run(new RecordEvidenceReads($run->id, [$read]));
-        $this->commands->run(new SettleSample($requestId));
+        $this->commands->run(new RecordEvidenceReadsCommand($run->id, [$read]));
+        $this->commands->run(new SettleSampleCommand($requestId));
 
         return $runId;
     }

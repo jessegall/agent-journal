@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Profiles;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\CleanupReportRequest;
-use App\Profiles\Commands\CleanAccount;
+use App\Profiles\Commands\CleanAccount\CleanAccountCommand;
 use Illuminate\Http\Response;
 
 /**
@@ -17,7 +17,7 @@ final readonly class ReportAccountCleanupController
 {
     public function __invoke(CleanupReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new CleanAccount(
+        $commands->run(new CleanAccountCommand(
             $host->hostId,
             $request->targetId(),
             $request->generation(),

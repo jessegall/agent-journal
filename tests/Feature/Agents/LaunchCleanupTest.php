@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchLimits;
 use App\Agents\Actions\StartHeartbeats;
-use App\Agents\Commands\ReportCleanup;
+use App\Agents\Commands\ReportCleanup\ReportCleanupCommand;
 use App\Agents\Enums\CapacityResource;
 use App\Agents\Enums\CleanupState;
 use App\Agents\Enums\CleanupStep;
@@ -210,7 +210,7 @@ final class LaunchCleanupTest extends TestCase
 
     private function report(TestStart $launch, CleanupReport $report): CleanupState
     {
-        return $this->asSystem(new ReportCleanup('host-1', $launch->session->id, $report));
+        return $this->asSystem(new ReportCleanupCommand('host-1', $launch->session->id, $report));
     }
 
     private function cleanupOf(TestStart $launch): CleanupOperation

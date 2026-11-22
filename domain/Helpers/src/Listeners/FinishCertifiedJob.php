@@ -8,7 +8,7 @@ use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
 use App\Hooks\Events\HelperCompletionCertified;
-use Domain\Helpers\Commands\FinishHelperJob;
+use Domain\Helpers\Commands\FinishHelperJob\FinishHelperJobCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 use Domain\Helpers\Support\JobStopEvidence;
@@ -30,7 +30,7 @@ final readonly class FinishCertifiedJob implements Listener
         $this->journal->runAsJournal(
             CommandEntry::Application,
             HelperLifecycleEntry::NAME,
-            new FinishHelperJob($event->work->id, JobStopEvidence::referenceOf($event->attempt)),
+            new FinishHelperJobCommand($event->work->id, JobStopEvidence::referenceOf($event->attempt)),
         );
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Console;
 
 use App\Bus\Contracts\CommandBus;
-use App\Skills\Commands\RetireSkill;
+use App\Skills\Commands\RetireSkill\RetireSkillCommand;
 use App\Skills\Console\Concerns\PrintsSkillRefusals;
 use App\Skills\Models\Skill;
 use App\Skills\Support\SkillAuthoring;
@@ -32,7 +32,7 @@ final class SkillRetireCommand extends Command
             $console->actAsOwner();
             $skill = $console->stored((string) $this->argument('number'));
 
-            $retiredSkill = $commands->run(new RetireSkill(
+            $retiredSkill = $commands->run(new RetireSkillCommand(
                 $skill->id,
                 (int) $this->option('expected-revision'),
                 $requestId,

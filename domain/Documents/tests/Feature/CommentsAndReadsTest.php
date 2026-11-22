@@ -11,8 +11,8 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Models\Agent;
 use App\Assignments\Support\Page;
 use App\Bus\Contracts\CommandBus;
-use App\Comments\Commands\PostComment;
-use App\Comments\Commands\PostTextComment;
+use App\Comments\Commands\PostComment\PostCommentCommand;
+use App\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use App\Comments\Contracts\CommentResolver;
 use App\Comments\Data\RecordCommentView;
 use App\Comments\Data\TextCommentLocation;
@@ -24,11 +24,11 @@ use App\Records\Support\RecordIdentity;
 use App\Text\Exceptions\AnchorMismatch;
 use App\Text\Support\TextSelection;
 use App\Text\Values\TextRange;
-use Domain\Documents\Commands\CloseDocument;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
-use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Commands\ReplaceDocumentText;
+use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
+use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
@@ -79,7 +79,7 @@ final class CommentsAndReadsTest extends TestCase
         );
 
         $this->bus()->run(
-            new CreateDocument('Design', 'What we build', <<<'TEXT'
+            new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
             # Goal
             Ship the editor.
 
@@ -107,7 +107,7 @@ final class CommentsAndReadsTest extends TestCase
     public function test_section_and_line_comments_reopen_on_their_original_revision_after_a_newer_one(): void
     {
         $this->bus()->run(
-            new CreateDocument(
+            new CreateDocumentCommand(
                 'Sections',
                 'Three parts',
                 <<<'TEXT'
@@ -126,7 +126,7 @@ final class CommentsAndReadsTest extends TestCase
         );
 
         $section = $this->bus()->run(
-            new PostTextComment(
+            new PostTextCommentCommand(
                 $this->documentNumbered(2),
                 'About the third part.',
                 TextRange::section('1', 3),
@@ -135,7 +135,7 @@ final class CommentsAndReadsTest extends TestCase
         );
 
         $lines = $this->bus()->run(
-            new PostTextComment(
+            new PostTextCommentCommand(
                 $this->documentNumbered(2),
                 'About these lines.',
                 TextRange::lines('1', 2, 5),
@@ -143,13 +143,13 @@ final class CommentsAndReadsTest extends TestCase
             ),
         );
 
-        $draft = $this->bus()->run(new OpenDocument('2'));
+        $draft = $this->bus()->run(new OpenDocumentCommand('2'));
 
         $draft = $this->bus()->run(
-            new ReplaceDocumentText($draft->target(), self::THIRD_PART, 'A rewritten third part.'),
+            new ReplaceDocumentTextCommand($draft->target(), self::THIRD_PART, 'A rewritten third part.'),
         );
 
-        $this->bus()->run(new CloseDocument($draft->target()));
+        $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
         $sectionPlace = $this->comments()->location($this->documentNumbered(2), $section);
         $linesPlace = $this->comments()->location($this->documentNumbered(2), $lines);
@@ -212,7 +212,7 @@ final class CommentsAndReadsTest extends TestCase
     {
         $lines = implode("\n", array_map(fn (int $line) => "Line {$line}.", range(1, 300)));
 
-        $this->bus()->run(new CreateDocument('Long', 'Many lines', <<<TEXT
+        $this->bus()->run(new CreateDocumentCommand('Long', 'Many lines', <<<TEXT
         # Long
         {$lines}
 
@@ -229,9 +229,9 @@ final class CommentsAndReadsTest extends TestCase
 
     public function test_a_continuation_after_a_new_revision_is_refused(): void
     {
-        $draft = $this->bus()->run(new OpenDocument('1'));
-        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'None.', 'Late.'));
-        $this->bus()->run(new CloseDocument($draft->target()));
+        $draft = $this->bus()->run(new OpenDocumentCommand('1'));
+        $draft = $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'None.', 'Late.'));
+        $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
         $this->expectException(StaleRead::class);
 
@@ -240,9 +240,9 @@ final class CommentsAndReadsTest extends TestCase
 
     public function test_search_finds_a_body_phrase_with_its_revision_and_never_a_draft_or_a_wildcard(): void
     {
-        $this->bus()->run(new CreateReport('Check', 'What we found', "Rates of 50%_off\n"));
-        $draft = $this->bus()->run(new OpenDocument('1'));
-        $this->bus()->run(new ReplaceDocumentText($draft->target(), 'None.', 'Only in the draft.'));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "Rates of 50%_off\n"));
+        $draft = $this->bus()->run(new OpenDocumentCommand('1'));
+        $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'None.', 'Only in the draft.'));
 
         $found = $this->documents()->list(new DocumentFilters(query: 'ship THE editor'));
 
@@ -256,11 +256,11 @@ final class CommentsAndReadsTest extends TestCase
     public function test_paging_after_a_cursor_shows_every_older_row_once_while_rows_are_added(): void
     {
         foreach (range(2, 5) as $number) {
-            $this->bus()->run(new CreateDocument("Doc {$number}", 'More', "Text\n"));
+            $this->bus()->run(new CreateDocumentCommand("Doc {$number}", 'More', "Text\n"));
         }
 
         $first = $this->documents()->list(new DocumentFilters(perPage: 2));
-        $this->bus()->run(new CreateDocument('Newer', 'Added while paging', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Newer', 'Added while paging', "Text\n"));
         $second = $this->documents()->list(new DocumentFilters(perPage: 2, after: (string) $first->next));
         $third = $this->documents()->list(new DocumentFilters(perPage: 2, after: (string) $second->next));
 
@@ -288,12 +288,12 @@ final class CommentsAndReadsTest extends TestCase
     private function comment(string $body, WholeRecord|TextRange $subject): void
     {
         $this->bus()->run(
-            $subject instanceof TextRange ? new PostTextComment(
+            $subject instanceof TextRange ? new PostTextCommentCommand(
                 $this->document(),
                 $body,
                 $subject,
                 (string) Str::uuid(),
-            ) : new PostComment($this->document(), $body, (string) Str::uuid()),
+            ) : new PostCommentCommand($this->document(), $body, (string) Str::uuid()),
         );
     }
 

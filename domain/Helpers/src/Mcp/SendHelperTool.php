@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Helpers\Commands\SendHelper;
+use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
 use Domain\Helpers\Http\Data\HelperReceiptData;
 use Domain\Helpers\Mcp\Concerns\HelperWorkArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 
 #[IsDestructive(false)]
 #[Name('helpers_send')]
-#[Dispatches(SendHelper::class)]
+#[Dispatches(SendHelperCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Give a kept helper its next job, with its memory of the last.')]
 final class SendHelperTool extends JournalWriteTool
@@ -37,9 +37,9 @@ final class SendHelperTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): SendHelper
+    protected function command(ToolArguments $arguments): SendHelperCommand
     {
-        return new SendHelper(
+        return new SendHelperCommand(
             $arguments->text('request_key'),
             $arguments->ulid('identity_id'),
             $arguments->text('profile_key'),

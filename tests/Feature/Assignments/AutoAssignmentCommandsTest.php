@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Assignments\Commands\ConfigureAutoAssignment;
-use App\Assignments\Commands\DisableAutoAssignment;
-use App\Assignments\Commands\EnableAutoAssignment;
+use App\Assignments\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
+use App\Assignments\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
+use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Exceptions\AutoAssignmentDenied;
 use App\Assignments\Exceptions\AutoAssignmentPoolUnknown;
@@ -50,7 +50,7 @@ final class AutoAssignmentCommandsTest extends TestCase
         [$first, $second, $third] = array_map(fn () => Task::factory()->create()->id, range(1, 3));
         $pool = new PoolReference('tasks.named', null, [$third, $first, $second]);
 
-        $change = $this->runCommand(new EnableAutoAssignment(new AutoAssignmentInput($this->key, $pool, 3), 0));
+        $change = $this->runCommand(new EnableAutoAssignmentCommand(new AutoAssignmentInput($this->key, $pool, 3), 0));
 
         $this->assertEquals(new AutoAssignmentChange(true, 1), $change);
         $fact = $this->fact();
@@ -58,7 +58,7 @@ final class AutoAssignmentCommandsTest extends TestCase
         $this->assertSame(3, $fact->size);
         $this->assertSame(1, $fact->revision);
 
-        $this->runCommand(new DisableAutoAssignment($this->key, 1));
+        $this->runCommand(new DisableAutoAssignmentCommand($this->key, 1));
 
         $this->assertFalse($this->fact()->enabled);
     }
@@ -69,7 +69,7 @@ final class AutoAssignmentCommandsTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->runCommand(
-                new EnableAutoAssignment(new AutoAssignmentInput($this->key, self::open(), 1), 0),
+                new EnableAutoAssignmentCommand(new AutoAssignmentInput($this->key, self::open(), 1), 0),
             ),
             AutoAssignmentDenied::class,
         );
@@ -78,15 +78,15 @@ final class AutoAssignmentCommandsTest extends TestCase
 
     public function test_a_pool_that_is_not_offered_or_not_valid_leaves_the_fact_as_it_was(): void
     {
-        $this->runCommand(new EnableAutoAssignment(new AutoAssignmentInput($this->key, self::open(), 2), 0));
+        $this->runCommand(new EnableAutoAssignmentCommand(new AutoAssignmentInput($this->key, self::open(), 2), 0));
         $class = new PoolReference(OpenTaskPoolFactory::class, null, []);
 
         $this->assertThrows(
-            fn () => $this->runCommand(new ConfigureAutoAssignment(new AutoAssignmentInput($this->key, $class, 4), 1)),
+            fn () => $this->runCommand(new ConfigureAutoAssignmentCommand(new AutoAssignmentInput($this->key, $class, 4), 1)),
             AutoAssignmentPoolUnknown::class,
         );
         $this->assertThrows(
-            fn () => $this->runCommand(new ConfigureAutoAssignment(
+            fn () => $this->runCommand(new ConfigureAutoAssignmentCommand(
                 new AutoAssignmentInput($this->key, new PoolReference('plans.unknown', null, []), 4),
                 1,
             )),
@@ -97,7 +97,7 @@ final class AutoAssignmentCommandsTest extends TestCase
             InvalidRecordIds::class,
         );
         $this->assertThrows(
-            fn () => $this->runCommand(new ConfigureAutoAssignment(
+            fn () => $this->runCommand(new ConfigureAutoAssignmentCommand(
                 new AutoAssignmentInput($this->key, new PoolReference('tasks.named', null, [TestIds::of(99)]), 4),
                 1,
             )),

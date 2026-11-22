@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Commands\RunKeyScript;
+
+use App\Agents\Contracts\AgentStackCommand;
+use App\Agents\Policies\AgentMaintenancePolicy;
+use App\Agents\Values\DriverReceipt;
+use App\Agents\Values\ScriptParameter;
+use App\Agents\Values\StackTarget;
+use App\Bus\Attributes\Authorize;
+use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+
+/**
+ * An operator's request to run one registered maintenance key script, such as ChangeModel, on an agent's terminal. The
+ * script is named by the operator's command, never read from a message body.
+ *
+ * @extends Command<DriverReceipt>
+ */
+#[Authorize(AgentMaintenancePolicy::class, AccessType::Execute)]
+final readonly class RunKeyScriptCommand extends Command implements AgentStackCommand
+{
+    /**
+     * @param  list<ScriptParameter>  $parameters
+     */
+    public function __construct(
+        public string $agentId,
+        public string $sessionId,
+        public string $idempotencyKey,
+        public string $script,
+        public array $parameters,
+    ) {}
+
+    public function target(): StackTarget
+    {
+        return new StackTarget($this->agentId, $this->sessionId);
+    }
+}

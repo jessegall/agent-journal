@@ -6,7 +6,7 @@ namespace App\Http\Data\Agents;
 
 use App\Bus\Support\Command;
 use App\Http\Enums\UsageMeasurementType;
-use App\Profiles\Commands\RecordThreadTokens;
+use App\Profiles\Commands\RecordThreadTokens\RecordThreadTokensCommand;
 use App\Profiles\Values\ReportedStart;
 use App\Profiles\Values\ThreadTokens;
 use App\Profiles\Values\UsageSource;
@@ -54,6 +54,6 @@ final class ThreadTokensData extends UsageMeasurementData
             $source,
         );
 
-        return new RecordThreadTokens($start, $tokens);
+        return new RecordThreadTokensCommand($start, $tokens);
     }
 }

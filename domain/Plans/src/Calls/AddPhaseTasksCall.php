@@ -11,7 +11,7 @@ use App\AgentRequests\Enums\CallEffect;
 use App\AgentRequests\Enums\ReceiptOwner;
 use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Transformers\CallKeyTransformer;
-use Domain\Plans\Commands\AddPhaseTasks;
+use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -40,7 +40,7 @@ final class AddPhaseTasksCall extends Data implements JournalCall
         #[Min(1)]
         public int $expectedRevision,
         #[Min(1)]
-        #[Max(AddPhaseTasks::MAX_TASKS)]
+        #[Max(AddPhaseTasksCommand::MAX_TASKS)]
         public array $taskIds,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]

@@ -6,9 +6,9 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Communication\Models\Message;
-use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\CreateDesk\CreateDeskCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
@@ -51,13 +51,13 @@ final class InboxPageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $own = $this->inboxOf(ActorIdentity::of($owner));
-        $team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 2, false)));
+        $team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 2, false)));
 
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat($team->id, ActorIdentity::of($owner)),
         );
 
-        $questionId = $this->runOnBus(new AskMessage($own->inboxId(), $team->inboxId(), 'Who takes this?'));
+        $questionId = $this->runOnBus(new AskMessageCommand($own->inboxId(), $team->inboxId(), 'Who takes this?'));
 
         $this->actingAs($owner)->get('/chat/inbox')->assertInertia(fn (AssertableInertia $page) => $page
             ->has('page.data.root.children', 2)

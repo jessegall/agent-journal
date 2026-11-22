@@ -9,8 +9,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Web\Events\PageChanged;
 use App\Web\Support\UserChannel;
 use Domain\Access\Support\AccessSettings;
-use Domain\Rules\Commands\ApproveRule;
-use Domain\Rules\Commands\RemoveRule;
+use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
+use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
@@ -42,7 +42,7 @@ final class RulePageChangeTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
         );
 
-        $this->app->make(CommandBus::class)->run(new ApproveRule($rule->id));
+        $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($rule->id));
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
 
@@ -53,7 +53,7 @@ final class RulePageChangeTest extends TestCase
 
     public function test_a_removed_rule_changes_the_page_too(): void
     {
-        $this->app->make(CommandBus::class)->run(new RemoveRule(HoldingRules::create('Old rule.')->id));
+        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand(HoldingRules::create('Old rule.')->id));
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
@@ -62,7 +62,7 @@ final class RulePageChangeTest extends TestCase
     {
         $this->app->instance(AccessSettings::class, new AccessSettings(null));
 
-        $this->app->make(CommandBus::class)->run(new RemoveRule(HoldingRules::create('Old rule.')->id));
+        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand(HoldingRules::create('Old rule.')->id));
 
         Event::assertNotDispatched(PageChanged::class);
     }

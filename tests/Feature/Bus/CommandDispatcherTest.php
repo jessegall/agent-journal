@@ -14,7 +14,7 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordDispatcher;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\TestIds;
 
 /**
@@ -29,10 +29,10 @@ final class CommandDispatcherTest extends CommandBusTestCase
     public function test_the_command_passed_on_reports_the_requests_actor_and_the_callers_object_stays_unbound(): void
     {
         $trail = $this->installCommandModules(
-            MiddlewareDeclaration::inside(RecordDispatcher::class, CommandScope::command(WriteNote::class)),
+            MiddlewareDeclaration::inside(RecordDispatcher::class, CommandScope::command(WriteNoteCommand::class)),
         );
         $this->startUserRequestAs(TestIds::of(1));
-        $note = new WriteNote('bound');
+        $note = new WriteNoteCommand('bound');
 
         $this->app->make(CommandBus::class)->run($note);
 
@@ -44,12 +44,12 @@ final class CommandDispatcherTest extends CommandBusTestCase
     public function test_a_replaced_command_is_bound_to_the_calls_actor(): void
     {
         $trail = $this->installCommandModules(
-            MiddlewareDeclaration::around(UppercasesText::class, CommandScope::command(WriteNote::class)),
-            MiddlewareDeclaration::inside(RecordDispatcher::class, CommandScope::command(WriteNote::class)),
+            MiddlewareDeclaration::around(UppercasesText::class, CommandScope::command(WriteNoteCommand::class)),
+            MiddlewareDeclaration::inside(RecordDispatcher::class, CommandScope::command(WriteNoteCommand::class)),
         );
         $this->startUserRequestAs(TestIds::of(1));
 
-        $this->app->make(CommandBus::class)->run(new WriteNote('loud'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('loud'));
 
         $this->assertContains(sprintf(self::DISPATCH_STEP, TestIds::of(1)), $trail->steps);
     }
@@ -61,7 +61,7 @@ final class CommandDispatcherTest extends CommandBusTestCase
         $refusal = null;
 
         try {
-            $this->app->make(CommandBus::class)->run(new WriteNote('never'));
+            $this->app->make(CommandBus::class)->run(new WriteNoteCommand('never'));
         } catch (ActorContextMissing $missing) {
             $refusal = $missing;
         }
@@ -76,6 +76,6 @@ final class CommandDispatcherTest extends CommandBusTestCase
     {
         $this->expectException(CommandNotRegistered::class);
 
-        $this->app->make(CommandBus::class)->run(new WriteNote('unknown'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('unknown'));
     }
 }

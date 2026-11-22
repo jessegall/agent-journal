@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportRuntimeScreen;
+use App\Agents\Commands\ReportRuntimeScreen\ReportRuntimeScreenCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +18,6 @@ final readonly class ScreenReportController
 {
     public function __invoke(Request $request, HostContext $host, CommandBus $commands): JsonResponse
     {
-        return new JsonResponse($commands->run(new ReportRuntimeScreen($host->hostId, $request->getContent())));
+        return new JsonResponse($commands->run(new ReportRuntimeScreenCommand($host->hostId, $request->getContent())));
     }
 }

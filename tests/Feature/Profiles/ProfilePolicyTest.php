@@ -12,8 +12,8 @@ use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Operations\Enums\AccessType;
-use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\RevokeProfiles\RevokeProfilesCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
@@ -150,7 +150,7 @@ final class ProfilePolicyTest extends TestCase
         $this->activate(['profiles' => ['journal-worker' => self::WORKER]]);
         $revision = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'));
 
-        $this->app->make(CommandBus::class)->run(new RevokeProfiles([ProfileKey::from('journal-worker')]));
+        $this->app->make(CommandBus::class)->run(new RevokeProfilesCommand([ProfileKey::from('journal-worker')]));
 
         Event::assertDispatched(
             ProfileRevisionRevoked::class,
@@ -166,7 +166,7 @@ final class ProfilePolicyTest extends TestCase
     {
         $proposal = ProfileProposal::fromConfiguration($configuration);
 
-        return $this->app->make(CommandBus::class)->run(new ActivateProfiles($proposal));
+        return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand($proposal));
     }
 
     private function resolver(): ProfileResolver

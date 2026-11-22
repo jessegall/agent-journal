@@ -7,10 +7,10 @@ namespace App\Settings\Http\Controllers;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Settings\SaveSettingsRequest;
-use App\Settings\Commands\SetBooleanSetting;
-use App\Settings\Commands\SetIntegerSetting;
-use App\Settings\Commands\SetStringChoice;
-use App\Settings\Commands\SetStringSetting;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Commands\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Settings\Commands\SetStringChoice\SetStringChoiceCommand;
+use App\Settings\Commands\SetStringSetting\SetStringSettingCommand;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Data\SettingData;
 use App\Settings\Data\SettingGroupData;
@@ -72,10 +72,10 @@ final readonly class SaveSettingsPageController
         $reference = new SettingReference($setting->identity->owner, $setting->identity->key);
 
         return match (true) {
-            $setting->default instanceof StringChoiceValueData => new SetStringChoice($reference, $text, $revision),
-            $setting->type === SettingType::Boolean => new SetBooleanSetting($reference, $text === '1', $revision),
-            $setting->type === SettingType::Integer => new SetIntegerSetting($reference, (int) $text, $revision),
-            $setting->type === SettingType::String => new SetStringSetting($reference, $text, $revision),
+            $setting->default instanceof StringChoiceValueData => new SetStringChoiceCommand($reference, $text, $revision),
+            $setting->type === SettingType::Boolean => new SetBooleanSettingCommand($reference, $text === '1', $revision),
+            $setting->type === SettingType::Integer => new SetIntegerSettingCommand($reference, (int) $text, $revision),
+            $setting->type === SettingType::String => new SetStringSettingCommand($reference, $text, $revision),
             default => null,
         };
     }

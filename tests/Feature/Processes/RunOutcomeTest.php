@@ -11,7 +11,8 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
-use App\Processes\Commands\RevokeRunOutcomeAccess;
+use App\Processes\Commands\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessCommand;
+use App\Processes\Commands\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessHandler;
 use App\Processes\Enums\RunEventType;
 use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Enums\RunRequestIntent;
@@ -19,7 +20,6 @@ use App\Processes\Enums\RunResultSource;
 use App\Processes\Enums\StepType;
 use App\Processes\Events\RunOutcomeRecorded;
 use App\Processes\Execution\RecordedRunEvents;
-use App\Processes\Handlers\RevokeRunOutcomeAccessHandler;
 use App\Processes\Listeners\NotifyRunOutcome;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\RunOutcome;
@@ -176,7 +176,7 @@ final class RunOutcomeTest extends TestCase
 
         $this->actAs($atlas);
         $this->app->make(RevokeRunOutcomeAccessHandler::class)->handle(
-            new RevokeRunOutcomeAccess($run->id)->withDispatcher(ActorContext::forAgent($atlas->id)),
+            new RevokeRunOutcomeAccessCommand($run->id)->withDispatcher(ActorContext::forAgent($atlas->id)),
         );
 
         $this->assertFalse($run->refresh()->hasOutcomeFor($kim));

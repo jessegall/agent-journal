@@ -20,8 +20,8 @@ final class CommandBypassTest extends TestCase
      * The folders judged: Core's handlers and bus, every domain and the test modules.
      */
     public const array CHECKED = [
-        'app/Agents/Handlers',
-        'app/Assignments/Handlers',
+        'app/Agents/Commands',
+        'app/Assignments/Commands',
         'app/Bus',
         'app/Records',
         'app/Sharing',

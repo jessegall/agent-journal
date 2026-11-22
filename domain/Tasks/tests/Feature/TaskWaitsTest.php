@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use Domain\Tasks\Commands\AddTaskWait;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\RemoveTaskWait;
-use Domain\Tasks\Commands\WaiveTaskWait;
+use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\RemoveTaskWait\RemoveTaskWaitCommand;
+use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
@@ -61,15 +61,15 @@ final class TaskWaitsTest extends TestCase
 
     public function test_a_cycle_and_a_self_link_are_refused(): void
     {
-        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id));
+        $this->runCommand(new AddTaskWaitCommand($this->second->id, $this->first->id));
 
         $this->assertThrows(
-            fn () => $this->runCommand(new AddTaskWait($this->first->id, $this->second->id)),
+            fn () => $this->runCommand(new AddTaskWaitCommand($this->first->id, $this->second->id)),
             TaskWaitRefused::class,
         );
 
         $this->assertThrows(
-            fn () => $this->runCommand(new AddTaskWait($this->first->id, $this->first->id)),
+            fn () => $this->runCommand(new AddTaskWaitCommand($this->first->id, $this->first->id)),
             TaskWaitRefused::class,
         );
 
@@ -78,13 +78,13 @@ final class TaskWaitsTest extends TestCase
 
     public function test_a_waiver_needs_a_reason_and_keeps_who_and_when(): void
     {
-        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id));
+        $this->runCommand(new AddTaskWaitCommand($this->second->id, $this->first->id));
 
         $this->assertThrows(
-            fn () => $this->runCommand(new WaiveTaskWait($this->second->id, $this->first->id, '')),
+            fn () => $this->runCommand(new WaiveTaskWaitCommand($this->second->id, $this->first->id, '')),
         );
 
-        $this->runCommand(new WaiveTaskWait($this->second->id, $this->first->id, 'Done by hand.'));
+        $this->runCommand(new WaiveTaskWaitCommand($this->second->id, $this->first->id, 'Done by hand.'));
 
         $wait = TaskWait::between($this->second->id, $this->first->id);
         $this->assertNotNull($wait?->waived_at);
@@ -94,15 +94,15 @@ final class TaskWaitsTest extends TestCase
 
     public function test_a_cancelled_prerequisite_leaves_the_wait_outstanding_and_history_keeps_every_change(): void
     {
-        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id));
-        $this->runCommand(new CancelTask($this->first->id, 'Not needed.'));
+        $this->runCommand(new AddTaskWaitCommand($this->second->id, $this->first->id));
+        $this->runCommand(new CancelTaskCommand($this->first->id, 'Not needed.'));
 
         $this->assertSame([], $this->waits()->readyAmong([$this->second->id]));
         $waits = $this->waits()->waitsOf($this->second->id);
         $this->assertFalse($waits->waitsFor[0]->isSatisfied);
         $this->assertSame($this->second->id, $this->waits()->waitsOf($this->first->id)->holdsUp[0]->taskId);
 
-        $this->runCommand(new RemoveTaskWait($this->second->id, $this->first->id));
+        $this->runCommand(new RemoveTaskWaitCommand($this->second->id, $this->first->id));
 
         $this->assertSame(
             [TaskWaitChange::Added, TaskWaitChange::Removed],

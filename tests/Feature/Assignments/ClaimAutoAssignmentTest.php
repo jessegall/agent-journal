@@ -8,9 +8,9 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Models\Agent;
-use App\Assignments\Commands\AssignRecordForMaintenance;
-use App\Assignments\Commands\ClaimAutoAssignment;
-use App\Assignments\Commands\EnableAutoAssignment;
+use App\Assignments\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
+use App\Assignments\Commands\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
+use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Contracts\MaintenanceAssignmentWriter;
 use App\Assignments\Enums\AutoAssignmentClaimType;
@@ -94,26 +94,26 @@ final class ClaimAutoAssignmentTest extends TestCase
         $this->assertThrows(
             fn () => $this->claim($this->key, 'different.scope'),
             EngineAccessRefused::class,
-            AssignRecordForMaintenance::FILL_SCOPE,
+            AssignRecordForMaintenanceCommand::FILL_SCOPE,
         );
     }
 
     private function enable(AutoAssignmentKey $key): void
     {
         $input = new AutoAssignmentInput($key, new PoolReference('tasks.open', null, []), 1);
-        $this->app->make(CommandBus::class)->run(new EnableAutoAssignment($input, 0));
+        $this->app->make(CommandBus::class)->run(new EnableAutoAssignmentCommand($input, 0));
     }
 
     private function claim(
         AutoAssignmentKey $key,
-        string $scope = AssignRecordForMaintenance::FILL_SCOPE,
+        string $scope = AssignRecordForMaintenanceCommand::FILL_SCOPE,
     ): AutoAssignmentOutcome {
         $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
         $access = $this->app->make(EngineAccess::class);
 
         return $access->withinMaintenance($scope, fn () => $this->app->make(CommandEntrance::class)->through(
             CommandEntry::EngineMaintenance,
-            fn () => $this->app->make(CommandBus::class)->run(new ClaimAutoAssignment($key)),
+            fn () => $this->app->make(CommandBus::class)->run(new ClaimAutoAssignmentCommand($key)),
         ));
     }
 

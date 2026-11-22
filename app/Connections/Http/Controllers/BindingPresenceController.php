@@ -6,7 +6,7 @@ namespace App\Connections\Http\Controllers;
 
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RecordBindingPresence;
+use App\Connections\Commands\RecordBindingPresence\RecordBindingPresenceCommand;
 use App\Http\Data\Connections\PresenceReportData;
 use Illuminate\Http\JsonResponse;
 
@@ -22,7 +22,7 @@ final readonly class BindingPresenceController
         HostContext $host,
         CommandBus $commands,
     ): JsonResponse {
-        $receipt = $commands->run(new RecordBindingPresence($host->hostId, $binding, $report->report()));
+        $receipt = $commands->run(new RecordBindingPresenceCommand($host->hostId, $binding, $report->report()));
 
         return new JsonResponse($receipt->toArray());
     }

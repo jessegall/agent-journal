@@ -7,8 +7,8 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Models\Agent;
@@ -242,7 +242,7 @@ final class HostStartsTest extends TestCase
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent');
-        $command = new OpenAgentRuntime(
+        $command = new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,
             self::FOLDER,
@@ -259,6 +259,6 @@ final class HostStartsTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHost('test host '.Str::random(6), [self::FOLDER]));
+        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
     }
 }

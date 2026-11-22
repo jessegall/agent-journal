@@ -7,8 +7,8 @@ namespace Tests\Feature\Communication;
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\AgentChatAccess;
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\RetryDelivery;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\RetryDelivery\RetryDeliveryCommand;
 use App\Communication\Enums\OutstandingRangeState;
 use App\Communication\Enums\ReceiptDeliveryState;
 use App\Communication\Enums\WakeState;
@@ -18,8 +18,8 @@ use App\Communication\Models\ReceiptDelivery;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Chat\Commands\AddChatParticipant;
-use Domain\Chat\Commands\CreateGroupChat;
+use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Data\ChatMessageData;
 use Domain\Chat\Resolvers\Support\ChatConversations;
 use Tests\Support\MessagingTestCase;
@@ -50,10 +50,10 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         }
 
         $this->asOwner();
-        $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$bea->id]));
-        $this->runOnBus(new AddChatParticipant($inboxId, "agent:{$this->builder->agent_id}"));
-        $this->runOnBus(new AddChatParticipant($inboxId, "agent:{$this->reviewer->agent_id}"));
-        $messageId = $this->runOnBus(new PostChatMessage($inboxId, 'Plan?', 'ada-plan'));
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$bea->id]));
+        $this->runOnBus(new AddChatParticipantCommand($inboxId, "agent:{$this->builder->agent_id}"));
+        $this->runOnBus(new AddChatParticipantCommand($inboxId, "agent:{$this->reviewer->agent_id}"));
+        $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'ada-plan'));
 
         $builderReceipt = $this->receiptOf($messageId, $this->builder->agent_id);
         $range = OutstandingRange::create($builderReceipt, 8000);
@@ -72,7 +72,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         $this->assertSame(8000, $given[0]->pendingFrom);
         $this->assertTrue($row->actions->retryDelivery);
 
-        $this->runOnBus(new RetryDelivery($range->id));
+        $this->runOnBus(new RetryDeliveryCommand($range->id));
 
         $this->assertSame(OutstandingRangeState::Outstanding, $range->refresh()->state);
         $this->assertSame(ReceiptDeliveryState::Pending, $delivery->refresh()->state);
@@ -84,7 +84,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
 
         $this->startChatMemberRequestAs($bea->id);
         $this->assertFalse($this->rowOf($inboxId, $messageId)->actions->retryDelivery);
-        $this->assertThrows(fn () => $this->runOnBus(new RetryDelivery($range->id)), Throwable::class);
+        $this->assertThrows(fn () => $this->runOnBus(new RetryDeliveryCommand($range->id)), Throwable::class);
     }
 
     private function receiptOf(string $messageId, string $agentId): MessageReceipt

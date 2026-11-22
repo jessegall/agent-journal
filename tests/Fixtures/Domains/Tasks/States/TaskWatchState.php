@@ -10,8 +10,8 @@ use App\Hooks\References\SubjectReference;
 use App\Hooks\States\AgentState;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
-use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask;
-use Tests\Fixtures\Domains\Tasks\States\Commands\RecordFinishedTask;
+use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCancelledTaskCommand;
+use Tests\Fixtures\Domains\Tasks\States\Commands\RecordFinishedTask\RecordFinishedTaskCommand;
 
 /**
  * A fixture watcher whose context identifies the frame reacting to a Tasks fact.
@@ -25,21 +25,21 @@ class TaskWatchState extends AgentState
         return new ContextLine("Watch {$this->watch->runNumber} is active.");
     }
 
-    public function onTaskFinished(TaskFinished $event): RecordFinishedTask|null
+    public function onTaskFinished(TaskFinished $event): RecordFinishedTaskCommand|null
     {
         if ($event->taskId !== $this->watch->id) {
             return null;
         }
 
-        return new RecordFinishedTask($event->taskId, $this->watch->runNumber);
+        return new RecordFinishedTaskCommand($event->taskId, $this->watch->runNumber);
     }
 
-    public function onTaskCancelled(TaskCancelled $event): RecordCancelledTask|null
+    public function onTaskCancelled(TaskCancelled $event): RecordCancelledTaskCommand|null
     {
         if ($event->taskId !== $this->watch->id) {
             return null;
         }
 
-        return new RecordCancelledTask($event->taskId, $this->watch->runNumber);
+        return new RecordCancelledTaskCommand($event->taskId, $this->watch->runNumber);
     }
 }

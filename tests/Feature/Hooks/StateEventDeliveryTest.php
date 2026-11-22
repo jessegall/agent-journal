@@ -30,7 +30,7 @@ use App\Hooks\Support\StackTransaction;
 use App\Profiles\Values\ProfileBase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
-use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect;
+use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect\RecordNoteEffectCommand;
 use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
 use Tests\Fixtures\Modules\Notes\Events\NotePublished;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
@@ -74,8 +74,8 @@ final class StateEventDeliveryTest extends TestCase
         $this->pushState(new StateReference('notes.watching', NoSubject::None));
 
         $this->dispatch(new NoteWritten(
-            ordinary: [new RecordNoteEffect('watching')],
-            marked: [new RecordNoteEffect('writing')],
+            ordinary: [new RecordNoteEffectCommand('watching')],
+            marked: [new RecordNoteEffectCommand('writing')],
         ));
 
         $this->assertSame(['watching', 'watching', 'writing'], $this->app->make(NoteEffects::class)->labels);
@@ -95,14 +95,14 @@ final class StateEventDeliveryTest extends TestCase
         });
 
         try {
-            $this->dispatch(new NoteWritten(listenerFails: true, ordinary: [new RecordNoteEffect('partial')]));
+            $this->dispatch(new NoteWritten(listenerFails: true, ordinary: [new RecordNoteEffectCommand('partial')]));
             $this->fail('The failing state returned successfully.');
         } catch (NoteWorkFailed) {
             $this->assertCount(1, $ordinary);
             $this->assertSame([], $effects->labels);
         }
 
-        $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffect('watching')], marked: [new RecordNoteEffect('writing')]));
+        $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffectCommand('watching')], marked: [new RecordNoteEffectCommand('writing')]));
         $this->assertSame(['watching', 'writing'], $effects->labels);
     }
 
@@ -113,7 +113,7 @@ final class StateEventDeliveryTest extends TestCase
             fn () => $this->app->make(StartStacks::class)->close($this->target),
         );
 
-        $this->dispatch(new NoteWritten(marked: [new RecordNoteEffect('closed')]));
+        $this->dispatch(new NoteWritten(marked: [new RecordNoteEffectCommand('closed')]));
 
         $this->assertSame([], $this->app->make(NoteEffects::class)->labels);
     }
@@ -125,7 +125,7 @@ final class StateEventDeliveryTest extends TestCase
         $this->pushState(new StateReference('guide', NoSubject::None));
 
         $effects = $this->app->make(NoteEffects::class);
-        $effects->afterRecording(function (RecordNoteEffect $command): void {
+        $effects->afterRecording(function (RecordNoteEffectCommand $command): void {
             if ($command->label === 'cover') {
                 $this->app->make(AgentStacks::class)->push(
                     $this->target,
@@ -135,8 +135,8 @@ final class StateEventDeliveryTest extends TestCase
         });
 
         $this->dispatch(new NoteWritten(
-            ordinary: [new RecordNoteEffect('cover'), new RecordNoteEffect('stale')],
-            marked: [new RecordNoteEffect('marked first'), new RecordNoteEffect('marked second')],
+            ordinary: [new RecordNoteEffectCommand('cover'), new RecordNoteEffectCommand('stale')],
+            marked: [new RecordNoteEffectCommand('marked first'), new RecordNoteEffectCommand('marked second')],
         ));
 
         $this->assertSame(['cover', 'stale', 'marked first', 'marked second'], $effects->labels);
@@ -147,7 +147,7 @@ final class StateEventDeliveryTest extends TestCase
         $reference = new StateReference('notes.watching', NoSubject::None);
         $this->pushState($reference);
         $effects = $this->app->make(NoteEffects::class);
-        $effects->afterRecording(function (RecordNoteEffect $command) use ($reference): void {
+        $effects->afterRecording(function (RecordNoteEffectCommand $command) use ($reference): void {
             if ($command->label === 'replace') {
                 $row = AgentStackRow::lockAuthorizedFor($this->target);
                 $stack = $this->app->make(StackRestorer::class)->restore($row->frames, $row->target());
@@ -157,7 +157,7 @@ final class StateEventDeliveryTest extends TestCase
             }
         });
 
-        $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffect('replace'), new RecordNoteEffect('stale')]));
+        $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffectCommand('replace'), new RecordNoteEffectCommand('stale')]));
 
         $this->assertSame(['replace'], $effects->labels);
     }
@@ -171,7 +171,7 @@ final class StateEventDeliveryTest extends TestCase
         );
 
         try {
-            $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffect('unauthorized')]));
+            $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffectCommand('unauthorized')]));
             $this->fail('The command ran without authority.');
         } catch (CommandAdmissionRefused) {
             $this->assertSame([], $this->app->make(NoteEffects::class)->labels);
@@ -182,20 +182,20 @@ final class StateEventDeliveryTest extends TestCase
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
         $effects = $this->app->make(NoteEffects::class);
-        $effects->afterRecording(function (RecordNoteEffect $command): void {
+        $effects->afterRecording(function (RecordNoteEffectCommand $command): void {
             if ($command->label === 'reenter') {
                 $this->dispatch(new NoteWritten());
             }
         });
 
         try {
-            $this->dispatch(new NoteWritten(marked: [new RecordNoteEffect('reenter')]));
+            $this->dispatch(new NoteWritten(marked: [new RecordNoteEffectCommand('reenter')]));
             $this->fail('The delivery reentered an active origin.');
         } catch (StateEventReentry $failure) {
             $this->assertStringContainsString('cycle', $failure->getMessage());
         }
 
-        $this->dispatch(new NoteWritten(marked: [new RecordNoteEffect('independent')]));
+        $this->dispatch(new NoteWritten(marked: [new RecordNoteEffectCommand('independent')]));
 
         $this->assertSame(['reenter', 'independent'], $effects->labels);
     }

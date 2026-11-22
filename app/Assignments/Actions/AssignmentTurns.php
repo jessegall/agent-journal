@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Actions;
 
-use App\Assignments\Commands\AssignRecordForMaintenance;
-use App\Assignments\Commands\ClaimAutoAssignment;
+use App\Assignments\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
+use App\Assignments\Commands\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AutoAssignmentResolver;
@@ -45,7 +45,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
 
     public function consider(AutoAssignmentBudget $budget): AutoAssignmentRun
     {
-        $this->maintenance->assertMaintenanceGranted(AssignRecordForMaintenance::FILL_SCOPE);
+        $this->maintenance->assertMaintenanceGranted(AssignRecordForMaintenanceCommand::FILL_SCOPE);
         $stop = $this->stopTimes->at($budget->stopNanoseconds);
 
         if ($stop->remainingMilliseconds() <= 0 || $budget->isEmpty()) {
@@ -82,7 +82,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
             $started++;
 
             try {
-                $outcome = $this->commands->run(new ClaimAutoAssignment($fact->key));
+                $outcome = $this->commands->run(new ClaimAutoAssignmentCommand($fact->key));
             } catch (Throwable $failure) {
                 $failed++;
                 $this->warn($fact, $failure);

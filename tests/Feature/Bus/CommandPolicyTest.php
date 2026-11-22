@@ -18,8 +18,8 @@ use App\Bus\Values\CommandDecision;
 use App\Bus\Values\EffectiveCommand;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
-use Tests\Fixtures\Modules\Notes\Commands\CopyNote;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 final class CommandPolicyTest extends CommandBusTestCase
 {
@@ -35,23 +35,23 @@ final class CommandPolicyTest extends CommandBusTestCase
     public function test_inside_middleware_replacement_is_checked_before_handler_and_refusal_replays(): void
     {
         $this->installCommandModules(
-            MiddlewareDeclaration::inside(UppercasesText::class, CommandScope::command(WriteNote::class)),
+            MiddlewareDeclaration::inside(UppercasesText::class, CommandScope::command(WriteNoteCommand::class)),
         );
         $this->startTestUserRequest(1);
         $this->app->make(RequestKey::class)->set(self::KEY);
         $admission = $this->mock(CommandAdmission::class);
         $admission->shouldReceive('assess')->twice()->withArgs(
             fn (EffectiveCommand $call): bool => $call->stage === CommandAdmissionStage::BeforeMiddleware
-                && $call->command instanceof WriteNote && $call->command->text === 'outside',
+                && $call->command instanceof WriteNoteCommand && $call->command->text === 'outside',
         )->andReturn(CommandDecision::allow());
         $admission->shouldReceive('assess')->once()->withArgs(
             fn (EffectiveCommand $call): bool => $call->stage === CommandAdmissionStage::BeforeHandler
-                && $call->command instanceof WriteNote && $call->command->text === 'OUTSIDE',
+                && $call->command instanceof WriteNoteCommand && $call->command->text === 'OUTSIDE',
         )->andReturn(CommandDecision::refuse(RefusalCode::Forbidden, 'The effective record is outside the grant.'));
         $bus = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $bus->run(new WriteNote('outside')), CommandAdmissionRefused::class);
-        $this->assertThrows(fn () => $bus->run(new WriteNote('outside')), RefusalReplayed::class);
+        $this->assertThrows(fn () => $bus->run(new WriteNoteCommand('outside')), CommandAdmissionRefused::class);
+        $this->assertThrows(fn () => $bus->run(new WriteNoteCommand('outside')), RefusalReplayed::class);
         $this->assertSame(0, $this->rowCount());
     }
 
@@ -61,15 +61,15 @@ final class CommandPolicyTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $admission = $this->mock(CommandAdmission::class);
         $admission->shouldReceive('assess')->twice()->withArgs(
-            fn (EffectiveCommand $call): bool => $call->command instanceof CopyNote,
+            fn (EffectiveCommand $call): bool => $call->command instanceof CopyNoteCommand,
         )->andReturn(CommandDecision::allow());
         $admission->shouldReceive('assess')->once()->withArgs(
             fn (EffectiveCommand $call): bool => $call->stage === CommandAdmissionStage::BeforeHandler
-                && $call->command instanceof WriteNote,
+                && $call->command instanceof WriteNoteCommand,
         )->andReturn(CommandDecision::refuse(RefusalCode::Forbidden, 'The nested write is outside the grant.'));
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new CopyNote('nested')),
+            fn () => $this->app->make(CommandBus::class)->run(new CopyNoteCommand('nested')),
             CommandAdmissionRefused::class,
         );
 

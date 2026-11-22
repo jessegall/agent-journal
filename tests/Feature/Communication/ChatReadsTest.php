@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AcknowledgeChatMessages;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\AcknowledgeChatMessages\AcknowledgeChatMessagesCommand;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Exceptions\ChatInboxRefused;
 use App\Communication\Support\PendingInboxWork;
@@ -36,7 +36,7 @@ final class ChatReadsTest extends MessagingTestCase
     public function test_the_authors_own_post_is_not_unread_and_the_agent_stays_unread_until_it_acknowledges(): void
     {
         $this->asOwner();
-        $messageId = $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Hello.', 'hello-key'));
+        $messageId = $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Hello.', 'hello-key'));
         $pending = $this->app->make(PendingInboxWork::class);
 
         $this->assertSame(0, $this->resolver()->counts($this->chat->inbox_id)->unread);
@@ -45,7 +45,7 @@ final class ChatReadsTest extends MessagingTestCase
         $this->asAgent($this->builder);
         $this->assertSame(1, $this->resolver()->counts($this->chat->inbox_id)->unread);
 
-        $this->runOnBus(new AcknowledgeChatMessages($this->chat->inbox_id, [$messageId]));
+        $this->runOnBus(new AcknowledgeChatMessagesCommand($this->chat->inbox_id, [$messageId]));
         $this->assertSame(1, $this->resolver()->counts($this->chat->inbox_id)->unread);
 
         $this->presentAll($this->actorOf($this->builder), $this->builder->id);

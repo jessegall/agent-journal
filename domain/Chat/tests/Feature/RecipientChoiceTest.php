@@ -12,7 +12,7 @@ use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\InstallDesks;
+use App\Desks\Commands\InstallDesks\InstallDesksCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\BuiltInDesks;
 use Domain\Access\Models\User;
@@ -59,7 +59,7 @@ final class RecipientChoiceTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
 
         $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
+            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesksCommand());
 
         $this->inboxOf(ActorIdentity::of($owner));
         $main = $this->start('Main');

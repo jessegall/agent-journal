@@ -7,8 +7,8 @@ namespace Tests\Feature\Bus;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandRefused;
 use Illuminate\Support\Facades\Log;
-use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\TestIds;
 
 /**
@@ -23,13 +23,13 @@ final class OctaneCommandBusTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $first = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $first->run(new RefuseNote('first request fails')), CommandRefused::class);
+        $this->assertThrows(fn () => $first->run(new RefuseNoteCommand('first request fails')), CommandRefused::class);
 
         $this->app->forgetScopedInstances();
         $this->startTestAgentRequest(9, 90);
         $second = $this->app->make(CommandBus::class);
         $log = Log::spy();
-        $second->run(new WriteNote('second request'));
+        $second->run(new WriteNoteCommand('second request'));
 
         $this->assertNotSame($first, $second);
         $log->shouldHaveReceived('info')->withArgs(

@@ -6,7 +6,7 @@ namespace Domain\Plans\Mcp;
 
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Commands\ReassignPlanWork;
+use Domain\Plans\Commands\ReassignPlanWork\ReassignPlanWorkCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -16,7 +16,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive]
 #[Name('plans_reassign_work')]
-#[Dispatches(ReassignPlanWork::class)]
+#[Dispatches(ReassignPlanWorkCommand::class)]
 #[Description('Move a plan or phase and its unfinished work using the root assignment reference you read.')]
 final class ReassignPlanWorkTool extends PlanCascadeTool
 {
@@ -29,9 +29,9 @@ final class ReassignPlanWorkTool extends PlanCascadeTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): ReassignPlanWork
+    protected function command(ToolArguments $arguments): ReassignPlanWorkCommand
     {
-        return new ReassignPlanWork(
+        return new ReassignPlanWorkCommand(
             $this->root($arguments),
             $this->expected($arguments),
             $this->recipient($arguments),

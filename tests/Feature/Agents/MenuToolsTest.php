@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\RetireMenuEntry;
+use App\Agents\Commands\RetireMenuEntry\RetireMenuEntryCommand;
 use App\Agents\Enums\MenuEntryState;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Models\MenuEntry;
@@ -119,7 +119,7 @@ final class MenuToolsTest extends TestCase
             'name' => 'menu_retire',
             'arguments' => ['entry' => $entry->id, 'expected_state' => 'current', 'request_key' => 'retire'],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
-        $this->asOwner(new RetireMenuEntry($entry->id, MenuEntryState::Current));
+        $this->asOwner(new RetireMenuEntryCommand($entry->id, MenuEntryState::Current));
 
         $owner = new ActorIdentity(ActorType::User, 'owner');
         $this->assertSame(MenuEntryState::Retired, $entry->fresh()?->state);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\StartExecutor;
@@ -52,7 +52,7 @@ final class HostBridgeTest extends TestCase
 
         foreach (HookDriver::cases() as $driver) {
             $this->assertThrows(
-                fn () => $commands->run(new StartAgent($this->requestFor($actor, $driver))),
+                fn () => $commands->run(new StartAgentCommand($this->requestFor($actor, $driver))),
                 AccountContainerUnsupported::class,
             );
         }

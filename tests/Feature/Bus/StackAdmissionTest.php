@@ -11,9 +11,9 @@ use App\Bus\Support\OperationDeadline;
 use App\Hooks\Admission\AdvisoryStackAdmission;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
-use Tests\Fixtures\Modules\Notes\Commands\CopyNote;
-use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\TestIds;
 
 /**
@@ -57,7 +57,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->startTestAgentRequest(1, 2);
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new WriteNote('waits')),
+            fn () => $this->app->make(CommandBus::class)->run(new WriteNoteCommand('waits')),
             StackLockTimedOut::class,
             self::BUSY,
         );
@@ -73,7 +73,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         );
         $this->startTestAgentRequest(1, 2);
 
-        $id = $this->app->make(CommandBus::class)->run(new WriteNote('after'));
+        $id = $this->app->make(CommandBus::class)->run(new WriteNoteCommand('after'));
 
         $this->assertSame('after', $this->rowText($id));
     }
@@ -83,7 +83,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->hold(2);
         $this->startTestAgentRequest(1, 3);
 
-        $id = $this->app->make(CommandBus::class)->run(new WriteNote(self::OTHER_SESSION));
+        $id = $this->app->make(CommandBus::class)->run(new WriteNoteCommand(self::OTHER_SESSION));
 
         $this->assertSame(self::OTHER_SESSION, $this->rowText($id));
     }
@@ -92,7 +92,7 @@ final class StackAdmissionTest extends CommandBusTestCase
     {
         $this->startTestAgentRequest(1, 2);
 
-        $id = $this->app->make(CommandBus::class)->run(new CopyNote('nested'));
+        $id = $this->app->make(CommandBus::class)->run(new CopyNoteCommand('nested'));
 
         $this->assertSame('nested', $this->rowText($id));
         $this->assertTrue($this->canTake(2));
@@ -103,7 +103,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->startTestAgentRequest(1, 2);
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new RefuseNote('refused')),
+            fn () => $this->app->make(CommandBus::class)->run(new RefuseNoteCommand('refused')),
             CommandRefused::class,
         );
 
@@ -115,7 +115,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->hold(2);
         $this->startTestUserRequest(4);
 
-        $id = $this->app->make(CommandBus::class)->run(new WriteNote('user'));
+        $id = $this->app->make(CommandBus::class)->run(new WriteNoteCommand('user'));
 
         $this->assertSame('user', $this->rowText($id));
     }

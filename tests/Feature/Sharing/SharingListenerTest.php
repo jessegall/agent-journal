@@ -18,7 +18,7 @@ use App\Sharing\Support\ShareReadLimits;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\ConnectionInterface;
@@ -92,7 +92,7 @@ final class SharingListenerTest extends TestCase
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
@@ -174,7 +174,7 @@ final class SharingListenerTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(
-            new CreateDocument(
+            new CreateDocumentCommand(
                 'Tricks',
                 'Inert',
                 <<<'TEXT'

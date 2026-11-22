@@ -10,10 +10,10 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandAdmissionRefused;
-use Domain\Rules\Commands\ApproveRule;
-use Domain\Rules\Commands\DenyRule;
-use Domain\Rules\Commands\ProposeRule;
-use Domain\Rules\Commands\RemoveRule;
+use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
+use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
+use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Models\Rule;
@@ -43,7 +43,7 @@ final class RuleProposalTest extends TestCase
         $this->startRequestAs($start->agent->id, $start->session->id);
 
         $id = $this->app->make(CommandBus::class)->run(
-            new ProposeRule('New rule.', 'The old one is too vague.', $old->id),
+            new ProposeRuleCommand('New rule.', 'The old one is too vague.', $old->id),
         );
 
         $details = $this->app->make(RuleDetailsResolver::class)->rule($id);
@@ -71,9 +71,9 @@ final class RuleProposalTest extends TestCase
         $this->startRequestAs($start->agent->id, $start->session->id);
         $bus = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $bus->run(new RemoveRule($active->id)), CommandAdmissionRefused::class);
-        $this->assertThrows(fn () => $bus->run(new ApproveRule($proposed->id)), CommandAdmissionRefused::class);
-        $this->assertThrows(fn () => $bus->run(new DenyRule($proposed->id)), CommandAdmissionRefused::class);
+        $this->assertThrows(fn () => $bus->run(new RemoveRuleCommand($active->id)), CommandAdmissionRefused::class);
+        $this->assertThrows(fn () => $bus->run(new ApproveRuleCommand($proposed->id)), CommandAdmissionRefused::class);
+        $this->assertThrows(fn () => $bus->run(new DenyRuleCommand($proposed->id)), CommandAdmissionRefused::class);
 
         $this->assertSame(
             [RuleState::Active, RuleState::Proposed],
@@ -90,7 +90,7 @@ final class RuleProposalTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $this->app->make(CommandBus::class)->run(new RemoveRule($active->id));
+        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand($active->id));
 
         $this->assertSame(RuleState::Removed, $active->fresh()?->state);
     }

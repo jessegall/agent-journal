@@ -6,8 +6,8 @@ namespace Tests\Feature\Profiles;
 
 use App\Actors\Enums\ActorType;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\RevokeProfiles\RevokeProfilesCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRetired;
@@ -86,7 +86,7 @@ final class ProfileStorageTest extends TestCase
         $id = Profile::byKey(ProfileKey::from('journal-reviewer'))->id;
         $resolver = $this->app->make(ProfileResolver::class);
 
-        $revoke = new RevokeProfiles([ProfileKey::from('journal-reviewer')]);
+        $revoke = new RevokeProfilesCommand([ProfileKey::from('journal-reviewer')]);
 
         $this->assertSame(1, $this->app->make(CommandBus::class)->run($revoke));
         $this->assertFalse($resolver->has(ProfileKey::from('journal-reviewer')));
@@ -108,7 +108,7 @@ final class ProfileStorageTest extends TestCase
 
         $this->expectException(ProfileMissing::class);
 
-        $this->app->make(CommandBus::class)->run(new RevokeProfiles([ProfileKey::from('journal-nobody')]));
+        $this->app->make(CommandBus::class)->run(new RevokeProfilesCommand([ProfileKey::from('journal-nobody')]));
     }
 
     public function test_the_console_lists_and_shows_a_profile_with_its_skill_lists(): void
@@ -149,6 +149,6 @@ final class ProfileStorageTest extends TestCase
 
     private function activate(ProposedProfile $profile): ProfileActivation
     {
-        return $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of($profile)));
+        return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of($profile)));
     }
 }

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Scripts;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\ReportWorkspaceRead;
+use App\Agents\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
 use App\Agents\Values\CommitObservation;
 use App\Agents\Values\WorkReference;
 use App\Agents\Values\WorkspaceReadReference;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileRevisionReference;
-use App\Scripts\Commands\RecordScriptStepResult;
+use App\Scripts\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
 use App\Scripts\Enums\ProfileRunState;
 use App\Scripts\Enums\StepStatus;
 use App\Scripts\Exceptions\ProfileRunRefused;
@@ -98,11 +98,11 @@ final class ProfileRunTest extends TestCase
 
     private function answer(bool $dirty): void
     {
-        $this->asSystem(new ReportWorkspaceRead('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3, CommitObservation::notRecorded()));
+        $this->asSystem(new ReportWorkspaceReadCommand('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3, CommitObservation::notRecorded()));
     }
 
     private function report(ProfileRun $run, string $step, StepStatus $status): void
     {
-        $this->asSystem(new RecordScriptStepResult('host-1', $run->id, $step, $status, 'next', null));
+        $this->asSystem(new RecordScriptStepResultCommand('host-1', $run->id, $step, $status, 'next', null));
     }
 }

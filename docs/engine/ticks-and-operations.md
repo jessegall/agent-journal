@@ -68,7 +68,7 @@ since the last success.
 
 The engine is authorized like any actor: its authorizer allows a command only while it holds a grant, the frame it is
 ticking or a maintenance capability (`App\Engine\Support\EngineAccess`). Outside one it may run nothing. Its own
-maintenance commands, such as `App\Engine\Commands\MarkSilentSessions`, name the `EngineMaintenance` entry.
+maintenance commands, such as `App\Engine\Commands\MarkSilentSessions\MarkSilentSessionsCommand`, name the `EngineMaintenance` entry.
 
 Every command a tick answers runs with the frame's work as its origin (`App\Hooks\Values\WorkOccurrence`, for
 example run 3 of task 41). Inside the command's transaction and before its handler, `GuardTickOrigin` takes the

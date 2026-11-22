@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Http\Controllers\Calls;
 
 use App\Assignments\Calls\ReassignRecordCall;
-use App\Assignments\Commands\ReassignRecord;
+use App\Assignments\Commands\ReassignRecord\ReassignRecordCommand;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Assignments\AssignmentResultData;
@@ -20,7 +20,7 @@ final readonly class ReassignRecordController
         CommandBus $commands,
         AssigneeResolver $assignees,
     ): AssignmentResultData {
-        $command = new ReassignRecord($call->record(), $call->expected(), $call->recipient());
+        $command = new ReassignRecordCommand($call->record(), $call->expected(), $call->recipient());
         $assignmentChange = $commands->run($command);
 
         return AssignmentResultData::of(

@@ -13,10 +13,10 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Commands\ApproveShareRequest;
-use App\Sharing\Commands\CreateShare;
-use App\Sharing\Commands\RequestShare;
-use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
+use App\Sharing\Commands\RequestShare\RequestShareCommand;
+use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
@@ -35,7 +35,7 @@ use App\Sharing\Support\ShareProposalStatus;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
@@ -105,7 +105,7 @@ final class ShareProposalTest extends TestCase
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
@@ -150,7 +150,7 @@ final class ShareProposalTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(
-                new CreateShare(
+                new CreateShareCommand(
                     TestIds::of(1),
                     str_repeat('0', 64),
                     ShareDuration::STANDARD_MINUTES,
@@ -176,7 +176,7 @@ final class ShareProposalTest extends TestCase
         $saved = $this->preview();
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2APPROVE1');
         $summary = $this->app->make(CommandBus::class)->run(
-            new ApproveShareRequest(
+            new ApproveShareRequestCommand(
                 $proposal->id,
                 $saved->previewId,
                 $saved->checksum,
@@ -246,13 +246,13 @@ final class ShareProposalTest extends TestCase
         $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set($key);
 
-        return $this->app->make(CommandBus::class)->run(new RequestShare($this->root->type, $this->root->id, $key));
+        return $this->app->make(CommandBus::class)->run(new RequestShareCommand($this->root->type, $this->root->id, $key));
     }
 
     private function preview(): SavedSharePreview
     {
         return $this->app->make(CommandBus::class)->run(
-            new SaveSharePreview($this->root->type, $this->root->id, [], $this->configuration->id),
+            new SaveSharePreviewCommand($this->root->type, $this->root->id, [], $this->configuration->id),
         );
     }
 

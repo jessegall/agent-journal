@@ -9,7 +9,7 @@ use App\Assignments\Support\AssignmentReference;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Calls\MessageNamed;
 use App\Communication\Calls\ReleaseMessageClaimCall;
-use App\Communication\Commands\ReleaseMessageClaim;
+use App\Communication\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
 
 /**
  * Gives up the claim on a message, as the claim its caller read.
@@ -20,7 +20,7 @@ final readonly class ReleaseMessageClaimController
     {
         $holder = new AssigneeIdentity($call->holderType, $call->holderId);
         $claim = new AssignmentReference($call->claimId, $holder);
-        $commands->run(new ReleaseMessageClaim($call->messageId, $claim, $call->reason));
+        $commands->run(new ReleaseMessageClaimCommand($call->messageId, $claim, $call->reason));
 
         return MessageNamed::from(['messageId' => $call->messageId]);
     }

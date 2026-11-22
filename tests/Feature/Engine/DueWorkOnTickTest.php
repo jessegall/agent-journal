@@ -22,7 +22,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
+use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
 use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;
@@ -135,7 +135,7 @@ final class DueWorkOnTickTest extends TestCase
         $this->app->make(EnginePass::class)->run(function () use ($target, $question): void {
             $this->app->make(EngineAccess::class)->grantFrame($target, $question->id);
             $remind = fn (): mixed => $this->app->make(CommandBus::class)->run(
-                new SendQuestionReminder($target, $question->id),
+                new SendQuestionReminderCommand($target, $question->id),
             );
             $this->app->make(CommandEntrance::class)->through(CommandEntry::Application, $remind);
         });

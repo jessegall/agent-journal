@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Enums\CapabilityStatusType;
@@ -681,6 +681,6 @@ final class ContainerManifestTest extends TestCase
 
     private function start(StartRequest $request): mixed
     {
-        return $this->app->make(CommandBus::class)->run(new StartAgent($request));
+        return $this->app->make(CommandBus::class)->run(new StartAgentCommand($request));
     }
 }

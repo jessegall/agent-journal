@@ -7,9 +7,9 @@ namespace Domain\Helpers\Tests\Feature;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Models\StartRecord;
 use App\Bus\Contracts\CommandBus;
-use Domain\Helpers\Commands\CancelHelperJob;
-use Domain\Helpers\Commands\ContinueHelper;
-use Domain\Helpers\Commands\SteerHelper;
+use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
+use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
+use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
 use Domain\Helpers\Exceptions\HelperLaunchUncertain;
@@ -96,9 +96,9 @@ final class HelperContinueTest extends TestCase
     {
         $receipt = $this->start('request-1', 'Review plan 7');
 
-        $steered = $this->commands()->run(new SteerHelper($receipt->identityId, 'Look at the tests too'));
+        $steered = $this->commands()->run(new SteerHelperCommand($receipt->identityId, 'Look at the tests too'));
         $this->endAttempt($receipt);
-        $kept = $this->commands()->run(new SteerHelper($receipt->identityId, 'And the docs'));
+        $kept = $this->commands()->run(new SteerHelperCommand($receipt->identityId, 'And the docs'));
 
         $this->assertSame($receipt->jobId, $steered->jobId);
         $this->assertSame(['Look at the tests too'], HelperJob::query()->findOrFail($receipt->jobId)->steering);
@@ -111,7 +111,7 @@ final class HelperContinueTest extends TestCase
         $receipt = $this->start('request-1', 'Review plan 7');
         $this->endAttempt($receipt);
 
-        $this->commands()->run(new CancelHelperJob($receipt->jobId, 'cancel-1'));
+        $this->commands()->run(new CancelHelperJobCommand($receipt->jobId, 'cancel-1'));
 
         $this->assertSame(JobState::Cancelled, HelperJob::query()->findOrFail($receipt->jobId)->state);
     }
@@ -125,7 +125,7 @@ final class HelperContinueTest extends TestCase
     private function continueJob(HelperReceipt $receipt, string $requestId): HelperReceipt
     {
         return $this->commands()->run(
-            new ContinueHelper($requestId, $receipt->identityId, $receipt->jobId, 'default', null),
+            new ContinueHelperCommand($requestId, $receipt->identityId, $receipt->jobId, 'default', null),
         );
     }
 

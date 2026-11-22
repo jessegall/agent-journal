@@ -6,8 +6,8 @@ namespace Tests\Feature\Comments;
 
 use App\Assignments\Support\Page;
 use App\Bus\Contracts\CommandBus;
-use App\Comments\Commands\PostComment;
-use App\Comments\Commands\PostTextComment;
+use App\Comments\Commands\PostComment\PostCommentCommand;
+use App\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use App\Comments\Contracts\CommentResolver;
 use App\Comments\Data\RecordCommentView;
 use App\Comments\Data\TextCommentView;
@@ -83,9 +83,9 @@ final class TextOwnerCommentTest extends TestCase
         );
 
         $this->bus()->run(
-            new PostTextComment($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
+            new PostTextCommentCommand($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
         );
-        $this->bus()->run(new PostComment($page, 'About the page.', (string) Str::uuid()));
+        $this->bus()->run(new PostCommentCommand($page, 'About the page.', (string) Str::uuid()));
         $items = $this->app->make(CommentResolver::class)->list($page, new Page())->comments;
 
         $this->assertInstanceOf(TextCommentView::class, $items[0]);
@@ -104,7 +104,7 @@ final class TextOwnerCommentTest extends TestCase
         $this->expectException(TargetNotCommentable::class);
 
         try {
-            $this->bus()->run(new PostComment($snapshot, 'Hello.', (string) Str::uuid()));
+            $this->bus()->run(new PostCommentCommand($snapshot, 'Hello.', (string) Str::uuid()));
         } finally {
             $this->assertSame(0, Comment::query()->count());
         }

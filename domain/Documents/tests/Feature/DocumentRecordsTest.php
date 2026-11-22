@@ -6,9 +6,9 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
 use App\Records\Contracts\IdentityLinks;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
-use Domain\Documents\Commands\OpenDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Contracts\ReportResolver;
@@ -39,9 +39,9 @@ final class DocumentRecordsTest extends TestCase
         $reader = TestStart::start();
         $author->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $document = $bus->run(new CreateDocument('Design', 'Current design.', self::PUBLIC_TEXT));
-        $report = $bus->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
-        $bus->run(new OpenDocument((string) $document->number));
+        $document = $bus->run(new CreateDocumentCommand('Design', 'Current design.', self::PUBLIC_TEXT));
+        $report = $bus->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
+        $bus->run(new OpenDocumentCommand((string) $document->number));
 
         $links = $this->app->make(IdentityLinks::class);
 

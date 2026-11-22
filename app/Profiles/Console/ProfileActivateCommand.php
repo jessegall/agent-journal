@@ -6,7 +6,7 @@ namespace App\Profiles\Console;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\DraftExpectations;
@@ -28,7 +28,7 @@ final class ProfileActivateCommand extends Command
         $owner->actAsOwner();
         $proposal = ProfileProposal::fromConfiguration((array) $config->get('profiles', []))->withBuiltIns();
         $drafts = DraftExpectations::fromOptions(array_values(array_filter($this->option('draft'), is_string(...))));
-        $activation = $commands->run(new ActivateProfiles($proposal, $drafts));
+        $activation = $commands->run(new ActivateProfilesCommand($proposal, $drafts));
 
         $this->line("Configuration {$activation->configurationHash}");
 

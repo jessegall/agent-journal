@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Data\MessageClaimHolder;
 use App\Communication\Data\MessageReader;
@@ -31,7 +31,7 @@ final class ConversationProjectionTest extends MessagingTestCase
         $this->assertArrayNotHasKey('firstReader', $unread->toArray());
 
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
         $taken = $this->resolver()->detail($questionId);
 
         $this->assertInstanceOf(MessageReader::class, $taken->firstReader);

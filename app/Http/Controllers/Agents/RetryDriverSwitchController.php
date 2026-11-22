@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Commands\RetryDriverSwitch;
+use App\Agents\Commands\RetryDriverSwitch\RetryDriverSwitchCommand;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ final readonly class RetryDriverSwitchController
         CommandBus $commands,
         Redirector $redirect,
     ): Response|RedirectResponse {
-        $commands->run(new RetryDriverSwitch(strtolower($switch)));
+        $commands->run(new RetryDriverSwitchCommand(strtolower($switch)));
 
         return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
     }

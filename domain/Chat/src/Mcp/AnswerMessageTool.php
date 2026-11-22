@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp;
 
-use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\AnswerMessage\AnswerMessageCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('messages_answer')]
-#[Dispatches(AnswerMessage::class)]
+#[Dispatches(AnswerMessageCommand::class)]
 #[Description('Close a waiting message from your inbox with a durable reply you wrote.')]
 final class AnswerMessageTool extends JournalWriteTool
 {
@@ -30,9 +30,9 @@ final class AnswerMessageTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): AnswerMessage
+    protected function command(ToolArguments $arguments): AnswerMessageCommand
     {
-        return new AnswerMessage($arguments->ulid('message_id'), $arguments->ulid('reply_id'));
+        return new AnswerMessageCommand($arguments->ulid('message_id'), $arguments->ulid('reply_id'));
     }
 
     protected function present(mixed $replyId): ToolResult

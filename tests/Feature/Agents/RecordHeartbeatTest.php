@@ -10,7 +10,7 @@ use App\Actors\Support\DatabaseClock;
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Actions\StartTokens;
-use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
@@ -130,7 +130,7 @@ final class RecordHeartbeatTest extends TestCase
 
     private function beat(AgentSession $session): void
     {
-        $this->app->make(CommandBus::class)->run(new RecordHeartbeat($session->id));
+        $this->app->make(CommandBus::class)->run(new RecordHeartbeatCommand($session->id));
     }
 
     private function startedSecondsAgo(AgentSession $session, int $seconds): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\MarkMenuEntryStale;
+use App\Agents\Commands\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Agents\MenuEntryStaleData;
@@ -22,7 +22,7 @@ final readonly class StaleEntryController
         HostContext $host,
         CommandBus $commands,
     ): Response {
-        $commands->run(new MarkMenuEntryStale(
+        $commands->run(new MarkMenuEntryStaleCommand(
             $host->hostId,
             $entry,
             $stale->runtimeId,

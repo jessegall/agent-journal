@@ -6,7 +6,7 @@ namespace App\Processes\Http\Controllers\Calls;
 
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Calls\ExplainCommandCall;
-use App\Processes\Commands\OpenCommandRequest;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Processes\Data\ExplanationData;
 use App\Processes\Data\HeldPartData;
 use App\Processes\Enums\RequestHoldReason;
@@ -40,7 +40,7 @@ final readonly class ExplainCommandController
 
     private function withRequest(HeldPartData $part, ExplainCommandCall $call, CommandBus $commands): HeldPartData
     {
-        $requestId = $commands->run(new OpenCommandRequest(
+        $requestId = $commands->run(new OpenCommandRequestCommand(
             $part->operation,
             hash('sha256', $part->operation),
             $call->line,

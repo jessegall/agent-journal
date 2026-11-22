@@ -6,7 +6,7 @@ namespace App\Agents\CommandMiddleware;
 
 use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\StartRefusal;
 use App\Agents\Models\StartRecord;
 use App\Agents\Support\HeldStartRefusals;
@@ -37,7 +37,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
     {
         $command = $call->command();
 
-        if (! $command instanceof StartAgent) {
+        if (! $command instanceof StartAgentCommand) {
             return $next($call);
         }
 

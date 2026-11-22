@@ -11,7 +11,7 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\RequestKey;
 use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Support\McpCatalogue;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Values\ProfileBase;
 use App\Reflection\Support\CatalogueReflectorFactory;
 use Illuminate\Http\Request;
@@ -21,7 +21,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Mcp\WriteNoteTool;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefuseNoteAtQuota;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\SendsMcpFrames;
@@ -64,7 +64,7 @@ final class WriteToolTest extends CommandBusTestCase
         Route::middleware('journal.agent')->post(
             self::PATH,
             static fn (Request $request, CommandBus $bus) => [
-                'note_id' => $bus->run(new WriteNote($request->string('text')->toString())),
+                'note_id' => $bus->run(new WriteNoteCommand($request->string('text')->toString())),
             ],
         );
 
@@ -92,7 +92,7 @@ final class WriteToolTest extends CommandBusTestCase
         $this->assertThrows(
             fn () => $catalogue->registerTool(WriteNoteTool::class),
             McpCommandMissing::class,
-            McpCommandMissing::for(WriteNoteTool::class, WriteNote::class)->getMessage(),
+            McpCommandMissing::for(WriteNoteTool::class, WriteNoteCommand::class)->getMessage(),
         );
         $this->assertSame([], $catalogue->toolClasses());
     }
@@ -100,7 +100,7 @@ final class WriteToolTest extends CommandBusTestCase
     public function test_a_module_middleware_preserves_its_coded_refusal(): void
     {
         $start = $this->startWithNotes(
-            MiddlewareDeclaration::around(RefuseNoteAtQuota::class, CommandScope::command(WriteNote::class)),
+            MiddlewareDeclaration::around(RefuseNoteAtQuota::class, CommandScope::command(WriteNoteCommand::class)),
         );
 
         $this->callMcpTool($start, 'write_note', ['text' => 'Over quota.', 'request_key' => 'quota-1'])
@@ -113,7 +113,7 @@ final class WriteToolTest extends CommandBusTestCase
     public function test_a_plain_command_refusal_is_forbidden_with_its_message(): void
     {
         $start = $this->startWithNotes(
-            MiddlewareDeclaration::around(RefusesAll::class, CommandScope::command(WriteNote::class)),
+            MiddlewareDeclaration::around(RefusesAll::class, CommandScope::command(WriteNoteCommand::class)),
         );
 
         $this->callMcpTool($start, 'write_note', ['text' => 'Refused.', 'request_key' => 'refusal-1'])
@@ -145,7 +145,7 @@ final class WriteToolTest extends CommandBusTestCase
     {
         $this->installCommandModules(...$middleware);
         $this->startUserRequestAs(TestIds::of(7));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(self::PROFILE, ProfileBase::mainAgent()),
         )));
         $catalogue = new McpCatalogue($this->app->make(CommandRegistry::class), new CatalogueReflectorFactory());

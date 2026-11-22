@@ -8,7 +8,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Contracts\Listener;
 use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Models\StopAttempt;
-use App\Supervision\Commands\RouteAsk;
+use App\Supervision\Commands\RouteAsk\RouteAskCommand;
 use App\Supervision\Enums\AskOriginType;
 use App\Supervision\Enums\CoreAskType;
 use App\Supervision\Support\AskOpening;
@@ -39,7 +39,7 @@ final readonly class OpenStuckAsk implements Listener
         );
 
         if ($ask->open && $ask->version === 0) {
-            $this->commands->run(new RouteAsk($ask->reference(), 0));
+            $this->commands->run(new RouteAskCommand($ask->reference(), 0));
         }
     }
 }

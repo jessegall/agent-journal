@@ -9,10 +9,10 @@ use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssignmentReference;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\Message;
-use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\CreateDesk\CreateDeskCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use App\Desks\Support\DeskSeating;
@@ -39,7 +39,7 @@ final class MessageConcurrencyTest extends MessagingTestCase
         parent::setUp();
 
         $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
-        $this->desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 1, false)));
+        $this->desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 1, false)));
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat($this->desk->id, $this->actorOf($this->builder)),
         );
@@ -79,7 +79,7 @@ final class MessageConcurrencyTest extends MessagingTestCase
     {
         $questionId = $this->ownerAsks($this->desk->inboxId(), 'Who answers?');
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->desk->inboxId(), [$questionId]));
+        $this->runOnBus(new ReadMessagesCommand($this->desk->inboxId(), [$questionId]));
         $this->asOwner();
         $seat = DeskSeat::query()->ofDesk($this->desk)->sole();
         $this->assertCount(1, $this->claimsOn($questionId));
@@ -97,7 +97,7 @@ final class MessageConcurrencyTest extends MessagingTestCase
         $this->assertSame([], $this->claimsOn($questionId));
         $this->asAgent($this->builder);
         $this->assertThrows(
-            fn () => $this->runOnBus(new ReadMessages($this->desk->inboxId(), [$questionId])),
+            fn () => $this->runOnBus(new ReadMessagesCommand($this->desk->inboxId(), [$questionId])),
             InboxUnavailable::class,
         );
     }

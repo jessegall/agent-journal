@@ -7,7 +7,7 @@ namespace App\Processes\Support;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Calls\OutputSummary;
 use App\Processes\Calls\PartSummary;
-use App\Processes\Commands\RecordEvidenceReads;
+use App\Processes\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Enums\RunMode;
 use App\Processes\Models\OutputAssessment;
@@ -29,7 +29,7 @@ final readonly class OutputSummaries
     {
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
         $envelopes = $parts->map(fn (PartRun $part) => EvidenceRange::envelope($part->id))->all();
-        $this->commands->run(new RecordEvidenceReads($run->id, array_values($envelopes)));
+        $this->commands->run(new RecordEvidenceReadsCommand($run->id, array_values($envelopes)));
 
         return OutputSummary::from([
             'label' => 'diagnostic output',

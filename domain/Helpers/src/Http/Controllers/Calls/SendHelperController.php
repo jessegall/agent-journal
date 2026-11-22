@@ -6,7 +6,7 @@ namespace Domain\Helpers\Http\Controllers\Calls;
 
 use App\Bus\Contracts\CommandBus;
 use Domain\Helpers\Calls\SendHelperCall;
-use Domain\Helpers\Commands\SendHelper;
+use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
 use Domain\Helpers\Http\Data\HelperReceiptData;
 use Domain\Helpers\Values\HelperWork;
 
@@ -17,7 +17,7 @@ final readonly class SendHelperController
 {
     public function __invoke(SendHelperCall $call, CommandBus $commands): HelperReceiptData
     {
-        return HelperReceiptData::from($commands->run(new SendHelper(
+        return HelperReceiptData::from($commands->run(new SendHelperCommand(
             $call->requestKey->value,
             $call->identityId,
             $call->profileKey,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Mcp;
 
 use App\Bus\Contracts\Command;
-use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Name('messages_send')]
-#[Dispatches(SendMessage::class)]
+#[Dispatches(SendMessageCommand::class)]
 #[Description('Send a note from one of your inboxes to another inbox; nobody has to answer it.')]
 final class MessageSendTool extends MessageWriteTool
 {
@@ -34,7 +34,7 @@ final class MessageSendTool extends MessageWriteTool
 
     protected function command(ToolArguments $arguments): Command
     {
-        return new SendMessage(
+        return new SendMessageCommand(
             $arguments->text('source_inbox_id'),
             $arguments->text('destination_inbox_id'),
             $arguments->text('body'),

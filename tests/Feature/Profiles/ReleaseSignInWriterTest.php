@@ -11,10 +11,10 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Bus\Support\RequiredListenerRegistry;
-use App\Profiles\Commands\BeginSignIn;
-use App\Profiles\Commands\BeginSignInAgain;
-use App\Profiles\Commands\CancelSignIn;
-use App\Profiles\Commands\ExpireSignInAttempt;
+use App\Profiles\Commands\BeginSignIn\BeginSignInCommand;
+use App\Profiles\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Profiles\Commands\CancelSignIn\CancelSignInCommand;
+use App\Profiles\Commands\ExpireSignInAttempt\ExpireSignInAttemptCommand;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
@@ -75,7 +75,7 @@ final class ReleaseSignInWriterTest extends TestCase
     {
         $attemptId = $this->again('tab-1');
 
-        $this->asOwner(new CancelSignIn($attemptId));
+        $this->asOwner(new CancelSignInCommand($attemptId));
 
         $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
         $this->account->refresh();
@@ -90,7 +90,7 @@ final class ReleaseSignInWriterTest extends TestCase
         $this->account->forceFill(['state' => AccountState::NeedsSignIn])->save();
         $attemptId = $this->again('tab-1');
 
-        $this->asOwner(new CancelSignIn($attemptId));
+        $this->asOwner(new CancelSignInCommand($attemptId));
 
         $this->assertFalse($this->account->refresh()->maintenance);
         $this->assertNull($this->account->live_writer_attempt_id);
@@ -99,7 +99,7 @@ final class ReleaseSignInWriterTest extends TestCase
     public function test_an_attempt_with_no_account_looks_no_account_up_when_it_expires(): void
     {
         $this->actAsOwner();
-        $begin = new BeginSignIn('codex', SignInMethod::OAuth);
+        $begin = new BeginSignInCommand('codex', SignInMethod::OAuth);
         $attemptId = $this->runOnBus($begin, 'new')->attemptId;
         $attempts = SignInAttempt::query()->withoutGlobalScopes();
         $attempts->whereKey($attemptId)->update(['expires_at' => now()->subMinute()]);
@@ -111,7 +111,7 @@ final class ReleaseSignInWriterTest extends TestCase
         };
         $this->app->make(Dispatcher::class)->listen(QueryExecuted::class, $recordAccountReads);
 
-        $this->asJournal(new ExpireSignInAttempt($attemptId));
+        $this->asJournal(new ExpireSignInAttemptCommand($attemptId));
 
         $expired = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
 
@@ -126,7 +126,7 @@ final class ReleaseSignInWriterTest extends TestCase
             SignInAttemptFinished::class => [ReleaseSignInWriter::class.'@handle', FailsAfterRelease::class.'@handle'],
         ]));
 
-        $this->assertThrows(fn () => $this->asOwner(new CancelSignIn($attemptId)), RuntimeException::class);
+        $this->assertThrows(fn () => $this->asOwner(new CancelSignInCommand($attemptId)), RuntimeException::class);
 
         $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
         $this->assertNotSame(SignInState::Cancelled, $attempt->state);
@@ -137,7 +137,7 @@ final class ReleaseSignInWriterTest extends TestCase
     {
         $this->actAsOwner();
 
-        return $this->runOnBus(new BeginSignInAgain($this->account->id), $requestKey)
+        return $this->runOnBus(new BeginSignInAgainCommand($this->account->id), $requestKey)
             ->attemptId;
     }
 

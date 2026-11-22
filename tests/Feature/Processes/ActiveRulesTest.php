@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Domains\Support\DomainEntry;
-use App\Processes\Commands\ApproveRuleBundle;
-use App\Processes\Commands\ApproveRuleProposal;
-use App\Processes\Commands\SaveCommandRule;
+use App\Processes\Commands\ApproveRuleBundle\ApproveRuleBundleCommand;
+use App\Processes\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\Processes\Commands\SaveCommandRule\SaveCommandRuleCommand;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\ShellDialect;
@@ -47,7 +47,7 @@ final class ActiveRulesTest extends TestCase
         $bundle = $this->installNotes(1);
         $this->assertFalse($this->isKnown('notes-cli list'));
 
-        $this->asUser(new ApproveRuleBundle($bundle->module, $bundle->version, $bundle->digest()));
+        $this->asUser(new ApproveRuleBundleCommand($bundle->module, $bundle->version, $bundle->digest()));
         $this->assertTrue($this->isKnown('notes-cli list'));
 
         $this->installNotes(2);
@@ -60,7 +60,7 @@ final class ActiveRulesTest extends TestCase
         $this->installNotes(2);
 
         $this->assertThrows(
-            fn () => $this->asUser(new ApproveRuleBundle($old->module, $old->version, $old->digest())),
+            fn () => $this->asUser(new ApproveRuleBundleCommand($old->module, $old->version, $old->digest())),
             ApprovalRefused::class,
         );
     }
@@ -68,7 +68,7 @@ final class ActiveRulesTest extends TestCase
     public function test_two_project_keys_in_one_worker_see_only_their_own_rules(): void
     {
         config(['processes.project_key' => 'project-a']);
-        $this->asUser(new SaveCommandRule('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
+        $this->asUser(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
         $this->assertTrue($this->isKnown('tidy list'));
         $this->assertCount(1, $this->app->make(ActiveRules::class)->approvedFor('tidy list'));
 
@@ -82,13 +82,13 @@ final class ActiveRulesTest extends TestCase
     public function test_another_projects_proposal_is_not_found_by_its_owner(): void
     {
         config(['processes.project_key' => 'project-a']);
-        $this->asUser(new SaveCommandRule('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
+        $this->asUser(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
         $proposal = RuleProposal::query()->sole();
 
         config(['processes.project_key' => 'project-b']);
 
         $this->assertThrows(
-            fn () => $this->asUser(new ApproveRuleProposal($proposal->id, new OwnerApproval(1, 0, [], 'b'))),
+            fn () => $this->asUser(new ApproveRuleProposalCommand($proposal->id, new OwnerApproval(1, 0, [], 'b'))),
             ModelNotFoundException::class,
         );
     }

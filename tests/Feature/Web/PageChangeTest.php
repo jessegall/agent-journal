@@ -6,7 +6,7 @@ namespace Tests\Feature\Web;
 
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Enums\HookDriver;
-use App\Profiles\Commands\SwitchAccount;
+use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Profiles\Models\Account;
 use App\Profiles\Values\AccountLabel;
 use App\Web\Events\PageChanged;
@@ -15,8 +15,8 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
@@ -68,7 +68,7 @@ final class PageChangeTest extends TestCase
             $progress[] = $changed->planId;
         });
 
-        $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 0, 'Done.'));
+        $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 0, 'Done.'));
 
         $this->assertSame([$plan->id], $progress);
         // One change for the finished task (the Tasks pages) and one for the plan it moved.
@@ -79,8 +79,8 @@ final class PageChangeTest extends TestCase
     {
         $account = Account::create(HookDriver::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
 
-        $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));
-        $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));
+        $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($account->id));
+        $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($account->id));
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
@@ -88,7 +88,7 @@ final class PageChangeTest extends TestCase
     public function test_a_task_outside_every_plan_changes_only_the_task_pages(): void
     {
         $this->app->make(CommandBus::class)->run(
-            new CancelTask(Task::factory()->create(['title' => 'Loose task'])->id, 'Dropped.'),
+            new CancelTaskCommand(Task::factory()->create(['title' => 'Loose task'])->id, 'Dropped.'),
         );
 
         Event::assertDispatchedTimes(PageChanged::class, 1);

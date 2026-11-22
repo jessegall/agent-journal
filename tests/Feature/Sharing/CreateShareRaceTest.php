@@ -8,8 +8,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Bus\Support\RequestKey;
-use App\Sharing\Commands\CreateShare;
-use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
+use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Exceptions\ShareQuotaReached;
 use App\Sharing\Models\Share;
@@ -73,7 +73,7 @@ final class CreateShareRaceTest extends TestCase
         DB::transaction(fn () => ShareInstallation::create());
         $this->startTestUserRequest(9);
         $saved = $this->app->make(CommandBus::class)->run(
-            new SaveSharePreview('binders.binder', TestIds::of(1), [], $second->id),
+            new SaveSharePreviewCommand('binders.binder', TestIds::of(1), [], $second->id),
         );
 
         config(['database.connections.second_creator' => config('database.connections.'.config('database.default'))]);
@@ -107,7 +107,7 @@ final class CreateShareRaceTest extends TestCase
         $this->startTestUserRequest(9);
         $this->app->make(RequestKey::class)->set($key);
         $summary = $this->app->make(CommandBus::class)->run(
-            new CreateShare($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
+            new CreateShareCommand($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
         );
 
         return Share::query()->findOrFail($summary->shareId);

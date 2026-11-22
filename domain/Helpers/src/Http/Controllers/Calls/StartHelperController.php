@@ -6,7 +6,7 @@ namespace Domain\Helpers\Http\Controllers\Calls;
 
 use App\Bus\Contracts\CommandBus;
 use Domain\Helpers\Calls\StartHelperCall;
-use Domain\Helpers\Commands\StartHelper;
+use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Http\Data\HelperReceiptData;
 use Domain\Helpers\Values\HelperWork;
 
@@ -17,7 +17,7 @@ final readonly class StartHelperController
 {
     public function __invoke(StartHelperCall $call, CommandBus $commands): HelperReceiptData
     {
-        return HelperReceiptData::from($commands->run(new StartHelper(
+        return HelperReceiptData::from($commands->run(new StartHelperCommand(
             $call->requestKey->value,
             $call->profileKey,
             $call->model,

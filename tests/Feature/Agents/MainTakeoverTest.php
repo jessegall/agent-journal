@@ -11,7 +11,7 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Communication\Support\RegisteredInboxes;
-use App\Desks\Commands\InstallDesks;
+use App\Desks\Commands\InstallDesks\InstallDesksCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\BuiltInDesks;
 use Tests\Support\MessagingTestCase;
@@ -25,7 +25,7 @@ final class MainTakeoverTest extends MessagingTestCase
     public function test_a_second_agent_takes_main_over_and_fences_the_first(): void
     {
         $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
+            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesksCommand());
 
         $this->takeOver($this->builder);
         $this->takeOver($this->builder);

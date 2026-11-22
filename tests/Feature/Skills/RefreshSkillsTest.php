@@ -10,8 +10,8 @@ use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Domains\Support\DomainRegistry;
-use App\Skills\Commands\CreateSkill;
-use App\Skills\Commands\RefreshSkills;
+use App\Skills\Commands\CreateSkill\CreateSkillCommand;
+use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 use App\Skills\Enums\GenerationState;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Models\SkillGeneration;
@@ -102,7 +102,7 @@ final class RefreshSkillsTest extends TestCase
 
         $this->actAs(TestActors::user(7));
         $this->app->make(CommandBus::class)->run(
-            new CreateSkill(
+            new CreateSkillCommand(
                 'user-review-notes',
                 'create-1',
                 new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], ''),
@@ -124,14 +124,14 @@ final class RefreshSkillsTest extends TestCase
 
         $this->expectException(CommandNotRegistered::class);
 
-        $this->app->make(CommandBus::class)->run(new RefreshSkills());
+        $this->app->make(CommandBus::class)->run(new RefreshSkillsCommand());
     }
 
     private function refresh(): RefreshResult
     {
         $this->app->forgetScopedInstances();
 
-        return $this->throughEntry(new RefreshSkills());
+        return $this->throughEntry(new RefreshSkillsCommand());
     }
 
     private function start(): AgentSession

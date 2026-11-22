@@ -6,7 +6,7 @@ namespace Domain\Documents\Mcp;
 
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use Domain\Documents\Commands\OpenDocument;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -16,7 +16,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('docs_open')]
 #[IsDestructive(false)]
-#[Dispatches(OpenDocument::class)]
+#[Dispatches(OpenDocumentCommand::class)]
 #[Description('Open an exclusive edit on the expected document revision.')]
 final class OpenDocumentTool extends DraftWriteTool
 {
@@ -28,9 +28,9 @@ final class OpenDocumentTool extends DraftWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): OpenDocument
+    protected function command(ToolArguments $arguments): OpenDocumentCommand
     {
-        return new OpenDocument(
+        return new OpenDocumentCommand(
             (string) $arguments->recordReference('doc_id'),
             $arguments->positiveInteger('expected_revision'),
         );

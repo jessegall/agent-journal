@@ -13,7 +13,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Hooks\Support\StackTransaction;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PlanFilters;
-use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\StartDenied;
@@ -30,7 +30,7 @@ final class StartPlanTest extends TestCase
     use CommitsHookRows;
 
     /**
-     * The bus commits StartPlan for real, so these tables are emptied around each test.
+     * The bus commits StartPlanCommand for real, so these tables are emptied around each test.
      */
     private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks', 'links', 'assignments'];
 
@@ -130,6 +130,6 @@ final class StartPlanTest extends TestCase
 
     private function startPlan(string $planId): void
     {
-        $this->app->make(CommandBus::class)->run(new StartPlan($planId));
+        $this->app->make(CommandBus::class)->run(new StartPlanCommand($planId));
     }
 }

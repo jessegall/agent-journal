@@ -22,7 +22,7 @@ use App\Desks\Support\DeskSeating;
 use App\Reads\Enums\ReadView;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Enums\TaskState;
@@ -89,7 +89,7 @@ final class TaskDetailsResolverTest extends TestCase
         ));
 
         $this->actAs($runner);
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
         $this->asUser();
 
         $details = $this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Context);
@@ -126,7 +126,7 @@ final class TaskDetailsResolverTest extends TestCase
             ->create();
 
         foreach ($tasks as $task) {
-            $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+            $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
         }
 
         $this->asUser();

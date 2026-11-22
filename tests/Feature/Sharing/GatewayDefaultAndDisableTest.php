@@ -8,11 +8,11 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Commands\ClaimGatewayOperation;
-use App\Sharing\Commands\ConfigureShareGateway;
-use App\Sharing\Commands\CreateShare;
-use App\Sharing\Commands\DisableShareGateway;
-use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
+use App\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
+use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Sharing\Enums\GatewayEndpointState;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
@@ -104,7 +104,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
             $share->activate();
         }
 
-        $this->asOwner(new DisableShareGateway($configuration->id, (string) Str::ulid()));
+        $this->asOwner(new DisableShareGatewayCommand($configuration->id, (string) Str::ulid()));
 
         $this->assertSame(
             [ShareState::Revoked],
@@ -130,7 +130,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
     public function test_after_the_default_is_disabled_a_preview_without_a_gateway_is_refused(): void
     {
         $configuration = $this->configure();
-        $this->asOwner(new DisableShareGateway($configuration->configurationId, (string) Str::ulid()));
+        $this->asOwner(new DisableShareGatewayCommand($configuration->configurationId, (string) Str::ulid()));
 
         $noDefault = ShareGatewayUnavailable::noDefault()->getMessage();
 
@@ -142,11 +142,11 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
         $share = TestShares::grantForADay($this->root, $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
-        $this->asSystem(new ClaimGatewayOperation(self::RUN));
+        $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $share->activate();
 
-        $this->asOwner(new DisableShareGateway($configuration->id, (string) Str::ulid()));
-        $this->asSystem(new ClaimGatewayOperation(self::RUN));
+        $this->asOwner(new DisableShareGatewayCommand($configuration->id, (string) Str::ulid()));
+        $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $this->assertSame(GatewayEndpointState::Closing, ShareGatewayEndpoint::query()->sole()->state);
 
         $configuration->disabled_at = null;
@@ -154,7 +154,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
         TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
 
-        $this->assertSame(2, $this->asSystem(new ClaimGatewayOperation(self::RUN))?->operation->endpointVersion);
+        $this->assertSame(2, $this->asSystem(new ClaimGatewayOperationCommand(self::RUN))?->operation->endpointVersion);
     }
 
     private function configure(): GatewayConfiguration
@@ -162,7 +162,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $key = (string) Str::ulid();
 
         return $this->asOwner(
-            new ConfigureShareGateway(
+            new ConfigureShareGatewayCommand(
                 FakeShareGateway::KEY,
                 '1.0.0',
                 'fake.test',
@@ -178,7 +178,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
 
     private function preview(): SavedSharePreview
     {
-        return $this->asOwner(new SaveSharePreview($this->root->type, $this->root->id, []));
+        return $this->asOwner(new SaveSharePreviewCommand($this->root->type, $this->root->id, []));
     }
 
     private function createShare(SavedSharePreview $saved): ShareSummary
@@ -186,7 +186,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $key = (string) Str::ulid();
 
         return $this->asOwner(
-            new CreateShare($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
+            new CreateShareCommand($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
             $key,
         );
     }

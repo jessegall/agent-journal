@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\ReadMessages;
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Support\PendingInboxWork;
 use App\Reads\Enums\ReadView;
@@ -37,7 +37,7 @@ final class AgentChatFlowTest extends MessagingTestCase
     public function test_the_agent_claims_answers_acknowledges_and_has_no_pending_work_left(): void
     {
         $this->asOwner();
-        $questionId = $this->runOnBus(new AskChatQuestion($this->chat->inbox_id, 'Ready?', 'ask-key'));
+        $questionId = $this->runOnBus(new AskChatQuestionCommand($this->chat->inbox_id, 'Ready?', 'ask-key'));
         $pending = $this->app->make(PendingInboxWork::class);
 
         $this->asAgent($this->builder);
@@ -47,8 +47,8 @@ final class AgentChatFlowTest extends MessagingTestCase
         $this->assertSame(1, $pending->pendingCount($this->actorOf($this->builder)));
 
         $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $questionId));
-        $this->runOnBus(new ReplyToMessage($questionId, null, 'Yes.'));
-        $this->runOnBus(new ReadMessages($this->chat->inbox_id, [$questionId]));
+        $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'Yes.'));
+        $this->runOnBus(new ReadMessagesCommand($this->chat->inbox_id, [$questionId]));
         $this->assertSame(1, $pending->pendingCount($this->actorOf($this->builder)));
         $this->presentAll($this->actorOf($this->builder), $this->builder->id);
 

@@ -16,12 +16,12 @@ use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Support\ProfileProposal;
 use App\Records\Support\RecordIdentity;
-use App\Supervision\Commands\ApproveCodeReview;
-use App\Supervision\Commands\HandOffCodeReview;
-use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Commands\ApproveCodeReview\ApproveCodeReviewCommand;
+use App\Supervision\Commands\HandOffCodeReview\HandOffCodeReviewCommand;
+use App\Supervision\Commands\ReplyToAsk\ReplyToAskCommand;
 use App\Supervision\Contracts\AskReader;
 use App\Supervision\Enums\AskResult;
 use App\Supervision\Enums\CodeReviewState;
@@ -73,7 +73,7 @@ final class CodeReviewTest extends TestCase
         parent::setUp();
         $this->buildHelperRepositories();
         $this->startUserRequestAs(User::factory()->create()->id);
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(ProfileProposal::fromConfiguration(
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));
         $this->worker = TestStart::start('journal-worker');
@@ -109,7 +109,7 @@ final class CodeReviewTest extends TestCase
         $ask = $this->reviewAsk();
 
         $this->reviewer->startRequest($this->app);
-        $this->app->make(CommandBus::class)->run(new ApproveCodeReview($ask->reference(), $ask->version, 'Clean.'));
+        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference(), $ask->version, 'Clean.'));
 
         $decision = ReviewDecision::query()->sole();
         $merge = Ask::query()->acrossActors()->where('type_key', 'merge.ready')->sole();
@@ -125,7 +125,7 @@ final class CodeReviewTest extends TestCase
         $ask = $this->reviewAsk();
 
         $this->reviewer->startRequest($this->app);
-        $this->app->make(CommandBus::class)->run(new ApproveCodeReview($ask->reference(), $ask->version, 'Clean.'));
+        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference(), $ask->version, 'Clean.'));
 
         $merge = Ask::query()->acrossActors()->where('type_key', 'merge.ready')->sole();
         $receipt = NotificationReceipt::query()->with('occurrence')->sole();
@@ -143,7 +143,7 @@ final class CodeReviewTest extends TestCase
         $ask = $this->reviewAsk();
 
         $this->reviewer->startRequest($this->app);
-        $this->app->make(CommandBus::class)->run(new ApproveCodeReview($ask->reference(), $ask->version, 'Clean.'));
+        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference(), $ask->version, 'Clean.'));
         $merge = Ask::query()->acrossActors()->where('type_key', 'merge.ready')->sole();
 
         $this->app->forgetScopedInstances();
@@ -165,7 +165,7 @@ final class CodeReviewTest extends TestCase
 
         $this->reviewer->startRequest($this->app);
         rescue(
-            fn () => $this->app->make(CommandBus::class)->run(new ReplyToAsk($this->reviewAsk()->reference(), 'approved')),
+            fn () => $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($this->reviewAsk()->reference(), 'approved')),
         );
 
         $this->assertSame(0, ReviewDecision::query()->count());
@@ -191,12 +191,12 @@ final class CodeReviewTest extends TestCase
     private function handOff(string $pass): void
     {
         $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
-        $this->app->make(EngineAccess::class)->grantMaintenance(HandOffCodeReview::MAINTENANCE_SCOPE);
+        $this->app->make(EngineAccess::class)->grantMaintenance(HandOffCodeReviewCommand::MAINTENANCE_SCOPE);
         $this->app->make(RequestKey::class)->set($pass);
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(CommandEntrance::class)->through(
             CommandEntry::EngineMaintenance,
-            fn () => $bus->run(new HandOffCodeReview('attempt-1')),
+            fn () => $bus->run(new HandOffCodeReviewCommand('attempt-1')),
         );
     }
 }

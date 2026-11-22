@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\DismissLaunchOutcome;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Contracts\HostCapabilities;
@@ -125,7 +125,7 @@ final class LaunchOutcomeTest extends TestCase
     private function dismiss(StartRequest $request): void
     {
         $this->commands()->run(
-            new DismissLaunchOutcome($this->agentId, $request->requestId, StartDisposition::Refused),
+            new DismissLaunchOutcomeCommand($this->agentId, $request->requestId, StartDisposition::Refused),
         );
     }
 
@@ -157,7 +157,7 @@ final class LaunchOutcomeTest extends TestCase
 
     private function start(StartRequest $request): StartReceipt
     {
-        return $this->commands()->run(new StartAgent($request));
+        return $this->commands()->run(new StartAgentCommand($request));
     }
 
     private function commands(): CommandBus

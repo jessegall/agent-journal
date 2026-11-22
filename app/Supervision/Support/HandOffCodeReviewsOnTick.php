@@ -8,7 +8,7 @@ use App\Agents\Models\WorkReservation;
 use App\Bus\Contracts\CommandBus;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
-use App\Supervision\Commands\HandOffCodeReview;
+use App\Supervision\Commands\HandOffCodeReview\HandOffCodeReviewCommand;
 use Throwable;
 
 /**
@@ -27,14 +27,14 @@ final readonly class HandOffCodeReviewsOnTick implements EngineListener
 
     public function maintenanceScope(): string
     {
-        return HandOffCodeReview::MAINTENANCE_SCOPE;
+        return HandOffCodeReviewCommand::MAINTENANCE_SCOPE;
     }
 
     public function __invoke(EngineTicked $event): void
     {
         foreach (WorkReservation::awaitingHandoff(self::PASS_LIMIT) as $reservation) {
             try {
-                $this->commands->run(new HandOffCodeReview($reservation->certificate));
+                $this->commands->run(new HandOffCodeReviewCommand($reservation->certificate));
             } catch (Throwable $failure) {
                 report($failure);
             }

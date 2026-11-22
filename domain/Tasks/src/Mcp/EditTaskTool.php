@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Commands\EditTask;
+use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('tasks_edit')]
 #[IsDestructive(false)]
-#[Dispatches(EditTask::class)]
+#[Dispatches(EditTaskCommand::class)]
 #[Description('Change the title or brief of a task at the revision you read.')]
 final class EditTaskTool extends TaskWriteTool
 {
@@ -32,9 +32,9 @@ final class EditTaskTool extends TaskWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): EditTask
+    protected function command(ToolArguments $arguments): EditTaskCommand
     {
-        return new EditTask(
+        return new EditTaskCommand(
             $arguments->ulid('task_id'),
             $arguments->positiveInteger('expected_revision'),
             $arguments->optionalText('title'),

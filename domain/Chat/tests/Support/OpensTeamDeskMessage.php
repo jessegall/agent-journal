@@ -8,8 +8,8 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Storage\AssignmentStore;
-use App\Communication\Commands\SendMessage;
-use App\Desks\Commands\CreateDesk;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
+use App\Desks\Commands\CreateDesk\CreateDeskCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use App\Desks\Support\DeskSeating;
@@ -52,9 +52,9 @@ trait OpensTeamDeskMessage
         $this->reviewer = $this->startMainAgent('Reviewer');
         $this->startUserRequestAs($this->owner->id);
         $this->ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
-        $this->desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 1, false)));
+        $this->desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 1, false)));
         $this->seat($this->builder[0]);
-        $this->messageId = $this->runOnBus(new SendMessage($this->ownInboxId, $this->desk->inboxId(), 'Pin me.'));
+        $this->messageId = $this->runOnBus(new SendMessageCommand($this->ownInboxId, $this->desk->inboxId(), 'Pin me.'));
     }
 
     private function seat(string $agentId): void

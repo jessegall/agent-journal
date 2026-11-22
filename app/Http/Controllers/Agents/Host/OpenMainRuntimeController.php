@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\OpenHostMainRuntime;
+use App\Agents\Commands\OpenHostMainRuntime\OpenHostMainRuntimeCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Agents\MainRuntimeRequestData;
@@ -19,7 +19,7 @@ final readonly class OpenMainRuntimeController
     public function __invoke(MainRuntimeRequestData $request, HostContext $host, CommandBus $commands): JsonResponse
     {
         $opened = $commands->run(
-            new OpenHostMainRuntime(
+            new OpenHostMainRuntimeCommand(
                 $request->agentId,
                 $host->hostId,
                 $request->folder,

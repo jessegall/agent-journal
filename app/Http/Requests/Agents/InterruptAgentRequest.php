@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -24,9 +24,9 @@ final class InterruptAgentRequest extends FormRequest
         ];
     }
 
-    public function command(string $agentId): InterruptAgent
+    public function command(string $agentId): InterruptAgentCommand
     {
-        return new InterruptAgent(
+        return new InterruptAgentCommand(
             $agentId,
             $this->string('sessionId')->lower()->toString(),
             $this->string('requestId')->lower()->toString(),

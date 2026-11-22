@@ -10,7 +10,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Supervision\Contracts\SupervisorDispatch;
 use App\Supervision\Enums\SupervisorDispatchOutcome;
 use App\Supervision\Values\SupervisorRequest;
-use Domain\Helpers\Commands\StartHelper;
+use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Values\HelperWork;
 use Illuminate\Database\DatabaseManager;
@@ -47,7 +47,7 @@ final readonly class HelperSupervisorDispatch implements SupervisorDispatch
     private function start(SupervisorRequest $request): void
     {
         try {
-            $this->commands->run(new StartHelper(
+            $this->commands->run(new StartHelperCommand(
                 $request->askId,
                 $request->profileKey,
                 'default',

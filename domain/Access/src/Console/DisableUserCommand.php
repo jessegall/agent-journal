@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Console;
 
 use App\Bus\Contracts\OwnerCommands;
-use Domain\Access\Commands\DisableUser;
+use Domain\Access\Commands\DisableUser\DisableUserCommand as DisableUser;
 use Domain\Access\Models\User;
 use Illuminate\Console\Command;
 

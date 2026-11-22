@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Links;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Links\LinkRecordsRequest;
-use App\Records\Commands\LinkRecords;
+use App\Records\Commands\LinkRecords\LinkRecordsCommand;
 use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +20,7 @@ final readonly class LinkRecordsController
         RecordResolver $records,
         Redirector $redirect,
     ): JsonResponse|RedirectResponse {
-        $commands->run(new LinkRecords($request->source($records), $request->target($records)));
+        $commands->run(new LinkRecordsCommand($request->source($records), $request->target($records)));
 
         if (! $request->expectsJson()) {
             return $redirect->back(303);

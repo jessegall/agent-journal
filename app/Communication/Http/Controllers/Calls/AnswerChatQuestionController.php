@@ -7,7 +7,7 @@ namespace App\Communication\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Calls\AnswerChatQuestionCall;
 use App\Communication\Calls\MessageNamed;
-use App\Communication\Commands\AnswerChatQuestion;
+use App\Communication\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
 
 /**
  * Answers a waiting chat question and closes it.
@@ -16,7 +16,7 @@ final readonly class AnswerChatQuestionController
 {
     public function __invoke(AnswerChatQuestionCall $call, CommandBus $commands): MessageNamed
     {
-        $replyId = $commands->run(new AnswerChatQuestion(
+        $replyId = $commands->run(new AnswerChatQuestionCommand(
             $call->questionId,
             $call->body,
             $call->requestKey->value,

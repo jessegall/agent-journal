@@ -47,27 +47,27 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Agents/Actions/RegisterPendingStart.php',
-            'app/Agents/Handlers/CancelAccountUsesHandler.php',
-            'app/Agents/Handlers/HoldAccountUsesHandler.php',
-            'app/Agents/Handlers/ReconcileStartsHandler.php',
-            'app/Agents/Handlers/ReportFailureHandler.php',
-            'app/Agents/Handlers/ReportStoppedHandler.php',
-            'app/Agents/Handlers/RetireAgentHandler.php',
-            'app/Agents/Handlers/SettleAccountUsesHandler.php',
+            'app/Agents/Commands/CancelAccountUses/CancelAccountUsesHandler.php',
+            'app/Agents/Commands/HoldAccountUses/HoldAccountUsesHandler.php',
+            'app/Agents/Commands/ReconcileStarts/ReconcileStartsHandler.php',
+            'app/Agents/Commands/ReportFailure/ReportFailureHandler.php',
+            'app/Agents/Commands/ReportStopped/ReportStoppedHandler.php',
+            'app/Agents/Commands/RetireAgent/RetireAgentHandler.php',
+            'app/Agents/Commands/SettleAccountUses/SettleAccountUsesHandler.php',
         ],
     ],
     AgentHoldReleased::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Agents/Handlers/ReleaseAgentHoldHandler.php',
+            'app/Agents/Commands/ReleaseAgentHold/ReleaseAgentHoldHandler.php',
         ],
     ],
     AgentRuntimeReassigned::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Agents/Handlers/ReassignAgentRuntimeHandler.php',
+            'app/Agents/Commands/ReassignAgentRuntime/ReassignAgentRuntimeHandler.php',
         ],
     ],
     DriverRequestRecovered::class => [
@@ -81,7 +81,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Agents/Handlers/CancelLaunchHandler.php',
+            'app/Agents/Commands/CancelLaunch/CancelLaunchHandler.php',
         ],
     ],
     DriverSwitchStopped::class => [
@@ -102,15 +102,15 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Agents/Handlers/InspectMergeAttemptsHandler.php',
-            'app/Agents/Handlers/MergeReviewedWorkHandler.php',
+            'app/Agents/Commands/InspectMergeAttempts/InspectMergeAttemptsHandler.php',
+            'app/Agents/Commands/MergeReviewedWork/MergeReviewedWorkHandler.php',
         ],
     ],
     DriverFailed::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Agents/Handlers/ReportFailureHandler.php',
+            'app/Agents/Commands/ReportFailure/ReportFailureHandler.php',
             'app/Hooks/Actions/RecordDriverFailure.php',
         ],
     ],
@@ -133,7 +133,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Agents/Handlers/StartAgentHandler.php',
+            'app/Agents/Commands/StartAgent/StartAgentHandler.php',
         ],
     ],
     StartGrantRequested::class => [

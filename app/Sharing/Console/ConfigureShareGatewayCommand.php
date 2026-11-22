@@ -6,7 +6,7 @@ namespace App\Sharing\Console;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
-use App\Sharing\Commands\ConfigureShareGateway;
+use App\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand as ConfigureShareGateway;
 use App\Sharing\Gateways\Support\GatewaySecrets;
 use Illuminate\Console\Command;
 

@@ -8,7 +8,7 @@ use App\Actors\Contracts\ServerClock;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\CommandEntrance;
-use App\Engine\Commands\SettleFrameTimes;
+use App\Engine\Commands\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Models\EngineFrameTime;
 use App\Engine\Values\FrameSettlement;
@@ -207,8 +207,8 @@ final readonly class TickDelivery
 
         try {
             $this->access->withinMaintenance(
-                SettleFrameTimes::MAINTENANCE_SCOPE,
-                fn () => $this->commands->run(new SettleFrameTimes($frames)),
+                SettleFrameTimesCommand::MAINTENANCE_SCOPE,
+                fn () => $this->commands->run(new SettleFrameTimesCommand($frames)),
             );
         } catch (Throwable $failure) {
             $this->log->error('Engine could not settle frame times', ['exception' => $failure]);

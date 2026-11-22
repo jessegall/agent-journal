@@ -10,8 +10,8 @@ use App\Agents\Support\ServerOrigin;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Support\EntryDispatchers;
-use App\Connections\Commands\PollDeviceGrant;
-use App\Connections\Commands\StartDeviceGrant;
+use App\Connections\Commands\PollDeviceGrant\PollDeviceGrantCommand;
+use App\Connections\Commands\StartDeviceGrant\StartDeviceGrantCommand;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Values\InstallTicket;
 use Illuminate\Http\JsonResponse;
@@ -34,7 +34,7 @@ final readonly class DeviceGrantController
         $userCode = implode('-', str_split(Str::upper(Str::random(8)), 4));
         $binding = $request->string('binding')->toString();
         $startKey = $request->filled('startKey') ? $request->string('startKey')->toString() : (string) Str::uuid();
-        $start = new StartDeviceGrant($host->hostId, $binding, $deviceCode->digest(), $userCode, $startKey);
+        $start = new StartDeviceGrantCommand($host->hostId, $binding, $deviceCode->digest(), $userCode, $startKey);
         $started = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $start);
 
         return new JsonResponse([
@@ -53,7 +53,7 @@ final readonly class DeviceGrantController
         $host = $this->calls->verify($request, HostProtocolVersion::RemoteProject);
         $grant = InstallTicket::generate();
         $deviceCode = InstallTicket::digestOf($request->string('deviceCode')->toString());
-        $poll = new PollDeviceGrant($host->hostId, $deviceCode, $grant->digest());
+        $poll = new PollDeviceGrantCommand($host->hostId, $deviceCode, $grant->digest());
         $polled = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $poll);
 
         if ($polled->isPending()) {

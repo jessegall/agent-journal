@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\AssignBindingEnvironment;
+use App\Connections\Commands\AssignBindingEnvironment\AssignBindingEnvironmentCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -23,7 +23,7 @@ final readonly class AssignBindingEnvironmentController
         CommandBus $commands,
         Redirector $redirect,
     ): Response|RedirectResponse {
-        $commands->run(new AssignBindingEnvironment($binding, $environment));
+        $commands->run(new AssignBindingEnvironmentCommand($binding, $environment));
 
         return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
     }

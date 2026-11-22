@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Profiles;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SignInReconcileRequest;
-use App\Profiles\Commands\ReconcileSignIns;
+use App\Profiles\Commands\ReconcileSignIns\ReconcileSignInsCommand;
 use Illuminate\Http\Response;
 
 /**
@@ -17,7 +17,7 @@ final readonly class ReconcileSignInsController
 {
     public function __invoke(SignInReconcileRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReconcileSignIns($host->hostId, $request->runningAttemptIds()));
+        $commands->run(new ReconcileSignInsCommand($host->hostId, $request->runningAttemptIds()));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\DismissMessage;
-use App\Communication\Commands\ReadMessages;
-use App\Communication\Commands\ReleaseMessageClaim;
-use App\Communication\Commands\ReplyToMessage;
-use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Commands\DismissMessage\DismissMessageCommand;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
+use App\Communication\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Communication\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageAnswered;
@@ -55,11 +55,11 @@ final class MessageFactsRefreshTest extends MessagingTestCase
     {
         $noteId = $this->ownerSends($this->inboxIdOf($this->builder), 'The build is green.');
         $this->assertChangesPages(
-            fn () => $this->runOnBus(new RequireMessageAnswer($noteId)),
+            fn () => $this->runOnBus(new RequireMessageAnswerCommand($noteId)),
             MessageAnswerRequired::class,
         );
         $this->assertChangesPages(
-            fn () => $this->runOnBus(new DismissMessage($noteId, 'No longer needed.')),
+            fn () => $this->runOnBus(new DismissMessageCommand($noteId, 'No longer needed.')),
             MessageDismissed::class,
         );
 
@@ -68,7 +68,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
         $claim = $this->claimsOn($questionId)[$questionId]->reference;
 
         $this->assertChangesPages(
-            fn () => $this->runOnBus(new ReleaseMessageClaim($questionId, $claim, 'The builder is stuck.')),
+            fn () => $this->runOnBus(new ReleaseMessageClaimCommand($questionId, $claim, 'The builder is stuck.')),
             MessageClaimReleased::class,
         );
     }
@@ -79,12 +79,12 @@ final class MessageFactsRefreshTest extends MessagingTestCase
         $this->asAgent($this->builder);
 
         $this->assertChangesPages(
-            fn () => $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId])),
+            fn () => $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId])),
             MessageRead::class,
             MessageTakenUp::class,
         );
         $this->assertChangesPages(
-            fn () => $this->runOnBus(new ReplyToMessage($questionId, null, 'Port 8080.')),
+            fn () => $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'Port 8080.')),
             MessageSent::class,
             MessageAnswered::class,
         );
@@ -94,7 +94,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
     {
         $questionId = $this->takenUpByBuilder('Which port?');
 
-        $replyId = $this->runOnBus(new ReplyToMessage($questionId, null, 'Port 8080.'));
+        $replyId = $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'Port 8080.'));
 
         $question = Message::query()->acrossInboxes()->findOrFail($questionId);
         $this->assertSame([MessageState::Answered, $replyId], [$question->state, $question->answer_message_id]);
@@ -158,7 +158,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
     {
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), $body);
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
 
         return $questionId;
     }

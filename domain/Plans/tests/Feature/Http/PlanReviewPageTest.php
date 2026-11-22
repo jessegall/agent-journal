@@ -11,7 +11,7 @@ use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Commands\EditTask;
+use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -76,7 +76,7 @@ final class PlanReviewPageTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(
-                new EditTask($this->task->id, $this->task->refresh()->revision, brief: 'Write the new page.'),
+                new EditTaskCommand($this->task->id, $this->task->refresh()->revision, brief: 'Write the new page.'),
             ),
             PlanUnderReview::class,
         );

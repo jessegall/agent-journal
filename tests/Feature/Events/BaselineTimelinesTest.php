@@ -16,8 +16,8 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Support\StackTransaction;
-use App\Profiles\Commands\BeginSignInAgain;
-use App\Profiles\Commands\ReconcileSignIns;
+use App\Profiles\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Profiles\Commands\ReconcileSignIns\ReconcileSignInsCommand;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
@@ -25,14 +25,14 @@ use App\Profiles\Models\SignInAttempt;
 use Carbon\CarbonImmutable;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\Events\PlanStarted;
-use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
@@ -314,10 +314,10 @@ final class BaselineTimelinesTest extends TestCase
         $this->session ??= $this->startedSession();
         $this->timeline = [];
 
-        $this->asAgent(new StartPlan($plan->id));
+        $this->asAgent(new StartPlanCommand($plan->id));
         $first = $this->timeline;
         $this->timeline = [];
-        $this->asAgent(new StartPlan($plan->id));
+        $this->asAgent(new StartPlanCommand($plan->id));
 
         $this->assertSame(['saved Plan', 'saved AgentStackRow', 'commit', 'PlanStarted'], $first);
         $this->assertSame(['commit'], $this->timeline);
@@ -344,7 +344,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new ReconcileSignIns('host-a', []),
+            new ReconcileSignInsCommand('host-a', []),
         );
 
         $this->assertSame([
@@ -397,12 +397,12 @@ final class BaselineTimelinesTest extends TestCase
 
     private function start(Task $task): void
     {
-        $this->asAgent(new StartTask($task->id));
+        $this->asAgent(new StartTaskCommand($task->id));
     }
 
     private function finish(Task $task): void
     {
-        $this->asAgent(new FinishTask($task->id, $task->refresh()->run_number, 'Done.'));
+        $this->asAgent(new FinishTaskCommand($task->id, $task->refresh()->run_number, 'Done.'));
     }
 
     /**
@@ -430,7 +430,7 @@ final class BaselineTimelinesTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $begin = new BeginSignInAgain($account->id);
+        $begin = new BeginSignInAgainCommand($account->id);
         $attemptId = $this->runOnBus($begin, "again-{$account->id}")->attemptId;
 
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);

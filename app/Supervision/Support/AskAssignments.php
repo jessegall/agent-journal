@@ -6,25 +6,25 @@ namespace App\Supervision\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\InspectMergeAttempts;
-use App\Agents\Commands\MergeReviewedWork;
+use App\Agents\Commands\InspectMergeAttempts\InspectMergeAttemptsCommand;
+use App\Agents\Commands\MergeReviewedWork\MergeReviewedWorkCommand;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\JournalAssignableProvider;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\JournalAssignment;
 use App\Bus\Support\CommandNesting;
 use App\Records\Support\RecordIdentity;
-use App\Supervision\Commands\AdvanceAsk;
-use App\Supervision\Commands\ApproveCodeReview;
-use App\Supervision\Commands\CloseWorkChain;
-use App\Supervision\Commands\HandOffCodeReview;
-use App\Supervision\Commands\ReplyToAsk;
-use App\Supervision\Commands\ResolveMergeAttempt;
-use App\Supervision\Commands\ReturnCodeReview;
-use App\Supervision\Commands\RouteAsk;
-use App\Supervision\Commands\SettleMergeOutcomes;
-use App\Supervision\Commands\WithdrawAsk;
-use App\Supervision\Commands\WithdrawWorkChain;
+use App\Supervision\Commands\AdvanceAsk\AdvanceAskCommand;
+use App\Supervision\Commands\ApproveCodeReview\ApproveCodeReviewCommand;
+use App\Supervision\Commands\CloseWorkChain\CloseWorkChainCommand;
+use App\Supervision\Commands\HandOffCodeReview\HandOffCodeReviewCommand;
+use App\Supervision\Commands\ReplyToAsk\ReplyToAskCommand;
+use App\Supervision\Commands\ResolveMergeAttempt\ResolveMergeAttemptCommand;
+use App\Supervision\Commands\ReturnCodeReview\ReturnCodeReviewCommand;
+use App\Supervision\Commands\RouteAsk\RouteAskCommand;
+use App\Supervision\Commands\SettleMergeOutcomes\SettleMergeOutcomesCommand;
+use App\Supervision\Commands\WithdrawAsk\WithdrawAskCommand;
+use App\Supervision\Commands\WithdrawWorkChain\WithdrawWorkChainCommand;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Models\Ask;
 use App\Supervision\Values\AskReference;
@@ -36,39 +36,39 @@ final readonly class AskAssignments implements JournalAssignableProvider
      * merge's settlement may open a repair's stuck ask.
      */
     private const array ROUTING_COMMANDS = [
-        RouteAsk::class,
-        HandOffCodeReview::class,
-        ApproveCodeReview::class,
-        ReturnCodeReview::class,
-        MergeReviewedWork::class,
-        InspectMergeAttempts::class,
-        SettleMergeOutcomes::class,
-        ResolveMergeAttempt::class,
+        RouteAskCommand::class,
+        HandOffCodeReviewCommand::class,
+        ApproveCodeReviewCommand::class,
+        ReturnCodeReviewCommand::class,
+        MergeReviewedWorkCommand::class,
+        InspectMergeAttemptsCommand::class,
+        SettleMergeOutcomesCommand::class,
+        ResolveMergeAttemptCommand::class,
     ];
 
     /**
      * The engine's commands that route an ask on its requester's behalf, as the review chain's maintenance.
      */
     private const array MAINTENANCE_ROUTING_COMMANDS = [
-        HandOffCodeReview::class,
-        InspectMergeAttempts::class,
-        SettleMergeOutcomes::class,
+        HandOffCodeReviewCommand::class,
+        InspectMergeAttemptsCommand::class,
+        SettleMergeOutcomesCommand::class,
     ];
 
     /**
      * The commands that end an ask for its holder: an answer, a withdrawal, a review decision or a merge's outcome.
      */
     private const array ANSWERING_COMMANDS = [
-        ReplyToAsk::class,
-        WithdrawAsk::class,
-        ApproveCodeReview::class,
-        ReturnCodeReview::class,
-        MergeReviewedWork::class,
-        InspectMergeAttempts::class,
-        SettleMergeOutcomes::class,
-        ResolveMergeAttempt::class,
-        CloseWorkChain::class,
-        WithdrawWorkChain::class,
+        ReplyToAskCommand::class,
+        WithdrawAskCommand::class,
+        ApproveCodeReviewCommand::class,
+        ReturnCodeReviewCommand::class,
+        MergeReviewedWorkCommand::class,
+        InspectMergeAttemptsCommand::class,
+        SettleMergeOutcomesCommand::class,
+        ResolveMergeAttemptCommand::class,
+        CloseWorkChainCommand::class,
+        WithdrawWorkChainCommand::class,
     ];
 
     public function __construct(
@@ -83,7 +83,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
 
     public function requireJournalAssignment(JournalAssignment $assignment): void
     {
-        if ($this->nesting->runs(AdvanceAsk::class)) {
+        if ($this->nesting->runs(AdvanceAskCommand::class)) {
             $this->requireEscalationRecipient($assignment);
 
             return;
@@ -127,7 +127,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
 
     public function assertJournalRelease(RecordIdentity $record): void
     {
-        $escalates = $this->nesting->runs(AdvanceAsk::class);
+        $escalates = $this->nesting->runs(AdvanceAskCommand::class);
 
         if (! $escalates && ! $this->runsAny(self::ANSWERING_COMMANDS)) {
             throw AskRefused::routeChanged();

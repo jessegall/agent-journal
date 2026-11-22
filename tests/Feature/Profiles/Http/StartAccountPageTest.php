@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles\Http;
 
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Models\Agent;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\RemoveAccount;
+use App\Profiles\Commands\RemoveAccount\RemoveAccountCommand;
 use Domain\Access\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
@@ -41,7 +41,7 @@ final class StartAccountPageTest extends TestCase
             ->where('page.data.root.children.1.children.1.native.props.rows.0.recentStarts.0.sessionId', $sessionId));
 
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new RemoveAccount($account->id));
+        $this->app->make(CommandBus::class)->run(new RemoveAccountCommand($account->id));
 
         $this->actingAs($this->owner)
             ->get("/accounts/starts/{$sessionId}")
@@ -83,6 +83,6 @@ final class StartAccountPageTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
         );
 
-        return $this->app->make(CommandBus::class)->run(new StartAgent($request))->sessionId;
+        return $this->app->make(CommandBus::class)->run(new StartAgentCommand($request))->sessionId;
     }
 }

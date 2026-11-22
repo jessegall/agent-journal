@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Domains\Providers\DomainEventServiceProvider;
-use App\Sharing\Commands\ClaimGatewayOperation;
-use App\Sharing\Commands\RecordGatewayOutcome;
+use App\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Events\ShareActivated;
@@ -88,12 +88,12 @@ final class SharingPageRefreshTest extends TestCase
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
-        $claim = $this->asSystem(new ClaimGatewayOperation(self::RUN));
+        $claim = $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
         Event::fake([PageChanged::class]);
 
         $this->asSystem(
-            new RecordGatewayOutcome(
+            new RecordGatewayOutcomeCommand(
                 self::RUN,
                 $claim->operation->operationId,
                 $claim->operation->endpointVersion,

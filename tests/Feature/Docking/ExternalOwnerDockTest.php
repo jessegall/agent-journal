@@ -10,7 +10,7 @@ use App\Docking\Support\DockDefinitions;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\DockPlacement;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -147,7 +147,7 @@ final class ExternalOwnerDockTest extends TestCase
     public function test_a_report_page_offers_add_to_chat_with_the_agents_the_viewer_may_see(): void
     {
         $this->agent->startRequest($this->app);
-        $report = $this->app->make(CommandBus::class)->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
+        $report = $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
 
         $this->actingAs($this->owner)
             ->get("/documents/reports/{$report->number}")
@@ -160,7 +160,7 @@ final class ExternalOwnerDockTest extends TestCase
     public function test_a_report_page_is_a_publication_whose_details_settle_with_revision_one(): void
     {
         $this->agent->startRequest($this->app);
-        $report = $this->app->make(CommandBus::class)->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
+        $report = $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
 
         $this->actingAs($this->owner)
             ->get("/documents/reports/{$report->number}?tab=details")
@@ -179,7 +179,7 @@ final class ExternalOwnerDockTest extends TestCase
     public function test_the_links_tab_of_a_report_reads_neither_its_text_nor_its_comments(): void
     {
         $this->agent->startRequest($this->app);
-        $report = $this->app->make(CommandBus::class)->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
+        $report = $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
 
         $this->actingAs($this->owner)
             ->get("/documents/reports/{$report->number}?tab=links")

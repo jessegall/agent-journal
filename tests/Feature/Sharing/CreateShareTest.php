@@ -11,8 +11,8 @@ use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\RequestKey;
 use App\Links\Models\Link;
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Commands\CreateShare;
-use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
+use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
@@ -157,7 +157,7 @@ final class CreateShareTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(
-                new CreateShare($saved->previewId, $saved->checksum, 60, self::KEY),
+                new CreateShareCommand($saved->previewId, $saved->checksum, 60, self::KEY),
             ),
             RequestKeyMissing::class,
         );
@@ -248,7 +248,7 @@ final class CreateShareTest extends TestCase
     private function preview(array $selectedIds): SavedSharePreview
     {
         return $this->app->make(CommandBus::class)->run(
-            new SaveSharePreview($this->root->type, $this->root->id, $selectedIds, $this->configuration->id),
+            new SaveSharePreviewCommand($this->root->type, $this->root->id, $selectedIds, $this->configuration->id),
         );
     }
 
@@ -260,7 +260,7 @@ final class CreateShareTest extends TestCase
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(
-            new CreateShare($saved->previewId, $saved->checksum, $minutes, $key),
+            new CreateShareCommand($saved->previewId, $saved->checksum, $minutes, $key),
         );
     }
 }

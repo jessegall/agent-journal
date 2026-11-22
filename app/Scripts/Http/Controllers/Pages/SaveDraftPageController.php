@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Scripts\Http\Controllers\Pages;
 
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\SaveProfileDraft;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Scripts\Calls\SaveProfileDraftCall;
 use App\Scripts\Readers\ProfileDraftReader;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +30,7 @@ final readonly class SaveDraftPageController
         ResponseFactory $inertia,
         Redirector $redirect,
     ): RedirectResponse {
-        $revision = $commands->run(new SaveProfileDraft(
+        $revision = $commands->run(new SaveProfileDraftCommand(
             $call->profileKey(),
             $call->expectedRevision,
             $call->scriptSource(),

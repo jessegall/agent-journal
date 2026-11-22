@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportWorkspaceRead;
+use App\Agents\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
 use App\Agents\Models\WorkspaceRead;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
@@ -39,7 +39,7 @@ final readonly class WorkspaceReadController
 
     public function __invoke(WorkspaceReadReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportWorkspaceRead(
+        $commands->run(new ReportWorkspaceReadCommand(
             $host->hostId,
             $request->reference(),
             $request->boolean('available'),

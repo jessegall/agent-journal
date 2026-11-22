@@ -6,16 +6,16 @@ namespace Tests\Unit\Settings;
 
 use App\Domains\Support\DomainRegistry;
 use App\Reflection\Support\CatalogueReflectorFactory;
-use App\Settings\Commands\DisableSettingGroup;
-use App\Settings\Commands\EnableSettingGroup;
-use App\Settings\Commands\ResetSetting;
-use App\Settings\Commands\ResetSettingGroup;
-use App\Settings\Commands\SetBooleanSetting;
-use App\Settings\Commands\SetDecimalSetting;
-use App\Settings\Commands\SetIntegerChoice;
-use App\Settings\Commands\SetIntegerSetting;
-use App\Settings\Commands\SetStringChoice;
-use App\Settings\Commands\SetStringSetting;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Settings\Commands\ResetSetting\ResetSettingCommand;
+use App\Settings\Commands\ResetSettingGroup\ResetSettingGroupCommand;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Commands\SetDecimalSetting\SetDecimalSettingCommand;
+use App\Settings\Commands\SetIntegerChoice\SetIntegerChoiceCommand;
+use App\Settings\Commands\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Settings\Commands\SetStringChoice\SetStringChoiceCommand;
+use App\Settings\Commands\SetStringSetting\SetStringSettingCommand;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Exceptions\SettingHandleUnknown;
@@ -56,51 +56,51 @@ final class SettingCommandsTest extends TestCase
         $reviews = $this->reviews;
 
         $this->assertEquals(
-            new SetStringSetting(new SettingReference('Reviews', 'title'), 'Weekly', 3),
+            new SetStringSettingCommand(new SettingReference('Reviews', 'title'), 'Weekly', 3),
             $this->commands->string($reviews->title, 'Weekly', 3),
         );
         $this->assertEquals(
-            new SetBooleanSetting(new SettingReference('Reviews', 'notify_owner'), false, 3),
+            new SetBooleanSettingCommand(new SettingReference('Reviews', 'notify_owner'), false, 3),
             $this->commands->boolean($reviews->notifyOwner, false, 3),
         );
         $this->assertEquals(
-            new SetIntegerSetting(new SettingReference('Reviews', 'retry_limit'), 4, 0),
+            new SetIntegerSettingCommand(new SettingReference('Reviews', 'retry_limit'), 4, 0),
             $this->commands->integer($reviews->retryLimit, 4, 0),
         );
         $this->assertEquals(
-            new SetDecimalSetting(new SettingReference('Reviews', 'weight'), Decimal::parse('0.75'), 1),
+            new SetDecimalSettingCommand(new SettingReference('Reviews', 'weight'), Decimal::parse('0.75'), 1),
             $this->commands->decimal($reviews->weight, Decimal::parse('0.75'), 1),
         );
         $this->assertEquals(
-            new SetStringChoice(new SettingReference('Reviews', 'summary_style'), 'long', 1),
+            new SetStringChoiceCommand(new SettingReference('Reviews', 'summary_style'), 'long', 1),
             $this->commands->stringChoice($reviews->summaryStyle, 'long', 1),
         );
         $this->assertEquals(
-            new SetIntegerChoice(new SettingReference('Reviews', 'priority'), 1, 1),
+            new SetIntegerChoiceCommand(new SettingReference('Reviews', 'priority'), 1, 1),
             $this->commands->integerChoice($reviews->priority, 1, 1),
         );
         $this->assertEquals(
-            new SetStringChoice(new SettingReference('Reviews', 'review_mode'), ReviewMode::Quick->value, 2),
+            new SetStringChoiceCommand(new SettingReference('Reviews', 'review_mode'), ReviewMode::Quick->value, 2),
             $this->commands->enumString($reviews->reviewMode, ReviewMode::Quick, 2),
         );
         $this->assertEquals(
-            new SetIntegerChoice(new SettingReference('Reviews', 'review_level'), 2, 2),
+            new SetIntegerChoiceCommand(new SettingReference('Reviews', 'review_level'), 2, 2),
             $this->commands->enumInteger($reviews->reviewLevel, ReviewLevel::SecondPass, 2),
         );
         $this->assertEquals(
-            new ResetSetting(new SettingReference('Reviews', 'retry_limit'), 5),
+            new ResetSettingCommand(new SettingReference('Reviews', 'retry_limit'), 5),
             $this->commands->reset($reviews->retryLimit, 5),
         );
         $this->assertEquals(
-            new EnableSettingGroup(new GroupReference('Reviews', 'review'), 5),
+            new EnableSettingGroupCommand(new GroupReference('Reviews', 'review'), 5),
             $this->commands->enable($reviews->review, 5),
         );
         $this->assertEquals(
-            new DisableSettingGroup(new GroupReference('Reviews', 'review'), 5),
+            new DisableSettingGroupCommand(new GroupReference('Reviews', 'review'), 5),
             $this->commands->disable($reviews->review, 5),
         );
         $this->assertEquals(
-            new ResetSettingGroup(new GroupReference('Reviews', 'review'), 5),
+            new ResetSettingGroupCommand(new GroupReference('Reviews', 'review'), 5),
             $this->commands->resetGroup($reviews->review, 5),
         );
     }

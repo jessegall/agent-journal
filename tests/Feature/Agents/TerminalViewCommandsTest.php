@@ -11,9 +11,9 @@ use App\Actors\Support\ActorContext;
 use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\StartSessions;
-use App\Agents\Commands\CloseTerminalView;
-use App\Agents\Commands\OpenTerminalView;
-use App\Agents\Commands\RenewTerminalView;
+use App\Agents\Commands\CloseTerminalView\CloseTerminalViewCommand;
+use App\Agents\Commands\OpenTerminalView\OpenTerminalViewCommand;
+use App\Agents\Commands\RenewTerminalView\RenewTerminalViewCommand;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\TerminalViewRefusal;
 use App\Agents\Exceptions\TerminalViewRefused;
@@ -103,7 +103,7 @@ final class TerminalViewCommandsTest extends TestCase
 
     public function test_an_unknown_agent_gets_the_answer_of_no_permission(): void
     {
-        $unknown = new OpenTerminalView('no-such-agent', (string) Str::ulid());
+        $unknown = new OpenTerminalViewCommand('no-such-agent', (string) Str::ulid());
 
         $this->assertRefused($unknown, TerminalViewRefused::mayNotInspect()->getMessage());
     }
@@ -280,19 +280,19 @@ final class TerminalViewCommandsTest extends TestCase
         $this->assertSame(1, $reread->status(CarbonImmutable::now())->watchers);
     }
 
-    private function open(AgentRuntime $runtime, int $intervalMs = 500, string $requestId = ''): OpenTerminalView
+    private function open(AgentRuntime $runtime, int $intervalMs = 500, string $requestId = ''): OpenTerminalViewCommand
     {
-        return new OpenTerminalView($runtime->session->agent_id, $requestId ?: (string) Str::ulid(), $intervalMs);
+        return new OpenTerminalViewCommand($runtime->session->agent_id, $requestId ?: (string) Str::ulid(), $intervalMs);
     }
 
-    private function renew(AgentRuntime $runtime, string $readInterestId): RenewTerminalView
+    private function renew(AgentRuntime $runtime, string $readInterestId): RenewTerminalViewCommand
     {
-        return new RenewTerminalView($runtime->session->agent_id, $readInterestId);
+        return new RenewTerminalViewCommand($runtime->session->agent_id, $readInterestId);
     }
 
-    private function close(AgentRuntime $runtime, string $readInterestId): CloseTerminalView
+    private function close(AgentRuntime $runtime, string $readInterestId): CloseTerminalViewCommand
     {
-        return new CloseTerminalView($runtime->session->agent_id, $readInterestId);
+        return new CloseTerminalViewCommand($runtime->session->agent_id, $readInterestId);
     }
 
     /**
@@ -321,7 +321,7 @@ final class TerminalViewCommandsTest extends TestCase
         return $replacement->load('session');
     }
 
-    private function assertRefused(OpenTerminalView $command, string $message, int $views = 0): void
+    private function assertRefused(OpenTerminalViewCommand $command, string $message, int $views = 0): void
     {
         try {
             $this->asOwner($command);

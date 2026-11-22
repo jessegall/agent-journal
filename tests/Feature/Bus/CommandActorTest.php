@@ -17,9 +17,9 @@ use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
 use Closure;
 use Illuminate\Support\Facades\Log;
-use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
-use Tests\Fixtures\Modules\Notes\Commands\EngineNote;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote\EngineCopyNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\EngineNote\EngineNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\TestIds;
 
 /**
@@ -34,14 +34,14 @@ final class CommandActorTest extends CommandBusTestCase
 
         $this->expectException(ActorContextMissing::class);
 
-        $this->app->make(CommandBus::class)->run(new WriteNote('never'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('never'));
     }
 
     public function test_the_journal_acting_through_a_trusted_entry_is_refused_an_application_command(): void
     {
         $this->installCommandModules();
 
-        $run = fn () => $this->app->make(CommandBus::class)->run(new WriteNote('never'));
+        $run = fn () => $this->app->make(CommandBus::class)->run(new WriteNoteCommand('never'));
         $this->assertThrows(
             fn () => $this->app->make(ActorStore::class)->actAsSystem('test', $run),
             CommandNotRegistered::class,
@@ -55,7 +55,7 @@ final class CommandActorTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $log = Log::spy();
 
-        $this->app->make(CommandBus::class)->run(new WriteNote('private text'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('private text'));
 
         $log->shouldHaveReceived('info')->withArgs(fn (
             string $line,
@@ -73,7 +73,7 @@ final class CommandActorTest extends CommandBusTestCase
 
         $this->expectException(CommandNotRegistered::class);
 
-        $this->app->make(CommandBus::class)->run(new WriteNote('never'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('never'));
     }
 
     public function test_the_engine_runs_a_ticks_own_command(): void
@@ -81,7 +81,7 @@ final class CommandActorTest extends CommandBusTestCase
         $this->installCommandModules();
         $this->actAsEngine();
 
-        $this->assertSame(4, $this->asTick(fn () => $this->app->make(CommandBus::class)->run(new EngineNote('tick'))));
+        $this->assertSame(4, $this->asTick(fn () => $this->app->make(CommandBus::class)->run(new EngineNoteCommand('tick'))));
     }
 
     public function test_a_nested_command_follows_the_ticks_command(): void
@@ -89,7 +89,7 @@ final class CommandActorTest extends CommandBusTestCase
         $this->installCommandModules();
         $this->actAsEngine();
 
-        $this->asTick(fn () => $this->app->make(CommandBus::class)->run(new EngineCopyNote('nested')));
+        $this->asTick(fn () => $this->app->make(CommandBus::class)->run(new EngineCopyNoteCommand('nested')));
 
         $this->assertGreaterThan(0, $this->rowCount());
     }

@@ -8,7 +8,7 @@ use App\Actors\Contracts\ServerClock;
 use App\Bus\Contracts\CommandBus;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
-use App\Supervision\Commands\AdvanceAsk;
+use App\Supervision\Commands\AdvanceAsk\AdvanceAskCommand;
 use Throwable;
 
 /**
@@ -31,7 +31,7 @@ final readonly class AdvanceDueAsksOnTick implements EngineListener
 
     public function maintenanceScope(): string
     {
-        return AdvanceAsk::MAINTENANCE_SCOPE;
+        return AdvanceAskCommand::MAINTENANCE_SCOPE;
     }
 
     public function __invoke(EngineTicked $event): void
@@ -40,7 +40,7 @@ final readonly class AdvanceDueAsksOnTick implements EngineListener
 
         foreach ($this->asks->dueHops($now, self::PASS_LIMIT) as $hop) {
             try {
-                $this->commands->run(new AdvanceAsk($hop->ask_id));
+                $this->commands->run(new AdvanceAskCommand($hop->ask_id));
             } catch (Throwable $failure) {
                 report($failure);
             }

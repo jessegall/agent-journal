@@ -16,8 +16,8 @@ use App\Web\Support\UserChannel;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Chat\Commands\CreateGroupChat;
-use Domain\Chat\Commands\RemoveChatParticipant;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
+use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\MessagingTestCase;
 
@@ -39,7 +39,7 @@ final class ChatLiveDeliveryTest extends MessagingTestCase
         );
         $this->inboxOf(ActorIdentity::of($bea));
         $this->asOwner();
-        $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$bea->id]));
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$bea->id]));
         $owner = ActorIdentity::of($this->owner);
 
         $this->assertTrue($this->app->make(UserChannel::class)->join($bea, $bea->id));
@@ -52,7 +52,7 @@ final class ChatLiveDeliveryTest extends MessagingTestCase
             fn (PageChanged $change) => in_array($bea->id, $change->userIds, true),
         );
 
-        $this->runOnBus(new RemoveChatParticipant($inboxId, "user:{$bea->id}"));
+        $this->runOnBus(new RemoveChatParticipantCommand($inboxId, "user:{$bea->id}"));
         Event::fake([PageChanged::class, ChatAccessEnded::class]);
         $listener = $this->app->make(BroadcastPageChange::class);
         $listener->handle(new ChatMemberLeft('interval', $inboxId, ActorIdentity::of($bea), LeaveReason::Removed));

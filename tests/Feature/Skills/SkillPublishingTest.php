@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Skills\Commands\PrepareSkillPublication;
-use App\Skills\Commands\PublishSkills;
+use App\Skills\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
+use App\Skills\Commands\PublishSkills\PublishSkillsCommand;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationStale;
@@ -98,7 +98,7 @@ final class SkillPublishingTest extends TestCase
     public function test_a_worker_with_an_older_fence_is_stopped(): void
     {
         $publication = $this->intend('First text.');
-        $first = $this->asSystem(new PublishSkills($publication->id, 'worker-1'));
+        $first = $this->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
         SkillPublication::query()->whereKey($publication->id)->firstOrFail()->claim(
             'worker-2',
             CarbonImmutable::now()->addMinute(),
@@ -106,7 +106,7 @@ final class SkillPublishingTest extends TestCase
 
         $this->expectException(SkillPublicationStale::class);
 
-        $this->asSystem(new PrepareSkillPublication($publication->id, $first->fence));
+        $this->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
     }
 
     private function publishing(): SkillPublishing

@@ -7,10 +7,10 @@ namespace Domain\Documents\Tests\Feature;
 use App\Bus\Contracts\CommandBus;
 use App\Comments\Models\Comment;
 use App\Records\Contracts\IdentityLinks;
-use Domain\Documents\Commands\AppendUpload;
-use Domain\Documents\Commands\BeginUpload;
-use Domain\Documents\Commands\CommitUpload;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
+use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
+use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\UploadType;
@@ -39,18 +39,18 @@ final class ReportTest extends TestCase
         $writer = TestStart::start('writing-helper');
         $writer->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $source = $bus->run(new CreateDocument('Source', 'Design under review.', 'Published design.'));
+        $source = $bus->run(new CreateDocumentCommand('Source', 'Design under review.', 'Published design.'));
 
         $reviewer = TestStart::start('read-only-helper');
         $reviewer->startRequest($this->app);
         $findings = str_pad('', 300 * 1024, 'Finding and evidence. ');
-        $upload = $bus->run(new BeginUpload(UploadType::ReportBody, strlen($findings), hash('sha256', $findings)));
+        $upload = $bus->run(new BeginUploadCommand(UploadType::ReportBody, strlen($findings), hash('sha256', $findings)));
 
         foreach (str_split($findings, TextUpload::CHUNK_BYTES) as $index => $part) {
-            $bus->run(new AppendUpload($upload, $index, $part, hash('sha256', $part)));
+            $bus->run(new AppendUploadCommand($upload, $index, $part, hash('sha256', $part)));
         }
 
-        $bus->run(new CommitUpload($upload));
+        $bus->run(new CommitUploadCommand($upload));
 
         $id = $this->signed($reviewer, '/agent/reports/make', [
             'title' => 'Review',

@@ -30,10 +30,37 @@ enum FolderType: string
     case Commands = 'Commands';
     case Handlers = 'Handlers';
     case CommandMiddleware = 'CommandMiddleware';
+    case CommandPair = 'CommandPair';
 
-    public static function ofFolder(string $folder): self|null
+    /**
+     * The type a file's place asks for. A command and its handler share a folder named for them under Commands, so
+     * Commands/CreateTask holds CreateTaskCommand and CreateTaskHandler and nothing else at its root; a file loose in
+     * Commands itself belongs to no pair. A Commands folder under Console holds Artisan commands and is not judged.
+     */
+    public static function ofFile(string $file): self|null
     {
-        return self::tryFrom(basename($folder));
+        $folder = dirname($file);
+        $name = basename($file, '.php');
+
+        if (basename(dirname($folder)) === 'Console') {
+            return null;
+        }
+
+        if (basename($folder) === 'Commands') {
+            return self::CommandPair;
+        }
+
+        if (basename(dirname($folder)) === 'Commands' && ! in_array(basename($folder), ['Support', 'Concerns'], true)) {
+            return match ($name) {
+                basename($folder).'Command' => self::Commands,
+                basename($folder).'Handler' => self::Handlers,
+                default => self::CommandPair,
+            };
+        }
+
+        $type = self::tryFrom(basename($folder));
+
+        return in_array($type, [self::Commands, self::Handlers, self::CommandPair], true) ? null : $type;
     }
 
     /**
@@ -64,6 +91,7 @@ enum FolderType: string
                 && $class->hasMethod('handle')
                 && $class->method('handle')->isPublic(),
             self::CommandMiddleware => $class->implements(CommandMiddlewareContract::class),
+            self::CommandPair => false,
         };
 
         return $meetsFolderRequirement ? null : $this->requirement();
@@ -84,6 +112,7 @@ enum FolderType: string
             self::Commands => 'a command (a final readonly class extending App\Bus\Support\Command)',
             self::Handlers => 'a handler (a final class with a public handle method)',
             self::CommandMiddleware => 'a command middleware (it implements CommandMiddleware)',
+            self::CommandPair => 'a command or its handler named for its folder (Commands/<Name>/<Name>Command or <Name>Handler)',
         };
     }
 }

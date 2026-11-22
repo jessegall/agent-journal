@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\MarkAllNotificationsRead;
+use App\Communication\Commands\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class MarkAllNotificationsReadRequest extends FormRequest
@@ -19,8 +19,8 @@ final class MarkAllNotificationsReadRequest extends FormRequest
         ];
     }
 
-    public function command(): MarkAllNotificationsRead
+    public function command(): MarkAllNotificationsReadCommand
     {
-        return new MarkAllNotificationsRead($this->integer('through'));
+        return new MarkAllNotificationsReadCommand($this->integer('through'));
     }
 }

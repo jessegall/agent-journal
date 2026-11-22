@@ -9,7 +9,7 @@ use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\DriverSwitchTarget;
 use App\Agents\Values\ModelSelection;
 use App\Drivers\Enums\HookDriver;
-use App\Profiles\Commands\SwitchAgentDriver;
+use App\Profiles\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Profiles\Values\ProfileKey;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -41,9 +41,9 @@ final class SwitchAgentDriverRequest extends FormRequest
         ];
     }
 
-    public function command(): SwitchAgentDriver
+    public function command(): SwitchAgentDriverCommand
     {
-        return new SwitchAgentDriver(
+        return new SwitchAgentDriverCommand(
             $this->string('requestId')->lower()->toString(),
             $this->string('agentId')->lower()->toString(),
             ProfileKey::from((string) $this->route('profile')),

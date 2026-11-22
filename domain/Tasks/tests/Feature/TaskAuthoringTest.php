@@ -11,8 +11,8 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
-use Domain\Tasks\Commands\CreateTask;
-use Domain\Tasks\Commands\EditTask;
+use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
+use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Models\Task;
@@ -58,7 +58,7 @@ final class TaskAuthoringTest extends TestCase
     {
         $this->actAsUser();
 
-        $taskId = $this->app->make(CommandBus::class)->run(new CreateTask('Write the brief', 'What it asks.'));
+        $taskId = $this->app->make(CommandBus::class)->run(new CreateTaskCommand('Write the brief', 'What it asks.'));
         $task = Task::query()->findOrFail($taskId);
 
         $this->assertSame(['Write the brief', 'What it asks.', 1], [$task->title, $task->brief, $task->revision]);
@@ -113,7 +113,7 @@ final class TaskAuthoringTest extends TestCase
     {
         $this->actAsUser();
         $bus = $this->app->make(CommandBus::class);
-        $tooLong = new CreateTask(str_repeat('é', Task::TITLE_CHARACTER_LIMIT + 1), 'Brief');
+        $tooLong = new CreateTaskCommand(str_repeat('é', Task::TITLE_CHARACTER_LIMIT + 1), 'Brief');
 
         $this->assertThrows(
             fn () => $bus->run($tooLong),
@@ -123,7 +123,7 @@ final class TaskAuthoringTest extends TestCase
 
         $this->assertSame(0, Task::query()->count());
 
-        $taskId = $bus->run(new CreateTask(str_repeat('é', Task::TITLE_CHARACTER_LIMIT), 'Brief'));
+        $taskId = $bus->run(new CreateTaskCommand(str_repeat('é', Task::TITLE_CHARACTER_LIMIT), 'Brief'));
 
         $this->assertSame(Task::TITLE_CHARACTER_LIMIT, mb_strlen((string) Task::query()->findOrFail($taskId)->title));
     }
@@ -134,7 +134,7 @@ final class TaskAuthoringTest extends TestCase
         $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new EditTask($task->id, 1)),
+            fn () => $this->app->make(CommandBus::class)->run(new EditTaskCommand($task->id, 1)),
             CommandInputInvalid::class,
             self::TITLE_NEEDED_WITHOUT_BRIEF,
         );
@@ -191,13 +191,13 @@ final class TaskAuthoringTest extends TestCase
         ])->assertOk()->assertJson(['task_id' => $task->id, 'revision' => 2]);
 
         $this->actAsUser();
-        $revision = $this->app->make(CommandBus::class)->run(new EditTask($task->id, 2, brief: 'Bus brief'));
+        $revision = $this->app->make(CommandBus::class)->run(new EditTaskCommand($task->id, 2, brief: 'Bus brief'));
 
         $this->assertSame(3, $revision);
         $this->assertSame(['First', 'Bus brief'], [$task->fresh()?->title, $task->fresh()?->brief]);
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new EditTask($task->id, 2, title: 'Late')),
+            fn () => $this->app->make(CommandBus::class)->run(new EditTaskCommand($task->id, 2, title: 'Late')),
             TaskRevisionChanged::class,
         );
     }

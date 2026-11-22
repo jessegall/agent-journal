@@ -8,7 +8,7 @@ use App\Agents\Events\DriverFailed;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
-use App\Profiles\Commands\RecordAccountFailure;
+use App\Profiles\Commands\RecordAccountFailure\RecordAccountFailureCommand;
 use App\Profiles\Models\Account;
 
 /**
@@ -34,7 +34,7 @@ final readonly class CheckFailedAccount implements Listener
         $this->journal->runAsJournal(
             CommandEntry::AccountMaintenance,
             'failed account check',
-            new RecordAccountFailure($account->id, $failed->accountGeneration),
+            new RecordAccountFailureCommand($account->id, $failed->accountGeneration),
         );
     }
 }

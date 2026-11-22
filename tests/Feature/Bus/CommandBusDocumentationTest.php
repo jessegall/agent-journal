@@ -34,10 +34,7 @@ final class CommandBusDocumentationTest extends TestCase
      */
     private static function isNamespace(string $name): bool
     {
-        return in_array(
-            FolderType::ofFolder(str_replace('\\', '/', $name)),
-            [FolderType::Commands, FolderType::Handlers],
-            true,
-        );
+        return in_array(class_basename($name), [FolderType::Commands->value, FolderType::CommandMiddleware->value], true)
+            || str_contains($name, '\\Commands\\') && ! str_ends_with($name, 'Command') && ! str_ends_with($name, 'Handler');
     }
 }

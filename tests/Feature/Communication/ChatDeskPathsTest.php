@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\ReplyToMessage;
-use App\Communication\Commands\RequireMessageAnswer;
-use App\Communication\Commands\SendMessage;
-use App\Communication\Commands\TakeNextMessages;
+use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Communication\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
+use App\Communication\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\ChatInboxRefused;
 use App\Communication\Exceptions\ChatMessageRefused;
@@ -41,26 +41,26 @@ final class ChatDeskPathsTest extends MessagingTestCase
         $this->asOwner();
 
         $this->expectException(ChatInboxRefused::class);
-        $this->runOnBus(new SendMessage($this->ownerInboxId(), $this->chat->inbox_id, 'Hello.'));
+        $this->runOnBus(new SendMessageCommand($this->ownerInboxId(), $this->chat->inbox_id, 'Hello.'));
     }
 
     public function test_a_chat_post_never_becomes_a_question(): void
     {
         $this->asOwner();
-        $postId = $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Hello.', 'post-key'));
+        $postId = $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Hello.', 'post-key'));
 
         $this->expectException(ChatMessageRefused::class);
-        $this->runOnBus(new RequireMessageAnswer($postId));
+        $this->runOnBus(new RequireMessageAnswerCommand($postId));
     }
 
     public function test_an_agent_takes_up_the_pair_question_and_answers_it_through_the_desk_reply(): void
     {
         $this->asOwner();
-        $questionId = $this->runOnBus(new AskChatQuestion($this->chat->inbox_id, 'Ready?', 'ask-key'));
+        $questionId = $this->runOnBus(new AskChatQuestionCommand($this->chat->inbox_id, 'Ready?', 'ask-key'));
 
         $this->asAgent($this->builder);
-        $taken = $this->runOnBus(new TakeNextMessages($this->chat->inbox_id));
-        $replyId = $this->runOnBus(new ReplyToMessage($questionId, null, 'Yes.'));
+        $taken = $this->runOnBus(new TakeNextMessagesCommand($this->chat->inbox_id));
+        $replyId = $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'Yes.'));
 
         $question = Message::query()->acrossInboxes()->findOrFail($questionId);
 

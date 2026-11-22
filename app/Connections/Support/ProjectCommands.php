@@ -7,9 +7,9 @@ namespace App\Connections\Support;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Connections\Calls\RunProjectCommandCall;
-use App\Connections\Commands\FinishProjectCommandRun;
-use App\Connections\Commands\RecordProjectCommandProcess;
-use App\Connections\Commands\StartProjectCommandRun;
+use App\Connections\Commands\FinishProjectCommandRun\FinishProjectCommandRunCommand;
+use App\Connections\Commands\RecordProjectCommandProcess\RecordProjectCommandProcessCommand;
+use App\Connections\Commands\StartProjectCommandRun\StartProjectCommandRunCommand;
 use App\Connections\Enums\CommandRunState;
 use App\Connections\Exceptions\VerbNotServed;
 use App\Connections\Models\ProjectBinding;
@@ -49,7 +49,7 @@ final readonly class ProjectCommands
         $this->assertServed($call, $agentId);
         $requestKey = $call->requestKey->value;
 
-        $start = new StartProjectCommandRun(
+        $start = new StartProjectCommandRunCommand(
             $requestKey,
             $agentId,
             $call->bindingId,
@@ -142,12 +142,12 @@ final readonly class ProjectCommands
             $frames[] = CommandFrame::output(count($frames) + 1, $type === Process::ERR ? 'stderr' : 'stdout', $bytes);
         });
 
-        $record = new RecordProjectCommandProcess($call->requestKey->value, (int) $process->getPid());
+        $record = new RecordProjectCommandProcessCommand($call->requestKey->value, (int) $process->getPid());
         $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $record);
         $code = $process->wait();
         $frames[] = CommandFrame::exit(count($frames) + 1, $code);
 
-        $finishRun = new FinishProjectCommandRun($call->requestKey->value, $frames, $code);
+        $finishRun = new FinishProjectCommandRunCommand($call->requestKey->value, $frames, $code);
         $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $finishRun);
 
         return $frames;

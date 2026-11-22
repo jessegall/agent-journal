@@ -7,10 +7,10 @@ namespace Domain\Documents\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use Domain\Documents\Calls\DraftHeld;
 use Domain\Documents\Calls\EditDocumentCall;
-use Domain\Documents\Commands\ChangeDocumentDetails;
-use Domain\Documents\Commands\EditDocument;
-use Domain\Documents\Commands\ReplaceDocumentBody;
-use Domain\Documents\Commands\ReplaceDocumentText;
+use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
+use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
+use Domain\Documents\Commands\ReplaceDocumentBody\ReplaceDocumentBodyCommand;
+use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
 
 /**
  * Changes the draft as the call asks and answers it.
@@ -22,10 +22,10 @@ final readonly class EditDocumentController
         $target = $call->target();
 
         $command = match ($call->mode) {
-            'section' => new EditDocument($target, (string) $call->section, $call->body, $call->uploadId),
-            'text' => new ReplaceDocumentText($target, (string) $call->originalText, (string) $call->replacementText),
-            'details' => new ChangeDocumentDetails($target, (string) $call->title, (string) $call->abstract),
-            default => new ReplaceDocumentBody($target, (string) $call->body),
+            'section' => new EditDocumentCommand($target, (string) $call->section, $call->body, $call->uploadId),
+            'text' => new ReplaceDocumentTextCommand($target, (string) $call->originalText, (string) $call->replacementText),
+            'details' => new ChangeDocumentDetailsCommand($target, (string) $call->title, (string) $call->abstract),
+            default => new ReplaceDocumentBodyCommand($target, (string) $call->body),
         };
 
         $draft = $commands->run($command);

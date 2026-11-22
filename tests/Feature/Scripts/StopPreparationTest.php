@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Scripts;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\ReportWorkspaceRead;
+use App\Agents\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
 use App\Agents\Models\WorkspaceRead;
 use App\Agents\Values\CommitObservation;
 use App\Agents\Values\WorkReference;
@@ -15,15 +15,15 @@ use App\Hooks\Enums\StopPreparationState;
 use App\Hooks\Models\PendingAgentMessage;
 use App\Hooks\Values\StopPreparation;
 use App\Hooks\Values\StopPreparationRequest;
-use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\SaveProfileDraft;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\CompiledScript;
 use App\Profiles\Values\DraftExpectations;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ScriptSource;
-use App\Scripts\Commands\RecordScriptStepResult;
+use App\Scripts\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
 use App\Scripts\Contracts\ScriptChecks;
 use App\Scripts\Enums\StepStatus;
 use App\Scripts\Models\ProfileRun;
@@ -153,7 +153,7 @@ final class StopPreparationTest extends TestCase
         $this->stopAgain();
         $run = ProfileRun::query()->acrossActors()->orderByDesc('sequence')->firstOrFail();
         $step = (string) $run->awaited_step;
-        $this->asSystem(new RecordScriptStepResult('host-1', $run->id, $step, $tests, $port, $evidence));
+        $this->asSystem(new RecordScriptStepResultCommand('host-1', $run->id, $step, $tests, $port, $evidence));
 
         return $this->stopAgain();
     }
@@ -176,7 +176,7 @@ final class StopPreparationTest extends TestCase
     private function answerReads(bool $dirty): void
     {
         foreach (WorkspaceRead::query()->whereNull('sampled_at')->limit(10)->get() as $read) {
-            $this->asSystem(new ReportWorkspaceRead('host-1', $read->reference(), true, $dirty, ! $dirty, 7, CommitObservation::notRecorded()));
+            $this->asSystem(new ReportWorkspaceReadCommand('host-1', $read->reference(), true, $dirty, ! $dirty, 7, CommitObservation::notRecorded()));
         }
     }
 
@@ -199,10 +199,10 @@ SCRIPT, ['tests' => [
             'effects' => ['read', 'test'],
             'timeout_seconds' => 600,
         ]]);
-        $commands->run(new SaveProfileDraft($profile, 0, $source));
+        $commands->run(new SaveProfileDraftCommand($profile, 0, $source));
         $proposal = ProfileProposal::fromConfiguration(['profiles' => [
             $profile->key => ['base' => 'writing-helper', 'model' => 'sonnet'],
         ]]);
-        $commands->run(new ActivateProfiles($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
+        $commands->run(new ActivateProfilesCommand($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
     }
 }

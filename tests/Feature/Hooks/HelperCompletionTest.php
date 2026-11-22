@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\TrustedEntryAuthority;
-use App\Agents\Commands\CancelLaunch;
+use App\Agents\Commands\CancelLaunch\CancelLaunchCommand;
 use App\Agents\Contracts\StartReservations;
 use App\Agents\Enums\CleanupStep;
 use App\Agents\Enums\ConversationModeType;
@@ -32,8 +32,8 @@ use App\Bus\Support\CommandEntrance;
 use App\Bus\Support\RequestKey;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
-use App\Hooks\Commands\CertifyPassedStops;
-use App\Hooks\Commands\RecordStopResults;
+use App\Hooks\Commands\CertifyPassedStops\CertifyPassedStopsCommand;
+use App\Hooks\Commands\RecordStopResults\RecordStopResultsCommand;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\StopResultType;
 use App\Hooks\Events\HelperCompletionCertified;
@@ -203,7 +203,7 @@ final class HelperCompletionTest extends TestCase
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $work = $this->ownerStart($session);
 
-        $this->asOwner(new CancelLaunch($session->agent_id, $session->id, 'cancel-1'));
+        $this->asOwner(new CancelLaunchCommand($session->agent_id, $session->id, 'cancel-1'));
 
         $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Stop)->count());
         Event::assertDispatched(LaunchCancelled::class, fn (LaunchCancelled $event) => $event->work->id === $work->id);
@@ -258,7 +258,7 @@ final class HelperCompletionTest extends TestCase
         $attempt = StopAttempt::query()->withoutGlobalScopes()->where('stop_id', $stopId)->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopResults('host-1', $attempt->id, $attempt->policy_digest, 0, [
+        $this->asSystem(new RecordStopResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
             new StopResultReport(
                 $condition->key,
                 $condition->definitionHash(),
@@ -280,12 +280,12 @@ final class HelperCompletionTest extends TestCase
     private function certifyPassedStops(string $pass): void
     {
         $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
-        $this->app->make(EngineAccess::class)->grantMaintenance(CertifyPassedStops::MAINTENANCE_SCOPE);
+        $this->app->make(EngineAccess::class)->grantMaintenance(CertifyPassedStopsCommand::MAINTENANCE_SCOPE);
         $this->app->make(RequestKey::class)->set($pass);
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(CommandEntrance::class)->through(
             CommandEntry::EngineMaintenance,
-            fn () => $bus->run(new CertifyPassedStops()),
+            fn () => $bus->run(new CertifyPassedStopsCommand()),
         );
     }
 }

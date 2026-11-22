@@ -7,9 +7,9 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\ClaimStartGrant;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\ClaimStartGrant\ClaimStartGrantCommand;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\SessionOpened;
@@ -19,7 +19,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\StartGrant;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Values\ProfileBase;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Enums\PublicationState;
@@ -94,7 +94,7 @@ final class StartSkillsTest extends TestCase
         $this->assertSame(PublicationState::Delivered, $publication->state);
         $this->assertFileExists("{$this->root}/targets/{$opened->sessionId}/codex/journal/SKILL.md");
 
-        $grant = $this->asSystem(new ClaimStartGrant($host, $opened->runtimeId));
+        $grant = $this->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
 
         $this->assertInstanceOf(StartGrant::class, $grant);
         $this->assertCount(1, $grant->folders);
@@ -112,7 +112,7 @@ final class StartSkillsTest extends TestCase
         $this->expectException(StartRefused::class);
         $this->expectExceptionMessage(self::NO_SPACE);
 
-        $this->asSystem(new ClaimStartGrant($host, $opened->runtimeId));
+        $this->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
     }
 
     public function test_a_program_without_a_skill_adapter_is_refused_by_name(): void
@@ -164,7 +164,7 @@ final class StartSkillsTest extends TestCase
     private function activateReviewer(array $requiredSkills): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',
                 ProfileBase::readOnlyHelper(),
@@ -179,10 +179,10 @@ final class StartSkillsTest extends TestCase
      */
     private function openCodexRuntime(): array
     {
-        $host = $this->asSystem(new EnrollHost('test host', [self::FOLDER]));
+        $host = $this->asSystem(new EnrollHostCommand('test host', [self::FOLDER]));
         $agent = Agent::create('Codex agent', 'main-agent');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
+        $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,
             self::FOLDER,

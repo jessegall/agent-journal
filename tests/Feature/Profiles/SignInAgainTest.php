@@ -15,13 +15,13 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Bus\Support\EntryDispatchers;
 use App\Drivers\Enums\HookDriver;
-use App\Profiles\Commands\BeginSignInAgain;
-use App\Profiles\Commands\CancelSignIn;
-use App\Profiles\Commands\CheckAccount;
-use App\Profiles\Commands\CompleteSignIn;
-use App\Profiles\Commands\RecheckAccount;
-use App\Profiles\Commands\ReconcileAccounts;
-use App\Profiles\Commands\RemoveAccount;
+use App\Profiles\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Profiles\Commands\CancelSignIn\CancelSignInCommand;
+use App\Profiles\Commands\CheckAccount\CheckAccountCommand;
+use App\Profiles\Commands\CompleteSignIn\CompleteSignInCommand;
+use App\Profiles\Commands\RecheckAccount\RecheckAccountCommand;
+use App\Profiles\Commands\ReconcileAccounts\ReconcileAccountsCommand;
+use App\Profiles\Commands\RemoveAccount\RemoveAccountCommand;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\SignInMethod;
@@ -120,7 +120,7 @@ final class SignInAgainTest extends TestCase
         $generation = $this->account->refresh()->sign_in_generation;
         SignInAttempt::query()->whereKey($attemptId)->sole()->waitForUser();
 
-        $this->asHost(new CompleteSignIn($attemptId, $generation, self::proved('subject-1')));
+        $this->asHost(new CompleteSignInCommand($attemptId, $generation, self::proved('subject-1')));
 
         $this->account->refresh();
         $this->assertSame($generation + 1, $this->account->sign_in_generation);
@@ -134,7 +134,7 @@ final class SignInAgainTest extends TestCase
         [$attemptId, $staging] = $this->waitingReconnect();
 
         $generation = SignInAttempt::query()->whereKey($attemptId)->sole()->generation;
-        $this->asHost(new CompleteSignIn($attemptId, $generation, self::proved('subject-1')));
+        $this->asHost(new CompleteSignInCommand($attemptId, $generation, self::proved('subject-1')));
 
         $this->assertSame($staging, $this->account->refresh()->directory);
         $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
@@ -157,7 +157,7 @@ final class SignInAgainTest extends TestCase
             [$attemptId] = $this->waitingReconnect();
             $generation = SignInAttempt::query()->whereKey($attemptId)->sole()->generation;
 
-            $this->asHost(new CompleteSignIn($attemptId, $generation, $identity));
+            $this->asHost(new CompleteSignInCommand($attemptId, $generation, $identity));
 
             $state = SignInAttempt::query()->whereKey($attemptId)->sole()->state;
             $this->assertSame($expected, $state);
@@ -175,7 +175,7 @@ final class SignInAgainTest extends TestCase
         $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
         $attempt->keepFingerprint('new');
 
-        $this->asHost(new CompleteSignIn($attemptId, $attempt->generation, SignInIdentity::unproved()));
+        $this->asHost(new CompleteSignInCommand($attemptId, $attempt->generation, SignInIdentity::unproved()));
 
         $this->account->refresh();
         $this->assertSame(SignInMethod::ApiKey, $attempt->method);
@@ -193,7 +193,7 @@ final class SignInAgainTest extends TestCase
         $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
         $attempt->keepFingerprint('shared');
 
-        $this->asHost(new CompleteSignIn($attemptId, $attempt->generation, SignInIdentity::unproved()));
+        $this->asHost(new CompleteSignInCommand($attemptId, $attempt->generation, SignInIdentity::unproved()));
 
         $this->assertSame(SignInState::AlreadyAdded, $attempt->refresh()->state);
         $this->assertSame($saved, $this->account->refresh()->directory);
@@ -250,10 +250,10 @@ final class SignInAgainTest extends TestCase
         $generation = $this->account->refresh()->sign_in_generation;
 
         $this->assertTrue($this->account->isHeldForCheck());
-        $this->asHost(new CheckAccount('host', $this->account->id, $generation, AccountCheckResult::Unknown));
+        $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::Unknown));
         $this->assertTrue($this->account->refresh()->isHeldForCheck());
 
-        $this->asHost(new CheckAccount('host', $this->account->id, $generation, AccountCheckResult::SignedIn));
+        $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::SignedIn));
 
         $this->account->refresh();
         $this->assertFalse($this->account->maintenance);
@@ -266,19 +266,19 @@ final class SignInAgainTest extends TestCase
         $this->cancel($this->again('tab-1'));
         $generation = $this->account->refresh()->sign_in_generation;
 
-        $this->asHost(new CheckAccount('host', $this->account->id, $generation, AccountCheckResult::Unknown));
+        $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::Unknown));
 
         $this->assertTrue($this->account->refresh()->isCheckInconclusive());
         $this->assertNull(Account::nextToCheck());
 
         $this->actAsOwner();
-        $this->app->make(CommandBus::class)->run(new RecheckAccount($this->account->id));
+        $this->app->make(CommandBus::class)->run(new RecheckAccountCommand($this->account->id));
 
         $this->assertFalse($this->account->refresh()->isCheckInconclusive());
         $this->assertTrue($this->account->isHeldForCheck());
         $this->assertSame($this->account->id, Account::nextToCheck()?->id);
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new RecheckAccount($this->account->id)),
+            fn () => $this->app->make(CommandBus::class)->run(new RecheckAccountCommand($this->account->id)),
             AccountRecheckRefused::class,
         );
     }
@@ -288,7 +288,7 @@ final class SignInAgainTest extends TestCase
         $this->cancel($this->again('tab-1'));
         $generation = $this->account->refresh()->sign_in_generation;
 
-        $this->asHost(new CheckAccount('host', $this->account->id, $generation, AccountCheckResult::SignedOut));
+        $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::SignedOut));
 
         $this->assertSame(AccountState::NeedsSignIn, $this->account->refresh()->state);
         $this->assertNull($this->chosen());
@@ -319,9 +319,9 @@ final class SignInAgainTest extends TestCase
         $generation = SignInAttempt::query()->whereKey($attemptId)->sole()->generation;
 
         $this->actAsOwner();
-        $this->app->make(CommandBus::class)->run(new RemoveAccount($this->account->id));
+        $this->app->make(CommandBus::class)->run(new RemoveAccountCommand($this->account->id));
         $this->assertThrows(
-            fn () => $this->asHost(new CompleteSignIn($attemptId, $generation, self::proved('subject-1'))),
+            fn () => $this->asHost(new CompleteSignInCommand($attemptId, $generation, self::proved('subject-1'))),
             SignInAttemptStale::class,
         );
 
@@ -337,7 +337,7 @@ final class SignInAgainTest extends TestCase
         $old = $this->again('tab-1');
         $this->cancel($old);
         $generation = $this->account->refresh()->sign_in_generation;
-        $this->asHost(new CheckAccount('host', $this->account->id, $generation, AccountCheckResult::SignedIn));
+        $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::SignedIn));
         $new = $this->again('tab-2');
 
         $this->account->refresh()->endSignInAgain($old);
@@ -351,14 +351,14 @@ final class SignInAgainTest extends TestCase
     {
         $this->actAsOwner();
 
-        return $this->runOnBus(new BeginSignInAgain($this->account->id), $requestKey)
+        return $this->runOnBus(new BeginSignInAgainCommand($this->account->id), $requestKey)
             ->attemptId;
     }
 
     private function cancel(string $attemptId): void
     {
         $this->actAsOwner();
-        $this->app->make(CommandBus::class)->run(new CancelSignIn($attemptId));
+        $this->app->make(CommandBus::class)->run(new CancelSignInCommand($attemptId));
     }
 
     private function asHost(Command $command): void
@@ -369,7 +369,7 @@ final class SignInAgainTest extends TestCase
     private function reconcile(): void
     {
         $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::AccountMaintenance, 'account reconciliation', new ReconcileAccounts());
+            ->runAsJournal(CommandEntry::AccountMaintenance, 'account reconciliation', new ReconcileAccountsCommand());
     }
 
     private function chosen(): string|null

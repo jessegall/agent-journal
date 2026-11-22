@@ -6,7 +6,7 @@ namespace App\Processes\Http\Controllers;
 
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Http\Responses\Processes\ReviewResponses;
-use App\Processes\Commands\CleanProcessOutput;
+use App\Processes\Commands\CleanProcessOutput\CleanProcessOutputCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -16,6 +16,6 @@ final readonly class CleanRunPageController
 {
     public function __invoke(RunPageRequest $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new CleanProcessOutput([$request->runId()], false));
+        return $review->run(new CleanProcessOutputCommand([$request->runId()], false));
     }
 }

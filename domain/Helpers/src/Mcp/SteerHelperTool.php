@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Helpers\Commands\SteerHelper;
+use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
 use Domain\Helpers\Http\Data\HelperSteerData;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 
 #[IsDestructive(false)]
 #[Name('helpers_steer')]
-#[Dispatches(SteerHelper::class)]
+#[Dispatches(SteerHelperCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Add to the current job of a helper; kept for its next job when none is live.')]
 final class SteerHelperTool extends JournalWriteTool
@@ -32,9 +32,9 @@ final class SteerHelperTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): SteerHelper
+    protected function command(ToolArguments $arguments): SteerHelperCommand
     {
-        return new SteerHelper($arguments->ulid('identity_id'), $arguments->text('text'));
+        return new SteerHelperCommand($arguments->ulid('identity_id'), $arguments->text('text'));
     }
 
     protected function present(mixed $commandResult): ToolResult

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Engine\Support;
 
 use App\Bus\Contracts\CommandBus;
-use App\Engine\Commands\EnforceLaunchLimits;
+use App\Engine\Commands\EnforceLaunchLimits\EnforceLaunchLimitsCommand;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
 
@@ -18,11 +18,11 @@ final readonly class EnforceLaunchLimitsOnTick implements EngineListener
 
     public function maintenanceScope(): string
     {
-        return EnforceLaunchLimits::MAINTENANCE_SCOPE;
+        return EnforceLaunchLimitsCommand::MAINTENANCE_SCOPE;
     }
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->commands->run(new EnforceLaunchLimits());
+        $this->commands->run(new EnforceLaunchLimitsCommand());
     }
 }

@@ -6,7 +6,7 @@ namespace App\Processes\Http\Controllers;
 
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Http\Responses\Processes\ReviewResponses;
-use App\Processes\Commands\StopProcessRun;
+use App\Processes\Commands\StopProcessRun\StopProcessRunCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -16,6 +16,6 @@ final readonly class StopRunPageController
 {
     public function __invoke(RunPageRequest $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new StopProcessRun($request->runId(), 'stopped from the run page'));
+        return $review->run(new StopProcessRunCommand($request->runId(), 'stopped from the run page'));
     }
 }

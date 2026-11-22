@@ -8,8 +8,8 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
@@ -68,7 +68,7 @@ final class LibraryReadCostTest extends TestCase
             $phrase = $number % 3 === 0 ? 'The retention window is thirty days.' : 'Nothing to find here.';
 
             $bus->run(
-                new CreateDocument(
+                new CreateDocumentCommand(
                     "Design {$number}",
                     "What design {$number} says",
                     <<<TEXT
@@ -83,7 +83,7 @@ final class LibraryReadCostTest extends TestCase
 
         foreach (range(1, 4) as $number) {
             $bus->run(
-                new CreateReport(
+                new CreateReportCommand(
                     "Check {$number}",
                     "What check {$number} found",
                     <<<TEXT

@@ -14,8 +14,8 @@ use App\Text\Exceptions\TextLineTooLong;
 use App\Text\Exceptions\TextSelectionRefused;
 use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Support\TextSelection;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\ActsAsFirstUser;
 use Tests\Support\CommitsHookRows;
@@ -128,7 +128,7 @@ final class TextResolverTest extends TestCase
 
     public function test_a_report_has_only_version_one(): void
     {
-        $this->app->make(CommandBus::class)->run(new CreateReport('Check', 'What was found', <<<'TEXT'
+        $this->app->make(CommandBus::class)->run(new CreateReportCommand('Check', 'What was found', <<<'TEXT'
         # Found
         All fine.
 
@@ -141,7 +141,7 @@ final class TextResolverTest extends TestCase
 
     private function createDocument(string $body): void
     {
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', $body));
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', $body));
     }
 
     private function record(string $type, int $number): RecordIdentity

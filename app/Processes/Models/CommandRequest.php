@@ -7,7 +7,7 @@ namespace App\Processes\Models;
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
-use App\Processes\Commands\OpenCommandRequest;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Processes\Enums\EvidenceSource;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\ProposalState;
@@ -83,7 +83,7 @@ final class CommandRequest extends Model implements ReadableModel
     /**
      * A new request holding the actor's command line in the project, collecting its declaration first.
      */
-    public static function create(string $projectKey, ActorIdentity $actor, OpenCommandRequest $command): self
+    public static function create(string $projectKey, ActorIdentity $actor, OpenCommandRequestCommand $command): self
     {
         return self::query()->create([
             'project_key' => $projectKey,

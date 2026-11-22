@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\RecordHostCombinations;
+use App\Agents\Commands\RecordHostCombinations\RecordHostCombinationsCommand;
 use App\Agents\Data\HostCombinationsData;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
@@ -18,7 +18,7 @@ final readonly class CombinationsReportController
 {
     public function __invoke(HostCombinationsData $report, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new RecordHostCombinations($host->hostId, $report->protocolVersion, $report->combinations()));
+        $commands->run(new RecordHostCombinationsCommand($host->hostId, $report->protocolVersion, $report->combinations()));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

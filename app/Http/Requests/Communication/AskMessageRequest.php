@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class AskMessageRequest extends FormRequest
@@ -21,9 +21,9 @@ final class AskMessageRequest extends FormRequest
         ];
     }
 
-    public function command(): AskMessage
+    public function command(): AskMessageCommand
     {
-        return new AskMessage(
+        return new AskMessageCommand(
             $this->string('sourceInboxId')->toString(),
             $this->string('destinationInboxId')->toString(),
             $this->string('body')->toString(),

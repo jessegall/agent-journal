@@ -6,7 +6,7 @@ namespace Domain\Rules\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
-use Domain\Rules\Commands\ProposeRule;
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -24,21 +24,21 @@ final class RuleInputLimitsTest extends TestCase
     private const array TABLES = ['rules', 'command_receipts'];
 
     /**
-     * @return iterable<string, array{ProposeRule, string}>
+     * @return iterable<string, array{ProposeRuleCommand, string}>
      */
     public static function refusedProposals(): iterable
     {
-        yield 'a long text' => [new ProposeRule(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'), 'text'];
+        yield 'a long text' => [new ProposeRuleCommand(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'), 'text'];
 
-        yield 'an empty text' => [new ProposeRule('', 'Reason'), 'text'];
+        yield 'an empty text' => [new ProposeRuleCommand('', 'Reason'), 'text'];
 
-        yield 'a long reason' => [new ProposeRule('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)), 'reason'];
+        yield 'a long reason' => [new ProposeRuleCommand('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)), 'reason'];
 
-        yield 'an empty reason' => [new ProposeRule('Text', ''), 'reason'];
+        yield 'an empty reason' => [new ProposeRuleCommand('Text', ''), 'reason'];
     }
 
     #[DataProvider('refusedProposals')]
-    public function test_a_proposal_past_its_limit_is_refused_naming_the_field(ProposeRule $proposal, string $field): void
+    public function test_a_proposal_past_its_limit_is_refused_naming_the_field(ProposeRuleCommand $proposal, string $field): void
     {
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run($proposal),
@@ -54,7 +54,7 @@ final class RuleInputLimitsTest extends TestCase
         $text = str_repeat('é', Rule::TEXT_CHARACTER_LIMIT);
 
         $ruleId = $this->app->make(CommandBus::class)->run(
-            new ProposeRule($text, str_repeat('é', Rule::REASON_CHARACTER_LIMIT)),
+            new ProposeRuleCommand($text, str_repeat('é', Rule::REASON_CHARACTER_LIMIT)),
         );
 
         $this->assertSame($text, Rule::query()->findOrFail($ruleId)->text);

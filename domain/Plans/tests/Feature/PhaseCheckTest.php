@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Processes\Commands\AssessPartOutput;
-use Domain\Plans\Commands\RecordPhaseCheck;
+use App\Processes\Commands\AssessPartOutput\AssessPartOutputCommand;
+use Domain\Plans\Commands\RecordPhaseCheck\RecordPhaseCheckCommand;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
@@ -50,7 +50,7 @@ final class PhaseCheckTest extends TestCase
     {
         $receipt = $this->receiptOf(0, self::PASSED_OUTPUT);
 
-        $this->runAsAgent(new RecordPhaseCheck($this->phase->id, $receipt));
+        $this->runAsAgent(new RecordPhaseCheckCommand($this->phase->id, $receipt));
 
         $check = PhaseCheck::query()->ofPhase($this->phase)->sole();
         $this->assertSame('passed', $check->outcome);
@@ -60,14 +60,14 @@ final class PhaseCheckTest extends TestCase
     public function test_a_run_without_a_result_and_a_superseded_receipt_are_refused(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
-        $first = $this->runAsAgent(new AssessPartOutput($part->id));
-        $this->runAsAgent(new AssessPartOutput($part->id));
+        $first = $this->runAsAgent(new AssessPartOutputCommand($part->id));
+        $this->runAsAgent(new AssessPartOutputCommand($part->id));
 
-        $superseded = new RecordPhaseCheck($this->phase->id, $first);
+        $superseded = new RecordPhaseCheckCommand($this->phase->id, $first);
         $this->assertThrows(fn () => $this->runAsAgent($superseded), PhaseCheckRefused::class);
 
         $this->assertThrows(
-            fn () => $this->runAsAgent(new RecordPhaseCheck($this->phase->id, 'no-receipt-for-an-evidence-run')),
+            fn () => $this->runAsAgent(new RecordPhaseCheckCommand($this->phase->id, 'no-receipt-for-an-evidence-run')),
             PhaseCheckRefused::class,
         );
 
@@ -79,13 +79,13 @@ final class PhaseCheckTest extends TestCase
         $receipt = $this->receiptOf(0, self::PASSED_OUTPUT);
         Task::query()->whereKey($this->task->id)->update(['updated_at' => now()->addMinute()]);
 
-        $stale = new RecordPhaseCheck($this->phase->id, $receipt);
+        $stale = new RecordPhaseCheckCommand($this->phase->id, $receipt);
         $this->assertThrows(fn () => $this->runAsAgent($stale), PhaseCheckRefused::class);
     }
 
     private function receiptOf(int $status, string $output): string
     {
-        return $this->runAsAgent(new AssessPartOutput($this->normalRun($status, $output)->id));
+        return $this->runAsAgent(new AssessPartOutputCommand($this->normalRun($status, $output)->id));
     }
 
     private function planStructure(): PlanStructure

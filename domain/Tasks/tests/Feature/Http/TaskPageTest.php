@@ -7,7 +7,7 @@ namespace Domain\Tasks\Tests\Feature\Http;
 use App\Assignments\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Tasks\Commands\AddTaskWait;
+use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Tests\TestCase;
@@ -82,7 +82,7 @@ final class TaskPageTest extends TestCase
         $first = Task::factory()->create(['title' => 'Prepare records']);
         $second = Task::factory()->create(['title' => 'Publish records']);
         $this->startUserRequestAs($this->owner->id);
-        $this->runOnBus(new AddTaskWait($second->id, $first->id));
+        $this->runOnBus(new AddTaskWaitCommand($second->id, $first->id));
 
         $waiting = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
 

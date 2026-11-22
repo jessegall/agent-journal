@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Helpers\Commands\CancelHelperJob;
+use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive]
 #[Name('helpers_cancel')]
-#[Dispatches(CancelHelperJob::class)]
+#[Dispatches(CancelHelperJobCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Cancel a helper job and stop its launch.')]
 final class CancelHelperJobTool extends JournalWriteTool
@@ -30,9 +30,9 @@ final class CancelHelperJobTool extends JournalWriteTool
         return ['job_id' => $schema->string()->max(64)->required()];
     }
 
-    protected function command(ToolArguments $arguments): CancelHelperJob
+    protected function command(ToolArguments $arguments): CancelHelperJobCommand
     {
-        return new CancelHelperJob($arguments->ulid('job_id'), $arguments->text('request_key'));
+        return new CancelHelperJobCommand($arguments->ulid('job_id'), $arguments->text('request_key'));
     }
 
     protected function present(mixed $commandResult): ToolResult

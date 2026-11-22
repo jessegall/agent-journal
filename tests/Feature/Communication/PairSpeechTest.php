@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AnswerChatQuestion;
-use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\ClaimSpeech;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
+use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Communication\Commands\ClaimSpeech\ClaimSpeechCommand;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\SpeechOpportunityState;
 use App\Communication\Exceptions\SpeechRefused;
@@ -38,21 +38,21 @@ final class PairSpeechTest extends MessagingTestCase
 
         $this->chat = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
         $this->asOwner();
-        $this->questionId = $this->runOnBus(new AskChatQuestion($this->chat->inbox_id, 'Ready?', 'question-key'));
+        $this->questionId = $this->runOnBus(new AskChatQuestionCommand($this->chat->inbox_id, 'Ready?', 'question-key'));
         $this->asAgent($this->builder);
     }
 
     public function test_an_agent_cannot_write_without_a_claim_or_beside_its_reserved_question(): void
     {
         $this->assertThrows(
-            fn () => $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Hi.', 'no-claim')),
+            fn () => $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Hi.', 'no-claim')),
             SpeechRefused::class,
         );
 
         $token = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $this->questionId));
 
         $this->assertThrows(
-            fn () => $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Hi.', 'beside', $token)),
+            fn () => $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Hi.', 'beside', $token)),
             SpeechRefused::class,
         );
     }
@@ -60,7 +60,7 @@ final class PairSpeechTest extends MessagingTestCase
     public function test_the_agent_answers_once_and_the_question_closes_once(): void
     {
         $token = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $this->questionId));
-        $answerId = $this->runOnBus(new AnswerChatQuestion($this->questionId, 'Yes.', 'answer-key', $token));
+        $answerId = $this->runOnBus(new AnswerChatQuestionCommand($this->questionId, 'Yes.', 'answer-key', $token));
 
         $question = Message::query()->acrossInboxes()->findOrFail($this->questionId);
         $opportunity = SpeechOpportunity::query()->onRoot($this->questionId)->sole();
@@ -71,7 +71,7 @@ final class PairSpeechTest extends MessagingTestCase
             $opportunity->contribution_message_id,
         ]);
         $this->assertThrows(
-            fn () => $this->runOnBus(new AnswerChatQuestion($this->questionId, 'Again.', 'second-key', $token)),
+            fn () => $this->runOnBus(new AnswerChatQuestionCommand($this->questionId, 'Again.', 'second-key', $token)),
             SpeechRefused::class,
         );
     }
@@ -82,18 +82,18 @@ final class PairSpeechTest extends MessagingTestCase
         $new = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $this->questionId));
 
         $this->assertThrows(
-            fn () => $this->runOnBus(new AnswerChatQuestion($this->questionId, 'Late.', 'old-key', $old)),
+            fn () => $this->runOnBus(new AnswerChatQuestionCommand($this->questionId, 'Late.', 'old-key', $old)),
             SpeechRefused::class,
         );
 
-        $this->runOnBus(new AnswerChatQuestion($this->questionId, 'Now.', 'new-key', $new));
+        $this->runOnBus(new AnswerChatQuestionCommand($this->questionId, 'Now.', 'new-key', $new));
         $this->assertSame(2, SpeechOpportunity::query()->onRoot($this->questionId)->sole()->lease_version);
     }
 
     public function test_a_claim_without_its_turns_grant_or_from_another_batch_is_refused(): void
     {
         $this->assertThrows(
-            fn () => $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $this->questionId, '', '')),
+            fn () => $this->runOnBus(new ClaimSpeechCommand($this->chat->inbox_id, $this->questionId, '', '')),
             SpeechRefused::class,
         );
 
@@ -101,7 +101,7 @@ final class PairSpeechTest extends MessagingTestCase
         $later = $this->claimSpeech($this->chat->inbox_id, $this->questionId);
 
         $this->assertThrows(
-            fn () => $this->runOnBus(new ClaimSpeech(
+            fn () => $this->runOnBus(new ClaimSpeechCommand(
                 $this->chat->inbox_id,
                 $this->questionId,
                 $later->batchId,

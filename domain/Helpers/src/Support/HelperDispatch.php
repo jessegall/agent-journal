@@ -8,8 +8,8 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\CreateAgent;
-use App\Agents\Commands\StartOwnedAgent;
+use App\Agents\Commands\CreateAgent\CreateAgentCommand;
+use App\Agents\Commands\StartOwnedAgent\StartOwnedAgentCommand;
 use App\Agents\Contracts\CallingDriver;
 use App\Agents\Contracts\StartReservations;
 use App\Agents\Enums\ConversationModeType;
@@ -159,7 +159,7 @@ final readonly class HelperDispatch
         $this->reserve($identity);
         $job->reopenForAttempt();
 
-        $start = $this->commands->run(new StartOwnedAgent(new OwnerStartRequest(
+        $start = $this->commands->run(new StartOwnedAgentCommand(new OwnerStartRequest(
             $requestId,
             $identity->helperActor(),
             $job->assignmentIdentity(),
@@ -330,7 +330,7 @@ final readonly class HelperDispatch
 
     private function newActor(DispatchRequest $request, ProfileSelection $profile): ActorIdentity
     {
-        return $this->commands->run(new CreateAgent(
+        return $this->commands->run(new CreateAgentCommand(
             sprintf('%s helper', $profile->base->label),
             $request->profileKey,
         ));
@@ -377,7 +377,7 @@ final readonly class HelperDispatch
 
         $this->responsibilities->assign($job->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($helper));
 
-        $start = $this->commands->run(new StartOwnedAgent(new OwnerStartRequest(
+        $start = $this->commands->run(new StartOwnedAgentCommand(new OwnerStartRequest(
             $job->id,
             $helper,
             $job->assignmentIdentity(),

@@ -12,7 +12,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
-use Domain\Plans\Commands\RequestPlanReview;
+use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\States\Support\ReviewingPlanStateReference;
 use Domain\Plans\Tests\TestCase;
@@ -39,7 +39,7 @@ final class PlanReviewStateTest extends TestCase
         $plan = Plan::factory()->create();
         $this->actAsUser();
 
-        $this->app->make(CommandBus::class)->run(new RequestPlanReview($plan->id, [
+        $this->app->make(CommandBus::class)->run(new RequestPlanReviewCommand($plan->id, [
             new ActorIdentity(ActorType::Agent, TestIds::of(1)),
             new ActorIdentity(ActorType::User, TestIds::of(7)),
         ]));
@@ -53,7 +53,7 @@ final class PlanReviewStateTest extends TestCase
         $plan = Plan::factory()->create();
         $this->actAsUser();
 
-        $this->app->make(CommandBus::class)->run(new RequestPlanReview($plan->id, [
+        $this->app->make(CommandBus::class)->run(new RequestPlanReviewCommand($plan->id, [
             new ActorIdentity(ActorType::User, TestIds::of(7)),
         ]));
 

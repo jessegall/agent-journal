@@ -22,8 +22,8 @@ final class ExplicitTransactionTest extends TestCase
      * The folders judged: the test modules now; each later phase adds the owner it moves.
      */
     public const array CHECKED = [
-        'app/Agents/Handlers',
-        'app/Assignments/Handlers',
+        'app/Agents/Commands',
+        'app/Assignments/Commands',
         'app/Bus',
         'app/Records',
         'app/Sharing',
@@ -49,7 +49,7 @@ final class ExplicitTransactionTest extends TestCase
     private const array ALLOWED = [
         // The bus's own frame step: the one place that opens a command's transaction.
         'app/Bus/CommandMiddleware/RunInTransaction.php',
-        'tests/Fixtures/Modules/Notes/src/Handlers/OpenTransactionNoteHandler.php',
+        'tests/Fixtures/Modules/Notes/src/Commands/OpenTransactionNote/OpenTransactionNoteHandler.php',
     ];
 
     /**

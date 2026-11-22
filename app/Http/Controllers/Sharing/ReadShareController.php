@@ -8,7 +8,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Http\Requests\Sharing\ReadShareRequest;
 use App\Http\Responses\Sharing\SharedPageResponses;
-use App\Sharing\Commands\ReadShare;
+use App\Sharing\Commands\ReadShare\ReadShareCommand;
 use App\Sharing\Exceptions\ShareLinkRefused;
 use App\Sharing\Exceptions\ShareReadLimited;
 use App\Sharing\Support\ReadPermit;
@@ -35,7 +35,7 @@ final readonly class ReadShareController
             $permit = $this->issue($request, $permits, $limits);
             $limits->admitRead($permit->shareId);
 
-            $read = new ReadShare(
+            $read = new ReadShareCommand(
                 $permit->reference,
                 $request->sharePath(),
                 $request->cursor(),

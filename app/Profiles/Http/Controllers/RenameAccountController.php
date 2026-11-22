@@ -6,7 +6,7 @@ namespace App\Profiles\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\RenameAccountRequest;
-use App\Profiles\Commands\RenameAccount;
+use App\Profiles\Commands\RenameAccount\RenameAccountCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -20,7 +20,7 @@ final readonly class RenameAccountController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new RenameAccount($request->accountId(), $request->label(), $request->seenRevision()));
+        $commands->run(new RenameAccountCommand($request->accountId(), $request->label(), $request->seenRevision()));
 
         return $redirect->back(303);
     }

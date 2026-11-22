@@ -17,10 +17,10 @@ use App\Desks\Contracts\RunClaims;
 use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskRunState;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
@@ -66,13 +66,13 @@ final class TaskRunTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
         $bus = $this->app->make(CommandBus::class);
 
-        $runNumber = $bus->run(new StartTask($task->id));
+        $runNumber = $bus->run(new StartTaskCommand($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
 
         $this->assertSame(1, $runNumber);
         $this->assertTrue($this->holderOf($run)?->isSameAs(ActorIdentity::of($this->owner)));
 
-        $bus->run(new FinishTask($task->id, 1, 'Done'));
+        $bus->run(new FinishTaskCommand($task->id, 1, 'Done'));
 
         $this->assertSame(TaskRunState::Finished, $run->refresh()->state);
         $this->assertNull($this->holderOf($run));
@@ -83,19 +83,19 @@ final class TaskRunTest extends TestCase
         $task = Task::factory()->create();
         $this->startUserRequestAs($this->owner->id);
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new StartTask($task->id));
+        $bus->run(new StartTaskCommand($task->id));
         $tooLong = str_repeat('a', Task::NOTE_CHARACTER_LIMIT + 1);
 
-        $finish = new FinishTask($task->id, 1, $tooLong);
-        $block = new BlockTask($task->id, 1, $tooLong);
-        $cancel = new CancelTask($task->id, $tooLong);
+        $finish = new FinishTaskCommand($task->id, 1, $tooLong);
+        $block = new BlockTaskCommand($task->id, 1, $tooLong);
+        $cancel = new CancelTaskCommand($task->id, $tooLong);
 
         $this->assertThrows(fn () => $bus->run($finish), CommandInputInvalid::class, 'note:');
         $this->assertThrows(fn () => $bus->run($block), CommandInputInvalid::class, 'reason:');
         $this->assertThrows(fn () => $bus->run($cancel), CommandInputInvalid::class, 'reason:');
         $this->assertSame(TaskState::Started, $task->refresh()->state);
 
-        $bus->run(new FinishTask($task->id, 1, str_repeat('a', Task::NOTE_CHARACTER_LIMIT)));
+        $bus->run(new FinishTaskCommand($task->id, 1, str_repeat('a', Task::NOTE_CHARACTER_LIMIT)));
 
         $this->assertSame(TaskState::Finished, $task->refresh()->state);
     }
@@ -117,7 +117,7 @@ final class TaskRunTest extends TestCase
         );
 
         $this->startRequestAs($leaving->agent_id, $leaving->id);
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 
         $this->startUserRequestAs($this->owner->id);
 
@@ -133,7 +133,7 @@ final class TaskRunTest extends TestCase
         $this->startRequestAs($leaving->agent_id, $leaving->id);
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 1, 'Done')),
+            fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 1, 'Done')),
             ActorNotAllowed::class,
         );
     }

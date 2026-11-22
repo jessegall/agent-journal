@@ -6,7 +6,7 @@ namespace App\Supervision\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Supervision\Calls\ReplyToAskCall;
-use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Commands\ReplyToAsk\ReplyToAskCommand;
 use App\Supervision\Contracts\AskReader;
 use App\Supervision\Data\AskCard;
 use App\Supervision\Values\AskReference;
@@ -15,7 +15,7 @@ final readonly class ReplyToAskController
 {
     public function __invoke(ReplyToAskCall $call, AskReader $asks, CommandBus $commands): AskCard
     {
-        $reference = $commands->run(new ReplyToAsk(new AskReference(strtolower($call->id)), $call->body));
+        $reference = $commands->run(new ReplyToAskCommand(new AskReference(strtolower($call->id)), $call->body));
 
         return $asks->card($reference);
     }

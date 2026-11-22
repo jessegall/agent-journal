@@ -9,8 +9,8 @@ use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Values\ProfileBase;
-use App\Settings\Commands\EnableSettingGroup;
-use App\Settings\Commands\SetIntegerSetting;
+use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Settings\Commands\SetIntegerSetting\SetIntegerSettingCommand;
 use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Enums\SettingsOutcome;
@@ -31,7 +31,7 @@ use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
 use Illuminate\Support\Facades\Event;
-use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
+use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail\SetIntegerSettingThenFailCommand;
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsCommandModules;
@@ -118,7 +118,7 @@ final class SettingsCommandsTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(
-                new SetIntegerSettingThenFail($change->setting, $change->settingNumber, $change->expectedRevision),
+                new SetIntegerSettingThenFailCommand($change->setting, $change->settingNumber, $change->expectedRevision),
             ),
             NoteWorkFailed::class,
         );
@@ -176,7 +176,7 @@ final class SettingsCommandsTest extends TestCase
 
     public function test_an_agent_another_user_and_a_forged_address_are_refused_before_any_record_is_touched(): void
     {
-        $command = new SetIntegerSetting(new SettingReference('Reviews', 'retry_limit'), 4, 0);
+        $command = new SetIntegerSettingCommand(new SettingReference('Reviews', 'retry_limit'), 4, 0);
 
         $agent = TestIds::of(3);
         $this->app->make(CurrentActorSetter::class)->set(
@@ -191,11 +191,11 @@ final class SettingsCommandsTest extends TestCase
         $this->actAs(ActorContext::forUser($this->ownerId));
         $this->assertRefused(
             SettingUnavailable::class,
-            new SetIntegerSetting(new SettingReference('Reviews', 'not_declared'), 4, 0),
+            new SetIntegerSettingCommand(new SettingReference('Reviews', 'not_declared'), 4, 0),
         );
         $this->assertRefused(
             SettingUnavailable::class,
-            new SetIntegerSetting(new SettingReference('Forged', 'retry_limit'), 4, 0),
+            new SetIntegerSettingCommand(new SettingReference('Forged', 'retry_limit'), 4, 0),
         );
 
         $this->assertSame(0, SettingsRecord::query()->count());
@@ -205,12 +205,12 @@ final class SettingsCommandsTest extends TestCase
     {
         $this->assertRefused(
             SettingValueInvalid::class,
-            new SetIntegerSetting(new SettingReference('Reviews', 'title'), 4, 0),
+            new SetIntegerSettingCommand(new SettingReference('Reviews', 'title'), 4, 0),
         );
         $this->assertRefused(SettingValueInvalid::class, $this->commands->integer($this->reviews->retryLimit, 11, 0));
         $this->assertRefused(
             SettingValueInvalid::class,
-            new EnableSettingGroup(new GroupReference('Reviews', 'general'), 0),
+            new EnableSettingGroupCommand(new GroupReference('Reviews', 'general'), 0),
         );
 
         $this->assertSame(0, SettingsRecord::query()->count());

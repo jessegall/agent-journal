@@ -9,7 +9,7 @@ use App\Assignments\Events\AssignmentsChanged;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
-use App\Communication\Commands\HideUnseatedNotifications;
+use App\Communication\Commands\HideUnseatedNotifications\HideUnseatedNotificationsCommand;
 use App\Contracts\Listener;
 
 /**
@@ -29,9 +29,9 @@ final readonly class HideReceiptsOfLostSeats implements Listener
                 $hidden = $this->journal->runAsJournal(
                     CommandEntry::EngineMaintenance,
                     self::TRUSTED_ENTRY,
-                    new HideUnseatedNotifications($holder->type, $holder->id),
+                    new HideUnseatedNotificationsCommand($holder->type, $holder->id),
                 );
-            } while ($hidden === HideUnseatedNotifications::BATCH);
+            } while ($hidden === HideUnseatedNotificationsCommand::BATCH);
         }
     }
 

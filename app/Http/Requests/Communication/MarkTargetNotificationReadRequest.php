@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\MarkTargetNotificationRead;
+use App\Communication\Commands\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class MarkTargetNotificationReadRequest extends FormRequest
@@ -20,9 +20,9 @@ final class MarkTargetNotificationReadRequest extends FormRequest
         ];
     }
 
-    public function command(): MarkTargetNotificationRead
+    public function command(): MarkTargetNotificationReadCommand
     {
-        return new MarkTargetNotificationRead(
+        return new MarkTargetNotificationReadCommand(
             $this->string('targetKey')->toString(),
             $this->string('targetId')->toString(),
         );

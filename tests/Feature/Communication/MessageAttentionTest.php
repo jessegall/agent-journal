@@ -10,9 +10,9 @@ use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Communication\Models\MessageAttention;
-use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\CreateDesk\CreateDeskCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
@@ -60,7 +60,7 @@ final class MessageAttentionTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $deskId = $this->app->make(CommandBus::class)->run(new CreateDesk('Team', 3, false));
+        $deskId = $this->app->make(CommandBus::class)->run(new CreateDeskCommand('Team', 3, false));
         $desk = DeskRecord::query()->whereKey($deskId)->sole();
         $running = [Agent::create('First', 'main-agent'), Agent::create('Second', 'main-agent')];
         $idle = Agent::create('Idle', 'main-agent');
@@ -80,11 +80,11 @@ final class MessageAttentionTest extends TestCase
         $source = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
         $key = (string) Str::ulid();
         $this->app->make(RequestKey::class)->set($key);
-        $this->app->make(CommandBus::class)->run(new AskMessage($source, $desk->inboxId(), 'Who takes this?'));
+        $this->app->make(CommandBus::class)->run(new AskMessageCommand($source, $desk->inboxId(), 'Who takes this?'));
         $this->app->forgetScopedInstances();
         $this->startUserRequestAs($owner->id);
         $this->app->make(RequestKey::class)->set($key);
-        $this->app->make(CommandBus::class)->run(new AskMessage($source, $desk->inboxId(), 'Who takes this?'));
+        $this->app->make(CommandBus::class)->run(new AskMessageCommand($source, $desk->inboxId(), 'Who takes this?'));
 
         $this->assertSame(3, MessageAttention::query()->count());
         $this->assertSame(2, MessageAttention::query()->whereNotNull('request_id')->count());

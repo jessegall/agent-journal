@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Commands\AnswerNavigation;
+use App\Agents\Commands\AnswerNavigation\AnswerNavigationCommand;
 use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Values\NavigationAnswer;
 use App\Mcp\Attributes\Dispatches;
@@ -24,7 +24,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('navigation_answer')]
-#[Dispatches(AnswerNavigation::class)]
+#[Dispatches(AnswerNavigationCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
     'Send one round to a stalled screen, at the version and generation navigation_show gave: exactly one of keys '
@@ -47,9 +47,9 @@ final class NavigationAnswerTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): AnswerNavigation
+    protected function command(ToolArguments $arguments): AnswerNavigationCommand
     {
-        return new AnswerNavigation(
+        return new AnswerNavigationCommand(
             $arguments->text('request'),
             $arguments->positiveInteger('version'),
             $arguments->wholeNumber('generation'),

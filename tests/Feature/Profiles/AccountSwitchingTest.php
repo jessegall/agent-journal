@@ -11,8 +11,8 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Enums\HookDriver;
-use App\Profiles\Commands\RenameAccount;
-use App\Profiles\Commands\SwitchAccount;
+use App\Profiles\Commands\RenameAccount\RenameAccountCommand;
+use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\AccountLabelInvalid;
 use App\Profiles\Exceptions\AccountLabelTaken;
@@ -56,9 +56,9 @@ final class AccountSwitchingTest extends TestCase
         Event::fake([AccountsChanged::class]);
         [$work, $home] = [$this->account('Work'), $this->account('Home')];
 
-        $this->bus()->run(new SwitchAccount($work->id));
-        $this->bus()->run(new SwitchAccount($home->id));
-        $this->bus()->run(new SwitchAccount($home->id));
+        $this->bus()->run(new SwitchAccountCommand($work->id));
+        $this->bus()->run(new SwitchAccountCommand($home->id));
+        $this->bus()->run(new SwitchAccountCommand($home->id));
 
         $selection = ActiveAccount::query()->sole();
         $this->assertSame([$home->id, 2], [$selection->account_id, $selection->change_number]);
@@ -69,13 +69,13 @@ final class AccountSwitchingTest extends TestCase
     public function test_a_choice_made_against_an_older_selection_is_refused_and_leaves_the_newer_one(): void
     {
         [$work, $home] = [$this->account('Work'), $this->account('Home')];
-        $this->bus()->run(new SwitchAccount($work->id, 0));
+        $this->bus()->run(new SwitchAccountCommand($work->id, 0));
 
-        $this->assertRefused(AccountSelectionChanged::class, new SwitchAccount($home->id, 0));
+        $this->assertRefused(AccountSelectionChanged::class, new SwitchAccountCommand($home->id, 0));
 
         $selection = ActiveAccount::query()->sole();
         $this->assertSame([$work->id, 1], [$selection->account_id, $selection->change_number]);
-        $this->bus()->run(new SwitchAccount($home->id, 1));
+        $this->bus()->run(new SwitchAccountCommand($home->id, 1));
         $this->assertSame($home->id, $selection->refresh()->account_id);
     }
 
@@ -83,10 +83,10 @@ final class AccountSwitchingTest extends TestCase
     {
         [$work, $home] = [$this->account('Work'), $this->account('Home')];
         $codex = Account::create(HookDriver::Codex, AccountLabel::from('Codex'), '/journal/accounts/Codex');
-        $this->bus()->run(new SwitchAccount($codex->id, 0));
-        $this->bus()->run(new SwitchAccount($work->id, 0));
+        $this->bus()->run(new SwitchAccountCommand($codex->id, 0));
+        $this->bus()->run(new SwitchAccountCommand($work->id, 0));
 
-        $this->assertRefused(AccountSelectionChanged::class, new SwitchAccount($home->id, 0));
+        $this->assertRefused(AccountSelectionChanged::class, new SwitchAccountCommand($home->id, 0));
 
         $chosen = ActiveAccount::query()->withoutGlobalScopes()->pluck('account_id', 'driver')->all();
         $this->assertSame(['claude-code' => $work->id, 'codex' => $codex->id], $chosen);
@@ -97,38 +97,38 @@ final class AccountSwitchingTest extends TestCase
         $held = $this->account('Held');
         $held->beginRemoval();
 
-        $this->assertRefused(AccountUnavailable::class, new SwitchAccount($held->id));
+        $this->assertRefused(AccountUnavailable::class, new SwitchAccountCommand($held->id));
 
         $held->finishRemoval();
-        $this->assertRefused(AccountMissing::class, new SwitchAccount($held->id));
-        $this->assertRefused(AccountMissing::class, new RenameAccount($held->id, 'Other'));
+        $this->assertRefused(AccountMissing::class, new SwitchAccountCommand($held->id));
+        $this->assertRefused(AccountMissing::class, new RenameAccountCommand($held->id, 'Other'));
     }
 
     public function test_a_rename_trims_the_name_and_refuses_one_another_account_holds(): void
     {
         [$work, $home] = [$this->account('Work'), $this->account('Home')];
 
-        $this->bus()->run(new RenameAccount($work->id, '  Office '));
+        $this->bus()->run(new RenameAccountCommand($work->id, '  Office '));
 
         $this->assertSame('Office', $work->refresh()->label);
-        $this->assertRefused(AccountLabelTaken::class, new RenameAccount($home->id, 'OFFICE'));
-        $this->assertRefused(AccountLabelInvalid::class, new RenameAccount($home->id, '../etc'));
+        $this->assertRefused(AccountLabelTaken::class, new RenameAccountCommand($home->id, 'OFFICE'));
+        $this->assertRefused(AccountLabelInvalid::class, new RenameAccountCommand($home->id, '../etc'));
     }
 
     public function test_two_tabs_renaming_one_account_refuse_the_second_until_it_saves_again(): void
     {
         $work = $this->account('Work');
 
-        $this->bus()->run(new RenameAccount($work->id, 'Office', 0));
-        $this->assertRefused(AccountNameChanged::class, new RenameAccount($work->id, 'Desk', 0));
+        $this->bus()->run(new RenameAccountCommand($work->id, 'Office', 0));
+        $this->assertRefused(AccountNameChanged::class, new RenameAccountCommand($work->id, 'Desk', 0));
 
         $work->refresh();
         $this->assertSame(['Office', 1], [$work->label, $work->name_revision]);
-        $this->bus()->run(new RenameAccount($work->id, 'Desk', 1));
+        $this->bus()->run(new RenameAccountCommand($work->id, 'Desk', 1));
         $this->assertSame(['Desk', 2], [$work->refresh()->label, $work->name_revision]);
 
         $work->forceFill(['checked_at' => now()])->save();
-        $this->bus()->run(new RenameAccount($work->id, 'Desk', 2));
+        $this->bus()->run(new RenameAccountCommand($work->id, 'Desk', 2));
         $this->assertSame(2, $work->refresh()->name_revision);
     }
 
@@ -140,14 +140,14 @@ final class AccountSwitchingTest extends TestCase
             TestStartAuthority::forAgent(TestIds::of(9)),
         );
 
-        $this->assertRefused(ActorNotAllowed::class, new SwitchAccount($work->id));
-        $this->assertRefused(ActorNotAllowed::class, new RenameAccount($work->id, 'Mine'));
+        $this->assertRefused(ActorNotAllowed::class, new SwitchAccountCommand($work->id));
+        $this->assertRefused(ActorNotAllowed::class, new RenameAccountCommand($work->id, 'Mine'));
     }
 
     /**
      * @param  class-string<\Throwable>  $refusal
      */
-    private function assertRefused(string $refusal, SwitchAccount|RenameAccount $command): void
+    private function assertRefused(string $refusal, SwitchAccountCommand|RenameAccountCommand $command): void
     {
         try {
             $this->bus()->run($command);

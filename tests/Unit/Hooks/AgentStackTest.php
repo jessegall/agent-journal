@@ -29,7 +29,7 @@ use App\Hooks\Stack\HookAnswer;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\WalkStep;
-use App\Records\Commands\UnlinkRecords;
+use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Skills\Enums\PublicationState;
 use App\Skills\States\AwaitingSkillsState;
 use Carbon\CarbonImmutable;
@@ -245,9 +245,9 @@ final class AgentStackTest extends TestCase
 
     public function test_commands_and_events_are_gathered_in_order_from_the_states_asked(): void
     {
-        $first = new UnlinkRecords(TestActors::record('tasks.task', 1), TestActors::record('tasks.task', 2));
+        $first = new UnlinkRecordsCommand(TestActors::record('tasks.task', 1), TestActors::record('tasks.task', 2));
         $event = new TaskClosed(5);
-        $second = new UnlinkRecords(TestActors::record('tasks.task', 3), TestActors::record('tasks.task', 4));
+        $second = new UnlinkRecordsCommand(TestActors::record('tasks.task', 3), TestActors::record('tasks.task', 4));
         $stack = $this->stack(
             $this->ready(),
             $this->frame('below', new StopAnswerState($second)),

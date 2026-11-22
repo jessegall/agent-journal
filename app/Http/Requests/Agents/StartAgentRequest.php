@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Values\ModelSelection;
@@ -33,7 +33,7 @@ final class StartAgentRequest extends FormRequest
         ];
     }
 
-    public function command(): StartAgent
+    public function command(): StartAgentCommand
     {
         $selection = SelectedDriver::resolve(
             $this->filled('driver') ? $this->string('driver')->toString() : null,
@@ -42,7 +42,7 @@ final class StartAgentRequest extends FormRequest
             null,
         );
 
-        return new StartAgent(new StartRequest(
+        return new StartAgentCommand(new StartRequest(
             $this->string('requestId')->lower()->toString(),
             strtolower((string) $this->route('agent')),
             $selection,

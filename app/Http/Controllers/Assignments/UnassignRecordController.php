@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Assignments\Commands\UnassignRecord;
+use App\Assignments\Commands\UnassignRecord\UnassignRecordCommand;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Assignments\AssignmentResultData;
@@ -22,7 +22,7 @@ final readonly class UnassignRecordController
         CommandBus $commands,
         AssigneeResolver $assignees,
     ): JsonResponse {
-        $assignmentChange = $commands->run(new UnassignRecord($request->record(), $request->expected()));
+        $assignmentChange = $commands->run(new UnassignRecordCommand($request->record(), $request->expected()));
 
         return new JsonResponse(
             AssignmentResultData::of($assignmentChange, $assignees->holdersOf($assignmentChange->currentAssignments())),

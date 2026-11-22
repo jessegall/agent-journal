@@ -29,9 +29,9 @@ use App\Agents\Values\DriverSwitchTarget;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Enums\HookDriver;
-use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\StartProfileMain;
-use App\Profiles\Commands\SwitchAgentDriver;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\StartProfileMain\StartProfileMainCommand;
+use App\Profiles\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Exceptions\DriverSwitchStale;
 use App\Profiles\Exceptions\ProfileCannotCoordinate;
@@ -272,7 +272,7 @@ final class ProfileStartTest extends TestCase
 
     private function resume(string $conversationId): StartReceipt
     {
-        return $this->app->make(CommandBus::class)->run(new StartProfileMain(
+        return $this->app->make(CommandBus::class)->run(new StartProfileMainCommand(
             strtolower((string) Str::ulid()),
             $this->main->id,
             ProfileKey::from('journal-main'),
@@ -295,7 +295,7 @@ final class ProfileStartTest extends TestCase
 
     private function switchTo(string $requestId, string $sessionId, Account $account): DriverSwitchReceipt
     {
-        return $this->app->make(CommandBus::class)->run(new SwitchAgentDriver(
+        return $this->app->make(CommandBus::class)->run(new SwitchAgentDriverCommand(
             $requestId,
             $this->main->id,
             ProfileKey::from('journal-main'),
@@ -387,7 +387,7 @@ final class ProfileStartTest extends TestCase
 
     private function activate(ProposedProfile $profile): void
     {
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of($profile)));
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of($profile)));
     }
 
     private function start(
@@ -397,7 +397,7 @@ final class ProfileStartTest extends TestCase
         DriverVariant|null $variant = null,
         Account|null $chosen = null,
     ): StartReceipt {
-        $start = new StartProfileMain(
+        $start = new StartProfileMainCommand(
             $requestId ?? strtolower((string) Str::ulid()),
             $this->main->id,
             ProfileKey::from('journal-main'),

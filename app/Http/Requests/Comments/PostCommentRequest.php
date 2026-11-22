@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Comments;
 
-use App\Comments\Commands\PostComment;
-use App\Comments\Commands\PostTextComment;
+use App\Comments\Commands\PostComment\PostCommentCommand;
+use App\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use App\Http\Requests\RecordTargetRequest;
 use App\Records\Contracts\RecordResolver;
 use App\Text\Enums\TextAnchorType;
@@ -90,15 +90,15 @@ final class PostCommentRequest extends RecordTargetRequest
      * The command for the comment asked for: about the whole record when no anchor field is given, otherwise about
      * the one place the fields describe.
      */
-    public function command(RecordResolver $records): PostComment|PostTextComment
+    public function command(RecordResolver $records): PostCommentCommand|PostTextCommentCommand
     {
         $target = $this->target($records);
 
         if ($this->givenAnchorFields() === []) {
-            return new PostComment($target, $this->body(), $this->submissionKey());
+            return new PostCommentCommand($target, $this->body(), $this->submissionKey());
         }
 
-        return new PostTextComment(
+        return new PostTextCommentCommand(
             $target,
             $this->body(),
             $this->range(

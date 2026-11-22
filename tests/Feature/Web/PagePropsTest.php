@@ -18,7 +18,7 @@ use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
 use App\Web\Data\ReadyWindow;
 use App\Web\Data\UnavailableWindow;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
@@ -129,7 +129,7 @@ final class PagePropsTest extends TestCase
 
     public function test_a_section_on_the_inspected_record_reads_that_record_by_its_number(): void
     {
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Design\n"));
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', "# Design\n"));
         $document = Document::query()->where('number', 1)->sole();
 
         $section = ($this->pageProps('/shelf?inspect=shelf.shelf&shelf=1')['inspector_section_shelf_margin_shelf_record'])();

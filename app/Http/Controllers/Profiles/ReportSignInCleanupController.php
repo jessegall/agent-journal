@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Profiles;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\CleanupReportRequest;
-use App\Profiles\Commands\CleanSignInAttempt;
+use App\Profiles\Commands\CleanSignInAttempt\CleanSignInAttemptCommand;
 use Illuminate\Http\Response;
 
 /**
@@ -17,7 +17,7 @@ final readonly class ReportSignInCleanupController
 {
     public function __invoke(CleanupReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new CleanSignInAttempt($host->hostId, $request->targetId(), $request->progress()));
+        $commands->run(new CleanSignInAttemptCommand($host->hostId, $request->targetId(), $request->progress()));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

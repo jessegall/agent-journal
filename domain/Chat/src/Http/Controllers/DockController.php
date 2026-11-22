@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Chat\Commands\DockSource;
+use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Data\DockAnswerData;
 use Domain\Chat\Data\DockInput;
 use Illuminate\Http\RedirectResponse;
@@ -33,7 +33,7 @@ final readonly class DockController
         Redirector $redirect,
     ): DockAnswerData|RedirectResponse {
         $answer = DockAnswerData::fromDockResult(
-            $commands->run(new DockSource($input->inboxId, $input->type, $input->id, $input->presentation)),
+            $commands->run(new DockSourceCommand($input->inboxId, $input->type, $input->id, $input->presentation)),
         );
 
         if ($request->expectsJson()) {

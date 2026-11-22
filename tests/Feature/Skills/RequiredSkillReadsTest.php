@@ -13,7 +13,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Support\ContextReminders;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Values\ProfileBase;
 use App\Skills\Listeners\AdmitStartSkills;
 use App\Skills\Listeners\RefreshSessionSkills;
@@ -88,7 +88,7 @@ final class RequiredSkillReadsTest extends TestCase
     private function startedReviewer(): AgentSession
     {
         $this->actAs(TestActors::user(7));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',
                 ProfileBase::readOnlyHelper(),

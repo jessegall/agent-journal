@@ -10,9 +10,9 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Rules\Api\Events\RuleRemoved;
-use Domain\Rules\Commands\ApproveRule;
-use Domain\Rules\Commands\ProposeRule;
-use Domain\Rules\Commands\RemoveRule;
+use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
+use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
@@ -51,7 +51,7 @@ final class RuleCommandsTest extends TestCase
         $this->startRequestAs(TestIds::of(3), TestIds::of(4));
 
         $id = $this->app->make(CommandBus::class)->run(
-            new ProposeRule('Every phase ends with its tests.', 'Phases ended untested.'),
+            new ProposeRuleCommand('Every phase ends with its tests.', 'Phases ended untested.'),
         );
 
         $this->assertSame(RuleState::Proposed, Rule::query()->findOrFail($id)->state);
@@ -66,7 +66,7 @@ final class RuleCommandsTest extends TestCase
 
         $rule = HoldingRules::create('Old rule.');
 
-        $this->app->make(CommandBus::class)->run(new RemoveRule($rule->id));
+        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand($rule->id));
 
         $this->assertSame(RuleState::Removed, $rule->fresh()?->state);
         Event::assertDispatched(RuleRemoved::class, fn (RuleRemoved $event) => $event->ruleId === $rule->id);
@@ -87,7 +87,7 @@ final class RuleCommandsTest extends TestCase
         );
 
         try {
-            $this->app->make(CommandBus::class)->run(new ApproveRule($rule->id));
+            $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($rule->id));
             $this->fail('An agent approved a rule.');
         } catch (ActorNotAllowed) {
             $this->assertSame(RuleState::Proposed, $rule->fresh()?->state);
@@ -108,7 +108,7 @@ final class RuleCommandsTest extends TestCase
             ActorContext::forAgent(TestIds::of(70)),
         );
 
-        Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRule($rule->id)));
+        Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRuleCommand($rule->id)));
 
         $this->postJson('/rules-test/approve')->assertForbidden();
     }
@@ -122,6 +122,6 @@ final class RuleCommandsTest extends TestCase
 
         $this->expectExceptionObject(RuleMissing::withId(TestIds::of(999999)));
 
-        $this->app->make(CommandBus::class)->run(new RemoveRule(TestIds::of(999999)));
+        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand(TestIds::of(999999)));
     }
 }

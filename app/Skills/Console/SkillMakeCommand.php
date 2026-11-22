@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Console;
 
 use App\Bus\Contracts\CommandBus;
-use App\Skills\Commands\CreateSkill;
+use App\Skills\Commands\CreateSkill\CreateSkillCommand;
 use App\Skills\Console\Concerns\PrintsSkillRefusals;
 use App\Skills\Console\Concerns\ReadsAudienceOptions;
 use App\Skills\Support\SkillAuthoring;
@@ -42,7 +42,7 @@ final class SkillMakeCommand extends Command
                 $console->conditionOf($this->conditionsOption(), $this->audience()),
             );
 
-            return $console->savedLines($commands->run(new CreateSkill($key, $requestId, $draft)));
+            return $console->savedLines($commands->run(new CreateSkillCommand($key, $requestId, $draft)));
         });
     }
 }

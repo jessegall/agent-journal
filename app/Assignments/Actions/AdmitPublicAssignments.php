@@ -6,7 +6,7 @@ namespace App\Assignments\Actions;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Assignments\Commands\AssignRecordForMaintenance;
+use App\Assignments\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
 use App\Assignments\Contracts\AssigneeLocks;
 use App\Assignments\Contracts\AssignmentDestinationResolver;
 use App\Assignments\Contracts\AssignmentProviders;
@@ -45,7 +45,7 @@ final readonly class AdmitPublicAssignments
     public function admitMaintenance(RecordIdentity $record, AssigneeIdentity $requested): AdmittedAssignment
     {
         $this->providers->assertPublic($record->type);
-        $this->maintenance->assertMaintenanceGranted(AssignRecordForMaintenance::FILL_SCOPE);
+        $this->maintenance->assertMaintenanceGranted(AssignRecordForMaintenanceCommand::FILL_SCOPE);
 
         return $this->resolve($record, $requested);
     }

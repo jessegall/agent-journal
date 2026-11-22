@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Hooks\StateEffects;
 use App\Bus\Contracts\CommandBus as Runner;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
-use App\Records\Commands\UnlinkRecords;
+use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Records\Support\RecordIdentity;
 
 /**
@@ -19,7 +19,7 @@ final class RunsTheBus extends AgentState
 
     public function onStop(StopRequested $input): null
     {
-        $command = new UnlinkRecords(new RecordIdentity('tasks.task', '1'), new RecordIdentity('tasks.task', '2'));
+        $command = new UnlinkRecordsCommand(new RecordIdentity('tasks.task', '1'), new RecordIdentity('tasks.task', '2'));
 
         $this->runner->run($command);
 

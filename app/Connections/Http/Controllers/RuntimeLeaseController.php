@@ -6,7 +6,7 @@ namespace App\Connections\Http\Controllers;
 
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RenewRuntimeLease;
+use App\Connections\Commands\RenewRuntimeLease\RenewRuntimeLeaseCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,7 +22,7 @@ final readonly class RuntimeLeaseController
         HostContext $host,
         CommandBus $commands,
     ): JsonResponse {
-        $lease = $commands->run(new RenewRuntimeLease(
+        $lease = $commands->run(new RenewRuntimeLeaseCommand(
             $host->hostId,
             $binding,
             $runtime,

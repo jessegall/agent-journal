@@ -14,7 +14,7 @@ use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareScope;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
@@ -58,7 +58,7 @@ final class PlanSharingTest extends TestCase
     public function test_a_plan_previews_as_a_summary_root_with_its_linked_document_as_a_candidate(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(1), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 

@@ -7,7 +7,7 @@ namespace Domain\Plans\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Commands\AddPhase;
+use Domain\Plans\Commands\AddPhase\AddPhaseCommand;
 use Domain\Plans\Enums\PlanTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('phases_create')]
-#[Dispatches(AddPhase::class)]
+#[Dispatches(AddPhaseCommand::class)]
 #[Description('Add a phase after the last phase of a plan.')]
 final class CreatePhaseTool extends PlanWriteTool
 {
@@ -30,9 +30,9 @@ final class CreatePhaseTool extends PlanWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): AddPhase
+    protected function command(ToolArguments $arguments): AddPhaseCommand
     {
-        return new AddPhase($arguments->ulid('plan_id'), $arguments->text('title'));
+        return new AddPhaseCommand($arguments->ulid('plan_id'), $arguments->text('title'));
     }
 
     protected function present(mixed $phaseId): ToolResult

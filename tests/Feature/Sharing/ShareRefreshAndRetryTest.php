@@ -8,10 +8,10 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Links\Models\Link;
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Commands\CreateShare;
-use App\Sharing\Commands\RefreshShareScope;
-use App\Sharing\Commands\RetryShare;
-use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
+use App\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
+use App\Sharing\Commands\RetryShare\RetryShareCommand;
+use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
@@ -78,7 +78,7 @@ final class ShareRefreshAndRetryTest extends TestCase
         $saved = $this->preview($this->root, [TestIds::of(102)]);
 
         $summary = $this->runOwner(
-            fn (string $key) => new RefreshShareScope($share->id, $saved->previewId, $saved->checksum, $key),
+            fn (string $key) => new RefreshShareScopeCommand($share->id, $saved->previewId, $saved->checksum, $key),
         );
         $refreshed = Share::query()->findOrFail($share->id);
 
@@ -107,7 +107,7 @@ final class ShareRefreshAndRetryTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->runOwner(
-                fn (string $key) => new RefreshShareScope($share->id, $saved->previewId, $saved->checksum, $key),
+                fn (string $key) => new RefreshShareScopeCommand($share->id, $saved->previewId, $saved->checksum, $key),
             ),
             ShareRefreshRefused::class,
             ShareRefreshRefused::otherRoot($share->id)->getMessage(),
@@ -121,7 +121,7 @@ final class ShareRefreshAndRetryTest extends TestCase
         $share->state = ShareState::Failed;
         $share->save();
 
-        $summary = $this->runOwner(fn (string $key) => new RetryShare($share->id, $key));
+        $summary = $this->runOwner(fn (string $key) => new RetryShareCommand($share->id, $key));
 
         $this->assertSame(ShareState::Pending, $summary->state);
         $this->assertSame(2, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
@@ -148,7 +148,7 @@ final class ShareRefreshAndRetryTest extends TestCase
 
         foreach ([$expired, $revoked, $proposal] as $share) {
             $this->assertThrows(
-                fn () => $this->runOwner(fn (string $key) => new RetryShare($share->id, $key)),
+                fn () => $this->runOwner(fn (string $key) => new RetryShareCommand($share->id, $key)),
                 ShareRetryRefused::class,
             );
         }
@@ -163,7 +163,7 @@ final class ShareRefreshAndRetryTest extends TestCase
     {
         $saved = $this->preview($this->root, $selectedIds);
         $summary = $this->runOwner(
-            fn (string $key) => new CreateShare(
+            fn (string $key) => new CreateShareCommand(
                 $saved->previewId,
                 $saved->checksum,
                 ShareDuration::STANDARD_MINUTES,
@@ -183,14 +183,14 @@ final class ShareRefreshAndRetryTest extends TestCase
         $this->startTestUserRequest(9);
 
         return $this->app->make(CommandBus::class)->run(
-            new SaveSharePreview($root->type, $root->id, $selectedIds, $this->configuration->id),
+            new SaveSharePreviewCommand($root->type, $root->id, $selectedIds, $this->configuration->id),
         );
     }
 
     /**
      * Runs an owner command under a new request key.
      *
-     * @param  callable(string): (CreateShare|RefreshShareScope|RetryShare)  $command
+     * @param  callable(string): (CreateShareCommand|RefreshShareScopeCommand|RetryShareCommand)  $command
      */
     private function runOwner(callable $command): ShareSummary
     {

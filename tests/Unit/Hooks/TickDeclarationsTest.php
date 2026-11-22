@@ -11,7 +11,7 @@ use App\Hooks\States\AgentState;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;
-use App\Records\Commands\UnlinkRecords;
+use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Reflection\Support\ReflectedProperty;
 use App\Reflection\Support\Reflector;
 use Carbon\CarbonImmutable;
@@ -69,9 +69,9 @@ final class TickDeclarationsTest extends TestCase
         $this->assertSame(['now', 'delta', 'enteredAt', 'target'], $fields);
     }
 
-    private function command(int $number): UnlinkRecords
+    private function command(int $number): UnlinkRecordsCommand
     {
-        return new UnlinkRecords(
+        return new UnlinkRecordsCommand(
             TestActors::record('tasks.task', $number),
             TestActors::record('tasks.task', $number + 100),
         );

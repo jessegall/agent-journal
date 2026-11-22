@@ -7,8 +7,8 @@ namespace Tests\Feature\Profiles;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandAdmissionRefused;
-use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\SaveProfileDraft;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Profiles\Enums\CommandDirectory;
 use App\Profiles\Exceptions\InvalidScript;
 use App\Profiles\Exceptions\ProfileDraftRefused;
@@ -52,13 +52,13 @@ final class ProfileDraftTest extends TestCase
         $profile = ProfileKey::from('draft-test');
         $actor = Agent::create('Editor', 'writing-helper');
 
-        $this->assertSame(1, $commands->run(new SaveProfileDraft($profile, 0, new ScriptSource('syntax error'))));
+        $this->assertSame(1, $commands->run(new SaveProfileDraftCommand($profile, 0, new ScriptSource('syntax error'))));
         $this->startRequestAs($actor->id, TestIds::of(87));
 
         $draft = ScriptSource::fromDefinitions('RUN tests', self::COMMANDS);
-        $this->assertSame(2, $commands->run(new SaveProfileDraft($profile, 1, $draft)));
+        $this->assertSame(2, $commands->run(new SaveProfileDraftCommand($profile, 1, $draft)));
         $this->assertThrows(
-            fn () => $commands->run(new SaveProfileDraft($profile, 1, ScriptSource::empty())),
+            fn () => $commands->run(new SaveProfileDraftCommand($profile, 1, ScriptSource::empty())),
             ProfileDraftRefused::class,
             self::REVISION_TWO,
         );
@@ -70,7 +70,7 @@ final class ProfileDraftTest extends TestCase
         $this->assertEquals($draft, $latest->scriptSource());
         $this->assertSame(CommandDirectory::Workspace, $latest->scriptSource()->definitions()['tests']->directory);
         $this->assertThrows(
-            fn () => $commands->run(new ActivateProfiles($this->proposal())),
+            fn () => $commands->run(new ActivateProfilesCommand($this->proposal())),
             CommandAdmissionRefused::class,
         );
     }
@@ -81,14 +81,14 @@ final class ProfileDraftTest extends TestCase
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('draft-test');
 
-        $commands->run(new SaveProfileDraft($profile, 0, ScriptSource::empty()));
-        $activation = new ActivateProfiles($this->proposal(), DraftExpectations::fromOptions(['draft-test=1']));
+        $commands->run(new SaveProfileDraftCommand($profile, 0, ScriptSource::empty()));
+        $activation = new ActivateProfilesCommand($this->proposal(), DraftExpectations::fromOptions(['draft-test=1']));
         $first = $commands->run($activation);
         $this->assertTrue($first->profiles[0]->script->after->isEmpty());
 
-        $commands->run(new SaveProfileDraft($profile, 1, new ScriptSource('RUN tests')));
+        $commands->run(new SaveProfileDraftCommand($profile, 1, new ScriptSource('RUN tests')));
         $this->assertThrows(fn () => $commands->run($activation), ProfileDraftRefused::class, self::REVISION_TWO);
-        $updated = new ActivateProfiles($this->proposal(), DraftExpectations::fromOptions(['draft-test=2']));
+        $updated = new ActivateProfilesCommand($this->proposal(), DraftExpectations::fromOptions(['draft-test=2']));
         $this->assertThrows(
             fn () => $commands->run($updated),
             InvalidScript::class,

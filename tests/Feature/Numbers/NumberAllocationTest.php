@@ -20,8 +20,8 @@ use App\Reflection\Support\Reflector;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger;
-use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry;
+use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger\OpenLedgerCommand;
+use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry\WriteEntryCommand;
 use Tests\Fixtures\Modules\Ledger\LedgerDomain;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
@@ -68,16 +68,16 @@ final class NumberAllocationTest extends TestCase
 
     public function test_each_group_counts_on_its_own(): void
     {
-        $first = $this->commands->run(new OpenLedger('first'));
-        $second = $this->commands->run(new OpenLedger('second'));
+        $first = $this->commands->run(new OpenLedgerCommand('first'));
+        $second = $this->commands->run(new OpenLedgerCommand('second'));
 
         $this->assertSame(
             [1, 2],
             [Ledger::query()->findOrFail($first)->number, Ledger::query()->findOrFail($second)->number],
         );
-        $this->assertSame(1, $this->commands->run(new WriteEntry($first, 'a')));
-        $this->assertSame(2, $this->commands->run(new WriteEntry($first, 'b')));
-        $this->assertSame(1, $this->commands->run(new WriteEntry($second, 'c')));
+        $this->assertSame(1, $this->commands->run(new WriteEntryCommand($first, 'a')));
+        $this->assertSame(2, $this->commands->run(new WriteEntryCommand($first, 'b')));
+        $this->assertSame(1, $this->commands->run(new WriteEntryCommand($second, 'c')));
     }
 
     public function test_a_numbered_model_is_found_without_its_domain_listing_it(): void
@@ -94,16 +94,16 @@ final class NumberAllocationTest extends TestCase
 
     public function test_a_refused_command_takes_its_number_back_with_it(): void
     {
-        $ledger = $this->commands->run(new OpenLedger('ledger'));
+        $ledger = $this->commands->run(new OpenLedgerCommand('ledger'));
 
         try {
-            $this->commands->run(new WriteEntry($ledger, 'refused', refusedAfterSave: true));
+            $this->commands->run(new WriteEntryCommand($ledger, 'refused', refusedAfterSave: true));
             $this->fail('The write was not refused.');
         } catch (CommandRefused) {
             $this->assertSame(0, LedgerEntry::query()->count());
         }
 
-        $this->assertSame(1, $this->commands->run(new WriteEntry($ledger, 'kept')));
+        $this->assertSame(1, $this->commands->run(new WriteEntryCommand($ledger, 'kept')));
     }
 
     public function test_a_save_outside_a_command_is_refused(): void
@@ -113,7 +113,7 @@ final class NumberAllocationTest extends TestCase
 
     public function test_a_saved_number_never_changes(): void
     {
-        $ledger = Ledger::query()->findOrFail($this->commands->run(new OpenLedger('ledger')));
+        $ledger = Ledger::query()->findOrFail($this->commands->run(new OpenLedgerCommand('ledger')));
         $ledger->number = 7;
 
         $this->expectException(NumberChanged::class);
@@ -124,8 +124,8 @@ final class NumberAllocationTest extends TestCase
     public function test_a_held_group_lock_ends_in_the_bus_lock_timeout(): void
     {
         $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
-        $ledger = $this->commands->run(new OpenLedger('ledger'));
-        $this->commands->run(new WriteEntry($ledger, 'first'));
+        $ledger = $this->commands->run(new OpenLedgerCommand('ledger'));
+        $this->commands->run(new WriteEntryCommand($ledger, 'first'));
         config(['database.connections.second_writer' => config('database.connections.'.config('database.default'))]);
         $secondWriter = DB::connection('second_writer');
         $secondWriter->beginTransaction();
@@ -134,7 +134,7 @@ final class NumberAllocationTest extends TestCase
         try {
             $this->app->forgetScopedInstances();
             $this->startTestUserRequest(1);
-            $this->app->make(CommandBus::class)->run(new WriteEntry($ledger, 'waits'));
+            $this->app->make(CommandBus::class)->run(new WriteEntryCommand($ledger, 'waits'));
             $this->fail('The write did not wait on the held lock.');
         } catch (StackLockTimedOut) {
             $this->assertSame(1, LedgerEntry::query()->count());
@@ -146,15 +146,15 @@ final class NumberAllocationTest extends TestCase
 
     public function test_the_last_number_refuses_instead_of_wrapping(): void
     {
-        $ledger = $this->commands->run(new OpenLedger('ledger'));
-        $this->commands->run(new WriteEntry($ledger, 'first'));
+        $ledger = $this->commands->run(new OpenLedgerCommand('ledger'));
+        $this->commands->run(new WriteEntryCommand($ledger, 'first'));
         DB::table('number_groups')->where('holder_id', $ledger)->update(
             ['last_number' => NumberGroup::LAST_NUMBER_LIMIT],
         );
 
         $this->expectException(NumberLimitReached::class);
 
-        $this->commands->run(new WriteEntry($ledger, 'past the limit'));
+        $this->commands->run(new WriteEntryCommand($ledger, 'past the limit'));
     }
 
     private function createLedgerTables(): void

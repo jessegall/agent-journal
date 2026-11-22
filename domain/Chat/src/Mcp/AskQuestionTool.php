@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp;
 
-use App\Communication\Commands\AskQuestion;
+use App\Communication\Commands\AskQuestion\AskQuestionCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('messages_question')]
-#[Dispatches(AskQuestion::class)]
+#[Dispatches(AskQuestionCommand::class)]
 #[Description('Ask the journal owner a question and return its message ID immediately.')]
 final class AskQuestionTool extends JournalWriteTool
 {
@@ -34,9 +34,9 @@ final class AskQuestionTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): AskQuestion
+    protected function command(ToolArguments $arguments): AskQuestionCommand
     {
-        return new AskQuestion($arguments->text('body'), $this->relatedRecord($arguments));
+        return new AskQuestionCommand($arguments->text('body'), $this->relatedRecord($arguments));
     }
 
     protected function present(mixed $messageId): ToolResult

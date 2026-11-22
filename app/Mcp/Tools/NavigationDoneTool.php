@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Commands\ProveNavigation;
+use App\Agents\Commands\ProveNavigation\ProveNavigationCommand;
 use App\Agents\Enums\NavigationCompletion;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
@@ -23,7 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('navigation_done')]
-#[Dispatches(ProveNavigation::class)]
+#[Dispatches(ProveNavigationCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
     'Say a navigation request is done: completes goal (the whole goal shows) or step (only the stalled step is '
@@ -42,9 +42,9 @@ final class NavigationDoneTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): ProveNavigation
+    protected function command(ToolArguments $arguments): ProveNavigationCommand
     {
-        return new ProveNavigation(
+        return new ProveNavigationCommand(
             $arguments->text('request'),
             $arguments->positiveInteger('version'),
             NavigationCompletion::from($arguments->text('completes')),

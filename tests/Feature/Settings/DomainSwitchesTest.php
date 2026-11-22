@@ -6,8 +6,8 @@ namespace Tests\Feature\Settings;
 
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainSwitches;
-use App\Settings\Commands\DisableSettingGroup;
-use App\Settings\Commands\SetStringSetting;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Settings\Commands\SetStringSetting\SetStringSettingCommand;
 use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Enums\SettingsOutcome;
@@ -66,7 +66,7 @@ final class DomainSwitchesTest extends TestCase
     public function test_the_owner_switches_a_domain_off_with_the_ordinary_group_command(): void
     {
         $change = $this->app->make(CommandBus::class)->run(
-            new DisableSettingGroup(new GroupReference('Core', 'domain_plans'), 0),
+            new DisableSettingGroupCommand(new GroupReference('Core', 'domain_plans'), 0),
         );
 
         $this->assertSame([1, SettingsOutcome::Changed], [$change->revision, $change->outcome]);
@@ -84,16 +84,16 @@ final class DomainSwitchesTest extends TestCase
         $this->expectException(SettingUnavailable::class);
 
         $this->app->make(CommandBus::class)->run(
-            new DisableSettingGroup(new GroupReference('Core', 'domain_access'), 0),
+            new DisableSettingGroupCommand(new GroupReference('Core', 'domain_access'), 0),
         );
     }
 
     public function test_core_settings_still_read_and_change_while_a_domain_is_off(): void
     {
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new DisableSettingGroup(new GroupReference('Core', 'domain_plans'), 0));
+        $bus->run(new DisableSettingGroupCommand(new GroupReference('Core', 'domain_plans'), 0));
 
-        $change = $bus->run(new SetStringSetting(new SettingReference('Core', 'display_name'), self::JOURNAL_NAME, 1));
+        $change = $bus->run(new SetStringSettingCommand(new SettingReference('Core', 'display_name'), self::JOURNAL_NAME, 1));
         $this->app->forgetScopedInstances();
         $core = $this->app->make(SettingRegistry::class)->definition('Core');
         $this->assertInstanceOf(CoreSettings::class, $core);

@@ -6,7 +6,7 @@ namespace Domain\Helpers\Http\Controllers\Calls;
 
 use App\Bus\Contracts\CommandBus;
 use Domain\Helpers\Calls\ContinueHelperCall;
-use Domain\Helpers\Commands\ContinueHelper;
+use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Http\Data\HelperReceiptData;
 
 /**
@@ -16,7 +16,7 @@ final readonly class ContinueHelperController
 {
     public function __invoke(ContinueHelperCall $call, CommandBus $commands): HelperReceiptData
     {
-        return HelperReceiptData::from($commands->run(new ContinueHelper(
+        return HelperReceiptData::from($commands->run(new ContinueHelperCommand(
             $call->requestKey->value,
             $call->identityId,
             $call->jobId,

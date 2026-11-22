@@ -9,7 +9,7 @@ use App\Http\Data\Sharing\ShareProposalStatusData;
 use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordResolver;
 use App\Sharing\Calls\RequestShareCall;
-use App\Sharing\Commands\RequestShare;
+use App\Sharing\Commands\RequestShare\RequestShareCommand;
 
 /**
  * Proposes sharing the named record and answers the proposal.
@@ -23,7 +23,7 @@ final readonly class RequestShareController
     ): ShareProposalStatusData {
         $reference = RecordReference::of($call->alias, RecordReference::number($call->number));
         $root = $records->identify($reference);
-        $status = $commands->run(new RequestShare($root->type, $root->id, $call->requestKey->value));
+        $status = $commands->run(new RequestShareCommand($root->type, $root->id, $call->requestKey->value));
 
         return ShareProposalStatusData::fromStatus($status);
     }

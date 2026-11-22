@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\AgentChatAccess;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\TimelineEventType;
 use App\Communication\Exceptions\InboxUnavailable;
@@ -17,9 +17,9 @@ use App\Communication\Support\InboxIntervals;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Chat\Commands\AddChatParticipant;
-use Domain\Chat\Commands\RemoveChatParticipant;
-use Domain\Chat\Commands\TransferChatOwnership;
+use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
+use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
+use Domain\Chat\Commands\TransferChatOwnership\TransferChatOwnershipCommand;
 use Domain\Chat\Exceptions\ChatMembershipRefused;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;
@@ -58,21 +58,21 @@ final class ChatMembershipTest extends MessagingTestCase
     public function test_the_owner_adds_members_once_and_hands_the_chat_over(): void
     {
         $this->asOwner();
-        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, $this->keyOf($this->bea)));
-        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, $this->keyOf($this->bea)));
-        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, $this->keyOf($this->cy)));
+        $this->runOnBus(new AddChatParticipantCommand($this->chat->inbox_id, $this->keyOf($this->bea)));
+        $this->runOnBus(new AddChatParticipantCommand($this->chat->inbox_id, $this->keyOf($this->bea)));
+        $this->runOnBus(new AddChatParticipantCommand($this->chat->inbox_id, $this->keyOf($this->cy)));
 
         $this->assertSame(3, TimelineEvent::query()->ofInbox($this->chat->inbox_id)
             ->where('type', TimelineEventType::Joined)->count());
 
         $this->startUserRequestAs($this->bea->id);
         $this->assertThrows(
-            fn () => $this->runOnBus(new RemoveChatParticipant($this->chat->inbox_id, $this->keyOf($this->cy))),
+            fn () => $this->runOnBus(new RemoveChatParticipantCommand($this->chat->inbox_id, $this->keyOf($this->cy))),
             ChatMembershipRefused::class,
         );
 
         $this->asOwner();
-        $this->runOnBus(new TransferChatOwnership($this->chat->inbox_id, $this->keyOf($this->bea)));
+        $this->runOnBus(new TransferChatOwnershipCommand($this->chat->inbox_id, $this->keyOf($this->bea)));
 
         $this->assertTrue($this->chat->refresh()->isOwnedBy(ActorIdentity::of($this->bea)));
     }
@@ -80,12 +80,12 @@ final class ChatMembershipTest extends MessagingTestCase
     public function test_a_removed_member_can_no_longer_post(): void
     {
         $this->asOwner();
-        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, $this->keyOf($this->cy)));
-        $this->runOnBus(new RemoveChatParticipant($this->chat->inbox_id, $this->keyOf($this->cy)));
+        $this->runOnBus(new AddChatParticipantCommand($this->chat->inbox_id, $this->keyOf($this->cy)));
+        $this->runOnBus(new RemoveChatParticipantCommand($this->chat->inbox_id, $this->keyOf($this->cy)));
 
         $this->startUserRequestAs($this->cy->id);
         $this->expectException(InboxUnavailable::class);
-        $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Still here?', 'cy-post'));
+        $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Still here?', 'cy-post'));
     }
 
     public function test_the_owner_adds_both_agents_beside_a_user_and_an_agent_keeps_its_other_chat(): void
@@ -99,9 +99,9 @@ final class ChatMembershipTest extends MessagingTestCase
         $desk = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
 
         $this->asOwner();
-        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, $this->keyOf($this->bea)));
-        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, "agent:{$this->builder->agent_id}"));
-        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, "agent:{$this->reviewer->agent_id}"));
+        $this->runOnBus(new AddChatParticipantCommand($this->chat->inbox_id, $this->keyOf($this->bea)));
+        $this->runOnBus(new AddChatParticipantCommand($this->chat->inbox_id, "agent:{$this->builder->agent_id}"));
+        $this->runOnBus(new AddChatParticipantCommand($this->chat->inbox_id, "agent:{$this->reviewer->agent_id}"));
 
         $chats = $this->app->make(ChatInboxes::class);
         $release = new ChatInbox($this->chat->inbox_id, 'Release');

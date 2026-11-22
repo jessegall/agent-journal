@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Exceptions\ActorContextMissing;
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
@@ -139,7 +139,7 @@ final class ModuleAssignmentTest extends TestCase
             AssignmentTypeUnavailable::class,
         );
 
-        $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->writer->id));
+        $result = $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->writer->id));
 
         $this->assertCount(1, $result->changes);
         $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());

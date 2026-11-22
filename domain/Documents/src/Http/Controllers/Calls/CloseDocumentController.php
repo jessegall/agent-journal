@@ -7,7 +7,7 @@ namespace Domain\Documents\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use Domain\Documents\Calls\CloseDocumentCall;
 use Domain\Documents\Calls\DraftClosed;
-use Domain\Documents\Commands\CloseDocument;
+use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 
 /**
  * Closes the draft and answers the revision it left.
@@ -16,7 +16,7 @@ final readonly class CloseDocumentController
 {
     public function __invoke(CloseDocumentCall $call, CommandBus $commands): DraftClosed
     {
-        $closed = $commands->run(new CloseDocument($call->target()));
+        $closed = $commands->run(new CloseDocumentCommand($call->target()));
 
         return DraftClosed::from(['revisionNumber' => $closed->revisionNumber, 'published' => $closed->published]);
     }

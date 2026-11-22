@@ -6,7 +6,7 @@ namespace App\Settings\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Settings\SaveSettingsRequest;
-use App\Settings\Commands\ResetSetting;
+use App\Settings\Commands\ResetSetting\ResetSettingCommand;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Data\SettingData;
 use App\Settings\Enums\SettingSource;
@@ -32,7 +32,7 @@ final readonly class ResetSettingsPageController
             foreach ($group->settings as $setting) {
                 if ($this->isChanged($setting)) {
                     $reference = new SettingReference($setting->identity->owner, $setting->identity->key);
-                    $revision = $commands->run(new ResetSetting($reference, $revision))->revision;
+                    $revision = $commands->run(new ResetSettingCommand($reference, $revision))->revision;
                 }
             }
         }

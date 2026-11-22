@@ -7,8 +7,8 @@ namespace Tests\Feature\Communication;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Support\AssignmentReference;
 use App\Bus\Exceptions\CommandAdmissionRefused;
-use App\Communication\Commands\ReadMessages;
-use App\Communication\Commands\ReleaseMessageClaim;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
+use App\Communication\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
 use App\Communication\Enums\MessageState;
 use App\Communication\Models\Message;
 use Tests\Support\MessagingTestCase;
@@ -24,7 +24,7 @@ final class ReleaseMessageClaimTest extends MessagingTestCase
         $questionId = $this->takenUpByBuilder();
         $this->asOwner();
 
-        $this->runOnBus(new ReleaseMessageClaim($questionId, $this->claimOf($questionId), 'The builder is stuck.'));
+        $this->runOnBus(new ReleaseMessageClaimCommand($questionId, $this->claimOf($questionId), 'The builder is stuck.'));
 
         $this->assertSame([], $this->claimsOn($questionId));
         $this->assertSame(MessageState::WaitingForAnswer, Message::query()->findOrFail($questionId)->state);
@@ -35,11 +35,11 @@ final class ReleaseMessageClaimTest extends MessagingTestCase
         $questionId = $this->takenUpByBuilder();
         $claim = $this->claimOf($questionId);
         $this->asOwner();
-        $this->runOnBus(new ReleaseMessageClaim($questionId, $claim, 'First release.'));
+        $this->runOnBus(new ReleaseMessageClaimCommand($questionId, $claim, 'First release.'));
 
         $this->expectException(AssignmentConflict::class);
 
-        $this->runOnBus(new ReleaseMessageClaim($questionId, $claim, 'Second release.'));
+        $this->runOnBus(new ReleaseMessageClaimCommand($questionId, $claim, 'Second release.'));
     }
 
     public function test_an_agent_may_not_release_a_claim(): void
@@ -48,14 +48,14 @@ final class ReleaseMessageClaimTest extends MessagingTestCase
 
         $this->expectException(CommandAdmissionRefused::class);
 
-        $this->runOnBus(new ReleaseMessageClaim($questionId, $this->claimOf($questionId), 'Mine to give up.'));
+        $this->runOnBus(new ReleaseMessageClaimCommand($questionId, $this->claimOf($questionId), 'Mine to give up.'));
     }
 
     private function takenUpByBuilder(): string
     {
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
 
         return $questionId;
     }

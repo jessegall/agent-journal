@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Commands\RetireMenuEntry;
+use App\Agents\Commands\RetireMenuEntry\RetireMenuEntryCommand;
 use App\Agents\Enums\MenuEntryState;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
@@ -23,7 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[VisibleToProfiles]
 #[Name('menu_retire')]
 #[IsDestructive(true)]
-#[Dispatches(RetireMenuEntry::class)]
+#[Dispatches(RetireMenuEntryCommand::class)]
 #[Description(
     'Retire a menu library entry in the state you read; the next uncertain point of any runtime asks the main agent '
     .'instead.',
@@ -38,11 +38,11 @@ final class MenuRetireTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): RetireMenuEntry
+    protected function command(ToolArguments $arguments): RetireMenuEntryCommand
     {
         $expected = $arguments->enum('expected_state', MenuEntryState::class);
 
-        return new RetireMenuEntry($arguments->text('entry'), $expected);
+        return new RetireMenuEntryCommand($arguments->text('entry'), $expected);
     }
 
     protected function present(mixed $entryId): ToolResult

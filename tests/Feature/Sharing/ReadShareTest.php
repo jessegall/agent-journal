@@ -11,7 +11,7 @@ use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Links\Models\Link;
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Commands\ReadShare;
+use App\Sharing\Commands\ReadShare\ReadShareCommand;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
@@ -26,7 +26,7 @@ use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
@@ -81,7 +81,7 @@ final class ReadShareTest extends TestCase
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
@@ -181,7 +181,7 @@ final class ReadShareTest extends TestCase
     public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Notes', 'What we learned', <<<'TEXT'
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Notes', 'What we learned', <<<'TEXT'
         # Notes
         Keep it.
 
@@ -282,7 +282,7 @@ final class ReadShareTest extends TestCase
     {
         $permit = $this->app->make(ReadPermits::class)->issue($token);
 
-        return $this->throughEntry(new ReadShare($permit->reference, $path, $cursor, $head));
+        return $this->throughEntry(new ReadShareCommand($permit->reference, $path, $cursor, $head));
     }
 
     /**

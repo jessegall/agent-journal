@@ -8,13 +8,13 @@ use App\Bus\Contracts\CommandBus;
 use App\Comments\Models\Comment;
 use App\Text\Exceptions\SectionMissing;
 use Domain\Documents\Api\DraftTarget;
-use Domain\Documents\Commands\AppendUpload;
-use Domain\Documents\Commands\BeginUpload;
-use Domain\Documents\Commands\CloseDocument;
-use Domain\Documents\Commands\CommitUpload;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\EditDocument;
-use Domain\Documents\Commands\OpenDocument;
+use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
+use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
+use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
+use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Enums\UploadType;
@@ -46,30 +46,30 @@ final class DocumentEditTest extends TestCase
         $designer = TestStart::start('writing-helper');
         $designer->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $created = $bus->run(new CreateDocument('Design', 'The next design.', "# Design\nOld text.\n"));
-        $draft = $bus->run(new OpenDocument($created->id, 1));
+        $created = $bus->run(new CreateDocumentCommand('Design', 'The next design.', "# Design\nOld text.\n"));
+        $draft = $bus->run(new OpenDocumentCommand($created->id, 1));
         $target = new DraftTarget($created->id, $draft->token, 1);
         $replacement = str_repeat('a', 1024 * 1024);
 
-        $id = $bus->run(new BeginUpload(
+        $id = $bus->run(new BeginUploadCommand(
             UploadType::EditReplacement,
             strlen($replacement),
             hash('sha256', $replacement),
         ));
 
         foreach (str_split($replacement, TextUpload::CHUNK_BYTES) as $index => $chunk) {
-            $bus->run(new AppendUpload($id, $index, $chunk, hash('sha256', $chunk)));
+            $bus->run(new AppendUploadCommand($id, $index, $chunk, hash('sha256', $chunk)));
         }
 
-        $bus->run(new CommitUpload($id));
+        $bus->run(new CommitUploadCommand($id));
 
         $this->assertThrows(
-            fn () => $bus->run(new EditDocument($target, 'Missing section', null, $id)),
+            fn () => $bus->run(new EditDocumentCommand($target, 'Missing section', null, $id)),
             SectionMissing::class,
         );
 
-        $bus->run(new EditDocument($target, '1', null, $id));
-        $closed = $bus->run(new CloseDocument(new DraftTarget($created->id, $draft->token)));
+        $bus->run(new EditDocumentCommand($target, '1', null, $id));
+        $closed = $bus->run(new CloseDocumentCommand(new DraftTarget($created->id, $draft->token)));
         $this->assertSame(2, $closed->revisionNumber);
         $published = $this->app->make(DocumentResolver::class)->show($created->number);
         $this->assertSame($replacement, trim(substr($published->body, strlen("# Design\n"))));
@@ -81,18 +81,18 @@ final class DocumentEditTest extends TestCase
         $other = TestStart::start();
         $author->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $created = $bus->run(new CreateDocument('Design', 'The next design.', "# Design\nOld text.\n"));
-        $draft = $bus->run(new OpenDocument($created->id, 1));
+        $created = $bus->run(new CreateDocumentCommand('Design', 'The next design.', "# Design\nOld text.\n"));
+        $draft = $bus->run(new OpenDocumentCommand($created->id, 1));
 
         $other->startRequest($this->app);
-        $this->assertThrows(fn () => $bus->run(new OpenDocument($created->id, 1)), DraftHeld::class);
+        $this->assertThrows(fn () => $bus->run(new OpenDocumentCommand($created->id, 1)), DraftHeld::class);
 
         $author->startRequest($this->app);
         $broken = "| A | B |\n| --- | --- |\n| one |";
-        $bus->run(new EditDocument(new DraftTarget($created->id, $draft->token, 1), '1', $broken));
+        $bus->run(new EditDocumentCommand(new DraftTarget($created->id, $draft->token, 1), '1', $broken));
 
         $this->assertThrows(
-            fn () => $bus->run(new CloseDocument(new DraftTarget($created->id, $draft->token))),
+            fn () => $bus->run(new CloseDocumentCommand(new DraftTarget($created->id, $draft->token))),
             DraftMarkdownInvalid::class,
             'line',
         );
@@ -119,8 +119,8 @@ final class DocumentEditTest extends TestCase
         $author = TestStart::start('writing-helper');
         $author->startRequest($this->app);
         $commands = $this->app->make(CommandBus::class);
-        $document = $commands->run(new CreateDocument('Design', 'Current design.', 'Original text.'));
-        $draft = $commands->run(new OpenDocument($document->id, 1));
+        $document = $commands->run(new CreateDocumentCommand('Design', 'Current design.', 'Original text.'));
+        $draft = $commands->run(new OpenDocumentCommand($document->id, 1));
 
         $this->signed($author, '/agent/docs/edit', [
             'number' => (string) $document->number,
@@ -150,7 +150,7 @@ final class DocumentEditTest extends TestCase
         $author->startRequest($this->app);
 
         $document = $this->app->make(CommandBus::class)->run(
-            new CreateDocument('Design', 'Current design.', 'Published text.'),
+            new CreateDocumentCommand('Design', 'Current design.', 'Published text.'),
         );
 
         $this->signed($author, '/agent/docs/comment', [

@@ -9,8 +9,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Memory\Commands\EditMemory;
-use Domain\Memory\Commands\SaveMemory;
+use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
+use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
@@ -141,13 +141,13 @@ final class MemoryCommandsTest extends TestCase
         $this->startRequestAs($this->owner->agent->id, $this->owner->session->id);
         $bus = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $bus->run(new SaveMemory('   ', 5)), CommandInputInvalid::class, 'text:');
-        $this->assertThrows(fn () => $bus->run(new SaveMemory('Light.', 0)), CommandInputInvalid::class, 'weight:');
-        $this->assertThrows(fn () => $bus->run(new SaveMemory('Heavy.', 11)), CommandInputInvalid::class, 'weight:');
+        $this->assertThrows(fn () => $bus->run(new SaveMemoryCommand('   ', 5)), CommandInputInvalid::class, 'text:');
+        $this->assertThrows(fn () => $bus->run(new SaveMemoryCommand('Light.', 0)), CommandInputInvalid::class, 'weight:');
+        $this->assertThrows(fn () => $bus->run(new SaveMemoryCommand('Heavy.', 11)), CommandInputInvalid::class, 'weight:');
         $this->assertSame(0, Memory::query()->count());
 
-        $bus->run(new SaveMemory('Lightest.', Memory::LIGHTEST));
-        $bus->run(new SaveMemory('Heaviest.', Memory::HEAVIEST));
+        $bus->run(new SaveMemoryCommand('Lightest.', Memory::LIGHTEST));
+        $bus->run(new SaveMemoryCommand('Heaviest.', Memory::HEAVIEST));
 
         $this->assertSame([1, 2], Memory::query()->orderBy('number')->pluck('number')->all());
     }
@@ -158,8 +158,8 @@ final class MemoryCommandsTest extends TestCase
         $memory = Memory::create(ActorIdentity::of($this->owner->agent), 'Keep me.', 4);
         $bus = $this->app->make(CommandBus::class);
 
-        $blank = new EditMemory($memory->id, 1, '   ', null);
-        $nothing = new EditMemory($memory->id, 1, null, null);
+        $blank = new EditMemoryCommand($memory->id, 1, '   ', null);
+        $nothing = new EditMemoryCommand($memory->id, 1, null, null);
 
         $this->assertThrows(fn () => $bus->run($blank), CommandInputInvalid::class, 'text:');
         $this->assertThrows(fn () => $bus->run($nothing), CommandInputInvalid::class, 'text:');

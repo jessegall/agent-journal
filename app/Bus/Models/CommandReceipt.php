@@ -9,6 +9,7 @@ use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\RefusalReplayed;
 use App\Bus\Exceptions\RequestKeyExpired;
+use App\Bus\Support\CommandName;
 use App\Bus\Support\Operation;
 use App\Bus\Support\PlainValue;
 use App\Bus\Support\ReceiptCaller;
@@ -256,7 +257,7 @@ final class CommandReceipt extends Model implements ReadableModel
     {
         return new Operation(
             $this->request_key,
-            class_basename($this->command),
+            CommandName::of($this->command),
             $this->state,
             $this->result['value'] ?? null,
             $this->refusal_code === null ? null : RefusalCode::from($this->refusal_code),

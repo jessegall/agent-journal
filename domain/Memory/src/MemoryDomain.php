@@ -14,9 +14,9 @@ use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use Domain\Memory\Api\MemoryCard;
 use Domain\Memory\Api\MemoryPage;
-use Domain\Memory\Commands\EditMemory;
-use Domain\Memory\Commands\RemoveMemory;
-use Domain\Memory\Commands\SaveMemory;
+use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
+use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
+use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
@@ -64,7 +64,7 @@ final class MemoryDomain extends Domain implements
 
     public function commands(): array
     {
-        return [SaveMemory::class, EditMemory::class, RemoveMemory::class];
+        return [SaveMemoryCommand::class, EditMemoryCommand::class, RemoveMemoryCommand::class];
     }
 
     public function skills(): array

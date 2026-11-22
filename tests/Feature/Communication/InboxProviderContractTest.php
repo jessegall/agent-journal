@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Models\InboxRecord;
@@ -48,7 +48,7 @@ final class InboxProviderContractTest extends MessagingTestCase
         $this->asAgent($this->builder);
         $history = $this->resolver()->history($this->team->id, null, 50);
         $this->assertSame([$messageId], array_column($history->messages, 'id'));
-        $read = $this->runOnBus(new ReadMessages($this->team->id, [$messageId]));
+        $read = $this->runOnBus(new ReadMessagesCommand($this->team->id, [$messageId]));
         $this->assertTrue($read->messageReads[0]->firstRead);
 
         $this->asAgent($this->reviewer);

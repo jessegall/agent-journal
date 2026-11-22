@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverFailure;
 use App\Agents\Enums\StartOriginType;
@@ -19,8 +19,8 @@ use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\AccountNoticesData;
-use App\Profiles\Commands\DismissAccountNotice;
-use App\Profiles\Commands\SwitchAccount;
+use App\Profiles\Commands\DismissAccountNotice\DismissAccountNoticeCommand;
+use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountNotice;
@@ -89,9 +89,9 @@ final class AccountNoticesTest extends TestCase
         event(new DriverFailed('agent', 'session', 'claude-code', DriverFailure::AuthenticationFailed));
         $codexNotice = AccountNotice::query()->where('driver', 'codex')->sole();
 
-        $this->app->make(CommandBus::class)->run(new DismissAccountNotice($codexNotice->id));
+        $this->app->make(CommandBus::class)->run(new DismissAccountNoticeCommand($codexNotice->id));
         $account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
-        $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));
+        $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($account->id));
 
         $this->assertSame([], $this->section()->notices);
         event(new DriverFailed('agent', 'session', 'codex', DriverFailure::RateLimit));
@@ -117,7 +117,7 @@ final class AccountNoticesTest extends TestCase
         );
 
         try {
-            $this->app->make(CommandBus::class)->run(new StartAgent($request));
+            $this->app->make(CommandBus::class)->run(new StartAgentCommand($request));
             $this->fail('A start ran without an account.');
         } catch (AccountUnavailable) {
             $this->actAsOwner();

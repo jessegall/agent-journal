@@ -7,7 +7,7 @@ namespace Domain\Plans\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Commands\FinishPlan;
+use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('plans_finish')]
-#[Dispatches(FinishPlan::class)]
+#[Dispatches(FinishPlanCommand::class)]
 #[Description('Finish a started plan when all its tasks have ended.')]
 final class FinishPlanTool extends PlanWriteTool
 {
@@ -31,9 +31,9 @@ final class FinishPlanTool extends PlanWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): FinishPlan
+    protected function command(ToolArguments $arguments): FinishPlanCommand
     {
-        return new FinishPlan(
+        return new FinishPlanCommand(
             $arguments->ulid('plan_id'),
             $arguments->positiveInteger('expected_revision'),
             $arguments->text('note'),

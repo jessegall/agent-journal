@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\CreateAgent;
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\CreateAgent\CreateAgentCommand;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
@@ -14,7 +14,7 @@ use App\Bus\Support\RequestKey;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Models\InboxRecord;
-use App\Desks\Commands\RestoreActorDesk;
+use App\Desks\Commands\RestoreActorDesk\RestoreActorDeskCommand;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
@@ -73,7 +73,7 @@ final class DeskProvisioningTest extends TestCase
 
     public function test_a_created_agent_has_one_personal_desk_it_prefers(): void
     {
-        $agent = $this->app->make(CommandBus::class)->run(new CreateAgent('Builder', 'read-only-helper'));
+        $agent = $this->app->make(CommandBus::class)->run(new CreateAgentCommand('Builder', 'read-only-helper'));
 
         $this->assertSame(1, DeskRecord::query()->occupiedBy($agent)->count());
         $this->assertTrue(DeskRecord::preferredBy($agent)->isDefined());
@@ -94,7 +94,7 @@ final class DeskProvisioningTest extends TestCase
         $this->assertFalse(DeskRecord::query()->occupiedBy($builder)->whereKey($first->deskId)->exists());
         $desks = DeskRecord::query()->count();
 
-        $this->app->make(CommandBus::class)->run(new RetireAgent($reviewer->id));
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($reviewer->id));
 
         $this->assertSame(0, DeskRecord::query()->occupiedBy($reviewer)->count());
         $this->assertSame($desks, DeskRecord::query()->count());
@@ -105,11 +105,11 @@ final class DeskProvisioningTest extends TestCase
         $builder = ActorIdentity::of(Agent::create('Builder', 'read-only-helper'));
         $reviewer = ActorIdentity::of(Agent::create('Reviewer', 'read-only-helper'));
         $old = $this->provision($builder);
-        $this->app->make(CommandBus::class)->run(new RetireAgent($builder->id));
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($builder->id));
         $this->inTransaction(fn () => $this->app->make(DeskSeating::class)->seat($old->deskId, $reviewer));
         $this->app->make(RequestKey::class)->set('restore-the-builder');
 
-        $restored = $this->app->make(CommandBus::class)->run(new RestoreActorDesk($builder));
+        $restored = $this->app->make(CommandBus::class)->run(new RestoreActorDeskCommand($builder));
 
         $this->assertNotSame($old->deskId, $restored->deskId);
         $this->assertTrue(DeskRecord::query()->occupiedBy($reviewer)->whereKey($old->deskId)->exists());

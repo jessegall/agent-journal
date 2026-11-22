@@ -13,7 +13,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\ProjectInvitation;
 use App\Connections\Values\InstallTicket;
-use App\Settings\Commands\SetBooleanSetting;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Settings\Values\SettingReference;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -46,7 +46,7 @@ trait ConnectsProjects
             new OwnerAuthority('test'),
         );
         $this->app->make(CommandBus::class)->run(
-            new SetBooleanSetting(new SettingReference('Core', 'remote_projects'), true, 0),
+            new SetBooleanSettingCommand(new SettingReference('Core', 'remote_projects'), true, 0),
         );
         $this->app->forgetScopedInstances();
     }

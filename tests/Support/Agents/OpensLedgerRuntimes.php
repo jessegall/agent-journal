@@ -7,9 +7,9 @@ namespace Tests\Support\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Commands\RunKeyScript;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Agents\Commands\RunKeyScript\RunKeyScriptCommand;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -47,7 +47,7 @@ trait OpensLedgerRuntimes
     {
         $host = $this->enrollHost();
         $opened = $this->asOwner(
-            new OpenAgentRuntime(
+            new OpenAgentRuntimeCommand(
                 $this->agent()->id,
                 $host->hostId,
                 self::FOLDER,
@@ -65,7 +65,7 @@ trait OpensLedgerRuntimes
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHost('test host '.Str::random(6), [self::FOLDER]));
+        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
     }
 
     private function agent(): Agent
@@ -81,11 +81,11 @@ trait OpensLedgerRuntimes
     /**
      * @param  array<string, string>  $parameters
      */
-    private function keyScript(OpenedRuntime $opened, string $script, array $parameters): RunKeyScript
+    private function keyScript(OpenedRuntime $opened, string $script, array $parameters): RunKeyScriptCommand
     {
         $key = (string) Str::ulid();
 
-        return new RunKeyScript(
+        return new RunKeyScriptCommand(
             $this->agentIdOf($opened),
             $opened->sessionId,
             $key,

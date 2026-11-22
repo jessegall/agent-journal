@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ClaimStartGrant;
+use App\Agents\Commands\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +18,7 @@ final readonly class StartGrantController
 {
     public function __invoke(string $runtime, HostContext $host, CommandBus $commands): JsonResponse
     {
-        $grant = $commands->run(new ClaimStartGrant($host->hostId, $runtime));
+        $grant = $commands->run(new ClaimStartGrantCommand($host->hostId, $runtime));
 
         return $grant === null
             ? new JsonResponse(['message' => 'This start was already granted.'], Response::HTTP_GONE)

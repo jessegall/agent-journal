@@ -6,8 +6,8 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Api\TaskLogLine;
-use Domain\Tasks\Commands\LogTaskRun;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\TaskLogResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
@@ -44,10 +44,10 @@ final class TaskLogTest extends TestCase
     {
         $task = Task::factory()->create();
         $this->startUserRequestAs($this->owner->id);
-        $this->runCommand(new StartTask($task->id));
+        $this->runCommand(new StartTaskCommand($task->id));
 
         foreach (range(1, 5) as $line) {
-            $this->runCommand(new LogTaskRun($task->id, 1, "Line {$line}."));
+            $this->runCommand(new LogTaskRunCommand($task->id, 1, "Line {$line}."));
         }
 
         $log = $this->app->make(TaskLogResolver::class);
@@ -71,7 +71,7 @@ final class TaskLogTest extends TestCase
         $task = Task::factory()->create();
         $this->startUserRequestAs($this->owner->id);
 
-        $this->assertThrows(fn () => $this->runCommand(new LogTaskRun($task->id, 1, 'No run yet.')));
+        $this->assertThrows(fn () => $this->runCommand(new LogTaskRunCommand($task->id, 1, 'No run yet.')));
         $this->assertSame(0, TaskLogEntry::query()->where('task_id', $task->id)->count());
     }
 

@@ -9,8 +9,8 @@ use App\Actors\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Chat\Commands\CreateGroupChat;
-use Domain\Chat\Commands\DockSource;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
+use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Data\DockPageData;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\DockProjection;
@@ -39,8 +39,8 @@ final class ChatDockPermissionTest extends MessagingTestCase
         $task = Task::factory()->create(['title' => self::TITLE]);
 
         $this->asOwner();
-        $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$bea->id]));
-        $this->runOnBus(new DockSource($inboxId, 'tasks.task', $task->id));
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$bea->id]));
+        $this->runOnBus(new DockSourceCommand($inboxId, 'tasks.task', $task->id));
         $chat = Conversation::forInbox($inboxId);
 
         $this->assertCount(1, $this->pageAs($chat)->cards);

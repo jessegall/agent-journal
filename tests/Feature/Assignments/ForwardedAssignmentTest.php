@@ -6,8 +6,8 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
-use App\Assignments\Commands\AssignRecord;
-use App\Assignments\Commands\UnassignRecord;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Commands\UnassignRecord\UnassignRecordCommand;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
@@ -55,7 +55,7 @@ final class ForwardedAssignmentTest extends TestCase
         $task = Task::factory()->create()->assignmentIdentity();
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $result = $this->app->make(CommandBus::class)->run(new AssignRecord($task, $agent->assigneeIdentity()));
+        $result = $this->app->make(CommandBus::class)->run(new AssignRecordCommand($task, $agent->assigneeIdentity()));
 
         $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment()->holder();
         $this->assertTrue($held->isSameAs($main->assigneeIdentity()));
@@ -69,7 +69,7 @@ final class ForwardedAssignmentTest extends TestCase
         $task = Task::factory()->create()->assignmentIdentity();
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $this->app->make(CommandBus::class)->run(new AssignRecord($task, $agent->assigneeIdentity()));
+        $this->app->make(CommandBus::class)->run(new AssignRecordCommand($task, $agent->assigneeIdentity()));
 
         $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment()->holder();
         $this->assertTrue($held->isSameAs($agent->assigneeIdentity()));
@@ -81,12 +81,12 @@ final class ForwardedAssignmentTest extends TestCase
         $task = Task::factory()->create()->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set('assign-the-builder');
-        $first = $bus->run(new AssignRecord($task, $agent->assigneeIdentity()));
+        $first = $bus->run(new AssignRecordCommand($task, $agent->assigneeIdentity()));
         $this->app->make(RequestKey::class)->set('unassign-the-builder');
-        $bus->run(new UnassignRecord($task, $first->outcomes[0]->current->reference));
+        $bus->run(new UnassignRecordCommand($task, $first->outcomes[0]->current->reference));
 
         $this->app->make(RequestKey::class)->set('assign-the-builder');
-        $retry = $bus->run(new AssignRecord($task, $agent->assigneeIdentity()));
+        $retry = $bus->run(new AssignRecordCommand($task, $agent->assigneeIdentity()));
 
         $this->assertEquals($first, $retry);
         $this->assertSame(0, AssignmentRecord::query()->forRecord($task)->count());
@@ -99,12 +99,12 @@ final class ForwardedAssignmentTest extends TestCase
         $task = Task::factory()->create()->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set('assign-once');
-        $bus->run(new AssignRecord($task, $builder->assigneeIdentity()));
+        $bus->run(new AssignRecordCommand($task, $builder->assigneeIdentity()));
 
         $this->app->make(RequestKey::class)->set('assign-once');
 
         $this->assertThrows(
-            fn () => $bus->run(new AssignRecord($task, $reviewer->assigneeIdentity())),
+            fn () => $bus->run(new AssignRecordCommand($task, $reviewer->assigneeIdentity())),
             RequestKeyConflict::class,
         );
     }

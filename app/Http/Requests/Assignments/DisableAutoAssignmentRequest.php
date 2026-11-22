@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Assignments\Commands\DisableAutoAssignment;
+use App\Assignments\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
 use App\Http\Requests\Assignments\Concerns\ReadsAutoAssignmentInput;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,8 +23,8 @@ final class DisableAutoAssignmentRequest extends FormRequest
         return [...$this->keyRules(), ...$this->revisionRules()];
     }
 
-    public function command(): DisableAutoAssignment
+    public function command(): DisableAutoAssignmentCommand
     {
-        return new DisableAutoAssignment($this->key(), $this->expectedRevision());
+        return new DisableAutoAssignmentCommand($this->key(), $this->expectedRevision());
     }
 }

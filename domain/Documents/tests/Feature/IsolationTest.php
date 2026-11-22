@@ -10,8 +10,8 @@ use App\Reflection\Support\ReflectedParameter;
 use App\Reflection\Support\Reflector;
 use App\Text\Exceptions\ContentMissing;
 use Domain\Documents\Api\Events\DocumentCreated;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\OpenDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Models\Document;
@@ -45,8 +45,8 @@ final class IsolationTest extends TestCase
     public function test_a_second_request_in_the_same_worker_sees_no_draft_text_of_the_first(): void
     {
         $this->actAsUser(1);
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Private draft text\n"));
-        $this->bus()->run(new OpenDocument('1'));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Private draft text\n"));
+        $this->bus()->run(new OpenDocumentCommand('1'));
         $this->assertSame(EditingState::Yours, $this->app->make(DraftResolver::class)->stateOf(1)->state);
 
         $this->app->forgetScopedInstances();
@@ -59,7 +59,7 @@ final class IsolationTest extends TestCase
 
     public function test_no_create_command_takes_an_author(): void
     {
-        foreach ([CreateDocument::class] as $command) {
+        foreach ([CreateDocumentCommand::class] as $command) {
             $parameters = array_map(
                 fn (ReflectedParameter $parameter) => $parameter->name(),
                 Reflector::of($command)->constructor()
@@ -76,7 +76,7 @@ final class IsolationTest extends TestCase
         }
 
         $this->actAsUser(3);
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
         $this->assertSame(TestIds::of(3), DocumentRevision::query()->sole()->author_id);
     }
 
@@ -92,7 +92,7 @@ final class IsolationTest extends TestCase
         });
 
         try {
-            $this->bus()->run(new CreateDocument('Design', 'What we build', "   \n"));
+            $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "   \n"));
             $this->fail('An empty body was accepted.');
         } catch (ContentMissing) {
             $this->assertSame([0, 0, []], [Document::query()->count(), DocumentRevision::query()->count(), $announced]);

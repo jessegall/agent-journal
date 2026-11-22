@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RevokeProjectBinding;
+use App\Connections\Commands\RevokeProjectBinding\RevokeProjectBindingCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ final readonly class RevokeProjectBindingController
         ResponseFactory $inertia,
         Redirector $redirect,
     ): JsonResponse|RedirectResponse {
-        $outcome = $commands->run(new RevokeProjectBinding($binding));
+        $outcome = $commands->run(new RevokeProjectBindingCommand($binding));
 
         if ($request->expectsJson()) {
             return new JsonResponse([

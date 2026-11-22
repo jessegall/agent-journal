@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers\Membership;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Chat\Commands\TransferChatOwnership;
+use Domain\Chat\Commands\TransferChatOwnership\TransferChatOwnershipCommand;
 use Domain\Chat\Data\ParticipantInput;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +23,7 @@ final readonly class TransferChatController
         CommandBus $commands,
         Redirector $redirect,
     ): JsonResponse|RedirectResponse {
-        $commands->run(new TransferChatOwnership($input->inboxId, $input->participant));
+        $commands->run(new TransferChatOwnershipCommand($input->inboxId, $input->participant));
 
         return $request->expectsJson()
             ? new JsonResponse(['inboxId' => $input->inboxId])

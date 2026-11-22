@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\ServerClock;
-use App\Agents\Commands\RetireAgent;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\StartHeartbeats;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
@@ -49,7 +49,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * Every Core start runs StartAgent: one session per request id, refused for a retired or busy agent, and a receipt
+ * Every Core start runs StartAgentCommand: one session per request id, refused for a retired or busy agent, and a receipt
  * that never carries the start token, which only the host's own read gives.
  */
 final class StartAgentTest extends TestCase
@@ -110,7 +110,7 @@ final class StartAgentTest extends TestCase
 
         $this->assertThrows(fn () => $this->start($this->request()), AgentBusy::class);
 
-        $this->app->make(CommandBus::class)->run(new RetireAgent($this->agent->id));
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->agent->id));
 
         $this->assertThrows(fn () => $this->start($this->request()), StartRefused::class);
     }
@@ -250,6 +250,6 @@ final class StartAgentTest extends TestCase
 
     private function start(StartRequest $request): StartReceipt
     {
-        return $this->app->make(CommandBus::class)->run(new StartAgent($request));
+        return $this->app->make(CommandBus::class)->run(new StartAgentCommand($request));
     }
 }

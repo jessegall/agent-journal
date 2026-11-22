@@ -6,7 +6,7 @@ namespace App\Profiles\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\StartSignInRequest;
-use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Commands\BeginSignIn\BeginSignInCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -20,7 +20,7 @@ final readonly class StartSignInController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new BeginSignIn(
+        $commands->run(new BeginSignInCommand(
             $request->driver(),
             $request->signInMethod(),
         ));

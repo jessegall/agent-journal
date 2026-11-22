@@ -7,7 +7,7 @@ namespace Tests\Feature\Sharing;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\RequestKey;
-use App\Sharing\Commands\ConfigureShareGateway;
+use App\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Exceptions\GatewayNotSetUp;
 use App\Sharing\Exceptions\GatewaySecretRefused;
@@ -146,7 +146,7 @@ final class ConfigureShareGatewayTest extends TestCase
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(
-            new ConfigureShareGateway(
+            new ConfigureShareGatewayCommand(
                 $gatewayKey,
                 '1.0.0',
                 'fake.test',

@@ -11,11 +11,11 @@ use App\Bus\Support\CommandNesting;
 use App\Bus\Support\LaravelCommandBus;
 use Illuminate\Support\Facades\Log;
 use Mockery;
-use Tests\Fixtures\Bus\Shop\Commands\AddItem;
+use Tests\Fixtures\Bus\Shop\Commands\AddItem\AddItemCommand;
 use Tests\Fixtures\Bus\Shop\Enums\ItemSize;
-use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
-use Tests\Fixtures\Modules\Notes\Commands\ClearNotes;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Cards\Commands\DrawCard\DrawCardCommand;
+use Tests\Fixtures\Modules\Notes\Commands\ClearNotes\ClearNotesCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 /**
  * Dispatching on the command bus (doc 19, Book C): every registered command reaches its handler and its result comes
@@ -32,10 +32,10 @@ final class CommandDispatchTest extends CommandBusTestCase
         $bus = $this->app->make(CommandBus::class);
 
         $this->assertInstanceOf(LaravelCommandBus::class, $bus);
-        $this->assertTrue($bus->hasHandlerFor(new DrawCard('red')));
-        $this->assertSame(self::DRAWN_CARD, $bus->run(new DrawCard('red')));
-        $bus->run(new WriteNote('cleared'));
-        $bus->run(new ClearNotes());
+        $this->assertTrue($bus->hasHandlerFor(new DrawCardCommand('red')));
+        $this->assertSame(self::DRAWN_CARD, $bus->run(new DrawCardCommand('red')));
+        $bus->run(new WriteNoteCommand('cleared'));
+        $bus->run(new ClearNotesCommand());
         $this->assertSame(0, $this->rowCount());
     }
 
@@ -45,7 +45,7 @@ final class CommandDispatchTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         Log::spy();
 
-        $this->app->make(CommandBus::class)->run(new WriteNote('counted'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('counted'));
 
         Log::shouldHaveReceived('info')->with(
             'Command WriteNote done',
@@ -64,7 +64,7 @@ final class CommandDispatchTest extends CommandBusTestCase
 
         $this->expectException(CommandNotRegistered::class);
 
-        $this->app->make(CommandBus::class)->run(new AddItem(1, ItemSize::Small, []));
+        $this->app->make(CommandBus::class)->run(new AddItemCommand(1, ItemSize::Small, []));
     }
 
     public function test_the_ninth_nested_dispatch_is_refused_and_the_count_comes_back_down(): void
@@ -72,11 +72,11 @@ final class CommandDispatchTest extends CommandBusTestCase
         $nesting = $this->app->make(CommandNesting::class);
 
         foreach (range(1, 8) as $level) {
-            $nesting->enter(AddItem::class);
+            $nesting->enter(AddItemCommand::class);
         }
 
         try {
-            $nesting->enter(AddItem::class);
+            $nesting->enter(AddItemCommand::class);
             $this->fail('A ninth level was let through.');
         } catch (CommandNestingTooDeep) {
             foreach (range(1, 8) as $level) {
@@ -84,7 +84,7 @@ final class CommandDispatchTest extends CommandBusTestCase
             }
         }
 
-        $nesting->enter(AddItem::class);
+        $nesting->enter(AddItemCommand::class);
         $this->addToAssertionCount(1);
     }
 }

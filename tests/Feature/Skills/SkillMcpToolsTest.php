@@ -8,8 +8,8 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
-use App\Skills\Commands\CreateSkill;
-use App\Skills\Commands\ReviseSkill;
+use App\Skills\Commands\CreateSkill\CreateSkillCommand;
+use App\Skills\Commands\ReviseSkill\ReviseSkillCommand;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Values\SectionDraft;
@@ -74,7 +74,7 @@ final class SkillMcpToolsTest extends TestCase
     {
         $this->actAs(TestActors::user(7));
         $created = $this->app->make(CommandBus::class)->run(
-            new CreateSkill(
+            new CreateSkillCommand(
                 'user-review-notes',
                 'create-1',
                 new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], ''),
@@ -88,7 +88,7 @@ final class SkillMcpToolsTest extends TestCase
 
         try {
             $this->app->make(CommandBus::class)->run(
-                new ReviseSkill(
+                new ReviseSkillCommand(
                     $created->skillId,
                     1,
                     'revise-1',

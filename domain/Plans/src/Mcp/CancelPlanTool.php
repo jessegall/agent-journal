@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Commands\CancelPlan;
+use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive]
 #[VisibleToProfiles]
 #[Name('plans_cancel')]
-#[Dispatches(CancelPlan::class)]
+#[Dispatches(CancelPlanCommand::class)]
 #[Description('Cancel a plan with a reason. Its tasks remain.')]
 final class CancelPlanTool extends PlanWriteTool
 {
@@ -33,9 +33,9 @@ final class CancelPlanTool extends PlanWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CancelPlan
+    protected function command(ToolArguments $arguments): CancelPlanCommand
     {
-        return new CancelPlan(
+        return new CancelPlanCommand(
             $arguments->ulid('plan_id'),
             $arguments->positiveInteger('expected_revision'),
             $arguments->text('reason'),

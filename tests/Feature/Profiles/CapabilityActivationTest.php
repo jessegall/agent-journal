@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Enums\CapabilityStatusType;
@@ -19,7 +19,7 @@ use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\ProfileKey;
@@ -68,18 +68,18 @@ final class CapabilityActivationTest extends TestCase
         $this->assertThrows(fn () => $commands->run($this->start($policy)), AccountContainerUnsupported::class);
     }
 
-    private function activation(): ActivateProfiles
+    private function activation(): ActivateProfilesCommand
     {
-        return new ActivateProfiles(ProfileProposal::fromConfiguration(['profiles' => [
+        return new ActivateProfilesCommand(ProfileProposal::fromConfiguration(['profiles' => [
             self::PROFILE => ['base' => 'writing-helper', 'model' => 'opus', 'driver' => 'claude-code'],
         ]]));
     }
 
-    private function start(StartPolicy $policy): StartAgent
+    private function start(StartPolicy $policy): StartAgentCommand
     {
         $actor = Agent::create('Editor', self::PROFILE);
 
-        return new StartAgent(new StartRequest(
+        return new StartAgentCommand(new StartRequest(
             TestSelections::requestId(),
             $actor->id,
             TestSelections::of(),

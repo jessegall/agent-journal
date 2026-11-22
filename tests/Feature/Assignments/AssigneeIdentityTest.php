@@ -6,8 +6,8 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Contracts\Actor;
 use App\Agents\Models\Agent;
-use App\Assignments\Commands\AssignRecord;
-use App\Assignments\Commands\ReassignRecord;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Commands\ReassignRecord\ReassignRecordCommand;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
@@ -48,11 +48,11 @@ final class AssigneeIdentityTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $toAgent = $bus->run(new AssignRecord($task, $agent->assigneeIdentity()))->outcomes[0]->current;
+        $toAgent = $bus->run(new AssignRecordCommand($task, $agent->assigneeIdentity()))->outcomes[0]->current;
         $this->assertTrue($toAgent->holder()->isSameAs(new AssigneeIdentity('agent', $agent->id)));
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $toUser = $bus->run(new ReassignRecord($task, $toAgent->reference, $owner->assigneeIdentity()))
+        $toUser = $bus->run(new ReassignRecordCommand($task, $toAgent->reference, $owner->assigneeIdentity()))
             ->outcomes[0]->current;
         $this->assertTrue($toUser->holder()->isSameAs(new AssigneeIdentity('user', (string) $owner->id)));
 

@@ -6,9 +6,9 @@ namespace App\Sharing\Http\Support;
 
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
-use App\Sharing\Commands\ApproveShareRequest;
-use App\Sharing\Commands\CreateShare;
-use App\Sharing\Commands\RefreshShareScope;
+use App\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
+use App\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
 use App\Sharing\Support\ShareSummary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -23,17 +23,17 @@ final readonly class ShareOpener
         private Redirector $redirect,
     ) {}
 
-    public function create(CreateShare $command): RedirectResponse
+    public function create(CreateShareCommand $command): RedirectResponse
     {
         return $this->runAndOpen($command);
     }
 
-    public function approve(ApproveShareRequest $command): RedirectResponse
+    public function approve(ApproveShareRequestCommand $command): RedirectResponse
     {
         return $this->runAndOpen($command);
     }
 
-    public function refreshScope(RefreshShareScope $command): RedirectResponse
+    public function refreshScope(RefreshShareScopeCommand $command): RedirectResponse
     {
         return $this->runAndOpen($command);
     }

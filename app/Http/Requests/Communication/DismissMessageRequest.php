@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\DismissMessage\DismissMessageCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class DismissMessageRequest extends FormRequest
@@ -20,9 +20,9 @@ final class DismissMessageRequest extends FormRequest
         ];
     }
 
-    public function command(): DismissMessage
+    public function command(): DismissMessageCommand
     {
-        return new DismissMessage(
+        return new DismissMessageCommand(
             $this->string('messageId')->toString(),
             $this->string('reason')->toString(),
         );

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportRequestProgress;
+use App\Agents\Commands\ReportRequestProgress\ReportRequestProgressCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Agents\RequestProgressReportData;
@@ -18,7 +18,7 @@ final readonly class RequestReportController
 {
     public function __invoke(RequestProgressReportData $report, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportRequestProgress(
+        $commands->run(new ReportRequestProgressCommand(
             $host->hostId,
             $report->requestId,
             $report->attempt,

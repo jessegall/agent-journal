@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Http\Controllers\Runtimes;
 
-use App\Agents\Commands\CancelDriverRequest;
+use App\Agents\Commands\CancelDriverRequest\CancelDriverRequestCommand;
 use App\Http\Requests\Web\RequestRecoveryRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;
@@ -16,6 +16,6 @@ final readonly class CancelRuntimeRequestController
 {
     public function __invoke(RequestRecoveryRequest $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new CancelDriverRequest($request->requestId(), $request->rowVersion(), $request->reason()));
+        return $review->run(new CancelDriverRequestCommand($request->requestId(), $request->rowVersion(), $request->reason()));
     }
 }

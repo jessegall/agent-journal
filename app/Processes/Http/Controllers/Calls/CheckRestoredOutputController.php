@@ -7,7 +7,7 @@ namespace App\Processes\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Calls\CheckRestoredOutputCall;
 use App\Processes\Calls\RestoreChecked;
-use App\Processes\Commands\VerifyRestoredOutput;
+use App\Processes\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
 
 /**
  * Checks a run's restored output and answers each part's state.
@@ -16,7 +16,7 @@ final readonly class CheckRestoredOutputController
 {
     public function __invoke(CheckRestoredOutputCall $call, CommandBus $commands): RestoreChecked
     {
-        $captures = $commands->run(new VerifyRestoredOutput($call->processRun));
+        $captures = $commands->run(new VerifyRestoredOutputCommand($call->processRun));
 
         return RestoreChecked::from([
             'capture' => array_map(

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\ContinueStart;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\ContinueStart\ContinueStartCommand;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\StartRefused;
@@ -65,8 +65,8 @@ final class ContinueStartTest extends TestCase
         $newAccount = Account::create(HookDriver::ClaudeCode, $label, '/journal/accounts/second');
         ActiveAccount::lockedFor(HookDriver::ClaudeCode)->select($newAccount);
 
-        $successor = $this->bus()->run(new ContinueStart($first, $this->agent->id));
-        $again = $this->bus()->run(new ContinueStart($first, $this->agent->id));
+        $successor = $this->bus()->run(new ContinueStartCommand($first, $this->agent->id));
+        $again = $this->bus()->run(new ContinueStartCommand($first, $this->agent->id));
 
         $this->assertNotSame($first, $successor->sessionId);
         $this->assertSame($successor->sessionId, $again->sessionId);
@@ -83,7 +83,7 @@ final class ContinueStartTest extends TestCase
 
         $this->expectException(StartRefused::class);
 
-        $this->bus()->run(new ContinueStart($first, $other->id));
+        $this->bus()->run(new ContinueStartCommand($first, $other->id));
     }
 
     private function startFirst(): string
@@ -100,7 +100,7 @@ final class ContinueStartTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
         );
 
-        return $this->bus()->run(new StartAgent($request))->sessionId;
+        return $this->bus()->run(new StartAgentCommand($request))->sessionId;
     }
 
     private function bus(): CommandBus

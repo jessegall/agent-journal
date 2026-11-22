@@ -8,7 +8,7 @@ use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandBus;
-use App\Engine\Commands\SettleFrameTimes;
+use App\Engine\Commands\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Engine\Models\EngineFrameTime;
 use App\Engine\Support\EngineAccess;
@@ -83,13 +83,13 @@ final class SettleFrameTimesTest extends TestCase
 
         $this->pass(function () use ($settlements): void {
             $this->app->make(EngineAccess::class)->grantFrame($this->target, 'frame-1');
-            $this->app->make(CommandBus::class)->run(new SettleFrameTimes($settlements));
+            $this->app->make(CommandBus::class)->run(new SettleFrameTimesCommand($settlements));
         });
         $this->assertCount(3, EngineFrameTime::settledAtFor(['frame-1', 'frame-2', 'frame-3']));
 
         $this->assertThrows(fn () => $this->pass(fn () => $this->app->make(
             CommandBus::class,
-        )->run(new SettleFrameTimes([
+        )->run(new SettleFrameTimesCommand([
             FrameSettlement::at(
                 new StackTarget($this->target->agentId, 'another-session'),
                 $this->stack->id,
@@ -113,8 +113,8 @@ final class SettleFrameTimesTest extends TestCase
     private function settleUnderTiming(CarbonImmutable $settledAt): void
     {
         $this->pass(function () use ($settledAt): void {
-            $this->app->make(EngineAccess::class)->grantMaintenance(SettleFrameTimes::MAINTENANCE_SCOPE);
-            $this->app->make(CommandBus::class)->run(new SettleFrameTimes($this->settlements($settledAt)));
+            $this->app->make(EngineAccess::class)->grantMaintenance(SettleFrameTimesCommand::MAINTENANCE_SCOPE);
+            $this->app->make(CommandBus::class)->run(new SettleFrameTimesCommand($this->settlements($settledAt)));
         });
     }
 

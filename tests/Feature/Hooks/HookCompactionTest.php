@@ -16,11 +16,11 @@ use App\Hooks\Models\HookCall;
 use App\Hooks\Stack\HookAnswer;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
-use Domain\Sequences\Commands\StartSequence;
+use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Support\SequenceWork;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Event;
@@ -52,9 +52,9 @@ final class HookCompactionTest extends TestCase
         parent::setUp();
 
         $this->task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTask($this->task->id));
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($this->task->id));
         $this->run = SequenceRun::create('Close a task', ['Read the brief.', 'Run the phase tests.']);
-        $this->app->make(CommandBus::class)->run(new StartSequence($this->run->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($this->run->id, $this->target->sessionId));
 
         $this->remember(self::MEMORY_TEXT, 2);
         $this->remember(self::QUESTION_TEXT, 1);

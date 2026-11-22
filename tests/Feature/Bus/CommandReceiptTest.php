@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
@@ -20,9 +20,9 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
-use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 /**
  * A keyed write of an agent session runs once: a repeat answers from its receipt without the handler, a different
@@ -71,8 +71,8 @@ final class CommandReceiptTest extends CommandBusTestCase
     {
         $bus = $this->app->make(CommandBus::class);
 
-        $first = $bus->run(new WriteNote('once'));
-        $repeat = $bus->run(new WriteNote('once'));
+        $first = $bus->run(new WriteNoteCommand('once'));
+        $repeat = $bus->run(new WriteNoteCommand('once'));
 
         $this->assertSame($first, $repeat);
         $this->assertSame(1, $this->rowCount());
@@ -85,9 +85,9 @@ final class CommandReceiptTest extends CommandBusTestCase
     public function test_a_changed_body_under_the_same_key_is_a_request_key_conflict(): void
     {
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new WriteNote('first'));
+        $bus->run(new WriteNoteCommand('first'));
 
-        $this->assertThrows(fn () => $bus->run(new WriteNote('changed')), RequestKeyConflict::class);
+        $this->assertThrows(fn () => $bus->run(new WriteNoteCommand('changed')), RequestKeyConflict::class);
         $this->assertSame(1, $this->rowCount());
     }
 
@@ -96,13 +96,13 @@ final class CommandReceiptTest extends CommandBusTestCase
         $bus = $this->app->make(CommandBus::class);
 
         try {
-            $bus->run(new RefuseNote('refused'));
+            $bus->run(new RefuseNoteCommand('refused'));
             $this->fail('The write was not refused.');
         } catch (CommandRefused $refusal) {
             $message = $refusal->getMessage();
         }
 
-        $this->assertThrows(fn () => $bus->run(new RefuseNote('refused')), RefusalReplayed::class, $message);
+        $this->assertThrows(fn () => $bus->run(new RefuseNoteCommand('refused')), RefusalReplayed::class, $message);
         $this->assertSame(
             ReceiptState::Refused,
             $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
@@ -115,7 +115,7 @@ final class CommandReceiptTest extends CommandBusTestCase
         $bus = $this->app->make(CommandBus::class);
 
         $this->assertThrows(
-            fn () => $bus->run(new IgnoreFailedNote('rolled back')),
+            fn () => $bus->run(new IgnoreFailedNoteCommand('rolled back')),
             NestedCommandFailureIgnored::class,
         );
 
@@ -123,7 +123,7 @@ final class CommandReceiptTest extends CommandBusTestCase
             fn () => $this->app->make(OperationResolver::class)->operation(self::KEY),
             OperationUnavailable::class,
         );
-        $id = $bus->run(new WriteNote('retried'));
+        $id = $bus->run(new WriteNoteCommand('retried'));
         $this->assertSame('retried', $this->rowText($id));
     }
 
@@ -131,7 +131,7 @@ final class CommandReceiptTest extends CommandBusTestCase
     {
         $task = Task::factory()->create(['title' => 'Keyed']);
         $bus = $this->app->make(CommandBus::class);
-        $command = new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent));
+        $command = new AssignRecordCommand($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent));
 
         $first = $bus->run($command);
         $repeat = $bus->run($command);

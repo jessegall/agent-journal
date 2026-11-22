@@ -7,7 +7,7 @@ namespace App\Communication\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Calls\MessagesRead;
 use App\Communication\Calls\TakeNextMessagesCall;
-use App\Communication\Commands\TakeNextMessages;
+use App\Communication\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use App\Communication\Data\MessageReadResult;
 
 /**
@@ -17,7 +17,7 @@ final readonly class TakeNextMessagesController
 {
     public function __invoke(TakeNextMessagesCall $call, CommandBus $commands): MessagesRead
     {
-        $batch = $commands->run(new TakeNextMessages($call->inboxId, $call->limit));
+        $batch = $commands->run(new TakeNextMessagesCommand($call->inboxId, $call->limit));
 
         return MessagesRead::from(['results' => array_map(
             fn (MessageReadResult $messageRead) => [

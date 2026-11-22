@@ -6,7 +6,7 @@ namespace Domain\Helpers\Http\Controllers\Calls;
 
 use App\Bus\Contracts\CommandBus;
 use Domain\Helpers\Calls\SteerHelperCall;
-use Domain\Helpers\Commands\SteerHelper;
+use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
 use Domain\Helpers\Http\Data\HelperSteerData;
 
 /**
@@ -16,6 +16,6 @@ final readonly class SteerHelperController
 {
     public function __invoke(SteerHelperCall $call, CommandBus $commands): HelperSteerData
     {
-        return HelperSteerData::from($commands->run(new SteerHelper($call->identityId, $call->text)));
+        return HelperSteerData::from($commands->run(new SteerHelperCommand($call->identityId, $call->text)));
     }
 }

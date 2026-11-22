@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Rules\Commands\ProposeRule;
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Enums\RuleState;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('rules_propose')]
-#[Dispatches(ProposeRule::class)]
+#[Dispatches(ProposeRuleCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Propose a new or replacement rule for the journal owner to review.')]
 final class ProposeRuleTool extends JournalWriteTool
@@ -35,9 +35,9 @@ final class ProposeRuleTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): ProposeRule
+    protected function command(ToolArguments $arguments): ProposeRuleCommand
     {
-        return new ProposeRule(
+        return new ProposeRuleCommand(
             $arguments->text('text'),
             $arguments->text('reason'),
             $arguments->optionalUlid('replaces_rule_id'),

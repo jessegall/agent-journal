@@ -9,10 +9,10 @@ use App\Agents\Enums\RequestProgress;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Models\Message;
-use App\Settings\Commands\DisableSettingGroup;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Settings\Values\GroupReference;
 use Tests\Support\MessagingTestCase;
 
@@ -40,11 +40,11 @@ final class MessageWakeTracesTest extends MessagingTestCase
     public function test_agents_still_message_and_wake_each_other_with_chat_switched_off(): void
     {
         $this->asOwner();
-        $this->runOnBus(new DisableSettingGroup(new GroupReference('Core', 'domain_chat'), 0));
+        $this->runOnBus(new DisableSettingGroupCommand(new GroupReference('Core', 'domain_chat'), 0));
         $this->app->forgetScopedInstances();
         $this->asAgent($this->builder);
 
-        $this->runOnBus(new AskMessage(
+        $this->runOnBus(new AskMessageCommand(
             $this->inboxIdOf($this->builder),
             $this->inboxIdOf($this->reviewer),
             'Still there with Chat off?',

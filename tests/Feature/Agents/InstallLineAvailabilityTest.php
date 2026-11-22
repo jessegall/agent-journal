@@ -9,7 +9,7 @@ use App\Agents\Support\InstallLineAvailability;
 use App\Agents\Support\PublishedReleases;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Connections\ReleaseOfferData;
-use App\Settings\Commands\SetBooleanSetting;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Values\SettingReference;
@@ -146,7 +146,7 @@ final class InstallLineAvailabilityTest extends TestCase
     private function switchOn(): void
     {
         $this->app->make(CommandBus::class)->run(
-            new SetBooleanSetting(new SettingReference('Core', 'remote_projects'), true, 0),
+            new SetBooleanSettingCommand(new SettingReference('Core', 'remote_projects'), true, 0),
         );
         $this->app->forgetScopedInstances();
     }

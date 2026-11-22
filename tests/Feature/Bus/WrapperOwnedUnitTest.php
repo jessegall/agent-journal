@@ -9,7 +9,7 @@ use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandNesting;
 use App\Bus\Support\Publication;
 use App\Bus\Support\RequiredListenerRegistry;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
@@ -84,9 +84,9 @@ final class WrapperOwnedUnitTest extends TestCase
      */
     private function command(callable $work): void
     {
-        $call = CommandCall::of(new StartTask('task'), 'Tasks', true, false, null);
+        $call = CommandCall::of(new StartTaskCommand('task'), 'Tasks', true, false, null);
         $nesting = $this->app->make(CommandNesting::class);
-        $nesting->enter(StartTask::class);
+        $nesting->enter(StartTaskCommand::class);
 
         try {
             $this->app->make(RunInTransaction::class)->handle($call, function () use ($work): null {

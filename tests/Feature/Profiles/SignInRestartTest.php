@@ -10,8 +10,8 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Files\Contracts\Files;
-use App\Profiles\Commands\BeginSignIn;
-use App\Profiles\Commands\ReconcileSignIns;
+use App\Profiles\Commands\BeginSignIn\BeginSignInCommand;
+use App\Profiles\Commands\ReconcileSignIns\ReconcileSignInsCommand;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Jobs\SignInDeadline;
@@ -80,7 +80,7 @@ final class SignInRestartTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $begin = new BeginSignIn($driver, SignInMethod::OAuth);
+        $begin = new BeginSignInCommand($driver, SignInMethod::OAuth);
         $attemptId = $this->runOnBus($begin, "key-{$driver}")
             ->attemptId;
         $this->assertSame($attemptId, $this->claimSignIn($hostId, CarbonImmutable::now())?->id);
@@ -96,7 +96,7 @@ final class SignInRestartTest extends TestCase
         return $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new ReconcileSignIns($hostId, $running),
+            new ReconcileSignInsCommand($hostId, $running),
         );
     }
 

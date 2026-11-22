@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Http\Controllers\Runtimes;
 
-use App\Agents\Commands\RetryDriverRequest;
+use App\Agents\Commands\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Http\Requests\Web\RequestRecoveryRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;
@@ -16,6 +16,6 @@ final readonly class RetryRuntimeRequestController
 {
     public function __invoke(RequestRecoveryRequest $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new RetryDriverRequest($request->requestId(), $request->rowVersion(), $request->reason()));
+        return $review->run(new RetryDriverRequestCommand($request->requestId(), $request->rowVersion(), $request->reason()));
     }
 }

@@ -6,7 +6,7 @@ namespace App\Profiles\Console;
 
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Profiles\Commands\ReconcileAccounts;
+use App\Profiles\Commands\ReconcileAccounts\ReconcileAccountsCommand as ReconcileAccounts;
 use Illuminate\Console\Command;
 
 /**

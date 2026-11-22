@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportCleanup;
+use App\Agents\Commands\ReportCleanup\ReportCleanupCommand;
 use App\Agents\Enums\CleanupStep;
 use App\Agents\Models\CleanupOperation;
 use App\Agents\Values\HostContext;
@@ -39,7 +39,7 @@ final readonly class CleanupReportController
 
     public function __invoke(CleanupReportRequest $request, HostContext $host, CommandBus $commands): JsonResponse
     {
-        $state = $commands->run(new ReportCleanup($host->hostId, $request->sessionId(), $request->report()));
+        $state = $commands->run(new ReportCleanupCommand($host->hostId, $request->sessionId(), $request->report()));
 
         return new JsonResponse(['state' => $state->value]);
     }

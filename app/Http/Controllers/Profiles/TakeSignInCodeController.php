@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Profiles;
 
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\TakeSignInCode;
+use App\Profiles\Commands\TakeSignInCode\TakeSignInCodeCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,7 +18,7 @@ final readonly class TakeSignInCodeController
 {
     public function __invoke(string $attempt, Request $request, HostContext $host, CommandBus $commands): JsonResponse
     {
-        $poll = $commands->run(new TakeSignInCode($host->hostId, $attempt, $request->integer('generation')));
+        $poll = $commands->run(new TakeSignInCodeCommand($host->hostId, $attempt, $request->integer('generation')));
 
         return new JsonResponse(
             ['live' => $poll->isLive, 'code' => $poll->code],

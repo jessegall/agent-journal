@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Models\Host;
 use App\Agents\Support\ClaimAnswer;
@@ -60,7 +60,7 @@ final readonly class ClaimRequestsController
             $request->boolean('browser_private'),
         );
 
-        $claiming = new ClaimDriverRequests($host->hostId, $limit, $browserInput);
+        $claiming = new ClaimDriverRequestsCommand($host->hostId, $limit, $browserInput);
         $claim = fn (): ClaimedRequests => $commands->run($claiming);
         $version = fn (): int => $watched->version($host->hostId);
 

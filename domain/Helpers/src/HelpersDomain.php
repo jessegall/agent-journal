@@ -19,11 +19,11 @@ use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\Page;
 use App\Ui\Enums\Icon;
 use Domain\Documents\DocumentsDomain;
-use Domain\Helpers\Commands\CancelHelperJob;
-use Domain\Helpers\Commands\ContinueHelper;
-use Domain\Helpers\Commands\SendHelper;
-use Domain\Helpers\Commands\StartHelper;
-use Domain\Helpers\Commands\SteerHelper;
+use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
+use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
+use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
+use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
+use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
@@ -71,7 +71,7 @@ final class HelpersDomain extends Domain implements
      */
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands', Command::class);
+        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
     }
 
     /**
@@ -93,11 +93,11 @@ final class HelpersDomain extends Domain implements
                 SteerReceipt::class,
             )
             ->commands(
-                StartHelper::class,
-                SendHelper::class,
-                ContinueHelper::class,
-                SteerHelper::class,
-                CancelHelperJob::class,
+                StartHelperCommand::class,
+                SendHelperCommand::class,
+                ContinueHelperCommand::class,
+                SteerHelperCommand::class,
+                CancelHelperJobCommand::class,
             )
             ->exceptions(
                 HelperUnavailable::class,

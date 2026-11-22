@@ -8,11 +8,11 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\ClaimStart;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Commands\ReportStopped;
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\ClaimStart\ClaimStartCommand;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Agents\Commands\ReportStopped\ReportStoppedCommand;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Enums\StartUnavailableReason;
@@ -97,16 +97,16 @@ final class AccountMaintenanceTest extends TestCase
         $host = $this->enrollHost();
         $claimed = $this->open($host);
         $pending = $this->open($host);
-        $key = $this->asSystem(new ClaimStart($host->hostId, $claimed->sessionId))?->startKey;
+        $key = $this->asSystem(new ClaimStartCommand($host->hostId, $claimed->sessionId))?->startKey;
 
         $first = $this->maintenance()->advance($this->account->id);
 
         $this->assertSame([1, false], [$first->cancelledStarts, $first->settled]);
         $this->assertEqualsCanonicalizing([$claimed->sessionId, $pending->sessionId], $first->runningSessionIds);
-        $this->assertNull($this->asSystem(new ClaimStart($host->hostId, $pending->sessionId)));
+        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $pending->sessionId)));
         $this->assertRefusedWhileHeld($host);
 
-        $this->asSystem(new ReportStopped($host->hostId, (string) $key));
+        $this->asSystem(new ReportStoppedCommand($host->hostId, (string) $key));
         $this->actAsOwner();
 
         $this->assertTrue($this->maintenance()->advance($this->account->id)->settled);
@@ -135,10 +135,10 @@ final class AccountMaintenanceTest extends TestCase
         $opened = $this->open($host);
         $agentId = ProcessStart::query()->withoutGlobalScopes()->sole()->agent_id;
 
-        $this->app->make(CommandBus::class)->run(new RetireAgent($agentId));
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
 
         $this->assertSame(ProcessStartState::Cancelled, ProcessStart::query()->withoutGlobalScopes()->sole()->state);
-        $this->assertNull($this->asSystem(new ClaimStart($host->hostId, $opened->sessionId)));
+        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
     }
 
     private function assertRefusedWhileHeld(EnrolledHost $host): void
@@ -155,7 +155,7 @@ final class AccountMaintenanceTest extends TestCase
     {
         $this->actAsOwner();
         $agent = Agent::create('Held agent '.Str::random(6), 'main-agent');
-        $command = new OpenAgentRuntime(
+        $command = new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,
             self::FOLDER,
@@ -171,7 +171,7 @@ final class AccountMaintenanceTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        $host = $this->asSystem(new EnrollHost('test host '.Str::random(6), [self::FOLDER]));
+        $host = $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
         $this->actAsOwner();
 
         return $host;

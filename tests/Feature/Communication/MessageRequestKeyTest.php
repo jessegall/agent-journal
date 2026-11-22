@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\AskMessage;
-use App\Communication\Commands\ReadMessages;
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Data\MessageView;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +21,7 @@ final class MessageRequestKeyTest extends MessagingTestCase
     public function test_the_sender_reads_its_key_and_another_viewer_reads_none(): void
     {
         $questionId = $this->runOnBus(
-            new AskMessage($this->ownerInboxId(), $this->inboxIdOf($this->builder), 'Which port?'),
+            new AskMessageCommand($this->ownerInboxId(), $this->inboxIdOf($this->builder), 'Which port?'),
             'owner-key-1',
         );
 
@@ -34,8 +34,8 @@ final class MessageRequestKeyTest extends MessagingTestCase
     {
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
-        $replyId = $this->runOnBus(new ReplyToMessage($questionId, null, 'Port 8080.'), 'agent-key-1');
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
+        $replyId = $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'Port 8080.'), 'agent-key-1');
         $this->asOwner();
 
         $this->assertNull($this->rowOf($this->ownerInboxId(), $replyId)->requestKey);
@@ -45,7 +45,7 @@ final class MessageRequestKeyTest extends MessagingTestCase
     {
         foreach (range(1, 3) as $count) {
             $this->runOnBus(
-                new AskMessage($this->ownerInboxId(), $this->inboxIdOf($this->builder), "Question {$count}"),
+                new AskMessageCommand($this->ownerInboxId(), $this->inboxIdOf($this->builder), "Question {$count}"),
                 "owner-key-{$count}",
             );
         }

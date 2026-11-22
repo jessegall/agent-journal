@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages;
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Communication\Models\Message;
 use App\Communication\States\Support\AnsweringMessageStateFactory;
 use App\Communication\States\Support\AnsweringMessageStateReference;
@@ -27,7 +27,7 @@ final class MessageActivationTest extends MessagingTestCase
     {
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
         $claimId = $this->claimsOn($questionId)[$questionId]->reference->id;
 
         $this->activate();
@@ -38,7 +38,7 @@ final class MessageActivationTest extends MessagingTestCase
         $this->assertFalse($this->stateOf($claimId)->isFinished());
 
         $version = Message::query()->findOrFail($questionId)->state_version;
-        $this->runOnBus(new ReplyToMessage($questionId, $version, 'Port 8080.'));
+        $this->runOnBus(new ReplyToMessageCommand($questionId, $version, 'Port 8080.'));
 
         $this->assertTrue($this->stateOf($claimId)->isFinished());
     }

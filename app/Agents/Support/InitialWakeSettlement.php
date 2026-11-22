@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Actions\StartHeartbeats;
-use App\Agents\Commands\ReportRequestProgress;
+use App\Agents\Commands\ReportRequestProgress\ReportRequestProgressCommand;
 use App\Agents\Enums\HostWakeRefusal;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
@@ -35,7 +35,7 @@ final readonly class InitialWakeSettlement
         return 'start-'.$sessionId;
     }
 
-    public function settle(DriverRequest $wake, AgentRuntime $runtime, ReportRequestProgress $report): void
+    public function settle(DriverRequest $wake, AgentRuntime $runtime, ReportRequestProgressCommand $report): void
     {
         $sessionId = $runtime->agent_session_id;
         $binding = $report->binding;

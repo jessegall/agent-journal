@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Console;
 
 use App\Actors\Exceptions\ConsoleOwnerMissing;
-use App\Agents\Commands\ResolveDriverDelivery;
+use App\Agents\Commands\ResolveDriverDelivery\ResolveDriverDeliveryCommand as ResolveDriverDelivery;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
 use Illuminate\Console\Command;

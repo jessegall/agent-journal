@@ -7,7 +7,7 @@ namespace Domain\Plans\Tests\Feature\Http;
 use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
@@ -47,7 +47,7 @@ final class PlanEndPageTest extends TestCase
         $task = Task::factory()->create();
         $structure = $this->app->make(PlanStructure::class);
         $structure->addTasks($structure->addPhase($this->plan, 'Work'), [$task->id]);
-        $this->app->make(CommandBus::class)->run(new StartPlan($this->plan->id));
+        $this->app->make(CommandBus::class)->run(new StartPlanCommand($this->plan->id));
 
         $this->end('cancel', ['revision' => $this->plan->revision, 'state' => 'planned', 'text' => 'Dropped.'])
             ->assertSessionHasErrors();
@@ -63,7 +63,7 @@ final class PlanEndPageTest extends TestCase
 
     public function test_a_started_plan_with_nothing_unfinished_offers_finish_and_finishing_shows_done(): void
     {
-        $this->app->make(CommandBus::class)->run(new StartPlan($this->plan->id));
+        $this->app->make(CommandBus::class)->run(new StartPlanCommand($this->plan->id));
 
         $offered = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
 

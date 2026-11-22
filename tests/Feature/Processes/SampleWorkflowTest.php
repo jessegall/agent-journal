@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Bus\Exceptions\CommandAdmissionRefused;
-use App\Processes\Commands\ApproveSample;
-use App\Processes\Commands\OpenCommandRequest;
-use App\Processes\Commands\ProposeCommandRule;
-use App\Processes\Commands\SettleSample;
-use App\Processes\Commands\StartSample;
+use App\Processes\Commands\ApproveSample\ApproveSampleCommand;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Processes\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Processes\Commands\SettleSample\SettleSampleCommand;
+use App\Processes\Commands\StartSample\StartSampleCommand;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
@@ -56,20 +56,20 @@ final class SampleWorkflowTest extends TestCase
 
         ProcessOutputDisk::fake();
         $this->start = TestStart::start();
-        $this->requestId = $this->runAsAgent(new OpenCommandRequest(
+        $this->requestId = $this->runAsAgent(new OpenCommandRequestCommand(
             'acme verify',
             str_repeat('a', 64),
             'acme verify',
             sys_get_temp_dir(),
             RequestHoldReason::UnknownCommand,
         ));
-        $this->runAsAgent(new ProposeCommandRule($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->runAsAgent(new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
     }
 
     public function test_a_sample_run_before_the_owner_approved_is_refused_with_the_waiting_step(): void
     {
         try {
-            $this->runAsAgent(new StartSample($this->requestId, 'no-permit', 'first'));
+            $this->runAsAgent(new StartSampleCommand($this->requestId, 'no-permit', 'first'));
             $this->fail('The sample started without an approval.');
         } catch (SampleRefused $refusal) {
             $this->assertStringContainsString(self::OWNER_WAIT, $refusal->getMessage());
@@ -87,11 +87,11 @@ final class SampleWorkflowTest extends TestCase
         $permitId = $this->asUser($this->approval());
         $this->assertSame(RequestState::ReadyForSample, $this->request()->state);
 
-        $runId = $this->runAsAgent(new StartSample($this->requestId, $permitId, 'first'));
-        $this->assertSame($runId, $this->runAsAgent(new StartSample($this->requestId, $permitId, 'first')));
+        $runId = $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'first'));
+        $this->assertSame($runId, $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'first')));
         $this->assertSame(RequestState::CapturingSample, $this->request()->state);
         $this->assertThrows(
-            fn () => $this->runAsAgent(new StartSample($this->requestId, $permitId, 'second')),
+            fn () => $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'second')),
             SampleRefused::class,
         );
 
@@ -107,7 +107,7 @@ final class SampleWorkflowTest extends TestCase
     public function test_a_failed_capture_returns_the_request_to_the_owner(): void
     {
         $permitId = $this->asUser($this->approval());
-        $runId = $this->runAsAgent(new StartSample($this->requestId, $permitId, 'first'));
+        $runId = $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'first'));
 
         $part = $this->part($runId);
         $part->start('host', 1);
@@ -119,7 +119,7 @@ final class SampleWorkflowTest extends TestCase
 
     public function test_a_declaration_without_effects_cannot_be_approved_for_a_sample(): void
     {
-        $other = $this->runAsAgent(new OpenCommandRequest(
+        $other = $this->runAsAgent(new OpenCommandRequestCommand(
             'acme verify',
             str_repeat('c', 64),
             'acme verify --all',
@@ -129,20 +129,20 @@ final class SampleWorkflowTest extends TestCase
         $rule = AcmeDeclarations::verify()->toArray();
         $rule['classes'] = [];
         $noEffects = AcmeDeclarations::proposed(CommandRule::fromArray($rule));
-        $this->runAsAgent(new ProposeCommandRule($other, 'request-2', $noEffects));
+        $this->runAsAgent(new ProposeCommandRuleCommand($other, 'request-2', $noEffects));
         $digest = CommandRequest::query()->findOrFail($other)->source_digest;
 
-        $this->assertThrows(fn () => $this->asUser(new ApproveSample($other, 1, $digest)), SampleRefused::class);
+        $this->assertThrows(fn () => $this->asUser(new ApproveSampleCommand($other, 1, $digest)), SampleRefused::class);
     }
 
-    private function approval(): ApproveSample
+    private function approval(): ApproveSampleCommand
     {
-        return new ApproveSample($this->requestId, 1, $this->request()->source_digest);
+        return new ApproveSampleCommand($this->requestId, 1, $this->request()->source_digest);
     }
 
     private function settle(): SampleOutcome
     {
-        return $this->runAsAgent(new SettleSample($this->requestId));
+        return $this->runAsAgent(new SettleSampleCommand($this->requestId));
     }
 
     private function endRun(string $runId, int $status): void

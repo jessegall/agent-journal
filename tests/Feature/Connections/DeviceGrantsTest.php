@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\HostProtocolVersion;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
@@ -172,7 +172,7 @@ final class DeviceGrantsTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $holder = AssigneeIdentity::of(ActorContext::forUser($this->owner->id));
-        $this->app->make(CommandBus::class)->run(new AssignRecord($task->assignmentIdentity(), $holder));
+        $this->app->make(CommandBus::class)->run(new AssignRecordCommand($task->assignmentIdentity(), $holder));
     }
 
     /**

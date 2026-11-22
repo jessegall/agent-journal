@@ -63,8 +63,8 @@ final readonly class WriteNote extends Command
 ```
 
 A command whose policy is a record policy implements `App\Bus\Contracts\RecordCommand`, returns the locked record from
-`subject()`, and its handler takes the record as its second argument: `Domain\Tasks\Commands\BlockTask` and
-`Domain\Tasks\Handlers\BlockTaskHandler` show it. A command with neither `Authorize` nor a trusted entry fails the boot;
+`subject()`, and its handler takes the record as its second argument: `Domain\Tasks\Commands\BlockTask\BlockTaskCommand` and
+`Domain\Tasks\Commands\BlockTask\BlockTaskHandler` show it. A command with neither `Authorize` nor a trusted entry fails the boot;
 see docs/commands/command-bus.md.
 
 ## 4. Declaring a read

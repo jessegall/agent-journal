@@ -32,7 +32,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Profiles/Handlers/PublishSignInChallengeHandler.php',
+            'app/Profiles/Commands/PublishSignInChallenge/PublishSignInChallengeHandler.php',
             'app/Profiles/Listeners/ProjectAccountsChanged.php',
         ],
     ],
@@ -122,7 +122,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Profiles/Handlers/RevokeProfilesHandler.php',
+            'app/Profiles/Commands/RevokeProfiles/RevokeProfilesHandler.php',
         ],
     ],
     SignInAttemptCleanupRetried::class => [

@@ -6,10 +6,10 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use Domain\Plans\Commands\ApprovePlanReview;
-use Domain\Plans\Commands\RequestPlanReview;
-use Domain\Plans\Commands\StartPlan;
-use Domain\Plans\Commands\WithdrawPlanReview;
+use Domain\Plans\Commands\ApprovePlanReview\ApprovePlanReviewCommand;
+use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
+use Domain\Plans\Commands\WithdrawPlanReview\WithdrawPlanReviewCommand;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\PlanReviewRefused;
@@ -62,11 +62,11 @@ final class PlanReviewDecisionTest extends TestCase
 
     public function test_approving_the_open_review_records_one_receipt_that_a_replay_returns(): void
     {
-        $this->runCommand(new RequestPlanReview($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]));
+        $this->runCommand(new RequestPlanReviewCommand($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]));
         $key = (string) Str::uuid();
 
-        $first = $this->runOnBus(new ApprovePlanReview($this->plan->id, 1, $key), $key);
-        $again = $this->runOnBus(new ApprovePlanReview($this->plan->id, 1, $key), $key);
+        $first = $this->runOnBus(new ApprovePlanReviewCommand($this->plan->id, 1, $key), $key);
+        $again = $this->runOnBus(new ApprovePlanReviewCommand($this->plan->id, 1, $key), $key);
 
         $this->assertSame($first, $again);
         $review = PlanReviewEdition::query()->whereKey($first)->sole();
@@ -74,17 +74,17 @@ final class PlanReviewDecisionTest extends TestCase
         $this->assertSame($this->owner->id, $review->decided_by_id);
         $this->assertSame(PlanState::Planned, $this->plan->refresh()->state);
 
-        $this->runCommand(new StartPlan($this->plan->id));
+        $this->runCommand(new StartPlanCommand($this->plan->id));
         $this->assertSame(PlanState::Started, $this->plan->refresh()->state);
     }
 
     public function test_a_decision_on_a_withdrawn_review_reports_its_outcome(): void
     {
-        $this->runCommand(new RequestPlanReview($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]));
-        $this->runCommand(new WithdrawPlanReview($this->plan->id));
+        $this->runCommand(new RequestPlanReviewCommand($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]));
+        $this->runCommand(new WithdrawPlanReviewCommand($this->plan->id));
 
         $this->assertThrows(
-            fn () => $this->runCommand(new ApprovePlanReview($this->plan->id, 1, (string) Str::uuid())),
+            fn () => $this->runCommand(new ApprovePlanReviewCommand($this->plan->id, 1, (string) Str::uuid())),
             PlanReviewRefused::class,
             PlanReviewRefused::alreadyDecided($this->plan->number, 1, PlanReviewState::Withdrawn->value)->getMessage(),
         );

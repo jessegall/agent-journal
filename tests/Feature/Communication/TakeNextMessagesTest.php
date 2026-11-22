@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Communication\Commands\TakeNextMessages;
+use App\Communication\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use App\Communication\Data\MessageReadBatch;
-use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\CreateDesk\CreateDeskCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use Tests\Support\MessagingTestCase;
@@ -20,7 +20,7 @@ final class TakeNextMessagesTest extends MessagingTestCase
 {
     public function test_each_member_takes_the_oldest_question_nobody_took_up(): void
     {
-        $desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 2, false)));
+        $desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 2, false)));
 
         foreach ([$this->builder, $this->reviewer] as $session) {
             $this->app->make(AssignmentTransaction::class)->run(
@@ -44,7 +44,7 @@ final class TakeNextMessagesTest extends MessagingTestCase
 
     private function takeNext(DeskRecord $desk): MessageReadBatch
     {
-        return $this->runOnBus(new TakeNextMessages($desk->inboxId()));
+        return $this->runOnBus(new TakeNextMessagesCommand($desk->inboxId()));
     }
 
     /**

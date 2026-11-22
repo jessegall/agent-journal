@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Hooks\StateEffects;
 
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
-use App\Records\Commands\UnlinkRecords;
+use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Records\Support\RecordIdentity;
 
 /**
@@ -14,8 +14,8 @@ use App\Records\Support\RecordIdentity;
  */
 final class ReturnsACommand extends AgentState
 {
-    public function onStop(StopRequested $input): UnlinkRecords
+    public function onStop(StopRequested $input): UnlinkRecordsCommand
     {
-        return new UnlinkRecords(new RecordIdentity('tasks.task', '1'), new RecordIdentity('tasks.task', '2'));
+        return new UnlinkRecordsCommand(new RecordIdentity('tasks.task', '1'), new RecordIdentity('tasks.task', '2'));
     }
 }

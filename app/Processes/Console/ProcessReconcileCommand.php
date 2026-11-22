@@ -6,7 +6,7 @@ namespace App\Processes\Console;
 
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Processes\Commands\ReconcileLostRuns;
+use App\Processes\Commands\ReconcileLostRuns\ReconcileLostRunsCommand;
 use Illuminate\Console\Command;
 
 /**
@@ -20,7 +20,7 @@ final class ProcessReconcileCommand extends Command
 
     public function handle(EntryDispatchers $dispatchers): int
     {
-        $lost = $dispatchers->runAsJournal(CommandEntry::HostControl, 'process reconcile', new ReconcileLostRuns());
+        $lost = $dispatchers->runAsJournal(CommandEntry::HostControl, 'process reconcile', new ReconcileLostRunsCommand());
         $this->line("{$lost} runs marked lost.");
 
         return self::SUCCESS;

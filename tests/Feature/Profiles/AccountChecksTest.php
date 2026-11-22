@@ -13,7 +13,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Drivers\Enums\HookDriver;
 use App\Files\Contracts\Files;
-use App\Profiles\Commands\CheckAccount;
+use App\Profiles\Commands\CheckAccount\CheckAccountCommand;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Enums\AccountState;
@@ -125,7 +125,7 @@ final class AccountChecksTest extends TestCase
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new CheckAccount('host', $this->account->id, $generation, $result),
+            new CheckAccountCommand('host', $this->account->id, $generation, $result),
         );
     }
 }

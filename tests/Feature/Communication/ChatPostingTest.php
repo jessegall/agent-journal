@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\ReplyInChat;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Communication\Enums\MessageType;
 use App\Communication\Exceptions\MessageRequestConflict;
 use App\Communication\Models\Message;
@@ -38,11 +38,11 @@ final class ChatPostingTest extends MessagingTestCase
     public function test_the_user_and_the_agent_post_one_row_each_that_both_see(): void
     {
         $this->asOwner();
-        $question = $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Can you look?', 'first-key'));
+        $question = $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Can you look?', 'first-key'));
 
         $this->asAgent($this->builder);
         $token = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $question));
-        $answer = $this->runOnBus(new ReplyInChat($question, 'Looking now.', 'reply-key', null, $token));
+        $answer = $this->runOnBus(new ReplyInChatCommand($question, 'Looking now.', 'reply-key', null, $token));
 
         $this->assertSame($question, Message::visibleById($question)->id);
 
@@ -64,15 +64,15 @@ final class ChatPostingTest extends MessagingTestCase
     public function test_a_retry_answers_the_same_message_and_a_different_one_is_refused(): void
     {
         $this->asOwner();
-        $first = $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Hello.', 'same-key'));
-        $again = $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Hello.', 'same-key'));
+        $first = $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Hello.', 'same-key'));
+        $again = $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Hello.', 'same-key'));
 
         $this->assertSame($first, $again);
 
         $this->expectException(MessageRequestConflict::class);
 
         try {
-            $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Something else.', 'same-key'));
+            $this->runOnBus(new PostChatMessageCommand($this->chat->inbox_id, 'Something else.', 'same-key'));
         } finally {
             $this->assertSame('Hello.', Message::visibleById($first)->body);
             $this->assertSame(1, Message::query()->acrossInboxes()->where('request_key', 'same-key')->count());

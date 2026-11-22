@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Documents\Commands\CommentOnReport;
+use Domain\Documents\Commands\CommentOnReport\CommentOnReportCommand;
 use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('reports_comment')]
-#[Dispatches(CommentOnReport::class)]
+#[Dispatches(CommentOnReportCommand::class)]
 #[Description('Add an attributed comment to a report.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class CommentOnReportTool extends JournalWriteTool
@@ -36,9 +36,9 @@ final class CommentOnReportTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CommentOnReport
+    protected function command(ToolArguments $arguments): CommentOnReportCommand
     {
-        return new CommentOnReport((string) $arguments->recordReference('report_id'), $arguments->text('body'));
+        return new CommentOnReportCommand((string) $arguments->recordReference('report_id'), $arguments->text('body'));
     }
 
     protected function present(mixed $commentId): ToolResult

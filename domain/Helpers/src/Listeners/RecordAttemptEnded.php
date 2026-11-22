@@ -8,7 +8,7 @@ use App\Agents\Events\LaunchEnded;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
-use Domain\Helpers\Commands\MarkHelperJobUnfinished;
+use Domain\Helpers\Commands\MarkHelperJobUnfinished\MarkHelperJobUnfinishedCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 
@@ -29,7 +29,7 @@ final readonly class RecordAttemptEnded implements Listener
         $this->journal->runAsJournal(
             CommandEntry::Application,
             HelperLifecycleEntry::NAME,
-            new MarkHelperJobUnfinished($event->work->id),
+            new MarkHelperJobUnfinishedCommand($event->work->id),
         );
     }
 }

@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Storage\AssignmentStore;
 use App\Communication\Contracts\ConversationResolver;
-use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\CreateDesk\CreateDeskCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use App\Desks\Support\DeskSeating;
@@ -39,7 +39,7 @@ final class MessageRefreshTest extends MessagingTestCase
 
     public function test_an_occupant_removed_from_an_inbox_reads_nothing_of_it_on_the_next_refresh(): void
     {
-        $desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 1, false)));
+        $desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 1, false)));
         $seating = $this->app->make(DeskSeating::class);
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $seating->seat($desk->id, $this->actorOf($this->builder)),

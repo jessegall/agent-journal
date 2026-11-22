@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Support\ProfileProposal;
-use Domain\Helpers\Commands\CancelHelperJob;
-use Domain\Helpers\Commands\StartHelper;
+use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
+use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperRetired;
 use Domain\Helpers\Exceptions\HelperUnavailable;
@@ -74,7 +74,7 @@ final class HelperInstancesTest extends TestCase
         $this->finish($first);
         $this->expectException(HelperUnavailable::class);
 
-        $this->app->make(CommandBus::class)->run(new StartHelper(
+        $this->app->make(CommandBus::class)->run(new StartHelperCommand(
             (string) Str::ulid(),
             'lone-reviewer',
             'default',
@@ -96,14 +96,14 @@ final class HelperInstancesTest extends TestCase
 
     private function finish(HelperReceipt $receipt): void
     {
-        $this->app->make(CommandBus::class)->run(new CancelHelperJob($receipt->jobId, 'cancel-'.$receipt->jobId));
+        $this->app->make(CommandBus::class)->run(new CancelHelperJobCommand($receipt->jobId, 'cancel-'.$receipt->jobId));
         $this->endSessionOf($receipt);
     }
 
     private function retireHelperOf(HelperReceipt $receipt): void
     {
         $agentId = HelperIdentity::query()->acrossActors()->findOrFail($receipt->identityId)->helper_actor_id;
-        $this->app->make(CommandBus::class)->run(new RetireAgent($agentId));
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
     }
 
     public function test_an_unknown_instances_value_refuses_the_proposal(): void

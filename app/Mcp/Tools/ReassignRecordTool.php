@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Assignments\Commands\ReassignRecord;
+use App\Assignments\Commands\ReassignRecord\ReassignRecordCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Enums\DiscoveryProfile;
@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive]
 #[Name('assignments_reassign')]
-#[Dispatches(ReassignRecord::class)]
+#[Dispatches(ReassignRecordCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Move a record to another recipient using the assignment reference you read.')]
 final class ReassignRecordTool extends AssignmentWriteTool
@@ -32,9 +32,9 @@ final class ReassignRecordTool extends AssignmentWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): ReassignRecord
+    protected function command(ToolArguments $arguments): ReassignRecordCommand
     {
-        return new ReassignRecord(
+        return new ReassignRecordCommand(
             $this->record($arguments),
             $this->expected($arguments),
             $this->recipient($arguments),

@@ -14,8 +14,8 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use Tests\Fixtures\Modules\Cards\CommandMiddleware\RecordCards;
-use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
-use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
+use Tests\Fixtures\Modules\Cards\Commands\DrawCard\DrawCardCommand;
+use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;
 use Tests\Fixtures\Modules\Cards\Models\Deck;
 use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 
@@ -37,13 +37,13 @@ final class CardsDomain extends Domain implements CommandMiddlewareProvider, Com
     public function exports(): Exports
     {
         return Exports::make()
-            ->commands(DrawCard::class)
+            ->commands(DrawCardCommand::class)
             ->build();
     }
 
     public function commands(): array
     {
-        return [DrawCard::class, ShuffleDeck::class];
+        return [DrawCardCommand::class, ShuffleDeckCommand::class];
     }
 
     public function commandMiddleware(): array

@@ -10,9 +10,9 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Actions\StartSessions;
-use App\Agents\Commands\CancelAccountUses;
-use App\Agents\Commands\HoldAccountUses;
-use App\Agents\Commands\SettleAccountUses;
+use App\Agents\Commands\CancelAccountUses\CancelAccountUsesCommand;
+use App\Agents\Commands\HoldAccountUses\HoldAccountUsesCommand;
+use App\Agents\Commands\SettleAccountUses\SettleAccountUsesCommand;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Enums\AccountProcessRole;
@@ -150,7 +150,7 @@ final class AccountUsesTest extends TestCase
 
         $this->assertRefused(fn () => $this->uses()->counts([$account]));
         $this->assertRefused(fn () => $this->uses()->history($account, 10));
-        $this->assertRefused(fn () => $this->bus()->run(new HoldAccountUses($account)));
+        $this->assertRefused(fn () => $this->bus()->run(new HoldAccountUsesCommand($account)));
     }
 
     public function test_maintenance_cancels_unclaimed_starts_and_settles_only_once_claimed_ones_exited(): void
@@ -161,15 +161,15 @@ final class AccountUsesTest extends TestCase
         $this->assertTrue($this->starts[$claimed->id]->claim());
         Event::fake([AccountUseChanged::class]);
 
-        $held = $this->bus()->run(new HoldAccountUses($account));
-        $cancelled = $this->bus()->run(new CancelAccountUses($account));
+        $held = $this->bus()->run(new HoldAccountUsesCommand($account));
+        $cancelled = $this->bus()->run(new CancelAccountUsesCommand($account));
 
         $this->assertSame([$claimed->id, $pending->id], $held->sessionIds);
         $this->assertSame(1, $cancelled);
         $this->assertFalse($this->starts[$pending->id]->refresh()->claim());
 
         try {
-            $this->bus()->run(new SettleAccountUses($account));
+            $this->bus()->run(new SettleAccountUsesCommand($account));
             $this->fail('An account with a claimed start was settled.');
         } catch (AccountInUse) {
             $claimed->endAt(CarbonImmutable::now());
@@ -177,7 +177,7 @@ final class AccountUsesTest extends TestCase
             $this->starts[$claimed->id]->stopWithProof();
         }
 
-        $this->bus()->run(new SettleAccountUses($account));
+        $this->bus()->run(new SettleAccountUsesCommand($account));
 
         Event::assertDispatchedTimes(AccountUseChanged::class, 3);
     }

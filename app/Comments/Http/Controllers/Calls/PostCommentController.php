@@ -7,8 +7,8 @@ namespace App\Comments\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Comments\Calls\CommentPosted;
 use App\Comments\Calls\PostCommentCall;
-use App\Comments\Commands\PostComment;
-use App\Comments\Commands\PostTextComment;
+use App\Comments\Commands\PostComment\PostCommentCommand;
+use App\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use App\Comments\Exceptions\CommentPlaceUnclear;
 use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordResolver;
@@ -26,8 +26,8 @@ final readonly class PostCommentController
         $target = $records->identify(RecordReference::parse($call->target));
 
         $command = $call->place === null
-            ? new PostComment($target, $call->body, $call->submissionKey)
-            : new PostTextComment($target, $call->body, $call->place->range(), $call->submissionKey);
+            ? new PostCommentCommand($target, $call->body, $call->submissionKey)
+            : new PostTextCommentCommand($target, $call->body, $call->place->range(), $call->submissionKey);
 
         return CommentPosted::from(['comment' => $commands->run($command)]);
     }

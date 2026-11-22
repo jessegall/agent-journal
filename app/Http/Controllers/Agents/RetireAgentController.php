@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Assignments\Support\AssignmentHolders;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Assignments\AssignmentResultData;
@@ -19,7 +19,7 @@ final readonly class RetireAgentController
     public function __invoke(RetireAgentRequest $request, CommandBus $commands): JsonResponse
     {
         return new JsonResponse(
-            AssignmentResultData::of($commands->run(new RetireAgent($request->agentId())), new AssignmentHolders([])),
+            AssignmentResultData::of($commands->run(new RetireAgentCommand($request->agentId())), new AssignmentHolders([])),
         );
     }
 }

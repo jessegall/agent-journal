@@ -17,7 +17,7 @@ use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\Page;
 use App\Ui\Enums\Icon;
-use Domain\Sequences\Commands\StartSequence;
+use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Resolvers\SequenceIndexResolver;
 use Domain\Sequences\Resolvers\SequenceRunWindowResolver;
@@ -55,7 +55,7 @@ final class SequencesDomain extends Domain implements
      */
     public function commands(): array
     {
-        return [StartSequence::class];
+        return [StartSequenceCommand::class];
     }
 
     /**

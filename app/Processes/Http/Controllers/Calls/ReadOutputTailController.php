@@ -7,7 +7,7 @@ namespace App\Processes\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Calls\OutputTail;
 use App\Processes\Calls\ReadOutputTailCall;
-use App\Processes\Commands\RecordEvidenceReads;
+use App\Processes\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Processes\Enums\EvidenceSource;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\StoredOutput;
@@ -27,7 +27,7 @@ final readonly class ReadOutputTailController
         $part = $processRun->latestAttemptAt($call->part);
         $tail = $output->tail($part, $call->stream, $call->lines);
         $range = EvidenceRange::bytes($part->id, EvidenceSource::of($call->stream), $tail['before'], $tail['end']);
-        $commands->run(new RecordEvidenceReads($processRun->id, [$range]));
+        $commands->run(new RecordEvidenceReadsCommand($processRun->id, [$range]));
 
         return new OutputTail('diagnostic output', $call->stream->value, $tail['text'], $tail['before'], $tail['end']);
     }

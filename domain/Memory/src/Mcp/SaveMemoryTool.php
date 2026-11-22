@@ -6,7 +6,7 @@ namespace Domain\Memory\Mcp;
 
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use Domain\Memory\Commands\SaveMemory;
+use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -16,7 +16,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('memories_create')]
-#[Dispatches(SaveMemory::class)]
+#[Dispatches(SaveMemoryCommand::class)]
 #[Description('Save a memory at a weight from 1 to 10.')]
 final class SaveMemoryTool extends MemoryWriteTool
 {
@@ -28,8 +28,8 @@ final class SaveMemoryTool extends MemoryWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): SaveMemory
+    protected function command(ToolArguments $arguments): SaveMemoryCommand
     {
-        return new SaveMemory($arguments->text('text'), $arguments->positiveInteger('weight', 10));
+        return new SaveMemoryCommand($arguments->text('text'), $arguments->positiveInteger('weight', 10));
     }
 }

@@ -9,8 +9,8 @@ use App\Contracts\DomainAvailability;
 use App\Domains\Exceptions\DomainNotFound;
 use App\Domains\Support\DomainStatus;
 use App\Domains\Support\SettingsDomainAvailability;
-use App\Settings\Commands\DisableSettingGroup;
-use App\Settings\Commands\EnableSettingGroup;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Models\SettingsRecord;
 use App\Settings\Storage\EncodedToggle;
@@ -103,14 +103,14 @@ final class DomainAvailabilityTest extends TestCase
     private function switchOff(string $key): void
     {
         $this->app->make(CommandBus::class)->run(
-            new DisableSettingGroup(new GroupReference('Core', $key), $this->revision++),
+            new DisableSettingGroupCommand(new GroupReference('Core', $key), $this->revision++),
         );
     }
 
     private function switchOn(string $key): void
     {
         $this->app->make(CommandBus::class)->run(
-            new EnableSettingGroup(new GroupReference('Core', $key), $this->revision++),
+            new EnableSettingGroupCommand(new GroupReference('Core', $key), $this->revision++),
         );
     }
 

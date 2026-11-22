@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Communication\Exceptions\MessageMissing;
-use Domain\Chat\Commands\PinMessage;
+use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Resolvers\Support\MessagePinRecords;
 use Domain\Chat\Tests\Support\OpensTeamDeskMessage;
@@ -82,7 +82,7 @@ final class MessagePinTest extends TestCase
 
     private function pin(): void
     {
-        $this->runOnBus(new PinMessage($this->desk->inboxId(), $this->messageId));
+        $this->runOnBus(new PinMessageCommand($this->desk->inboxId(), $this->messageId));
     }
 
     /**

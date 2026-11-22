@@ -8,7 +8,7 @@ use App\Hooks\Contracts\TickableState;
 use App\Hooks\States\AgentState;
 use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;
-use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
+use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
 
 /**
  * An agent waits for the answer to its question. Once it waited long enough the tick asks for one reminder; the
@@ -34,6 +34,6 @@ final class AwaitingAnswerState extends AgentState implements TickableState
             return TickCommands::none();
         }
 
-        return TickCommands::of(new SendQuestionReminder($tick->target, $this->questionId));
+        return TickCommands::of(new SendQuestionReminderCommand($tick->target, $this->questionId));
     }
 }

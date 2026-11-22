@@ -12,7 +12,7 @@ use App\Domains\Support\DomainStateType;
 use App\Domains\Support\DomainTickableStateType;
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Stack\StateTypes;
-use App\Settings\Commands\DisableSettingGroup;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Settings\Values\GroupReference;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
@@ -74,7 +74,7 @@ final class DomainStateTypesTest extends TestCase
         $this->assertTrue($working->isEnabled());
 
         $this->app->make(CommandBus::class)->run(
-            new DisableSettingGroup(new GroupReference('Core', 'domain_tasks'), 0),
+            new DisableSettingGroupCommand(new GroupReference('Core', 'domain_tasks'), 0),
         );
         $this->app->forgetScopedInstances();
 

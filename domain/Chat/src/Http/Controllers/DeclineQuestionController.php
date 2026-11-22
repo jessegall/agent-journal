@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\DeclineChatQuestion;
+use App\Communication\Commands\DeclineChatQuestion\DeclineChatQuestionCommand;
 use Domain\Chat\Data\DeclineInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -17,7 +17,7 @@ final readonly class DeclineQuestionController
      */
     public function __invoke(DeclineInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new DeclineChatQuestion($input->messageId, $input->reason));
+        $commands->run(new DeclineChatQuestionCommand($input->messageId, $input->reason));
 
         return $redirect->back(303);
     }

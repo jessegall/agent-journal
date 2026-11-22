@@ -22,10 +22,10 @@ use App\Sharing\Support\ShareTargetRead;
 use App\Text\Exceptions\ContentTooLarge;
 use App\Text\Support\MarkdownText;
 use Carbon\CarbonImmutable;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
-use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Commands\ReplaceDocumentBody;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
+use Domain\Documents\Commands\ReplaceDocumentBody\ReplaceDocumentBodyCommand;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
@@ -86,14 +86,14 @@ final class SharingTest extends TestCase
         );
 
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new CreateDocument('Design', 'What we build', self::BODY));
+        $bus->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
 
-        $bus->run(new CreateReport('Check', 'What we found', self::FOUND_TEXT));
+        $bus->run(new CreateReportCommand('Check', 'What we found', self::FOUND_TEXT));
 
-        $draft = $bus->run(new OpenDocument('1'));
+        $draft = $bus->run(new OpenDocumentCommand('1'));
 
         $bus->run(
-            new ReplaceDocumentBody(
+            new ReplaceDocumentBodyCommand(
                 $draft->target(),
                 <<<'TEXT'
                 # Draft

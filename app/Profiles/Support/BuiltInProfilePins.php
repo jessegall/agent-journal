@@ -10,7 +10,7 @@ use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Profiles\Commands\InstallBuiltInProfiles;
+use App\Profiles\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
@@ -64,7 +64,7 @@ final readonly class BuiltInProfilePins implements BuiltInStartProfiles
             $this->dispatchers->runAsJournal(
                 CommandEntry::HostControl,
                 'built-in profiles',
-                new InstallBuiltInProfiles(),
+                new InstallBuiltInProfilesCommand(),
             );
         }
 

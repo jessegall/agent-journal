@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
-use App\Agents\Commands\CancelAccountUses;
-use App\Agents\Commands\HoldAccountUses;
-use App\Agents\Commands\SettleAccountUses;
+use App\Agents\Commands\CancelAccountUses\CancelAccountUsesCommand;
+use App\Agents\Commands\HoldAccountUses\HoldAccountUsesCommand;
+use App\Agents\Commands\SettleAccountUses\SettleAccountUsesCommand;
 use App\Agents\Exceptions\AccountInUse;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\MaintainAccount;
+use App\Profiles\Commands\MaintainAccount\MaintainAccountCommand;
 use App\Profiles\Models\Account;
 use App\Profiles\Values\MaintenanceProgress;
 
@@ -24,18 +24,18 @@ final readonly class AccountMaintenance
 
     public function advance(string $accountId): MaintenanceProgress
     {
-        $this->commands->run(new MaintainAccount($accountId));
+        $this->commands->run(new MaintainAccountCommand($accountId));
         $account = Account::query()->findOrFail($accountId);
         $identity = $account->recordIdentity();
-        $held = $this->commands->run(new HoldAccountUses($identity));
-        $cancelled = $this->commands->run(new CancelAccountUses($identity));
+        $held = $this->commands->run(new HoldAccountUsesCommand($identity));
+        $cancelled = $this->commands->run(new CancelAccountUsesCommand($identity));
 
         if ($account->hasLiveWriter()) {
             return new MaintenanceProgress($held->sessionIds, $cancelled, true, false);
         }
 
         try {
-            $this->commands->run(new SettleAccountUses($identity));
+            $this->commands->run(new SettleAccountUsesCommand($identity));
         } catch (AccountInUse) {
             return new MaintenanceProgress($held->sessionIds, $cancelled, false, false);
         }

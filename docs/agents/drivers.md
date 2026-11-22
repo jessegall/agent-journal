@@ -48,7 +48,7 @@ still be watched.
   is decided again on every frame read. A process-driver runtime, a stopped runtime and more than 20 live views of
   one viewer are refused. Watching never types: no route takes keys or input for the program.
 - The browser renews its view every 10 seconds, and a view lapses 30 seconds after its last renewal. Each engine pass
-  (`app/Engine/Commands/EndTerminalViews.php`) ends lapsed views and views of stopped runtimes, and deletes views
+  (`app/Engine/Commands/EndTerminalViews/EndTerminalViewsCommand.php`) ends lapsed views and views of stopped runtimes, and deletes views
   that ended a day ago.
 - The claim answer carries `watched: [{runtime_id, interval_ms}]` and `watched_version`, a hash of that list (0 when
   nobody watches); the host sends the last version it saw, and a claim returns at once when the version differs

@@ -11,7 +11,7 @@ use App\Agents\Support\CredentialLookup;
 use App\Agents\Support\StartedAgent;
 use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandBus;
-use App\Engine\Commands\MarkSilentSessions;
+use App\Engine\Commands\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Engine\Events\EngineTicked;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Engine\Support\EngineListenerSet;
@@ -74,7 +74,7 @@ final class SilenceSweepOnTickTest extends TestCase
         $this->startedSecondsAgo($stale, 121);
 
         $this->assertThrows(
-            fn () => $this->pass(fn () => $this->app->make(CommandBus::class)->run(new MarkSilentSessions())),
+            fn () => $this->pass(fn () => $this->app->make(CommandBus::class)->run(new MarkSilentSessionsCommand())),
             EngineAccessRefused::class,
         );
 

@@ -7,7 +7,7 @@ namespace App\Http\Requests\Sharing;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Sharing\Concerns\ReadsConfirmedPreview;
 use App\Http\Requests\Sharing\Concerns\ReadsShareId;
-use App\Sharing\Commands\ApproveShareRequest;
+use App\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use App\Sharing\Support\ShareDuration;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -33,9 +33,9 @@ final class ApproveProposalRequest extends FormRequest
         ];
     }
 
-    public function command(): ApproveShareRequest
+    public function command(): ApproveShareRequestCommand
     {
-        return new ApproveShareRequest(
+        return new ApproveShareRequestCommand(
             $this->shareId(),
             $this->previewId(),
             $this->previewChecksum(),

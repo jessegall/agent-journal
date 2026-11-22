@@ -7,11 +7,11 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Support\PoolMembers;
 use Domain\Tasks\Api\TaskType;
-use Domain\Tasks\Commands\AddTaskWait;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
-use Domain\Tasks\Commands\WaiveTaskWait;
+use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
+use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
 use Domain\Tasks\Exceptions\TaskWaitsUnmet;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
@@ -62,39 +62,39 @@ final class TaskStartWaitsTest extends TestCase
 
     public function test_an_unmet_wait_keeps_the_task_out_of_starts_and_the_pool_until_its_prerequisite_finishes(): void
     {
-        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id));
+        $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
 
-        $this->assertThrows(fn () => $this->runCommand(new StartTask($this->dependent->id)), TaskWaitsUnmet::class);
+        $this->assertThrows(fn () => $this->runCommand(new StartTaskCommand($this->dependent->id)), TaskWaitsUnmet::class);
         $this->assertNotContains($this->dependent->id, $this->pooled());
 
-        $this->runCommand(new StartTask($this->prerequisite->id));
-        $this->runCommand(new FinishTask($this->prerequisite->id, 1, 'Done.'));
+        $this->runCommand(new StartTaskCommand($this->prerequisite->id));
+        $this->runCommand(new FinishTaskCommand($this->prerequisite->id, 1, 'Done.'));
 
         $this->assertContains($this->dependent->id, $this->pooled());
-        $this->assertSame(1, $this->runCommand(new StartTask($this->dependent->id)));
+        $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
     }
 
     public function test_a_waiver_makes_the_task_startable(): void
     {
-        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id));
+        $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
 
         $this->runCommand(
-            new WaiveTaskWait($this->dependent->id, $this->prerequisite->id, 'Done by hand.'),
+            new WaiveTaskWaitCommand($this->dependent->id, $this->prerequisite->id, 'Done by hand.'),
         );
 
         $this->assertContains($this->dependent->id, $this->pooled());
-        $this->assertSame(1, $this->runCommand(new StartTask($this->dependent->id)));
+        $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
     }
 
     public function test_a_blocked_task_with_a_new_unmet_wait_cannot_restart_and_a_repeat_start_keeps_the_run(): void
     {
-        $this->assertSame(1, $this->runCommand(new StartTask($this->dependent->id)));
-        $this->assertSame(1, $this->runCommand(new StartTask($this->dependent->id)));
+        $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
+        $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
 
-        $this->runCommand(new BlockTask($this->dependent->id, 1, 'Waits for records.'));
-        $this->runCommand(new AddTaskWait($this->dependent->id, $this->prerequisite->id));
+        $this->runCommand(new BlockTaskCommand($this->dependent->id, 1, 'Waits for records.'));
+        $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
 
-        $this->assertThrows(fn () => $this->runCommand(new StartTask($this->dependent->id)), TaskWaitsUnmet::class);
+        $this->assertThrows(fn () => $this->runCommand(new StartTaskCommand($this->dependent->id)), TaskWaitsUnmet::class);
     }
 
     /**

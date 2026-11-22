@@ -6,8 +6,8 @@ namespace Domain\Chat\Http\Controllers;
 
 use App\Agents\Contracts\AgentDirectory;
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 use Domain\Chat\Data\MessageInput;
 use Domain\Chat\Support\SentMessageAnswer;
 use Illuminate\Http\JsonResponse;
@@ -37,13 +37,13 @@ final readonly class SendMessageController
         }
 
         $messageId = $input->question
-            ? $commands->run(new AskChatQuestion(
+            ? $commands->run(new AskChatQuestionCommand(
                 $input->inboxId,
                 $input->body,
                 $input->requestKey,
                 $input->addressee,
             ))
-            : $commands->run(new PostChatMessage(
+            : $commands->run(new PostChatMessageCommand(
                 $input->inboxId,
                 $input->body,
                 $input->requestKey,

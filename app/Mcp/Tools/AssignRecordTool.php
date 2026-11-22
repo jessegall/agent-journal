@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -16,7 +16,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('assignments_assign')]
-#[Dispatches(AssignRecord::class)]
+#[Dispatches(AssignRecordCommand::class)]
 #[Description('Give an unheld record to an eligible recipient, or confirm that they already hold it.')]
 final class AssignRecordTool extends AssignmentWriteTool
 {
@@ -25,8 +25,8 @@ final class AssignRecordTool extends AssignmentWriteTool
         return [...$this->recordSchema($schema), 'recipient' => $this->assigneeSchema($schema)];
     }
 
-    protected function command(ToolArguments $arguments): AssignRecord
+    protected function command(ToolArguments $arguments): AssignRecordCommand
     {
-        return new AssignRecord($this->record($arguments), $this->recipient($arguments));
+        return new AssignRecordCommand($this->record($arguments), $this->recipient($arguments));
     }
 }

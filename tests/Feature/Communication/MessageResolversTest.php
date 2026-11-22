@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
@@ -40,7 +40,7 @@ final class MessageResolversTest extends MessagingTestCase
         $taken = $this->ownerAsks($this->inboxIdOf($this->builder), 'Taken?');
         $this->ownerAsks($this->inboxIdOf($this->builder), 'Waiting?');
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$taken]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$taken]));
 
         $counts = $this->resolver()->counts($this->inboxIdOf($this->builder));
 

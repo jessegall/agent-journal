@@ -9,11 +9,11 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use Closure;
-use Domain\Plans\Commands\CancelPlan;
-use Domain\Plans\Commands\EditPlan;
-use Domain\Plans\Commands\RequestPlanReview;
-use Domain\Plans\Commands\StartPlan;
-use Domain\Plans\Commands\WithdrawPlanReview;
+use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
+use Domain\Plans\Commands\EditPlan\EditPlanCommand;
+use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
+use Domain\Plans\Commands\WithdrawPlanReview\WithdrawPlanReviewCommand;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\PlanUnderReview;
@@ -21,7 +21,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Commands\EditTask;
+use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Models\Task;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ActsAsOwner;
@@ -58,11 +58,11 @@ final class PlanReviewTest extends TestCase
     public static function changes(): iterable
     {
         yield 'editing the plan' => [fn (self $test, Plan $plan) => $test->runCommand(
-            new EditPlan($plan->id, $plan->revision, 'Another title'),
+            new EditPlanCommand($plan->id, $plan->revision, 'Another title'),
         )];
 
         yield 'cancelling the plan' => [fn (self $test, Plan $plan) => $test->runCommand(
-            new CancelPlan($plan->id, $plan->revision, 'Not needed.'),
+            new CancelPlanCommand($plan->id, $plan->revision, 'Not needed.'),
         )];
 
         yield 'adding a phase' => [fn (self $test, Plan $plan) => $test->structure()->addPhase($plan, 'Checking')];
@@ -73,7 +73,7 @@ final class PlanReviewTest extends TestCase
         )];
 
         yield 'editing a task of the plan' => [fn (self $test, Plan $plan, Task $task) => $test->runCommand(
-            new EditTask($task->id, $task->revision, brief: self::NEW_BRIEF),
+            new EditTaskCommand($task->id, $task->revision, brief: self::NEW_BRIEF),
         )];
     }
 
@@ -81,20 +81,20 @@ final class PlanReviewTest extends TestCase
     {
         [$plan, $task] = $this->planWithTask();
 
-        $reviewId = $this->runCommand(new RequestPlanReview($plan->id, [$this->owner()]));
+        $reviewId = $this->runCommand(new RequestPlanReviewCommand($plan->id, [$this->owner()]));
 
         $this->assertSame(PlanState::Reviewing, $plan->refresh()->state);
         $this->assertSame(1, PlanReviewEdition::query()->whereKey($reviewId)->sole()->number);
-        $this->assertThrows(fn () => $this->runCommand(new StartPlan($plan->id)));
+        $this->assertThrows(fn () => $this->runCommand(new StartPlanCommand($plan->id)));
 
-        $this->runCommand(new WithdrawPlanReview($plan->id));
+        $this->runCommand(new WithdrawPlanReviewCommand($plan->id));
 
         $this->assertSame(PlanState::Planned, $plan->refresh()->state);
         $review = PlanReviewEdition::query()->whereKey($reviewId)->sole();
         $this->assertSame(PlanReviewState::Withdrawn, $review->state);
         $this->assertSame($this->owner->id, $review->decided_by_id);
 
-        $this->runCommand(new EditTask($task->id, $task->refresh()->revision, brief: self::NEW_BRIEF));
+        $this->runCommand(new EditTaskCommand($task->id, $task->refresh()->revision, brief: self::NEW_BRIEF));
         $this->assertSame(self::NEW_BRIEF, $task->refresh()->brief);
     }
 
@@ -105,7 +105,7 @@ final class PlanReviewTest extends TestCase
     public function test_a_change_to_a_plan_under_review_is_refused(Closure $change): void
     {
         [$plan, $task] = $this->planWithTask();
-        $this->runCommand(new RequestPlanReview($plan->id, [$this->owner()]));
+        $this->runCommand(new RequestPlanReviewCommand($plan->id, [$this->owner()]));
 
         $this->assertThrows(
             fn () => $change($this, $plan->refresh(), $task->refresh()),
@@ -123,7 +123,7 @@ final class PlanReviewTest extends TestCase
         $plan = Plan::factory()->create();
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        $this->assertThrows(fn () => $this->runCommand(new RequestPlanReview($plan->id, [$this->owner()])));
+        $this->assertThrows(fn () => $this->runCommand(new RequestPlanReviewCommand($plan->id, [$this->owner()])));
         $this->assertSame(PlanState::Planned, $plan->refresh()->state);
         $this->assertSame(0, PlanReviewEdition::query()->count());
     }

@@ -13,17 +13,17 @@ use Closure;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanStarted;
-use Domain\Plans\Commands\CancelPlan;
-use Domain\Plans\Commands\FinishPlan;
-use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
+use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
@@ -119,8 +119,8 @@ final class EventPayloadTest extends TestCase
         $task = Task::factory()->create();
         $sent = $this->recordedSends();
 
-        $this->runAsOwner(new StartTask($task->id));
-        $this->runAsOwner(new StartTask($task->id));
+        $this->runAsOwner(new StartTaskCommand($task->id));
+        $this->runAsOwner(new StartTaskCommand($task->id));
 
         $classes = array_map(fn (object $event) => $event::class, $sent());
 
@@ -134,13 +134,13 @@ final class EventPayloadTest extends TestCase
         $finished = Task::factory()->create();
         $blocked = Task::factory()->create();
         $cancelled = Task::factory()->create();
-        $this->runAsOwner(new StartTask($finished->id));
-        $this->runAsOwner(new StartTask($blocked->id));
+        $this->runAsOwner(new StartTaskCommand($finished->id));
+        $this->runAsOwner(new StartTaskCommand($blocked->id));
         $sent = $this->recordedSends();
 
-        $this->runAsOwner(new FinishTask($finished->id, 1, 'Done.'));
-        $this->runAsOwner(new BlockTask($blocked->id, 1, 'Waits.'));
-        $this->runAsOwner(new CancelTask($cancelled->id, 'Dropped.'));
+        $this->runAsOwner(new FinishTaskCommand($finished->id, 1, 'Done.'));
+        $this->runAsOwner(new BlockTaskCommand($blocked->id, 1, 'Waits.'));
+        $this->runAsOwner(new CancelTaskCommand($cancelled->id, 'Dropped.'));
 
         $this->assertSame(
             [
@@ -157,8 +157,8 @@ final class EventPayloadTest extends TestCase
         $plan = Plan::factory()->create();
         $sent = $this->recordedSends();
 
-        $this->runAsOwner(new StartPlan($plan->id));
-        $this->runAsOwner(new StartPlan($plan->id));
+        $this->runAsOwner(new StartPlanCommand($plan->id));
+        $this->runAsOwner(new StartPlanCommand($plan->id));
 
         $this->assertEquals([new PlanStarted($plan->id, ActorContext::forUser($this->owner->id))], $sent());
     }
@@ -167,11 +167,11 @@ final class EventPayloadTest extends TestCase
     {
         $finished = Plan::factory()->create();
         $cancelled = Plan::factory()->create();
-        $this->runAsOwner(new StartPlan($finished->id));
+        $this->runAsOwner(new StartPlanCommand($finished->id));
         $sent = $this->recordedSends();
 
-        $this->runAsOwner(new FinishPlan($finished->id, $finished->refresh()->revision, 'Done.'));
-        $this->runAsOwner(new CancelPlan($cancelled->id, $cancelled->refresh()->revision, 'Dropped.'));
+        $this->runAsOwner(new FinishPlanCommand($finished->id, $finished->refresh()->revision, 'Done.'));
+        $this->runAsOwner(new CancelPlanCommand($cancelled->id, $cancelled->refresh()->revision, 'Dropped.'));
 
         $owner = ActorContext::forUser($this->owner->id);
         $this->assertEquals(

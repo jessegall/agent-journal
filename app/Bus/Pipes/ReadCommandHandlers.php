@@ -22,11 +22,12 @@ use App\Bus\Support\DeclaredCommand;
 use App\Pipelines\Contracts\Pipe;
 use App\Reflection\Support\Reflector;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Str;
 
 /**
  * Reads every owner's commands against the command grammar and finds each one's handler by its name: a command is
  * listed once, is a final readonly command in its owner's Commands folder, repeats no attribute and has a handler of
- * its own name in the owner's Handlers folder.
+ * its own name beside it, in the command's own folder.
  */
 final readonly class ReadCommandHandlers implements Pipe
 {
@@ -72,6 +73,10 @@ final readonly class ReadCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($command, "it is not in {$owner->name}'s Commands folder");
         }
 
+        if (! str_ends_with($command, 'Command')) {
+            throw CommandDeclarationInvalid::for($command, 'its name does not end in Command');
+        }
+
         if (! Reflector::factory()->isSubclassOf($command, Command::class)) {
             throw CommandDeclarationInvalid::for($command, 'it is no class implementing Command');
         }
@@ -115,12 +120,11 @@ final readonly class ReadCommandHandlers implements Pipe
     }
 
     /**
-     * The handler a command has by its name: App\X\Commands\Foo is handled by App\X\Handlers\FooHandler.
+     * The handler a command has beside it in its own folder: App\X\Commands\Foo\FooCommand is handled by
+     * App\X\Commands\Foo\FooHandler.
      */
     private static function handlerNamedFor(string $command): string
     {
-        $folder = (int) strrpos($command, '\\Commands\\');
-
-        return substr($command, 0, $folder).'\\Handlers\\'.substr($command, $folder + strlen('\\Commands\\')).'Handler';
+        return Str::beforeLast($command, 'Command').'Handler';
     }
 }

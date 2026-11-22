@@ -6,7 +6,7 @@ namespace Domain\Chat\Http\Controllers\Calls;
 
 use App\Bus\Contracts\CommandBus;
 use Domain\Chat\Calls\DockRemoveCall;
-use Domain\Chat\Commands\UndockSource;
+use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Data\DockAnswerData;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockRequests;
@@ -27,7 +27,7 @@ final readonly class DockRemoveController
             return DockAnswerData::fromDockResult(DockResult::unavailable());
         }
 
-        return DockAnswerData::fromDockResult($commands->run(new UndockSource(
+        return DockAnswerData::fromDockResult($commands->run(new UndockSourceCommand(
             $conversation->id,
             $placement->id,
             $placement->dockable_type,

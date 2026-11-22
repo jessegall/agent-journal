@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Chat\Commands\DockSource;
+use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Data\DockAnswerData;
 use Domain\Chat\Values\DockResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
 #[Name('dock_add')]
-#[Dispatches(DockSource::class)]
+#[Dispatches(DockSourceCommand::class)]
 #[Description('Dock a record above your conversation, for both sides of it: give type and id, and chat (the inbox id of the chat) when you are in several chats. Answers added or present with the placement id.')]
 final class DockAddTool extends JournalWriteTool
 {
@@ -31,9 +31,9 @@ final class DockAddTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): DockSource
+    protected function command(ToolArguments $arguments): DockSourceCommand
     {
-        return new DockSource(
+        return new DockSourceCommand(
             $arguments->optionalText('chat'),
             $arguments->text('type'),
             $arguments->text('id')

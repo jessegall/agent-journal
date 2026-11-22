@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Profiles;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\AccountCheckRequest;
-use App\Profiles\Commands\CheckAccount;
+use App\Profiles\Commands\CheckAccount\CheckAccountCommand;
 use Illuminate\Http\Response;
 
 /**
@@ -17,7 +17,7 @@ final readonly class ReportAccountCheckController
 {
     public function __invoke(AccountCheckRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new CheckAccount(
+        $commands->run(new CheckAccountCommand(
             $host->hostId,
             $request->accountId(),
             $request->generation(),

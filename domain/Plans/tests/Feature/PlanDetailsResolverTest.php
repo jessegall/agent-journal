@@ -12,8 +12,8 @@ use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
@@ -63,8 +63,8 @@ final class PlanDetailsResolverTest extends TestCase
         $this->assertSame(self::BRIEF, $details->brief);
         $this->assertNull($resolver->plan($plan->id, ReadView::Summary)->brief);
 
-        $this->runAs(TestActors::user(7), new StartTask($tasks[1]->id));
-        $this->runAs(TestActors::user(7), new FinishTask($tasks[1]->id, 1, 'Done.'));
+        $this->runAs(TestActors::user(7), new StartTaskCommand($tasks[1]->id));
+        $this->runAs(TestActors::user(7), new FinishTaskCommand($tasks[1]->id, 1, 'Done.'));
 
         $this->assertSame(2, $resolver->plan($plan->id, ReadView::Summary)->progress->finished);
     }

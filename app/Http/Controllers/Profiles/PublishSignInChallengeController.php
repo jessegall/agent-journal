@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Profiles;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SignInChallengeRequest;
-use App\Profiles\Commands\PublishSignInChallenge;
+use App\Profiles\Commands\PublishSignInChallenge\PublishSignInChallengeCommand;
 use Illuminate\Http\Response;
 
 /**
@@ -17,7 +17,7 @@ final readonly class PublishSignInChallengeController
 {
     public function __invoke(SignInChallengeRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new PublishSignInChallenge(
+        $commands->run(new PublishSignInChallengeCommand(
             $host->hostId,
             $request->attemptId(),
             $request->address(),

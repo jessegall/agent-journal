@@ -9,10 +9,10 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Sharing\Commands\ClaimGatewayOperation;
-use App\Sharing\Commands\DisableShareGateway;
-use App\Sharing\Commands\RecordGatewayOutcome;
-use App\Sharing\Commands\RevokeShare;
+use App\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
+use App\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use App\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Enums\ShareState;
@@ -101,9 +101,9 @@ final class SharingEventsTest extends TestCase
 
     public function test_share_activated_reaches_a_listener_after_commit_once_and_not_on_a_replay(): void
     {
-        $claim = $this->asSystem(new ClaimGatewayOperation(self::RUN));
+        $claim = $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
-        $outcome = new RecordGatewayOutcome(
+        $outcome = new RecordGatewayOutcomeCommand(
             self::RUN,
             $claim->operation->operationId,
             $claim->operation->endpointVersion,
@@ -138,7 +138,7 @@ final class SharingEventsTest extends TestCase
 
         try {
             $this->assertThrows(
-                fn () => $this->asOwner(new DisableShareGateway($this->configuration->id, (string) Str::ulid())),
+                fn () => $this->asOwner(new DisableShareGatewayCommand($this->configuration->id, (string) Str::ulid())),
                 QueryException::class,
                 self::TRIGGER_REFUSAL,
             );
@@ -149,8 +149,8 @@ final class SharingEventsTest extends TestCase
         $this->assertSame([], $this->received);
         $this->assertSame(ShareState::Pending, $this->share->fresh()?->state);
 
-        $this->asOwner(new RevokeShare($this->share->id, (string) Str::ulid()));
-        $this->asOwner(new RevokeShare($this->share->id, (string) Str::ulid()));
+        $this->asOwner(new RevokeShareCommand($this->share->id, (string) Str::ulid()));
+        $this->asOwner(new RevokeShareCommand($this->share->id, (string) Str::ulid()));
 
         $this->assertSame([ShareRevoked::class], array_map(fn (object $event) => $event::class, $this->received));
     }

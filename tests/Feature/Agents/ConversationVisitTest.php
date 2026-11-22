@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Actions\StartSessions;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\DriverConversationResolver;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
@@ -139,7 +139,7 @@ final class ConversationVisitTest extends TestCase
         );
 
         return AgentSession::query()->findOrFail(
-            $this->app->make(CommandBus::class)->run(new StartAgent($request))->sessionId,
+            $this->app->make(CommandBus::class)->run(new StartAgentCommand($request))->sessionId,
         );
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Assignments\Support\ProvedClaims;
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Data\MessageReadBatch;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\MessageMissing;
@@ -51,7 +51,7 @@ final class ReadMessagesTest extends MessagingTestCase
 
         $this->expectException(InboxUnavailable::class);
 
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->reviewer), [$toReviewer]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->reviewer), [$toReviewer]));
     }
 
     /**
@@ -59,7 +59,7 @@ final class ReadMessagesTest extends MessagingTestCase
      */
     private function read(array $messageIds): MessageReadBatch
     {
-        return $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), $messageIds));
+        return $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), $messageIds));
     }
 
     /**

@@ -8,7 +8,7 @@ everything a module developer needs for that.
 
 A command is a final readonly value in the owner's `Commands` folder that extends `App\Bus\Support\Command` and
 declares only its business fields in its constructor, and its docblock says what it answers. Its handler is found by
-its name: `Domain\Rules\Commands\ProposeRule` is handled by `Domain\Rules\Handlers\ProposeRuleHandler`, so the command
+its name: `Domain\Rules\Commands\ProposeRule\ProposeRuleCommand` is handled by `Domain\Rules\Commands\ProposeRule\ProposeRuleHandler`, so the command
 names no handler and the two folders import one way. A handler has one public `handle` method that takes the command,
 and holds no transaction code: the bus opens the transaction.
 
@@ -16,8 +16,13 @@ The handler reads who dispatched the command with `$command->dispatchedBy()`: an
 the actor's type and id and nothing more, no authority. The bus binds it on every call. A command the caller has just
 built is unbound, and reading `dispatchedBy()` on it raises `App\Bus\Exceptions\CommandDispatcherMissing`.
 
+A command and its one handler share a folder of their own under the owner's `Commands` folder:
+`domain/Rules/src/Commands/ProposeRule/ProposeRuleCommand.php` beside `ProposeRuleHandler.php`, with an optional
+`Support` folder inside for code only that pair uses. The bus finds the handler by the command's name, `Command`
+replaced by `Handler`, in the same folder.
+
 ```php
-namespace Domain\Rules\Commands;
+namespace Domain\Rules\Commands\ProposeRule;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Support\Command;
@@ -30,7 +35,7 @@ use Domain\Rules\Policies\RulePolicy;
  * @extends Command<string>
  */
 #[Authorize(RulePolicy::class, AccessType::Create)]
-final readonly class ProposeRule extends Command
+final readonly class ProposeRuleCommand extends Command
 {
     public function __construct(
         public string $text,
@@ -41,10 +46,9 @@ final readonly class ProposeRule extends Command
 ```
 
 ```php
-namespace Domain\Rules\Handlers;
+namespace Domain\Rules\Commands\ProposeRule;
 
 use App\Contracts\CommandHandler;
-use Domain\Rules\Commands\ProposeRule;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
 
@@ -53,7 +57,7 @@ final readonly class ProposeRuleHandler implements CommandHandler
     /**
      * @throws RuleMissing when the rule it would replace does not exist
      */
-    public function handle(ProposeRule $command): string
+    public function handle(ProposeRuleCommand $command): string
     {
         if ($command->replacesRuleId !== null) {
             Rule::query()->find($command->replacesRuleId) ?? throw RuleMissing::withId($command->replacesRuleId);
@@ -67,8 +71,8 @@ final readonly class ProposeRuleHandler implements CommandHandler
 ```
 
 A handler that runs another handler directly, without the bus, binds that command to its own dispatcher with
-`withDispatcher($command->dispatchedBy())`, as `App\Agents\Handlers\OpenHostMainRuntimeHandler`,
-`App\Agents\Support\DriverHeartbeatSource` and `App\Profiles\Handlers\InstallBuiltInProfilesHandler` do. Every other
+`withDispatcher($command->dispatchedBy())`, as `App\Agents\Commands\OpenHostMainRuntime\OpenHostMainRuntimeHandler`,
+`App\Agents\Support\DriverHeartbeatSource` and `App\Profiles\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesHandler` do. Every other
 command goes through the bus.
 
 A command carries whole numbers, text, yes or no, decimals, backed enums, their nullable forms, final readonly values the
@@ -78,8 +82,8 @@ resolves). A handler returns nothing, one of those, or a final readonly value su
 Every command a person or an agent sends declares who may run it with one `#[Authorize(Policy::class,
 AccessType::Case)]`: the policy names the model it guards, so the declaration needs no subject. A command whose policy
 decides on one record implements `App\Bus\Contracts\RecordCommand` and returns that locked record from `subject()`,
-as `Domain\Tasks\Commands\BlockTask` does for `Domain\Tasks\Policies\TaskRunPolicy`; its handler takes the record as
-its second argument, as `Domain\Tasks\Handlers\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
+as `Domain\Tasks\Commands\BlockTask\BlockTaskCommand` does for `Domain\Tasks\Policies\TaskRunPolicy`; its handler takes the record as
+its second argument, as `Domain\Tasks\Commands\BlockTask\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
 loads it once. The bus checks the caller's profile grants before the subject is loaded and refuses with
 `App\Bus\Exceptions\CommandAdmissionRefused`, then authorizes the subject and refuses with
 `App\Actors\Exceptions\ActorNotAllowed`. A command with neither `Authorize` nor a trusted entry fails the boot with
@@ -90,14 +94,14 @@ docs/domains/authorization.md shows how a module declares its policies.
 
 One attribute changes how a command runs:
 
-- `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Assignments\Commands\AssignRecord` does.
+- `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Assignments\Commands\AssignRecord\AssignRecordCommand` does.
 
 The owner lists its commands on its Domain class through `App\Bus\Contracts\CommandProvider`, and exports the ones other
 owners may run. Callers take `App\Bus\Contracts\CommandBus` as a method parameter and call `run`:
 
 ```php
 use App\Bus\Contracts\CommandBus;
-use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 
 $commands->run(new FinishTask($taskId));
 ```
@@ -233,7 +237,7 @@ The registry checks every declaration when the application starts:
 | Error | Fix |
 |---|---|
 | `App\Bus\Exceptions\CommandDeclarationInvalid` | Make the command final readonly in `Commands`, extending `App\Bus\Support\Command`, with fields and a result the grammar above allows. |
-| `App\Bus\Exceptions\CommandHandlerMissing` | Write the handler the message names: the command's name with `Handler`, in the owner's `Handlers` folder. |
+| `App\Bus\Exceptions\CommandHandlerMissing` | Write the handler the message names: the command's name with `Command` replaced by `Handler`, beside the command in its folder. |
 | `App\Bus\Exceptions\CommandListedTwice` | List each command once. |
 | `App\Bus\Exceptions\MiddlewareDeclarationInvalid` | Name only commands the module may see, in a `CommandMiddleware` folder. |
 | `App\Bus\Exceptions\MiddlewareListedTwice` | Declare each middleware once per scope and stage. |

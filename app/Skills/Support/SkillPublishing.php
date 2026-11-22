@@ -7,13 +7,13 @@ namespace App\Skills\Support;
 use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Skills\Commands\ActivateSkillPublication;
-use App\Skills\Commands\FailSkillPublication;
-use App\Skills\Commands\PrepareSkillPublication;
-use App\Skills\Commands\PruneSkillPublications;
-use App\Skills\Commands\PublishSkills;
-use App\Skills\Commands\RefreshSkills;
-use App\Skills\Commands\RetrySkillPublication;
+use App\Skills\Commands\ActivateSkillPublication\ActivateSkillPublicationCommand;
+use App\Skills\Commands\FailSkillPublication\FailSkillPublicationCommand;
+use App\Skills\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
+use App\Skills\Commands\PruneSkillPublications\PruneSkillPublicationsCommand;
+use App\Skills\Commands\PublishSkills\PublishSkillsCommand;
+use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
+use App\Skills\Commands\RetrySkillPublication\RetrySkillPublicationCommand;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Exceptions\SkillPublicationStale;
@@ -39,7 +39,7 @@ final readonly class SkillPublishing
      */
     public function refresh(): RefreshResult
     {
-        return $this->asSystem(new RefreshSkills());
+        return $this->asSystem(new RefreshSkillsCommand());
     }
 
     /**
@@ -47,14 +47,14 @@ final readonly class SkillPublishing
      */
     public function retry(string $publicationId, string $holder): PublicationState
     {
-        $this->asSystem(new RetrySkillPublication($publicationId));
+        $this->asSystem(new RetrySkillPublicationCommand($publicationId));
 
         return $this->publish($publicationId, $holder);
     }
 
     public function prune(): PrunedPublications
     {
-        return $this->asSystem(new PruneSkillPublications());
+        return $this->asSystem(new PruneSkillPublicationsCommand());
     }
 
     /**
@@ -76,23 +76,23 @@ final readonly class SkillPublishing
     public function publish(string $publicationId, string $holder): PublicationState
     {
         try {
-            $claim = $this->asSystem(new PublishSkills($publicationId, $holder));
+            $claim = $this->asSystem(new PublishSkillsCommand($publicationId, $holder));
         } catch (SkillPublicationFailed) {
             return SkillPublication::query()->whereKey($publicationId)->firstOrFail()->state;
         }
 
         try {
             do {
-                $progress = $this->asSystem(new PrepareSkillPublication($publicationId, $claim->fence));
+                $progress = $this->asSystem(new PrepareSkillPublicationCommand($publicationId, $claim->fence));
             } while (! $progress->isComplete());
 
-            $this->asSystem(new ActivateSkillPublication($publicationId, $claim->fence));
+            $this->asSystem(new ActivateSkillPublicationCommand($publicationId, $claim->fence));
 
             return PublicationState::Delivered;
         } catch (SkillPublicationStale) {
             return PublicationState::Superseded;
         } catch (SkillPublicationFailed $failure) {
-            $this->asSystem(new FailSkillPublication($publicationId, $failure->getMessage()));
+            $this->asSystem(new FailSkillPublicationCommand($publicationId, $failure->getMessage()));
 
             return PublicationState::Failed;
         }

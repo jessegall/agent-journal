@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ClaimStart;
+use App\Agents\Commands\ClaimStart\ClaimStartCommand;
 use App\Agents\Values\ChildCheckout;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
@@ -20,7 +20,7 @@ final readonly class ClaimStartController
 {
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): JsonResponse
     {
-        $claimed = $commands->run(new ClaimStart($host->hostId, $request->sessionId()));
+        $claimed = $commands->run(new ClaimStartCommand($host->hostId, $request->sessionId()));
 
         return $claimed === null
             ? new JsonResponse(['message' => 'This start is no longer waiting for a host.'], Response::HTTP_GONE)

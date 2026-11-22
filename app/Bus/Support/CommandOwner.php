@@ -18,7 +18,7 @@ final readonly class CommandOwner
     public const string CORE = 'Core';
 
     /**
-     * @param  string  $namespace  the owner's namespace, whose Commands, Handlers and CommandMiddleware folders hold
+     * @param  string  $namespace  the owner's namespace, whose Commands and CommandMiddleware folders hold
      *                             its parts
      * @param  string  $domainClass  the owner's Domain class, or CORE, as a middleware scope names it
      * @param  list<class-string>  $commands
@@ -46,7 +46,7 @@ final readonly class CommandOwner
     }
 
     /**
-     * Whether a class sits in this owner's folder of that kind, such as its Commands or Handlers folder; for Core, in
+     * Whether a class sits in this owner's folder of that kind, such as its Commands or CommandMiddleware folder; for Core, in
      * that folder of one of its areas.
      */
     public function holdsIn(string $folder, string $class): bool

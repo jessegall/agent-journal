@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Connections;
 
-use App\Connections\Commands\IssueProjectInvitation;
+use App\Connections\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
 use App\Connections\Values\InstallTicket;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -32,9 +32,9 @@ final class IssueProjectInvitationRequest extends FormRequest
     /**
      * The command for a new line, carrying only the digest of its ticket.
      */
-    public function commandFor(InstallTicket $ticket): IssueProjectInvitation
+    public function commandFor(InstallTicket $ticket): IssueProjectInvitationCommand
     {
-        return new IssueProjectInvitation(
+        return new IssueProjectInvitationCommand(
             $ticket->digest(),
             $this->issuanceKey(),
             $this->projectId(),

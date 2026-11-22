@@ -6,8 +6,8 @@ namespace Tests\Feature\Profiles;
 
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\DomainAvailability;
-use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\SaveProfileDraft;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Profiles\Models\Profile;
 use App\Profiles\Models\ProfileRevision;
 use App\Profiles\Support\ProfileProposal;
@@ -108,11 +108,11 @@ SCRIPT, ['tests' => [
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('scripted-review');
         $source = new ScriptSource("ON STOP\nYIELD \"Check again.\"\nEND");
-        $commands->run(new SaveProfileDraft($profile, 0, $source));
+        $commands->run(new SaveProfileDraftCommand($profile, 0, $source));
         $proposal = ProfileProposal::fromConfiguration(['profiles' => [
             $profile->key => ['base' => 'read-only-helper', 'model' => 'opus'],
         ]]);
-        $commands->run(new ActivateProfiles($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
+        $commands->run(new ActivateProfilesCommand($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
 
         $revision = ProfileRevision::currentOf(Profile::byKey($profile));
         $this->assertEquals($source, $revision->scriptSource());

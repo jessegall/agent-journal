@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp;
 
-use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\DismissMessage\DismissMessageCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(true)]
 #[Name('messages_dismiss')]
-#[Dispatches(DismissMessage::class)]
+#[Dispatches(DismissMessageCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Withdraw a message you wrote, or decline one sent to your inbox, with a reason.')]
 final class DismissMessageTool extends JournalWriteTool
@@ -33,9 +33,9 @@ final class DismissMessageTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): DismissMessage
+    protected function command(ToolArguments $arguments): DismissMessageCommand
     {
-        return new DismissMessage(
+        return new DismissMessageCommand(
             $arguments->ulid('message_id'),
             $arguments->text('reason'),
         );

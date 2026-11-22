@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\CancelKeyScript;
+use App\Agents\Commands\CancelKeyScript\CancelKeyScriptCommand;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\NavigationState;
 use App\Agents\Enums\RequestOutcome;
@@ -83,7 +83,7 @@ final class NavigationLifecycleTest extends TestCase
         $stalled = $this->stalledScript();
         $navigation = $this->raise($stalled, 'raise-1');
 
-        $this->asOwner(new CancelKeyScript($stalled->id, $stalled->row_version, 'not needed'));
+        $this->asOwner(new CancelKeyScriptCommand($stalled->id, $stalled->row_version, 'not needed'));
 
         $this->assertSame(NavigationState::Cancelled, $navigation->fresh()?->state);
     }

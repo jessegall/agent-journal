@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\EnrolledHost;
@@ -129,7 +129,7 @@ final class ContainedProgramEvidenceTest extends TestCase
     {
         $name = 'contained host '.Str::random(6);
 
-        return $this->asSystem(new EnrollHost($name, ['/workspace'], ArrangementType::Contained));
+        return $this->asSystem(new EnrollHostCommand($name, ['/workspace'], ArrangementType::Contained));
     }
 
     /**

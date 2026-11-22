@@ -6,7 +6,7 @@ namespace App\Profiles\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SubmitSignInCodeRequest;
-use App\Profiles\Commands\SubmitSignInCode;
+use App\Profiles\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -20,7 +20,7 @@ final readonly class SubmitSignInCodeController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new SubmitSignInCode($request->attemptId(), $request->code(), $request->submissionKey()));
+        $commands->run(new SubmitSignInCodeCommand($request->attemptId(), $request->code(), $request->submissionKey()));
 
         return $redirect->back(303);
     }

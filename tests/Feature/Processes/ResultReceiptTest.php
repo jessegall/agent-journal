@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\AssessPartOutput;
+use App\Processes\Commands\AssessPartOutput\AssessPartOutputCommand;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Enums\ProblemCode;
@@ -35,7 +35,7 @@ final class ResultReceiptTest extends TestCase
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
 
-        $receiptId = $this->runAsAgent(new AssessPartOutput($part->id));
+        $receiptId = $this->runAsAgent(new AssessPartOutputCommand($part->id));
 
         $receipt = ResultReceipt::query()->findOrFail($receiptId);
         $this->assertSame(AssessmentOutcome::Passed, $receipt->outcome);
@@ -48,7 +48,7 @@ final class ResultReceiptTest extends TestCase
         Event::fake([EvidenceInvalid::class]);
         $part = $this->normalRun(0, "error: disk full\n".self::PASSED_OUTPUT);
 
-        $this->assertSame('', $this->runAsAgent(new AssessPartOutput($part->id)));
+        $this->assertSame('', $this->runAsAgent(new AssessPartOutputCommand($part->id)));
 
         $this->assertContains(ProblemCode::OutputUnrecognized, $this->codesOf($part));
         $this->assertSame(0, ResultReceipt::query()->count());
@@ -59,7 +59,7 @@ final class ResultReceiptTest extends TestCase
     {
         $part = $this->normalRun(0, self::FINDINGS_OUTPUT);
 
-        $this->runAsAgent(new AssessPartOutput($part->id));
+        $this->runAsAgent(new AssessPartOutputCommand($part->id));
 
         $this->assertContains(ProblemCode::OutcomeConflict, $this->codesOf($part));
     }
@@ -68,7 +68,7 @@ final class ResultReceiptTest extends TestCase
     {
         $part = $this->normalRun(3, self::FINDINGS_OUTPUT);
 
-        $this->runAsAgent(new AssessPartOutput($part->id));
+        $this->runAsAgent(new AssessPartOutputCommand($part->id));
 
         $this->assertContains(ProblemCode::ExecutionError, $this->codesOf($part));
         $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->sole();
@@ -79,7 +79,7 @@ final class ResultReceiptTest extends TestCase
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT, RunMode::Evidence);
 
-        $this->runAsAgent(new AssessPartOutput($part->id));
+        $this->runAsAgent(new AssessPartOutputCommand($part->id));
 
         $this->assertContains(ProblemCode::NotNormalRun, $this->codesOf($part));
         $this->assertSame(0, ResultReceipt::query()->count());
@@ -88,9 +88,9 @@ final class ResultReceiptTest extends TestCase
     public function test_a_replay_appends_an_assessment_and_supersedes_the_earlier_receipt(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
-        $first = $this->runAsAgent(new AssessPartOutput($part->id));
+        $first = $this->runAsAgent(new AssessPartOutputCommand($part->id));
 
-        $second = $this->runAsAgent(new AssessPartOutput($part->id));
+        $second = $this->runAsAgent(new AssessPartOutputCommand($part->id));
 
         $assessments = OutputAssessment::query()
             ->where('part_run_id', $part->id)

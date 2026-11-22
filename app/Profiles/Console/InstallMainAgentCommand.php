@@ -7,7 +7,7 @@ namespace App\Profiles\Console;
 use App\Agents\Models\MainAgentDesignation;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Profiles\Commands\InstallMainAgent;
+use App\Profiles\Commands\InstallMainAgent\InstallMainAgentCommand as InstallMainAgent;
 use Illuminate\Console\Command;
 
 final class InstallMainAgentCommand extends Command

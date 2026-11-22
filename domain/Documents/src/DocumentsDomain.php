@@ -46,17 +46,17 @@ use Domain\Documents\Api\Events\DraftKept;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Api\RetainedDraftView;
-use Domain\Documents\Commands\ChangeDocumentDetails;
-use Domain\Documents\Commands\CloseDocument;
-use Domain\Documents\Commands\CloseReport;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
-use Domain\Documents\Commands\EditDocument;
-use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Commands\RecoverDocument;
-use Domain\Documents\Commands\ReplaceDocumentBody;
-use Domain\Documents\Commands\ReplaceDocumentText;
-use Domain\Documents\Commands\SettleDocument;
+use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
+use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
+use Domain\Documents\Commands\CloseReport\CloseReportCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
+use Domain\Documents\Commands\RecoverDocument\RecoverDocumentCommand;
+use Domain\Documents\Commands\ReplaceDocumentBody\ReplaceDocumentBodyCommand;
+use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
+use Domain\Documents\Commands\SettleDocument\SettleDocumentCommand;
 use Domain\Documents\Contracts\AttachmentReader;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DocumentResolver;
@@ -192,17 +192,17 @@ final class DocumentsDomain extends Domain implements
                 ReportView::class,
             )
             ->commands(
-                CreateDocument::class,
-                CreateReport::class,
-                OpenDocument::class,
-                ReplaceDocumentBody::class,
-                EditDocument::class,
-                ReplaceDocumentText::class,
-                ChangeDocumentDetails::class,
-                CloseDocument::class,
-                SettleDocument::class,
-                CloseReport::class,
-                RecoverDocument::class,
+                CreateDocumentCommand::class,
+                CreateReportCommand::class,
+                OpenDocumentCommand::class,
+                ReplaceDocumentBodyCommand::class,
+                EditDocumentCommand::class,
+                ReplaceDocumentTextCommand::class,
+                ChangeDocumentDetailsCommand::class,
+                CloseDocumentCommand::class,
+                SettleDocumentCommand::class,
+                CloseReportCommand::class,
+                RecoverDocumentCommand::class,
             )
             ->exceptions(
                 SettlementDenied::class,
@@ -266,7 +266,7 @@ final class DocumentsDomain extends Domain implements
 
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands', Command::class);
+        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function mcpTools(): array

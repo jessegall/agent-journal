@@ -14,7 +14,7 @@ use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\SupervisorProfile;
 use App\Profiles\Values\SupervisorRoutes;
 use App\Profiles\Values\SupervisorTarget;
-use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\ChangeSupervisor\ChangeSupervisorCommand;
 use App\Supervision\Contracts\AskType;
 use App\Supervision\Exceptions\SupervisorRouteRefused;
 use App\Supervision\Models\Ask;
@@ -48,7 +48,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
         return $coverage;
     }
 
-    public function change(ChangeSupervisor $command, ActorIdentity $author): SupervisorChangeReceipt
+    public function change(ChangeSupervisorCommand $command, ActorIdentity $author): SupervisorChangeReceipt
     {
         $this->lock->acquire();
         $actor = $this->workingActor($command->actor);

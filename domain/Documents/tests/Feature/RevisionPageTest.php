@@ -10,7 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
@@ -49,7 +49,7 @@ final class RevisionPageTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
     }
 

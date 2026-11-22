@@ -7,7 +7,7 @@ namespace App\Processes\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Calls\ChunkStored;
 use App\Processes\Calls\RecordRunChunkCall;
-use App\Processes\Commands\RecordRunChunk;
+use App\Processes\Commands\RecordRunChunk\RecordRunChunkCommand;
 use App\Processes\Models\ProcessRun;
 
 /**
@@ -21,7 +21,7 @@ final readonly class RecordRunChunkController
 
         $chunk = $call->chunk;
 
-        return new ChunkStored($commands->run(new RecordRunChunk(
+        return new ChunkStored($commands->run(new RecordRunChunkCommand(
             $processRun->id,
             $chunk->part->node,
             $chunk->part->attempt,

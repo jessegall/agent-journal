@@ -7,7 +7,7 @@ namespace App\Processes\Admission;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
-use App\Processes\Commands\OpenCommandRequest;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\CommandPermissionResolver;
 use App\Processes\Contracts\ShellAdmission;
@@ -251,7 +251,7 @@ final readonly class LineAdmission implements ShellAdmission
     ): AdmissionRefusal {
         $operation = $part->contracts === [] ? $part->program->family ?? 'unknown' : $part->contracts[0]->operation;
         $digest = hash('sha256', $operation);
-        $open = new OpenCommandRequest($operation, $digest, $tree->source, $context->workingFolder, $reason);
+        $open = new OpenCommandRequestCommand($operation, $digest, $tree->source, $context->workingFolder, $reason);
         $request = CommandRequest::query()->findOrFail($this->commands->run($open));
 
         return $refusal->heldIn($request->id, $request->nextStep()->command);

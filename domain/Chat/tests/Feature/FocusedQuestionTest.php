@@ -7,12 +7,12 @@ namespace Domain\Chat\Tests\Feature;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Communication\Models\Message;
 use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
 use App\Communication\Resolvers\QuestionNotificationTarget;
-use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\CreateDesk\CreateDeskCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
@@ -83,7 +83,7 @@ final class FocusedQuestionTest extends TestCase
         $this->builder = $this->startMainAgent('Builder');
         $reviewer = $this->startMainAgent('Reviewer');
         $this->asOwner();
-        $this->team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 2, false)));
+        $this->team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 2, false)));
 
         foreach ([ActorIdentity::of($this->owner), $this->builderIdentity()] as $actor) {
             $this->app->make(AssignmentTransaction::class)->run(
@@ -96,8 +96,8 @@ final class FocusedQuestionTest extends TestCase
         $this->startRequestAs($reviewer[0], $reviewer[1]);
 
         $this->questions = [
-            $this->runOnBus(new AskMessage($reviewerInboxId, $this->team->inboxId(), 'Which port?')),
-            $this->runOnBus(new AskMessage($reviewerInboxId, $this->team->inboxId(), 'Which branch?')),
+            $this->runOnBus(new AskMessageCommand($reviewerInboxId, $this->team->inboxId(), 'Which port?')),
+            $this->runOnBus(new AskMessageCommand($reviewerInboxId, $this->team->inboxId(), 'Which branch?')),
         ];
 
         $this->asOwner();

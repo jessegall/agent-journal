@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Mcp;
 
 use App\Bus\Contracts\Command;
-use App\Communication\Commands\ClaimSpeech;
+use App\Communication\Commands\ClaimSpeech\ClaimSpeechCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
@@ -17,7 +17,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 #[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Name('messages_claim')]
-#[Dispatches(ClaimSpeech::class)]
+#[Dispatches(ClaimSpeechCommand::class)]
 #[Description('Claim your turn to speak on one user message of a chat for two minutes. Give the batch_id and '
     .'claim_grant from the chat messages this turn was shown: they prove the claim comes from the turn that read '
     .'them, and a claim from a passive or earlier turn is refused. Give the claim token you get back to your reply, '
@@ -36,7 +36,7 @@ final class MessageClaimTool extends MessageWriteTool
 
     protected function command(ToolArguments $arguments): Command
     {
-        return new ClaimSpeech(
+        return new ClaimSpeechCommand(
             $arguments->text('inbox_id'),
             $arguments->text('root_id'),
             $arguments->text('batch_id'),

@@ -11,8 +11,8 @@ use App\Bus\Support\Command;
 use App\Bus\Support\RequestKey;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Chat\Commands\DockSource;
-use Domain\Chat\Commands\UndockSource;
+use Domain\Chat\Commands\DockSource\DockSourceCommand;
+use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Enums\DockOutcome;
 use Domain\Chat\Exceptions\ConversationUnavailable;
 use Domain\Chat\Models\Conversation;
@@ -97,7 +97,7 @@ final class DockAdmissionTest extends TestCase
         $added = $this->runKeyed($this->dockTask(), $key);
 
         $this->runKeyed(
-            new UndockSource($this->conversationId, (string) $added->placementId, 'tasks.task', $this->task->id),
+            new UndockSourceCommand($this->conversationId, (string) $added->placementId, 'tasks.task', $this->task->id),
             (string) Str::ulid(),
         );
 
@@ -128,7 +128,7 @@ final class DockAdmissionTest extends TestCase
         $this->runKeyed($this->dockTask(), (string) Str::ulid());
 
         $guessed = $this->runKeyed(
-            new UndockSource($this->conversationId, strtolower((string) Str::ulid()), 'tasks.task', $this->task->id),
+            new UndockSourceCommand($this->conversationId, strtolower((string) Str::ulid()), 'tasks.task', $this->task->id),
             (string) Str::ulid(),
         );
 
@@ -156,12 +156,12 @@ final class DockAdmissionTest extends TestCase
 
         $this->expectException(ConversationUnavailable::class);
 
-        $this->runKeyed(new DockSource($strangers->inbox_id, 'tasks.task', $this->task->id), (string) Str::ulid());
+        $this->runKeyed(new DockSourceCommand($strangers->inbox_id, 'tasks.task', $this->task->id), (string) Str::ulid());
     }
 
-    private function dockTask(): DockSource
+    private function dockTask(): DockSourceCommand
     {
-        return new DockSource($this->conversationId, 'tasks.task', $this->task->id);
+        return new DockSourceCommand($this->conversationId, 'tasks.task', $this->task->id);
     }
 
     /**

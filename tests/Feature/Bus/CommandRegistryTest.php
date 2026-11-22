@@ -6,7 +6,7 @@ namespace Tests\Feature\Bus;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
@@ -25,31 +25,31 @@ use App\Exports\Support\Exports;
 use App\Operations\Enums\AccessType;
 use App\Pipelines\Contracts\PipelineRunner;
 use Tests\Fixtures\Bus\Garden\CommandMiddleware\Fence;
-use Tests\Fixtures\Bus\Garden\Commands\Water;
-use Tests\Fixtures\Bus\Garden\Handlers\WaterHandler;
+use Tests\Fixtures\Bus\Garden\Commands\Water\WaterCommand;
+use Tests\Fixtures\Bus\Garden\Commands\Water\WaterHandler;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\CheckStock;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\LogShop;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\NotMiddleware;
-use Tests\Fixtures\Bus\Shop\Commands\AddItem;
-use Tests\Fixtures\Bus\Shop\Commands\ArrayResultItem;
-use Tests\Fixtures\Bus\Shop\Commands\BaselessItem;
-use Tests\Fixtures\Bus\Shop\Commands\ClosureItem;
-use Tests\Fixtures\Bus\Shop\Commands\EnumLimitedItem;
-use Tests\Fixtures\Bus\Shop\Commands\LimitedItem;
-use Tests\Fixtures\Bus\Shop\Commands\LookupItem;
-use Tests\Fixtures\Bus\Shop\Commands\LooseItem;
-use Tests\Fixtures\Bus\Shop\Commands\MisnamedFieldItem;
-use Tests\Fixtures\Bus\Shop\Commands\NoHandlerItem;
-use Tests\Fixtures\Bus\Shop\Commands\OpenItem;
-use Tests\Fixtures\Bus\Shop\Commands\QueuedItem;
-use Tests\Fixtures\Bus\Shop\Commands\RemoveItem;
-use Tests\Fixtures\Bus\Shop\Commands\SingletonItem;
-use Tests\Fixtures\Bus\Shop\Commands\UnbuildableLookupItem;
-use Tests\Fixtures\Bus\Shop\Commands\UnreadableRuleItem;
-use Tests\Fixtures\Bus\Shop\Commands\ValueRuledItem;
-use Tests\Fixtures\Bus\Shop\Handlers\AddItemHandler;
-use Tests\Fixtures\Bus\Shop\Handlers\RemoveItemHandler;
+use Tests\Fixtures\Bus\Shop\Commands\AddItem\AddItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\AddItem\AddItemHandler;
+use Tests\Fixtures\Bus\Shop\Commands\ArrayResultItem\ArrayResultItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\BaselessItem\BaselessItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\ClosureItem\ClosureItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\EnumLimitedItem\EnumLimitedItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\LimitedItem\LimitedItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\LookupItem\LookupItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\LooseItem\LooseItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\MisnamedFieldItem\MisnamedFieldItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\NoHandlerItem\NoHandlerItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\OpenItem\OpenItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\QueuedItem\QueuedItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\RemoveItem\RemoveItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\RemoveItem\RemoveItemHandler;
+use Tests\Fixtures\Bus\Shop\Commands\SingletonItem\SingletonItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\UnbuildableLookupItem\UnbuildableLookupItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\UnreadableRuleItem\UnreadableRuleItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\ValueRuledItem\ValueRuledItemCommand;
 use Tests\Fixtures\Bus\Shop\Loose\MisplacedItem;
 use Tests\TestCase;
 
@@ -62,30 +62,30 @@ final class CommandRegistryTest extends TestCase
     public function test_a_correct_command_gets_its_handler_owner_settings_and_ordered_middleware(): void
     {
         $registry = $this->registryOf([
-            $this->shop([AddItem::class, RemoveItem::class], [
-                MiddlewareDeclaration::inside(CheckStock::class, CommandScope::command(AddItem::class)),
+            $this->shop([AddItemCommand::class, RemoveItemCommand::class], [
+                MiddlewareDeclaration::inside(CheckStock::class, CommandScope::command(AddItemCommand::class)),
                 MiddlewareDeclaration::around(LogShop::class, CommandScope::all()),
-            ], exports: [AddItem::class]),
-            $this->garden([Water::class], [MiddlewareDeclaration::around(Fence::class, CommandScope::all())]),
+            ], exports: [AddItemCommand::class]),
+            $this->garden([WaterCommand::class], [MiddlewareDeclaration::around(Fence::class, CommandScope::all())]),
         ]);
 
         $this->assertSame([
-            AddItem::class => AddItemHandler::class,
-            RemoveItem::class => RemoveItemHandler::class,
-            Water::class => WaterHandler::class,
+            AddItemCommand::class => AddItemHandler::class,
+            RemoveItemCommand::class => RemoveItemHandler::class,
+            WaterCommand::class => WaterHandler::class,
         ], $registry->handlerMap());
-        $this->assertSame('Shop', $registry->ownerOf(AddItem::class));
-        $this->assertTrue($registry->isExported(AddItem::class));
-        $this->assertFalse($registry->isExported(RemoveItem::class));
-        $this->assertTrue($registry->needsRepeatableRead(AddItem::class));
+        $this->assertSame('Shop', $registry->ownerOf(AddItemCommand::class));
+        $this->assertTrue($registry->isExported(AddItemCommand::class));
+        $this->assertFalse($registry->isExported(RemoveItemCommand::class));
+        $this->assertTrue($registry->needsRepeatableRead(AddItemCommand::class));
         $this->assertEquals(
             new Authorize(FixturePolicy::class, AccessType::Create),
-            $registry->authorizeOf(AddItem::class),
+            $registry->authorizeOf(AddItemCommand::class),
         );
-        $this->assertSame(CommandEntry::Application, $registry->entryOf(AddItem::class));
+        $this->assertSame(CommandEntry::Application, $registry->entryOf(AddItemCommand::class));
         $this->assertSame(
             [LogShop::class, Fence::class, CheckStock::class],
-            $this->middlewareClassesOf($registry, AddItem::class),
+            $this->middlewareClassesOf($registry, AddItemCommand::class),
         );
     }
 
@@ -94,29 +94,29 @@ final class CommandRegistryTest extends TestCase
         $registry = $this->app->make(DomainRegistry::class)
             ->commandDeclarations(CoreCommands::owner(), $this->app->make(PipelineRunner::class));
 
-        $this->assertFalse($registry->has(AddItem::class));
+        $this->assertFalse($registry->has(AddItemCommand::class));
     }
 
     public function test_a_command_exported_but_not_registered_by_its_owner_is_refused(): void
     {
-        $this->expectExceptionObject(CommandDeclarationInvalid::exportedButNotRegistered('Shop', RemoveItem::class));
+        $this->expectExceptionObject(CommandDeclarationInvalid::exportedButNotRegistered('Shop', RemoveItemCommand::class));
 
-        $this->registryOf([$this->shop([AddItem::class], exports: [RemoveItem::class])]);
+        $this->registryOf([$this->shop([AddItemCommand::class], exports: [RemoveItemCommand::class])]);
     }
 
     public function test_a_registered_command_that_is_not_exported_stays_private(): void
     {
-        $registry = $this->registryOf([$this->shop([AddItem::class, RemoveItem::class], exports: [AddItem::class])]);
+        $registry = $this->registryOf([$this->shop([AddItemCommand::class, RemoveItemCommand::class], exports: [AddItemCommand::class])]);
 
-        $this->assertTrue($registry->isExported(AddItem::class));
-        $this->assertFalse($registry->isExported(RemoveItem::class));
+        $this->assertTrue($registry->isExported(AddItemCommand::class));
+        $this->assertFalse($registry->isExported(RemoveItemCommand::class));
     }
 
     public function test_a_command_listed_twice_is_refused(): void
     {
         $this->expectException(CommandListedTwice::class);
 
-        $this->registryOf([$this->shop([AddItem::class, AddItem::class])]);
+        $this->registryOf([$this->shop([AddItemCommand::class, AddItemCommand::class])]);
     }
 
     public function test_a_command_outside_its_commands_folder_is_refused(): void
@@ -126,12 +126,12 @@ final class CommandRegistryTest extends TestCase
 
     public function test_a_command_that_is_not_final_readonly_is_refused(): void
     {
-        $this->refusedWith(CommandDeclarationInvalid::class, 'final readonly', [$this->shop([LooseItem::class])]);
+        $this->refusedWith(CommandDeclarationInvalid::class, 'final readonly', [$this->shop([LooseItemCommand::class])]);
     }
 
     public function test_a_readonly_command_that_is_not_final_is_refused(): void
     {
-        $this->refusedWith(CommandDeclarationInvalid::class, 'final readonly', [$this->shop([OpenItem::class])]);
+        $this->refusedWith(CommandDeclarationInvalid::class, 'final readonly', [$this->shop([OpenItemCommand::class])]);
     }
 
     public function test_a_command_that_does_not_extend_the_base_command_is_refused(): void
@@ -139,35 +139,35 @@ final class CommandRegistryTest extends TestCase
         $this->refusedWith(
             CommandDeclarationInvalid::class,
             'extends App\\Bus\\Support\\Command',
-            [$this->shop([BaselessItem::class])],
+            [$this->shop([BaselessItemCommand::class])],
         );
     }
 
     public function test_a_queued_command_is_refused(): void
     {
-        $this->refusedWith(CommandDeclarationInvalid::class, 'queueing', [$this->shop([QueuedItem::class])]);
+        $this->refusedWith(CommandDeclarationInvalid::class, 'queueing', [$this->shop([QueuedItemCommand::class])]);
     }
 
     public function test_a_property_outside_the_grammar_is_refused(): void
     {
-        $this->refusedWith(CommandDeclarationInvalid::class, 'callback', [$this->shop([ClosureItem::class])]);
+        $this->refusedWith(CommandDeclarationInvalid::class, 'callback', [$this->shop([ClosureItemCommand::class])]);
     }
 
     public function test_a_command_without_a_handler_is_refused(): void
     {
         $this->expectException(CommandHandlerMissing::class);
 
-        $this->registryOf([$this->shop([NoHandlerItem::class])]);
+        $this->registryOf([$this->shop([NoHandlerItemCommand::class])]);
     }
 
     public function test_a_result_outside_the_grammar_is_refused(): void
     {
-        $this->refusedWith(CommandDeclarationInvalid::class, 'its result', [$this->shop([ArrayResultItem::class])]);
+        $this->refusedWith(CommandDeclarationInvalid::class, 'its result', [$this->shop([ArrayResultItemCommand::class])]);
     }
 
     public function test_a_handler_kept_between_commands_is_refused(): void
     {
-        $this->refusedWith(CommandDeclarationInvalid::class, 'built fresh', [$this->shop([SingletonItem::class])]);
+        $this->refusedWith(CommandDeclarationInvalid::class, 'built fresh', [$this->shop([SingletonItemCommand::class])]);
     }
 
     public function test_a_middleware_that_is_no_command_middleware_is_refused(): void
@@ -190,8 +190,8 @@ final class CommandRegistryTest extends TestCase
     public function test_a_middleware_naming_another_owners_private_command_is_refused(): void
     {
         $this->refusedWith(MiddlewareDeclarationInvalid::class, 'may not name', [
-            $this->shop([AddItem::class]),
-            $this->garden([], [MiddlewareDeclaration::around(Fence::class, CommandScope::command(AddItem::class))]),
+            $this->shop([AddItemCommand::class]),
+            $this->garden([], [MiddlewareDeclaration::around(Fence::class, CommandScope::command(AddItemCommand::class))]),
         ]);
     }
 
@@ -199,63 +199,63 @@ final class CommandRegistryTest extends TestCase
     {
         $registry = $this->registryOf([
             CoreCommands::owner(),
-            $this->garden([], [MiddlewareDeclaration::around(Fence::class, CommandScope::command(RetireAgent::class))]),
+            $this->garden([], [MiddlewareDeclaration::around(Fence::class, CommandScope::command(RetireAgentCommand::class))]),
         ]);
 
-        $this->assertContains(Fence::class, $this->middlewareClassesOf($registry, RetireAgent::class));
+        $this->assertContains(Fence::class, $this->middlewareClassesOf($registry, RetireAgentCommand::class));
     }
 
     public function test_each_ruled_property_keeps_its_laravel_rules_with_the_type_rule_first(): void
     {
-        $registry = $this->registryOf([$this->shop([LimitedItem::class, RemoveItem::class])]);
+        $registry = $this->registryOf([$this->shop([LimitedItemCommand::class, RemoveItemCommand::class])]);
 
         $this->assertSame([
             'label' => ['string', 'max:5'],
             'count' => ['integer', 'between:1,10'],
             'tags' => ['array', 'max:3'],
-        ], $registry->rulesFor(LimitedItem::class));
-        $this->assertSame([], $registry->rulesFor(RemoveItem::class));
+        ], $registry->rulesFor(LimitedItemCommand::class));
+        $this->assertSame([], $registry->rulesFor(RemoveItemCommand::class));
     }
 
     public function test_a_limit_on_an_enum_is_refused(): void
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'size is the enum', [
-            $this->shop([EnumLimitedItem::class]),
+            $this->shop([EnumLimitedItemCommand::class]),
         ]);
     }
 
     public function test_a_rule_that_reads_the_database_is_refused(): void
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'itemId uses Exists, which reads the database', [
-            $this->shop([LookupItem::class]),
+            $this->shop([LookupItemCommand::class]),
         ]);
     }
 
     public function test_a_rule_that_reads_the_database_is_refused_before_it_is_built(): void
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'itemId uses Exists, which reads the database', [
-            $this->shop([UnbuildableLookupItem::class]),
+            $this->shop([UnbuildableLookupItemCommand::class]),
         ]);
     }
 
     public function test_a_rule_naming_a_field_the_command_lacks_is_refused(): void
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'title names the field breif', [
-            $this->shop([MisnamedFieldItem::class]),
+            $this->shop([MisnamedFieldItemCommand::class]),
         ]);
     }
 
     public function test_a_limit_inside_a_carried_value_is_refused(): void
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'whose property text has a validation attribute', [
-            $this->shop([ValueRuledItem::class]),
+            $this->shop([ValueRuledItemCommand::class]),
         ]);
     }
 
     public function test_an_attribute_no_rule_can_be_made_of_is_refused(): void
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'count has a validation attribute that cannot be', [
-            $this->shop([UnreadableRuleItem::class]),
+            $this->shop([UnreadableRuleItemCommand::class]),
         ]);
     }
 

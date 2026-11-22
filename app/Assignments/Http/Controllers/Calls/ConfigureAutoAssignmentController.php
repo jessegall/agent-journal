@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Http\Controllers\Calls;
 
 use App\Assignments\Calls\ConfigureAutoAssignmentCall;
-use App\Assignments\Commands\ConfigureAutoAssignment;
+use App\Assignments\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Assignments\AutoAssignmentChangeData;
 use App\Records\Contracts\RecordResolver;
@@ -20,7 +20,7 @@ final readonly class ConfigureAutoAssignmentController
         RecordResolver $records,
         CommandBus $commands,
     ): AutoAssignmentChangeData {
-        $command = new ConfigureAutoAssignment($call->input($records), $call->expectedRevision);
+        $command = new ConfigureAutoAssignmentCommand($call->input($records), $call->expectedRevision);
 
         return AutoAssignmentChangeData::of($commands->run($command));
     }

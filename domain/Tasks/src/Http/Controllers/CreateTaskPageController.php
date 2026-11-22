@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Tasks\Commands\CreateTask;
+use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Http\Requests\CreateTaskRequest;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +18,7 @@ final readonly class CreateTaskPageController
 {
     public function __invoke(CreateTaskRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $id = $commands->run(new CreateTask($request->title(), $request->brief()));
+        $id = $commands->run(new CreateTaskCommand($request->title(), $request->brief()));
 
         return $redirect->to(route('tasks.task', ['task' => Task::numberOf($id)], false), 303);
     }

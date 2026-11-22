@@ -14,7 +14,7 @@ use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Plans\Commands\AssignPlanWork;
+use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
@@ -67,7 +67,7 @@ final class DeskPlanAssignmentTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $result = $this->app->make(CommandBus::class)->run(
-            new AssignPlanWork($plan->assignmentIdentity(), $agent->assigneeIdentity()),
+            new AssignPlanWorkCommand($plan->assignmentIdentity(), $agent->assigneeIdentity()),
         );
 
         $records = array_map(fn ($record) => $record->assignmentIdentity(), [$plan, $phase, ...$tasks]);

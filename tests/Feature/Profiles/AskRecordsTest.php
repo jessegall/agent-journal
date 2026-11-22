@@ -8,12 +8,12 @@ use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
 use App\Actors\Support\AttentionOutcome;
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Models\Agent;
 use App\Agents\Values\StackTarget;
 use App\Agents\Values\WorkReference;
-use App\Assignments\Commands\AssignRecord;
-use App\Assignments\Commands\ReassignRecord;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Commands\ReassignRecord\ReassignRecordCommand;
 use App\Assignments\Exceptions\AssignmentTypeInternal;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
@@ -26,17 +26,17 @@ use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Ticks\TickingTypes;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Exceptions\SupervisorRouteInvalid;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\SupervisorTarget;
 use App\Records\Exceptions\RecordUnavailable;
-use App\Supervision\Commands\AskSupervisor;
-use App\Supervision\Commands\ChangeSupervisor;
-use App\Supervision\Commands\ReplyToAsk;
-use App\Supervision\Commands\RouteAsk;
-use App\Supervision\Commands\WithdrawAsk;
+use App\Supervision\Commands\AskSupervisor\AskSupervisorCommand;
+use App\Supervision\Commands\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Supervision\Commands\ReplyToAsk\ReplyToAskCommand;
+use App\Supervision\Commands\RouteAsk\RouteAskCommand;
+use App\Supervision\Commands\WithdrawAsk\WithdrawAskCommand;
 use App\Supervision\Contracts\AskReader;
 use App\Supervision\Enums\AskRouteStatus;
 use App\Supervision\Exceptions\AskRefused;
@@ -49,7 +49,7 @@ use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Values\AskReference;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
@@ -87,17 +87,17 @@ final class AskRecordsTest extends TestCase
         $keys->set('public-assign-ask');
 
         $this->assertThrows(
-            fn () => $bus->run(new AssignRecord($record, $holder->assigneeIdentity())),
+            fn () => $bus->run(new AssignRecordCommand($record, $holder->assigneeIdentity())),
             AssignmentTypeInternal::class,
         );
         $keys->forget();
-        $this->assertSame(AskRouteStatus::Assigned, $bus->run(new RouteAsk(new AskReference($ask->id), 0)));
+        $this->assertSame(AskRouteStatus::Assigned, $bus->run(new RouteAskCommand(new AskReference($ask->id), 0)));
         $assignment = AssignmentRecord::query()->forRecord($record)->firstOrFail()->toAssignment();
         $this->assertTrue($assignment->holder()->isSameAs($holder->assigneeIdentity()));
         $this->assertSame(1, AskHop::query()->count());
         $keys->set('public-reassign-ask');
         $this->assertThrows(
-            fn () => $bus->run(new ReassignRecord($record, $assignment->reference, $requester->assigneeIdentity())),
+            fn () => $bus->run(new ReassignRecordCommand($record, $assignment->reference, $requester->assigneeIdentity())),
             AssignmentTypeInternal::class,
         );
     }
@@ -111,8 +111,8 @@ final class AskRecordsTest extends TestCase
         $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorIdentity::of($holder)));
         $reference = new AskReference($ask->id);
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new RouteAsk($reference, 0));
-        $bus->run(new RetireAgent($holder->id));
+        $bus->run(new RouteAskCommand($reference, 0));
+        $bus->run(new RetireAgentCommand($holder->id));
         $this->assertFalse(AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->exists());
 
         $this->startRequestAs($outsider->id, TestIds::of(91));
@@ -133,7 +133,7 @@ final class AskRecordsTest extends TestCase
         $this->assertSame($ask->work, $again->work);
         $this->assertSame(
             AskRouteStatus::PendingProfile,
-            $this->app->make(CommandBus::class)->run(new RouteAsk(new AskReference($ask->id), 0)),
+            $this->app->make(CommandBus::class)->run(new RouteAskCommand(new AskReference($ask->id), 0)),
         );
         $this->assertFalse(AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->exists());
     }
@@ -188,24 +188,24 @@ final class AskRecordsTest extends TestCase
         $this->startRequestAs($requester->id, TestIds::of(91));
         $commands = $this->app->make(CommandBus::class);
 
-        $first = $commands->run(new AskSupervisor('First question', 'first'));
-        $second = $commands->run(new AskSupervisor('Second question', 'second'));
+        $first = $commands->run(new AskSupervisorCommand('First question', 'first'));
+        $second = $commands->run(new AskSupervisorCommand('Second question', 'second'));
 
         foreach (['third', 'fourth', 'fifth'] as $ordinal) {
-            $commands->run(new AskSupervisor('Another question', $ordinal));
+            $commands->run(new AskSupervisorCommand('Another question', $ordinal));
         }
 
-        $this->assertThrows(fn () => $commands->run(new AskSupervisor('One more', 'sixth')), AskRefused::class);
-        $this->assertEquals($first, $commands->run(new AskSupervisor('First question', 'first')));
-        $this->assertThrows(fn () => $commands->run(new AskSupervisor('Changed', 'first')), AskRefused::class);
+        $this->assertThrows(fn () => $commands->run(new AskSupervisorCommand('One more', 'sixth')), AskRefused::class);
+        $this->assertEquals($first, $commands->run(new AskSupervisorCommand('First question', 'first')));
+        $this->assertThrows(fn () => $commands->run(new AskSupervisorCommand('Changed', 'first')), AskRefused::class);
 
         $this->startRequestAs($recipient->id, TestIds::of(92));
         $inbox = $this->app->make(AskReader::class);
         $this->assertTrue($inbox->card($first)->obligation);
-        $commands->run(new ReplyToAsk($first, 'Check the input file.'));
+        $commands->run(new ReplyToAskCommand($first, 'Check the input file.'));
 
         $this->startRequestAs($requester->id, TestIds::of(91));
-        $commands->run(new WithdrawAsk($second));
+        $commands->run(new WithdrawAskCommand($second));
         $this->assertSame(self::INPUT_ADVICE, $inbox->card($first)->reply);
         $this->assertFalse($inbox->card($second)->open);
         $this->assertSame(3, Ask::openSubmissions(ActorIdentity::of($requester)));
@@ -224,7 +224,7 @@ final class AskRecordsTest extends TestCase
         $commands = $this->app->make(CommandBus::class);
 
         $this->assertThrows(
-            fn () => $commands->run(new AskSupervisor('Review this', 'review', AskTypeKey::from('review.ready'))),
+            fn () => $commands->run(new AskSupervisorCommand('Review this', 'review', AskTypeKey::from('review.ready'))),
             AskRefused::class,
         );
         $this->assertSame(0, Ask::openSubmissions(ActorIdentity::of($requester)));
@@ -238,10 +238,10 @@ final class AskRecordsTest extends TestCase
         $task = Task::create('Review a task', 'Check the expected result.', $start->agent);
         $start->openStack($this->app);
         $commands = $this->app->make(CommandBus::class);
-        $commands->run(new StartTask($task->id));
+        $commands->run(new StartTaskCommand($task->id));
 
-        $question = $commands->run(new AskSupervisor('What should I check?', 'question'));
-        $review = $commands->run(new AskSupervisor('Review this task', 'review', AskTypeKey::from('review.ready')));
+        $question = $commands->run(new AskSupervisorCommand('What should I check?', 'question'));
+        $review = $commands->run(new AskSupervisorCommand('Review this task', 'review', AskTypeKey::from('review.ready')));
 
         $expected = WorkReference::forRecord($task->assignmentIdentity());
         $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference());
@@ -289,8 +289,8 @@ final class AskRecordsTest extends TestCase
         $requester->startRequest($this->app);
         $this->app->instance(ActorAttention::class, $attention);
         $commands = $this->app->make(CommandBus::class);
-        $first = $commands->run(new AskSupervisor('First question', 'first'));
-        $second = $commands->run(new AskSupervisor('Next question', 'second'));
+        $first = $commands->run(new AskSupervisorCommand('First question', 'first'));
+        $second = $commands->run(new AskSupervisorCommand('Next question', 'second'));
         $firstHop = AskHop::query()->where('ask_id', $first->id)->sole();
         $secondHop = AskHop::query()->where('ask_id', $second->id)->sole();
         $progress = $this->app->make(WorkProgress::class);
@@ -301,7 +301,7 @@ final class AskRecordsTest extends TestCase
 
         $recipient->startRequest($this->app);
         $this->app->instance(ActorAttention::class, $attention);
-        $this->app->make(CommandBus::class)->run(new ReplyToAsk($first, 'Check the input.'));
+        $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($first, 'Check the input.'));
         $this->assertNull($progress->enteredAt($holder, $firstWork));
         $this->assertNotNull($progress->enteredAt($holder, $secondWork));
         $this->assertSame(AskHop::PENDING_DELIVERY, $firstHop->refresh()->attention);
@@ -321,7 +321,7 @@ final class AskRecordsTest extends TestCase
         $requester = Agent::create('Requester', 'journal-main');
         $this->startRequestAs($requester->id, TestIds::of(99));
 
-        $ask = $this->app->make(CommandBus::class)->run(new AskSupervisor('Check my result.', 'owner-question'));
+        $ask = $this->app->make(CommandBus::class)->run(new AskSupervisorCommand('Check my result.', 'owner-question'));
         $this->startUserRequestAs($owner->id);
         $card = $this->app->make(AskReader::class)->card($ask);
 
@@ -332,7 +332,7 @@ final class AskRecordsTest extends TestCase
     private function activateProfiles(): void
     {
         $this->startTestUserRequest(1);
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(ProfileProposal::fromConfiguration(
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));
     }
@@ -341,7 +341,7 @@ final class AskRecordsTest extends TestCase
     {
         $actor = ActorIdentity::of($requester);
         $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::from('question'));
-        $this->app->make(CommandBus::class)->run(new ChangeSupervisor($actor, $target, $routeVersion, $type->key()));
+        $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $routeVersion, $type->key()));
         $reference = Ask::newReference();
 
         return Ask::submit(

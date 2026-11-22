@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Commands\CreateTask;
+use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('tasks_create')]
-#[Dispatches(CreateTask::class)]
+#[Dispatches(CreateTaskCommand::class)]
 #[Description('Open a task with its title and brief.')]
 final class CreateTaskTool extends TaskWriteTool
 {
@@ -30,9 +30,9 @@ final class CreateTaskTool extends TaskWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CreateTask
+    protected function command(ToolArguments $arguments): CreateTaskCommand
     {
-        return new CreateTask($arguments->text('title'), $arguments->text('brief'));
+        return new CreateTaskCommand($arguments->text('title'), $arguments->text('brief'));
     }
 
     protected function present(mixed $taskId): ToolResult

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Connections;
 
-use App\Agents\Commands\OpenBindingMainRuntime;
-use App\Connections\Commands\AssertBindingStart;
+use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
+use App\Connections\Commands\AssertBindingStart\AssertBindingStartCommand;
 use App\Drivers\Enums\HookDriver;
 use Spatie\LaravelData\Data;
 
@@ -29,17 +29,17 @@ final class BindingRuntimeRequestData extends Data
     /**
      * The check that this host may start the binding's main runtime in this root, before any grant.
      */
-    public function asBindingStart(string $hostId, string $bindingId): AssertBindingStart
+    public function asBindingStart(string $hostId, string $bindingId): AssertBindingStartCommand
     {
-        return new AssertBindingStart($hostId, $bindingId, $this->rootId, $this->folder, $this->agentId, $this->driver);
+        return new AssertBindingStartCommand($hostId, $bindingId, $this->rootId, $this->folder, $this->agentId, $this->driver);
     }
 
     /**
      * The opening of the binding's main runtime on this host, as the owner selected it.
      */
-    public function asMainRuntime(string $hostId): OpenBindingMainRuntime
+    public function asMainRuntime(string $hostId): OpenBindingMainRuntimeCommand
     {
-        return new OpenBindingMainRuntime(
+        return new OpenBindingMainRuntimeCommand(
             $this->agentId,
             $hostId,
             $this->folder,

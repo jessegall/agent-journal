@@ -7,8 +7,8 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\TrustedEntryAuthority;
-use App\Assignments\Commands\AssignRecordForMaintenance;
-use App\Assignments\Commands\ClaimAutoAssignment;
+use App\Assignments\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
+use App\Assignments\Commands\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AutoAssignmentActivity;
@@ -43,7 +43,7 @@ final class AutoAssignmentTriggerTest extends TestCase
         parent::setUp();
 
         $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
-        $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecordForMaintenance::FILL_SCOPE);
+        $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecordForMaintenanceCommand::FILL_SCOPE);
         $stop = $this->createStub(StopTime::class);
         $stop->method('remainingMilliseconds')->willReturn(100);
         $this->mock(StopTimes::class)->shouldReceive('at')->andReturn($stop);
@@ -88,10 +88,10 @@ final class AutoAssignmentTriggerTest extends TestCase
         $bus = $this->mock(CommandBus::class);
         $record = TestActors::record('tasks.task', 4);
         $bus->shouldReceive('run')->once()->ordered()->withArgs(
-            fn (ClaimAutoAssignment $claim): bool => $claim->key->isOf(TestActors::agentIdentity(2)),
+            fn (ClaimAutoAssignmentCommand $claim): bool => $claim->key->isOf(TestActors::agentIdentity(2)),
         )->andThrow(AssignmentConflict::heldByAnother($record));
         $bus->shouldReceive('run')->once()->ordered()->withArgs(
-            fn (ClaimAutoAssignment $claim): bool => $claim->key->isOf(TestActors::agentIdentity(1)),
+            fn (ClaimAutoAssignmentCommand $claim): bool => $claim->key->isOf(TestActors::agentIdentity(1)),
         )->andReturn(AutoAssignmentOutcome::assigned($record));
         $this->mock(LoggerInterface::class)->shouldReceive('warning')->once()->withArgs(
             fn (string $message, array $fields): bool => $message === 'Auto-assignment claim failed.'

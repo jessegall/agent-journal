@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Documents\Commands\OpenDocument;
+
+use App\Bus\Attributes\Authorize;
+use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use Domain\Documents\Api\DraftReference;
+use Domain\Documents\Policies\DocumentPolicy;
+
+/**
+ * Opens a draft of a document for whoever runs the command; opening it again in the same session returns the
+ * same draft.
+ *
+ * @extends Command<DraftReference>
+ */
+#[Authorize(DocumentPolicy::class, AccessType::Create)]
+final readonly class OpenDocumentCommand extends Command
+{
+    public function __construct(
+        public string $documentNumber,
+        public int|null $expectedRevision = null,
+    ) {}
+}

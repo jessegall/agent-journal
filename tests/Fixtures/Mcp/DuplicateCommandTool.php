@@ -9,9 +9,9 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
-#[Dispatches(WriteNote::class)]
+#[Dispatches(WriteNoteCommand::class)]
 final class DuplicateCommandTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
@@ -19,12 +19,12 @@ final class DuplicateCommandTool extends JournalWriteTool
         return ['text' => $schema->string()->required()];
     }
 
-    protected function command(ToolArguments $arguments): WriteNote
+    protected function command(ToolArguments $arguments): WriteNoteCommand
     {
-        $first = new WriteNote($arguments->text('text'));
+        $first = new WriteNoteCommand($arguments->text('text'));
         strlen($first->text); // @phpstan-ignore function.resultUnused (the unrelated call the rule must find)
 
-        return new WriteNote($arguments->text('text'));
+        return new WriteNoteCommand($arguments->text('text'));
     }
 
     protected function present(mixed $result): ToolResult

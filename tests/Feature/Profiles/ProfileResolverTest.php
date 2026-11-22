@@ -12,7 +12,7 @@ use App\Agents\Values\StopCondition;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\RefusalCode;
 use App\Drivers\Enums\HookDriver;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Exceptions\ProfileMissing;
@@ -183,7 +183,7 @@ final class ProfileResolverTest extends TestCase
     {
         $proposal = TestProposals::of(TestProposals::profile($key, $type));
 
-        return $this->app->make(CommandBus::class)->run(new ActivateProfiles($proposal));
+        return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand($proposal));
     }
 
     private function resolver(): ProfileResolver

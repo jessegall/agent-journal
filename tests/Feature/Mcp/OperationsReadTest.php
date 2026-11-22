@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Actors\Support\ActorContext;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Models\CommandReceipt;
@@ -53,7 +53,7 @@ final class OperationsReadTest extends TestCase
         $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set(self::KEY);
         $this->app->make(CommandBus::class)->run(
-            new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent)),
+            new AssignRecordCommand($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent)),
         );
 
         $result = $this->callMcpTool(

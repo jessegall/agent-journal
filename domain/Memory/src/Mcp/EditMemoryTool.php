@@ -6,7 +6,7 @@ namespace Domain\Memory\Mcp;
 
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use Domain\Memory\Commands\EditMemory;
+use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -16,7 +16,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('memories_edit')]
-#[Dispatches(EditMemory::class)]
+#[Dispatches(EditMemoryCommand::class)]
 #[Description('Edit your memory at the revision you read.')]
 final class EditMemoryTool extends MemoryWriteTool
 {
@@ -30,9 +30,9 @@ final class EditMemoryTool extends MemoryWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): EditMemory
+    protected function command(ToolArguments $arguments): EditMemoryCommand
     {
-        return new EditMemory(
+        return new EditMemoryCommand(
             $arguments->ulid('memory_id'),
             $arguments->positiveInteger('expected_revision'),
             $arguments->optionalText('text'),

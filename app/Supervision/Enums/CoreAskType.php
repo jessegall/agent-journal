@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Supervision\Enums;
 
-use App\Agents\Commands\MergeReviewedWork;
+use App\Agents\Commands\MergeReviewedWork\MergeReviewedWorkCommand;
 use App\Bus\Contracts\Command;
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Profiles\Values\AskTypeKey;
-use App\Supervision\Commands\ApproveCodeReview;
+use App\Supervision\Commands\ApproveCodeReview\ApproveCodeReviewCommand;
 use App\Supervision\Values\SubjectType;
 
 enum CoreAskType: string
@@ -31,9 +31,9 @@ enum CoreAskType: string
     public function requiredCommand(): string
     {
         return match ($this) {
-            self::Question, self::Stuck => ReplyToMessage::class,
-            self::ReviewReady => ApproveCodeReview::class,
-            self::MergeReady => MergeReviewedWork::class,
+            self::Question, self::Stuck => ReplyToMessageCommand::class,
+            self::ReviewReady => ApproveCodeReviewCommand::class,
+            self::MergeReady => MergeReviewedWorkCommand::class,
         };
     }
 

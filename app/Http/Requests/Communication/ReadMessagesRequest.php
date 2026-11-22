@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class ReadMessagesRequest extends FormRequest
@@ -21,9 +21,9 @@ final class ReadMessagesRequest extends FormRequest
         ];
     }
 
-    public function command(): ReadMessages
+    public function command(): ReadMessagesCommand
     {
-        return new ReadMessages(
+        return new ReadMessagesCommand(
             $this->string('inboxId')->toString(),
             $this->messageIds(),
         );

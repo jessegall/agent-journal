@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Enums;
 
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\ReplyInChat;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -23,8 +23,8 @@ enum SentOperation: string
     public function command(): string
     {
         return match ($this) {
-            self::Send => PostChatMessage::class,
-            self::Reply => ReplyInChat::class,
+            self::Send => PostChatMessageCommand::class,
+            self::Reply => ReplyInChatCommand::class,
         };
     }
 }

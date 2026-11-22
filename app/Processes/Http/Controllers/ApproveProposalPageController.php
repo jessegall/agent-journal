@@ -6,7 +6,7 @@ namespace App\Processes\Http\Controllers;
 
 use App\Http\Requests\Processes\ReviewRequest;
 use App\Http\Responses\Processes\ReviewResponses;
-use App\Processes\Commands\ApproveRuleProposal;
+use App\Processes\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -16,6 +16,6 @@ final readonly class ApproveProposalPageController
 {
     public function __invoke(ReviewRequest $form, string $proposal, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new ApproveRuleProposal($proposal, $form->approval()));
+        return $review->run(new ApproveRuleProposalCommand($proposal, $form->approval()));
     }
 }

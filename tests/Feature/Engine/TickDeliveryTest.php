@@ -6,8 +6,8 @@ namespace Tests\Feature\Engine;
 
 use App\Actors\Contracts\ServerClock;
 use App\Agents\Values\StackTarget;
-use App\Engine\Commands\MarkSilentSessions;
-use App\Engine\Commands\SettleFrameTimes;
+use App\Engine\Commands\MarkSilentSessions\MarkSilentSessionsCommand;
+use App\Engine\Commands\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Models\EngineFrameTime;
 use App\Engine\Support\EnginePass;
@@ -126,8 +126,8 @@ final class TickDeliveryTest extends TestCase
         $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
         $target = new StackTarget($stack->agent_id, $stack->session_id);
         $this->loader->scripts['a'] = fn (TickContext $tick) => TickCommands::of(
-            new SettleFrameTimes([FrameSettlement::at($target, $stack->id, 'effect-of-a', $tick->now)]),
-            new MarkSilentSessions(),
+            new SettleFrameTimesCommand([FrameSettlement::at($target, $stack->id, 'effect-of-a', $tick->now)]),
+            new MarkSilentSessionsCommand(),
         );
 
         $this->passAt(0.0);
@@ -142,7 +142,7 @@ final class TickDeliveryTest extends TestCase
         $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
         $target = new StackTarget($stack->agent_id, $stack->session_id);
         $this->loader->scripts['a'] = fn (TickContext $tick) => TickCommands::of(
-            new SettleFrameTimes([FrameSettlement::at($target, $stack->id, 'effect-of-a', $tick->now)]),
+            new SettleFrameTimesCommand([FrameSettlement::at($target, $stack->id, 'effect-of-a', $tick->now)]),
         );
         $this->loader->guard->finishedSubjects = ['a'];
 

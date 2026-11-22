@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Chat\Commands\UndockSource;
+use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Data\UndockInput;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +21,7 @@ final readonly class UndockController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new UndockSource($input->inboxId, $input->placementId, $input->type, $input->id));
+        $commands->run(new UndockSourceCommand($input->inboxId, $input->placementId, $input->type, $input->id));
 
         $home = $redirect->getUrlGenerator()->route('home', ConversationRequest::queryForInbox($input->inboxId), false);
 

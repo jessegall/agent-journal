@@ -6,12 +6,12 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Support\AgentChatAccess;
 use App\Communication\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Commands\AddChatParticipant;
-use Domain\Chat\Commands\CreateGroupChat;
+use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Exceptions\ChatMembershipRefused;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatAdmissionPolicy;
@@ -38,7 +38,7 @@ final class AgentChatAdmissionTest extends MessagingTestCase
             CarbonImmutable::now(),
         );
         $this->asOwner();
-        $this->inboxId = $this->runOnBus(new CreateGroupChat('Design', []));
+        $this->inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', []));
     }
 
     public function test_an_allowed_agent_is_a_candidate_and_joins_and_another_is_refused(): void
@@ -49,16 +49,16 @@ final class AgentChatAdmissionTest extends MessagingTestCase
         $this->assertContains($this->builder->agent_id, array_map(fn ($candidate) => $candidate->id, $candidates));
         $this->assertNotContains($this->reviewer->agent_id, array_map(fn ($candidate) => $candidate->id, $candidates));
 
-        $this->runOnBus(new AddChatParticipant($this->inboxId, "agent:{$this->builder->agent_id}"));
+        $this->runOnBus(new AddChatParticipantCommand($this->inboxId, "agent:{$this->builder->agent_id}"));
         $this->assertTrue($this->isMember($this->builder->agent_id));
 
         $this->expectException(ChatMembershipRefused::class);
-        $this->runOnBus(new AddChatParticipant($this->inboxId, "agent:{$this->reviewer->agent_id}"));
+        $this->runOnBus(new AddChatParticipantCommand($this->inboxId, "agent:{$this->reviewer->agent_id}"));
     }
 
     public function test_withdrawing_or_retiring_the_agent_takes_it_out_of_the_chat(): void
     {
-        $this->runOnBus(new AddChatParticipant($this->inboxId, "agent:{$this->builder->agent_id}"));
+        $this->runOnBus(new AddChatParticipantCommand($this->inboxId, "agent:{$this->builder->agent_id}"));
         $this->app->make(AgentChatAccess::class)->withdraw($this->builder->agent_id, null, CarbonImmutable::now());
 
         $this->assertFalse($this->isMember($this->builder->agent_id));
@@ -70,8 +70,8 @@ final class AgentChatAdmissionTest extends MessagingTestCase
             ActorIdentity::system(),
             CarbonImmutable::now(),
         );
-        $this->runOnBus(new AddChatParticipant($this->inboxId, "agent:{$this->builder->agent_id}"));
-        $this->runOnBus(new RetireAgent($this->builder->agent_id));
+        $this->runOnBus(new AddChatParticipantCommand($this->inboxId, "agent:{$this->builder->agent_id}"));
+        $this->runOnBus(new RetireAgentCommand($this->builder->agent_id));
 
         $this->assertFalse($this->isMember($this->builder->agent_id));
     }

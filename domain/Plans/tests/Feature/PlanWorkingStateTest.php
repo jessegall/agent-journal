@@ -13,7 +13,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Storage\FrameRecord;
-use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
@@ -50,8 +50,8 @@ final class PlanWorkingStateTest extends TestCase
             TestStartAuthority::forAgent(TestIds::of(1)),
         );
 
-        $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
-        $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
+        $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
+        $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
 
         $this->assertSame([WorkingOnPlanStateReference::TYPE_KEY], $this->frameTypes());
 
@@ -73,7 +73,7 @@ final class PlanWorkingStateTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
+        $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
 
         $this->assertSame([], $this->frameTypes());
     }

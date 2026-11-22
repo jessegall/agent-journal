@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages;
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Exceptions\MessageStateConflict;
@@ -24,9 +24,9 @@ final class ReplyToMessageTest extends MessagingTestCase
         Event::fake([MessageAnswered::class]);
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
 
-        $replyId = $this->runOnBus(new ReplyToMessage($questionId, $this->versionOf($questionId), 'Port 8080.'));
+        $replyId = $this->runOnBus(new ReplyToMessageCommand($questionId, $this->versionOf($questionId), 'Port 8080.'));
 
         $reply = Message::query()->findOrFail($replyId);
         $this->assertSame(MessageState::Answered, Message::query()->findOrFail($questionId)->state);
@@ -45,24 +45,24 @@ final class ReplyToMessageTest extends MessagingTestCase
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
         $this->asAgent($this->builder);
         $stale = $this->versionOf($questionId);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
-        $this->runOnBus(new ReplyToMessage($questionId, $this->versionOf($questionId), 'Done.'));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
+        $this->runOnBus(new ReplyToMessageCommand($questionId, $this->versionOf($questionId), 'Done.'));
 
         $this->expectException(MessageStateConflict::class);
 
-        $this->runOnBus(new ReplyToMessage($questionId, $stale, 'Again.'));
+        $this->runOnBus(new ReplyToMessageCommand($questionId, $stale, 'Again.'));
     }
 
     public function test_two_replies_to_one_version_have_one_winner_and_the_loser_is_told_the_version_is_stale(): void
     {
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
         $shown = $this->versionOf($questionId);
-        $this->runOnBus(new ReplyToMessage($questionId, $shown, 'Port 8080.', $this->builder->agent_id));
+        $this->runOnBus(new ReplyToMessageCommand($questionId, $shown, 'Port 8080.', $this->builder->agent_id));
 
         try {
-            $this->runOnBus(new ReplyToMessage($questionId, $shown, 'Port 9090.', $this->builder->agent_id));
+            $this->runOnBus(new ReplyToMessageCommand($questionId, $shown, 'Port 9090.', $this->builder->agent_id));
             $this->fail('The second reply to the same version went through.');
         } catch (MessageStateConflict $refused) {
             $this->assertSame('stale-version', $refused->staleCode());

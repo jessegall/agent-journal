@@ -7,6 +7,7 @@ namespace App\Bus\Exceptions;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
+use App\Bus\Support\CommandName;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +24,7 @@ final class RequestKeyMissing extends InvalidArgumentException implements CodedR
      */
     public static function for(string $command): self
     {
-        $name = class_basename($command);
+        $name = CommandName::of($command);
 
         return new self(
             sprintf(

@@ -35,7 +35,7 @@ use App\Hooks\Storage\FrameRecord;
 use App\Profiles\Exceptions\ProfileMissing;
 use Carbon\CarbonImmutable;
 use Closure;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
@@ -147,7 +147,7 @@ final class HookStartTest extends TestCase
     {
         $parent = $this->start('main-agent');
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id)));
+        $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id)));
         $childAgent = Agent::create('Helper', 'read-only-helper');
 
         $child = $this->app->make(StartSessions::class)->start(

@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('docs_create')]
 #[IsDestructive(false)]
-#[Dispatches(CreateDocument::class)]
+#[Dispatches(CreateDocumentCommand::class)]
 #[Description('Publish a document from text or one sealed upload.')]
 final class CreateDocumentTool extends JournalWriteTool
 {
@@ -36,9 +36,9 @@ final class CreateDocumentTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CreateDocument
+    protected function command(ToolArguments $arguments): CreateDocumentCommand
     {
-        return new CreateDocument(
+        return new CreateDocumentCommand(
             $arguments->text('title'),
             $arguments->text('abstract'),
             $arguments->optionalText('body'),

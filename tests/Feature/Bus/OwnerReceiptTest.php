@@ -16,8 +16,8 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\KeepNote\KeepNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\ClearsStartRows;
 
 /**
@@ -44,31 +44,31 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->app->make(RequestKey::class)->set(self::KEY);
         $bus = $this->app->make(CommandBus::class);
 
-        $first = $bus->run(new KeepNote('once'));
-        $repeat = $bus->run(new KeepNote('once'));
+        $first = $bus->run(new KeepNoteCommand('once'));
+        $repeat = $bus->run(new KeepNoteCommand('once'));
 
         $this->assertSame($first, $repeat);
         $this->assertSame(1, $this->rowCount());
         $receipt = CommandReceipt::query()->sole();
         $this->assertSame('user', $receipt->author_type);
         $this->assertNull($receipt->session_id);
-        $this->assertSame(KeepNote::class, $receipt->command);
+        $this->assertSame(KeepNoteCommand::class, $receipt->command);
     }
 
     public function test_a_changed_payload_under_the_same_key_conflicts(): void
     {
         $this->app->make(RequestKey::class)->set(self::KEY);
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new KeepNote('first'));
+        $bus->run(new KeepNoteCommand('first'));
 
-        $this->assertThrows(fn () => $bus->run(new KeepNote('changed')), RequestKeyConflict::class);
+        $this->assertThrows(fn () => $bus->run(new KeepNoteCommand('changed')), RequestKeyConflict::class);
         $this->assertSame(1, $this->rowCount());
     }
 
     public function test_a_command_that_requires_a_key_is_refused_without_one(): void
     {
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new KeepNote('keyless')),
+            fn () => $this->app->make(CommandBus::class)->run(new KeepNoteCommand('keyless')),
             RequestKeyMissing::class,
         );
         $this->assertSame(0, $this->rowCount());
@@ -79,12 +79,12 @@ final class OwnerReceiptTest extends CommandBusTestCase
     {
         $this->app->make(RequestKey::class)->set(self::KEY);
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new KeepNote('kept'));
+        $bus->run(new KeepNoteCommand('kept'));
 
         $this->travel(32)->days();
 
-        $this->assertThrows(fn () => $bus->run(new KeepNote('kept')), RequestKeyExpired::class);
-        $this->assertThrows(fn () => $bus->run(new KeepNote('another')), RequestKeyExpired::class);
+        $this->assertThrows(fn () => $bus->run(new KeepNoteCommand('kept')), RequestKeyExpired::class);
+        $this->assertThrows(fn () => $bus->run(new KeepNoteCommand('another')), RequestKeyExpired::class);
         $this->assertSame(1, $this->rowCount());
     }
 
@@ -92,7 +92,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
     {
         $this->app->make(RequestKey::class)->set(self::KEY);
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new KeepNote('kept'));
+        $bus->run(new KeepNoteCommand('kept'));
 
         $this->travel(32)->days();
         $this->prune();
@@ -100,7 +100,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $receipt = CommandReceipt::query()->sole();
         $this->assertSame(ReceiptState::Expired, $receipt->state);
         $this->assertNull($receipt->result);
-        $this->assertThrows(fn () => $bus->run(new KeepNote('kept')), RequestKeyExpired::class);
+        $this->assertThrows(fn () => $bus->run(new KeepNoteCommand('kept')), RequestKeyExpired::class);
 
         $this->travel(334)->days();
         $this->prune();
@@ -111,7 +111,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
     public function test_a_receipt_without_a_declared_retention_is_removed_after_thirty_days(): void
     {
         $this->app->make(RequestKey::class)->set(self::KEY);
-        $this->app->make(CommandBus::class)->run(new WriteNote('standard'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('standard'));
 
         $this->travel(31)->days();
         $this->prune();
@@ -122,11 +122,11 @@ final class OwnerReceiptTest extends CommandBusTestCase
     public function test_the_same_key_of_a_user_and_an_agent_names_two_writes(): void
     {
         $this->app->make(RequestKey::class)->set(self::KEY);
-        $this->app->make(CommandBus::class)->run(new WriteNote('user'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('user'));
 
         $start = TestStart::start();
         $this->startRequestAs($start->agent->id, $start->session->id);
-        $this->app->make(CommandBus::class)->run(new WriteNote('agent'));
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('agent'));
 
         $this->assertSame(2, $this->rowCount());
         $this->assertSame(1, CommandReceipt::query()->count());

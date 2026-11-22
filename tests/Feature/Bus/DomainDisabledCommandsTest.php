@@ -10,9 +10,9 @@ use App\Bus\Exceptions\DomainDisabled;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Contracts\DomainAvailability;
-use Domain\Plans\Commands\StartPlan;
-use Domain\Plans\Handlers\StartPlanHandler;
-use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
+use Domain\Plans\Commands\StartPlan\StartPlanHandler;
+use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Support\TestIds;
 
@@ -36,10 +36,10 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
         });
 
         $this->startTestUserRequest(1);
-        $this->assertRefusedAsDisabled(new StartPlan(TestIds::of(5)));
+        $this->assertRefusedAsDisabled(new StartPlanCommand(TestIds::of(5)));
 
         $this->startTestAgentRequest(2, 20);
-        $this->assertRefusedAsDisabled(new StartPlan(TestIds::of(5)));
+        $this->assertRefusedAsDisabled(new StartPlanCommand(TestIds::of(5)));
 
         $this->assertFalse($built, self::HANDLER_BUILT);
     }
@@ -54,7 +54,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
         });
         $this->startTestUserRequest(1);
 
-        $this->app->make(CommandBus::class)->run(new ShuffleDeck('red'));
+        $this->app->make(CommandBus::class)->run(new ShuffleDeckCommand('red'));
 
         $this->assertFalse($built, self::MIDDLEWARE_BUILT);
     }
@@ -66,7 +66,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
 
         $this->expectException(CommandRefused::class);
 
-        $this->app->make(CommandBus::class)->run(new ShuffleDeck('red'));
+        $this->app->make(CommandBus::class)->run(new ShuffleDeckCommand('red'));
     }
 
     private function switchOff(string $owner): void
@@ -82,13 +82,13 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
         });
     }
 
-    private function assertRefusedAsDisabled(StartPlan $command): void
+    private function assertRefusedAsDisabled(StartPlanCommand $command): void
     {
         try {
             $this->app->make(CommandBus::class)->run($command);
             $this->fail('A command of a switched-off domain ran.');
         } catch (DomainDisabled $refused) {
-            $this->assertSame(DomainDisabled::for('Plans', StartPlan::class)->getMessage(), $refused->getMessage());
+            $this->assertSame(DomainDisabled::for('Plans', StartPlanCommand::class)->getMessage(), $refused->getMessage());
         }
     }
 }

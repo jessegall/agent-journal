@@ -15,8 +15,8 @@ use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\CommandBus;
 use App\Ui\Declarations\SlotContext;
 use Carbon\CarbonImmutable;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Data\DockData;
 use Domain\Documents\Resolvers\DocumentDockResolver;
 use Domain\Documents\Tests\TestCase;
@@ -78,10 +78,10 @@ final class DockTest extends TestCase
     public function test_creating_a_document_or_report_docks_nothing_and_the_section_only_suggests_them(): void
     {
         $this->actAsAgent($this->builderSession);
-        $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
 
         $this->actAsUser();
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
 
         $this->assertFalse(Schema::hasTable('record_docks'));
 

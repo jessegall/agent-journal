@@ -7,9 +7,9 @@ namespace App;
 use App\Agents\CommandMiddleware\AnnounceUnavailableStart;
 use App\Agents\CommandMiddleware\CommitHeldStartRefusals;
 use App\Agents\CommandMiddleware\KeepStartReceipt;
-use App\Agents\Commands\ContinueStart;
-use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\ContinueStart\ContinueStartCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\CommandOwner;
@@ -28,7 +28,7 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/*/Commands', Command::class);
+        return FolderClasses::in(__DIR__.'/*/Commands/*', Command::class);
     }
 
     /**
@@ -50,7 +50,7 @@ final class CoreCommands
         return [
             MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all()),
             MiddlewareDeclaration::around(CommitHeldStartRefusals::class, CommandScope::all()),
-            MiddlewareDeclaration::around(KeepStartReceipt::class, CommandScope::command(StartAgent::class)),
+            MiddlewareDeclaration::around(KeepStartReceipt::class, CommandScope::command(StartAgentCommand::class)),
             ...self::startRefusalAnnouncements(),
             MiddlewareDeclaration::inside(GuardTickOrigin::class, CommandScope::all()),
         ];
@@ -68,7 +68,7 @@ final class CoreCommands
                 AnnounceUnavailableStart::class,
                 CommandScope::command($start),
             ),
-            [StartAgent::class, OpenAgentRuntime::class, ContinueStart::class],
+            [StartAgentCommand::class, OpenAgentRuntimeCommand::class, ContinueStartCommand::class],
         );
     }
 

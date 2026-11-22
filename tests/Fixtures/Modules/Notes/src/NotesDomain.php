@@ -45,23 +45,23 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\AuditNotes;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\AuditRules;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordWriteNote;
-use Tests\Fixtures\Modules\Notes\Commands\ClearNotes;
-use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote;
-use Tests\Fixtures\Modules\Notes\Commands\CopyNote;
-use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
-use Tests\Fixtures\Modules\Notes\Commands\EngineNote;
-use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
-use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
-use Tests\Fixtures\Modules\Notes\Commands\LimitNote;
-use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
-use Tests\Fixtures\Modules\Notes\Commands\PinNote;
-use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect;
-use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
-use Tests\Fixtures\Modules\Notes\Commands\RetainNote;
-use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
-use Tests\Fixtures\Modules\Notes\Commands\SystemNote;
-use Tests\Fixtures\Modules\Notes\Commands\UserNote;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\ClearNotes\ClearNotesCommand;
+use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote\CopyLimitNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote\EngineCopyNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\EngineNote\EngineNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\KeepNote\KeepNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\LimitNote\LimitNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote\OpenTransactionNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\PinNote\PinNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect\RecordNoteEffectCommand;
+use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\RetainNote\RetainNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail\SetIntegerSettingThenFailCommand;
+use Tests\Fixtures\Modules\Notes\Commands\SystemNote\SystemNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\UserNote\UserNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
 use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
@@ -117,7 +117,7 @@ final class NotesDomain extends Domain implements
             ->events(NoteRemoved::class)
             ->contracts(NoteResolver::class)
             ->values(NoteValue::class)
-            ->commands(WriteNote::class)
+            ->commands(WriteNoteCommand::class)
             ->build();
     }
 
@@ -185,23 +185,23 @@ final class NotesDomain extends Domain implements
     public function commands(): array
     {
         return [
-            WriteNote::class,
-            PinNote::class,
-            CopyNote::class,
-            RefuseNote::class,
-            RecordNoteEffect::class,
-            IgnoreFailedNote::class,
-            OpenTransactionNote::class,
-            UserNote::class,
-            SystemNote::class,
-            ClearNotes::class,
-            EngineNote::class,
-            EngineCopyNote::class,
-            KeepNote::class,
-            RetainNote::class,
-            LimitNote::class,
-            CopyLimitNote::class,
-            SetIntegerSettingThenFail::class,
+            WriteNoteCommand::class,
+            PinNoteCommand::class,
+            CopyNoteCommand::class,
+            RefuseNoteCommand::class,
+            RecordNoteEffectCommand::class,
+            IgnoreFailedNoteCommand::class,
+            OpenTransactionNoteCommand::class,
+            UserNoteCommand::class,
+            SystemNoteCommand::class,
+            ClearNotesCommand::class,
+            EngineNoteCommand::class,
+            EngineCopyNoteCommand::class,
+            KeepNoteCommand::class,
+            RetainNoteCommand::class,
+            LimitNoteCommand::class,
+            CopyLimitNoteCommand::class,
+            SetIntegerSettingThenFailCommand::class,
         ];
     }
 
@@ -221,7 +221,7 @@ final class NotesDomain extends Domain implements
     {
         return [
             MiddlewareDeclaration::around(RecordAll::class, CommandScope::all()),
-            MiddlewareDeclaration::around(RecordWriteNote::class, CommandScope::command(WriteNote::class)),
+            MiddlewareDeclaration::around(RecordWriteNote::class, CommandScope::command(WriteNoteCommand::class)),
             MiddlewareDeclaration::inside(AuditNotes::class, CommandScope::ownedBy(self::class)),
             MiddlewareDeclaration::inside(AuditRules::class, CommandScope::ownedBy(RulesDomain::class)),
         ];

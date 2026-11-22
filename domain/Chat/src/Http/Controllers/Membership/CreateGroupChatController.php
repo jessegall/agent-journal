@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers\Membership;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Chat\Commands\CreateGroupChat;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Data\CreateGroupInput;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +23,7 @@ final readonly class CreateGroupChatController
         CommandBus $commands,
         Redirector $redirect,
     ): JsonResponse|RedirectResponse {
-        $inboxId = $commands->run(new CreateGroupChat($input->title, $input->userIds));
+        $inboxId = $commands->run(new CreateGroupChatCommand($input->title, $input->userIds));
 
         return $request->expectsJson()
             ? new JsonResponse(['inboxId' => $inboxId])

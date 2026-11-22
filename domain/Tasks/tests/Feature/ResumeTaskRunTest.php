@@ -18,9 +18,9 @@ use App\Desks\Exceptions\RunClaimRefused;
 use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\ResumeTaskRun;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\ResumeTaskRun\ResumeTaskRunCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Exceptions\TaskResumeCovered;
 use Domain\Tasks\Exceptions\TaskRunStale;
 use Domain\Tasks\Models\Task;
@@ -77,7 +77,7 @@ final class ResumeTaskRunTest extends TestCase
             ),
         );
 
-        $this->runAs($leaving, new StartTask($task->id));
+        $this->runAs($leaving, new StartTaskCommand($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
         $this->startUserRequestAs($this->owner->id);
 
@@ -90,10 +90,10 @@ final class ResumeTaskRunTest extends TestCase
             ),
         ));
 
-        $this->assertSame(1, $this->runAs($arriving, new ResumeTaskRun($run->id)));
+        $this->assertSame(1, $this->runAs($arriving, new ResumeTaskRunCommand($run->id)));
         $this->assertTrue($this->holderOf($run)?->isSameAs(ActorIdentity::of($arriving->agent()->firstOrFail())));
         $this->assertSame(1, TaskRun::query()->where('task_id', $task->id)->count());
-        $this->assertThrows(fn () => $this->runAs($leaving, new ResumeTaskRun($run->id)), RunClaimRefused::class);
+        $this->assertThrows(fn () => $this->runAs($leaving, new ResumeTaskRunCommand($run->id)), RunClaimRefused::class);
     }
 
     public function test_a_direct_holder_that_regained_the_task_resumes_afresh(): void
@@ -106,14 +106,14 @@ final class ResumeTaskRunTest extends TestCase
             AssigneeIdentity::of($worker->agent()->firstOrFail()),
         );
 
-        $this->runAs($worker, new StartTask($task->id));
+        $this->runAs($worker, new StartTaskCommand($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
 
         $holding->delete();
         AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
 
         $this->assertNull($this->holderOf($run));
-        $this->assertSame(1, $this->runAs($worker, new ResumeTaskRun($run->id)));
+        $this->assertSame(1, $this->runAs($worker, new ResumeTaskRunCommand($run->id)));
         $this->assertTrue($this->holderOf($run)?->isSameAs(ActorIdentity::of($worker->agent()->firstOrFail())));
     }
 
@@ -125,13 +125,13 @@ final class ResumeTaskRunTest extends TestCase
         $second = Task::factory()->create();
         AssignmentRecord::create($first->assignmentIdentity(), $holder);
         AssignmentRecord::create($second->assignmentIdentity(), $holder);
-        $this->runAs($worker, new StartTask($first->id));
-        $this->runAs($worker, new StartTask($second->id));
+        $this->runAs($worker, new StartTaskCommand($first->id));
+        $this->runAs($worker, new StartTaskCommand($second->id));
 
         $run = TaskRun::query()->where('task_id', $first->id)->sole();
 
         $this->assertThrows(
-            fn () => $this->runAs($worker, new ResumeTaskRun($run->id)),
+            fn () => $this->runAs($worker, new ResumeTaskRunCommand($run->id)),
             TaskResumeCovered::class,
             TaskResumeCovered::by($second->number, $first->number)->getMessage(),
         );
@@ -142,15 +142,15 @@ final class ResumeTaskRunTest extends TestCase
         $worker = $this->started('Fifth');
         $task = Task::factory()->create();
         AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
-        $this->runAs($worker, new StartTask($task->id));
+        $this->runAs($worker, new StartTaskCommand($task->id));
         $first = TaskRun::query()->where('task_id', $task->id)->sole();
-        $this->runAs($worker, new BlockTask($task->id, 1, 'Waits on the server.'));
-        $this->runAs($worker, new StartTask($task->id));
+        $this->runAs($worker, new BlockTaskCommand($task->id, 1, 'Waits on the server.'));
+        $this->runAs($worker, new StartTaskCommand($task->id));
 
-        $this->assertThrows(fn () => $this->runAs($worker, new ResumeTaskRun($first->id)), TaskRunStale::class);
+        $this->assertThrows(fn () => $this->runAs($worker, new ResumeTaskRunCommand($first->id)), TaskRunStale::class);
     }
 
-    private function runAs(AgentSession $start, StartTask|ResumeTaskRun|BlockTask $command): mixed
+    private function runAs(AgentSession $start, StartTaskCommand|ResumeTaskRunCommand|BlockTaskCommand $command): mixed
     {
         $this->startRequestAs($start->agent_id, $start->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());

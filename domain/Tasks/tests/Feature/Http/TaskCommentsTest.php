@@ -6,7 +6,7 @@ namespace Domain\Tasks\Tests\Feature\Http;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Bus\Contracts\CommandBus;
-use App\Comments\Commands\PostComment;
+use App\Comments\Commands\PostComment\PostCommentCommand;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -43,7 +43,7 @@ final class TaskCommentsTest extends TestCase
         $task = Task::factory()->create();
         $this->startUserRequestAs($this->owner->id);
 
-        $this->app->make(CommandBus::class)->run(new PostComment(
+        $this->app->make(CommandBus::class)->run(new PostCommentCommand(
             new RecordIdentity(Task::LINK_TYPE, $task->id),
             'Is the schema settled?',
             (string) Str::uuid(),
@@ -62,7 +62,7 @@ final class TaskCommentsTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new PostComment(
+            fn () => $this->app->make(CommandBus::class)->run(new PostCommentCommand(
                 new RecordIdentity(Task::LINK_TYPE, $task->id),
                 'Sneaking in.',
                 (string) Str::uuid(),

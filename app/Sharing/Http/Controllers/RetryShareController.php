@@ -6,7 +6,7 @@ namespace App\Sharing\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Sharing\ShareActionRequest;
-use App\Sharing\Commands\RetryShare;
+use App\Sharing\Commands\RetryShare\RetryShareCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -17,7 +17,7 @@ final readonly class RetryShareController
 {
     public function __invoke(ShareActionRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new RetryShare($request->shareId(), $request->requestKey()));
+        $commands->run(new RetryShareCommand($request->shareId(), $request->requestKey()));
 
         return $redirect->back(303);
     }

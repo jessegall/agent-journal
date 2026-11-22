@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Assignments\Commands\ConfigureAutoAssignment;
-use App\Assignments\Commands\EnableAutoAssignment;
+use App\Assignments\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
+use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Http\Requests\Assignments\Concerns\ReadsAutoAssignmentInput;
 use App\Records\Contracts\RecordResolver;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,13 +25,13 @@ final class ChangeAutoAssignmentRequest extends FormRequest
         return [...$this->keyRules(), ...$this->poolRules(), ...$this->revisionRules()];
     }
 
-    public function enableCommand(RecordResolver $records): EnableAutoAssignment
+    public function enableCommand(RecordResolver $records): EnableAutoAssignmentCommand
     {
-        return new EnableAutoAssignment($this->autoAssignmentInput($records), $this->expectedRevision());
+        return new EnableAutoAssignmentCommand($this->autoAssignmentInput($records), $this->expectedRevision());
     }
 
-    public function configureCommand(RecordResolver $records): ConfigureAutoAssignment
+    public function configureCommand(RecordResolver $records): ConfigureAutoAssignmentCommand
     {
-        return new ConfigureAutoAssignment($this->autoAssignmentInput($records), $this->expectedRevision());
+        return new ConfigureAutoAssignmentCommand($this->autoAssignmentInput($records), $this->expectedRevision());
     }
 }

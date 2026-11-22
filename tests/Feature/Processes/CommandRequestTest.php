@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\OpenCommandRequest;
-use App\Processes\Commands\WithdrawCommandRequest;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Processes\Commands\WithdrawCommandRequest\WithdrawCommandRequestCommand;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
 use App\Processes\Exceptions\RequestTransitionRefused;
@@ -53,7 +53,7 @@ final class CommandRequestTest extends TestCase
     public function test_a_withdrawn_request_stays_readable_and_a_new_attempt_opens_a_new_one(): void
     {
         $first = $this->open('agent-1', '/projects/acme');
-        $this->runAsAgentId('agent-1', new WithdrawCommandRequest($first));
+        $this->runAsAgentId('agent-1', new WithdrawCommandRequestCommand($first));
 
         $request = CommandRequest::query()->findOrFail($first);
         $this->assertSame(RequestState::Withdrawn, $request->state);
@@ -66,7 +66,7 @@ final class CommandRequestTest extends TestCase
         $first = $this->open('agent-1', '/projects/acme');
 
         $this->assertThrows(
-            fn () => $this->runAsAgentId('agent-2', new WithdrawCommandRequest($first)),
+            fn () => $this->runAsAgentId('agent-2', new WithdrawCommandRequestCommand($first)),
             RequestTransitionRefused::class,
         );
         $this->assertThrows(
@@ -89,7 +89,7 @@ final class CommandRequestTest extends TestCase
     {
         return $this->runAsAgentId(
             $agentId,
-            new OpenCommandRequest(
+            new OpenCommandRequestCommand(
                 'acme verify',
                 str_repeat('a', 64),
                 'acme verify --all',

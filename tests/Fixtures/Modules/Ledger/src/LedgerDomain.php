@@ -11,8 +11,8 @@ use App\Bus\Contracts\CommandProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use Tests\Fixtures\Modules\Ledger\Bootstrappers\RegisterLedgerLinkTypes;
-use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger;
-use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry;
+use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger\OpenLedgerCommand;
+use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry\WriteEntryCommand;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
 
@@ -44,7 +44,7 @@ final class LedgerDomain extends Domain implements CommandProvider, PolicyProvid
 
     public function commands(): array
     {
-        return [OpenLedger::class, WriteEntry::class];
+        return [OpenLedgerCommand::class, WriteEntryCommand::class];
     }
 
     public function policies(): array

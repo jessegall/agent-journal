@@ -17,7 +17,7 @@ use Exception;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 use PDOException;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -131,7 +131,7 @@ final class CommandStopTimeTest extends TestCase
 
     private function writeNoteCall(): CommandCall
     {
-        return CommandCall::of(new WriteNote('A note'), 'Notes', false, false, null);
+        return CommandCall::of(new WriteNoteCommand('A note'), 'Notes', false, false, null);
     }
 
     private function statementLimit(): int

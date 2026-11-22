@@ -8,7 +8,7 @@ use App\Actors\Support\ActorContext;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Support\RegisteredInboxes;
-use Domain\Chat\Commands\OpenPairChat;
+use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -21,9 +21,9 @@ final class OpenPairChatTest extends MessagingTestCase
     {
         $this->asOwner();
 
-        $first = $this->runOnBus(new OpenPairChat($this->builder->agent_id));
-        $again = $this->runOnBus(new OpenPairChat($this->builder->agent_id));
-        $other = $this->runOnBus(new OpenPairChat($this->reviewer->agent_id));
+        $first = $this->runOnBus(new OpenPairChatCommand($this->builder->agent_id));
+        $again = $this->runOnBus(new OpenPairChatCommand($this->builder->agent_id));
+        $other = $this->runOnBus(new OpenPairChatCommand($this->reviewer->agent_id));
 
         $this->assertSame($first, $again);
         $this->assertNotSame($first, $other);

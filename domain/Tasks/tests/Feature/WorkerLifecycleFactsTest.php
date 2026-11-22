@@ -8,8 +8,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ActiveEventUnits;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
@@ -51,13 +51,13 @@ final class WorkerLifecycleFactsTest extends TestCase
         $task = Task::factory()->create(['title' => 'Kept']);
         $this->startUserRequestAs(TestIds::of(7));
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 9, 'Done.')));
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 9, 'Done.')));
 
         $this->app->forgetScopedInstances();
         $units = $this->app->make(ActiveEventUnits::class);
         $this->assertTrue($units->activeFor($this->app->make(ConnectionInterface::class))->isEmpty());
         $this->startUserRequestAs(TestIds::of(7));
-        $this->app->make(CommandBus::class)->run(new CancelTask($task->id, 'Dropped.'));
+        $this->app->make(CommandBus::class)->run(new CancelTaskCommand($task->id, 'Dropped.'));
 
         $this->assertSame([TaskCancelled::class], $facts);
     }

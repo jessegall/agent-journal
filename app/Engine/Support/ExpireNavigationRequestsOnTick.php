@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Engine\Support;
 
 use App\Bus\Contracts\CommandBus;
-use App\Engine\Commands\ExpireNavigationRequests;
+use App\Engine\Commands\ExpireNavigationRequests\ExpireNavigationRequestsCommand;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
 
@@ -18,11 +18,11 @@ final readonly class ExpireNavigationRequestsOnTick implements EngineListener
 
     public function maintenanceScope(): string
     {
-        return ExpireNavigationRequests::MAINTENANCE_SCOPE;
+        return ExpireNavigationRequestsCommand::MAINTENANCE_SCOPE;
     }
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->commands->run(new ExpireNavigationRequests());
+        $this->commands->run(new ExpireNavigationRequestsCommand());
     }
 }

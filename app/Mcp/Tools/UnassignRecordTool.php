@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Assignments\Commands\UnassignRecord;
+use App\Assignments\Commands\UnassignRecord\UnassignRecordCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Enums\DiscoveryProfile;
@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive]
 #[Name('assignments_unassign')]
-#[Dispatches(UnassignRecord::class)]
+#[Dispatches(UnassignRecordCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Release a record from its current holder using the assignment reference you read.')]
 final class UnassignRecordTool extends AssignmentWriteTool
@@ -28,8 +28,8 @@ final class UnassignRecordTool extends AssignmentWriteTool
         return [...$this->recordSchema($schema), 'expected_assignment' => $this->expectedSchema($schema)];
     }
 
-    protected function command(ToolArguments $arguments): UnassignRecord
+    protected function command(ToolArguments $arguments): UnassignRecordCommand
     {
-        return new UnassignRecord($this->record($arguments), $this->expected($arguments));
+        return new UnassignRecordCommand($this->record($arguments), $this->expected($arguments));
     }
 }

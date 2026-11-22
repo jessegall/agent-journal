@@ -7,7 +7,7 @@ namespace App\Http\Requests\Profiles;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\ModelSelection;
-use App\Profiles\Commands\StartProfileMain;
+use App\Profiles\Commands\StartProfileMain\StartProfileMainCommand;
 use App\Profiles\Values\ProfileKey;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -39,9 +39,9 @@ final class StartProfileMainRequest extends FormRequest
         ];
     }
 
-    public function command(): StartProfileMain
+    public function command(): StartProfileMainCommand
     {
-        return new StartProfileMain(
+        return new StartProfileMainCommand(
             $this->string('requestId')->lower()->toString(),
             $this->string('agentId')->lower()->toString(),
             ProfileKey::from((string) $this->route('profile')),

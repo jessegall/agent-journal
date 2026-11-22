@@ -6,7 +6,7 @@ namespace App\Desks\Console;
 
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\InstallDesks;
+use App\Desks\Commands\InstallDesks\InstallDesksCommand as InstallDesks;
 use Illuminate\Console\Command;
 
 final class InstallDesksCommand extends Command

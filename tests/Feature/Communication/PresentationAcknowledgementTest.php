@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AcknowledgePresentation;
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Models\MessageReceipt;
 use App\Communication\Support\PresentationBatches;
 use Carbon\CarbonImmutable;
@@ -35,7 +35,7 @@ final class PresentationAcknowledgementTest extends MessagingTestCase
         $this->chat = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
         $this->asOwner();
         $this->messageId = $this->runOnBus(
-            new PostChatMessage($this->chat->inbox_id, str_repeat('a', 12000), 'long'),
+            new PostChatMessageCommand($this->chat->inbox_id, str_repeat('a', 12000), 'long'),
         );
         $this->asAgent($this->builder);
     }
@@ -46,8 +46,8 @@ final class PresentationAcknowledgementTest extends MessagingTestCase
         $agent = $this->actorOf($this->builder);
 
         $first = $batches->next($agent, $this->builder->id, 1, 'thread-1', CarbonImmutable::now());
-        $this->runOnBus(new AcknowledgePresentation($first->batchId, [$first->items[0]->handle], 'thread-1'));
-        $this->runOnBus(new ReadMessages($this->chat->inbox_id, [$this->messageId]));
+        $this->runOnBus(new AcknowledgePresentationCommand($first->batchId, [$first->items[0]->handle], 'thread-1'));
+        $this->runOnBus(new ReadMessagesCommand($this->chat->inbox_id, [$this->messageId]));
 
         $this->assertFalse($this->receipt()->isPresented());
 
@@ -57,9 +57,9 @@ final class PresentationAcknowledgementTest extends MessagingTestCase
         $rest = $batches->next($agent, $this->builder->id, 1, 'thread-1', CarbonImmutable::now());
         $this->assertSame(PresentationBatches::CHARACTER_LIMIT, $rest->items[0]->startOffset);
 
-        $stray = new AcknowledgePresentation($rest->batchId, [$elsewhere->items[0]->handle], 'thread-1');
+        $stray = new AcknowledgePresentationCommand($rest->batchId, [$elsewhere->items[0]->handle], 'thread-1');
         $this->assertSame(0, $this->runOnBus($stray));
-        $this->runOnBus(new AcknowledgePresentation($rest->batchId, [$rest->items[0]->handle], 'thread-1'));
+        $this->runOnBus(new AcknowledgePresentationCommand($rest->batchId, [$rest->items[0]->handle], 'thread-1'));
 
         $this->assertTrue($this->receipt()->isPresented());
     }

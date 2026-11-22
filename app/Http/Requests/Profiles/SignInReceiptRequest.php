@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Profiles\Commands\BeginSignIn;
-use App\Profiles\Commands\BeginSignInAgain;
+use App\Profiles\Commands\BeginSignIn\BeginSignInCommand;
+use App\Profiles\Commands\BeginSignInAgain\BeginSignInAgainCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -41,13 +41,13 @@ final class SignInReceiptRequest extends FormRequest
      */
     public function command(): string
     {
-        return $this->isRenewal() ? BeginSignInAgain::class : BeginSignIn::class;
+        return $this->isRenewal() ? BeginSignInAgainCommand::class : BeginSignInCommand::class;
     }
 
     public function target(): string
     {
         return $this->isRenewal()
-            ? BeginSignInAgain::targetOf($this->string('account')->toString())
-            : BeginSignIn::targetOf($this->string('driver')->toString());
+            ? BeginSignInAgainCommand::targetOf($this->string('account')->toString())
+            : BeginSignInCommand::targetOf($this->string('driver')->toString());
     }
 }

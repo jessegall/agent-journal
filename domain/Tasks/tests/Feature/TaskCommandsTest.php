@@ -8,10 +8,10 @@ use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
@@ -56,10 +56,10 @@ final class TaskCommandsTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         [$finished, $blocked, $cancelled] = [$this->task('Finish'), $this->task('Block'), $this->task('Cancel')];
 
-        $bus->run(new StartTask($blocked->id));
-        $bus->run(new FinishTask($finished->id, 0, 'Done.'));
-        $bus->run(new BlockTask($blocked->id, $blocked->refresh()->run_number, 'Waits.'));
-        $bus->run(new CancelTask($cancelled->id, 'Dropped.'));
+        $bus->run(new StartTaskCommand($blocked->id));
+        $bus->run(new FinishTaskCommand($finished->id, 0, 'Done.'));
+        $bus->run(new BlockTaskCommand($blocked->id, $blocked->refresh()->run_number, 'Waits.'));
+        $bus->run(new CancelTaskCommand($cancelled->id, 'Dropped.'));
 
         $this->assertSame(
             [TaskState::Finished, TaskState::Blocked, TaskState::Cancelled],
@@ -76,7 +76,7 @@ final class TaskCommandsTest extends TestCase
         $this->expectExceptionObject(TaskMissing::forId(TestIds::of(999999)));
 
         try {
-            $this->app->make(CommandBus::class)->run(new FinishTask(TestIds::of(999999), 0, 'Done.'));
+            $this->app->make(CommandBus::class)->run(new FinishTaskCommand(TestIds::of(999999), 0, 'Done.'));
         } finally {
             Event::assertNotDispatched(TaskFinished::class);
         }
@@ -100,7 +100,7 @@ final class TaskCommandsTest extends TestCase
     {
         $task = $this->task('Taken');
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 3, 'Done.')));
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 3, 'Done.')));
 
         $this->assertSame(TaskState::Open, $task->fresh()?->state);
         Event::assertNotDispatched(TaskFinished::class);

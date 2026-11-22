@@ -13,13 +13,13 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 #[IsIdempotent]
 #[Name('write_note')]
 #[IsDestructive(false)]
 #[Description('Write a note.')]
-#[Dispatches(WriteNote::class)]
+#[Dispatches(WriteNoteCommand::class)]
 final class WriteNoteTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
@@ -27,9 +27,9 @@ final class WriteNoteTool extends JournalWriteTool
         return ['text' => $schema->string()->required()];
     }
 
-    protected function command(ToolArguments $arguments): WriteNote
+    protected function command(ToolArguments $arguments): WriteNoteCommand
     {
-        return new WriteNote($arguments->text('text'));
+        return new WriteNoteCommand($arguments->text('text'));
     }
 
     protected function present(mixed $result): ToolResult

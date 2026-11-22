@@ -6,15 +6,15 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
-use Domain\Access\Commands\DisableUser;
-use Domain\Access\Commands\RevokeEnvironmentAccess;
+use Domain\Access\Commands\DisableUser\DisableUserCommand;
+use Domain\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Chat\Commands\CreateGroupChat;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;
 use Tests\Support\MessagingTestCase;
@@ -31,10 +31,10 @@ final class ChatRevocationTest extends MessagingTestCase
         $cy = $this->grantedUser('Cy', [ChatPermission::ReceiveInvitations, ChatPermission::ManageMembers]);
 
         $this->startUserRequestAs($bea->id);
-        $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$cy->id]));
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$cy->id]));
 
         $this->startUserRequestAs($this->owner->id);
-        $this->runOnBus(new RevokeEnvironmentAccess($bea->id, null));
+        $this->runOnBus(new RevokeEnvironmentAccessCommand($bea->id, null));
 
         $chat = Conversation::forInbox($inboxId);
         $members = $this->app->make(ChatInboxes::class)->activeIntervals(new ChatInbox($inboxId, 'Design'));
@@ -44,7 +44,7 @@ final class ChatRevocationTest extends MessagingTestCase
 
         $this->startUserRequestAs($bea->id);
         $this->expectException(InboxUnavailable::class);
-        $this->runOnBus(new PostChatMessage($inboxId, 'Still here?', 'bea-late'));
+        $this->runOnBus(new PostChatMessageCommand($inboxId, 'Still here?', 'bea-late'));
     }
 
     public function test_disabling_the_owner_of_a_chat_nobody_else_may_manage_closes_it(): void
@@ -53,10 +53,10 @@ final class ChatRevocationTest extends MessagingTestCase
         $dee = $this->grantedUser('Dee', [ChatPermission::ReceiveInvitations]);
 
         $this->startUserRequestAs($bea->id);
-        $inboxId = $this->runOnBus(new CreateGroupChat('Quiet', [$dee->id]));
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Quiet', [$dee->id]));
 
         $this->startUserRequestAs($this->owner->id);
-        $this->runOnBus(new DisableUser($bea->id));
+        $this->runOnBus(new DisableUserCommand($bea->id));
 
         $this->assertFalse(Conversation::forInbox($inboxId)->isOpen());
     }

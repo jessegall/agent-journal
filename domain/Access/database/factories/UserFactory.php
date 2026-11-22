@@ -7,7 +7,7 @@ namespace Domain\Access\Database\Factories;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\ProvisionActorDesk;
+use App\Desks\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
 use Domain\Access\Models\User;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -73,7 +73,7 @@ class UserFactory extends Factory
             Container::getInstance()->make(EntryDispatchers::class)->runAsJournal(
                 CommandEntry::HostControl,
                 'desk install',
-                new ProvisionActorDesk(ActorIdentity::of($user), $user->name),
+                new ProvisionActorDeskCommand(ActorIdentity::of($user), $user->name),
             );
         });
     }

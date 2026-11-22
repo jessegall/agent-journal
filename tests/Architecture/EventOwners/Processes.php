@@ -23,7 +23,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Processes/Handlers/ApproveRuleBundleHandler.php',
+            'app/Processes/Commands/ApproveRuleBundle/ApproveRuleBundleHandler.php',
         ],
     ],
     EvidenceInvalid::class => [
@@ -51,14 +51,14 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Processes/Handlers/RejectRuleProposalHandler.php',
+            'app/Processes/Commands/RejectRuleProposal/RejectRuleProposalHandler.php',
         ],
     ],
     RuleRetired::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Processes/Handlers/RetireCommandRuleHandler.php',
+            'app/Processes/Commands/RetireCommandRule/RetireCommandRuleHandler.php',
         ],
     ],
     RunChanged::class => [

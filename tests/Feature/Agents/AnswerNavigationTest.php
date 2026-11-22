@@ -7,9 +7,9 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\AbandonNavigation;
-use App\Agents\Commands\AnswerNavigation;
-use App\Agents\Commands\ProveNavigation;
+use App\Agents\Commands\AbandonNavigation\AbandonNavigationCommand;
+use App\Agents\Commands\AnswerNavigation\AnswerNavigationCommand;
+use App\Agents\Commands\ProveNavigation\ProveNavigationCommand;
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\NavigationCompletion;
@@ -101,8 +101,8 @@ final class AnswerNavigationTest extends TestCase
         $stranger = Agent::create('Helper', 'main-agent');
         $choose = NavigationAnswer::choose('GPT-6');
         $refused = [
-            'stale version' => [$this->main, new AnswerNavigation($navigation->id, 9, 7, $choose)],
-            'old screen' => [$this->main, new AnswerNavigation($navigation->id, 1, 6, $choose)],
+            'stale version' => [$this->main, new AnswerNavigationCommand($navigation->id, 9, 7, $choose)],
+            'old screen' => [$this->main, new AnswerNavigationCommand($navigation->id, 1, 6, $choose)],
             'free text' => [$this->main, $this->answer($navigation, NavigationAnswer::typeParameter('shell'))],
             'another agent' => [$stranger, $this->answer($navigation, NavigationAnswer::confirm('GPT-6'))],
         ];
@@ -140,7 +140,7 @@ final class AnswerNavigationTest extends TestCase
 
         $receipt = $this->asAgent(
             $this->main,
-            new ProveNavigation($navigation->id, $navigation->row_version, NavigationCompletion::Step, 'Set model'),
+            new ProveNavigationCommand($navigation->id, $navigation->row_version, NavigationCompletion::Step, 'Set model'),
         );
 
         $navigation->refresh();
@@ -160,15 +160,15 @@ final class AnswerNavigationTest extends TestCase
         $version = $navigation->row_version;
         $goal = NavigationCompletion::Goal;
         $refused = [
-            'empty' => [new ProveNavigation($navigation->id, $version, $goal, ' '), NavigationProofRefused::class],
+            'empty' => [new ProveNavigationCommand($navigation->id, $version, $goal, ' '), NavigationProofRefused::class],
             'on screen' => [
-                new ProveNavigation($navigation->id, $version, $goal, 'gpt-5'),
+                new ProveNavigationCommand($navigation->id, $version, $goal, 'gpt-5'),
                 NavigationProofRefused::class,
             ],
         ];
         $open = $this->raise($this->stalledScript(), 'raise-2');
         $refused['not answering'] = [
-            new ProveNavigation($open->id, $open->row_version, NavigationCompletion::Goal, 'GPT-6'),
+            new ProveNavigationCommand($open->id, $open->row_version, NavigationCompletion::Goal, 'GPT-6'),
             NavigationAnswerRefused::class,
         ];
 
@@ -183,7 +183,7 @@ final class AnswerNavigationTest extends TestCase
     {
         $navigation = $this->answered();
 
-        $this->asAgent($this->main, new AbandonNavigation($navigation->id, $navigation->row_version, 'no such model'));
+        $this->asAgent($this->main, new AbandonNavigationCommand($navigation->id, $navigation->row_version, 'no such model'));
 
         $navigation->refresh();
         $this->assertSame(
@@ -208,11 +208,11 @@ final class AnswerNavigationTest extends TestCase
         return NavigationRequest::query()->acrossActors()->findOrFail($navigation->id);
     }
 
-    private function answer(NavigationRequest $navigation, NavigationAnswer $answer): AnswerNavigation
+    private function answer(NavigationRequest $navigation, NavigationAnswer $answer): AnswerNavigationCommand
     {
         $generation = $navigation->screen->generation;
 
-        return new AnswerNavigation($navigation->id, $navigation->row_version, $generation, $answer);
+        return new AnswerNavigationCommand($navigation->id, $navigation->row_version, $generation, $answer);
     }
 
     /**

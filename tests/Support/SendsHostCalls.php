@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Support\EnrolledHost;
 use App\Bus\Contracts\Command;
@@ -29,7 +29,7 @@ trait SendsHostCalls
 
     private function enrolledHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHost('test host '.Str::random(6), [base_path()]));
+        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [base_path()]));
     }
 
     /**

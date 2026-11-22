@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportFailure;
+use App\Agents\Commands\ReportFailure\ReportFailureCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
@@ -18,7 +18,7 @@ final readonly class ReportFailureController
 {
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportFailure($host->hostId, $request->startKey(), $request->failure()));
+        $commands->run(new ReportFailureCommand($host->hostId, $request->startKey(), $request->failure()));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

@@ -17,7 +17,7 @@ use App\Profiles\Contracts\StartAccounts;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SlotSections;
 use App\Web\Exceptions\PrivateRecordMissing;
-use Domain\Chat\Commands\OpenPairChat;
+use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
@@ -199,7 +199,7 @@ final readonly class ChatWindowResolver implements PageResolver
 
     private function conversationWith(AgentOption $agent): ConversationData
     {
-        $chatInboxId = $this->commands->run(new OpenPairChat($agent->agentId));
+        $chatInboxId = $this->commands->run(new OpenPairChatCommand($agent->agentId));
 
         return $this->chats->pageFor($agent, $chatInboxId, $this->request->dockToken());
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers\Membership;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Chat\Commands\RemoveChatParticipant;
+use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
 use Domain\Chat\Data\ParticipantInput;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +23,7 @@ final readonly class RemoveParticipantController
         CommandBus $commands,
         Redirector $redirect,
     ): JsonResponse|RedirectResponse {
-        $commands->run(new RemoveChatParticipant($input->inboxId, $input->participant));
+        $commands->run(new RemoveChatParticipantCommand($input->inboxId, $input->participant));
 
         return $request->expectsJson()
             ? new JsonResponse(['inboxId' => $input->inboxId])

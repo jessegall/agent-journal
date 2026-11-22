@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Scripts\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\SaveProfileDraft;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Scripts\Calls\SaveProfileDraftCall;
 use App\Scripts\Data\ProfileDraftData;
 use App\Scripts\Readers\ProfileDraftReader;
@@ -20,7 +20,7 @@ final readonly class SaveProfileDraftController
         CommandBus $commands,
         ProfileDraftReader $drafts,
     ): ProfileDraftData {
-        $revision = $commands->run(new SaveProfileDraft(
+        $revision = $commands->run(new SaveProfileDraftCommand(
             $call->profileKey(),
             $call->expectedRevision,
             $call->scriptSource(),

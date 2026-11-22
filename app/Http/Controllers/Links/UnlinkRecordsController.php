@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Links;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Links\LinkRecordsRequest;
-use App\Records\Commands\UnlinkRecords;
+use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +20,7 @@ final readonly class UnlinkRecordsController
         RecordResolver $records,
         Redirector $redirect,
     ): JsonResponse|RedirectResponse {
-        $commands->run(new UnlinkRecords($request->source($records), $request->target($records)));
+        $commands->run(new UnlinkRecordsCommand($request->source($records), $request->target($records)));
 
         if (! $request->expectsJson()) {
             return $redirect->back(303);

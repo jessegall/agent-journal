@@ -10,7 +10,7 @@ use App\Contracts\Attributes\DecodesAnyJson;
 use App\Files\Contracts\Files;
 use App\Files\Exceptions\FileMissing;
 use App\Files\Exceptions\FileUnreadable;
-use App\Profiles\Commands\SaveProfileDraft;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Profiles\Exceptions\ProfileDraftRefused;
 use App\Profiles\Values\DraftExpectations;
 use App\Profiles\Values\ProfileKey;
@@ -32,7 +32,7 @@ final class ImportProfileDraftCommand extends Command
         $source = self::read($files, (string) $this->argument('source'));
         $definitions = self::readCommands($files, (string) $this->argument('commands'));
 
-        $revision = $commands->run(new SaveProfileDraft(
+        $revision = $commands->run(new SaveProfileDraftCommand(
             $profile,
             $expected->revisionOf($profile),
             ScriptSource::fromDefinitions($source, $definitions),

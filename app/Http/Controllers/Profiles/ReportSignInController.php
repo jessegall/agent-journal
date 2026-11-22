@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Profiles;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SignInReportRequest;
-use App\Profiles\Commands\ReportSignIn;
+use App\Profiles\Commands\ReportSignIn\ReportSignInCommand;
 use Illuminate\Http\Response;
 
 /**
@@ -17,7 +17,7 @@ final readonly class ReportSignInController
 {
     public function __invoke(SignInReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportSignIn(
+        $commands->run(new ReportSignInCommand(
             $host->hostId,
             $request->attemptId(),
             $request->generation(),

@@ -12,8 +12,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Drivers\Enums\HookDriver;
-use App\Profiles\Commands\CompleteSignIn;
-use App\Profiles\Commands\SubmitSignInCode;
+use App\Profiles\Commands\CompleteSignIn\CompleteSignInCommand;
+use App\Profiles\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Exceptions\SignInAnswerRefused;
@@ -132,7 +132,7 @@ final class SignInSecretTest extends TestCase
         $challenges = $this->app->make(SignInChallenges::class);
         $attempt = $this->attempt(HookDriver::ClaudeCode, SignInMethod::OAuth, 'request-1');
         $answer = fn (string $code, string $key) => $this->app->make(CommandBus::class)
-            ->run(new SubmitSignInCode($attempt->id, $code, $key));
+            ->run(new SubmitSignInCodeCommand($attempt->id, $code, $key));
 
         $this->assertThrows(fn () => $answer('1234', 'answer-1'), SignInAnswerRefused::class);
         $attempt->refresh()->waitForUser();
@@ -189,7 +189,7 @@ final class SignInSecretTest extends TestCase
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new CompleteSignIn($attempt->id, $attempt->refresh()->generation, SignInIdentity::unproved()),
+            new CompleteSignInCommand($attempt->id, $attempt->refresh()->generation, SignInIdentity::unproved()),
         );
 
         return $attempt;
@@ -209,6 +209,6 @@ final class SignInSecretTest extends TestCase
     private function submit(SignInAttempt $attempt, string $text): void
     {
         $attempt->waitForUser();
-        $this->app->make(CommandBus::class)->run(new SubmitSignInCode($attempt->id, $text, 'answer-'.bin2hex(random_bytes(4))));
+        $this->app->make(CommandBus::class)->run(new SubmitSignInCodeCommand($attempt->id, $text, 'answer-'.bin2hex(random_bytes(4))));
     }
 }

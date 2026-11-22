@@ -6,7 +6,7 @@ namespace App\Numbers\Console;
 
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Numbers\Commands\InstallNumbers;
+use App\Numbers\Commands\InstallNumbers\InstallNumbersCommand as InstallNumbers;
 use Illuminate\Console\Command;
 
 final class InstallNumbersCommand extends Command

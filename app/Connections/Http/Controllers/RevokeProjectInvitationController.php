@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RevokeProjectInvitation;
+use App\Connections\Commands\RevokeProjectInvitation\RevokeProjectInvitationCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -24,7 +24,7 @@ final readonly class RevokeProjectInvitationController
         Redirector $redirect,
     ): Response|RedirectResponse {
         $seenVersion = $request->filled('seenVersion') ? $request->integer('seenVersion') : null;
-        $commands->run(new RevokeProjectInvitation($invitation, $seenVersion));
+        $commands->run(new RevokeProjectInvitationCommand($invitation, $seenVersion));
 
         return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
     }

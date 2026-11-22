@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Settings\Support;
 
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Settings\Commands\DisableSettingGroup;
-use App\Settings\Commands\EnableSettingGroup;
-use App\Settings\Commands\ResetSetting;
-use App\Settings\Commands\ResetSettingGroup;
-use App\Settings\Commands\SetBooleanSetting;
-use App\Settings\Commands\SetDecimalSetting;
-use App\Settings\Commands\SetIntegerChoice;
-use App\Settings\Commands\SetIntegerSetting;
-use App\Settings\Commands\SetStringChoice;
-use App\Settings\Commands\SetStringSetting;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Settings\Commands\ResetSetting\ResetSettingCommand;
+use App\Settings\Commands\ResetSettingGroup\ResetSettingGroupCommand;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Commands\SetDecimalSetting\SetDecimalSettingCommand;
+use App\Settings\Commands\SetIntegerChoice\SetIntegerChoiceCommand;
+use App\Settings\Commands\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Settings\Commands\SetStringChoice\SetStringChoiceCommand;
+use App\Settings\Commands\SetStringSetting\SetStringSettingCommand;
 use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\Setting;
 use App\Settings\Contracts\SettingCommands;
@@ -44,33 +44,33 @@ final readonly class RegisteredSettingCommands implements SettingCommands
     /**
      * @throws SettingHandleUnknown
      */
-    public function string(StringSetting $setting, string $input, int $expectedRevision): SetStringSetting
+    public function string(StringSetting $setting, string $input, int $expectedRevision): SetStringSettingCommand
     {
-        return new SetStringSetting($this->settingReference($setting), $input, $expectedRevision);
+        return new SetStringSettingCommand($this->settingReference($setting), $input, $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function boolean(BooleanSetting $setting, bool $input, int $expectedRevision): SetBooleanSetting
+    public function boolean(BooleanSetting $setting, bool $input, int $expectedRevision): SetBooleanSettingCommand
     {
-        return new SetBooleanSetting($this->settingReference($setting), $input, $expectedRevision);
+        return new SetBooleanSettingCommand($this->settingReference($setting), $input, $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function integer(IntegerSetting $setting, int $input, int $expectedRevision): SetIntegerSetting
+    public function integer(IntegerSetting $setting, int $input, int $expectedRevision): SetIntegerSettingCommand
     {
-        return new SetIntegerSetting($this->settingReference($setting), $input, $expectedRevision);
+        return new SetIntegerSettingCommand($this->settingReference($setting), $input, $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function decimal(DecimalSetting $setting, Decimal $input, int $expectedRevision): SetDecimalSetting
+    public function decimal(DecimalSetting $setting, Decimal $input, int $expectedRevision): SetDecimalSettingCommand
     {
-        return new SetDecimalSetting($this->settingReference($setting), $input, $expectedRevision);
+        return new SetDecimalSettingCommand($this->settingReference($setting), $input, $expectedRevision);
     }
 
     /**
@@ -78,9 +78,9 @@ final readonly class RegisteredSettingCommands implements SettingCommands
      *
      * @throws SettingHandleUnknown
      */
-    public function stringChoice(ChoiceSetting $setting, string $input, int $expectedRevision): SetStringChoice
+    public function stringChoice(ChoiceSetting $setting, string $input, int $expectedRevision): SetStringChoiceCommand
     {
-        return new SetStringChoice($this->settingReference($setting), $input, $expectedRevision);
+        return new SetStringChoiceCommand($this->settingReference($setting), $input, $expectedRevision);
     }
 
     /**
@@ -88,9 +88,9 @@ final readonly class RegisteredSettingCommands implements SettingCommands
      *
      * @throws SettingHandleUnknown
      */
-    public function integerChoice(ChoiceSetting $setting, int $input, int $expectedRevision): SetIntegerChoice
+    public function integerChoice(ChoiceSetting $setting, int $input, int $expectedRevision): SetIntegerChoiceCommand
     {
-        return new SetIntegerChoice($this->settingReference($setting), $input, $expectedRevision);
+        return new SetIntegerChoiceCommand($this->settingReference($setting), $input, $expectedRevision);
     }
 
     /**
@@ -104,7 +104,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
      * @throws SettingHandleUnknown
      * @throws SettingValueInvalid
      */
-    public function enumString(EnumSetting $setting, BackedEnum $input, int $expectedRevision): SetStringChoice
+    public function enumString(EnumSetting $setting, BackedEnum $input, int $expectedRevision): SetStringChoiceCommand
     {
         $reference = $this->settingReference($setting);
         $backing = $input->value;
@@ -113,7 +113,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 
-        return new SetStringChoice($reference, $backing, $expectedRevision);
+        return new SetStringChoiceCommand($reference, $backing, $expectedRevision);
     }
 
     /**
@@ -127,7 +127,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
      * @throws SettingHandleUnknown
      * @throws SettingValueInvalid
      */
-    public function enumInteger(EnumSetting $setting, BackedEnum $input, int $expectedRevision): SetIntegerChoice
+    public function enumInteger(EnumSetting $setting, BackedEnum $input, int $expectedRevision): SetIntegerChoiceCommand
     {
         $reference = $this->settingReference($setting);
         $backing = $input->value;
@@ -136,39 +136,39 @@ final readonly class RegisteredSettingCommands implements SettingCommands
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 
-        return new SetIntegerChoice($reference, $backing, $expectedRevision);
+        return new SetIntegerChoiceCommand($reference, $backing, $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function reset(Setting $setting, int $expectedRevision): ResetSetting
+    public function reset(Setting $setting, int $expectedRevision): ResetSettingCommand
     {
-        return new ResetSetting($this->settingReference($setting), $expectedRevision);
+        return new ResetSettingCommand($this->settingReference($setting), $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function enable(ToggleGroup $group, int $expectedRevision): EnableSettingGroup
+    public function enable(ToggleGroup $group, int $expectedRevision): EnableSettingGroupCommand
     {
-        return new EnableSettingGroup($this->groupReference($group), $expectedRevision);
+        return new EnableSettingGroupCommand($this->groupReference($group), $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function disable(ToggleGroup $group, int $expectedRevision): DisableSettingGroup
+    public function disable(ToggleGroup $group, int $expectedRevision): DisableSettingGroupCommand
     {
-        return new DisableSettingGroup($this->groupReference($group), $expectedRevision);
+        return new DisableSettingGroupCommand($this->groupReference($group), $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function resetGroup(ToggleGroup|SettingGroup $group, int $expectedRevision): ResetSettingGroup
+    public function resetGroup(ToggleGroup|SettingGroup $group, int $expectedRevision): ResetSettingGroupCommand
     {
-        return new ResetSettingGroup($this->groupReference($group), $expectedRevision);
+        return new ResetSettingGroupCommand($this->groupReference($group), $expectedRevision);
     }
 
     /**

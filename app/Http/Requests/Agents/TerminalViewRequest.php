@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Commands\CloseTerminalView;
-use App\Agents\Commands\OpenTerminalView;
-use App\Agents\Commands\RenewTerminalView;
+use App\Agents\Commands\CloseTerminalView\CloseTerminalViewCommand;
+use App\Agents\Commands\OpenTerminalView\OpenTerminalViewCommand;
+use App\Agents\Commands\RenewTerminalView\RenewTerminalViewCommand;
 use App\Agents\Models\TerminalView;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -30,19 +30,19 @@ final class TerminalViewRequest extends FormRequest
         ];
     }
 
-    public function openCommand(): OpenTerminalView
+    public function openCommand(): OpenTerminalViewCommand
     {
-        return new OpenTerminalView($this->agentId(), $this->string('requestId')->toString(), $this->intervalMs());
+        return new OpenTerminalViewCommand($this->agentId(), $this->string('requestId')->toString(), $this->intervalMs());
     }
 
-    public function renewCommand(): RenewTerminalView
+    public function renewCommand(): RenewTerminalViewCommand
     {
-        return new RenewTerminalView($this->agentId(), $this->readInterestId());
+        return new RenewTerminalViewCommand($this->agentId(), $this->readInterestId());
     }
 
-    public function closeCommand(): CloseTerminalView
+    public function closeCommand(): CloseTerminalViewCommand
     {
-        return new CloseTerminalView($this->agentId(), $this->readInterestId());
+        return new CloseTerminalViewCommand($this->agentId(), $this->readInterestId());
     }
 
     public function agentId(): string

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Actors\Support\ActorIdentity;
-use App\Sharing\Commands\PruneShareAudit;
+use App\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
@@ -74,7 +74,7 @@ final class PruneShareAuditTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        return $this->throughEntry(new PruneShareAudit());
+        return $this->throughEntry(new PruneShareAuditCommand());
     }
 
     /**

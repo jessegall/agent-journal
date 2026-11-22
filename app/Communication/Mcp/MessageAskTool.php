@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Mcp;
 
 use App\Bus\Contracts\Command;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[VisibleToProfiles]
 #[Name('messages_ask')]
 #[IsDestructive(false)]
-#[Dispatches(AskMessage::class)]
+#[Dispatches(AskMessageCommand::class)]
 #[Description('Ask a question from one of your inboxes to another inbox; it waits until someone there answers.')]
 final class MessageAskTool extends MessageWriteTool
 {
@@ -34,7 +34,7 @@ final class MessageAskTool extends MessageWriteTool
 
     protected function command(ToolArguments $arguments): Command
     {
-        return new AskMessage(
+        return new AskMessageCommand(
             $arguments->text('source_inbox_id'),
             $arguments->text('destination_inbox_id'),
             $arguments->text('body'),

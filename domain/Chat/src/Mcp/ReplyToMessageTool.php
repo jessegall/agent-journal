@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp;
 
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('messages_reply')]
-#[Dispatches(ReplyToMessage::class)]
+#[Dispatches(ReplyToMessageCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 #[Description('Reply to a message. A waiting question is answered. Optionally require the state version you read.')]
 final class ReplyToMessageTool extends JournalWriteTool
@@ -34,9 +34,9 @@ final class ReplyToMessageTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): ReplyToMessage
+    protected function command(ToolArguments $arguments): ReplyToMessageCommand
     {
-        return new ReplyToMessage(
+        return new ReplyToMessageCommand(
             $arguments->ulid('message_id'),
             $arguments->optionalWholeNumber('state_version'),
             $arguments->text('body'),

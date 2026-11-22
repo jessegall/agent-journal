@@ -7,8 +7,8 @@ namespace Domain\Tasks\Tests\Feature\Http;
 use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
@@ -62,9 +62,9 @@ final class TaskActionsPageTest extends TestCase
     {
         $this->startUserRequestAs($this->owner->id);
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new StartTask($this->task->id));
-        $bus->run(new BlockTask($this->task->id, 1, 'Waits.'));
-        $bus->run(new StartTask($this->task->id));
+        $bus->run(new StartTaskCommand($this->task->id));
+        $bus->run(new BlockTaskCommand($this->task->id, 1, 'Waits.'));
+        $bus->run(new StartTaskCommand($this->task->id));
 
         $this->act('cancel', ['reason' => 'Dropped.', 'revision' => 1, 'run' => 1])->assertSessionHasErrors();
         $this->act('block', ['run' => 1, 'reason' => 'From an older tab.'])->assertSessionHasErrors();

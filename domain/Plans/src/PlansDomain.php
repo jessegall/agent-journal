@@ -53,10 +53,10 @@ use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Assignments\PlanTaskPoolFactory;
-use Domain\Plans\Commands\AssignPlanWork;
-use Domain\Plans\Commands\ReassignPlanWork;
-use Domain\Plans\Commands\StartPlan;
-use Domain\Plans\Commands\UnassignPlanWork;
+use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
+use Domain\Plans\Commands\ReassignPlanWork\ReassignPlanWorkCommand;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
+use Domain\Plans\Commands\UnassignPlanWork\UnassignPlanWorkCommand;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanReviewState;
@@ -163,10 +163,10 @@ final class PlansDomain extends Domain implements
                 PhaseDetails::class,
             )
             ->commands(
-                StartPlan::class,
-                AssignPlanWork::class,
-                ReassignPlanWork::class,
-                UnassignPlanWork::class,
+                StartPlanCommand::class,
+                AssignPlanWorkCommand::class,
+                ReassignPlanWorkCommand::class,
+                UnassignPlanWorkCommand::class,
             )
             ->exceptions(PlanMissing::class, PhaseMissing::class, StartDenied::class)
             ->build();
@@ -228,7 +228,7 @@ final class PlansDomain extends Domain implements
      */
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands', Command::class);
+        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function skills(): array

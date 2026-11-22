@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\CreateAgent;
+use App\Agents\Commands\CreateAgent\CreateAgentCommand;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
@@ -14,7 +14,7 @@ use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
- * Core creates helper agents through CreateAgent, and refuses a blank name.
+ * Core creates helper agents through CreateAgentCommand, and refuses a blank name.
  */
 final class AgentCreationTest extends TestCase
 {
@@ -27,8 +27,8 @@ final class AgentCreationTest extends TestCase
     {
         $bus = $this->app->make(CommandBus::class);
 
-        $resolver = $bus->run(new CreateAgent('Researcher', 'read-only-helper'))->id;
-        $writer = $bus->run(new CreateAgent('Builder', 'writing-helper'))->id;
+        $resolver = $bus->run(new CreateAgentCommand('Researcher', 'read-only-helper'))->id;
+        $writer = $bus->run(new CreateAgentCommand('Builder', 'writing-helper'))->id;
         $labels = $this->app->make(AgentResolver::class)->labelsFor([$resolver, $writer]);
 
         $this->assertSame(['Researcher', 'Builder'], [$labels[$resolver]->name, $labels[$writer]->name]);
@@ -43,7 +43,7 @@ final class AgentCreationTest extends TestCase
         $agents = Agent::query()->count();
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new CreateAgent('   ', 'writing-helper')),
+            fn () => $this->app->make(CommandBus::class)->run(new CreateAgentCommand('   ', 'writing-helper')),
             CommandInputInvalid::class,
             self::NAME_REQUIRED,
         );

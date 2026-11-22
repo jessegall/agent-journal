@@ -7,12 +7,12 @@ namespace App\Sharing\Support;
 use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Sharing\Commands\ClaimGatewayOperation;
-use App\Sharing\Commands\ExpireShares;
-use App\Sharing\Commands\PruneShareAudit;
-use App\Sharing\Commands\RecordGatewayHealth;
-use App\Sharing\Commands\RecordGatewayOutcome;
-use App\Sharing\Commands\ReopenSharedGateways;
+use App\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Sharing\Commands\ExpireShares\ExpireSharesCommand;
+use App\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
+use App\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
+use App\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use App\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\GatewayOutcome;
@@ -50,7 +50,7 @@ final class SharingSupervisor
      */
     public function begin(): int
     {
-        return $this->asSystem(new ReopenSharedGateways($this->runId));
+        return $this->asSystem(new ReopenSharedGatewaysCommand($this->runId));
     }
 
     /**
@@ -61,7 +61,7 @@ final class SharingSupervisor
     public function work(): bool
     {
         $this->assertNoTransaction();
-        $claim = $this->asSystem(new ClaimGatewayOperation($this->runId));
+        $claim = $this->asSystem(new ClaimGatewayOperationCommand($this->runId));
 
         if ($claim === null) {
             return false;
@@ -76,7 +76,7 @@ final class SharingSupervisor
         ) : $this->close($gateway, $endpoint);
 
         try {
-            $this->asSystem(RecordGatewayOutcome::of($claim->operation, $outcome));
+            $this->asSystem(RecordGatewayOutcomeCommand::of($claim->operation, $outcome));
         } catch (GatewayLeaseRefused|GatewayRunStale $lost) {
             $gateway->close($endpoint);
 
@@ -96,7 +96,7 @@ final class SharingSupervisor
             $healthy = $this->gateways->healthOf($endpoint)->isHealthy();
 
             $this->asSystem(
-                new RecordGatewayHealth(
+                new RecordGatewayHealthCommand(
                     $this->runId,
                     $endpoint->share_gateway_configuration_id,
                     $endpoint->endpoint_version,
@@ -112,7 +112,7 @@ final class SharingSupervisor
     public function expire(): void
     {
         do {
-            $expiry = $this->asSystem(new ExpireShares());
+            $expiry = $this->asSystem(new ExpireSharesCommand());
         } while ($expiry->hasMore);
     }
 
@@ -122,7 +122,7 @@ final class SharingSupervisor
     public function pruneAudit(): void
     {
         do {
-            $pruning = $this->asSystem(new PruneShareAudit());
+            $pruning = $this->asSystem(new PruneShareAuditCommand());
         } while ($pruning->hasMore);
     }
 

@@ -33,8 +33,8 @@
             {"file": "domain/Tasks/src/Listeners/PushTaskState.php"},
             {"file": "domain/Plans/src/Listeners/PushPlanState.php"},
             {"file": "domain/Sequences/src/Listeners/PushSequenceState.php"},
-            {"file": "domain/Tasks/src/Handlers/ResumeTaskRunHandler.php"},
-            {"file": "app/Supervision/Handlers/AskSupervisorHandler.php"},
+            {"file": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php"},
+            {"file": "app/Supervision/Commands/AskSupervisor/AskSupervisorHandler.php"},
             {"file": "tests/**"}
         ]
     },

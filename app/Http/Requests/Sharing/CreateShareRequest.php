@@ -6,7 +6,7 @@ namespace App\Http\Requests\Sharing;
 
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Sharing\Concerns\ReadsConfirmedPreview;
-use App\Sharing\Commands\CreateShare;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
 use App\Sharing\Support\ShareDuration;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -31,9 +31,9 @@ final class CreateShareRequest extends FormRequest
         ];
     }
 
-    public function command(): CreateShare
+    public function command(): CreateShareCommand
     {
-        return new CreateShare(
+        return new CreateShareCommand(
             $this->previewId(),
             $this->previewChecksum(),
             $this->minutesUntilExpiry(),

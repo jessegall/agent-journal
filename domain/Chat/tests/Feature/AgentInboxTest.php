@@ -9,7 +9,7 @@ use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\RequestSource;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Exceptions\MessageMissing;
@@ -91,7 +91,7 @@ final class AgentInboxTest extends TestCase
         $this->assertNull($last->continuation);
         $this->assertNull($question->refresh()->read_at);
 
-        $replyId = $this->runOnBus(new ReplyToMessage($question->id, 0, 'An answer.'));
+        $replyId = $this->runOnBus(new ReplyToMessageCommand($question->id, 0, 'An answer.'));
         $reply = $reader->context($replyId, null);
         $ancestor = $reader->context($replyId, $reply->continuation);
 

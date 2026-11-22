@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RevokeProjectBindings;
+use App\Connections\Commands\RevokeProjectBindings\RevokeProjectBindingsCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -30,7 +30,7 @@ final readonly class RevokeProjectBindingsController
     ): RedirectResponse {
         $request->validate(['bindings' => ['required', 'array', 'min:1', 'max:50'], 'bindings.*' => ['ulid']]);
         $bindingIds = array_values(array_map(strval(...), $request->array('bindings')));
-        $revoked = $commands->run(new RevokeProjectBindings($bindingIds));
+        $revoked = $commands->run(new RevokeProjectBindingsCommand($bindingIds));
         $inertia->flash(self::REVOKED_BINDINGS, $revoked->outcomesByBindingId());
 
         return $redirect->back(303);

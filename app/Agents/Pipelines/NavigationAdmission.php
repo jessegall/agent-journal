@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Pipelines;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\RaiseNavigation;
+use App\Agents\Commands\RaiseNavigation\RaiseNavigationCommand;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Support\NavigationDispatch;
@@ -16,7 +16,7 @@ use App\Agents\Support\NavigationDispatch;
 final readonly class NavigationAdmission
 {
     public function __construct(
-        public RaiseNavigation $command,
+        public RaiseNavigationCommand $command,
         public AgentRuntime $runtime,
         public DriverRequest $request,
         public ActorIdentity $owner,

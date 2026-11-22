@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\ProveReader;
+use App\Processes\Commands\ProveReader\ProveReaderCommand;
 use App\Processes\Enums\RequestState;
 use App\Processes\Exceptions\ReaderProofFailed;
 use App\Processes\Exceptions\RevisionImmutable;
@@ -75,7 +75,7 @@ final class ReaderProofTest extends TestCase
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
         $reader = $this->reader();
 
-        $proofId = $this->runAsAgent(new ProveReader($this->requestId, $reader, [$passed, $findings]));
+        $proofId = $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]));
 
         $proof = ReaderProof::query()->findOrFail($proofId);
         $this->assertSame([0, 1], array_map(fn ($branch) => $branch->status, $proof->proven_branches));
@@ -90,7 +90,7 @@ final class ReaderProofTest extends TestCase
     {
         $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
-        $this->runAsAgent(new ProveReader($this->requestId, $this->reader(), [$passed, $findings]));
+        $this->runAsAgent(new ProveReaderCommand($this->requestId, $this->reader(), [$passed, $findings]));
 
         $changed = ReaderRevision::query()->findOrFail($this->reader());
 
@@ -103,7 +103,7 @@ final class ReaderProofTest extends TestCase
     private function failedProof(string $reader, array $runs): ReaderProofFailed
     {
         try {
-            $this->runAsAgent(new ProveReader($this->requestId, $reader, $runs));
+            $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, $runs));
         } catch (ReaderProofFailed $refusal) {
             return $refusal;
         }

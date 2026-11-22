@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Skills\Writing;
 
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Numbers\Commands\InstallNumbers;
+use App\Numbers\Commands\InstallNumbers\InstallNumbersCommand;
 use App\Skills\Contracts\SkillConditionEvaluator;
 use App\Skills\Values\ConditionResult;
 use App\Skills\Values\SkillContext;
@@ -23,7 +23,7 @@ final readonly class WritesDuringEvaluation implements SkillConditionEvaluator
 
     public function evaluate(SkillContext $context, Data $parameters): ConditionResult
     {
-        $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'number install', new InstallNumbers());
+        $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'number install', new InstallNumbersCommand());
 
         return ConditionResult::match('wrote');
     }

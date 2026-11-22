@@ -8,7 +8,7 @@ use App\Agents\Events\LaunchCancelled;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
-use Domain\Helpers\Commands\CancelLaunchedHelperJob;
+use Domain\Helpers\Commands\CancelLaunchedHelperJob\CancelLaunchedHelperJobCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 
@@ -29,7 +29,7 @@ final readonly class CancelLaunchedJob implements Listener
         $this->journal->runAsJournal(
             CommandEntry::Application,
             HelperLifecycleEntry::NAME,
-            new CancelLaunchedHelperJob($event->work->id),
+            new CancelLaunchedHelperJobCommand($event->work->id),
         );
     }
 }

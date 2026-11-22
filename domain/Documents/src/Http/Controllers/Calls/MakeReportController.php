@@ -9,7 +9,7 @@ use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordResolver;
 use Domain\Documents\Calls\MakeReportCall;
 use Domain\Documents\Calls\RecordFiled;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 
 /**
  * Files a report and answers its number and label.
@@ -23,7 +23,7 @@ final readonly class MakeReportController
             $call->relatedRecords,
         );
 
-        $created = $commands->run(new CreateReport(
+        $created = $commands->run(new CreateReportCommand(
             $call->title,
             $call->abstract,
             $call->body,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Http\Requests;
 
-use App\Agents\Commands\MergeReviewedWork;
+use App\Agents\Commands\MergeReviewedWork\MergeReviewedWorkCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -23,8 +23,8 @@ final class ApproveMergeAskRequest extends FormRequest
         ];
     }
 
-    public function command(): MergeReviewedWork
+    public function command(): MergeReviewedWorkCommand
     {
-        return new MergeReviewedWork($this->string('decisionId')->toString(), $this->integer('expectedVersion'));
+        return new MergeReviewedWorkCommand($this->string('decisionId')->toString(), $this->integer('expectedVersion'));
     }
 }

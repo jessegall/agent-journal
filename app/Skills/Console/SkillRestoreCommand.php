@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Console;
 
 use App\Bus\Contracts\CommandBus;
-use App\Skills\Commands\RestoreSkill;
+use App\Skills\Commands\RestoreSkill\RestoreSkillCommand;
 use App\Skills\Console\Concerns\PrintsSkillRefusals;
 use App\Skills\Support\SkillAuthoring;
 use Illuminate\Console\Command;
@@ -33,7 +33,7 @@ final class SkillRestoreCommand extends Command
 
             return $console->savedLines(
                 $commands->run(
-                    new RestoreSkill(
+                    new RestoreSkillCommand(
                         $skill->id,
                         (int) $this->option('revision'),
                         (int) $this->option('expected-revision'),

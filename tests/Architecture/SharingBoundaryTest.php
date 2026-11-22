@@ -8,22 +8,22 @@ use App\Bus\Support\CommandRegistry;
 use App\CoreApi;
 use App\CoreCommands;
 use App\Reflection\Support\Reflector;
-use App\Sharing\Commands\ApproveShareRequest;
-use App\Sharing\Commands\ClaimGatewayOperation;
-use App\Sharing\Commands\ConfigureShareGateway;
-use App\Sharing\Commands\CreateShare;
-use App\Sharing\Commands\DisableShareGateway;
-use App\Sharing\Commands\ExpireShares;
-use App\Sharing\Commands\PruneShareAudit;
-use App\Sharing\Commands\ReadShare;
-use App\Sharing\Commands\RecordGatewayHealth;
-use App\Sharing\Commands\RecordGatewayOutcome;
-use App\Sharing\Commands\RefreshShareScope;
-use App\Sharing\Commands\ReopenSharedGateways;
-use App\Sharing\Commands\RequestShare;
-use App\Sharing\Commands\RetryShare;
-use App\Sharing\Commands\RevokeShare;
-use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
+use App\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
+use App\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
+use App\Sharing\Commands\ExpireShares\ExpireSharesCommand;
+use App\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
+use App\Sharing\Commands\ReadShare\ReadShareCommand;
+use App\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
+use App\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use App\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
+use App\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
+use App\Sharing\Commands\RequestShare\RequestShareCommand;
+use App\Sharing\Commands\RetryShare\RetryShareCommand;
+use App\Sharing\Commands\RevokeShare\RevokeShareCommand;
+use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Contracts\ShareGatewayProvider;
@@ -56,25 +56,25 @@ final class SharingBoundaryTest extends TestCase
      * The commands an owner or agent calls; every other sharing command is the System's own.
      */
     private const array ENTRY_COMMANDS = [
-        SaveSharePreview::class,
-        CreateShare::class,
-        RequestShare::class,
-        ApproveShareRequest::class,
-        RevokeShare::class,
-        RefreshShareScope::class,
-        RetryShare::class,
-        ConfigureShareGateway::class,
-        DisableShareGateway::class,
+        SaveSharePreviewCommand::class,
+        CreateShareCommand::class,
+        RequestShareCommand::class,
+        ApproveShareRequestCommand::class,
+        RevokeShareCommand::class,
+        RefreshShareScopeCommand::class,
+        RetryShareCommand::class,
+        ConfigureShareGatewayCommand::class,
+        DisableShareGatewayCommand::class,
     ];
 
     private const array SYSTEM_COMMANDS = [
-        ReadShare::class,
-        ExpireShares::class,
-        ClaimGatewayOperation::class,
-        RecordGatewayOutcome::class,
-        RecordGatewayHealth::class,
-        ReopenSharedGateways::class,
-        PruneShareAudit::class,
+        ReadShareCommand::class,
+        ExpireSharesCommand::class,
+        ClaimGatewayOperationCommand::class,
+        RecordGatewayOutcomeCommand::class,
+        RecordGatewayHealthCommand::class,
+        ReopenSharedGatewaysCommand::class,
+        PruneShareAuditCommand::class,
     ];
 
     private const array SEAMS = [
@@ -151,7 +151,7 @@ final class SharingBoundaryTest extends TestCase
             ...self::SYSTEM_COMMANDS,
             ReadPermit::class,
             ...$this->classesIn('Models'),
-            ...$this->classesIn('Handlers'),
+            ...$this->handlers(),
             ...$this->classesIn('Actions'),
         ];
 
@@ -183,6 +183,17 @@ final class SharingBoundaryTest extends TestCase
         }
 
         return $files;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function handlers(): array
+    {
+        return array_map(
+            fn (string $file) => 'App\\Sharing\\Commands\\'.basename(dirname($file)).'\\'.basename($file, '.php'),
+            glob(app_path('Sharing/Commands/*/*Handler.php')) ?: [],
+        );
     }
 
     /**

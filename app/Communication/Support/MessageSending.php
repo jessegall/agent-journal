@@ -11,8 +11,8 @@ use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Exceptions\SessionOutdated;
 use App\Bus\Support\AcceptedReceipt;
-use App\Communication\Commands\AskMessage;
-use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Exceptions\AnswerImpossible;
@@ -37,7 +37,7 @@ final readonly class MessageSending
         private AgentDirectory $agents,
     ) {}
 
-    public function send(SendMessage $command): string
+    public function send(SendMessageCommand $command): string
     {
         return $this->deliver(
             $command->sourceInboxId,
@@ -55,7 +55,7 @@ final readonly class MessageSending
     /**
      * @throws SessionOutdated when the user saw a session the agent no longer runs
      */
-    public function ask(AskMessage $command): string
+    public function ask(AskMessageCommand $command): string
     {
         if ($command->seenSession !== null) {
             $seen = $command->seenSession;

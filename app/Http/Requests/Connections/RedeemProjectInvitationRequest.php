@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Connections;
 
-use App\Connections\Commands\RedeemProjectInvitation;
+use App\Connections\Commands\RedeemProjectInvitation\RedeemProjectInvitationCommand;
 use App\Connections\Values\BindingFolder;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -36,9 +36,9 @@ final class RedeemProjectInvitationRequest extends FormRequest
         ];
     }
 
-    public function command(): RedeemProjectInvitation
+    public function command(): RedeemProjectInvitationCommand
     {
-        return new RedeemProjectInvitation(
+        return new RedeemProjectInvitationCommand(
             $this->string('ticket')->toString(),
             $this->string('hostCredential')->toString(),
             $this->string('projectLabel')->toString(),

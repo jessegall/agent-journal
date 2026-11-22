@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
 use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\Message;
@@ -44,7 +44,7 @@ final class MessageEventsTest extends MessagingTestCase
     {
         $this->assertThrows(fn () => $this->ownerSends((string) Str::ulid(), 'Nowhere.'), InboxUnavailable::class);
         $key = (string) Str::ulid();
-        $command = new SendMessage($this->ownerInboxId(), $this->inboxIdOf($this->builder), 'Once.');
+        $command = new SendMessageCommand($this->ownerInboxId(), $this->inboxIdOf($this->builder), 'Once.');
 
         $first = $this->runOnBus($command, $key);
         $this->asOwner();

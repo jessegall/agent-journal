@@ -9,7 +9,7 @@ use App\Agents\Models\SessionPolicy;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
-use App\Hooks\Commands\RecordStopResults;
+use App\Hooks\Commands\RecordStopResults\RecordStopResultsCommand;
 use App\Hooks\Enums\StopResultType;
 use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\StopAttempt;
@@ -89,7 +89,7 @@ final class SessionInspectionTest extends TestCase
         $attempt = StopAttempt::query()->withoutGlobalScopes()->where('stop_id', 'stop-1')->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopResults('host-1', $attempt->id, $attempt->policy_digest, 0, [
+        $this->asSystem(new RecordStopResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
             new StopResultReport(
                 $condition->key,
                 $condition->definitionHash(),

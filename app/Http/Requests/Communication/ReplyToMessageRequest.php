@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class ReplyToMessageRequest extends FormRequest
@@ -21,9 +21,9 @@ final class ReplyToMessageRequest extends FormRequest
         ];
     }
 
-    public function command(): ReplyToMessage
+    public function command(): ReplyToMessageCommand
     {
-        return new ReplyToMessage(
+        return new ReplyToMessageCommand(
             $this->string('messageId')->toString(),
             $this->integer('expectedStateVersion'),
             $this->string('body')->toString(),

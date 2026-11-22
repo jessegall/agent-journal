@@ -11,7 +11,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Plan;
-use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\ActsAsActors;
@@ -77,8 +77,8 @@ final class PlanToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.task_ids', [$build->id]);
         $this->actAs(ActorContext::forUser($this->ownerId));
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new FinishTask($build->id, 0, 'Done.'));
-        $bus->run(new FinishTask($check->id, 0, 'Done.'));
+        $bus->run(new FinishTaskCommand($build->id, 0, 'Done.'));
+        $bus->run(new FinishTaskCommand($check->id, 0, 'Done.'));
 
         $read = $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])
             ->assertJsonPath('result.structuredContent.progress.finished', 2)

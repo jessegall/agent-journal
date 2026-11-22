@@ -6,8 +6,8 @@ namespace Domain\Access\Console;
 
 use App\Actors\Enums\ChatPermission;
 use App\Bus\Contracts\OwnerCommands;
-use Domain\Access\Commands\GrantEnvironmentAccess;
-use Domain\Access\Commands\RevokeEnvironmentAccess;
+use Domain\Access\Commands\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
+use Domain\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
 use Domain\Access\Models\User;
 use Illuminate\Console\Command;
 
@@ -30,7 +30,7 @@ final class GrantEnvironmentCommand extends Command
         $environment = is_string($environmentId) && $environmentId !== '' ? $environmentId : null;
 
         if ($this->option('revoke') === true) {
-            $commands->run(new RevokeEnvironmentAccess($user->id, $environment));
+            $commands->run(new RevokeEnvironmentAccessCommand($user->id, $environment));
             $this->info("Revoked the grant of {$user->email}.");
 
             return self::SUCCESS;
@@ -41,7 +41,7 @@ final class GrantEnvironmentCommand extends Command
             fn (ChatPermission $permission) => $this->option(str_replace('_', '-', $permission->value)) === true,
         ));
 
-        $commands->run(new GrantEnvironmentAccess($user->id, $environment, $permissions));
+        $commands->run(new GrantEnvironmentAccessCommand($user->id, $environment, $permissions));
         $this->info("Granted {$user->email}.");
 
         return self::SUCCESS;

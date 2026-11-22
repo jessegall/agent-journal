@@ -135,7 +135,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Communication/Handlers/ReleaseMessageClaimHandler.php',
+            'app/Communication/Commands/ReleaseMessageClaim/ReleaseMessageClaimHandler.php',
         ],
     ],
     MessageDismissed::class => [
@@ -182,7 +182,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Communication/Handlers/HideUnseatedNotificationsHandler.php',
+            'app/Communication/Commands/HideUnseatedNotifications/HideUnseatedNotificationsHandler.php',
             'app/Communication/Support/RecipientNotifications.php',
         ],
     ],

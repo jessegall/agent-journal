@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Commands\AbandonNavigation;
+use App\Agents\Commands\AbandonNavigation\AbandonNavigationCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
@@ -22,7 +22,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(true)]
 #[Name('navigation_give_up')]
-#[Dispatches(AbandonNavigation::class)]
+#[Dispatches(AbandonNavigationCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
     'Give up on a navigation request, saying why: its key script ends and the runtime stays held for the user.',
@@ -38,9 +38,9 @@ final class NavigationGiveUpTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): AbandonNavigation
+    protected function command(ToolArguments $arguments): AbandonNavigationCommand
     {
-        return new AbandonNavigation(
+        return new AbandonNavigationCommand(
             $arguments->text('request'),
             $arguments->positiveInteger('version'),
             $arguments->text('reason'),

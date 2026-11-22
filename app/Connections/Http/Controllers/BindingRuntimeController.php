@@ -6,7 +6,7 @@ namespace App\Connections\Http\Controllers;
 
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RecordBindingStart;
+use App\Connections\Commands\RecordBindingStart\RecordBindingStartCommand;
 use App\Connections\Models\BindingStart;
 use App\Connections\Models\ProjectBinding;
 use App\Http\Data\Connections\BindingRuntimeRequestData;
@@ -35,7 +35,7 @@ final readonly class BindingRuntimeController
         $opened = $commands->run($request->asMainRuntime($host->hostId));
 
         if ($request->startId !== '') {
-            $commands->run(new RecordBindingStart($binding, $request->startId, $opened->sessionId, $opened->runtimeId));
+            $commands->run(new RecordBindingStartCommand($binding, $request->startId, $opened->sessionId, $opened->runtimeId));
         }
 
         return $this->answer($binding, $opened->sessionId, $opened->runtimeId, JsonResponse::HTTP_CREATED);

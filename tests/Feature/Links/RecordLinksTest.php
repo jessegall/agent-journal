@@ -15,15 +15,15 @@ use App\Communication\Models\Message;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Models\Link;
 use App\Numbers\Support\RecordReference;
-use App\Records\Commands\LinkRecords;
-use App\Records\Commands\UnlinkRecords;
+use App\Records\Commands\LinkRecords\LinkRecordsCommand;
+use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Records\Contracts\RecordResolver;
 use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Plans\Enums\PlanType;
@@ -78,7 +78,7 @@ final class RecordLinksTest extends TestCase
     {
         Task::factory()->create(['title' => 'Write the client']);
         Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
 
         $cards = array_map(
             fn (string $reference) => $this->records()->card($this->identified($reference)),
@@ -119,16 +119,16 @@ final class RecordLinksTest extends TestCase
     public function test_a_report_links_to_a_plan_and_a_document_once_and_unlinking_keeps_both_records(): void
     {
         Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
-        $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
         [$report, $plan, $document] = array_map($this->identified(...), ['report 1', 'plan 1', 'doc 1']);
 
-        $this->bus()->run(new LinkRecords($report, $plan));
-        $this->bus()->run(new LinkRecords($report, $document));
-        $this->bus()->run(new LinkRecords($plan, $report));
+        $this->bus()->run(new LinkRecordsCommand($report, $plan));
+        $this->bus()->run(new LinkRecordsCommand($report, $document));
+        $this->bus()->run(new LinkRecordsCommand($plan, $report));
         $this->assertSame(2, Link::query()->count());
 
-        $this->bus()->run(new UnlinkRecords($document, $report));
+        $this->bus()->run(new UnlinkRecordsCommand($document, $report));
 
         $this->assertSame(
             ['plan 1'],
@@ -142,7 +142,7 @@ final class RecordLinksTest extends TestCase
         Task::factory()->create(['title' => 'Write the client']);
         $task = $this->records()->identify(RecordReference::parse('task 1'));
 
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n", [$task]));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n", [$task]));
         $this->assertSame(1, Link::query()->count());
 
         $message = $this->messageFor(8);
@@ -150,19 +150,19 @@ final class RecordLinksTest extends TestCase
 
         try {
             $about = [new RecordIdentity(Message::LINK_TYPE, $message->id)];
-            $this->bus()->run(new CreateDocument('Leak', 'Should not exist', "Text\n", $about));
+            $this->bus()->run(new CreateDocumentCommand('Leak', 'Should not exist', "Text\n", $about));
             $this->fail('A document about a private message was created.');
         } catch (RecordUnavailable) {
             $this->assertSame(1, Document::query()->count());
         }
 
         $this->expectException(CommandInputInvalid::class);
-        $this->bus()->run(new CreateDocument('Many', 'Too many links', "Text\n", array_fill(0, 51, $task)));
+        $this->bus()->run(new CreateDocumentCommand('Many', 'Too many links', "Text\n", array_fill(0, 51, $task)));
     }
 
     public function test_an_agent_sees_no_trace_of_a_link_to_another_agents_message(): void
     {
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
         $message = $this->messageFor(8);
         $stored = Message::query()->withoutGlobalScopes()->whereKey($message->id)->sole();
         Link::connect(Document::query()->sole(), $stored);

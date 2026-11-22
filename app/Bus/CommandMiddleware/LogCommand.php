@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Support\CommandCall;
+use App\Bus\Support\CommandName;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\RequestKey;
 use App\Contracts\CommandRefusal;
@@ -62,7 +63,7 @@ final readonly class LogCommand implements CommandMiddleware
 
     private function write(CommandCall $call, ReadCounts $counts, string $outcome): void
     {
-        $this->log->info('Command '.class_basename($call->name()).' '.$outcome, [
+        $this->log->info('Command '.CommandName::of($call->name()).' '.$outcome, [
             'command' => $call->name(),
             'owner' => $call->owner(),
             'actor' => $call->actorText(),
@@ -80,7 +81,7 @@ final readonly class LogCommand implements CommandMiddleware
     {
         $authorize = $this->registry->authorizeOf($call->name());
 
-        $this->log->warning('Authorization refused for '.class_basename($call->name()), [
+        $this->log->warning('Authorization refused for '.CommandName::of($call->name()), [
             'command' => $call->name(),
             'actor' => $call->actorText(),
             ...$authorize?->auditFields() ?? [],

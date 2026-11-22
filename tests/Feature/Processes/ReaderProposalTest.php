@@ -6,8 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Processes\Commands\OpenCommandRequest;
-use App\Processes\Commands\ProposeCommandRule;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Processes\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
@@ -51,14 +51,14 @@ final class ReaderProposalTest extends TestCase
         parent::setUp();
 
         ProcessOutputDisk::fake();
-        $requestId = $this->runAsAgent(new OpenCommandRequest(
+        $requestId = $this->runAsAgent(new OpenCommandRequestCommand(
             self::OPERATION,
             str_repeat('a', 64),
             self::OPERATION,
             '/projects/acme',
             RequestHoldReason::UnknownCommand,
         ));
-        $this->runAsAgent(new ProposeCommandRule($requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->runAsAgent(new ProposeCommandRuleCommand($requestId, 'request-1', AcmeDeclarations::proposedVerify()));
         $this->request = CommandRequest::query()->findOrFail($requestId);
     }
 

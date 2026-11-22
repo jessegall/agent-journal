@@ -9,7 +9,7 @@ use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Desks\Commands\SeatActor;
+use App\Desks\Commands\SeatActor\SeatActorCommand;
 use App\Desks\Exceptions\SeatCapacityReached;
 use App\Desks\Exceptions\SeatConflict;
 use App\Desks\Exceptions\SecondForwardingSeat;
@@ -110,7 +110,7 @@ final class DeskSeatingTest extends TestCase
         $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 2, false);
         $this->app->make(RequestKey::class)->set('seat-the-builder');
 
-        $result = $this->app->make(CommandBus::class)->run(new SeatActor($desk->id, $this->builder));
+        $result = $this->app->make(CommandBus::class)->run(new SeatActorCommand($desk->id, $this->builder));
 
         $this->assertSame($this->builder->id, $result->reference->holder->id);
         $this->assertSame(1, $desk->refresh()->seating_revision);

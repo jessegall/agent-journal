@@ -7,7 +7,7 @@ namespace Domain\Plans\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Commands\CreatePlan;
+use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
 use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Enums\PlanType;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('plans_create')]
-#[Dispatches(CreatePlan::class)]
+#[Dispatches(CreatePlanCommand::class)]
 #[Description('Create a plan with a title, brief, and type.')]
 final class CreatePlanTool extends PlanWriteTool
 {
@@ -32,9 +32,9 @@ final class CreatePlanTool extends PlanWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CreatePlan
+    protected function command(ToolArguments $arguments): CreatePlanCommand
     {
-        return new CreatePlan(
+        return new CreatePlanCommand(
             $arguments->text('title'),
             $arguments->text('brief'),
             $arguments->enum('type', PlanType::class),

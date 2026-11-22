@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class RequireMessageAnswerRequest extends FormRequest
@@ -19,9 +19,9 @@ final class RequireMessageAnswerRequest extends FormRequest
         ];
     }
 
-    public function command(): RequireMessageAnswer
+    public function command(): RequireMessageAnswerCommand
     {
-        return new RequireMessageAnswer(
+        return new RequireMessageAnswerCommand(
             $this->string('messageId')->toString(),
         );
     }

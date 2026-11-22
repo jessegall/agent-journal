@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Commands\BlockTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('tasks_block')]
 #[IsDestructive(false)]
-#[Dispatches(BlockTask::class)]
+#[Dispatches(BlockTaskCommand::class)]
 #[Description('Block your current task run with the reason it must wait.')]
 final class BlockTaskTool extends TaskWriteTool
 {
@@ -31,9 +31,9 @@ final class BlockTaskTool extends TaskWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): BlockTask
+    protected function command(ToolArguments $arguments): BlockTaskCommand
     {
-        return new BlockTask(
+        return new BlockTaskCommand(
             $arguments->ulid('task_id'),
             $arguments->positiveInteger('run_number'),
             $arguments->text('reason'),

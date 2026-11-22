@@ -7,7 +7,7 @@ namespace App\Communication\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Calls\MessageNamed;
 use App\Communication\Calls\PostChatMessageCall;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 
 /**
  * Posts a message in one of your chats.
@@ -16,7 +16,7 @@ final readonly class PostChatMessageController
 {
     public function __invoke(PostChatMessageCall $call, CommandBus $commands): MessageNamed
     {
-        $messageId = $commands->run(new PostChatMessage(
+        $messageId = $commands->run(new PostChatMessageCommand(
             $call->inboxId,
             $call->body,
             $call->requestKey->value,

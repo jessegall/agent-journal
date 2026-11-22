@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Modules\Notes\Support;
 
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
-use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect;
+use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect\RecordNoteEffectCommand;
 
 /**
  * Records each effect and lets a test change the stack in between effects.
@@ -20,19 +20,19 @@ final class NoteEffects
     public array $labels = [];
 
     /**
-     * @var list<Closure(RecordNoteEffect): void>
+     * @var list<Closure(RecordNoteEffectCommand): void>
      */
     private array $afterRecording = [];
 
     /**
-     * @param Closure(RecordNoteEffect): void $callback
+     * @param Closure(RecordNoteEffectCommand): void $callback
      */
     public function afterRecording(Closure $callback): void
     {
         $this->afterRecording[] = $callback;
     }
 
-    public function record(RecordNoteEffect $command): void
+    public function record(RecordNoteEffectCommand $command): void
     {
         $this->labels[] = $command->label;
 

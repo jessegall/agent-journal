@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Hooks\Actions\PruneHookHistory;
-use App\Hooks\Commands\RecordStopResults;
+use App\Hooks\Commands\RecordStopResults\RecordStopResultsCommand;
 use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Enums\StopResultType;
@@ -90,10 +90,10 @@ final class StopAttemptTest extends TestCase
         $other = $this->report('other', StopResultType::Passed);
 
         foreach ([
-            new RecordStopResults('host-1', $attempt->id, self::DIGEST, 2, [$report]),
-            new RecordStopResults('host-1', $attempt->id, str_repeat('c', 64), 1, [$report]),
-            new RecordStopResults('host-1', $attempt->id, self::DIGEST, 1, [$report, $report]),
-            new RecordStopResults('host-1', $attempt->id, self::DIGEST, 1, [$other]),
+            new RecordStopResultsCommand('host-1', $attempt->id, self::DIGEST, 2, [$report]),
+            new RecordStopResultsCommand('host-1', $attempt->id, str_repeat('c', 64), 1, [$report]),
+            new RecordStopResultsCommand('host-1', $attempt->id, self::DIGEST, 1, [$report, $report]),
+            new RecordStopResultsCommand('host-1', $attempt->id, self::DIGEST, 1, [$other]),
         ] as $command) {
             $this->assertThrows(fn () => $this->asSystem($command), StopResultsRefused::class);
         }
@@ -184,9 +184,9 @@ final class StopAttemptTest extends TestCase
      * @param  list<StopResultType>  $statuses
      * @param  array<string, string>  $renamed  status value => condition key it is reported under
      */
-    private function results(StopAttempt $attempt, array $statuses, array $renamed = []): RecordStopResults
+    private function results(StopAttempt $attempt, array $statuses, array $renamed = []): RecordStopResultsCommand
     {
-        return new RecordStopResults('host-1', $attempt->id, self::DIGEST, 1, array_map(
+        return new RecordStopResultsCommand('host-1', $attempt->id, self::DIGEST, 1, array_map(
             fn (StopResultType $status) => $this->report($renamed[$status->value] ?? $status->value, $status),
             $statuses,
         ));

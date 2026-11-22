@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('reports_create')]
-#[Dispatches(CreateReport::class)]
+#[Dispatches(CreateReportCommand::class)]
 #[Description('File a report from text or one sealed upload.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class CreateReportTool extends JournalWriteTool
@@ -39,9 +39,9 @@ final class CreateReportTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CreateReport
+    protected function command(ToolArguments $arguments): CreateReportCommand
     {
-        return new CreateReport(
+        return new CreateReportCommand(
             $arguments->text('title'),
             $arguments->text('abstract'),
             $arguments->optionalText('body'),

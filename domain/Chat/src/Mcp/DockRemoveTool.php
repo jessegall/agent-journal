@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Chat\Commands\UndockSource;
+use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Data\DockAnswerData;
 use Domain\Chat\Values\DockResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(true)]
 #[Name('dock_remove')]
-#[Dispatches(UndockSource::class)]
+#[Dispatches(UndockSourceCommand::class)]
 #[Description('Undock a placement from your conversation, named with the type and source id dock_list gave it; the record itself stays. Answers removed, or unavailable when nothing was there.')]
 final class DockRemoveTool extends JournalWriteTool
 {
@@ -34,9 +34,9 @@ final class DockRemoveTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): UndockSource
+    protected function command(ToolArguments $arguments): UndockSourceCommand
     {
-        return new UndockSource(
+        return new UndockSourceCommand(
             $arguments->optionalText('chat'),
             $arguments->ulid('placement_id'),
             $arguments->text('type'),

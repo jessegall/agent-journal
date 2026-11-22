@@ -6,7 +6,7 @@ namespace App\Connections\Http\Controllers;
 
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\SubmitWorktreeDelivery;
+use App\Connections\Commands\SubmitWorktreeDelivery\SubmitWorktreeDeliveryCommand;
 use App\Connections\Values\DeliverySubmission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,7 +28,7 @@ final readonly class WorktreeDeliveryController
             $request->string('expectedTarget')->toString(),
         );
 
-        $receipt = $commands->run(new SubmitWorktreeDelivery($host->hostId, $submission));
+        $receipt = $commands->run(new SubmitWorktreeDeliveryCommand($host->hostId, $submission));
 
         return new JsonResponse([
             'deliveryId' => $receipt->id,

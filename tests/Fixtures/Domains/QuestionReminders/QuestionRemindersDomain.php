@@ -9,7 +9,7 @@ use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\StateProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
+use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
 use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;
 
 /**
@@ -42,6 +42,6 @@ final class QuestionRemindersDomain extends Domain implements CommandProvider, S
 
     public function commands(): array
     {
-        return [SendQuestionReminder::class];
+        return [SendQuestionReminderCommand::class];
     }
 }

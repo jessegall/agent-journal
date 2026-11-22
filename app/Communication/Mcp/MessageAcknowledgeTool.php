@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Mcp;
 
 use App\Bus\Contracts\Command;
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Name('messages_acknowledge')]
-#[Dispatches(ReadMessages::class)]
+#[Dispatches(ReadMessagesCommand::class)]
 #[Description('Mark inbox messages as read and take up any unanswered questions.')]
 final class MessageAcknowledgeTool extends MessageWriteTool
 {
@@ -33,7 +33,7 @@ final class MessageAcknowledgeTool extends MessageWriteTool
 
     protected function command(ToolArguments $arguments): Command
     {
-        return new ReadMessages(
+        return new ReadMessagesCommand(
             $arguments->text('inbox_id'),
             $arguments->list('message_ids'),
         );

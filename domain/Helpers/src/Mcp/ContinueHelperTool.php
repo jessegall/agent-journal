@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Helpers\Commands\ContinueHelper;
+use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Http\Data\HelperReceiptData;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 
 #[IsDestructive(false)]
 #[Name('helpers_continue')]
-#[Dispatches(ContinueHelper::class)]
+#[Dispatches(ContinueHelperCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Continue a helper job whose launch ended before it finished, in the same conversation.')]
 final class ContinueHelperTool extends JournalWriteTool
@@ -34,9 +34,9 @@ final class ContinueHelperTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): ContinueHelper
+    protected function command(ToolArguments $arguments): ContinueHelperCommand
     {
-        return new ContinueHelper(
+        return new ContinueHelperCommand(
             $arguments->text('request_key'),
             $arguments->ulid('identity_id'),
             $arguments->ulid('job_id'),

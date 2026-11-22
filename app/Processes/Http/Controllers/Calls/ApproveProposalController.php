@@ -7,7 +7,7 @@ namespace App\Processes\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Calls\ApproveProposalCall;
 use App\Processes\Calls\RuleApproved;
-use App\Processes\Commands\ApproveRuleProposal;
+use App\Processes\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
 use App\Processes\Values\OwnerApproval;
 use App\Processes\Values\ReaderApproval;
 
@@ -21,6 +21,6 @@ final readonly class ApproveProposalController
         $readers = $call->proof === null ? [] : [new ReaderApproval((string) $call->readerRevision, $call->proof)];
         $approval = new OwnerApproval($call->expectedRevision, $call->expectedActiveRevision, $readers, $call->reason);
 
-        return RuleApproved::from($commands->run(new ApproveRuleProposal($call->proposal, $approval))->toArray());
+        return RuleApproved::from($commands->run(new ApproveRuleProposalCommand($call->proposal, $approval))->toArray());
     }
 }

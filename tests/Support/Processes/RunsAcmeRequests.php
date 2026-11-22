@@ -6,14 +6,14 @@ namespace Tests\Support\Processes;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Processes\Commands\ApproveRuleProposal;
-use App\Processes\Commands\ApproveSample;
-use App\Processes\Commands\OpenCommandRequest;
-use App\Processes\Commands\ProposeCommandRule;
-use App\Processes\Commands\ProposeReader;
-use App\Processes\Commands\ProveReader;
-use App\Processes\Commands\SettleSample;
-use App\Processes\Commands\StartSample;
+use App\Processes\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\Processes\Commands\ApproveSample\ApproveSampleCommand;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Processes\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Processes\Commands\ProposeReader\ProposeReaderCommand;
+use App\Processes\Commands\ProveReader\ProveReaderCommand;
+use App\Processes\Commands\SettleSample\SettleSampleCommand;
+use App\Processes\Commands\StartSample\StartSampleCommand;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RecordRole;
 use App\Processes\Enums\RequestHoldReason;
@@ -66,14 +66,14 @@ trait RunsAcmeRequests
     {
         ProcessOutputDisk::fake();
         $this->start = TestStart::start();
-        $this->requestId = $this->runAsAgent(new OpenCommandRequest(
+        $this->requestId = $this->runAsAgent(new OpenCommandRequestCommand(
             'acme verify',
             str_repeat('a', 64),
             'acme verify',
             sys_get_temp_dir(),
             RequestHoldReason::UnknownCommand,
         ));
-        $this->runAsAgent(new ProposeCommandRule($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->runAsAgent(new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
     }
 
     /**
@@ -87,7 +87,7 @@ trait RunsAcmeRequests
             RecordRule::of(RecordRole::Summary, 'passed={passed:int} failed={failed:int}'),
         ], failureField: 'failed');
 
-        return $this->runAsAgent(new ProposeReader($this->requestId, 1, $definition));
+        return $this->runAsAgent(new ProposeReaderCommand($this->requestId, 1, $definition));
     }
 
     /**
@@ -95,8 +95,8 @@ trait RunsAcmeRequests
      */
     private function sample(int $status, string $output, bool $read): string
     {
-        $permit = $this->asUser(new ApproveSample($this->requestId, 1, $this->request()->source_digest));
-        $runId = $this->runAsAgent(new StartSample($this->requestId, $permit, "sample-{$status}"));
+        $permit = $this->asUser(new ApproveSampleCommand($this->requestId, 1, $this->request()->source_digest));
+        $runId = $this->runAsAgent(new StartSampleCommand($this->requestId, $permit, "sample-{$status}"));
         $part = PartRun::create(
             ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId),
             new PartKey(1, 1, 'acme verify'),
@@ -114,7 +114,7 @@ trait RunsAcmeRequests
             $this->signed($this->start, "/agent/processes/runs/{$runId}/output/tail", $tail)->assertOk();
         }
 
-        $this->runAsAgent(new SettleSample($this->requestId));
+        $this->runAsAgent(new SettleSampleCommand($this->requestId));
 
         return $runId;
     }
@@ -129,10 +129,10 @@ trait RunsAcmeRequests
         $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
         $reader = $this->reader();
-        $proof = $this->runAsAgent(new ProveReader($this->requestId, $reader, [$passed, $findings]));
+        $proof = $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]));
         $approval = new OwnerApproval(1, 0, [new ReaderApproval($reader, $proof)], 'proven');
 
-        $this->asUser(new ApproveRuleProposal(RuleProposal::query()->sole()->id, $approval));
+        $this->asUser(new ApproveRuleProposalCommand(RuleProposal::query()->sole()->id, $approval));
     }
 
     private function normalRun(int $status, string $output, RunMode $mode = RunMode::Normal): PartRun

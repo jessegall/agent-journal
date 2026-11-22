@@ -17,9 +17,9 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanStarted;
-use Domain\Plans\Commands\CancelPlan;
-use Domain\Plans\Commands\FinishPlan;
-use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
+use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
+use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\PlanHasUnfinishedTasks;
 use Domain\Plans\Models\Plan;
@@ -68,7 +68,7 @@ final class PlanFinishCancelTest extends TestCase
         $plan = $this->startedPlan([TaskState::Finished, TaskState::Open, TaskState::Blocked]);
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new FinishPlan($plan->id, 1, 'Done.')),
+            fn () => $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Done.')),
             PlanHasUnfinishedTasks::class,
             PlanHasUnfinishedTasks::for($plan->number, 2)->getMessage(),
         );
@@ -81,7 +81,7 @@ final class PlanFinishCancelTest extends TestCase
     {
         $plan = $this->startedPlan([TaskState::Finished, TaskState::Cancelled]);
 
-        $this->bus()->run(new FinishPlan($plan->id, 1, 'Shipped.'));
+        $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Shipped.'));
 
         $this->assertSame(
             [PlanState::Done, 'Shipped.', 2],
@@ -107,7 +107,7 @@ final class PlanFinishCancelTest extends TestCase
 
         $assignments = AssignmentRecord::query()->withoutGlobalScopes()->count();
 
-        $this->bus()->run(new CancelPlan($plan->id, 1, 'Superseded.'));
+        $this->bus()->run(new CancelPlanCommand($plan->id, 1, 'Superseded.'));
 
         $this->assertSame(
             [PlanState::Cancelled, 'Superseded.'],
@@ -127,8 +127,8 @@ final class PlanFinishCancelTest extends TestCase
     {
         $plan = Plan::factory()->create();
 
-        $this->bus()->run(new StartPlan($plan->id));
-        $this->bus()->run(new StartPlan($plan->id));
+        $this->bus()->run(new StartPlanCommand($plan->id));
+        $this->bus()->run(new StartPlanCommand($plan->id));
 
         Event::assertDispatchedTimes(PlanStarted::class, 1);
     }

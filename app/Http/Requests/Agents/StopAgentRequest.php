@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\StopAgent\StopAgentCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -26,9 +26,9 @@ final class StopAgentRequest extends FormRequest
         ];
     }
 
-    public function command(string $agentId): StopAgent
+    public function command(string $agentId): StopAgentCommand
     {
-        return new StopAgent(
+        return new StopAgentCommand(
             $agentId,
             $this->string('sessionId')->lower()->toString(),
             $this->string('requestId')->lower()->toString(),

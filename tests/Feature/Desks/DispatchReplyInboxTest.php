@@ -6,7 +6,7 @@ namespace Tests\Feature\Desks;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\StartSessions;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Models\Agent;
@@ -21,7 +21,7 @@ use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Tests\Fixtures\Agents\TestSelections;
@@ -90,7 +90,7 @@ final class DispatchReplyInboxTest extends TestCase
             ),
         );
         $this->startRequestAs($first->agent_id, $first->id);
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
 
         $this->assertSame($main->inbox_id, $run->replyInboxId()->get());
@@ -136,7 +136,7 @@ final class DispatchReplyInboxTest extends TestCase
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
         );
-        $this->app->make(CommandBus::class)->run(new StartAgent($request));
+        $this->app->make(CommandBus::class)->run(new StartAgentCommand($request));
         $record = StartRecord::query()->where('request_id', $request->requestId)->sole();
 
         $this->assertSame($main->inbox_id, $record->replyInboxId()->get());

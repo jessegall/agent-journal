@@ -6,7 +6,7 @@ namespace App\Processes\Listeners;
 
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\Listener;
-use App\Processes\Commands\MarkRunsStale;
+use App\Processes\Commands\MarkRunsStale\MarkRunsStaleCommand;
 use App\Processes\Events\BundleActivated;
 use App\Processes\Events\RuleActivated;
 use App\Processes\Events\RuleRetired;
@@ -20,6 +20,6 @@ final readonly class RefuseStaleRuns implements Listener
 
     public function handle(RuleActivated|RuleRetired|BundleActivated $change): void
     {
-        $this->commands->run(new MarkRunsStale($change->project(), $change->staleReason()));
+        $this->commands->run(new MarkRunsStaleCommand($change->project(), $change->staleReason()));
     }
 }

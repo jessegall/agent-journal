@@ -12,13 +12,13 @@ use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Api\Events\DocumentPublished;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Api\Events\ReportFiled;
-use Domain\Documents\Commands\CloseDocument;
-use Domain\Documents\Commands\CloseReport;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
-use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Commands\ReplaceDocumentText;
-use Domain\Documents\Commands\SettleDocument;
+use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
+use Domain\Documents\Commands\CloseReport\CloseReportCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
+use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
+use Domain\Documents\Commands\SettleDocument\SettleDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -76,10 +76,10 @@ final class DocumentFactsTest extends TestCase
 
     public function test_creating_editing_and_closing_a_document_raise_each_fact_once_in_order(): void
     {
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
-        $draft = $this->bus()->run(new OpenDocument('1'));
-        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'Ship it.', 'Ship it soon.'));
-        $this->bus()->run(new CloseDocument($draft->target()));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $draft = $this->bus()->run(new OpenDocumentCommand('1'));
+        $draft = $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Ship it soon.'));
+        $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
         $this->assertSame([
             'DocumentCreated',
@@ -92,22 +92,22 @@ final class DocumentFactsTest extends TestCase
 
     public function test_an_unchanged_close_raises_no_publication(): void
     {
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
-        $draft = $this->bus()->run(new OpenDocument('1'));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $this->facts = [];
 
-        $this->bus()->run(new CloseDocument($draft->target()));
+        $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
         $this->assertSame(['DocumentClosed 1'], $this->facts);
     }
 
     public function test_settling_twice_with_one_reason_and_filing_a_report_raise_one_fact_each(): void
     {
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
-        $this->bus()->run(new SettleDocument(1, 1, 'Shipped.'));
-        $this->bus()->run(new SettleDocument(1, 1, 'Shipped.'));
-        $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
-        $this->bus()->run(new CloseReport('1', 'Read.'));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->bus()->run(new SettleDocumentCommand(1, 1, 'Shipped.'));
+        $this->bus()->run(new SettleDocumentCommand(1, 1, 'Shipped.'));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
+        $this->bus()->run(new CloseReportCommand('1', 'Read.'));
 
         $this->assertSame(
             ['DocumentCreated', 'RecordSettled', 'ReportFiled', 'RecordSettled'],

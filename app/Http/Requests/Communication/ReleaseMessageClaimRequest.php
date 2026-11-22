@@ -6,7 +6,7 @@ namespace App\Http\Requests\Communication;
 
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
-use App\Communication\Commands\ReleaseMessageClaim;
+use App\Communication\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class ReleaseMessageClaimRequest extends FormRequest
@@ -25,9 +25,9 @@ final class ReleaseMessageClaimRequest extends FormRequest
         ];
     }
 
-    public function command(): ReleaseMessageClaim
+    public function command(): ReleaseMessageClaimCommand
     {
-        return new ReleaseMessageClaim(
+        return new ReleaseMessageClaimCommand(
             $this->string('messageId')->toString(),
             $this->expectedClaim(),
             $this->string('reason')->toString(),

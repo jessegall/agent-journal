@@ -9,13 +9,13 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Support\ToolArguments;
 use Domain\Documents\Api\DraftTarget;
-use Domain\Documents\Commands\AppendUpload;
-use Domain\Documents\Commands\BeginUpload;
-use Domain\Documents\Commands\CloseDocument;
-use Domain\Documents\Commands\CommitUpload;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\EditDocument;
-use Domain\Documents\Commands\OpenDocument;
+use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
+use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
+use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
+use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Contracts\AttachmentReader;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Enums\UploadType;
@@ -44,7 +44,7 @@ final class DocumentReaderTest extends TestCase
         $body = "# Guide\nFirst paragraph.\n\n## Retry\nKeep your key.\n\n## Examples\n".str_repeat("A row.\n", 8000);
 
         $id = $this->app->make(CommandBus::class)->run(
-            new CreateDocument('Guide', self::ABSTRACT, $body),
+            new CreateDocumentCommand('Guide', self::ABSTRACT, $body),
         )->number;
 
         $summary = $this->read($id, ['view' => 'summary'])->responseFields;
@@ -61,7 +61,7 @@ final class DocumentReaderTest extends TestCase
     {
         TestStart::start()->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $created = $bus->run(new CreateDocument('Guide', 'A long line.', "# Guide\nOriginal."));
+        $created = $bus->run(new CreateDocumentCommand('Guide', 'A long line.', "# Guide\nOriginal."));
         $number = $created->number;
         $this->publish($number, str_repeat('a', 10000));
         $range = ['view' => 'body', 'line_start' => 2, 'line_end' => 2, 'character_offset' => 0];
@@ -96,9 +96,9 @@ final class DocumentReaderTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $text = 'Attachment bytes.';
         $digest = hash('sha256', $text);
-        $id = $bus->run(new BeginUpload(UploadType::ReportBody, strlen($text), $digest));
-        $bus->run(new AppendUpload($id, 0, $text, $digest));
-        $bus->run(new CommitUpload($id));
+        $id = $bus->run(new BeginUploadCommand(UploadType::ReportBody, strlen($text), $digest));
+        $bus->run(new AppendUploadCommand($id, 0, $text, $digest));
+        $bus->run(new CommitUploadCommand($id));
 
         $answer = $this->app->make(AttachmentReader::class)->attachment($id, null);
         $this->assertSame($text, $answer->responseFields['body']);
@@ -113,9 +113,9 @@ final class DocumentReaderTest extends TestCase
     private function publish(int $number, string $body): void
     {
         $bus = $this->app->make(CommandBus::class);
-        $draft = $bus->run(new OpenDocument((string) $number));
-        $bus->run(new EditDocument(new DraftTarget((string) $number, $draft->token, $draft->version), '1', $body));
-        $bus->run(new CloseDocument(new DraftTarget((string) $number, $draft->token)));
+        $draft = $bus->run(new OpenDocumentCommand((string) $number));
+        $bus->run(new EditDocumentCommand(new DraftTarget((string) $number, $draft->token, $draft->version), '1', $body));
+        $bus->run(new CloseDocumentCommand(new DraftTarget((string) $number, $draft->token)));
     }
 
     /**

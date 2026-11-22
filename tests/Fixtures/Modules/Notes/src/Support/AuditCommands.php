@@ -6,6 +6,7 @@ namespace Tests\Fixtures\Modules\Notes\Support;
 
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Support\CommandCall;
+use App\Bus\Support\CommandName;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 
@@ -19,7 +20,7 @@ abstract readonly class AuditCommands implements CommandMiddleware
     public function handle(CommandCall $call, Closure $next): mixed
     {
         $this->trail->add($this->trailLine());
-        $this->database->table('module_command_rows')->insert(['text' => 'audit '.class_basename($call->name())]);
+        $this->database->table('module_command_rows')->insert(['text' => 'audit '.CommandName::of($call->name())]);
 
         return $next($call);
     }

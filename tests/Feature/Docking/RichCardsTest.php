@@ -11,8 +11,8 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\DockProjection;
-use Domain\Documents\Commands\CloseReport;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CloseReport\CloseReportCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Enums\TaskState;
@@ -108,14 +108,14 @@ final class RichCardsTest extends TestCase
     public function test_a_docked_report_shows_open_and_then_closed_once_settled(): void
     {
         $this->agent->startRequest($this->app);
-        $report = $this->app->make(CommandBus::class)->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
+        $report = $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
         $this->dock('documents.report', $report->id);
 
         $this->assertStringContainsString('"text":"Evidence"', $this->cards());
         $this->assertStringContainsString('"text":"Open","tone":"note"', $this->cards());
 
         $this->agent->startRequest($this->app);
-        $this->app->make(CommandBus::class)->run(new CloseReport((string) $report->number, 'Done.'));
+        $this->app->make(CommandBus::class)->run(new CloseReportCommand((string) $report->number, 'Done.'));
 
         $this->assertStringContainsString('"text":"Closed","tone":"muted"', $this->cards());
     }

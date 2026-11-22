@@ -7,10 +7,10 @@ namespace Tests\Fixtures\Modules\Notes\CommandMiddleware;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Support\CommandCall;
 use Closure;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 /**
- * Replaces WriteNote with a copy whose text is in capitals.
+ * Replaces WriteNoteCommand with a copy whose text is in capitals.
  */
 final readonly class UppercasesText implements CommandMiddleware
 {
@@ -19,7 +19,7 @@ final readonly class UppercasesText implements CommandMiddleware
         $command = $call->command();
 
         return $next(
-$command instanceof WriteNote ? $call->replacedBy(new WriteNote(strtoupper($command->text))) : $call,
+$command instanceof WriteNoteCommand ? $call->replacedBy(new WriteNoteCommand(strtoupper($command->text))) : $call,
 );
     }
 }

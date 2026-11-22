@@ -18,10 +18,10 @@ use App\Communication\Models\Message;
 use App\Desks\Support\DeskOpening;
 use App\Hooks\Support\StackTransaction;
 use Domain\Documents\Api\DraftTarget;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\EditDocument;
-use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Commands\RecoverDraft;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
+use Domain\Documents\Commands\RecoverDraft\RecoverDraftCommand;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Contracts\DraftResolver;
@@ -67,10 +67,10 @@ final class DocumentDraftTest extends TestCase
 
         $this->startRequestAs($child->id, $session->id);
         $bus = $this->app->make(CommandBus::class);
-        $created = $bus->run(new CreateDocument('Design', 'Current plan.', "# Design\nPublished text."));
-        $opened = $bus->run(new OpenDocument($created->id, 1));
+        $created = $bus->run(new CreateDocumentCommand('Design', 'Current plan.', "# Design\nPublished text."));
+        $opened = $bus->run(new OpenDocumentCommand($created->id, 1));
         $badText = "| Missing | Dashes |\n| A | B |";
-        $bus->run(new EditDocument(new DraftTarget($created->id, $opened->token, $opened->version), '1', $badText));
+        $bus->run(new EditDocumentCommand(new DraftTarget($created->id, $opened->token, $opened->version), '1', $badText));
 
         $closed = new SessionClosed($child->id, $session->id);
         $listener = $this->app->make(CloseEndedSessionDraft::class);
@@ -91,8 +91,8 @@ final class DocumentDraftTest extends TestCase
 
         $this->grantSource($parent, $created->id);
         $this->assertStringContainsString($badText, $this->app->make(DraftReader::class)->draft($kept->id)->body);
-        $this->assertThrows(fn () => $bus->run(new RecoverDraft($kept->id, 99)), StaleRead::class);
-        $recovered = $bus->run(new RecoverDraft($kept->id, 1));
+        $this->assertThrows(fn () => $bus->run(new RecoverDraftCommand($kept->id, 99)), StaleRead::class);
+        $recovered = $bus->run(new RecoverDraftCommand($kept->id, 1));
         $this->assertNotSame($opened->token, $recovered->token);
         $this->assertStringContainsString($badText, $this->app->make(DraftResolver::class)->current(1)->body);
         $this->assertSame('1', $this->app->make(DocumentResolver::class)->show($created->number)->revision);

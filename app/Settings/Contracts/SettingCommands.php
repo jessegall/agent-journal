@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Settings\Contracts;
 
-use App\Settings\Commands\DisableSettingGroup;
-use App\Settings\Commands\EnableSettingGroup;
-use App\Settings\Commands\ResetSetting;
-use App\Settings\Commands\ResetSettingGroup;
-use App\Settings\Commands\SetBooleanSetting;
-use App\Settings\Commands\SetDecimalSetting;
-use App\Settings\Commands\SetIntegerChoice;
-use App\Settings\Commands\SetIntegerSetting;
-use App\Settings\Commands\SetStringChoice;
-use App\Settings\Commands\SetStringSetting;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Settings\Commands\ResetSetting\ResetSettingCommand;
+use App\Settings\Commands\ResetSettingGroup\ResetSettingGroupCommand;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Commands\SetDecimalSetting\SetDecimalSettingCommand;
+use App\Settings\Commands\SetIntegerChoice\SetIntegerChoiceCommand;
+use App\Settings\Commands\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Settings\Commands\SetStringChoice\SetStringChoiceCommand;
+use App\Settings\Commands\SetStringSetting\SetStringSettingCommand;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\DecimalSetting;
@@ -36,36 +36,36 @@ interface SettingCommands
     /**
      * @throws SettingHandleUnknown
      */
-    public function string(StringSetting $setting, string $settingInput, int $expectedRevision): SetStringSetting;
+    public function string(StringSetting $setting, string $settingInput, int $expectedRevision): SetStringSettingCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function boolean(BooleanSetting $setting, bool $settingInput, int $expectedRevision): SetBooleanSetting;
+    public function boolean(BooleanSetting $setting, bool $settingInput, int $expectedRevision): SetBooleanSettingCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function integer(IntegerSetting $setting, int $settingInput, int $expectedRevision): SetIntegerSetting;
+    public function integer(IntegerSetting $setting, int $settingInput, int $expectedRevision): SetIntegerSettingCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function decimal(DecimalSetting $setting, Decimal $settingInput, int $expectedRevision): SetDecimalSetting;
+    public function decimal(DecimalSetting $setting, Decimal $settingInput, int $expectedRevision): SetDecimalSettingCommand;
 
     /**
      * @param  ChoiceSetting<string>  $setting
      *
      * @throws SettingHandleUnknown
      */
-    public function stringChoice(ChoiceSetting $setting, string $settingInput, int $expectedRevision): SetStringChoice;
+    public function stringChoice(ChoiceSetting $setting, string $settingInput, int $expectedRevision): SetStringChoiceCommand;
 
     /**
      * @param  ChoiceSetting<int>  $setting
      *
      * @throws SettingHandleUnknown
      */
-    public function integerChoice(ChoiceSetting $setting, int $settingInput, int $expectedRevision): SetIntegerChoice;
+    public function integerChoice(ChoiceSetting $setting, int $settingInput, int $expectedRevision): SetIntegerChoiceCommand;
 
     /**
      * @template TEnum of BackedEnum
@@ -76,7 +76,7 @@ interface SettingCommands
      * @throws SettingHandleUnknown
      * @throws SettingValueInvalid
      */
-    public function enumString(EnumSetting $setting, BackedEnum $settingInput, int $expectedRevision): SetStringChoice;
+    public function enumString(EnumSetting $setting, BackedEnum $settingInput, int $expectedRevision): SetStringChoiceCommand;
 
     /**
      * @template TEnum of BackedEnum
@@ -91,25 +91,25 @@ interface SettingCommands
         EnumSetting $setting,
         BackedEnum $settingInput,
         int $expectedRevision,
-    ): SetIntegerChoice;
+    ): SetIntegerChoiceCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function reset(Setting $setting, int $expectedRevision): ResetSetting;
+    public function reset(Setting $setting, int $expectedRevision): ResetSettingCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function enable(ToggleGroup $group, int $expectedRevision): EnableSettingGroup;
+    public function enable(ToggleGroup $group, int $expectedRevision): EnableSettingGroupCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function disable(ToggleGroup $group, int $expectedRevision): DisableSettingGroup;
+    public function disable(ToggleGroup $group, int $expectedRevision): DisableSettingGroupCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function resetGroup(ToggleGroup|SettingGroup $group, int $expectedRevision): ResetSettingGroup;
+    public function resetGroup(ToggleGroup|SettingGroup $group, int $expectedRevision): ResetSettingGroupCommand;
 }

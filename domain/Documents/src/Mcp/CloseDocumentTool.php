@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Documents\Commands\CloseDocument;
+use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('docs_close')]
 #[IsDestructive(false)]
-#[Dispatches(CloseDocument::class)]
+#[Dispatches(CloseDocumentCommand::class)]
 #[Description('Close an edit and publish a revision if its text changed.')]
 final class CloseDocumentTool extends JournalWriteTool
 {
@@ -33,9 +33,9 @@ final class CloseDocumentTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CloseDocument
+    protected function command(ToolArguments $arguments): CloseDocumentCommand
     {
-        return new CloseDocument($this->target($arguments));
+        return new CloseDocumentCommand($this->target($arguments));
     }
 
     protected function present(mixed $publication): ToolResult

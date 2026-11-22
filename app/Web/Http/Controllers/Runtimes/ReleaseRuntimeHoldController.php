@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Http\Controllers\Runtimes;
 
-use App\Agents\Commands\ReleaseAgentHold;
+use App\Agents\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Http\Requests\Web\HoldReleaseRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +16,7 @@ final readonly class ReleaseRuntimeHoldController
 {
     public function __invoke(HoldReleaseRequest $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new ReleaseAgentHold(
+        return $review->run(new ReleaseAgentHoldCommand(
             $request->agentId(),
             $request->sessionId(),
             $request->hold(),

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\ImportHelperCommits;
+use App\Agents\Commands\ImportHelperCommits\ImportHelperCommitsCommand;
+use App\Agents\Commands\ImportHelperCommits\ImportHelperCommitsHandler;
 use App\Agents\Exceptions\HelperWorkUncertified;
-use App\Agents\Handlers\ImportHelperCommitsHandler;
 use App\Agents\Values\HelperImportReceipt;
 use App\Records\Support\RecordIdentity;
 use Tests\Fixtures\Agents\TestStart;
@@ -80,7 +80,7 @@ final class HelperImportTest extends TestCase
 
     private function import(string $certificate): HelperImportReceipt
     {
-        $command = new ImportHelperCommits(new RecordIdentity('helpers.job', self::WORK_ID), $certificate);
+        $command = new ImportHelperCommitsCommand(new RecordIdentity('helpers.job', self::WORK_ID), $certificate);
 
         return $this->app->make(ImportHelperCommitsHandler::class)->handle($command);
     }

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Bus\Exceptions\CommandAdmissionRefused;
-use App\Processes\Commands\ApproveRuleProposal;
-use App\Processes\Commands\ProveReader;
-use App\Processes\Commands\RejectRuleProposal;
-use App\Processes\Commands\RestoreCommandRule;
-use App\Processes\Commands\RetireCommandRule;
-use App\Processes\Commands\SaveCommandRule;
+use App\Processes\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\Processes\Commands\ProveReader\ProveReaderCommand;
+use App\Processes\Commands\RejectRuleProposal\RejectRuleProposalCommand;
+use App\Processes\Commands\RestoreCommandRule\RestoreCommandRuleCommand;
+use App\Processes\Commands\RetireCommandRule\RetireCommandRuleCommand;
+use App\Processes\Commands\SaveCommandRule\SaveCommandRuleCommand;
 use App\Processes\Enums\ClassificationState;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\ProposalState;
@@ -63,7 +63,7 @@ final class RuleApprovalTest extends TestCase
         Event::fake([RuleActivated::class]);
         [$reader, $proof] = $this->provenReader();
 
-        $receipt = $this->asUser(new ApproveRuleProposal($this->proposalId(), $this->approval($reader, $proof, 0)));
+        $receipt = $this->asUser(new ApproveRuleProposalCommand($this->proposalId(), $this->approval($reader, $proof, 0)));
 
         $this->assertSame('project.acme.verify', $receipt->ruleId);
         $this->assertSame(1, $receipt->revision);
@@ -80,7 +80,7 @@ final class RuleApprovalTest extends TestCase
     {
         [$reader, $proof] = $this->provenReader();
 
-        $approve = new ApproveRuleProposal($this->proposalId(), $this->approval($reader, $proof, 0));
+        $approve = new ApproveRuleProposalCommand($this->proposalId(), $this->approval($reader, $proof, 0));
 
         $this->assertThrows(fn () => $this->runAsAgent($approve), CommandAdmissionRefused::class);
         $this->assertSame(0, ClassificationRule::query()->count());
@@ -90,8 +90,8 @@ final class RuleApprovalTest extends TestCase
     {
         [$reader, $proof] = $this->provenReader();
         $other = $this->reader();
-        $without = new ApproveRuleProposal($this->proposalId(), new OwnerApproval(1, 0, [], 'looks right'));
-        $mismatched = new ApproveRuleProposal($this->proposalId(), $this->approval($other, $proof, 0));
+        $without = new ApproveRuleProposalCommand($this->proposalId(), new OwnerApproval(1, 0, [], 'looks right'));
+        $mismatched = new ApproveRuleProposalCommand($this->proposalId(), $this->approval($other, $proof, 0));
 
         $this->assertThrows(fn () => $this->asUser($without), ApprovalRefused::class);
         $this->assertThrows(fn () => $this->asUser($mismatched), ApprovalRefused::class);
@@ -117,7 +117,7 @@ final class RuleApprovalTest extends TestCase
     {
         Event::fake([RuleRejected::class]);
 
-        $this->asUser(new RejectRuleProposal($this->proposalId(), 'effects are wider than read'));
+        $this->asUser(new RejectRuleProposalCommand($this->proposalId(), 'effects are wider than read'));
 
         $this->assertSame(RequestState::Rejected, $this->request()->state);
         $this->assertSame(ProposalState::Rejected, RuleProposal::query()->sole()->state);
@@ -133,29 +133,29 @@ final class RuleApprovalTest extends TestCase
         $this->saveOrdinary('save-1', 0);
         $rule = ClassificationRule::query()->sole();
 
-        $this->asUser(new RetireCommandRule($rule->id, 1, 'replaced by a script'));
+        $this->asUser(new RetireCommandRuleCommand($rule->id, 1, 'replaced by a script'));
         $this->assertSame(ClassificationState::Retired, $rule->refresh()->state);
 
-        $restored = $this->asUser(new RestoreCommandRule($rule->id, 1, 1, 'restore-1'));
+        $restored = $this->asUser(new RestoreCommandRuleCommand($rule->id, 1, 1, 'restore-1'));
         $this->assertSame(ProposalState::Pending, $restored->state);
         $this->assertSame(ClassificationState::Retired, $rule->refresh()->state);
 
-        $this->asUser(new ApproveRuleProposal($restored->proposalId, new OwnerApproval(1, 1, [], 'back again')));
+        $this->asUser(new ApproveRuleProposalCommand($restored->proposalId, new OwnerApproval(1, 1, [], 'back again')));
         $this->assertSame(ClassificationState::Active, $rule->refresh()->state);
         $this->assertSame(2, $rule->active_revision);
     }
 
     public function test_saving_a_check_without_a_request_is_refused(): void
     {
-        $save = new SaveCommandRule('save-1', AcmeDeclarations::proposedVerify(), 0, 'trusted');
+        $save = new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposedVerify(), 0, 'trusted');
 
         $this->assertThrows(fn () => $this->asUser($save), ApprovalRefused::class);
         $this->assertThrows(
-            fn () => $this->asUser(new RejectRuleProposal('no-such-proposal', 'none')),
+            fn () => $this->asUser(new RejectRuleProposalCommand('no-such-proposal', 'none')),
             ModelNotFoundException::class,
         );
         $this->assertThrows(
-            fn () => $this->runAsAgent(new RejectRuleProposal($this->proposalId(), 'agents cannot')),
+            fn () => $this->runAsAgent(new RejectRuleProposalCommand($this->proposalId(), 'agents cannot')),
             CommandAdmissionRefused::class,
         );
         $this->assertSame(ProposalState::Pending, RuleProposal::query()->sole()->state);
@@ -170,7 +170,7 @@ final class RuleApprovalTest extends TestCase
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
         $reader = $this->reader();
 
-        return [$reader, $this->runAsAgent(new ProveReader($this->requestId, $reader, [$passed, $findings]))];
+        return [$reader, $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]))];
     }
 
     private function approval(string $reader, string $proof, int $expectedActive): OwnerApproval
@@ -189,7 +189,7 @@ final class RuleApprovalTest extends TestCase
         )->ownedBy(RuleScope::project(), 1);
         $proposed = AcmeDeclarations::proposed($rule);
 
-        $save = new SaveCommandRule($requestId, $proposed, $expectedActive, 'reviewed');
+        $save = new SaveCommandRuleCommand($requestId, $proposed, $expectedActive, 'reviewed');
 
         return $this->asUser($save);
     }

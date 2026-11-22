@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Console;
 
 use App\Bus\Contracts\CommandBus;
-use App\Skills\Commands\ReviseSkill;
+use App\Skills\Commands\ReviseSkill\ReviseSkillCommand;
 use App\Skills\Console\Concerns\PrintsSkillRefusals;
 use App\Skills\Console\Concerns\ReadsAudienceOptions;
 use App\Skills\Models\SkillRevision;
@@ -50,7 +50,7 @@ final class SkillEditCommand extends Command
 
             return $console->savedLines(
                 $commands->run(
-                    new ReviseSkill($skill->id, (int) $this->option('expected-revision'), $requestId, $draft),
+                    new ReviseSkillCommand($skill->id, (int) $this->option('expected-revision'), $requestId, $draft),
                 ),
             );
         });

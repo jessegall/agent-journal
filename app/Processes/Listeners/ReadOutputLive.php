@@ -7,7 +7,7 @@ namespace App\Processes\Listeners;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
-use App\Processes\Commands\ReadPartLive;
+use App\Processes\Commands\ReadPartLive\ReadPartLiveCommand;
 use App\Processes\Events\OutputChunkCommitted;
 use App\Processes\Models\PartRun;
 use App\Processes\Support\PartAssessments;
@@ -29,6 +29,6 @@ final readonly class ReadOutputLive implements Listener
             return;
         }
 
-        $this->commands->run(new ReadPartLive($part->id));
+        $this->commands->run(new ReadPartLiveCommand($part->id));
     }
 }

@@ -7,8 +7,8 @@ namespace Domain\Documents\Tests\Feature;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Records\Support\RecordIdentity;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
@@ -59,9 +59,9 @@ final class DocumentsTest extends TestCase
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void
     {
-        $first = $this->bus()->run(new CreateDocument('Design', 'What we build', self::GOAL_TEXT));
+        $first = $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::GOAL_TEXT));
 
-        $second = $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
+        $second = $this->bus()->run(new CreateDocumentCommand('Notes', 'What we saw', "Text\n"));
 
         $this->assertSame(self::FIRST_DOCUMENT, $first->label());
         $this->assertSame(self::SECOND_DOCUMENT, $second->label());
@@ -72,8 +72,8 @@ final class DocumentsTest extends TestCase
 
     public function test_a_report_is_filed_and_a_document_number_never_selects_it(): void
     {
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
-        $report = $this->bus()->run(new CreateReport('Check', 'What we found', self::GOOD_REPORT));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
+        $report = $this->bus()->run(new CreateReportCommand('Check', 'What we found', self::GOOD_REPORT));
 
         $this->assertSame(self::FIRST_REPORT, $report->label());
         $this->assertSame(self::GOOD_REPORT, $this->app->make(ReportResolver::class)->show(1)->body);
@@ -85,7 +85,7 @@ final class DocumentsTest extends TestCase
     public function test_an_empty_title_leaves_no_row_and_names_the_field(): void
     {
         $this->assertThrows(
-            fn () => $this->bus()->run(new CreateDocument(' ', 'What we build', "Text\n")),
+            fn () => $this->bus()->run(new CreateDocumentCommand(' ', 'What we build', "Text\n")),
             CommandInputInvalid::class,
             self::TITLE_REQUIRED,
         );
@@ -97,17 +97,17 @@ final class DocumentsTest extends TestCase
     {
         $about = array_map(
             fn (int $number) => new RecordIdentity('tasks.task', TestIds::of($number)),
-            range(1, CreateDocument::MOST_LINKS + 1),
+            range(1, CreateDocumentCommand::MOST_LINKS + 1),
         );
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new CreateDocument('Design', "What we\nbuild", "Text\n")),
+            fn () => $this->bus()->run(new CreateDocumentCommand('Design', "What we\nbuild", "Text\n")),
             CommandInputInvalid::class,
             self::ABSTRACT_ONE_LINE,
         );
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new CreateReport('Check', 'What we found', "Text\n", $about)),
+            fn () => $this->bus()->run(new CreateReportCommand('Check', 'What we found', "Text\n", $about)),
             CommandInputInvalid::class,
             self::TOO_MANY_RELATED,
         );
@@ -117,8 +117,8 @@ final class DocumentsTest extends TestCase
 
     public function test_a_title_and_abstract_are_stored_trimmed(): void
     {
-        $this->bus()->run(new CreateDocument('  Plan for May  ', ' What we build ', "Text\n"));
-        $this->bus()->run(new CreateReport('  Plan for May  ', ' What we found ', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('  Plan for May  ', ' What we build ', "Text\n"));
+        $this->bus()->run(new CreateReportCommand('  Plan for May  ', ' What we found ', "Text\n"));
 
         $document = $this->app->make(DocumentResolver::class)->show(1);
 
@@ -132,7 +132,7 @@ final class DocumentsTest extends TestCase
 
     public function test_a_saved_revision_does_not_change(): void
     {
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
         $revision = DocumentRevision::query()->sole();
 
         $this->expectException(RecordImmutable::class);

@@ -8,7 +8,7 @@ use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
 use App\Hooks\Events\HelperStopHeld;
-use Domain\Helpers\Commands\HoldHelperJob;
+use Domain\Helpers\Commands\HoldHelperJob\HoldHelperJobCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 use Domain\Helpers\Support\JobStopEvidence;
@@ -30,7 +30,7 @@ final readonly class HoldFailingJob implements Listener
         $this->journal->runAsJournal(
             CommandEntry::Application,
             HelperLifecycleEntry::NAME,
-            new HoldHelperJob($event->work->id, JobStopEvidence::referenceOf($event->attempt)),
+            new HoldHelperJobCommand($event->work->id, JobStopEvidence::referenceOf($event->attempt)),
         );
     }
 }

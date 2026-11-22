@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Tasks\States;
 
 use Illuminate\Container\Attributes\Scoped;
-use Tests\Fixtures\Domains\Tasks\States\Commands\TaskWatchRecord;
+use Tests\Fixtures\Domains\Tasks\States\Commands\Support\TaskWatchRecord;
 
 /**
  * Preserves which actor's command recorded each watched task outcome.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Console;
 
 use App\Bus\Contracts\CommandBus;
-use App\Skills\Commands\CopySkill;
+use App\Skills\Commands\CopySkill\CopySkillCommand;
 use App\Skills\Console\Concerns\PrintsSkillRefusals;
 use App\Skills\Support\SkillAuthoring;
 use Illuminate\Console\Command;
@@ -32,7 +32,7 @@ final class SkillCopyCommand extends Command
 
             return $console->savedLines(
                 $commands->run(
-                    new CopySkill((string) $this->argument('key'), (string) $this->argument('new-key'), $requestId),
+                    new CopySkillCommand((string) $this->argument('key'), (string) $this->argument('new-key'), $requestId),
                 ),
             );
         });

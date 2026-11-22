@@ -7,7 +7,7 @@ namespace App\Processes\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Calls\ProposalReceived;
 use App\Processes\Calls\ReviseProposalCall;
-use App\Processes\Commands\ReviseRuleProposal;
+use App\Processes\Commands\ReviseRuleProposal\ReviseRuleProposalCommand;
 use App\Processes\Declarations\RuleDeclarations;
 
 /**
@@ -21,7 +21,7 @@ final readonly class ReviseProposalController
         CommandBus $commands,
     ): ProposalReceived {
         $declared = $declarations->readOne([...$call->declaration, 'request_id' => $call->proposal]);
-        $command = new ReviseRuleProposal($call->proposal, (int) $call->expectedRevision, $declared->proposed);
+        $command = new ReviseRuleProposalCommand($call->proposal, (int) $call->expectedRevision, $declared->proposed);
 
         return ProposalReceived::from($commands->run($command)->toArray());
     }

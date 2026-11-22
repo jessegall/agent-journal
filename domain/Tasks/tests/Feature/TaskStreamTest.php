@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\LogTaskRun;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskStreamEntryType;
 use Domain\Tasks\Http\Data\TaskStreamEntryData;
 use Domain\Tasks\Models\Task;
@@ -49,10 +49,10 @@ final class TaskStreamTest extends TestCase
         $task = Task::factory()->create();
         $this->startUserRequestAs($this->owner->id);
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new StartTask($task->id));
-        $bus->run(new LogTaskRun($task->id, 1, self::LOG_TEXT));
-        $bus->run(new LogTaskRun($task->id, 1, 'Wrote it.'));
-        $bus->run(new BlockTask($task->id, 1, 'Waits.'));
+        $bus->run(new StartTaskCommand($task->id));
+        $bus->run(new LogTaskRunCommand($task->id, 1, self::LOG_TEXT));
+        $bus->run(new LogTaskRunCommand($task->id, 1, 'Wrote it.'));
+        $bus->run(new BlockTaskCommand($task->id, 1, 'Waits.'));
 
         $page = $this->app->make(TaskStream::class)->page($task->id, '');
 

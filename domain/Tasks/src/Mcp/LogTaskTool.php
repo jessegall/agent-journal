@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Commands\LogTaskRun;
+use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('tasks_log')]
 #[IsDestructive(false)]
-#[Dispatches(LogTaskRun::class)]
+#[Dispatches(LogTaskRunCommand::class)]
 #[Description('Add a line to the log of your current task run.')]
 final class LogTaskTool extends TaskWriteTool
 {
@@ -30,9 +30,9 @@ final class LogTaskTool extends TaskWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): LogTaskRun
+    protected function command(ToolArguments $arguments): LogTaskRunCommand
     {
-        return new LogTaskRun(
+        return new LogTaskRunCommand(
             $arguments->ulid('task_id'),
             $arguments->positiveInteger('run_number'),
             $arguments->text('text'),

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Profiles\Listeners;
 
-use App\Agents\Commands\FailDriverSwitchLaunch;
+use App\Agents\Commands\FailDriverSwitchLaunch\FailDriverSwitchLaunchCommand;
 use App\Agents\Events\DriverSwitchStopped;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\CommandRefusal;
 use App\Contracts\Listener;
-use App\Profiles\Commands\StartSwitchReplacement;
+use App\Profiles\Commands\StartSwitchReplacement\StartSwitchReplacementCommand;
 
 /**
  * Once a switch's old session is proven stopped and that has committed, starts its replacement; a refused start is
@@ -26,13 +26,13 @@ final readonly class StartSwitchReplacementOnStop implements Listener
             $this->journal->runAsJournal(
                 CommandEntry::HostControl,
                 'driver switch',
-                new StartSwitchReplacement($fact->switchId),
+                new StartSwitchReplacementCommand($fact->switchId),
             );
         } catch (CommandRefusal $refused) {
             $this->journal->runAsJournal(
                 CommandEntry::HostControl,
                 'driver switch',
-                new FailDriverSwitchLaunch($fact->switchId, $refused->getMessage()),
+                new FailDriverSwitchLaunchCommand($fact->switchId, $refused->getMessage()),
             );
         }
     }

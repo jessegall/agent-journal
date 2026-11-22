@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Profiles;
 
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ClaimAccountCheck;
+use App\Profiles\Commands\ClaimAccountCheck\ClaimAccountCheckCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
@@ -17,7 +17,7 @@ final readonly class ClaimAccountCheckController
 {
     public function __invoke(HostContext $host, CommandBus $commands): JsonResponse|Response
     {
-        $claimed = $commands->run(new ClaimAccountCheck($host->hostId));
+        $claimed = $commands->run(new ClaimAccountCheckCommand($host->hostId));
 
         return $claimed === null
             ? new Response(status: Response::HTTP_NO_CONTENT)

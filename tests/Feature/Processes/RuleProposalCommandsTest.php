@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\ImportRuleProposals;
-use App\Processes\Commands\OpenCommandRequest;
-use App\Processes\Commands\ProposeCommandRule;
-use App\Processes\Commands\ReviseRuleProposal;
-use App\Processes\Commands\WithdrawRuleProposal;
+use App\Processes\Commands\ImportRuleProposals\ImportRuleProposalsCommand;
+use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Processes\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Processes\Commands\ReviseRuleProposal\ReviseRuleProposalCommand;
+use App\Processes\Commands\WithdrawRuleProposal\WithdrawRuleProposalCommand;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\ProposalState;
@@ -140,10 +140,10 @@ final class RuleProposalCommandsTest extends TestCase
         $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
 
         $this->assertThrows(
-            fn () => $this->runAsAgentId('agent-2', new WithdrawRuleProposal($receipt->proposalId)),
+            fn () => $this->runAsAgentId('agent-2', new WithdrawRuleProposalCommand($receipt->proposalId)),
             RuleProposalRefused::class,
         );
-        $this->runAsAgentId('agent-1', new WithdrawRuleProposal($receipt->proposalId));
+        $this->runAsAgentId('agent-1', new WithdrawRuleProposalCommand($receipt->proposalId));
 
         $this->assertSame(ProposalState::Withdrawn, RuleProposal::query()->findOrFail($receipt->proposalId)->state);
         $this->assertThrows(
@@ -161,7 +161,7 @@ final class RuleProposalCommandsTest extends TestCase
             'rule' => AcmeDeclarations::verify()->toArray(),
         ]]], JSON_THROW_ON_ERROR);
 
-        $receipts = $this->runAsAgentId('agent-1', new ImportRuleProposals($file))->receipts;
+        $receipts = $this->runAsAgentId('agent-1', new ImportRuleProposalsCommand($file))->receipts;
 
         $this->assertCount(1, $receipts);
         $this->assertSame(ProposalState::Pending, $receipts[0]->state);
@@ -180,7 +180,7 @@ final class RuleProposalCommandsTest extends TestCase
         $file = json_encode(['declarations' => [$declaration]]);
 
         try {
-            $this->runAsAgentId('agent-1', new ImportRuleProposals((string) $file));
+            $this->runAsAgentId('agent-1', new ImportRuleProposalsCommand((string) $file));
             $this->fail('The broken file was imported.');
         } catch (DeclarationInvalid $refusal) {
             $this->assertCount(2, $refusal->fields);
@@ -203,14 +203,14 @@ final class RuleProposalCommandsTest extends TestCase
 
     private function revise(string $agentId, string $proposalId, int $expectedRevision): ProposalReceipt
     {
-        $command = new ReviseRuleProposal($proposalId, $expectedRevision, AcmeDeclarations::proposedVerify());
+        $command = new ReviseRuleProposalCommand($proposalId, $expectedRevision, AcmeDeclarations::proposedVerify());
 
         return $this->runAsAgentId($agentId, $command);
     }
 
     private function openRequest(string $agentId, RequestHoldReason $reason): string
     {
-        $command = new OpenCommandRequest('acme verify', str_repeat('a', 64), 'acme verify', self::FOLDER, $reason);
+        $command = new OpenCommandRequestCommand('acme verify', str_repeat('a', 64), 'acme verify', self::FOLDER, $reason);
 
         return $this->runAsAgentId($agentId, $command);
     }
@@ -221,6 +221,6 @@ final class RuleProposalCommandsTest extends TestCase
         string $requestId,
         ProposedRule $proposed,
     ): ProposalReceipt {
-        return $this->runAsAgentId($agentId, new ProposeCommandRule($request, $requestId, $proposed));
+        return $this->runAsAgentId($agentId, new ProposeCommandRuleCommand($request, $requestId, $proposed));
     }
 }

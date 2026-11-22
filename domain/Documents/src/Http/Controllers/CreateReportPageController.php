@@ -6,7 +6,7 @@ namespace Domain\Documents\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Records\Contracts\RecordResolver;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Http\Requests\CreateRecordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -20,7 +20,7 @@ final readonly class CreateReportPageController
         Redirector $redirect,
     ): RedirectResponse {
         $commands->run(
-            new CreateReport($request->title(), $request->abstract(), $request->body(), $request->about($records)),
+            new CreateReportCommand($request->title(), $request->abstract(), $request->body(), $request->about($records)),
         );
 
         return $redirect->back(303);

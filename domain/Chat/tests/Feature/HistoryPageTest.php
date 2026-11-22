@@ -8,7 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
@@ -64,7 +64,7 @@ final class HistoryPageTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $questionId = $this->app->make(CommandBus::class)
-            ->run(new AskMessage($reviewerInboxId, $builderInboxId, 'Still needed?'));
+            ->run(new AskMessageCommand($reviewerInboxId, $builderInboxId, 'Still needed?'));
 
         $this->actingAs($owner)
             ->get('/chat/history?inbox='.$builderInboxId)

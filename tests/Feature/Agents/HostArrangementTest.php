@@ -7,8 +7,8 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Exceptions\ArrangementUnknown;
@@ -155,14 +155,14 @@ final class HostArrangementTest extends TestCase
 
     private function openOn(ArrangementType $arrangement, string $driver = 'claude-code'): OpenedRuntime
     {
-        $host = $this->asSystem(new EnrollHost('test host '.Str::random(6), [self::FOLDER], $arrangement));
+        $host = $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER], $arrangement));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent');
         [$build, $profile, $model] = $driver === 'codex'
             ? ['0.165.0', 'codex', 'gpt-5.5']
             : ['2.1.323', 'claude', 'claude-opus-5-5'];
 
-        return $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
+        return $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,
             self::FOLDER,

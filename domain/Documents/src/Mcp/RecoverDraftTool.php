@@ -6,7 +6,7 @@ namespace Domain\Documents\Mcp;
 
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use Domain\Documents\Commands\RecoverDraft;
+use Domain\Documents\Commands\RecoverDraft\RecoverDraftCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -16,7 +16,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('docs_drafts_recover')]
-#[Dispatches(RecoverDraft::class)]
+#[Dispatches(RecoverDraftCommand::class)]
 #[Description('Open an authorized saved draft as a new private edit.')]
 final class RecoverDraftTool extends DraftWriteTool
 {
@@ -28,8 +28,8 @@ final class RecoverDraftTool extends DraftWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): RecoverDraft
+    protected function command(ToolArguments $arguments): RecoverDraftCommand
     {
-        return new RecoverDraft($arguments->ulid('draft_id'), $arguments->positiveInteger('expected_revision'));
+        return new RecoverDraftCommand($arguments->ulid('draft_id'), $arguments->positiveInteger('expected_revision'));
     }
 }

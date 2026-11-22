@@ -7,7 +7,7 @@ namespace App\Skills\Listeners;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Contracts\Listener;
-use App\Skills\Commands\RefreshSkills;
+use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 use App\Skills\Events\SkillsChanged;
 
 /**
@@ -22,6 +22,6 @@ final readonly class RefreshOnSkillsChanged implements Listener
 
     public function handle(SkillsChanged $event): void
     {
-        $this->dispatchers->runAsJournal(CommandEntry::SkillPublisher, 'skill refresh', new RefreshSkills());
+        $this->dispatchers->runAsJournal(CommandEntry::SkillPublisher, 'skill refresh', new RefreshSkillsCommand());
     }
 }

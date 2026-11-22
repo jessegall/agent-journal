@@ -8,7 +8,7 @@ use App\Actors\Exceptions\ActorNotAllowed;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Actions\StartTokens;
-use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\StartRefused;
@@ -93,7 +93,7 @@ final class AgentRetirementTest extends TestCase
             AssigneeIdentity::of($this->helper),
         );
 
-        $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
+        $result = $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->helper->id));
 
         $this->assertCount(2, $result->changes);
         $this->assertTrue($this->helper->refresh()->isRetired());
@@ -107,16 +107,16 @@ final class AgentRetirementTest extends TestCase
     {
         $this->startRequestAs($this->helper->id, TestIds::of(2));
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)),
+            fn () => $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->main->id)),
             ActorNotAllowed::class,
         );
 
         $this->startRequestAs($this->main->id, TestIds::of(1));
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)),
+            fn () => $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->main->id)),
             AgentRetirementDenied::class,
         );
-        $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->helper->id));
 
         $this->assertTrue($this->helper->refresh()->isRetired());
         $this->assertFalse($this->main->refresh()->isRetired());
@@ -126,7 +126,7 @@ final class AgentRetirementTest extends TestCase
     {
         DB::transaction(function (): void {
             $this->assertThrows(
-                fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id)),
+                fn () => $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->helper->id)),
                 CommandTransactionMismatch::class,
             );
         });
@@ -147,7 +147,7 @@ final class AgentRetirementTest extends TestCase
 
         fgets($parentEnd);
         DB::reconnect();
-        $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
+        $result = $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->helper->id));
         pcntl_waitpid($child, $status);
 
         $this->assertCount(1, $result->changes);
@@ -206,7 +206,7 @@ final class AgentRetirementTest extends TestCase
 
         fgets($parentEnd);
         DB::reconnect();
-        $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->helper->id));
         pcntl_waitpid($child, $status);
 
         $session = AgentSession::query()->with('startToken')->where('agent_id', $this->helper->id)->sole();

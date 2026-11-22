@@ -6,7 +6,7 @@ namespace App\Connections\Http\Controllers;
 
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RecordBindingRuntimeStop;
+use App\Connections\Commands\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
 use Illuminate\Http\Response;
 
 /**
@@ -17,7 +17,7 @@ final readonly class BindingRuntimeStopController
 {
     public function __invoke(string $binding, string $runtime, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new RecordBindingRuntimeStop($host->hostId, $binding, $runtime));
+        $commands->run(new RecordBindingRuntimeStopCommand($host->hostId, $binding, $runtime));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

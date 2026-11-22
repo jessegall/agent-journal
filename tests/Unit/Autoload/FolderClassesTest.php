@@ -8,7 +8,7 @@ use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;
-use Domain\Chat\Commands\PinMessage;
+use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Illuminate\Console\Command as ConsoleCommand;
 use Tests\TestCase;
 
@@ -23,7 +23,7 @@ final class FolderClassesTest extends TestCase
         $commands = FolderClasses::in(base_path('domain/Chat/src/Commands'), Command::class);
 
         $this->assertCount(count(glob(base_path('domain/Chat/src/Commands/*.php')) ?: []), $commands);
-        $this->assertContains(PinMessage::class, $commands);
+        $this->assertContains(PinMessageCommand::class, $commands);
         $this->assertSame($commands, array_values(array_unique([...$commands])));
     }
 

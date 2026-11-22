@@ -9,7 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Actions\StartSessions;
-use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
@@ -23,7 +23,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestSelections;
@@ -86,7 +86,7 @@ final class HookRecoveryTest extends TestCase
             ActorContext::forAgent($started->session->agent_id),
             TestStartAuthority::forAgent($started->session->agent_id),
         );
-        $this->app->make(CommandBus::class)->run(new RecordHeartbeat($started->session->id));
+        $this->app->make(CommandBus::class)->run(new RecordHeartbeatCommand($started->session->id));
         $this->heartbeats()->markSilentStarts();
 
         $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
@@ -177,7 +177,7 @@ final class HookRecoveryTest extends TestCase
             ActorContext::forAgent($started->session->agent_id),
             TestStartAuthority::forAgent($started->session->agent_id),
         );
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
         $this->app->forgetScopedInstances();
 
         return $task;

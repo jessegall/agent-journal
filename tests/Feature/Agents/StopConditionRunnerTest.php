@@ -10,7 +10,7 @@ use App\Agents\Values\SelectedAccount;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
-use App\Hooks\Commands\RecordStopResults;
+use App\Hooks\Commands\RecordStopResults\RecordStopResultsCommand;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Enums\StopResultType;
@@ -132,7 +132,7 @@ final class StopConditionRunnerTest extends TestCase
         $attempt = StopAttempt::query()->withoutGlobalScopes()->where('stop_id', $stopId)->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopResults('host-1', $attempt->id, $attempt->policy_digest, 0, [
+        $this->asSystem(new RecordStopResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
             new StopResultReport(
                 $condition->key,
                 $condition->definitionHash(),

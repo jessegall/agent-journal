@@ -15,14 +15,14 @@ use App\Bus\Support\CommandEntrance;
 use App\Bus\Support\RequestKey;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\SupervisorTarget;
-use App\Supervision\Commands\AdvanceAsk;
-use App\Supervision\Commands\ChangeSupervisor;
-use App\Supervision\Commands\ReplyToAsk;
-use App\Supervision\Commands\RouteAsk;
+use App\Supervision\Commands\AdvanceAsk\AdvanceAskCommand;
+use App\Supervision\Commands\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Supervision\Commands\ReplyToAsk\ReplyToAskCommand;
+use App\Supervision\Commands\RouteAsk\RouteAskCommand;
 use App\Supervision\Enums\UnansweredReason;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\AskHop;
@@ -68,7 +68,7 @@ final class AskClockTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(ProfileProposal::fromConfiguration(
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));
         $this->requester = Agent::create('Requester', 'journal-worker');
@@ -113,7 +113,7 @@ final class AskClockTest extends TestCase
 
         $this->advanceAt($ask, CarbonImmutable::now()->addHours(Ask::LIFETIME_HOURS));
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new ReplyToAsk($ask->reference(), self::LATE_ANSWER));
+        $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($ask->reference(), self::LATE_ANSWER));
 
         $closed = $ask->refresh();
         $this->assertSame(UnansweredReason::TotalExpiry, $closed->outcome);
@@ -135,7 +135,7 @@ final class AskClockTest extends TestCase
             SupervisorTarget::forActor(ActorIdentity::of($this->holder)),
         );
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new RouteAsk($reference, 0));
+        $this->app->make(CommandBus::class)->run(new RouteAskCommand($reference, 0));
 
         return $ask->refresh();
     }
@@ -153,12 +153,12 @@ final class AskClockTest extends TestCase
     {
         $this->app->instance(ServerClock::class, new FixedServerClock($now));
         $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
-        $this->app->make(EngineAccess::class)->grantMaintenance(AdvanceAsk::MAINTENANCE_SCOPE);
+        $this->app->make(EngineAccess::class)->grantMaintenance(AdvanceAskCommand::MAINTENANCE_SCOPE);
         $this->app->make(RequestKey::class)->set('advance-'.$now->getTimestamp());
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(CommandEntrance::class)->through(
             CommandEntry::EngineMaintenance,
-            fn () => $bus->run(new AdvanceAsk($ask->id)),
+            fn () => $bus->run(new AdvanceAskCommand($ask->id)),
         );
     }
 
@@ -178,6 +178,6 @@ final class AskClockTest extends TestCase
         $type = AskTypeKey::from('question');
         $actor = ActorIdentity::of($agent);
         $version = $this->app->make(SupervisorRouting::class)->routeFor($actor, $type)->version;
-        $this->app->make(CommandBus::class)->run(new ChangeSupervisor($actor, $target, $version, $type));
+        $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $version, $type));
     }
 }

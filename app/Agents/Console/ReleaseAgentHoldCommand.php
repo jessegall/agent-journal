@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Console;
 
 use App\Actors\Exceptions\ConsoleOwnerMissing;
-use App\Agents\Commands\ReleaseAgentHold;
+use App\Agents\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand as ReleaseAgentHold;
 use App\Agents\Enums\HoldReason;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;

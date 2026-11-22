@@ -8,11 +8,11 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
 use App\Bus\Support\AcceptedReceipt;
-use App\Communication\Commands\AnswerChatQuestion;
-use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\DeclineChatQuestion;
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\ReplyInChat;
+use App\Communication\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
+use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Communication\Commands\DeclineChatQuestion\DeclineChatQuestionCommand;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\DismissalType;
@@ -49,7 +49,7 @@ final readonly class ChatPosting
         private CurrentSession $session,
     ) {}
 
-    public function post(PostChatMessage $command): string
+    public function post(PostChatMessageCommand $command): string
     {
         return $this->accept(
             $this->inboxes->resolve($command->inboxId),
@@ -65,7 +65,7 @@ final readonly class ChatPosting
         )->id;
     }
 
-    public function ask(AskChatQuestion $command): string
+    public function ask(AskChatQuestionCommand $command): string
     {
         return $this->accept(
             $this->inboxes->resolve($command->inboxId),
@@ -88,7 +88,7 @@ final readonly class ChatPosting
      *
      * @throws MessageMissing
      */
-    public function reply(ReplyInChat $command): string
+    public function reply(ReplyInChatCommand $command): string
     {
         $parent = $this->visibleParent($command->parentId, $command->inboxId);
         $author = $command->dispatchedBy();
@@ -124,7 +124,7 @@ final readonly class ChatPosting
      * @throws MessageMissing
      * @throws MessageStateConflict
      */
-    public function answer(AnswerChatQuestion $command): string
+    public function answer(AnswerChatQuestionCommand $command): string
     {
         $question = $this->visibleParent($command->questionId, null);
         $author = $command->dispatchedBy();
@@ -187,7 +187,7 @@ final readonly class ChatPosting
      * @throws MessageMissing
      * @throws SpeechRefused
      */
-    public function decline(DeclineChatQuestion $command): void
+    public function decline(DeclineChatQuestionCommand $command): void
     {
         $question = $this->visibleParent($command->questionId, null);
         $inbox = $this->inboxes->resolve($question->destination_inbox_id);

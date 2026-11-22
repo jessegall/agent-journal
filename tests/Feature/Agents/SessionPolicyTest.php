@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
@@ -68,7 +68,7 @@ final class SessionPolicyTest extends TestCase
     {
         $agent = Agent::create('Frozen policy agent', 'read-only-helper');
 
-        return $this->app->make(CommandBus::class)->run(new StartAgent(new StartRequest(
+        return $this->app->make(CommandBus::class)->run(new StartAgentCommand(new StartRequest(
             TestSelections::requestId(),
             $agent->id,
             TestSelections::of(),

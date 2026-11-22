@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Commands\RunTaskCheck;
+use Domain\Tasks\Commands\RunTaskCheck\RunTaskCheckCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -17,7 +17,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('tasks_check')]
 #[IsDestructive(false)]
-#[Dispatches(RunTaskCheck::class)]
+#[Dispatches(RunTaskCheckCommand::class)]
 #[Description('Record that a process run you opened checks your current task run; its result becomes the proof.')]
 final class RunTaskCheckTool extends TaskWriteTool
 {
@@ -30,9 +30,9 @@ final class RunTaskCheckTool extends TaskWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): RunTaskCheck
+    protected function command(ToolArguments $arguments): RunTaskCheckCommand
     {
-        return new RunTaskCheck(
+        return new RunTaskCheckCommand(
             $arguments->ulid('task_id'),
             $arguments->positiveInteger('run_number'),
             $arguments->ulid('process_run_id'),

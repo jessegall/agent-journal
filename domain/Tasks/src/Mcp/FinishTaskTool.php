@@ -9,7 +9,7 @@ use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('tasks_finish')]
-#[Dispatches(FinishTask::class)]
+#[Dispatches(FinishTaskCommand::class)]
 #[Description('Finish your current task run with a result note.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 final class FinishTaskTool extends TaskWriteTool
@@ -34,9 +34,9 @@ final class FinishTaskTool extends TaskWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): FinishTask
+    protected function command(ToolArguments $arguments): FinishTaskCommand
     {
-        return new FinishTask(
+        return new FinishTaskCommand(
             $arguments->ulid('task_id'),
             $arguments->positiveInteger('run_number'),
             $arguments->text('note'),

@@ -7,7 +7,7 @@ namespace Domain\Access\Database\Seeders;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\ProvisionActorDesk;
+use App\Desks\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
 use Domain\Access\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -25,7 +25,7 @@ final class OwnerSeeder extends Seeder
             $dispatchers->runAsJournal(
                 CommandEntry::HostControl,
                 'desk install',
-                new ProvisionActorDesk(ActorIdentity::of($owner), $owner->name),
+                new ProvisionActorDeskCommand(ActorIdentity::of($owner), $owner->name),
             );
         }
     }

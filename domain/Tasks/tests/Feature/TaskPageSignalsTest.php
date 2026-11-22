@@ -11,7 +11,7 @@ use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\Events\TaskStartCommitted;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
@@ -47,7 +47,7 @@ final class TaskPageSignalsTest extends TestCase
         $task = Task::factory()->create();
         $this->startUserRequestAs($this->owner->id);
 
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 
         Event::assertDispatchedTimes(TaskStartCommitted::class, 1);
         Event::assertDispatched(TaskStartCommitted::class, fn (TaskStartCommitted $sent) => $sent->taskId === $task->id);

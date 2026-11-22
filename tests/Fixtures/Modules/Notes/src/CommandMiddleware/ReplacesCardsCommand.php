@@ -18,6 +18,6 @@ final readonly class ReplacesCardsCommand implements CommandMiddleware
         // It knows the private command only by its name, as a module that may not import it would.
         $class = $call->name();
 
-        return $next(str_ends_with($class, '\ShuffleDeck') ? $call->replacedBy(new $class('changed')) : $call);
+        return $next(str_ends_with($class, '\ShuffleDeckCommand') ? $call->replacedBy(new $class('changed')) : $call);
     }
 }

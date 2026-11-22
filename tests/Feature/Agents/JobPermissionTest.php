@@ -10,7 +10,7 @@ use App\Actors\Support\ActorContext;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use App\Operations\Enums\AccessType;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Exceptions\GrantNotWithheld;
 use App\Profiles\Values\ProfileBase;
@@ -20,7 +20,7 @@ use App\Profiles\Values\StartProfileAuthority;
 use App\Profiles\Values\WithheldGrant;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Rules\Commands\ProposeRule;
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Policies\RulePolicy;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
@@ -95,7 +95,7 @@ final class JobPermissionTest extends TestCase
     private function activate(array $withheld): void
     {
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(self::EXECUTOR, ProfileBase::writingHelper(), withheldGrants: $withheld),
             TestProposals::profile(self::WRITER, ProfileBase::writingHelper()),
         )));
@@ -118,6 +118,6 @@ final class JobPermissionTest extends TestCase
 
     private function propose(): void
     {
-        $this->app->make(CommandBus::class)->run(new ProposeRule('Write tests first.', 'It keeps the work honest.'));
+        $this->app->make(CommandBus::class)->run(new ProposeRuleCommand('Write tests first.', 'It keeps the work honest.'));
     }
 }

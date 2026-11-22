@@ -7,7 +7,7 @@ namespace App\Communication\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Calls\MessagesRead;
 use App\Communication\Calls\ReadMessagesCall;
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Data\MessageReadResult;
 
 /**
@@ -17,7 +17,7 @@ final readonly class ReadMessagesController
 {
     public function __invoke(ReadMessagesCall $call, CommandBus $commands): MessagesRead
     {
-        $batch = $commands->run(new ReadMessages($call->inboxId, $call->messageIds));
+        $batch = $commands->run(new ReadMessagesCommand($call->inboxId, $call->messageIds));
 
         return MessagesRead::from(['results' => array_map(
             fn (MessageReadResult $messageRead) => [

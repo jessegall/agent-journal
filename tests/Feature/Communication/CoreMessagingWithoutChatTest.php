@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Bus\Support\CommandRegistry;
-use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
 use App\Communication\Models\Message;
 use App\Communication\States\Support\AnsweringMessageStateReference;
 use App\CoreCommands;
@@ -39,8 +39,8 @@ final class CoreMessagingWithoutChatTest extends TestCase
 
     public function test_core_registers_the_messaging_mechanics(): void
     {
-        $this->assertContains(SendMessage::class, CoreCommands::commands());
-        $this->assertTrue($this->app->make(CommandRegistry::class)->has(SendMessage::class));
+        $this->assertContains(SendMessageCommand::class, CoreCommands::commands());
+        $this->assertTrue($this->app->make(CommandRegistry::class)->has(SendMessageCommand::class));
         $this->assertSame(Message::class, $this->app->make(LinkTypeRegistry::class)->modelFor(Message::LINK_TYPE));
 
         $states = new StateTypeRegistry();

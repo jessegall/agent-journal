@@ -82,6 +82,6 @@ final class AccessDomain extends Domain implements AssigneeContributor, CommandP
 
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands', Command::class);
+        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
     }
 }

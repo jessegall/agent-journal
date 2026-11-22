@@ -16,10 +16,10 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Desks\Contracts\RunClaims;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
@@ -73,11 +73,11 @@ final class TaskRunOwnershipTest extends TestCase
     {
         $this->actAs($this->first);
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2STARTKEY1');
-        $run = $this->bus()->run(new StartTask($this->task->id));
-        $retry = $this->bus()->run(new StartTask($this->task->id));
+        $run = $this->bus()->run(new StartTaskCommand($this->task->id));
+        $retry = $this->bus()->run(new StartTaskCommand($this->task->id));
 
         $this->actAs($this->second);
-        $this->assertThrows(fn () => $this->bus()->run(new StartTask($this->task->id)), TaskRunTaken::class);
+        $this->assertThrows(fn () => $this->bus()->run(new StartTaskCommand($this->task->id)), TaskRunTaken::class);
 
         $this->assertSame([1, 1], [$run, $retry]);
         $run = TaskRun::query()->where('task_id', $this->task->id)->sole();
@@ -88,9 +88,9 @@ final class TaskRunOwnershipTest extends TestCase
     public function test_finishing_records_the_note_and_ends_the_working_state(): void
     {
         $this->actAs($this->first);
-        $run = $this->bus()->run(new StartTask($this->task->id));
+        $run = $this->bus()->run(new StartTaskCommand($this->task->id));
 
-        $this->bus()->run(new FinishTask($this->task->id, $run, 'Built and tested.'));
+        $this->bus()->run(new FinishTaskCommand($this->task->id, $run, 'Built and tested.'));
 
         $this->assertSame(
             [TaskState::Finished, 'Built and tested.'],
@@ -103,23 +103,23 @@ final class TaskRunOwnershipTest extends TestCase
     public function test_blocking_keeps_the_reason_and_another_session_cannot_block_or_finish_the_run(): void
     {
         $this->actAs($this->first);
-        $run = $this->bus()->run(new StartTask($this->task->id));
+        $run = $this->bus()->run(new StartTaskCommand($this->task->id));
 
         $this->actAs($this->second);
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new FinishTask($this->task->id, $run, 'Not mine.')),
+            fn () => $this->bus()->run(new FinishTaskCommand($this->task->id, $run, 'Not mine.')),
             ActorNotAllowed::class,
         );
 
         $this->actAs($this->first);
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new BlockTask($this->task->id, $run + 1, 'Wrong run.')),
+            fn () => $this->bus()->run(new BlockTaskCommand($this->task->id, $run + 1, 'Wrong run.')),
             TaskRunNotYours::class,
         );
 
-        $this->bus()->run(new BlockTask($this->task->id, $run, 'Waits on review.'));
+        $this->bus()->run(new BlockTaskCommand($this->task->id, $run, 'Waits on review.'));
 
         $this->assertSame(
             [TaskState::Blocked, 'Waits on review.'],
@@ -131,19 +131,19 @@ final class TaskRunOwnershipTest extends TestCase
     {
         $this->actAs($this->second);
         $helperTask = Task::factory()->create(['title' => 'Helper work']);
-        $this->bus()->run(new StartTask($helperTask->id));
+        $this->bus()->run(new StartTaskCommand($helperTask->id));
         $this->actAs($this->first);
-        $this->bus()->run(new StartTask($this->task->id));
+        $this->bus()->run(new StartTaskCommand($this->task->id));
 
         $this->actAs($this->second);
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new CancelTask($this->task->id, 'Not mine.')),
+            fn () => $this->bus()->run(new CancelTaskCommand($this->task->id, 'Not mine.')),
             ActorNotAllowed::class,
         );
 
         $this->actAs($this->second);
-        $this->bus()->run(new CancelTask($helperTask->id, 'Superseded.'));
+        $this->bus()->run(new CancelTaskCommand($helperTask->id, 'Superseded.'));
 
         $this->assertSame(
             [TaskState::Started, TaskState::Cancelled, 'Superseded.'],
@@ -154,10 +154,10 @@ final class TaskRunOwnershipTest extends TestCase
     public function test_an_ended_task_is_not_started_again(): void
     {
         $this->actAs($this->first);
-        $run = $this->bus()->run(new StartTask($this->task->id));
-        $this->bus()->run(new FinishTask($this->task->id, $run, 'Done.'));
+        $run = $this->bus()->run(new StartTaskCommand($this->task->id));
+        $this->bus()->run(new FinishTaskCommand($this->task->id, $run, 'Done.'));
 
-        $this->assertThrows(fn () => $this->bus()->run(new StartTask($this->task->id)), TaskRestartRefused::class);
+        $this->assertThrows(fn () => $this->bus()->run(new StartTaskCommand($this->task->id)), TaskRestartRefused::class);
     }
 
     private function start(string $name, string $profileKey): AgentSession

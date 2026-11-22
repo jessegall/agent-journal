@@ -6,7 +6,7 @@ namespace App\Http\Middleware\Agents;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\PresenceWindow;
-use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Agents\Exceptions\CallProtocolUnsupported;
 use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\CredentialRejected;
@@ -81,6 +81,6 @@ final readonly class AuthenticateAgent
             return;
         }
 
-        $this->commands->run(new RecordHeartbeat($context->sessionId));
+        $this->commands->run(new RecordHeartbeatCommand($context->sessionId));
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Enums;
 
-use Domain\Plans\Commands\CancelPlan;
-use Domain\Plans\Commands\FinishPlan;
+use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
+use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
 
 /**
  * How a signed agent call ends a plan: finished with a note, or cancelled with a reason.
@@ -26,11 +26,11 @@ enum PlanEndType: string
         };
     }
 
-    public function command(string $planId, int $expectedRevision, string $text): CancelPlan|FinishPlan
+    public function command(string $planId, int $expectedRevision, string $text): CancelPlanCommand|FinishPlanCommand
     {
         return match ($this) {
-            self::Finish => new FinishPlan($planId, $expectedRevision, $text),
-            self::Cancel => new CancelPlan($planId, $expectedRevision, $text),
+            self::Finish => new FinishPlanCommand($planId, $expectedRevision, $text),
+            self::Cancel => new CancelPlanCommand($planId, $expectedRevision, $text),
         };
     }
 }

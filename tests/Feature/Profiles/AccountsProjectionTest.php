@@ -14,9 +14,9 @@ use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Drivers\Enums\HookDriver;
-use App\Profiles\Commands\RecordAccountNotice;
-use App\Profiles\Commands\RenameAccount;
-use App\Profiles\Commands\SwitchAccount;
+use App\Profiles\Commands\RecordAccountNotice\RecordAccountNoticeCommand;
+use App\Profiles\Commands\RenameAccount\RenameAccountCommand;
+use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
@@ -62,9 +62,9 @@ final class AccountsProjectionTest extends TestCase
     {
         $account = $this->account('Work');
 
-        $this->bus()->run(new RenameAccount($account->id, 'Office'));
-        $this->bus()->run(new SwitchAccount($account->id));
-        $this->bus()->run(new SwitchAccount($account->id));
+        $this->bus()->run(new RenameAccountCommand($account->id, 'Office'));
+        $this->bus()->run(new SwitchAccountCommand($account->id));
+        $this->bus()->run(new SwitchAccountCommand($account->id));
 
         $this->assertSame([['claude-code', $account->id], ['claude-code', $account->id]], $this->changes);
     }
@@ -74,7 +74,7 @@ final class AccountsProjectionTest extends TestCase
         $this->account('Work');
         $home = $this->account('Home');
 
-        $this->assertThrows(fn () => $this->bus()->run(new RenameAccount($home->id, 'Work')));
+        $this->assertThrows(fn () => $this->bus()->run(new RenameAccountCommand($home->id, 'Work')));
 
         $this->assertSame([], $this->changes);
     }
@@ -105,7 +105,7 @@ final class AccountsProjectionTest extends TestCase
 
     public function test_recording_the_notice_again_counts_it_and_refreshes_for_the_same_notice(): void
     {
-        $record = new RecordAccountNotice('claude-code', AccountNoticeReason::NeedsSignIn);
+        $record = new RecordAccountNoticeCommand('claude-code', AccountNoticeReason::NeedsSignIn);
         $journal = $this->app->make(EntryDispatchers::class);
 
         $journal->runAsJournal(CommandEntry::AccountMaintenance, 'test', $record);

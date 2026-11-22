@@ -14,7 +14,7 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Connections\Models\ProjectBinding;
-use App\Desks\Commands\InstallDesks;
+use App\Desks\Commands\InstallDesks\InstallDesksCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use App\Desks\Support\BuiltInDesks;
@@ -56,7 +56,7 @@ final class BindingStartTest extends TestCase
 
         $this->chooseActiveAccounts();
         $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
+            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesksCommand());
     }
 
     public function test_another_folder_root_id_or_agent_is_refused_before_any_runtime(): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\RaiseNavigation;
+use App\Agents\Commands\RaiseNavigation\RaiseNavigationCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Agents\NavigationRaiseData;
@@ -22,7 +22,7 @@ final readonly class RaiseNavigationController
         HostContext $host,
         CommandBus $commands,
     ): JsonResponse {
-        $answer = $commands->run(new RaiseNavigation(
+        $answer = $commands->run(new RaiseNavigationCommand(
             $host->hostId,
             $runtime,
             $raise->operationKey,

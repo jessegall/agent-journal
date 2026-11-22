@@ -6,7 +6,7 @@ namespace App\Desks\Database\Seeders;
 
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\InstallDesks;
+use App\Desks\Commands\InstallDesks\InstallDesksCommand;
 use Illuminate\Database\Seeder;
 
 /**
@@ -16,6 +16,6 @@ final class DesksSeeder extends Seeder
 {
     public function run(EntryDispatchers $dispatchers): void
     {
-        $dispatchers->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
+        $dispatchers->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesksCommand());
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\ReplyInChat;
+use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
 use Domain\Chat\Data\ReplyInput;
 use Domain\Chat\Support\SentMessageAnswer;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +26,7 @@ final readonly class ReplyController
         CommandBus $commands,
         SentMessageAnswer $answer,
     ): JsonResponse|RedirectResponse {
-        $replyId = $commands->run(new ReplyInChat($input->messageId, $input->body, $input->requestKey, $input->inboxId));
+        $replyId = $commands->run(new ReplyInChatCommand($input->messageId, $input->body, $input->requestKey, $input->inboxId));
 
         return $answer->to($request, $replyId, $input->agent, $input->inboxId);
     }

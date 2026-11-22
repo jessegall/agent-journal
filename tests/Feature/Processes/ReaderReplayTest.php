@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\AssessPartOutput;
-use App\Processes\Commands\ReplayAssessment;
+use App\Processes\Commands\AssessPartOutput\AssessPartOutputCommand;
+use App\Processes\Commands\ReplayAssessment\ReplayAssessmentCommand;
 use App\Processes\Enums\InterpretationState;
 use App\Processes\Enums\PositionPurpose;
 use App\Processes\Enums\RunMode;
@@ -54,10 +54,10 @@ final class ReaderReplayTest extends TestCase
     public function test_a_replay_appends_a_linked_assessment_and_runs_nothing_again(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
-        $first = $this->runAsAgent(new AssessPartOutput($part->id));
+        $first = $this->runAsAgent(new AssessPartOutputCommand($part->id));
         $runs = ProcessRun::query()->withoutGlobalScopes()->count();
 
-        $second = $this->asUser(new ReplayAssessment($part->id));
+        $second = $this->asUser(new ReplayAssessmentCommand($part->id));
 
         $assessments = OutputAssessment::query()
             ->where('part_run_id', $part->id)
@@ -73,13 +73,13 @@ final class ReaderReplayTest extends TestCase
     public function test_an_evidence_run_and_an_unended_part_are_not_replayed(): void
     {
         $evidence = $this->normalRun(0, self::PASSED_OUTPUT, RunMode::Evidence);
-        $this->assertThrows(fn () => $this->asUser(new ReplayAssessment($evidence->id)), ReplayRefused::class);
+        $this->assertThrows(fn () => $this->asUser(new ReplayAssessmentCommand($evidence->id)), ReplayRefused::class);
 
         $running = PartRun::create(
             ProcessRun::query()->withoutGlobalScopes()->findOrFail($evidence->process_run_id),
             new PartKey(2, 1, 'acme verify'),
         );
-        $this->assertThrows(fn () => $this->asUser(new ReplayAssessment($running->id)), ReplayRefused::class);
+        $this->assertThrows(fn () => $this->asUser(new ReplayAssessmentCommand($running->id)), ReplayRefused::class);
     }
 
     private function livePosition(PartRun $part): ReaderPosition

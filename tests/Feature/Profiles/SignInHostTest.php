@@ -7,11 +7,11 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
 use App\Agents\Support\EnrolledHost;
 use App\Files\Contracts\Files;
 use App\Http\Data\Profiles\SignInAttemptData;
-use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Commands\BeginSignIn\BeginSignInCommand;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Enums\SignInRefusal;
@@ -140,7 +140,7 @@ final class SignInHostTest extends TestCase
         $owner = ActorContext::forUser($this->owner()->id);
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
         $this->assertThrows(
-            fn () => $this->runOnBus(new BeginSignIn('codex', SignInMethod::ProviderToken), 'request-4'),
+            fn () => $this->runOnBus(new BeginSignInCommand('codex', SignInMethod::ProviderToken), 'request-4'),
             SignInMethodMissing::class,
         );
         $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
@@ -435,7 +435,7 @@ final class SignInHostTest extends TestCase
         $owner = ActorContext::forUser($this->owner()->id);
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
 
-        $begin = new BeginSignIn('claude-code', SignInMethod::OAuth);
+        $begin = new BeginSignInCommand('claude-code', SignInMethod::OAuth);
         $started = $this->runOnBus($begin, (string) Str::ulid());
 
         return $started->attemptId;
@@ -478,6 +478,6 @@ final class SignInHostTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHost('test host '.Str::random(6), ['/work']));
+        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), ['/work']));
     }
 }

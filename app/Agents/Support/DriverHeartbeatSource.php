@@ -6,16 +6,16 @@ namespace App\Agents\Support;
 
 use App\Actors\Support\ActorContext;
 use App\Agents\Actions\StartHeartbeats;
-use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatHandler;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\HostReportRefused;
-use App\Agents\Handlers\RecordHeartbeatHandler;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 
 /**
  * The driver side of the heartbeat: evidence from the host that runs the session's current process refreshes its
- * presence by RecordHeartbeat's own rule, inside the host's command and for its actor, and a verified exit ends it
+ * presence by RecordHeartbeatCommand's own rule, inside the host's command and for its actor, and a verified exit ends it
  * through the start lifecycle. Silence ends nothing.
  */
 final readonly class DriverHeartbeatSource
@@ -26,7 +26,7 @@ final readonly class DriverHeartbeatSource
     {
         $this->requireCurrent($session, $evidence->hostId, $evidence->processGeneration);
 
-        $this->beats->handle(new RecordHeartbeat($session->id)->withDispatcher($actor));
+        $this->beats->handle(new RecordHeartbeatCommand($session->id)->withDispatcher($actor));
     }
 
     public function recordExit(AgentSession $session, RuntimeExit $exit): void

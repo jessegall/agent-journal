@@ -126,7 +126,7 @@ final class FolderLayoutTest extends TestCase
             new TypesDeclared(),
             [app_path(), ...DomainFiles::domainCode()],
         ) as $file => $declarations) {
-            $type = FolderType::ofFolder(dirname($file));
+            $type = FolderType::ofFile($file);
 
             if ($type === null) {
                 continue;

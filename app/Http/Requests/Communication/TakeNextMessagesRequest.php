@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\TakeNextMessages;
+use App\Communication\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class TakeNextMessagesRequest extends FormRequest
@@ -20,9 +20,9 @@ final class TakeNextMessagesRequest extends FormRequest
         ];
     }
 
-    public function command(): TakeNextMessages
+    public function command(): TakeNextMessagesCommand
     {
-        return new TakeNextMessages(
+        return new TakeNextMessagesCommand(
             $this->string('inboxId')->toString(),
             $this->integer('limit', 1),
         );

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\DismissMessage\DismissMessageCommand;
 use Domain\Chat\Data\CancelInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -17,7 +17,7 @@ final readonly class CancelMessageController
      */
     public function __invoke(CancelInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new DismissMessage($input->messageId, $input->reason));
+        $commands->run(new DismissMessageCommand($input->messageId, $input->reason));
 
         return $redirect->back(303);
     }

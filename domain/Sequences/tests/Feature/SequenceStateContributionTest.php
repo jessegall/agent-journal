@@ -16,7 +16,7 @@ use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\HookAnswer;
 use Carbon\CarbonImmutable;
-use Domain\Sequences\Commands\StartSequence;
+use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Support\SequenceWork;
@@ -36,7 +36,7 @@ final class SequenceStateContributionTest extends TestCase
     {
         $run = $this->newRun();
 
-        $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
 
         $this->assertSame(
             [SequenceRunState::Running, 1, 'agent', TestIds::of(1)],
@@ -52,7 +52,7 @@ final class SequenceStateContributionTest extends TestCase
         AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
 
         try {
-            $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
+            $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
             $this->fail('The start went through without its push.');
         } catch (StackAlreadyClosed) {
             $this->assertNull($run->fresh()?->actor_id);
@@ -62,7 +62,7 @@ final class SequenceStateContributionTest extends TestCase
     public function test_each_hook_reads_the_current_step_fresh(): void
     {
         $run = $this->newRun();
-        $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
 
         $onFirstStep = $this->answerStop('call-1');
         $run->advance();
@@ -76,7 +76,7 @@ final class SequenceStateContributionTest extends TestCase
     public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
     {
         $run = $this->newRun();
-        $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
 
         $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
@@ -87,7 +87,7 @@ final class SequenceStateContributionTest extends TestCase
     public function test_a_finished_or_cancelled_run_is_passed_over_and_a_push_pops_the_exposed_one(): void
     {
         $finished = $this->newRun();
-        $this->app->make(CommandBus::class)->run(new StartSequence($finished->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($finished->id, $this->target->sessionId));
         $finished->advance();
         $finished->advance();
 
@@ -95,7 +95,7 @@ final class SequenceStateContributionTest extends TestCase
         $this->assertSame('{}', $this->answerStop('call-1'));
 
         $cancelled = $this->newRun();
-        $this->app->make(CommandBus::class)->run(new StartSequence($cancelled->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($cancelled->id, $this->target->sessionId));
         $cancelled->cancel();
 
         $this->assertSame('{}', $this->answerStop('call-2'));

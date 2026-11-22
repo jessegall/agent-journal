@@ -6,7 +6,7 @@ namespace App\Sharing\Console;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
-use App\Sharing\Commands\RevokeShare;
+use App\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use Illuminate\Console\Command;
 
 /**
@@ -26,7 +26,7 @@ final class ShareRevokeCommand extends Command
             $this->option('request-key') === null ? null : (string) $this->option('request-key'),
         );
 
-        $summary = $commands->run(new RevokeShare((string) $this->argument('share'), $key));
+        $summary = $commands->run(new RevokeShareCommand((string) $this->argument('share'), $key));
 
         $this->line("Share {$summary->number} is {$summary->state->value}.");
 

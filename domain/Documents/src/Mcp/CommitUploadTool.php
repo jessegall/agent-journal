@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Documents\Commands\CommitUpload;
+use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('uploads_commit')]
-#[Dispatches(CommitUpload::class)]
+#[Dispatches(CommitUploadCommand::class)]
 #[Description('Verify all bytes and seal the upload.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class CommitUploadTool extends JournalWriteTool
@@ -32,9 +32,9 @@ final class CommitUploadTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CommitUpload
+    protected function command(ToolArguments $arguments): CommitUploadCommand
     {
-        return new CommitUpload($arguments->ulid('upload_id'));
+        return new CommitUploadCommand($arguments->ulid('upload_id'));
     }
 
     protected function present(mixed $attachmentId): ToolResult

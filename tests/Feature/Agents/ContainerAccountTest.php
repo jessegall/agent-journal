@@ -7,10 +7,10 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\ClaimStart;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Commands\ReconcileStarts;
+use App\Agents\Commands\ClaimStart\ClaimStartCommand;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Agents\Commands\ReconcileStarts\ReconcileStartsCommand;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Enums\AgentPresence;
 use App\Agents\Enums\DriverVariant;
@@ -27,7 +27,7 @@ use App\Drivers\Enums\HookDriver;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Enums\DriverEvidence;
-use App\Profiles\Commands\SwitchAccount;
+use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Profiles\Models\Account;
 use App\Profiles\Values\AccountLabel;
 use Illuminate\Support\Str;
@@ -92,10 +92,10 @@ final class ContainerAccountTest extends TestCase
     {
         $host = $this->enrollHost();
         $running = $this->open($host);
-        $this->asSystem(new ClaimStart($host->hostId, $running->sessionId));
+        $this->asSystem(new ClaimStartCommand($host->hostId, $running->sessionId));
         $second = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Second'), '/journal/accounts/second');
         $this->actAsOwner();
-        $this->app->make(CommandBus::class)->run(new SwitchAccount($second->id));
+        $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($second->id));
 
         $next = $this->open($host);
 
@@ -108,8 +108,8 @@ final class ContainerAccountTest extends TestCase
         $host = $this->enrollHost();
         $launch = $this->open($host);
 
-        $claimed = $this->asSystem(new ClaimStart($host->hostId, $launch->sessionId));
-        $again = $this->asSystem(new ClaimStart($host->hostId, $launch->sessionId));
+        $claimed = $this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId));
+        $again = $this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId));
 
         $this->assertNotNull($claimed);
         $this->assertNull($again);
@@ -119,14 +119,14 @@ final class ContainerAccountTest extends TestCase
     {
         $host = $this->enrollHost();
         $launch = $this->open($host);
-        $this->asSystem(new ClaimStart($host->hostId, $launch->sessionId));
+        $this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId));
         $key = $this->startOf($launch)->start_key;
 
-        $this->asSystem(new ReconcileStarts($host->hostId, []));
+        $this->asSystem(new ReconcileStartsCommand($host->hostId, []));
 
         $this->assertSame([$key], ProcessStart::unresolvedKeysOf($host->hostId));
 
-        $this->asSystem(new ReconcileStarts($host->hostId, [$key]));
+        $this->asSystem(new ReconcileStartsCommand($host->hostId, [$key]));
 
         $this->assertSame([], ProcessStart::unresolvedKeysOf($host->hostId));
         $this->assertFalse(AgentSession::query()->findOrFail($launch->sessionId)->isActive());
@@ -148,7 +148,7 @@ final class ContainerAccountTest extends TestCase
         $host = $this->enrollHost();
         $launch = $this->open($host);
 
-        $this->assertNull($this->asSystem(new ClaimStart($host->hostId, $launch->sessionId)));
+        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId)));
 
         $start = $this->startOf($launch);
         $this->assertSame(ProcessStartState::Stopped, $start->state);
@@ -156,7 +156,7 @@ final class ContainerAccountTest extends TestCase
             self::REPORT_MISSING,
             (string) $start->refusal,
         );
-        $this->assertNull($this->asSystem(new ClaimStart($host->hostId, $launch->sessionId)));
+        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId)));
         $this->actAsOwner();
         $agent = $this->app->make(AgentDirectory::class)->visibleAgent($start->agent_id);
         $this->assertSame(AgentPresence::Failed, $agent->presence);
@@ -172,7 +172,7 @@ final class ContainerAccountTest extends TestCase
     {
         $this->actAsOwner();
         $agent = Agent::create('Helper '.Str::random(6), 'main-agent');
-        $command = new OpenAgentRuntime(
+        $command = new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,
             self::FOLDER,
@@ -188,7 +188,7 @@ final class ContainerAccountTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        $host = $this->asSystem(new EnrollHost('test host '.Str::random(6), [self::FOLDER]));
+        $host = $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
         $this->actAsOwner();
 
         return $host;

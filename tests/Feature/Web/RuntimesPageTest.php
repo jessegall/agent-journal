@@ -7,8 +7,8 @@ namespace Tests\Feature\Web;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestOutcome;
@@ -140,10 +140,10 @@ final class RuntimesPageTest extends TestCase
 
     private function openRuntime(): void
     {
-        $host = $this->throughEntry(new EnrollHost('test host', ['/work/project']));
+        $host = $this->throughEntry(new EnrollHostCommand('test host', ['/work/project']));
         $agent = Agent::create('Driven agent', 'main-agent');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
+        $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,
             '/work/project',

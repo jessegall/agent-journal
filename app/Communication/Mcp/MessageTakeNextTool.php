@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Mcp;
 
 use App\Bus\Contracts\Command;
-use App\Communication\Commands\TakeNextMessages;
+use App\Communication\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Name('messages_take_next')]
-#[Dispatches(TakeNextMessages::class)]
+#[Dispatches(TakeNextMessagesCommand::class)]
 #[Description('Take up the oldest questions nobody has taken up in one of your inboxes.')]
 final class MessageTakeNextTool extends MessageWriteTool
 {
@@ -33,9 +33,9 @@ final class MessageTakeNextTool extends MessageWriteTool
 
     protected function command(ToolArguments $arguments): Command
     {
-        return new TakeNextMessages(
+        return new TakeNextMessagesCommand(
             $arguments->text('inbox_id'),
-            $arguments->positiveIntegerOr('limit', 1, TakeNextMessages::LARGEST_LIMIT),
+            $arguments->positiveIntegerOr('limit', 1, TakeNextMessagesCommand::LARGEST_LIMIT),
         );
     }
 

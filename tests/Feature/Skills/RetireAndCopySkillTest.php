@@ -8,9 +8,9 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
-use App\Skills\Commands\CopySkill;
-use App\Skills\Commands\CreateSkill;
-use App\Skills\Commands\RetireSkill;
+use App\Skills\Commands\CopySkill\CopySkillCommand;
+use App\Skills\Commands\CreateSkill\CreateSkillCommand;
+use App\Skills\Commands\RetireSkill\RetireSkillCommand;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Exceptions\SkillOwnerRequired;
 use App\Skills\Models\Skill;
@@ -48,13 +48,13 @@ final class RetireAndCopySkillTest extends TestCase
     {
         $created = $this->as(
             7,
-            new CreateSkill(
+            new CreateSkillCommand(
                 'user-review-notes',
                 'create-1',
                 new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], ''),
             ),
         );
-        $this->as(7, new RetireSkill($created->skillId, 1, 'retire-1'));
+        $this->as(7, new RetireSkillCommand($created->skillId, 1, 'retire-1'));
 
         Artisan::call('skill:list', ['--json' => true]);
         $this->assertNotContains(
@@ -68,7 +68,7 @@ final class RetireAndCopySkillTest extends TestCase
     {
         $created = $this->as(
             7,
-            new CreateSkill(
+            new CreateSkillCommand(
                 'user-review-notes',
                 'create-1',
                 new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], ''),
@@ -77,13 +77,13 @@ final class RetireAndCopySkillTest extends TestCase
 
         $this->expectException(SkillOwnerRequired::class);
 
-        $this->as(8, new RetireSkill($created->skillId, 1, 'retire-1'));
+        $this->as(8, new RetireSkillCommand($created->skillId, 1, 'retire-1'));
     }
 
     public function test_copying_journal_plans_snapshots_its_text_and_source_digest(): void
     {
         $source = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-plans'));
-        $copied = $this->as(7, new CopySkill('journal-plans', 'user-plans', 'copy-1'));
+        $copied = $this->as(7, new CopySkillCommand('journal-plans', 'user-plans', 'copy-1'));
         $revision = SkillRevision::currentOf(Skill::query()->whereKey($copied->skillId)->firstOrFail());
 
         $this->assertSame(1, $copied->revision);

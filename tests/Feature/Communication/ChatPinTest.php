@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Communication\Exceptions\MessageMissing;
-use Domain\Chat\Commands\PinMessage;
+use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;
@@ -24,12 +24,12 @@ final class ChatPinTest extends MessagingTestCase
         $chat = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
         $other = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->reviewer));
         $this->asOwner();
-        $messageId = $this->runOnBus(new PostChatMessage($chat->inbox_id, 'Pin this.', 'pin-key'));
+        $messageId = $this->runOnBus(new PostChatMessageCommand($chat->inbox_id, 'Pin this.', 'pin-key'));
 
-        $this->runOnBus(new PinMessage($chat->inbox_id, $messageId));
+        $this->runOnBus(new PinMessageCommand($chat->inbox_id, $messageId));
 
         $this->assertSame($chat->inbox_id, MessagePin::query()->sole()->inbox_id);
         $this->expectException(MessageMissing::class);
-        $this->runOnBus(new PinMessage($other->inbox_id, $messageId));
+        $this->runOnBus(new PinMessageCommand($other->inbox_id, $messageId));
     }
 }

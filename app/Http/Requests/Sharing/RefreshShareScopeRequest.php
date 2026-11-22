@@ -7,7 +7,7 @@ namespace App\Http\Requests\Sharing;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Sharing\Concerns\ReadsConfirmedPreview;
 use App\Http\Requests\Sharing\Concerns\ReadsShareId;
-use App\Sharing\Commands\RefreshShareScope;
+use App\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -28,9 +28,9 @@ final class RefreshShareScopeRequest extends FormRequest
         return [...$this->confirmedPreviewRules(), ...$this->idempotencyKeyRules()];
     }
 
-    public function command(): RefreshShareScope
+    public function command(): RefreshShareScopeCommand
     {
-        return new RefreshShareScope(
+        return new RefreshShareScopeCommand(
             $this->shareId(),
             $this->previewId(),
             $this->previewChecksum(),

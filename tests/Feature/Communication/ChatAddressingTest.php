@@ -6,18 +6,18 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\ReplyInChat;
+use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Communication\Exceptions\RespondentRequired;
 use App\Communication\Exceptions\StaleAddressee;
 use App\Communication\Models\Message;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Chat\Commands\AddChatParticipant;
-use Domain\Chat\Commands\CreateGroupChat;
-use Domain\Chat\Commands\RemoveChatParticipant;
+use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
+use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
 use Domain\Chat\Data\ChatMessageData;
 use Domain\Chat\Resolvers\Support\ChatConversations;
 use Tests\Support\MessagingTestCase;
@@ -44,22 +44,22 @@ final class ChatAddressingTest extends MessagingTestCase
         $this->cy = $this->grantedUser('Cy');
         $this->dee = $this->grantedUser('Dee');
         $this->asOwner();
-        $this->inboxId = $this->runOnBus(new CreateGroupChat('Design', [$this->bea->id, $this->cy->id]));
+        $this->inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$this->bea->id, $this->cy->id]));
     }
 
     public function test_addressing_someone_who_left_and_a_question_without_respondent_are_refused(): void
     {
-        $this->runOnBus(new AddChatParticipant($this->inboxId, $this->keyOf($this->dee)));
-        $this->runOnBus(new RemoveChatParticipant($this->inboxId, $this->keyOf($this->dee)));
+        $this->runOnBus(new AddChatParticipantCommand($this->inboxId, $this->keyOf($this->dee)));
+        $this->runOnBus(new RemoveChatParticipantCommand($this->inboxId, $this->keyOf($this->dee)));
 
         $this->assertThrows(
             fn () => $this->runOnBus(
-                new PostChatMessage($this->inboxId, 'Hi', 'to-dee', null, $this->keyOf($this->dee)),
+                new PostChatMessageCommand($this->inboxId, 'Hi', 'to-dee', null, $this->keyOf($this->dee)),
             ),
             StaleAddressee::class,
         );
         $this->assertThrows(
-            fn () => $this->runOnBus(new AskChatQuestion($this->inboxId, 'Ready?', 'nobody')),
+            fn () => $this->runOnBus(new AskChatQuestionCommand($this->inboxId, 'Ready?', 'nobody')),
             RespondentRequired::class,
         );
         $this->assertSame(0, Message::query()->acrossInboxes()->where('body', 'Hi')->count());
@@ -68,7 +68,7 @@ final class ChatAddressingTest extends MessagingTestCase
     public function test_only_the_named_respondent_is_offered_to_settle_the_question(): void
     {
         $questionId = $this->runOnBus(
-            new AskChatQuestion($this->inboxId, 'Ready?', 'to-bea', $this->keyOf($this->bea)),
+            new AskChatQuestionCommand($this->inboxId, 'Ready?', 'to-bea', $this->keyOf($this->bea)),
         );
 
         $this->startUserRequestAs($this->bea->id);
@@ -80,9 +80,9 @@ final class ChatAddressingTest extends MessagingTestCase
 
     public function test_a_reply_shows_an_original_from_before_a_member_joined_as_unavailable(): void
     {
-        $originalId = $this->runOnBus(new PostChatMessage($this->inboxId, 'Before Dee.', 'before'));
-        $this->runOnBus(new AddChatParticipant($this->inboxId, $this->keyOf($this->dee)));
-        $replyId = $this->runOnBus(new ReplyInChat($originalId, 'Following up.', 'after'));
+        $originalId = $this->runOnBus(new PostChatMessageCommand($this->inboxId, 'Before Dee.', 'before'));
+        $this->runOnBus(new AddChatParticipantCommand($this->inboxId, $this->keyOf($this->dee)));
+        $replyId = $this->runOnBus(new ReplyInChatCommand($originalId, 'Following up.', 'after'));
 
         $this->startUserRequestAs($this->dee->id);
         $reply = $this->rowAs($replyId);

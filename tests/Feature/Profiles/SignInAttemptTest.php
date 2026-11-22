@@ -11,11 +11,11 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Http\Data\Profiles\SignInAttemptData;
-use App\Profiles\Commands\BeginSignIn;
-use App\Profiles\Commands\BeginSignInAgain;
-use App\Profiles\Commands\CancelSignIn;
-use App\Profiles\Commands\CompleteSignIn;
-use App\Profiles\Commands\ReconcileAccounts;
+use App\Profiles\Commands\BeginSignIn\BeginSignInCommand;
+use App\Profiles\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Profiles\Commands\CancelSignIn\CancelSignInCommand;
+use App\Profiles\Commands\CompleteSignIn\CompleteSignInCommand;
+use App\Profiles\Commands\ReconcileAccounts\ReconcileAccountsCommand;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
@@ -129,13 +129,13 @@ final class SignInAttemptTest extends TestCase
         $added = $this->completeNew('request-1', new SignInIdentity('a@example.test', 'subject-1', null));
         $account = Account::query()->sole();
         $matched = $this->completeNew('request-2', new SignInIdentity('a@example.test', 'subject-1', null));
-        $again = $this->runOnBus(new BeginSignInAgain($account->id), 'request-3');
+        $again = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-3');
         $renewal = SignInAttempt::query()->whereKey($again->attemptId)->sole();
         $renewal->waitForUser();
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new CompleteSignIn($again->attemptId, $renewal->generation, new SignInIdentity('a@example.test', 'subject-1', null)),
+            new CompleteSignInCommand($again->attemptId, $renewal->generation, new SignInIdentity('a@example.test', 'subject-1', null)),
         );
         $this->actAsOwner();
 
@@ -176,7 +176,7 @@ final class SignInAttemptTest extends TestCase
     {
         $started = $this->begin('request-1');
 
-        $this->bus()->run(new CancelSignIn($started->attemptId));
+        $this->bus()->run(new CancelSignInCommand($started->attemptId));
 
         $attempt = SignInAttempt::query()->sole();
         $this->assertSame(SignInState::Cancelled, $attempt->state);
@@ -190,15 +190,15 @@ final class SignInAttemptTest extends TestCase
     {
         $account = $this->chooseActiveAccounts()['codex'];
         $this->actAsOwner();
-        $again = $this->runOnBus(new BeginSignInAgain($account->id), 'request-again');
-        $rejoined = $this->runOnBus(new BeginSignInAgain($account->id), 'request-other');
+        $again = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-again');
+        $rejoined = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-other');
 
         $this->assertSame($again->attemptId, $rejoined->attemptId);
         $this->assertSame($again->attemptId, $account->refresh()->live_writer_attempt_id);
         $this->travel(16)->minutes();
 
         $ended = $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::AccountMaintenance, 'test sweep', new ReconcileAccounts());
+            ->runAsJournal(CommandEntry::AccountMaintenance, 'test sweep', new ReconcileAccountsCommand());
 
         $this->assertSame(1, $ended);
         $this->assertSame(SignInState::Expired, SignInAttempt::query()->whereKey($again->attemptId)->sole()->state);
@@ -207,7 +207,7 @@ final class SignInAttemptTest extends TestCase
 
     private function begin(string $requestKey): SignInStarted
     {
-        return $this->runOnBus(new BeginSignIn('claude-code', SignInMethod::OAuth), $requestKey);
+        return $this->runOnBus(new BeginSignInCommand('claude-code', SignInMethod::OAuth), $requestKey);
     }
 
     /**
@@ -220,7 +220,7 @@ final class SignInAttemptTest extends TestCase
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new CompleteSignIn($started->attemptId, 0, $identity),
+            new CompleteSignInCommand($started->attemptId, 0, $identity),
         );
         $this->actAsOwner();
 
@@ -232,7 +232,7 @@ final class SignInAttemptTest extends TestCase
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new CompleteSignIn($attemptId, $generation, SignInIdentity::shown($display)),
+            new CompleteSignInCommand($attemptId, $generation, SignInIdentity::shown($display)),
         );
         $this->actAsOwner();
     }

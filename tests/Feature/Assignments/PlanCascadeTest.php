@@ -14,8 +14,8 @@ use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Plans\Commands\AssignPlanWork;
-use Domain\Plans\Commands\UnassignPlanWork;
+use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
+use Domain\Plans\Commands\UnassignPlanWork\UnassignPlanWorkCommand;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
@@ -156,14 +156,14 @@ final class PlanCascadeTest extends TestCase
     {
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
-        return $this->app->make(CommandBus::class)->run(new AssignPlanWork($root, $recipient));
+        return $this->app->make(CommandBus::class)->run(new AssignPlanWorkCommand($root, $recipient));
     }
 
     private function unassignWork(RecordIdentity $root, AssignmentReference $expectedRoot): AssignmentResult
     {
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
-        return $this->app->make(CommandBus::class)->run(new UnassignPlanWork($root, $expectedRoot));
+        return $this->app->make(CommandBus::class)->run(new UnassignPlanWorkCommand($root, $expectedRoot));
     }
 
     private function planStructure(): PlanStructure

@@ -9,7 +9,7 @@ use App\Agents\Events\StartUnavailable;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
-use App\Profiles\Commands\RecordAccountNotice;
+use App\Profiles\Commands\RecordAccountNotice\RecordAccountNoticeCommand;
 use App\Profiles\Enums\AccountNoticeReason;
 
 /**
@@ -33,7 +33,7 @@ final readonly class ShowAccountsNotice implements Listener
         $this->journal->runAsJournal(
             CommandEntry::AccountMaintenance,
             'accounts notice',
-            new RecordAccountNotice($fact->driver, $reason),
+            new RecordAccountNoticeCommand($fact->driver, $reason),
         );
     }
 }

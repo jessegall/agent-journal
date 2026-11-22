@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReconcileStarts;
+use App\Agents\Commands\ReconcileStarts\ReconcileStartsCommand;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
@@ -25,7 +25,7 @@ final readonly class ReconcileStartsController
 
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): JsonResponse
     {
-        $accounts = $commands->run(new ReconcileStarts($host->hostId, $request->stoppedStartKeys()));
+        $accounts = $commands->run(new ReconcileStartsCommand($host->hostId, $request->stoppedStartKeys()));
 
         return new JsonResponse(['accounts_changed' => $accounts]);
     }

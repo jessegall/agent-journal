@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Console;
 
-use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\EnrollHost\EnrollHostCommand as EnrollHost;
 use App\Agents\Enums\ArrangementType;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;

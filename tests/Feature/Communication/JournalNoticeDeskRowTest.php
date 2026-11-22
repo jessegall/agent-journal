@@ -9,7 +9,7 @@ use App\Bus\Support\EntryDispatchers;
 use App\Communication\Contracts\InboxNotices;
 use App\Communication\Enums\MessageType;
 use App\Communication\Models\Message;
-use App\Desks\Commands\InstallDesks;
+use App\Desks\Commands\InstallDesks\InstallDesksCommand;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -21,7 +21,7 @@ final class JournalNoticeDeskRowTest extends MessagingTestCase
     public function test_a_journal_notice_to_the_owner_is_stored_as_a_desk_row(): void
     {
         $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
+            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesksCommand());
 
         $ownerInboxId = $this->ownerInboxId();
         $messageId = $this->app->make(InboxNotices::class)->sendFromJournal(null, 'A draft was kept.', 'notice-1');

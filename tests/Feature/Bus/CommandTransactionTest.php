@@ -11,12 +11,12 @@ use App\Bus\Exceptions\ExplicitTransactionInCommand;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
 use App\Hooks\Support\StackTransaction;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Modules\Notes\Commands\CopyNote;
-use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
-use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
-use Tests\Fixtures\Modules\Notes\Commands\PinNote;
-use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote\OpenTransactionNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\PinNote\PinNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 /**
  * One transaction per command (doc 19, Book D): it commits in the command's isolation, a nested command joins it, a
@@ -33,10 +33,10 @@ final class CommandTransactionTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $bus = $this->app->make(CommandBus::class);
 
-        $id = $bus->run(new WriteNote('kept'));
+        $id = $bus->run(new WriteNoteCommand('kept'));
 
         $this->assertSame('kept', $this->rowText($id));
-        $this->assertSame(self::ISOLATION, $bus->run(new PinNote($id)));
+        $this->assertSame(self::ISOLATION, $bus->run(new PinNoteCommand($id)));
         $this->assertSame(0, $this->app->make(ConnectionInterface::class)->transactionLevel());
     }
 
@@ -45,7 +45,7 @@ final class CommandTransactionTest extends CommandBusTestCase
         $this->installCommandModules();
         $this->startTestUserRequest(1);
 
-        $id = $this->app->make(CommandBus::class)->run(new CopyNote('copied'));
+        $id = $this->app->make(CommandBus::class)->run(new CopyNoteCommand('copied'));
 
         $this->assertSame('copied', $this->rowText($id));
     }
@@ -56,7 +56,7 @@ final class CommandTransactionTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
 
         try {
-            $this->app->make(CommandBus::class)->run(new RefuseNote('gone'));
+            $this->app->make(CommandBus::class)->run(new RefuseNoteCommand('gone'));
             $this->fail('The refusal did not reach the caller.');
         } catch (CommandRefused) {
             $this->assertSame(0, $this->rowCount());
@@ -69,7 +69,7 @@ final class CommandTransactionTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
 
         try {
-            $this->app->make(CommandBus::class)->run(new IgnoreFailedNote('half'));
+            $this->app->make(CommandBus::class)->run(new IgnoreFailedNoteCommand('half'));
             $this->fail('The ignored failure was let through.');
         } catch (NestedCommandFailureIgnored) {
             $this->assertSame(0, $this->rowCount());
@@ -82,7 +82,7 @@ final class CommandTransactionTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
 
         try {
-            $this->app->make(CommandBus::class)->run(new OpenTransactionNote('own'));
+            $this->app->make(CommandBus::class)->run(new OpenTransactionNoteCommand('own'));
             $this->fail('The explicit transaction was let through.');
         } catch (ExplicitTransactionInCommand) {
             $this->assertSame(0, $this->app->make(ConnectionInterface::class)->transactionLevel());
@@ -96,10 +96,10 @@ final class CommandTransactionTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $bus = $this->app->make(CommandBus::class);
 
-        $id = $this->app->make(StackTransaction::class)->run(fn () => $bus->run(new WriteNote('joined')));
+        $id = $this->app->make(StackTransaction::class)->run(fn () => $bus->run(new WriteNoteCommand('joined')));
         $this->assertSame('joined', $this->rowText($id));
 
         $this->expectException(CommandTransactionMismatch::class);
-        $this->app->make(StackTransaction::class)->run(fn () => $bus->run(new PinNote($id)));
+        $this->app->make(StackTransaction::class)->run(fn () => $bus->run(new PinNoteCommand($id)));
     }
 }

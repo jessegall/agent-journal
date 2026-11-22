@@ -51,7 +51,10 @@ final class CommandFolderTest extends TestCase
     public function test_every_class_in_a_commands_folder_is_a_registered_command(): void
     {
         $registry = $this->app->make(CommandRegistry::class);
-        $unlisted = array_filter($this->classesIn('Commands'), fn (string $class) => ! $registry->has($class));
+        $unlisted = array_filter(
+            $this->classesIn('Commands'),
+            fn (string $class) => str_ends_with($class, 'Command') && ! $registry->has($class),
+        );
 
         $this->assertSame(
             [],
@@ -103,7 +106,7 @@ final class CommandFolderTest extends TestCase
     {
         $static = [];
 
-        foreach ([...$this->classesIn('Handlers'), ...$this->classesIn('CommandMiddleware')] as $class) {
+        foreach ([...array_values($this->app->make(CommandRegistry::class)->handlerMap()), ...$this->classesIn('CommandMiddleware')] as $class) {
             foreach (Reflector::of($class)->properties() as $property) {
                 if ($property->isStatic()) {
                     $static[] = "{$class}::\${$property->name()}";

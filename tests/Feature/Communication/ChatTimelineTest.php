@@ -6,15 +6,15 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Communication\Contracts\ChatTimeline;
 use App\Communication\Exceptions\ChatCursorRefused;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Chat\Commands\AddChatParticipant;
-use Domain\Chat\Commands\CreateGroupChat;
-use Domain\Chat\Commands\RemoveChatParticipant;
+use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
+use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -41,14 +41,14 @@ final class ChatTimelineTest extends MessagingTestCase
         );
         $this->inboxOf(ActorIdentity::of($this->bea));
         $this->asOwner();
-        $this->inboxId = $this->runOnBus(new CreateGroupChat('Design', [$this->bea->id]));
+        $this->inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$this->bea->id]));
     }
 
     public function test_the_events_after_the_cursor_are_the_new_ones(): void
     {
         $cursor = $this->timeline()->snapshot($this->inboxId)->cursor;
-        $this->runOnBus(new PostChatMessage($this->inboxId, 'One.', 'one'));
-        $this->runOnBus(new PostChatMessage($this->inboxId, 'Two.', 'two'));
+        $this->runOnBus(new PostChatMessageCommand($this->inboxId, 'One.', 'one'));
+        $this->runOnBus(new PostChatMessageCommand($this->inboxId, 'Two.', 'two'));
 
         $page = $this->timeline()->after($this->inboxId, (string) $cursor);
 
@@ -62,13 +62,13 @@ final class ChatTimelineTest extends MessagingTestCase
         $old = (string) $this->timeline()->snapshot($this->inboxId)->cursor;
 
         $this->asOwner();
-        $this->runOnBus(new RemoveChatParticipant($this->inboxId, "user:{$this->bea->id}"));
+        $this->runOnBus(new RemoveChatParticipantCommand($this->inboxId, "user:{$this->bea->id}"));
 
         $this->startUserRequestAs($this->bea->id);
         $this->assertTrue($this->timeline()->after($this->inboxId, $old)->accessEnded);
 
         $this->asOwner();
-        $this->runOnBus(new AddChatParticipant($this->inboxId, "user:{$this->bea->id}"));
+        $this->runOnBus(new AddChatParticipantCommand($this->inboxId, "user:{$this->bea->id}"));
 
         $this->startUserRequestAs($this->bea->id);
         $this->expectException(ChatCursorRefused::class);

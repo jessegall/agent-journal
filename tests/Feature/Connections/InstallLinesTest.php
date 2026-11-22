@@ -12,7 +12,7 @@ use App\Agents\Values\ReleaseManifest;
 use App\Agents\Values\ReleaseTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Connections\Models\ProjectInvitation;
-use App\Settings\Commands\SetBooleanSetting;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Settings\Values\SettingReference;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -164,7 +164,7 @@ final class InstallLinesTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->app->make(CommandBus::class)->run(
-            new SetBooleanSetting(new SettingReference('Core', 'remote_projects'), true, 0),
+            new SetBooleanSettingCommand(new SettingReference('Core', 'remote_projects'), true, 0),
         );
         $this->app->forgetScopedInstances();
     }

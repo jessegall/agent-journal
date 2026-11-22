@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
 use App\Bus\Exceptions\CommandInputInvalid;
-use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\InboxUnavailable;
@@ -69,7 +69,7 @@ final class SendMessageTest extends TestCase
 
     public function test_a_sent_message_keeps_its_text_and_both_inboxes_and_waits_for_nobody(): void
     {
-        $messageId = $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, self::BUILD_NOTICE));
+        $messageId = $this->runOnBus(new SendMessageCommand($this->ownInboxId, $this->builderInboxId, self::BUILD_NOTICE));
 
         $message = Message::query()->findOrFail($messageId);
         $this->assertSame(self::BUILD_NOTICE, $message->body);
@@ -82,7 +82,7 @@ final class SendMessageTest extends TestCase
     public function test_the_same_request_sent_again_gives_back_the_same_message(): void
     {
         $key = (string) Str::ulid();
-        $command = new SendMessage($this->ownInboxId, $this->builderInboxId, 'Once.');
+        $command = new SendMessageCommand($this->ownInboxId, $this->builderInboxId, 'Once.');
 
         $first = $this->runOnBus($command, $key);
         $this->app->forgetScopedInstances();
@@ -96,11 +96,11 @@ final class SendMessageTest extends TestCase
     public function test_an_inbox_the_sender_is_not_seated_at_refuses_and_leaves_no_message(): void
     {
         $this->assertThrows(
-            fn () => $this->runOnBus(new SendMessage($this->builderInboxId, $this->ownInboxId, 'Not mine to send.')),
+            fn () => $this->runOnBus(new SendMessageCommand($this->builderInboxId, $this->ownInboxId, 'Not mine to send.')),
             InboxUnavailable::class,
         );
         $this->assertThrows(
-            fn () => $this->runOnBus(new SendMessage($this->ownInboxId, (string) Str::ulid(), 'Nowhere.')),
+            fn () => $this->runOnBus(new SendMessageCommand($this->ownInboxId, (string) Str::ulid(), 'Nowhere.')),
             InboxUnavailable::class,
         );
 
@@ -110,7 +110,7 @@ final class SendMessageTest extends TestCase
     public function test_a_blank_message_is_refused_naming_its_body_and_nothing_is_sent(): void
     {
         $this->assertThrows(
-            fn () => $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, "  \n")),
+            fn () => $this->runOnBus(new SendMessageCommand($this->ownInboxId, $this->builderInboxId, "  \n")),
             CommandInputInvalid::class,
             self::BODY_REQUIRED,
         );

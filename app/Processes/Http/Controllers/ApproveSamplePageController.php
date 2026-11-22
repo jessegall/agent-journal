@@ -6,7 +6,7 @@ namespace App\Processes\Http\Controllers;
 
 use App\Http\Requests\Processes\ApproveSampleRequest;
 use App\Http\Responses\Processes\ReviewResponses;
-use App\Processes\Commands\ApproveSample;
+use App\Processes\Commands\ApproveSample\ApproveSampleCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -16,6 +16,6 @@ final readonly class ApproveSamplePageController
 {
     public function __invoke(ApproveSampleRequest $form, string $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new ApproveSample($request, $form->expectedRevision(), $form->commandDigest()));
+        return $review->run(new ApproveSampleCommand($request, $form->expectedRevision(), $form->commandDigest()));
     }
 }

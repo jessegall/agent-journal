@@ -26,7 +26,7 @@ use Illuminate\Auth\Access\Response;
 use PhpOption\Option;
 
 /**
- * Checks every command's handler: a final class built fresh in its owner's Handlers folder, whose public handle takes
+ * Checks every command's handler: a final class built fresh beside its command, whose public handle takes
  * the command, and the record too for record work, and returns what the grammar allows; and checks that each
  * application command's grant fits its policy.
  */

@@ -6,7 +6,7 @@ namespace App\Http\Data\Agents;
 
 use App\Bus\Support\Command;
 use App\Http\Enums\UsageMeasurementType;
-use App\Profiles\Commands\AddUsageCost;
+use App\Profiles\Commands\AddUsageCost\AddUsageCostCommand;
 use App\Profiles\Values\ReportedStart;
 use App\Profiles\Values\UsageCost;
 use App\Profiles\Values\UsageSource;
@@ -27,6 +27,6 @@ final class UsageCostData extends UsageMeasurementData
 
     public function commandFor(ReportedStart $start, UsageSource $source): Command
     {
-        return new AddUsageCost($start, new UsageCost($source->id, UsdAmount::from($this->usd), $source->observedAt));
+        return new AddUsageCostCommand($start, new UsageCost($source->id, UsdAmount::from($this->usd), $source->observedAt));
     }
 }

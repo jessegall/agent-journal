@@ -8,8 +8,8 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
-use App\Processes\Commands\RetryProcessRun;
-use App\Processes\Commands\StopSurvivors;
+use App\Processes\Commands\RetryProcessRun\RetryProcessRunCommand;
+use App\Processes\Commands\StopSurvivors\StopSurvivorsCommand;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
@@ -87,10 +87,10 @@ final class RunReconcileTest extends TestCase
         $this->setActor(TestActors::user(7));
         $bus = $this->app->make(CommandBus::class);
 
-        $other = new RetryProcessRun($this->run->id, 'cat README.md', 'key-2');
+        $other = new RetryProcessRunCommand($this->run->id, 'cat README.md', 'key-2');
         $this->assertThrows(fn () => $bus->run($other), RetryRefused::class);
-        $retried = $bus->run(new RetryProcessRun($this->run->id, 'cat composer.json', 'key-2'));
-        $bus->run(new StopSurvivors($this->run->id));
+        $retried = $bus->run(new RetryProcessRunCommand($this->run->id, 'cat composer.json', 'key-2'));
+        $bus->run(new StopSurvivorsCommand($this->run->id));
 
         $this->assertNotSame($this->run->id, $retried);
         $this->assertSame(LifecycleState::Lost, $this->run->refresh()->lifecycle);

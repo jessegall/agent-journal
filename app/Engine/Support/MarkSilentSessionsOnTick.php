@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Engine\Support;
 
 use App\Bus\Contracts\CommandBus;
-use App\Engine\Commands\MarkSilentSessions;
+use App\Engine\Commands\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
 
@@ -18,11 +18,11 @@ final readonly class MarkSilentSessionsOnTick implements EngineListener
 
     public function maintenanceScope(): string
     {
-        return MarkSilentSessions::MAINTENANCE_SCOPE;
+        return MarkSilentSessionsCommand::MAINTENANCE_SCOPE;
     }
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->commands->run(new MarkSilentSessions());
+        $this->commands->run(new MarkSilentSessionsCommand());
     }
 }

@@ -8,7 +8,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Numbers\Support\RecordReference;
 use App\Records\Calls\LinkChanged;
 use App\Records\Calls\RemoveLinkCall;
-use App\Records\Commands\UnlinkRecords;
+use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Records\Contracts\RecordResolver;
 
 /**
@@ -20,7 +20,7 @@ final readonly class RemoveLinkController
     {
         $source = $records->identify(RecordReference::parse($call->source));
         $target = $records->identify(RecordReference::parse($call->target));
-        $commands->run(new UnlinkRecords($source, $target));
+        $commands->run(new UnlinkRecordsCommand($source, $target));
 
         return LinkChanged::from(['source' => $call->source, 'target' => $call->target]);
     }

@@ -10,8 +10,8 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Documents\Commands\CreateDocument;
-use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
@@ -113,8 +113,8 @@ final class LibraryPageTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "Text\n"));
-        $this->app->make(CommandBus::class)->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
+        $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
         $this->app->make(CurrentActorSetter::class)->clear();
     }
 }

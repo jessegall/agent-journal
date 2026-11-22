@@ -7,7 +7,7 @@ namespace App\Supervision\Support;
 use App\Bus\Contracts\CommandBus;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
-use App\Supervision\Commands\SettleMergeOutcomes;
+use App\Supervision\Commands\SettleMergeOutcomes\SettleMergeOutcomesCommand;
 
 /**
  * Settles unsettled merge attempts on every engine pass; the sweep is bounded.
@@ -18,11 +18,11 @@ final readonly class SettleMergeOutcomesOnTick implements EngineListener
 
     public function maintenanceScope(): string
     {
-        return SettleMergeOutcomes::MAINTENANCE_SCOPE;
+        return SettleMergeOutcomesCommand::MAINTENANCE_SCOPE;
     }
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->commands->run(new SettleMergeOutcomes());
+        $this->commands->run(new SettleMergeOutcomesCommand());
     }
 }

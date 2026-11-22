@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\ReplyInChat;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
 use Domain\Chat\Enums\SentOperation;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\RequiredIf;
@@ -36,8 +36,8 @@ final class RequestOutcomeInput extends Data
     public function target(): string
     {
         return match ($this->operation) {
-            SentOperation::Send => PostChatMessage::targetOf((string) $this->inboxId),
-            SentOperation::Reply => ReplyInChat::targetOf((string) $this->messageId),
+            SentOperation::Send => PostChatMessageCommand::targetOf((string) $this->inboxId),
+            SentOperation::Reply => ReplyInChatCommand::targetOf((string) $this->messageId),
         };
     }
 

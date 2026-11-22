@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class SendMessageRequest extends FormRequest
@@ -21,9 +21,9 @@ final class SendMessageRequest extends FormRequest
         ];
     }
 
-    public function command(): SendMessage
+    public function command(): SendMessageCommand
     {
-        return new SendMessage(
+        return new SendMessageCommand(
             $this->string('sourceInboxId')->toString(),
             $this->string('destinationInboxId')->toString(),
             $this->string('body')->toString(),

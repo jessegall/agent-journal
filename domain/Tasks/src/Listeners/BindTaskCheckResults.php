@@ -10,7 +10,7 @@ use App\Contracts\Listener;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Events\RunChanged;
 use App\Processes\Values\PartProjection;
-use Domain\Tasks\Commands\BindTaskCheck;
+use Domain\Tasks\Commands\BindTaskCheck\BindTaskCheckCommand;
 use Domain\Tasks\Models\TaskCheck;
 
 /**
@@ -48,6 +48,6 @@ final readonly class BindTaskCheckResults implements Listener
             return;
         }
 
-        $this->journal->runAsJournal(CommandEntry::Application, self::ENTRY, new BindTaskCheck($result->receiptId));
+        $this->journal->runAsJournal(CommandEntry::Application, self::ENTRY, new BindTaskCheckCommand($result->receiptId));
     }
 }

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Commands\CancelPrivateEntry;
-use App\Agents\Commands\CancelTerminalTake;
-use App\Agents\Commands\CheckTerminalScreen;
-use App\Agents\Commands\ChooseTerminalDraft;
-use App\Agents\Commands\OpenPrivateEntry;
-use App\Agents\Commands\ReleaseTerminalControl;
-use App\Agents\Commands\RenewTerminalControl;
-use App\Agents\Commands\SendTerminalInput;
-use App\Agents\Commands\SubmitPrivateInput;
-use App\Agents\Commands\TakeTerminalControl;
+use App\Agents\Commands\CancelPrivateEntry\CancelPrivateEntryCommand;
+use App\Agents\Commands\CancelTerminalTake\CancelTerminalTakeCommand;
+use App\Agents\Commands\CheckTerminalScreen\CheckTerminalScreenCommand;
+use App\Agents\Commands\ChooseTerminalDraft\ChooseTerminalDraftCommand;
+use App\Agents\Commands\OpenPrivateEntry\OpenPrivateEntryCommand;
+use App\Agents\Commands\ReleaseTerminalControl\ReleaseTerminalControlCommand;
+use App\Agents\Commands\RenewTerminalControl\RenewTerminalControlCommand;
+use App\Agents\Commands\SendTerminalInput\SendTerminalInputCommand;
+use App\Agents\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Agents\Commands\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Agents\Enums\TerminalDraftChoice;
 use App\Agents\Enums\TerminalInputType;
 use App\Agents\Enums\TerminalNamedKey;
@@ -64,27 +64,27 @@ final class TerminalControlRequest extends FormRequest
         ];
     }
 
-    public function takeCommand(): TakeTerminalControl
+    public function takeCommand(): TakeTerminalControlCommand
     {
-        return new TakeTerminalControl($this->agentId(), $this->string('interest')->toString(), $this->takeId());
+        return new TakeTerminalControlCommand($this->agentId(), $this->string('interest')->toString(), $this->takeId());
     }
 
-    public function cancelCommand(): CancelTerminalTake
+    public function cancelCommand(): CancelTerminalTakeCommand
     {
-        return new CancelTerminalTake($this->agentId(), $this->takeId());
+        return new CancelTerminalTakeCommand($this->agentId(), $this->takeId());
     }
 
-    public function renewCommand(): RenewTerminalControl
+    public function renewCommand(): RenewTerminalControlCommand
     {
-        return new RenewTerminalControl($this->agentId(), $this->grantId());
+        return new RenewTerminalControlCommand($this->agentId(), $this->grantId());
     }
 
-    public function releaseCommand(): ReleaseTerminalControl
+    public function releaseCommand(): ReleaseTerminalControlCommand
     {
-        return new ReleaseTerminalControl($this->agentId(), $this->grantId());
+        return new ReleaseTerminalControlCommand($this->agentId(), $this->grantId());
     }
 
-    public function inputCommand(): SendTerminalInput
+    public function inputCommand(): SendTerminalInputCommand
     {
         $input = new TerminalInput(
             $this->string('text')->toString(),
@@ -97,32 +97,32 @@ final class TerminalControlRequest extends FormRequest
             $this->integer('columns'),
         );
 
-        return new SendTerminalInput($this->agentId(), $this->grantId(), $input);
+        return new SendTerminalInputCommand($this->agentId(), $this->grantId(), $input);
     }
 
-    public function chooseCommand(): ChooseTerminalDraft
+    public function chooseCommand(): ChooseTerminalDraftCommand
     {
         $this->validate(['choice' => ['required', Rule::enum(TerminalDraftChoice::class)]]);
         $choice = TerminalDraftChoice::from($this->string('choice')->toString());
 
-        return new ChooseTerminalDraft($this->agentId(), $this->grantId(), $choice, $this->sequence());
+        return new ChooseTerminalDraftCommand($this->agentId(), $this->grantId(), $choice, $this->sequence());
     }
 
-    public function openPrivateCommand(): OpenPrivateEntry
+    public function openPrivateCommand(): OpenPrivateEntryCommand
     {
-        return new OpenPrivateEntry($this->agentId(), $this->grantId(), $this->sequence());
+        return new OpenPrivateEntryCommand($this->agentId(), $this->grantId(), $this->sequence());
     }
 
-    public function submitPrivateCommand(): SubmitPrivateInput
+    public function submitPrivateCommand(): SubmitPrivateInputCommand
     {
         $submission = new PrivateSubmission($this->submissionId(), $this->sequence());
 
-        return new SubmitPrivateInput($this->agentId(), $this->grantId(), $submission);
+        return new SubmitPrivateInputCommand($this->agentId(), $this->grantId(), $submission);
     }
 
-    public function cancelPrivateCommand(): CancelPrivateEntry
+    public function cancelPrivateCommand(): CancelPrivateEntryCommand
     {
-        return new CancelPrivateEntry($this->agentId(), $this->grantId());
+        return new CancelPrivateEntryCommand($this->agentId(), $this->grantId());
     }
 
     public function submissionId(): string
@@ -142,9 +142,9 @@ final class TerminalControlRequest extends FormRequest
         return $this->string('value')->toString();
     }
 
-    public function checkCommand(): CheckTerminalScreen
+    public function checkCommand(): CheckTerminalScreenCommand
     {
-        return new CheckTerminalScreen($this->agentId(), $this->grantId());
+        return new CheckTerminalScreenCommand($this->agentId(), $this->grantId());
     }
 
     public function agentId(): string

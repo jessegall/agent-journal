@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Support\PendingInboxWork;
 use Tests\Support\MessagingTestCase;
 
@@ -22,7 +22,7 @@ final class PendingInboxWorkTest extends MessagingTestCase
         $this->assertSame(2, $this->pendingFor());
 
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$note, $question]));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$note, $question]));
 
         $this->assertSame(1, $this->pendingFor());
         $this->assertSame(0, $this->app->make(PendingInboxWork::class)->pendingCount($this->actorOf($this->reviewer)));

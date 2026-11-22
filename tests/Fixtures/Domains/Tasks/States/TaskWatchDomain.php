@@ -14,8 +14,8 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Bus\Models\FixtureWork;
-use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask;
-use Tests\Fixtures\Domains\Tasks\States\Commands\RecordFinishedTask;
+use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCancelledTaskCommand;
+use Tests\Fixtures\Domains\Tasks\States\Commands\RecordFinishedTask\RecordFinishedTaskCommand;
 use Tests\Fixtures\Domains\Tasks\States\Policies\TaskWatchPolicy;
 
 final class TaskWatchDomain extends Domain implements CommandProvider, PolicyProvider, StateProvider
@@ -47,7 +47,7 @@ final class TaskWatchDomain extends Domain implements CommandProvider, PolicyPro
 
     public function commands(): array
     {
-        return [RecordFinishedTask::class, RecordCancelledTask::class];
+        return [RecordFinishedTaskCommand::class, RecordCancelledTaskCommand::class];
     }
 
     public function policies(): array

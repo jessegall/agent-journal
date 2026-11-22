@@ -16,9 +16,9 @@ use App\Processes\Values\PublishedResult;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\Events\TaskCheckRecorded;
 use Domain\Tasks\Api\TaskProof;
-use Domain\Tasks\Commands\BindTaskCheck;
-use Domain\Tasks\Commands\RunTaskCheck;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\BindTaskCheck\BindTaskCheckCommand;
+use Domain\Tasks\Commands\RunTaskCheck\RunTaskCheckCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\TaskProofResolver;
 use Domain\Tasks\Exceptions\TaskCheckRefused;
 use Domain\Tasks\Models\Task;
@@ -72,17 +72,17 @@ final class TaskCheckTest extends TestCase
         ]);
 
         $this->startUserRequestAs($this->owner->id);
-        $this->runCommand(new StartTask($task->id));
+        $this->runCommand(new StartTaskCommand($task->id));
 
-        $this->runCommand(new RunTaskCheck($task->id, 1, $mine, 'acme verify'));
+        $this->runCommand(new RunTaskCheckCommand($task->id, 1, $mine, 'acme verify'));
 
         $this->assertThrows(
-            fn () => $this->runCommand(new RunTaskCheck($task->id, 1, $theirs, 'acme verify')),
+            fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $theirs, 'acme verify')),
             TaskCheckRefused::class,
         );
 
         $this->assertThrows(
-            fn () => $this->runCommand(new RunTaskCheck($task->id, 1, $mine, 'acme verify')),
+            fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $mine, 'acme verify')),
             TaskCheckRefused::class,
         );
 
@@ -120,7 +120,7 @@ final class TaskCheckTest extends TestCase
         $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::Application,
             'task checks',
-            new BindTaskCheck($receiptId),
+            new BindTaskCheckCommand($receiptId),
         );
     }
 

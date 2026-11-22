@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Tasks\Commands\LogTaskRun;
+
+use App\Bus\Attributes\Authorize;
+use App\Bus\Contracts\RecordCommand;
+use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\Policies\TaskRunPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+
+/**
+ * Adds a line to the log of the caller's current run of a task, kept against that run as it is now.
+ *
+ * @extends Command<string>
+ */
+#[Authorize(TaskRunPolicy::class, AccessType::Edit)]
+final readonly class LogTaskRunCommand extends Command implements RecordCommand
+{
+    public function __construct(
+        public string $taskId,
+        public int $runNumber,
+        #[Max(Task::NOTE_CHARACTER_LIMIT)]
+        public string $text,
+    ) {}
+
+    public function subject(): Task
+    {
+        return Task::lockedById($this->taskId);
+    }
+}

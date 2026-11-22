@@ -17,7 +17,7 @@ use Tests\TestCase;
 /**
  * Every class in an Events folder of Core, a domain or an installed module implements Core's Event marker, so what
  * happens is recognisable as an event (user message 2307); every class in a Listeners folder implements Listener and
- * every class in a Handlers folder implements CommandHandler (user message 3246), and neither marker is used outside
+ * every handler beside its command implements CommandHandler (user message 3246), and neither marker is used outside
  * its
  * folder.
  */
@@ -29,11 +29,11 @@ final class EventMarkerTest extends TestCase
      */
     public static function markedFolders(): iterable
     {
-        yield 'events' => ['/Events/', Event::class];
+        yield 'events' => ['#/Events/#', Event::class];
 
-        yield 'listeners' => ['/Listeners/', Listener::class];
+        yield 'listeners' => ['#/Listeners/#', Listener::class];
 
-        yield 'handlers' => ['/Handlers/', CommandHandler::class];
+        yield 'handlers' => ['#/Commands/(\w+|Support)/\w+Handler\.php$#', CommandHandler::class];
     }
 
     /**
@@ -58,7 +58,7 @@ final class EventMarkerTest extends TestCase
                 continue;
             }
 
-            $inFolder = str_contains($file, $folder);
+            $inFolder = preg_match($folder, $file) === 1;
             $marked = $class !== null && Reflector::factory()->isSubclassOf($class, $marker);
 
             if ($inFolder && ! $marked) {

@@ -8,8 +8,8 @@ use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
 use App\Actors\Support\AttentionOutcome;
-use App\Communication\Commands\AnswerChatQuestion;
-use App\Communication\Commands\AskChatQuestion;
+use App\Communication\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
+use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\SpeechRefused;
 use App\Communication\Models\Message;
@@ -17,7 +17,7 @@ use App\Communication\Models\MessageReceipt;
 use App\Communication\Support\PendingInboxWork;
 use App\Communication\Support\ReceiptDeliveries;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Commands\OpenPairChat;
+use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\PresentsChatText;
 use Tests\Support\TestIds;
@@ -59,8 +59,8 @@ final class PairChatDemonstrationTest extends MessagingTestCase
     public function test_the_pair_question_is_answered_once_and_leaves_no_chat_work(): void
     {
         $this->asOwner();
-        $inboxId = $this->runOnBus(new OpenPairChat($this->builder->agent_id));
-        $questionId = $this->runOnBus(new AskChatQuestion($inboxId, 'Is the build green?', 'ask-1'));
+        $inboxId = $this->runOnBus(new OpenPairChatCommand($this->builder->agent_id));
+        $questionId = $this->runOnBus(new AskChatQuestionCommand($inboxId, 'Is the build green?', 'ask-1'));
         $pending = $this->app->make(PendingInboxWork::class);
         $agent = $this->actorOf($this->builder);
 
@@ -72,14 +72,14 @@ final class PairChatDemonstrationTest extends MessagingTestCase
         $live = $this->runOnBus($this->claimSpeech($inboxId, $questionId));
 
         $this->assertThrows(
-            fn () => $this->runOnBus(new AnswerChatQuestion($questionId, 'Yes.', 'answer-stale', $stale)),
+            fn () => $this->runOnBus(new AnswerChatQuestionCommand($questionId, 'Yes.', 'answer-stale', $stale)),
             SpeechRefused::class,
         );
 
-        $answerId = $this->runOnBus(new AnswerChatQuestion($questionId, 'Yes.', 'answer-1', $live));
+        $answerId = $this->runOnBus(new AnswerChatQuestionCommand($questionId, 'Yes.', 'answer-1', $live));
 
         $this->assertThrows(
-            fn () => $this->runOnBus(new AnswerChatQuestion($questionId, 'Still yes.', 'answer-2', $live)),
+            fn () => $this->runOnBus(new AnswerChatQuestionCommand($questionId, 'Still yes.', 'answer-2', $live)),
             SpeechRefused::class,
         );
 
@@ -95,6 +95,6 @@ final class PairChatDemonstrationTest extends MessagingTestCase
         $this->asOwner();
         $this->ownerSends($this->inboxIdOf($this->builder), 'Unrelated desk mail.');
         $this->assertSame(1, $pending->pendingCount($agent));
-        $this->assertSame($inboxId, $this->runOnBus(new OpenPairChat($this->builder->agent_id)));
+        $this->assertSame($inboxId, $this->runOnBus(new OpenPairChatCommand($this->builder->agent_id)));
     }
 }

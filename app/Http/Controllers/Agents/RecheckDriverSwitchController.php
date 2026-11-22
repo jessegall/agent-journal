@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Commands\RecheckDriverSwitch;
+use App\Agents\Commands\RecheckDriverSwitch\RecheckDriverSwitchCommand;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ final readonly class RecheckDriverSwitchController
         CommandBus $commands,
         Redirector $redirect,
     ): Response|RedirectResponse {
-        $commands->run(new RecheckDriverSwitch(strtolower($switch)));
+        $commands->run(new RecheckDriverSwitchCommand(strtolower($switch)));
 
         return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
     }

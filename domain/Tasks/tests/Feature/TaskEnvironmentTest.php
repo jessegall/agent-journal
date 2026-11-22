@@ -10,7 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Support\ConnectedProject;
 use App\Processes\Support\ProjectKey;
-use Domain\Tasks\Commands\CreateTask;
+use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
@@ -62,7 +62,7 @@ final class TaskEnvironmentTest extends TestCase
     private function create(string $title): Task
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
-        $id = $this->app->make(CommandBus::class)->run(new CreateTask($title, 'What it asks.'));
+        $id = $this->app->make(CommandBus::class)->run(new CreateTaskCommand($title, 'What it asks.'));
 
         return Task::query()->findOrFail($id);
     }

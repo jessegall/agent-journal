@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\StartRecordResolver;
@@ -228,6 +228,6 @@ final class StartReceiptTest extends TestCase
 
     private function start(StartRequest $request): StartReceipt
     {
-        return $this->app->make(CommandBus::class)->run(new StartAgent($request));
+        return $this->app->make(CommandBus::class)->run(new StartAgentCommand($request));
     }
 }

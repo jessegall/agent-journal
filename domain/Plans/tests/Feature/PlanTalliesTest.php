@@ -12,9 +12,9 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -55,10 +55,10 @@ final class PlanTalliesTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
         $this->structure()->addTasks($phase, [$first->id, $second->id, $third->id]);
 
-        $this->runCommand(new StartTask($first->id));
-        $this->runCommand(new StartTask($second->id));
-        $this->runCommand(new FinishTask($second->id, 1, 'Done.'));
-        $this->runCommand(new CancelTask($third->id, 'Not needed.'));
+        $this->runCommand(new StartTaskCommand($first->id));
+        $this->runCommand(new StartTaskCommand($second->id));
+        $this->runCommand(new FinishTaskCommand($second->id, 1, 'Done.'));
+        $this->runCommand(new CancelTaskCommand($third->id, 'Not needed.'));
 
         foreach ([$phase->refresh()->progress, $plan->refresh()->progress] as $progress) {
             $this->assertSame(
@@ -67,7 +67,7 @@ final class PlanTalliesTest extends TestCase
             );
         }
 
-        $this->runCommand(new CancelTask($first->id, 'Dropped.'));
+        $this->runCommand(new CancelTaskCommand($first->id, 'Dropped.'));
 
         $this->assertSame(
             ['total' => 3, 'finished' => 1, 'cancelled' => 2, 'started' => 0, 'blocked' => 0, 'unfinished' => 0],

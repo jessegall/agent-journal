@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * Each domain has exactly one handler base, named for the domain in the singular plus CommandHandler, in its
- * Handlers/Support folder, and every concrete handler of the domain is final readonly and extends that base directly.
+ * Commands/Support folder, and every concrete handler of the domain is final readonly and extends that base directly.
  */
 final class HandlerBaseTest extends TestCase
 {
@@ -20,9 +20,9 @@ final class HandlerBaseTest extends TestCase
     {
         $faults = [];
 
-        foreach (glob(base_path('domain/*/src/Handlers')) ?: [] as $folder) {
+        foreach (glob(base_path('domain/*/src/Commands')) ?: [] as $folder) {
             $domain = basename(dirname($folder, 2));
-            $base = "Domain\\{$domain}\\Handlers\\Support\\".Str::singular($domain).'CommandHandler';
+            $base = "Domain\\{$domain}\\Commands\\Support\\".Str::singular($domain).'CommandHandler';
 
             $isBase = Reflector::find($base)
                 ->filter(fn (Reflector $type) => $type->isClass() && $type->isAbstract())
@@ -35,9 +35,9 @@ final class HandlerBaseTest extends TestCase
                 continue;
             }
 
-            foreach (Finder::create()->files()->in($folder)->depth(0)->name('*Handler.php') as $file) {
+            foreach (Finder::create()->files()->in($folder)->depth(1)->notPath('Support')->name('*Handler.php') as $file) {
                 /** @var class-string $handler */
-                $handler = "Domain\\{$domain}\\Handlers\\".$file->getBasename('.php');
+                $handler = "Domain\\{$domain}\\Commands\\".$file->getRelativePath().'\\'.$file->getBasename('.php');
                 $declaration = Reflector::of($handler);
                 $extendsBase = $declaration->parent()
                     ->filter(fn (Reflector $parent) => $parent->name() === $base)

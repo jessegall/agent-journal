@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Domains\Reviews\Messaging;
 use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxDestinationResolver;
@@ -31,7 +31,7 @@ final readonly class ReviewRequests
     {
         $source = $this->ownInboxes->preferredFor($this->actors->actor());
         $destination = $this->destinations->resolve($reviewer);
-        $messageId = $this->commands->run(new AskMessage($source->inboxId(), $destination->inboxId(), $question));
+        $messageId = $this->commands->run(new AskMessageCommand($source->inboxId(), $destination->inboxId(), $question));
 
         return $this->conversations->detail($messageId);
     }

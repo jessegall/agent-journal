@@ -8,10 +8,10 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Communication\Models\MessageAttention;
-use App\Settings\Commands\DisableSettingGroup;
-use App\Settings\Commands\EnableSettingGroup;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Settings\Values\GroupReference;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -64,17 +64,17 @@ final class ChatSwitchTest extends TestCase
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
         $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id))->inboxId();
         $this->startUserRequestAs($owner->id);
-        $this->runOnBus(new DisableSettingGroup(new GroupReference('Core', 'domain_chat'), 0));
+        $this->runOnBus(new DisableSettingGroupCommand(new GroupReference('Core', 'domain_chat'), 0));
         $this->app->forgetScopedInstances();
 
         $this->actingAs($owner)->get('/chat/inbox')->assertNotFound();
         $this->actingAs($owner)->get('/')->assertOk();
 
         $this->startUserRequestAs($owner->id);
-        $this->runOnBus(new AskMessage($ownInboxId, $agentInboxId, 'Still there?'));
+        $this->runOnBus(new AskMessageCommand($ownInboxId, $agentInboxId, 'Still there?'));
         $this->assertSame(1, MessageAttention::query()->count());
 
-        $this->runOnBus(new EnableSettingGroup(new GroupReference('Core', 'domain_chat'), 1));
+        $this->runOnBus(new EnableSettingGroupCommand(new GroupReference('Core', 'domain_chat'), 1));
         $this->app->forgetScopedInstances();
 
         $this->actingAs($owner)->get('/chat/inbox')->assertOk();

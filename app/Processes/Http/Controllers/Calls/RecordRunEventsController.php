@@ -7,7 +7,7 @@ namespace App\Processes\Http\Controllers\Calls;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Calls\RecordRunEventsCall;
 use App\Processes\Calls\RunEventsAccepted;
-use App\Processes\Commands\RecordRunEvents;
+use App\Processes\Commands\RecordRunEvents\RecordRunEventsCommand;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Values\RunEventBatch;
 
@@ -26,6 +26,6 @@ final readonly class RecordRunEventsController
 
         $events = RunEventBatch::from(['events' => $call->events])->toJson();
 
-        return new RunEventsAccepted($commands->run(new RecordRunEvents($processRun->id, $events)));
+        return new RunEventsAccepted($commands->run(new RecordRunEventsCommand($processRun->id, $events)));
     }
 }

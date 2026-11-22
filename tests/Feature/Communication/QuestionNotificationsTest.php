@@ -6,14 +6,14 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Communication\Commands\AskMessage;
-use App\Communication\Commands\RequireMessageAnswer;
-use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
+use App\Communication\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
 use App\Communication\Models\NotificationOccurrence;
 use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
-use App\Desks\Commands\CreateDesk;
-use App\Desks\Commands\ReleaseSeat;
+use App\Desks\Commands\CreateDesk\CreateDeskCommand;
+use App\Desks\Commands\ReleaseSeat\ReleaseSeatCommand;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChangeResult;
@@ -60,7 +60,7 @@ final class QuestionNotificationsTest extends MessagingTestCase
     {
         parent::setUp();
 
-        $this->team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 3, false)));
+        $this->team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 3, false)));
 
         $seated = [$this->actorOf($this->builder), $this->actorOf($this->reviewer), ActorIdentity::of($this->owner)];
 
@@ -73,7 +73,7 @@ final class QuestionNotificationsTest extends MessagingTestCase
 
     public function test_a_direct_question_gives_each_seated_recipient_one_receipt_and_the_sender_none(): void
     {
-        $this->runOnBus(new AskMessage($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?'));
+        $this->runOnBus(new AskMessageCommand($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?'));
 
         $this->assertSame(1, NotificationOccurrence::query()->count());
         $this->assertSame(1, $this->unreadOf($this->actorOf($this->builder)));
@@ -84,13 +84,13 @@ final class QuestionNotificationsTest extends MessagingTestCase
     public function test_an_ordinary_send_gives_none_until_promoted_and_a_second_promotion_adds_nothing(): void
     {
         $messageId = $this->runOnBus(
-            new SendMessage($this->ownerInboxId(), $this->team->inboxId(), 'The build is green.'),
+            new SendMessageCommand($this->ownerInboxId(), $this->team->inboxId(), 'The build is green.'),
         );
 
         $this->assertSame(0, NotificationReceipt::query()->count());
 
-        $this->runOnBus(new RequireMessageAnswer($messageId));
-        $this->runOnBus(new RequireMessageAnswer($messageId));
+        $this->runOnBus(new RequireMessageAnswerCommand($messageId));
+        $this->runOnBus(new RequireMessageAnswerCommand($messageId));
 
         $this->assertSame(1, NotificationOccurrence::query()->count());
         $this->assertSame(2, NotificationReceipt::query()->count());
@@ -105,7 +105,7 @@ final class QuestionNotificationsTest extends MessagingTestCase
 
         try {
             $this->assertThrows(
-                fn () => $this->runOnBus(new AskMessage($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?')),
+                fn () => $this->runOnBus(new AskMessageCommand($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?')),
                 QueryException::class,
                 self::TRIGGER_REFUSAL,
             );
@@ -119,11 +119,11 @@ final class QuestionNotificationsTest extends MessagingTestCase
 
     public function test_leaving_the_desk_hides_that_actors_question_receipts_and_keeps_the_others(): void
     {
-        $this->runOnBus(new AskMessage($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?'));
+        $this->runOnBus(new AskMessageCommand($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?'));
         $builder = $this->actorOf($this->builder);
         $seat = $this->seats[$builder->id];
 
-        $this->runOnBus(new ReleaseSeat($this->team->id, $seat->seatId, $seat->reference));
+        $this->runOnBus(new ReleaseSeatCommand($this->team->id, $seat->seatId, $seat->reference));
 
         $this->assertSame(0, $this->unreadOf($builder));
         $this->assertSame(1, $this->unreadOf($this->actorOf($this->reviewer)));

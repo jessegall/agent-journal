@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Documents\Commands\CloseReport;
+use Domain\Documents\Commands\CloseReport\CloseReportCommand;
 use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(false)]
 #[Name('reports_close')]
-#[Dispatches(CloseReport::class)]
+#[Dispatches(CloseReportCommand::class)]
 #[Description('Close a report with a reason, preserving the findings.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class CloseReportTool extends JournalWriteTool
@@ -36,9 +36,9 @@ final class CloseReportTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CloseReport
+    protected function command(ToolArguments $arguments): CloseReportCommand
     {
-        return new CloseReport((string) $arguments->recordReference('report_id'), $arguments->text('reason'));
+        return new CloseReportCommand((string) $arguments->recordReference('report_id'), $arguments->text('reason'));
     }
 
     protected function present(mixed $commandResult): ToolResult

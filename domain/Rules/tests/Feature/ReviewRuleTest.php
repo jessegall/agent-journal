@@ -10,8 +10,8 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Rules\Api\Events\RuleApproved;
 use Domain\Rules\Api\Events\RuleDenied;
-use Domain\Rules\Commands\ApproveRule;
-use Domain\Rules\Commands\DenyRule;
+use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
+use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
@@ -22,7 +22,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
 /**
- * The user reviews a proposed rule through the ApproveRule and DenyRule commands: once, and only while it is proposed.
+ * The user reviews a proposed rule through the ApproveRuleCommand and DenyRuleCommand commands: once, and only while it is proposed.
  */
 final class ReviewRuleTest extends TestCase
 {
@@ -58,7 +58,7 @@ final class ReviewRuleTest extends TestCase
     {
         $this->assertSame([], $this->app->make(ActiveRules::class)->reminders());
 
-        $this->app->make(CommandBus::class)->run(new ApproveRule($this->proposed->id));
+        $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($this->proposed->id));
 
         $this->assertSame(
             ["Rule {$this->proposed->id}: No phase waits on the user."],
@@ -74,10 +74,10 @@ final class ReviewRuleTest extends TestCase
     public function test_a_second_review_is_refused_and_changes_nothing(): void
     {
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new DenyRule($this->proposed->id));
+        $bus->run(new DenyRuleCommand($this->proposed->id));
 
         try {
-            $bus->run(new ApproveRule($this->proposed->id));
+            $bus->run(new ApproveRuleCommand($this->proposed->id));
             $this->fail('A denied rule was approved.');
         } catch (RuleNotProposed) {
             $this->assertSame(RuleState::Denied, $this->proposed->fresh()?->state);

@@ -6,7 +6,7 @@ namespace App\Profiles\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SignInAgainRequest;
-use App\Profiles\Commands\BeginSignInAgain;
+use App\Profiles\Commands\BeginSignInAgain\BeginSignInAgainCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -17,7 +17,7 @@ final readonly class SignInAgainController
 {
     public function __invoke(SignInAgainRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new BeginSignInAgain($request->accountId()));
+        $commands->run(new BeginSignInAgainCommand($request->accountId()));
 
         return $redirect->back(303);
     }

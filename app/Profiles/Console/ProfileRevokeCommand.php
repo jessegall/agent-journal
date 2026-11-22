@@ -6,7 +6,7 @@ namespace App\Profiles\Console;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
-use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Commands\RevokeProfiles\RevokeProfilesCommand;
 use App\Profiles\Values\ProfileKey;
 use Illuminate\Console\Command;
 
@@ -24,7 +24,7 @@ final class ProfileRevokeCommand extends Command
     {
         $owner->actAsOwner();
         $keys = array_map(fn (mixed $key) => ProfileKey::from((string) $key), (array) $this->argument('keys'));
-        $revoked = $commands->run(new RevokeProfiles(array_values($keys)));
+        $revoked = $commands->run(new RevokeProfilesCommand(array_values($keys)));
 
         $this->line("Revoked {$revoked} profiles.");
 

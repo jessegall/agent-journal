@@ -11,7 +11,7 @@ use App\Bus\Support\RequestKey;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Chat\Commands\DockSource;
+use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Support\DockRequests;
 use Domain\Chat\Tests\TestCase;
@@ -74,7 +74,7 @@ final class DockSectionTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $this->app->make(CommandBus::class)->run(
-            new DockSource($conversation->inbox_id, 'tasks.task', $task->id),
+            new DockSourceCommand($conversation->inbox_id, 'tasks.task', $task->id),
         );
 
         $this->assertSame(['Ship the dock'], $this->dockedTitles($owner, $window));

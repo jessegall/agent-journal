@@ -6,10 +6,10 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
-use Domain\Documents\Commands\AppendUpload;
-use Domain\Documents\Commands\BeginUpload;
-use Domain\Documents\Commands\CommitUpload;
-use Domain\Documents\Commands\DiscardUpload;
+use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
+use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
+use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
+use Domain\Documents\Commands\DiscardUpload\DiscardUploadCommand;
 use Domain\Documents\Contracts\SealedUploads;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadChunkConflict;
@@ -43,18 +43,18 @@ final class TextUploadTest extends TestCase
         $chunkDigest = hash('sha256', $part);
 
         for ($index = 0; $index < 32; $index++) {
-            $bus->run(new AppendUpload($id, $index, $part, $chunkDigest));
+            $bus->run(new AppendUploadCommand($id, $index, $part, $chunkDigest));
         }
 
-        $bus->run(new AppendUpload($id, 0, $part, $chunkDigest));
+        $bus->run(new AppendUploadCommand($id, 0, $part, $chunkDigest));
         $this->assertSame(32, TextUploadChunk::query()->count());
 
         $this->assertThrows(
-            fn () => $bus->run(new AppendUpload($id, 0, 'different', hash('sha256', 'different'))),
+            fn () => $bus->run(new AppendUploadCommand($id, 0, 'different', hash('sha256', 'different'))),
             UploadChunkConflict::class,
         );
 
-        $bus->run(new CommitUpload($id));
+        $bus->run(new CommitUploadCommand($id));
 
         $this->assertThrows(fn () => $this->consume($id, UploadType::ReportBody), UploadExpired::class);
         $this->assertSame($text, $this->consume($id, UploadType::DocumentBody));
@@ -70,23 +70,23 @@ final class TextUploadTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
 
         $this->assertThrows(fn () => $this->begin('e'), UploadLimitReached::class);
-        $this->assertThrows(fn () => $bus->run(new CommitUpload($ids[0])), UploadIncomplete::class);
+        $this->assertThrows(fn () => $bus->run(new CommitUploadCommand($ids[0])), UploadIncomplete::class);
         $this->assertThrows(fn () => $this->consume($ids[0], UploadType::DocumentBody), UploadIncomplete::class);
 
         $other->startRequest($this->app);
         $this->assertFalse(TextUpload::query()->whereKey($ids[0])->exists());
         $this->begin('e');
-        $this->assertThrows(fn () => $bus->run(new DiscardUpload($ids[0])), UploadExpired::class);
+        $this->assertThrows(fn () => $bus->run(new DiscardUploadCommand($ids[0])), UploadExpired::class);
 
         $author->startRequest($this->app);
-        $bus->run(new DiscardUpload($ids[0]));
+        $bus->run(new DiscardUploadCommand($ids[0]));
         $this->begin('f');
     }
 
     private function begin(string $text): string
     {
         return $this->app->make(CommandBus::class)->run(
-            new BeginUpload(UploadType::DocumentBody, strlen($text), hash('sha256', $text)),
+            new BeginUploadCommand(UploadType::DocumentBody, strlen($text), hash('sha256', $text)),
         );
     }
 

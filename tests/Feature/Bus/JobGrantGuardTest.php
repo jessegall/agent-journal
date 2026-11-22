@@ -10,12 +10,12 @@ use App\Agents\Support\ReadGrant;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\ReadRequest;
 use App\Agents\Values\StackTarget;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Values\RecoveryCall;
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\References\StateReference;
@@ -26,7 +26,7 @@ use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Values\StackVerdict;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
-use Domain\Rules\Commands\ProposeRule;
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
@@ -65,9 +65,9 @@ final class JobGrantGuardTest extends TestCase
     {
         $registry = $this->app->make(CommandRegistry::class);
 
-        $this->assertSame(CommandEffectType::Recovery, $registry->effectOf(ReplyToMessage::class));
-        $this->assertSame(CommandEffectType::AssignmentChange, $registry->effectOf(AssignRecord::class));
-        $this->assertSame(CommandEffectType::StateChange, $registry->effectOf(ProposeRule::class));
+        $this->assertSame(CommandEffectType::Recovery, $registry->effectOf(ReplyToMessageCommand::class));
+        $this->assertSame(CommandEffectType::AssignmentChange, $registry->effectOf(AssignRecordCommand::class));
+        $this->assertSame(CommandEffectType::StateChange, $registry->effectOf(ProposeRuleCommand::class));
     }
 
     public function test_a_live_answering_state_names_the_message_to_read(): void

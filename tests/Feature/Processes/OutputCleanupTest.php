@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\CleanProcessOutput;
-use App\Processes\Commands\VerifyRestoredOutput;
+use App\Processes\Commands\CleanProcessOutput\CleanProcessOutputCommand;
+use App\Processes\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Enums\CaptureState;
@@ -49,12 +49,12 @@ final class OutputCleanupTest extends TestCase
     {
         $this->storedRun()->markStopped('done');
 
-        $preview = $this->asUser(new CleanProcessOutput([$this->part->process_run_id], true));
+        $preview = $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], true));
         $this->assertSame([$this->part->id], $preview->partRunIds);
         $this->assertSame(strlen(self::PASSED_OUTPUT), $preview->bytes);
         $this->assertSame(CaptureState::Complete, $this->part->refresh()->capture_state);
 
-        $this->asUser(new CleanProcessOutput([$this->part->process_run_id], false));
+        $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], false));
 
         $this->assertSame(CaptureState::Removed, $this->part->refresh()->capture_state);
         $chunk = OutputChunk::query()->where('part_run_id', $this->part->id)->sole();
@@ -64,7 +64,7 @@ final class OutputCleanupTest extends TestCase
     public function test_a_run_that_has_not_ended_keeps_its_output(): void
     {
         $this->assertThrows(
-            fn () => $this->asUser(new CleanProcessOutput([$this->part->process_run_id], false)),
+            fn () => $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], false)),
             CleanRefused::class,
         );
     }
@@ -74,7 +74,7 @@ final class OutputCleanupTest extends TestCase
         $path = OutputChunk::query()->where('part_run_id', $this->part->id)->sole()->storage_path;
         Storage::disk(SpoolRecorder::DISK)->put($path, 'X'.substr(self::PASSED_OUTPUT, 1));
 
-        $check = new VerifyRestoredOutput($this->part->process_run_id);
+        $check = new VerifyRestoredOutputCommand($this->part->process_run_id);
         $this->assertSame([CaptureState::Corrupt], $this->asUser($check)->states());
 
         Storage::disk(SpoolRecorder::DISK)->put($path, self::PASSED_OUTPUT);

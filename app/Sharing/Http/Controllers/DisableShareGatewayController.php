@@ -6,7 +6,7 @@ namespace App\Sharing\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Sharing\GatewayActionRequest;
-use App\Sharing\Commands\DisableShareGateway;
+use App\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -21,7 +21,7 @@ final readonly class DisableShareGatewayController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new DisableShareGateway($request->configurationId(), $request->requestKey()));
+        $commands->run(new DisableShareGatewayCommand($request->configurationId(), $request->requestKey()));
 
         return $redirect->back(303);
     }

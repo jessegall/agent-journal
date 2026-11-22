@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\AskMessage;
-use App\Communication\Commands\DismissMessage;
-use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
+use App\Communication\Commands\DismissMessage\DismissMessageCommand;
+use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\MessageMissing;
@@ -24,10 +24,10 @@ final class DismissMessageTest extends MessagingTestCase
         $withdrawn = $this->ownerAsks($this->inboxIdOf($this->builder), 'Still needed?');
         $declined = $this->ownerAsks($this->inboxIdOf($this->builder), 'Can you?');
 
-        $this->runOnBus(new DismissMessage($withdrawn, 'No longer needed.'));
+        $this->runOnBus(new DismissMessageCommand($withdrawn, 'No longer needed.'));
         $this->asAgent($this->builder);
-        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$declined]));
-        $this->runOnBus(new DismissMessage($declined, 'Not my area.'));
+        $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$declined]));
+        $this->runOnBus(new DismissMessageCommand($declined, 'Not my area.'));
 
         $this->assertSame(DismissalType::Withdrawn, $this->stored($withdrawn)->dismissal_type);
         $this->assertSame(DismissalType::Declined, $this->stored($declined)->dismissal_type);
@@ -38,14 +38,14 @@ final class DismissMessageTest extends MessagingTestCase
     public function test_the_owner_cancels_a_message_between_two_agents(): void
     {
         $this->asAgent($this->builder);
-        $questionId = $this->runOnBus(new AskMessage(
+        $questionId = $this->runOnBus(new AskMessageCommand(
             $this->inboxIdOf($this->builder),
             $this->inboxIdOf($this->reviewer),
             'Review?',
         ));
         $this->asOwner();
 
-        $this->runOnBus(new DismissMessage($questionId, 'Cancelled by the owner.'));
+        $this->runOnBus(new DismissMessageCommand($questionId, 'Cancelled by the owner.'));
 
         $this->assertSame(DismissalType::Cancelled, $this->stored($questionId)->dismissal_type);
     }
@@ -57,7 +57,7 @@ final class DismissMessageTest extends MessagingTestCase
 
         $this->expectException(MessageMissing::class);
 
-        $this->runOnBus(new DismissMessage($questionId, 'Not mine.'));
+        $this->runOnBus(new DismissMessageCommand($questionId, 'Not mine.'));
     }
 
     private function stored(string $messageId): Message

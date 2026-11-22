@@ -12,8 +12,8 @@ use App\Agents\Models\AgentSession;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\ProvedClaims;
-use App\Communication\Commands\AskMessage;
-use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
+use App\Communication\Commands\SendMessage\SendMessageCommand;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -110,7 +110,7 @@ abstract class MessagingTestCase extends TestCase
      */
     protected function ownerAsks(string $inboxId, string $body): string
     {
-        return $this->runOnBus(new AskMessage($this->ownerInboxId(), $inboxId, $body));
+        return $this->runOnBus(new AskMessageCommand($this->ownerInboxId(), $inboxId, $body));
     }
 
     /**
@@ -118,7 +118,7 @@ abstract class MessagingTestCase extends TestCase
      */
     protected function ownerSends(string $inboxId, string $body): string
     {
-        return $this->runOnBus(new SendMessage($this->ownerInboxId(), $inboxId, $body));
+        return $this->runOnBus(new SendMessageCommand($this->ownerInboxId(), $inboxId, $body));
     }
 
     /**

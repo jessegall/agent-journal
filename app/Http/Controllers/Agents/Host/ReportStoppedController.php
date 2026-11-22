@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportStopped;
+use App\Agents\Commands\ReportStopped\ReportStoppedCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
@@ -18,7 +18,7 @@ final readonly class ReportStoppedController
 {
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportStopped($host->hostId, $request->startKey()));
+        $commands->run(new ReportStoppedCommand($host->hostId, $request->startKey()));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

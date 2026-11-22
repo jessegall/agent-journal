@@ -7,8 +7,8 @@ namespace Tests\Feature\Comments;
 use App\Agents\Models\Agent;
 use App\Assignments\Support\Page;
 use App\Bus\Contracts\CommandBus;
-use App\Comments\Commands\PostComment;
-use App\Comments\Commands\PostTextComment;
+use App\Comments\Commands\PostComment\PostCommentCommand;
+use App\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use App\Comments\Contracts\CommentResolver;
 use App\Comments\Data\RecordCommentLocation;
 use App\Comments\Data\RecordCommentView;
@@ -80,7 +80,7 @@ final class WholeRecordCommentTest extends TestCase
     public function test_a_comment_on_the_whole_note_is_listed_and_leads_to_the_note(): void
     {
         $commentId = $this->app->make(CommandBus::class)->run(
-            new PostComment($this->target(), self::QUESTION, (string) Str::uuid()),
+            new PostCommentCommand($this->target(), self::QUESTION, (string) Str::uuid()),
         );
 
         $items = $this->app->make(CommentResolver::class)->list($this->target(), new Page())->comments;
@@ -98,7 +98,7 @@ final class WholeRecordCommentTest extends TestCase
 
         try {
             $this->app->make(CommandBus::class)->run(
-                new PostTextComment($this->target(), 'Which line?', TextRange::lines('1', 1, 1), (string) Str::uuid()),
+                new PostTextCommentCommand($this->target(), 'Which line?', TextRange::lines('1', 1, 1), (string) Str::uuid()),
             );
         } finally {
             $this->assertSame(0, Comment::query()->count());
@@ -201,7 +201,7 @@ final class WholeRecordCommentTest extends TestCase
     {
         $ids = array_map(
             fn (int $index) => $this->app->make(CommandBus::class)->run(
-                new PostComment($this->target(), "Comment {$index}.", (string) Str::uuid()),
+                new PostCommentCommand($this->target(), "Comment {$index}.", (string) Str::uuid()),
             ),
             range(1, 3),
         );

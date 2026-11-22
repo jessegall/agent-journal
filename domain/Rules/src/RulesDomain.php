@@ -25,10 +25,10 @@ use Domain\Rules\Api\RuleDetails;
 use Domain\Rules\Api\RuleFilters;
 use Domain\Rules\Api\RuleList;
 use Domain\Rules\Api\RuleView;
-use Domain\Rules\Commands\ApproveRule;
-use Domain\Rules\Commands\DenyRule;
-use Domain\Rules\Commands\ProposeRule;
-use Domain\Rules\Commands\RemoveRule;
+use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
+use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
+use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Enums\RuleState;
@@ -79,7 +79,7 @@ final class RulesDomain extends Domain implements
                 RuleView::class,
                 RuleState::class,
             )
-            ->commands(ApproveRule::class, DenyRule::class)
+            ->commands(ApproveRuleCommand::class, DenyRuleCommand::class)
             ->exceptions(RuleMissing::class, RuleNotProposed::class)
             ->build();
     }
@@ -99,7 +99,7 @@ final class RulesDomain extends Domain implements
      */
     public function commands(): array
     {
-        return [ApproveRule::class, DenyRule::class, ProposeRule::class, RemoveRule::class];
+        return [ApproveRuleCommand::class, DenyRuleCommand::class, ProposeRuleCommand::class, RemoveRuleCommand::class];
     }
 
     public function pages(): array

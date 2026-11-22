@@ -13,7 +13,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\MainAgentDesignation;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskMessage\AskMessageCommand;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Exceptions\InboxUnavailable;
@@ -190,7 +190,7 @@ final class ChatWindowTest extends TestCase
         $this->startRequestAs($this->session->agent_id, $this->session->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
-        return $this->app->make(CommandBus::class)->run(new AskMessage($this->agentInboxId, $this->ownInboxId, $body));
+        return $this->app->make(CommandBus::class)->run(new AskMessageCommand($this->agentInboxId, $this->ownInboxId, $body));
     }
 
     private function stored(string $messageId): Message

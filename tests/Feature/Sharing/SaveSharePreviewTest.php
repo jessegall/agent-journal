@@ -8,7 +8,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Links\Models\Link;
 use App\Reads\Contracts\ReadMeter;
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Exceptions\SharePreviewRefused;
 use App\Sharing\Exceptions\SharingNotAllowed;
@@ -88,7 +88,7 @@ final class SaveSharePreviewTest extends TestCase
         $this->expectException(SharingNotAllowed::class);
 
         $this->app->make(CommandBus::class)->run(
-            new SaveSharePreview($this->root->type, $this->root->id, [], $this->configuration->id),
+            new SaveSharePreviewCommand($this->root->type, $this->root->id, [], $this->configuration->id),
         );
     }
 
@@ -98,7 +98,7 @@ final class SaveSharePreviewTest extends TestCase
 
         $this->expectExceptionObject(ShareGatewayUnavailable::noDefault());
 
-        $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->root->type, $this->root->id, []));
+        $this->app->make(CommandBus::class)->run(new SaveSharePreviewCommand($this->root->type, $this->root->id, []));
     }
 
     public function test_a_preview_is_consumed_once_while_its_selection_is_unchanged(): void
@@ -147,7 +147,7 @@ final class SaveSharePreviewTest extends TestCase
         $this->startTestUserRequest(9);
 
         return $this->app->make(CommandBus::class)->run(
-            new SaveSharePreview($this->root->type, $this->root->id, $selectedIds, $this->configuration->id),
+            new SaveSharePreviewCommand($this->root->type, $this->root->id, $selectedIds, $this->configuration->id),
         );
     }
 

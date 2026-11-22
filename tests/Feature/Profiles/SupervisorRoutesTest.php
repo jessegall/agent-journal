@@ -10,7 +10,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\SupervisorCoverageType;
 use App\Profiles\Exceptions\SupervisorRouteInvalid;
@@ -20,7 +20,7 @@ use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\SupervisorTarget;
-use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\ChangeSupervisor\ChangeSupervisorCommand;
 use App\Supervision\Enums\OwnerRouteType;
 use App\Supervision\Exceptions\SupervisorRouteRefused;
 use App\Supervision\Models\SupervisorChange;
@@ -103,7 +103,7 @@ final class SupervisorRoutesTest extends TestCase
         $actor = ActorIdentity::of(ActorContext::forAgent($agent->id));
         $question = AskTypeKey::from('question');
         $receipt = $this->app->make(CommandBus::class)->run(
-            new ChangeSupervisor($actor, SupervisorTarget::parse('profile:journal-main'), 0, $question),
+            new ChangeSupervisorCommand($actor, SupervisorTarget::parse('profile:journal-main'), 0, $question),
         );
         $link = SupervisorLink::query()->ownedBy($actor)->firstOrFail();
 
@@ -128,7 +128,7 @@ final class SupervisorRoutesTest extends TestCase
     {
         $this->startTestUserRequest(1);
 
-        return $this->app->make(CommandBus::class)->run(new ActivateProfiles(
+        return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(
             ProfileProposal::fromConfiguration(['revision' => 1, ...$configuration]),
         ));
     }

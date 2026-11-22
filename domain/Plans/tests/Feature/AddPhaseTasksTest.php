@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
-use Domain\Plans\Commands\AddPhaseTasks;
+use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Plan;
@@ -27,7 +27,7 @@ final class AddPhaseTasksTest extends TestCase
     use CommitsHookRows;
 
     /**
-     * The bus commits AddPhaseTasks for real, so these tables are emptied around each test.
+     * The bus commits AddPhaseTasksCommand for real, so these tables are emptied around each test.
      */
     private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks'];
 
@@ -46,7 +46,7 @@ final class AddPhaseTasksTest extends TestCase
         $first = Task::factory()->create(['title' => 'First'])->id;
         $second = Task::factory()->create(['title' => 'Second'])->id;
 
-        $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, 1, [$second, $first]));
+        $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [$second, $first]));
 
         $this->assertSame([$second, $first], $phase->taskIds());
     }
@@ -66,7 +66,7 @@ final class AddPhaseTasksTest extends TestCase
         $real = Task::factory()->create(['title' => 'Real'])->id;
 
         try {
-            $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, 1, [$real, TestIds::of(999999)]));
+            $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [$real, TestIds::of(999999)]));
             $this->fail('A missing task was added.');
         } catch (TaskMissing) {
             $this->assertSame([], $phase->taskIds());
@@ -88,7 +88,7 @@ final class AddPhaseTasksTest extends TestCase
         $task = Task::factory()->create(['title' => 'Twice'])->id;
 
         try {
-            $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, 1, [$task, $task]));
+            $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [$task, $task]));
             $this->fail('A task named twice was added.');
         } catch (TaskAlreadyInAPhase $refusal) {
             $this->assertEquals(TaskAlreadyInAPhase::forTask($task), $refusal);

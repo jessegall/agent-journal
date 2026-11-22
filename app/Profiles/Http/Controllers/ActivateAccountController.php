@@ -6,7 +6,7 @@ namespace App\Profiles\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\ActivateAccountRequest;
-use App\Profiles\Commands\SwitchAccount;
+use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -20,7 +20,7 @@ final readonly class ActivateAccountController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new SwitchAccount($request->accountId(), $request->expectedChangeNumber()));
+        $commands->run(new SwitchAccountCommand($request->accountId(), $request->expectedChangeNumber()));
 
         return $redirect->back(303);
     }

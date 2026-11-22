@@ -11,7 +11,7 @@ use App\Bus\Exceptions\RequestKeyMissing;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\RequestKey;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Modules\Notes\Commands\RetainNote;
+use Tests\Fixtures\Modules\Notes\Commands\RetainNote\RetainNoteCommand;
 use Tests\Support\TestIds;
 
 /**
@@ -83,7 +83,7 @@ final class RetainedRequestKeyTest extends CommandBusTestCase
 
         $this->expectException(RequestKeyMissing::class);
 
-        $this->app->make(CommandBus::class)->run(new RetainNote('no key'));
+        $this->app->make(CommandBus::class)->run(new RetainNoteCommand('no key'));
     }
 
     private function retainAs(int $agentIdNumber, int $sessionIdNumber, string $text): int
@@ -94,6 +94,6 @@ final class RetainedRequestKeyTest extends CommandBusTestCase
         $this->startRequestAs($agentId, $sessionId);
         $this->app->make(RequestKey::class)->set(self::KEY);
 
-        return $this->app->make(CommandBus::class)->run(new RetainNote($text));
+        return $this->app->make(CommandBus::class)->run(new RetainNoteCommand($text));
     }
 }

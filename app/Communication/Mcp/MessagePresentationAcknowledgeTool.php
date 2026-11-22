@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Mcp;
 
 use App\Bus\Contracts\Command;
-use App\Communication\Commands\AcknowledgePresentation;
+use App\Communication\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Name('messages_acknowledge_presented')]
-#[Dispatches(AcknowledgePresentation::class)]
+#[Dispatches(AcknowledgePresentationCommand::class)]
 #[Description('Confirm the pieces of chat text your driver showed, by batch id and the handles of its pieces; a chat '
     .'message is read only once its whole body was confirmed in this driver context.')]
 final class MessagePresentationAcknowledgeTool extends MessageWriteTool
@@ -35,7 +35,7 @@ final class MessagePresentationAcknowledgeTool extends MessageWriteTool
 
     protected function command(ToolArguments $arguments): Command
     {
-        return new AcknowledgePresentation(
+        return new AcknowledgePresentationCommand(
             $arguments->text('batch_id'),
             $arguments->list('handles'),
             $arguments->text('context_key'),

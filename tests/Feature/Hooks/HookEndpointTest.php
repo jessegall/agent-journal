@@ -19,7 +19,7 @@ use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
 use App\Processes\Values\AdmissionRefusal;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Event;
@@ -86,7 +86,7 @@ final class HookEndpointTest extends TestCase
     public function test_a_started_task_holds_the_stop_through_the_endpoint(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->asStartedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id)));
+        $this->asStartedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id)));
 
         $stdout = $this->hook('claude-code', $this->stopBody())->assertOk()->json('stdout');
 

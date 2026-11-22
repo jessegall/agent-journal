@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Commands\ContinueStart;
+use App\Agents\Commands\ContinueStart\ContinueStartCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -20,10 +20,10 @@ final class ContinueStartRequest extends FormRequest
         return ['agent_id' => ['required', 'string', 'max:64']];
     }
 
-    public function command(): ContinueStart
+    public function command(): ContinueStartCommand
     {
         $sessionId = strtolower((string) $this->route('session'));
 
-        return new ContinueStart($sessionId, $this->string('agent_id')->lower()->toString());
+        return new ContinueStartCommand($sessionId, $this->string('agent_id')->lower()->toString());
     }
 }

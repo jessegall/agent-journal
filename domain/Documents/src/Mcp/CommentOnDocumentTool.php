@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
-use Domain\Documents\Commands\CommentOnDocument;
+use Domain\Documents\Commands\CommentOnDocument\CommentOnDocumentCommand;
 use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('docs_comment')]
 #[IsDestructive(false)]
-#[Dispatches(CommentOnDocument::class)]
+#[Dispatches(CommentOnDocumentCommand::class)]
 #[Description('Add an attributed comment to a document.')]
 final class CommentOnDocumentTool extends JournalWriteTool
 {
@@ -33,9 +33,9 @@ final class CommentOnDocumentTool extends JournalWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): CommentOnDocument
+    protected function command(ToolArguments $arguments): CommentOnDocumentCommand
     {
-        return new CommentOnDocument((string) $arguments->recordReference('doc_id'), $arguments->text('body'));
+        return new CommentOnDocumentCommand((string) $arguments->recordReference('doc_id'), $arguments->text('body'));
     }
 
     protected function present(mixed $commentId): ToolResult

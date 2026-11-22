@@ -6,7 +6,7 @@ namespace App\Sharing\Console;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
-use App\Sharing\Commands\CreateShare;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
 use App\Sharing\Models\SharePreview;
 use App\Sharing\Support\ShareDuration;
 use Illuminate\Console\Command;
@@ -31,7 +31,7 @@ final class ShareCreateCommand extends Command
 
         $preview = SharePreview::of((string) $this->argument('preview'));
         $minutes = $this->option('minutes') === null ? ShareDuration::STANDARD_MINUTES : (int) $this->option('minutes');
-        $summary = $commands->run(new CreateShare($preview->id, $preview->checksum, $minutes, $key));
+        $summary = $commands->run(new CreateShareCommand($preview->id, $preview->checksum, $minutes, $key));
 
         $this->line("Share {$summary->number} ({$summary->shareId}) is {$summary->state->value}.");
 

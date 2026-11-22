@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Agents\Commands\OpenPrivateEntry;
-use App\Agents\Commands\OpenTerminalView;
-use App\Agents\Commands\SendTerminalInput;
-use App\Agents\Commands\SubmitPrivateInput;
-use App\Agents\Commands\TakeTerminalControl;
+use App\Agents\Commands\OpenPrivateEntry\OpenPrivateEntryCommand;
+use App\Agents\Commands\OpenTerminalView\OpenTerminalViewCommand;
+use App\Agents\Commands\SendTerminalInput\SendTerminalInputCommand;
+use App\Agents\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Agents\Commands\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Data\TerminalControlData;
 use App\Agents\Enums\DriverOperation;
@@ -100,7 +100,7 @@ final class TerminalControlTest extends TestCase
             ->closeAllFor($runtime->session->agent_id, $this->owner(), CarbonImmutable::now());
 
         $this->assertSame(TerminalGrantState::Retired, TerminalGrant::query()->acrossActors()->sole()->state);
-        $this->assertRefusedWith(TerminalControlRefusal::GrantEnded, fn () => $this->asOwner(new SendTerminalInput(
+        $this->assertRefusedWith(TerminalControlRefusal::GrantEnded, fn () => $this->asOwner(new SendTerminalInputCommand(
             $runtime->session->agent_id,
             'grant-1',
             new TerminalInput('ls', true, 1, 0),
@@ -123,13 +123,13 @@ final class TerminalControlTest extends TestCase
         TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
         $agentId = $runtime->session->agent_id;
 
-        $sent = $this->asOwner(new SendTerminalInput($agentId, 'grant-1', new TerminalInput('ls', true, 1, 0)));
+        $sent = $this->asOwner(new SendTerminalInputCommand($agentId, 'grant-1', new TerminalInput('ls', true, 1, 0)));
 
         $this->assertSame(2, $sent->nextSequence);
         $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::TerminalInput)->count());
 
         try {
-            $this->asOwner(new SendTerminalInput($agentId, 'grant-1', new TerminalInput('pwd', true, 5, 0)));
+            $this->asOwner(new SendTerminalInputCommand($agentId, 'grant-1', new TerminalInput('pwd', true, 5, 0)));
             $this->fail('An input out of order was sent.');
         } catch (TerminalControlRefused $refusal) {
             $this->assertSame(TerminalControlRefused::sequenceGap(2)->getMessage(), $refusal->getMessage());
@@ -144,7 +144,7 @@ final class TerminalControlTest extends TestCase
         $paste = new TerminalInput(str_repeat('x', 17 * 1024), false, 1, 0, TerminalInputType::Paste);
 
         try {
-            $this->asOwner(new SendTerminalInput($runtime->session->agent_id, 'grant-1', $paste));
+            $this->asOwner(new SendTerminalInputCommand($runtime->session->agent_id, 'grant-1', $paste));
             $this->fail('The large paste was sent.');
         } catch (TerminalControlRefused $refusal) {
             $this->assertSame(TerminalControlRefusal::PasteTooLarge, $refusal->refusal);
@@ -161,7 +161,7 @@ final class TerminalControlTest extends TestCase
         TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
         $key = new TerminalInput('', false, 1, 0, TerminalInputType::Key, TerminalNamedKey::CtrlC);
 
-        $this->asOwner(new SendTerminalInput($runtime->session->agent_id, 'grant-1', $key));
+        $this->asOwner(new SendTerminalInputCommand($runtime->session->agent_id, 'grant-1', $key));
 
         $sent = DriverRequest::query()->where('operation', DriverOperation::TerminalInput)->sole();
         $this->assertStringContainsString('"key":"ctrl_c"', (string) $sent->message);
@@ -176,9 +176,9 @@ final class TerminalControlTest extends TestCase
         $values = $this->app->make(PrivateValues::class);
         $secret = 'correct-horse-'.Str::random(12);
 
-        $this->asOwner(new OpenPrivateEntry($agentId, 'grant-1', 1));
+        $this->asOwner(new OpenPrivateEntryCommand($agentId, 'grant-1', 1));
         $values->keep('private-1', $secret);
-        $this->asOwner(new SubmitPrivateInput($agentId, 'grant-1', new PrivateSubmission('private-1', 2)));
+        $this->asOwner(new SubmitPrivateInputCommand($agentId, 'grant-1', new PrivateSubmission('private-1', 2)));
 
         $request = DriverRequest::query()->where('operation', DriverOperation::PrivateInput)->sole();
         $this->assertStringNotContainsString($secret, (string) $request->message);
@@ -200,12 +200,12 @@ final class TerminalControlTest extends TestCase
 
     private function openInterest(AgentRuntime $runtime): string
     {
-        return $this->asOwner(new OpenTerminalView($runtime->session->agent_id, (string) Str::ulid()))->readInterestId;
+        return $this->asOwner(new OpenTerminalViewCommand($runtime->session->agent_id, (string) Str::ulid()))->readInterestId;
     }
 
     private function take(AgentRuntime $runtime, string $interest): TerminalControlData
     {
-        return $this->asOwner(new TakeTerminalControl($runtime->session->agent_id, $interest, (string) Str::ulid()));
+        return $this->asOwner(new TakeTerminalControlCommand($runtime->session->agent_id, $interest, (string) Str::ulid()));
     }
 
     /**

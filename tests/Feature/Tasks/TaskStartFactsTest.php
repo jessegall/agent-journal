@@ -15,7 +15,7 @@ use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
-use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Listeners\PushTaskState;
@@ -143,7 +143,7 @@ final class TaskStartFactsTest extends TestCase
     private function start(Task $task): void
     {
         $this->startRequestAs($this->session->agent_id, $this->session->id);
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
     }
 
     /**

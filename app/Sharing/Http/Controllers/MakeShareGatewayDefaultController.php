@@ -6,7 +6,7 @@ namespace App\Sharing\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Sharing\GatewayActionRequest;
-use App\Sharing\Commands\ConfigureShareGateway;
+use App\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -25,7 +25,7 @@ final readonly class MakeShareGatewayDefaultController
         $settings = ShareGatewayConfiguration::usable($request->configurationId())->settings;
 
         $commands->run(
-            new ConfigureShareGateway(
+            new ConfigureShareGatewayCommand(
                 $settings->gatewayKey,
                 $settings->executableVersion,
                 $settings->providerHost,

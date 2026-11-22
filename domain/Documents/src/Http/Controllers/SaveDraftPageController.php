@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Documents\Commands\ChangeDocumentDetails;
-use Domain\Documents\Commands\ReplaceDocumentBody;
+use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
+use Domain\Documents\Commands\ReplaceDocumentBody\ReplaceDocumentBodyCommand;
 use Domain\Documents\Http\Requests\DraftPageRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -18,10 +18,10 @@ final readonly class SaveDraftPageController
 {
     public function __invoke(DraftPageRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $saved = $commands->run(new ChangeDocumentDetails($request->target(), $request->title(), $request->abstract()));
+        $saved = $commands->run(new ChangeDocumentDetailsCommand($request->target(), $request->title(), $request->abstract()));
 
         $commands->run(
-            new ReplaceDocumentBody(
+            new ReplaceDocumentBodyCommand(
                 $saved->target(),
                 $request->body(),
             ),

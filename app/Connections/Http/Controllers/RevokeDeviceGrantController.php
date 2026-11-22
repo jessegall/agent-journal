@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RevokeDeviceGrant;
+use App\Connections\Commands\RevokeDeviceGrant\RevokeDeviceGrantCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -23,7 +23,7 @@ final readonly class RevokeDeviceGrantController
         CommandBus $commands,
         Redirector $redirect,
     ): Response|RedirectResponse {
-        $commands->run(new RevokeDeviceGrant($grant));
+        $commands->run(new RevokeDeviceGrantCommand($grant));
 
         return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
     }

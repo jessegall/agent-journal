@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Sharing\Commands\ClaimGatewayOperation;
-use App\Sharing\Commands\RecordGatewayHealth;
-use App\Sharing\Commands\RecordGatewayOutcome;
+use App\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
+use App\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use App\Sharing\Enums\GatewayEndpointState;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\GatewayOutcome;
@@ -163,14 +163,14 @@ final class GatewayRuntimeTest extends TestCase
 
     private function claim(string $runId): ClaimedGatewayOperation|null
     {
-        return $this->asSystem(new ClaimGatewayOperation($runId));
+        return $this->asSystem(new ClaimGatewayOperationCommand($runId));
     }
 
     private function outcome(string $runId, ClaimedGatewayOperation|null $claim, GatewayOutcome $outcome): void
     {
         $this->assertNotNull($claim);
         $this->asSystem(
-            new RecordGatewayOutcome(
+            new RecordGatewayOutcomeCommand(
                 $runId,
                 $claim->operation->operationId,
                 $claim->operation->endpointVersion,
@@ -182,7 +182,7 @@ final class GatewayRuntimeTest extends TestCase
 
     private function health(string $runId, int $endpointVersion): void
     {
-        $this->asSystem(new RecordGatewayHealth($runId, $this->configuration->id, $endpointVersion, true));
+        $this->asSystem(new RecordGatewayHealthCommand($runId, $this->configuration->id, $endpointVersion, true));
     }
 
     /**

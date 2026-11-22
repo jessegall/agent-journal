@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\PostChatMessage;
+use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Communication\Enums\IntervalRole;
 use App\Communication\Exceptions\SpeechRefused;
 use App\Communication\Models\Message;
@@ -46,9 +46,9 @@ final class GroupSpeechTest extends MessagingTestCase
     public function test_a_broadcast_offers_each_agent_and_a_directed_post_only_its_target(): void
     {
         $this->asOwner();
-        $broadcast = $this->runOnBus(new PostChatMessage($this->inboxId, 'Thoughts?', 'all'));
+        $broadcast = $this->runOnBus(new PostChatMessageCommand($this->inboxId, 'Thoughts?', 'all'));
         $directed = $this->runOnBus(
-            new PostChatMessage($this->inboxId, 'Builder, please.', 'one', null, "agent:{$this->builder->agent_id}"),
+            new PostChatMessageCommand($this->inboxId, 'Builder, please.', 'one', null, "agent:{$this->builder->agent_id}"),
         );
 
         $this->assertSame(2, SpeechOpportunity::query()->onRoot($broadcast)->count());
@@ -61,11 +61,11 @@ final class GroupSpeechTest extends MessagingTestCase
     public function test_an_agent_question_to_the_other_agent_keeps_its_turn_or_fails_whole(): void
     {
         $this->asOwner();
-        $root = $this->runOnBus(new PostChatMessage($this->inboxId, 'Thoughts?', 'all'));
+        $root = $this->runOnBus(new PostChatMessageCommand($this->inboxId, 'Thoughts?', 'all'));
 
         $this->asAgent($this->builder);
         $builderToken = $this->runOnBus($this->claimSpeech($this->inboxId, $root));
-        $ask = new AskChatQuestion(
+        $ask = new AskChatQuestionCommand(
             $this->inboxId,
             'Reviewer, agree?',
             'ask',

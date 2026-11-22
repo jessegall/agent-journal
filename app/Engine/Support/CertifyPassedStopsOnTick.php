@@ -7,7 +7,7 @@ namespace App\Engine\Support;
 use App\Bus\Contracts\CommandBus;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
-use App\Hooks\Commands\CertifyPassedStops;
+use App\Hooks\Commands\CertifyPassedStops\CertifyPassedStopsCommand;
 
 /**
  * Certifies passed stops whose agent never stopped again, on every engine pass; the sweep is bounded.
@@ -18,11 +18,11 @@ final readonly class CertifyPassedStopsOnTick implements EngineListener
 
     public function maintenanceScope(): string
     {
-        return CertifyPassedStops::MAINTENANCE_SCOPE;
+        return CertifyPassedStopsCommand::MAINTENANCE_SCOPE;
     }
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->commands->run(new CertifyPassedStops());
+        $this->commands->run(new CertifyPassedStopsCommand());
     }
 }

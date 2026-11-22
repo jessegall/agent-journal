@@ -12,7 +12,7 @@ use Tests\Support\AffectedTests;
  *
  *   composer test:affected
  *   composer test:affected -- --since=main
- *   composer test:affected -- domain/Rules/src/Commands/ApproveRule.php
+ *   composer test:affected -- domain/Rules/src/Commands/ApproveRule/ApproveRuleCommand.php
  */
 
 $root = dirname(__DIR__, 2);

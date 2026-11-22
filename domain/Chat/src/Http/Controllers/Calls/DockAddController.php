@@ -6,7 +6,7 @@ namespace Domain\Chat\Http\Controllers\Calls;
 
 use App\Bus\Contracts\CommandBus;
 use Domain\Chat\Calls\DockAddCall;
-use Domain\Chat\Commands\DockSource;
+use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Data\DockAnswerData;
 
 /**
@@ -16,6 +16,6 @@ final readonly class DockAddController
 {
     public function __invoke(DockAddCall $call, CommandBus $commands): DockAnswerData
     {
-        return DockAnswerData::fromDockResult($commands->run(new DockSource($call->chat, $call->type, $call->id)));
+        return DockAnswerData::fromDockResult($commands->run(new DockSourceCommand($call->chat, $call->type, $call->id)));
     }
 }

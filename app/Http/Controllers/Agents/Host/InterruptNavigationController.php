@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\InterruptNavigation;
+use App\Agents\Commands\InterruptNavigation\InterruptNavigationCommand;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\Response;
@@ -17,7 +17,7 @@ final readonly class InterruptNavigationController
 {
     public function __invoke(string $navigation, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new InterruptNavigation($host->hostId, $navigation));
+        $commands->run(new InterruptNavigationCommand($host->hostId, $navigation));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

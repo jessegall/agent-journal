@@ -11,8 +11,8 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Actions\StartSessions;
-use App\Agents\Commands\OpenTerminalView;
-use App\Agents\Commands\RenewTerminalView;
+use App\Agents\Commands\OpenTerminalView\OpenTerminalViewCommand;
+use App\Agents\Commands\RenewTerminalView\RenewTerminalViewCommand;
 use App\Agents\Data\TerminalControlData;
 use App\Agents\Data\TerminalInterestData;
 use App\Agents\Enums\DriverVariant;
@@ -57,7 +57,7 @@ trait OpensTerminalRuntimes
         $rowId = $this->app->make(CommandBus::class)->run($command);
 
         return match (true) {
-            $command instanceof OpenTerminalView, $command instanceof RenewTerminalView => $this->app
+            $command instanceof OpenTerminalViewCommand, $command instanceof RenewTerminalViewCommand => $this->app
                 ->make(TerminalViews::class)
                 ->answerFor($this->owner(), $rowId, $this->app->make(ServerClock::class)->now()),
             is_string($rowId) => $this->app

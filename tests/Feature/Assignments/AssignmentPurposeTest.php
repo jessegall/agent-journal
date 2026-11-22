@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Support\ActorIdentity;
-use App\Assignments\Commands\AssignRecord;
-use App\Assignments\Commands\EnableAutoAssignment;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Exceptions\AssignmentTypeInternal;
@@ -77,13 +77,13 @@ final class AssignmentPurposeTest extends TestCase
         $key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), DeskSeat::LINK_TYPE);
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $this->assertThrows(fn () => $bus->run(new AssignRecord($seat, $holder)), AssignmentTypeInternal::class);
+        $this->assertThrows(fn () => $bus->run(new AssignRecordCommand($seat, $holder)), AssignmentTypeInternal::class);
         $this->assertThrows(
             fn () => $writer->assignUnfinished($holder, fn () => new AssignmentGroup($seat, [$seat])),
             AssignmentTypeInternal::class,
         );
         $this->assertThrows(
-            fn () => $bus->run(new EnableAutoAssignment(
+            fn () => $bus->run(new EnableAutoAssignmentCommand(
                 new AutoAssignmentInput($key, new PoolReference('tasks.open', null, []), 1),
                 0,
             )),
@@ -93,7 +93,7 @@ final class AssignmentPurposeTest extends TestCase
 
         $task = Task::factory()->create()->assignmentIdentity();
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $bus->run(new AssignRecord($task, $holder));
+        $bus->run(new AssignRecordCommand($task, $holder));
         $this->assertSame(1, AssignmentRecord::query()->count());
     }
 

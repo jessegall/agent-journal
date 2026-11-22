@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Actors\Support\ActorStore;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Profiles\Commands\InstallBuiltInProfiles as InstallCommand;
+use App\Profiles\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand as InstallCommand;
 
 /**
  * Activates the journal's built-in profiles before each test, for tests that write session rows pinned to them.

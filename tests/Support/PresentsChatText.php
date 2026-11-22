@@ -8,8 +8,8 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Models\AgentSession;
-use App\Communication\Commands\AcknowledgePresentation;
-use App\Communication\Commands\ClaimSpeech;
+use App\Communication\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
+use App\Communication\Commands\ClaimSpeech\ClaimSpeechCommand;
 use App\Communication\Data\PresentationItemData;
 use App\Communication\Support\PresentationBatches;
 use Carbon\CarbonImmutable;
@@ -29,7 +29,7 @@ trait PresentsChatText
             return;
         }
 
-        $this->runOnBus(new AcknowledgePresentation(
+        $this->runOnBus(new AcknowledgePresentationCommand(
             $batch->batchId,
             array_map(fn (PresentationItemData $item) => $item->handle, $batch->items),
             $contextKey,
@@ -39,7 +39,7 @@ trait PresentsChatText
     /**
      * The claim the current agent session makes from the batch its turn was shown, as a driver turn does.
      */
-    protected function claimSpeech(string $inboxId, string $rootId): ClaimSpeech
+    protected function claimSpeech(string $inboxId, string $rootId): ClaimSpeechCommand
     {
         $sessionId = $this->app->make(CurrentSession::class)->sessionId();
         $session = AgentSession::query()->findOrFail($sessionId);
@@ -51,6 +51,6 @@ trait PresentsChatText
             CarbonImmutable::now(),
         );
 
-        return new ClaimSpeech($inboxId, $rootId, (string) $batch?->batchId, (string) $batch?->claimGrant);
+        return new ClaimSpeechCommand($inboxId, $rootId, (string) $batch?->batchId, (string) $batch?->claimGrant);
     }
 }

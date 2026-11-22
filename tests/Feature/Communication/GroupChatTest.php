@@ -6,13 +6,13 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage;
-use App\Communication\Commands\ReplyInChat;
+use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Communication\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Chat\Commands\CreateGroupChat;
+use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Resolvers\Support\ChatConversations;
 use Domain\Chat\Support\ChatInbox;
@@ -30,18 +30,18 @@ final class GroupChatTest extends MessagingTestCase
         $cy = $this->grantedUser('Cy');
 
         $this->asOwner();
-        $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$bea->id, $cy->id]));
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$bea->id, $cy->id]));
 
         $members = $this->app->make(ChatInboxes::class)->activeIntervals(new ChatInbox($inboxId, 'Design'));
         $this->assertCount(3, $members);
         $this->assertTrue($this->pageOf($inboxId)->capabilities->add);
 
         $this->startUserRequestAs($bea->id);
-        $postId = $this->runOnBus(new PostChatMessage($inboxId, 'Draft is up.', 'bea-post'));
+        $postId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Draft is up.', 'bea-post'));
         $this->assertFalse($this->pageOf($inboxId)->capabilities->add);
 
         $this->startUserRequestAs($cy->id);
-        $replyId = $this->runOnBus(new ReplyInChat($postId, 'Looks good.', 'cy-reply'));
+        $replyId = $this->runOnBus(new ReplyInChatCommand($postId, 'Looks good.', 'cy-reply'));
 
         $this->assertNotSame($postId, $replyId);
         $this->assertNull($this->pageOf($inboxId)->agentId);
