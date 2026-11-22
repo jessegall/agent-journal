@@ -522,6 +522,7 @@ use App\Bus\Exceptions\RaisedOutsideUnit;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\Command as BaseCommand;
 use App\Bus\Support\CommandCall;
+use App\Bus\Support\CommandName;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
@@ -2210,6 +2211,7 @@ final class CoreApi
                 RequiresListener::class,
                 CommandEffectType::class,
                 CommandCall::class,
+                CommandName::class,
                 CurrentUser::class,
                 ActionRoute::class,
                 DeclaredLayoutData::class,

@@ -45,6 +45,7 @@ final class TerminalViewCommandsTest extends TestCase
 
     public function test_a_good_open_makes_one_live_view_of_the_viewer_and_changes_the_hosts_version(): void
     {
+        $this->freezeTime();
         $runtime = $this->runtimeOn('host-1');
         $watched = $this->app->make(WatchedRuntimes::class);
         $this->assertSame(0, $watched->version('host-1'));

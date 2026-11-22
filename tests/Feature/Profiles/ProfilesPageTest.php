@@ -29,6 +29,9 @@ final class ProfilesPageTest extends TestCase
 
     public function test_with_no_profile_the_page_shows_an_informational_empty_state_and_nothing_selected(): void
     {
+        // Starting an agent installs the built-in profiles, and a test that commits its rows may leave them behind.
+        $this->emptyTables('profile_revisions', 'profiles');
+
         $this->actingAs($this->owner)->get('/accounts/profiles')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
                 ->component('layout/DeclaredLayout')

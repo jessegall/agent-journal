@@ -20,9 +20,9 @@ final class FolderClassesTest extends TestCase
 {
     public function test_every_class_of_the_type_in_the_folder_is_found_by_name(): void
     {
-        $commands = FolderClasses::in(base_path('domain/Chat/src/Commands'), Command::class);
+        $commands = FolderClasses::in(base_path('domain/Chat/src/Commands/*'), Command::class);
 
-        $this->assertCount(count(glob(base_path('domain/Chat/src/Commands/*.php')) ?: []), $commands);
+        $this->assertCount(count(glob(base_path('domain/Chat/src/Commands/*/*Command.php')) ?: []), $commands);
         $this->assertContains(PinMessageCommand::class, $commands);
         $this->assertSame($commands, array_values(array_unique([...$commands])));
     }
