@@ -33,8 +33,8 @@ final readonly class StartProposal
         return $this->model !== null && ! $this->profile->allows($this->model);
     }
 
-    public function isContainedCodex(): bool
+    public function isContained(): bool
     {
-        return $this->driver === HookDriver::Codex && $this->placement === ExecutionModeType::RequiredContainer;
+        return $this->placement === ExecutionModeType::RequiredContainer;
     }
 }

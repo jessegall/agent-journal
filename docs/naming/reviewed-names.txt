@@ -344,6 +344,7 @@ case	DriverCapability::Paste
 case	DriverCapability::PrivateEntry
 case	DriverCapability::Resize
 case	DriverCapability::Run
+case	DriverCapability::RunContained
 case	DriverCapability::SignIn
 case	DriverCapability::TurnEffort
 case	DriverCapability::TurnModel
@@ -7046,6 +7047,7 @@ constant	CodexAdapter::NATIVE_CHILD_TOOLS
 constant	CodexAdapter::NATIVE_EVENTS
 constant	CodexAdapter::PATCH_FILE_LINE
 constant	CodexAdapter::PATCH_MOVED_FILE
+constant	CodexHeadlessCapabilities::NOT_CONTAINABLE
 constant	CodexHeadlessCapabilities::NO_EXACT_RESUME
 constant	CodexJournalServer::HEADER
 constant	CodexJournalServer::PASSED_VARIABLES
@@ -13605,7 +13607,7 @@ method	DriverKeyInvalid::for()
 method	DriverMethodsData::__construct()
 method	DriverMethodsData::fromMethods()
 method	DriverModeAmbiguous::for()
-method	DriverNotContainable::codex()
+method	DriverNotContainable::because()
 method	DriverNotContainable::reason()
 method	DriverOperation::control()
 method	DriverOperation::isTerminalControl()
@@ -15164,9 +15166,11 @@ method	HostStartExecutor::__construct()
 method	HostStartExecutor::exchange()
 method	HostStartExecutor::start()
 method	HostStartExecutor::stop()
+method	HostStartPreflight::__construct()
 method	HostStartPreflight::assertAdmitted()
 method	HostStartPreflight::hostRefusals()
 method	HostStartPreflight::refusals()
+method	HostStartPreflight::runsContained()
 method	HostStartRefused::because()
 method	HostStartRefused::unreachable()
 method	HostStartReplyData::__construct()
@@ -23716,7 +23720,7 @@ method	StartProjectCommandRunCommand::__construct()
 method	StartProjectCommandRunHandler::__construct()
 method	StartProjectCommandRunHandler::handle()
 method	StartProposal::__construct()
-method	StartProposal::isContainedCodex()
+method	StartProposal::isContained()
 method	StartProposal::isDriverPinnedAway()
 method	StartProposal::isModelRefused()
 method	StartReadiness::holdsDeliveries()
@@ -28446,6 +28450,7 @@ parameter	$rule
 parameter	$ruleId
 parameter	$rules
 parameter	$run
+parameter	$runContained
 parameter	$runId
 parameter	$runIds
 parameter	$runNumber
@@ -32880,6 +32885,7 @@ property	HostRefusalData::$refusal
 property	HostSkillPublisher::$files
 property	HostSkillPublisher::$targets
 property	HostStartExecutor::$socket
+property	HostStartPreflight::$drivers
 property	HostStartReplyData::$execution
 property	HostStartReplyData::$startedAt
 property	HostStartSocket::$path
@@ -34047,6 +34053,7 @@ property	OpenAgentRuntimeHandler::$accounts
 property	OpenAgentRuntimeHandler::$arrangement
 property	OpenAgentRuntimeHandler::$builtInProfiles
 property	OpenAgentRuntimeHandler::$containers
+property	OpenAgentRuntimeHandler::$drivers
 property	OpenAgentRuntimeHandler::$pendingStarts
 property	OpenAgentRuntimeHandler::$sessions
 property	OpenAgentRuntimeHandler::$starts

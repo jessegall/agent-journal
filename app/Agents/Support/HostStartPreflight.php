@@ -9,6 +9,9 @@ use App\Agents\Enums\StartPreflightRefusal;
 use App\Agents\Exceptions\StartPreflightRefused;
 use App\Agents\Models\Host;
 use App\Agents\Values\StartProposal;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Enums\DriverCapability;
+use App\Drivers\Values\BoundTarget;
 
 /**
  * Whether a proposed start can run, answered on the server before anything stops or a grant is allocated: the
@@ -17,6 +20,8 @@ use App\Agents\Values\StartProposal;
  */
 final readonly class HostStartPreflight implements StartPreflight
 {
+    public function __construct(private DriverCatalogue $drivers) {}
+
     public function refusals(StartProposal $proposal): array
     {
         $refusals = [];
@@ -29,7 +34,7 @@ final readonly class HostStartPreflight implements StartPreflight
             $refusals[] = StartPreflightRefusal::ModelNotAllowed;
         }
 
-        if ($proposal->isContainedCodex()) {
+        if ($proposal->isContained() && ! $this->runsContained($proposal)) {
             return [...$refusals, StartPreflightRefusal::DriverNotContainable];
         }
 
@@ -41,6 +46,19 @@ final readonly class HostStartPreflight implements StartPreflight
         foreach ($this->refusals($proposal) as $refusal) {
             throw StartPreflightRefused::because($refusal);
         }
+    }
+
+    /**
+     * Whether the proposed driver's capabilities let it run in a container.
+     */
+    private function runsContained(StartProposal $proposal): bool
+    {
+        $key = $this->drivers->keyFor($proposal->driver->value, $proposal->variant);
+
+        return $this->drivers->forKey($key)
+            ->capabilities(BoundTarget::beforePlacement())
+            ->supportOf(DriverCapability::RunContained)
+            ->isAllowed();
     }
 
     /**

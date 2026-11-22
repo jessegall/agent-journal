@@ -15,7 +15,7 @@ use App\Agents\Exceptions\WorkspaceSourceMissing;
 use App\Agents\Exceptions\WorkspaceSourcesInvalid;
 use App\Agents\Models\Host;
 use App\Agents\Values\SelectedAccount;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Values\OperationSupport;
 
 /**
  * The arrangement this journal runs its agents in, read once from AGENTS_ARRANGEMENT; the one place that answers it,
@@ -96,15 +96,14 @@ final readonly class ArrangementSetting
     }
 
     /**
-     * Refuses, contained, a driver whose sandbox does not keep its tools from its sign-in, whatever the account's
-     * sign-in method: Codex limits writes only (doc 61, decision 8).
+     * Refuses, contained, a driver whose capabilities say it cannot run in a container, with their reason.
      *
      * @throws DriverNotContainable
      */
-    public function assertContainable(HookDriver $driver): void
+    public function assertContainable(OperationSupport $runContained): void
     {
-        if ($this->arrangement->isContained() && $driver === HookDriver::Codex) {
-            throw DriverNotContainable::codex();
+        if ($this->arrangement->isContained() && ! $runContained->isAllowed()) {
+            throw DriverNotContainable::because((string) $runContained->reason);
         }
     }
 

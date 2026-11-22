@@ -25,6 +25,8 @@ use App\Agents\Values\ModelSelection;
 use App\Agents\Values\RuntimeIntent;
 use App\Agents\Values\SelectedDriver;
 use App\Contracts\CommandHandler;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Enums\DriverCapability;
 use Illuminate\Support\Str;
 
 final readonly class OpenAgentRuntimeHandler implements CommandHandler
@@ -38,6 +40,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         private ArrangementSetting $arrangement,
         private BuiltInStartProfiles $builtInProfiles,
         private ContainerAdmission $containers,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function handle(OpenAgentRuntimeCommand $command): OpenedRuntime
@@ -76,7 +79,9 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             null,
         );
 
-        $this->arrangement->assertContainable($selection->driver);
+        $this->arrangement->assertContainable(
+            $this->drivers->pinned($command->driver, $command->variant)->support->supportOf(DriverCapability::RunContained),
+        );
 
         $agent = Agent::query()->findOrFail($command->agentId);
         $this->sessions->lockForStart($agent);

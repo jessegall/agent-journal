@@ -23,4 +23,5 @@ enum DriverCapability: string
     case HookMethods = 'hook-methods';
     case SignIn = 'sign-in';
     case ExactResume = 'exact-resume';
+    case RunContained = 'run-contained';
 }

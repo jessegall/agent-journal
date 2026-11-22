@@ -20,6 +20,7 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Capabilities\CodexHeadlessCapabilities;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
@@ -136,7 +137,7 @@ final class HostArrangementTest extends TestCase
             $this->openOn(ArrangementType::Contained, 'codex');
             $this->fail('a contained Codex start was not refused');
         } catch (DriverNotContainable $refusal) {
-            $this->assertSame(DriverNotContainable::codex()->getMessage(), $refusal->getMessage());
+            $this->assertSame(CodexHeadlessCapabilities::NOT_CONTAINABLE, $refusal->getMessage());
         }
 
         $this->assertSame(0, ProcessStart::query()->count());

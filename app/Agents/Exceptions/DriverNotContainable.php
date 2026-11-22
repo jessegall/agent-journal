@@ -14,11 +14,12 @@ use RuntimeException;
  */
 final class DriverNotContainable extends RuntimeException implements StartRefusal
 {
-    public static function codex(): self
+    /**
+     * The driver cannot run contained, for the reason its capabilities give.
+     */
+    public static function because(string $reason): self
     {
-        return new self(
-            "Codex's sandbox does not keep tools from its sign-in; container starts wait for the provider transport",
-        );
+        return new self($reason);
     }
 
     public function reason(): StartRefusalType
