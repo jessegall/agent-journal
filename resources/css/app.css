@@ -43,7 +43,6 @@
     --duration-hover: 120ms;
     --duration-pop: 180ms;
     --duration-view: 240ms;
-    --duration-panel: 340ms;
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -85,6 +84,12 @@
     --color-bubble: var(--bubble);
     --color-code-bg: var(--code-bg);
     --color-term: var(--term);
+    --color-term-text: var(--term-text);
+    --color-term-dim: var(--term-dim);
+    --color-term-out: var(--term-out);
+    --color-term-error: var(--term-error);
+    --color-scrim: var(--scrim);
+    --color-mark-claude: var(--mark-claude);
     --color-border-inner: var(--border-inner);
     --color-border-2: var(--border-2);
     --color-border-3: var(--border-3);
@@ -118,8 +123,44 @@
     --color-delegated: var(--delegated);
 }
 
+/* Elevation (doc 105, section 7): a window, the palette and a dialog float on --shadow-window; a menu, popover, toast,
+   tooltip, compass cell and drag ghost on --shadow-pop. Static, so the variables exist for the dark override below. */
+@theme static {
+    --shadow-window: 0 10px 30px rgba(20, 22, 30, 0.14), 0 1px 3px rgba(20, 22, 30, 0.08);
+    --shadow-pop: 0 6px 20px rgba(20, 22, 30, 0.13);
+}
+
 :root {
     --inset: 16px;
+
+    /* Icon sizes: small, medium and large pictograms. */
+    --icon-sm: 13px;
+    --icon-md: 14px;
+    --icon-lg: 16px;
+
+    /* The stacking ladder inside the app (doc 105, section 7). A window's place in the stack adds to --z-window. */
+    --z-strip: 6;
+    --z-window: 20;
+    --z-chat-panel: 30;
+    --z-comment: 70;
+    --z-drop-preview: 80;
+    --z-drop-compass: 82;
+    --z-sidebar: 100;
+    --z-menu: 150;
+    --z-reaction-picker: 155;
+    --z-scrim: 160;
+    --z-dialog: 170;
+    --z-toast: 180;
+    --z-drag-ghost: 190;
+    --z-caption: 195;
+
+    /* The terminal and process output are dark in both colour schemes. */
+    --term-text: #e9e6e2;
+    --term-dim: #a09a93;
+    --term-out: #d9d5d0;
+    --term-error: #f0a294;
+    --mark-claude: #d97757;
+    --scrim: rgba(0, 0, 0, 0.18);
     /* The ring a focused control shows, the strongest stone, as the accent is. */
     --focus: #262422;
 
@@ -169,7 +210,6 @@
     --delegated: #6e6861;
     --tip-bg: #ffffff;
     --tip-edge: var(--border-2);
-    --tip-shadow: 0 6px 20px rgba(20, 22, 30, 0.13);
 
     --background: var(--bg);
     --foreground: var(--text);
@@ -187,7 +227,7 @@
     --accent-foreground: var(--text);
     --destructive: var(--danger);
     --destructive-foreground: var(--on-danger);
-    --border: #e7e4e0;
+    --border: #e9e6e2;
     --input: var(--border-2);
     --ring: var(--focus);
     --sidebar: var(--side);
@@ -248,7 +288,9 @@
     --delegated: #a09a93;
     --tip-bg: var(--sel);
     --tip-edge: var(--border-3);
-    --tip-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+    --scrim: rgba(0, 0, 0, 0.45);
+    --shadow-window: 0 14px 36px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-pop: 0 8px 22px rgba(0, 0, 0, 0.5);
 }
 
 @layer base {
@@ -357,6 +399,11 @@
             transition: none !important;
             animation: none !important;
         }
+
+        /* The spinner only slows, so work in progress still reads as moving. */
+        .spinner {
+            animation: busy-spin 3s linear infinite !important;
+        }
     }
 }
 
@@ -365,6 +412,10 @@
  * one-line field is the kit's height; a textarea grows with its rows.
  */
 @layer components {
+    .spinner {
+        animation: busy-spin 0.9s linear infinite;
+    }
+
     .input {
         @apply min-h-7 min-w-0 rounded-control border border-border-2 bg-transparent px-2.5 py-1 text-field text-text transition-colors duration-(--duration-hover) placeholder:text-text-4 focus-visible:border-brand focus-visible:outline-none disabled:opacity-45 aria-invalid:border-danger;
     }

@@ -109,7 +109,7 @@ function followed(receiptId: string): void {
             </template>
         </IconAction>
         <template v-if="isOpen && !isCompact">
-            <div class="absolute top-8 right-0 z-90 rounded-menu border border-border-2 bg-raised p-1.5 shadow-(--tip-shadow)">
+            <div class="absolute top-8 right-0 z-90 rounded-menu border border-border-2 bg-raised p-1.5 shadow-pop">
                 <NotificationList
                     :id="panelId"
                     :state="state"
