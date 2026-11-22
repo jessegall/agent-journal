@@ -116,7 +116,7 @@ final readonly class TaskIndexLayout
     private function creation(string $key = 'creation'): LayoutPartData
     {
         $dialog = new LayoutDialogData(
-            'Create task',
+            'New task',
             'Task created',
             guidedNoun: $this->producers->offersGuided('task') ? 'task' : new Optional(),
         );
@@ -124,7 +124,7 @@ final readonly class TaskIndexLayout
         return LayoutPartData::dialog(
             $key,
             $dialog,
-            LayoutPartData::action('open', 'Create task', LayoutActionData::changing([]), 'primary'),
+            LayoutPartData::action('open', 'New task', LayoutActionData::changing([])),
             new LayoutFormData(ActionMethod::Post, route('tasks.create-task', [], false), isKeyed: true),
             [
                 LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),

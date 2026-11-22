@@ -57,7 +57,7 @@ final readonly class LibraryWindowResolver implements PageResolver
 
         return ListPage::make('Documents', $rows, $this->emptyFor($filters))
             ->searching('Search documents', new LayoutFieldData('query', $filters->query, ['after', 'page']))
-            ->creatingWith($this->creation('doc', 'Create document'), $this->creation('report', 'Create report'))
+            ->creatingWith($this->creation('doc', 'New document'), $this->creation('report', 'New report'))
             ->paged(ListPaging::cursor($type === LibraryTypeFilter::All ? null : $this->nextOf($documents ?? $reports)))
             ->withReader(new LayoutBackData('/documents', 'Documents'))
             ->layout();
@@ -108,7 +108,7 @@ final readonly class LibraryWindowResolver implements PageResolver
 
         return ListEmpty::offering(
             'No documents or reports yet.',
-            $this->creation('doc', 'Create document', 'create-first'),
+            $this->creation('doc', 'New document', 'create-first'),
             'A document is lasting knowledge kept as revisions; a report says what was checked or found, once.',
         );
     }
@@ -131,7 +131,14 @@ final readonly class LibraryWindowResolver implements PageResolver
                 LayoutPartData::field('abstract', 'One line about it', new LayoutFieldData('abstract'), 'text'),
                 LayoutPartData::field('body', 'Text', new LayoutFieldData('body'), 'area'),
             ],
-            [LayoutPartData::action('send', $label, LayoutActionData::submitting(), 'primary')],
+            [
+                LayoutPartData::action(
+                    'send',
+                    $kind === 'doc' ? 'File document' : 'File report',
+                    LayoutActionData::submitting(),
+                    'primary',
+                ),
+            ],
         );
     }
 }
