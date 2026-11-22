@@ -15,6 +15,7 @@ use App\Exceptions\ProfileCannotCoordinate;
 use App\Models\Agent;
 use App\Models\DriverConversation;
 use App\Models\Profile;
+use App\Support\StartPreviews;
 use App\Support\StartReceipt;
 use App\Values\StartRequest;
 
@@ -28,6 +29,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
         private ProfileSelections $profiles,
         private CommandBus $commands,
         private StartPreflight $preflight,
+        private StartPreviews $previews,
     ) {}
 
     /**
@@ -42,7 +44,14 @@ final readonly class StartProfileMainHandler implements CommandHandler
         }
 
         $agent = Agent::query()->findOrFail($command->agentId);
-        $variant = $agent->variantFor($command->variant, $profile->base->defaultVariant);
+        $variant = $this->previews->preview(
+            $agent,
+            $command->driverKey,
+            $command->variant,
+            $command->requested,
+            $profile->defaults,
+            null,
+        )->mode;
         $this->preflight->assertAdmitted($profile->proposal($variant, $command->requested->model));
 
         $target = $command->conversationId === null
@@ -63,6 +72,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
             variant: $variant,
             chosenAccount: $command->chosenAccount,
             savesVariant: $command->saveVariant,
+            previewRevision: $command->previewRevision,
         )));
     }
 }

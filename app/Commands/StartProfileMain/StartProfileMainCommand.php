@@ -35,6 +35,7 @@ final readonly class StartProfileMainCommand extends Command
         public bool $saveVariant = false,
         public ChosenAccount|null $chosenAccount = null,
         public string|null $conversationId = null,
+        public int|null $previewRevision = null,
     ) {}
 
     /**

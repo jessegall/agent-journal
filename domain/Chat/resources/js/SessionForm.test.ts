@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils';
+import type { VueWrapper } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, reactive } from 'vue';
 import type { AgentOptionData } from '@generated/types/chat';
@@ -88,6 +89,40 @@ vi.mock('@inertiajs/vue3', () => ({
         },
     },
 }));
+// The server's preview of a start: the drafted mode, else headless, and only the Codex terminal cannot run.
+vi.mock('@kit/pageReads', async (importOriginal) => {
+    const original = await importOriginal<typeof import('@kit/pageReads')>();
+
+    return {
+        ...original,
+        readPage: (routeName: string, query: Record<string, string>) => {
+            if (routeName !== 'web.start-preview') {
+                return original.readPage(routeName, query);
+            }
+
+            const mode = query.mode === '' ? 'headless' : query.mode;
+            const runs = !(query.family === 'codex' && mode === 'terminal');
+
+            return Promise.resolve({
+                family: query.family,
+                familySource: 'explicit',
+                mode,
+                modeSource: query.mode === '' ? 'profile' : 'explicit',
+                driverKey: mode === 'headless' ? `${query.family}-headless` : query.family,
+                label: `${query.family} ${mode}`,
+                canRun: runs,
+                unavailableReason: runs ? null : 'The Codex terminal is not proven on any host yet.',
+                isModeLocked: false,
+                catalogueRevision: 4,
+            });
+        },
+    };
+});
+
+function startButton(form: VueWrapper) {
+    return form.findAll('button').find((candidate) => candidate.text() === 'Start session');
+}
+
 vi.mock('@kit/Dialog', () => ({
     default: { template: '<div><slot /><slot name="footer" /></div>' },
 }));
@@ -157,14 +192,9 @@ describe('SessionForm', () => {
             ['Old account: its account needs to sign in again', true],
             ['Work account', false],
         ]);
-        expect(form.text()).toContain('Starts Claude Code, on Work account.');
+        expect(form.text()).toContain('Starts claude-code headless, on Work account.');
         const driverOptions = form.findAll('select[id$="-driver"] option');
-        expect(driverOptions.map((option) => [option.text(), (option.element as HTMLOptionElement).disabled])).toEqual([
-            ['Claude Code', false],
-            ['Claude Code headless', false],
-            ['Codex: The Codex terminal is not proven on any host yet.', true],
-            ['Codex headless', false],
-        ]);
+        expect(driverOptions.map((option) => option.text())).toEqual(['Claude Code', 'Codex']);
 
         await form.find('form').trigger('submit');
         await flushPromises();
@@ -182,6 +212,35 @@ describe('SessionForm', () => {
             ['/profiles/journal-main/start-main', 'ready', 4],
         ]);
         expect(posted[0].body.requestId).toBe(posted[1].body.requestId);
+        expect([posted[0].body.variant, posted[0].body.previewRevision]).toEqual([null, 4]);
+        form.unmount();
+    });
+
+    it('keeps a Codex terminal it cannot run, says why and disables Start, and lets Headless or the inherited mode back', async () => {
+        const form = mount(SessionForm, {
+            attachTo: document.body,
+            props: { agent: idle, mode: 'start' },
+        });
+        await flushPromises();
+
+        await form.find('select[id$="-driver"]').setValue('codex');
+        await form.find('input[type="checkbox"]').setValue(false);
+        await flushPromises();
+
+        expect(form.text()).toContain('The Codex terminal is not proven on any host yet.');
+        expect(startButton(form)?.attributes('disabled')).toBeDefined();
+
+        await form.find('input[type="checkbox"]').setValue(true);
+        await flushPromises();
+
+        expect(form.text()).not.toContain('The Codex terminal is not proven on any host yet.');
+        expect(startButton(form)?.attributes('disabled')).toBeUndefined();
+
+        const inherit = form.findAll('button').find((button) => button.text() === 'Use saved or profile setting');
+        await inherit?.trigger('click');
+        await flushPromises();
+
+        expect(form.findAll('button').some((button) => button.text() === 'Use saved or profile setting')).toBe(false);
         form.unmount();
     });
 

@@ -6342,6 +6342,9 @@ class	StartPlanTool
 class	StartPolicy
 class	StartPreflightRefused
 class	StartPreview
+class	StartPreviewController
+class	StartPreviewData
+class	StartPreviewRequest
 class	StartPreviewStale
 class	StartPreviews
 class	StartProfile
@@ -24531,6 +24534,13 @@ method	StartPreflightRefused::refusalCode()
 method	StartPreflightRefused::status()
 method	StartPreview::__construct()
 method	StartPreview::canRun()
+method	StartPreviewController::__invoke()
+method	StartPreviewData::__construct()
+method	StartPreviewData::fromPreview()
+method	StartPreviewRequest::family()
+method	StartPreviewRequest::mode()
+method	StartPreviewRequest::model()
+method	StartPreviewRequest::rules()
 method	StartPreviewStale::since()
 method	StartPreviews::__construct()
 method	StartPreviews::modeOf()
@@ -27396,6 +27406,7 @@ parameter	$canResolve
 parameter	$canResumeScript
 parameter	$canRetry
 parameter	$canReview
+parameter	$canRun
 parameter	$canRunChecks
 parameter	$canSendAgain
 parameter	$canShare
@@ -28032,6 +28043,7 @@ parameter	$fallbacks
 parameter	$fallthrough
 parameter	$families
 parameter	$family
+parameter	$familySource
 parameter	$feed
 parameter	$feedbackAddress
 parameter	$fence
@@ -29075,6 +29087,7 @@ parameter	$previewChecksum
 parameter	$previewId
 parameter	$previewRevision
 parameter	$previewed
+parameter	$previews
 parameter	$previous
 parameter	$previousPassStart
 parameter	$previousState
@@ -39612,6 +39625,16 @@ property	StartPreview::$mode
 property	StartPreview::$modeSource
 property	StartPreview::$selection
 property	StartPreview::$unavailableReason
+property	StartPreviewData::$canRun
+property	StartPreviewData::$catalogueRevision
+property	StartPreviewData::$driverKey
+property	StartPreviewData::$family
+property	StartPreviewData::$familySource
+property	StartPreviewData::$isModeLocked
+property	StartPreviewData::$label
+property	StartPreviewData::$mode
+property	StartPreviewData::$modeSource
+property	StartPreviewData::$unavailableReason
 property	StartPreviews::$drivers
 property	StartProfile::$snapshot
 property	StartProfileAuthority::$profile
@@ -39619,6 +39642,7 @@ property	StartProfileMainCommand::$agentId
 property	StartProfileMainCommand::$chosenAccount
 property	StartProfileMainCommand::$conversationId
 property	StartProfileMainCommand::$driverKey
+property	StartProfileMainCommand::$previewRevision
 property	StartProfileMainCommand::$profile
 property	StartProfileMainCommand::$requestId
 property	StartProfileMainCommand::$requested
@@ -39626,6 +39650,7 @@ property	StartProfileMainCommand::$saveVariant
 property	StartProfileMainCommand::$variant
 property	StartProfileMainHandler::$commands
 property	StartProfileMainHandler::$preflight
+property	StartProfileMainHandler::$previews
 property	StartProfileMainHandler::$profiles
 property	StartProfilePin::$key
 property	StartProfilePin::$revision

@@ -13,6 +13,7 @@ import { newRequestId } from '@kit/requestId';
 import { useStartRestoration } from './composables/useStartRestoration';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import type { AgentOptionData, ChatData, DriverChoiceData } from '@generated/types/chat';
+import type { DriverSourceType, ModeSourceType, StartPreviewData } from '@generated/types/core';
 import type { WindowResult } from '@kit/PageTypes';
 import type { DriverVariant } from '@kit/CoreTypes';
 import {
@@ -54,6 +55,7 @@ type SessionChoice = {
     accountId: string | undefined;
     accountRevision: number | undefined;
     conversationId: string | null;
+    previewRevision: number | undefined;
 };
 
 const titles = { start: 'Start session', resume: 'Resume a conversation', switch: 'Switch session' };
@@ -71,8 +73,13 @@ type FieldKey = keyof typeof fieldIds;
 
 let requestId = newRequestId();
 const switching = useSwitchOperation(() => props.agent);
-// The registered driver chosen, by its key; the family and mode a start sends come from it.
-const driverKey = ref<string | null>(null);
+// The driver family chosen; none takes the family of the agent's latest conversation, else the first.
+const family = ref<string | null>(null);
+// The mode as drafted: inherit takes the agent's saved mode or the profile's; on and off name headless or terminal.
+type ModeDraft = 'inherit' | 'on' | 'off';
+const modeDraft = ref<ModeDraft>('inherit');
+// The server's preview of the start as drafted, read again whenever the draft changes.
+const preview = ref<StartPreviewData | null>(null);
 const saveVariant = ref(false);
 const accounts = ref<EligibleAccountData[]>([]);
 const accountId = ref<string | null>(null);
@@ -90,12 +97,13 @@ let following: { stop: () => void } | undefined;
 
 const account = computed(() => accounts.value.find((choice) => choice.id === accountId.value));
 const review = computed(() => {
-    return `${chosenDriver.value?.label ?? 'its driver'}, on ${account.value?.label ?? 'no account'}`;
+    return `${preview.value?.label ?? 'its driver'}, on ${account.value?.label ?? 'no account'}`;
 });
 const isSwitchOpen = computed(() => ['sending', 'following', 'uncertain'].includes(switching.state.value));
 const canSubmit = computed(
     () => account.value !== undefined
         && account.value.unavailableReason === null
+        && preview.value?.canRun === true
         && !sending.value
         && !isSwitchOpen.value
         && !isCancelling.value,
@@ -132,7 +140,7 @@ if (restored !== null) {
 function keepRestoration(sentRequestId: string | null): void {
     restoration.keep({
         driver: driver.value,
-        variant: variant.value,
+        variant: draftedMode.value ?? '',
         model: model.value,
         accountId: accountId.value,
         conversationId: conversationId.value,
@@ -212,23 +220,48 @@ const driverChoices = computed<DriverChoiceData[]>(() => {
 
     return shown?.state === 'ready' ? shown.data.drivers : [];
 });
-// The chosen driver, else the first that can run in the family of the agent's latest conversation, else the first
-// that can run at all.
-const chosenDriver = computed(() => {
-    const available = driverChoices.value.filter((choice) => choice.isAvailable);
-    const family = props.agent.conversations[0]?.driver;
-
-    return driverChoices.value.find((choice) => choice.key === driverKey.value)
-        ?? available.find((choice) => choice.family === family)
-        ?? available[0];
-});
-const driver = computed(() => chosenDriver.value?.family ?? 'claude-code');
-const variant = computed(() => (chosenDriver.value?.mode ?? 'headless') as DriverVariant);
+// Each driver family once, in the catalogue's order.
+const families = computed(() => [...new Set(driverChoices.value.map((choice) => choice.family))]);
+const driver = computed(
+    () => family.value ?? props.agent.conversations[0]?.driver ?? families.value[0] ?? 'claude-code',
+);
+const draftedMode = computed<DriverVariant | null>(() => ({ inherit: null, on: 'headless', off: 'terminal' } as const)[modeDraft.value]);
+// The mode the start runs in, as the server resolved it; the drafted one until its preview arrives.
+const variant = computed<DriverVariant>(() => preview.value?.mode ?? draftedMode.value ?? 'headless');
+const modeSources: Record<ModeSourceType, string> = {
+    explicit: 'chosen here',
+    saved: 'saved for this agent',
+    profile: "the profile's default",
+    only_mode: 'the only way this driver runs',
+};
+const familySources: Record<DriverSourceType, string> = {
+    explicit: 'chosen here',
+    profile: 'set by the profile',
+    parent_session: 'from the agent that started it',
+};
 
 if (restored !== null) {
-    driverKey.value = driverChoices.value
-        .find((choice) => choice.family === restored.driver && choice.mode === restored.variant)?.key ?? null;
+    family.value = restored.driver;
+    modeDraft.value = restored.variant === '' ? 'inherit' : restored.variant === 'headless' ? 'on' : 'off';
 }
+
+function chooseHeadless(event: Event): void {
+    modeDraft.value = (event.target as HTMLInputElement).checked ? 'on' : 'off';
+}
+
+function readPreview(): void {
+    readPage<StartPreviewData>('web.start-preview', {
+        agent: props.agent.id,
+        family: driver.value,
+        mode: draftedMode.value ?? '',
+        model: model.value ?? 'default',
+    }).then(
+        (answer) => (preview.value = answer),
+        () => (preview.value = null),
+    );
+}
+
+watch([driver, draftedMode, model], readPreview, { immediate: true });
 watch([driver, variant, model, accountId, conversationId, saveVariant, focusedField], () => keepRestoration(sentRequestId));
 
 /**
@@ -326,11 +359,12 @@ function sessionChoice(): SessionChoice {
         agentId: props.agent.id,
         model: model.value ?? 'default',
         driver: driver.value,
-        variant: variant.value,
+        variant: draftedMode.value,
         saveVariant: saveVariant.value,
         accountId: account.value?.id,
         accountRevision: account.value?.signInRevision,
         conversationId: conversationId.value,
+        previewRevision: preview.value?.catalogueRevision,
     };
 }
 
@@ -421,6 +455,7 @@ function followStart(): void {
 function switchSession(): void {
     switching.begin(requestId, switchMethod.url(props.agent.profileKey), {
         ...sessionChoice(),
+        variant: variant.value,
         expectedSessionId: props.agent.sessionId,
         expectedGeneration: props.agent.sessionGeneration,
     });
@@ -430,7 +465,7 @@ function switchSession(): void {
 const isReviewing = ref(false);
 const familyLabel = (family: string | null) => driverChoices.value.find((choice) => choice.family === family)?.label ?? 'its driver';
 const sourceLabel = computed(() => props.agent.sessionDriverLabel ?? familyLabel(props.agent.sessionDriver));
-const targetLabel = computed(() => chosenDriver.value?.label ?? 'its driver');
+const targetLabel = computed(() => preview.value?.label ?? 'its driver');
 // The leg of the agent's switch the host has not confirmed, in the words of that leg; none while both are known.
 const unconfirmedLeg = computed(() => {
     if (props.agent.switchStage === 'stop_unconfirmed') {
@@ -580,19 +615,43 @@ onBeforeUnmount(() => following?.stop());
                 <template #default="{ id, describedBy, invalid }">
                     <select
                         :id="id"
-                        v-model="driverKey"
+                        :value="driver"
                         :aria-describedby="describedBy"
                         :aria-invalid="invalid"
                         class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body"
+                        @change="family = ($event.target as HTMLSelectElement).value"
                     >
-                        <template v-for="choice in driverChoices" :key="choice.key">
-                            <option :value="choice.key" :disabled="!choice.isAvailable">
-                                {{ choice.label }}<template v-if="!choice.isAvailable">: {{ choice.unavailableReason }}</template>
-                            </option>
+                        <template v-for="choice in families" :key="choice">
+                            <option :value="choice">{{ familyLabel(choice) }}</option>
                         </template>
                     </select>
                 </template>
             </Field>
+            <div class="flex flex-col gap-1">
+                <label class="flex items-center gap-2 text-small text-text-2">
+                    <input
+                        type="checkbox"
+                        :checked="variant === 'headless'"
+                        :disabled="preview?.isModeLocked === true"
+                        @change="chooseHeadless"
+                    />
+                    Headless
+                </label>
+                <template v-if="preview !== null">
+                    <p class="text-small text-text-3" aria-live="polite">
+                        {{ preview.label }}: mode {{ modeSources[preview.modeSource] }}, driver
+                        {{ familySources[preview.familySource] }}.
+                    </p>
+                    <template v-if="!preview.canRun">
+                        <p class="text-small text-danger">{{ preview.unavailableReason }}</p>
+                    </template>
+                </template>
+                <template v-if="modeDraft !== 'inherit' && preview?.isModeLocked !== true">
+                    <button type="button" class="self-start text-small text-text-2 underline" @click="modeDraft = 'inherit'">
+                        Use saved or profile setting
+                    </button>
+                </template>
+            </div>
             <Field
                 :id="fieldIds.model"
                 label="Model"

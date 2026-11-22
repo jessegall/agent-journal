@@ -34,6 +34,7 @@ final class StartProfileMainRequest extends FormRequest
             'accountId' => ['nullable', 'ulid', 'required_with:accountRevision'],
             'accountRevision' => ['nullable', 'integer', 'min:0', 'required_with:accountId'],
             'conversationId' => ['nullable', 'ulid'],
+            'previewRevision' => ['nullable', 'integer', 'min:0'],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
         ];
@@ -53,6 +54,7 @@ final class StartProfileMainRequest extends FormRequest
                 ? new ChosenAccount($this->string('accountId')->lower()->toString(), $this->integer('accountRevision'))
                 : null,
             $this->filled('conversationId') ? $this->string('conversationId')->lower()->toString() : null,
+            $this->filled('previewRevision') ? $this->integer('previewRevision') : null,
         );
     }
 }
