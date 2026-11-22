@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Home, version 6</title>
+<title>Home, version 6 · round 2: from a plain chat to an IDE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 /* Self-contained: no external fonts or scripts. Colours inside .app are version 6 token names in the Stone mono
@@ -10,20 +10,21 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased;background:var(--page);color:var(--page-text);--page:#eceae8;--page-text:#171514}
 body.dk{--page:#060505;--page-text:#ebe9e7}
-.top{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--page) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid color-mix(in srgb,var(--page-text) 10%,transparent)}
+.top{position:sticky;top:0;z-index:200;background:color-mix(in srgb,var(--page) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid color-mix(in srgb,var(--page-text) 10%,transparent)}
 .top .in{padding:9px 24px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .top h1{margin:0 6px 0 0;font-size:14px;font-weight:600}
 .seg2{display:flex;border:1px solid color-mix(in srgb,var(--page-text) 14%,transparent);border-radius:7px;overflow:hidden}
-.seg2 button{font:inherit;font-size:12px;padding:5px 11px;border:0;background:transparent;color:inherit;cursor:pointer}
+.seg2 button,.tbtn{font:inherit;font-size:12px;padding:5px 10px;border:0;background:transparent;color:inherit;cursor:pointer}
+.tbtn{border:1px solid color-mix(in srgb,var(--page-text) 14%,transparent);border-radius:7px}
 .seg2 button[aria-pressed=true]{background:color-mix(in srgb,var(--page-text) 14%,transparent);font-weight:500}
-.seg2 button:focus-visible{outline:2px solid var(--page-text);outline-offset:-2px}
+.seg2 button:focus-visible,.tbtn:focus-visible{outline:2px solid var(--page-text);outline-offset:-2px}
 .lbl{font-size:11px;opacity:.6;margin-left:8px}
 .wrap{padding:14px 24px 80px}
-.lead{max-width:980px;margin:0 0 10px;opacity:.82}
+.lead{max-width:1080px;margin:0 0 10px;opacity:.82}
 .vhead{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin:6px 0 2px}
 .vhead h2{margin:0;font-size:18px;letter-spacing:-.01em}
 .vhead p{margin:0;opacity:.8;max-width:900px}
-.sline{margin:2px 0 12px;opacity:.65;font-size:12.5px;max-width:1000px}
+.sline{margin:2px 0 12px;opacity:.65;font-size:12.5px;max-width:1080px}
 .stage{overflow-x:auto;padding-bottom:6px}
 .notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-top:14px;max-width:1500px}
 .notes div{border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent);border-radius:10px;padding:10px 12px;font-size:12px;opacity:.9}
@@ -33,22 +34,36 @@ kbd{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;padding:0 
 /* ---------- The app, in tokens only ---------- */
 .app{display:flex;height:700px;border-radius:12px;overflow:hidden;border:1px solid var(--border-2);background:var(--bg);color:var(--text);position:relative;margin:0 auto}
 svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
-svg.s14{width:14px;height:14px}
+svg.s14{width:14px;height:14px}svg.s10{width:10px;height:10px;stroke-width:2}
 .prog-claude{color:#D97757}
-.side{width:216px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:1px}
-.brand{display:flex;align-items:center;gap:8px;padding:2px 8px 14px;font-weight:600}
-.brand b{width:20px;height:20px;border-radius:6px;background:var(--plum);color:var(--on-plum);display:inline-flex;align-items:center;justify-content:center;font-size:11px}
-.nav{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:7px;color:var(--text-3);position:relative;user-select:none}
+.side{width:216px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.side.rail{width:56px}
+.brand{display:flex;align-items:center;gap:8px;padding:2px 8px 14px;font-weight:600;white-space:nowrap}
+.brand b{width:20px;height:20px;flex:none;border-radius:6px;background:var(--plum);color:var(--on-plum);display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+.nav{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:7px;color:var(--text-3);position:relative;user-select:none;white-space:nowrap}
 .nav.on{background:var(--sel);color:var(--text);font-weight:500}
 .nav.on::before{content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:2px;border-radius:2px;background:var(--plum)}
-.nav .pd{margin-left:auto;width:6px;height:6px;border-radius:50%;background:var(--plum)}
+.nav .pd{margin-left:auto;width:6px;height:6px;border-radius:50%;background:var(--plum);flex:none}
+.side.rail .nav{justify-content:center;padding:7px 0}
+.side.rail .nav .pd{position:absolute;right:6px;top:6px}
+.sidefoot{margin-top:auto;display:flex}
+.side.rail .sidefoot{justify-content:center}
 .main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
-.abar{height:54px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px 0 16px;border-bottom:1px solid var(--line)}
+.abar{height:54px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px 0 16px;border-bottom:1px solid var(--line);overflow:hidden}
+.abar.hidden{height:0;border-bottom:0}
 .abar .r{margin-left:auto;display:flex;gap:4px;align-items:center}
 .agent{display:flex;align-items:center;gap:10px}
 .av{width:26px;height:26px;border-radius:8px;border:1px solid var(--border-2);display:inline-flex;align-items:center;justify-content:center}
-.who{display:flex;flex-direction:column;line-height:1.25}
+.who{display:flex;flex-direction:column;line-height:1.25;white-space:nowrap}
 .who small{color:var(--text-3);font-size:11.5px}
+.pill{position:absolute;top:5px;right:8px;z-index:97;display:inline-flex;gap:7px;align-items:center;height:24px;padding:0 10px 0 8px;border-radius:999px;border:1px solid var(--border-2);background:var(--raised);font:inherit;font-size:12px;color:var(--text-2);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.pill:hover{color:var(--text);border-color:var(--border-3)}
+.pill:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.sbar{height:26px;flex:none;border-top:1px solid var(--line);background:var(--side);display:flex;align-items:center;gap:14px;padding:0 6px 0 12px;font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden}
+.sbar.hidden{display:none}
+.sbar .gap{flex:1}
+.sbar .ib{width:22px;height:22px;position:relative}
+.badge{position:absolute;top:1px;right:0;min-width:13px;height:13px;border-radius:7px;background:var(--plum);color:var(--on-plum);font-size:9.5px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 3px}
 .st{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);white-space:nowrap}
 .st.strong{color:var(--text);font-weight:500}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--text-4);flex:none}
@@ -77,9 +92,14 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 /* The desk: Home below the agent bar */
 .desk{position:relative;flex:1;min-height:0;overflow:hidden}
 .desk.scrolls{overflow-y:auto}
-.chatcol{position:absolute;display:flex;flex-direction:column;transition:left .2s,width .2s}
+.chatcol{position:absolute;display:flex;flex-direction:column}
 .chatcol .scroll{flex:1;overflow:auto;scrollbar-width:thin}
 .chat{display:flex;flex-direction:column;gap:14px;padding:22px 4px 18px}
+.chead{display:flex;align-items:center;gap:8px;padding:12px 4px 0;font-size:12px;color:var(--text-3);white-space:nowrap}
+.wchat .chead{padding:8px 12px 0}
+.convbtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12.5px;font-weight:500;border:1px solid var(--line);background:var(--raised);color:var(--text);border-radius:7px;height:24px;padding:0 6px 0 8px;cursor:pointer}
+.convbtn:hover{border-color:var(--border-3)}
+.convbtn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 .me{align-self:flex-end;max-width:78%;background:var(--bubble);border-radius:12px 12px 4px 12px;padding:8px 12px}
 .ag{max-width:90%}
 .ag .m{font-size:11.5px;color:var(--text-3);margin-bottom:2px;display:flex;align-items:center;gap:5px}
@@ -88,6 +108,10 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .rowcard.you{border-color:color-mix(in srgb,var(--plum) 55%,var(--line))}
 .rowcard .t{flex:1;min-width:0}
 .rowcard .t small{display:block;color:var(--text-3);font-size:11.5px}
+.sugg{display:flex;gap:10px;align-items:center;border:1px dashed var(--border-2);border-radius:10px;padding:7px 8px 7px 10px;color:var(--text-2);font-size:12.5px}
+.sugg .t{flex:1;min-width:0}
+.sugg small{display:block;color:var(--text-4);font-size:11.5px}
+.jm{width:18px;height:18px;flex:none;border-radius:5px;border:1px solid var(--border-3);font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2)}
 .composer{margin:0 0 16px;border:1px solid var(--border-2);border-radius:14px;padding:10px 10px 8px 12px;background:var(--bg)}
 .composer:focus-within{border-color:var(--border-3)}
 .composer textarea{display:block;width:100%;border:0;outline:0;resize:none;background:transparent;color:var(--text);font:inherit;height:22px}
@@ -101,22 +125,31 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .win.float{box-shadow:0 10px 30px rgba(0,0,0,.16),0 1px 3px rgba(0,0,0,.08)}
 body.dk .win.float{box-shadow:0 14px 36px rgba(0,0,0,.55),0 1px 3px rgba(0,0,0,.4)}
 .win.flat{border-color:var(--line)}
-.win.flash{outline:2px solid var(--ring);outline-offset:2px}
+.win.flush{border-radius:0;box-shadow:none;border-color:var(--line)}
+.win.flash{outline:2px solid var(--ring);outline-offset:-2px}
 .win.lifted{opacity:.55;pointer-events:none;z-index:90!important}
-.wbar{height:34px;flex:none;display:flex;align-items:center;gap:8px;padding:0 6px 0 10px;border-bottom:1px solid var(--line);background:var(--side);cursor:grab;user-select:none;touch-action:none}
-.wbar .t{font-weight:500;font-size:12.5px;white-space:nowrap}
+.win.dragging{box-shadow:0 22px 50px rgba(0,0,0,.28)}
+.wbar{height:34px;flex:none;display:flex;align-items:center;gap:8px;padding:0 6px 0 10px;border-bottom:1px solid var(--line);background:var(--side);cursor:grab;user-select:none;touch-action:none;min-width:0}
+.wbar .t{font-weight:500;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wbar .n{font-size:11.5px;color:var(--text-4)}
-.wbar .r{margin-left:auto;display:flex;gap:2px}
+.lights{display:flex;gap:7px;margin-right:4px;flex:none}
+.light{width:12px;height:12px;border-radius:50%;border:0;padding:0;background:var(--border-3);display:inline-flex;align-items:center;justify-content:center;color:transparent;cursor:pointer;flex:none}
+.wbar:hover .light,.light:focus-visible{color:var(--text-2)}
+.light:hover{background:var(--text-4);color:var(--bg)!important}
+.light:focus-visible{outline:2px solid var(--ring);outline-offset:1px}
+.light[disabled]{opacity:.35;pointer-events:none}
 .wbody{flex:1;overflow:auto;min-height:0;scrollbar-width:thin}
 .wgrip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;touch-action:none}
 .wgrip::after{content:"";position:absolute;right:4px;bottom:4px;width:7px;height:7px;border-right:1.5px solid var(--border-3);border-bottom:1.5px solid var(--border-3)}
 .tabs{display:flex;gap:2px;align-items:stretch;height:34px;flex:1;min-width:0;overflow:hidden}
-.tab{display:flex;align-items:center;gap:6px;padding:0 6px 0 10px;font-size:12.5px;color:var(--text-3);border-radius:7px 7px 0 0;margin-top:4px;cursor:pointer;white-space:nowrap}
+.tab{display:flex;align-items:center;gap:6px;padding:0 4px 0 10px;font-size:12.5px;color:var(--text-3);border-radius:7px 7px 0 0;margin-top:4px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--text-2)}
 .tab.on{background:var(--bg);color:var(--text);font-weight:500;box-shadow:inset 0 2px 0 var(--plum)}
 .tab .ib{width:18px;height:18px}
 .splitter{position:absolute;top:8px;bottom:8px;width:9px;cursor:col-resize;touch-action:none;z-index:5}
 .splitter::after{content:"";position:absolute;left:4px;top:45%;height:36px;width:1px;background:var(--border-3)}
 .lrow{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12.5px}
+.lrow[data-item]:hover{background:var(--hover)}
 .lrow .num{font-size:11.5px;color:var(--text-4);width:36px;flex:none;font-variant-numeric:tabular-nums}
 .lrow .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lrow .t.dim{color:var(--text-3)}
@@ -125,31 +158,56 @@ body.dk .win.float{box-shadow:0 14px 36px rgba(0,0,0,.55),0 1px 3px rgba(0,0,0,.
 .plan .ph b{font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .phase{display:flex;align-items:center;gap:8px;padding:5px 12px;font-size:12px;color:var(--text-2)}
 .phase .t{flex:1}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:10px 0 0;font-size:12.5px}
+.facts dt{color:var(--text-3)}.facts dd{margin:0}
+.tree{padding:4px 0}
+.tr{display:flex;align-items:center;gap:6px;height:24px;padding-right:8px;font-size:12.5px;color:var(--text-2);white-space:nowrap;cursor:default;user-select:none}
+.tr:hover{background:var(--hover)}
+.tr.sel{background:var(--sel);color:var(--text)}
+.tr:focus-visible{outline:2px solid var(--ring);outline-offset:-2px}
+.tr .cv{width:12px;height:12px;flex:none;transition:transform .12s;color:var(--text-4)}
+.tr .cv.open{transform:rotate(90deg)}
+.tr .sp{width:12px;flex:none}
+.tr .lb{overflow:hidden;text-overflow:ellipsis}
+.act{font-size:12px;padding:4px 0}
+.act div{display:flex;gap:10px;padding:3px 12px;color:var(--text-2)}
+.act time{color:var(--text-4);font-variant-numeric:tabular-nums;width:38px;flex:none}
 .wchat{display:flex;flex-direction:column;height:100%;margin:0 auto}
 .wchat .chat{padding:14px 12px;flex:1;overflow:auto}
 .wchat .composer{margin:0 10px 10px}
 .guide{position:absolute;background:var(--ring);opacity:.5;pointer-events:none;z-index:95}
-.preview{position:absolute;border:1.5px dashed var(--border-3);border-radius:10px;background:color-mix(in srgb,var(--sel) 55%,transparent);pointer-events:none;z-index:85;display:flex;align-items:flex-start;gap:6px;padding:8px 10px;font-size:12px;color:var(--text-2);transition:left .08s,top .08s,width .08s,height .08s}
-.gridlines{position:absolute;left:0;top:0;pointer-events:none;opacity:.5}
+.preview{position:absolute;border:1.5px solid color-mix(in srgb,var(--ring) 45%,transparent);border-radius:10px;background:color-mix(in srgb,var(--ring) 9%,transparent);pointer-events:none;z-index:85;display:flex;align-items:flex-start;gap:6px;padding:8px 10px;font-size:12px;color:var(--text-2);transition:left .12s cubic-bezier(.2,.8,.2,1),top .12s cubic-bezier(.2,.8,.2,1),width .12s cubic-bezier(.2,.8,.2,1),height .12s cubic-bezier(.2,.8,.2,1)}
 
-/* Quick-add menu */
+/* Menus, balloons, the shortcut sheet */
 .qm{position:absolute;width:340px;background:var(--raised);border:1px solid var(--border-2);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.28);z-index:99;overflow:hidden}
-body.dk .qm{box-shadow:0 18px 50px rgba(0,0,0,.7)}
+body.dk .qm,body.dk .ctx,body.dk .hm,body.dk .keys{box-shadow:0 18px 50px rgba(0,0,0,.7)}
 .qm .qh{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;border-bottom:1px solid var(--line);cursor:grab;user-select:none;touch-action:none}
 .qm .qh .t{font-weight:500;font-size:12.5px;flex:1}
 .qm .qh small{color:var(--text-4);font-size:11px}
 .qm .qs{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);color:var(--text-3)}
 .qm input{flex:1;border:0;outline:0;background:transparent;color:var(--text);font:inherit}
 .qm input::placeholder{color:var(--text-4)}
-.qm .rows{max-height:320px;overflow:auto;padding:4px}
-.qrow{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:7px;color:var(--text-2);cursor:pointer;user-select:none;touch-action:none}
-.qrow.on{background:var(--sel);color:var(--text)}
-.qrow .k{margin-left:auto;font-size:11px;color:var(--text-4);font-family:ui-monospace,'SF Mono',Menlo,monospace}
-.qrow small{color:var(--text-4);font-size:11.5px}
+.qm .rows{max-height:330px;overflow:auto;padding:4px}
+.qgroup{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-4);padding:7px 8px 3px}
+.qrow{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:7px;color:var(--text-2);cursor:pointer;user-select:none;touch-action:none;width:100%;border:0;background:transparent;font:inherit;text-align:left}
+.qrow.on,.qrow:hover,.qrow:focus-visible{background:var(--sel);color:var(--text);outline:0}
+.qrow[disabled]{opacity:.4;pointer-events:none}
+.qrow .k{margin-left:auto;font-size:11px;color:var(--text-4);font-family:ui-monospace,'SF Mono',Menlo,monospace;display:inline-flex;white-space:nowrap}
+.qrow small{color:var(--text-4);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qfoot{display:flex;gap:12px;padding:7px 12px;border-top:1px solid var(--line);font-size:11px;color:var(--text-4);flex-wrap:wrap}
-.hm{position:absolute;right:10px;top:4px;width:240px;background:var(--raised);border:1px solid var(--border-2);border-radius:10px;box-shadow:0 14px 40px rgba(0,0,0,.3);z-index:99;padding:4px}
-.hm hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
-.toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:var(--raised);border:1px solid var(--border-2);border-radius:9px;padding:7px 12px;font-size:12px;color:var(--text-2);z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .2s;pointer-events:none}
+.hm{position:absolute;right:10px;top:4px;width:270px;background:var(--raised);border:1px solid var(--border-2);border-radius:10px;box-shadow:0 14px 40px rgba(0,0,0,.3);z-index:99;padding:4px}
+.ctx{position:absolute;min-width:210px;max-width:320px;background:var(--raised);border:1px solid var(--border-2);border-radius:10px;box-shadow:0 14px 40px rgba(0,0,0,.3);z-index:120;padding:4px}
+.hm hr,.ctx hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
+.ctx .qrow{padding:5px 8px}
+.balloons{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px;z-index:110;width:320px}
+.balloon{display:flex;gap:10px;align-items:flex-start;background:var(--raised);border:1px solid var(--border-2);border-radius:10px;padding:10px 8px 10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:12.5px}
+.balloon .t{flex:1}.balloon small{display:block;color:var(--text-3);font-size:11.5px;margin-top:2px}
+.balloon .r{display:flex;gap:6px;margin-top:8px}
+.keys{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:420px;background:var(--raised);border:1px solid var(--border-2);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.3);z-index:125;padding:14px 16px}
+.keys h4{margin:0 0 8px;font-size:13px}
+.keys dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:12.5px}
+.keys dt{text-align:right}.keys dd{margin:0;color:var(--text-2)}
+.toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:var(--raised);border:1px solid var(--border-2);border-radius:9px;padding:7px 12px;font-size:12px;color:var(--text-2);z-index:130;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 .toast.on{opacity:1}
 </style>
 </head>
@@ -159,6 +217,7 @@ body.dk .qm{box-shadow:0 18px 50px rgba(0,0,0,.7)}
   <symbol id="todos" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></symbol>
   <symbol id="plan" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/></symbol>
   <symbol id="docs" viewBox="0 0 16 16"><path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/></symbol>
+  <symbol id="folder" viewBox="0 0 16 16"><path d="M2 4.5a1 1 0 0 1 1-1h3.2l1.3 1.5H13a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4.5Z"/></symbol>
   <symbol id="users" viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.2"/><path d="M2.2 13c.4-2.2 1.9-3.5 3.8-3.5s3.4 1.3 3.8 3.5"/><circle cx="11.2" cy="6" r="1.8"/><path d="M11 9.6c1.6 0 2.8 1.1 3.1 3"/></symbol>
   <symbol id="cog" viewBox="0 0 16 16"><path d="M2.75 5h3.5M9.75 5h3.5M2.75 11h1.5M7.75 11h5.5"/><circle cx="8" cy="5" r="1.75"/><circle cx="6" cy="11" r="1.75"/></symbol>
   <symbol id="plus" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></symbol>
@@ -175,6 +234,18 @@ body.dk .qm{box-shadow:0 18px 50px rgba(0,0,0,.7)}
   <symbol id="chip" viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/><path d="M6 1.5v2M10 1.5v2M6 12.5v2M10 12.5v2M1.5 6h2M1.5 10h2M12.5 6h2M12.5 10h2"/></symbol>
   <symbol id="grip" viewBox="0 0 16 16"><circle cx="6" cy="4" r=".6"/><circle cx="10" cy="4" r=".6"/><circle cx="6" cy="8" r=".6"/><circle cx="10" cy="8" r=".6"/><circle cx="6" cy="12" r=".6"/><circle cx="10" cy="12" r=".6"/></symbol>
   <symbol id="layout" viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M7 2.5v11M7 8h7"/></symbol>
+  <symbol id="caret" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4"/></symbol>
+  <symbol id="fill" viewBox="0 0 16 16"><path d="M3 9V3h6M13 7v6H7"/></symbol>
+  <symbol id="restore" viewBox="0 0 16 16"><path d="M7 3v4H3M9 13V9h4"/></symbol>
+  <symbol id="halfl" viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M8 2.5v11"/><path d="M3.5 4h3v8h-3z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="halfr" viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M8 2.5v11"/><path d="M9.5 4h3v8h-3z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="front" viewBox="0 0 16 16"><rect x="5" y="5" width="8.5" height="8" rx="1.5"/><path d="M3 10.5V3.5a1 1 0 0 1 1-1h7"/></symbol>
+  <symbol id="pop" viewBox="0 0 16 16"><rect x="2.5" y="4.5" width="9" height="9" rx="1.5"/><path d="M8 2.5h5.5V8M13.5 2.5 8 8"/></symbol>
+  <symbol id="sidebar" viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11"/></symbol>
+  <symbol id="barup" viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M2 6h12M6 10l2-2 2 2"/></symbol>
+  <symbol id="pulse" viewBox="0 0 16 16"><path d="M1.5 8h3l1.5-4 3 8 1.5-4h4"/></symbol>
+  <symbol id="keyb" viewBox="0 0 16 16"><rect x="1.5" y="4" width="13" height="8" rx="1.5"/><path d="M4 7h.1M6.5 7h.1M9 7h.1M11.5 7h.1M5 9.5h6"/></symbol>
 </defs></svg>
 
 <div class="top"><div class="in">
@@ -182,17 +253,18 @@ body.dk .qm{box-shadow:0 18px 50px rgba(0,0,0,.7)}
   <div class="seg2" id="vars"></div>
   <span class="lbl">Grows</span><div class="seg2" id="steps"></div>
   <span class="lbl">Window</span><div class="seg2" id="widths"></div>
+  <button class="tbtn" id="simHelper" title="The main agent dispatches a helper">Agent starts a helper</button>
   <div class="seg2" style="margin-left:auto"><button id="mL">Light</button><button id="mD" aria-pressed="true">Dark</button></div>
 </div></div>
 
 <div class="wrap">
-  <p class="lead">Four ways Home could grow, kept basic so they can be felt rather than read. All four start the same: just the chat, centred at a 760 px reading width however wide the window. They differ in what happens once the user adds a window. In every one, <kbd>Space</kbd> (outside a text field) or the <b>+</b> in the agent bar opens the quick-add menu; drag the menu to where the window should go and press Enter, or drag a row onto the desk. Pick a variant, then step through how a user grows it, or build your own from step 1.</p>
+  <p class="lead">One Home with two ends. On day one it is a plain chat anyone understands at first sight; step by step it grows, if the user wants, into something like an IDE: a Project tree, an editor with tabs, an Activity panel, a status bar with shortcuts and notifications. Every step is the same mechanism. Press <kbd>Space</kbd> (or <kbd>⌘K</kbd>) to add a window. Drag it to a side, corner or the top edge to snap it flush, or drag it away to float it again. Double-click a bar to fill or restore it, and right-click anything for its menu. Fold the sidebar (<kbd>⌘B</kbd>) or hide the agent bar (<kbd>⌘⇧B</kbd>) for room, and press <kbd>?</kbd> for every shortcut. Round 2 builds on A, the floating desk; B, C and D stay to compare.</p>
   <div class="vhead"><h2 id="vName"></h2><p id="vLine"></p></div>
   <p class="sline" id="sLine"></p>
   <div class="stage"><div class="app" id="app">
-    <nav class="side" id="side"></nav>
-    <div class="main"><div class="abar" id="abar"></div><div class="desk" id="desk"></div></div>
-    <div class="toast" id="toast"></div>
+    <nav class="side" id="side" aria-label="Pages"></nav>
+    <div class="main"><div class="abar" id="abar"></div><div class="desk" id="desk"></div><div class="sbar hidden" id="sbar" aria-label="Status bar"></div></div>
+    <div class="toast" id="toast" role="status"></div>
   </div></div>
   <div class="notes" id="notes"></div>
 </div>
@@ -212,8 +284,8 @@ function tokens(mode){
 }
 
 /* ---------- icons and sample content ---------- */
-const I=(n,c='')=>`<svg class="i ${c}"><use href="#${n}"/></svg>`;
-const CLAUDE=(c='')=>`<svg class="i prog-claude ${c}"><use href="#spark"/></svg>`;
+const I=(n,c='')=>`<svg class="i ${c}" aria-hidden="true"><use href="#${n}"/></svg>`;
+const CLAUDE=(c='')=>`<svg class="i prog-claude ${c}" aria-hidden="true"><use href="#spark"/></svg>`;
 const ST={work:`<span class="st" style="color:var(--text-2)"><span class="spin"></span>Working</span>`,done:`<span class="st">${I('tick','s14')}Done</span>`,
   open:`<span class="st"><span class="dot hollow"></span>Open</span>`,you:`<span class="st strong"><span class="dot plum"></span>Waits on you</span>`,
   testing:`<span class="st"><span class="dot solid"></span>Testing</span>`,failed:`<span class="st" style="color:var(--danger)">${I('alert','s14')}Failed</span>`};
@@ -222,80 +294,152 @@ const CAT={
   tasks:{t:'Tasks',ic:'todos',n:7,key:'2',w:420,h:330,gw:4,gh:6},
   asks:{t:'Asks',ic:'ask',n:1,key:'3',w:360,h:190,gw:3,gh:4},
   plans:{t:'Plans',ic:'plan',n:2,key:'4',w:340,h:320,gw:3,gh:6},
-  docs:{t:'Documents',ic:'docs',n:100,key:'5',w:380,h:280,gw:4,gh:5},
-  helpers:{t:'Helpers',ic:'users',n:2,key:'6',w:340,h:200,gw:3,gh:4},
-  reminders:{t:'Reminders',ic:'bell',n:0,key:'7',w:320,h:190,gw:3,gh:4},
-  runtimes:{t:'Runtimes',ic:'chip',n:2,key:'8',w:340,h:200,gw:3,gh:4},
+  docs:{t:'Documents',ic:'docs',n:101,key:'5',w:380,h:280,gw:4,gh:5},
+  helpers:{t:'Helpers',ic:'users',n:2,key:'6',w:340,h:220,gw:3,gh:4},
+  project:{t:'Project',ic:'folder',key:'7',w:260,h:480,gw:3,gh:11,tool:'⌘1'},
+  activity:{t:'Activity',ic:'pulse',key:'8',w:520,h:200,gw:6,gh:4,tool:'⌘2'},
+  reminders:{t:'Reminders',ic:'bell',n:0,w:320,h:190,gw:3,gh:4},
+  runtimes:{t:'Runtimes',ic:'chip',n:2,w:340,h:200,gw:3,gh:4},
 };
 const TASKS=[[1702,'Account settings dialog: Save inside the name field','work'],[1701,'Accounts page: smaller settings button','you'],[1699,'House style: Stone mono into app.css','work'],
   [1698,'Recovery notice runs full width under the card','open'],[1695,'Sign-in check times out on a slow host','failed'],[1694,'Rename refused for a name in use: say why','testing'],[1692,'Home: agent bar chooses the agent','done']];
+let DOCS=[];
+const freshDocs=()=>DOCS=[[101,'Design: Home, version 6','today'],[100,'Design: Stone and one accent, round five','today'],[99,'Design: Stone and one accent, round four','yesterday'],[96,'Accounts review','yesterday'],[88,'The journal\'s house style','last week']];
+const PLANS=[[54,'Notifications and compact polish',62,[['Phase 302 · Stone palette','work',[1699,1698]],['Phase 303 · Toasts','open',[1695]]]],[56,'Home, version 6',8,[['Phase 310 · The chat alone','you',[1702,1701]],['Phase 311 · The desk','open',[1694,1692]]]]];
+const PEOPLE=()=>[...(helpersOn?[['helper:262','Helper 262','Designing the notifications bell','work']]:[]),['worker:3','Worker 3','Task 1702 · 2 of 5 steps','work'],['helper:258','Helper 258','Reviewed plan 54','done']];
+const row=(ref,inner)=>`<div class="lrow" data-item="${ref}">${inner}</div>`;
 const BODY={
-  tasks:()=>TASKS.map(([n,t,s])=>`<div class="lrow"><span class="num">${n}</span><span class="t ${s==='done'?'dim':''}">${t}</span>${ST[s]}</div>`).join(''),
+  tasks:()=>TASKS.map(([n,t,s])=>row('task:'+n,`<span class="num">${n}</span><span class="t ${s==='done'?'dim':''}">${t}</span>${ST[s]}`)).join(''),
   asks:()=>`<div style="padding:10px"><div class="rowcard you">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · Agent 1 · 13:44</small></div><button class="btn sm primary">Answer</button></div></div><div style="padding:0 12px 10px;color:var(--text-3);font-size:12px">Nothing else waits on you.</div>`,
-  plans:()=>[['Plan 54','Notifications and compact polish',62,[['Phase 302 · Stone palette','work'],['Phase 303 · Toasts','open']]],['Plan 56','Home, version 6',8,[['Phase 310 · The chat alone','you'],['Phase 311 · The desk','open']]]]
-    .map(([n,t,p,ph])=>`<div class="plan"><div class="ph"><span style="color:var(--text-4);font-size:11.5px">${n}</span><b>${t}</b><span style="font-size:11.5px;color:var(--text-3)">${p}%</span></div><div style="padding:0 12px 6px"><div class="meter"><i style="width:${p}%"></i></div></div>${ph.map(([a,s])=>`<div class="phase"><span class="t">${a}</span>${ST[s]}</div>`).join('')}</div>`).join(''),
-  docs:()=>[[100,'Design: Stone and one accent, round five','today'],[99,'Design: Stone and one accent, round four','today'],[96,'Accounts review','yesterday'],[95,'Notifications plan','yesterday'],[88,'The journal\'s house style','last week']]
-    .map(([n,t,m])=>`<div class="lrow"><span class="num">${n}</span><span class="t">${t}</span><span style="color:var(--text-4);font-size:11.5px">${m}</span></div>`).join(''),
-  helpers:()=>[['Helper 261','Designing Home, version 6','work'],['Helper 258','Reviewing plan 54','done']].map(([n,t,s])=>`<div class="lrow"><span class="t">${n}<span style="color:var(--text-3)"> · ${t}</span></span>${ST[s]}</div>`).join(''),
+  plans:()=>PLANS.map(([n,t,p,ph])=>`<div class="plan" data-item="plan:${n}"><div class="ph"><span style="color:var(--text-4);font-size:11.5px">Plan ${n}</span><b>${t}</b><span style="font-size:11.5px;color:var(--text-3)">${p}%</span></div><div style="padding:0 12px 6px"><div class="meter"><i style="width:${p}%"></i></div></div>${ph.map(([a,s])=>`<div class="phase"><span class="t">${a}</span>${ST[s]}</div>`).join('')}</div>`).join(''),
+  docs:()=>DOCS.map(([n,t,m])=>row('doc:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="color:var(--text-4);font-size:11.5px">${m}</span>`)).join(''),
+  helpers:()=>PEOPLE().map(([ref,n,t,s])=>row(ref,`<span class="t">${n}<span style="color:var(--text-3)"> · ${t}</span></span>${ST[s]}`)).join('')+`<div style="padding:8px 12px;color:var(--text-4);font-size:11.5px">Right-click a row to chat with it.</div>`,
   reminders:()=>`<div style="padding:26px 16px;text-align:center;color:var(--text-3);font-size:12.5px">No reminders.<br><span style="color:var(--text-4)">Ask the agent to remind you of something.</span></div>`,
   runtimes:()=>[['This Mac','2 agents',1],['Build box','idle',0]].map(([n,t,on])=>`<div class="lrow"><span class="t">${n}<span style="color:var(--text-3)"> · ${t}</span></span>${on?'<span class="st"><span class="dot solid"></span>Connected</span>':'<span class="st"><span class="dot hollow"></span>Idle</span>'}</div>`).join(''),
+  activity:()=>`<div class="act">${[['14:05','Helper 262 asked a question in its chat'],['14:01','Agent 1 started Helper 262: designing the notifications bell'],['13:50','Worker 3 finished step 2 of task 1702'],['13:47','Agent 1 started Worker 3 on task 1702'],['13:44','Agent 1 asked you: which save behaviour for the name?'],['13:42','Doc 85 revised to revision 2']].map(([t,x])=>`<div><time>${t}</time><span>${x}</span></div>`).join('')}</div>`,
+  project:()=>treeHtml(),
 };
-let MSGS=[['day','Today'],['me','Can you tidy up the account settings dialog? The Save button is in the way.'],
+/* One thing a row stands for, shown alone in its own window or an editor tab. */
+function itemOf(ref){const [k,id]=ref.split(':'),n=+id;
+  if(k==='task'){const t=TASKS.find(x=>x[0]===n)||[n,'Task '+n,'open'];return {t:'Task '+n,ic:'todos',conv:n===1702?'w3':null,body:`<div style="padding:14px 16px;max-width:${readW}px"><div style="font-weight:500;font-size:14px">${t[1]}</div><div style="margin-top:6px">${ST[t[2]]}</div><dl class="facts"><dt>Worker</dt><dd>${n===1702?'Worker 3':'—'}</dd><dt>Plan</dt><dd>Plan 56</dd><dt>Steps</dt><dd>2 of 5</dd></dl></div>`}}
+  if(k==='doc'){const d=DOCS.find(x=>x[0]===n)||[n,'Doc '+n,''];return {t:'Doc '+n,ic:'docs',body:`<div style="padding:14px 16px;max-width:${readW}px"><div style="font-weight:500;font-size:14px">${d[1]}</div><p style="color:var(--text-3);margin:6px 0 0">Revised ${d[2]}. Its sections, comments and links show here, at the reading width.</p></div>`}}
+  if(k==='plan'){const p=PLANS.find(x=>x[0]===n);return {t:'Plan '+n,ic:'plan',body:`<div style="padding:14px 16px;max-width:${readW}px"><div style="font-weight:500;font-size:14px">${p[1]}</div><div style="margin:8px 0"><div class="meter"><i style="width:${p[2]}%"></i></div></div>${p[3].map(([a,s])=>`<div class="phase" style="padding:4px 0"><span class="t">${a}</span>${ST[s]}</div>`).join('')}</div>`}}
+  const pe=PEOPLE().find(x=>x[0]===ref)||[ref,ref,'',''];const conv=ref==='helper:262'?'h262':ref==='worker:3'?'w3':null;
+  return {t:pe[1],ic:'users',conv,body:`<div style="padding:14px 16px"><div style="font-weight:500">${pe[1]}</div><div style="color:var(--text-3)">${pe[2]}</div><div style="margin-top:6px">${ST[pe[3]]||''}</div>${conv?`<button class="btn sm bordered" style="margin-top:12px" data-chatwith="${conv}">${I('ask','s14')}Chat with it</button>`:''}</div>`}}
+
+/* The Project tree: the journal's things as folders, like an IDE's file browser. */
+let TREE_OPEN=new Set(), TREE_SEL=null;
+function treeNodes(){return [
+  {id:'conv',label:'Conversations',ic:'folder',kids:activeConvs().map(c=>({id:'c:'+c,label:CONV[c].name,ic:c==='main'?'ask':'users',open:'conv:'+c}))},
+  ...PLANS.map(([n,t,,ph])=>({id:'plan:'+n,label:'Plan '+n+' · '+t,ic:'plan',ref:'plan:'+n,kids:ph.map(([a,,ts],i)=>({id:'plan:'+n+'/'+i,label:a,ic:'folder',kids:ts.map(tn=>({id:'t:'+tn,label:'Task '+tn+' · '+TASKS.find(x=>x[0]===tn)[1],ic:'todos',ref:'task:'+tn,open:'item:task:'+tn}))}))})),
+  {id:'docs',label:'Documents',ic:'folder',kids:DOCS.map(([n,t])=>({id:'d:'+n,label:n+' · '+t,ic:'docs',ref:'doc:'+n,open:'item:doc:'+n}))}]}
+function treeHtml(){let h='';const walk=(ns,d)=>ns.forEach(n=>{const open=TREE_OPEN.has(n.id),kids=n.kids&&n.kids.length;
+  h+=`<div class="tr ${TREE_SEL===n.id?'sel':''}" tabindex="0" style="padding-left:${8+d*14}px" data-tnode="${n.id}" ${n.ref?`data-item="${n.ref}"`:''} ${n.open?`data-topen="${n.open}"`:''} role="treeitem" ${kids?`aria-expanded="${open}"`:''}>${kids?`<svg class="i cv ${open?'open':''}" aria-hidden="true"><use href="#chev"/></svg>`:'<span class="sp"></span>'}${I(n.ic,'s14')}<span class="lb">${n.label}</span></div>`;
+  if(kids&&open)walk(n.kids,d+1)});walk(treeNodes(),0);return `<div class="tree" role="tree">${h}</div>`}
+const openSpec=s=>s.startsWith('conv:')?{k:'hchat',conv:s.slice(5)}:{k:'item',ref:s.slice(5)};
+
+/* Conversations: the main agent's, and each helper's or worker's. */
+const BASE=()=>[['day','Today'],['me','Can you tidy up the account settings dialog? The Save button is in the way.'],
   ['ag','13:42','I\'ve asked a designer. The draft is in <a class="lk">doc 85</a>: Save now sits inside the name field and appears only once the name has changed. The work is <a class="lk">task 1702</a>.'],
   ['card','task'],['card','ask'],['me','Inside the field, Enter saves. Go.'],['ag','13:47','Done. Worker 3 is on it; I\'ll tell you when it\'s ready to test.']];
-const chatHtml=()=>MSGS.map(m=>m[0]==='day'?`<div class="day">${m[1]}</div>`:m[0]==='me'?`<div class="me">${m[1]}</div>`
-  :m[0]==='ag'?`<div class="ag"><div class="m">${CLAUDE('s14')}Agent 1 · ${m[1]}</div>${m[2]}</div>`
-  :m[1]==='task'?`<div class="rowcard">${I('todos')}<div class="t">Account settings dialog: Save inside the name field<small>Task 1702 · Worker 3 · 2 of 5 steps</small></div>${ST.work}</div>`
-  :`<div class="rowcard you">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · asked 13:44</small></div><span class="chip plum">Waits on you</span><button class="btn sm primary">Answer</button></div>`).join('');
-const composer=()=>`<div class="composer"><textarea placeholder="Message Agent 1…" data-compose aria-label="Message Agent 1"></textarea><div class="r"><span class="ib sm">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm primary" data-send>${I('arrow','s14')}Send</button></div></div>`;
+let CONV={};
+function freshConvs(){CONV={main:{name:'Agent 1',sub:'main agent',msgs:BASE()},
+  h262:{name:'Helper 262',sub:'Designing the notifications bell',msgs:[['ag','14:02','I\'m reading the bell and toast code first.'],['ag','14:05','One question before I draw: should the bell count only what waits on you, or every unread line?']]},
+  w3:{name:'Worker 3',sub:'Task 1702 · 2 of 5 steps',msgs:[['ag','13:50','Save now sits inside the name field. Writing the test for Enter next.']]}}}
+let helpersOn=false, SUGG={};
+const activeConvs=()=>helpersOn?['main','h262','w3']:['main'];
+function chatHtml(conv){const c=CONV[conv];return c.msgs.map(m=>m[0]==='day'?`<div class="day">${m[1]}</div>`:m[0]==='me'?`<div class="me">${m[1]}</div>`
+  :m[0]==='ag'?`<div class="ag"><div class="m">${conv==='main'?CLAUDE('s14'):I('users','s14')}${c.name} · ${m[1]}</div>${m[2]}</div>`
+  :m[0]==='sugg'?suggHtml(m[1])
+  :m[1]==='task'?`<div class="rowcard" data-item="task:1702">${I('todos')}<div class="t">Account settings dialog: Save inside the name field<small>Task 1702 · Worker 3 · 2 of 5 steps</small></div>${ST.work}</div>`
+  :`<div class="rowcard you">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · asked 13:44</small></div><span class="chip plum">Waits on you</span><button class="btn sm primary">Answer</button></div>`).join('')}
+/* The journal's own suggestion, not the agent's words: dashed, marked J, one button, dismissable. */
+function suggHtml(conv){const s=SUGG[conv]||'offered',n=CONV[conv].name;
+  if(s==='accepted')return `<div class="sugg"><span class="jm" title="From the journal">J</span><div class="t">${n} has its own window<small>Close it any time; its chat keeps every message.</small></div><button class="btn sm" data-sugg="show:${conv}">Show it</button></div>`;
+  if(s==='dismissed')return `<div class="sugg" style="border-style:solid;border-color:var(--line)"><span class="jm">J</span><div class="t" style="color:var(--text-3)">Not now. ${n} stays in Helpers.</div><button class="btn sm" data-sugg="accept:${conv}">Add a window</button></div>`;
+  return `<div class="sugg"><span class="jm" title="From the journal">J</span><div class="t">${n} started: ${CONV[conv].sub.toLowerCase()}<small>Suggested by the journal · follow it and chat with it in a window</small></div><button class="btn sm bordered" data-sugg="accept:${conv}">${I('plus','s14')}Add a window</button><button class="ib sm" data-sugg="dismiss:${conv}" title="Not now" aria-label="Not now">${I('close','s14')}</button></div>`}
+function chatHead(conv,scope){if(activeConvs().length<2)return '';const c=CONV[conv];
+  return `<div class="chead"><button class="convbtn" data-convmenu="${scope}" aria-haspopup="menu" title="Switch conversation">${conv==='main'?CLAUDE('s14'):I('users','s14')}${c.name}${I('caret','s14')}</button><span>${c.sub}</span><span style="flex:1"></span>${scope==='main'&&conv!=='main'?`<button class="ib sm" data-popconv="${conv}" title="Open ${c.name} in its own window" aria-label="Open in its own window">${I('pop','s14')}</button>`:''}</div>`}
+const composer=conv=>`<div class="composer"><textarea placeholder="Message ${CONV[conv].name}…" data-compose="${conv}" aria-label="Message ${CONV[conv].name}"></textarea><div class="r"><span class="ib sm">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm primary" data-send="${conv}">${I('arrow','s14')}Send</button></div></div>`;
+const chatView=(conv,scope,limit)=>`<div class="wchat" style="max-width:${limit?readW:9999}px">${chatHead(conv,scope)}<div class="chat">${chatHtml(conv)}</div>${composer(conv)}</div>`;
 
 /* ---------- shared state ---------- */
 let mode='dark', frameW=1440, readW=760, vkey='float', step='start', own=false;
-let A={wins:[],drawer:{side:'right',pw:400,active:null}};   // the arrangement: what Home keeps for the user
-let qm=null, hm=false, z=10, lastPointer=null, undo=null, seq=0;
-const H=646, PAD=10;
-const W=()=>frameW-216;
+let A, ui={rail:false,barHidden:false,status:false};
+let qm=null, hm=false, ctx=null, keysOpen=false, zc=10, lastPointer=null, seq=0, quiet=true, opened=new Set();
+let NOTES=[], BAL=[];
+const PAD=10, EASE='cubic-bezier(.2,.8,.2,1)', CALM=matchMedia('(prefers-reduced-motion: reduce)');
+const sideW=()=>ui.rail?56:216;
+const W=()=>frameW-sideW();
+const H=()=>700-(ui.barHidden?0:54)-(ui.status?26:0);
 const clone=a=>JSON.parse(JSON.stringify(a));
-const newWin=(type,extra={})=>({id:type+'-'+(++seq),type,z:++z,...extra});
+const newWin=(type,extra={})=>({id:type+'-'+(++seq),type,z:++zc,...extra});
 const hasChat=a=>a.wins.some(w=>w.type==='chat');
-function centred(left,right,top=0,bottom=H){const room=right-left,w=Math.min(readW,room-48);return {x:left+(room-w)/2,y:top,w,h:bottom-top}}
+const editor=()=>A.wins.find(w=>w.type==='editor');
+function centred(left,right,top=0,bottom=H()){const room=right-left,w=Math.min(readW,room-48);return {x:left+(room-w)/2,y:top,w,h:bottom-top}}
+function tabMeta(t){return t.k==='hchat'?{t:t.conv==='main'?'Chat':'Chat · '+CONV[t.conv].name,ic:t.conv==='main'?'ask':'users'}:{t:itemOf(t.ref).t,ic:itemOf(t.ref).ic}}
+function meta(w){if(w.type==='hchat'){const c=CONV[w.conv];return {t:'Chat · '+c.name,ic:'users',w:440,h:520,gw:4,gh:9}}
+  if(w.type==='item'){const it=itemOf(w.ref);return {t:it.t,ic:it.ic,w:360,h:260,gw:3,gh:5}}
+  if(w.type==='editor')return {t:'Editor',ic:'docs',w:700,h:480,gw:6,gh:9}; return CAT[w.type]}
+function bodyOf(w,limit){if(w.type==='chat')return chatView(A.mainConv,'main',limit);if(w.type==='hchat')return chatView(w.conv,w.id,limit);if(w.type==='item')return itemOf(w.ref).body;
+  if(w.type==='editor'){const t=w.tabs[w.act]||w.tabs[0];if(!t)return `<div class="emptydesk"><span>No tabs. Double-click something in Project to open it here.</span></div>`;return t.k==='hchat'?chatView(t.conv,'tab:'+w.id+':'+w.act,true):itemOf(t.ref).body}
+  return BODY[w.type]()}
+const sameKind=(a,b)=>a.type===b.type&&a.conv===b.conv&&a.ref===b.ref;
+
+/* ---------- snapping (floating desk) ---------- */
+const EDGE=18, CORNER=90;
+function zoneAt(p){const w=W(),h=H(),L=p.x<EDGE,R=p.x>w-EDGE,T=p.y<EDGE,B=p.y>h-EDGE,nl=p.x<CORNER,nr=p.x>w-CORNER,nt=p.y<CORNER,nb=p.y>h-CORNER;
+  if((L&&nt)||(T&&nl))return 'tl';if((R&&nt)||(T&&nr))return 'tr';if((L&&nb)||(B&&nl))return 'bl';if((R&&nb)||(B&&nr))return 'br';
+  if(T)return 'fill';if(L)return 'left';if(R)return 'right';return null}
+function zoneRect(z,w){const X=W(),Y=H(),x2=Math.round(X/2),y2=Math.round(Y/2);
+  if(z==='tile')return {x:Math.round(w.tf[0]*X),y:Math.round(w.tf[1]*Y),w:Math.round(w.tf[2]*X),h:Math.round(w.tf[3]*Y)};
+  return {fill:{x:0,y:0,w:X,h:Y},left:{x:0,y:0,w:x2,h:Y},right:{x:x2,y:0,w:X-x2,h:Y},tl:{x:0,y:0,w:x2,h:y2},tr:{x:x2,y:0,w:X-x2,h:y2},bl:{x:0,y:y2,w:x2,h:Y-y2},br:{x:x2,y:y2,w:X-x2,h:Y-y2}}[z]}
+const ZONE_NAME={fill:'Fill',left:'Left half',right:'Right half',tl:'Top-left quarter',tr:'Top-right quarter',bl:'Bottom-left quarter',br:'Bottom-right quarter'};
+function snapTo(w,z,tf){if(!w.snap)w.prev={x:w.x,y:w.y,w:w.w,h:w.h};if(w.type==='chat')w.plain=false;w.snap=z;if(tf)w.tf=tf;Object.assign(w,zoneRect(z,w));w.z=++zc}
+function restoreWin(w){if(!w.snap)return;Object.assign(w,w.prev||{w:meta(w).w,h:meta(w).h,x:40,y:40});w.snap=null;delete w.prev;delete w.tf}
+function toggleFill(w){if(w.snap==='fill')restoreWin(w);else snapTo(w,'fill')}
 
 /* ---------- the four variants ----------
    Each gives: layout(A) → boxes to draw; put(A, win, point) → places a window where the user let go or where the menu
    stands; preset(step) → the arrangement for each step of growing; and how its windows move. */
 const V={};
 
-/* A. Floating desk: windows lie over the desk anywhere; the chat steps into the widest free stretch. */
-V.float={name:'A · Floating desk',line:'Windows float freely over Home, as version 5\'s detached windows: drag by the bar, resize by the corner, snap to edges. The chat stays a plain column and steps aside into the widest free stretch.',
+/* A. Floating desk: windows float or snap flush to halves, quarters or the whole desk; the chat steps aside. */
+V.float={name:'A · Floating desk',line:'Windows float over Home, or snap flush to a half, a quarter or the whole desk. The chat stays a plain column in the widest free stretch, or becomes a window or an editor tab itself.',
   free:true,
-  layout(a){const ws=a.wins.filter(w=>w.type!=='chat'),out=ws.map(w=>({id:w.id,x:w.x,y:w.y,w:w.w,h:w.h,float:true,z:w.z}));
-    const c=a.wins.find(w=>w.type==='chat'); if(!c) return out;
-    if(!c.plain){out.push({id:c.id,x:c.x,y:c.y,w:c.w,h:c.h,float:true,z:c.z});return out}
+  layout(a){const ws=a.wins.filter(w=>!(w.type==='chat'&&w.plain));
+    const out=ws.map(w=>{if(w.snap)Object.assign(w,zoneRect(w.snap,w));return {id:w.id,x:w.x,y:w.y,w:w.w,h:w.h,float:!w.snap,flush:!!w.snap,z:w.z,grip:!w.snap,limit:w.type==='chat'||w.type==='hchat'}});
+    const c=a.wins.find(w=>w.type==='chat'&&w.plain);if(!c)return out;
     const cover=ws.map(w=>[Math.max(0,w.x),Math.min(W(),w.x+w.w)]).sort((p,q)=>p[0]-q[0]);let gaps=[],at=0;
     for(const [l,r] of cover){if(l>at)gaps.push([at,l]);at=Math.max(at,r)} if(at<W())gaps.push([at,W()]);
     const best=gaps.sort((p,q)=>(q[1]-q[0])-(p[1]-p[0]))[0]||[0,W()];
     const b=(cover.length&&best[1]-best[0]>=420)?centred(best[0],best[1]):centred(0,W());
     out.unshift({id:c.id,...b,plain:true});return out},
-  put(a,w,p){const c=CAT[w.type];w.w=w.w||c.w;w.h=w.h||c.h;w.x=Math.round(Math.max(-w.w+48,Math.min(W()-48,p.x)));w.y=Math.round(Math.max(0,Math.min(H-34,p.y)));
+  put(a,w,p){const m=meta(w);w.w=w.w||m.w;w.h=w.h||m.h;w.x=Math.round(Math.max(-w.w+48,Math.min(W()-48,p.x)));w.y=Math.round(Math.max(0,Math.min(H()-34,p.y)));
     if(w.type==='chat'&&w.plain==null)w.plain=false; if(!a.wins.includes(w))a.wins.push(w)},
-  preset(s){const g=12,ws=[];const chat=newWin('chat',{plain:true});
-    if(s==='start')ws.push(chat);
-    if(s==='first')ws.push(chat,newWin('tasks',{x:W()-420-g,y:g,w:420,h:330}));
-    if(s==='desk'){const sw=Math.min(300,Math.round(W()*.24));ws.push(chat,newWin('plans',{x:g,y:g,w:sw,h:H-2*g}),newWin('asks',{x:W()-340-g,y:g,w:340,h:190}),newWin('tasks',{x:W()-340-g,y:190+2*g,w:340,h:H-190-3*g}))}
-    if(s==='bare'){const lw=Math.round((W()-3*g)*.55),rw=W()-3*g-lw,th=Math.round((H-3*g)*.55);ws.push(newWin('tasks',{x:g,y:g,w:lw,h:H-2*g}),newWin('plans',{x:2*g+lw,y:g,w:rw,h:th}),newWin('asks',{x:2*g+lw,y:2*g+th,w:rw,h:H-3*g-th}))}
+  preset(s){const ws=[],X=W();const chat=newWin('chat',{plain:true});
+    const snapped=(type,z,extra={},tf)=>{const m=meta({type,...extra});const w=newWin(type,{x:X-m.w-36,y:36,w:m.w,h:m.h,...extra});snapTo(w,z,tf);return w};
+    if(s==='start'||s==='helper')ws.push(chat);
+    if(s==='first')ws.push(chat,newWin('tasks',{x:X-420-36,y:36,w:420,h:330}));
+    if(s==='desk')ws.push(chat,snapped('asks','tr'),snapped('tasks','br'));
+    if(s==='bare')ws.push(snapped('tasks','left'),snapped('plans','tr'),snapped('asks','br'));
+    if(s==='ide')ws.push(snapped('project','tile',{},[0,0,.2,1]),
+      snapped('editor','tile',{tabs:[{k:'hchat',conv:'main'},{k:'hchat',conv:'h262'},{k:'item',ref:'task:1702'},{k:'item',ref:'doc:101'}],act:0},[.2,0,.8,.72]),
+      snapped('activity','tile',{},[.2,.72,.8,.28]));
     return {wins:ws}},
   menuPoint:q=>({x:q.x,y:q.y}),
-  notes:[['Most freedom','Any size, anywhere, overlapping if the user wants. Closest to version 5\'s detached windows (arrangement.ts, 480 × 360 by default).'],
-    ['Can get messy','Overlap needs bring-to-front and keep-on-screen rules; a window can hide the chat. The chat steps aside only when 420 px stay free.']]};
+  notes:[['Snap and grow flush','Drag to a side for a half, a corner for a quarter, the top edge to fill. A snapped window drops its corners and shadow and fills the area; drag it away to float it at its old size.'],
+    ['Buttons and gestures','Close, fill and restore on every bar, grey like the rest of the house style (no traffic-light colours: red means an error here). Double-click the bar to fill or restore.'],
+    ['Menus where the pointer is','Right-click a bar, the empty desk, a tab, a tree item or a row. A menu opens where it fits, flipping left or up near an edge; arrow keys walk it and Escape closes it.']]};
 
-/* B. Tiled panes: version 5's pane grid. Windows never overlap; columns share the width, a column stacks its windows. */
-V.tiles={name:'B · Tiled panes',line:'Version 5\'s pane grid, kept simple: windows fill the screen in columns and never overlap. Drop a window on a column\'s middle to stack it there, on its outer quarter to make a new column. The chat\'s pane keeps its text at the reading width.',
+/* B. Tiled panes: version 5's pane grid as columns; nothing overlaps. */
+V.tiles={name:'B · Tiled panes',line:'Version 5\'s pane grid, kept simple: windows fill the screen in columns and never overlap. Drop a window on a column\'s middle to stack it there, on its outer quarter to make a new column.',
   layout(a){const ws=a.wins;if(!ws.length)return [];
     if(ws.length===1&&ws[0].type==='chat')return [{id:ws[0].id,...centred(0,W()),plain:true}];
     const cols=[...new Set(ws.map(w=>w.col))].sort((p,q)=>p-q);
     const weight=c=>ws.some(w=>w.col===c&&w.type==='chat')?1.7:1, total=cols.reduce((s,c)=>s+weight(c),0), g=8;
     let x=g,out=[];const avail=W()-g*(cols.length+1);
-    cols.forEach(c=>{const cw=avail*weight(c)/total,stack=ws.filter(w=>w.col===c).sort((p,q)=>p.ord-q.ord),hh=(H-g*(stack.length+1))/stack.length;
+    cols.forEach(c=>{const cw=avail*weight(c)/total,stack=ws.filter(w=>w.col===c).sort((p,q)=>p.ord-q.ord),hh=(H()-g*(stack.length+1))/stack.length;
       stack.forEach((w,i)=>out.push({id:w.id,x,y:g+i*(hh+g),w:cw,h:hh,flat:true,limit:w.type==='chat'}));x+=cw+g});
     return out},
   put(a,w,p){a.wins=a.wins.filter(x=>x.id!==w.id);const boxes=this.layout(a);
@@ -306,135 +450,216 @@ V.tiles={name:'B · Tiled panes',line:'Version 5\'s pane grid, kept simple: wind
     let col=cols.find(k=>p.x>=k.l&&p.x<=k.r)||(p.x<cols[0].l?cols[0]:cols[cols.length-1]);
     const rel=(p.x-col.l)/(col.r-col.l);
     if((rel<.25||rel>.75)&&cols.length<4){w.col=col.c+(rel<.25?-.5:.5);w.ord=0}
-    else{w.col=col.c;const before=col.bs.filter(b=>p.y>b.y+b.h/2).length;w.ord=before-.5}
+    else{w.col=col.c;w.ord=col.bs.filter(b=>p.y>b.y+b.h/2).length-.5}
     a.wins.push(w);const cs=[...new Set(a.wins.map(x=>x.col))].sort((p,q)=>p-q);
     a.wins.forEach(x=>x.col=cs.indexOf(x.col));cs.forEach((_,ci)=>a.wins.filter(x=>x.col===ci).sort((p,q)=>p.ord-q.ord).forEach((x,i)=>x.ord=i))},
   preset(s){const t=(type,col,ord=0)=>newWin(type,{col,ord});
-    return {wins:s==='start'?[t('chat',0)]:s==='first'?[t('chat',0),t('tasks',1)]:s==='desk'?[t('plans',0),t('chat',1),t('asks',2,0),t('tasks',2,1)]:[t('tasks',0),t('plans',1,0),t('asks',1,1)]}},
+    return {wins:s==='start'||s==='helper'?[t('chat',0)]:s==='first'?[t('chat',0),t('tasks',1)]:s==='desk'||s==='ide'?[t('plans',0),t('chat',1),t('asks',2,0),t('tasks',2,1)]:[t('tasks',0),t('plans',1,0),t('asks',1,1)]}},
   menuPoint:q=>({x:q.x+170,y:q.y+60}),
-  notes:[['Always tidy','Nothing overlaps and the screen is always used; the grid already exists in version 6 (paneLayout.ts, PaneGrid.vue) with splits, tabs and the drop compass.'],
-    ['Less free','Sizes follow the columns, not the user\'s hand (a splitter would be the next step). With four columns on a small screen, panes get narrow.']]};
+  notes:[['Always tidy','Nothing overlaps and the screen is always used; the grid already exists in version 6 (paneLayout.ts, PaneGrid.vue).'],
+    ['Less free','Sizes follow the columns, not the user\'s hand. Round 2\'s snapping in A is what this variant does all the time.']]};
 
-/* C. Chat and a drawer: the chat stays in the middle; every other window is a tab in one drawer at the left or right. */
-V.drawer={name:'C · Chat and a drawer',line:'The chat never moves. Every other window opens as a tab in one drawer beside it; drag the drawer\'s bar to the other side, drag its edge to make it wider. Hide the chat and the drawer fills Home.',
+/* C. Chat and a drawer: the chat stays in the middle; every other window is a tab in one drawer. */
+V.drawer={name:'C · Chat and a drawer',line:'The chat never moves. Every other window opens as a tab in one drawer beside it; drag the drawer\'s bar to the other side, its edge to make it wider.',
   layout(a){const tabs=a.wins.filter(w=>w.type!=='chat'),c=a.wins.find(w=>w.type==='chat'),d=a.drawer,out=[];
     if(!tabs.length){if(c)out.push({id:c.id,...centred(0,W()),plain:true});return out}
     const pw=c?Math.min(d.pw,W()-360):W()-2*PAD,px=c?(d.side==='right'?W()-pw-PAD:PAD):PAD;
-    out.push({id:'drawer',x:px,y:PAD,w:pw,h:H-2*PAD,drawer:true});
+    out.push({id:'drawer',x:px,y:PAD,w:pw,h:H()-2*PAD,drawer:true});
     if(c)out.push({id:c.id,...(d.side==='right'?centred(0,px):centred(px+pw,W())),plain:true});return out},
   put(a,w,p){const tabs=a.wins.filter(x=>x.type!=='chat');
     if(w.type==='chat'){if(!hasChat(a))a.wins.push(w);return}
     if(!tabs.length)a.drawer.side=p.x<W()/2?'left':'right';
     if(!a.wins.includes(w))a.wins.push(w);a.drawer.active=w.id},
-  preset(s){const ws=s==='start'?[newWin('chat')]:s==='first'?[newWin('chat'),newWin('tasks')]:s==='desk'?[newWin('chat'),newWin('plans'),newWin('asks'),newWin('tasks')]:[newWin('tasks'),newWin('plans'),newWin('asks')];
+  preset(s){const ws=s==='start'||s==='helper'?[newWin('chat')]:s==='first'?[newWin('chat'),newWin('tasks')]:s==='desk'||s==='ide'?[newWin('chat'),newWin('plans'),newWin('asks'),newWin('tasks')]:[newWin('tasks'),newWin('plans'),newWin('asks')];
     const tabs=ws.filter(w=>w.type!=='chat');return {wins:ws,drawer:{side:'right',pw:400,active:(tabs.find(w=>w.type==='asks')||tabs[0]||{}).id||null}}},
   menuPoint:q=>({x:q.x+170,y:q.y+60}),
-  notes:[['Quietest','One extra place, never more: the chat keeps its spot and its reading width; windows are tabs, so the screen never fills up.'],
-    ['One at a time','Only one window shows beside the chat. Seeing Tasks and Plans together means hiding the chat, or a second drawer later.']]};
+  notes:[['Quietest','One extra place, never more: the chat keeps its spot and its reading width.'],['One at a time','Only one window shows beside the chat.']]};
 
-/* D. Board: a grid of cards the user places on cells; cards snap, push the others down, and the board scrolls. */
-V.board={name:'D · Board of cards',line:'Home is a board of cards on a twelve-column grid: drop a card on a cell and it snaps there, pushing others down; resize by the corner in whole cells. The chat is one card, centred when alone.',
+/* D. Board: cards on a twelve-column grid that snap to cells and push others down. */
+V.board={name:'D · Board of cards',line:'Home is a board of cards on a twelve-column grid: drop a card on a cell and it snaps there, pushing others down; resize by the corner in whole cells.',
   scrolls:true,
   cell(){const cw=(W()-2*PAD-11*PAD)/12;return {cw,rh:44}},
   layout(a){const ws=a.wins;if(ws.length===1&&ws[0].type==='chat')return [{id:ws[0].id,...centred(0,W()),plain:true}];
     const {cw,rh}=this.cell();return ws.map(w=>({id:w.id,x:PAD+w.gx*(cw+PAD),y:PAD+w.gy*(rh+PAD),w:w.gw*cw+(w.gw-1)*PAD,h:w.gh*rh+(w.gh-1)*PAD,flat:true,grip:true,limit:w.type==='chat'}))},
-  put(a,w,p){const {cw,rh}=this.cell(),c=CAT[w.type];a.wins=a.wins.filter(x=>x.id!==w.id);
-    a.wins.forEach(x=>{if(x.gx==null){x.gw=Math.min(8,Math.max(5,Math.round(readW/(cw+PAD))));x.gh=11;x.gx=Math.round((12-x.gw)/2);x.gy=0}});
-    w.gw=w.gw||c.gw;w.gh=w.gh||c.gh;w.gx=Math.max(0,Math.min(12-w.gw,Math.round((p.x-PAD)/(cw+PAD))));w.gy=Math.max(0,Math.round((p.y-PAD)/(rh+PAD)));
-    /* The first card beside a lone chat: the chat narrows and moves over to make room, rather than being pushed down. */
+  put(a,w,p){const {cw,rh}=this.cell(),m=meta(w);a.wins=a.wins.filter(x=>x.id!==w.id);
+    w.gw=w.gw||m.gw;w.gh=w.gh||m.gh;w.gx=Math.max(0,Math.min(12-w.gw,Math.round((p.x-PAD)/(cw+PAD))));w.gy=Math.max(0,Math.round((p.y-PAD)/(rh+PAD)));
     if(a.wins.length===1&&a.wins[0].type==='chat'&&w.type!=='chat'){const ch=a.wins[0];ch.gw=Math.min(ch.gw,12-w.gw);ch.gy=0;w.gy=0;
       ch.gx=w.gx+w.gw/2>=6?Math.max(0,w.gx-ch.gw):Math.min(12-ch.gw,w.gx+w.gw);if(ch.gx+ch.gw>w.gx&&w.gx+w.gw>ch.gx)w.gx=ch.gx>=w.gw?0:12-w.gw}
     a.wins.push(w);this.settle(a,w)},
   settle(a,moved){const hit=(p,q)=>p.gx<q.gx+q.gw&&q.gx<p.gx+p.gw&&p.gy<q.gy+q.gh&&q.gy<p.gy+p.gh;
     for(let n=0;n<40;n++){let any=false;for(const x of a.wins){if(x===moved)continue;for(const y of [moved,...a.wins.filter(o=>o!==x)]){if(y!==x&&hit(x,y)&&(y===moved||x.gy>=y.gy)){x.gy=y.gy+y.gh;any=true}}}if(!any)break}},
   preset(s){const t=(type,gx,gy,gw,gh)=>newWin(type,{gx,gy,gw,gh});
-    return {wins:s==='start'?[t('chat',2,0,8,11)]:s==='first'?[t('chat',1,0,7,11),t('tasks',8,0,4,7)]:s==='desk'?[t('plans',0,0,3,11),t('chat',3,0,6,11),t('asks',9,0,3,4),t('tasks',9,4,3,7)]:[t('tasks',0,0,7,11),t('plans',7,0,5,6),t('asks',7,6,5,5)]}},
+    return {wins:s==='start'||s==='helper'?[t('chat',2,0,8,11)]:s==='first'?[t('chat',1,0,7,11),t('tasks',8,0,4,7)]:s==='desk'||s==='ide'?[t('plans',0,0,3,11),t('chat',3,0,6,11),t('asks',9,0,3,4),t('tasks',9,4,3,7)]:[t('tasks',0,0,7,11),t('plans',7,0,5,6),t('asks',7,6,5,5)]}},
   menuPoint:q=>({x:q.x+20,y:q.y+20}),
-  notes:[['Ordered freedom','Free placement, but on a grid: edges line up by themselves and cards never cover each other. Familiar from dashboards.'],
-    ['Taller than the screen','Pushed-down cards can fall below the fold, so the board scrolls; the chat card is best kept in the first rows.']]};
+  notes:[['Ordered freedom','Free placement on a grid: edges line up by themselves and cards never cover each other.'],['Taller than the screen','Pushed-down cards can fall below the fold, so the board scrolls.']]};
 
-/* ---------- steps of growing (the same four for every variant) ---------- */
-const STEPS={start:['1 · Day one','A new user sees only the chat, centred at the reading width, with the composer under it. Nothing else. Press Space or the + to add a window.'],
-  first:['2 · A first window','The user pressed Space and chose Tasks.'],
-  desk:['3 · A dashboard','A few weeks in: Plans, Asks and Tasks around the chat, each added from Space and dragged into place.'],
-  bare:['4 · Without the chat','The user hid the chat from the Home menu; Home is windows only. Space, then Chat, brings it back.']};
+/* ---------- steps of growing ---------- */
+const STEPS={start:['1 · Day one','A new user sees only the chat, centred at the reading width, with the composer under it. Nothing else: no status bar, no tree, no hint line. Press Space or the + to add a window.'],
+  first:['2 · A first window','The user pressed Space and chose Tasks; it floats where the menu stood. Drag it to the right edge to snap it flush.'],
+  desk:['3 · A dashboard','Asks and Tasks snapped to the right quarters; the chat sits in the free left half at a narrower width.'],
+  bare:['4 · Without the chat','The chat is hidden; Tasks fills the left half, Plans and Asks the right quarters. Space, then Chat, brings it back.'],
+  helper:['5 · A helper starts','The agent dispatched Helper 262. Under the agent\'s line, the journal itself adds a quiet card: add a window for that helper. Accept it to see the helper\'s chat open flush on the right while the main chat steps aside; a moment later a notification says its first draft is ready.'],
+  ide:['6 · Like an IDE','The far end of the same Home: sidebar folded to icons, Project tree on the left (⌘1), an editor with tabs where the chat is the first tab, Activity below (⌘2), and a status bar with the agents, shortcuts and a notifications bell. Each piece was added with Space and snapped; Back to just the chat folds it all away again, with Undo.']};
+const STEP_UI={start:{},first:{},desk:{},bare:{},helper:{},ide:{rail:true,status:true}};
 
 /* ---------- drawing ---------- */
-function side(){return `<div class="brand"><b>J</b>Journal</div>`+[['home','Home',1],['todos','Tasks'],['plan','Plans'],['docs','Documents'],['users','Accounts'],['cog','Settings']]
-  .map(([ic,t,on])=>`<div class="nav ${on?'on':''}">${I(ic)}${t}${on?'<span class="pd" title="A question waits on you"></span>':''}</div>`).join('')}
+function side(){const navs=[['home','Home',1],['todos','Tasks'],['plan','Plans'],['docs','Documents'],['users','Accounts'],['cog','Settings']];
+  return `<div class="brand"><b>J</b>${ui.rail?'':'Journal'}</div>`+navs.map(([ic,t,on])=>`<div class="nav ${on?'on':''}" title="${ui.rail?t:''}">${I(ic)}${ui.rail?'':t}${on?'<span class="pd" title="A question waits on you"></span>':''}</div>`).join('')
+   +`<div class="sidefoot"><button class="ib" id="railBtn" title="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'} · ⌘B" aria-label="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'}">${I('sidebar','s14')}</button></div>`}
+const unread=()=>NOTES.filter(n=>!n.read).length;
 function abar(){return `<div class="agent"><span class="av">${CLAUDE()}</span><div class="who"><span>Agent 1 · main</span><small>Claude Code · Opus · Work (Max)</small></div></div>
   <span class="st" style="margin-left:12px;color:var(--text-2)"><span class="spin"></span>Working on task 1702</span>
-  <div class="r"><button class="btn sm bordered">${I('power','s14')}Stop</button><button class="ib" id="addBtn" title="Add a window · Space" aria-label="Add a window (Space)">${I('plus')}</button><button class="ib" id="homeBtn" title="Home" aria-label="Home menu" aria-expanded="${hm}">${I('layout','s14')}</button></div>`}
-function title(w){const same=A.wins.filter(x=>x.type===w.type);return CAT[w.type].t+(same.length>1?' '+(same.indexOf(w)+1):'')}
-function winBody(w,limit){return w.type==='chat'?`<div class="wchat" style="max-width:${limit?readW:9999}px">${`<div class="chat">${chatHtml()}</div>`}${composer()}</div>`:BODY[w.type]()}
-function boxHtml(b){
+  <div class="r"><button class="btn sm bordered">${I('power','s14')}Stop</button>${!ui.status&&NOTES.length?`<button class="ib" data-bell title="Notifications" aria-label="Notifications" style="position:relative">${I('bell','s14')}${unread()?`<span class="badge">${unread()}</span>`:''}</button>`:''}<button class="ib" id="addBtn" title="Add a window · Space or ⌘K" aria-label="Add a window (Space)">${I('plus')}</button><button class="ib" id="homeBtn" title="Home" aria-label="Home menu" aria-expanded="${hm}">${I('layout','s14')}</button><button class="ib" id="hideBar" title="Hide the agent bar · ⌘⇧B" aria-label="Hide the agent bar">${I('barup','s14')}</button></div>`}
+function sbar(){const n=unread();return `<span class="st"><span class="spin"></span>Agent 1 working</span><span>${helpersOn?'2 helpers and workers running':'1 worker running'}</span><span class="st strong"><span class="dot plum"></span>1 waits on you</span><span class="gap"></span>
+  <span><kbd>⌘K</kbd> go to anything</span><span><kbd>⌘1</kbd> Project</span><span><kbd>⌘2</kbd> Activity</span><button class="ib" data-keys title="Keyboard shortcuts · ?" aria-label="Keyboard shortcuts">${I('keyb','s14')}</button><button class="ib" data-bell title="Notifications" aria-label="Notifications, ${n} unread">${I('bell','s14')}${n?`<span class="badge">${n}</span>`:''}</button>`}
+function title(w){const same=A.wins.filter(x=>sameKind(x,w));return meta(w).t+(same.length>1?' '+(same.indexOf(w)+1):'')}
+function lights(w,v){return `<div class="lights"><button class="light" data-close="${w.id}" title="Close" aria-label="Close ${title(w)}">${I('close','s10')}</button>${v.free?`<button class="light" data-fill="${w.id}" title="Fill" aria-label="Fill" ${w.snap==='fill'?'disabled':''}>${I('fill','s10')}</button><button class="light" data-restore="${w.id}" title="Restore" aria-label="Restore" ${w.snap?'':'disabled'}>${I('restore','s10')}</button>`:''}</div>`}
+function boxHtml(b,v){
   if(b.drawer){const d=A.drawer,tabs=A.wins.filter(w=>w.type!=='chat'),act=tabs.find(w=>w.id===d.active)||tabs[0];
     const split=hasChat(A)?`<div class="splitter" data-split style="left:${d.side==='right'?b.x-9:b.x+b.w}px"></div>`:'';
-    return split+`<section class="win flat" data-w="drawer" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px" aria-label="Drawer">
-      <div class="wbar" data-drag="drawer" style="padding-left:4px"><div class="tabs" role="tablist">${tabs.map(w=>`<div class="tab ${w===act?'on':''}" role="tab" aria-selected="${w===act}" data-tab="${w.id}">${I(CAT[w.type].ic,'s14')}${title(w)}<button class="ib" data-close="${w.id}" aria-label="Close ${title(w)}">${I('close','s14')}</button></div>`).join('')}</div></div>
-      <div class="wbody">${BODY[act.type]()}</div></section>`}
+    return split+`<section class="win flat" data-w="drawer" data-flip="drawer" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px" aria-label="Drawer">
+      <div class="wbar" data-drag="drawer" style="padding-left:4px"><div class="tabs" role="tablist">${tabs.map(w=>`<div class="tab ${w===act?'on':''}" role="tab" aria-selected="${w===act}" data-tab="${w.id}">${I(meta(w).ic,'s14')}${title(w)}<button class="ib" data-close="${w.id}" aria-label="Close ${title(w)}">${I('close','s14')}</button></div>`).join('')}</div></div>
+      <div class="wbody">${bodyOf(act,false)}</div></section>`}
   const w=A.wins.find(x=>x.id===b.id);
-  if(b.plain)return `<div class="chatcol" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px"><div class="scroll"><div class="chat">${chatHtml()}</div></div>${composer()}</div>`;
-  const c=CAT[w.type];
-  return `<section class="win ${b.float?'float':'flat'}" data-w="${w.id}" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;z-index:${b.z||1}" aria-label="${title(w)}">
-    <div class="wbar" data-drag="${w.id}">${I(c.ic,'s14')}<span class="t">${title(w)}</span>${c.n!=null&&w.type!=='chat'?`<span class="n">${c.n}</span>`:''}<div class="r"><button class="ib sm" data-close="${w.id}" aria-label="Close ${title(w)}">${I('close','s14')}</button></div></div>
-    <div class="wbody">${winBody(w,b.limit)}</div>${b.float||b.grip?`<div class="wgrip" data-grip="${w.id}"></div>`:''}</section>`}
+  if(b.plain)return `<div class="chatcol" data-flip="chatcol" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px">${chatHead(A.mainConv,'main')}<div class="scroll"><div class="chat">${chatHtml(A.mainConv)}</div></div>${composer(A.mainConv)}</div>`;
+  const m=meta(w),cls=b.flush?'flush':b.float?'float':'flat';
+  const head=w.type==='editor'?`<div class="tabs" role="tablist">${w.tabs.map((t,i)=>{const tm=tabMeta(t);return `<div class="tab ${i===w.act?'on':''}" role="tab" aria-selected="${i===w.act}" data-etab="${w.id}:${i}">${I(tm.ic,'s14')}${tm.t}<button class="ib" data-eclose="${w.id}:${i}" aria-label="Close ${tm.t}">${I('close','s14')}</button></div>`}).join('')}</div>`
+    :`${I(m.ic,'s14')}<span class="t">${title(w)}</span>${m.n!=null&&['tasks','docs','asks'].includes(w.type)?`<span class="n">${m.n}</span>`:''}`;
+  return `<section class="win ${cls}" data-w="${w.id}" data-flip="${w.id}" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;z-index:${b.z||1}" aria-label="${title(w)}">
+    <div class="wbar" data-drag="${w.id}" title="${v.free?'Drag to move · double-click to fill or restore':'Drag to move'}">${lights(w,v)}${head}</div>
+    <div class="wbody">${bodyOf(w,b.limit)}</div>${b.grip?`<div class="wgrip" data-grip="${w.id}"></div>`:''}</section>`}
 function qmRows(){const q=qm.q.trim().toLowerCase();
-  const rows=Object.entries(CAT).map(([k,c])=>{const n=A.wins.filter(w=>w.type===k).length;
-    const sub=k==='chat'?(n?'open · brings it forward':'hidden · brings it back'):n?(n>1?n+' open · opens another':'open · opens another'):'';
-    return {type:k,label:c.t,ic:c.ic,key:c.key,sub}}).filter(r=>!q||r.label.toLowerCase().includes(q));
-  if(q)rows.push({msg:qm.q.trim(),label:`Message the agent: “${qm.q.trim().replace(/</g,'&lt;')}”`,ic:'arrow'});return rows}
-function qmHtml(){const rows=qmRows();
+  let rows=Object.entries(CAT).map(([k,c])=>{const n=A.wins.filter(w=>w.type===k).length;
+    const sub=k==='chat'?(n||chatTab()?'open · brings it forward':'hidden · brings it back'):c.tool?(n?'open · '+c.tool+' closes it':c.tool):n?(n>1?n+' open · opens another':'open · opens another'):'';
+    return {type:k,label:c.t,ic:c.ic,key:c.key,sub,group:'Windows'}});
+  if(helpersOn)activeConvs().filter(c=>c!=='main').forEach(c=>rows.push({type:'hchat',extra:{conv:c},label:'Chat · '+CONV[c].name,ic:'users',sub:A.wins.some(w=>w.type==='hchat'&&w.conv===c)?'open · brings it forward':CONV[c].sub,group:'Conversations'}));
+  if(q)TASKS.forEach(([n,t])=>rows.push({type:'item',extra:{ref:'task:'+n},label:'Task '+n,sub:t,ic:'todos',group:'Go to'}));
+  if(q)DOCS.forEach(([n,t])=>rows.push({type:'item',extra:{ref:'doc:'+n},label:'Doc '+n,sub:t,ic:'docs',group:'Go to'}));
+  rows=rows.filter(r=>!q||(r.label+' '+(r.sub||'')).toLowerCase().includes(q));
+  if(q)rows.push({msg:qm.q.trim(),label:`Message the agent: “${qm.q.trim().replace(/</g,'&lt;')}”`,ic:'arrow',group:'Ask'});return rows}
+function qmHtml(){const rows=qmRows();let last=null;
   return `<div class="qm" id="qm" style="left:${qm.x}px;top:${qm.y}px" role="dialog" aria-label="Add a window">
-    <div class="qh" data-qdrag>${I('grip','s14')}<span class="t">Add a window</span><small>drag me to where it goes</small></div>
-    <div class="qs">${I('search','s14')}<input id="qin" placeholder="Search, or type to message the agent" value="${qm.q.replace(/"/g,'&quot;')}" autocomplete="off" aria-label="Search windows"></div>
-    <div class="rows" role="listbox">${rows.map((r,i)=>`<div class="qrow ${i===qm.i?'on':''}" data-row="${i}" role="option" aria-selected="${i===qm.i}">${I(r.ic,'s14')}<span>${r.label}</span>${r.sub?`<small>${r.sub}</small>`:''}${r.key?`<span class="k">${r.key}</span>`:''}</div>`).join('')}</div>
-    <div class="qfoot"><span><kbd>↑</kbd><kbd>↓</kbd> choose</span><span><kbd>↵</kbd> open here</span><span>or drag a row onto Home</span><span><kbd>Esc</kbd> close</span></div></div>`}
-function hmHtml(){const r=(id,label,ic,on)=>`<div class="qrow" data-hm="${id}" role="menuitem">${I(ic,'s14')}<span>${label}</span>${on?`<span class="k">${I('tick','s14')}</span>`:''}</div>`;
-  const c=A.wins.find(w=>w.type==='chat');let h='';
-  if(vkey==='float'&&c)h+=r('centre','Chat as a plain column','ask',c.plain)+r('window','Chat as a window','layout',!c.plain);
-  h+=c?r('hide','Hide the chat','close'):r('show','Show the chat','ask');
-  h+='<hr>'+r('add','Add a window…','plus');
-  if(A.wins.some(w=>w.type!=='chat'))h+=r('reset','Back to just the chat','home');
-  return `<div class="hm" id="hm" role="menu">${h}</div>`}
+    <div class="qh" data-qdrag>${I('grip','s14')}<span class="t">Add a window or go to anything</span><small>drag me</small></div>
+    <div class="qs">${I('search','s14')}<input id="qin" placeholder="Windows, tasks, documents… or a message" value="${qm.q.replace(/"/g,'&quot;')}" autocomplete="off" aria-label="Search"></div>
+    <div class="rows" role="listbox">${rows.map((r,i)=>{const g=r.group&&r.group!==last?`<div class="qgroup">${r.group}</div>`:'';last=r.group||last;
+      return g+`<div class="qrow ${i===qm.i?'on':''}" data-row="${i}" role="option" aria-selected="${i===qm.i}">${I(r.ic,'s14')}<span style="white-space:nowrap">${r.label}</span>${r.sub?`<small>${r.sub}</small>`:''}${r.key&&!qm.q?`<span class="k">${r.key}</span>`:''}</div>`}).join('')}</div>
+    <div class="qfoot"><span><kbd>↑</kbd><kbd>↓</kbd> choose</span><span><kbd>↵</kbd> open here</span><span>or drag a row onto Home, or to an edge to snap</span><span><kbd>Esc</kbd></span></div></div>`}
+function menuHtml(cls,id,items,style){return `<div class="${cls}" id="${id}" role="menu" ${style?`style="${style}"`:''}>`+items.map((it,i)=>it.sep?'<hr>':it.head?`<div class="qgroup">${it.head}</div>`:`<button class="qrow" data-ci="${i}" role="menuitem" ${it.disabled?'disabled':''}>${it.ic?I(it.ic,'s14'):'<span style="width:14px;flex:none"></span>'}<span style="flex:1;min-width:0">${it.label}${it.sub?`<small style="display:block">${it.sub}</small>`:''}</span>${it.tick?`<span class="k">${I('tick','s14')}</span>`:it.keys?`<span class="k">${it.keys}</span>`:''}</button>`).join('')+'</div>'}
+const chatTab=()=>{const e=editor();return e&&e.tabs.findIndex(t=>t.k==='hchat'&&t.conv==='main')>=0};
+function homeItems(){const c=A.wins.find(w=>w.type==='chat'),it=[];
+  if(vkey==='float'&&c)it.push({label:'Chat as a plain column',ic:'ask',tick:c.plain,run:()=>{restoreWin(c);c.plain=true}},{label:'Chat as a window',ic:'layout',tick:!c.plain,run:()=>chatToWindow(c)});
+  it.push(c||chatTab()?{label:'Hide the chat',ic:'close',disabled:!c,run:()=>{A.wins=A.wins.filter(w=>w.type!=='chat')}}:{label:'Show the chat',ic:'ask',run:()=>{openAt('chat',{x:W()/2-240,y:12});return false}});
+  it.push({sep:1},{label:'Add a window…',ic:'plus',keys:'Space',run:()=>{openMenu();return false}});
+  if(vkey==='float')it.push({label:'Tile all windows',ic:'layout',disabled:A.wins.length<2,run:tileAll},{label:'Float all windows',ic:'front',disabled:!A.wins.some(w=>w.snap),run:()=>A.wins.forEach(restoreWin)});
+  it.push({label:'Back to just the chat',ic:'home',disabled:!A.wins.some(w=>w.type!=='chat')&&!ui.status,run:backToChat},{sep:1},
+    {label:ui.rail?'Show the sidebar':'Fold the sidebar to icons',ic:'sidebar',keys:'⌘B',run:toggleRail},{label:ui.barHidden?'Show the agent bar':'Hide the agent bar',ic:'barup',keys:'⌘⇧B',run:toggleBar},
+    {label:'Status bar',ic:'keyb',tick:ui.status,run:()=>{ui.status=!ui.status}},{label:'Keyboard shortcuts',ic:'keyb',keys:'?',run:()=>{keysOpen=true}});
+  return it}
+function keysHtml(){const K=[['Space','Add a window (outside a text field)'],['⌘K','Go to anything, also from a field'],['⌘1','Show or hide Project'],['⌘2','Show or hide Activity'],['⌘B','Fold or show the sidebar'],['⌘⇧B','Hide or show the agent bar'],['Double-click a bar','Fill or restore'],['Drag to an edge','Snap to a half, a quarter or fill'],['Right-click','The menu for what is under the pointer'],['Esc','Close a menu'],['?','This list']];
+  return `<div class="keys" id="keys" role="dialog" aria-label="Keyboard shortcuts"><h4>Keyboard shortcuts</h4><dl>${K.map(([k,d])=>`<dt><kbd>${k}</kbd></dt><dd>${d}</dd>`).join('')}</dl></div>`}
+let hmItems=[];
 function render(){
-  const app=document.getElementById('app');app.style.width=frameW+'px';
-  Object.entries(tokens(mode)).forEach(([k,v])=>app.style.setProperty(k,v));document.body.classList.toggle('dk',mode==='dark');
-  document.getElementById('side').innerHTML=side();document.getElementById('abar').innerHTML=abar();
-  const v=V[vkey],desk=document.getElementById('desk');desk.classList.toggle('scrolls',!!v.scrolls);
-  const boxes=v.layout(A);let h=boxes.map(boxHtml).join('');
+  const app=document.getElementById('app'),desk=document.getElementById('desk'),sideEl=document.getElementById('side'),barEl=document.getElementById('abar'),sb=document.getElementById('sbar');
+  const prev={};if(!quiet&&!CALM.matches)desk.querySelectorAll('[data-flip]').forEach(e=>prev[e.dataset.flip]={x:e.offsetLeft,y:e.offsetTop,w:e.offsetWidth,h:e.offsetHeight});
+  const oldSide=sideEl.offsetWidth,oldBar=barEl.offsetHeight;
+  app.style.width=frameW+'px';Object.entries(tokens(mode)).forEach(([k,v])=>app.style.setProperty(k,v));document.body.classList.toggle('dk',mode==='dark');
+  sideEl.className='side'+(ui.rail?' rail':'');sideEl.innerHTML=side();barEl.className='abar'+(ui.barHidden?' hidden':'');barEl.innerHTML=abar();
+  sb.className='sbar'+(ui.status?'':' hidden');sb.innerHTML=ui.status?sbar():'';
+  const v=V[vkey];desk.classList.toggle('scrolls',!!v.scrolls);
+  const boxes=v.layout(A);let h=boxes.map(b=>boxHtml(b,v)).join('');
   if(v.scrolls&&boxes.length){const bottom=Math.max(...boxes.map(b=>b.y+b.h))+PAD;h+=`<div style="position:absolute;left:0;top:${bottom}px;width:1px;height:1px"></div>`}
-  if(!A.wins.length)h+=`<div class="emptydesk"><b>Nothing on Home</b><span>Press <kbd>Space</kbd> to add a window. The chat is one of them.</span></div>`;
-  if(qm)h+=qmHtml(); if(hm)h+=hmHtml();
+  if(!A.wins.length)h+=`<div class="emptydesk"><b>Nothing on Home</b><span>Press <kbd>Space</kbd> to add a window, or right-click here. The chat is one of them.</span></div>`;
+  if(ui.barHidden)h+=`<button class="pill" id="showBar" title="Show the agent bar · ⌘⇧B">${CLAUDE('s14')}Agent 1<span class="spin"></span><span class="dot plum" title="A question waits on you"></span>${I('caret','s14')}</button>`;
+  if(BAL.length)h+=`<div class="balloons" role="status">${BAL.map(b=>`<div class="balloon">${I('bell','s14')}<div class="t">${b.t}<small>${b.sub||''}</small>${b.actLabel?`<div class="r"><button class="btn sm bordered" data-bact="${b.id}">${b.actLabel}</button></div>`:''}</div><button class="ib sm" data-bclose="${b.id}" aria-label="Dismiss">${I('close','s14')}</button></div>`).join('')}</div>`;
+  if(qm)h+=qmHtml();
+  if(hm){hmItems=homeItems();h+=menuHtml('hm','hm',hmItems)}
+  if(ctx)h+=menuHtml('ctx','ctx',ctx.items,`left:${ctx.x}px;top:${ctx.y}px`);
+  if(keysOpen)h+=keysHtml();
   desk.innerHTML=h;
+  /* Motion: windows glide from where they were (FLIP), new ones grow in; the sidebar and agent bar ease to their size. */
+  if(!quiet&&!CALM.matches){desk.querySelectorAll('[data-flip]').forEach(e=>{const p=prev[e.dataset.flip],r={x:e.offsetLeft,y:e.offsetTop,w:e.offsetWidth,h:e.offsetHeight};
+      if(p){const dx=p.x-r.x,dy=p.y-r.y,sx=p.w/r.w,sy=p.h/r.h;if(Math.abs(dx)>1||Math.abs(dy)>1||Math.abs(sx-1)>.01||Math.abs(sy-1)>.01)
+        e.animate([{transformOrigin:'0 0',transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`},{transformOrigin:'0 0',transform:'none'}],{duration:230,easing:EASE})}
+      else if(opened.has(e.dataset.flip))e.animate([{opacity:0,transform:'scale(.96)'},{opacity:1,transform:'none'}],{duration:190,easing:EASE})});
+    if(oldSide!==sideEl.offsetWidth)sideEl.animate([{width:oldSide+'px'},{width:sideEl.offsetWidth+'px'}],{duration:220,easing:EASE});
+    if(oldBar!==barEl.offsetHeight)barEl.animate([{height:oldBar+'px'},{height:barEl.offsetHeight+'px'}],{duration:220,easing:EASE})}
+  opened.clear();quiet=false;
   document.getElementById('vName').textContent=v.name;document.getElementById('vLine').textContent=v.line;
-  document.getElementById('sLine').textContent=own?'Your own arrangement. Pick a step to start again from it.':STEPS[step][1]+(step==='first'?' '+({float:'It opened where the menu stood and was dragged to the right; the chat stepped aside into the free space.',tiles:'Dropped on the right quarter, it became a second column; the chat\'s pane keeps its text at the reading width.',drawer:'It opened as the first tab of a drawer on the side the menu stood; the chat moved over and kept its width.',board:'It snapped to the cells where it was dropped; the chat became a card beside it.'}[vkey]):'');
-  document.getElementById('notes').innerHTML=[...v.notes,['Same everywhere','The agent bar stays on top; Space never fires inside a field or with a modifier (version 5\'s shellKeys.js); Home is saved for the user; “Back to just the chat” in the Home menu undoes it all, with Undo.']].map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join('');
+  document.getElementById('sLine').textContent=own?'Your own arrangement. Pick a step to start again from it.':STEPS[step][1]+(step==='ide'&&vkey!=='float'?' (The IDE end is drawn for A; this variant shows its dashboard with the status bar.)':'');
+  document.getElementById('notes').innerHTML=[...v.notes,
+    ['Two ends, one Home','The plain chat and the IDE-like setup are the same Home: every piece is a window added with Space and snapped, so nothing new has to be learnt between them, and Back to just the chat returns to day one.'],
+    ['A quiet suggestion','When the agent dispatches a helper or worker, the journal (not the agent) adds one dashed card marked J under the agent\'s line: add a window for it. One button, a Not now, no sound, once per helper.'],
+    ['Chat with a helper','The name at the top of a chat switches it between the main agent and each running helper or worker; the window button opens that conversation on its own. Rows in Helpers and the tree do the same.'],
+    ['More room, never lost','The sidebar folds to an icon rail with its button kept at the bottom; the agent bar hides into a pill at the top right that keeps the agent\'s state and dot. Each has a shortcut, a Home menu entry and an Undo.'],
+    ['Notifications','A balloon at the bottom right for a few seconds, then kept under the bell (in the status bar, or in the agent bar when there is none). Nothing beeps; nothing steals focus.']].map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join('');
   [['#vars','k',vkey],['#steps','k',own?'':step],['#widths','w',String(frameW)]].forEach(([s,a,val])=>document.querySelectorAll(s+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset[a]===val)));
   document.getElementById('mL').setAttribute('aria-pressed',mode==='light');document.getElementById('mD').setAttribute('aria-pressed',mode==='dark');
   wire();
+  if(ctx)placeCtx();
   if(qm){const i=document.getElementById('qin');i.focus();i.setSelectionRange(i.value.length,i.value.length)}
-  document.querySelectorAll('.chat,.chatcol .scroll').forEach(c=>c.scrollTop=c.scrollHeight);
+  desk.querySelectorAll('.chat,.chatcol .scroll').forEach(c=>c.scrollTop=c.scrollHeight);
 }
-function load(){own=false;qm=null;hm=false;z=10;const p=V[vkey].preset(step);A={wins:p.wins,drawer:p.drawer||{side:'right',pw:400,active:null}};render()}
+/* A context menu opens where it fits: flipped left or up near the desk's edges. */
+function placeCtx(){const d=document.getElementById('desk'),m=document.getElementById('ctx');let x=ctx.x,y=ctx.y;
+  if(x+m.offsetWidth>d.clientWidth-4)x=Math.max(4,x-m.offsetWidth);if(y+m.offsetHeight>d.scrollTop+d.clientHeight-4)y=Math.max(4,y-m.offsetHeight);
+  x=Math.max(4,x);y=Math.max(4,y);m.style.left=x+'px';m.style.top=y+'px';const f=m.querySelector('button:not([disabled])');if(f)f.focus()}
+function load(){own=false;qm=null;hm=false;ctx=null;keysOpen=false;zc=10;quiet=true;freshConvs();freshDocs();helpersOn=step==='helper'||step==='ide';SUGG={};NOTES=[];BAL=[];
+  ui={rail:false,barHidden:false,status:false,...STEP_UI[step]};TREE_OPEN=new Set(['conv','plan:56','plan:56/0','docs']);TREE_SEL=null;
+  const p=V[vkey].preset(step);A={wins:p.wins,drawer:p.drawer||{side:'right',pw:400,active:null},mainConv:'main'};
+  if(step==='helper'||step==='ide')startHelperScript(false);
+  if(step==='ide'){SUGG.h262='accepted';NOTES=[{t:'Helper 262 asked you a question',sub:'In its chat · 14:05',read:false,run:()=>openInEditor({k:'hchat',conv:'h262'})}]}
+  render()}
 function changed(){own=true;render()}
-function toast(t,withUndo){const e=document.getElementById('toast');e.innerHTML=t+(withUndo?' · <a class="lk" id="undo">Undo</a>':'');e.classList.add('on');e.style.pointerEvents=withUndo?'auto':'none';
-  const u=document.getElementById('undo');if(u)u.onclick=()=>{if(undo){A=undo;undo=null;e.classList.remove('on');changed()}};
-  clearTimeout(toast.t);toast.t=setTimeout(()=>{e.classList.remove('on');e.style.pointerEvents='none'},withUndo?5000:1800)}
-function flash(id){requestAnimationFrame(()=>{const e=document.querySelector(`[data-w="${id}"]`);if(e){e.classList.add('flash');setTimeout(()=>e.classList.remove('flash'),550)}})}
+function toast(t,undoFn,ms){const e=document.getElementById('toast');e.innerHTML=t+(undoFn?' · <a class="lk" id="undo">Undo</a>':'');e.classList.add('on');e.style.pointerEvents=undoFn?'auto':'none';
+  const u=document.getElementById('undo');if(u)u.onclick=()=>{e.classList.remove('on');undoFn()};
+  clearTimeout(toast.t);toast.t=setTimeout(()=>{e.classList.remove('on');e.style.pointerEvents='none'},ms||(undoFn?6000:1800))}
+function notify(t,sub,actLabel,act){const id='b'+(++seq);NOTES.unshift({t,sub,read:false,run:act});BAL.push({id,t,sub,actLabel,act});render();
+  setTimeout(()=>{if(BAL.some(b=>b.id===id)){BAL=BAL.filter(b=>b.id!==id);render()}},7000)}
+function flash(id){requestAnimationFrame(()=>{const e=document.querySelector(`[data-w="${id}"]`);if(e){e.classList.add('flash');setTimeout(()=>e.classList.remove('flash'),600)}})}
+function front(w){w.z=++zc}
 
-/* ---------- opening ---------- */
-function openAt(type,p){qm=null;
-  if(type==='chat'&&hasChat(A)){const c=A.wins.find(w=>w.type==='chat');c.z=++z;render();flash(c.id);return}
-  if(type!=='chat'&&A.wins.filter(w=>w.type===type).length>=8){toast('Eight '+CAT[type].t+' windows are open: close one first');return render()}
-  const w=newWin(type);
+/* ---------- actions ---------- */
+/* Opens a thing as a tab in the editor when there is one; answers whether it did. */
+function openInEditor(spec){const e=editor();if(!e)return false;let i=e.tabs.findIndex(t=>t.k===spec.k&&t.conv===spec.conv&&t.ref===spec.ref);
+  if(i<0){e.tabs.push(spec);i=e.tabs.length-1}e.act=i;front(e);changed();flash(e.id);return true}
+function openAt(type,p,extra={},opts={}){qm=null;ctx=null;
+  if(type==='chat'&&chatTab()&&!hasChat(A)){const e=editor();e.act=e.tabs.findIndex(t=>t.k==='hchat'&&t.conv==='main');front(e);changed();flash(e.id);return e}
+  const probe={type,...extra},have=A.wins.find(w=>sameKind(w,probe)&&(type==='chat'||type==='hchat'||type==='item'||CAT[type]&&CAT[type].tool));
+  if(have){front(have);if(opts.snap&&vkey==='float')snapTo(have,opts.snap);if(vkey==='drawer'&&type!=='chat')A.drawer.active=have.id;changed();flash(vkey==='drawer'&&type!=='chat'?'drawer':have.id);return have}
+  if(CAT[type]&&type!=='chat'&&A.wins.filter(w=>w.type===type).length>=8){toast('Eight '+CAT[type].t+' windows are open: close one first');render();return}
+  const w=newWin(type,extra);
   if(type==='chat'&&vkey==='float'&&!A.wins.length)w.plain=true;
-  V[vkey].put(A,w,p);
-  changed();flash(vkey==='drawer'&&type!=='chat'?'drawer':w.id)}
-function openMenu(){let x=(W()-340)/2,y=70;if(lastPointer&&lastPointer.inside){x=lastPointer.x-170;y=lastPointer.y-30}
-  qm={x:Math.max(8,Math.min(W()-348,x)),y:Math.max(8,Math.min(H-430,y)),q:'',i:0};hm=false;render()}
-function runRow(r){if(!r)return;if(r.msg){qm=null;sendMessage(r.msg);return}openAt(r.type,V[vkey].menuPoint(qm))}
-function sendMessage(t){if(!t.trim())return;MSGS.push(['me',t.replace(/</g,'&lt;')]);render();setTimeout(()=>{MSGS.push(['ag','now','On it.']);render()},700)}
+  V[vkey].put(A,w,p);if(vkey==='float'&&(opts.snap||opts.tile))snapTo(w,opts.snap||'tile',opts.tile);
+  opened.add(vkey==='drawer'&&type!=='chat'?'drawer':w.id);changed();return w}
+function closeWin(id){const el=document.querySelector(`[data-w="${id}"]`),done=()=>{A.wins=A.wins.filter(x=>x.id!==id);
+    if(A.drawer.active===id)A.drawer.active=(A.wins.find(x=>x.type!=='chat')||{}).id||null;changed()};
+  if(el&&id!=='drawer'&&!CALM.matches&&vkey!=='drawer'){el.style.pointerEvents='none';el.animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.96)'}],{duration:150,easing:EASE}).onfinish=done}else done()}
+function toggleTool(type,tf){const have=A.wins.find(w=>w.type===type);if(have){closeWin(have.id);return}openAt(type,{x:40,y:40},{},vkey==='float'?{tile:tf}:{})}
+function chatToWindow(c){const b=V.float.layout(A).find(x=>x.id===c.id);Object.assign(c,{plain:false,snap:null,x:Math.round(b.x),y:12,w:Math.min(560,Math.round(b.w)),h:H()-24});front(c)}
+function tileAll(){const ws=A.wins.slice();ws.forEach(w=>{if(w.type==='chat'&&w.plain)chatToWindow(w)});
+  const n=ws.length,cols=Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols);
+  ws.forEach((w,i)=>{const c=i%cols,r=Math.floor(i/cols),inRow=r===rows-1?n-cols*(rows-1):cols,cw=1/inRow;
+    if(!w.snap)w.prev={x:w.x,y:w.y,w:w.w,h:w.h};w.snap='tile';w.tf=[c*cw,r/rows,cw,1/rows]})}
+function backToChat(){const before=clone(A),beforeUi={...ui};const c=A.wins.find(w=>w.type==='chat')||newWin('chat');restoreWin(c);
+  A.wins=[Object.assign(c,vkey==='float'?{plain:true}:vkey==='tiles'?{col:0,ord:0}:vkey==='board'?{gx:2,gy:0,gw:8,gh:11}:{})];A.mainConv='main';ui.status=false;
+  setTimeout(()=>toast('Home is back to just the chat',()=>{A=before;ui=beforeUi;changed()}),0)}
+function toggleRail(){ui.rail=!ui.rail;changed();if(ui.rail)toast('Sidebar folded to icons · ⌘B brings it back',()=>{ui.rail=false;changed()},3500)}
+function toggleBar(){ui.barHidden=!ui.barHidden;changed();if(ui.barHidden)toast('Agent bar hidden · the pill at the top right brings it back',()=>{ui.barHidden=false;changed()},5000)}
+function openMenu(at){let x=(W()-340)/2,y=70;const p=at||lastPointer;if(p&&(at||p.inside)){x=p.x-170;y=p.y-30}
+  qm={x:Math.max(8,Math.min(W()-348,x)),y:Math.max(8,Math.min(H()-430,y)),q:'',i:0};hm=false;ctx=null;keysOpen=false;render()}
+function runRow(r){if(!r)return;if(r.msg){qm=null;sendMessage('main',r.msg);return}
+  if(r.type==='item'&&openInEditor({k:'item',ref:r.extra.ref})){qm=null;return}
+  openAt(r.type,V[vkey].menuPoint(qm),r.extra||{})}
+function sendMessage(conv,t){if(!t.trim())return;CONV[conv].msgs.push(['me',t.replace(/</g,'&lt;')]);render();setTimeout(()=>{CONV[conv].msgs.push(['ag','now','On it.']);render()},700)}
+/* The main agent dispatches a helper: its own line, then the journal's suggestion under it. */
+function startHelperScript(live){helpersOn=true;const m=CONV.main.msgs;
+  m.push(['me','Can someone design the notifications bell?'],['ag','14:01','I\'ve asked Helper 262 to design the bell. It reports back here when it has a draft.'],['sugg','h262']);
+  if(live){A.mainConv='main';changed()}}
+function helperPoint(){return vkey==='float'?{x:W()-460,y:12}:vkey==='board'?{x:W()-200,y:20}:{x:W()-60,y:H()/2}}
+function openItem(ref,p){if(!openInEditor({k:'item',ref}))openAt('item',p||{x:W()/2-180,y:60},{ref})}
+function acceptSugg(conv){SUGG[conv]='accepted';if(!openInEditor({k:'hchat',conv}))openAt('hchat',helperPoint(),{conv},{snap:'right'});
+  setTimeout(()=>{if(!DOCS.some(d=>d[0]===102))DOCS.unshift([102,'Design: the notifications bell','just now']);
+    notify('Helper 262 has a first draft','Doc 102 · Design: the notifications bell','Open doc 102',()=>openItem('doc:102'))},2600)}
 
 /* ---------- moving ---------- */
 function deskPoint(ev){const d=document.getElementById('desk'),r=d.getBoundingClientRect();return {x:ev.clientX-r.left+d.scrollLeft,y:ev.clientY-r.top+d.scrollTop,inside:ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom}}
@@ -444,8 +669,7 @@ function drag(e,move,end){e.preventDefault();const sx=e.clientX,sy=e.clientY;
 function clearMarks(){document.querySelectorAll('.guide,.preview').forEach(g=>g.remove())}
 function showPreview(box,label){let p=document.querySelector('.preview');if(!box){if(p)p.remove();return}
   if(!p){p=document.createElement('div');p.className='preview';document.getElementById('desk').appendChild(p)}
-  p.innerHTML=label;Object.assign(p.style,{left:box.x+'px',top:box.y+'px',width:box.w+'px',height:box.h+'px'})}
-/* Where a window would land if let go at p: the variant places a copy, and its box in that copy is the preview. */
+  p.innerHTML=label;Object.assign(p.style,{left:box.x+'px',top:box.y+'px',width:box.w+'px',height:box.h+'px',borderRadius:box.flush?'0':'10px'})}
 function landing(win,p){const a=clone(A),w=a.wins.find(x=>x.id===win.id)||{...win};V[vkey].put(a,w,p);
   const bs=V[vkey].layout(a);return vkey==='drawer'&&w.type!=='chat'?bs.find(b=>b.drawer):bs.find(b=>b.id===w.id)}
 const SNAP=14;
@@ -453,37 +677,83 @@ function snap(v,len,lines){for(const t of lines){if(Math.abs(v-t)<SNAP)return [t
 function guides(gx,gy){document.querySelectorAll('.guide').forEach(g=>g.remove());const d=document.getElementById('desk');
   if(gx!=null)d.insertAdjacentHTML('beforeend',`<div class="guide" style="left:${gx}px;top:0;bottom:0;width:1px"></div>`);
   if(gy!=null)d.insertAdjacentHTML('beforeend',`<div class="guide" style="top:${gy}px;left:0;right:0;height:1px"></div>`)}
+function moveChat(){if(vkey!=='float')return;const c=document.querySelector('.chatcol'),ch=A.wins.find(w=>w.type==='chat'&&w.plain);if(!c||!ch)return;const b=V.float.layout(A).find(x=>x.id===ch.id);c.style.left=b.x+'px';c.style.width=b.w+'px'}
+
+/* A floating window's drag: a flush window floats again at its old size under the pointer; near an edge or corner a
+   preview shows the half, quarter or fill it will snap to; elsewhere it lines up with the other windows' edges. */
+function dragFloat(e,w,el){let started=false,ox=0,oy=0,zone=null,xs=[],ys=[];
+  drag(e,(dx,dy,ev)=>{const p=deskPoint(ev);
+    if(!started){if(Math.hypot(dx,dy)<4)return;started=true;el.classList.add('dragging');
+      if(w.snap){const frac=(p.x-w.x)/w.w,pr=w.prev||{w:meta(w).w,h:meta(w).h};w.snap=null;delete w.prev;delete w.tf;w.w=pr.w;w.h=pr.h;w.x=Math.round(p.x-frac*w.w);w.y=Math.max(0,Math.round(p.y-17));
+        el.classList.remove('flush');el.classList.add('float');el.style.width=w.w+'px';el.style.height=w.h+'px';
+        el.querySelectorAll('[data-restore]').forEach(b=>b.disabled=true);el.querySelectorAll('[data-fill]').forEach(b=>b.disabled=false)}
+      ox=w.x-dx;oy=w.y-dy;const others=A.wins.filter(o=>o!==w&&!(o.type==='chat'&&o.plain));
+      xs=[0,W(),...others.flatMap(o=>[o.x,o.x+o.w])];ys=[0,H(),...others.flatMap(o=>[o.y,o.y+o.h])]}
+    zone=zoneAt(p);let x=ox+dx,y=oy+dy,gx=null,gy=null;
+    if(zone){showPreview({...zoneRect(zone,w),flush:true},ZONE_NAME[zone]);guides()}
+    else{showPreview(null);[x,gx]=snap(x,w.w,xs);[y,gy]=snap(y,w.h,ys);guides(gx,gy)}
+    w.x=Math.round(Math.max(-w.w+48,Math.min(W()-48,x)));w.y=Math.round(Math.max(0,Math.min(H()-34,y)));el.style.left=w.x+'px';el.style.top=w.y+'px';moveChat()},
+  ()=>{el.classList.remove('dragging');if(!started)return;if(zone)snapTo(w,zone);changed()})}
 
 function wire(){
-  const desk=document.getElementById('desk'),v=V[vkey];
+  const desk=document.getElementById('desk'),v=V[vkey],on=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
   desk.onpointermove=ev=>{lastPointer=deskPoint(ev)};
   document.getElementById('addBtn').onclick=()=>{if(qm){qm=null;render()}else openMenu()};
-  document.getElementById('homeBtn').onclick=()=>{hm=!hm;qm=null;render()};
-  document.querySelectorAll('[data-compose]').forEach(t=>t.onkeydown=ev=>{if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();const s=t.value;t.value='';sendMessage(s)}});
-  document.querySelectorAll('[data-send]').forEach(b=>b.onclick=()=>{const t=b.closest('.composer').querySelector('textarea'),s=t.value;t.value='';sendMessage(s)});
-  document.querySelectorAll('[data-close]').forEach(b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=ev=>{ev.stopPropagation();A.wins=A.wins.filter(x=>x.id!==b.dataset.close);
-    if(A.drawer.active===b.dataset.close)A.drawer.active=(A.wins.find(x=>x.type!=='chat')||{}).id||null;changed()}});
-  document.querySelectorAll('[data-tab]').forEach(t=>t.onclick=()=>{A.drawer.active=t.dataset.tab;render()});
-  document.querySelectorAll('.win[data-w]').forEach(el=>el.addEventListener('pointerdown',()=>{const w=A.wins.find(x=>x.id===el.dataset.w);if(w&&v.free&&w.z!==z){w.z=++z;el.style.zIndex=z}}));
-  document.querySelectorAll('[data-drag]').forEach(bar=>bar.onpointerdown=e=>{if(e.target.closest('button'))return;const id=bar.dataset.drag,el=bar.closest('.win');
-    if(id==='drawer'){if(e.target.closest('[data-tab]')&&!hasChat(A))return;const label='Drawer';
-      drag(e,(dx,dy,ev)=>{if(Math.hypot(dx,dy)<6)return;el.classList.add('lifted');el.style.transform=`translate(${dx}px,${dy}px)`;const p=deskPoint(ev),a=clone(A);a.drawer.side=p.x<W()/2?'left':'right';showPreview(V.drawer.layout(a).find(b=>b.drawer),label)},
+  document.getElementById('homeBtn').onclick=()=>{hm=!hm;qm=null;ctx=null;render()};
+  document.getElementById('hideBar').onclick=toggleBar;
+  document.getElementById('railBtn').onclick=toggleRail;
+  const sbtn=document.getElementById('showBar');if(sbtn)sbtn.onclick=toggleBar;
+  on('[data-keys]',b=>b.onclick=()=>{keysOpen=!keysOpen;render()});
+  on('[data-bell]',b=>b.onclick=ev=>{ev.stopPropagation();const r=b.getBoundingClientRect(),d=desk.getBoundingClientRect();
+    const items=NOTES.length?[{head:'Notifications'},...NOTES.map(n=>({label:n.t,sub:n.sub,ic:n.read?null:'bell',run:()=>{n.read=true;n.run&&n.run();return false}})),{sep:1},{label:'Mark all as read',ic:'tick',disabled:!unread(),run:()=>NOTES.forEach(n=>n.read=true)}]:[{label:'No notifications',disabled:true}];
+    ctx={x:r.right-d.left-300,y:r.top-d.top<0?r.bottom-d.top+4:H()-4,items};hm=false;render()});
+  on('[data-bact]',b=>b.onclick=()=>{const bl=BAL.find(x=>x.id===b.dataset.bact);BAL=BAL.filter(x=>x!==bl);const n=NOTES.find(x=>x.t===bl.t);if(n)n.read=true;bl.act()});
+  on('[data-bclose]',b=>b.onclick=()=>{BAL=BAL.filter(x=>x.id!==b.dataset.bclose);render()});
+  on('[data-compose]',t=>t.onkeydown=ev=>{if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();const s=t.value;t.value='';sendMessage(t.dataset.compose,s)}});
+  on('[data-send]',b=>b.onclick=()=>{const t=b.closest('.composer').querySelector('textarea'),s=t.value;t.value='';sendMessage(b.dataset.send,s)});
+  on('[data-close]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=ev=>{ev.stopPropagation();closeWin(b.dataset.close)}});
+  on('[data-fill]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=()=>{const w=A.wins.find(x=>x.id===b.dataset.fill);snapTo(w,'fill');changed()}});
+  on('[data-restore]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=()=>{const w=A.wins.find(x=>x.id===b.dataset.restore);restoreWin(w);front(w);changed()}});
+  on('[data-tab]',t=>t.onclick=()=>{A.drawer.active=t.dataset.tab;render()});
+  on('[data-etab]',t=>t.onclick=()=>{const [id,i]=t.dataset.etab.split(':');const e=A.wins.find(w=>w.id===id);e.act=+i;render()});
+  on('[data-eclose]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=ev=>{ev.stopPropagation();const [id,i]=b.dataset.eclose.split(':');const e=A.wins.find(w=>w.id===id);e.tabs.splice(+i,1);e.act=Math.max(0,Math.min(e.act,e.tabs.length-1));changed()}});
+  on('[data-sugg]',b=>b.onclick=()=>{const [k,conv]=b.dataset.sugg.split(':');
+    if(k==='accept')acceptSugg(conv);
+    if(k==='dismiss'){SUGG[conv]='dismissed';changed()}
+    if(k==='show'){if(openInEditor({k:'hchat',conv}))return;const hw=A.wins.find(w=>w.type==='hchat'&&w.conv===conv);if(hw){front(hw);changed();flash(vkey==='drawer'?'drawer':hw.id)}else acceptSugg(conv)}});
+  on('[data-popconv]',b=>b.onclick=()=>{const conv=b.dataset.popconv;A.mainConv='main';openAt('hchat',helperPoint(),{conv},{snap:'right'})});
+  on('[data-chatwith]',b=>b.onclick=()=>{if(!openInEditor({k:'hchat',conv:b.dataset.chatwith}))openAt('hchat',helperPoint(),{conv:b.dataset.chatwith})});
+  on('[data-convmenu]',b=>b.onclick=ev=>{ev.stopPropagation();const scope=b.dataset.convmenu,r=b.getBoundingClientRect(),d=desk.getBoundingClientRect();
+    let get,set;
+    if(scope==='main'){get=()=>A.mainConv;set=c=>A.mainConv=c}
+    else if(scope.startsWith('tab:')){const [,id,i]=scope.split(':'),e=A.wins.find(w=>w.id===id),t=e.tabs[+i];get=()=>t.conv;set=c=>t.conv=c}
+    else{const hw=A.wins.find(w=>w.id===scope);get=()=>hw.conv;set=c=>hw.conv=c}
+    const cur=get(),items=[{head:'Conversations'},...activeConvs().map(c=>({label:CONV[c].name,sub:CONV[c].sub,ic:c==='main'?'ask':'users',tick:c===cur,run:()=>set(c)}))];
+    const others=activeConvs().filter(c=>c!=='main'&&c!==cur&&!A.wins.some(w=>w.type==='hchat'&&w.conv===c));
+    if(others.length)items.push({sep:1},...others.map(c=>({label:`Open ${CONV[c].name} in its own window`,ic:'pop',run:()=>{openAt('hchat',helperPoint(),{conv:c},{snap:'right'});return false}})));
+    ctx={x:r.left-d.left,y:r.bottom-d.top+4,items};hm=false;render()});
+  on('[data-tnode]',n=>{n.onclick=()=>{const id=n.dataset.tnode;TREE_SEL=id;if(n.hasAttribute('aria-expanded')){TREE_OPEN.has(id)?TREE_OPEN.delete(id):TREE_OPEN.add(id)}render()};
+    n.ondblclick=()=>{if(n.dataset.topen){const s=openSpec(n.dataset.topen);if(!openInEditor(s))s.k==='hchat'?openAt('hchat',helperPoint(),{conv:s.conv}):openAt('item',{x:W()/2-180,y:60},{ref:s.ref})}};
+    n.onkeydown=ev=>{if(ev.key==='Enter')n.ondblclick();if(ev.key===' '){ev.preventDefault();ev.stopPropagation();n.onclick()}}});
+  on('.lrow[data-item]',r=>r.ondblclick=()=>openItem(r.dataset.item,{x:W()/2-180,y:60}));
+  on('.win[data-w]',el=>el.addEventListener('pointerdown',()=>{const w=A.wins.find(x=>x.id===el.dataset.w);if(w&&v.free&&w.z!==zc){w.z=++zc;el.style.zIndex=zc}}));
+  on('[data-drag]',bar=>{
+    bar.ondblclick=ev=>{if(!v.free||ev.target.closest('button'))return;const w=A.wins.find(x=>x.id===bar.dataset.drag);if(!w)return;toggleFill(w);changed()};
+    bar.onpointerdown=e=>{if(e.button!==0||e.target.closest('button'))return;const id=bar.dataset.drag,el=bar.closest('.win');
+    if(id==='drawer'){if(e.target.closest('[data-tab]')&&!hasChat(A))return;
+      drag(e,(dx,dy,ev)=>{if(Math.hypot(dx,dy)<6)return;el.classList.add('lifted');el.style.transform=`translate(${dx}px,${dy}px)`;const p=deskPoint(ev),a=clone(A);a.drawer.side=p.x<W()/2?'left':'right';showPreview(V.drawer.layout(a).find(b=>b.drawer),'Drawer')},
         (dx,dy,ev)=>{if(Math.hypot(dx,dy)<6){const t=e.target.closest('[data-tab]');if(t){A.drawer.active=t.dataset.tab;render()}return}A.drawer.side=deskPoint(ev).x<W()/2?'left':'right';changed()});return}
     const w=A.wins.find(x=>x.id===id);
-    if(v.free){const ox=parseFloat(el.style.left),oy=parseFloat(el.style.top),ww=el.offsetWidth,wh=el.offsetHeight;
-      const others=A.wins.filter(o=>o!==w&&!o.plain&&o.x!=null),xs=[0,W(),...others.flatMap(o=>[o.x,o.x+o.w,o.x-8,o.x+o.w+8])],ys=[0,H,...others.flatMap(o=>[o.y,o.y+o.h,o.y-8,o.y+o.h+8])];
-      if(w.type==='chat'&&w.plain){w.plain=false;w.x=ox;w.y=oy;w.w=Math.min(ww,560);w.h=wh}
-      drag(e,(dx,dy)=>{const [x,gx]=snap(ox+dx,w.w,xs),[y,gy]=snap(oy+dy,w.h,ys);w.x=Math.round(Math.max(-w.w+48,Math.min(W()-48,x)));w.y=Math.round(Math.max(0,Math.min(H-34,y)));
-        el.style.left=w.x+'px';el.style.top=w.y+'px';guides(gx,gy);moveChat()},()=>changed());return}
-    drag(e,(dx,dy,ev)=>{if(Math.hypot(dx,dy)<6)return;el.classList.add('lifted');el.style.transform=`translate(${dx}px,${dy}px)`;showPreview(landing(w,deskPoint(ev)),I(CAT[w.type].ic,'s14')+CAT[w.type].t)},
-      (dx,dy,ev)=>{if(Math.hypot(dx,dy)<6)return;const p=deskPoint(ev);if(p.inside){v.put(A,w,p);changed()}else render()})});
-  document.querySelectorAll('[data-grip]').forEach(g=>g.onpointerdown=e=>{const w=A.wins.find(x=>x.id===g.dataset.grip),el=g.parentElement,ow=el.offsetWidth,oh=el.offsetHeight;
-    if(vkey==='board'){const {cw,rh}=V.board.cell(),gw=w.gw,gh=w.gh;
+    if(v.free){dragFloat(e,w,el);return}
+    drag(e,(dx,dy,ev)=>{if(Math.hypot(dx,dy)<6)return;el.classList.add('lifted');el.style.transform=`translate(${dx}px,${dy}px)`;showPreview(landing(w,deskPoint(ev)),I(meta(w).ic,'s14')+meta(w).t)},
+      (dx,dy,ev)=>{if(Math.hypot(dx,dy)<6){const t=e.target.closest('[data-etab]');if(t)t.onclick();return}const p=deskPoint(ev);if(p.inside){v.put(A,w,p);changed()}else render()})}});
+  on('[data-grip]',g=>g.onpointerdown=e=>{const w=A.wins.find(x=>x.id===g.dataset.grip),el=g.parentElement,ow=el.offsetWidth,oh=el.offsetHeight;
+    if(vkey==='board'){const {cw,rh}=V.board.cell();
       drag(e,(dx,dy)=>{w.gw=Math.max(2,Math.min(12-w.gx,Math.round((ow+dx+PAD)/(cw+PAD))));w.gh=Math.max(3,Math.round((oh+dy+PAD)/(rh+PAD)));
         showPreview({x:PAD+w.gx*(cw+PAD),y:PAD+w.gy*(rh+PAD),w:w.gw*cw+(w.gw-1)*PAD,h:w.gh*rh+(w.gh-1)*PAD},w.gw+' × '+w.gh+' cells')},()=>{V.board.settle(A,w);changed()});return}
-    drag(e,(dx,dy)=>{w.w=Math.max(260,Math.min(W()-w.x,ow+dx));w.h=Math.max(180,Math.min(H-w.y,oh+dy));el.style.width=w.w+'px';el.style.height=w.h+'px';moveChat()},()=>changed())});
+    drag(e,(dx,dy)=>{w.w=Math.max(260,Math.min(W()-w.x,ow+dx));w.h=Math.max(180,Math.min(H()-w.y,oh+dy));el.style.width=w.w+'px';el.style.height=w.h+'px';moveChat()},()=>changed())});
   const sp=document.querySelector('[data-split]');
-  if(sp)sp.onpointerdown=e=>{const ow=A.drawer.pw,dir=A.drawer.side==='right'?-1:1;drag(e,dx=>{A.drawer.pw=Math.max(300,Math.min(W()-420,ow+dir*dx));render()},()=>changed())};
+  if(sp)sp.onpointerdown=e=>{const ow=A.drawer.pw,dir=A.drawer.side==='right'?-1:1;drag(e,dx=>{A.drawer.pw=Math.max(300,Math.min(W()-420,ow+dir*dx));quiet=true;render()},()=>changed())};
   if(qm){const qi=document.getElementById('qin'),qel=document.getElementById('qm');
     qi.oninput=()=>{qm.q=qi.value;qm.i=0;render()};
     qi.onkeydown=ev=>{const rows=qmRows();
@@ -492,32 +762,64 @@ function wire(){
       if(ev.key==='ArrowUp'){ev.preventDefault();qm.i=(qm.i-1+rows.length)%rows.length;render();return}
       if(ev.key==='Enter'){ev.preventDefault();runRow(rows[qm.i]);return}
       if(!qm.q&&/^[1-8]$/.test(ev.key)){ev.preventDefault();runRow(rows.find(r=>r.key===ev.key))}};
-    qel.querySelector('[data-qdrag]').onpointerdown=e=>{const ox=qm.x,oy=qm.y;drag(e,(dx,dy)=>{qm.x=Math.max(0,Math.min(W()-340,ox+dx));qm.y=Math.max(0,Math.min(H-120,oy+dy));qel.style.left=qm.x+'px';qel.style.top=qm.y+'px'},()=>document.getElementById('qin').focus())};
-    qel.querySelectorAll('[data-row]').forEach(row=>row.onpointerdown=e=>{const r=qmRows()[+row.dataset.row];
-      drag(e,(dx,dy,ev)=>{if(r.msg||Math.hypot(dx,dy)<6)return;qel.style.opacity='.35';const p=deskPoint(ev);
-        const tmp=r.type==='chat'&&hasChat(A)?null:{id:'new',type:r.type};showPreview(tmp&&p.inside?landing(tmp,p):null,I(CAT[r.type].ic,'s14')+CAT[r.type].t)},
-      (dx,dy,ev)=>{if(r.msg||Math.hypot(dx,dy)<6){runRow(r);return}const p=deskPoint(ev);if(p.inside)openAt(r.type,p);else{qel.style.opacity='';}})})}
-  if(hm)document.querySelectorAll('[data-hm]').forEach(r=>r.onclick=()=>{const k=r.dataset.hm,c=A.wins.find(w=>w.type==='chat');hm=false;
-    if(k==='centre'){c.plain=true}
-    if(k==='window'){const b=V.float.layout(A).find(x=>x.id===c.id);Object.assign(c,{plain:false,x:Math.round(b.x),y:12,w:Math.min(560,Math.round(b.w)),h:H-24,z:++z})}
-    if(k==='hide'){A.wins=A.wins.filter(w=>w.type!=='chat')}
-    if(k==='show'){openAt('chat',{x:W()/2-240,y:12});return}
-    if(k==='add'){openMenu();return}
-    if(k==='reset'){undo=clone(A);const ch=c||newWin('chat');A.wins=[Object.assign(ch,vkey==='float'?{plain:true}:vkey==='tiles'?{col:0,ord:0}:vkey==='board'?{gx:2,gy:0,gw:8,gh:11}:{})];changed();toast('Home is back to just the chat',true);return}
-    changed()});
+    qel.querySelector('[data-qdrag]').onpointerdown=e=>{const ox=qm.x,oy=qm.y;drag(e,(dx,dy)=>{qm.x=Math.max(0,Math.min(W()-340,ox+dx));qm.y=Math.max(0,Math.min(H()-120,oy+dy));qel.style.left=qm.x+'px';qel.style.top=qm.y+'px'},()=>document.getElementById('qin').focus())};
+    qel.querySelectorAll('[data-row]').forEach(rowEl=>rowEl.onpointerdown=e=>{const r=qmRows()[+rowEl.dataset.row];
+      drag(e,(dx,dy,ev)=>{if(r.msg||Math.hypot(dx,dy)<6)return;qel.style.opacity='.35';const p=deskPoint(ev),m=meta({type:r.type,...(r.extra||{})});
+        const z=vkey==='float'?zoneAt(p):null;
+        showPreview(!p.inside?null:z?{...zoneRect(z),flush:true}:landing({id:'new',type:r.type,...(r.extra||{})},p),I(m.ic,'s14')+m.t)},
+      (dx,dy,ev)=>{if(r.msg||Math.hypot(dx,dy)<6){runRow(r);return}const p=deskPoint(ev);
+        if(p.inside){const z=vkey==='float'?zoneAt(p):null;openAt(r.type,p,r.extra||{},{snap:z})}else qel.style.opacity=''})})}
+  const menu=document.getElementById(hm?'hm':ctx?'ctx':'_');
+  if(menu){const items=hm?hmItems:ctx.items;
+    menu.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{const it=items[+b.dataset.ci];hm=false;ctx=null;const r=it.run();if(r!==false)changed()});
+    menu.onkeydown=ev=>{const bs=[...menu.querySelectorAll('button:not([disabled])')],i=bs.indexOf(document.activeElement);
+      if(ev.key==='ArrowDown'){ev.preventDefault();bs[(i+1)%bs.length].focus()}if(ev.key==='ArrowUp'){ev.preventDefault();bs[(i-1+bs.length)%bs.length].focus()}
+      if(ev.key==='Escape'){hm=false;ctx=null;render()}}}
+  desk.oncontextmenu=onContext;
 }
-function moveChat(){if(vkey!=='float')return;const c=document.querySelector('.chatcol'),ch=A.wins.find(w=>w.type==='chat');if(!c||!ch||!ch.plain)return;const b=V.float.layout(A).find(x=>x.id===ch.id);c.style.left=b.x+'px';c.style.width=b.w+'px'}
 
-/* Space opens the quick-add menu: not in a field, not with a modifier, not while a menu is open. */
-addEventListener('keydown',ev=>{const t=ev.target,inField=t.closest&&t.closest('input,textarea,select,[contenteditable]');
-  if(ev.key===' '&&!inField&&!ev.metaKey&&!ev.ctrlKey&&!ev.altKey&&!qm&&!hm&&!(t.closest&&t.closest('button'))){ev.preventDefault();openMenu()}
-  if(ev.key==='Escape'&&hm){hm=false;render()}});
+/* ---------- context menus ---------- */
+function onContext(ev){const t=ev.target;if(t.closest('textarea,input,.qm,.ctx,.hm,.keys,.me,.ag,.balloons'))return;
+  const p=deskPoint(ev),v=V[vkey];let items=null;
+  const item=t.closest('[data-item]'),etab=t.closest('[data-etab]'),win=t.closest('.win[data-w]');
+  if(item){const ref=item.dataset.item,it=itemOf(ref);
+    items=[{head:it.t},{label:editor()?'Open in the editor':'Open',ic:'arrow',keys:'double-click',run:()=>{openItem(ref,{x:p.x+12,y:p.y-12});return false}},{label:'Open in its own window',ic:'pop',run:()=>{openAt('item',{x:p.x+12,y:p.y-12},{ref});return false}}];
+    if(it.conv&&activeConvs().includes(it.conv))items.push({sep:1},{label:'Chat with it here',ic:'ask',run:()=>{A.mainConv=it.conv;if(!hasChat(A)&&!chatTab())openAt('chat',{x:W()/2-240,y:12})}},{label:'Open its chat in a window',ic:'users',run:()=>{openAt('hchat',helperPoint(),{conv:it.conv},{snap:'right'});return false}})}
+  else if(etab){const [id,i]=etab.dataset.etab.split(':'),e=A.wins.find(w=>w.id===id),tb=e.tabs[+i],tm=tabMeta(tb);
+    items=[{head:tm.t},{label:'Open in its own window',ic:'pop',run:()=>{e.tabs.splice(+i,1);e.act=Math.max(0,Math.min(e.act,e.tabs.length-1));
+        if(tb.k==='hchat'&&tb.conv==='main')openAt('chat',{x:p.x,y:p.y});else if(tb.k==='hchat')openAt('hchat',{x:p.x,y:p.y},{conv:tb.conv});else openAt('item',{x:p.x,y:p.y},{ref:tb.ref});return false}},
+      {sep:1},{label:'Close tab',ic:'close',run:()=>{e.tabs.splice(+i,1);e.act=Math.max(0,Math.min(e.act,e.tabs.length-1))}},{label:'Close other tabs',ic:'close',disabled:e.tabs.length<2,run:()=>{e.tabs=[tb];e.act=0}}]}
+  else if(win&&win.dataset.w==='drawer'){const tab=t.closest('[data-tab]'),tw=tab&&A.wins.find(w=>w.id===tab.dataset.tab);
+    items=[{label:'Move the drawer to the '+(A.drawer.side==='right'?'left':'right'),ic:A.drawer.side==='right'?'halfl':'halfr',disabled:!hasChat(A),run:()=>{A.drawer.side=A.drawer.side==='right'?'left':'right'}}];
+    if(tw)items.push({sep:1},{label:'Close '+title(tw),ic:'close',run:()=>{closeWin(tw.id);return false}})}
+  else if(win){const w=A.wins.find(x=>x.id===win.dataset.w);if(!w)return;
+    items=v.free?[{head:title(w)},{label:'Fill',ic:'fill',keys:'double-click',disabled:w.snap==='fill',run:()=>snapTo(w,'fill')},{label:'Restore',ic:'restore',disabled:!w.snap,run:()=>{restoreWin(w);front(w)}},{sep:1},
+      {label:'Snap left',ic:'halfl',disabled:w.snap==='left',run:()=>snapTo(w,'left')},{label:'Snap right',ic:'halfr',disabled:w.snap==='right',run:()=>snapTo(w,'right')},{sep:1},
+      {label:'Move to front',ic:'front',disabled:w.z===zc,run:()=>front(w)},{sep:1},{label:'Close',ic:'close',run:()=>{closeWin(w.id);return false}}]
+      :[{head:title(w)},{label:'Close',ic:'close',run:()=>{closeWin(w.id);return false}}];
+    if(w.type==='chat'&&vkey==='float')items.splice(items.length-2,0,{label:'Back into the middle',ic:'ask',run:()=>{restoreWin(w);w.plain=true}},{sep:1})}
+  else if(t===document.getElementById('desk')||t.closest('.emptydesk')||t.closest('.chatcol')&&!t.closest('.rowcard,.composer,.chead,.sugg')){
+    items=[{label:'Add a window…',ic:'plus',keys:'Space',run:()=>{openMenu(p);return false}}];
+    if(v.free)items.push({label:'Tile all windows',ic:'layout',disabled:A.wins.length<2,run:tileAll},{label:'Float all windows',ic:'front',disabled:!A.wins.some(w=>w.snap),run:()=>A.wins.forEach(restoreWin)});
+    items.push({sep:1},{label:'Back to just the chat',ic:'home',disabled:!A.wins.some(w=>w.type!=='chat'),run:backToChat})}
+  if(!items)return;ev.preventDefault();qm=null;hm=false;keysOpen=false;ctx={x:p.x,y:p.y,items};render()}
+
+/* ---------- keys ---------- */
+addEventListener('keydown',ev=>{const t=ev.target,inField=t.closest&&t.closest('input,textarea,select,[contenteditable]'),mod=ev.metaKey||ev.ctrlKey;
+  if(mod&&(ev.key==='b'||ev.key==='B')){ev.preventDefault();if(ev.shiftKey)toggleBar();else toggleRail();return}
+  if(mod&&(ev.key==='k'||ev.key==='K')){ev.preventDefault();if(!qm)openMenu();return}
+  if(mod&&ev.key==='1'){ev.preventDefault();toggleTool('project',[0,0,.2,1]);return}
+  if(mod&&ev.key==='2'){ev.preventDefault();toggleTool('activity',[.2,.72,.8,.28]);return}
+  if(ev.key==='?'&&!inField){ev.preventDefault();keysOpen=!keysOpen;render();return}
+  if(ev.key===' '&&!inField&&!mod&&!ev.altKey&&!qm&&!hm&&!ctx&&!(t.closest&&t.closest('button,[data-tnode]'))){ev.preventDefault();openMenu()}
+  if(ev.key==='Escape'&&(hm||ctx||keysOpen)){hm=false;ctx=null;keysOpen=false;render()}});
 document.addEventListener('pointerdown',ev=>{const d=document.getElementById('desk');
-  if(hm&&!ev.target.closest('#hm,#homeBtn')){hm=false;render()}
+  if(ctx&&!ev.target.closest('#ctx')){ctx=null;if(!ev.target.closest('[data-convmenu],[data-bell]'))render()}
+  else if(hm&&!ev.target.closest('#hm,#homeBtn')){hm=false;render()}
+  else if(keysOpen&&!ev.target.closest('#keys,[data-keys]')){keysOpen=false;render()}
   else if(qm&&d.contains(ev.target)&&!ev.target.closest('#qm')){qm=null;render()}});
 
 /* ---------- design chrome ---------- */
-/* A chrome button keeps no focus, so Space after a click opens the menu instead of pressing the button again. */
 document.querySelector('.top').addEventListener('click',()=>document.activeElement&&document.activeElement.blur());
 document.getElementById('vars').innerHTML=Object.entries(V).map(([k,v])=>`<button data-k="${k}">${v.name}</button>`).join('');
 document.querySelectorAll('#vars button').forEach(b=>b.onclick=()=>{vkey=b.dataset.k;if(own)step='start';load()});
@@ -525,8 +827,9 @@ document.getElementById('steps').innerHTML=Object.entries(STEPS).map(([k,s])=>`<
 document.querySelectorAll('#steps button').forEach(b=>b.onclick=()=>{step=b.dataset.k;load()});
 document.getElementById('widths').innerHTML=[1100,1440,1920].map(w=>`<button data-w="${w}">${w}</button>`).join('');
 document.querySelectorAll('#widths button').forEach(b=>b.onclick=()=>{frameW=+b.dataset.w;load()});
-document.getElementById('mL').onclick=()=>{mode='light';render()};
-document.getElementById('mD').onclick=()=>{mode='dark';render()};
+document.getElementById('simHelper').onclick=()=>{if(CONV.main.msgs.some(m=>m[0]==='sugg')){toast('Helper 262 is already running');return}startHelperScript(true)};
+document.getElementById('mL').onclick=()=>{mode='light';quiet=true;render()};
+document.getElementById('mD').onclick=()=>{mode='dark';quiet=true;render()};
 load();
 </script>
 </body>
