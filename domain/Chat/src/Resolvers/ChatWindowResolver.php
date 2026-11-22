@@ -14,6 +14,7 @@ use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SlotSections;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ConversationData;
+use Domain\Chat\Data\FocusedQuestionData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Support\AuthorizedConversations;
 use Domain\Chat\Support\DockProjection;
@@ -21,8 +22,8 @@ use Spatie\LaravelData\Optional;
 
 /**
  * The chat window, on Home and on its own page: every agent the user can see, idle ones included, the chosen one
- * (the main agent unless the query names another) and its conversation, which is there with or without a session.
- * An agent out of sight is refused like a missing one.
+ * (the main agent unless the query names another) and its conversation, which is there with or without a session,
+ * and the one question a notification opened. An agent out of sight is refused like a missing one.
  */
 final readonly class ChatWindowResolver implements PageResolver
 {
@@ -54,7 +55,35 @@ final readonly class ChatWindowResolver implements PageResolver
             'conversation' => $chosen->map($this->conversationWith(...))->getOrElse(Optional::create()),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->eligibleAccounts(),
+            ...$this->focusedQuestion(),
         ]);
+    }
+
+    /**
+     * The question a notification opened, under the keys ChatData reads it by: found by the membership of its own
+     * destination inbox, whichever agent is chosen and whatever page is loaded. It reads nothing and claims nothing.
+     *
+     * @return array<string, string|FocusedQuestionData>
+     */
+    private function focusedQuestion(): array
+    {
+        $asked = [];
+
+        foreach ($this->request->focusedQuestionId() as $messageId) {
+            $asked['focusedQuestionId'] = $messageId;
+
+            if (! $this->messages->canSee($messageId)) {
+                continue;
+            }
+
+            $question = $this->messages->detail($messageId);
+            $answer = $question->answerId !== null && $this->messages->canSee($question->answerId)
+                ? $this->messages->detail($question->answerId)
+                : Optional::create();
+            $asked['focusedQuestion'] = new FocusedQuestionData($question, $answer);
+        }
+
+        return $asked;
     }
 
     /**

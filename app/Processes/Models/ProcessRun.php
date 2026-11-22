@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Docking\Cards\DockCard;
@@ -21,7 +22,9 @@ use App\Links\Support\Linkable;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\PartEndType;
+use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Enums\RunMode;
+use App\Processes\Enums\RunRequestIntent;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\RetryRefused;
 use App\Processes\Values\ExecutionPlan;
@@ -69,6 +72,11 @@ use Illuminate\Support\Carbon;
  * @property CarbonImmutable|null $heartbeat_at
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $ended_at
+ * @property RunRequestIntent $request_intent
+ * @property string|null $responsible_type
+ * @property string|null $responsible_id
+ * @property string|null $outcome_user_id
+ * @property string $attempt_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -124,6 +132,7 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
             'plan' => ExecutionPlan::class,
             'consumed_at' => 'immutable_datetime',
             'heartbeat_at' => 'immutable_datetime',
+            'request_intent' => RunRequestIntent::class,
         ];
     }
 
@@ -143,6 +152,11 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         $run->policy_revision = $admission->policyRevision;
         $run->working_folder = $admission->workingFolder;
         $run->plan = $admission->plan;
+        $run->request_intent = $admission->intent;
+        $run->responsible_type = $admission->intent->isRequested() ? $actor->type->value : null;
+        $run->responsible_id = $admission->intent->isRequested() ? $actor->id : null;
+        $run->outcome_user_id = $admission->outcomeUserId;
+        $run->attempt_id = $run->newUniqueId();
         $run->belongTo($actor);
         $run->save();
 
@@ -157,6 +171,14 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
     public static function ofAnyActor(string $id): self
     {
         return self::query()->acrossActors()->findOrFail($id);
+    }
+
+    /**
+     * The run under its row lock, whichever actor owns it: the lock its attempt's one result is recorded under.
+     */
+    public static function lockedForOutcome(string $id): self
+    {
+        return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
     // ----------[ Mutations ]----------
@@ -232,6 +254,15 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         $this->save();
     }
 
+    /**
+     * The user a request on the run's behalf entitled to its outcome no longer is.
+     */
+    public function revokeOutcomeUser(): void
+    {
+        $this->outcome_user_id = null;
+        $this->save();
+    }
+
     // ----------[ Answers ]----------
 
     /**
@@ -267,6 +298,42 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         }
 
         $this->markStale('stopped: the run was lost and a user stopped what survived');
+    }
+
+    /**
+     * Who hears of the attempt's result: the responsible actor and the user a request on its behalf entitled. A
+     * success reaches them only for a run someone asked for, a failure or an unknown result always, a stop never.
+     *
+     * @return list<ActorIdentity>
+     */
+    public function outcomeRecipients(RunLogicalResult $result): array
+    {
+        $isTold = match ($result) {
+            RunLogicalResult::Succeeded => $this->request_intent->isRequested(),
+            RunLogicalResult::Failed, RunLogicalResult::Unknown => true,
+            RunLogicalResult::Stopped => false,
+        };
+
+        return $isTold ? $this->outcomeAudience() : [];
+    }
+
+    /**
+     * Whether the actor is the run's responsible actor or the user its request entitled to the outcome.
+     */
+    public function hasOutcomeFor(ActorIdentity $actor): bool
+    {
+        foreach ($this->outcomeAudience() as $member) {
+            if ($member->type === $actor->type && $member->id === $actor->id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isStopped(): bool
+    {
+        return $this->lifecycle === LifecycleState::Stopped;
     }
 
     public function isStale(): bool
@@ -369,6 +436,26 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    /**
+     * The responsible actor and the entitled user, when the run has them.
+     *
+     * @return list<ActorIdentity>
+     */
+    private function outcomeAudience(): array
+    {
+        $audience = [];
+
+        if ($this->responsible_type !== null && $this->responsible_id !== null) {
+            $audience[] = new ActorIdentity(ActorType::from($this->responsible_type), $this->responsible_id);
+        }
+
+        if ($audience !== [] && $this->outcome_user_id !== null) {
+            $audience[] = new ActorIdentity(ActorType::User, $this->outcome_user_id);
+        }
+
+        return $audience;
+    }
 
     /**
      * Whether a run's parts have all reached a final state; a run with no part yet has not ended.

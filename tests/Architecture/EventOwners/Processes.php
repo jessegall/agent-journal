@@ -9,6 +9,8 @@ use App\Processes\Events\RuleActivated;
 use App\Processes\Events\RuleRejected;
 use App\Processes\Events\RuleRetired;
 use App\Processes\Events\RunChanged;
+use App\Processes\Enums\RunLogicalResult;
+use App\Processes\Events\RunOutcomeRecorded;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -65,5 +67,12 @@ return [
         'producers' => [
             'app/Processes/Support/RunUpdates.php',
         ],
+    ],
+    RunOutcomeRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => ['RunOutcome::create', 'RunOutcome::correct'],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RunOutcomeRecorded('run', 'attempt', RunLogicalResult::Failed, false),
     ],
 ];

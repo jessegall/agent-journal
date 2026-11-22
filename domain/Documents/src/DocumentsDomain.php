@@ -307,7 +307,7 @@ final class DocumentsDomain extends Domain implements
      */
     public function nativeParts(): array
     {
-        return ['CreateRecordForm.vue', 'RecordComments.vue', 'RecordLinks.vue', 'RecordShare.vue'];
+        return ['CreateRecordForm.vue', 'RecordComments.vue', 'RecordLinks.vue', 'RecordShare.vue', 'ReportReceipt.vue'];
     }
 
     public function pages(): array

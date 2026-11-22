@@ -18,6 +18,7 @@ use App\Operations\Enums\AccessType;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\Page;
 use App\Ui\Enums\Icon;
+use Domain\Documents\DocumentsDomain;
 use Domain\Helpers\Commands\CancelHelperJob;
 use Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Commands\SendHelper;
@@ -78,7 +79,7 @@ final class HelpersDomain extends Domain implements
      */
     public function requires(): array
     {
-        return [];
+        return [DocumentsDomain::class];
     }
 
     public function exports(): Exports

@@ -19,16 +19,22 @@ use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxNotices as InboxNoticesContract;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Contracts\Notifications;
+use App\Communication\Contracts\NotificationTargets;
 use App\Communication\Links\MessageLinkRecords;
 use App\Communication\Models\Message;
 use App\Communication\Policies\MessageAdministrationPolicy;
 use App\Communication\Policies\MessagePolicy;
 use App\Communication\Resolvers\AgentMessages;
 use App\Communication\Resolvers\MessageRecords;
+use App\Communication\Resolvers\QuestionNotificationTarget;
 use App\Communication\Support\InboxNotices;
 use App\Communication\Support\MessageAnswerActivation;
 use App\Communication\Support\MessageClaimProvider;
+use App\Communication\Support\NotificationChangePruning;
+use App\Communication\Support\NotificationTargetRegistry;
 use App\Communication\Support\PendingInboxWork;
+use App\Communication\Support\RecipientNotifications;
 use App\Communication\Support\RegisteredInboxes;
 use App\Communication\Support\SelectedMessages;
 use App\Hooks\Contracts\IncomingWorkRegistration;
@@ -37,7 +43,9 @@ use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Records\Contracts\RecordProviderRegistration;
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -55,6 +63,9 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->bind(InboxNoticesContract::class, InboxNotices::class);
         $this->app->scoped(AgentMessageReader::class, AgentMessages::class);
         $this->app->scoped(RequestSource::class, SelectedMessages::class);
+        $this->app->singleton(NotificationTargetRegistry::class);
+        $this->app->singleton(NotificationTargets::class, NotificationTargetRegistry::class);
+        $this->app->bind(Notifications::class, RecipientNotifications::class);
     }
 
     public function boot(
@@ -67,6 +78,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         IncomingWorkRegistration $incoming,
         SystemEntryPolicies $system,
         ReadEntitlements $reads,
+        NotificationTargetRegistry $notificationTargets,
     ): void {
         $readGrant = ReadEntitlement::grant(MessagePolicy::class);
 
@@ -91,6 +103,14 @@ final class CommunicationServiceProvider extends ServiceProvider
 
         $links->register([Message::LINK_TYPE => Message::class]);
         $pendingWork->register(PendingInboxWork::class);
+        $notificationTargets->register(QuestionNotificationTarget::KEY, QuestionNotificationTarget::class);
+
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (NotificationChangePruning $pruning) => $pruning->prune(CarbonImmutable::now()))
+                ->hourly(),
+        );
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/communication.php');
         $incoming->register(MessageAnswerActivation::class);

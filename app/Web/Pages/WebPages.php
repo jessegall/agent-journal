@@ -11,6 +11,7 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
+use App\Web\Http\Controllers\Asks\ApproveMergeAskPageController;
 use App\Web\Http\Controllers\Runtimes\CancelRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\CancelScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
@@ -19,6 +20,7 @@ use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
 use App\Web\Http\Controllers\Terminal\OpenTerminalPageController;
 use App\Web\Http\Controllers\Terminal\RenewTerminalPageController;
+use App\Web\Resolvers\AskDetailResolver;
 use App\Web\Resolvers\AskInboxResolver;
 use App\Web\Resolvers\HomeWindowResolver;
 use App\Web\Resolvers\RuntimeStatusResolver;
@@ -37,6 +39,11 @@ final class WebPages implements PageProvider
                 ->at('')
                 ->slots(Slot::make('bar', SlotContextType::Nothing)),
             Page::make('asks', 'Asks', Icon::Chat, AskInboxResolver::class, 'Asks.vue')->at('asks'),
+            Page::make('ask', 'Ask', Icon::Chat, AskDetailResolver::class, 'AskDetail.vue')
+                ->at('asks/{ask}')
+                ->actions(
+                    ActionRoute::post('asks/{ask}/approve-merge', ApproveMergeAskPageController::class, 'approve-merge'),
+                ),
             Page::make('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class, 'Runtimes.vue')
                 ->at('runtimes')
                 ->actions(

@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace App\Agents\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Exceptions\StartRecordMissing;
 use App\Agents\Models\StartRecord;
 use App\Agents\Support\StartRecordDetails;
+use PhpOption\None;
+use PhpOption\Option;
 
 /**
  * Reads start records for the actor of this request: an agent sees only the starts of itself.
  */
 final readonly class StartRecords implements StartRecordResolver
 {
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(private CurrentActor $actors, private CurrentSession $sessions) {}
 
     public function own(string $requestId): StartRecordDetails
     {
@@ -33,6 +36,15 @@ final readonly class StartRecords implements StartRecordResolver
         )->get()
             ->map(fn (StartRecord $record) => self::detailsOf($record))
             ->all());
+    }
+
+    public function currentOwnerStart(): Option
+    {
+        if (! $this->sessions->hasSession()) {
+            return None::create();
+        }
+
+        return StartRecord::ownerStartOf($this->sessions->sessionId())->map(self::detailsOf(...));
     }
 
     private static function detailsOf(StartRecord $record): StartRecordDetails

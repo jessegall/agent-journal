@@ -9,7 +9,8 @@ use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\WorkReference;
 use App\Assignments\Contracts\Assignable;
-use App\Contracts\Support\InsertsAbsentRows;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\ProfileKey;
@@ -19,6 +20,7 @@ use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Supervision\Enums\AskOriginType;
 use App\Supervision\Enums\UnansweredReason;
+use App\Supervision\Events\AskClosed;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Values\AskReference;
 use App\Supervision\Values\AskSubject;
@@ -50,14 +52,14 @@ use PhpOption\Option;
  * @property Carbon $created_at
  */
 #[Fillable(['version', 'pending_target', 'open', 'outcome', 'late_answer'])]
-final class Ask extends Model implements Assignable, ReadableModel
+final class Ask extends Model implements Assignable, EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.ask';
 
@@ -216,7 +218,8 @@ final class Ask extends Model implements Assignable, ReadableModel
         $this->version++;
         $this->open = false;
         $this->pending_target = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AskClosed($this->id, $this->type_key));
     }
 
     // ----------[ Answers ]----------

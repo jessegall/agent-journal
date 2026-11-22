@@ -155,6 +155,14 @@ final class MergeAttempt extends Model implements ReadableModel
             ->all());
     }
 
+    /**
+     * Whether an attempt for the ask merged: the one evidence that a merge ask ended merged.
+     */
+    public static function hasMerged(string $askId): bool
+    {
+        return self::query()->where('ask_id', $askId)->where('state', MergeAttemptState::Merged)->exists();
+    }
+
     public static function lockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();

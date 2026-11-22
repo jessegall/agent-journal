@@ -6,16 +6,20 @@ namespace App\Supervision\Models;
 
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Supervision\Enums\CoreAskType;
+use App\Supervision\Events\AskHopAssigned;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use PhpOption\Option;
 
 /**
  * @property string|null $result
@@ -30,13 +34,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable $accepted_at
  */
 #[Fillable(['ask_id', 'actor_type', 'actor_id', 'type_key', 'version', 'route_version', 'accepted_at'])]
-final class AskHop extends Model implements ReadableModel
+final class AskHop extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
-    use HasActorColumns;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.ask-hop';
 
@@ -54,9 +58,12 @@ final class AskHop extends Model implements ReadableModel
         return ['accepted_at' => 'immutable_datetime', 'version' => 'integer', 'route_version' => 'integer'];
     }
 
+    /**
+     * The ask's new hop to its holder, at the ask's version and the routing configuration's version, kept apart.
+     */
     public static function create(Ask $ask, ActorIdentity $holder, int $routeVersion): self
     {
-        return self::query()->create([
+        $hop = new self([
             'ask_id' => $ask->id,
             ...$holder->asColumns('actor'),
             'type_key' => $ask->type_key,
@@ -64,9 +71,45 @@ final class AskHop extends Model implements ReadableModel
             'route_version' => $routeVersion,
             'accepted_at' => CarbonImmutable::now(),
         ]);
+
+        $hop->assertSaved($hop->save());
+        $hop->raise(new AskHopAssigned($ask->id, $hop->id, $hop->type_key, $holder));
+
+        return $hop;
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The holder of the ask's hop before this one, when the ask had one.
+     *
+     * @return Option<ActorIdentity>
+     */
+    public static function holderBefore(string $askId, string $hopId): Option
+    {
+        return Option::fromValue(self::query()
+            ->where('ask_id', $askId)
+            ->whereKeyNot($hopId)
+            ->reorder('version', 'desc')
+            ->orderByDesc('id')
+            ->first())
+            ->map(fn (self $hop) => $hop->actor());
+    }
+
+    /**
+     * The holder of the ask's newest hop, the final holder once the ask closed, when the ask was ever assigned.
+     *
+     * @return Option<ActorIdentity>
+     */
+    public static function latestHolderOf(string $askId): Option
+    {
+        return Option::fromValue(self::query()
+            ->where('ask_id', $askId)
+            ->reorder('version', 'desc')
+            ->orderByDesc('id')
+            ->first())
+            ->map(fn (self $hop) => $hop->actor());
+    }
 
     public static function currentFor(Ask $ask): self
     {

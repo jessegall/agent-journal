@@ -17,3 +17,14 @@ export function agentUrl(pageUrl: string, agent: AgentOptionData): string {
 
     return `${url.pathname}${url.search}`;
 }
+
+/**
+ * The page's address with this one question opened, as a notification opens it: passively, reading nothing else.
+ * The rest of the page's query stays.
+ */
+export function questionUrl(pageUrl: string, messageId: string): string {
+    const url = new URL(pageUrl, 'http://journal.local');
+    url.searchParams.set('question', messageId);
+
+    return `${url.pathname}${url.search}`;
+}

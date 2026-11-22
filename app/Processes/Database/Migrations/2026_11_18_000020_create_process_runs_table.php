@@ -35,6 +35,11 @@ return new class extends Migration
             $table->timestampTz('heartbeat_at')->nullable();
             $table->timestampTz('started_at')->nullable();
             $table->timestampTz('ended_at')->nullable();
+            $table->string('request_intent', 32)->default('explicit_request');
+            $table->string('responsible_type', 16)->nullable();
+            $table->string('responsible_id', 64)->nullable();
+            $table->string('outcome_user_id', 64)->nullable();
+            $table->ulid('attempt_id')->unique();
             $table->timestampsTz();
 
             $table->index(['project_key', 'actor_type', 'actor_id']);
