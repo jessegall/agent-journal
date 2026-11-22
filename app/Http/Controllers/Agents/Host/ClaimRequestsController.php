@@ -36,6 +36,7 @@ final readonly class ClaimRequestsController
         $request->validate([
             'watched_version' => ['required', 'integer', 'min:0'],
             'arrangement' => ['sometimes', Rule::enum(ArrangementType::class)],
+            'browser_input' => ['sometimes', 'boolean'],
         ]);
 
         Host::query()->whereKey($host->hostId)->sole()->assertEnrolledAs(
@@ -46,7 +47,9 @@ final readonly class ClaimRequestsController
         $deadline = microtime(true) + min($budgets->longPollMaxSeconds, max(0, $request->integer('wait', 0)));
         $knownVersion = $request->integer('watched_version');
 
-        $claim = fn (): ClaimedRequests => $commands->run(new ClaimDriverRequests($host->hostId, $limit));
+        $browserInput = $request->boolean('browser_input');
+        $claiming = new ClaimDriverRequests($host->hostId, $limit, $browserInput);
+        $claim = fn (): ClaimedRequests => $commands->run($claiming);
         $version = fn (): int => $watched->version($host->hostId);
 
         $claimed = ScopedReadMeter::ofCurrentScope()->withinSchedule(

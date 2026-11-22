@@ -117,8 +117,11 @@ use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\CancelLaunch;
+use App\Agents\Commands\CancelTerminalTake;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
+use App\Agents\Commands\CheckTerminalScreen;
+use App\Agents\Commands\ChooseTerminalDraft;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\CloseTerminalView;
 use App\Agents\Commands\ContinueStart;
@@ -142,6 +145,8 @@ use App\Agents\Commands\ReassignAgentRuntime;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RecordRuntime;
 use App\Agents\Commands\ReleaseAgentHold;
+use App\Agents\Commands\ReleaseTerminalControl;
+use App\Agents\Commands\RenewTerminalControl;
 use App\Agents\Commands\RenewTerminalView;
 use App\Agents\Commands\RepairDriverSettings;
 use App\Agents\Commands\ReportDriverTurn;
@@ -157,10 +162,12 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\RetireMenuEntry;
 use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
+use App\Agents\Commands\SendTerminalInput;
 use App\Agents\Commands\SettleAccountUses;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Commands\StartOwnedAgent;
 use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\TakeTerminalControl;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
@@ -190,6 +197,7 @@ use App\Agents\Contracts\WorkspaceSource;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
+use App\Agents\Data\TerminalControlData;
 use App\Agents\Data\TerminalInterestData;
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
@@ -234,6 +242,7 @@ use App\Agents\Enums\StartRefusalType;
 use App\Agents\Enums\StartRemedyType;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Enums\StatusActionType;
+use App\Agents\Enums\TerminalDraftChoice;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
@@ -279,6 +288,7 @@ use App\Agents\Exceptions\StartRecordMissing;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Exceptions\StopConditionsInvalid;
+use App\Agents\Exceptions\TerminalControlRefused;
 use App\Agents\Support\AccountUseCounts;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\AgentOption;
@@ -314,6 +324,7 @@ use App\Agents\Support\StartRecordDetails;
 use App\Agents\Support\StartRemedy;
 use App\Agents\Support\StatusAction;
 use App\Agents\Support\StatusOperation;
+use App\Agents\Support\TerminalInput;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\AccountUse;
@@ -2031,6 +2042,10 @@ final class CoreApi
                 NavigationKey::class,
                 NavigationCompletion::class,
                 TerminalInterestData::class,
+                TerminalControlData::class,
+                TerminalInput::class,
+                TerminalDraftChoice::class,
+                TerminalControlRefused::class,
                 ScreenReportAnswer::class,
                 ScreenReportRefusal::class,
                 ToolOutcome::class,
@@ -2369,6 +2384,13 @@ final class CoreApi
                 OpenTerminalView::class,
                 RenewTerminalView::class,
                 CloseTerminalView::class,
+                TakeTerminalControl::class,
+                CancelTerminalTake::class,
+                RenewTerminalControl::class,
+                ReleaseTerminalControl::class,
+                SendTerminalInput::class,
+                ChooseTerminalDraft::class,
+                CheckTerminalScreen::class,
                 AbandonNavigation::class,
                 AnswerNavigation::class,
                 InterruptNavigation::class,

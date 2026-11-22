@@ -37,6 +37,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $protocol_version
  * @property list<array{driver: string, build: string, arrangement: string, placement: string, variant: string}> $combinations
  * @property CarbonImmutable|null $revoked_at
+ * @property bool $browser_input
  */
 #[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
 final class Host extends Model implements ReadableModel
@@ -57,6 +58,7 @@ final class Host extends Model implements ReadableModel
             'start_roots' => 'array',
             'protection' => 'array',
             'combinations' => 'array',
+            'browser_input' => 'boolean',
             'revoked_at' => 'immutable_datetime',
         ];
     }
@@ -179,6 +181,19 @@ final class Host extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * Keeps whether the host's latest claim says it carries out browser control of its terminals.
+     */
+    public function advertiseBrowserInput(bool $carriesOut): void
+    {
+        if ($this->browser_input === $carriesOut) {
+            return;
+        }
+
+        $this->browser_input = $carriesOut;
+        $this->save();
+    }
+
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;
@@ -193,6 +208,14 @@ final class Host extends Model implements ReadableModel
     public function runsPlacement(ExecutionModeType $placement): bool
     {
         return $this->arrangement->isContained() === ($placement === ExecutionModeType::RequiredContainer);
+    }
+
+    /**
+     * Whether a browser may take control of this host's terminals; a host that never said so is watch-only.
+     */
+    public function carriesOutBrowserInput(): bool
+    {
+        return $this->browser_input;
     }
 
     public function speaksCurrentProtocol(): bool

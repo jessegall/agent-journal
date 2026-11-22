@@ -11,6 +11,7 @@ use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Models\Host;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\PendingWorkSources;
@@ -29,6 +30,8 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
     public function handle(ClaimDriverRequests $command): ClaimedRequests
     {
+        Host::query()->whereKey($command->hostId)->sole()->advertiseBrowserInput($command->browserInput);
+
         /**
          * @var Collection<string, AgentRuntime> $runtimes
          */

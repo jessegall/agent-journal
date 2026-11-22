@@ -21,5 +21,7 @@ final readonly class ClaimDriverRequests extends Command
     public function __construct(
         public string $hostId,
         public int $limit,
+        // Whether the host says it carries out browser control of its terminals; one that does not is watch-only.
+        public bool $browserInput = false,
     ) {}
 }

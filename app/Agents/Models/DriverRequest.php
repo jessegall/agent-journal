@@ -433,6 +433,15 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * Drops the request's payload once its host reported how it ended, as a browser writer's typed text is never kept.
+     */
+    public function forgetPayload(): void
+    {
+        $this->message = null;
+        $this->save();
+    }
+
+    /**
      * The request as stored, for readers.
      */
     public function status(): DriverRequestStatus

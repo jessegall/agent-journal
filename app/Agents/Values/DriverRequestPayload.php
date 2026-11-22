@@ -33,6 +33,16 @@ final readonly class DriverRequestPayload
         return new self(message: $message);
     }
 
+    /**
+     * A browser writer's operation for the host's input gate, its fields as the host reads them from the message.
+     *
+     * @param  array<string, string|int|bool|null>  $fields
+     */
+    public static function terminalControl(array $fields): self
+    {
+        return new self(message: json_encode($fields, JSON_THROW_ON_ERROR));
+    }
+
     public static function model(string $model): self
     {
         return new self(model: $model);

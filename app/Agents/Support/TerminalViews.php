@@ -11,7 +11,6 @@ use App\Agents\Data\TerminalInterestData;
 use App\Agents\Data\TerminalScreenIdentityData;
 use App\Agents\Enums\TerminalFrameState;
 use App\Agents\Exceptions\TerminalViewRefused;
-use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use Carbon\CarbonImmutable;
@@ -22,7 +21,11 @@ use Carbon\CarbonImmutable;
  */
 final readonly class TerminalViews implements TerminalViewCloser
 {
-    public function __construct(private RuntimeScreen $screens) {}
+    public function __construct(
+        private RuntimeScreen $screens,
+        private CurrentRuntimes $runtimes,
+        private TerminalControls $controls,
+    ) {}
 
     /**
      * Opens a new read interest in the agent's current runtime for the viewer; a retry of the same open request gives
@@ -90,7 +93,7 @@ final readonly class TerminalViews implements TerminalViewCloser
      */
     public function close(string $agentId, ActorIdentity $viewer, string $readInterestId, CarbonImmutable $now): void
     {
-        $this->runtimeOf($agentId);
+        $this->runtimes->of($agentId);
         $view = $this->interestOf($agentId, $viewer, $readInterestId);
 
         if (! $view->isLive()) {
@@ -120,7 +123,7 @@ final readonly class TerminalViews implements TerminalViewCloser
             return $this->endedView($view, $now);
         }
 
-        $runtime = $this->runtimeOf($agentId);
+        $runtime = $this->runtimes->of($agentId);
 
         if ($view->watchedAnotherSession($runtime)) {
             $view->close($now);
@@ -157,6 +160,8 @@ final readonly class TerminalViews implements TerminalViewCloser
         foreach ($views as $view) {
             $view->close($now);
         }
+
+        $this->controls->revokeAllFor($agentId, $viewer, $now);
     }
 
     /**
@@ -235,7 +240,7 @@ final readonly class TerminalViews implements TerminalViewCloser
      */
     private function watchableRuntime(string $agentId): AgentRuntime
     {
-        $runtime = $this->runtimeOf($agentId);
+        $runtime = $this->runtimes->of($agentId);
 
         if (! $runtime->hasScreen()) {
             throw TerminalViewRefused::processDriver();
@@ -246,24 +251,6 @@ final readonly class TerminalViews implements TerminalViewCloser
         }
 
         return $runtime;
-    }
-
-    /**
-     * The agent's current runtime; an unknown agent and an agent with no runtime get the answer of no permission.
-     *
-     * @throws TerminalViewRefused
-     */
-    private function runtimeOf(string $agentId): AgentRuntime
-    {
-        $agent = Agent::query()->find($agentId);
-
-        if ($agent === null || $agent->currentRuntime()->isEmpty()) {
-            throw TerminalViewRefused::mayNotInspect();
-        }
-
-        $sessionId = $agent->currentRuntime()->get()->target->sessionId;
-
-        return AgentRuntime::ofSession($sessionId) ?? throw TerminalViewRefused::mayNotInspect();
     }
 
     /**

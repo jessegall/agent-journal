@@ -21,6 +21,8 @@ return new class extends Migration
             // The protocol version the host last spoke, and the combinations it reported it can run.
             $table->unsignedInteger('protocol_version')->nullable();
             $table->jsonb('combinations')->default('[]');
+            // Whether the host's last claim said it carries out browser control of its terminals.
+            $table->boolean('browser_input')->default(false);
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampsTz();
         });
