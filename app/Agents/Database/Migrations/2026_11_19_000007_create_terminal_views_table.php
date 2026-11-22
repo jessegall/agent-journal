@@ -14,6 +14,8 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('actor_type', 16);
             $table->string('actor_id', 64);
+            $table->string('read_interest_id', 64)->unique();
+            $table->string('open_request_id', 64);
             $table->ulid('agent_runtime_id')->index();
             $table->unsignedInteger('process_generation');
             $table->unsignedInteger('interval_ms');
@@ -22,6 +24,7 @@ return new class extends Migration
             $table->timestampsTz();
             $table->index(['actor_type', 'actor_id', 'closed_at']);
             $table->index(['closed_at', 'expires_at']);
+            $table->unique(['actor_type', 'actor_id', 'open_request_id']);
         });
     }
 
