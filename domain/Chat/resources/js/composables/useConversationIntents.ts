@@ -40,7 +40,7 @@ export type ConversationRow =
 type SendDraft = {
     draftKey: string;
     text: string;
-    agent: string;
+    agent: string | null;
     expectedSessionId: string | null;
     expectedGeneration: number;
     inboxId: string;

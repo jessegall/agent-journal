@@ -14,8 +14,8 @@ import { useMessageDrafts } from './composables/useMessageDrafts';
  */
 const props = defineProps<{
     draftKey: string;
-    agent: string;
-    agentName: string;
+    agent: string | null;
+    addresseeName: string | null;
     sessionId: string | null;
     sessionGeneration: number;
     inboxId: string;
@@ -99,7 +99,10 @@ function sendOnEnter(event: KeyboardEvent): void {
         @submit.prevent="submit"
     >
         <p class="text-small text-text-3">
-            To {{ agentName }}<template v-if="sessionId === null">, no session</template>
+            <template v-if="addresseeName !== null">
+                To {{ addresseeName }}<template v-if="sessionId === null">, no session</template>
+            </template>
+            <template v-else>To everyone in this chat</template>
         </p>
         <template v-if="replyingTo">
             <p class="text-small text-text-3">
@@ -111,8 +114,8 @@ function sendOnEnter(event: KeyboardEvent): void {
             v-model="body"
             name="body"
             rows="3"
-            placeholder="Message the agent"
-            aria-label="Message the agent"
+            placeholder="Write a message"
+            aria-label="Write a message"
             class="resize-none border-0 bg-transparent p-0 text-body leading-[1.45] text-text transition-[height] duration-160 outline-none placeholder:text-text-3"
             @keydown.enter="sendOnEnter"
         />

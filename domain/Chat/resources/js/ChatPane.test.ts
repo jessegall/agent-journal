@@ -48,6 +48,8 @@ vi.mock('./Composer.vue', () => ({
     default: { name: 'Composer', template: '<form aria-label="Composer" />' },
 }));
 vi.mock('./AgentPicker.vue', () => ({ default: { template: '<div />' } }));
+vi.mock('./chats/ChatRoster.vue', () => ({ default: { template: '<div />' } }));
+vi.mock('./chats/InboxSelector.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('./AgentSessionActions.vue', () => ({
     default: { template: '<div />' },
 }));
@@ -60,11 +62,14 @@ function chatWith(inboxId: string): ChatData {
         selectedAgentId: 'agent-1',
         setupRequired: false,
         dockSections: [],
+        chats: [],
+        canCreateChats: false,
         conversation: {
             inboxId,
             agentId: 'agent-1',
             viewer: 'user:user-1',
             participants: [],
+            capabilities: { add: false, remove: false, transfer: false, leave: true, close: false },
             sessionId: null,
             sessionGeneration: 0,
             dock: { cards: [], more: null },
@@ -86,6 +91,7 @@ function mountPane(inboxId = 'conversation-1') {
             chat: chatWith(inboxId),
             offersChoice: false,
             agentUrl: () => '/chat',
+            chatUrl: () => '/chat',
             questionUrl: () => '/chat?question=1',
             loadMore: () => undefined,
             protectedProp: 'window_chat_conversation',

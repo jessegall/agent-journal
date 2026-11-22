@@ -13,6 +13,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\AgentOption;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Data\InboxView;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
@@ -20,6 +21,7 @@ use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatMessageData;
+use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\ParticipantData;
 use Domain\Chat\Data\QuestionActionsData;
@@ -77,6 +79,26 @@ final readonly class ChatConversations
             'messages' => $rows,
             'dock' => $this->dock->page($conversation, $dockToken),
         ]);
+    }
+
+    /**
+     * The viewer's own inboxes that are chats, as the inbox selector lists them.
+     *
+     * @param  list<InboxView>  $inboxes
+     * @return list<ChatSummaryData>
+     */
+    public function summariesFor(array $inboxes): array
+    {
+        $chatInboxIds = Conversation::query()
+            ->whereIn('inbox_id', array_map(fn (InboxView $inbox) => $inbox->inboxId, $inboxes))
+            ->pluck('inbox_id')
+            ->all();
+
+        return array_values(array_map(fn (InboxView $inbox) => ChatSummaryData::from([
+            'inboxId' => $inbox->inboxId,
+            'label' => $inbox->label,
+            'unread' => $inbox->counts->unread,
+        ]), array_filter($inboxes, fn (InboxView $inbox) => in_array($inbox->inboxId, $chatInboxIds, true))));
     }
 
     /**

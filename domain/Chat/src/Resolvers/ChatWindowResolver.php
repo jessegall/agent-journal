@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentOption;
@@ -17,11 +19,13 @@ use App\Ui\Contracts\SlotSections;
 use App\Web\Exceptions\PrivateRecordMissing;
 use Domain\Chat\Commands\OpenPairChat;
 use Domain\Chat\Data\ChatData;
+use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\FocusedQuestionData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\ChatConversations;
 use Domain\Chat\Support\AuthorizedConversations;
+use Domain\Chat\Support\ChatAdmissionPolicy;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
@@ -42,6 +46,8 @@ final readonly class ChatWindowResolver implements PageResolver
         private ConversationResolver $messages,
         private ChatConversations $chats,
         private AuthorizedConversations $conversations,
+        private ChatAdmissionPolicy $admission,
+        private CurrentActor $actors,
         private SlotSections $slots,
         private StartAccounts $startAccounts,
         private CommandBus $commands,
@@ -70,6 +76,7 @@ final readonly class ChatWindowResolver implements PageResolver
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->eligibleAccounts($chosen),
             ...$this->focusedQuestion(),
+            ...$this->chatList(),
         ]);
     }
 
@@ -89,10 +96,27 @@ final readonly class ChatWindowResolver implements PageResolver
             'setupRequired' => $main->isEmpty(),
             'mainAgentId' => $main->getOrElse(Optional::create()),
             'selectedAgentId' => Optional::create(),
+            'selectedInboxId' => $inboxId,
             'conversation' => $this->chats->pageFor(null, $inboxId, $this->request->dockToken()),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->focusedQuestion(),
+            ...$this->chatList(),
         ]);
+    }
+
+    /**
+     * The chats the viewer is in, each with its title and unread count, and whether it may open a new one.
+     *
+     * @return array{chats: list<ChatSummaryData>, canCreateChats: bool}
+     */
+    private function chatList(): array
+    {
+        $viewer = ActorIdentity::of($this->actors->actor());
+
+        return [
+            'chats' => $this->chats->summariesFor($this->messages->ownInboxes()),
+            'canCreateChats' => $this->admission->mayCreate($viewer, null),
+        ];
     }
 
     /**

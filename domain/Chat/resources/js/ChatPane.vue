@@ -14,6 +14,8 @@ import Composer from './Composer.vue';
 import DockStack from './dock/DockStack.vue';
 import FocusedQuestion from './FocusedQuestion.vue';
 import MessageList from './MessageList.vue';
+import ChatRoster from './chats/ChatRoster.vue';
+import InboxSelector from './chats/InboxSelector.vue';
 
 /**
  * The chat (doc 4, 6.1): the chosen agent's conversation, what other domains suggest in the dock slot, the sources
@@ -24,6 +26,7 @@ const props = defineProps<{
     chat: ChatData;
     offersChoice: boolean;
     agentUrl: (agent: AgentOptionData) => string;
+    chatUrl: (inboxId: string) => string;
     questionUrl: (messageId: string) => string;
     loadMore: (token: string) => void;
     protectedProp: string;
@@ -31,7 +34,7 @@ const props = defineProps<{
 
 const page = usePage();
 const conversation = computed(() => props.chat.conversation);
-const selected = computed(() => props.chat.agents.find((agent) => agent.id === props.chat.selectedAgentId));
+const selected = computed(() => props.chat.agents.find((agent) => agent.id === conversation.value?.agentId));
 const key = computed(() => {
     const user = page.props.currentUser;
 
@@ -135,6 +138,14 @@ function retryFocused(): void {
         aria-label="Chat"
     >
         <template v-if="offersChoice">
+            <InboxSelector
+                :chats="chat.chats"
+                :selected-inbox-id="conversation?.inboxId"
+                :can-create-chats="chat.canCreateChats"
+                :chat-url="chatUrl"
+            />
+        </template>
+        <template v-if="offersChoice">
             <AgentPicker
                 :agents="chat.agents"
                 :selected-agent-id="chat.selectedAgentId"
@@ -150,10 +161,11 @@ function retryFocused(): void {
         <template v-if="chat.setupNotice">
             <p class="text-small text-text-2">{{ chat.setupNotice }}</p>
         </template>
-        <template v-if="conversation && key && selected">
-            <template v-if="offersChoice">
+        <template v-if="conversation && key">
+            <template v-if="offersChoice && selected">
                 <AgentSessionActions :agent="selected" />
             </template>
+            <ChatRoster :conversation="conversation" :conversation-prop="protectedProp" />
             <template v-if="isShown">
                 <template v-if="chat.focusedQuestionId !== undefined">
                     <FocusedQuestion
@@ -194,7 +206,7 @@ function retryFocused(): void {
                 <Composer
                     :draft-key="key"
                     :agent="conversation.agentId"
-                    :agent-name="selected.name"
+                    :addressee-name="selected?.name ?? null"
                     :session-id="conversation.sessionId"
                     :session-generation="conversation.sessionGeneration"
                     :inbox-id="conversation.inboxId"

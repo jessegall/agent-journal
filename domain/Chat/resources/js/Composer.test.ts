@@ -40,7 +40,7 @@ function mountComposer() {
         props: {
             draftKey: 'user-1/inbox-chat',
             agent: 'agent-1',
-            agentName: 'Main agent',
+            addresseeName: 'Main agent',
             sessionId: null,
             sessionGeneration: 0,
             inboxId: 'inbox-chat',
