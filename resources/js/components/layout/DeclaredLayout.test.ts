@@ -617,4 +617,140 @@ describe('a declared layout', () => {
         expect(card.text()).toContain('Waiting');
         expect(card.get('a').attributes('href')).toBe('/chat/4');
     });
+
+    it('shows only the reader with Back to the owning list at a record address, and sets the reader width', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'split',
+                        style: 'split',
+                        split: {
+                            listWidth: 430,
+                            narrowShows: 'reader',
+                            readerWidth: 'settings',
+                            back: { href: '/tasks?state=open&page=2', label: 'Tasks' },
+                        },
+                        children: [
+                            part({ tag: 'box', key: 'list', style: 'stack' }),
+                            part({ tag: 'text', key: 'facts', style: 'plain', text: 'Facts' }),
+                        ],
+                    }),
+                },
+            },
+            global: { stubs: { Link: { props: ['href'], template: '<a :href="href"><slot /></a>' } } },
+        });
+
+        expect(view.find('a[href="/tasks?state=open&page=2"]').text()).toContain('Tasks');
+        expect(view.findAll('section')[0].classes()).toContain('hidden');
+        expect(view.find('.max-w-180').text()).toContain('Facts');
+    });
+
+    it('keeps the title and creation on the first line of the bar, the views and search after them', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'header',
+                        style: 'bar',
+                        children: ['title', 'views', 'search', 'creation'].map((key) =>
+                            part({ tag: 'text', key, style: 'plain', text: key }),
+                        ),
+                    }),
+                },
+            },
+        });
+        const slots = view.findAll('[data-layout-box="bar"] > div');
+
+        expect(slots.map((slot) => slot.text())).toEqual(['title', 'views', 'search', 'creation']);
+        expect(slots[3].classes()).toContain('order-3');
+        expect(slots[1].classes()).toContain('w-full');
+    });
+
+    it('draws a reader box in the kit Reader: the wrapping title, the metadata line, the actions and the body', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'detail',
+                        style: 'reader',
+                        children: [
+                            part({ tag: 'text', key: 'title', style: 'heading', text: 'A long title' }),
+                            part({
+                                tag: 'box',
+                                key: 'metadata',
+                                style: 'row',
+                                children: [part({ tag: 'text', key: 'plan', style: 'plain', text: 'Plan 2' })],
+                            }),
+                            part({
+                                tag: 'box',
+                                key: 'actions',
+                                style: 'row',
+                                children: [part({ tag: 'text', key: 'open', style: 'plain', text: 'Open' })],
+                            }),
+                            part({ tag: 'text', key: 'body', style: 'plain', text: 'Body text' }),
+                        ],
+                    }),
+                },
+            },
+        });
+
+        expect(view.get('article h2').text()).toBe('A long title');
+        expect(view.get('article header').text()).toContain('Plan 2');
+        expect(view.get('article header').text()).toContain('Open');
+        expect(view.get('article > div').text()).toContain('Body text');
+    });
+
+    it('opens a dialog from its opener, keeps its form inside, and returns the focus to the opener on Cancel', async () => {
+        const view = mount(DeclaredLayout, {
+            attachTo: document.body,
+            props: {
+                data: {
+                    root: part({
+                        tag: 'dialog',
+                        key: 'create',
+                        style: 'dialog',
+                        dialog: { title: 'Create task', confirmation: 'Task created' },
+                        children: [
+                            part({
+                                tag: 'action',
+                                key: 'open',
+                                style: 'bordered',
+                                size: 'normal',
+                                text: 'Create task',
+                                action: { query: {}, submits: false, appends: false },
+                            }),
+                            part({
+                                tag: 'form',
+                                key: 'form',
+                                style: 'stack',
+                                form: { method: 'POST', href: '/tasks', fixed: {}, isKeyed: true },
+                                children: [],
+                            }),
+                        ],
+                    }),
+                },
+            },
+        });
+
+        expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+
+        const opener = view.get('button');
+        opener.element.focus();
+        await opener.trigger('click');
+
+        expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
+        expect(document.body.querySelector('form[data-layout-form="stack"]')).not.toBeNull();
+
+        const cancel = [...document.body.querySelectorAll('button')].find((button) => button.textContent === 'Cancel');
+        cancel?.click();
+        await view.vm.$nextTick();
+
+        expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+        expect(document.activeElement).toBe(opener.element);
+        view.unmount();
+    });
 });

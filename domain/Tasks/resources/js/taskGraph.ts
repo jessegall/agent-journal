@@ -131,3 +131,34 @@ export function bottlenecksOf(nodes: TaskGraphNode[], edges: TaskGraphEdge[]): S
 
     return new Set(most === 0 ? [] : waitingOnIt.filter((entry) => entry.count === most).map((entry) => entry.id));
 }
+
+/**
+ * The waits only one of two graphs has: those Suggested adds to Now, and those it takes away.
+ */
+export function diffOf(
+    now: TaskGraphEdge[],
+    suggested: TaskGraphEdge[],
+): { added: TaskGraphEdge[]; removed: TaskGraphEdge[] } {
+    const key = (edge: TaskGraphEdge): string => `${edge.prerequisiteId}>${edge.dependentId}`;
+    const nowKeys = new Set(now.map(key));
+    const suggestedKeys = new Set(suggested.map(key));
+
+    return {
+        added: suggested.filter((edge) => !nowKeys.has(key(edge))),
+        removed: now.filter((edge) => !suggestedKeys.has(key(edge))),
+    };
+}
+
+/**
+ * The most tasks that must finish one after the other, the task itself counted: the number of columns of the layout.
+ */
+export function longestChainOf(nodes: TaskGraphNode[], edges: TaskGraphEdge[]): number {
+    return columnsOf(nodes, edges).length;
+}
+
+/**
+ * The most tasks that can be worked on at once: those in the fullest column of the layout.
+ */
+export function maxConcurrencyOf(nodes: TaskGraphNode[], edges: TaskGraphEdge[]): number {
+    return Math.max(0, ...columnsOf(nodes, edges).map((column) => column.length));
+}

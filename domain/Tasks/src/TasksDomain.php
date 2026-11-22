@@ -43,8 +43,10 @@ use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskGraph;
+use Domain\Tasks\Api\TaskGraphDestinations;
 use Domain\Tasks\Api\TaskGraphEdge;
 use Domain\Tasks\Api\TaskGraphNode;
+use Domain\Tasks\Api\TaskGraphSuggestion;
 use Domain\Tasks\Api\TaskHistoryPage;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskLogLine;
@@ -210,6 +212,8 @@ final class TasksDomain extends Domain implements
                 TaskGraph::class,
                 TaskGraphNode::class,
                 TaskGraphEdge::class,
+                TaskGraphSuggestion::class,
+                TaskGraphDestinations::class,
                 TaskWaitChange::class,
                 TaskSummary::class,
                 TaskAssignmentCompletion::class,

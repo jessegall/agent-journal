@@ -270,4 +270,16 @@ final class DeclaredLayoutTest extends TestCase
         $this->assertGreaterThan(1, $dialog->assertWithinCatalogue());
         $this->assertInstanceOf(Optional::class, $dialog->dialog->undo);
     }
+
+    public function test_a_progress_part_carries_its_reading_and_picks_its_style_by_whether_it_counts(): void
+    {
+        $meter = LayoutPartData::progress('week', 72, 100, 'Weekly allowance', 'percent');
+        $counted = LayoutPartData::progress('tasks', 3, 8, 'Plan 4', 'tasks', true);
+
+        $this->assertSame(1, $meter->assertWithinCatalogue());
+        $this->assertSame('meter', $meter->style);
+        $this->assertSame('counted', $counted->style);
+        $this->assertSame(72.0, $meter->progress->value);
+        $this->assertSame(8.0, $counted->progress->max);
+    }
 }
