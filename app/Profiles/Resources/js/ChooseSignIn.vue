@@ -5,7 +5,7 @@ import type {
 } from '@generated/types/accounts';
 import OptionCards from '@kit/OptionCards';
 import DriverIcon from '@kit/DriverIcon';
-import SegmentedSwitch from '@kit/SegmentedSwitch';
+import SegmentedControl from '@kit/SegmentedControl';
 import { computed } from 'vue';
 import { driverIcon, driverName } from './accountLooks';
 
@@ -46,16 +46,16 @@ function chooseDriver(chosen: string): void {
 </script>
 
 <template>
-    <SegmentedSwitch
+    <SegmentedControl
         label="Driver"
-        :options="drivers"
+        :items="drivers"
         :model-value="driver"
         @update:model-value="chooseDriver"
     >
         <template #icon="{ value }">
             <DriverIcon :driver="driverIcon(value)" :size="14" />
         </template>
-    </SegmentedSwitch>
+    </SegmentedControl>
     <OptionCards
         v-model="method"
         label="How to sign in"

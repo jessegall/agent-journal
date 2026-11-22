@@ -1,0 +1,25 @@
+<script setup lang="ts">
+/**
+ * A one-line text input in the shared input look: md is 30 px high, sm is 28 px; a --border-2 border, radius
+ * --radius-field, --bg fill, --text-field; the focus ring at offset 1; invalid (aria-invalid) turns the border
+ * --danger. `bare` drops the box for an input that sits inside another control, such as the search field.
+ */
+withDefaults(defineProps<{ size?: 'md' | 'sm'; invalid?: boolean; bare?: boolean }>(), {
+    size: 'md',
+    invalid: false,
+    bare: false,
+});
+const value = defineModel<string>({ default: '' });
+</script>
+
+<template>
+    <input
+        v-model="value"
+        :aria-invalid="invalid || undefined"
+        :class="
+            bare
+                ? 'min-w-0 bg-transparent text-field text-text outline-none placeholder:text-text-4'
+                : ['input', size === 'sm' ? 'h-7 min-h-7 px-[9px]' : 'h-7.5']
+        "
+    />
+</template>

@@ -3,7 +3,7 @@ import { dateTime } from '@kit/format';
 import { Link, router, useHttp, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import Button from '@kit/Button';
-import FormField from '@kit/FormField';
+import Field from '@kit/Field';
 import Modal from '@kit/Modal';
 import { followPage } from '@kit/followPage';
 import { keyedPost } from '@kit/keyedPost';
@@ -567,7 +567,7 @@ onBeforeUnmount(() => following?.stop());
                     </template>
                 </fieldset>
             </template>
-            <FormField
+            <Field
                 :id="fieldIds.driver"
                 label="Driver"
                 :error="fieldRefusal?.field === 'driver' ? fieldRefusal.reason : undefined"
@@ -585,8 +585,8 @@ onBeforeUnmount(() => following?.stop());
                         </template>
                     </select>
                 </template>
-            </FormField>
-            <FormField
+            </Field>
+            <Field
                 :id="fieldIds.model"
                 label="Model"
                 :error="fieldRefusal?.field === 'model' ? fieldRefusal.reason : undefined"
@@ -604,8 +604,8 @@ onBeforeUnmount(() => following?.stop());
                         </template>
                     </select>
                 </template>
-            </FormField>
-            <FormField :id="fieldIds.variant" label="Variant">
+            </Field>
+            <Field :id="fieldIds.variant" label="Variant">
                 <template #default="{ id }">
                     <select :id="id" v-model="variant" class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body">
                         <template v-for="choice in variants" :key="choice.value">
@@ -613,12 +613,12 @@ onBeforeUnmount(() => following?.stop());
                         </template>
                     </select>
                 </template>
-            </FormField>
+            </Field>
             <label class="flex items-center gap-2 text-small text-text-2">
                 <input v-model="saveVariant" type="checkbox" :disabled="variant === ''" />
                 Use as default for this agent
             </label>
-            <FormField
+            <Field
                 :id="fieldIds.accountId"
                 label="Account"
                 :error="fieldRefusal?.field === 'accountId' ? fieldRefusal.reason : undefined"
@@ -658,7 +658,7 @@ onBeforeUnmount(() => following?.stop());
                         </template>
                     </template>
                 </template>
-            </FormField>
+            </Field>
             <p class="text-small text-text-2">Starts {{ review }}.</p>
             <template v-if="shownProgress">
                 <p class="text-small text-text" aria-live="polite">{{ shownProgress }}</p>

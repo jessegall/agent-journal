@@ -3,7 +3,7 @@ import type {
     AccountRowData,
     SignInMethodData,
 } from '@generated/types/accounts';
-import TextField from '@kit/TextField';
+import Field from '@kit/Field';
 import { onMounted, ref, useId } from 'vue';
 import ChosenSignIn from './ChosenSignIn.vue';
 import { useAccountNaming } from './accountNaming';
@@ -59,7 +59,7 @@ function saveOrSkip(): void {
                 It has no email, so give it a name you'll recognise.
             </p>
         </div>
-        <TextField
+        <Field
             :id="fieldId"
             v-model="naming.label"
             label="Name"

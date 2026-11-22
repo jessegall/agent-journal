@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue';
-import TextField from '@/components/kit/TextField.vue';
+import Field from '@/components/kit/Field.vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import type { LayoutFieldData, LayoutPartData } from '@/generated/types/core';
 import type { LayoutFormValues } from './layoutForm';
@@ -22,7 +22,7 @@ const value = computed({
 </script>
 
 <template>
-    <TextField
+    <Field
         :id="fieldId"
         v-model="value"
         :label="part.text ?? ''"

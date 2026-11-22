@@ -8,7 +8,7 @@ import { accountStart, activate, remove } from '@generated/routes/accounts';
 import { Link, useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import Modal from '@kit/Modal';
-import TextField from '@kit/TextField';
+import Field from '@kit/Field';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, nextTick, ref, useId, watch } from 'vue';
 import AccountFactList from './AccountFactList.vue';
@@ -277,7 +277,7 @@ function signInAgain(): void {
                 </div>
             </template>
             <form @submit.prevent="canSave && save(() => undefined)">
-                <TextField
+                <Field
                     :id="fieldId"
                     v-model="naming.label"
                     label="Name"
@@ -307,7 +307,7 @@ function signInAgain(): void {
                             >
                         </template>
                     </template>
-                </TextField>
+                </Field>
             </form>
             <section class="flex flex-col gap-2" aria-labelledby="account-use">
                 <h4
