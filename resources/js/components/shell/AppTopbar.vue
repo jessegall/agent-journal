@@ -7,6 +7,7 @@ import Menu from '@/components/kit/Menu.vue';
 import MenuItem from '@/components/kit/MenuItem.vue';
 import type { Appearance } from '@/composables/useAppearance';
 import { useAppearance } from '@/composables/useAppearance';
+import { useShellOverlays } from '@/composables/useShellOverlays';
 import { useSidebar } from '@/composables/useSidebar';
 import { logout } from '@/routes';
 import EnvironmentMenu from './EnvironmentMenu.vue';
@@ -24,6 +25,7 @@ const appName = computed(() => page.props.name);
 const userName = computed(() => page.props.currentUser?.name);
 const { appearance, update } = useAppearance();
 const { toggle: toggleSidebar } = useSidebar();
+const { isPaletteOpen, isHelpOpen } = useShellOverlays();
 
 const schemes: { value: Appearance; label: string }[] = [
     { value: 'system', label: 'System' },
@@ -57,6 +59,12 @@ function toggleFullScreen(): void {
         <span class="flex-1"></span>
         <div class="flex items-center gap-2" role="group" aria-label="Shell actions">
             <EnvironmentMenu />
+            <Button variant="icon" aria-label="Open commands" @click="isPaletteOpen = true"
+                ><Icon name="search" :size="13"
+            /></Button>
+            <Button variant="icon" aria-label="Keyboard help" @click="isHelpOpen = true"
+                ><Icon name="question" :size="13"
+            /></Button>
             <template v-if="userName">
                 <NotificationBell />
             </template>
