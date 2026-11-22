@@ -103,3 +103,25 @@ func TestOneOwnerIsStartedForAnAccountGenerationAndAnotherForTheNext(t *testing.
 		t.Fatalf("started %d owners; the same generation shared one: %v", starts, first == again)
 	}
 }
+
+// One account's app-server ending ends only its own threads: another account's owner keeps running unchanged, and
+// the ended account starts a new owner rather than borrowing one.
+func TestAnOwnerThatEndsLeavesAnotherAccountsOwnerRunning(t *testing.T) {
+	owners := &CodexOwners{}
+	start := func(context.Context) (*CodexOwner, error) {
+		return &CodexOwner{ended: make(chan struct{}), turnEnds: map[string]chan CodexTurnEnd{}}, nil
+	}
+	ended, _ := owners.Of(context.Background(), "/accounts/a", 1, start)
+	other, _ := owners.Of(context.Background(), "/accounts/b", 1, start)
+
+	close(ended.ended)
+	otherAgain, _ := owners.Of(context.Background(), "/accounts/b", 1, start)
+	replacement, _ := owners.Of(context.Background(), "/accounts/a", 1, start)
+
+	if otherAgain != other || hasEnded(other) {
+		t.Fatal("another account's owner changed when one owner ended")
+	}
+	if replacement == ended || replacement == other {
+		t.Fatal("the ended account did not get an owner of its own")
+	}
+}
