@@ -73,10 +73,10 @@ final class HelperStartCommand extends Command
      */
     private function namedMode(): DriverVariant|null
     {
-        return match (true) {
-            $this->option('headless') === true => DriverVariant::Headless,
-            $this->option('no-headless') === true => DriverVariant::Terminal,
-            default => null,
-        };
+        if ($this->option('headless') !== true && $this->option('no-headless') !== true) {
+            return null;
+        }
+
+        return DriverVariant::ofHeadless($this->option('headless') === true);
     }
 }

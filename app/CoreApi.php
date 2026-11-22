@@ -32,6 +32,7 @@ use App\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
 use App\Commands\AnswerMessage\AnswerMessageCommand;
 use App\Commands\AnswerNavigation\AnswerNavigationCommand;
 use App\Commands\ApproveDeviceGrant\ApproveDeviceGrantCommand;
+use App\Commands\ApproveDriver\ApproveDriverCommand;
 use App\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use App\Commands\AskChatQuestion\AskChatQuestionCommand;
 use App\Commands\AskMessage\AskMessageCommand;
@@ -253,6 +254,7 @@ use App\Contracts\AssignmentRegistration;
 use App\Contracts\AssignmentResolver;
 use App\Contracts\AssignmentTransaction;
 use App\Contracts\AssignmentWriter;
+use App\Contracts\AttachmentReferences;
 use App\Contracts\AuthoritySource;
 use App\Contracts\Authorizer;
 use App\Contracts\AuthorizerProvider;
@@ -613,6 +615,7 @@ use App\Enums\LayoutTag;
 use App\Enums\LeaveReason;
 use App\Enums\LineCardPlacement;
 use App\Enums\MenuEntryState;
+use App\Enums\MessagePartType;
 use App\Enums\MessageState;
 use App\Enums\MiddlewareStage;
 use App\Enums\ModelSelectionType;
@@ -836,6 +839,7 @@ use App\Exceptions\DriverKeyInvalid;
 use App\Exceptions\DriverModeAmbiguous;
 use App\Exceptions\DriverRegisteredTwice;
 use App\Exceptions\DriverRequestMismatch;
+use App\Exceptions\DriverRequestRefused;
 use App\Exceptions\DriverRequired;
 use App\Exceptions\DriverUnknown;
 use App\Exceptions\DriverUnsupported;
@@ -1360,6 +1364,7 @@ use App\Values\LibraryEntryAnswer;
 use App\Values\MarkdownPart;
 use App\Values\Measurement;
 use App\Values\MenuStep;
+use App\Values\MessagePart;
 use App\Values\ModelSelection;
 use App\Values\MoreOutcome;
 use App\Values\NamedCommand;
@@ -1562,6 +1567,7 @@ final class CoreApi
             )
             ->contracts(
                 WorkAllowance::class,
+                AttachmentReferences::class,
                 TieredSearch::class,
                 StatementDeadlines::class,
                 MessageSearch::class,
@@ -2510,6 +2516,8 @@ final class CoreApi
                 OperationRule::class,
                 ProfileChangeType::class,
                 SignInMethod::class,
+                MessagePart::class,
+                MessagePartType::class,
                 FieldOrigin::class,
                 PolicyOriginType::class,
                 ProfileDefinition::class,
@@ -2549,6 +2557,7 @@ final class CoreApi
             ->commands(
                 ActivateProfilesCommand::class,
                 RevokeProfilesCommand::class,
+                ApproveDriverCommand::class,
                 StartProfileMainCommand::class,
                 SwitchAccountCommand::class,
                 RenameAccountCommand::class,
@@ -2725,6 +2734,7 @@ final class CoreApi
             )
             ->exceptions(
                 WorkBudgetSpent::class,
+                DriverRequestRefused::class,
                 StatementTimedOut::class,
                 ChatCursorRefused::class,
                 HookAnswerRefused::class,

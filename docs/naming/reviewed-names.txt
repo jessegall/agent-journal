@@ -1862,6 +1862,8 @@ class	ApproveCodeReviewHandler
 class	ApproveDeviceGrantCommand
 class	ApproveDeviceGrantController
 class	ApproveDeviceGrantHandler
+class	ApproveDriverCommand
+class	ApproveDriverHandler
 class	ApproveMergeAskPageController
 class	ApproveMergeAskRequest
 class	ApprovePlanReviewCommand
@@ -3040,6 +3042,8 @@ class	DraftView
 class	DraftWriteTool
 class	DraftedRecordData
 class	DrainReplyData
+class	DriverApproval
+class	DriverApproveCommand
 class	DriverArrangementUnproven
 class	DriverBudgets
 class	DriverCapabilities
@@ -7475,6 +7479,7 @@ constant	HookShellAdmission::RUNNER_UNAVAILABLE
 constant	HostCapacityLock::LOCK_KEY
 constant	HostDescriptorEnrollment::BUILD_UNAPPROVED
 constant	HostDescriptorEnrollment::PROTOCOL_INCOMPATIBLE
+constant	HostDescriptorEnrollment::REGISTRATION_UNAPPROVED
 constant	HostDescriptorEnrollment::UNKNOWN_DRIVER
 constant	HostSkillPublisher::GENERATIONS
 constant	HostSkillPublisher::STAGED_LEVEL_LIMIT
@@ -10057,6 +10062,9 @@ method	ApproveCodeReviewHandler::handle()
 method	ApproveDeviceGrantCommand::__construct()
 method	ApproveDeviceGrantController::__invoke()
 method	ApproveDeviceGrantHandler::handle()
+method	ApproveDriverCommand::__construct()
+method	ApproveDriverHandler::__construct()
+method	ApproveDriverHandler::handle()
 method	ApproveMergeAskPageController::__invoke()
 method	ApproveMergeAskRequest::command()
 method	ApproveMergeAskRequest::rules()
@@ -13970,6 +13978,11 @@ method	DriverAdapter::renderShell()
 method	DriverAdapter::renderStop()
 method	DriverAdapters::for()
 method	DriverAdapters::supports()
+method	DriverApproval::approveBuilds()
+method	DriverApproval::buildsByKey()
+method	DriverApproval::casts()
+method	DriverApproval::forKey()
+method	DriverApproveCommand::handle()
 method	DriverArrangementUnproven::for()
 method	DriverArrangementUnproven::inContainer()
 method	DriverArrangementUnproven::refusalCode()
@@ -14035,6 +14048,7 @@ method	DriverKey::__construct()
 method	DriverKey::__toString()
 method	DriverKey::from()
 method	DriverKey::isSameAs()
+method	DriverKey::isThirdParty()
 method	DriverKeyInvalid::for()
 method	DriverMethodsData::__construct()
 method	DriverMethodsData::fromProtocols()
@@ -14254,6 +14268,7 @@ method	DriverUnstartableInContainer::refusalCode()
 method	DriverUnstartableInContainer::status()
 method	DriverUnsupported::for()
 method	DriverUnsupported::reason()
+method	DriverVariant::ofHeadless()
 method	Drivers::__construct()
 method	Drivers::evaluate()
 method	Drivers::keyTexts()
@@ -28223,6 +28238,7 @@ parameter	$headers
 parameter	$heading
 parameter	$headingPath
 parameter	$headings
+parameter	$headless
 parameter	$healthSeconds
 parameter	$healthy
 parameter	$heartbeatSeconds
@@ -30896,6 +30912,9 @@ property	ApproveCodeReviewCommand::$expectedVersion
 property	ApproveCodeReviewCommand::$findings
 property	ApproveCodeReviewHandler::$decisions
 property	ApproveDeviceGrantCommand::$userCode
+property	ApproveDriverCommand::$buildPins
+property	ApproveDriverCommand::$key
+property	ApproveDriverHandler::$drivers
 property	ApprovePlanReviewCommand::$editionNumber
 property	ApprovePlanReviewCommand::$planId
 property	ApprovePlanReviewCommand::$requestKey
@@ -33145,6 +33164,8 @@ property	DraftView::$version
 property	DraftedRecordData::$agent
 property	DraftedRecordData::$fields
 property	DrainReplyData::$drained
+property	DriverApproveCommand::$description
+property	DriverApproveCommand::$signature
 property	DriverBudgets::$claimBatchMax
 property	DriverBudgets::$deliverMaxBytes
 property	DriverBudgets::$longPollMaxSeconds
@@ -41478,6 +41499,7 @@ variable	$browserInput
 variable	$budget
 variable	$budgetAmount
 variable	$build
+variable	$builds
 variable	$built
 variable	$builtinExecution
 variable	$bundles

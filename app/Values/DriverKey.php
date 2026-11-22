@@ -29,6 +29,15 @@ final readonly class DriverKey
         return new self($text);
     }
 
+    /**
+     * Whether a package outside the journal registered the driver, its key named under the package's own name, such
+     * as acme/reader; such a driver runs only once the owner approved it.
+     */
+    public function isThirdParty(): bool
+    {
+        return str_contains($this->key, '/');
+    }
+
     public function isSameAs(self $other): bool
     {
         return $this->key === $other->key;

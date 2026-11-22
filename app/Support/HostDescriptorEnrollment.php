@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Contracts\DriverCatalogue;
 use App\Exceptions\HostDescriptorRepeated;
+use App\Models\DriverApproval;
 use App\Values\DriverRegistration;
 use App\Values\EnrolledDescriptor;
 use App\Values\HostDescriptor;
@@ -23,6 +24,8 @@ final readonly class HostDescriptorEnrollment
 
     public const string BUILD_UNAPPROVED = 'The host runs a build of this driver the journal has not approved.';
 
+    public const string REGISTRATION_UNAPPROVED = 'The owner has not approved this third-party driver yet.';
+
     public function __construct(private DriverCatalogue $drivers) {}
 
     /**
@@ -39,6 +42,8 @@ final readonly class HostDescriptorEnrollment
             $registrations[(string) $registration->key] = $registration;
         }
 
+        $approvals = DriverApproval::buildsByKey(array_keys($registrations));
+
         $seen = [];
         $enrolled = [];
 
@@ -50,14 +55,20 @@ final readonly class HostDescriptorEnrollment
             }
 
             $seen[$key] = true;
-            $enrolled[] = $this->enrolledOf($descriptor, $registrations[$key] ?? null);
+            $enrolled[] = $this->enrolledOf($descriptor, $registrations[$key] ?? null, $approvals);
         }
 
         return $enrolled;
     }
 
-    private function enrolledOf(HostDescriptor $descriptor, DriverRegistration|null $registration): EnrolledDescriptor
-    {
+    /**
+     * @param  array<string, list<string>>  $approvals  the approved builds of each approved third-party driver
+     */
+    private function enrolledOf(
+        HostDescriptor $descriptor,
+        DriverRegistration|null $registration,
+        array $approvals,
+    ): EnrolledDescriptor {
         if ($registration === null) {
             return EnrolledDescriptor::unavailable($descriptor, self::UNKNOWN_DRIVER, null);
         }
@@ -66,7 +77,15 @@ final readonly class HostDescriptorEnrollment
             return EnrolledDescriptor::unavailable($descriptor, self::PROTOCOL_INCOMPATIBLE, $registration);
         }
 
-        if ($registration->buildPins !== [] && ! in_array($descriptor->build, $registration->buildPins, true)) {
+        $key = (string) $registration->key;
+
+        if ($registration->key->isThirdParty() && ! array_key_exists($key, $approvals)) {
+            return EnrolledDescriptor::unavailable($descriptor, self::REGISTRATION_UNAPPROVED, $registration);
+        }
+
+        $builds = $approvals[$key] ?? $registration->buildPins;
+
+        if ($builds !== [] && ! in_array($descriptor->build, $builds, true)) {
             return EnrolledDescriptor::unavailable($descriptor, self::BUILD_UNAPPROVED, $registration);
         }
 

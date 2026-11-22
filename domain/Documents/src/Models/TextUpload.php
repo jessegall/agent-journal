@@ -7,7 +7,7 @@ namespace Domain\Documents\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\ReadableModel;
-use App\Support\SessionProvenance;
+use App\Contracts\SessionProvenance;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadChunkConflict;
