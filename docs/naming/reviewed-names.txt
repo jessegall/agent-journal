@@ -538,6 +538,7 @@ case	LayoutTag::Box
 case	LayoutTag::Collection
 case	LayoutTag::Field
 case	LayoutTag::Form
+case	LayoutTag::Menu
 case	LayoutTag::Native
 case	LayoutTag::Notice
 case	LayoutTag::Tabs
@@ -1908,6 +1909,7 @@ class	BuiltInProfiles
 class	BuiltinResult
 class	BuiltinSteps
 class	BundleActivated
+class	BundleListPartData
 class	BundleRowData
 class	BusyReplyData
 class	Button
@@ -2646,7 +2648,6 @@ class	DocumentFilters
 class	DocumentLinkRecords
 class	DocumentMissing
 class	DocumentOpened
-class	DocumentPageData
 class	DocumentPages
 class	DocumentPolicy
 class	DocumentPublished
@@ -2684,6 +2685,7 @@ class	DraftClosed
 class	DraftClosing
 class	DraftConflict
 class	DraftEditing
+class	DraftEditorPartData
 class	DraftExpectations
 class	DraftHeld
 class	DraftKept
@@ -2995,6 +2997,7 @@ class	GatedListeners
 class	GatewayActionRequest
 class	GatewayChildren
 class	GatewayConfiguration
+class	GatewayConfigurePartData
 class	GatewayEndpoint
 class	GatewayHealth
 class	GatewayLeaseRefused
@@ -3008,7 +3011,6 @@ class	GatewaySecretRefused
 class	GatewaySecrets
 class	GatewaySettings
 class	GatewaySettingsCast
-class	GatewaySettingsData
 class	GatewaySettingsResolver
 class	GatewaySetupCheck
 class	GatewayStarts
@@ -3107,7 +3109,6 @@ class	HideReceiptsOfLostSeats
 class	HideUnseatedNotifications
 class	HideUnseatedNotificationsHandler
 class	HistoryPage
-class	HistoryPageData
 class	HistoryPageResolver
 class	HistoryRequest
 class	HoldAccountUses
@@ -3191,10 +3192,9 @@ class	InboxHistoryRequest
 class	InboxHistoryTool
 class	InboxMembers
 class	InboxMembership
+class	InboxMessagesPartData
 class	InboxNotices
-class	InboxPageData
 class	InboxPageResolver
-class	InboxPanelData
 class	InboxProviderInvalid
 class	InboxRecord
 class	InboxUnavailable
@@ -3277,6 +3277,7 @@ class	InvalidExports
 class	InvalidHeldCount
 class	InvalidHookAnswer
 class	InvalidListener
+class	InvalidMenuDeclaration
 class	InvalidNavigationDeclaration
 class	InvalidObservationAnswer
 class	InvalidPageDeclaration
@@ -3360,6 +3361,9 @@ class	LayoutData
 class	LayoutFieldData
 class	LayoutFormData
 class	LayoutLimits
+class	LayoutMenuData
+class	LayoutMenuGroupData
+class	LayoutMenuItemData
 class	LayoutNativeData
 class	LayoutPartData
 class	LayoutRefused
@@ -3562,10 +3566,12 @@ class	MemoryServiceProvider
 class	MemorySkill
 class	MemoryUnavailable
 class	MemoryWriteTool
+class	Menu
 class	MenuEntry
 class	MenuEntryBuild
 class	MenuEntryRefused
 class	MenuEntryStaleData
+class	MenuItem
 class	MenuListTool
 class	MenuRetireTool
 class	MenuShowTool
@@ -3677,15 +3683,19 @@ class	NavigationAnswer
 class	NavigationAnswerCheck
 class	NavigationAnswerRefused
 class	NavigationAnswerTool
+class	NavigationCandidate
 class	NavigationCountsData
 class	NavigationData
 class	NavigationDispatch
 class	NavigationDoneTool
 class	NavigationExpiry
 class	NavigationGiveUpTool
+class	NavigationGroupData
+class	NavigationIndex
 class	NavigationItem
 class	NavigationItemData
 class	NavigationLibrary
+class	NavigationMerge
 class	NavigationProof
 class	NavigationProofRefused
 class	NavigationRaiseAnswer
@@ -4553,8 +4563,8 @@ class	RecordImmutable
 class	RecordInspection
 class	RecordLinkPolicy
 class	RecordLinksPartData
+class	RecordMenus
 class	RecordNotFound
-class	RecordPageData
 class	RecordPageReads
 class	RecordPageRequest
 class	RecordPhaseCheck
@@ -4621,10 +4631,12 @@ class	RecoverDocumentHandler
 class	RecoverDocumentPageController
 class	RecoverDraft
 class	RecoverDraftHandler
+class	RecoverDraftPartData
 class	RecoverDraftTool
 class	RecoverProjectBinding
 class	RecoverProjectBindingHandler
 class	RecoveryCall
+class	RecoveryRefusalPartData
 class	RedactInstallSecrets
 class	RedeemProjectInvitation
 class	RedeemProjectInvitationController
@@ -4687,12 +4699,15 @@ class	RegisteredCondition
 class	RegisteredInboxDestinations
 class	RegisteredInboxes
 class	RegisteredKeyword
+class	RegisteredMenu
+class	RegisteredMenuItem
 class	RegisteredMiddleware
 class	RegisteredNavigation
 class	RegisteredPage
 class	RegisteredPolicies
 class	RegisteredSection
 class	RegisteredSettingCommands
+class	RegisteredSidebarGroup
 class	RegisteredStateFactory
 class	Registry
 class	RejectProposalCall
@@ -4881,7 +4896,6 @@ class	RequestKeyConflict
 class	RequestKeyExpired
 class	RequestKeyInvalid
 class	RequestKeyMissing
-class	RequestListData
 class	RequestListResolver
 class	RequestOutcomeController
 class	RequestOutcomeData
@@ -5136,7 +5150,6 @@ class	RunKeyScriptHandler
 class	RunKeyword
 class	RunLifecycleAnswers
 class	RunLinePipeline
-class	RunListData
 class	RunListResolver
 class	RunNamedAdmissionPipeline
 class	RunNotificationTarget
@@ -5192,7 +5205,6 @@ class	RuntimeStart
 class	RuntimeStatus
 class	RuntimeStatusResolver
 class	RuntimeStatuses
-class	RuntimesData
 class	SampleApproved
 class	SampleData
 class	SampleOutcome
@@ -5429,12 +5441,12 @@ class	ShareBudgetExceeded
 class	ShareCandidateData
 class	ShareCandidates
 class	ShareContentRead
+class	ShareControlsPartData
 class	ShareCreateCommand
 class	ShareCreated
 class	ShareCursor
 class	ShareCursorData
 class	ShareCursors
-class	ShareDetailData
 class	ShareDetailResolver
 class	ShareDuration
 class	ShareDurationInvalid
@@ -5460,7 +5472,6 @@ class	ShareLinkRefused
 class	ShareLinkResolver
 class	ShareLinkedCandidate
 class	ShareListCommand
-class	ShareListData
 class	ShareListFilters
 class	ShareListRequest
 class	ShareListResolver
@@ -5583,6 +5594,7 @@ class	ShowProfileRunController
 class	ShowRecordRequest
 class	ShowReportCall
 class	ShowReportController
+class	SidebarGroup
 class	SignInAgainController
 class	SignInAgainRequest
 class	SignInAnswerRefused
@@ -6726,6 +6738,7 @@ constant	DocumentPages::REVISIONS
 constant	DocumentPages::TOOL
 constant	DocumentRevision::LINK_TYPE
 constant	DocumentType::VALUE
+constant	DocumentsDomain::DOCUMENT_ACTIONS
 constant	DocumentsDomain::SHARE_LINKED_RECORD
 constant	Domain::TRAIT_OF_CAPABILITY
 constant	DomainEventServiceProvider::LANES
@@ -7040,8 +7053,6 @@ constant	PrivatePlaceScan::PLACE
 constant	PrivatePlaceScan::PRIVATE_PLACES
 constant	ProbeChallenges::SECONDS
 constant	ProcessEvent::OPERATIONAL_ERROR
-constant	ProcessPages::LIST_VIEW
-constant	ProcessPages::WINDOW
 constant	ProcessRun::DOCK_PART_LIMIT
 constant	ProcessRun::DOCK_TYPE
 constant	Profile::LINK_TYPE
@@ -7947,6 +7958,7 @@ interface	McpCall
 interface	McpRegistration
 interface	McpToolProvider
 interface	MemoryResolver
+interface	MenuProvider
 interface	MergeAdmission
 interface	MessageCommand
 interface	MessageRecipient
@@ -8008,6 +8020,7 @@ interface	ReceiptRefusal
 interface	RecipientStateLoader
 interface	RecordCommand
 interface	RecordLinker
+interface	RecordMenus
 interface	RecordPolicy
 interface	RecordProvider
 interface	RecordProviderRegistration
@@ -8074,6 +8087,7 @@ interface	SharedHolders
 interface	ShellAdmission
 interface	ShellCommandParser
 interface	ShownOnAccounts
+interface	SidebarGroupProvider
 interface	SignInHost
 interface	SignInProtocol
 interface	Skill
@@ -8426,6 +8440,7 @@ method	AccountUses::history()
 method	AccountsChanged::__construct()
 method	AccountsWindowResolver::__construct()
 method	AccountsWindowResolver::read()
+method	AccountsWindowResolver::startsOf()
 method	ActionRoute::__construct()
 method	ActionRoute::delete()
 method	ActionRoute::get()
@@ -10082,6 +10097,7 @@ method	BundleActivated::__construct()
 method	BundleActivated::forApproval()
 method	BundleActivated::project()
 method	BundleActivated::staleReason()
+method	BundleListPartData::__construct()
 method	BundleRowData::__construct()
 method	BundleRowData::fromBundle()
 method	BusyReplyData::__construct()
@@ -10329,6 +10345,7 @@ method	ChatDomain::commands()
 method	ChatDomain::description()
 method	ChatDomain::exports()
 method	ChatDomain::mcpResources()
+method	ChatDomain::nativeParts()
 method	ChatDomain::navigation()
 method	ChatDomain::overviewContributions()
 method	ChatDomain::pages()
@@ -12367,7 +12384,6 @@ method	DocumentMissing::identified()
 method	DocumentMissing::numbered()
 method	DocumentMissing::refusalCode()
 method	DocumentOpened::__construct()
-method	DocumentPageData::__construct()
 method	DocumentPages::__construct()
 method	DocumentPages::body()
 method	DocumentPages::document()
@@ -12423,13 +12439,20 @@ method	DocumentShareProvider::linkType()
 method	DocumentShareProvider::mayDisclose()
 method	DocumentView::__construct()
 method	DocumentWindowResolver::__construct()
+method	DocumentWindowResolver::detailsOf()
+method	DocumentWindowResolver::editingOf()
+method	DocumentWindowResolver::historyOf()
+method	DocumentWindowResolver::holderOf()
 method	DocumentWindowResolver::read()
+method	DocumentWindowResolver::textOf()
 method	DocumentsDomain::commands()
 method	DocumentsDomain::description()
 method	DocumentsDomain::exports()
 method	DocumentsDomain::linkRecords()
 method	DocumentsDomain::mcpResources()
 method	DocumentsDomain::mcpTools()
+method	DocumentsDomain::menuItems()
+method	DocumentsDomain::menus()
 method	DocumentsDomain::nativeParts()
 method	DocumentsDomain::navigation()
 method	DocumentsDomain::numberedModels()
@@ -12591,6 +12614,7 @@ method	DraftConflict::stale()
 method	DraftConflict::withoutVersion()
 method	DraftEditing::__construct()
 method	DraftEditing::saveEdit()
+method	DraftEditorPartData::__construct()
 method	DraftExpectations::__construct()
 method	DraftExpectations::fromOptions()
 method	DraftExpectations::revisionOf()
@@ -12916,6 +12940,7 @@ method	EditTaskHandler::handle()
 method	EditTaskTool::command()
 method	EditTaskTool::present()
 method	EditTaskTool::writeSchema()
+method	EditingState::word()
 method	Effect::__construct()
 method	EffectiveCommand::__construct()
 method	ElapsedTime::__construct()
@@ -13651,6 +13676,7 @@ method	GatewayChildren::keep()
 method	GatewayChildren::stop()
 method	GatewayConfiguration::__construct()
 method	GatewayConfiguration::gatewayKey()
+method	GatewayConfigurePartData::__construct()
 method	GatewayEndpoint::__construct()
 method	GatewayEndpoint::forOperation()
 method	GatewayEndpoint::referenceOf()
@@ -13691,9 +13717,12 @@ method	GatewaySecrets::store()
 method	GatewaySettings::__construct()
 method	GatewaySettingsCast::get()
 method	GatewaySettingsCast::set()
-method	GatewaySettingsData::__construct()
 method	GatewaySettingsResolver::__construct()
+method	GatewaySettingsResolver::actionsOf()
+method	GatewaySettingsResolver::dependentsOf()
 method	GatewaySettingsResolver::read()
+method	GatewaySettingsResolver::readinessOf()
+method	GatewaySettingsResolver::rowOf()
 method	GatewaySetupCheck::__construct()
 method	GatewaySetupCheck::isComplete()
 method	GatewaySetupCheck::passed()
@@ -13968,8 +13997,8 @@ method	HideUnseatedNotificationsHandler::__construct()
 method	HideUnseatedNotificationsHandler::handle()
 method	HideUnseatedNotificationsHandler::hideOutsideSeats()
 method	HistoryPage::__construct()
-method	HistoryPageData::__construct()
 method	HistoryPageResolver::__construct()
+method	HistoryPageResolver::messageOf()
 method	HistoryPageResolver::read()
 method	HistoryRequest::chosenInbox()
 method	HistoryRequest::olderCursor()
@@ -14265,13 +14294,13 @@ method	InboxHistoryTool::read()
 method	InboxHistoryTool::schema()
 method	InboxMembers::__construct()
 method	InboxMembership::__construct()
+method	InboxMessagesPartData::__construct()
 method	InboxNotices::__construct()
 method	InboxNotices::send()
 method	InboxNotices::sendFromJournal()
-method	InboxPageData::__construct()
 method	InboxPageResolver::__construct()
+method	InboxPageResolver::cardOf()
 method	InboxPageResolver::read()
-method	InboxPanelData::__construct()
 method	InboxProvider::inboxFor()
 method	InboxProviderInvalid::notAProvider()
 method	InboxProviderInvalid::repeated()
@@ -14482,6 +14511,10 @@ method	InvalidListener::staleCache()
 method	InvalidListener::stateCacheChanged()
 method	InvalidListener::stateRegisteredByHand()
 method	InvalidListener::unknownOwner()
+method	InvalidMenuDeclaration::contextMismatch()
+method	InvalidMenuDeclaration::menuMissing()
+method	InvalidMenuDeclaration::targetMissing()
+method	InvalidNavigationDeclaration::groupMissing()
 method	InvalidNavigationDeclaration::nothingToOpen()
 method	InvalidNavigationDeclaration::pageMissing()
 method	InvalidNavigationDeclaration::rootOnlyOnChild()
@@ -14730,6 +14763,9 @@ method	LayoutBodyData::fromMarkdown()
 method	LayoutData::__construct()
 method	LayoutFieldData::__construct()
 method	LayoutFormData::__construct()
+method	LayoutMenuData::__construct()
+method	LayoutMenuGroupData::__construct()
+method	LayoutMenuItemData::__construct()
 method	LayoutNativeData::__construct()
 method	LayoutNativeData::of()
 method	LayoutPartData::__construct()
@@ -14743,6 +14779,7 @@ method	LayoutPartData::box()
 method	LayoutPartData::collection()
 method	LayoutPartData::field()
 method	LayoutPartData::form()
+method	LayoutPartData::menu()
 method	LayoutPartData::native()
 method	LayoutPartData::notice()
 method	LayoutPartData::tabs()
@@ -15304,6 +15341,9 @@ method	MemorySkill::sections()
 method	MemoryUnavailable::forId()
 method	MemoryUnavailable::refusalCode()
 method	MemoryWriteTool::present()
+method	Menu::__construct()
+method	Menu::general()
+method	Menu::record()
 method	MenuEntry::builds()
 method	MenuEntry::casts()
 method	MenuEntry::create()
@@ -15333,10 +15373,18 @@ method	MenuEntryRefused::changedSinceRead()
 method	MenuEntryRefused::notFound()
 method	MenuEntryStaleData::__construct()
 method	MenuEntryState::isUsable()
+method	MenuItem::__construct()
+method	MenuItem::inGroup()
+method	MenuItem::opens()
+method	MenuItem::sends()
+method	MenuItem::visibleWhen()
+method	MenuItem::withIcon()
 method	MenuListTool::__construct()
 method	MenuListTool::page()
 method	MenuListTool::read()
 method	MenuListTool::schema()
+method	MenuProvider::menuItems()
+method	MenuProvider::menus()
 method	MenuRetireTool::command()
 method	MenuRetireTool::present()
 method	MenuRetireTool::writeSchema()
@@ -15781,6 +15829,11 @@ method	NavigationAnswerTool::answerOf()
 method	NavigationAnswerTool::command()
 method	NavigationAnswerTool::present()
 method	NavigationAnswerTool::writeSchema()
+method	NavigationCandidate::__construct()
+method	NavigationCandidate::depth()
+method	NavigationCandidate::key()
+method	NavigationCandidate::withChildren()
+method	NavigationCandidate::withDescendants()
 method	NavigationChildren::children()
 method	NavigationCountsData::__construct()
 method	NavigationData::__construct()
@@ -15795,6 +15848,11 @@ method	NavigationExpiry::expireDue()
 method	NavigationGiveUpTool::command()
 method	NavigationGiveUpTool::present()
 method	NavigationGiveUpTool::writeSchema()
+method	NavigationGroupData::__construct()
+method	NavigationIndex::__construct()
+method	NavigationIndex::counted()
+method	NavigationIndex::entries()
+method	NavigationIndex::groupKeys()
 method	NavigationItem::__construct()
 method	NavigationItem::assertNoLooseValues()
 method	NavigationItem::atFoot()
@@ -15807,6 +15865,15 @@ method	NavigationItem::visibleWhen()
 method	NavigationItem::withChildren()
 method	NavigationItemData::__construct()
 method	NavigationLibrary::save()
+method	NavigationMerge::__construct()
+method	NavigationMerge::declaredKeys()
+method	NavigationMerge::droppedContributions()
+method	NavigationMerge::gathered()
+method	NavigationMerge::index()
+method	NavigationMerge::isVisible()
+method	NavigationMerge::listedChildren()
+method	NavigationMerge::pruned()
+method	NavigationMerge::rootsInOrder()
 method	NavigationProof::__construct()
 method	NavigationProof::against()
 method	NavigationProof::backwards()
@@ -15837,25 +15904,19 @@ method	NavigationReader::menuEntry()
 method	NavigationReader::menuEntryCount()
 method	NavigationReader::navigationRequest()
 method	NavigationRecords::__construct()
-method	NavigationRecords::childrenOf()
-method	NavigationRecords::countedItems()
 method	NavigationRecords::counts()
 method	NavigationRecords::current()
-method	NavigationRecords::flatten()
-method	NavigationRecords::isVisible()
+method	NavigationRecords::itemData()
 method	NavigationRecords::matchScore()
 method	NavigationRecords::menuEntries()
 method	NavigationRecords::menuEntry()
 method	NavigationRecords::menuEntryCount()
 method	NavigationRecords::menuQuery()
 method	NavigationRecords::navigationRequest()
-method	NavigationRecords::paths()
-method	NavigationRecords::registeredItem()
-method	NavigationRecords::rootsInOrder()
+method	NavigationRecords::outranks()
 method	NavigationRecords::staleHint()
 method	NavigationRecords::tree()
 method	NavigationRecords::urlOf()
-method	NavigationRecords::visible()
 method	NavigationRequest::abandon()
 method	NavigationRequest::answer()
 method	NavigationRequest::assignmentIdentity()
@@ -17011,6 +17072,7 @@ method	PlanTaskPoolFactory::open()
 method	PlanTaskPoolFactory::plan()
 method	PlanTaskPoolFactory::validate()
 method	PlanWindowResolver::__construct()
+method	PlanWindowResolver::factsOf()
 method	PlanWindowResolver::read()
 method	PlanWord::__construct()
 method	PlanWord::literal()
@@ -17034,6 +17096,7 @@ method	PlansDomain::description()
 method	PlansDomain::exports()
 method	PlansDomain::linkRecords()
 method	PlansDomain::mcpResources()
+method	PlansDomain::nativeParts()
 method	PlansDomain::navigation()
 method	PlansDomain::numberedModels()
 method	PlansDomain::overviewContributions()
@@ -17278,6 +17341,7 @@ method	ProcessGrants::everything()
 method	ProcessGrants::readingOnly()
 method	ProcessPages::declarations()
 method	ProcessPages::listPage()
+method	ProcessPages::nativeParts()
 method	ProcessPages::pages()
 method	ProcessPages::requestPage()
 method	ProcessPages::runOutcomePage()
@@ -17593,6 +17657,7 @@ method	Profiles::evaluate()
 method	Profiles::keyTexts()
 method	Profiles::toArray()
 method	ProfilesPages::declarations()
+method	ProfilesPages::nativeParts()
 method	ProfilesPages::navigation()
 method	ProfilesPages::pages()
 method	ProfilesPages::sections()
@@ -17964,6 +18029,7 @@ method	PublicationPage::chosenTab()
 method	PublicationPage::content()
 method	PublicationPage::layout()
 method	PublicationPage::make()
+method	PublicationPage::withStanding()
 method	PublicationPages::__construct()
 method	PublicationPages::comments()
 method	PublicationPages::summary()
@@ -18555,10 +18621,12 @@ method	RecordLinker::link()
 method	RecordLinker::linkFrom()
 method	RecordLinker::unlink()
 method	RecordLinksPartData::__construct()
-method	RecordPageData::__construct()
-method	RecordPageData::dockSource()
-method	RecordPageData::fromDocumentView()
-method	RecordPageData::fromReportView()
+method	RecordMenus::__construct()
+method	RecordMenus::general()
+method	RecordMenus::isVisible()
+method	RecordMenus::itemData()
+method	RecordMenus::menuOf()
+method	RecordMenus::onRecord()
 method	RecordPageReads::__construct()
 method	RecordPageReads::of()
 method	RecordPageRequest::chosenTab()
@@ -18744,12 +18812,14 @@ method	RecoverDocumentPageController::__invoke()
 method	RecoverDraft::__construct()
 method	RecoverDraftHandler::__construct()
 method	RecoverDraftHandler::handle()
+method	RecoverDraftPartData::__construct()
 method	RecoverDraftTool::command()
 method	RecoverDraftTool::writeSchema()
 method	RecoverProjectBinding::__construct()
 method	RecoverProjectBindingHandler::handle()
 method	RecoveryCall::__construct()
 method	RecoveryCall::toArray()
+method	RecoveryRefusalPartData::__construct()
 method	RedactInstallSecrets::__invoke()
 method	RedeemProjectInvitation::__construct()
 method	RedeemProjectInvitationController::__invoke()
@@ -19001,6 +19071,13 @@ method	RegisteredInboxes::named()
 method	RegisteredInboxes::register()
 method	RegisteredInboxes::resolve()
 method	RegisteredKeyword::__construct()
+method	RegisteredMenu::__construct()
+method	RegisteredMenu::of()
+method	RegisteredMenu::parameters()
+method	RegisteredMenuItem::__construct()
+method	RegisteredMenuItem::of()
+method	RegisteredMenuItem::targetOf()
+method	RegisteredMenuItem::visibilityChecks()
 method	RegisteredMiddleware::__construct()
 method	RegisteredMiddleware::appliesTo()
 method	RegisteredMiddleware::middlewareClass()
@@ -19046,6 +19123,8 @@ method	RegisteredSettingCommands::resetGroup()
 method	RegisteredSettingCommands::settingReference()
 method	RegisteredSettingCommands::string()
 method	RegisteredSettingCommands::stringChoice()
+method	RegisteredSidebarGroup::__construct()
+method	RegisteredSidebarGroup::of()
 method	RegisteredStateFactory::__construct()
 method	RegisteredStateFactory::frameFor()
 method	RegisteredStateFactory::isEnabled()
@@ -19458,9 +19537,10 @@ method	RequestKeyInvalid::status()
 method	RequestKeyMissing::for()
 method	RequestKeyMissing::refusalCode()
 method	RequestKeyMissing::status()
-method	RequestListData::__construct()
 method	RequestListResolver::__construct()
 method	RequestListResolver::read()
+method	RequestListResolver::requestsOf()
+method	RequestListResolver::rulesOf()
 method	RequestOutcomeController::__invoke()
 method	RequestOutcomeData::__construct()
 method	RequestOutcomeData::of()
@@ -20090,7 +20170,6 @@ method	RunKeyword::flow()
 method	RunLifecycleAnswers::__construct()
 method	RunLifecycleAnswers::handle()
 method	RunLinePipeline::pipes()
-method	RunListData::__construct()
 method	RunListResolver::__construct()
 method	RunListResolver::read()
 method	RunLogicalResult::ofRootStatus()
@@ -20231,11 +20310,11 @@ method	RuntimeStart::of()
 method	RuntimeStart::toArray()
 method	RuntimeStatus::__construct()
 method	RuntimeStatusResolver::__construct()
+method	RuntimeStatusResolver::cardOf()
 method	RuntimeStatusResolver::read()
 method	RuntimeStatuses::ofRequest()
 method	RuntimeStatuses::ofRuntime()
 method	RuntimeStops::stopAgent()
-method	RuntimesData::__construct()
 method	SampleApproved::__construct()
 method	SampleData::__construct()
 method	SampleData::fromPermit()
@@ -20996,6 +21075,7 @@ method	ShareCandidates::notSharedYet()
 method	ShareCandidates::selection()
 method	ShareCandidates::sourceOf()
 method	ShareContentRead::__construct()
+method	ShareControlsPartData::__construct()
 method	ShareCreateCommand::handle()
 method	ShareCreated::__construct()
 method	ShareCursor::__construct()
@@ -21008,9 +21088,9 @@ method	ShareCursors::encode()
 method	ShareCursors::read()
 method	ShareCursors::signatureOf()
 method	ShareCursors::write()
-method	ShareDetailData::__construct()
-method	ShareDetailData::fromShare()
 method	ShareDetailResolver::__construct()
+method	ShareDetailResolver::auditOf()
+method	ShareDetailResolver::factsOf()
 method	ShareDetailResolver::read()
 method	ShareDuration::__construct()
 method	ShareDuration::deadlineFrom()
@@ -21138,12 +21218,14 @@ method	ShareLinkedCandidate::isApprovedAmong()
 method	ShareLinkedCandidate::recordId()
 method	ShareLinkedCandidate::toSelectedTarget()
 method	ShareListCommand::handle()
-method	ShareListData::__construct()
 method	ShareListFilters::__construct()
 method	ShareListRequest::filters()
 method	ShareListRequest::rules()
 method	ShareListResolver::__construct()
+method	ShareListResolver::filtersOf()
+method	ShareListResolver::isFiltered()
 method	ShareListResolver::read()
+method	ShareListResolver::rowsOf()
 method	ShareMember::approvedLinkIdsOf()
 method	ShareMember::approvedTargetsFrom()
 method	ShareMember::approvesOverLiveLink()
@@ -21264,6 +21346,7 @@ method	ShareRelationSet::none()
 method	ShareRelationSet::owned()
 method	ShareRelationSet::with()
 method	ShareRequest::auditAfter()
+method	ShareRequest::chosenTab()
 method	ShareRequest::rules()
 method	ShareRequestPolicy::model()
 method	ShareRequested::__construct()
@@ -21347,6 +21430,7 @@ method	SharingNotAllowed::status()
 method	SharingOwnerCheck::__construct()
 method	SharingOwnerCheck::allows()
 method	SharingPages::declarations()
+method	SharingPages::nativeParts()
 method	SharingPages::pages()
 method	SharingPolicy::model()
 method	SharingServiceProvider::boot()
@@ -21502,6 +21586,9 @@ method	ShowReportCall::__construct()
 method	ShowReportController::__invoke()
 method	ShownOnAccounts::driver()
 method	ShownOnAccounts::subjectId()
+method	SidebarGroup::__construct()
+method	SidebarGroup::make()
+method	SidebarGroupProvider::sidebarGroups()
 method	SignInAgainController::__invoke()
 method	SignInAgainRequest::accountId()
 method	SignInAgainRequest::rules()
@@ -23946,6 +24033,9 @@ method	UiDeclarations::assertUniqueKeys()
 method	UiDeclarations::check()
 method	UiDeclarations::childrenOf()
 method	UiDeclarations::declares()
+method	UiDeclarations::menu()
+method	UiDeclarations::menuItems()
+method	UiDeclarations::menuItemsOf()
 method	UiDeclarations::nativeParts()
 method	UiDeclarations::navigation()
 method	UiDeclarations::ownerOf()
@@ -23957,6 +24047,7 @@ method	UiDeclarations::refuseRepeatedPropNames()
 method	UiDeclarations::refuseRepeatedRoutes()
 method	UiDeclarations::sections()
 method	UiDeclarations::sectionsIn()
+method	UiDeclarations::sidebarGroup()
 method	UiDeclarations::visibilityChecksOf()
 method	UiKeyInvalid::notLocal()
 method	UiKeyRepeated::inDomain()
@@ -24243,7 +24334,10 @@ method	WatchedRuntimes::isWatched()
 method	WatchedRuntimes::version()
 method	WatchedRuntimes::versionOf()
 method	WebPages::declarations()
+method	WebPages::nativeParts()
+method	WebPages::navigation()
 method	WebPages::pages()
+method	WebPages::sidebarGroups()
 method	WebServiceProvider::boot()
 method	WebServiceProvider::fieldOf()
 method	WebServiceProvider::refusalAnswer()
@@ -24686,6 +24780,7 @@ parameter	$beats
 parameter	$because
 parameter	$before
 parameter	$beforeSequence
+parameter	$bestRank
 parameter	$bg
 parameter	$billingLabel
 parameter	$billingNote
@@ -24944,6 +25039,7 @@ parameter	$configurationVersion
 parameter	$configured
 parameter	$confinement
 parameter	$confirm
+parameter	$confirmation
 parameter	$conflict
 parameter	$conflicts
 parameter	$connection
@@ -24975,6 +25071,8 @@ parameter	$contract
 parameter	$contractLabel
 parameter	$contractVersion
 parameter	$contracts
+parameter	$contribution
+parameter	$contributionPaths
 parameter	$controlPort
 parameter	$controller
 parameter	$controllers
@@ -25168,6 +25266,7 @@ parameter	$driverPinned
 parameter	$driverSource
 parameter	$driverVersion
 parameter	$drivers
+parameter	$dropped
 parameter	$due
 parameter	$duration
 parameter	$durationMilliseconds
@@ -25249,6 +25348,7 @@ parameter	$environments
 parameter	$epoch
 parameter	$error
 parameter	$errorDetails
+parameter	$errorKey
 parameter	$errorReason
 parameter	$errors
 parameter	$escalation
@@ -25633,9 +25733,9 @@ parameter	$isHeldForCheck
 parameter	$isHistorical
 parameter	$isInForm
 parameter	$isInsideFilter
-parameter	$isInspection
 parameter	$isInterface
 parameter	$isJobSource
+parameter	$isKeyed
 parameter	$isKnown
 parameter	$isLimit
 parameter	$isLive
@@ -25695,11 +25795,16 @@ parameter	$item	app/Agents/Values/ProtectedItem.php
 parameter	$item	app/Agents/Values/ProtectionReport.php
 parameter	$item	app/Communication/Data/NotificationChangeItem.php
 parameter	$item	app/Communication/Resolvers/Support/NotificationFeed.php
+parameter	$item	app/Ui/Declarations/RegisteredMenuItem.php
 parameter	$item	app/Ui/Declarations/RegisteredNavigation.php
+parameter	$item	app/Ui/Exceptions/InvalidMenuDeclaration.php
+parameter	$item	app/Ui/Support/UiDeclarations.php
+parameter	$item	app/Web/Support/RecordMenus.php
 parameter	$itemValue
 parameter	$items	app/Agents/Data/ProtectionReportData.php
 parameter	$items	app/Agents/Values/ProtectionReport.php
 parameter	$items	app/Communication/Data/NotificationPage.php
+parameter	$items	app/Ui/Layout/LayoutMenuGroupData.php
 parameter	$job
 parameter	$jobId
 parameter	$jobState
@@ -25887,6 +25992,12 @@ parameter	$memory
 parameter	$memoryBytes
 parameter	$memoryId
 parameter	$memorySwapBytes
+parameter	$menu
+parameter	$menuItem
+parameter	$menuItems
+parameter	$menuKey
+parameter	$menuOf
+parameter	$menus
 parameter	$merge
 parameter	$mergeDecisionId
 parameter	$mermaid
@@ -26046,6 +26157,7 @@ parameter	$occupant
 parameter	$occurredAt
 parameter	$occurrence
 parameter	$occurrenceKey
+parameter	$occurrences
 parameter	$of
 parameter	$ofType
 parameter	$offer
@@ -26150,7 +26262,6 @@ parameter	$pagination
 parameter	$pair
 parameter	$pairs
 parameter	$paneKey
-parameter	$panels
 parameter	$param
 parameter	$parameter
 parameter	$parameterText
@@ -26383,7 +26494,6 @@ parameter	$publicationId
 parameter	$publicationPending
 parameter	$publicationVersion
 parameter	$publications
-parameter	$publiclyShared
 parameter	$published
 parameter	$publishedAt
 parameter	$publishedPorts
@@ -26858,6 +26968,7 @@ parameter	$shortName
 parameter	$shortfall
 parameter	$shown
 parameter	$shownIds
+parameter	$sidebarGroups
 parameter	$sides
 parameter	$signIn
 parameter	$signInMethod
@@ -26926,6 +27037,7 @@ parameter	$staleEntryId
 parameter	$staleReason
 parameter	$staleScreen
 parameter	$stalledStep
+parameter	$standing
 parameter	$start
 parameter	$startAccounts
 parameter	$startCommand
@@ -28416,6 +28528,7 @@ property	BuiltinResult::$stdout
 property	BundleActivated::$digest
 property	BundleActivated::$module
 property	BundleActivated::$projectKey
+property	BundleListPartData::$bundles
 property	BundleRowData::$digest
 property	BundleRowData::$module
 property	BundleRowData::$rules
@@ -29726,10 +29839,6 @@ property	DocumentLinkRecords::$actors
 property	DocumentLinkRecords::$changes
 property	DocumentOpened::$documentId
 property	DocumentOpened::$number
-property	DocumentPageData::$editing
-property	DocumentPageData::$number
-property	DocumentPageData::$record
-property	DocumentPageData::$revisions
 property	DocumentPages::$chunks
 property	DocumentPages::$continuations
 property	DocumentPages::$pages
@@ -29758,6 +29867,7 @@ property	DocumentView::$title
 property	DocumentWindowResolver::$comments
 property	DocumentWindowResolver::$documents
 property	DocumentWindowResolver::$drafts
+property	DocumentWindowResolver::$menus
 property	DocumentWindowResolver::$reads
 property	DocumentWindowResolver::$records
 property	DocumentWindowResolver::$request
@@ -29787,6 +29897,8 @@ property	DomainTickableStateType::$loader
 property	DomainTickableStateType::$type
 property	DomainTypeWriter::$owners
 property	DomainUi::$key
+property	DomainUi::$menuItems
+property	DomainUi::$menus
 property	DomainUi::$name
 property	DomainUi::$namespace
 property	DomainUi::$nativeParts
@@ -29794,11 +29906,14 @@ property	DomainUi::$navigation
 property	DomainUi::$pages
 property	DomainUi::$scriptFolder
 property	DomainUi::$sections
+property	DomainUi::$sidebarGroups
 property	DraftClosed::$published
 property	DraftClosed::$revisionNumber
 property	DraftClosing::$editors
 property	DraftClosing::$provenance
 property	DraftEditing::$editors
+property	DraftEditorPartData::$draft
+property	DraftEditorPartData::$number
 property	DraftExpectations::$revisions
 property	DraftHeld::$baseRevisionNumber
 property	DraftHeld::$documentId
@@ -30445,6 +30560,7 @@ property	GatewayChildren::$children
 property	GatewayConfiguration::$configurationId
 property	GatewayConfiguration::$configurationVersion
 property	GatewayConfiguration::$settings
+property	GatewayConfigurePartData::$gatewayKeys
 property	GatewayEndpoint::$endpointVersion
 property	GatewayEndpoint::$processReference
 property	GatewayEndpoint::$publicOrigin
@@ -30476,9 +30592,6 @@ property	GatewaySettings::$listenerPort
 property	GatewaySettings::$providerHost
 property	GatewaySettings::$publicOrigin
 property	GatewaySettings::$secretReferences
-property	GatewaySettingsData::$gatewayKeys
-property	GatewaySettingsData::$isOffline
-property	GatewaySettingsData::$revisions
 property	GatewaySettingsResolver::$gateways
 property	GatewaySetupCheck::$problems
 property	GatewayStarts::$children
@@ -30644,9 +30757,6 @@ property	HideUnseatedNotificationsHandler::$receipts
 property	HideUnseatedNotificationsHandler::$scopes
 property	HistoryPage::$limit
 property	HistoryPage::$olderCursor
-property	HistoryPageData::$inboxId
-property	HistoryPageData::$isInspection
-property	HistoryPageData::$page
 property	HistoryPageResolver::$messages
 property	HistoryPageResolver::$request
 property	HoldAccountUses::$account
@@ -30792,6 +30902,8 @@ property	InboxHistoryTool::$conversations
 property	InboxMembers::$memberships
 property	InboxMembership::$actor
 property	InboxMembership::$seatReference
+property	InboxMessagesPartData::$inboxId
+property	InboxMessagesPartData::$messages
 property	InboxNotices::$accepted
 property	InboxNotices::$admission
 property	InboxNotices::$call
@@ -30800,10 +30912,7 @@ property	InboxNotices::$destinations
 property	InboxNotices::$entryDispatchers
 property	InboxNotices::$inboxes
 property	InboxNotices::$key
-property	InboxPageData::$panels
 property	InboxPageResolver::$messages
-property	InboxPanelData::$inbox
-property	InboxPanelData::$page
 property	InboxView::$counts
 property	InboxView::$inboxId
 property	InboxView::$label
@@ -31062,9 +31171,21 @@ property	LayoutData::$shape
 property	LayoutFieldData::$clears
 property	LayoutFieldData::$name
 property	LayoutFieldData::$value
+property	LayoutFormData::$confirmation
 property	LayoutFormData::$fixed
 property	LayoutFormData::$href
+property	LayoutFormData::$isKeyed
 property	LayoutFormData::$method
+property	LayoutMenuData::$groups
+property	LayoutMenuData::$key
+property	LayoutMenuData::$label
+property	LayoutMenuGroupData::$items
+property	LayoutMenuGroupData::$key
+property	LayoutMenuItemData::$href
+property	LayoutMenuItemData::$icon
+property	LayoutMenuItemData::$key
+property	LayoutMenuItemData::$label
+property	LayoutMenuItemData::$method
 property	LayoutNativeData::$component
 property	LayoutNativeData::$props
 property	LayoutPartData::$action
@@ -31074,6 +31195,7 @@ property	LayoutPartData::$detail
 property	LayoutPartData::$field
 property	LayoutPartData::$form
 property	LayoutPartData::$key
+property	LayoutPartData::$menu
 property	LayoutPartData::$native
 property	LayoutPartData::$rows
 property	LayoutPartData::$size
@@ -31087,6 +31209,7 @@ property	LayoutRowData::$href
 property	LayoutRowData::$isCurrent
 property	LayoutRowData::$key
 property	LayoutRowData::$label
+property	LayoutRowData::$menu
 property	LayoutRowData::$query
 property	LayoutRowData::$value
 property	LayoutTabData::$isChosen
@@ -31117,6 +31240,7 @@ property	LibraryEntryAnswer::$nextStep
 property	LibraryEntryAnswer::$proof
 property	LibraryEntryAnswer::$steps
 property	LibraryWindowResolver::$documents
+property	LibraryWindowResolver::$menus
 property	LibraryWindowResolver::$reports
 property	LibraryWindowResolver::$request
 property	LifecycleAnswer::$commands
@@ -31411,6 +31535,9 @@ property	MemoryResource::$memories
 property	MemoryResource::$reads
 property	MemorySaveCommand::$description
 property	MemorySaveCommand::$signature
+property	Menu::$key
+property	Menu::$label
+property	Menu::$recordParameter
 property	MenuEntry::$attributes
 property	MenuEntryBuild::$build
 property	MenuEntryBuild::$provenAt
@@ -31423,6 +31550,16 @@ property	MenuEntryStaleData::$reason
 property	MenuEntryStaleData::$rows
 property	MenuEntryStaleData::$runtimeId
 property	MenuEntryStaleData::$step
+property	MenuItem::$action
+property	MenuItem::$group
+property	MenuItem::$icon
+property	MenuItem::$key
+property	MenuItem::$label
+property	MenuItem::$menu
+property	MenuItem::$page
+property	MenuItem::$position
+property	MenuItem::$query
+property	MenuItem::$visibility
 property	MenuListTool::$admission
 property	MenuListTool::$navigation
 property	MenuListTool::$pages
@@ -31639,12 +31776,20 @@ property	NavigationAnswer::$typeParameter
 property	NavigationAnswerCheck::$actors
 property	NavigationAnswerCheck::$admission
 property	NavigationAnswerCheck::$mainDesk
+property	NavigationCandidate::$children
+property	NavigationCandidate::$contribution
+property	NavigationCandidate::$navigation
+property	NavigationCandidate::$path
 property	NavigationCountsData::$counts
 property	NavigationData::$current
+property	NavigationData::$groups
 property	NavigationData::$navigationLinks
 property	NavigationDispatch::$attention
 property	NavigationDispatch::$mainDesk
 property	NavigationExpiry::$endings
+property	NavigationGroupData::$key
+property	NavigationGroupData::$label
+property	NavigationIndex::$roots
 property	NavigationItem::$atFoot
 property	NavigationItem::$children
 property	NavigationItem::$childrenResolver
@@ -31666,6 +31811,11 @@ property	NavigationItemData::$icon
 property	NavigationItemData::$key
 property	NavigationItemData::$label
 property	NavigationItemData::$url
+property	NavigationMerge::$container
+property	NavigationMerge::$declarations
+property	NavigationMerge::$log
+property	NavigationMerge::$owners
+property	NavigationMerge::$visibility
 property	NavigationProof::$text
 property	NavigationRaiseAnswer::$answer
 property	NavigationRaiseAnswer::$entry
@@ -31688,10 +31838,9 @@ property	NavigationRecords::$answering
 property	NavigationRecords::$container
 property	NavigationRecords::$declarations
 property	NavigationRecords::$log
-property	NavigationRecords::$owners
+property	NavigationRecords::$merge
 property	NavigationRecords::$transaction
 property	NavigationRecords::$urls
-property	NavigationRecords::$visibility
 property	NavigationRequest::$attributes
 property	NavigationRound::$choose
 property	NavigationRound::$completes
@@ -33097,6 +33246,7 @@ property	PublicationManifest::$selectionDigest
 property	PublicationManifest::$sessionId
 property	PublicationPage::$body
 property	PublicationPage::$metadata
+property	PublicationPage::$standing
 property	PublicationPage::$summary
 property	PublicationPage::$tabs
 property	PublicationPage::$title
@@ -33433,6 +33583,7 @@ property	RecordComments::$key
 property	RecordCommentsPartData::$comments
 property	RecordCommentsPartData::$reads
 property	RecordCommentsPartData::$target
+property	RecordCommentsPartData::$version
 property	RecordConversationVisit::$outputs
 property	RecordDriverFailure::$facts
 property	RecordEvidenceReads::$processRunId
@@ -33476,20 +33627,10 @@ property	RecordInspection::$links
 property	RecordInspection::$settlements
 property	RecordLinksPartData::$links
 property	RecordLinksPartData::$source
-property	RecordPageData::$abstract
-property	RecordPageData::$attention
-property	RecordPageData::$body
-property	RecordPageData::$bodyHtml
-property	RecordPageData::$comments
-property	RecordPageData::$label
-property	RecordPageData::$links
-property	RecordPageData::$publiclyShared
-property	RecordPageData::$reads
-property	RecordPageData::$revision
-property	RecordPageData::$settlements
-property	RecordPageData::$sourceId
-property	RecordPageData::$sourceType
-property	RecordPageData::$title
+property	RecordMenus::$declarations
+property	RecordMenus::$owners
+property	RecordMenus::$urls
+property	RecordMenus::$visibility
 property	RecordPageReads::$comments
 property	RecordPageReads::$request
 property	RecordPageReads::$text
@@ -33610,10 +33751,14 @@ property	RecoverDraft::$expectedRevision
 property	RecoverDraftHandler::$commands
 property	RecoverDraftHandler::$drafts
 property	RecoverDraftHandler::$edits
+property	RecoverDraftPartData::$held
+property	RecoverDraftPartData::$holder
+property	RecoverDraftPartData::$number
 property	RecoverProjectBinding::$hostId
 property	RecoverProjectBinding::$installationNonce
 property	RecoveryCall::$arguments
 property	RecoveryCall::$tool
+property	RecoveryRefusalPartData::$errorKey
 property	RedeemProjectInvitation::$folder
 property	RedeemProjectInvitation::$hostCredential
 property	RedeemProjectInvitation::$projectLabel
@@ -33763,6 +33908,15 @@ property	RegisteredInboxDestinations::$destinations
 property	RegisteredInboxes::$providers
 property	RegisteredKeyword::$definition
 property	RegisteredKeyword::$owner
+property	RegisteredMenu::$key
+property	RegisteredMenu::$label
+property	RegisteredMenu::$owner
+property	RegisteredMenu::$recordParameter
+property	RegisteredMenuItem::$key
+property	RegisteredMenuItem::$menu
+property	RegisteredMenuItem::$menuItem
+property	RegisteredMenuItem::$owner
+property	RegisteredMenuItem::$target
 property	RegisteredMiddleware::$declaration
 property	RegisteredMiddleware::$owner
 property	RegisteredNavigation::$children
@@ -33792,6 +33946,9 @@ property	RegisteredSection::$section
 property	RegisteredSection::$slot
 property	RegisteredSettingCommands::$reflectors
 property	RegisteredSettingCommands::$registry
+property	RegisteredSidebarGroup::$key
+property	RegisteredSidebarGroup::$label
+property	RegisteredSidebarGroup::$owner
 property	RegisteredStateFactory::$clock
 property	RegisteredStateFactory::$states
 property	RegisteredStateFactory::$types
@@ -34140,9 +34297,6 @@ property	RequestEditor::$provenance
 property	RequestKey::$depth
 property	RequestKey::$key
 property	RequestKey::$receiptTaken
-property	RequestListData::$bundles
-property	RequestListData::$requests
-property	RequestListData::$rules
 property	RequestListResolver::$approved
 property	RequestListResolver::$projects
 property	RequestListResolver::$rules
@@ -34577,7 +34731,6 @@ property	RunKeyScriptHandler::$requests
 property	RunKeyScriptHandler::$scripts
 property	RunKeyScriptHandler::$validators
 property	RunLifecycleAnswers::$effects
-property	RunListData::$runs
 property	RunListResolver::$projects
 property	RunNotificationTarget::$pages
 property	RunNotificationTarget::$summaries
@@ -34719,7 +34872,6 @@ property	RuntimeStatus::$sessionId
 property	RuntimeStatus::$variant
 property	RuntimeStatus::$watchers
 property	RuntimeStatusResolver::$runtimes
-property	RuntimesData::$runtimes
 property	SampleApproved::$permitId
 property	SampleData::$approvedClasses
 property	SampleData::$byteCap
@@ -35207,6 +35359,11 @@ property	ShareCandidateData::$type
 property	ShareCandidates::$linked
 property	ShareCandidates::$root
 property	ShareContentRead::$record
+property	ShareControlsPartData::$id
+property	ShareControlsPartData::$mayRetry
+property	ShareControlsPartData::$mayReveal
+property	ShareControlsPartData::$mayRevoke
+property	ShareControlsPartData::$state
 property	ShareCreateCommand::$description
 property	ShareCreateCommand::$signature
 property	ShareCreated::$share
@@ -35223,20 +35380,6 @@ property	ShareCursorData::$relation
 property	ShareCursorData::$scopeVersion
 property	ShareCursorData::$shareId
 property	ShareCursors::$key
-property	ShareDetailData::$audit
-property	ShareDetailData::$expiresAt
-property	ShareDetailData::$gatewayKey
-property	ShareDetailData::$id
-property	ShareDetailData::$mayRetry
-property	ShareDetailData::$mayReveal
-property	ShareDetailData::$mayRevoke
-property	ShareDetailData::$members
-property	ShareDetailData::$number
-property	ShareDetailData::$rootId
-property	ShareDetailData::$rootType
-property	ShareDetailData::$runtime
-property	ShareDetailData::$scopeVersion
-property	ShareDetailData::$state
 property	ShareDetailResolver::$actors
 property	ShareDetailResolver::$audits
 property	ShareDetailResolver::$links
@@ -35277,9 +35420,6 @@ property	ShareLinkedCandidate::$linkId
 property	ShareLinkedCandidate::$source
 property	ShareListCommand::$description
 property	ShareListCommand::$signature
-property	ShareListData::$filters
-property	ShareListData::$nextAfter
-property	ShareListData::$rows
 property	ShareListFilters::$after
 property	ShareListFilters::$configurationId
 property	ShareListFilters::$expiresBefore
@@ -35477,6 +35617,8 @@ property	ShowProfileDraftCall::$profile
 property	ShowProfileRunCall::$id
 property	ShowReportCall::$number
 property	ShowReportCall::$selection
+property	SidebarGroup::$key
+property	SidebarGroup::$label
 property	SignInAttempt::$hidden
 property	SignInAttemptCleanupRetried::$attemptId
 property	SignInAttemptCleanupRetried::$driver
@@ -36930,10 +37072,13 @@ property	UiComponentFinder::$declarations
 property	UiComponentFinder::$legacyPages
 property	UiComponentFinder::$root
 property	UiDeclarations::$actions
+property	UiDeclarations::$menuItems
+property	UiDeclarations::$menus
 property	UiDeclarations::$navigation
 property	UiDeclarations::$owners
 property	UiDeclarations::$pages
 property	UiDeclarations::$sections
+property	UiDeclarations::$sidebarGroups
 property	UiManifest::$declarations
 property	UiManifest::$files
 property	UiManifest::$propTypes
@@ -37406,8 +37551,6 @@ variable	$batch
 variable	$batches
 variable	$before
 variable	$best
-variable	$bestKey
-variable	$bestScore
 variable	$binding
 variable	$bindingId
 variable	$bindingIds
@@ -37433,6 +37576,7 @@ variable	$budgetAmount
 variable	$build
 variable	$built
 variable	$builtinExecution
+variable	$bundles
 variable	$busy
 variable	$busyAgent
 variable	$byEvent
@@ -37573,6 +37717,7 @@ variable	$configFile
 variable	$configuration
 variable	$configurationId
 variable	$configurations
+variable	$configure
 variable	$configured
 variable	$configuredField
 variable	$confined
@@ -37598,6 +37743,7 @@ variable	$continuation
 variable	$contract
 variable	$contracts
 variable	$contribution
+variable	$contributions
 variable	$control
 variable	$controller
 variable	$controllerMethod
@@ -37616,7 +37762,6 @@ variable	$coreRoot
 variable	$correction
 variable	$costs
 variable	$count
-variable	$countResolver
 variable	$counted
 variable	$counts
 variable	$coverRemoved
@@ -37641,6 +37786,7 @@ variable	$decisionId
 variable	$declaration
 variable	$declarations
 variable	$declared
+variable	$declaredKeys
 variable	$declaresState
 variable	$declaring
 variable	$decoded
@@ -37676,6 +37822,7 @@ variable	$desk
 variable	$desks
 variable	$destination
 variable	$destinations
+variable	$detail
 variable	$details
 variable	$deviceCode
 variable	$diagnostic
@@ -37866,7 +38013,6 @@ variable	$fix
 variable	$fixed
 variable	$flag
 variable	$flags
-variable	$flat
 variable	$folder
 variable	$folders
 variable	$forbiddenWordLines
@@ -37986,6 +38132,7 @@ variable	$inbox
 variable	$inboxId
 variable	$inboxIds
 variable	$inboxLabels
+variable	$inboxes
 variable	$include
 variable	$incoming
 variable	$incomplete
@@ -38122,6 +38269,8 @@ variable	$item	app/Bus/Support/CommandGrammar.php
 variable	$item	app/Communication/Resolvers/Support/NotificationChanges.php
 variable	$items	app/Communication/Resolvers/Support/NotificationChanges.php
 variable	$items	app/Communication/Resolvers/Support/NotificationFeed.php
+variable	$items	app/Ui/Support/UiDeclarations.php
+variable	$items	app/Web/Support/RecordMenus.php
 variable	$job
 variable	$jobId
 variable	$jobs
@@ -38181,6 +38330,8 @@ variable	$linkType
 variable	$linked
 variable	$links
 variable	$list
+variable	$list	app/Processes/Resolvers/RunListResolver.php
+variable	$list	app/Profiles/Resolvers/AccountsWindowResolver.php
 variable	$listed
 variable	$listedClasses
 variable	$listener
@@ -38243,7 +38394,6 @@ variable	$mayAdminister
 variable	$mayCreate
 variable	$mayEditRun
 variable	$mayName
-variable	$mayReveal
 variable	$mayStillSee
 variable	$measuredOutput
 variable	$measurement
@@ -38313,7 +38463,6 @@ variable	$namespace
 variable	$namespaceMatch
 variable	$namespaces
 variable	$navigation
-variable	$navigationLinks
 variable	$nearest
 variable	$needed
 variable	$negation
@@ -38334,6 +38483,7 @@ variable	$nextRound
 variable	$nextStep
 variable	$nextTaskOffset
 variable	$noEmitOperands
+variable	$noMenu
 variable	$node
 variable	$nodes
 variable	$none
@@ -38648,6 +38798,8 @@ variable	$refusals
 variable	$refused
 variable	$regexpOption
 variable	$registered
+variable	$registeredGroup
+variable	$registeredMenu
 variable	$registeredModel
 variable	$registeredName
 variable	$registration
@@ -38689,6 +38841,7 @@ variable	$request
 variable	$requestId
 variable	$requestKey
 variable	$requestKeys
+variable	$requestRows
 variable	$requested
 variable	$requestedRevision
 variable	$requestedTaskIds
@@ -38750,6 +38903,7 @@ variable	$roundQuery
 variable	$rounds
 variable	$route
 variable	$routeArguments
+variable	$routeName
 variable	$routes
 variable	$row
 variable	$rowMakers
@@ -38757,6 +38911,7 @@ variable	$rowVersion
 variable	$rows
 variable	$rowsOfShare
 variable	$rule
+variable	$ruleRows
 variable	$rules
 variable	$run
 variable	$runFailures
@@ -38821,7 +38976,6 @@ variable	$segment
 variable	$segments
 variable	$selected
 variable	$selection
-variable	$selections
 variable	$self
 variable	$sending
 variable	$sent
@@ -38971,6 +39125,7 @@ variable	$table
 variable	$tables
 variable	$tag
 variable	$tail
+variable	$takeNext
 variable	$taken
 variable	$takenUp
 variable	$takesBoth
@@ -38992,6 +39147,7 @@ variable	$taskOffset
 variable	$taskPage
 variable	$tasks
 variable	$temporary
+variable	$terminal
 variable	$text
 variable	$textBeforeTitle
 variable	$textField

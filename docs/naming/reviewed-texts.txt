@@ -28,11 +28,9 @@ Add it as a new account
 Agent
 Agent journal
 Agent terminal, read only
-Agents
 Alias
 All caught up
 Allow one sample run of this exact line
-Any
 Approve
 Approve a terminal
 Approve merge
@@ -45,7 +43,6 @@ Attempt
 Audit
 Back
 Back to Accounts
-Before you choose a gateway
 Before you share
 Breadcrumb
 Build
@@ -78,8 +75,6 @@ Close to the right
 Code from the sign-in page
 Codex cannot run in a container yet: its sandbox does not keep its tools
 Color scheme
-Command requests
-Command review
 Commands and sessions of {{ binding.projectLabel }} on {{ binding.machineLabel }} stop being accepted at once. The files on that computer stay as they are. A device that is offline now stops when its lease ends.
 Comment on a section
 Comment on the selected paragraphs
@@ -88,7 +83,6 @@ Comments
 Compare code
 Configure a gateway
 Confirm
-Confirm disabling
 Connect a project
 Connected projects
 Connection recovered
@@ -109,9 +103,6 @@ Default
 Delete
 Detach
 Device
-Disable
-Disable and revoke
-Disabling revokes these shares:
 Dismiss
 Dock
 Dock it back into the layout
@@ -132,11 +123,8 @@ Every window is open
 Examples
 Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
 Expires
-Expires before
 Expires {{ dateOnly(account.expiresAt) }}
 Failed
-Filter
-Filter shares
 Finish signing in
 Fixed public address
 Folder connected
@@ -145,7 +133,6 @@ Full
 Full screen
 Gateway
 Gateway runtime
-Gateways
 Generate install line
 Go back
 Held by
@@ -171,7 +158,6 @@ It waits on the host until it expires. Resume it from the Accounts header, or ca
 Journal
 Journal operation
 Journal unreachable. This is the last known list, read {{ dateTimeWithZone(data.bindings.serverTime) }}. Revoking and copying wait until the journal answers.
-Keep it
 Keep me signed in
 Keep the sign-in waiting?
 Keep waiting
@@ -197,6 +183,7 @@ Mark read
 Merged
 Mermaid
 Module bundles waiting
+More pages
 Move to ${titleOf(other)}
 NOT
 Name
@@ -209,15 +196,12 @@ Network
 New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
 New notifications
 No
-No active runtimes.
 No capacity
 No connected host runs agents in this place.
 No connected projects
 No endpoint is serving this share.
-No gateway is configured yet.
 No install line was issued in the last 30 days.
 No linked record can be shared with it.
-No linked record is shared with it.
 No module bundle is waiting.
 No notifications yet
 No output yet. Status {{ part.lifecycle }}, ended by {{ part.end }}.
@@ -225,7 +209,6 @@ No project is connected yet, so there is nothing to join.
 No questions waiting.
 No samples
 No saved accounts yet
-No share uses this gateway.
 No terminal signed in to this folder yet.
 Not filled in yet: {{ revision.missingFields.join(', ') }}
 Not in contact yet
@@ -237,7 +220,6 @@ Off
 Offline
 Offline: start the sharing service.
 Older entries
-Older shares
 On the whole record: open record
 On {{ text.anchor.versionLabel }}, lines {{ text.anchor.firstLine }}–{{ text.anchor.lastLine }}
 One piece of text, without spaces.
@@ -269,7 +251,6 @@ Paste a key from the OpenAI platform.
 Paste a token made with claude setup-token.
 Paste it below and send it.
 Paste it in a terminal in the project folder. It works once, until {{ timeOfDay(expiresAt) }}.
-Plans
 Pool empty
 Pool too large
 Presets
@@ -295,8 +276,6 @@ Reason
 Recheck
 Reconnecting to the sign-in…
 Reconnecting…
-Record
-Record type
 Recorded
 Refresh visible windows
 Refused
@@ -310,7 +289,6 @@ Removing
 Rename
 Replace
 Reply
-Requests
 Reset layout
 Resize
 Resume
@@ -329,13 +307,10 @@ Revoke terminal access
 Revoked
 Revoked on the server
 Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.activeRevision}` }}
-Rules
 Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }} ({{ data.origin }}).
 Run outcome
 Run permitted commands as you in {{ data.projectLabel }} for up to 12 hours
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
-Runs
-Runtimes
 Samples
 Save
 Save gateway
@@ -351,10 +326,6 @@ Settled
 Setup token
 Share
 Share for
-Share gateways
-Share {{ share.number }} ({{ share.state }})
-Shared with it
-Shares
 Shell actions
 Show in notifications
 Show its connection
@@ -377,7 +348,6 @@ Sign-in
 Signed in
 Signed in as {{ accountIdentity }}.
 Sorting a command into kinds does not allow it to run, and a sample run only shows what the command does.
-Sorting a command into kinds does not allow it to run.
 Source text
 Split below
 Split right
@@ -390,7 +360,6 @@ Start session
 Started
 Starting
 Starting the new session
-State
 Status
 Status unknown
 Status: {{ part.lifecycle }}, ended by {{ part.end }}
@@ -418,14 +387,12 @@ That conversation is not one this agent can continue.
 That conversation ran on another driver; start a new conversation instead.
 That conversation was for other work; start a new conversation instead.
 The address is not available.
-The gateway provider can see the public address and everything a share shows.
 The gateway provider can see the public address and everything this share shows.
 The host has not said it can run this driver this way.
 The host speaks another protocol version; upgrade journal-agent.
 The journal cannot be reached to check this line is still valid, so it cannot be copied now.
 The new session failed to start
 The place this comment points at is not available: {{ unavailable.message }}
-The project has no rule of its own yet.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The version that runs here
 This account must sign in again.
@@ -458,9 +425,7 @@ Waiting for sign-in
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
 Waiting for you to finish on OpenAI's page…
-Watch terminal
 What
-What is still needed
 What the journal is and how to read and write its records.
 What the line connects
 When
@@ -470,7 +435,6 @@ Who
 Why
 Window menu
 Window settings
-Work
 Working
 Write
 Write a comment
@@ -503,7 +467,6 @@ no exit code checked yet: every exit counts as a failure
 no grant
 none
 now {{ setting.observed ?? 'unknown' }}, next {{ setting.staged ?? 'nothing' }}, asked for {{ setting.requested ?? 'nothing' }}
-observed {{ age(status.observationAgeSeconds) }}{{ status.isStale ? ', stale' : '' }}
 operation
 parts
 program
@@ -523,17 +486,14 @@ tools
 unresolved
 until {{ dateTime(signIn.expiresAt) }}
 updated {{ seconds(ageSeconds()) }} ago
+{{ completed }} of {{ total }}
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
 {{ provider.label }}: start it with
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
-{{ revision.gatewayKey }} version {{ revision.version }}
-{{ revision.publicOrigin }} through {{ revision.providerHost }}, program {{ revision.executableVersion }}
-{{ rule.ruleId }} ({{ rule.owner }}) revision {{ rule.revision }}: {{ rule.state }} - {{ rule.reason }}
 {{ runtime.isHealthy ? 'Running' : 'Not answering: no sign of life in the last 45 seconds' }}. Version {{ runtime.endpointVersion }}, last seen {{ runtime.lastHealthAt ?? 'never' }}.
-{{ status.watchers }} watching
 {{ summary.length }} more outcomes
 {{ target.name }} is not offered yet, because it does not run {{ target.missingProviders.join(' or ') }}.
 {{ target.name }} is not offered yet: its size was not measured.
