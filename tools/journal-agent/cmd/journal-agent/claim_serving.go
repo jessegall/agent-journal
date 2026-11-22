@@ -13,8 +13,8 @@ import (
 // serving loop that opens each claimed runtime, and the claim poll that feeds it. The enrolled host and a connected
 // project's relay both run it, each with its own client and arrangement.
 type claimServing struct {
-	journal           *client.Client
-	preparation       host.StartPreparation
+	journal     *client.Client
+	preparation host.StartPreparation
 	// open opens each claimed runtime: the opener's own on an enrolled host, one that keeps its lease on a relay.
 	open              serving.Opener
 	executor          *protectedExecutor

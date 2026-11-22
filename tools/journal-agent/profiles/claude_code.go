@@ -48,8 +48,8 @@ const (
 	// and starts it as a login shell, so the bridge takes the shell's place and hands every command, unparsed, to the
 	// executor's user (docs/accounts/claude-integration.md, section Shell handoff).
 	claudeCodeProtectedShell = "/opt/journal/shell/bash"
-	claudeCodeMcpToolTimeout  = "30000"
-	claudeCodeJournalTimeout  = 30000
+	claudeCodeMcpToolTimeout = "30000"
+	claudeCodeJournalTimeout = 30000
 )
 
 // errUnresolvedLaunchSetting refuses a launch whose generated settings would hold an empty, relative or placeholder

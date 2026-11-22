@@ -156,9 +156,9 @@ func record(arguments []string) (int, error) {
 	recorder := recording.NewRecorder(recording.Fixture{
 		Driver:        *driver,
 		DriverVersion: programVersion(command[0]),
-		Profile:        profileName,
-		Mode:           recording.Mode(*mode),
-		InitialState:   initialState(command),
+		Profile:       profileName,
+		Mode:          recording.Mode(*mode),
+		InitialState:  initialState(command),
 	}, time.Now)
 
 	var exitCode int

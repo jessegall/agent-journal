@@ -85,7 +85,7 @@ type ExpectedTransition struct {
 // Fixture is one recorded session of an agent driver.
 type Fixture struct {
 	Driver              string               `json:"driver"`
-	DriverVersion      string               `json:"driver_version"`
+	DriverVersion       string               `json:"driver_version"`
 	Profile             string               `json:"profile"`
 	Mode                Mode                 `json:"mode"`
 	Geometry            Geometry             `json:"geometry"`

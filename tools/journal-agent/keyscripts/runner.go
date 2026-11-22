@@ -79,12 +79,12 @@ const pollInterval = 50 * time.Millisecond
 
 // Runner runs key scripts one step at a time through the input gate, reporting each confirmed step.
 type Runner struct {
-	gate    Gate
-	screen  Screen
-	clock   Clock
-	view    View
+	gate   Gate
+	screen Screen
+	clock  Clock
+	view   View
 	driver Driver
-	report  func(Progress)
+	report func(Progress)
 }
 
 // Gate is the input gate a run sends its keys through: it counts the user's inputs and says who holds the
