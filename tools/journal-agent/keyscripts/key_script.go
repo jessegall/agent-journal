@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"journal-agent/screen"
+	"journal-agent/terminal"
 )
 
 // Action is what one step of a key script does.
@@ -153,15 +154,15 @@ func (script KeyScript) ProvesResult() bool {
 
 // arrowDown and arrowUp move a menu's highlight one entry down or up; enterKey chooses the highlighted entry.
 const (
-	arrowDown = "\x1b[B"
-	arrowUp   = "\x1b[A"
+	arrowDown = terminal.KeyArrowDown
+	arrowUp   = terminal.KeyArrowUp
 	enterKey  = "\r"
 )
 
 // arrowRight and arrowLeft move a slider's marker one label across.
 const (
-	arrowRight = "\x1b[C"
-	arrowLeft  = "\x1b[D"
+	arrowRight = terminal.KeyArrowRight
+	arrowLeft  = terminal.KeyArrowLeft
 )
 
 // Choose is the step that chooses the entry with the label in the menu: it finds the entry on screen, moves the

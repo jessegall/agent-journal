@@ -141,7 +141,11 @@ func serve(arguments []string) error {
 		return err
 	}
 	defer listener.Close()
-	journal := client.New(enrollment).WithArrangement(string(arrangement))
+	// Every host carries out browser writers' text, keys, pastes and resizes on its terminal drivers: a contained
+	// one through its docker attach, whose attachment the grant is scoped to; Ctrl+C goes as its byte, never a
+	// signal, the gate writes in order with the PTY's own backpressure, and docker attach gives the outer PTY's size
+	// to the container's terminal. No host offers private entry.
+	journal := client.New(enrollment).WithArrangement(string(arrangement)).WithBrowserInput()
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket,
 		declared: combinationsOf(arrangement)}
@@ -149,6 +153,7 @@ func serve(arguments []string) error {
 	if arrangement.IsContained() {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
 		opener.containers = host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
+		socket.InstanceRuns = instanceRunsOn(opener.containers)
 		opener.installation = installation
 		opener.reportExit = journal.ReportExit
 		prerequisites = containedPrerequisites(*stateFolder, *seccomp, opener.containers)
@@ -502,6 +507,16 @@ func (opener runtimeOpener) terminalRuntime(
 	return terminalDriverOf(profile, opened, grant.Runtime.ProcessGeneration), nil
 }
 
+// instanceRunsOn answers whether a container instance still runs, for telling a lost attachment from an ended
+// session; a failed inspect counts as not running. It only looks.
+func instanceRunsOn(containers host.Containers) func(instance string) bool {
+	return func(instance string) bool {
+		running, err := containers.IsRunning(context.Background(), instance)
+
+		return err == nil && running
+	}
+}
+
 // terminalDriverOf builds the terminal driver of a program the host runs, with its key script runner reading the
 // menus through the profile's layout and reporting each step through the driver's progress relay.
 func terminalDriverOf(profile contracts.DriverProfile, opened host.Terminal, generation int) *drivers.TerminalDriver {
@@ -517,6 +532,11 @@ func terminalDriverOf(profile contracts.DriverProfile, opened host.Terminal, gen
 		Classifier:        classifier,
 		Gate:              opened.Gate,
 		Composer:          layout.Composer.Name(),
+		Layout:            layout,
+		Hangup:            opened.Hangup,
+		EnterPrivate:      opened.EnterPrivate,
+		ConfirmPrivateEnd: opened.ConfirmPrivateEnd,
+		Attachment:        opened.Attachment,
 		Generation:        opened.Reader.Generation,
 		Scripts:           scripts.Registered(),
 		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Report),

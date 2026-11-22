@@ -30,6 +30,7 @@ function agent(id: string, name: string, presenceLabel: string): AgentOptionData
         conversations: [],
         startRefusal: null,
         sessionDriver: null,
+        needsAttention: false,
         status: {
             sessionState: presenceLabel === 'Working' ? 'working' : 'idle',
             label: presenceLabel,

@@ -10,7 +10,8 @@ use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 
 /**
- * A viewer stops watching an agent's terminal; other viewers keep theirs.
+ * A viewer stops watching an agent's terminal through one read interest; the viewer's other interests and other
+ * viewers' stay.
  *
  * @extends Command<void>
  */
@@ -19,5 +20,6 @@ final readonly class CloseTerminalView extends Command
 {
     public function __construct(
         public string $agentId,
+        public string $readInterestId,
     ) {}
 }

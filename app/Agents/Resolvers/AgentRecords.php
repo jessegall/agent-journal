@@ -12,6 +12,7 @@ use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
 use App\Agents\Enums\DriverVariant;
+use App\Agents\Enums\HoldReason;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
@@ -225,6 +226,7 @@ final readonly class AgentRecords implements AgentDirectory
                 $this->remedyWords,
             ),
             $session?->driver,
+            $runtime === null ? HoldReason::None : $runtime->hold_reason,
         );
     }
 }

@@ -17,12 +17,16 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
- * One viewer's lease on watching a runtime's terminal: live until it is closed or lapses unrenewed, and never a
- * request to the driver.
+ * One viewer's lease on watching a runtime's terminal, one per explicit open: its opaque read interest id is what the
+ * opening view renews, reads and closes, so two views of one viewer never touch each other. It is live until it is
+ * closed or lapses unrenewed, an ended one never reopens, and it is never a request to the driver.
  *
  * @property string $id
+ * @property string $read_interest_id
+ * @property string $open_request_id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $agent_runtime_id
@@ -65,6 +69,11 @@ final class TerminalView extends Model implements ReadableModel
 
     public const int DEFAULT_INTERVAL_MS = 500;
 
+    /**
+     * How many random characters a read interest id has.
+     */
+    public const int READ_INTEREST_LENGTH = 40;
+
     // ----------[ Constructors ]----------
 
     /**
@@ -88,9 +97,12 @@ final class TerminalView extends Model implements ReadableModel
         AgentRuntime $runtime,
         int $intervalMs,
         CarbonImmutable $now,
+        string $openRequestId,
     ): self {
         $view = new self();
         $view->belongTo($viewer);
+        $view->read_interest_id = Str::random(self::READ_INTEREST_LENGTH);
+        $view->open_request_id = $openRequestId;
         $view->agent_runtime_id = $runtime->id;
         $view->process_generation = $runtime->process_generation;
         $view->interval_ms = $intervalMs;
@@ -153,6 +165,14 @@ final class TerminalView extends Model implements ReadableModel
         return $this->closed_at === null;
     }
 
+    /**
+     * Whether the view was closed or its lease ran out unrenewed by the given time.
+     */
+    public function hasEndedAt(CarbonImmutable $now): bool
+    {
+        return ! $this->isLive() || $this->expires_at->lessThan($now);
+    }
+
     // ----------[ Relations ]----------
 
     /**
@@ -205,6 +225,28 @@ final class TerminalView extends Model implements ReadableModel
                 fn (Builder $session) => $session->where('agent_id', $agentId),
             ),
         );
+    }
+
+    /**
+     * The view that holds the read interest.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function withReadInterest(Builder $query, string $readInterestId): void
+    {
+        $query->where('read_interest_id', $readInterestId);
+    }
+
+    /**
+     * The view the viewer's open request created.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function openedBy(Builder $query, string $openRequestId): void
+    {
+        $query->where('open_request_id', $openRequestId);
     }
 
     /**

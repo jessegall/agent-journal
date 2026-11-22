@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Bus\Enums;
 
+use App\Actors\Exceptions\ActorNotAllowed;
+use App\Bus\Contracts\CodedRefusal;
+use Throwable;
+
 /**
  * The code an MCP caller reads from a refused call, to choose its recovery.
  */
@@ -26,6 +30,23 @@ enum RefusalCode: string
     case UnsupportedVersion = 'unsupported_version';
     case ProfilesUnavailable = 'profiles_unavailable';
     case AdmissionRefused = 'admission_refused';
+
+    /**
+     * The code of a refusal: its own when it carries one, forbidden for an actor its authorizer refused, which comes
+     * from an area that cannot carry a code of its own, else blocked.
+     */
+    public static function of(Throwable $refusal): self
+    {
+        if ($refusal instanceof CodedRefusal) {
+            return $refusal->refusalCode();
+        }
+
+        if ($refusal instanceof ActorNotAllowed) {
+            return self::Forbidden;
+        }
+
+        return self::StateBlocked;
+    }
 
     /**
      * The HTTP status a signed route answers the refusal with.

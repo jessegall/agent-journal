@@ -8,17 +8,25 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
+use App\Agents\Actions\AgentRuntimes;
+use App\Agents\Actions\AgentSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\CloseTerminalView;
 use App\Agents\Commands\OpenTerminalView;
 use App\Agents\Commands\RenewTerminalView;
 use App\Agents\Enums\DriverVariant;
+use App\Agents\Enums\TerminalViewRefusal;
 use App\Agents\Exceptions\TerminalViewRefused;
+use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\WatchedRuntimes;
+use App\Agents\Values\RuntimeIntent;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\FakeServerClock;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
@@ -44,11 +52,13 @@ final class TerminalViewCommandsTest extends TestCase
         $receipt = $this->asOwner($this->open($runtime, 1000));
 
         $view = TerminalView::query()->ownedBy($this->owner())->sole();
-        $this->assertSame([$view->id, $runtime->id, 1000, 30], [
+        $this->assertSame([$view->id, $view->read_interest_id, $runtime->id, 1000, 30, true], [
             $receipt->viewId,
+            $receipt->readInterestId,
             $receipt->runtimeId,
             $receipt->intervalMs,
             $receipt->expiresInSeconds,
+            $receipt->live,
         ]);
         $this->assertTrue($view->isLive());
         $this->assertNotSame(0, $watched->version('host-1'));
@@ -81,7 +91,7 @@ final class TerminalViewCommandsTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
 
         for ($view = 0; $view < TerminalView::MAX_PER_VIEWER; $view++) {
-            TerminalView::create($this->owner(), $runtime, 500, CarbonImmutable::now());
+            TerminalView::create($this->owner(), $runtime, 500, CarbonImmutable::now(), (string) Str::ulid());
         }
 
         $this->assertRefused(
@@ -93,7 +103,7 @@ final class TerminalViewCommandsTest extends TestCase
 
     public function test_an_unknown_agent_gets_the_answer_of_no_permission(): void
     {
-        $unknown = new OpenTerminalView('no-such-agent');
+        $unknown = new OpenTerminalView('no-such-agent', (string) Str::ulid());
 
         $this->assertRefused($unknown, TerminalViewRefused::mayNotInspect()->getMessage());
     }
@@ -112,7 +122,7 @@ final class TerminalViewCommandsTest extends TestCase
         $this->app->make(CommandBus::class)->run($this->open($runtime));
     }
 
-    public function test_renewing_moves_the_expiry_and_a_closed_view_is_opened_anew(): void
+    public function test_renewing_moves_the_expiry_and_a_closed_interest_is_refused_not_reopened(): void
     {
         $runtime = $this->runtimeOn('host-1');
         $clock = new FakeServerClock(CarbonImmutable::parse('2026-11-19 12:00:00'));
@@ -120,7 +130,7 @@ final class TerminalViewCommandsTest extends TestCase
         $first = $this->asOwner($this->open($runtime));
 
         $clock->set(CarbonImmutable::parse('2026-11-19 12:00:10'));
-        $renewed = $this->asOwner($this->renew($runtime));
+        $renewed = $this->asOwner($this->renew($runtime, $first->readInterestId));
         $this->assertSame($first->viewId, $renewed->viewId);
         $this->assertTrue(
             TerminalView::query()->ownedBy($this->owner())->findOrFail($first->viewId)->expires_at->equalTo(
@@ -128,9 +138,71 @@ final class TerminalViewCommandsTest extends TestCase
             ),
         );
 
-        $this->asOwner($this->close($runtime));
-        $reopened = $this->asOwner($this->renew($runtime));
-        $this->assertNotSame($first->viewId, $reopened->viewId);
+        $this->asOwner($this->close($runtime, $first->readInterestId));
+
+        try {
+            $this->asOwner($this->renew($runtime, $first->readInterestId));
+            $this->fail('The closed interest was renewed.');
+        } catch (TerminalViewRefused $refusal) {
+            $this->assertSame(TerminalViewRefusal::InterestEnded, $refusal->refusal);
+        }
+
+        $this->assertSame(0, TerminalView::query()->ownedBy($this->owner())->live()->count());
+    }
+
+    public function test_a_lapsed_interest_is_refused_on_renewal(): void
+    {
+        $runtime = $this->runtimeOn('host-1');
+        $clock = new FakeServerClock(CarbonImmutable::parse('2026-11-19 12:00:00'));
+        $this->app->instance(ServerClock::class, $clock);
+        $first = $this->asOwner($this->open($runtime));
+        $clock->set(CarbonImmutable::parse('2026-11-19 12:01:00'));
+
+        $this->expectExceptionObject(TerminalViewRefused::interestEnded());
+
+        $this->asOwner($this->renew($runtime, $first->readInterestId));
+    }
+
+    public function test_a_retried_open_request_gives_its_first_outcome_and_a_new_request_a_new_interest(): void
+    {
+        $runtime = $this->runtimeOn('host-1');
+        $requestId = (string) Str::ulid();
+        $first = $this->asOwner($this->open($runtime, 500, $requestId));
+
+        $retried = $this->asOwner($this->open($runtime, 500, $requestId));
+        $this->asOwner($this->close($runtime, $first->readInterestId));
+        $retriedAfterClose = $this->asOwner($this->open($runtime, 500, $requestId));
+        $fresh = $this->asOwner($this->open($runtime));
+
+        $this->assertSame($first->readInterestId, $retried->readInterestId);
+        $this->assertSame(
+            [$first->readInterestId, false],
+            [$retriedAfterClose->readInterestId, $retriedAfterClose->live],
+        );
+        $this->assertNotSame($first->readInterestId, $fresh->readInterestId);
+        $this->assertSame(2, TerminalView::query()->ownedBy($this->owner())->count());
+    }
+
+    public function test_a_delayed_renew_and_close_of_one_interest_never_touch_its_sibling_on_a_replacement(): void
+    {
+        $runtime = $this->runtimeOn('host-1');
+        $clock = new FakeServerClock(CarbonImmutable::parse('2026-11-19 12:00:00'));
+        $this->app->instance(ServerClock::class, $clock);
+        $hidden = $this->asOwner($this->open($runtime));
+        $sibling = $this->asOwner($this->open($runtime));
+        $replacement = $this->replacementOf($runtime);
+        $clock->set(CarbonImmutable::parse('2026-11-19 12:00:05'));
+        $this->asOwner($this->close($runtime, $sibling->readInterestId));
+        $advanced = $this->asOwner($this->open($replacement));
+        $clock->set(CarbonImmutable::parse('2026-11-19 12:00:20'));
+
+        $this->asOwner($this->renew($runtime, $hidden->readInterestId));
+        $this->asOwner($this->close($runtime, $hidden->readInterestId));
+
+        $view = TerminalView::query()->ownedBy($this->owner())->withReadInterest($advanced->readInterestId)->sole();
+        $this->assertTrue($view->isLive());
+        $this->assertSame($replacement->id, $view->agent_runtime_id);
+        $this->assertTrue($view->expires_at->equalTo(CarbonImmutable::parse('2026-11-19 12:00:35')));
         $this->assertSame(1, TerminalView::query()->ownedBy($this->owner())->live()->count());
     }
 
@@ -138,10 +210,18 @@ final class TerminalViewCommandsTest extends TestCase
     {
         $runtime = $this->runtimeOn('host-1');
         $watched = $this->app->make(WatchedRuntimes::class);
-        $other = TerminalView::create(TestActors::userIdentity(2), $runtime, 1000, CarbonImmutable::now());
-        $this->asOwner($this->open($runtime));
 
-        $this->asOwner($this->close($runtime));
+        $other = TerminalView::create(
+            TestActors::userIdentity(2),
+            $runtime,
+            1000,
+            CarbonImmutable::now(),
+            (string) Str::ulid(),
+        );
+
+        $mine = $this->asOwner($this->open($runtime));
+
+        $this->asOwner($this->close($runtime, $mine->readInterestId));
         $this->assertSame([$runtime->id], array_column($watched->forHost('host-1'), 'runtimeId'));
         $this->assertTrue($other->refresh()->isLive());
 
@@ -154,9 +234,16 @@ final class TerminalViewCommandsTest extends TestCase
         $watched = $this->app->make(WatchedRuntimes::class);
         $first = $this->runtimeOn('host-1');
         $elsewhere = $this->runtimeOn('host-2');
-        TerminalView::create(TestActors::userIdentity(1), $first, 1000, CarbonImmutable::now());
-        TerminalView::create(TestActors::userIdentity(2), $first, 500, CarbonImmutable::now());
-        TerminalView::create(TestActors::userIdentity(1), $elsewhere, 1000, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(1), $first, 1000, CarbonImmutable::now(), (string) Str::ulid());
+        TerminalView::create(TestActors::userIdentity(2), $first, 500, CarbonImmutable::now(), (string) Str::ulid());
+
+        TerminalView::create(
+            TestActors::userIdentity(1),
+            $elsewhere,
+            1000,
+            CarbonImmutable::now(),
+            (string) Str::ulid(),
+        );
 
         $listed = $watched->forHost('host-1');
 
@@ -166,15 +253,23 @@ final class TerminalViewCommandsTest extends TestCase
         $this->assertSame(WatchedRuntimes::versionOf($listed), $watched->version('host-1'));
         $this->assertSame(0, $watched->version('host-3'));
         $otherVersion = $watched->version('host-2');
-        TerminalView::create(TestActors::userIdentity(3), $first, 500, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(3), $first, 500, CarbonImmutable::now(), (string) Str::ulid());
         $this->assertSame($otherVersion, $watched->version('host-2'));
     }
 
     public function test_the_runtime_status_counts_its_watchers_and_names_its_driver(): void
     {
         $runtime = $this->runtimeOn('host-1');
-        $first = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
-        TerminalView::create(TestActors::userIdentity(2), $runtime, 500, CarbonImmutable::now());
+
+        $first = TerminalView::create(
+            TestActors::userIdentity(1),
+            $runtime,
+            500,
+            CarbonImmutable::now(),
+            (string) Str::ulid(),
+        );
+
+        TerminalView::create(TestActors::userIdentity(2), $runtime, 500, CarbonImmutable::now(), (string) Str::ulid());
 
         $read = AgentRuntime::query()->withWatchers()->with('session')->findOrFail($runtime->id);
         $status = $read->status(CarbonImmutable::now());
@@ -185,19 +280,45 @@ final class TerminalViewCommandsTest extends TestCase
         $this->assertSame(1, $reread->status(CarbonImmutable::now())->watchers);
     }
 
-    private function open(AgentRuntime $runtime, int $intervalMs = 500): OpenTerminalView
+    private function open(AgentRuntime $runtime, int $intervalMs = 500, string $requestId = ''): OpenTerminalView
     {
-        return new OpenTerminalView($runtime->session->agent_id, $intervalMs);
+        return new OpenTerminalView($runtime->session->agent_id, $requestId ?: (string) Str::ulid(), $intervalMs);
     }
 
-    private function renew(AgentRuntime $runtime): RenewTerminalView
+    private function renew(AgentRuntime $runtime, string $readInterestId): RenewTerminalView
     {
-        return new RenewTerminalView($runtime->session->agent_id);
+        return new RenewTerminalView($runtime->session->agent_id, $readInterestId);
     }
 
-    private function close(AgentRuntime $runtime): CloseTerminalView
+    private function close(AgentRuntime $runtime, string $readInterestId): CloseTerminalView
     {
-        return new CloseTerminalView($runtime->session->agent_id);
+        return new CloseTerminalView($runtime->session->agent_id, $readInterestId);
+    }
+
+    /**
+     * The agent's session ends and a replacement session starts on the same host, with its own runtime.
+     */
+    private function replacementOf(AgentRuntime $runtime): AgentRuntime
+    {
+        $agent = Agent::query()->findOrFail($runtime->session->agent_id);
+        $this->app->make(AgentSessions::class)->end($runtime->session);
+        $agent->fenceRuntimes();
+        $started = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
+        $intent = new RuntimeIntent(
+            'host-1',
+            base_path(),
+            'claude',
+            '1.0.0',
+            'default',
+            DriverVariant::Terminal,
+            null,
+            null,
+            null,
+        );
+        [$replacement] = $this->app->make(AgentRuntimes::class)->open($started->session, $intent, 'start-token-2');
+
+        return $replacement;
     }
 
     private function assertRefused(OpenTerminalView $command, string $message, int $views = 0): void

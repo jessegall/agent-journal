@@ -9,8 +9,9 @@ import type { SplitSide } from './paneLayout';
 /**
  * Version 5's tab strip (kit/EditorTabs.vue): 34 px on the sidebar colour, each tab with its icon, label, count and a
  * close cross whose slot is always kept so no tab changes width. A middle click or Delete closes a tab, a right click
- * opens its menu, and a strip too tight for every label shows only the icon of its inactive tabs. The pane's own
- * buttons come in the slot at the right.
+ * opens its menu, and a strip too tight for every label shows only the icon of its inactive tabs. Only the chosen tab
+ * is in the Tab order: Left and Right choose its neighbours and Home and End the ends. The pane's own buttons come in
+ * the slot at the right.
  */
 export type PaneTab = {
     key: string;
@@ -18,6 +19,8 @@ export type PaneTab = {
     icon: IconName;
     count?: number;
     isActive: boolean;
+    // The id of the panel the tab shows, which the tab names as the panel it controls.
+    panelId?: string;
 };
 
 const props = withDefaults(
@@ -87,6 +90,27 @@ function openMenu(event: MouseEvent, tab: PaneTab): void {
     menu.value = { tab, left: event.clientX, top: event.clientY };
 }
 
+async function pickByKey(event: KeyboardEvent, tab: PaneTab): Promise<void> {
+    const place = props.tabs.indexOf(tab);
+    const last = props.tabs.length - 1;
+    const target = {
+        ArrowLeft: place === 0 ? last : place - 1,
+        ArrowRight: place === last ? 0 : place + 1,
+        Home: 0,
+        End: last,
+    }[event.key];
+
+    if (target === undefined) {
+        return;
+    }
+
+    event.preventDefault();
+    const chosen = props.tabs[target];
+    emit('pick', chosen.key);
+    await nextTick();
+    row.value?.querySelector<HTMLElement>(`[data-tab="${CSS.escape(chosen.key)}"]`)?.focus();
+}
+
 function closeByMiddleClick(event: MouseEvent, key: string): void {
     if (event.button === 1) {
         event.preventDefault();
@@ -123,9 +147,10 @@ onBeforeUnmount(() => watcher?.disconnect());
             <template v-for="tab in tabs" :key="tab.key">
                 <div
                     role="tab"
-                    tabindex="0"
+                    :tabindex="tab.isActive ? 0 : -1"
                     :data-tab="tab.key"
                     :aria-selected="tab.isActive"
+                    :aria-controls="tab.panelId"
                     class="group relative inline-flex flex-none cursor-pointer items-center gap-1.5 text-badge tracking-[.03em] whitespace-nowrap transition-colors duration-150 hover:text-text-2 focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-brand"
                     :class="[
                         tab.isActive
@@ -146,6 +171,7 @@ onBeforeUnmount(() => watcher?.disconnect());
                     @keydown.enter.prevent="emit('pick', tab.key)"
                     @keydown.space.prevent="emit('pick', tab.key)"
                     @keydown.delete.prevent="emit('close', tab.key)"
+                    @keydown="pickByKey($event, tab)"
                 >
                     <Icon :name="tab.icon" :size="13" />
                     <span v-show="!isCompact || tab.isActive">{{

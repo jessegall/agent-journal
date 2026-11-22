@@ -13,6 +13,7 @@ use App\Agents\Models\DriverRequest;
 use App\Agents\Support\HostRuntimes;
 use App\Agents\Support\InitialWakeSettlement;
 use App\Agents\Support\NavigationRoundReports;
+use App\Agents\Support\TerminalGrantReports;
 use App\Contracts\CommandHandler;
 
 final readonly class ReportRequestProgressHandler implements CommandHandler
@@ -21,6 +22,7 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
         private HostRuntimes $runtimes,
         private NavigationRoundReports $navigationReports,
         private InitialWakeSettlement $initialWakes,
+        private TerminalGrantReports $terminalGrants,
     ) {}
 
     public function handle(ReportRequestProgress $command): void
@@ -40,11 +42,15 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             RequestProgress::Unavailable => $request->markUnavailable($command->outcome ?? RequestOutcome::Refused),
             RequestProgress::Accepted,
             RequestProgress::Staged,
-            RequestProgress::Superseded,
-            RequestProgress::Cancelled => $request->hold(
+            RequestProgress::Cancelled => $request->cancel(),
+            RequestProgress::Superseded => $request->hold(
                 $request->hold_reason,
             ),
         };
+
+        if ($request->operation->isTerminalControl()) {
+            $this->terminalGrants->settle($request, $command);
+        }
 
         if ($command->refusal !== null) {
             $request->recordRefusal($command->refusal, $command->noProcessCreated);

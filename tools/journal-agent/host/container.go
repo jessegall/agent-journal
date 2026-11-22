@@ -634,6 +634,15 @@ func (containers Containers) Start(ctx context.Context, id string) error {
 	return containers.command(ctx, "start", id).Run()
 }
 
+// InstanceID is the container's own id as docker inspect reports it, which names this instance and no replacement.
+func (containers Containers) InstanceID(ctx context.Context, name string) (string, error) {
+	output, err := containers.command(ctx, "inspect", "--format", "{{.Id}}", name).Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
 // IsRunning answers whether the container runs, as docker inspect reports it; a failed inspect is an error, never
 // an answer.
 func (containers Containers) IsRunning(ctx context.Context, id string) (bool, error) {

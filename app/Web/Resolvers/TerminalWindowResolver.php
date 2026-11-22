@@ -4,25 +4,20 @@ declare(strict_types=1);
 
 namespace App\Web\Resolvers;
 
-use App\Agents\Support\TerminalFrames;
 use App\Http\Requests\Agents\TerminalFrameRequest;
 use App\Ui\Contracts\PageResolver;
 use App\Web\Data\TerminalWindowData;
-use Spatie\LaravelData\Optional;
 
 /**
- * An agent's terminal page, reloaded by the page itself: the newest frame after the epoch and sequence the viewer
- * holds. It reads only; opening, renewing and closing the view are the page's actions.
+ * An agent's terminal page: only the agent; the page's terminal controller opens, renews, reads and closes its read
+ * interest through the terminal's JSON actions.
  */
 final readonly class TerminalWindowResolver implements PageResolver
 {
-    public function __construct(private TerminalFrameRequest $request, private TerminalFrames $frames) {}
+    public function __construct(private TerminalFrameRequest $request) {}
 
     public function read(): TerminalWindowData
     {
-        $agentId = $this->request->agentId();
-        $frame = $this->frames->after($agentId, $this->request->heldEpoch(), $this->request->heldSequence());
-
-        return new TerminalWindowData($agentId, $frame->getOrElse(Optional::create()));
+        return new TerminalWindowData($this->request->agentId());
     }
 }

@@ -177,9 +177,44 @@ func (loop *Loop) control(ctx context.Context, runtime *liveRuntime, request cli
 		}
 		return false
 	default:
+		if client.IsBrowserControl(request.Operation) {
+			loop.browserControl(ctx, runtime, request)
+			return true
+		}
 		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressUnavailable})
 		return true
 	}
+}
+
+// browserControl hands a browser writer's operation to a driver that carries them out; any other driver answers
+// unavailable, as a watch-only host does.
+func (loop *Loop) browserControl(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	controlled, carriesOut := runtime.driver.(contracts.BrowserControlled)
+	fields, err := request.BrowserControl()
+	if !carriesOut || err != nil {
+		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressUnavailable})
+		return
+	}
+	result, err := controlled.ControlFromBrowser(ctx, contracts.BrowserControl{
+		Request:        identityOf(request),
+		Operation:      request.Operation,
+		TakeID:         fields.TakeID,
+		GrantID:        fields.GrantID,
+		Renew:          fields.Renew,
+		Generation:     uint64(request.ProcessGeneration),
+		Sequence:       fields.Sequence,
+		PromptRevision: fields.ScreenRevision,
+		Text:           fields.Text,
+		Enter:          fields.Enter,
+		Choice:         fields.Choice,
+		InputKind:      fields.Kind,
+		Key:            fields.Key,
+		Rows:           fields.Rows,
+		Columns:        fields.Columns,
+		SubmissionID:   fields.SubmissionID,
+		Value:          fields.Value,
+	})
+	loop.reportResult(ctx, request, result, err)
 }
 
 func (loop *Loop) setting(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router, useHttp, usePage } from '@inertiajs/vue3';
+import { router, useHttp, usePage } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
 import { newRequestId } from '@kit/requestId';
 import type { AgentOptionData, StatusActionData } from '@generated/types/chat';
@@ -17,6 +17,7 @@ import {
 import { keyedPost } from '@kit/keyedPost';
 import { useOpenSessionDialog } from './composables/useChosenAgent';
 import { useSwitchOperation } from './composables/useSwitchOperation';
+import { openTerminalBesideChat } from './composables/useTerminalDock';
 import SessionAction from './SessionAction.vue';
 import SessionForm from './SessionForm.vue';
 import StopConfirmation from './StopConfirmation.vue';
@@ -167,6 +168,27 @@ function interrupt(): void {
     });
 }
 
+/**
+ * Opens the agent's terminal beside the chat; with no chat window to take it, its own page opens instead.
+ */
+function openTerminal(): void {
+    if (!openTerminalBesideChat(props.agent.id, props.agent.sessionId, props.agent.sessionGeneration)) {
+        router.visit(terminalPage.url(props.agent.id));
+    }
+}
+
+/**
+ * A plain click opens the terminal beside the chat; a click that asks for a new tab or window follows the link.
+ */
+function openTerminalFromLink(event: MouseEvent): void {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) {
+        return;
+    }
+
+    event.preventDefault();
+    openTerminal();
+}
+
 const handlers: Record<StatusActionData['type'], () => void> = {
     stop: () => {
         rememberOpener();
@@ -193,7 +215,7 @@ const handlers: Record<StatusActionData['type'], () => void> = {
     },
     'check-capacity': checkCapacity,
     'sign-in': () => router.visit(accountsPage.url()),
-    'open-terminal': () => router.visit(terminalPage.url(props.agent.id)),
+    'open-terminal': openTerminal,
     dismiss,
     'cancel-start': cancelStart,
 };
@@ -202,11 +224,19 @@ const handlers: Record<StatusActionData['type'], () => void> = {
 <template>
     <div class="flex flex-wrap items-center gap-1.5" aria-label="Session actions">
         <template v-if="agent.hasTerminal && agent.sessionId !== null">
-            <Link
+            <a
                 :href="terminalPage.url(agent.id)"
+                data-terminal-action
                 class="rounded-control border border-border-2 px-2.5 py-0.5 text-small text-text-2 hover:bg-hover hover:text-text"
-                >Terminal</Link
+                @click="openTerminalFromLink"
+                >Terminal</a
             >
+        </template>
+        <template v-if="agent.needsAttention && agent.hasTerminal && agent.sessionId !== null">
+            <p class="flex items-center gap-1.5 text-small text-text-2" role="status">
+                The driver needs your attention.
+                <button type="button" class="underline" @click="openTerminal">Open terminal</button>
+            </p>
         </template>
         <template v-for="(action, index) in agent.status.actions" :key="action.type">
             <SessionAction

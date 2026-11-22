@@ -45,4 +45,12 @@ enum HoldReason: string
             self::UsageLimited => false,
         };
     }
+
+    /**
+     * Whether the driver waits at a menu only its user can answer in its terminal: folder trust or first-run setup.
+     */
+    public function needsAttentionInDriver(): bool
+    {
+        return in_array($this, [self::TrustRequired, self::OnboardingRequired], true);
+    }
 }

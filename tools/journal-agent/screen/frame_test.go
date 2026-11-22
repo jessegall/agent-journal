@@ -168,3 +168,23 @@ func TestAFrameOverTheLimitEvenPlainComesBackAsTheMarker(t *testing.T) {
 		t.Fatalf("marker %+v", marker)
 	}
 }
+
+func TestExportFrameShieldsASecretScreenAndExportsAnOrdinaryOne(t *testing.T) {
+	layout := Layout{Menus: []MenuFamily{{Name: "key", Keywords: []string{"api key"}, MinKeywords: 1, Secret: true}}}
+	reader, err := NewEmulatorReader(30, 3, DefaultLimits, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	reader.Feed([]byte("> ready"))
+	ordinary := reader.ExportFrame(layout, "epoch", 1, time.Now())
+	if ordinary.Shielded || textOf(ordinary.Rows[0]) != "> ready" {
+		t.Fatalf("the ordinary screen was not exported: %+v", ordinary)
+	}
+
+	reader.Feed([]byte("\r\nPaste your API key:"))
+	shield := reader.ExportFrame(layout, "epoch", 2, time.Now())
+	if !shield.Shielded || len(shield.Rows) != 0 || shield.Cursor != (contracts.Cursor{}) {
+		t.Fatalf("the secret screen left the reader: %+v", shield)
+	}
+}

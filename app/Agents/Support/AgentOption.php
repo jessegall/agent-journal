@@ -7,6 +7,7 @@ namespace App\Agents\Support;
 use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
 use App\Agents\Enums\DriverSwitchStage;
+use App\Agents\Enums\HoldReason;
 use App\Agents\Exceptions\SessionOutdated;
 use App\Assignments\Support\AssigneeIdentity;
 
@@ -39,6 +40,8 @@ final readonly class AgentOption
         public LaunchOutcome|null $launchOutcome,
         public AgentStatus $status,
         public string|null $sessionDriver = null,
+        // What holds the current runtime now, with the session and generation above it belongs to.
+        public HoldReason $hold = HoldReason::None,
     ) {}
 
     /**

@@ -7,7 +7,7 @@ namespace App\Agents\Handlers;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\OpenTerminalView;
-use App\Agents\Support\TerminalViewReceipt;
+use App\Agents\Data\TerminalInterestData;
 use App\Agents\Support\TerminalViews;
 use App\Contracts\CommandHandler;
 
@@ -18,10 +18,16 @@ final readonly class OpenTerminalViewHandler implements CommandHandler
         private ServerClock $clock,
     ) {}
 
-    public function handle(OpenTerminalView $command): TerminalViewReceipt
+    public function handle(OpenTerminalView $command): TerminalInterestData
     {
         $viewer = ActorIdentity::of($command->dispatchedBy());
 
-        return $this->views->open($command->agentId, $viewer, $command->intervalMs, $this->clock->now());
+        return $this->views->open(
+            $command->agentId,
+            $viewer,
+            $command->intervalMs,
+            $command->openRequestId,
+            $this->clock->now(),
+        );
     }
 }

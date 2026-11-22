@@ -166,14 +166,14 @@ func (queue *RuntimeQueue) takeLeadingSettings() Admission {
 	return admission
 }
 
-// isControl answers whether the request acts on the runtime itself rather than its turns: a stop, an interrupt or
-// a recording; it goes first and never waits behind content.
+// isControl answers whether the request acts on the runtime itself rather than its turns: a stop, an interrupt, a
+// recording or a browser writer's operation; it goes first and never waits behind content.
 func isControl(request client.ClaimedRequest) bool {
 	switch request.Operation {
 	case operationStop, operationInterrupt, operationStartRecord, operationStopRecord:
 		return true
 	}
-	return false
+	return client.IsBrowserControl(request.Operation)
 }
 
 func isSetting(request client.ClaimedRequest) bool {

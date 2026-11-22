@@ -7,26 +7,29 @@ namespace App\Agents\Support;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Data\TerminalFrameData;
+use App\Agents\Data\TerminalInterestData;
+use App\Agents\Data\TerminalScreenIdentityData;
 use App\Agents\Enums\TerminalFrameState;
 use App\Agents\Exceptions\TerminalViewRefused;
-use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use Carbon\CarbonImmutable;
-use PhpOption\None;
-use PhpOption\Option;
-use PhpOption\Some;
 
 /**
- * Opens, renews and closes a viewer's lease on an agent's terminal, with the refusals an open meets, and answers the
- * frames the viewer should see.
+ * Opens, renews and closes a viewer's read interests in an agent's terminal, one per explicit open and each addressed
+ * by its own id, with the refusals they meet, and answers the frames each interest should see.
  */
 final readonly class TerminalViews implements TerminalViewCloser
 {
-    public function __construct(private RuntimeScreen $screens) {}
+    public function __construct(
+        private RuntimeScreen $screens,
+        private CurrentRuntimes $runtimes,
+        private TerminalControls $controls,
+    ) {}
 
     /**
-     * Opens a new view of the agent's current runtime for the viewer.
+     * Opens a new read interest in the agent's current runtime for the viewer; a retry of the same open request gives
+     * the interest it opened first, as it stands now, closed or lapsed included.
      *
      * @throws TerminalViewRefused
      */
@@ -34,8 +37,15 @@ final readonly class TerminalViews implements TerminalViewCloser
         string $agentId,
         ActorIdentity $viewer,
         int $intervalMs,
+        string $openRequestId,
         CarbonImmutable $now,
-    ): TerminalViewReceipt {
+    ): TerminalInterestData {
+        $opened = TerminalView::query()->ownedBy($viewer)->ofAgent($agentId)->openedBy($openRequestId)->first();
+
+        if ($opened !== null) {
+            return $this->receiptOf($opened, $now);
+        }
+
         if (! in_array($intervalMs, TerminalView::INTERVALS_MS, true)) {
             throw TerminalViewRefused::unsupportedInterval($intervalMs);
         }
@@ -46,97 +56,98 @@ final readonly class TerminalViews implements TerminalViewCloser
             throw TerminalViewRefused::tooManyViews();
         }
 
-        return $this->receiptOf(TerminalView::create($viewer, $runtime, $intervalMs, $now));
+        $view = TerminalView::create($viewer, $runtime, $intervalMs, $now, $openRequestId);
+
+        return $this->receiptOf($view, $now);
     }
 
     /**
-     * Keeps the viewer's live view of the runtime live for another lease, or opens a new one when it lapsed or ended.
+     * Keeps exactly the viewer's read interest live for another lease; an interest that was closed or lapsed is
+     * refused and never reopens, and a renewal never grants anything but reading.
      *
      * @throws TerminalViewRefused
      */
     public function renew(
         string $agentId,
         ActorIdentity $viewer,
-        int $intervalMs,
+        string $readInterestId,
         CarbonImmutable $now,
-    ): TerminalViewReceipt {
-        $runtime = $this->watchableRuntime($agentId);
-        $view = TerminalView::query()->ownedBy($viewer)->live()->where('agent_runtime_id', $runtime->id)->first();
+    ): TerminalInterestData {
+        $this->watchableRuntime($agentId);
+        $view = $this->interestOf($agentId, $viewer, $readInterestId);
 
-        if ($view === null) {
-            return $this->open($agentId, $viewer, $intervalMs, $now);
+        if ($view->hasEndedAt($now)) {
+            throw TerminalViewRefused::interestEnded();
         }
 
         $view->renew($now);
 
-        return $this->receiptOf($view);
+        return $this->receiptOf($view, $now);
     }
 
     /**
-     * Ends the viewer's live views of the runtime at once; other viewers' views stay.
-     */
-    public function close(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void
-    {
-        $runtime = $this->runtimeOf($agentId);
-        $views = TerminalView::query()->ownedBy($viewer)->live()->where('agent_runtime_id', $runtime->id)->get();
-
-        foreach ($views as $view) {
-            $view->close($now);
-        }
-    }
-
-    /**
-     * The frame the viewer should see next: none while nothing newer than the epoch and sequence they hold is kept,
-     * the last frame once the terminal ended, and once a restarted answer when the agent moved to another runtime or
-     * generation, which the view then follows.
+     * Ends exactly the viewer's read interest; the viewer's other interests and other viewers' stay, and closing an
+     * interest that already ended changes nothing.
      *
-     * @return Option<TerminalFrameData>
+     * @throws TerminalViewRefused
+     */
+    public function close(string $agentId, ActorIdentity $viewer, string $readInterestId, CarbonImmutable $now): void
+    {
+        $this->runtimes->of($agentId);
+        $view = $this->interestOf($agentId, $viewer, $readInterestId);
+
+        if (! $view->isLive()) {
+            return;
+        }
+
+        $view->close($now);
+    }
+
+    /**
+     * What the read interest should see next: unchanged while nothing newer than the stream and sequence it holds is
+     * kept, the live frame with its proof's remaining lifetime, an older host's frame as last reported, no preview of a
+     * shielded screen, the last frame once the terminal or the interest ended, and restarted, which ends the interest
+     * and asks for a fresh open, once the same session runs in a new generation.
      *
      * @throws TerminalViewRefused
      */
     public function frame(
         string $agentId,
         ActorIdentity $viewer,
-        string $epoch,
-        int $after,
+        HeldFrame $held,
         CarbonImmutable $now,
-    ): Option {
-        $view = TerminalView::query()->with('runtime')->ownedBy($viewer)->live()->ofAgent($agentId)
-            ->latest('updated_at')->first();
+    ): TerminalFrameData {
+        $view = $this->interestOf($agentId, $viewer, $held->readInterestId);
 
-        if ($view === null) {
-            return new Some($this->endedView($agentId, $viewer, $now));
+        if (! $view->isLive()) {
+            return $this->endedView($view, $now);
         }
 
-        $runtime = $this->runtimeOf($agentId);
+        $runtime = $this->runtimes->of($agentId);
 
         if ($view->watchedAnotherSession($runtime)) {
             $view->close($now);
 
-            return new Some($this->endedView($agentId, $viewer, $now));
+            return $this->endedView($view, $now);
         }
 
         if (! $view->watches($runtime)) {
-            $view->follow($runtime);
+            $view->close($now);
 
-            return Some::create(TerminalFrameData::from(['state' => TerminalFrameState::Restarted]));
+            return TerminalFrameData::from(['state' => TerminalFrameState::Restarted]);
         }
 
-        $received = $this->screens->latest($runtime->id);
+        $received = $this->screens->latest(ScreenRegistration::of($runtime));
 
         if ($runtime->hasEnded()) {
-            return Some::create($this->ended($received, $runtime->updated_at->toImmutable()));
+            return $this->ended($received, $runtime->updated_at->toImmutable());
         }
 
-        if ($received === null || ! $received->isNewerThan($epoch, $after)) {
-            return None::create();
+        if ($received === null) {
+            return TerminalFrameData::from(['state' => TerminalFrameState::Unchanged]);
         }
 
-        return Some::create(TerminalFrameData::from([
-            'state' => TerminalFrameState::Live,
-            'frame' => $received->frame,
-            'receivedAt' => $received->receivedAt,
-        ]));
+        return $this->answerOf($runtime, $received, $held, $now);
     }
 
     /**
@@ -149,20 +160,73 @@ final readonly class TerminalViews implements TerminalViewCloser
         foreach ($views as $view) {
             $view->close($now);
         }
+
+        $this->controls->revokeAllFor($agentId, $viewer, $now);
     }
 
     /**
-     * The answer for a viewer whose view of the agent ended: the last frame of the runtime it watched while kept.
+     * The answer about the runtime's kept screen for a view that holds the given frame.
      */
-    private function endedView(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): TerminalFrameData
-    {
-        $last = TerminalView::query()->ownedBy($viewer)->ofAgent($agentId)->latest('closed_at')->first();
+    private function answerOf(
+        AgentRuntime $runtime,
+        ReceivedScreen $received,
+        HeldFrame $held,
+        CarbonImmutable $now,
+    ): TerminalFrameData {
+        $identity = TerminalScreenIdentityData::from([
+            'sessionId' => $runtime->agent_session_id,
+            'processGeneration' => $received->identity->registration->processGeneration,
+            'epoch' => $received->identity->epoch,
+            'stream' => $received->identity->stream,
+            'privacyRevision' => $received->identity->privacyRevision,
+            'attachment' => $received->frame->attachment,
+            'containerInstance' => $received->frame->containerInstance,
+        ]);
+        $liveForMs = $received->liveForMs($now);
+        $proof = $liveForMs === null ? [] : ['liveForMs' => $liveForMs];
 
-        if ($last === null) {
-            return TerminalFrameData::from(['state' => TerminalFrameState::Ended, 'endedAt' => $now]);
+        if ($received->frame->connectionLost) {
+            return TerminalFrameData::from([
+                'state' => TerminalFrameState::ConnectionLost,
+                'identity' => $identity,
+                'receivedAt' => $received->receivedAt,
+            ]);
         }
 
-        return $this->ended($this->screens->latest($last->agent_runtime_id), $last->closed_at ?? $now);
+        if ($received->frame->shielded) {
+            return TerminalFrameData::from([
+                'state' => TerminalFrameState::PreviewUnavailable,
+                'identity' => $identity,
+                'receivedAt' => $received->receivedAt,
+                ...$proof,
+            ]);
+        }
+
+        if (! $received->isNewerThan($held->epoch, $held->stream, $held->sequence)) {
+            return TerminalFrameData::from([
+                'state' => TerminalFrameState::Unchanged,
+                'identity' => $identity,
+                ...$proof,
+            ]);
+        }
+
+        return TerminalFrameData::from([
+            'state' => $liveForMs === null ? TerminalFrameState::LastReported : TerminalFrameState::Live,
+            'identity' => $identity,
+            'frame' => $received->frame,
+            'receivedAt' => $received->receivedAt,
+            ...$proof,
+        ]);
+    }
+
+    /**
+     * The answer for a read interest that ended: the last frame of the runtime it watched while kept.
+     */
+    private function endedView(TerminalView $view, CarbonImmutable $now): TerminalFrameData
+    {
+        $received = $this->screens->latest(ScreenRegistration::of($view->runtime));
+
+        return $this->ended($received, $view->closed_at ?? $now);
     }
 
     private function ended(ReceivedScreen|null $received, CarbonImmutable $endedAt): TerminalFrameData
@@ -186,7 +250,7 @@ final readonly class TerminalViews implements TerminalViewCloser
      */
     private function watchableRuntime(string $agentId): AgentRuntime
     {
-        $runtime = $this->runtimeOf($agentId);
+        $runtime = $this->runtimes->of($agentId);
 
         if (! $runtime->hasScreen()) {
             throw TerminalViewRefused::processDriver();
@@ -200,30 +264,32 @@ final readonly class TerminalViews implements TerminalViewCloser
     }
 
     /**
-     * The agent's current runtime; an unknown agent and an agent with no runtime get the answer of no permission.
+     * The viewer's read interest in the agent, live or ended; an id that is not the viewer's interest in this agent is
+     * refused as unknown.
      *
      * @throws TerminalViewRefused
      */
-    private function runtimeOf(string $agentId): AgentRuntime
+    private function interestOf(string $agentId, ActorIdentity $viewer, string $readInterestId): TerminalView
     {
-        $agent = Agent::query()->find($agentId);
+        $view = TerminalView::query()->with('runtime')->ownedBy($viewer)->ofAgent($agentId)
+            ->withReadInterest($readInterestId)->first();
 
-        if ($agent === null || $agent->currentRuntime()->isEmpty()) {
-            throw TerminalViewRefused::mayNotInspect();
+        if ($view === null) {
+            throw TerminalViewRefused::unknownInterest();
         }
 
-        $sessionId = $agent->currentRuntime()->get()->target->sessionId;
-
-        return AgentRuntime::ofSession($sessionId) ?? throw TerminalViewRefused::mayNotInspect();
+        return $view;
     }
 
-    private function receiptOf(TerminalView $view): TerminalViewReceipt
+    private function receiptOf(TerminalView $view, CarbonImmutable $now): TerminalInterestData
     {
-        return new TerminalViewReceipt(
-            $view->id,
-            $view->agent_runtime_id,
-            $view->interval_ms,
-            TerminalView::LEASE_SECONDS,
-        );
+        return TerminalInterestData::from([
+            'viewId' => $view->id,
+            'readInterestId' => $view->read_interest_id,
+            'runtimeId' => $view->agent_runtime_id,
+            'intervalMs' => $view->interval_ms,
+            'expiresInSeconds' => max(0, (int) $now->diffInSeconds($view->expires_at, false)),
+            'live' => ! $view->hasEndedAt($now),
+        ]);
     }
 }

@@ -23,8 +23,21 @@ use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
 use App\Web\Http\Controllers\Runtimes\ResolveRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
-use App\Web\Http\Controllers\Terminal\OpenTerminalPageController;
-use App\Web\Http\Controllers\Terminal\RenewTerminalPageController;
+use App\Web\Http\Controllers\Terminal\CancelPrivateEntryController;
+use App\Web\Http\Controllers\Terminal\CancelTerminalTakeController;
+use App\Web\Http\Controllers\Terminal\CheckTerminalScreenController;
+use App\Web\Http\Controllers\Terminal\ChooseTerminalDraftController;
+use App\Web\Http\Controllers\Terminal\CloseTerminalController;
+use App\Web\Http\Controllers\Terminal\OpenPrivateEntryController;
+use App\Web\Http\Controllers\Terminal\OpenTerminalController;
+use App\Web\Http\Controllers\Terminal\ReleaseTerminalControlController;
+use App\Web\Http\Controllers\Terminal\RenewTerminalControlController;
+use App\Web\Http\Controllers\Terminal\RenewTerminalController;
+use App\Web\Http\Controllers\Terminal\SendTerminalInputController;
+use App\Web\Http\Controllers\Terminal\SubmitPrivateInputController;
+use App\Web\Http\Controllers\Terminal\TakeTerminalControlController;
+use App\Web\Http\Controllers\Terminal\TerminalControlReceiptController;
+use App\Web\Http\Controllers\Terminal\TerminalFrameController;
 use App\Web\Resolvers\AskDetailResolver;
 use App\Web\Resolvers\AskInboxResolver;
 use App\Web\Resolvers\HomeWindowResolver;
@@ -107,8 +120,77 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             Page::make('terminal', 'Terminal', Icon::Activity, TerminalWindowResolver::class, 'TerminalWindow.vue')
                 ->at('agents/{agent}/terminal')
                 ->actions(
-                    ActionRoute::post('agents/{agent}/terminal/open', OpenTerminalPageController::class, 'open-terminal'),
-                    ActionRoute::post('agents/{agent}/terminal/renew', RenewTerminalPageController::class, 'renew-terminal'),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/interests',
+                        OpenTerminalController::class,
+                        'open-terminal-interest',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/interests/renew',
+                        RenewTerminalController::class,
+                        'renew-terminal-interest',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/interests/close',
+                        CloseTerminalController::class,
+                        'close-terminal-interest',
+                    ),
+                    ActionRoute::get('agents/{agent}/terminal/frame', TerminalFrameController::class, 'terminal-frame'),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/take',
+                        TakeTerminalControlController::class,
+                        'take-terminal-control',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/cancel',
+                        CancelTerminalTakeController::class,
+                        'cancel-terminal-take',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/renew',
+                        RenewTerminalControlController::class,
+                        'renew-terminal-control',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/release',
+                        ReleaseTerminalControlController::class,
+                        'release-terminal-control',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/input',
+                        SendTerminalInputController::class,
+                        'send-terminal-input',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/draft',
+                        ChooseTerminalDraftController::class,
+                        'choose-terminal-draft',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/check',
+                        CheckTerminalScreenController::class,
+                        'check-terminal-screen',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/private/open',
+                        OpenPrivateEntryController::class,
+                        'open-private-entry',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/private/submit',
+                        SubmitPrivateInputController::class,
+                        'submit-private-input',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/private/cancel',
+                        CancelPrivateEntryController::class,
+                        'cancel-private-entry',
+                    ),
+                    ActionRoute::get(
+                        'agents/{agent}/terminal/control',
+                        TerminalControlReceiptController::class,
+                        'terminal-control',
+                    ),
                 ),
         ];
     }
