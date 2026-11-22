@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Enums\DriverSourceType;
 use App\Enums\DriverVariant;
 use App\Enums\ModeSourceType;
 
@@ -25,6 +26,11 @@ final readonly class StartPreview
         public bool $isModeLocked,
         public int $catalogueRevision,
     ) {}
+
+    public function familySource(): DriverSourceType
+    {
+        return $this->selection->source->driverSource;
+    }
 
     public function canRun(): bool
     {

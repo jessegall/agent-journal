@@ -35,7 +35,7 @@ final class StartPreviewData extends Data
     {
         return self::from([
             'family' => $preview->selection->driver,
-            'familySource' => $preview->selection->source->driverSource,
+            'familySource' => $preview->familySource(),
             'mode' => $preview->mode,
             'modeSource' => $preview->modeSource,
             'driverKey' => $preview->driverKey,

@@ -93,7 +93,7 @@ final class HelperDispatchTest extends TestCase
         $this->assertSame(ConversationModeType::New, $sent->launch->conversationMode);
     }
 
-    public function test_a_helper_starts_in_its_profile_mode_and_a_saved_mode_that_cannot_run_is_refused_not_swapped(): void
+    public function test_a_helper_starts_in_its_profile_mode_and_a_saved_mode_it_cannot_run_is_refused(): void
     {
         $first = $this->start('request-1', 'Review plan 7');
         $record = StartRecord::query()->where('request_id', $first->start->launchReference)->sole();

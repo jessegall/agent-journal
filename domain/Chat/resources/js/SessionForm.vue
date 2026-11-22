@@ -242,7 +242,7 @@ const familySources: Record<DriverSourceType, string> = {
 
 if (restored !== null) {
     family.value = restored.driver;
-    modeDraft.value = restored.variant === '' ? 'inherit' : restored.variant === 'headless' ? 'on' : 'off';
+    modeDraft.value = ({ '': 'inherit', headless: 'on', terminal: 'off' } as const)[restored.variant];
 }
 
 function chooseHeadless(event: Event): void {
