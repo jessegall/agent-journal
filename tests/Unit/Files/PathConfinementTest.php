@@ -58,7 +58,10 @@ final class PathConfinementTest extends TestCase
             $this->confinement()->resolved(FilePath::in(Place::Project, 'evil.md'));
             $this->fail('A link out of the place was followed.');
         } catch (LinkLeavesPlace $refusal) {
-            $this->assertStringContainsString('evil.md in the place project', $refusal->getMessage());
+            $this->assertStringContainsString(
+                FilePath::in(Place::Project, 'evil.md')->label(),
+                $refusal->getMessage(),
+            );
             $this->assertStringNotContainsString($this->folder, $refusal->getMessage());
         }
     }

@@ -21,6 +21,22 @@ final class MarkdownPartsSectionsTest extends TestCase
 {
     use UsesTemporaryFolder;
 
+    private const string PURPOSE_TEXT = <<<'TEXT'
+        Commands run through the journal.
+
+        They keep their output.
+        TEXT;
+
+    private const string RETRY_TEXT = <<<'TEXT'
+        ### Retry
+
+        Again.
+        TEXT;
+
+    private const string FENCED_HEADING = '## Not a heading';
+
+    private const string UNREADABLE = 'cannot be read';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,11 +77,7 @@ final class MarkdownPartsSectionsTest extends TestCase
             ['Purpose', 'Running commands', 'Reading output'],
             array_map(fn (SkillSection $section) => $section->heading, $sections),
         );
-        $this->assertSame(<<<'TEXT'
-        Commands run through the journal.
-
-        They keep their output.
-        TEXT, $sections[0]->content);
+        $this->assertSame(self::PURPOSE_TEXT, $sections[0]->content);
         $this->assertSame('Run.', $sections[1]->body($this->app->make(MarkdownParts::class), $this->owner()));
         $this->assertSame('Read.', $sections[2]->body($this->app->make(MarkdownParts::class), $this->owner()));
     }
@@ -117,14 +129,12 @@ final class MarkdownPartsSectionsTest extends TestCase
 
         $this->assertSame(['failure', 'done'], array_map(fn (SkillSection $section) => $section->key, $sections));
         $this->assertStringContainsString(
-            <<<'TEXT'
-            ### Retry
-
-            Again.
-            TEXT,
+            self::RETRY_TEXT,
             $sections[0]->body($this->app->make(MarkdownParts::class), $this->owner()),
         );
-        $this->assertStringContainsString('## Not a heading', $sections[0]->body($this->app->make(MarkdownParts::class), $this->owner()));
+        $fenced = $sections[0]->body($this->app->make(MarkdownParts::class), $this->owner());
+
+        $this->assertStringContainsString(self::FENCED_HEADING, $fenced);
         $this->assertSame('', $sections[1]->body($this->app->make(MarkdownParts::class), $this->owner()));
     }
 
@@ -193,7 +203,7 @@ final class MarkdownPartsSectionsTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, string}>
+     * @return iterable<string, array{string, SkillSourceInvalid}>
      */
     public static function brokenFiles(): iterable
     {
@@ -202,7 +212,7 @@ final class MarkdownPartsSectionsTest extends TestCase
 
         Text.
 
-        TEXT, 'has no # title before its first ## heading'];
+        TEXT, SkillSourceInvalid::missingTitle('shell.md')];
 
         yield 'text before the title' => [
             <<<'TEXT'
@@ -213,7 +223,7 @@ final class MarkdownPartsSectionsTest extends TestCase
             ## States
 
             TEXT,
-            'has no # title before its first ## heading',
+            SkillSourceInvalid::missingTitle('shell.md'),
         ];
 
         yield 'a deeper heading first' => [
@@ -225,10 +235,10 @@ final class MarkdownPartsSectionsTest extends TestCase
             ## One
 
             TEXT,
-            'has no # title before its first ## heading',
+            SkillSourceInvalid::missingTitle('shell.md'),
         ];
 
-        yield 'no heading at all' => ["Just text.\n", 'has no # title before its first ## heading'];
+        yield 'no heading at all' => ["Just text.\n", SkillSourceInvalid::missingTitle('shell.md')];
 
         yield 'second title' => [<<<'TEXT'
         # Shell
@@ -237,32 +247,32 @@ final class MarkdownPartsSectionsTest extends TestCase
 
         # Notes
 
-        TEXT, 'has a second # title, Notes'];
+        TEXT, SkillSourceInvalid::secondTitle('shell.md', 'Notes')];
 
         yield 'title differs' => [<<<'TEXT'
         # Shells
 
         ## States
 
-        TEXT, 'has the # title Shells, but the skill is named Shell'];
+        TEXT, SkillSourceInvalid::titleDiffers('shell.md', 'Shells', 'Shell')];
 
         yield 'heading without key' => [<<<'TEXT'
         # Shell
 
         ## ???
 
-        TEXT, 'has the ## heading ???, which gives no section key'];
+        TEXT, SkillSourceInvalid::headingWithoutKey('shell.md', '???')];
     }
 
     #[DataProvider('brokenFiles')]
     public function test_a_broken_file_is_refused_naming_the_file_and_the_heading(
         string $markdown,
-        string $message,
+        SkillSourceInvalid $refusal,
     ): void {
         $this->write($markdown);
 
         $this->expectException(SkillSourceInvalid::class);
-        $this->expectExceptionMessage('The skill source shell.md '.$message);
+        $this->expectExceptionMessage($refusal->getMessage());
         $this->sections('Shell');
     }
 
@@ -303,7 +313,7 @@ final class MarkdownPartsSectionsTest extends TestCase
         TEXT);
 
         $this->expectException(SkillSourceInvalid::class);
-        $this->expectExceptionMessage('cannot be read');
+        $this->expectExceptionMessage(self::UNREADABLE);
 
         $this->sections('Shell');
     }

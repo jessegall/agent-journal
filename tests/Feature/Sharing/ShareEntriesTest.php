@@ -189,11 +189,11 @@ final class ShareEntriesTest extends TestCase
             RetryShare::class,
             SaveSharePreview::class,
         ] as $command) {
-            $this->assertTrue($registry->isExported($command), "{$command} is not exported.");
+            $this->assertTrue($registry->isExported($command), $command);
         }
 
         foreach ([ExpireShares::class, ReadShare::class] as $command) {
-            $this->assertFalse($registry->isExported($command), "{$command} is exported.");
+            $this->assertFalse($registry->isExported($command), $command);
         }
     }
 }

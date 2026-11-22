@@ -9,6 +9,7 @@ use App\Processes\Enums\RequestState;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\RuleProposal;
+use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
@@ -27,14 +28,18 @@ final class CommandTypeRoutesTest extends TestCase
     use SendsSignedCalls;
     use StartsTestAgent;
 
+    private const string PROPOSE_STEP = 'journal command-type propose --request ';
+
+    private const string APPROVE_STEP = 'waiting for the owner: journal reader sample-approve %s';
+
     public function test_explaining_an_unknown_line_opens_its_request_and_names_the_propose_step(): void
     {
         $reply = $this->signed($this->start, '/agent/processes/explain', ['line' => 'acme verify'])->assertOk();
 
-        $this->assertSame('Nothing in this request started.', $reply->json('notice'));
+        $this->assertSame(AdmissionRefusal::NOTICE, $reply->json('notice'));
         $this->assertSame('acme', $reply->json('held.0.operation'));
         $this->assertSame(RequestState::CollectingDeclaration->value, $reply->json('held.0.requestState'));
-        $this->assertStringStartsWith('journal command-type propose --request ', (string) $reply->json('held.0.next'));
+        $this->assertStringStartsWith(self::PROPOSE_STEP, (string) $reply->json('held.0.next'));
         $this->assertSame(1, CommandRequest::query()->count());
     }
 
@@ -59,7 +64,7 @@ final class CommandTypeRoutesTest extends TestCase
         $this->app->forgetScopedInstances();
         $shown = $this->signed($this->start, "/agent/processes/requests/{$requestId}/show", [])->assertOk();
         $this->assertSame(RequestState::AwaitingSampleApproval->value, $shown->json('state'));
-        $this->assertSame("waiting for the owner: journal reader sample-approve {$requestId}", $shown->json('next'));
+        $this->assertSame(sprintf(self::APPROVE_STEP, $requestId), $shown->json('next'));
         $this->assertSame($reply->json('proposal_id'), $shown->json('proposals.0.proposal_id'));
     }
 

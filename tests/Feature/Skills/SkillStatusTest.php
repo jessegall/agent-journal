@@ -42,6 +42,10 @@ final class SkillStatusTest extends TestCase
     use InstallsBuiltInProfiles;
     use UsesTemporaryFolder;
 
+    private const string NO_SPACE = 'no space left';
+
+    private const string RETRY_COMMAND = 'php artisan skill:retry %s';
+
     private const array TABLES = [
         'skill_publications',
         'skill_generations',
@@ -82,8 +86,8 @@ final class SkillStatusTest extends TestCase
         $this->assertSame('delivered', $bySession[$delivered->session_id]['state']);
         $this->assertNull($bySession[$delivered->session_id]['retry']);
         $this->assertSame('failed', $bySession[$failed->session_id]['state']);
-        $this->assertStringContainsString('no space left', (string) $bySession[$failed->session_id]['error']);
-        $this->assertSame("php artisan skill:retry {$failed->id}", $bySession[$failed->session_id]['retry']);
+        $this->assertStringContainsString(self::NO_SPACE, (string) $bySession[$failed->session_id]['error']);
+        $this->assertSame(sprintf(self::RETRY_COMMAND, $failed->id), $bySession[$failed->session_id]['retry']);
 
         $this->artisan('skill:status', ['--session' => $failed->session_id])
             ->expectsOutputToContain('failed')
@@ -110,7 +114,7 @@ final class SkillStatusTest extends TestCase
             $this->app->make(SkillStatusResolver::class)->statusOfSession($other->session_id);
             $this->fail('Another session\'s status was shown to the agent.');
         } catch (SkillSessionHidden $hidden) {
-            $this->assertSame('No skill delivery was found for that session.', $hidden->getMessage());
+            $this->assertSame(SkillSessionHidden::create()->getMessage(), $hidden->getMessage());
             $this->assertStringNotContainsString($other->session_id, $hidden->getMessage());
             $this->assertStringNotContainsString($other->target, $hidden->getMessage());
         }

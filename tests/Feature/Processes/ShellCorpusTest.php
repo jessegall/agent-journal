@@ -27,6 +27,10 @@ final class ShellCorpusTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string DIFFER = '%d cases differ from their frozen expectation';
+
+    private const string CLASSIFY_DIFFERENTLY = '%d cases classify differently from their frozen expectation';
+
     private const string CORPUS = __DIR__.'/../../Fixtures/Processes/ShellCorpus';
 
     private const int SHOWN_DIFFERENCES = 40;
@@ -41,7 +45,7 @@ final class ShellCorpusTest extends TestCase
             $this->assertSame(
                 $hash,
                 hash_file('sha256', self::CORPUS.'/'.$name),
-                "{$name} does not match the manifest",
+                $name,
             );
         }
 
@@ -87,7 +91,7 @@ final class ShellCorpusTest extends TestCase
         $this->assertSame(
             [],
             array_slice($differences, 0, self::SHOWN_DIFFERENCES),
-            count($differences).' cases differ from their frozen expectation',
+            sprintf(self::DIFFER, count($differences)),
         );
     }
 
@@ -120,7 +124,7 @@ final class ShellCorpusTest extends TestCase
         $this->assertSame(
             [],
             array_slice($differences, 0, self::SHOWN_DIFFERENCES),
-            count($differences).' cases classify differently from their frozen expectation',
+            sprintf(self::CLASSIFY_DIFFERENTLY, count($differences)),
         );
     }
 

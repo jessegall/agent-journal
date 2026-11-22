@@ -24,6 +24,8 @@ use Tests\Support\MessagingTestCase;
  */
 final class MessageEventsTest extends MessagingTestCase
 {
+    private const string SAVED_TEXT = 'Still saved.';
+
     /**
      * @var list<string>
      */
@@ -58,9 +60,9 @@ final class MessageEventsTest extends MessagingTestCase
             FailingMessageListener::class.'@handle',
         ));
 
-        $messageId = $this->ownerSends($this->inboxIdOf($this->builder), 'Still saved.');
+        $messageId = $this->ownerSends($this->inboxIdOf($this->builder), self::SAVED_TEXT);
 
-        $this->assertSame('Still saved.', Message::query()->findOrFail($messageId)->body);
+        $this->assertSame(self::SAVED_TEXT, Message::query()->findOrFail($messageId)->body);
         $this->assertSame([$messageId], $this->received);
     }
 

@@ -29,6 +29,8 @@ use Tests\Support\TestActors;
  */
 final class AwaitingSkillsStateTest extends TestCase
 {
+    private const string STATUS_COMMAND = 'php artisan skill:status';
+
     /**
      * @return iterable<string, array{PublicationState}>
      */
@@ -65,7 +67,7 @@ final class AwaitingSkillsStateTest extends TestCase
 
         $this->assertInstanceOf(Denied::class, $awaiting->onFileEdit($edit)->answer);
         $this->assertInstanceOf(Denied::class, $awaiting->onShellCommand($write)->answer);
-        $this->assertStringContainsString('php artisan skill:status', $awaiting->onFileEdit($edit)->refusalReason());
+        $this->assertStringContainsString(self::STATUS_COMMAND, $awaiting->onFileEdit($edit)->refusalReason());
         $this->assertFalse($awaiting->isFinished());
     }
 

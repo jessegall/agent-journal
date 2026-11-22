@@ -46,6 +46,8 @@ final class HookStartTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string STILL_NEEDS_WORK = 'Task %d still needs work';
+
     private const array TABLES = [
         'agents',
         'agent_sessions',
@@ -157,7 +159,9 @@ final class HookStartTest extends TestCase
 
         $this->assertSame($parent->session->id, $child->session->fresh()?->parent_session_id);
         $this->assertSame('{}', $this->stopAs($child, 'call-1'));
-        $this->assertStringContainsString("Task {$task->number} still needs work", $this->stopAs($parent, 'call-2'));
+        $held = $this->stopAs($parent, 'call-2');
+
+        $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);
     }
 
     public function test_ending_a_start_closes_its_stack_and_revokes_its_credential(): void

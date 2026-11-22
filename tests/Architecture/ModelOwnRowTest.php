@@ -20,6 +20,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 30, reason: 'It parses every model file of app and the domains.')]
 final class ModelOwnRowTest extends TestCase
 {
+    private const string HOW_TO_FIX = "A model method writes only its own row; raise a fact for the rest (%s):\n";
+
     /**
      * The guideline a failure points to.
      */
@@ -72,8 +74,7 @@ final class ModelOwnRowTest extends TestCase
         $this->assertSame(
             $found->frozenMethods(),
             $found->methods(),
-            'A model method writes only its own row; raise a fact for the rest ('.self::GUIDELINE."):\n"
-                .$found->report(),
+            sprintf(self::HOW_TO_FIX, self::GUIDELINE).$found->report(),
         );
     }
 

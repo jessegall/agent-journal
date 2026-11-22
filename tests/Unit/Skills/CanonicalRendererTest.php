@@ -8,6 +8,7 @@ use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\MarkdownParts;
+use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillOwner;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -80,7 +81,9 @@ final class CanonicalRendererTest extends TestCase
     public function test_a_missing_heading_names_the_file_and_selector(): void
     {
         $this->expectException(SkillSourceInvalid::class);
-        $this->expectExceptionMessage('guide.md > Guide > Failure > Again');
+        $this->expectExceptionMessage(SkillSourceInvalid::missingHeading(
+            MarkdownPart::heading('guide.md', ['Guide', 'Failure', 'Again'])->selector(),
+        )->getMessage());
 
         $this->renderer()->render(
             new GuideSkill('guide.md', ['Guide', 'Failure', 'Again']),
@@ -119,7 +122,7 @@ final class CanonicalRendererTest extends TestCase
 
         try {
             $this->expectException(SkillSourceInvalid::class);
-            $this->expectExceptionMessage('is not a relative path inside');
+            $this->expectExceptionMessage(SkillSourceInvalid::outsideFolder('guide.md')->getMessage());
 
             $this->renderer()->render(new GuideSkill(), $this->owner($root));
         } finally {
@@ -151,7 +154,9 @@ final class CanonicalRendererTest extends TestCase
 
         try {
             $this->expectException(SkillSourceInvalid::class);
-            $this->expectExceptionMessage('more than once');
+            $this->expectExceptionMessage(SkillSourceInvalid::repeatedHeading(
+                MarkdownPart::heading('guide.md', ['Guide', 'Failure', 'Retry'])->selector(),
+            )->getMessage());
 
             $this->renderer()->render(new GuideSkill(), $this->owner($root));
         } finally {

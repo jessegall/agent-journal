@@ -14,6 +14,8 @@ use Tests\Architecture\Support\ParsedFile;
  */
 final class FileFunctionScanTest extends TestCase
 {
+    private const string LISTING_ADVICE = 'Files::list or Files::matching';
+
     public function test_every_banned_form_is_found_and_every_look_alike_left_alone(): void
     {
         $findings = FileFunctionScan::of(ParsedFile::fromPath(dirname(__DIR__).'/Fixtures/FileAccess/DirectFileAccess.php'));
@@ -52,7 +54,7 @@ final class FileFunctionScanTest extends TestCase
         $instead = array_column($findings, 'instead', 'form');
 
         $this->assertSame('Files::read', $instead['file_get_contents()']);
-        $this->assertSame('Files::list or Files::matching', $instead['glob()']);
+        $this->assertSame(self::LISTING_ADVICE, $instead['glob()']);
         $this->assertSame('Files::digest', $instead['hash_file()']);
         $this->assertSame('Files', $instead['Illuminate\Filesystem\Filesystem']);
     }

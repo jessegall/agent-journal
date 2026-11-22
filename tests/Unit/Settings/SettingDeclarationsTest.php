@@ -17,6 +17,8 @@ use Tests\TestCase;
  */
 final class SettingDeclarationsTest extends TestCase
 {
+    private const string SECRET_DEFAULT = 'Secret default';
+
     public function test_a_valid_text_setting_and_group_are_built(): void
     {
         $setting = StringSetting::make('display_name', 'Journal name', 'Journal', 1, 200);
@@ -77,11 +79,11 @@ final class SettingDeclarationsTest extends TestCase
     public function test_a_default_outside_the_lengths_is_refused_without_the_value(): void
     {
         try {
-            StringSetting::make('display_name', 'Journal name', 'Secret default', maximumLength: 4);
+            StringSetting::make('display_name', 'Journal name', self::SECRET_DEFAULT, maximumLength: 4);
             $this->fail('The long default was accepted.');
         } catch (SettingDeclarationInvalid $refusal) {
             $this->assertStringContainsString('display_name', $refusal->getMessage());
-            $this->assertStringNotContainsString('Secret default', $refusal->getMessage());
+            $this->assertStringNotContainsString(self::SECRET_DEFAULT, $refusal->getMessage());
         }
     }
 

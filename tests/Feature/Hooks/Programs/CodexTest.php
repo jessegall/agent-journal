@@ -34,6 +34,12 @@ final class CodexTest extends TestCase
     use ChecksProgramAdapter;
     use RefreshHookDatabase;
 
+    private const string SHELL_LINE = 'echo hello';
+
+    private const string DENIAL_REASON = 'Save it first.';
+
+    private const string STOP_REASON = 'Task 42 still needs work.';
+
     protected static function fixtureFolder(): string
     {
         return 'Codex';
@@ -62,7 +68,7 @@ final class CodexTest extends TestCase
         $input = $this->inputOf($this->adapter()->callFor($this->payload('shell command'), $this->hook()));
 
         $this->assertInstanceOf(ShellCommandRequested::class, $input);
-        $this->assertSame('echo hello', $input->command->source);
+        $this->assertSame(self::SHELL_LINE, $input->command->source);
         $this->assertSame([CommandType::Ordinary], array_map(fn ($part) => $part->type, $input->command->parts));
     }
 
@@ -102,17 +108,17 @@ final class CodexTest extends TestCase
 
     public function test_a_denial_carries_its_reason(): void
     {
-        $reply = json_decode($this->render('shell command', Decision::deny('Save it first.'))->stdout, true);
+        $reply = json_decode($this->render('shell command', Decision::deny(self::DENIAL_REASON))->stdout, true);
 
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame('Save it first.', $reply['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertSame(self::DENIAL_REASON, $reply['hookSpecificOutput']['permissionDecisionReason']);
     }
 
     public function test_one_stop_blocker_gives_one_reason(): void
     {
         $this->assertSame(
-            '{"decision":"block","reason":"Task 42 still needs work."}',
-            $this->render('stop', Decision::deny('Task 42 still needs work.'))->stdout,
+            json_encode(['decision' => 'block', 'reason' => self::STOP_REASON]),
+            $this->render('stop', Decision::deny(self::STOP_REASON))->stdout,
         );
     }
 

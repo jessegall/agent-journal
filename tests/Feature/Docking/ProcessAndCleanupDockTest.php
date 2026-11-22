@@ -52,6 +52,12 @@ final class ProcessAndCleanupDockTest extends TestCase
     use SendsMcpFrames;
     use WritesInboxMessages;
 
+    private const string RUN_TITLE = '"text":"Run of acme verify"';
+
+    private const string EXIT_TEXT = '"text":"Exit 0"';
+
+    private const string OUTPUT_LINES = '"lines":["first line","second line"],"truncated":false';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -115,10 +121,10 @@ final class ProcessAndCleanupDockTest extends TestCase
         $this->dock(OutputDocking::DOCK_TYPE, $outputKey)->assertJsonPath('result.structuredContent.outcome', 'added');
         $cards = $this->cards();
 
-        $this->assertStringContainsString('"text":"Run of acme verify"', $cards);
+        $this->assertStringContainsString(self::RUN_TITLE, $cards);
         $this->assertStringContainsString('"text":"Ended","tone":"muted"', $cards);
-        $this->assertStringContainsString('"text":"Exit 0"', $cards);
-        $this->assertStringContainsString('"lines":["first line","second line"],"truncated":false', $cards);
+        $this->assertStringContainsString(self::EXIT_TEXT, $cards);
+        $this->assertStringContainsString(self::OUTPUT_LINES, $cards);
         $this->assertSame($evidence, EvidenceRead::query()->count());
 
         $other = TestStart::start();

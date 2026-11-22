@@ -28,6 +28,8 @@ final class NativeSubagentRuleTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string RULE_REFERENCE = 'rule 36';
+
     private const array TABLES = [
         'agents',
         'agent_sessions',
@@ -66,7 +68,7 @@ final class NativeSubagentRuleTest extends TestCase
             $this->assertNotSame([], $driver->nativeChildTools(), $driver->value);
 
             foreach ($driver->nativeChildTools() as $toolName) {
-                $this->assertContains($toolName, $denied, "{$driver->value} starts without denying {$toolName}");
+                $this->assertContains($toolName, $denied, "{$driver->value}/{$toolName}");
             }
         }
     }
@@ -104,7 +106,7 @@ final class NativeSubagentRuleTest extends TestCase
     private function assertDenied(TestResponse $response): void
     {
         $response->assertOk();
-        $this->assertStringContainsString('rule 36', $response->json('stdout'));
+        $this->assertStringContainsString(self::RULE_REFERENCE, $response->json('stdout'));
         $this->assertSame(0, HookCall::query()->authorizedFor($this->target())->count());
     }
 

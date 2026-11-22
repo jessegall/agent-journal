@@ -29,6 +29,8 @@ final class PlanDetailsResolverTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
+    private const string BRIEF = 'Count it.';
+
     private const array TABLES = [
         'plans',
         'phases',
@@ -42,7 +44,7 @@ final class PlanDetailsResolverTest extends TestCase
 
     public function test_progress_equals_the_web_lists_and_a_finishing_task_shows_on_the_next_read(): void
     {
-        $plan = Plan::factory()->create(['title' => 'Counted plan', 'brief' => 'Count it.']);
+        $plan = Plan::factory()->create(['title' => 'Counted plan', 'brief' => self::BRIEF]);
         $tasks = Task::factory()->count(3)->create();
         $tasks[0]->finish('Done.');
 
@@ -58,7 +60,7 @@ final class PlanDetailsResolverTest extends TestCase
 
         $this->assertEquals($card->progress, $details->progress);
         $this->assertSame([1, 3], [$details->progress->finished, $details->progress->total]);
-        $this->assertSame('Count it.', $details->brief);
+        $this->assertSame(self::BRIEF, $details->brief);
         $this->assertNull($resolver->plan($plan->id, ReadView::Summary)->brief);
 
         $this->runAs(TestActors::user(7), new StartTask($tasks[1]->id));

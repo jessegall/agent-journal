@@ -49,6 +49,8 @@ final class StopPreparationTest extends TestCase
     use RunsTrustedCommands;
     use StartsAgentRequests;
 
+    private const string FAILED_TESTS = '2 tests failed.';
+
     private const array TABLES = [
         'active_accounts', 'account_notices', 'accounts', 'process_starts', 'agent_runtimes',
         'profile_step_results',
@@ -90,10 +92,10 @@ final class StopPreparationTest extends TestCase
 
     public function test_failed_tests_send_their_diagnostics_back_without_holding_the_work(): void
     {
-        $outcome = $this->stopDirty(StepStatus::Failed, 'failure', '2 tests failed.');
+        $outcome = $this->stopDirty(StepStatus::Failed, 'failure', self::FAILED_TESTS);
 
         $this->assertSame(StopPreparationState::ReturnToActor, $outcome->state);
-        $this->assertSame('2 tests failed.', $outcome->message);
+        $this->assertSame(self::FAILED_TESTS, $outcome->message);
     }
 
     public function test_three_returns_on_an_unchanged_workspace_hold_the_work_and_tell_the_owner_once(): void

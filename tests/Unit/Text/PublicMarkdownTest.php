@@ -13,6 +13,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class PublicMarkdownTest extends TestCase
 {
+    private const string SITE_LINK = '<a rel="noopener noreferrer" href="https://example.com">site</a>';
+
     public function test_public_html_keeps_only_outgoing_links_and_fetches_nothing(): void
     {
         $html = MarkdownText::publicHtmlOf(<<<'TEXT'
@@ -25,7 +27,7 @@ final class PublicMarkdownTest extends TestCase
         $this->assertStringNotContainsString('<script', $html);
         $this->assertStringNotContainsString('javascript:', $html);
         $this->assertStringNotContainsString('<img', $html);
-        $this->assertStringContainsString('<a rel="noopener noreferrer" href="https://example.com">site</a>', $html);
+        $this->assertStringContainsString(self::SITE_LINK, $html);
         $this->assertStringContainsString('href="https://example.com/logo.png"', $html);
         $this->assertStringNotContainsString('href="/s/token/records"', $html);
         $this->assertStringContainsString('doc', $html);

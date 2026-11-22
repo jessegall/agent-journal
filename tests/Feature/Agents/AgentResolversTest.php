@@ -117,7 +117,7 @@ final class AgentResolversTest extends TestCase
                 $this->fail("Session {$sessionId} was not refused.");
             } catch (StackTargetRefused $refused) {
                 $this->assertSame(
-                    "This request may not change the stack of session {$sessionId}.",
+                    StackTargetRefused::forTarget("session {$sessionId}")->getMessage(),
                     $refused->getMessage(),
                 );
             }

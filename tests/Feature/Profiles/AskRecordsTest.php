@@ -65,6 +65,10 @@ final class AskRecordsTest extends TestCase
     use SendsSignedCalls;
     use StartsAgentRequests;
 
+    private const string FIXTURE_ADVICE = 'Read the fixture.';
+
+    private const string INPUT_ADVICE = 'Check the input file.';
+
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
         'assignments', 'command_receipts', 'start_tokens', 'agent_sessions', 'agents', 'profile_revisions', 'profiles',
@@ -167,7 +171,7 @@ final class AskRecordsTest extends TestCase
             'id' => $ask->id,
             'body' => 'Read the fixture.',
             'request_key' => 'reply-to-fixture-ask',
-        ])->assertOk()->assertJsonPath('reply', 'Read the fixture.');
+        ])->assertOk()->assertJsonPath('reply', self::FIXTURE_ADVICE);
         $this->assertFalse($ask->refresh()->open);
 
         $this->artisan('ask:make', ['text' => 'Please check another file.'])->assertSuccessful();
@@ -202,7 +206,7 @@ final class AskRecordsTest extends TestCase
 
         $this->startRequestAs($requester->id, TestIds::of(91));
         $commands->run(new WithdrawAsk($second));
-        $this->assertSame('Check the input file.', $inbox->card($first)->reply);
+        $this->assertSame(self::INPUT_ADVICE, $inbox->card($first)->reply);
         $this->assertFalse($inbox->card($second)->open);
         $this->assertSame(3, Ask::openSubmissions(ActorIdentity::of($requester)));
         $this->assertSame(3, AssignmentRecord::query()->count());

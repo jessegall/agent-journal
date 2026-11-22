@@ -14,6 +14,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class CodexCaptureTest extends TestCase
 {
+    private const string MISSING_BEARER = 'Missing bearer';
+
+    private const string VERSION_LINE = 'codex-cli %s';
+
     private const string FIXTURES = __DIR__.'/../../Fixtures/Accounts/Codex';
 
     public function test_a_signed_out_exec_fails_its_turn_but_exits_zero(): void
@@ -28,7 +32,7 @@ final class CodexCaptureTest extends TestCase
         $this->assertSame(0, $capture['exec_signed_out']['exit']);
         $this->assertSame('thread.started', $events[0]['type']);
         $this->assertSame('turn.failed', $events[array_key_last($events)]['type']);
-        $this->assertStringContainsString('Missing bearer', $events[array_key_last($events)]['error']['message']);
+        $this->assertStringContainsString(self::MISSING_BEARER, $events[array_key_last($events)]['error']['message']);
         $this->assertSame(['stdout' => 'Not logged in', 'exit' => 1], $capture['login_status_signed_out']);
     }
 
@@ -61,7 +65,7 @@ final class CodexCaptureTest extends TestCase
         $capture = self::capture();
         $document = (string) file_get_contents(__DIR__.'/../../../docs/accounts/codex-integration.md');
 
-        $this->assertStringContainsString("codex-cli {$capture['version']}", $document);
+        $this->assertStringContainsString(sprintf(self::VERSION_LINE, $capture['version']), $document);
         $this->assertStringContainsString($capture['binary_sha256'], $document);
     }
 

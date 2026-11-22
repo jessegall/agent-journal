@@ -19,6 +19,7 @@ use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Support\SequenceWork;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
@@ -26,6 +27,10 @@ use Tests\Support\TestIds;
 final class SequenceStateContributionTest extends TestCase
 {
     use CommittedHookStack;
+
+    private const string FIRST_STEP = 'Read the brief.';
+
+    private const string SECOND_STEP = 'Run the phase tests.';
 
     public function test_starting_a_run_commits_the_start_and_its_state_together(): void
     {
@@ -63,12 +68,9 @@ final class SequenceStateContributionTest extends TestCase
         $run->advance();
         $onSecondStep = $this->answerStop('call-2');
 
-        $this->assertStringContainsString("Sequence run {$run->number} is on step 1: Read the brief.", $onFirstStep);
+        $this->assertStringContainsString($this->stepText($run, 1, self::FIRST_STEP), $onFirstStep);
 
-        $this->assertStringContainsString(
-            "Sequence run {$run->number} is on step 2: Run the phase tests.",
-            $onSecondStep,
-        );
+        $this->assertStringContainsString($this->stepText($run, 2, self::SECOND_STEP), $onSecondStep);
     }
 
     public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
@@ -78,7 +80,7 @@ final class SequenceStateContributionTest extends TestCase
 
         $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertContains("Sequence run {$run->number} is on step 1: Read the brief.", $context);
+        $this->assertContains($this->stepText($run, 1, self::FIRST_STEP), $context);
         $this->assertSame(1, $run->fresh()?->current_step);
     }
 
@@ -102,7 +104,12 @@ final class SequenceStateContributionTest extends TestCase
 
     private function newRun(): SequenceRun
     {
-        return SequenceRun::create('Close a task', ['Read the brief.', 'Run the phase tests.']);
+        return SequenceRun::create('Close a task', [self::FIRST_STEP, self::SECOND_STEP]);
+    }
+
+    private function stepText(SequenceRun $run, int $step, string $instruction): string
+    {
+        return new SequenceWork($run->number, $step, $instruction, SequenceRunState::Running)->currentInstruction();
     }
 
     /**

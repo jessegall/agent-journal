@@ -43,6 +43,10 @@ final class RuleRecordsTest extends TestCase
     use ChecksSchemaTables;
     use RefreshHookDatabase;
 
+    private const string RETIREMENT_REASON = 'no longer used';
+
+    private const string OPERATION = 'acme status';
+
     private const string PROJECT = 'acme-project';
 
     protected static function storedTables(): array
@@ -71,7 +75,7 @@ final class RuleRecordsTest extends TestCase
         $this->assertSame(ProposalState::Pending, $pending->refresh()->state);
         $this->assertSame(ProposalState::Draft, $draft->refresh()->state);
         $this->assertSame(1, $pending->current_revision);
-        $this->assertSame('acme status', $pending->operation);
+        $this->assertSame(self::OPERATION, $pending->operation);
         $this->assertSame('acme', $pending->program);
         $this->assertEquals(RuleScope::project(), $pending->scope);
     }
@@ -168,9 +172,9 @@ final class RuleRecordsTest extends TestCase
         $rule->activate($second, 1);
         $this->assertThrows(fn () => $rule->activate($first, 2), ClassificationRuleRefused::class);
 
-        $rule->retire(2, 'no longer used');
+        $rule->retire(2, self::RETIREMENT_REASON);
         $this->assertSame(ClassificationState::Retired, $rule->refresh()->state);
-        $this->assertSame('no longer used', $rule->state_reason);
+        $this->assertSame(self::RETIREMENT_REASON, $rule->state_reason);
         $this->assertThrows(fn () => $rule->retire(2, 'again'), ClassificationRuleRefused::class);
 
         $rule->restoreFrom($first, 2);
@@ -222,7 +226,7 @@ final class RuleRecordsTest extends TestCase
     private function complete(CommandRule $rule): ProposedRule
     {
         return new ProposedRule($rule, 'acme --help lists status as read-only', [
-            RuleExample::positive('acme status', CommandClassSet::of(CommandClass::Read)),
+            RuleExample::positive(self::OPERATION, CommandClassSet::of(CommandClass::Read)),
             RuleExample::negative('acme status --write'),
         ]);
     }

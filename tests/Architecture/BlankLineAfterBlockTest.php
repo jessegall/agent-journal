@@ -16,6 +16,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It reads every PHP file of the application and its tests.')]
 final class BlankLineAfterBlockTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'These closing braces want a blank line after them: ';
+
     public function test_a_statement_after_a_closing_brace_has_a_blank_line_above_it(): void
     {
         $check = new Process(
@@ -26,7 +28,7 @@ final class BlankLineAfterBlockTest extends TestCase
 
         $this->assertTrue(
             $check->isSuccessful(),
-            'These closing braces want a blank line after them: '.$check->getOutput(),
+            self::HOW_TO_FIX.$check->getOutput(),
         );
     }
 }

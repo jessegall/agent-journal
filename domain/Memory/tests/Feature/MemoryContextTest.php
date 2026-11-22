@@ -32,6 +32,8 @@ final class MemoryContextTest extends TestCase
 {
     use CommittedHookStack;
 
+    private const string MEMORY_REMINDER = 'Memory: Run migrate:fresh after a create-migration edit.';
+
     private Memory $memory;
 
     protected function setUp(): void
@@ -58,7 +60,7 @@ final class MemoryContextTest extends TestCase
             'onCompaction',
         );
 
-        $this->assertStringContainsString('Memory: Run migrate:fresh after a create-migration edit.', $context);
+        $this->assertStringContainsString(self::MEMORY_REMINDER, $context);
         $this->assertSame(6, $this->memory->refresh()->weight);
     }
 
@@ -79,7 +81,7 @@ final class MemoryContextTest extends TestCase
             'onSessionStart',
         );
 
-        $this->assertStringContainsString('Memory: Run migrate:fresh after a create-migration edit.', $context);
+        $this->assertStringContainsString(self::MEMORY_REMINDER, $context);
         $this->assertSame(6, $this->memory->refresh()->weight);
     }
 

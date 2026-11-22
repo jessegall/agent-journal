@@ -34,6 +34,10 @@ final class SettingsCatalogueTest extends TestCase
     use CountsReads;
     use UsesReviewsSettings;
 
+    private const string SECRET_TEXT = 'secret text';
+
+    private const string NOT_REFUSED = 'The catalogue was not refused.';
+
     /**
      * The reset runs through the bus, which commits for real, so this table is emptied around each test.
      */
@@ -77,7 +81,7 @@ final class SettingsCatalogueTest extends TestCase
     public function test_an_invalid_stored_value_shows_invalid_and_a_reset_at_its_revision_restores_the_default(): void
     {
         $this->storeDirectly('Reviews', fn (SettingsDocument $document) => $document
-            ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of('secret text')))
+            ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of(self::SECRET_TEXT)))
             ->withSetting(new EncodedSetting('title', EncodedValue::of('Weekly'))));
 
         $catalogue = $this->catalogue('Reviews');
@@ -92,7 +96,7 @@ final class SettingsCatalogueTest extends TestCase
             ['value' => 'Weekly', 'type' => 'string'],
             $catalogue['groups'][0]['settings'][0]['configured'],
         );
-        $this->assertStringNotContainsString('secret text', json_encode($catalogue, JSON_THROW_ON_ERROR));
+        $this->assertStringNotContainsString(self::SECRET_TEXT, json_encode($catalogue, JSON_THROW_ON_ERROR));
 
         $this->app->make(CommandBus::class)->run(
             $this->commands->reset($this->reviews->retryLimit, $catalogue['revision']),
@@ -189,7 +193,7 @@ final class SettingsCatalogueTest extends TestCase
             }
         });
 
-        $this->assertTrue($refused, 'The catalogue was not refused.');
+        $this->assertTrue($refused, self::NOT_REFUSED);
         $this->assertSame(0, $counts->queriesRun);
     }
 

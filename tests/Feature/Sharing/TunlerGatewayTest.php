@@ -126,7 +126,7 @@ final class TunlerGatewayTest extends TestCase
             $this->assertThrows(
                 fn () => $this->gateway()->open($this->operation()),
                 GatewayOpenFailed::class,
-                'other than its fixed public origin',
+                GatewayOpenFailed::unexpectedAddress('tunler')->getMessage(),
             );
         }
     }

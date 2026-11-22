@@ -46,6 +46,10 @@ final class StaleAdmissionTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
+    private const string EXPLAIN_AGAIN = 'explain the line again';
+
+    private const string RETIRED_PRINTF = 'printf was retired';
+
     public function test_retiring_a_rule_makes_a_queued_admission_refuse_on_start(): void
     {
         config(['processes.runner' => true]);
@@ -61,7 +65,7 @@ final class StaleAdmissionTest extends TestCase
             "/agent/processes/admissions/{$queued->id}",
             ['request_key' => 'stale-1'],
         )->assertStatus(409);
-        $this->assertStringContainsString('explain the line again', (string) $reply->json('message'));
+        $this->assertStringContainsString(self::EXPLAIN_AGAIN, (string) $reply->json('message'));
     }
 
     public function test_a_run_whose_rules_changed_mid_run_skips_its_later_part_and_keeps_the_earlier_one(): void
@@ -84,7 +88,7 @@ final class StaleAdmissionTest extends TestCase
         $parts = PartRun::query()->where('process_run_id', $run->id)->orderBy('syntax_node')->get();
         $this->assertSame(LifecycleState::Ended, $parts[0]->lifecycle);
         $this->assertSame(LifecycleState::Skipped, $parts[1]->lifecycle);
-        $this->assertStringContainsString('printf was retired', $parts[1]->skip_reason);
+        $this->assertStringContainsString(self::RETIRED_PRINTF, $parts[1]->skip_reason);
     }
 
     private function admit(ActorIdentity $actor, string $line): ProcessRun

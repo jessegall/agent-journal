@@ -75,7 +75,7 @@ final class SharingPageRefreshTest extends TestCase
             $this->assertContains(
                 BroadcastPageChange::class.'@handle',
                 $map[$event] ?? [],
-                "{$event} does not reread the owner's pages.",
+                $event,
             );
         }
 

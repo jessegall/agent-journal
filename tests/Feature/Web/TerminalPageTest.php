@@ -49,6 +49,8 @@ final class TerminalPageTest extends TestCase
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
 
+    private const string NOT_RUNNING = 'This agent is not running';
+
     private User $owner;
 
     private string $readInterestId = '';

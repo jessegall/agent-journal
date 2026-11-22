@@ -24,6 +24,12 @@ final class StoredSkillCatalogueTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string NOTES_HEADING = <<<'TEXT'
+        ## Notes
+
+
+        TEXT;
+
     private const array TABLES = ['skill_requests', 'skill_revisions', 'skills', 'number_groups'];
 
     private const string MARKDOWN = <<<'TEXT'
@@ -69,11 +75,7 @@ final class StoredSkillCatalogueTest extends TestCase
     {
         Artisan::call('skill:show', ['key' => 'user-review-notes']);
 
-        $this->assertStringContainsString(<<<'TEXT'
-        ## Notes
-
-
-        TEXT.self::MARKDOWN."\n", Artisan::output());
+        $this->assertStringContainsString(self::NOTES_HEADING.self::MARKDOWN."\n", Artisan::output());
     }
 
     public function test_the_stored_skill_appears_in_preview(): void

@@ -17,6 +17,15 @@ use Tests\TestCase;
  */
 final class DomainActorColumnsTest extends TestCase
 {
+    private const string DOMAIN_TABLE_ADVICE = 'A domain table names an agent or an agent session; '
+        .'name an actor (actor_type, actor_id) or use a frame on the stack.';
+
+    private const string CORE_TABLE_ADVICE = 'A Core table above Agents and Hooks names an agent or a session; '
+        .'name an actor.';
+
+    private const string MODEL_ADVICE = 'A domain model names an agent stack or request; '
+        .'it should name an actor or a state instead.';
+
     /**
      * The columns still being removed, each with the work that removes it. The list only shrinks: a new entry fails
      * review, and a removed column must leave the list.
@@ -43,7 +52,7 @@ final class DomainActorColumnsTest extends TestCase
         $this->assertSame(
             $expected,
             $columns,
-            'A domain table names an agent or an agent session; name an actor (actor_type, actor_id) or use a frame on the stack.',
+            self::DOMAIN_TABLE_ADVICE,
         );
     }
 
@@ -62,7 +71,7 @@ final class DomainActorColumnsTest extends TestCase
             }
         }
 
-        $this->assertSame([], $columns, 'A Core table above Agents and Hooks names an agent or a session; name an actor.');
+        $this->assertSame([], $columns, self::CORE_TABLE_ADVICE);
     }
 
     public function test_no_domain_model_takes_or_returns_a_stack_target_or_agent_context(): void
@@ -76,7 +85,7 @@ final class DomainActorColumnsTest extends TestCase
         $this->assertSame(
             array_keys(self::METHODS_BEING_REMOVED),
             $methods,
-            'A domain model names an agent stack or request; it should name an actor or a state instead.',
+            self::MODEL_ADVICE,
         );
     }
 

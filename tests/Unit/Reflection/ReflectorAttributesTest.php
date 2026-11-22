@@ -80,7 +80,9 @@ final class ReflectorAttributesTest extends TestCase
         $this->assertSame($reflector->attributes(FailingMarker::class), $reflector->attributes(FailingMarker::class));
 
         $this->expectException(AttributeMissing::class);
-        $this->expectExceptionMessage('class '.MarkedParcel::class.' carries no attribute '.FailingMarker::class);
+        $this->expectExceptionMessage(
+            AttributeMissing::on('class '.MarkedParcel::class, FailingMarker::class)->getMessage(),
+        );
 
         $reflector->attribute(FailingMarker::class);
     }
@@ -116,8 +118,8 @@ final class ReflectorAttributesTest extends TestCase
                 $reflector->attribute(FailingMarker::class);
                 $this->fail("Attempt {$attempt} built a marker that always throws.");
             } catch (RuntimeException $failure) {
-                $this->assertSame('The marker refuses to be built.', $failure->getMessage());
-                $this->assertSame('the cause', $failure->getPrevious()?->getMessage());
+                $this->assertSame(FailingMarker::MESSAGE, $failure->getMessage());
+                $this->assertSame(FailingMarker::CAUSE, $failure->getPrevious()?->getMessage());
             }
         }
 

@@ -28,6 +28,8 @@ final class TaskStreamTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
+    private const string LOG_TEXT = 'Read <b>the</b> schema.';
+
     private const array TABLES = [
         'users',
         'tasks',
@@ -48,7 +50,7 @@ final class TaskStreamTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new StartTask($task->id));
-        $bus->run(new LogTaskRun($task->id, 1, 'Read <b>the</b> schema.'));
+        $bus->run(new LogTaskRun($task->id, 1, self::LOG_TEXT));
         $bus->run(new LogTaskRun($task->id, 1, 'Wrote it.'));
         $bus->run(new BlockTask($task->id, 1, 'Waits.'));
 
@@ -67,7 +69,7 @@ final class TaskStreamTest extends TestCase
         );
 
         $this->assertContains(
-            'Read <b>the</b> schema.',
+            self::LOG_TEXT,
             array_map(fn (TaskStreamEntryData $entry) => $entry->text, $page->entries),
         );
 

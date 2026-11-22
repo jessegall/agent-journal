@@ -13,6 +13,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class ClaudeCaptureTest extends TestCase
 {
+    private const string SIGNED_OUT_REPLY = 'Not logged in';
+
+    private const string VERSION_LINE = 'Claude Code %s';
+
     private const string FIXTURES = __DIR__.'/../../Fixtures/Accounts/Claude';
 
     public function test_the_start_invocation_keeps_out_settings_and_mcp_the_journal_did_not_supply(): void
@@ -40,7 +44,7 @@ final class ClaudeCaptureTest extends TestCase
         $this->assertTrue($run['is_error']);
         $this->assertSame(0, $run['duration_api_ms']);
         $this->assertSame(0, $run['total_cost_usd']);
-        $this->assertStringStartsWith('Not logged in', $run['result']);
+        $this->assertStringStartsWith(self::SIGNED_OUT_REPLY, $run['result']);
     }
 
     public function test_the_document_names_the_pinned_version_and_digest(): void
@@ -48,7 +52,7 @@ final class ClaudeCaptureTest extends TestCase
         $capture = self::fixture('capture.json');
         $document = (string) file_get_contents(__DIR__.'/../../../docs/accounts/claude-integration.md');
 
-        $this->assertStringContainsString("Claude Code {$capture['version']}", $document);
+        $this->assertStringContainsString(sprintf(self::VERSION_LINE, $capture['version']), $document);
         $this->assertStringContainsString($capture['binary_sha256'], $document);
     }
 

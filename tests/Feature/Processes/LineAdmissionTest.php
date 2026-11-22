@@ -27,6 +27,12 @@ final class LineAdmissionTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string PROPOSE_COMMAND = 'journal command-type propose';
+
+    private const string BLOCKING_TASKS = 'task 447, task 448';
+
+    private const string NOTICE = 'Nothing in this request started.';
+
     private TestStart $start;
 
     protected function setUp(): void
@@ -54,7 +60,7 @@ final class LineAdmissionTest extends TestCase
 
         $this->assertSame(AdmissionRefusalCode::CommandUnknown, $refusal->code);
         $this->assertSame(CommandRequest::query()->sole()->id, $refusal->requestId);
-        $this->assertStringStartsWith('journal command-type propose', $refusal->next);
+        $this->assertStringStartsWith(self::PROPOSE_COMMAND, $refusal->next);
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
@@ -79,7 +85,7 @@ final class LineAdmissionTest extends TestCase
         $refusal = $this->refusalOf($this->admit('vendor/bin/phpstan analyse', 'key-1'));
 
         $this->assertSame(AdmissionRefusalCode::PhaseTiming, $refusal->code);
-        $this->assertStringContainsString('task 447, task 448', $refusal->reason);
+        $this->assertStringContainsString(self::BLOCKING_TASKS, $refusal->reason);
     }
 
     public function test_a_read_only_helper_writing_a_file_is_refused_by_its_ceiling(): void
@@ -110,7 +116,7 @@ final class LineAdmissionTest extends TestCase
         $refusal = $this->refusalOf($this->admit('TOKEN=hunter2 acme verify', 'key-1'));
 
         $this->assertStringNotContainsString('hunter2', $refusal->excerpt);
-        $this->assertSame('Nothing in this request started.', AdmissionRefusal::NOTICE);
+        $this->assertSame(self::NOTICE, AdmissionRefusal::NOTICE);
     }
 
     private function admit(string $line, string $key): Admission

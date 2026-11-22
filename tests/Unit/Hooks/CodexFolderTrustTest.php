@@ -16,6 +16,12 @@ use PHPUnit\Framework\TestCase;
  */
 final class CodexFolderTrustTest extends TestCase
 {
+    private const string HOOKS_HEAD = "cli_auth_credentials_store = \"file\"\n\n[hooks]\n";
+
+    private const string FEATURES_HEAD = "cli_auth_credentials_store = \"file\"\n[features]\nmulti_agent = false\n";
+
+    private const string TRUSTED_TWO = "[projects.\"%s/roots/two\"]\ntrust_level = \"trusted\"";
+
     private string $base;
 
     protected function setUp(): void
@@ -51,12 +57,9 @@ final class CodexFolderTrustTest extends TestCase
         $this->assertTrue($write->addTrust($this->base.'/account', $two));
 
         $written = (string) file_get_contents($config);
-        $this->assertStringStartsWith("cli_auth_credentials_store = \"file\"\n\n[hooks]\n", $written);
+        $this->assertStringStartsWith(self::HOOKS_HEAD, $written);
         $this->assertSame(1, substr_count($written, '[projects."'.$this->base.'/roots/one"]'));
-        $this->assertStringContainsString(
-            '[projects."'.$this->base."/roots/two\"]\ntrust_level = \"trusted\"",
-            $written,
-        );
+        $this->assertStringContainsString(sprintf(self::TRUSTED_TWO, $this->base), $written);
         $this->assertSame([], glob($this->base.'/account/config.toml.*.new') ?: []);
     }
 
@@ -80,10 +83,7 @@ final class CodexFolderTrustTest extends TestCase
         );
 
         $written = (string) file_get_contents($config);
-        $this->assertStringStartsWith(
-            "cli_auth_credentials_store = \"file\"\n[features]\nmulti_agent = false\n",
-            $written,
-        );
+        $this->assertStringStartsWith(self::FEATURES_HEAD, $written);
         $this->assertSame(1, substr_count($written, 'cli_auth_credentials_store'));
         $this->assertSame(1, substr_count($written, '[hooks.state.'));
         $this->assertSame(1, substr_count($written, '[projects."'.$this->base.'/roots/one"]'));

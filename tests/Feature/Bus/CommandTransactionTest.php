@@ -25,6 +25,8 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
  */
 final class CommandTransactionTest extends CommandBusTestCase
 {
+    private const string ISOLATION = 'repeatable read';
+
     public function test_a_command_commits_in_its_isolation_and_a_repeatable_read_command_gets_its_own(): void
     {
         $this->installCommandModules();
@@ -34,7 +36,7 @@ final class CommandTransactionTest extends CommandBusTestCase
         $id = $bus->run(new WriteNote('kept'));
 
         $this->assertSame('kept', $this->rowText($id));
-        $this->assertSame('repeatable read', $bus->run(new PinNote($id)));
+        $this->assertSame(self::ISOLATION, $bus->run(new PinNote($id)));
         $this->assertSame(0, $this->app->make(ConnectionInterface::class)->transactionLevel());
     }
 

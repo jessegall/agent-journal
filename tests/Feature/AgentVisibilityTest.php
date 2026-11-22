@@ -26,6 +26,8 @@ final class AgentVisibilityTest extends TestCase
     use RefreshHookDatabase;
     use StartsAgentRequests;
 
+    private const string AGENT_ONE_RUN = 'Run of agent 1';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -44,7 +46,7 @@ final class AgentVisibilityTest extends TestCase
         $this->startTestAgentRequest(1, 10);
 
         $this->assertSame(
-            ['Run of agent 1', 'Run of agent 1'],
+            [self::AGENT_ONE_RUN, self::AGENT_ONE_RUN],
             SequenceRun::query()->orderBy('id')->pluck('name')->all(),
         );
         $this->assertSame(['Kept by agent 1'], Memory::query()->pluck('text')->all());
@@ -128,7 +130,7 @@ final class AgentVisibilityTest extends TestCase
         $runOfAgentOne = $this->runOfAgentOne();
 
         $this->startTestUserRequest(7);
-        $this->assertSame('Run of agent 1', new SequenceRun()->resolveRouteBinding($runOfAgentOne)?->name);
+        $this->assertSame(self::AGENT_ONE_RUN, new SequenceRun()->resolveRouteBinding($runOfAgentOne)?->name);
 
         $this->app->forgetScopedInstances();
         $this->startTestAgentRequest(2, 20);

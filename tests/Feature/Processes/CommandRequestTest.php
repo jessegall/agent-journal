@@ -23,6 +23,10 @@ final class CommandRequestTest extends TestCase
     use ActsAsActors;
     use RefreshHookDatabase;
 
+    private const string PROPOSE_STEP = 'journal command-type propose --request %s';
+
+    private const string APPROVE_STEP = 'waiting for the owner: journal reader sample-approve %s';
+
     public function test_opening_twice_returns_the_same_request_with_its_propose_step(): void
     {
         $first = $this->open('agent-1', '/projects/acme');
@@ -31,7 +35,7 @@ final class CommandRequestTest extends TestCase
         $request = CommandRequest::query()->findOrFail($first);
         $this->assertSame($first, $second);
         $this->assertSame(RequestState::CollectingDeclaration, $request->state);
-        $this->assertStringStartsWith("journal command-type propose --request {$first}", $request->nextStep()->command);
+        $this->assertStringStartsWith(sprintf(self::PROPOSE_STEP, $first), $request->nextStep()->command);
     }
 
     public function test_another_project_or_another_agent_gets_its_own_request(): void
@@ -78,7 +82,7 @@ final class CommandRequestTest extends TestCase
 
         $again = CommandRequest::query()->findOrFail($first);
         $this->assertSame(RequestState::AwaitingSampleApproval, $again->state);
-        $this->assertSame("waiting for the owner: journal reader sample-approve {$first}", $again->nextStep()->command);
+        $this->assertSame(sprintf(self::APPROVE_STEP, $first), $again->nextStep()->command);
     }
 
     private function open(string $agentId, string $folder): string

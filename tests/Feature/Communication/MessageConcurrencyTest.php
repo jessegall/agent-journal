@@ -30,6 +30,8 @@ final class MessageConcurrencyTest extends MessagingTestCase
 {
     use UsesSecondConnection;
 
+    private const string CONCURRENT_QUESTION = 'Both at once?';
+
     private DeskRecord $desk;
 
     protected function setUp(): void
@@ -49,10 +51,10 @@ final class MessageConcurrencyTest extends MessagingTestCase
         $other->beginTransaction();
         $other->table('desks')->where('id', $this->desk->id)->sharedLock()->first();
 
-        $messageId = $this->ownerAsks($this->desk->inboxId(), 'Both at once?');
+        $messageId = $this->ownerAsks($this->desk->inboxId(), self::CONCURRENT_QUESTION);
         $other->rollBack();
 
-        $this->assertSame('Both at once?', Message::query()->findOrFail($messageId)->body);
+        $this->assertSame(self::CONCURRENT_QUESTION, Message::query()->findOrFail($messageId)->body);
     }
 
     public function test_a_send_waits_for_a_seating_change_and_gives_up_whole(): void

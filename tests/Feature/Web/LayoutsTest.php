@@ -20,6 +20,8 @@ final class LayoutsTest extends TestCase
     use ActsAsOwner;
     use RefreshHookDatabase;
 
+    private const string LAYOUT_NAME = 'Deep review';
+
     /**
      * @var array<string, mixed>
      */
@@ -90,7 +92,7 @@ final class LayoutsTest extends TestCase
             ['name' => 'Deep review', 'shape' => $changed],
         )->assertSessionHasNoErrors();
 
-        $this->assertSame('Deep review', $layout->refresh()->name);
+        $this->assertSame(self::LAYOUT_NAME, $layout->refresh()->name);
         $this->assertSame('plans', $layout->shape['detached'][0]['key']);
     }
 

@@ -32,6 +32,8 @@ final class RetireAndCopySkillTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string ASSIGNED_LINE = '`plan:assigned` lists the plans you hold.';
+
     private const array TABLES = [
         'skill_publications',
         'skill_generations',
@@ -88,7 +90,7 @@ final class RetireAndCopySkillTest extends TestCase
         $this->assertSame('journal-plans', $revision->source_key);
         $this->assertSame($source->rendered->digest, $revision->source_digest);
         $this->assertStringContainsString(
-            '`plan:assigned` lists the plans you hold.',
+            self::ASSIGNED_LINE,
             (string) $revision->sections[0]->content,
         );
         $this->assertSame($source->condition->toArray(), $revision->condition);

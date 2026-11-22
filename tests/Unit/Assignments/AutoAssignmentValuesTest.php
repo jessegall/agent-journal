@@ -31,6 +31,8 @@ use Tests\Support\TestIds;
  */
 final class AutoAssignmentValuesTest extends TestCase
 {
+    private const string HOSTILE_ID = 'drop table tasks';
+
     public function test_ordered_pool_members_keep_their_order(): void
     {
         $members = PoolMembers::ordered([TestIds::of(3), TestIds::of(1), TestIds::of(2)]);
@@ -62,7 +64,7 @@ final class AutoAssignmentValuesTest extends TestCase
         $this->assertCount(1000, PoolMembers::ordered(self::ids(1000))->ids->ids);
 
         $this->expectException(InvalidRecordIds::class);
-        $this->expectExceptionMessage('at most 1000 ids; this one holds 1001');
+        $this->expectExceptionMessage(InvalidRecordIds::tooMany(1001, 1000)->getMessage());
 
         PoolMembers::ordered(self::ids(1001));
     }
@@ -70,10 +72,10 @@ final class AutoAssignmentValuesTest extends TestCase
     public function test_ordered_record_ids_refuse_something_other_than_a_ulid_without_echoing_it(): void
     {
         try {
-            new OrderedRecordIds(['drop table tasks']);
+            new OrderedRecordIds([self::HOSTILE_ID]);
             $this->fail('A word was accepted as a record id.');
         } catch (InvalidRecordIds $refusal) {
-            $this->assertStringNotContainsString('drop table', $refusal->getMessage());
+            $this->assertStringNotContainsString(self::HOSTILE_ID, $refusal->getMessage());
         }
     }
 

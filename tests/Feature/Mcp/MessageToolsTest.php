@@ -19,6 +19,12 @@ final class MessageToolsTest extends MessagingTestCase
     use SendsMcpFrames;
     use SendsSignedCalls;
 
+    private const string ANSWER_TEXT = 'Port 8080.';
+
+    private const string QUESTION_TEXT = 'Which port?';
+
+    private const string DISMISSAL_REASON = 'Already settled.';
+
     public function test_inbox_and_resource_reads_keep_control_like_text_in_the_body_and_select_nothing(): void
     {
         $caller = TestStart::start();
@@ -70,11 +76,11 @@ final class MessageToolsTest extends MessagingTestCase
             ->assertJsonPath('message_id', $reply);
 
         $context = $this->callMcpTool($caller, 'messages_context', ['message_id' => $reply])
-            ->assertJsonPath('result.structuredContent.body', 'Port 8080.')->json('result.structuredContent');
+            ->assertJsonPath('result.structuredContent.body', self::ANSWER_TEXT)->json('result.structuredContent');
         $next = $context['next_actions'][0];
         $this->callMcpTool($caller, $next['tool'], $next['arguments'])
             ->assertJsonPath('result.structuredContent.message.message_id', $question)
-            ->assertJsonPath('result.structuredContent.body', 'Which port?');
+            ->assertJsonPath('result.structuredContent.body', self::QUESTION_TEXT);
 
         $answer = ['message_id' => $question, 'reply_id' => $reply, 'request_key' => 'confirm-answer'];
         $this->callMcpTool($caller, 'messages_answer', $answer)
@@ -101,6 +107,6 @@ final class MessageToolsTest extends MessagingTestCase
         $this->signed($caller, '/agent/communication/dismiss', $dismiss)->assertOk()
             ->assertJsonPath('message_id', $question);
         $this->callMcpTool($caller, 'messages_read', ['message_id' => $question])
-            ->assertJsonPath('result.structuredContent.message.dismissal_reason', 'Already settled.');
+            ->assertJsonPath('result.structuredContent.message.dismissal_reason', self::DISMISSAL_REASON);
     }
 }

@@ -28,6 +28,10 @@ final class DomainSwitchPagesTest extends TestCase
     use RefreshHookDatabase;
     use SwitchesDomainsOff;
 
+    private const string COUNT_READ = 'The count of a switched-off domain was read.';
+
+    private const string SECTION_BUILT = 'The section reader of a switched-off domain was built.';
+
     public function test_pages_and_actions_of_a_switched_off_domain_answer_not_found_and_others_stay(): void
     {
         $plan = Plan::factory()->create(['title' => 'Kept', 'type' => PlanType::Build]);
@@ -55,7 +59,7 @@ final class DomainSwitchPagesTest extends TestCase
         $this->assertNotContains('plans.list', array_column($items, 'key'));
         $this->assertContains('rules.list', array_column($items, 'key'));
         $this->assertArrayNotHasKey('plans.open', $counts);
-        $this->assertFalse($countRead, 'The count of a switched-off domain was read.');
+        $this->assertFalse($countRead, self::COUNT_READ);
     }
 
     public function test_a_section_of_a_switched_off_domain_is_left_out_even_on_a_forged_partial_request(): void
@@ -75,7 +79,7 @@ final class DomainSwitchPagesTest extends TestCase
             'X-Inertia-Partial-Data' => $section->propName,
         ])->assertOk()->assertJsonMissingPath('props.'.$section->propName);
 
-        $this->assertFalse($sectionRead, 'The section reader of a switched-off domain was built.');
+        $this->assertFalse($sectionRead, self::SECTION_BUILT);
     }
 
     public function test_with_the_domain_on_its_page_and_navigation_show_again(): void

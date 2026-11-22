@@ -21,14 +21,23 @@ use Tests\TestCase;
 
 final class ProgramCapabilitiesTest extends TestCase
 {
+    private const string SCHEMA_CONTRACT = 'pre-tool and stop replies, checked against documentation on 2026-11-17';
+
+    private const string CLAUDE_HEADING = '## Claude Code';
+
+    private const string CODEX_HEADING = '## Codex';
+
+    private const string CLAUDE_VERSION_ROW = '| Driver and pinned version | Claude Code 2.1.323,';
+
+    private const string CODEX_VERSION_ROW = '| Driver and pinned version | codex-cli 0.165.0,';
+
+    private const string NO_PRODUCTION_RUN = 'No production driver runs under it yet:';
+
     public function test_capabilities_name_the_contract_and_the_hooks_they_map(): void
     {
         $capabilities = $this->capabilities(RewriteSupport::WithoutApproval);
 
-        $this->assertSame(
-            'pre-tool and stop replies, checked against documentation on 2026-11-17',
-            $capabilities->schemaContract,
-        );
+        $this->assertSame(self::SCHEMA_CONTRACT, $capabilities->schemaContract);
         $this->assertTrue($capabilities->supports('onShellCommand'));
         $this->assertTrue($capabilities->supports('onStop'));
         $this->assertFalse($capabilities->supports('onCompaction'));
@@ -61,7 +70,10 @@ final class ProgramCapabilitiesTest extends TestCase
         $taken = DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval);
         $refused = DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval);
 
-        $this->assertStringContainsString('"updatedInput":{"command":"journal run tests"}', $taken->stdout);
+        $this->assertStringContainsString(
+            trim((string) json_encode(['updatedInput' => ['command' => 'journal run tests']]), '{}'),
+            $taken->stdout,
+        );
         $this->assertStringContainsString('"permissionDecision":"deny"', $refused->stdout);
     }
 
@@ -82,19 +94,19 @@ final class ProgramCapabilitiesTest extends TestCase
     {
         $evidence = (string) file_get_contents(base_path('docs/hooks/driver-capabilities.md'));
 
-        $this->assertStringContainsString('## Claude Code', $evidence);
-        $this->assertStringContainsString('## Codex', $evidence);
+        $this->assertStringContainsString(self::CLAUDE_HEADING, $evidence);
+        $this->assertStringContainsString(self::CODEX_HEADING, $evidence);
         $this->assertStringContainsString('X-Journal-Call-Signature', $evidence);
-        $this->assertStringContainsString('| Driver and pinned version | Claude Code 2.1.323,', $evidence);
-        $this->assertStringContainsString('| Driver and pinned version | codex-cli 0.165.0,', $evidence);
-        $this->assertStringContainsString('No production driver runs under it yet:', $evidence);
+        $this->assertStringContainsString(self::CLAUDE_VERSION_ROW, $evidence);
+        $this->assertStringContainsString(self::CODEX_VERSION_ROW, $evidence);
+        $this->assertStringContainsString(self::NO_PRODUCTION_RUN, $evidence);
     }
 
     private function capabilities(RewriteSupport $rewrites): DriverCapabilities
     {
         return new DriverCapabilities(
             'Test driver',
-            'pre-tool and stop replies, checked against documentation on 2026-11-17',
+            self::SCHEMA_CONTRACT,
             ['onShellCommand', 'onStop'],
             $rewrites,
         );

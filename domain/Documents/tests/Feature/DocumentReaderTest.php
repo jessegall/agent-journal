@@ -29,6 +29,10 @@ final class DocumentReaderTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string ABSTRACT = 'How to use a request key.';
+
+    private const string RETRY_SECTION = "## Retry\nKeep your key.\n";
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
         'documents', 'document_revisions', 'document_drafts', 'document_closes', 'text_uploads', 'text_upload_chunks',
@@ -40,17 +44,17 @@ final class DocumentReaderTest extends TestCase
         $body = "# Guide\nFirst paragraph.\n\n## Retry\nKeep your key.\n\n## Examples\n".str_repeat("A row.\n", 8000);
 
         $id = $this->app->make(CommandBus::class)->run(
-            new CreateDocument('Guide', 'How to use a request key.', $body),
+            new CreateDocument('Guide', self::ABSTRACT, $body),
         )->number;
 
         $summary = $this->read($id, ['view' => 'summary'])->responseFields;
         $this->assertSame(['1 Guide', '2 Retry', '3 Examples'], $summary['outline']);
-        $this->assertSame('How to use a request key.', $summary['abstract']);
+        $this->assertSame(self::ABSTRACT, $summary['abstract']);
         $this->assertArrayNotHasKey('body', $summary);
 
         $section = $this->read($id, ['view' => 'body', 'section' => 'Retry'])->responseFields;
         $this->assertSame([1, 4, 6], [$section['revision'], $section['line_start'], $section['line_end']]);
-        $this->assertSame("## Retry\nKeep your key.\n", $section['body']);
+        $this->assertSame(self::RETRY_SECTION, $section['body']);
     }
 
     public function test_a_current_cursor_expires_on_publication_and_a_pinned_cursor_keeps_its_revision(): void

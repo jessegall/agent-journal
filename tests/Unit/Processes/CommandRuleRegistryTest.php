@@ -33,6 +33,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class CommandRuleRegistryTest extends TestCase
 {
+    private const string REQUIRED_OPTION_REASON = 'The option -D is required here.';
+
     public function test_the_list_and_delete_forms_of_git_branch_each_match_their_own_rule(): void
     {
         $registry = CommandRuleRegistry::from([$this->branchDelete(), $this->branchList()]);
@@ -57,7 +59,7 @@ final class CommandRuleRegistryTest extends TestCase
         $registry = CommandRuleRegistry::from([$this->branchList(), $this->branchDelete()]);
 
         $this->assertSame(UnresolvedType::UnknownOption, $this->refusal($registry, 'git branch --force')->type);
-        $this->assertSame('The option -D is required here.', $this->refusal($registry, 'git branch new-name')->reason);
+        $this->assertSame(self::REQUIRED_OPTION_REASON, $this->refusal($registry, 'git branch new-name')->reason);
         $this->assertSame(UnresolvedType::UnknownSubcommand, $this->refusal($registry, 'git frobnicate')->type);
         $this->assertSame(UnresolvedType::UnknownProgram, $this->refusal($registry, 'frob it')->type);
     }
@@ -67,7 +69,7 @@ final class CommandRuleRegistryTest extends TestCase
         $module = $this->branchList()->ownedBy(RuleScope::module('acme', '2.0'), 1);
 
         $this->expectException(CommandRuleConflict::class);
-        $this->expectExceptionMessage('core.git.branch-list is declared by acme@2.0 and by core');
+        $this->expectExceptionMessage(CommandRuleConflict::sameId($module, $this->branchList())->getMessage());
 
         CommandRuleRegistry::from([$this->branchList(), $module]);
     }

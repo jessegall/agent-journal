@@ -17,6 +17,13 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 600, reason: 'It runs PHPStan over every PHP source the project owns.')]
 final class ReflectionBoundaryTest extends TestCase
 {
+    private const string INCOMPLETE = 'The reflection analysis did not complete.';
+
+    private const string SKIPPED = 'The reflection analysis skipped sources.';
+
+    private const string HOW_TO_FIX = 'Native reflection or a raw type question outside app/Reflection; '
+        .'ask the Reflector as each line says.';
+
     /**
      * The rule's own fixtures, which use native reflection on purpose.
      */
@@ -33,12 +40,12 @@ final class ReflectionBoundaryTest extends TestCase
         $sources = ReflectionSources::in($root, self::RULE_FIXTURES);
         $scan = ReflectionScan::of($root, $sources);
 
-        $this->assertSame([], $scan->failures, 'The reflection analysis did not complete.');
-        $this->assertGreaterThanOrEqual(count($sources), $scan->analysedFiles, 'The reflection analysis skipped sources.');
+        $this->assertSame([], $scan->failures, self::INCOMPLETE);
+        $this->assertGreaterThanOrEqual(count($sources), $scan->analysedFiles, self::SKIPPED);
         $this->assertSame(
             [],
             $scan->reports(),
-            'Native reflection or a raw type question outside app/Reflection; ask the Reflector as each line says.',
+            self::HOW_TO_FIX,
         );
     }
 }

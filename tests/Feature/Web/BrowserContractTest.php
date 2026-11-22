@@ -19,6 +19,16 @@ use Tests\TestCase;
  */
 final class BrowserContractTest extends TestCase
 {
+    private const string STATE_TYPE = "export type ShelfState = 'open' | 'closed';";
+
+    private const string BOOKS_FIELD = 'readonly books: BookData[]';
+
+    private const string STATE_FIELD = 'readonly state: ShelfState';
+
+    private const string NOTE_FIELD = 'readonly note?: string';
+
+    private const string COUNT_FIELD = 'bookCount: number';
+
     private string $output;
 
     protected function setUp(): void
@@ -46,11 +56,11 @@ final class BrowserContractTest extends TestCase
 
         $types = (string) file_get_contents("{$this->output}/index.ts");
 
-        $this->assertStringContainsString("export type ShelfState = 'open' | 'closed';", $types);
-        $this->assertStringContainsString('readonly books: BookData[]', $types);
-        $this->assertStringContainsString('readonly state: ShelfState', $types);
-        $this->assertStringContainsString('readonly note?: string', $types);
-        $this->assertStringContainsString('bookCount: number', $types);
+        $this->assertStringContainsString(self::STATE_TYPE, $types);
+        $this->assertStringContainsString(self::BOOKS_FIELD, $types);
+        $this->assertStringContainsString(self::STATE_FIELD, $types);
+        $this->assertStringContainsString(self::NOTE_FIELD, $types);
+        $this->assertStringContainsString(self::COUNT_FIELD, $types);
         $this->assertStringNotContainsString('shelf:', $types);
         $this->assertStringNotContainsString('counter', $types);
         $this->assertStringNotContainsString('ShelfCounter', $types);

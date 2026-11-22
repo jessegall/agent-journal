@@ -17,12 +17,17 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 30, reason: 'It parses every source file of app and the domains.')]
 final class RepeatedStaticFactoryTest extends TestCase
 {
+    private const string REPEATED_ADVICE = 'Hold the first answer in a variable and ask it again:';
+
+    private const string INJECTABLE_ADVICE = 'Take App\Reflection\Contracts\ReflectorFactory '
+        .'in the constructor and call make():';
+
     public function test_no_function_calls_one_static_factory_twice_with_the_same_arguments(): void
     {
         $this->assertSame(
             [],
             $this->findings(StaticFactoryScan::REPEATED),
-            'Hold the first answer in a variable and ask it again:',
+            self::REPEATED_ADVICE,
         );
     }
 
@@ -31,7 +36,7 @@ final class RepeatedStaticFactoryTest extends TestCase
         $this->assertSame(
             [],
             $this->findings(StaticFactoryScan::INJECTABLE),
-            'Take App\Reflection\Contracts\ReflectorFactory in the constructor and call make():',
+            self::INJECTABLE_ADVICE,
         );
     }
 

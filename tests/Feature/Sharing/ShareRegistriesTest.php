@@ -79,14 +79,14 @@ final class ShareRegistriesTest extends TestCase
                 ),
             ),
             ShareRecordInvalid::class,
-            'does not implement Shareable',
+            ShareRecordInvalid::notShareable('tests.thing', PamphletShareProvider::class)->getMessage(),
         );
         $this->assertThrows(
             fn () => $records->register(
                 new ShareRecordDefinition('tests.thing', Pamphlet::class, Pamphlet::class, []),
             ),
             ShareRecordInvalid::class,
-            'is no share record provider',
+            ShareRecordInvalid::notAProvider('tests.thing', Pamphlet::class)->getMessage(),
         );
         $this->assertThrows(
             fn () => $records->register(
@@ -123,12 +123,12 @@ final class ShareRegistriesTest extends TestCase
         $this->assertThrows(
             fn () => $gateways->register('press', PressGateway::class),
             ShareGatewayInvalid::class,
-            'already registered',
+            ShareGatewayInvalid::repeated('press')->getMessage(),
         );
         $this->assertThrows(
             fn () => $gateways->register('pamphlet', Pamphlet::class),
             ShareGatewayInvalid::class,
-            'is no share gateway',
+            ShareGatewayInvalid::notAGateway('pamphlet', Pamphlet::class)->getMessage(),
         );
         $this->assertThrows(fn () => $gateways->get('carrier-pigeon'), UnknownShareGateway::class);
     }

@@ -30,6 +30,10 @@ final class StoredOutputReadTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
+    private const string TAIL_TEXT = "line 100\n\\x00\\xFF end";
+
+    private const string LABEL = 'diagnostic output';
+
     private TestStart $start;
 
     private ProcessRun $run;
@@ -65,9 +69,9 @@ final class StoredOutputReadTest extends TestCase
             ['part' => 1, 'lines' => 2],
         )->assertOk();
 
-        $this->assertSame("line 100\n\\x00\\xFF end", $reply->json('text'));
+        $this->assertSame(self::TAIL_TEXT, $reply->json('text'));
         $this->assertGreaterThan(0, $reply->json('before'));
-        $this->assertSame('diagnostic output', $reply->json('label'));
+        $this->assertSame(self::LABEL, $reply->json('label'));
     }
 
     public function test_a_search_lists_offsets_and_the_summary_keeps_the_own_exit(): void

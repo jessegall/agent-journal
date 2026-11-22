@@ -32,6 +32,13 @@ final class SkillCatalogueTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string NOTES_SECTION = <<<'TEXT'
+            ## Notes
+
+            A note keeps what an agent learned while it works.
+
+            TEXT;
+
     public function test_the_catalogue_lists_a_registered_module_skill_with_its_owner(): void
     {
         $domainClasses = DomainRegistry::installedClasses(base_path());
@@ -45,12 +52,7 @@ final class SkillCatalogueTest extends TestCase
         $this->assertSame('Notes', $entry->owner);
         $this->assertSame('Notes', $entry->name);
         $this->assertStringContainsString(
-            <<<'TEXT'
-            ## Notes
-
-            A note keeps what an agent learned while it works.
-
-            TEXT,
+            self::NOTES_SECTION,
             $entry->rendered->markdown,
         );
     }
@@ -58,7 +60,7 @@ final class SkillCatalogueTest extends TestCase
     public function test_two_owners_with_one_key_stop_the_catalogue_naming_both(): void
     {
         $this->expectException(SkillConflict::class);
-        $this->expectExceptionMessage('Guide and Copy both declare the skill key journal-guide');
+        $this->expectExceptionMessage(SkillConflict::between('journal-guide', 'Guide', 'Copy')->getMessage());
 
         $this->catalogue(
             SkillRegistry::of(
@@ -86,7 +88,7 @@ final class SkillCatalogueTest extends TestCase
     public function test_a_module_may_not_declare_a_journal_key(): void
     {
         $this->expectException(SkillDeclarationInvalid::class);
-        $this->expectExceptionMessage('Guide declares the skill key journal-guide, whose prefix it does not own');
+        $this->expectExceptionMessage(SkillDeclarationInvalid::reservedKey('Guide', 'journal-guide')->getMessage());
 
         $this->catalogue(
             SkillRegistry::of(

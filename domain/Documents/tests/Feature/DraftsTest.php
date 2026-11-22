@@ -36,6 +36,18 @@ final class DraftsTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
 
+    private const string RISKS_TEXT = <<<'TEXT'
+        ## Risks
+        Late.
+
+        TEXT;
+
+    private const string STEPS_TEXT = <<<'TEXT'
+        ## Steps
+        One.
+
+        TEXT;
+
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
@@ -82,11 +94,7 @@ final class DraftsTest extends TestCase
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
 
-        $draft = $this->bus()->run(new EditDocument($draft->target(), '3', <<<'TEXT'
-        ## Risks
-        Late.
-
-        TEXT));
+        $draft = $this->bus()->run(new EditDocument($draft->target(), '3', self::RISKS_TEXT));
 
         $draft = $this->bus()->run(new ChangeDocumentDetails($draft->target(), 'Design', 'What we build next'));
         $closed = $this->bus()->run(new CloseDocument($draft->target()));
@@ -94,17 +102,9 @@ final class DraftsTest extends TestCase
         $this->assertSame(3, $draft->version);
         $this->assertSame([2, true], [$closed->revisionNumber, $closed->published]);
 
-        $this->assertStringContainsString(<<<'TEXT'
-        ## Risks
-        Late.
+        $this->assertStringContainsString(self::RISKS_TEXT, $this->documents()->show(1)->body);
 
-        TEXT, $this->documents()->show(1)->body);
-
-        $this->assertStringContainsString(<<<'TEXT'
-        ## Steps
-        One.
-
-        TEXT, $this->documents()->show(1)->body);
+        $this->assertStringContainsString(self::STEPS_TEXT, $this->documents()->show(1)->body);
 
         $this->assertSame(self::BODY, $this->documents()->revision(1, 1)->body);
         $this->assertTrue($this->documents()->revision(1, 1)->historical);
@@ -135,7 +135,7 @@ final class DraftsTest extends TestCase
             $this->bus()->run(new OpenDocument('2'));
             $this->fail('A second draft for one editor was opened.');
         } catch (DraftHeld $held) {
-            $this->assertStringContainsString('doc 1', $held->getMessage());
+            $this->assertSame(DraftHeld::elsewhere(1)->getMessage(), $held->getMessage());
         }
 
         $this->actAsUser(2);
@@ -206,7 +206,7 @@ final class DraftsTest extends TestCase
     public function test_an_edit_without_an_open_draft_names_doc_open(): void
     {
         $this->expectException(DraftMissing::class);
-        $this->expectExceptionMessage('doc:open 1');
+        $this->expectExceptionMessage(DraftMissing::forDocument(1)->getMessage());
 
         $this->bus()->run(new ReplaceDocumentText(new DraftTarget('1', 'unknown', 1), 'One.', 'Two.'));
     }

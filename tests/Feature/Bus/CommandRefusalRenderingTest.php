@@ -20,6 +20,14 @@ use Tests\TestCase;
  */
 final class CommandRefusalRenderingTest extends TestCase
 {
+    private const string REFUSED_HEAD = "The input was refused.\ntitle: The title must be one line";
+
+    private const string REVISION_LINE = "\nexpectedRevision: The expected revision field must be at least 1.";
+
+    private const string CONSOLE_HEAD = "The journal refused the call (invalid_input): The input was refused.\ntitle: ";
+
+    private const string SECRET_TITLE = "Secret\nnotes";
+
     public function test_a_refusal_is_a_form_error_on_the_web_and_a_403_on_an_agent_route(): void
     {
         Route::post('/bus-test/refuse', fn () => throw CommandRefused::because('Notes are closed for now.'))
@@ -38,9 +46,9 @@ final class CommandRefusalRenderingTest extends TestCase
     {
         $message = $this->refusedInput()->getMessage();
 
-        $this->assertStringStartsWith("The input was refused.\ntitle: The title must be one line", $message);
+        $this->assertStringStartsWith(self::REFUSED_HEAD, $message);
         $this->assertStringContainsString(
-            "\nexpectedRevision: The expected revision field must be at least 1.",
+            self::REVISION_LINE,
             $message,
         );
         $this->assertStringNotContainsString('Secret', $message);
@@ -50,7 +58,7 @@ final class CommandRefusalRenderingTest extends TestCase
     {
         Route::post('/bus-test/invalid-input', fn () => throw $this->refusedInput())->middleware('web');
 
-        $this->postJson('/bus-test/invalid-input', ['title' => "Secret\nnotes"])
+        $this->postJson('/bus-test/invalid-input', ['title' => self::SECRET_TITLE])
             ->assertStatus(422)
             ->assertJsonPath('code', 'invalid-input')
             ->assertJsonStructure(['fields' => ['title', 'expectedRevision']]);
@@ -61,10 +69,10 @@ final class CommandRefusalRenderingTest extends TestCase
         Route::post('/bus-test/invalid-input', fn () => throw $this->refusedInput())->middleware('web');
 
         $this->from('/somewhere')
-            ->post('/bus-test/invalid-input', ['title' => "Secret\nnotes"])
+            ->post('/bus-test/invalid-input', ['title' => self::SECRET_TITLE])
             ->assertRedirect('/somewhere')
             ->assertSessionHasErrors(['title', 'expectedRevision'])
-            ->assertSessionHasInput('title', "Secret\nnotes");
+            ->assertSessionHasInput('title', self::SECRET_TITLE);
     }
 
     public function test_refused_input_is_invalid_input_to_mcp_and_an_agent_route(): void
@@ -85,7 +93,7 @@ final class CommandRefusalRenderingTest extends TestCase
         $refused = InputRefused::answered('invalid_input', $this->refusedInput()->getMessage(), 'call', null, []);
 
         $this->assertStringStartsWith(
-            "The journal refused the call (invalid_input): The input was refused.\ntitle: ",
+            self::CONSOLE_HEAD,
             $refused->consoleLines()[0],
         );
     }
@@ -93,7 +101,7 @@ final class CommandRefusalRenderingTest extends TestCase
     private function refusedInput(): CommandInputInvalid
     {
         $validator = Validator::make(
-            ['title' => "Secret\nnotes", 'expectedRevision' => 0],
+            ['title' => self::SECRET_TITLE, 'expectedRevision' => 0],
             ['title' => ['string', new OneLineRule()], 'expectedRevision' => ['integer', 'min:1']],
         );
         $validator->passes();

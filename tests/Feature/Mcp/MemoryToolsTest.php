@@ -16,6 +16,8 @@ final class MemoryToolsTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
+    private const string MEMORY_TEXT = 'Use the same key to retry.';
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'memories', 'command_receipts',
     ];
@@ -37,7 +39,7 @@ final class MemoryToolsTest extends TestCase
         $this->callMcpTool($caller, 'memories_list')
             ->assertJsonPath('result.structuredContent.cards.0.memory_id', $memory);
         $read = $this->callMcpTool($caller, 'memories_read', ['memory_id' => $memory])
-            ->assertJsonPath('result.structuredContent.text', 'Use the same key to retry.')
+            ->assertJsonPath('result.structuredContent.text', self::MEMORY_TEXT)
             ->assertJsonPath('result.structuredContent.revision', 1)
             ->json('result.structuredContent');
         $resource = $this->sendMcp($caller, 'resources/read', ['uri' => "journal://v1/memories/{$memory}"])

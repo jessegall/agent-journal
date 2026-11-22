@@ -22,6 +22,11 @@ final class TableModelTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string MODEL_ADVICE = 'Give each of these tables an Eloquent model (rule 25).';
+
+    private const string PIVOT_ADVICE = 'Make the model of each of these pivot tables '
+        .'extend Pivot or MorphPivot (rule 33).';
+
     /**
      * Columns every table may carry besides the references that make it a pivot.
      */
@@ -31,7 +36,7 @@ final class TableModelTest extends TestCase
     {
         $missing = array_values(array_diff($this->migratedTables(), array_keys($this->modelOfTable())));
 
-        $this->assertSame([], $missing, 'Give each of these tables an Eloquent model (rule 25).');
+        $this->assertSame([], $missing, self::MODEL_ADVICE);
     }
 
     public function test_every_pivot_table_has_a_pivot_model(): void
@@ -47,7 +52,7 @@ final class TableModelTest extends TestCase
         $this->assertSame(
             [],
             $notPivots,
-            'Make the model of each of these pivot tables extend Pivot or MorphPivot (rule 33).',
+            self::PIVOT_ADVICE,
         );
     }
 

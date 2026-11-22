@@ -121,6 +121,8 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
  */
 final class CoreCommandsTest extends CommandBusTestCase
 {
+    private const string EVERY_CLASS = "Every class of a Core Commands folder is one of Core's commands.";
+
     public function test_core_lists_its_commands_and_exports_them(): void
     {
         $this->installCommandModules();
@@ -131,7 +133,7 @@ final class CoreCommandsTest extends CommandBusTestCase
         $this->assertCount(
             count($commandFiles),
             CoreCommands::commands(),
-            'Every class of a Core Commands folder is one of Core\'s commands.',
+            self::EVERY_CLASS,
         );
         $this->assertContains(StartAgent::class, CoreCommands::commands());
         $this->assertContains(RecordUserHeartbeat::class, CoreCommands::commands());

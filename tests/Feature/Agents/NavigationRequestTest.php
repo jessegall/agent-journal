@@ -99,7 +99,7 @@ final class NavigationRequestTest extends TestCase
             $navigation = $this->raise($stalled, $name);
             $end($navigation);
 
-            $this->assertFalse($navigation->fresh()?->state->isOpen(), "{$name} left the request open");
+            $this->assertFalse($navigation->fresh()?->state->isOpen(), $name);
         }
     }
 

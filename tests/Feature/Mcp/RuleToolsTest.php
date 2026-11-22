@@ -17,6 +17,10 @@ final class RuleToolsTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
+    private const string RULE_REASON = 'A retry should return the first receipt.';
+
+    private const string RULE_TEXT = 'Use the same request key on retry.';
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'rules', 'command_receipts',
     ];
@@ -44,8 +48,8 @@ final class RuleToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.cards.0.rule_id', $proposal)
             ->assertJsonPath('result.structuredContent.cards.0.state', 'proposed');
         $this->callMcpTool($caller, 'rules_read', ['rule_id' => $proposal])
-            ->assertJsonPath('result.structuredContent.text', 'Use the same request key on retry.')
-            ->assertJsonPath('result.structuredContent.reason', 'A retry should return the first receipt.')
+            ->assertJsonPath('result.structuredContent.text', self::RULE_TEXT)
+            ->assertJsonPath('result.structuredContent.reason', self::RULE_REASON)
             ->assertJsonPath('result.structuredContent.replaces_rule_number', $active->number);
     }
 

@@ -78,6 +78,11 @@ final class AccountRemovalTest extends TestCase
     use RunsKeyedCommands;
     use WithActiveAccount;
 
+    private const string NO_DEFAULT_ACCOUNT = 'codex cannot be started now: no default account is chosen for it; '
+        .'choose one in Accounts.';
+
+    private const string ACCOUNT_LABEL = 'Test account';
+
     private const array TABLES = [
         'account_usage_windows',
         'account_usage_costs',
@@ -124,7 +129,7 @@ final class AccountRemovalTest extends TestCase
         $this->assertThrows(
             fn () => ActiveAccount::lockedAccountForStart(HookDriver::Codex),
             AccountUnavailable::class,
-            'codex cannot be started now: no default account is chosen for it; choose one in Accounts.',
+            self::NO_DEFAULT_ACCOUNT,
         );
     }
 
@@ -157,7 +162,7 @@ final class AccountRemovalTest extends TestCase
         $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
         $this->assertSame(0, AccountUsageTokens::query()->withoutGlobalScopes()->count());
         $this->assertNull($this->account->directory);
-        $this->assertSame('Test account', $this->account->label);
+        $this->assertSame(self::ACCOUNT_LABEL, $this->account->label);
     }
 
     public function test_the_runner_signs_out_before_it_deletes_the_folder(): void

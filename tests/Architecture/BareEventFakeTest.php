@@ -16,6 +16,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every test file.')]
 final class BareEventFakeTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'Name the faked events with fakeBusinessEvents(...):';
+
     public function test_no_test_fakes_every_event(): void
     {
         $folders = [base_path('tests'), ...glob(base_path('domain/*/tests'), GLOB_ONLYDIR) ?: []];
@@ -34,6 +36,6 @@ final class BareEventFakeTest extends TestCase
             }
         }
 
-        $this->assertSame([], array_values(array_unique($bare)), 'Name the faked events with fakeBusinessEvents(...):');
+        $this->assertSame([], array_values(array_unique($bare)), self::HOW_TO_FIX);
     }
 }

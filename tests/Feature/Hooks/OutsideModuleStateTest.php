@@ -20,12 +20,17 @@ final class OutsideModuleStateTest extends TestCase
 {
     use CommittedHookStack;
 
+    private const string NOTE_REASON = 'Finish the note first.';
+
     public function test_a_module_outside_the_domains_registers_and_pushes_its_own_state(): void
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
 
         $this->assertSame(['hooks.ready', 'notes.writing'], $this->storedTypeKeys());
-        $this->assertSame('{"decision":"block","reason":"Finish the note first."}', $this->answerStop('call-2'));
+        $this->assertSame(
+            json_encode(['decision' => 'block', 'reason' => self::NOTE_REASON]),
+            $this->answerStop('call-2'),
+        );
     }
 
     /**

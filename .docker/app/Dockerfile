@@ -140,10 +140,10 @@ FROM php AS runner-tools
 ARG CLAUDE_CODE_VERSION=2.1.323
 ARG CODEX_VERSION=0.165.0
 
-RUN apt-get update \
+RUN --mount=type=cache,target=/root/.npm \
+    apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates nodejs npm \
     && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
-    && npm cache clean --force \
     && apt-get purge -y npm && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # The Docker client the contained agent host starts containers with, on the agent daemon only.

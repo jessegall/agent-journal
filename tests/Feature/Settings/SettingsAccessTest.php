@@ -25,6 +25,8 @@ final class SettingsAccessTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string DENIAL = 'You may not read or change the settings.';
+
     public function test_the_application_uses_the_owner_policy(): void
     {
         $this->assertInstanceOf(OwnerSettingsAccess::class, $this->app->make(SettingsAccessPolicy::class));
@@ -71,7 +73,7 @@ final class SettingsAccessTest extends TestCase
 
     public function test_the_refusal_names_no_owner_or_setting(): void
     {
-        $this->assertSame('You may not read or change the settings.', SettingsAccessDenied::forActor()->getMessage());
+        $this->assertSame(self::DENIAL, SettingsAccessDenied::forActor()->getMessage());
     }
 
     public function test_nobody_is_let_in_while_no_owner_is_configured(): void

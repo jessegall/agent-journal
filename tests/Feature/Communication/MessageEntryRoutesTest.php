@@ -19,6 +19,10 @@ final class MessageEntryRoutesTest extends MessagingTestCase
 {
     use SendsMcpFrames;
 
+    private const string QUESTION = 'Which port?';
+
+    private const string ANSWER = 'Port 8080.';
+
     public function test_a_user_sends_asks_and_reads_back_over_http(): void
     {
         $pair = ['sourceInboxId' => $this->ownerInboxId(), 'destinationInboxId' => $this->inboxIdOf($this->builder)];
@@ -49,22 +53,22 @@ final class MessageEntryRoutesTest extends MessagingTestCase
     {
         $caller = TestStart::start();
         $callerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $caller->agent->id))->inboxId();
-        $questionId = $this->ownerAsks($callerInboxId, 'Which port?');
+        $questionId = $this->ownerAsks($callerInboxId, self::QUESTION);
 
         $showing = $this->callMcpTool($caller, 'messages_read', ['message_id' => $questionId, 'view' => 'context']);
         $this->assertFalse($showing->json('result.isError'), (string) json_encode($showing->json('result')));
-        $this->assertSame('Which port?', $showing->json('result.structuredContent.body'));
+        $this->assertSame(self::QUESTION, $showing->json('result.structuredContent.body'));
         $shown = $showing->json('result.structuredContent.message');
         $replied = $this->callMcpTool($caller, 'messages_reply', [
             'message_id' => $questionId,
             'state_version' => $shown['revision'] - 1,
-            'body' => 'Port 8080.',
+            'body' => self::ANSWER,
             'request_key' => (string) Str::ulid(),
         ]);
         $this->assertFalse($replied->json('result.isError'), (string) json_encode($replied->json('result')));
         $this->callMcpTool($caller, 'messages_read', [
             'message_id' => $replied->json('result.structuredContent.message_id'), 'view' => 'context',
-        ])->assertJsonPath('result.structuredContent.body', 'Port 8080.');
+        ])->assertJsonPath('result.structuredContent.body', self::ANSWER);
     }
 
     public function test_a_send_named_by_session_instead_of_inboxes_is_refused(): void

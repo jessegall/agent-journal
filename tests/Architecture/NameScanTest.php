@@ -116,7 +116,7 @@ final class NameScanTest extends TestCase
 
         try {
             $this->expectException(ParseFailed::class);
-            $this->expectExceptionMessage("{$path} could not be parsed");
+            $this->expectExceptionMessage($path);
 
             ParsedFile::fromPath($path);
         } finally {

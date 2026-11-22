@@ -45,6 +45,8 @@ final class SharingEventsTest extends TestCase
     use CommitsHookRows;
     use RunsTrustedCommands;
 
+    private const string TRIGGER_REFUSAL = 'refused for the test';
+
     private const array TABLES = [
         'command_receipts',
         'share_audits',
@@ -138,7 +140,7 @@ final class SharingEventsTest extends TestCase
             $this->assertThrows(
                 fn () => $this->asOwner(new DisableShareGateway($this->configuration->id, (string) Str::ulid())),
                 QueryException::class,
-                'refused for the test',
+                self::TRIGGER_REFUSAL,
             );
         } finally {
             $database->unprepared('DROP TRIGGER refuse_disabled_audit ON share_audits; DROP FUNCTION refuse_disabled_audit();');

@@ -6,6 +6,9 @@ namespace Tests\Architecture\PhpStan;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
+use Tests\Fixtures\PhpStan\ReflectorWrongAttributeType;
+use Tests\Fixtures\Reflection\Attributes\DerivedMarker;
+use Tests\Fixtures\Reflection\Attributes\Marker;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -15,6 +18,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 120, reason: 'It runs PHPStan on one fixture.')]
 final class ReflectorWrongAttributeTypeTest extends TestCase
 {
+    private const string REPORT = 'Parameter #1 $marker of method %s::labelOf() expects %s, %s given.';
+
     public function test_an_attribute_of_the_wrong_class_is_reported(): void
     {
         $root = dirname(__DIR__, 3);
@@ -40,9 +45,12 @@ final class ReflectorWrongAttributeTypeTest extends TestCase
         $analysis->run();
 
         $this->assertStringContainsString(
-            'Parameter #1 $marker of method Tests\\\\Fixtures\\\\PhpStan\\\\ReflectorWrongAttributeType::labelOf() expects '
-                .'Tests\\\\Fixtures\\\\Reflection\\\\Attributes\\\\DerivedMarker, '
-                .'Tests\\\\Fixtures\\\\Reflection\\\\Attributes\\\\Marker given.',
+            sprintf(
+                self::REPORT,
+                addslashes(ReflectorWrongAttributeType::class),
+                addslashes(DerivedMarker::class),
+                addslashes(Marker::class),
+            ),
             $analysis->getOutput(),
         );
         $this->assertStringContainsString('"line":24', $analysis->getOutput());

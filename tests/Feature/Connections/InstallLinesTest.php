@@ -32,6 +32,9 @@ final class InstallLinesTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string UNUSABLE_LINE = 'journal: this install line cannot be used. '
+        ."Copy a new one from the journal.\n";
+
     private const array TABLES = [
         'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'projects',
         'settings_records', 'users',
@@ -124,7 +127,7 @@ final class InstallLinesTest extends TestCase
             ->assertNoContent();
 
         $this->assertSame(
-            "journal: this install line cannot be used. Copy a new one from the journal.\n",
+            self::UNUSABLE_LINE,
             $this->get("/install/{$ticket}")->assertNotFound()->getContent(),
         );
     }

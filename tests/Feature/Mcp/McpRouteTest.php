@@ -22,6 +22,8 @@ final class McpRouteTest extends TestCase
     use SendsMcpFrames;
     use StartsTestAgent;
 
+    private const string INSTRUCTIONS_OPENING = 'Use overview_read first.';
+
     private const array TABLES = ['agents', 'agent_sessions', 'start_tokens'];
 
     private const string ROUTE = '/agent/mcp/v1';
@@ -47,7 +49,7 @@ final class McpRouteTest extends TestCase
             $result['capabilities'],
         );
         $this->assertLessThan(2000, mb_strlen($result['instructions']));
-        $this->assertStringStartsWith('Use overview_read first.', $result['instructions']);
+        $this->assertStringStartsWith(self::INSTRUCTIONS_OPENING, $result['instructions']);
     }
 
     public function test_an_unsigned_post_gets_401(): void
