@@ -35,11 +35,31 @@ final readonly class TerminalFrames
      * @throws ActorNotAllowed
      * @throws TerminalViewRefused
      */
-    public function after(string $agentId, string $epoch, int $sequence): Option
+    public function after(string $agentId, string $readInterestId, string $epoch, int $sequence): Option
+    {
+        $viewer = $this->inspectingViewer();
+
+        return $this->views->frame($agentId, $viewer, $readInterestId, $epoch, $sequence, $this->clock->now());
+    }
+
+    /**
+     * The id of the read interest the current viewer's open request opened.
+     *
+     * @throws ActorNotAllowed
+     * @throws TerminalViewRefused
+     */
+    public function interestOpenedBy(string $agentId, string $openRequestId): string
+    {
+        return $this->views->interestOpenedBy($agentId, $this->inspectingViewer(), $openRequestId);
+    }
+
+    /**
+     * @throws ActorNotAllowed
+     */
+    private function inspectingViewer(): ActorIdentity
     {
         $this->authorizer->authorize(AgentMaintenancePolicy::class, Agent::class, AccessType::Read);
-        $viewer = ActorIdentity::of($this->actor->actor());
 
-        return $this->views->frame($agentId, $viewer, $epoch, $sequence, $this->clock->now());
+        return ActorIdentity::of($this->actor->actor());
     }
 }

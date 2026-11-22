@@ -22,6 +22,12 @@ final readonly class OpenTerminalViewHandler implements CommandHandler
     {
         $viewer = ActorIdentity::of($command->dispatchedBy());
 
-        return $this->views->open($command->agentId, $viewer, $command->intervalMs, $this->clock->now());
+        return $this->views->open(
+            $command->agentId,
+            $viewer,
+            $command->intervalMs,
+            $command->openRequestId,
+            $this->clock->now(),
+        );
     }
 }

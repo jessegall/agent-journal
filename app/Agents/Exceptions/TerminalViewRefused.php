@@ -15,7 +15,8 @@ use RuntimeException;
 use Throwable;
 
 /**
- * A terminal view refused before it is opened, so no view is stored.
+ * A terminal view refused: before it is opened, so no view is stored, or a renewal or read of a view that is unknown
+ * or ended, which changes nothing.
  */
 final class TerminalViewRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
@@ -67,6 +68,25 @@ final class TerminalViewRefused extends RuntimeException implements CodedRefusal
         return new self(
             "A terminal view refreshes every 500 or 1000 ms, not every {$ms} ms.",
             TerminalViewRefusal::UnsupportedInterval,
+        );
+    }
+
+    /**
+     * An id that names none of the viewer's views of this agent gets this answer, which says nothing of other viewers.
+     */
+    public static function unknownInterest(): self
+    {
+        return new self(
+            'This terminal view is not open; open the terminal again.',
+            TerminalViewRefusal::UnknownInterest,
+        );
+    }
+
+    public static function interestEnded(): self
+    {
+        return new self(
+            'This terminal view was closed or ran out; open the terminal again.',
+            TerminalViewRefusal::InterestEnded,
         );
     }
 

@@ -26,6 +26,7 @@ use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\OpensTerminalRuntimes;
@@ -46,6 +47,8 @@ final class TerminalPageTest extends TestCase
 
     private User $owner;
 
+    private string $openRequestId = '';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -62,10 +65,23 @@ final class TerminalPageTest extends TestCase
         $view = TerminalView::query()->acrossActors()->live()->sole();
         $this->assertSame(1000, $view->interval_ms);
 
-        $this->actingAs($this->owner)->post("/web/agents/{$agentId}/terminal/renew")
+        $this->actingAs($this->owner)
+            ->post("/web/agents/{$agentId}/terminal/renew", ['interest' => $view->read_interest_id])
             ->assertStatus(303)
             ->assertSessionHasNoErrors();
         $this->assertSame($view->id, TerminalView::query()->acrossActors()->live()->sole()->id);
+    }
+
+    public function test_the_page_learns_the_id_of_the_interest_its_open_request_opened(): void
+    {
+        $runtime = $this->runtimeOn('host-1');
+        $agentId = $runtime->session->agent_id;
+        $this->open($agentId)->assertSessionHasNoErrors();
+        $view = TerminalView::query()->acrossActors()->live()->sole();
+
+        $this->frame($agentId, "?request={$this->openRequestId}")
+            ->assertJsonPath('props.page.data.readInterestId', $view->read_interest_id)
+            ->assertJsonMissingPath('props.page.data.frame');
     }
 
     public function test_each_refusal_is_shown_on_the_page(): void
@@ -88,7 +104,13 @@ final class TerminalPageTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
 
         for ($view = 0; $view < TerminalView::MAX_PER_VIEWER; $view++) {
-            TerminalView::create($this->viewerOf($this->owner), $runtime, 500, CarbonImmutable::now());
+            TerminalView::create(
+                $this->viewerOf($this->owner),
+                $runtime,
+                500,
+                CarbonImmutable::now(),
+                (string) Str::ulid(),
+            );
         }
 
         $this->assertRefusal($runtime->session->agent_id, 'You may have at most 20 terminal views open');
@@ -117,14 +139,14 @@ final class TerminalPageTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
         $agentId = $runtime->session->agent_id;
         $viewer = TestActors::agentIdentity(9);
-        $view = TerminalView::create($viewer, $runtime, 500, CarbonImmutable::now());
+        $view = TerminalView::create($viewer, $runtime, 500, CarbonImmutable::now(), (string) Str::ulid());
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($viewer->id),
             TestStartAuthority::forAgent($viewer->id),
         );
         $frames = $this->app->make(TerminalFrames::class);
 
-        $this->assertThrows(fn () => $frames->after($agentId, '', 0), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $frames->after($agentId, $view->read_interest_id, '', 0), ActorNotAllowed::class);
         $this->assertTrue($view->refresh()->isLive());
     }
 
@@ -189,15 +211,21 @@ final class TerminalPageTest extends TestCase
      */
     private function open(string $agentId, array $body = []): TestResponse
     {
-        return $this->actingAs($this->owner)->post("/web/agents/{$agentId}/terminal/open", $body);
+        $this->openRequestId = (string) Str::ulid();
+
+        return $this->actingAs($this->owner)
+            ->post("/web/agents/{$agentId}/terminal/open", [...$body, 'requestId' => $this->openRequestId]);
     }
 
     /**
-     * The terminal page's data as the page reloads it, with the frame the viewer holds in the query.
+     * The terminal page's data as the page reloads it, through the interest the last open opened, with the frame the
+     * viewer holds in the query; a query that names the open request asks for the interest's id instead.
      */
     private function frame(string $agentId, string $held = ''): TestResponse
     {
-        $uri = "/web/agents/{$agentId}/terminal{$held}";
+        $interest = TerminalView::query()->acrossActors()->openedBy($this->openRequestId)->value('read_interest_id');
+        $query = str_starts_with($held, '?request=') ? $held : '?interest='.$interest.str_replace('?', '&', $held);
+        $uri = "/web/agents/{$agentId}/terminal{$query}";
 
         return $this->actingAs($this->owner)->get($uri, [
             'X-Inertia' => 'true',

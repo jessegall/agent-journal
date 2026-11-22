@@ -22,6 +22,6 @@ final readonly class RenewTerminalViewHandler implements CommandHandler
     {
         $viewer = ActorIdentity::of($command->dispatchedBy());
 
-        return $this->views->renew($command->agentId, $viewer, $command->intervalMs, $this->clock->now());
+        return $this->views->renew($command->agentId, $viewer, $command->readInterestId, $this->clock->now());
     }
 }

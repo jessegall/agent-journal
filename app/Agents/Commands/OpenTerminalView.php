@@ -12,7 +12,8 @@ use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 
 /**
- * A viewer opens a read-only view of an agent's live terminal: a lease, never a request to the driver.
+ * A viewer opens a read-only view of an agent's live terminal: a new read interest of its own, a lease, never a request
+ * to the driver. A retry with the same open request gives the interest it opened first.
  *
  * @extends Command<TerminalViewReceipt>
  */
@@ -21,6 +22,7 @@ final readonly class OpenTerminalView extends Command
 {
     public function __construct(
         public string $agentId,
+        public string $openRequestId,
         public int $intervalMs = TerminalView::DEFAULT_INTERVAL_MS,
     ) {}
 }

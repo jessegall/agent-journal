@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\ServerClock;
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Data\ScreenFrameData;
+use App\Agents\Data\TerminalFrameData;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use App\Agents\Support\EnrolledHost;
@@ -14,7 +14,9 @@ use App\Agents\Support\RuntimeScreen;
 use App\Agents\Support\ScreenRegistration;
 use App\Agents\Support\TerminalViews;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use PhpOption\Option;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\FakeServerClock;
 use Tests\Support\OpensTerminalRuntimes;
@@ -142,23 +144,33 @@ final class ScreenReportRouteTest extends TestCase
         $views = $this->app->make(TerminalViews::class);
         $agentId = $runtime->session->agent_id;
         $now = CarbonImmutable::now();
-        $views->open($agentId, TestActors::userIdentity(2), 500, $now);
+        $watcher = TerminalView::query()->ownedBy(TestActors::userIdentity(1))->live()->value('read_interest_id');
+        $opened = $views->open($agentId, TestActors::userIdentity(2), 500, (string) Str::ulid(), $now);
 
-        return array_map(function (ActorIdentity $viewer) use ($views, $agentId, $now): string|null {
-            $frame = $views->frame($agentId, $viewer, '', 0, $now)->get()->frame;
+        return [
+            $this->firstRowText($views->frame($agentId, TestActors::userIdentity(1), $watcher, '', 0, $now)),
+            $this->firstRowText($views->frame($agentId, TestActors::userIdentity(2), $openedNow, '', 0, $now)),
+        ];
+    }
 
-            if (! $frame instanceof ScreenFrameData || $frame->rows === []) {
-                return null;
-            }
+    /**
+     * @param  Option<TerminalFrameData>  $answer
+     */
+    private function firstRowText(Option $answer): string|null
+    {
+        $frame = $answer->get()->frame;
 
-            return $frame->rows[0]->runs[0]->text;
-        }, [TestActors::userIdentity(1), TestActors::userIdentity(2)]);
+        if (! $frame instanceof ScreenFrameData || $frame->rows === []) {
+            return null;
+        }
+
+        return $frame->rows[0]->runs[0]->text;
     }
 
     private function watchedRuntimeOn(EnrolledHost $host): AgentRuntime
     {
         $runtime = $this->runtimeOn($host->hostId);
-        TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now(), (string) Str::ulid());
 
         return $runtime;
     }

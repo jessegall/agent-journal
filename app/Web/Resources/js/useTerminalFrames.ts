@@ -1,6 +1,7 @@
 import type { ScreenFrameData, TerminalFrameData } from '@generated/types/core';
 import type { TerminalWindowData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
+import { newRequestId } from '@/kit/requestId';
 import { openTerminal, renewTerminal } from '@/routes/web';
 import type { Ref } from 'vue';
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
@@ -28,9 +29,10 @@ export type TerminalViewState =
     | 'restarted';
 
 /**
- * Holds a viewer's lease on an agent's terminal through the terminal page's own Inertia actions: opens on mount,
- * renews every 10 seconds and reloads only the page's data every half second with the frame it holds. Leaving the page
- * or hiding it stops the reloads, and the lease runs out by itself. It only reads; nothing reaches the driver.
+ * Holds a viewer's lease on an agent's terminal through the terminal page's own Inertia actions: opens its own read
+ * interest on mount with a fresh request id, learns the interest's id, renews exactly that interest every 10 seconds
+ * and reloads only the page's data every half second with the frame it holds. Leaving the page or hiding it stops the
+ * reloads, and the lease runs out by itself. It only reads; nothing reaches the driver.
  */
 export function useTerminalFrames(data: Ref<TerminalWindowData>) {
     const state = ref<TerminalViewState>('opening');
@@ -39,6 +41,7 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
     const receivedAt = ref(Date.now());
     const endedAt = ref('');
     const held = { epoch: '', after: 0 };
+    const interest = { id: '', requestId: '' };
     const now = ref(Date.now());
     const timers: number[] = [];
     const actions = { open: openTerminal, renew: renewTerminal };
@@ -76,10 +79,20 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
         },
     );
 
-    function send(verb: 'open' | 'renew', onSuccess: () => void = () => undefined): void {
+    watch(
+        () => data.value.readInterestId,
+        (readInterestId) => {
+            if (readInterestId !== undefined && state.value === 'opening' && interest.id === '') {
+                interest.id = readInterestId;
+                begin();
+            }
+        },
+    );
+
+    function send(verb: 'open' | 'renew', body: Record<string, string>, onSuccess: () => void = () => undefined): void {
         router.post(
             actions[verb].url(data.value.agentId),
-            {},
+            body,
             {
                 only: ['page'],
                 preserveState: true,
@@ -92,7 +105,18 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
 
     function poll(): void {
         now.value = Date.now();
-        router.reload({ only: ['page'], data: { ...held }, async: true });
+        router.reload({ only: ['page'], data: { ...held, interest: interest.id }, async: true });
+    }
+
+    function open(): void {
+        state.value = 'opening';
+        interest.id = '';
+        interest.requestId = newRequestId();
+        held.epoch = '';
+        held.after = 0;
+        send('open', { requestId: interest.requestId }, () =>
+            router.reload({ only: ['page'], data: { request: interest.requestId } }),
+        );
     }
 
     function stopTimers(): void {
@@ -103,7 +127,7 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
         state.value = 'live';
         receivedAt.value = Date.now();
         timers.push(window.setInterval(poll, POLL_MILLISECONDS));
-        timers.push(window.setInterval(() => send('renew'), RENEW_MILLISECONDS));
+        timers.push(window.setInterval(() => send('renew', { interest: interest.id }), RENEW_MILLISECONDS));
         poll();
     }
 
@@ -114,13 +138,13 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
             return;
         }
         if (timers.length === 0 && state.value !== 'refused') {
-            send('open', begin);
+            open();
         }
     }
 
     onMounted(() => {
         document.addEventListener('visibilitychange', pauseWhenHidden);
-        send('open', begin);
+        open();
     });
     onBeforeUnmount(() => {
         document.removeEventListener('visibilitychange', pauseWhenHidden);
