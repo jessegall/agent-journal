@@ -27,6 +27,8 @@ final readonly class TaskReadResult
 {
     public const string TOOL = 'tasks_read';
 
+    public const string ID_ARGUMENT = 'task_id';
+
     private const int INLINE_TEXT_BYTES = 3000;
 
     public function __construct(
@@ -41,7 +43,7 @@ final readonly class TaskReadResult
      */
     public static function requestFor(string $taskId): ReadRequest
     {
-        return new ReadRequest(self::TOOL, arguments: ['task_id' => $taskId], target: $taskId);
+        return ReadRequest::forRecord(self::TOOL, self::ID_ARGUMENT, $taskId);
     }
 
     public function read(string $taskId, ToolArguments $arguments): ToolResult

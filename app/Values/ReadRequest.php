@@ -20,6 +20,14 @@ final readonly class ReadRequest
         public string|null $target = null,
     ) {}
 
+    /**
+     * The read of one record by its id argument, targeted at that record so a grant scoped to it admits it.
+     */
+    public static function forRecord(string $name, string $argument, string $recordId): self
+    {
+        return new self($name, arguments: [$argument => $recordId], target: $recordId);
+    }
+
     public static function forDiscovery(string $name): self
     {
         return new self($name, discovery: true);

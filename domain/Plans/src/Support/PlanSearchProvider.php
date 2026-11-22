@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Plans\Support;
+
+use App\Contracts\SearchProvider;
+use App\Enums\ScoreTier;
+use App\Support\RecordIdentity;
+use App\Support\TieredRecordSearch;
+use App\Values\AdmittedConstraints;
+use App\Values\SearchBatch;
+use App\Values\SearchQuery;
+use App\Values\SearchResult;
+use App\Values\TieredSearchSource;
+use Domain\Plans\Models\Plan;
+use Illuminate\Database\Eloquent\Builder;
+
+/**
+ * Searches plan titles through the shared bounded tiered search, a plan reference such as plan 57 first.
+ */
+final readonly class PlanSearchProvider implements SearchProvider
+{
+    public function __construct(
+        private PlanSearchAccess $access,
+        private PlanReferenceRecognizer $recognizer,
+        private TieredRecordSearch $titles,
+    ) {}
+
+    public function search(SearchQuery $query): SearchBatch
+    {
+        $constraints = $this->access->constraints($query->reader);
+
+        if ($constraints->recordIds->admitsNone()) {
+            return SearchBatch::exhausted('', []);
+        }
+
+        return $this->titles->search($query, new TieredSearchSource(
+            fn () => self::admitted($constraints),
+            'title',
+            ['id', 'number', 'title'],
+            self::hitOf(...),
+            fn (string $planId): bool => $this->access->admitsOpen($query->reader, $planId),
+            fn (SearchQuery $asked, TieredSearchSource $plans): SearchResult|null => $this->titles->numberedReference(
+                $asked,
+                $this->recognizer,
+                $plans,
+            ),
+        ));
+    }
+
+    /**
+     * @return Builder<Plan>
+     */
+    private static function admitted(AdmittedConstraints $constraints): Builder
+    {
+        $query = Plan::query();
+
+        if ($constraints->recordIds->isRestricted()) {
+            $query->whereKey($constraints->recordIds->names());
+        }
+
+        return $query;
+    }
+
+    private static function hitOf(Plan $plan, ScoreTier $tier): SearchResult
+    {
+        return SearchResult::shortened(
+            "Plan {$plan->number} · {$plan->title}",
+            $tier === ScoreTier::Reference ? "Plan {$plan->number}" : $plan->title,
+            new RecordIdentity(Plan::LINK_TYPE, $plan->id),
+            $tier,
+        );
+    }
+}

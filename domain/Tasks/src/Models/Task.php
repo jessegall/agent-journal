@@ -462,17 +462,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     // ----------[ Scopes ]----------
 
     /**
-     * Tasks whose title matches the LIKE pattern without regard to case, served by the title trigram index.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function titleLike(Builder $query, string $pattern): void
-    {
-        $query->whereLike('title', $pattern, caseSensitive: false);
-    }
-
-    /**
      * Tasks whose brief matches the LIKE pattern without regard to case, served by the brief trigram index.
      *
      * @param  Builder<self>  $query

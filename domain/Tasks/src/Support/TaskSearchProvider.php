@@ -10,6 +10,7 @@ use App\Enums\ScoreTier;
 use App\Support\RecordIdentity;
 use App\Support\StatementDeadline;
 use App\Support\TextSearch;
+use App\Support\TieredRecordSearch;
 use App\Values\AdmittedConstraints;
 use App\Values\HitIdentity;
 use App\Values\RefreshCandidates;
@@ -17,6 +18,7 @@ use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchResult;
 use App\Values\SourcePosition;
+use App\Values\TieredSearchSource;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Values\TaskBriefPassage;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,21 +32,13 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class TaskSearchProvider implements SearchProvider
 {
-    public const int BLOCK_SIZE = 32;
+    public const int BLOCK_SIZE = TieredRecordSearch::BLOCK_SIZE;
 
     public const int SEGMENT_CHARACTERS = 2048;
 
     private const int BYTES_PER_CHARACTER = 4;
 
     private const int SNIPPET_CONTEXT_CHARACTERS = 60;
-
-    private const string TIER = 'tier';
-
-    private const string AFTER = 'after';
-
-    private const string HIGH_WATER = 'high_water';
-
-    private const string REFERENCE = 'reference';
 
     private const string RECORD = 'record';
 
@@ -56,6 +50,7 @@ final readonly class TaskSearchProvider implements SearchProvider
         private TaskReferenceLookup $lookup,
         private ServedEnvironment $environment,
         private StatementDeadline $deadline,
+        private TieredRecordSearch $titles,
     ) {}
 
     public function search(SearchQuery $query): SearchBatch
@@ -70,86 +65,34 @@ final readonly class TaskSearchProvider implements SearchProvider
             return SearchBatch::exhausted('', []);
         }
 
+        $source = $this->source($query, $constraints);
+
         if ($query->position === null) {
-            return $this->start($query, $constraints);
+            return $this->titles->start($query, $source, self::briefsAfterTitles(...));
         }
 
-        if ($query->position->integer(self::TIER) === ScoreTier::BodyContains->value) {
+        if ($query->position->integer(TieredRecordSearch::TIER) === ScoreTier::BodyContains->value) {
             return $this->scanBriefs($query, $query->position, $constraints);
         }
 
-        return $this->scanTitles($query, $query->position, $constraints);
+        return $this->titles->scanTitles($query, $query->position, $source, self::briefsAfterTitles(...));
     }
 
     /**
-     * Fixes the high water, answers a complete reference first, then scans the first block of the top title tier.
+     * Tasks as the shared tiered search reads them: the admitted tasks, compared by title.
      */
-    private function start(SearchQuery $query, AdmittedConstraints $constraints): SearchBatch
+    private function source(SearchQuery $query, AdmittedConstraints $constraints): TieredSearchSource
     {
-        $highWater = $this->admitted($constraints)->max('id');
-
-        if (! is_string($highWater)) {
-            return SearchBatch::exhausted('', []);
-        }
-
-        $reference = $this->referenceHit($query, $constraints);
-
-        if ($reference !== null) {
-            $first = self::position(ScoreTier::ExactTitle, '', $highWater, $reference->reference->id);
-
-            return SearchBatch::more($highWater, [$reference], $first);
-        }
-
-        return $this->scanTitles($query, self::position(ScoreTier::ExactTitle, '', $highWater, ''), $constraints);
-    }
-
-    /**
-     * One block of the current title tier: its hits are certified, since every later id of this tier sorts after
-     * them and every other unseen hit sits in a lower tier.
-     */
-    private function scanTitles(
-        SearchQuery $query,
-        SourcePosition $position,
-        AdmittedConstraints $constraints,
-    ): SearchBatch {
-        $tier = ScoreTier::from($position->integer(self::TIER));
-        $highWater = $position->text(self::HIGH_WATER);
-        $referenceId = $position->text(self::REFERENCE);
-        $blockSize = max(1, min(self::BLOCK_SIZE, $query->budget->remainingCandidates()));
-        $query->budget->chargeCandidates($blockSize);
-
-        $pattern = $tier->likePattern(TextSearch::literal($query->words->text));
-
-        $block = $this->deadline->within($query->budget->remainingMilliseconds(), fn () => $this->admitted($constraints)
-            ->titleLike($pattern)
-            ->where('id', '>', $position->text(self::AFTER))
-            ->where('id', '<=', $highWater)
-            ->orderBy('id')
-            ->limit($blockSize)
-            ->get(['id', 'number', 'title']));
-
-        $hits = [];
-        $lastExamined = $position->text(self::AFTER);
-
-        foreach ($block as $task) {
-            if (count($hits) === $query->pageAllowance) {
-                break;
-            }
-
-            $lastExamined = $task->id;
-
-            if ($task->id !== $referenceId && $query->words->titleTier($task->title) === $tier) {
-                $hits[] = self::titleHit($task, $tier);
-            }
-        }
-
-        $examinedWholeBlock = $block->isEmpty() || $lastExamined === $block->last()->id;
-        $tierFinished = $examinedWholeBlock && $block->count() < $blockSize;
-        $nextPosition = $tierFinished
-            ? self::afterTitleTier($tier, $highWater, $referenceId)
-            : self::position($tier, $lastExamined, $highWater, $referenceId);
-
-        return self::batch($highWater, $hits, $nextPosition);
+        return new TieredSearchSource(
+            fn () => $this->admitted($constraints),
+            'title',
+            ['id', 'number', 'title'],
+            fn (Task $task, ScoreTier $tier): SearchResult => $tier === ScoreTier::Reference
+                ? self::referenceResult($task)
+                : self::titleHit($task, $tier),
+            fn (string $taskId): bool => $this->access->admitsOpen($query->reader, $taskId),
+            fn (SearchQuery $asked): SearchResult|null => $this->referenceHit($asked, $constraints),
+        );
     }
 
     /**
@@ -162,9 +105,9 @@ final readonly class TaskSearchProvider implements SearchProvider
         SourcePosition $position,
         AdmittedConstraints $constraints,
     ): SearchBatch {
-        $highWater = $position->text(self::HIGH_WATER);
-        $referenceId = $position->text(self::REFERENCE);
-        $after = $position->text(self::AFTER);
+        $highWater = $position->text(TieredRecordSearch::HIGH_WATER);
+        $referenceId = $position->text(TieredRecordSearch::REFERENCE);
+        $after = $position->text(TieredRecordSearch::AFTER);
         $record = $position->text(self::RECORD);
         $start = $record === '' ? 1 : $position->integer(self::OFFSET);
         $rowLimit = $record === '' ? self::briefRowsFor($query) : 1;
@@ -413,31 +356,11 @@ final readonly class TaskSearchProvider implements SearchProvider
     }
 
     /**
-     * The start of the tier after this title tier: the next title tier, or the briefs after the last one.
+     * Where the search goes after the title tiers: the briefs, from the first task.
      */
-    private static function afterTitleTier(ScoreTier $tier, string $highWater, string $referenceId): SourcePosition
+    private static function briefsAfterTitles(string $highWater, string $referenceId): SourcePosition
     {
-        $next = $tier->nextTitleTier();
-
-        if ($next === null) {
-            return self::briefPosition('', $highWater, $referenceId);
-        }
-
-        return self::position($next, '', $highWater, $referenceId);
-    }
-
-    private static function position(
-        ScoreTier $tier,
-        string $after,
-        string $highWater,
-        string $referenceId,
-    ): SourcePosition {
-        return SourcePosition::of([
-            self::TIER => $tier->value,
-            self::AFTER => $after,
-            self::HIGH_WATER => $highWater,
-            self::REFERENCE => $referenceId,
-        ]);
+        return self::briefPosition('', $highWater, $referenceId);
     }
 
     /**
@@ -452,10 +375,10 @@ final readonly class TaskSearchProvider implements SearchProvider
         int $offset = 1,
     ): SourcePosition {
         return SourcePosition::of([
-            self::TIER => ScoreTier::BodyContains->value,
-            self::AFTER => $after,
-            self::HIGH_WATER => $highWater,
-            self::REFERENCE => $referenceId,
+            TieredRecordSearch::TIER => ScoreTier::BodyContains->value,
+            TieredRecordSearch::AFTER => $after,
+            TieredRecordSearch::HIGH_WATER => $highWater,
+            TieredRecordSearch::REFERENCE => $referenceId,
             self::RECORD => $record,
             self::OFFSET => $offset,
         ]);

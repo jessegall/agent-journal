@@ -1484,6 +1484,12 @@ use App\Values\SearchWords;
 use App\Values\SourceHit;
 use App\Values\SourcePosition;
 use App\Values\WorkBudget;
+use App\Values\OpenAction;
+use App\Values\TieredSearchSource;
+use App\Support\ReadToolSearchAccess;
+use App\Support\NumberedReferenceRecognizer;
+use App\Support\TieredRecordSearch;
+use App\Support\StatementDeadline;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
@@ -2038,6 +2044,8 @@ final class CoreApi
                 AllowedNames::class,
                 AdmittedConstraints::class,
                 RecognizedReference::class,
+                OpenAction::class,
+                TieredSearchSource::class,
                 Dispatches::class,
                 VisibleToProfiles::class,
                 DiscoveryProfile::class,
@@ -2981,6 +2989,10 @@ final class CoreApi
                 StateReferenceFactory::class,
                 ProvidesModelRecords::class,
                 Searchable::class,
+                ReadToolSearchAccess::class,
+                NumberedReferenceRecognizer::class,
+                TieredRecordSearch::class,
+                StatementDeadline::class,
                 HasNumber::class,
                 AssignableListing::class,
                 TextSearch::class,

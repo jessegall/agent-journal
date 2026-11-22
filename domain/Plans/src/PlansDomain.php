@@ -33,6 +33,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\PoolDefinition;
+use App\Support\Searchable;
 use App\Support\ShareRecordDefinition;
 use App\Values\PolicyDefinition;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
@@ -83,6 +84,9 @@ use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PhaseRecords;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Plans\Support\PlanRecords;
+use Domain\Plans\Support\PlanReferenceRecognizer;
+use Domain\Plans\Support\PlanSearchAccess;
+use Domain\Plans\Support\PlanSearchProvider;
 use Domain\Plans\Support\PlanShareProvider;
 use Domain\Plans\Support\Skills\PlanSkill;
 use Domain\Plans\Support\States\Support\ReviewingPlanStateFactory;
@@ -339,6 +343,19 @@ final class PlansDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [HeldPlansOverview::class];
+    }
+
+    public function searchables(): array
+    {
+        return [
+            Searchable::make(
+                'plan',
+                'Plans',
+                PlanSearchAccess::class,
+                PlanSearchProvider::class,
+                PlanReferenceRecognizer::class,
+            ),
+        ];
     }
 
     public function searchContributions(): array
