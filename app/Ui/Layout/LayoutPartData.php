@@ -51,6 +51,7 @@ final class LayoutPartData extends Data
         public readonly LayoutMenuData|Optional $menu = new Optional(),
         public readonly int|Optional $placeholders = new Optional(),
         public readonly LayoutSplitData|Optional $split = new Optional(),
+        public readonly LayoutProgressData|Optional $progress = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
@@ -193,6 +194,31 @@ final class LayoutPartData extends Data
     }
 
     /**
+     * A measured reading of a value against its maximum: a labelled meter, or, when it counts pieces such as the
+     * finished tasks of a plan, a counted progress.
+     */
+    public static function progress(
+        string $key,
+        float $value,
+        float $max,
+        string $label,
+        string $unit,
+        bool $isCounted = false,
+    ): self {
+        return new self(
+            LayoutTag::Progress,
+            $key,
+            null,
+            $isCounted ? 'counted' : 'meter',
+            null,
+            null,
+            [],
+            [],
+            progress: new LayoutProgressData($value, $max, $label, $unit),
+        );
+    }
+
+    /**
      * A native part, mounted by its registered component name with its typed props.
      */
     public static function native(string $key, LayoutNativeData $native): self
@@ -291,6 +317,7 @@ final class LayoutPartData extends Data
             || ($this->tag === LayoutTag::Body) === $this->body instanceof Optional
             || ($this->tag === LayoutTag::Native) === $this->native instanceof Optional
             || ($this->tag === LayoutTag::Menu) === $this->menu instanceof Optional
+            || ($this->tag === LayoutTag::Progress) === $this->progress instanceof Optional
             || ($this->tag === LayoutTag::Tabs) === ($this->tabs === [])
             || ($this->style === 'skeleton') === $this->placeholders instanceof Optional
             || ! $this->split instanceof Optional && ! ($this->tag === LayoutTag::Box && $this->style === 'split')

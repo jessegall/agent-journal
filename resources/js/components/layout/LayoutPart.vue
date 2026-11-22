@@ -9,6 +9,7 @@ import LayoutForm from '@/components/layout/LayoutForm.vue';
 import LayoutMenu from '@/components/layout/LayoutMenu.vue';
 import LayoutNative from '@/components/layout/LayoutNative.vue';
 import LayoutNotice from '@/components/layout/LayoutNotice.vue';
+import LayoutProgress from '@/components/layout/LayoutProgress.vue';
 import LayoutTabs from '@/components/layout/LayoutTabs.vue';
 import LayoutText from '@/components/layout/LayoutText.vue';
 import type { LayoutPartData, LayoutTag } from '@/generated/types/core';
@@ -29,6 +30,7 @@ const partComponents: Record<LayoutTag, Component> = {
     body: LayoutBody,
     native: LayoutNative,
     menu: LayoutMenu,
+    progress: LayoutProgress,
 };
 </script>
 

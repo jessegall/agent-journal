@@ -381,4 +381,40 @@ describe('a declared layout', () => {
         view.unmount();
         reload.mockRestore();
     });
+
+    it('draws a measured reading as a fluid meter that speaks its value, maximum and label, or as a counted progress', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'root',
+                        style: 'stack',
+                        children: [
+                            part({
+                                tag: 'progress',
+                                key: 'week',
+                                style: 'meter',
+                                progress: { value: 72, max: 100, label: 'Weekly allowance', unit: 'percent' },
+                            }),
+                            part({
+                                tag: 'progress',
+                                key: 'tasks',
+                                style: 'counted',
+                                progress: { value: 3, max: 8, label: 'Plan 4', unit: 'tasks' },
+                            }),
+                        ],
+                    }),
+                },
+            },
+        });
+        const meter = view.get('[role="meter"]');
+
+        expect(meter.attributes('aria-valuenow')).toBe('72');
+        expect(meter.attributes('aria-valuemax')).toBe('100');
+        expect(meter.attributes('aria-label')).toBe('Weekly allowance');
+        expect(meter.attributes('aria-valuetext')).toBe('72 of 100 percent');
+        expect(meter.classes()).toContain('max-w-55');
+        expect(view.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('3');
+    });
 });

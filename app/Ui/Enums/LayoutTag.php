@@ -6,7 +6,7 @@ namespace App\Ui\Enums;
 
 /**
  * The parts a declared layout may hold, as they cross the page wire, with what each accepts: its sizes and
- * styles, default first, and whether it holds children: box, text, collection, notice, action, field and form.
+ * styles, default first, and whether it holds children: box, text, collection, notice, action, field, form, tabs, body, native, menu and progress.
  */
 enum LayoutTag: string
 {
@@ -21,6 +21,7 @@ enum LayoutTag: string
     case Body = 'body';
     case Native = 'native';
     case Menu = 'menu';
+    case Progress = 'progress';
 
     /**
      * The sizes the part takes, the default first; none for a part that takes no size.
@@ -33,7 +34,7 @@ enum LayoutTag: string
             self::Box, self::Collection => ['normal', 'compact'],
             self::Text, self::Action => ['normal', 'small', 'large'],
             self::Field => ['normal'],
-            self::Notice, self::Form, self::Tabs, self::Body, self::Native, self::Menu => [],
+            self::Notice, self::Form, self::Tabs, self::Body, self::Native, self::Menu, self::Progress => [],
         };
     }
 
@@ -56,6 +57,7 @@ enum LayoutTag: string
             self::Body => ['prose'],
             self::Native => ['native'],
             self::Menu => ['dropdown'],
+            self::Progress => ['meter', 'counted'],
         };
     }
 
