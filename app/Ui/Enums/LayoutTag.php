@@ -6,7 +6,8 @@ namespace App\Ui\Enums;
 
 /**
  * The parts a declared layout may hold, as they cross the page wire, with what each accepts: its sizes and
- * styles, default first, and whether it holds children: box, text, collection, notice, action, field, form, tabs, body, native, menu, progress and dialog.
+ * styles, default first, and whether it holds children: box, text, collection, notice, action, field, form, tabs,
+ * body, native, menu, progress and dialog.
  */
 enum LayoutTag: string
 {
@@ -47,12 +48,15 @@ enum LayoutTag: string
     public function styles(): array
     {
         return match ($this) {
-            self::Box => ['stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split', 'bar', 'reader'],
-            self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint', 'paragraph', 'time'],
+            self::Box => [
+                'stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split', 'bar', 'reader',
+                'settings-page', 'settings', 'settings-group', 'setting', 'setting-block',
+            ],
+            self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint', 'paragraph', 'time', 'chip'],
             self::Collection => ['list', 'facts', 'choices'],
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal', 'skeleton', 'stale'],
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],
-            self::Field => ['search', 'text'],
+            self::Field => ['search', 'text', 'secret', 'toggle'],
             self::Form => ['stack', 'inline'],
             self::Tabs => ['tabs'],
             self::Body => ['prose'],

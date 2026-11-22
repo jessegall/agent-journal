@@ -486,4 +486,49 @@ describe('a declared layout', () => {
         expect(view.get('dd').findAll('a')).toHaveLength(1);
         expect(view.get('dd').text()).toContain('Task 4');
     });
+
+    it('draws a settings group in the kit rows with the value below its label in a block row, chips and a switch only where declared', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'settings',
+                        style: 'settings',
+                        children: [
+                            part({ tag: 'text', key: 'title', style: 'heading', text: 'Profile' }),
+                            part({ tag: 'text', key: 'help', style: 'muted', text: 'Who it works as' }),
+                            part({
+                                tag: 'box',
+                                key: 'rows',
+                                style: 'settings-group',
+                                children: [
+                                    part({
+                                        tag: 'box',
+                                        key: 'row-models',
+                                        style: 'setting-block',
+                                        children: [
+                                            part({ tag: 'text', key: 'title', style: 'plain', text: 'Models' }),
+                                            part({
+                                                tag: 'box',
+                                                key: 'models',
+                                                style: 'row',
+                                                children: [part({ tag: 'text', key: 'chip-0', style: 'chip', text: 'fast' })],
+                                            }),
+                                        ],
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }),
+                },
+            },
+        });
+
+        expect(view.get('section').attributes('aria-label')).toBe('Profile');
+        expect(view.get('[role="group"]').exists()).toBe(true);
+        expect(view.get('.flex-col.items-stretch').text()).toContain('Models');
+        expect(view.get('.flex-col.items-stretch').text()).toContain('fast');
+        expect(view.find('[role="switch"]').exists()).toBe(false);
+    });
 });

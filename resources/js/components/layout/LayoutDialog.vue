@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import { useGuidedCreation } from '@/components/creation/guidedCreation';
 import Dialog from '@/components/kit/Dialog.vue';
 import DraftedBanner from '@/components/kit/DraftedBanner.vue';
-import Toast from '@/components/kit/Toast.vue';
-import { overlayTarget } from '@/composables/overlayLayer';
 import type { LayoutPartData } from '@/generated/types/core';
+import LayoutConfirmation from './LayoutConfirmation.vue';
 import LayoutPart from './LayoutPart.vue';
-import { inertiaMethods, provideFormDraft, provideFormSent } from './layoutForm';
+import { provideFormDraft, provideFormSent } from './layoutForm';
 
 // A dialog of a declared layout: its opener is drawn in place and opens it; its form sends through the form's own
 // registered submission and keeps its draft with the focus on the first invalid field. Cancel and Escape give the
@@ -42,14 +41,6 @@ function close(): void {
 function confirmed(): void {
     isOpen.value = false;
     isConfirmed.value = true;
-}
-
-function undo(): void {
-    const inverse = props.part.dialog?.undo;
-
-    if (inverse !== undefined) {
-        router.visit(inverse.href, { method: inertiaMethods[inverse.method], data: inverse.fixed, preserveScroll: true });
-    }
 }
 
 function startGuided(): void {
@@ -94,16 +85,10 @@ watch(() => page.url, close);
         </template>
     </Dialog>
     <template v-if="isConfirmed">
-        <Teleport :to="overlayTarget()">
-            <div class="pointer-events-none fixed inset-0 z-(--z-toast)">
-                <Toast
-                    class="pointer-events-auto"
-                    :text="part.dialog?.confirmation ?? ''"
-                    :undo="part.dialog?.undo !== undefined"
-                    @undo="undo"
-                    @close="isConfirmed = false"
-                />
-            </div>
-        </Teleport>
+        <LayoutConfirmation
+            :text="part.dialog?.confirmation ?? ''"
+            :undo="part.dialog?.undo"
+            @close="isConfirmed = false"
+        />
     </template>
 </template>

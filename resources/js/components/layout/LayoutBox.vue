@@ -3,6 +3,9 @@ import { computed } from 'vue';
 import LayoutPart from '@/components/layout/LayoutPart.vue';
 import ListReaderLayout from '@/components/kit/ListReaderLayout.vue';
 import Reader from '@/components/kit/Reader.vue';
+import SettingGroup from '@/components/kit/SettingGroup.vue';
+import SettingRow from '@/components/kit/SettingRow.vue';
+import SettingsSection from '@/components/kit/SettingsSection.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import type { LayoutPartData } from '@/generated/types/core';
 
@@ -10,7 +13,9 @@ import type { LayoutPartData } from '@/generated/types/core';
 // child as a list beside the rest as its reader. The bar keeps the title, count and views together on the left, the
 // search and creation at the other edge; on a phone the title and creation share the first line, and the views and
 // search wrap below. A reader box draws its title, metadata line, abstract and actions in the kit Reader and the rest
-// of its parts as the body.
+// of its parts as the body. The settings styles draw a group in the kit's SettingsSection, SettingGroup and SettingRow:
+// a row's title and hint are its first parts, its control the rest, below the title in a block row and stacked below it
+// on a phone, with long values breaking within their block.
 const props = defineProps<{ part: LayoutPartData }>();
 const slotClasses: Record<string, string> = {
     creation: 'order-3 ml-auto @2xl:order-none @2xl:ml-0',
@@ -18,6 +23,10 @@ const slotClasses: Record<string, string> = {
     search: 'order-5 w-full @2xl:order-none @2xl:w-auto',
 };
 const readerSlots = new Set(['title', 'metadata', 'abstract', 'actions']);
+const sectionSlots = new Set(['title', 'help']);
+const rowSlots = new Set(['title', 'hint']);
+const sectionBody = computed(() => props.part.children.filter((child) => !sectionSlots.has(child.key)));
+const rowControl = computed(() => props.part.children.filter((child) => !rowSlots.has(child.key)));
 const readerBody = computed(() => props.part.children.filter((child) => !readerSlots.has(child.key)));
 
 function readerPart(key: string): LayoutPartData | undefined {
@@ -71,6 +80,56 @@ const firstTool = computed(
                     </template>
                 </div>
             </Reader>
+        </template>
+        <template #settings-page>
+            <div data-layout-box="settings-page" class="flex w-full max-w-180 flex-col">
+                <template v-for="child in part.children" :key="child.key">
+                    <LayoutPart :part="child" />
+                </template>
+            </div>
+        </template>
+        <template #settings>
+            <SettingsSection
+                :title="readerPart('title')?.text ?? ''"
+                :help="readerPart('help')?.text ?? undefined"
+            >
+                <template v-for="child in sectionBody" :key="child.key">
+                    <LayoutPart :part="child" />
+                </template>
+            </SettingsSection>
+        </template>
+        <template #settings-group>
+            <SettingGroup :label="readerPart('title')?.text">
+                <template v-for="child in part.children" :key="child.key">
+                    <LayoutPart :part="child" />
+                </template>
+            </SettingGroup>
+        </template>
+        <template #setting>
+            <SettingRow
+                :title="readerPart('title')?.text ?? ''"
+                :hint="readerPart('hint')?.text ?? undefined"
+                class="max-[760px]:flex-col max-[760px]:items-stretch"
+            >
+                <span class="flex flex-wrap items-center justify-end gap-2 [overflow-wrap:anywhere] max-[760px]:justify-start">
+                    <template v-for="child in rowControl" :key="child.key">
+                        <LayoutPart :part="child" />
+                    </template>
+                </span>
+            </SettingRow>
+        </template>
+        <template #setting-block>
+            <SettingRow
+                block
+                :title="readerPart('title')?.text ?? ''"
+                :hint="readerPart('hint')?.text ?? undefined"
+            >
+                <span class="flex flex-wrap items-center gap-2 [overflow-wrap:anywhere]">
+                    <template v-for="child in rowControl" :key="child.key">
+                        <LayoutPart :part="child" />
+                    </template>
+                </span>
+            </SettingRow>
         </template>
         <template #bar>
             <div

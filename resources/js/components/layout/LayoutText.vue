@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import Chip from '@/components/kit/Chip.vue';
 import StateBadge from '@/components/kit/StateBadge.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import type { LayoutPartData } from '@/generated/types/core';
@@ -24,13 +25,16 @@ const badgeTone = computed(() => (props.part.tone ?? 'quiet') as BadgeTone);
         <template #badge>
             <StateBadge :label="part.text ?? ''" :tone="badgeTone" />
         </template>
+        <template #chip>
+            <Chip>{{ part.text }}</Chip>
+        </template>
         <template #paragraph>
             <p class="text-body whitespace-pre-wrap text-text">
                 {{ part.text }}
             </p>
         </template>
         <template #code>
-            <code class="font-mono text-field">{{ part.text }}</code>
+            <code class="font-mono text-field [overflow-wrap:anywhere]">{{ part.text }}</code>
         </template>
         <template #time>
             <span data-layout-text="time" class="text-text-3"
