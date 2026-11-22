@@ -14,7 +14,7 @@ use Tests\TestCase;
 
 /**
  * A model transition that raises a fact runs only inside a unit (plan 40): every caller of a transition the lists in
- * tests/Architecture/RaisingTransitions name is reached from a registered command's handler, is a required listener
+ * tests/Architecture/RaisingTransitions name is reached from a registered command's handler, is a transaction listener
  * or is a model; a public listener, a job, a console command, a controller or unreached code fails.
  */
 #[TimeLimit(seconds: 30, reason: 'It parses every PHP file of app and the domains.')]
@@ -30,7 +30,7 @@ final class ModelRaiseCallerTest extends TestCase
     /**
      * The attribute that marks a listener required in the command's transaction (plan 40 task 1579).
      */
-    private const string REQUIRED_LISTENER = 'App\Attributes\InCommandTransaction';
+    private const string TRANSACTION_LISTENER = 'App\Attributes\InCommandTransaction';
 
     private const string FIXTURES = 'tests/Fixtures/RaiseCallers';
 
@@ -41,7 +41,7 @@ final class ModelRaiseCallerTest extends TestCase
             base_path(),
             RaiseCallers::migrated(base_path()),
             $reach->handlersByFile,
-            self::REQUIRED_LISTENER,
+            self::TRANSACTION_LISTENER,
         );
         $violations = $callers->violationsIn([app_path(), ...DomainFiles::domainCode()]);
 
@@ -64,9 +64,9 @@ final class ModelRaiseCallerTest extends TestCase
 
         $this->assertSame([
             self::FIXTURES.'/Console/ShipCommand.php:19 ShipCommand::handle calls Shipment::ship, which raises a fact, '
-                .'from a console command; call it from a command handler or a required listener',
+                .'from a console command; call it from a command handler or a transaction listener',
             self::FIXTURES.'/Listeners/CertifiedShipper.php:19 CertifiedShipper::handle calls Shipment::ship, which '
-                .'raises a fact, from a public listener; call it from a command handler or a required listener',
+                .'raises a fact, from a public listener; call it from a command handler or a transaction listener',
         ], $callers->violationsIn([base_path(self::FIXTURES)]));
     }
 }

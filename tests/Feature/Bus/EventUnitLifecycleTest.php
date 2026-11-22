@@ -8,7 +8,7 @@ use App\Exceptions\EventUnitRefused;
 use App\Support\ActiveEventUnits;
 use App\Support\EventUnit;
 use App\Support\EventUnitLifecycle;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
 use App\Support\StackTransaction;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
@@ -45,7 +45,7 @@ final class EventUnitLifecycleTest extends TestCase
             $table->timestamps();
         });
         $required = [RowRenamed::class => [NotesFirstRename::class.'@handle']];
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry($required));
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry($required));
     }
 
     protected function tearDown(): void

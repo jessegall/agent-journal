@@ -8,10 +8,10 @@ use Tests\Fixtures\RaiseCallers\Attributes\InCommandTransaction;
 use Tests\Fixtures\RaiseCallers\Models\Shipment;
 
 /**
- * A required listener: it runs inside the command's transaction, so its transition's fact is collected.
+ * A transaction listener: it runs inside the command's transaction, so its transition's fact is collected.
  */
 #[InCommandTransaction]
-final readonly class RequiredShipper
+final readonly class TransactionShipper
 {
     public function handle(Shipment $shipment): void
     {

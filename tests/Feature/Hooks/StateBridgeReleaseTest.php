@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Support\Delivery\StateEventBridge;
 use App\Support\EventUnitLifecycle;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
 use App\Support\StackTransaction;
 use App\Support\StateEvents\StateEventScope;
 use App\Values\StackTarget;
@@ -48,7 +48,7 @@ final class StateBridgeReleaseTest extends TestCase
             $table->string('name');
             $table->timestamps();
         });
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry());
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry());
         $scope = $this->app->make(StateEventScope::class);
         $dispatcher = $this->app->make(Dispatcher::class);
         $dispatcher->listen(RowRenamed::class, StateEventBridge::LISTENER);

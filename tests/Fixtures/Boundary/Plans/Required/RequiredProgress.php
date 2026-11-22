@@ -8,7 +8,7 @@ use App\Exceptions\RaisedOutsideUnit;
 use App\Exceptions\RowWriteRefused;
 use App\Contracts\Bus\CommandFacts;
 use App\Attributes\InCommandTransaction;
-use App\Attributes\RequiresListener;
+use App\Attributes\RequiresTransactionListener;
 
 /**
  * A domain listener the command's transaction requires, using the seams and exceptions Core exports for it.
@@ -23,6 +23,6 @@ final readonly class RequiredProgress
      */
     public function namesItUses(): array
     {
-        return [RequiresListener::class, RowWriteRefused::class, RaisedOutsideUnit::class, $this->lifecycle::class];
+        return [RequiresTransactionListener::class, RowWriteRefused::class, RaisedOutsideUnit::class, $this->lifecycle::class];
     }
 }

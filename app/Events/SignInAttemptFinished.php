@@ -8,7 +8,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 
 /**
  * A sign-in attempt ended without completing: cancelled, failed, interrupted or expired; the account it wrote, if
- * any, is released by the required listener in the same transaction.
+ * any, is released by the transaction listener in the same transaction.
  */
 final readonly class SignInAttemptFinished implements ShownOnAccounts
 {

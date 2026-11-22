@@ -14,7 +14,7 @@ final class EventUnitRefused extends RuntimeException
 {
     public static function failedBeforeCommit(string $command): self
     {
-        return new self("{$command} cannot commit: a command or required listener of its transaction failed.");
+        return new self("{$command} cannot commit: a command or transaction listener of its transaction failed.");
     }
 
     public static function nothingPending(): self

@@ -47,7 +47,7 @@ final readonly class MergeReviewedWorkHandler implements CommandHandler
         }
 
         $this->facts->publishAfterCommit(new MergeOutcomeRecorded($attempt->id));
-        $this->facts->applyRequired();
+        $this->facts->runTransactionListeners();
 
         return $attempt->outcome();
     }

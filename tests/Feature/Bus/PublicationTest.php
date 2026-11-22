@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Support\EventUnitLifecycle;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Schema\Blueprint;
@@ -43,7 +43,7 @@ final class PublicationTest extends TestCase
             $table->string('name');
             $table->timestamps();
         });
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry());
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry());
     }
 
     protected function tearDown(): void

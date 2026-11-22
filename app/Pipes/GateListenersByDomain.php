@@ -9,20 +9,20 @@ use App\Contracts\Events\ListenerFailureLog;
 use App\Exceptions\InvalidListener;
 use App\Support\AvailableListener;
 use App\Support\FailureLoggingListener;
-use App\Support\GatedListeners;
 use App\Support\ListenerDeclarations;
+use App\Support\ListenerRegistry;
 use App\Support\Reflector;
 
 /**
  * Wraps domain listeners for availability, in both lanes, and adds failure logging to the dispatcher's listeners
- * when their event requests it; a required listener's failure reaches the command's unit.
+ * when their event requests it; a transaction listener's failure reaches the command's unit.
  */
 final readonly class GateListenersByDomain implements Pipe
 {
-    public function handle(ListenerDeclarations $declarations): GatedListeners
+    public function handle(ListenerDeclarations $declarations): ListenerRegistry
     {
         $gated = [];
-        $required = [];
+        $inTransaction = [];
 
         foreach ($declarations->events as $event => $listeners) {
             foreach ($listeners as $listener) {
@@ -37,13 +37,13 @@ final readonly class GateListenersByDomain implements Pipe
             }
         }
 
-        foreach ($declarations->required as $event => $listeners) {
+        foreach ($declarations->inCommandTransaction as $event => $listeners) {
             foreach ($listeners as $listener) {
-                $required[$event][] = $this->available($declarations, $event, $listener);
+                $inTransaction[$event][] = $this->available($declarations, $event, $listener);
             }
         }
 
-        return new GatedListeners($gated, $required);
+        return new ListenerRegistry(inCommandTransaction: $inTransaction, afterCommit: $gated);
     }
 
     /**

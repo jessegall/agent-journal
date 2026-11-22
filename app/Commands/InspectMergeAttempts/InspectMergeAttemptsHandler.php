@@ -41,7 +41,7 @@ final readonly class InspectMergeAttemptsHandler implements CommandHandler
         foreach (MergeAttempt::interrupted($stale, self::PASS_LIMIT) as $attempt) {
             $this->merge->inspect(MergeAttempt::lockedById($attempt->id));
             $this->facts->publishAfterCommit(new MergeOutcomeRecorded($attempt->id));
-            $this->facts->applyRequired();
+            $this->facts->runTransactionListeners();
         }
     }
 }

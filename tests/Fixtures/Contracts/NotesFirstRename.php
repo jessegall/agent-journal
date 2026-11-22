@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Contracts;
 
 /**
- * A required listener that notes the row renamed first, raising a fact of its own.
+ * A transaction listener that notes the row renamed first, raising a fact of its own.
  */
 final readonly class NotesFirstRename
 {

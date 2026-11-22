@@ -114,7 +114,7 @@ final class BoundaryCheckerTest extends TestCase
         $this->assertSame([], $this->checker()->violations($uses));
     }
 
-    public function test_a_domain_model_and_required_listener_use_the_exported_event_recording_pieces(): void
+    public function test_a_domain_model_and_transaction_listener_use_the_exported_event_recording_pieces(): void
     {
         $files = [
             $this->fixtureFolder().'/Plans/Models/RecordingPlan.php',

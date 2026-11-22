@@ -613,6 +613,8 @@ case	LifecycleState::SpawnFailed
 case	LifecycleState::Stopped
 case	LineCardPlacement::Inline
 case	LineCardPlacement::Panel
+case	ListenerLane::AfterCommit
+case	ListenerLane::InCommandTransaction
 case	MenuEntryState::Current
 case	MenuEntryState::Retired
 case	MenuEntryState::Superseded
@@ -3355,7 +3357,6 @@ class	FrozenSessionPolicies
 class	FunctionToParse
 class	GateListenersByDomain
 class	GatedCardContext
-class	GatedListeners
 class	GatewayActionRequest
 class	GatewayChildren
 class	GatewayConfiguration
@@ -3836,6 +3837,7 @@ class	ListedTasks
 class	ListenerDeclarations
 class	ListenerOwnership
 class	ListenerPolicy
+class	ListenerRegistry
 class	LiteralSentenceAssertionScan
 class	LiveShareStatus
 class	LoadMigrations
@@ -5384,11 +5386,9 @@ class	RequireMessageAnswerHandler
 class	RequireMessageAnswerRequest
 class	RequiredDomainMissing
 class	RequiredDomainTwice
-class	RequiredDrain
-class	RequiredListenerRegistry
 class	RequiredServices
-class	RequiresListener
 class	RequiresRequestKey
+class	RequiresTransactionListener
 class	ReserveStarts
 class	ReservedWordReader
 class	ResetSettingCommand
@@ -5827,7 +5827,7 @@ class	SendTerminalInputCommand
 class	SendTerminalInputController
 class	SendTerminalInputHandler
 class	SentMessageAnswer
-class	SeparateRequiredListeners
+class	SeparateTransactionListeners
 class	Sequence
 class	SequenceChanged
 class	SequenceChangedMeanwhile
@@ -6894,6 +6894,7 @@ class	ToolResult
 class	ToolRules
 class	ToolVersions
 class	TraitsUsed
+class	TransactionListenerDrain
 class	TransactionalIdentityLinks
 class	TransactionalRecordLinker
 class	TransferChatController
@@ -7837,7 +7838,6 @@ constant	ReportShareProvider::CARD_COLUMNS
 constant	ReportWorkspaceReadHandler::ANSWERED
 constant	RequestKey::FORM
 constant	RequestKey::LONGEST
-constant	RequiredDrain::CAUSAL_DEPTH_LIMIT
 constant	RequiredServices::SERVICES
 constant	ReservedWordReader::RESERVED_OUT_OF_PLACE
 constant	ResultBudget::JSON_FLAGS
@@ -7938,7 +7938,7 @@ constant	SecureShareResponse::HEADERS
 constant	SendDriverRequestAgainHandler::KEY_PREFIX
 constant	SentMessageAnswer::REQUEST_KEY
 constant	SentMessageAnswer::SENT_MESSAGE
-constant	SeparateRequiredListeners::DEFERRING_INTERFACES
+constant	SeparateTransactionListeners::DEFERRING_INTERFACES
 constant	SequenceIndexLayout::LIST_LIMIT
 constant	SequenceRun::LINK_TYPE
 constant	SequenceWindowResolver::RUN_LIMIT
@@ -8208,6 +8208,7 @@ constant	ToolArguments::FIRST_PAGE_FILTERS
 constant	ToolRules::CHECK
 constant	ToolRules::GH_READS
 constant	ToolRules::GH_WRITES
+constant	TransactionListenerDrain::CAUSAL_DEPTH_LIMIT
 constant	TransitionCallScan::SHOWN_CLASSES
 constant	TreeClassifier::CONTEXT_ASSIGNMENTS
 constant	TreeClassifier::FIND_CHILD_STARTS
@@ -8372,6 +8373,7 @@ enum	LeaveReason
 enum	LibraryTypeFilter
 enum	LifecycleState
 enum	LineCardPlacement
+enum	ListenerLane
 enum	MenuEntryState
 enum	MergeAttemptState
 enum	MergeRefusalReason
@@ -12095,9 +12097,9 @@ method	CommandEntrance::admits()
 method	CommandEntrance::current()
 method	CommandEntrance::isOpenedForApplication()
 method	CommandEntrance::through()
-method	CommandFacts::applyRequired()
 method	CommandFacts::holdUntilReturn()
 method	CommandFacts::publishAfterCommit()
+method	CommandFacts::runTransactionListeners()
 method	CommandFingerprint::of()
 method	CommandFrame::__construct()
 method	CommandFrame::exit()
@@ -14598,10 +14600,10 @@ method	EventUnit::stage()
 method	EventUnit::stagedBatch()
 method	EventUnit::takePending()
 method	EventUnitLifecycle::__construct()
-method	EventUnitLifecycle::applyRequired()
 method	EventUnitLifecycle::holdUntilReturn()
 method	EventUnitLifecycle::own()
 method	EventUnitLifecycle::publishAfterCommit()
+method	EventUnitLifecycle::runTransactionListeners()
 method	EventUnitLifecycle::within()
 method	EventUnitRefused::failedBeforeCommit()
 method	EventUnitRefused::nothingPending()
@@ -15087,7 +15089,6 @@ method	GateListenersByDomain::available()
 method	GateListenersByDomain::handle()
 method	GatedCardContext::__construct()
 method	GatedCardContext::permittedDestination()
-method	GatedListeners::__construct()
 method	GatewayActionRequest::configurationId()
 method	GatewayActionRequest::rules()
 method	GatewayChildren::end()
@@ -15921,6 +15922,7 @@ method	IntegerSetting::label()
 method	IntegerSetting::make()
 method	IntegerSetting::type()
 method	IntegerValueData::__construct()
+method	InterfacePlacement::isPlaced()
 method	InterfacePlacement::misplacedIn()
 method	InterfacesDeclared::findingsIn()
 method	InterfacesDeclared::key()
@@ -15973,15 +15975,15 @@ method	InvalidHeldCount::negative()
 method	InvalidHookAnswer::for()
 method	InvalidListener::cacheBeforeLanes()
 method	InvalidListener::cacheMissing()
+method	InvalidListener::deferredInTransaction()
+method	InvalidListener::inTransactionWithoutDeclaration()
 method	InvalidListener::notAConcreteEvent()
 method	InvalidListener::notRequired()
 method	InvalidListener::privateEvent()
-method	InvalidListener::requiredButDeferred()
-method	InvalidListener::requiredTwice()
-method	InvalidListener::requiredWithoutDeclaration()
 method	InvalidListener::staleCache()
 method	InvalidListener::stateCacheChanged()
 method	InvalidListener::stateRegisteredByHand()
+method	InvalidListener::twiceInTransaction()
 method	InvalidListener::unknownOwner()
 method	InvalidMenuDeclaration::contextMismatch()
 method	InvalidMenuDeclaration::menuMissing()
@@ -16524,6 +16526,9 @@ method	ListenerPolicy::__construct()
 method	ListenerPolicy::discover()
 method	ListenerPolicy::registerCached()
 method	ListenerPolicy::registerDiscovered()
+method	ListenerRegistry::__construct()
+method	ListenerRegistry::byEvent()
+method	ListenerRegistry::listenersOf()
 method	LiteralSentenceAssertionScan::findingsIn()
 method	LiteralSentenceAssertionScan::isAssertion()
 method	LiteralSentenceAssertionScan::key()
@@ -21427,16 +21432,9 @@ method	RequireMessageAnswerRequest::command()
 method	RequireMessageAnswerRequest::rules()
 method	RequiredDomainMissing::for()
 method	RequiredDomainTwice::for()
-method	RequiredDrain::__construct()
-method	RequiredDrain::applyNow()
-method	RequiredDrain::applyRequired()
-method	RequiredDrain::runListenersOf()
-method	RequiredListenerRegistry::__construct()
-method	RequiredListenerRegistry::events()
-method	RequiredListenerRegistry::listenersOf()
 method	RequiredServices::check()
-method	RequiresListener::__construct()
 method	RequiresRequestKey::__construct()
+method	RequiresTransactionListener::__construct()
 method	ReserveStarts::__construct()
 method	ReserveStarts::hasRetired()
 method	ReserveStarts::reserve()
@@ -22725,11 +22723,11 @@ method	SendTerminalInputHandler::handle()
 method	SentMessageAnswer::__construct()
 method	SentMessageAnswer::to()
 method	SentOperation::command()
-method	SeparateRequiredListeners::assertRequired()
-method	SeparateRequiredListeners::handle()
-method	SeparateRequiredListeners::isDeclaredBy()
-method	SeparateRequiredListeners::requiredClassOf()
-method	SeparateRequiredListeners::sorted()
+method	SeparateTransactionListeners::assertTransactionListener()
+method	SeparateTransactionListeners::handle()
+method	SeparateTransactionListeners::isDeclaredBy()
+method	SeparateTransactionListeners::sorted()
+method	SeparateTransactionListeners::transactionClassOf()
 method	Sequence::byId()
 method	Sequence::casts()
 method	Sequence::change()
@@ -26494,6 +26492,10 @@ method	ToolVersions::lockOf()
 method	ToolVersions::ofProject()
 method	TraitsUsed::findingsIn()
 method	TraitsUsed::key()
+method	TransactionListenerDrain::__construct()
+method	TransactionListenerDrain::applyNow()
+method	TransactionListenerDrain::runListenersOf()
+method	TransactionListenerDrain::runTransactionListeners()
 method	TransactionalIdentityLinks::__construct()
 method	TransactionalIdentityLinks::among()
 method	TransactionalIdentityLinks::link()
@@ -28356,6 +28358,7 @@ parameter	$implementation
 parameter	$import
 parameter	$importRef
 parameter	$imports
+parameter	$inCommandTransaction
 parameter	$inSidebar
 parameter	$inStates
 parameter	$inbox
@@ -28558,6 +28561,7 @@ parameter	$known
 parameter	$knownVersion
 parameter	$label
 parameter	$labels
+parameter	$lane
 parameter	$language
 parameter	$largest
 parameter	$last
@@ -29488,7 +29492,6 @@ parameter	$requestsAttention
 parameter	$requireCloser
 parameter	$required
 parameter	$requiredClasses
-parameter	$requiredListenerAttribute
 parameter	$requiredName
 parameter	$requiredSkills
 parameter	$requirement
@@ -30114,6 +30117,7 @@ parameter	$totals
 parameter	$trailing
 parameter	$trait
 parameter	$transaction
+parameter	$transactionListenerAttribute
 parameter	$transactions
 parameter	$transcriptPath
 parameter	$transfer
@@ -33836,8 +33840,6 @@ property	FunctionToParse::$start
 property	FunctionToParse::$toParse
 property	GatedCardContext::$gate
 property	GatedCardContext::$viewer
-property	GatedListeners::$events
-property	GatedListeners::$required
 property	GatewayChildren::$children
 property	GatewayConfiguration::$configurationId
 property	GatewayConfiguration::$configurationVersion
@@ -34700,8 +34702,8 @@ property	ListedTasks::$assignees
 property	ListedTasks::$assignments
 property	ListedTasks::$executions
 property	ListenerDeclarations::$events
+property	ListenerDeclarations::$inCommandTransaction
 property	ListenerDeclarations::$ownership
-property	ListenerDeclarations::$required
 property	ListenerOwnership::$coreExports
 property	ListenerOwnership::$coreListenerFolders
 property	ListenerOwnership::$corePath
@@ -34709,6 +34711,8 @@ property	ListenerOwnership::$reflectors
 property	ListenerOwnership::$registry
 property	ListenerPolicy::$ownership
 property	ListenerPolicy::$runner
+property	ListenerRegistry::$afterCommit
+property	ListenerRegistry::$inCommandTransaction
 property	LoadMigrations::$app
 property	LocalAccountFolders::$files
 property	LocalFiles::$code
@@ -36767,7 +36771,7 @@ property	QuestionRecord::$id
 property	QuestionRecord::$type
 property	RaiseCallers::$projectRoot
 property	RaiseCallers::$reach
-property	RaiseCallers::$requiredListenerAttribute
+property	RaiseCallers::$transactionListenerAttribute
 property	RaiseCallers::$transitions
 property	RaiseNavigationCommand::$attempt
 property	RaiseNavigationCommand::$declinedEntries
@@ -37911,12 +37915,9 @@ property	RequireMessageAnswerCommand::$messageId
 property	RequireMessageAnswerCommand::$signature
 property	RequireMessageAnswerHandler::$inboxes
 property	RequireMessageAnswerHandler::$responsibilities
-property	RequiredDrain::$container
-property	RequiredDrain::$registry
-property	RequiredListenerRegistry::$listeners
-property	RequiresListener::$listener
 property	RequiresRequestKey::$retentionDays
 property	RequiresRequestKey::$tombstoneDays
+property	RequiresTransactionListener::$listener
 property	ReserveStarts::$sessions
 property	ResetSettingCommand::$expectedRevision
 property	ResetSettingCommand::$setting
@@ -40966,6 +40967,8 @@ property	ToolResult::$responseFields
 property	ToolResult::$status
 property	ToolResult::$toolName
 property	ToolVersions::$versions
+property	TransactionListenerDrain::$container
+property	TransactionListenerDrain::$registry
 property	TransactionalIdentityLinks::$transaction
 property	TransactionalIdentityLinks::$types
 property	TransactionalRecordLinker::$records
@@ -42129,6 +42132,7 @@ variable	$inDriver
 variable	$inPath
 variable	$inPlan
 variable	$inRank
+variable	$inTransaction
 variable	$inbox
 variable	$inboxId
 variable	$inboxIds
@@ -42241,7 +42245,6 @@ variable	$isRecordCommand
 variable	$isRecordPolicy
 variable	$isRefusedCommand
 variable	$isRemoved
-variable	$isRequired
 variable	$isReturned
 variable	$isRevisionChanged
 variable	$isRevisionMoved
@@ -42270,6 +42273,7 @@ variable	$isTicking
 variable	$isTold
 variable	$isToolCall
 variable	$isTouched
+variable	$isTransactionListener
 variable	$isUnderWay
 variable	$isWaiting
 variable	$isWritten
@@ -43259,6 +43263,7 @@ variable	$traitMethods
 variable	$traitUse
 variable	$traits
 variable	$traitsByFile
+variable	$transactionClass
 variable	$transactions
 variable	$transition
 variable	$transport

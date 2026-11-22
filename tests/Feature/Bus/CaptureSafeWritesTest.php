@@ -6,8 +6,8 @@ namespace Tests\Feature\Bus;
 
 use App\Support\ActiveEventUnits;
 use App\Support\EventUnit;
-use App\Support\RequiredDrain;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
+use App\Support\TransactionListenerDrain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;
@@ -68,6 +68,6 @@ final class CaptureSafeWritesTest extends TestCase
 
     private function drain(EventUnit $unit): void
     {
-        new RequiredDrain(new RequiredListenerRegistry(), $this->app)->applyRequired($unit);
+        new TransactionListenerDrain(new ListenerRegistry(), $this->app)->runTransactionListeners($unit);
     }
 }

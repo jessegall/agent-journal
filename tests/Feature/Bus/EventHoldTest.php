@@ -7,8 +7,8 @@ namespace Tests\Feature\Bus;
 use App\Support\ActiveEventUnits;
 use App\Support\EventUnit;
 use App\Support\EventUnitLifecycle;
-use App\Support\RequiredDrain;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
+use App\Support\TransactionListenerDrain;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -43,7 +43,7 @@ final class EventHoldTest extends TestCase
             $table->timestamps();
         });
         $required = [RowRenamed::class => [NotesFirstRename::class.'@handle']];
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry($required));
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry($required));
     }
 
     protected function tearDown(): void
@@ -97,7 +97,7 @@ final class EventHoldTest extends TestCase
         $unit = $this->owned(fn () => $this->lifecycle()->holdUntilReturn(function () use ($held, &$seen): void {
             $held->rename('held');
             $this->lifecycle()->holdUntilReturn(fn () => null);
-            $this->app->make(RequiredDrain::class)->applyRequired($this->activeUnit());
+            $this->app->make(TransactionListenerDrain::class)->runTransactionListeners($this->activeUnit());
             $seen = $this->activeUnit()->batch();
         }));
 

@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Contracts;
 use App\Contracts\Events\Event;
 
 /**
- * The fact a RaisingRow raises when a required listener notes it.
+ * The fact a RaisingRow raises when a transaction listener notes it.
  */
 final readonly class RowNoted implements Event
 {

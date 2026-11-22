@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Events\Event;
 
 /**
- * One fact in an event unit: the event, the chain of facts whose required listeners raised it, and the delivery
+ * One fact in an event unit: the event, the chain of facts whose transaction listeners raised it, and the delivery
  * context staged for it while its command ran.
  */
 final readonly class Occurrence
@@ -18,7 +18,7 @@ final readonly class Occurrence
     public function __construct(public Event $event, public array $chain, public object|null $staged) {}
 
     /**
-     * Its chain with itself at the end, as the facts its required listeners raise carry it.
+     * Its chain with itself at the end, as the facts its transaction listeners raise carry it.
      *
      * @return list<string>
      */

@@ -7,8 +7,8 @@ namespace Tests\Feature\Bus;
 use App\CommandMiddleware\RunInTransaction;
 use App\Support\CommandCall;
 use App\Support\CommandNesting;
+use App\Support\ListenerRegistry;
 use App\Support\Publication;
-use App\Support\RequiredListenerRegistry;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;
@@ -23,7 +23,7 @@ use Tests\TestCase;
 
 /**
  * Under the test wrapper's uncommitted transaction the first command owns an event unit as a commit would: its
- * required listener runs inside it, its public facts go out once it returns, and a command that throws sends none.
+ * transaction listener runs inside it, its public facts go out once it returns, and a command that throws sends none.
  */
 final class WrapperOwnedUnitTest extends TestCase
 {
@@ -44,13 +44,13 @@ final class WrapperOwnedUnitTest extends TestCase
             $table->timestamps();
         });
         $required = [RowRenamed::class => [NotesFirstRename::class.'@handle']];
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry($required));
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry($required));
         $dispatcher = $this->app->make(Dispatcher::class);
         $dispatcher->listen(RowRenamed::class, fn (RowRenamed $renamed) => $this->heard[] = "renamed {$renamed->name}");
         $dispatcher->listen(RowNoted::class, fn () => $this->heard[] = 'noted');
     }
 
-    public function test_the_required_listener_runs_inside_and_the_public_facts_go_out_when_the_command_returns(): void
+    public function test_the_transaction_listener_runs_inside_and_the_public_facts_go_out_when_the_command_returns(): void
     {
         $row = RaisingRow::query()->create(['name' => 'start']);
         $heardInside = null;

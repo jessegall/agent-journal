@@ -70,7 +70,7 @@ final readonly class SignInCompletion
 
         if ($holder !== null) {
             $attempt->finishMatching($holder);
-            $this->facts->applyRequired();
+            $this->facts->runTransactionListeners();
 
             return;
         }
@@ -131,6 +131,6 @@ final readonly class SignInCompletion
     private function endWithout(SignInAttempt $attempt, SignInState $state, CarbonImmutable $now): void
     {
         $attempt->finishAt($state, $now);
-        $this->facts->applyRequired();
+        $this->facts->runTransactionListeners();
     }
 }

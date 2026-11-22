@@ -113,7 +113,7 @@ final readonly class StartSessions
         }
 
         $this->facts->publishAfterCommit(new SessionOpened($agent->id, $session->id, $authorizedSource));
-        $this->facts->applyRequired();
+        $this->facts->runTransactionListeners();
 
         return new StartedAgent(
             $session,
@@ -132,7 +132,7 @@ final readonly class StartSessions
             $this->credentials->revoke($session);
 
             $this->facts->publishAfterCommit(new SessionClosed($session->agent_id, $session->id));
-            $this->facts->applyRequired();
+            $this->facts->runTransactionListeners();
         });
     }
 }

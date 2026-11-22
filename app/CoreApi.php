@@ -14,8 +14,8 @@ use App\Attributes\OneLine;
 use App\Attributes\OutsideThePlaces;
 use App\Attributes\PresentList;
 use App\Attributes\RepeatableRead;
-use App\Attributes\RequiresListener;
 use App\Attributes\RequiresRequestKey;
+use App\Attributes\RequiresTransactionListener;
 use App\Attributes\RetainedActorRequestKey;
 use App\Attributes\ScriptMember;
 use App\Attributes\ScriptObject;
@@ -2347,7 +2347,7 @@ final class CoreApi
                 Authorize::class,
                 Effect::class,
                 InCommandTransaction::class,
-                RequiresListener::class,
+                RequiresTransactionListener::class,
                 CommandEffectType::class,
                 CommandCall::class,
                 CommandName::class,

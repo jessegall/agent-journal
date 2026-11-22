@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Attributes\InCommandTransaction;
-use App\Attributes\RequiresListener;
+use App\Attributes\RequiresTransactionListener;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\InvalidListener;
 use App\Support\ListenerDeclarations;
@@ -16,11 +16,11 @@ use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * Takes the listeners marked InCommandTransaction out of the dispatcher's map into the required map, each event's in
- * the order of their full names, and refuses a required listener that defers its work, is registered twice, or
- * belongs to a domain other than the event's owner without the owner's RequiresListener declaration.
+ * Takes the listeners marked InCommandTransaction out of the dispatcher's map into the transaction map, each event's in
+ * the order of their full names, and refuses a transaction listener that defers its work, is registered twice, or
+ * belongs to a domain other than the event's owner without the owner's RequiresTransactionListener declaration.
  */
-final readonly class SeparateRequiredListeners implements Pipe
+final readonly class SeparateTransactionListeners implements Pipe
 {
     /**
      * The interfaces that move a listener's work out of the transaction.
@@ -35,24 +35,24 @@ final readonly class SeparateRequiredListeners implements Pipe
     public function handle(ListenerDeclarations $declarations): ListenerDeclarations
     {
         $ordinary = [];
-        $required = [];
+        $inTransaction = [];
 
         foreach ($declarations->events as $event => $listeners) {
             foreach ($listeners as $listener) {
-                $requiredClass = self::requiredClassOf($listener);
+                $transactionClass = self::transactionClassOf($listener);
 
-                if ($requiredClass === null) {
+                if ($transactionClass === null) {
                     $ordinary[$event][] = $listener;
 
                     continue;
                 }
 
-                $this->assertRequired($declarations, $event, $listener, $requiredClass, $required[$event] ?? []);
-                $required[$event][] = $listener;
+                $this->assertTransactionListener($declarations, $event, $listener, $transactionClass, $inTransaction[$event] ?? []);
+                $inTransaction[$event][] = $listener;
             }
         }
 
-        return new ListenerDeclarations($ordinary, $declarations->ownership, array_map(self::sorted(...), $required));
+        return new ListenerDeclarations($ordinary, $declarations->ownership, array_map(self::sorted(...), $inTransaction));
     }
 
     /**
@@ -60,7 +60,7 @@ final readonly class SeparateRequiredListeners implements Pipe
      *
      * @return Reflector<object>|null
      */
-    private static function requiredClassOf(string $listener): Reflector|null
+    private static function transactionClassOf(string $listener): Reflector|null
     {
         $class = explode('@', $listener, 2)[0];
 
@@ -71,11 +71,11 @@ final readonly class SeparateRequiredListeners implements Pipe
 
     /**
      * @param  Reflector<object>  $class
-     * @param  list<string>  $earlier  the event's required listeners already taken
+     * @param  list<string>  $earlier  the event's transaction listeners already taken
      *
      * @throws InvalidListener
      */
-    private function assertRequired(
+    private function assertTransactionListener(
         ListenerDeclarations $declarations,
         string $event,
         string $listener,
@@ -84,12 +84,12 @@ final readonly class SeparateRequiredListeners implements Pipe
     ): void {
         foreach (self::DEFERRING_INTERFACES as $interface) {
             if ($class->implements($interface)) {
-                throw InvalidListener::requiredButDeferred($listener, $event, $interface);
+                throw InvalidListener::deferredInTransaction($listener, $event, $interface);
             }
         }
 
         if (in_array($listener, $earlier, true)) {
-            throw InvalidListener::requiredTwice($listener, $event);
+            throw InvalidListener::twiceInTransaction($listener, $event);
         }
 
         $owner = $declarations->ownership->domainHoldingListener($class->fileName()->getOrElse(''));
@@ -100,7 +100,7 @@ final readonly class SeparateRequiredListeners implements Pipe
             && ! self::isDeclaredBy($event, $class->name());
 
         if ($isForeignUndeclared) {
-            throw InvalidListener::requiredWithoutDeclaration($listener, $event, $owner->name);
+            throw InvalidListener::inTransactionWithoutDeclaration($listener, $event, $owner->name);
         }
     }
 
@@ -112,7 +112,7 @@ final readonly class SeparateRequiredListeners implements Pipe
             return false;
         }
 
-        foreach ($eventType->get()->attributes(RequiresListener::class) as $declaration) {
+        foreach ($eventType->get()->attributes(RequiresTransactionListener::class) as $declaration) {
             if ($declaration->listener === $listener) {
                 return true;
             }

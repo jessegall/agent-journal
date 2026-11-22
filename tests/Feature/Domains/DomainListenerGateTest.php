@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Domains;
 
 use App\Contracts\Domains\DomainAvailability;
+use App\Enums\ListenerLane;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\AvailableListener;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
 use App\Support\Stack\StateTypes;
 use Domain\Memory\Listeners\SupplyMemories;
 use Domain\Plans\Listeners\RaisePlanProgressChanged;
@@ -55,11 +56,11 @@ final class DomainListenerGateTest extends TestCase
         $discovered = $provider->discoverEvents();
         unset($discovered[DomainEventServiceProvider::LANES], $discovered[DomainEventServiceProvider::STATE_EVENTS]);
         $gated = $provider->getEvents();
-        $required = $this->app->make(RequiredListenerRegistry::class);
+        $registry = $this->app->make(ListenerRegistry::class);
         $kept = [];
 
         foreach (array_keys($discovered) as $event) {
-            $kept[$event] = count($gated[$event] ?? []) + count($required->listenersOf($event));
+            $kept[$event] = count($gated[$event] ?? []) + count($registry->listenersOf($event, ListenerLane::InCommandTransaction));
         }
 
         $this->assertSame(array_map('count', $discovered), $kept);

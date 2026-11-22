@@ -23,7 +23,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
 {
     public function __construct(
         private ActiveEventUnits $units,
-        private RequiredDrain $drain,
+        private TransactionListenerDrain $drain,
         private Publication $publication,
         private ConnectionInterface $database,
         private FactStaging $staging,
@@ -50,7 +50,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
 
         try {
             $result = $work();
-            $this->drain->applyRequired($unit);
+            $this->drain->runTransactionListeners($unit);
 
             if ($unit->hasFailed()) {
                 throw EventUnitRefused::failedBeforeCommit($owner);
@@ -97,7 +97,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
         try {
             return $unit->runNested(function () use ($work, $unit): mixed {
                 $result = $work();
-                $this->drain->applyRequired($unit);
+                $this->drain->runTransactionListeners($unit);
 
                 return $result;
             });
@@ -108,16 +108,16 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
         }
     }
 
-    public function applyRequired(): void
+    public function runTransactionListeners(): void
     {
-        $this->units->activeFor($this->database)->forAll(fn (EventUnit $unit) => $this->drain->applyRequired($unit));
+        $this->units->activeFor($this->database)->forAll(fn (EventUnit $unit) => $this->drain->runTransactionListeners($unit));
     }
 
     /**
      * Sends a fact through the unit's owner-ordered stream, in its place among the facts the models raise, released
-     * after the commit; outside a unit its required listeners run and it goes out at once. It takes a command-level
-     * fact whose required listeners must run in the transaction, and an occurrence a required listener stages; a plain
-     * dispatch is heard after the commit too, through the app's dispatcher, but runs no required listener.
+     * after the commit; outside a unit its transaction listeners run and it goes out at once. It takes a command-level
+     * fact whose transaction listeners must run in the transaction, and an occurrence a transaction listener stages; a plain
+     * dispatch is heard after the commit too, through the app's dispatcher, but runs no transaction listener.
      */
     public function publishAfterCommit(Event $event): void
     {
@@ -152,7 +152,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
 
         $unit = $active->get();
         $result = $unit->hold($work);
-        $this->drain->applyRequired($unit);
+        $this->drain->runTransactionListeners($unit);
 
         return $result;
     }

@@ -7,7 +7,7 @@ namespace App\Exceptions;
 use RuntimeException;
 
 /**
- * Required listeners raised facts whose listeners raised more, deeper than the drain allows: a loop, named by the
+ * Transaction listeners raised facts whose listeners raised more, deeper than the drain allows: a loop, named by the
  * chain of event classes, never their payloads.
  */
 final class CausalDepthExceeded extends RuntimeException
@@ -17,6 +17,6 @@ final class CausalDepthExceeded extends RuntimeException
      */
     public static function along(array $chain, int $limit): self
     {
-        return new self("Required listeners raised facts {$limit} deep: ".implode(' -> ', $chain).'.');
+        return new self("Transaction listeners raised facts {$limit} deep: ".implode(' -> ', $chain).'.');
     }
 }

@@ -27,7 +27,7 @@ final readonly class CancelSignInHandler implements CommandHandler
         }
 
         $attempt->finishAt(SignInState::Cancelled, CarbonImmutable::now());
-        $this->facts->applyRequired();
+        $this->facts->runTransactionListeners();
         $this->challenges->forget($attempt->id);
     }
 }

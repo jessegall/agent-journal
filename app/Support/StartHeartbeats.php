@@ -84,7 +84,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
                 ->each(fn (AgentRuntime $runtime) => $this->endings->closeAfterExit($runtime));
 
             $this->facts->publishAfterCommit(new SessionClosed($session->agent_id, $session->id));
-            $this->facts->applyRequired();
+            $this->facts->runTransactionListeners();
         });
     }
 
@@ -129,7 +129,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
                 ->each(fn (AgentRuntime $runtime) => $this->endings->closeAfterExit($runtime));
 
             $this->facts->publishAfterCommit(new SessionClosed($session->agent_id, $session->id));
-            $this->facts->applyRequired();
+            $this->facts->runTransactionListeners();
         });
     }
 

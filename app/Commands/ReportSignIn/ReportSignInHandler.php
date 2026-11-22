@@ -69,6 +69,6 @@ final readonly class ReportSignInHandler implements CommandHandler
     {
         $attempt->finishAt($state, CarbonImmutable::now(), $reason);
         $this->challenges->forget($attempt->id);
-        $this->facts->applyRequired();
+        $this->facts->runTransactionListeners();
     }
 }

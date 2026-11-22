@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Contracts;
 
 /**
- * A required listener that renames the row again on every rename: a loop the drain stops.
+ * A transaction listener that renames the row again on every rename: a loop the drain stops.
  */
 final readonly class RenamesAgain
 {

@@ -9,14 +9,15 @@ use App\Contracts\Reflection\ReflectorFactory;
 use App\CoreApi;
 use App\Declarations\StateEvents;
 use App\Declarations\StateMethods;
+use App\Enums\ListenerLane;
 use App\Exceptions\InvalidListener;
 use App\Support\AvailableListener;
 use App\Support\Delivery\StateEventBridge;
 use App\Support\DomainRegistry;
 use App\Support\FailureLoggingListener;
 use App\Support\ListenerOwnership;
+use App\Support\ListenerRegistry;
 use App\Support\Registration\ListenerPolicy;
-use App\Support\RequiredListenerRegistry;
 use App\Support\Stack\StateTypes;
 use App\Support\StateListenerDeclarations;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -32,7 +33,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
     public const string STATE_EVENTS = '@state-events';
 
     /**
-     * The mark of a cache built with the required lane, so a cache from before it fails loudly.
+     * The mark of a cache built with the transaction lane, so a cache from before it fails loudly.
      */
     public const string LANES = '@listener-lanes';
 
@@ -91,15 +92,15 @@ final class DomainEventServiceProvider extends EventServiceProvider
         if ($this->app->eventsAreCached()) {
             $events = $this->cachedEvents();
             unset($events[self::STATE_EVENTS], $events[self::LANES]);
-            $gated = $this->policy()->registerCached($events);
+            $registry = $this->policy()->registerCached($events);
         } else {
             $events = array_merge_recursive($this->discoverOrdinaryEvents(), $this->listens());
-            $gated = $this->policy()->registerDiscovered($events);
+            $registry = $this->policy()->registerDiscovered($events);
         }
 
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry($gated->required));
+        $this->app->instance(ListenerRegistry::class, $registry);
 
-        return $gated->events;
+        return $registry->byEvent(ListenerLane::AfterCommit);
     }
 
     private function registerStateBridges(): void

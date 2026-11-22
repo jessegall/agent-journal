@@ -25,7 +25,7 @@ final readonly class ExpireSignInAttemptHandler implements CommandHandler
 
         $attempt->finishAt(SignInState::Expired, CarbonImmutable::now());
         $this->challenges->forget($attempt->id);
-        $this->facts->applyRequired();
+        $this->facts->runTransactionListeners();
 
         return true;
     }

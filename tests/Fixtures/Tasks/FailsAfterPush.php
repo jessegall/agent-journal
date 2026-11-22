@@ -8,7 +8,7 @@ use Domain\Tasks\Events\TaskStarted;
 use RuntimeException;
 
 /**
- * A required listener that fails after the started task was pushed, so the start must roll back with its stack.
+ * A transaction listener that fails after the started task was pushed, so the start must roll back with its stack.
  */
 final readonly class FailsAfterPush
 {

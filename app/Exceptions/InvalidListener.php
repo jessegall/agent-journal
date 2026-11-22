@@ -75,7 +75,7 @@ final class InvalidListener extends DomainDeclarationError
         return new self('The state event declarations changed. Run php artisan event:cache to rebuild them.');
     }
 
-    public static function requiredButDeferred(string $listener, string $event, string $interface): self
+    public static function deferredInTransaction(string $listener, string $event, string $interface): self
     {
         return new self(
             "{$listener} runs in the command's transaction for {$event}, so it cannot implement {$interface}; "
@@ -83,23 +83,23 @@ final class InvalidListener extends DomainDeclarationError
         );
     }
 
-    public static function requiredTwice(string $listener, string $event): self
+    public static function twiceInTransaction(string $listener, string $event): self
     {
-        return new self("{$listener} is registered twice as a required listener of {$event}; register it once.");
+        return new self("{$listener} is registered twice as a transaction listener of {$event}; register it once.");
     }
 
-    public static function requiredWithoutDeclaration(string $listener, string $event, string $owner): self
+    public static function inTransactionWithoutDeclaration(string $listener, string $event, string $owner): self
     {
         return new self(
             "{$listener} of {$owner} cannot run in the transaction of {$event}, whose write another owner holds; "
-            .'the event must name it with #[RequiresListener].',
+            .'the event must name it with #[RequiresTransactionListener].',
         );
     }
 
     public static function cacheBeforeLanes(): self
     {
         return new self(
-            'The cached events were built before required listeners had their own lane; run php artisan event:cache.',
+            'The cached events were built before transaction listeners had their own lane; run php artisan event:cache.',
         );
     }
 

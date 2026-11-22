@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Support\EventUnitLifecycle;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;
@@ -20,7 +20,7 @@ use Tests\TestCase;
 
 /**
  * Legacy sends and migrated facts share one stream in the order they were made: L1, M, L2 and M1, L, M2 release in
- * those orders after the commit, an occurrence a required listener stages takes its place, and a rollback sends none.
+ * those orders after the commit, an occurrence a transaction listener stages takes its place, and a rollback sends none.
  */
 final class OrderedStreamTest extends TestCase
 {
@@ -85,7 +85,7 @@ final class OrderedStreamTest extends TestCase
         $this->assertSame(['M one', 'L middle', 'M two'], $this->released);
     }
 
-    public function test_a_required_listeners_staged_occurrence_releases_after_the_commit_in_its_place(): void
+    public function test_a_transaction_listeners_staged_occurrence_releases_after_the_commit_in_its_place(): void
     {
         $this->useRequired([RowRenamed::class => [StagesProgress::class.'@handle']]);
         [$first, $second] = [$this->row(), $this->row()];
@@ -117,7 +117,7 @@ final class OrderedStreamTest extends TestCase
      */
     private function useRequired(array $required): void
     {
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry($required));
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry($required));
     }
 
     private function stream(string $label): void

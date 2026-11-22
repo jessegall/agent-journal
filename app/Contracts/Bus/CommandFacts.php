@@ -14,9 +14,9 @@ use Closure;
 interface CommandFacts
 {
     /**
-     * Runs the required listeners of every fact collected so far, before the code goes on to read what they wrote.
+     * Runs the transaction listeners of every fact collected so far, before the code goes on to read what they wrote.
      */
-    public function applyRequired(): void;
+    public function runTransactionListeners(): void;
 
     /**
      * @template TResult

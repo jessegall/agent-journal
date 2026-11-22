@@ -24,13 +24,13 @@ final readonly class RaiseCallers
     /**
      * @param  list<string>  $transitions  each migrated transition as Class::method
      * @param  array<string, list<string>>  $reach  the handlers that reach each file, by path from the root
-     * @param  class-string  $requiredListenerAttribute
+     * @param  class-string  $transactionListenerAttribute
      */
     public function __construct(
         private string $projectRoot,
         private array $transitions,
         private array $reach,
-        private string $requiredListenerAttribute,
+        private string $transactionListenerAttribute,
     ) {}
 
     /**
@@ -77,7 +77,7 @@ final readonly class RaiseCallers
 
                 if ($transition !== null && $caller !== null) {
                     $violations[] = "{$relative}:{$call['line']} {$call['site']} calls {$transition}, which raises a "
-                        ."fact, from {$caller}; call it from a command handler or a required listener";
+                        ."fact, from {$caller}; call it from a command handler or a transaction listener";
                 }
             }
         }
@@ -117,10 +117,10 @@ final readonly class RaiseCallers
     {
         $declaration = Reflector::exists($type) ? Reflector::of($type) : null;
         $isModel = $declaration !== null && $declaration->isSubclassOf(Model::class);
-        $isRequired = $declaration !== null && $declaration->hasAttribute($this->requiredListenerAttribute);
+        $isTransactionListener = $declaration !== null && $declaration->hasAttribute($this->transactionListenerAttribute);
 
         return match (true) {
-            $isModel, $isRequired => null,
+            $isModel, $isTransactionListener => null,
             str_contains($path, '/Listeners/') => 'a public listener',
             $declaration?->implements(EngineListener::class) === true => 'an engine tick listener',
             str_contains($path, '/Jobs/') => 'a queued job',

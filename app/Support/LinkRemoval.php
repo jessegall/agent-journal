@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Removes links one at a time and tells LinksRemoved with their ids through the command's ordered stream, then runs
- * its required listeners at once, so what rested on the links ends before the caller reads on, outside a command too.
+ * its transaction listeners at once, so what rested on the links ends before the caller reads on, outside a command too.
  */
 final readonly class LinkRemoval
 {
@@ -66,6 +66,6 @@ final readonly class LinkRemoval
         }
 
         $this->facts->publishAfterCommit(new LinksRemoved($ids));
-        $this->facts->applyRequired();
+        $this->facts->runTransactionListeners();
     }
 }

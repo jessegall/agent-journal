@@ -11,7 +11,7 @@ use Attribute;
  * that listener may run in the command's transaction.
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
-final readonly class RequiresListener
+final readonly class RequiresTransactionListener
 {
     /**
      * @param  class-string  $listener

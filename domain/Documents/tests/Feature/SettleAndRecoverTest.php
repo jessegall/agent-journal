@@ -6,6 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Enums\ListenerLane;
 use App\Events\SessionClosed;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\CommandAdmissionRefused;
@@ -13,7 +14,7 @@ use App\Exceptions\CommandInputInvalid;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\AvailableListener;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
 use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
@@ -256,7 +257,7 @@ final class SettleAndRecoverTest extends TestCase
     {
         $listeners = array_map(
             fn ($listener) => $listener instanceof AvailableListener ? $listener->listener : '',
-            $this->app->make(RequiredListenerRegistry::class)->listenersOf(SessionClosed::class),
+            $this->app->make(ListenerRegistry::class)->listenersOf(SessionClosed::class, ListenerLane::InCommandTransaction),
         );
 
         $this->assertContains(CloseEndedSessionDraft::class.'@handle', $listeners);

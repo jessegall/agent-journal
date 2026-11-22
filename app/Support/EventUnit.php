@@ -13,7 +13,7 @@ use Throwable;
 /**
  * The facts one physical transaction's saves raised, in save order. Each save opens a slot for its row and seals the
  * slot before it, so only the row saved last is held; a sealed slot keeps only its immutable facts, each with the
- * chain of facts whose required listeners raised it. Drained facts wait in the public batch for release.
+ * chain of facts whose transaction listeners raised it. Drained facts wait in the public batch for release.
  */
 final class EventUnit
 {
@@ -54,7 +54,7 @@ final class EventUnit
     private array $batch = [];
 
     /**
-     * The chain of facts whose required listeners run now, which the facts they raise extend.
+     * The chain of facts whose transaction listeners run now, which the facts they raise extend.
      *
      * @var list<string>
      */

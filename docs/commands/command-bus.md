@@ -223,12 +223,12 @@ handler that catches a failed inner command and goes on fails the whole command 
 
 A model raises the fact of its change after its own save, and the command's code stages a fact with no row through
 `CommandFacts::publishAfterCommit`; both join the event unit of the command's transaction in save order. Before the
-transaction commits, the unit runs each fact's required listeners (those marked `#[InCommandTransaction]`) in order,
-and a fact one of them raises joins the end of the queue. `CommandFacts::applyRequired` runs them earlier, where the
+transaction commits, the unit runs each fact's transaction listeners (those marked `#[InCommandTransaction]`) in order,
+and a fact one of them raises joins the end of the queue. `CommandFacts::runTransactionListeners` runs them earlier, where the
 command reads what they wrote, and `CommandFacts::holdUntilReturn` keeps an operation's facts back until it returns, so
 they follow the work it does on the way. After the real commit, once no command of the request still runs, the facts
 go to their public listeners through Laravel's dispatcher; a rollback releases nothing. Outside a unit, a staged fact's
-required listeners run at once before it goes out. `.ai/guidelines/models-raise-their-events.md` is the guideline.
+transaction listeners run at once before it goes out. `.ai/guidelines/models-raise-their-events.md` is the guideline.
 
 ## Errors at start-up
 

@@ -21,7 +21,7 @@ use App\Models\Account;
 use App\Models\SignInAttempt;
 use App\Support\ActorContext;
 use App\Support\EntryDispatchers;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
 use App\Values\OwnerAuthority;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -37,7 +37,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A sign-in attempt that ends without completing raises SignInAttemptFinished on itself, and the required listener
+ * A sign-in attempt that ends without completing raises SignInAttemptFinished on itself, and the transaction listener
  * releases the account it wrote in the same transaction: a signed-in account is held for a generation check, one
  * needing a sign-in is let go, an attempt with no account looks no account up, and a failure after the release rolls
  * both rows back.
@@ -122,7 +122,7 @@ final class ReleaseSignInWriterTest extends TestCase
     public function test_a_failure_after_the_release_rolls_back_the_attempt_and_the_account(): void
     {
         $attemptId = $this->again('tab-1');
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry([
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
             SignInAttemptFinished::class => [ReleaseSignInWriter::class.'@handle', FailsAfterRelease::class.'@handle'],
         ]));
 

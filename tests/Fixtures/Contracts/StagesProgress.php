@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Contracts;
 use App\Contracts\Bus\CommandFacts;
 
 /**
- * A required listener that stages a public occurrence it has no row to raise on.
+ * A transaction listener that stages a public occurrence it has no row to raise on.
  */
 final readonly class StagesProgress
 {

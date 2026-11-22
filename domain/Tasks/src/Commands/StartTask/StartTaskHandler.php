@@ -21,7 +21,7 @@ use Domain\Tasks\Values\TaskWaitLink;
 /**
  * Resolves the session after every middleware, then starts the task for it under the task's row lock and answers the
  * run number: the same session's active run is kept, another session's run is not taken. The start's fact waits for
- * the run and claim work, and its required listeners run before the reply.
+ * the run and claim work, and its transaction listeners run before the reply.
  */
 final readonly class StartTaskHandler extends TaskCommandHandler
 {
@@ -56,7 +56,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
             $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
         });
 
-        $this->facts->applyRequired();
+        $this->facts->runTransactionListeners();
 
         return $task->run_number;
     }

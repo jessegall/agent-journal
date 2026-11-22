@@ -7,8 +7,8 @@ namespace Tests\Feature\Bus;
 use App\Exceptions\CausalDepthExceeded;
 use App\Support\ActiveEventUnits;
 use App\Support\EventUnit;
-use App\Support\RequiredDrain;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
+use App\Support\TransactionListenerDrain;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
@@ -25,7 +25,7 @@ use WeakReference;
 
 /**
  * The event unit keeps the facts of its connection's saves in save order and holds only the row saved last; its
- * required drain runs each fact's required listeners first in first out, a raised fact after its siblings, and stops
+ * transaction listener drain runs each fact's transaction listeners first in first out, a raised fact after its siblings, and stops
  * a loop at its depth limit naming the chain.
  */
 final class EventUnitTest extends TestCase
@@ -89,7 +89,7 @@ final class EventUnitTest extends TestCase
         $this->assertFalse($unit->hasPending());
     }
 
-    public function test_a_required_listener_runs_on_drain_and_its_fact_follows_its_siblings(): void
+    public function test_a_transaction_listener_runs_on_drain_and_its_fact_follows_its_siblings(): void
     {
         $unit = $this->openUnit();
         [$first, $second] = [new RaisingRow(), new RaisingRow()];
@@ -104,13 +104,13 @@ final class EventUnitTest extends TestCase
         );
     }
 
-    public function test_a_loop_of_required_listeners_stops_at_the_limit_naming_the_chain(): void
+    public function test_a_loop_of_transaction_listeners_stops_at_the_limit_naming_the_chain(): void
     {
         $unit = $this->openUnit();
         new RaisingRow()->rename('again');
-        $chain = array_fill(0, RequiredDrain::CAUSAL_DEPTH_LIMIT + 1, RowRenamed::class);
+        $chain = array_fill(0, TransactionListenerDrain::CAUSAL_DEPTH_LIMIT + 1, RowRenamed::class);
 
-        $this->expectExceptionObject(CausalDepthExceeded::along($chain, RequiredDrain::CAUSAL_DEPTH_LIMIT));
+        $this->expectExceptionObject(CausalDepthExceeded::along($chain, TransactionListenerDrain::CAUSAL_DEPTH_LIMIT));
 
         try {
             $this->drain($unit, [RowRenamed::class => [RenamesAgain::class.'@handle']]);
@@ -139,7 +139,7 @@ final class EventUnitTest extends TestCase
      */
     private function drain(EventUnit $unit, array $required): void
     {
-        $drain = new RequiredDrain(new RequiredListenerRegistry($required), $this->app);
-        $drain->applyRequired($unit);
+        $drain = new TransactionListenerDrain(new ListenerRegistry($required), $this->app);
+        $drain->runTransactionListeners($unit);
     }
 }

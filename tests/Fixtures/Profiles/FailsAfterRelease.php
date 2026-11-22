@@ -8,7 +8,7 @@ use App\Events\SignInAttemptFinished;
 use RuntimeException;
 
 /**
- * A required listener that fails after the writer was released, so the transaction must roll both rows back.
+ * A transaction listener that fails after the writer was released, so the transaction must roll both rows back.
  */
 final readonly class FailsAfterRelease
 {

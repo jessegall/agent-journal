@@ -6,13 +6,12 @@ namespace Tests\Fixtures\Listeners;
 
 use App\Attributes\InCommandTransaction;
 use Domain\Plans\Events\PlanProgressChanged;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
- * A required listener that would leave the transaction for a queue.
+ * A Core listener the command's transaction requires.
  */
 #[InCommandTransaction]
-final class QueuedRequiredListener implements ShouldQueue
+final class TransactionProgressListener
 {
     public function handle(PlanProgressChanged $event): void {}
 }

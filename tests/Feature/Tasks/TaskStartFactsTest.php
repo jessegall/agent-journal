@@ -9,7 +9,7 @@ use App\Models\Agent;
 use App\Models\AgentSession;
 use App\Models\AgentStackRow;
 use App\Support\ActorIdentity;
-use App\Support\RequiredListenerRegistry;
+use App\Support\ListenerRegistry;
 use App\Support\StartSessions;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
@@ -125,7 +125,7 @@ final class TaskStartFactsTest extends TestCase
     {
         $task = Task::factory()->create();
         $stackRows = AgentStackRow::query()->withoutGlobalScopes()->count();
-        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry([
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
             TaskStarted::class => [
                 SamplePlanOfStartedTask::class.'@handle',
                 PushTaskState::class.'@handle',
