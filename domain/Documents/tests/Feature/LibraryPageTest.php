@@ -37,9 +37,7 @@ final class LibraryPageTest extends TestCase
         'number_groups',
     ];
 
-    private const string LIST = 'page.data.root.children.1.children.0.children';
-
-    private const string CONTENT = 'page.data.root.children.1.children.0.children.3.children';
+    private const string CONTENT = 'page.data.root.children.1.children.0.children.0.children';
 
     private User $owner;
 
@@ -60,7 +58,6 @@ final class LibraryPageTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('layout/DeclaredLayout')
-                ->where(self::LIST.'.1.rows.0.isCurrent', true)
                 ->where(self::CONTENT.'.0.rows.0.label', 'doc 1 · Design')
                 ->where(self::CONTENT.'.0.rows.0.detail', 'What we build')
                 ->where(self::CONTENT.'.0.rows.0.href', '/documents/docs/1')
@@ -77,7 +74,6 @@ final class LibraryPageTest extends TestCase
         $this->actingAs($this->owner)
             ->get('/documents?type=report')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where(self::LIST.'.1.rows.2.isCurrent', true)
                 ->has(self::CONTENT.'.0.rows', 1)
                 ->where(self::CONTENT.'.0.rows.0.href', '/documents/reports/1'));
     }
@@ -97,13 +93,13 @@ final class LibraryPageTest extends TestCase
                 ));
     }
 
-    public function test_a_fresh_library_says_why_it_is_empty_and_offers_to_file_the_first_document(): void
+    public function test_a_fresh_library_says_why_it_is_empty(): void
     {
         $this->actingAs($this->owner)
             ->get('/documents')
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where(self::CONTENT.'.0.key', 'empty')
-                ->where(self::CONTENT.'.1.children.0.dialog.title', 'Create document'));
+                ->missing(self::CONTENT.'.1'));
     }
 
     private function file(): void

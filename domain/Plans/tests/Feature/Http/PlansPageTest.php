@@ -22,7 +22,7 @@ final class PlansPageTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const string ROWS = 'page.data.root.children.1.children.0.children.1.children.0.rows';
+    private const string ROWS = 'page.data.root.children.1.children.0.children.0.children.0.rows';
 
     private const string READER = 'page.data.root.children.1.children.1.children';
 

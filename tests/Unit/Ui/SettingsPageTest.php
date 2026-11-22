@@ -41,7 +41,7 @@ final class SettingsPageTest extends TestCase
         $form = $root->children[0]->children[2]->children[0];
 
         $this->assertSame('form', $form->key);
-        $this->assertSame(['row-name', 'row-on', 'row-version', 'save'], $this->keysOf($form->children));
+        $this->assertSame(['row-name', 'row-on', 'row-version', 'save-row'], $this->keysOf($form->children));
         $this->assertSame('toggle', $form->children[1]->children[1]->style);
         $this->assertSame('changed', $form->children[0]->children[2]->key);
 

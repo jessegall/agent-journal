@@ -14,7 +14,6 @@ use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
-use Illuminate\Support\Facades\Event;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -27,22 +26,17 @@ final class StoredSequenceTest extends TestCase
 
     public function test_defining_stores_the_steps_and_raises_its_fact(): void
     {
-        Event::fake([SequenceDefined::class]);
-
         $sequence = Sequence::define('Release', 'Ship a version', [self::step('tests')]);
 
         $this->assertSame(1, $sequence->fresh()?->version);
-        $this->assertSame([self::step('tests')->toArray()], $sequence->fresh()?->steps);
-        Event::assertDispatched(
-            SequenceDefined::class,
-            fn (SequenceDefined $fact) => $fact->sequenceId === $sequence->id,
-        );
+        $this->assertEquals([self::step('tests')->toArray()], $sequence->fresh()?->steps);
+        $this->assertEquals([new SequenceDefined($sequence->id)], $sequence->takeRaisedEvents());
     }
 
     public function test_a_change_goes_one_version_on_and_a_started_run_keeps_its_own_steps(): void
     {
-        Event::fake([SequenceChanged::class]);
         $sequence = Sequence::define('Release', 'Ship a version', [self::step('tests')]);
+        $sequence->takeRaisedEvents();
         $run = SequenceRun::create('Release', ['tests']);
         $run->sequence()->associate($sequence)->save();
 
@@ -50,10 +44,7 @@ final class StoredSequenceTest extends TestCase
 
         $this->assertSame(2, $sequence->fresh()?->version);
         $this->assertSame(['tests'], $run->fresh()?->steps);
-        Event::assertDispatched(
-            SequenceChanged::class,
-            fn (SequenceChanged $fact) => $fact->sequenceId === $sequence->id,
-        );
+        $this->assertEquals([new SequenceChanged($sequence->id)], $sequence->takeRaisedEvents());
     }
 
     public function test_a_change_from_an_older_version_is_refused(): void

@@ -195,9 +195,7 @@ final readonly class ListPage
     private function shownParts(): array
     {
         if ($this->rows === []) {
-            $empty = $this->creation === null ? $this->empty : $this->empty->informingOnly();
-
-            return $empty->parts();
+            return $this->empty->parts();
         }
 
         return [

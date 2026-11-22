@@ -67,7 +67,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
         $sequence->name = $name;
         $sequence->summary = $summary;
         $sequence->steps = self::stored($steps);
-        $sequence->save();
+        $sequence->assertSaved($sequence->save());
         $sequence->raise(new SequenceDefined($sequence->id));
 
         return $sequence;
@@ -122,7 +122,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
         $this->summary = $summary;
         $this->steps = self::stored($steps);
         $this->version++;
-        $this->save();
+        $this->assertSaved($this->save());
         $this->raise(new SequenceChanged($this->id));
     }
 

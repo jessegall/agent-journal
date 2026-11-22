@@ -98,7 +98,7 @@ final readonly class PlanIndexLayout
             );
         }
 
-        return ListEmpty::offering('No plans yet.', $this->creation('create-first'));
+        return ListEmpty::informing('No plans yet.');
     }
 
     /**

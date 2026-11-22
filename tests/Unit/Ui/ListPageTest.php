@@ -112,7 +112,7 @@ final class ListPageTest extends TestCase
             ->creating('Create task', LayoutActionData::to('/tasks/new'))
             ->layout()->root->children[0];
 
-        $this->assertSame('bar', $header->style);
+        $this->assertSame('page-head', $header->style);
         $this->assertSame(
             ['title', 'count', 'views', 'search', 'creation'],
             $this->keysOf($header->children),

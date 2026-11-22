@@ -106,9 +106,8 @@ final readonly class LibraryWindowResolver implements PageResolver
             );
         }
 
-        return ListEmpty::offering(
+        return ListEmpty::informing(
             'No documents or reports yet.',
-            $this->creation('doc', 'New document', 'create-first'),
             'A document is lasting knowledge kept as revisions; a report says what was checked or found, once.',
         );
     }

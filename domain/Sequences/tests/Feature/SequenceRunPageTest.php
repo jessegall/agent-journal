@@ -10,6 +10,7 @@ use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
+use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -19,6 +20,8 @@ use Tests\Support\RefreshHookDatabase;
 final class SequenceRunPageTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    private const string READER = 'page.data.root.children.1.children.1.children';
 
     private User $owner;
 
@@ -42,8 +45,9 @@ final class SequenceRunPageTest extends TestCase
         $this->actingAs($this->owner)
             ->get("/sequences/{$sequence->id}")
             ->assertOk()
-            ->assertSee('tests')
-            ->assertSee("/sequences/runs/{$run->number}");
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where(self::READER.'.4.rows.0.key', 'tests')
+                ->where(self::READER.'.6.rows.0.href', "/sequences/runs/{$run->number}"));
     }
 
     public function test_an_unknown_sequence_is_not_found(): void

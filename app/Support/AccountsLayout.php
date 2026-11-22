@@ -46,10 +46,7 @@ final readonly class AccountsLayout
         return ListPage::make(
             'Accounts',
             array_map(fn (AccountRowData $row) => $this->rowOf($row, $chosen), $accounts->rows),
-            ListEmpty::offering(
-                'No accounts yet.',
-                LayoutPartData::action('add-first', 'Add account', LayoutActionData::changing(['add' => '1'])),
-            ),
+            ListEmpty::informing('No accounts yet.'),
         )
             ->counting(count($accounts->rows))
             ->creating('Add account', LayoutActionData::changing(['add' => '1', 'account' => '']))

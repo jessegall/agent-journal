@@ -7,6 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Contracts\ChatLines;
 use App\Events\StartAccepted;
 use App\Listeners\ShowHelperStartInChat;
+use App\Models\Agent;
 use App\Support\ActorIdentity;
 use App\Values\ChatLine;
 use Tests\Support\MessagingTestCase;
@@ -34,7 +35,7 @@ final class HelperStartChatLineTest extends MessagingTestCase
             parentAgentId: $this->builder->agent_id,
         ));
 
-        $this->assertSame([$this->reviewer->agent->name], $this->subjectsIn($inboxId));
+        $this->assertSame([Agent::query()->findOrFail($this->reviewer->agent_id)->name], $this->subjectsIn($inboxId));
     }
 
     /**

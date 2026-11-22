@@ -76,7 +76,7 @@ final readonly class SequenceWindowResolver implements PageResolver
      */
     private function runParts(Sequence $sequence): array
     {
-        $runs = array_values($sequence->runs()->limit(self::RUN_LIMIT)->get()->all());
+        $runs = array_values($sequence->runs()->acrossActors()->limit(self::RUN_LIMIT)->get()->all());
 
         if ($runs === []) {
             return [LayoutPartData::notice('no-runs', 'empty', 'No runs yet.')];

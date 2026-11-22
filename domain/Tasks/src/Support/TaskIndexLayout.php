@@ -106,7 +106,7 @@ final readonly class TaskIndexLayout
             );
         }
 
-        return ListEmpty::offering('No tasks yet.', $this->creation('create-first'));
+        return ListEmpty::informing('No tasks yet.');
     }
 
     /**
