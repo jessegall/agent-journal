@@ -6,6 +6,10 @@ use App\Actors\Support\ActorContext;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Api\Events\PlanReviewDecided;
+use Domain\Plans\Api\Events\PlanReviewRequested;
+use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Api\Events\PlanReviewWithdrawn;
 use Domain\Plans\Api\Events\PlanStarted;
 use Tests\Architecture\Support\EventRole;
 
@@ -36,6 +40,27 @@ return [
             'domain/Plans/src/Listeners/RaisePlanProgressChanged.php',
             'domain/Plans/src/Listeners/SamplePlanOfStartedTask.php',
         ],
+    ],
+    PlanReviewDecided::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Plan::settleReview',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanReviewDecided('plan', 'edition', PlanReviewState::Approved),
+    ],
+    PlanReviewRequested::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Plan::requestReview',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanReviewRequested('plan', 'edition'),
+    ],
+    PlanReviewWithdrawn::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Plan::withdrawReview',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanReviewWithdrawn('plan', 'edition'),
     ],
     PlanStarted::class => [
         'role' => EventRole::RowFact,

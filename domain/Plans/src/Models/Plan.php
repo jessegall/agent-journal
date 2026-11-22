@@ -26,16 +26,21 @@ use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRelationSet;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
+use Domain\Plans\Api\Events\PlanReviewDecided;
+use Domain\Plans\Api\Events\PlanReviewRequested;
+use Domain\Plans\Api\Events\PlanReviewWithdrawn;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Database\Factories\PlanFactory;
+use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
+use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -233,6 +238,54 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         $this->raise(new PlanStarted($this->id, $actor));
 
         return true;
+    }
+
+    /**
+     * Puts the planned plan up for review with its frozen edition; any other state refuses.
+     *
+     * @throws PlanReviewRefused
+     */
+    public function requestReview(string $editionId): void
+    {
+        if ($this->state !== PlanState::Planned) {
+            throw PlanReviewRefused::notPlanned($this->number, $this->state->value);
+        }
+
+        $this->state = PlanState::Reviewing;
+        $this->assertSaved($this->save());
+        $this->raise(new PlanReviewRequested($this->id, $editionId));
+    }
+
+    /**
+     * Takes the reviewing plan back to Planned after its review was withdrawn; any other state refuses.
+     *
+     * @throws PlanReviewRefused
+     */
+    public function withdrawReview(string $editionId): void
+    {
+        if ($this->state !== PlanState::Reviewing) {
+            throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
+        }
+
+        $this->state = PlanState::Planned;
+        $this->assertSaved($this->save());
+        $this->raise(new PlanReviewWithdrawn($this->id, $editionId));
+    }
+
+    /**
+     * Takes the reviewing plan back to Planned with its review decided, approved or sent back for changes.
+     *
+     * @throws PlanReviewRefused
+     */
+    public function settleReview(string $editionId, PlanReviewState $decision): void
+    {
+        if ($this->state !== PlanState::Reviewing) {
+            throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
+        }
+
+        $this->state = PlanState::Planned;
+        $this->assertSaved($this->save());
+        $this->raise(new PlanReviewDecided($this->id, $editionId, $decision));
     }
 
     /**

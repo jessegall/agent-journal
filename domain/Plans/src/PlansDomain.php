@@ -42,6 +42,9 @@ use Domain\Plans\Api\AssignedPlanList;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Api\Events\PlanReviewDecided;
+use Domain\Plans\Api\Events\PlanReviewRequested;
+use Domain\Plans\Api\Events\PlanReviewWithdrawn;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanCard;
@@ -49,6 +52,7 @@ use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanList;
 use Domain\Plans\Api\PlanPhaseTasks;
+use Domain\Plans\Api\PlanEditionChanges;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Assignments\PlanTaskPoolFactory;
@@ -58,6 +62,7 @@ use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
+use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
@@ -124,7 +129,15 @@ final class PlansDomain extends Domain implements
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(PlanStarted::class, PlanFinished::class, PlanCancelled::class, PlanProgressChanged::class)
+            ->events(
+                PlanStarted::class,
+                PlanFinished::class,
+                PlanCancelled::class,
+                PlanProgressChanged::class,
+                PlanReviewRequested::class,
+                PlanReviewWithdrawn::class,
+                PlanReviewDecided::class,
+            )
             ->contracts(PlanResolver::class, PlanDetailsResolver::class)
             ->values(
                 PlanFilters::class,
@@ -134,6 +147,8 @@ final class PlansDomain extends Domain implements
                 AssignedPlanFilters::class,
                 AssignedPlanList::class,
                 PlanProgress::class,
+                PlanEditionChanges::class,
+                PlanReviewState::class,
                 PlanType::class,
                 PlanState::class,
                 PlanDetails::class,
@@ -196,7 +211,7 @@ final class PlansDomain extends Domain implements
         return [
             new PolicyDefinition(
                 PlanPolicy::class,
-                [AccessType::Read, AccessType::Create, AccessType::Edit],
+                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Admin],
             ),
         ];
     }

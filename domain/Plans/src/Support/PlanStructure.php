@@ -10,6 +10,7 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 
 /**
@@ -23,6 +24,7 @@ final readonly class PlanStructure
     public function addPhase(Plan $plan, string $title): Phase
     {
         Plan::lockStructure($plan->id);
+        PlanReviewEdition::currentApprovalOf($plan->id)?->markHistorical();
 
         return Phase::create($plan, $title);
     }
@@ -57,6 +59,7 @@ final readonly class PlanStructure
         $phase->recordProgress($phase->progress->plus($placed));
         $phase->advanceRevision();
         $plan->recordProgress($plan->progress->plus($placed));
+        PlanReviewEdition::currentApprovalOf($plan->id)?->markHistorical();
     }
 
     /**

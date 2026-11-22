@@ -67,6 +67,9 @@ use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Api\Events\PlanReviewDecided;
+use Domain\Plans\Api\Events\PlanReviewRequested;
+use Domain\Plans\Api\Events\PlanReviewWithdrawn;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Rules\Api\Events\RuleApproved;
 use Domain\Rules\Api\Events\RuleDenied;
@@ -486,6 +489,28 @@ final class EventPayloads
                 'fields' => [
                     'planId' => 'string',
                     'finishedBy' => 'App\Actors\Support\ActorContext',
+                ],
+            ],
+            PlanReviewDecided::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'planId' => 'string',
+                    'editionId' => 'string',
+                    'decision' => 'Domain\Plans\Enums\PlanReviewState',
+                ],
+            ],
+            PlanReviewRequested::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'planId' => 'string',
+                    'editionId' => 'string',
+                ],
+            ],
+            PlanReviewWithdrawn::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'planId' => 'string',
+                    'editionId' => 'string',
                 ],
             ],
             PlanStarted::class => [
