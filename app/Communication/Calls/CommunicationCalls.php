@@ -17,6 +17,23 @@ final readonly class CommunicationCalls
 {
     public function __construct(private CallSender $sender) {}
 
+    /**
+     * @param  list<string>  $handles
+     */
+    public function acknowledgePresentation(
+        string $batchId,
+        array $handles,
+        string $contextKey,
+        CallKey $requestKey = new CallKey(),
+    ): PresentationAcknowledged {
+        return $this->sender->send(AcknowledgePresentationCall::from([
+            'batchId' => $batchId,
+            'handles' => $handles,
+            'contextKey' => $contextKey,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
     public function answerChatQuestion(
         string $questionId,
         string $body,

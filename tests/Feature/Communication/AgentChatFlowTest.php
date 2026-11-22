@@ -15,6 +15,7 @@ use App\Reads\Enums\ReadView;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;
+use Tests\Support\PresentsChatText;
 
 /**
  * An agent in a pair sees the user's question as pending chat work with a claimable root, claims its turn, answers
@@ -22,6 +23,7 @@ use Tests\Support\OpensPairChats;
  */
 final class AgentChatFlowTest extends MessagingTestCase
 {
+    use PresentsChatText;
     use OpensPairChats;
 
     private Conversation $chat;
@@ -48,6 +50,8 @@ final class AgentChatFlowTest extends MessagingTestCase
         $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $questionId));
         $this->runOnBus(new ReplyToMessage($questionId, null, 'Yes.'));
         $this->runOnBus(new ReadMessages($this->chat->inbox_id, [$questionId]));
+        $this->assertSame(1, $pending->pendingCount($this->actorOf($this->builder)));
+        $this->presentAll($this->actorOf($this->builder), $this->builder->id);
 
         $this->assertSame(0, $pending->pendingCount($this->actorOf($this->builder)));
     }

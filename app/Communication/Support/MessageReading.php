@@ -129,7 +129,9 @@ final readonly class MessageReading
         bool $held,
     ): MessageReadResult {
         if ($membership->isChat()) {
-            $shown = $this->present($message, $membership->interval(), $now);
+            // An agent's chat row is read only through a confirmed presentation of its whole body, never by id.
+            $shown = ! $membership->actor->type->isAgent()
+                && $this->present($message, $membership->interval(), $now);
             $takenUp = $message->needsReply()
                 && $this->speech->claimOnTakeUp($message, $membership->actor, $membership->interval(), $now);
 

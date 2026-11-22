@@ -529,6 +529,7 @@ use App\Comments\Support\HasComments;
 use App\Comments\Support\PublicComment;
 use App\Comments\Support\PublicCommentPage;
 use App\Communication\Commands\AcknowledgeChatMessages;
+use App\Communication\Commands\AcknowledgePresentation;
 use App\Communication\Commands\AnswerChatQuestion;
 use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\AskChatQuestion;
@@ -2388,6 +2389,7 @@ final class CoreApi
                 AskChatQuestion::class,
                 ReplyInChat::class,
                 AcknowledgeChatMessages::class,
+                AcknowledgePresentation::class,
                 ClaimSpeech::class,
                 ReleaseSpeech::class,
                 AnswerChatQuestion::class,

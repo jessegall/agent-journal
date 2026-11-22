@@ -55,6 +55,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
         $calls->register(Calls\ReleaseSpeechController::class)->name('chat.release');
         $calls->register(Calls\AnswerChatQuestionController::class)->name('chat.answer');
         $calls->register(Calls\DeclineChatQuestionController::class)->name('chat.decline');
+        $calls->register(Calls\AcknowledgePresentationController::class)->name('chat.acknowledge');
     });
 
 Route::middleware(['web', 'auth', 'journal.user'])

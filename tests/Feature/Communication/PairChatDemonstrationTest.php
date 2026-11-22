@@ -8,7 +8,6 @@ use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
 use App\Actors\Support\AttentionOutcome;
-use App\Communication\Commands\AcknowledgeChatMessages;
 use App\Communication\Commands\AnswerChatQuestion;
 use App\Communication\Commands\AskChatQuestion;
 use App\Communication\Commands\ClaimSpeech;
@@ -21,6 +20,7 @@ use App\Communication\Support\ReceiptDeliveries;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\OpenPairChat;
 use Tests\Support\MessagingTestCase;
+use Tests\Support\PresentsChatText;
 use Tests\Support\TestIds;
 
 /**
@@ -30,6 +30,8 @@ use Tests\Support\TestIds;
  */
 final class PairChatDemonstrationTest extends MessagingTestCase
 {
+    use PresentsChatText;
+
     private int $wakes = 0;
 
     protected function setUp(): void
@@ -81,7 +83,7 @@ final class PairChatDemonstrationTest extends MessagingTestCase
             SpeechRefused::class,
         );
 
-        $this->runOnBus(new AcknowledgeChatMessages($inboxId, [$questionId]));
+        $this->presentAll($agent, $this->builder->id);
         $this->app->make(ReceiptDeliveries::class)->deliverDue(CarbonImmutable::now()->addDay());
 
         $question = Message::query()->acrossInboxes()->findOrFail($questionId);
