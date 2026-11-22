@@ -40,6 +40,7 @@ const value = computed({
             :label="part.text ?? ''"
             :hint="part.detail ?? undefined"
             :secret="part.style === 'secret'"
+            :multiline="part.style === 'area'"
             :error="form.errors[props.field.name]"
         />
     </template>

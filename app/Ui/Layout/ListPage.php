@@ -122,11 +122,14 @@ final class ListPage
     }
 
     /**
-     * The creation the viewer may use when it opens a dialog: the dialog part, whose opener stands in the header.
+     * The creation the viewer may use when it opens a dialog: the dialog part, whose opener stands in the header; with
+     * several, such as one for each kind of record, they stand side by side.
      */
-    public function creatingWith(LayoutPartData $creation): self
+    public function creatingWith(LayoutPartData ...$creations): self
     {
-        $this->creation = $creation;
+        $this->creation = count($creations) === 1
+            ? $creations[0]
+            : LayoutPartData::box('creation', 'row', ...$creations);
 
         return $this;
     }

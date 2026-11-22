@@ -25,6 +25,7 @@ use App\Ui\Layout\PublicationPage;
 use App\Ui\Layout\PublicationTab;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\DraftResolver;
+use Domain\Documents\Data\DocumentCommentsPartData;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\DraftEditorPartData;
 use Domain\Documents\Data\DraftState;
@@ -44,7 +45,7 @@ use Spatie\LaravelData\Optional;
 /**
  * A document's page as a publication: its title, label, revision, actions menu and abstract; under them the editing part, which
  * stays mounted whichever tab is shown, so a held draft survives a tab change; then the tab the window chose, read
- * alone. Text is the body, the public-comment notice and comments; Links its linked records; Details its editing and
+ * alone. Text is the numbered lines to comment on, the public-comment notice and the record's comments; Links its linked records; Details its editing and
  * attention, settlements, Settle and Share; History its revisions, each linking to its own page.
  */
 final readonly class DocumentWindowResolver implements PageResolver
@@ -102,7 +103,8 @@ final readonly class DocumentWindowResolver implements PageResolver
 
     private function textOf(DocumentView $document, RecordIdentity $identity, string $label): LayoutPartData
     {
-        $parts = [LayoutPartData::body('body', LayoutBodyData::fromMarkdown($document->body))];
+        $commentList = $this->comments->list($identity, $this->request->commentsPage());
+        $parts = [];
 
         if ($this->shares->isPubliclyShared($identity)) {
             $parts[] = LayoutPartData::notice(
@@ -112,8 +114,12 @@ final readonly class DocumentWindowResolver implements PageResolver
             );
         }
 
+        $lines = DocumentCommentsPartData::of($document->revision, $label, $document->body, $commentList);
+
+        $parts[] = LayoutPartData::native('lines', LayoutNativeData::of('documents/DocumentComments', $lines));
+
         $comments = RecordCommentsPartData::from([
-            'comments' => $this->comments->list($identity, $this->request->commentsPage()),
+            'comments' => $commentList,
             'target' => $label,
             'reads' => $this->reads->of($identity),
             'version' => $document->revision,
