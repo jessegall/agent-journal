@@ -62,6 +62,7 @@ final class Publication
             $this->log->error('A listener of a committed fact failed.', [
                 'event' => $event::class,
                 'listener_failure' => $failure::class,
+                'exception' => $failure,
             ]);
         }
     }

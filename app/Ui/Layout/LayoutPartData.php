@@ -235,7 +235,7 @@ final class LayoutPartData extends Data
         $hasTone = ! $this->tone instanceof Optional;
 
         if ($isBadge !== $hasTone || $hasTone && ! in_array($this->tone, self::TONES, true)) {
-            throw LayoutRefused::toneNotAllowed($path, $hasTone ? $this->tone : 'none');
+            throw LayoutRefused::toneNotAllowed($path, $hasTone ? $this->tone : 'none', self::TONES);
         }
 
         $isAction = $this->tag === LayoutTag::Action;

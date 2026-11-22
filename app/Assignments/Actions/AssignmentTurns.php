@@ -126,6 +126,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
             'type' => $key->assignableType,
             'provider' => $this->providers->autoAssignerClass($key->assignableType),
             'failure' => $failure::class,
+            'exception' => $failure,
         ]);
     }
 }

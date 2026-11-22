@@ -33,6 +33,7 @@ final readonly class FailureLoggingListener
                 'event' => $this->event,
                 'listener' => is_string($this->listener) ? $this->listener : $this->listener->listener,
                 'failure' => $failure::class,
+                'exception' => $failure,
             ]);
 
             return null;

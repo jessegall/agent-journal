@@ -23,6 +23,7 @@ use App\Sharing\Exceptions\SupervisorInsideTransaction;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
 /**
  * One run of the sharing supervisor, in three committed steps per gateway operation: it claims the operation through
@@ -38,6 +39,7 @@ final class SharingSupervisor
         private readonly EntryDispatchers $dispatchers,
         private readonly ShareGatewayRegistry $gateways,
         private readonly ConnectionInterface $database,
+        private readonly LoggerInterface $log,
     ) {
         $this->runId = Str::ulid()->toBase32();
     }
@@ -138,7 +140,12 @@ final class SharingSupervisor
     {
         try {
             $gateway->open($operation);
-        } catch (GatewayOpenFailed) {
+        } catch (GatewayOpenFailed $failure) {
+            $this->log->error(
+                "A share gateway did not open: {$failure->getMessage()}",
+                ['operation' => $operation->operationId, 'exception' => $failure],
+            );
+
             return GatewayOutcome::Failed;
         }
 
