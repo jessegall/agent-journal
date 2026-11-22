@@ -554,6 +554,7 @@ use App\Communication\Contracts\MessageCommand;
 use App\Communication\Contracts\Notifications;
 use App\Communication\Contracts\NotificationTargetResolver;
 use App\Communication\Contracts\NotificationTargets;
+use App\Communication\Data\AgentChatPart;
 use App\Communication\Data\AgentInbox;
 use App\Communication\Data\AgentInboxCounts;
 use App\Communication\Data\AgentMessageCard;
@@ -1781,6 +1782,7 @@ final class CoreApi
                 AgentInboxCounts::class,
                 AgentInbox::class,
                 AgentMessageCard::class,
+                AgentChatPart::class,
                 AgentMessageDetails::class,
                 AgentInboxState::class,
                 ReadView::class,

@@ -10,12 +10,14 @@ use App\Agents\Contracts\CurrentSession;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Support\NumberedPage;
 use App\Communication\Contracts\AgentMessageReader;
+use App\Communication\Data\AgentChatPart;
 use App\Communication\Data\AgentInbox;
 use App\Communication\Data\AgentInboxCounts;
 use App\Communication\Data\AgentMessageCard;
 use App\Communication\Data\AgentMessageDetails;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Models\Message;
+use App\Communication\Models\SpeechOpportunity;
 use App\Communication\Support\RegisteredInboxes;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Contracts\SearchContribution;
@@ -175,12 +177,39 @@ final readonly class AgentMessages implements AgentMessageReader
             $message->state,
             $message->revision(),
             $message->is_question,
-            $message->read_at === null,
+            $this->isUnread($message),
             $message->id === $selected,
             $message->id === $source,
             $message->reply_to_id,
             $message->answer_message_id,
             $message->dismissal_reason,
+            $message->isChat() ? $this->chatPartOf($message) : null,
         );
+    }
+
+    /**
+     * Desk mail is unread until anyone reads it; a chat row until it was shown to this reader.
+     */
+    private function isUnread(Message $message): bool
+    {
+        if (! $message->isChat()) {
+            return $message->read_at === null;
+        }
+
+        return Message::query()->whereKey($message->id)->unpresentedTo($this->reader())->exists();
+    }
+
+    private function chatPartOf(Message $message): AgentChatPart
+    {
+        $reader = $this->reader();
+        $root = $message->user_root_id;
+        $isOpen = $root !== null && SpeechOpportunity::query()->onRoot($root)->openFor($reader)->exists();
+
+        return new AgentChatPart($message->destination_inbox_id, $reader, $isOpen ? $root : null);
+    }
+
+    private function reader(): ActorIdentity
+    {
+        return ActorIdentity::of($this->actors->actor());
     }
 }
