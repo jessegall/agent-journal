@@ -8,6 +8,7 @@ use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\CommandBus;
 use App\Contracts\SessionPolicyReader;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Exceptions\SessionPolicyFrozen;
 use App\Models\Agent;
@@ -78,6 +79,7 @@ final class SessionPolicyTest extends TestCase
             ConversationModeType::New,
             null,
             $policy,
+            variant: DriverVariant::Headless,
         )));
     }
 }

@@ -8,6 +8,7 @@ use App\Commands\RemoveAccount\RemoveAccountCommand;
 use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\CommandBus;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Models\Agent;
 use App\Values\StartPolicy;
@@ -81,6 +82,7 @@ final class StartAccountPageTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
 
         return $this->app->make(CommandBus::class)->run(new StartAgentCommand($request))->sessionId;

@@ -12,6 +12,7 @@ use App\Contracts\DockerImageVerifier;
 use App\Contracts\HostCapabilities;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartDisposition;
 use App\Enums\StartOriginType;
@@ -152,6 +153,7 @@ final class LaunchOutcomeTest extends TestCase
                 ExecutionBudgets::defaults(),
                 [],
             )),
+            variant: DriverVariant::Headless,
         );
     }
 

@@ -8,6 +8,7 @@ use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\CommandBus;
 use App\Contracts\SessionOutputAccess;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Models\Agent;
 use App\Models\AgentSession;
@@ -153,6 +154,7 @@ final class SessionOutputGrantsTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
 
         return AgentSession::query()->findOrFail(

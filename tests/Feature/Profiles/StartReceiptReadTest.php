@@ -6,6 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Enums\CapacityResource;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
 use App\Models\Agent;
@@ -108,6 +109,7 @@ final class StartReceiptReadTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
     }
 }

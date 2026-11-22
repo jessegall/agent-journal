@@ -10,6 +10,7 @@ use App\Enums\CapacityResource;
 use App\Enums\CleanupState;
 use App\Enums\CleanupStep;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\ReservationState;
 use App\Enums\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
@@ -196,6 +197,7 @@ final class LaunchCleanupTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
         StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($launch->session);
         SessionPolicy::create($launch->session, $request->policy);

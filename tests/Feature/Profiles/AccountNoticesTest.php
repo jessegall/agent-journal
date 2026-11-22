@@ -14,6 +14,7 @@ use App\Declarations\SlotContext;
 use App\Enums\AccountNoticeReason;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverFailure;
+use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Events\DriverFailed;
 use App\Exceptions\AccountUnavailable;
@@ -114,6 +115,7 @@ final class AccountNoticesTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
 
         try {

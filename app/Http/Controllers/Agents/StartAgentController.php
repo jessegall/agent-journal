@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Contracts\BuiltInStartProfiles;
 use App\Contracts\CommandBus;
 use App\Contracts\DriverCatalogue;
 use App\Http\Requests\Agents\StartAgentRequest;
@@ -14,9 +15,13 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class StartAgentController
 {
-    public function __invoke(StartAgentRequest $request, CommandBus $commands, DriverCatalogue $drivers): JsonResponse
-    {
-        $receipt = $commands->run($request->command($drivers));
+    public function __invoke(
+        StartAgentRequest $request,
+        CommandBus $commands,
+        DriverCatalogue $drivers,
+        BuiltInStartProfiles $profiles,
+    ): JsonResponse {
+        $receipt = $commands->run($request->command($drivers, $profiles));
         $selection = $receipt->selection;
 
         return new JsonResponse([

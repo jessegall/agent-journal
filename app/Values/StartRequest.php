@@ -26,9 +26,9 @@ final readonly class StartRequest
         public ConversationModeType $conversationMode,
         public string|null $parentSessionId,
         public StartPolicy $policy,
+        public DriverVariant $variant,
         public RecordIdentity|null $authorizedSource = null,
         public string|null $conversationTarget = null,
-        public DriverVariant $variant = DriverVariant::Headless,
         public ChosenAccount|null $chosenAccount = null,
         public bool $savesVariant = false,
     ) {}

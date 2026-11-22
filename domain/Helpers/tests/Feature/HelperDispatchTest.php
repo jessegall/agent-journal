@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\CommandBus;
+use App\Contracts\DriverCatalogue;
 use App\Contracts\HostCapabilities;
 use App\Contracts\StartReservations;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;
 use App\Exceptions\AccountContainerUnsupported;
+use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agent;
 use App\Models\AssignmentRecord;
+use App\Models\StartRecord;
 use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
@@ -87,6 +91,25 @@ final class HelperDispatchTest extends TestCase
         $this->assertSame($first->identityId, $sent->identityId);
         $this->assertFalse($sent->launch->isNewIdentity);
         $this->assertSame(ConversationModeType::New, $sent->launch->conversationMode);
+    }
+
+    public function test_a_helper_starts_in_its_profile_mode_and_a_saved_mode_that_cannot_run_is_refused_not_swapped(): void
+    {
+        $first = $this->start('request-1', 'Review plan 7');
+        $record = StartRecord::query()->where('request_id', $first->start->launchReference)->sole();
+        $this->assertSame($this->keyOf($record->family, DriverVariant::Headless), $record->driver_key);
+
+        Agent::query()->findOrFail($record->agent_id)->preferVariant(DriverVariant::Terminal);
+        $this->finish($first);
+
+        $this->expectException(DriverCapabilityUnsupported::class);
+
+        $this->send('request-2', $first->identityId, 'Review plan 8');
+    }
+
+    private function keyOf(string $family, DriverVariant $mode): string
+    {
+        return (string) $this->app->make(DriverCatalogue::class)->keyFor($family, $mode);
     }
 
     public function test_a_busy_unfinished_retired_or_foreign_helper_refuses_with_its_own_refusal(): void

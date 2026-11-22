@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Commands\StartOwnedAgent;
 
 use App\Commands\StartAgent\StartAgentCommand;
+use App\Contracts\BuiltInStartProfiles;
 use App\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use App\Contracts\CurrentSession;
 use App\Contracts\RequestSource;
+use App\Models\Agent;
 use App\Support\OwnerStartReceipt;
 
 /**
@@ -21,15 +23,18 @@ final readonly class StartOwnedAgentHandler implements CommandHandler
         private CurrentSession $sessions,
         private CommandBus $commands,
         private RequestSource $sources,
+        private BuiltInStartProfiles $profiles,
     ) {}
 
     public function handle(StartOwnedAgentCommand $command): OwnerStartReceipt
     {
         $request = $command->request;
         $parentSessionId = $this->sessions->hasSession() ? $this->sessions->sessionId() : null;
+        $agent = Agent::query()->findOrFail($request->agent->id);
+        $variant = $agent->variantFor(null, $this->profiles->defaultVariantOf($agent->profile_key));
 
         $receipt = $this->commands->run(
-            new StartAgentCommand($request->startRequest($parentSessionId, $this->sources->selectedSource())),
+            new StartAgentCommand($request->startRequest($parentSessionId, $variant, $this->sources->selectedSource())),
         );
 
         return OwnerStartReceipt::ofStart(

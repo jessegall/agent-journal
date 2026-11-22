@@ -16,6 +16,7 @@ use App\Enums\CleanupStep;
 use App\Enums\CommandEntry;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverOperation;
+use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Enums\StopResultType;
 use App\Events\HelperCompletionCertified;
@@ -248,6 +249,7 @@ final class HelperCompletionTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
         StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
 

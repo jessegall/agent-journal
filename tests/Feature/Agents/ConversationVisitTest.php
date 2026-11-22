@@ -8,6 +8,7 @@ use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\CommandBus;
 use App\Contracts\DriverConversationResolver;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Exceptions\ConversationIncompatible;
 use App\Models\AgentSession;
@@ -136,6 +137,7 @@ final class ConversationVisitTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
 
         return AgentSession::query()->findOrFail(

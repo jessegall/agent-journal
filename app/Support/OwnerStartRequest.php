@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartOriginType;
 use App\Models\DriverConversation;
@@ -40,6 +41,7 @@ final readonly class OwnerStartRequest
 
     public function startRequest(
         string|null $parentSessionId,
+        DriverVariant $variant,
         RecordIdentity|null $authorizedSource = null,
     ): StartRequest {
         return new StartRequest(
@@ -52,8 +54,9 @@ final readonly class OwnerStartRequest
             $this->conversationMode,
             $parentSessionId,
             $this->policy,
-            $authorizedSource,
-            $this->conversationMode === ConversationModeType::Resume
+            $variant,
+            authorizedSource: $authorizedSource,
+            conversationTarget: $this->conversationMode === ConversationModeType::Resume
                 ? DriverConversation::lastUnder($this->agent->id, $this->contextReference, $this->selection->driver)
                 : null,
         );

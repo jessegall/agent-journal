@@ -8,6 +8,7 @@ use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\AssignmentTransaction;
 use App\Contracts\CommandBus;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Models\Agent;
 use App\Models\AgentSession;
@@ -135,6 +136,7 @@ final class DispatchReplyInboxTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
         $this->app->make(CommandBus::class)->run(new StartAgentCommand($request));
         $record = StartRecord::query()->where('request_id', $request->requestId)->sole();

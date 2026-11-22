@@ -10,6 +10,7 @@ use App\Contracts\DockerImageVerifier;
 use App\Contracts\HostCapabilities;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;
 use App\Enums\LaunchProfileType;
@@ -676,6 +677,7 @@ final class ContainerManifestTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile($this->policy()),
+            variant: DriverVariant::Headless,
         );
     }
 

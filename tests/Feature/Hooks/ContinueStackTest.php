@@ -7,6 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\DriverCatalogue;
 use App\Contracts\StartTransaction;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\NoSubject;
 use App\Enums\StartOriginType;
 use App\Exceptions\StateTransferUnknown;
@@ -115,6 +116,7 @@ final class ContinueStackTest extends TestCase
             $mode,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: DriverVariant::Headless,
         );
         StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
         $target = new StackTarget($old->agent->id, $session->id);

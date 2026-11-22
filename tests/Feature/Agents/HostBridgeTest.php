@@ -11,6 +11,7 @@ use App\Contracts\HostCapabilities;
 use App\Contracts\StartExecutor;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;
 use App\Enums\StartOriginType;
@@ -79,6 +80,7 @@ final class HostBridgeTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile($policy),
+            variant: DriverVariant::Headless,
         );
     }
 }

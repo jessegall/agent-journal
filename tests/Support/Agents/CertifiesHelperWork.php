@@ -6,6 +6,7 @@ namespace Tests\Support\Agents;
 
 use App\Contracts\DriverCatalogue;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartOriginType;
 use App\Models\CertifiedWork;
@@ -91,6 +92,7 @@ trait CertifiesHelperWork
             ConversationModeType::New,
             null,
             new StartPolicy($policy->access, $policy->stopConditions, $execution, null, null, null, $requiresReview),
+            variant: DriverVariant::Headless,
         );
         $start = StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
         $start->startedAs($launch->session);

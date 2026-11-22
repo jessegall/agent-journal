@@ -12,6 +12,7 @@ use App\Contracts\HostCapabilities;
 use App\Contracts\ProfileResolver;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverVariant;
 use App\Enums\HostCapabilityType;
 use App\Enums\StartOriginType;
 use App\Exceptions\AccountContainerUnsupported;
@@ -89,6 +90,7 @@ final class CapabilityActivationTest extends TestCase
             ConversationModeType::New,
             null,
             $policy,
+            variant: DriverVariant::Headless,
         ));
     }
 
