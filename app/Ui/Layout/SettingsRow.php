@@ -51,6 +51,14 @@ final readonly class SettingsRow
     }
 
     /**
+     * A block row whose value is a part the caller built, such as a measured reading, below its label.
+     */
+    public static function reading(string $key, string $label, LayoutPartData $control, string|null $help = null): self
+    {
+        return new self($key, $label, $help, $control, true);
+    }
+
+    /**
      * A row whose value is a few words drawn as chips, below its label.
      *
      * @param  list<string>  $chips

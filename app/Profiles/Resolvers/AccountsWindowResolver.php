@@ -9,6 +9,7 @@ use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\AccountListData;
 use App\Http\Data\Profiles\AccountRowData;
 use App\Http\Data\Profiles\AccountUsageData;
+use App\Http\Requests\Profiles\AccountsPageRequest;
 use App\Http\Data\Profiles\DriverMethodsData;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountUsageCost;
@@ -16,12 +17,10 @@ use App\Profiles\Models\AccountUsageTokens;
 use App\Profiles\Models\AccountUsageWindow;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
+use App\Profiles\Support\AccountsLayout;
 use App\Profiles\Support\SignInProtocols;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutNativeData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
 use Carbon\CarbonImmutable;
 
 /**
@@ -32,20 +31,16 @@ final readonly class AccountsWindowResolver implements PageResolver
 {
     private const int RECENT_STARTS = 5;
 
-    public function __construct(private AccountUses $uses, private SignInProtocols $protocols) {}
+    public function __construct(
+        private AccountUses $uses,
+        private SignInProtocols $protocols,
+        private AccountsPageRequest $request,
+        private AccountsLayout $layout,
+    ) {}
 
     public function read(): DeclaredLayoutData
     {
-        $accounts = Account::listed();
-        $selections = ActiveAccount::listed();
-        $list = LayoutNativeData::of('accounts/AccountsWindow', $this->listOf($accounts, $selections));
-
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'accounts-page',
-            'stack',
-            $this->startsOf($accounts, $selections),
-            LayoutPartData::native('accounts', $list),
-        ));
+        return $this->layout->of($this->list(), $this->request->chosenAccount(), $this->request->isAdding());
     }
 
     /**
@@ -92,37 +87,5 @@ final readonly class AccountsWindowResolver implements PageResolver
                 HookDriver::cases(),
             ),
         ]);
-    }
-
-    /**
-     * Which saved account new starts of each driver use, as shared fact rows above the native list.
-     *
-     * @param  list<Account>  $accounts
-     * @param  list<ActiveAccount>  $selections
-     */
-    private function startsOf(array $accounts, array $selections): LayoutPartData
-    {
-        $labels = [];
-
-        foreach ($accounts as $account) {
-            $labels[$account->id] = $account->label;
-        }
-
-        $chosen = [];
-
-        foreach ($selections as $selection) {
-            $chosen[$selection->driver] = $selection->account_id === null
-                ? 'none chosen'
-                : $labels[$selection->account_id] ?? 'a removed account';
-        }
-
-        return LayoutPartData::collection('starts', 'facts', array_map(
-            fn (HookDriver $driver) => new LayoutRowData(
-                $driver->value,
-                "New {$driver->value} starts use",
-                $chosen[$driver->value] ?? 'none chosen',
-            ),
-            HookDriver::cases(),
-        ));
     }
 }

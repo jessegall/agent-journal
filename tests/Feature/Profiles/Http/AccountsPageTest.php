@@ -28,6 +28,8 @@ final class AccountsPageTest extends TestCase
 
     private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts', 'users'];
 
+    private const string ROWS = 'page.data.root.children.1.children.0.children.0.children.0.rows';
+
     private User $owner;
 
     protected function setUp(): void
@@ -67,14 +69,11 @@ final class AccountsPageTest extends TestCase
         $page = $this->actingAs($this->owner)->get('/accounts')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
                 ->component('layout/DeclaredLayout')
-                ->where('page.data.root.children.1.key', 'accounts')
-                ->where('page.data.root.children.1.native.component', 'accounts/AccountsWindow')
-                ->has('page.data.root.children.1.native.props.rows', 1)
-                ->where('page.data.root.children.1.native.props.rows.0.id', $work->id)
-                ->where('page.data.root.children.1.native.props.rows.0.label', 'Work')
-                ->where('page.data.root.children.1.native.props.rows.0.state', 'signed_in')
-                ->where('page.data.root.children.1.native.props.rows.0.isActive', false)
-                ->where('page.data.root.children.1.native.props.rows.0.runningCount', 0),
+                ->has(self::ROWS, 1)
+                ->where(self::ROWS.'.0.key', $work->id)
+                ->where(self::ROWS.'.0.label', 'Work')
+                ->where(self::ROWS.'.0.leading.0.style', 'driver')
+                ->where(self::ROWS.'.0.trailing.0.key', 'state'),
         );
 
         $this->assertStringNotContainsString('private-work-folder', (string) $page->getContent());
@@ -89,13 +88,13 @@ final class AccountsPageTest extends TestCase
             ->patch("/accounts/{$work->id}", ['label' => ' Office '])
             ->assertStatus(303);
 
-        $this->actingAs($this->owner)->get('/accounts')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.root.children.1.native.props.rows.0.label', 'Office')
-            ->where('page.data.root.children.1.native.props.rows.0.isActive', true)
-            ->where('page.data.root.children.1.native.props.selections.0.accountId', $work->id)
-            ->where('page.data.root.children.1.native.props.selections.0.changeNumber', 1)
-            ->where('page.data.root.children.0.key', 'starts')
-            ->where('page.data.root.children.1.key', 'accounts'));
+        $this->actingAs($this->owner)->get("/accounts?account={$work->id}")->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->where(self::ROWS.'.0.label', 'Office')
+                ->where(self::ROWS.'.0.isCurrent', true)
+                ->where('page.data.root.children.1.children.1.key', 'detail')
+                ->where('page.data.root.children.1.children.1.children.2.children.0.key', 'active'),
+        );
     }
 
     public function test_another_user_can_neither_see_nor_change_accounts(): void
