@@ -60,6 +60,9 @@ var browserControlOperations = []string{
 	"terminal_input",
 	"draft_choice",
 	"check_screen",
+	"open_private_entry",
+	"private_input",
+	"cancel_private_entry",
 }
 
 // IsBrowserControl is whether the operation is one a browser writer's grant sends.
@@ -88,6 +91,9 @@ type BrowserControlFields struct {
 	Key            string `json:"key"`
 	Rows           int    `json:"rows"`
 	Columns        int    `json:"columns"`
+	SubmissionID   string `json:"submission_id"`
+	// Value is a private submission's value, which only the claim carries; it is never logged or kept.
+	Value string `json:"value"`
 }
 
 // BrowserControl reads the fields of a browser writer's operation from the request's message.

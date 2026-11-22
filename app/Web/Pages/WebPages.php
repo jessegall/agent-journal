@@ -23,15 +23,18 @@ use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
 use App\Web\Http\Controllers\Runtimes\ResolveRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
+use App\Web\Http\Controllers\Terminal\CancelPrivateEntryController;
 use App\Web\Http\Controllers\Terminal\CancelTerminalTakeController;
 use App\Web\Http\Controllers\Terminal\CheckTerminalScreenController;
 use App\Web\Http\Controllers\Terminal\ChooseTerminalDraftController;
 use App\Web\Http\Controllers\Terminal\CloseTerminalController;
+use App\Web\Http\Controllers\Terminal\OpenPrivateEntryController;
 use App\Web\Http\Controllers\Terminal\OpenTerminalController;
 use App\Web\Http\Controllers\Terminal\ReleaseTerminalControlController;
 use App\Web\Http\Controllers\Terminal\RenewTerminalControlController;
 use App\Web\Http\Controllers\Terminal\RenewTerminalController;
 use App\Web\Http\Controllers\Terminal\SendTerminalInputController;
+use App\Web\Http\Controllers\Terminal\SubmitPrivateInputController;
 use App\Web\Http\Controllers\Terminal\TakeTerminalControlController;
 use App\Web\Http\Controllers\Terminal\TerminalControlReceiptController;
 use App\Web\Http\Controllers\Terminal\TerminalFrameController;
@@ -167,6 +170,21 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                         'agents/{agent}/terminal/control/check',
                         CheckTerminalScreenController::class,
                         'check-terminal-screen',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/private/open',
+                        OpenPrivateEntryController::class,
+                        'open-private-entry',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/private/submit',
+                        SubmitPrivateInputController::class,
+                        'submit-private-input',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/private/cancel',
+                        CancelPrivateEntryController::class,
+                        'cancel-private-entry',
                     ),
                     ActionRoute::get(
                         'agents/{agent}/terminal/control',

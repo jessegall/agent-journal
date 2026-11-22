@@ -31,6 +31,8 @@ type InputGate struct {
 	stopping bool
 	// resizer gives a browser writer's size to the PTY the host owns; nil where nothing may be resized.
 	resizer Resizer
+	// privateOutcomes is the outcome of every private submission, by its single-use id; it never holds a value.
+	privateOutcomes map[string]ReceiptOutcome
 }
 
 // NewInputGate guards writes to the program, reading its composer from the reader; now is the clock of draft ages.
@@ -40,7 +42,14 @@ func NewInputGate(
 	composer contracts.Region,
 	now func() time.Time,
 ) *InputGate {
-	return &InputGate{program: program, reader: reader, composer: composer, now: now, owner: NobodyOwns}
+	return &InputGate{
+		program:         program,
+		reader:          reader,
+		composer:        composer,
+		now:             now,
+		owner:           NobodyOwns,
+		privateOutcomes: map[string]ReceiptOutcome{},
+	}
 }
 
 // UserTyped forwards the local user's keys at once. A browser writer's grant is retired before the keys are written,

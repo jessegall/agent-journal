@@ -109,7 +109,7 @@ final class TerminalControlActionsTest extends TestCase
     private function controllableRuntime(): AgentRuntime
     {
         $host = $this->enrolledHost();
-        $everyInput = new BrowserInputCapabilities(true, true, true, true);
+        $everyInput = new BrowserInputCapabilities(true, true, true, true, true);
         Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput($everyInput);
 
         return $this->runtimeOn($host->hostId);

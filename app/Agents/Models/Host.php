@@ -43,6 +43,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $browser_keys
  * @property bool $browser_paste
  * @property bool $browser_resize
+ * @property bool $browser_private
  */
 #[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
 final class Host extends Model implements ReadableModel
@@ -67,6 +68,7 @@ final class Host extends Model implements ReadableModel
             'browser_keys' => 'boolean',
             'browser_paste' => 'boolean',
             'browser_resize' => 'boolean',
+            'browser_private' => 'boolean',
             'revoked_at' => 'immutable_datetime',
         ];
     }
@@ -198,8 +200,9 @@ final class Host extends Model implements ReadableModel
         $this->browser_keys = $capabilities->keys;
         $this->browser_paste = $capabilities->paste;
         $this->browser_resize = $capabilities->resize;
+        $this->browser_private = $capabilities->privateEntry;
 
-        if (! $this->isDirty(['browser_input', 'browser_keys', 'browser_paste', 'browser_resize'])) {
+        if (! $this->isDirty(['browser_input', 'browser_keys', 'browser_paste', 'browser_resize', 'browser_private'])) {
             return;
         }
 
@@ -240,6 +243,7 @@ final class Host extends Model implements ReadableModel
             $this->browser_keys,
             $this->browser_paste,
             $this->browser_resize,
+            $this->browser_private,
         );
 
         return $capabilities->carriesOut($kind);

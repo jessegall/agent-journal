@@ -28,6 +28,9 @@ enum DriverOperation: string
     case TerminalInput = 'terminal_input';
     case DraftChoice = 'draft_choice';
     case CheckScreen = 'check_screen';
+    case OpenPrivateEntry = 'open_private_entry';
+    case PrivateInput = 'private_input';
+    case CancelPrivateEntry = 'cancel_private_entry';
 
     /**
      * The operations that act on the runtime itself rather than its turns; a host takes them before any other work.
@@ -60,6 +63,9 @@ enum DriverOperation: string
             self::TerminalInput,
             self::DraftChoice,
             self::CheckScreen,
+            self::OpenPrivateEntry,
+            self::PrivateInput,
+            self::CancelPrivateEntry,
         ];
     }
 

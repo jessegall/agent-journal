@@ -14,4 +14,5 @@ enum TerminalInputKind: string
     case Key = 'key';
     case Paste = 'paste';
     case Resize = 'resize';
+    case Private = 'private';
 }

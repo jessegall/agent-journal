@@ -524,6 +524,8 @@ func terminalDriverOf(profile contracts.DriverProfile, opened host.Terminal, gen
 		Composer:          layout.Composer.Name(),
 		Layout:            layout,
 		Hangup:            opened.Hangup,
+		EnterPrivate:      opened.EnterPrivate,
+		ConfirmPrivateEnd: opened.ConfirmPrivateEnd,
 		Generation:        opened.Reader.Generation,
 		Scripts:           scripts.Registered(),
 		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Report),

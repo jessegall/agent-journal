@@ -94,6 +94,9 @@ type BrowserControl struct {
 	Key            string
 	Rows           int
 	Columns        int
+	SubmissionID   string
+	// Value is a private submission's value: written once, never logged or kept.
+	Value string
 }
 
 // BrowserControlled carries out browser writers' operations; a driver without a terminal does not.

@@ -47,6 +47,8 @@ type TerminalRuntime struct {
 	Composer          string
 	Layout            screen.Layout
 	Hangup            func() error
+	EnterPrivate      func() bool
+	ConfirmPrivateEnd func()
 	Generation        func(region string) uint64
 	Scripts           *keyscripts.Registry
 	Runner            *keyscripts.Runner

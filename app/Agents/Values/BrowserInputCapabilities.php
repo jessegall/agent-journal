@@ -7,8 +7,9 @@ namespace App\Agents\Values;
 use App\Agents\Enums\TerminalInputKind;
 
 /**
- * Which browser input a host's claim says it carries out on its terminals: text and Enter, named keys, pastes and
- * resizes. A host that says none is watch-only.
+ * Which browser input a host's claim says it carries out on its terminals: text and Enter, named keys, pastes,
+ * resizes and private entry, which only a driver with a proven private boundary offers. A host that says none is
+ * watch-only.
  */
 final readonly class BrowserInputCapabilities
 {
@@ -17,11 +18,12 @@ final readonly class BrowserInputCapabilities
         public bool $keys,
         public bool $paste,
         public bool $resize,
+        public bool $privateEntry,
     ) {}
 
     public static function none(): self
     {
-        return new self(false, false, false, false);
+        return new self(false, false, false, false, false);
     }
 
     public function carriesOut(TerminalInputKind $kind): bool
@@ -31,6 +33,7 @@ final readonly class BrowserInputCapabilities
             TerminalInputKind::Key => $this->text && $this->keys,
             TerminalInputKind::Paste => $this->text && $this->paste,
             TerminalInputKind::Resize => $this->text && $this->resize,
+            TerminalInputKind::Private => $this->text && $this->privateEntry,
         };
     }
 }

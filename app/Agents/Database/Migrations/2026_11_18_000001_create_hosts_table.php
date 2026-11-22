@@ -26,6 +26,7 @@ return new class extends Migration
             $table->boolean('browser_keys')->default(false);
             $table->boolean('browser_paste')->default(false);
             $table->boolean('browser_resize')->default(false);
+            $table->boolean('browser_private')->default(false);
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampsTz();
         });

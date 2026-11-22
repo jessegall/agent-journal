@@ -41,6 +41,7 @@ final readonly class ClaimRequestsController
             'browser_keys' => ['sometimes', 'boolean'],
             'browser_paste' => ['sometimes', 'boolean'],
             'browser_resize' => ['sometimes', 'boolean'],
+            'browser_private' => ['sometimes', 'boolean'],
         ]);
 
         Host::query()->whereKey($host->hostId)->sole()->assertEnrolledAs(
@@ -56,6 +57,7 @@ final readonly class ClaimRequestsController
             $request->boolean('browser_keys'),
             $request->boolean('browser_paste'),
             $request->boolean('browser_resize'),
+            $request->boolean('browser_private'),
         );
         $claiming = new ClaimDriverRequests($host->hostId, $limit, $browserInput);
         $claim = fn (): ClaimedRequests => $commands->run($claiming);

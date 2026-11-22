@@ -37,6 +37,8 @@ func (driver *TerminalDriver) ControlFromBrowser(
 		}
 
 		return contracts.OperationResult{Request: control.Request, Progress: contracts.ProgressApplied}, nil
+	case "open_private_entry", "private_input", "cancel_private_entry":
+		return driver.private(control), nil
 	}
 
 	receipt := gate.ApplyBrowser(driver.operationOf(control), driver.runtime.Layout, clearLineKeys)
@@ -46,6 +48,36 @@ func (driver *TerminalDriver) ControlFromBrowser(
 	}
 
 	return result, nil
+}
+
+// private carries out a private entry step: opening closes every output sink and succeeds only when each confirmed;
+// a submission writes its value once and then waits for a verified public redraw; a cancel waits for one too. A
+// driver without a private boundary answers unavailable.
+func (driver *TerminalDriver) private(control contracts.BrowserControl) contracts.OperationResult {
+	if driver.runtime.EnterPrivate == nil || driver.runtime.ConfirmPrivateEnd == nil {
+		return contracts.OperationResult{Request: control.Request, Progress: contracts.ProgressUnavailable}
+	}
+	switch control.Operation {
+	case "open_private_entry":
+		if !driver.runtime.EnterPrivate() {
+			return failed(control.Request)
+		}
+
+		return contracts.OperationResult{Request: control.Request, Progress: contracts.ProgressApplied}
+	case "private_input":
+		receipt := driver.runtime.Gate.WritePrivate(terminal.PrivateOperation{
+			GrantID:      control.GrantID,
+			Sequence:     control.Sequence,
+			SubmissionID: control.SubmissionID,
+			Value:        control.Value,
+		})
+		driver.runtime.ConfirmPrivateEnd()
+
+		return contracts.OperationResult{Request: control.Request, Progress: progressOf(receipt.Outcome)}
+	}
+	driver.runtime.ConfirmPrivateEnd()
+
+	return contracts.OperationResult{Request: control.Request, Progress: contracts.ProgressApplied}
 }
 
 // take issues or renews the writer's grant for the program as it runs now.

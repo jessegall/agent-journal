@@ -122,6 +122,7 @@ use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\CancelLaunch;
+use App\Agents\Commands\CancelPrivateEntry;
 use App\Agents\Commands\CancelTerminalTake;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
@@ -143,6 +144,7 @@ use App\Agents\Commands\MarkMenuEntryStale;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenBindingMainRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
+use App\Agents\Commands\OpenPrivateEntry;
 use App\Agents\Commands\OpenTerminalView;
 use App\Agents\Commands\ProveNavigation;
 use App\Agents\Commands\RaiseNavigation;
@@ -172,6 +174,7 @@ use App\Agents\Commands\SettleAccountUses;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Commands\StartOwnedAgent;
 use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\SubmitPrivateInput;
 use App\Agents\Commands\TakeTerminalControl;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AccountUses;
@@ -357,6 +360,7 @@ use App\Agents\Values\NavigationScreen;
 use App\Agents\Values\NavigationUncertainty;
 use App\Agents\Values\Operation as PolicyOperation;
 use App\Agents\Values\OperationGrant;
+use App\Agents\Values\PrivateSubmission;
 use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\ReadRequest;
 use App\Agents\Values\RequestReportBinding;
@@ -556,8 +560,8 @@ use App\Communication\Commands\ReleaseMessageClaim;
 use App\Communication\Commands\ReleaseSpeech;
 use App\Communication\Commands\ReplyInChat;
 use App\Communication\Commands\ReplyToMessage;
-use App\Communication\Commands\RetryDelivery;
 use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Commands\RetryDelivery;
 use App\Communication\Commands\SelectMessage;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Commands\TakeNextMessages;
@@ -596,13 +600,13 @@ use App\Communication\Data\NotificationTarget;
 use App\Communication\Data\PresentationBatchData;
 use App\Communication\Data\PresentationItemData;
 use App\Communication\Data\WakeStatus;
-use App\Communication\Enums\WakeState;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\LeaveReason;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\NotificationSourceType;
+use App\Communication\Enums\WakeState;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageClaimReleased;
@@ -2087,6 +2091,7 @@ final class CoreApi
                 TerminalInterestData::class,
                 TerminalControlData::class,
                 TerminalInput::class,
+                PrivateSubmission::class,
                 TerminalDraftChoice::class,
                 TerminalControlRefused::class,
                 ScreenReportAnswer::class,
@@ -2463,6 +2468,9 @@ final class CoreApi
                 SendTerminalInput::class,
                 ChooseTerminalDraft::class,
                 CheckTerminalScreen::class,
+                OpenPrivateEntry::class,
+                SubmitPrivateInput::class,
+                CancelPrivateEntry::class,
                 AbandonNavigation::class,
                 AnswerNavigation::class,
                 InterruptNavigation::class,

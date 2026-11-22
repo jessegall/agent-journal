@@ -211,6 +211,8 @@ func (loop *Loop) browserControl(ctx context.Context, runtime *liveRuntime, requ
 		Key:            fields.Key,
 		Rows:           fields.Rows,
 		Columns:        fields.Columns,
+		SubmissionID:   fields.SubmissionID,
+		Value:          fields.Value,
 	})
 	loop.reportResult(ctx, request, result, err)
 }

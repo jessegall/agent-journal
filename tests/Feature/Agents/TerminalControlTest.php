@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\CurrentAuthorizer;
+use App\Agents\Commands\OpenPrivateEntry;
 use App\Agents\Commands\OpenTerminalView;
 use App\Agents\Commands\SendTerminalInput;
+use App\Agents\Commands\SubmitPrivateInput;
 use App\Agents\Commands\TakeTerminalControl;
 use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Data\TerminalControlData;
@@ -20,8 +22,10 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\Host;
 use App\Agents\Models\TerminalGrant;
+use App\Agents\Support\PrivateValues;
 use App\Agents\Support\TerminalInput;
 use App\Agents\Values\BrowserInputCapabilities;
+use App\Agents\Values\PrivateSubmission;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
@@ -163,10 +167,32 @@ final class TerminalControlTest extends TestCase
         $this->assertStringContainsString('"key":"ctrl_c"', (string) $sent->message);
     }
 
+    public function test_a_private_value_reaches_the_host_once_and_is_stored_nowhere(): void
+    {
+        $runtime = $this->controllableRuntime();
+        $this->take($runtime, $this->openInterest($runtime));
+        TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
+        $agentId = $runtime->session->agent_id;
+        $values = $this->app->make(PrivateValues::class);
+        $secret = 'correct-horse-'.Str::random(12);
+
+        $this->asOwner(new OpenPrivateEntry($agentId, 'grant-1', 1));
+        $values->keep('private-1', $secret);
+        $this->asOwner(new SubmitPrivateInput($agentId, 'grant-1', new PrivateSubmission('private-1', 2)));
+
+        $request = DriverRequest::query()->where('operation', DriverOperation::PrivateInput)->sole();
+        $this->assertStringNotContainsString($secret, (string) $request->message);
+        $claimed = $values->carriedBy($request, $request->claimed($runtime, null));
+        $again = $values->carriedBy($request, $request->claimed($runtime, null));
+        $this->assertStringContainsString($secret, (string) $claimed->message);
+        $this->assertStringNotContainsString($secret, (string) $again->message);
+        $this->assertSame(0, DriverRequest::query()->where('message', 'like', '%'.$secret.'%')->count());
+    }
+
     private function controllableRuntime(): AgentRuntime
     {
         $host = $this->enrolledHost();
-        $everyInput = new BrowserInputCapabilities(true, true, true, true);
+        $everyInput = new BrowserInputCapabilities(true, true, true, true, true);
         Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput($everyInput);
 
         return $this->runtimeOn($host->hostId);

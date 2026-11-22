@@ -21,6 +21,7 @@ use App\Agents\Models\TerminalGrant;
 use App\Agents\Models\TerminalView;
 use App\Agents\Policies\AgentTerminalControlPolicy;
 use App\Agents\Values\DriverRequestPayload;
+use App\Agents\Values\PrivateSubmission;
 use App\Agents\Values\StackTarget;
 use App\Operations\Enums\AccessType;
 use Carbon\CarbonImmutable;
@@ -212,6 +213,77 @@ final readonly class TerminalControls
             'grant_id' => $grant->grant_id,
             'sequence' => $sequence,
             'choice' => $choice->value,
+        ]);
+
+        return $this->answerOf($grant, $now);
+    }
+
+    /**
+     * Asks the host to close the capture barrier for a private entry; the field is offered once the host's receipt says
+     * every sink confirmed. Only a host that advertises private entry gets the request.
+     *
+     * @throws TerminalControlRefused
+     * @throws TerminalViewRefused
+     */
+    public function openPrivate(
+        string $agentId,
+        ActorIdentity $writer,
+        string $grantId,
+        int $sequence,
+        CarbonImmutable $now,
+    ): TerminalControlData {
+        [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
+        $this->assertCarriesOut($runtime, TerminalInputKind::Private);
+        $this->takeSequence($grant, $sequence);
+        $this->send($runtime, DriverOperation::OpenPrivateEntry, "input:{$grantId}:{$sequence}", [
+            'grant_id' => $grantId,
+            'sequence' => $sequence,
+        ]);
+
+        return $this->answerOf($grant, $now);
+    }
+
+    /**
+     * Sends a private value to the host once, under its single-use submission id: the value already waits in the
+     * cache (PrivateValues) until the host claims it, and the request row and its receipt name the submission alone.
+     *
+     * @throws TerminalControlRefused
+     * @throws TerminalViewRefused
+     */
+    public function submitPrivate(
+        string $agentId,
+        ActorIdentity $writer,
+        string $grantId,
+        PrivateSubmission $submission,
+        CarbonImmutable $now,
+    ): TerminalControlData {
+        [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
+        $this->assertCarriesOut($runtime, TerminalInputKind::Private);
+        $this->takeSequence($grant, $submission->sequence);
+        $this->send($runtime, DriverOperation::PrivateInput, "input:{$grantId}:{$submission->sequence}", [
+            'grant_id' => $grantId,
+            'sequence' => $submission->sequence,
+            'submission_id' => $submission->submissionId,
+        ]);
+
+        return $this->answerOf($grant, $now);
+    }
+
+    /**
+     * Leaves private entry without a value; the session stays shielded until the host sees a verified public redraw.
+     *
+     * @throws TerminalControlRefused
+     * @throws TerminalViewRefused
+     */
+    public function cancelPrivate(
+        string $agentId,
+        ActorIdentity $writer,
+        string $grantId,
+        CarbonImmutable $now,
+    ): TerminalControlData {
+        [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
+        $this->send($runtime, DriverOperation::CancelPrivateEntry, 'private-cancel:'.Str::ulid(), [
+            'grant_id' => $grantId,
         ]);
 
         return $this->answerOf($grant, $now);
