@@ -14,6 +14,7 @@ use Domain\Tasks\Api\Events\TaskWaitChanged;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -99,6 +100,20 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     {
         return array_values(array_map(strval(...), self::query()->whereIn('dependent_task_id', $dependentIds)
             ->limit($limit)->distinct()->pluck('prerequisite_task_id')->all()));
+    }
+
+    /**
+     * The ids of the tasks with a wait not met: not waived, and its prerequisite gone or not finished, as a subquery
+     * a task query narrows by before its count and limit.
+     *
+     * @return Builder<self>
+     */
+    public static function unmetDependentIds(): Builder
+    {
+        return self::query()->select('dependent_task_id')->whereNull('waived_at')->whereNotIn(
+            'prerequisite_task_id',
+            Task::query()->select('id')->where('state', TaskState::Finished),
+        );
     }
 
     /**

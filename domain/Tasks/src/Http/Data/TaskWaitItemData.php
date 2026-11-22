@@ -7,6 +7,7 @@ namespace Domain\Tasks\Http\Data;
 use App\Actors\Enums\ActorType;
 use Domain\Tasks\Api\TaskWaitLink;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskWaitTargetType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -20,7 +21,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class TaskWaitItemData extends Data
 {
     public function __construct(
-        public readonly string $kind,
+        public readonly TaskWaitTargetType $type,
         public readonly bool $isSatisfied,
         public readonly string|Optional $number = new Optional(),
         public readonly string|Optional $title = new Optional(),
@@ -34,7 +35,7 @@ final class TaskWaitItemData extends Data
     public static function ofLink(TaskWaitLink $link): self
     {
         return self::from(array_filter([
-            'kind' => $link->number === null ? 'removed' : 'task',
+            'type' => $link->number === null ? TaskWaitTargetType::Removed : TaskWaitTargetType::Task,
             'isSatisfied' => $link->isSatisfied,
             'number' => $link->number === null ? null : (string) $link->number,
             'title' => $link->title,

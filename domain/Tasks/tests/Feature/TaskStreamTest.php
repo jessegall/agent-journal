@@ -8,6 +8,7 @@ use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\LogTaskRun;
 use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Enums\TaskStreamEntryType;
 use Domain\Tasks\Http\Data\TaskStreamEntryData;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskStream;
@@ -55,8 +56,8 @@ final class TaskStreamTest extends TestCase
 
         $this->assertCount(4, $page->entries);
         $this->assertEqualsCanonicalizing(
-            ['change', 'change', 'log', 'log'],
-            array_map(fn (TaskStreamEntryData $entry) => $entry->kind, $page->entries),
+            [TaskStreamEntryType::Change, TaskStreamEntryType::Change, TaskStreamEntryType::Log, TaskStreamEntryType::Log],
+            array_map(fn (TaskStreamEntryData $entry) => $entry->type, $page->entries),
         );
         $this->assertSame(
             [1, 1, 1, 1],

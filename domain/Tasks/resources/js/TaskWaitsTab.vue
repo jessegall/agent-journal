@@ -85,7 +85,7 @@ function spoken(direction: 'waitsFor' | 'holdsUp', item: TaskWaitItemData): stri
         removed: 'a removed task',
         hidden: 'a task you cannot see',
     } as Record<string, string>;
-    const other = others[item.kind];
+    const other = others[item.type];
 
     return direction === 'waitsFor'
         ? `Task ${props.number} waits for ${other}`
@@ -122,13 +122,13 @@ function spoken(direction: 'waitsFor' | 'holdsUp', item: TaskWaitItemData): stri
                     <ul class="flex flex-col gap-1">
                         <template
                             v-for="(item, index) in shown[direction]"
-                            :key="`${item.kind}-${item.number ?? index}`"
+                            :key="`${item.type}-${item.number ?? index}`"
                         >
                             <li
                                 class="flex flex-wrap items-center gap-x-2 text-small"
                                 :aria-label="spoken(direction, item)"
                             >
-                                <template v-if="item.kind === 'task'">
+                                <template v-if="item.type === 'task'">
                                     <Link
                                         :href="taskRoute.url({ task: item.number ?? '' })"
                                         :data-task-number="item.number"
@@ -138,7 +138,7 @@ function spoken(direction: 'waitsFor' | 'holdsUp', item: TaskWaitItemData): stri
                                     >
                                     <span class="text-text-3">{{ stateText(item) }}</span>
                                 </template>
-                                <template v-else-if="item.kind === 'removed'">
+                                <template v-else-if="item.type === 'removed'">
                                     <span class="text-text-2">Removed task</span>
                                 </template>
                                 <template v-else>

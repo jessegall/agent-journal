@@ -14,10 +14,10 @@ const { rememberFollowedWait } = await import('./openedWaits');
 
 const waits = {
     waitsFor: [
-        { kind: 'task', isSatisfied: false, number: '24', title: 'Prepare records', state: 'started' },
-        { kind: 'hidden', isSatisfied: false },
+        { type: 'task', isSatisfied: false, number: '24', title: 'Prepare records', state: 'started' },
+        { type: 'hidden', isSatisfied: false },
         {
-            kind: 'task',
+            type: 'task',
             isSatisfied: true,
             number: '25',
             title: 'Check records',
@@ -28,7 +28,7 @@ const waits = {
             waiveReason: 'Done by hand.',
         },
     ],
-    holdsUp: [{ kind: 'task', isSatisfied: false, number: '40', title: 'Publish records', state: 'open' }],
+    holdsUp: [{ type: 'task', isSatisfied: false, number: '40', title: 'Publish records', state: 'open' }],
 } as TaskWaitsData;
 
 describe('TaskWaitsTab', () => {

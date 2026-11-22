@@ -87,7 +87,7 @@ function changeText(entry: TaskStreamEntryData): string {
                             <span>{{ entry.actorType }} {{ entry.actorId }}</span>
                             <span class="tabular-nums">{{ runText(entry) }}</span>
                         </span>
-                        <template v-if="entry.kind === 'change'">
+                        <template v-if="entry.type === 'change'">
                             <span class="text-small font-medium text-text-2">{{
                                 changeText(entry)
                             }}</span>

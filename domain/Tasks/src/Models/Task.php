@@ -184,6 +184,37 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     }
 
     /**
+     * Holds the lock of the graph of waits of each environment, in order, to the end of the transaction; every change
+     * of a wait and every fresh start takes it before any task row.
+     *
+     * @param  list<string>  $environments  '' for the tasks made here
+     */
+    public static function lockWaitGraphs(array $environments): void
+    {
+        $environments = array_values(array_unique($environments));
+        sort($environments);
+
+        foreach ($environments as $environment) {
+            self::query()->getConnection()->select('select pg_advisory_xact_lock(hashtext(?))', [
+                "task-waits:{$environment}",
+            ]);
+        }
+    }
+
+    /**
+     * The task locked for a start: the graph of waits of its environment first, then its own row, so a start and a
+     * change of its waits never check against each other's stale state.
+     *
+     * @throws TaskMissing
+     */
+    public static function lockedForStart(string $id): self
+    {
+        self::lockWaitGraphs([(string) self::query()->whereKey($id)->value('environment_id')]);
+
+        return self::lockedById($id);
+    }
+
+    /**
      * The task with this id, unlocked; none is refused as missing.
      *
      * @throws TaskMissing
@@ -225,7 +256,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             return new OrderedRecordIds([]);
         }
 
-        $query = self::query()->where('state', TaskState::Open)->outsideSelectedIds($assignedIds);
+        $query = self::query()->where('state', TaskState::Open)->outsideSelectedIds($assignedIds)
+            ->outsideSelectedIds(TaskWait::unmetDependentIds());
 
         $ordered = match ($members->type) {
             PoolMembersType::All => $query->orderBy('id'),

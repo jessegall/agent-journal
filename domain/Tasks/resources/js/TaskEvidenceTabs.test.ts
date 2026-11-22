@@ -20,7 +20,7 @@ const { default: TaskProofsTab } = await import('./TaskProofsTab.vue');
 function entry(id: string, runNumber: number | undefined, text: string): TaskStreamEntryData {
     return {
         id,
-        kind: 'log',
+        type: 'log',
         at: `2026-11-22T10:0${id}:00+00:00`,
         actorType: 'agent',
         actorId: 'worker',

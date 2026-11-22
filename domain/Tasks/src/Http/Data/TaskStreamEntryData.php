@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use Domain\Tasks\Api\TaskLogLine;
 use Domain\Tasks\Api\TaskTransition;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStreamEntryType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -21,7 +22,7 @@ final class TaskStreamEntryData extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $kind,
+        public readonly TaskStreamEntryType $type,
         public readonly string $at,
         public readonly ActorType $actorType,
         public readonly string $actorId,
@@ -35,7 +36,7 @@ final class TaskStreamEntryData extends Data
     {
         return self::from(array_filter([
             'id' => $transition->id,
-            'kind' => 'change',
+            'type' => TaskStreamEntryType::Change,
             'at' => $transition->at->toIso8601String(),
             'actorType' => $transition->actorType,
             'actorId' => $transition->actorId,
@@ -50,7 +51,7 @@ final class TaskStreamEntryData extends Data
     {
         return self::from([
             'id' => $line->id,
-            'kind' => 'log',
+            'type' => TaskStreamEntryType::Log,
             'at' => $line->at->toIso8601String(),
             'actorType' => $line->actorType,
             'actorId' => $line->actorId,
