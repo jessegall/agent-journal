@@ -22,6 +22,9 @@ function controlled(client: Partial<TerminalControlClient>) {
         },
         choose: async () => answer({ state: 'granted', grantId: 'grant' }),
         check: async () => answer({ state: 'granted', grantId: 'grant' }),
+        openPrivate: async () => answer({ state: 'granted', grantId: 'grant' }),
+        submitPrivate: async () => answer({ state: 'granted', grantId: 'grant' }),
+        cancelPrivate: async () => answer({ state: 'granted', grantId: 'grant' }),
         receipt: async (_take, sequence) =>
             answer({
                 state: 'granted',

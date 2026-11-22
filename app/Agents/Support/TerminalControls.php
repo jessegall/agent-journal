@@ -511,6 +511,8 @@ final readonly class TerminalControls
             'state' => $grant->state,
             'expiresInSeconds' => max(0, (int) $now->diffInSeconds($grant->expires_at, false)),
             'nextSequence' => $grant->next_sequence,
+            'privateEntry' => Host::query()->whereKey($grant->host_id)->sole()
+                ->carriesOutBrowserInputOf(TerminalInputKind::Private),
         ];
     }
 }

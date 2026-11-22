@@ -2,12 +2,15 @@ import type { TerminalControlData } from '@generated/types/core';
 import { getJson, JsonRequestFailed, postJson } from '@kit/jsonRequests';
 import { newRequestId } from '@/kit/requestId';
 import {
+    cancelPrivateEntry,
     cancelTerminalTake,
     checkTerminalScreen,
     chooseTerminalDraft,
+    openPrivateEntry,
     releaseTerminalControl,
     renewTerminalControl,
     sendTerminalInput,
+    submitPrivateInput,
     takeTerminalControl,
     terminalControl,
 } from '@/routes/web';
@@ -32,6 +35,10 @@ function clientFor(agentId: string): TerminalControlClient {
         choose: (grantId, choice, sequence) =>
             answered(postJson(chooseTerminalDraft.url(agentId), { grantId, choice, sequence })),
         check: (grantId) => answered(postJson(checkTerminalScreen.url(agentId), { grantId })),
+        openPrivate: (grantId, sequence) => answered(postJson(openPrivateEntry.url(agentId), { grantId, sequence })),
+        submitPrivate: (grantId, submissionId, value, sequence) =>
+            answered(postJson(submitPrivateInput.url(agentId), { grantId, submissionId, value, sequence })),
+        cancelPrivate: (grantId) => answered(postJson(cancelPrivateEntry.url(agentId), { grantId })),
         receipt: (takeId, sequence) =>
             getJson<TerminalControlData>(terminalControl.url(agentId, { query: { takeId, sequence } })),
     };
@@ -62,6 +69,7 @@ export function useTerminalControl(
         unsentLine: '',
         savedDrafts: [],
         geometry: '',
+        privateEntry: false,
     });
     let control = controlFor(agentId.value);
 
@@ -153,6 +161,9 @@ export function useTerminalControl(
             control.sendInput({ kind: 'resize', rows, columns }, promptRevision()),
         promptRevision,
         deleteSavedDraft: (index: number) => control.deleteSavedDraft(index),
+        openPrivate: () => control.openPrivate(),
+        submitPrivate: (value: string) => control.submitPrivate(value),
+        cancelPrivate: () => control.cancelPrivate(),
         holdsGrant: () => control.holdsGrant(),
         mayTake: () => {
             const frame = screen.value.frame;

@@ -148,15 +148,43 @@ function onCompositionEnd(): void {
     isComposing.value = false;
 }
 
-// Keys typed while control was gone are dropped, never replayed.
+/**
+ * The private value as it is typed: only in this field's memory, masked, gone on submit, cancel or any change of
+ * state; it never enters the paste preview, the line or a saved draft.
+ */
+const privateValue = ref('');
+const privateButton = ref<HTMLElement | null>(null);
+const privateField = ref<HTMLInputElement | null>(null);
+
+function submitPrivate(): void {
+    const value = privateValue.value;
+    privateValue.value = '';
+    void props.control.submitPrivate(value);
+    privateButton.value?.focus();
+}
+
+function cancelPrivate(): void {
+    privateValue.value = '';
+    void props.control.cancelPrivate();
+    (privateButton.value ?? controlsButton.value)?.focus();
+}
+
+// Keys typed while control was gone are dropped, never replayed, and a private value never outlives its field.
 watch(
     () => view.value.state,
-    (state) => {
+    async (state) => {
         if (state !== 'controlling') {
             typed.value = '';
             preview.value = null;
             isComposing.value = false;
         }
+        if (state !== 'private') {
+            privateValue.value = '';
+
+            return;
+        }
+        await nextTick();
+        privateField.value?.focus();
     },
 );
 
@@ -240,7 +268,18 @@ async function copy(text: string): Promise<void> {
                 <Button variant="ghost" size="sm" @click="control.sendKey('shift_tab')">
                     Send Shift+Tab to driver
                 </Button>
+                <span ref="privateButton" tabindex="-1">
+                    <Button variant="bordered" size="sm" :disabled="!view.privateEntry" @click="control.openPrivate()">
+                        Private input
+                    </Button>
+                </span>
             </div>
+            <template v-if="!view.privateEntry">
+                <p class="text-small text-text-3">
+                    Private input is unavailable: this driver and host have not proved they can keep a secret off every
+                    screen and recording.
+                </p>
+            </template>
             <template v-if="pasteRefusal">
                 <p class="text-small text-warn" role="alert">{{ pasteRefusal }}</p>
             </template>
@@ -258,6 +297,24 @@ async function copy(text: string): Promise<void> {
                     </div>
                 </section>
             </template>
+        </template>
+        <template v-if="view.state === 'private_opening'">
+            <p class="text-small text-text-2">Shielding the screen before private input…</p>
+        </template>
+        <template v-if="view.state === 'private'">
+            <form class="flex gap-1.5" aria-label="Private input" @submit.prevent="submitPrivate">
+                <input
+                    ref="privateField"
+                    v-model="privateValue"
+                    type="password"
+                    class="min-w-0 flex-1 rounded border border-border-2 bg-bg px-2 py-1 text-small"
+                    aria-label="Private input; it is sent once and kept nowhere"
+                    autocomplete="off"
+                    @paste.stop
+                />
+                <Button variant="primary" size="sm" type="submit">Send privately</Button>
+                <Button variant="ghost" size="sm" @click="cancelPrivate">Cancel</Button>
+            </form>
         </template>
         <template v-if="view.state === 'choosing'">
             <div class="flex flex-col gap-1.5" role="group" aria-label="The unfinished line">

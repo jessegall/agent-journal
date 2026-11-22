@@ -18,6 +18,14 @@ export type TerminalControlClient = {
     choose: (grantId: string, choice: DraftChoice, sequence: number) => Promise<TerminalControlData>;
     check: (grantId: string) => Promise<TerminalControlData>;
     receipt: (takeId: string, sequence: number) => Promise<TerminalControlData>;
+    openPrivate: (grantId: string, sequence: number) => Promise<TerminalControlData>;
+    submitPrivate: (
+        grantId: string,
+        submissionId: string,
+        value: string,
+        sequence: number,
+    ) => Promise<TerminalControlData>;
+    cancelPrivate: (grantId: string) => Promise<TerminalControlData>;
 };
 
 /**
@@ -50,6 +58,8 @@ export type ControlState =
     | 'releasing'
     | 'uncertain'
     | 'choosing'
+    | 'private_opening'
+    | 'private'
     | 'watch_only';
 
 /**
@@ -63,6 +73,8 @@ export type ControlView = {
     savedDrafts: string[];
     // The size the last resize achieved, as rowsxcolumns, or that it was unavailable.
     geometry: string;
+    // Whether the host offers private entry for this terminal.
+    privateEntry: boolean;
 };
 
 /**
@@ -87,7 +99,14 @@ export class TerminalControl {
     private nextSequence = 1;
     private cancelled = false;
     private lastAchievedSize = '';
-    private current: ControlView = { state: 'watching', notice: '', unsentLine: '', savedDrafts: [], geometry: '' };
+    private current: ControlView = {
+        state: 'watching',
+        notice: '',
+        unsentLine: '',
+        savedDrafts: [],
+        geometry: '',
+        privateEntry: false,
+    };
 
     constructor(
         private readonly client: TerminalControlClient,
@@ -254,6 +273,56 @@ export class TerminalControl {
         }
     }
 
+    /**
+     * Asks the host to close every output sink; the masked field shows only once its receipt says it did.
+     */
+    async openPrivate(): Promise<void> {
+        if (this.grantId === '' || this.current.state !== 'controlling' || !this.current.privateEntry) {
+            return;
+        }
+        const sequence = this.nextSequence;
+        this.publish({ state: 'private_opening', notice: '' });
+
+        try {
+            this.nextSequence = (await this.client.openPrivate(this.grantId, sequence)).nextSequence;
+            const outcome = await this.followReceipt(sequence);
+            this.publish(
+                outcome === 'applied'
+                    ? { state: 'private' }
+                    : { state: 'controlling', notice: 'Private input is unavailable at this prompt.' },
+            );
+        } catch (failure) {
+            this.inputRefused(failure);
+        }
+    }
+
+    /**
+     * Sends the value once under a fresh submission id; the caller drops it at once, and nothing here keeps it.
+     */
+    async submitPrivate(value: string): Promise<void> {
+        if (this.current.state !== 'private') {
+            return;
+        }
+        const sequence = this.nextSequence;
+        this.publish({ state: 'controlling', notice: 'The screen stays shielded until the terminal redraws.' });
+
+        try {
+            this.nextSequence = (await this.client.submitPrivate(this.grantId, this.newTakeId(), value, sequence))
+                .nextSequence;
+            await this.followReceipt(sequence);
+        } catch (failure) {
+            this.inputRefused(failure);
+        }
+    }
+
+    async cancelPrivate(): Promise<void> {
+        if (this.current.state !== 'private' && this.current.state !== 'private_opening') {
+            return;
+        }
+        this.publish({ state: 'controlling', notice: '' });
+        await this.client.cancelPrivate(this.grantId).catch(() => undefined);
+    }
+
     deleteSavedDraft(index: number): void {
         this.publish({ savedDrafts: this.current.savedDrafts.filter((_, kept) => kept !== index) });
     }
@@ -301,6 +370,7 @@ export class TerminalControl {
 
         this.grantId = current.grantId;
         this.nextSequence = current.nextSequence;
+        this.publish({ privateEntry: current.privateEntry });
         this.publish({ state: this.current.unsentLine === '' ? 'controlling' : 'choosing', notice: '' });
     }
 
