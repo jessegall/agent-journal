@@ -18,6 +18,8 @@ use Illuminate\Container\Container;
  */
 final readonly class FixedOperationPolicy implements OperationPolicy
 {
+    public const string NO_CHANGES_REASON = 'Your profile grants no changes to workspace files';
+
     public function __construct(private bool $mayChangeFiles = true) {}
 
     /**
@@ -40,7 +42,7 @@ final readonly class FixedOperationPolicy implements OperationPolicy
             return AccessDecision::refused(
                 AccessRuleType::NotGranted,
                 sprintf(
-                    'Your profile grants no changes to workspace files, so %s of %s is refused.',
+                    self::NO_CHANGES_REASON.', so %s of %s is refused.',
                     $operation->name,
                     implode(', ', $operation->arguments),
                 ),

@@ -63,7 +63,7 @@ final class ShippedReadersTest extends TestCase
         $name = "{$reader->tool} {$sample->file}";
 
         if (! $sample->provesABranch()) {
-            $this->assertFalse($accepted, "{$name} was read as a clean or findings run.");
+            $this->assertFalse($accepted, $name);
 
             return;
         }
@@ -72,7 +72,7 @@ final class ShippedReadersTest extends TestCase
         $this->assertSame($sample->proves, $outcome->value);
         $this->assertTrue(
             $outcome->acceptsClaim($assessment->claimed),
-            "{$name} claims {$assessment->claimed->value}.",
+            $name.'/'.$assessment->claimed->value,
         );
     }
 }

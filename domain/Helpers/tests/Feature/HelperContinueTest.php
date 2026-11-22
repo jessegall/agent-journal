@@ -36,6 +36,12 @@ final class HelperContinueTest extends TestCase
     use DispatchesHelpers;
     use RefreshHookDatabase;
 
+    private const string BRIEF = 'Review it.';
+
+    private const string SEND_COMMAND = "journal helper send '%s'";
+
+    private const string CONTINUE_COMMAND = 'journal helper continue';
+
     public function test_an_ended_attempt_leaves_the_job_unfinished_with_a_complete_continue_command(): void
     {
         $receipt = $this->start('request-1', 'Review plan 7');
@@ -67,7 +73,7 @@ final class HelperContinueTest extends TestCase
         $this->assertSame($receipt->jobId, $continued->jobId);
         $this->assertSame($continued->jobId, $repeated->jobId);
         $this->assertSame(JobState::Accepted, $job->state);
-        $this->assertSame('Review it.', $job->brief);
+        $this->assertSame(self::BRIEF, $job->brief);
         $this->assertSame(2, StartRecord::query()->where('owner_reference', 'like', '%'.$receipt->jobId)->count());
     }
 
@@ -82,7 +88,7 @@ final class HelperContinueTest extends TestCase
         $this->assertThrows(
             fn () => $this->continueJob($receipt, (string) Str::ulid()),
             HelperJobAlreadyEnded::class,
-            "journal helper send '{$receipt->identityId}'",
+            sprintf(self::SEND_COMMAND, $receipt->identityId),
         );
     }
 
@@ -97,7 +103,7 @@ final class HelperContinueTest extends TestCase
         $this->assertSame($receipt->jobId, $steered->jobId);
         $this->assertSame(['Look at the tests too'], HelperJob::query()->findOrFail($receipt->jobId)->steering);
         $this->assertSame($kept->messageId, HelperMessage::query()->sole()->id);
-        $this->assertStringContainsString('journal helper continue', (string) $kept->suggestedCommand);
+        $this->assertStringContainsString(self::CONTINUE_COMMAND, (string) $kept->suggestedCommand);
     }
 
     public function test_a_cancel_marks_an_unfinished_job_cancelled(): void

@@ -35,6 +35,12 @@ final class HookScopeTest extends TestCase
     use RefreshHookDatabase;
     use StartsAgentRequests;
 
+    private const string AGENT_FILTER = '"agent_stacks"."agent_id" = ?';
+
+    private const string SESSION_FILTER = '"agent_stacks"."session_id" = ?';
+
+    private const string LOCK_CLAUSE = 'for update';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -123,9 +129,9 @@ final class HookScopeTest extends TestCase
 
         $sql = AgentStackRow::query()->lockForUpdate()->toSql();
 
-        $this->assertStringContainsString('"agent_stacks"."agent_id" = ?', $sql);
-        $this->assertStringContainsString('"agent_stacks"."session_id" = ?', $sql);
-        $this->assertStringContainsString('for update', $sql);
+        $this->assertStringContainsString(self::AGENT_FILTER, $sql);
+        $this->assertStringContainsString(self::SESSION_FILTER, $sql);
+        $this->assertStringContainsString(self::LOCK_CLAUSE, $sql);
     }
 
     public function test_reading_another_session_is_an_explicit_named_query(): void

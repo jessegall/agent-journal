@@ -116,7 +116,7 @@ final class SettingsCatalogueDataTest extends TestCase
     {
         foreach (glob(app_path('Settings/Data/*.php')) ?: [] as $file) {
             $class = Reflector::of('App\\Settings\\Data\\'.basename($file, '.php'));
-            $this->assertTrue($class->isFinal(), "{$class->name()} is not final.");
+            $this->assertTrue($class->isFinal(), $class->name());
 
             $ownProperties = array_filter(
                 $class->properties(),
@@ -126,16 +126,13 @@ final class SettingsCatalogueDataTest extends TestCase
             foreach ($ownProperties as $property) {
                 $names = self::typeNamesOf($property->type());
 
-                $this->assertNotContains('mixed', $names, "{$class->name()}::\${$property->name()} is mixed.");
-                $this->assertTrue(
-                    $property->isReadOnly(),
-                    "{$class->name()}::\${$property->name()} is not readonly.",
-                );
+                $this->assertNotContains('mixed', $names, "{$class->name()}::\${$property->name()}");
+                $this->assertTrue($property->isReadOnly(), "{$class->name()}::\${$property->name()}");
 
                 if ($names === ['array']) {
                     $this->assertTrue(
                         $property->hasAttribute(DataCollectionOf::class),
-                        "{$class->name()}::\${$property->name()} is an array without its element type.",
+                        "{$class->name()}::\${$property->name()}",
                     );
                 }
             }

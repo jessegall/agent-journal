@@ -21,6 +21,8 @@ final class AgentCreationTest extends TestCase
     use RefreshHookDatabase;
     use StartsOwnerRequest;
 
+    private const string NAME_REQUIRED = 'name: The name field is required.';
+
     public function test_a_read_only_and_a_writing_helper_are_created_and_read_through_the_agent_reader(): void
     {
         $bus = $this->app->make(CommandBus::class);
@@ -43,7 +45,7 @@ final class AgentCreationTest extends TestCase
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new CreateAgent('   ', 'writing-helper')),
             CommandInputInvalid::class,
-            'name: The name field is required.',
+            self::NAME_REQUIRED,
         );
         $this->assertSame($agents, Agent::query()->count());
     }

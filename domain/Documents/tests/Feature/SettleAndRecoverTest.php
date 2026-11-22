@@ -53,6 +53,10 @@ final class SettleAndRecoverTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
 
+    private const string REASON_REQUIRED = 'reason: The reason field is required.';
+
+    private const string SHIPPED_SOON = 'Ship it soon.';
+
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
@@ -102,14 +106,14 @@ final class SettleAndRecoverTest extends TestCase
         $this->assertThrows(
             fn () => $this->bus()->run(new SettleDocument(1, 1, '   ')),
             CommandInputInvalid::class,
-            'reason: The reason field is required.',
+            self::REASON_REQUIRED,
         );
 
         $this->assertSame(AttentionState::Active, Document::query()->sole()->attention);
 
         $this->bus()->run(new OpenDocument('1'));
         $this->expectException(SettlementDenied::class);
-        $this->expectExceptionMessage('close it before settling');
+        $this->expectExceptionMessage(SettlementDenied::beingEdited(1)->getMessage());
 
         $this->bus()->run(new SettleDocument(1, 1, 'Done.'));
     }
@@ -172,12 +176,12 @@ final class SettleAndRecoverTest extends TestCase
     {
         $this->actAsAgent(9, 90);
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'Ship it.', 'Ship it soon.'));
+        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'Ship it.', self::SHIPPED_SOON));
 
         $this->actAsUser(1);
         $editing = $this->documents()->inspect(1)->editing;
         $this->assertInstanceOf(DraftView::class, $editing->held);
-        $this->assertSame('Ship it soon.', trim(substr($editing->held->body, -14)));
+        $this->assertSame(self::SHIPPED_SOON, trim(substr($editing->held->body, -14)));
 
         try {
             $this->bus()->run(new RecoverDocument(new DraftTarget('1', $draft->token, 1), 'Agent gone.'));

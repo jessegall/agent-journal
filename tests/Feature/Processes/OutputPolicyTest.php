@@ -21,19 +21,29 @@ final class OutputPolicyTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string WAYFINDER_COMMAND = 'php artisan wayfinder:generate';
+
+    private const string TEST_COMMAND = 'php artisan test';
+
+    private const string THE_PIPE = 'the pipe';
+
+    private const string EXIT_STATUS = 'exit status';
+
+    private const string STANDARD_ERROR = 'standard error';
+
     public function test_a_piped_build_is_refused_with_its_correction(): void
     {
         $verdict = $this->verdict('php artisan wayfinder:generate | tail -20');
 
         $this->assertFalse($verdict->isAllowed());
-        $this->assertSame('php artisan wayfinder:generate', $verdict->hidden[0]->correction);
-        $this->assertStringContainsString('the pipe', $verdict->reasons()[0]);
+        $this->assertSame(self::WAYFINDER_COMMAND, $verdict->hidden[0]->correction);
+        $this->assertStringContainsString(self::THE_PIPE, $verdict->reasons()[0]);
     }
 
     public function test_a_piped_check_loses_its_status_and_pipefail_waives_nothing(): void
     {
         $this->assertStringContainsString(
-            'exit status',
+            self::EXIT_STATUS,
             $this->verdict('vendor/bin/phpstan analyse | grep error')->reasons()[0],
         );
         $this->assertFalse($this->verdict('set -o pipefail; vue-tsc --noEmit | cut -c1-80')->isAllowed());
@@ -42,11 +52,11 @@ final class OutputPolicyTest extends TestCase
     public function test_redirects_around_a_check_are_refused_and_name_the_stream(): void
     {
         $this->assertSame(
-            'php artisan test',
+            self::TEST_COMMAND,
             $this->verdict('{ php artisan test; } > result.log')->hidden[0]->correction,
         );
         $this->assertStringContainsString(
-            'standard error',
+            self::STANDARD_ERROR,
             $this->verdict('php artisan test 2>/dev/null')->reasons()[0],
         );
     }

@@ -19,6 +19,8 @@ use Tests\TestCase;
  */
 final class HostStartExecutorTest extends TestCase
 {
+    private const string REFUSAL = 'no protected installation';
+
     private string $socket;
 
     private string $requestFile;
@@ -61,13 +63,13 @@ final class HostStartExecutorTest extends TestCase
 
     public function test_a_refusal_from_the_host_is_thrown(): void
     {
-        $host = $this->hostAnswering(['startId' => 'start-1', 'refusal' => 'no protected installation']);
+        $host = $this->hostAnswering(['startId' => 'start-1', 'refusal' => self::REFUSAL]);
 
         try {
             new HostStartExecutor($this->socket)->start($this->prepared());
             $this->fail('A refused start returned a receipt.');
         } catch (HostStartRefused $refused) {
-            $this->assertStringContainsString('no protected installation', $refused->getMessage());
+            $this->assertStringContainsString(self::REFUSAL, $refused->getMessage());
         } finally {
             $host->wait();
         }

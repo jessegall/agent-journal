@@ -28,6 +28,8 @@ final class PhaseCheckTest extends TestCase
     use RunsAcmeRequests;
     use SendsSignedCalls;
 
+    private const string OPERATION = 'acme verify';
+
     private Phase $phase;
 
     private Task $task;
@@ -52,7 +54,7 @@ final class PhaseCheckTest extends TestCase
 
         $check = PhaseCheck::query()->ofPhase($this->phase)->sole();
         $this->assertSame('passed', $check->outcome);
-        $this->assertSame('acme verify', $check->operation);
+        $this->assertSame(self::OPERATION, $check->operation);
     }
 
     public function test_a_run_without_a_result_and_a_superseded_receipt_are_refused(): void

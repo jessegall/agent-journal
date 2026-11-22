@@ -30,25 +30,35 @@ final class HelperContextTest extends TestCase
     use DispatchesHelpers;
     use RefreshHookDatabase;
 
+    private const string PHASE_BRIEF = 'Read every phase.';
+
+    private const string STEERING = 'Look at the tests too';
+
+    private const string STEERING_REMINDER = 'Steering from your parent: %s';
+
+    private const string REVIEW_TITLE = 'Review plan 7';
+
+    private const string CONTINUE_COMMAND = "journal helper continue '%s'";
+
     public function test_a_helper_gets_its_brief_and_steering_again_after_a_compaction(): void
     {
-        $receipt = $this->start((string) Str::ulid(), 'Review plan 7', 'Read every phase.');
-        HelperJob::query()->findOrFail($receipt->jobId)->addSteering('Look at the tests too');
+        $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE, self::PHASE_BRIEF);
+        HelperJob::query()->findOrFail($receipt->jobId)->addSteering(self::STEERING);
 
         $started = $this->remindersOn($this->helperAgentOf($receipt), ContextStartType::Start);
         $compacted = $this->remindersOn($this->helperAgentOf($receipt), ContextStartType::Compact);
 
         foreach ([$started, $compacted] as $reminders) {
             $this->assertCount(1, $reminders);
-            $this->assertStringContainsString('Read every phase.', $reminders[0]);
-            $this->assertStringContainsString('Steering from your parent: Look at the tests too', $reminders[0]);
-            $this->assertStringContainsString('Review plan 7', $reminders[0]);
+            $this->assertStringContainsString(self::PHASE_BRIEF, $reminders[0]);
+            $this->assertStringContainsString(sprintf(self::STEERING_REMINDER, self::STEERING), $reminders[0]);
+            $this->assertStringContainsString(self::REVIEW_TITLE, $reminders[0]);
         }
     }
 
     public function test_a_parent_sees_the_notice_of_a_lost_helper_once(): void
     {
-        $receipt = $this->start((string) Str::ulid(), 'Review plan 7');
+        $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE);
         $job = HelperJob::query()->findOrFail($receipt->jobId);
         $this->app->make(Dispatcher::class)->dispatch(new LaunchEnded($job->assignmentIdentity()));
 
@@ -56,7 +66,7 @@ final class HelperContextTest extends TestCase
         $again = $this->remindersOn($this->parent->agent->id, ContextStartType::Resume);
 
         $this->assertCount(1, $first);
-        $this->assertStringContainsString("journal helper continue '{$receipt->identityId}'", $first[0]);
+        $this->assertStringContainsString(sprintf(self::CONTINUE_COMMAND, $receipt->identityId), $first[0]);
         $this->assertSame([], $again);
     }
 

@@ -24,6 +24,12 @@ use PHPUnit\Framework\TestCase;
  */
 final class ShellLexerTest extends TestCase
 {
+    private const string DOUBLE_QUOTED = 'a > b; c';
+
+    private const string SINGLE_QUOTED = 'd && e';
+
+    private const string SUBSTITUTION_BODY = "\$(rm a)\n";
+
     private ShellLexer $lexer;
 
     protected function setUp(): void
@@ -35,11 +41,11 @@ final class ShellLexerTest extends TestCase
 
     public function test_a_quoted_separator_stays_inside_one_word(): void
     {
-        $line = $this->lex('echo "a > b; c" \'d && e\'');
+        $line = $this->lex('echo "'.self::DOUBLE_QUOTED.'" \''.self::SINGLE_QUOTED.'\'');
 
         $this->assertSame([TokenType::Word, TokenType::Word, TokenType::Word], $this->types($line));
-        $this->assertSame('a > b; c', $line->tokens[1]->word?->literal());
-        $this->assertSame('d && e', $line->tokens[2]->word?->literal());
+        $this->assertSame(self::DOUBLE_QUOTED, $line->tokens[1]->word?->literal());
+        $this->assertSame(self::SINGLE_QUOTED, $line->tokens[2]->word?->literal());
     }
 
     public function test_operators_and_redirects_are_tokens_of_their_own(): void
@@ -115,7 +121,7 @@ final class ShellLexerTest extends TestCase
 
         $this->assertTrue($body->hereDocument?->isQuoted);
         $this->assertNull($body->word);
-        $this->assertSame("\$(rm a)\n", $body->range->slice(<<<'TEXT'
+        $this->assertSame(self::SUBSTITUTION_BODY, $body->range->slice(<<<'TEXT'
         cat <<'EOF'
         $(rm a)
         EOF

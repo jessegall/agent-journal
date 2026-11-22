@@ -50,6 +50,8 @@ final class ContainerAccountTest extends TestCase
     use RunsTrustedCommands;
     use WithActiveAccount;
 
+    private const string REPORT_MISSING = 'cannot start in a container: its protection report is missing';
+
     private const array TABLES = [
         'agents',
         'agent_sessions',
@@ -151,7 +153,7 @@ final class ContainerAccountTest extends TestCase
         $start = $this->startOf($launch);
         $this->assertSame(ProcessStartState::Stopped, $start->state);
         $this->assertStringContainsString(
-            'cannot start in a container: its protection report is missing',
+            self::REPORT_MISSING,
             (string) $start->refusal,
         );
         $this->assertNull($this->asSystem(new ClaimStart($host->hostId, $launch->sessionId)));

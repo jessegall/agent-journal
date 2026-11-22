@@ -126,8 +126,8 @@ final class SharingBoundaryTest extends TestCase
         $this->assertEqualsCanonicalizing([...self::ENTRY_COMMANDS, ...self::SYSTEM_COMMANDS], $sharing);
 
         foreach ($sharing as $command) {
-            $this->assertTrue($registry->has($command), "{$command} is not registered.");
-            $this->assertFalse(Reflector::of($command)->implements(ShouldQueue::class), "{$command} is queued.");
+            $this->assertTrue($registry->has($command), $command);
+            $this->assertFalse(Reflector::of($command)->implements(ShouldQueue::class), $command);
         }
     }
 
@@ -136,15 +136,15 @@ final class SharingBoundaryTest extends TestCase
         $exports = CoreApi::exports();
 
         foreach ([...self::SEAMS, ...self::EVENTS, ...self::ENTRY_COMMANDS] as $exported) {
-            $this->assertTrue($exports->has($exported), "{$exported} is not exported.");
+            $this->assertTrue($exports->has($exported), $exported);
         }
 
         foreach (self::EVENTS as $event) {
-            $this->assertTrue($exports->hasEvent($event), "{$event} is not exported as an event.");
+            $this->assertTrue($exports->hasEvent($event), $event);
         }
 
         foreach (self::ENTRY_COMMANDS as $command) {
-            $this->assertTrue($exports->hasCommand($command), "{$command} is not exported as a command.");
+            $this->assertTrue($exports->hasCommand($command), $command);
         }
 
         $private = [
@@ -156,7 +156,7 @@ final class SharingBoundaryTest extends TestCase
         ];
 
         foreach ($private as $class) {
-            $this->assertFalse($exports->has($class), "{$class} is exported.");
+            $this->assertFalse($exports->has($class), $class);
         }
     }
 

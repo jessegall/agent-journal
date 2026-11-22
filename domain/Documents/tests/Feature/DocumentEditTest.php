@@ -31,6 +31,10 @@ final class DocumentEditTest extends TestCase
     use CommitsHookRows;
     use SendsSignedCalls;
 
+    private const string REPLACEMENT = 'Replacement text.';
+
+    private const string SECTION_COMMENT = 'Check the first section.';
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links',
         'documents', 'document_revisions', 'document_drafts', 'document_closes', 'number_groups',
@@ -126,7 +130,7 @@ final class DocumentEditTest extends TestCase
             'section' => null,
             'body' => null,
             'old' => 'Original text.',
-            'new' => 'Replacement text.',
+            'new' => self::REPLACEMENT,
             'title' => null,
             'abstract' => null,
             'request_key' => 'replace-design-words',
@@ -135,7 +139,7 @@ final class DocumentEditTest extends TestCase
         $author->startRequest($this->app);
 
         $this->assertSame(
-            'Replacement text.',
+            self::REPLACEMENT,
             $this->app->make(DraftResolver::class)->current($document->number)->body,
         );
     }
@@ -151,10 +155,10 @@ final class DocumentEditTest extends TestCase
 
         $this->signed($author, '/agent/docs/comment', [
             'doc_id' => $document->id,
-            'body' => 'Check the first section.',
+            'body' => self::SECTION_COMMENT,
             'request_key' => 'comment-on-design',
         ])->assertOk();
 
-        $this->assertSame('Check the first section.', Comment::query()->sole()->body);
+        $this->assertSame(self::SECTION_COMMENT, Comment::query()->sole()->body);
     }
 }

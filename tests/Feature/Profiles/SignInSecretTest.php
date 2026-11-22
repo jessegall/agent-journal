@@ -40,6 +40,8 @@ final class SignInSecretTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string PASTE_ADVICE = 'it has spaces. Paste the';
+
     private const array TABLES = [
         'users',
         'accounts',
@@ -113,7 +115,7 @@ final class SignInSecretTest extends TestCase
             $this->assertThrows(
                 fn () => $this->submit($attempt, $pasted),
                 SignInCodeInvalid::class,
-                'it has spaces. Paste the',
+                self::PASTE_ADVICE,
             );
             $this->assertNull($challenges->takeCode($attempt->refresh()));
             $this->assertTrue($attempt->refresh()->isLive());

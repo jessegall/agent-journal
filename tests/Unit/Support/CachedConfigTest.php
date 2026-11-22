@@ -12,6 +12,8 @@ use Tests\TestCase;
  */
 final class CachedConfigTest extends TestCase
 {
+    private const string CHANGED_NAME = 'Changed in a test';
+
     public function test_the_configuration_comes_from_the_process_cache(): void
     {
         $this->assertTrue($this->app->bound('config_loaded_from_cache'));
@@ -20,13 +22,13 @@ final class CachedConfigTest extends TestCase
 
     public function test_a_change_in_one_test_does_not_reach_the_next(): void
     {
-        config(['app.name' => 'Changed in a test']);
+        config(['app.name' => self::CHANGED_NAME]);
 
-        $this->assertSame('Changed in a test', config('app.name'));
+        $this->assertSame(self::CHANGED_NAME, config('app.name'));
     }
 
     public function test_the_next_test_sees_the_configuration_as_read(): void
     {
-        $this->assertNotSame('Changed in a test', config('app.name'));
+        $this->assertNotSame(self::CHANGED_NAME, config('app.name'));
     }
 }

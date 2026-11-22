@@ -14,6 +14,21 @@ use PHPUnit\Framework\TestCase;
  */
 final class MarkdownTextTest extends TestCase
 {
+    private const string LATER_SECTIONS = <<<'TEXT'
+        # Four
+        d  
+
+        # Five
+        e
+
+        TEXT;
+
+    private const string REPLACED_THIRD = <<<'TEXT'
+        # Three
+        new third
+        # Four
+        TEXT;
+
     public function test_accents_emoji_and_shell_code_come_back_unchanged(): void
     {
         $body = <<<TEXT
@@ -75,20 +90,9 @@ final class MarkdownTextTest extends TestCase
 
         $replaced = $text->withSectionReplaced(3, 'new third');
 
-        $this->assertStringEndsWith(<<<'TEXT'
-        # Four
-        d  
+        $this->assertStringEndsWith(self::LATER_SECTIONS, $replaced->text);
 
-        # Five
-        e
-
-        TEXT, $replaced->text);
-
-        $this->assertStringContainsString(<<<'TEXT'
-        # Three
-        new third
-        # Four
-        TEXT, $replaced->text);
+        $this->assertStringContainsString(self::REPLACED_THIRD, $replaced->text);
     }
 
     public function test_a_script_tag_comes_out_escaped(): void

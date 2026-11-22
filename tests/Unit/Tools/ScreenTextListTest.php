@@ -13,6 +13,16 @@ use Tests\TestCase;
  */
 final class ScreenTextListTest extends TestCase
 {
+    private const string EXPIRY_TEXT = 'Expires {{ date }}';
+
+    private const string ACCOUNT_STATE_TEXT = 'Account state';
+
+    private const string SIGN_IN_TEXT = 'Sign in again';
+
+    private const string COUNT_TEXT = '{{ count }}';
+
+    private const string ALL_REVIEWED_TEXT = 'All 3 screen texts were reviewed.';
+
     private string $folder;
 
     protected function setUp(): void
@@ -46,10 +56,10 @@ final class ScreenTextListTest extends TestCase
         $check = $this->texts('--check');
 
         $this->assertSame(1, $check->exitCode());
-        $this->assertStringContainsString('Expires {{ date }} (', $check->output());
-        $this->assertStringContainsString('Account state (', $check->output());
-        $this->assertStringContainsString('Sign in again (', $check->output());
-        $this->assertStringNotContainsString('{{ count }} (', $check->output());
+        $this->assertStringContainsString($this->listed(self::EXPIRY_TEXT), $check->output());
+        $this->assertStringContainsString($this->listed(self::ACCOUNT_STATE_TEXT), $check->output());
+        $this->assertStringContainsString($this->listed(self::SIGN_IN_TEXT), $check->output());
+        $this->assertStringNotContainsString($this->listed(self::COUNT_TEXT), $check->output());
     }
 
     public function test_the_check_passes_once_the_texts_are_accepted(): void
@@ -59,7 +69,12 @@ final class ScreenTextListTest extends TestCase
         $check = $this->texts('--check');
 
         $this->assertSame(0, $check->exitCode());
-        $this->assertStringContainsString('All 3 screen texts were reviewed.', $check->output());
+        $this->assertStringContainsString(self::ALL_REVIEWED_TEXT, $check->output());
+    }
+
+    private function listed(string $text): string
+    {
+        return "{$text} (";
     }
 
     private function texts(string $mode): ProcessResult

@@ -9,6 +9,9 @@ use PHPUnit\Framework\TestCase;
 
 final class SignInVerificationTest extends TestCase
 {
+    private const string KEPT_REASON = 'unexpected status 401 Unauthorized: Incorrect API key provided: the key. '
+        .'Find yours online.';
+
     public function test_a_refusal_keeps_the_reason_but_never_the_key_or_the_request_trace(): void
     {
         $refused = SignInVerification::refused(
@@ -17,10 +20,7 @@ final class SignInVerificationTest extends TestCase
         );
 
         $this->assertFalse($refused->isSignedIn);
-        $this->assertSame(
-            'unexpected status 401 Unauthorized: Incorrect API key provided: the key. Find yours online.',
-            $refused->refusal,
-        );
+        $this->assertSame(self::KEPT_REASON, $refused->refusal);
     }
 
     public function test_a_long_refusal_is_cut_short(): void

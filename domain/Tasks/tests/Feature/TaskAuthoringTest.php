@@ -32,6 +32,10 @@ final class TaskAuthoringTest extends TestCase
     use CommitsHookRows;
     use SendsSignedCalls;
 
+    private const string TITLE_TOO_LONG = 'title: The title field must not be greater than 240 characters.';
+
+    private const string TITLE_NEEDED_WITHOUT_BRIEF = 'title: The title field is required when brief is not present.';
+
     private const array TABLES = ['tasks', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks'];
 
     private const string AGENT = '01jd8x0g9m3qz6v4k2agent001';
@@ -114,7 +118,7 @@ final class TaskAuthoringTest extends TestCase
         $this->assertThrows(
             fn () => $bus->run($tooLong),
             CommandInputInvalid::class,
-            'title: The title field must not be greater than 240 characters.',
+            self::TITLE_TOO_LONG,
         );
 
         $this->assertSame(0, Task::query()->count());
@@ -132,7 +136,7 @@ final class TaskAuthoringTest extends TestCase
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new EditTask($task->id, 1)),
             CommandInputInvalid::class,
-            'title: The title field is required when brief is not present.',
+            self::TITLE_NEEDED_WITHOUT_BRIEF,
         );
 
         $this->assertSame(1, $task->fresh()?->revision);

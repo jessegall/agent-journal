@@ -42,6 +42,8 @@ final class StopConditionRunnerTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const string DIRTY_WORKTREE = 'clean-worktree (failed): NOTE is not committed';
+
     public function test_a_stop_with_conditions_opens_its_attempt_and_ends_the_turn_while_the_checks_run(): void
     {
         $start = $this->helperWithConditions();
@@ -91,7 +93,7 @@ final class StopConditionRunnerTest extends TestCase
         $allowed = $this->stop($start, 'stop-2');
 
         $this->assertSame(AnswerType::Deny, $refused->answerType());
-        $this->assertStringContainsString('clean-worktree (failed): NOTE is not committed', $refused->refusalReason());
+        $this->assertStringContainsString(self::DIRTY_WORKTREE, $refused->refusalReason());
         $this->assertSame(AnswerType::Allow, $allowed->answerType());
         $this->assertSame([], $allowed->messages);
     }

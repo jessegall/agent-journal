@@ -49,6 +49,8 @@ final class RuleApprovalTest extends TestCase
     use RunsAcmeRequests;
     use SendsSignedCalls;
 
+    private const string AT_REVISION = 'is at revision 1';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -105,7 +107,7 @@ final class RuleApprovalTest extends TestCase
             $this->saveOrdinary('save-2', 0);
             $this->fail('The second approval on the same base was accepted.');
         } catch (ClassificationRuleRefused $refusal) {
-            $this->assertStringContainsString('is at revision 1', $refusal->getMessage());
+            $this->assertStringContainsString(self::AT_REVISION, $refusal->getMessage());
         }
 
         $this->assertSame(2, $this->saveOrdinary('save-3', 1)->revision);

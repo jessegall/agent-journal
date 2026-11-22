@@ -15,6 +15,12 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 20, reason: 'The check formats every generated file with Pint.')]
 final class GeneratedCallsTest extends TestCase
 {
+    private const string WRITE_METHOD = 'public function writeNote(';
+
+    private const string CLASS_DECLARATION = 'final readonly class NoteCalls';
+
+    private const string KEY_PARAMETER = '\\App\\AgentRequests\\Support\\CallKey $requestKey = new CallKey()';
+
     public function test_the_generated_files_are_current(): void
     {
         $this->artisan('journal:calls', ['--check' => true])->assertSuccessful();
@@ -28,10 +34,10 @@ final class GeneratedCallsTest extends TestCase
             'Notes',
         );
 
-        $this->assertStringContainsString('final readonly class NoteCalls', $source);
-        $this->assertStringContainsString('public function writeNote(', $source);
+        $this->assertStringContainsString(self::CLASS_DECLARATION, $source);
+        $this->assertStringContainsString(self::WRITE_METHOD, $source);
         $this->assertStringContainsString(
-            '\\App\\AgentRequests\\Support\\CallKey $requestKey = new CallKey()',
+            self::KEY_PARAMETER,
             $source,
         );
         $this->assertStringContainsString('\\Tests\\Fixtures\\AgentRequests\\WriteNoteCall::from([', $source);

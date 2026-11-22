@@ -39,6 +39,10 @@ final class DeviceGrantsTest extends TestCase
     use CommitsHookRows;
     use ConnectsProjects;
 
+    private const string SESSION_USE_REFUSAL = 'runs in a provider session';
+
+    private const string REVOKED_REFUSAL = 'can no longer use the journal';
+
     private const array TABLES = [
         'assignments', 'tasks', 'command_receipts', 'device_grants', 'connection_audits', 'project_invitations',
         'install_attempts', 'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts',
@@ -108,7 +112,7 @@ final class DeviceGrantsTest extends TestCase
         $grant = $this->approvedGrant($binding);
 
         $command = $this->deviceCommand($grant, $binding)->assertForbidden();
-        $this->assertStringContainsString('runs in a provider session', (string) $command->json('message'));
+        $this->assertStringContainsString(self::SESSION_USE_REFUSAL, (string) $command->json('message'));
 
         $other = (string) Str::ulid();
         $refusal = $this->deviceCommand($grant, $other)->assertForbidden();
@@ -123,7 +127,7 @@ final class DeviceGrantsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
 
         $refusal = $this->deviceCommand($grant, $binding)->assertForbidden();
-        $this->assertStringContainsString('can no longer use the journal', (string) $refusal->json('message'));
+        $this->assertStringContainsString(self::REVOKED_REFUSAL, (string) $refusal->json('message'));
     }
 
     public function test_revoking_one_terminal_sign_in_leaves_the_other_working(): void

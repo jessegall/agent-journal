@@ -53,6 +53,8 @@ final class StartSkillsTest extends TestCase
     use RunsTrustedCommands;
     use WithActiveAccount;
 
+    private const string NO_SPACE = 'no space left';
+
     private const array TABLES = [
         'skill_publications',
         'skill_generations',
@@ -108,7 +110,7 @@ final class StartSkillsTest extends TestCase
         [$host, $opened] = $this->openCodexRuntime();
 
         $this->expectException(StartRefused::class);
-        $this->expectExceptionMessage('no space left');
+        $this->expectExceptionMessage(self::NO_SPACE);
 
         $this->asSystem(new ClaimStartGrant($host, $opened->runtimeId));
     }

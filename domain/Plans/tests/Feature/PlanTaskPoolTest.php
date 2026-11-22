@@ -8,6 +8,7 @@ use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Enums\PoolInputType;
 use App\Assignments\Exceptions\AssignmentPoolTooLarge;
 use App\Assignments\Exceptions\AssignmentPoolUnavailable;
+use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\PoolDefinition;
 use App\Assignments\Support\PoolMembers;
 use App\Assignments\Support\PoolReference;
@@ -35,6 +36,10 @@ final class PlanTaskPoolTest extends TestCase
 {
     use HasBuilderAgent;
     use RefreshHookDatabase;
+
+    private const string PLAN_TITLE = 'Ship the pools';
+
+    private const string POOL_LABEL = 'Tasks in a started plan';
 
     public function test_plans_declares_the_pool_of_a_plans_tasks_at_boot(): void
     {
@@ -97,7 +102,7 @@ final class PlanTaskPoolTest extends TestCase
         $this->assertThrows(
             fn () => $this->open($factory, $plan),
             AssignmentPoolUnavailable::class,
-            "is {$state->value}",
+            AssignmentPoolUnavailable::inState("Plan {$plan->number}", $state->value)->getMessage(),
         );
     }
 
@@ -111,7 +116,9 @@ final class PlanTaskPoolTest extends TestCase
         );
 
         $this->expectException(AssignmentPoolTooLarge::class);
-        $this->expectExceptionMessage('more than 1000 records');
+        $this->expectExceptionMessage(
+            AssignmentPoolTooLarge::holding("Plan {$plan->number}", OrderedRecordIds::LARGEST)->getMessage(),
+        );
 
         $this->open($this->app->make(PlanTaskPoolFactory::class), $plan);
     }
@@ -154,14 +161,14 @@ final class PlanTaskPoolTest extends TestCase
 
     public function test_the_description_names_the_plan_once_it_is_found(): void
     {
-        $plan = Plan::factory()->create(['title' => 'Ship the pools']);
+        $plan = Plan::factory()->create(['title' => self::PLAN_TITLE]);
 
         $factory = $this->app->make(PlanTaskPoolFactory::class);
 
         $description = $factory->describe(self::reference($plan), $this->builder);
 
-        $this->assertSame('Tasks in a started plan', $description->label);
-        $this->assertStringContainsString('Ship the pools', $description->help);
+        $this->assertSame(self::POOL_LABEL, $description->label);
+        $this->assertStringContainsString(self::PLAN_TITLE, $description->help);
         $this->assertSame(PoolInputType::Target, $description->input);
     }
 

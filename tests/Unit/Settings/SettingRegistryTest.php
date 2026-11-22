@@ -42,7 +42,7 @@ final class SettingRegistryTest extends TestCase
     public function test_a_group_key_used_by_a_plain_and_a_toggle_group_is_refused(): void
     {
         $this->expectException(SettingDeclarationInvalid::class);
-        $this->expectExceptionMessage('Library declares the settings group desk twice');
+        $this->expectExceptionMessage(SettingDeclarationInvalid::groupTwice('Library', 'desk')->getMessage());
 
         SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([
             SettingGroup::make('desk', 'Desk', []),
@@ -55,7 +55,7 @@ final class SettingRegistryTest extends TestCase
         $greeting = StringSetting::make('greeting', 'Greeting', 'Hi');
 
         $this->expectException(SettingDeclarationInvalid::class);
-        $this->expectExceptionMessage('Library declares the setting greeting twice');
+        $this->expectExceptionMessage(SettingDeclarationInvalid::settingTwice('Library', 'greeting')->getMessage());
 
         SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([
             SettingGroup::make('desk', 'Desk', [$greeting]),
@@ -111,7 +111,7 @@ final class SettingRegistryTest extends TestCase
     public function test_a_key_in_two_groups_is_refused_with_owner_and_key(): void
     {
         $this->expectException(SettingDeclarationInvalid::class);
-        $this->expectExceptionMessage('Library declares the setting greeting twice');
+        $this->expectExceptionMessage(SettingDeclarationInvalid::settingTwice('Library', 'greeting')->getMessage());
 
         SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([
             SettingGroup::make('desk', 'Desk', [StringSetting::make('greeting', 'Greeting', 'Hi')]),
@@ -138,7 +138,9 @@ final class SettingRegistryTest extends TestCase
         );
 
         $this->expectException(SettingDeclarationInvalid::class);
-        $this->expectExceptionMessage('Library declares more than '.SettingRegistry::SETTINGS_PER_OWNER.' settings');
+        $this->expectExceptionMessage(
+            SettingDeclarationInvalid::tooManySettings('Library', SettingRegistry::SETTINGS_PER_OWNER)->getMessage(),
+        );
 
         SettingRegistry::from(
             [

@@ -50,6 +50,8 @@ final class TaskDetailsResolverTest extends TestCase
     use ActsAsOwner;
     use CommitsHookRows;
 
+    private const string BRIEF = 'Held by one, run by another.';
+
     private const array TABLES = [
         'users',
         'tasks',
@@ -73,7 +75,7 @@ final class TaskDetailsResolverTest extends TestCase
     {
         $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 1, false);
         $runner = $this->start('Runner');
-        $task = Task::factory()->create(['title' => 'Split work', 'brief' => 'Held by one, run by another.']);
+        $task = Task::factory()->create(['title' => 'Split work', 'brief' => self::BRIEF]);
         $this->asUser();
 
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
@@ -104,7 +106,7 @@ final class TaskDetailsResolverTest extends TestCase
             ],
         );
 
-        $this->assertSame('Held by one, run by another.', $details->text->brief);
+        $this->assertSame(self::BRIEF, $details->text->brief);
 
         $this->assertInstanceOf(
             Optional::class,

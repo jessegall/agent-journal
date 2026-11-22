@@ -16,6 +16,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app/ and the domains.')]
 final class DirectFileAccessTest extends TestCase
 {
+    private const string HOW_TO_FIX = "Read, list, stat and write files through App\\Files\\Contracts\\Files:\n";
+
     public function test_only_the_files_area_touches_the_disk(): void
     {
         $found = DirectFileAccess::across(base_path())->outside('app/Files');
@@ -23,7 +25,7 @@ final class DirectFileAccessTest extends TestCase
         $this->assertSame(
             $found->listedSites(),
             $found->sites(),
-            "Read, list, stat and write files through App\\Files\\Contracts\\Files:\n".$found->report(),
+            self::HOW_TO_FIX.$found->report(),
         );
     }
 }

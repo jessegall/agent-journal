@@ -36,6 +36,12 @@ final class BindingStartTest extends TestCase
     use ConnectsProjects;
     use WithActiveAccount;
 
+    private const string HOOKS_NOT_KEPT = 'Codex does not keep its hooks to one session';
+
+    private const string CLAUDE_NOT_REPORTED = 'has not reported it can run Claude Code';
+
+    private const string EARLIER_SESSIONS = 'reported what became of its earlier sessions';
+
     private const array TABLES = [
         'connection_audits', 'project_invitations', 'install_attempts', 'binding_starts', 'project_bindings',
         'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
@@ -119,11 +125,11 @@ final class BindingStartTest extends TestCase
         $unreported = $this->signedStart('nonce-bbbbbbbbbbbbbbbb', $silent, [])->assertForbidden();
 
         $this->assertStringContainsString(
-            'Codex does not keep its hooks to one session',
+            self::HOOKS_NOT_KEPT,
             (string) $codex->json('message'),
         );
         $this->assertStringContainsString(
-            'has not reported it can run Claude Code',
+            self::CLAUDE_NOT_REPORTED,
             (string) $unreported->json('message'),
         );
         $this->assertSame(0, AgentRuntime::query()->count());
@@ -152,7 +158,7 @@ final class BindingStartTest extends TestCase
         $refused = $this->start($binding, [])->assertForbidden();
 
         $this->assertStringContainsString(
-            'reported what became of its earlier sessions',
+            self::EARLIER_SESSIONS,
             (string) $refused->json('message'),
         );
         $this->assertSame(0, AgentRuntime::query()->count());

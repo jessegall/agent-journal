@@ -18,6 +18,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 8, reason: 'It runs a stand-in program as a host process several times.')]
 final class ClaudeSecretSignInTest extends TestCase
 {
+    private const string INVALID_KEY_REPLY = 'Invalid API key · Fix external API key';
+
     private string $directory;
 
     protected function setUp(): void
@@ -62,7 +64,7 @@ final class ClaudeSecretSignInTest extends TestCase
         $verification = $this->proofOf(ClaudeKeySignIn::class, 'revoked-key');
 
         $this->assertFalse($verification->isSignedIn);
-        $this->assertSame('Invalid API key · Fix external API key', $verification->refusal);
+        $this->assertSame(self::INVALID_KEY_REPLY, $verification->refusal);
     }
 
     public function test_a_key_no_model_call_accepts_or_an_oauth_login_in_its_folder_proves_nothing(): void

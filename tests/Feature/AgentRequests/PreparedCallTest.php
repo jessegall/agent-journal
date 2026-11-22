@@ -26,6 +26,8 @@ use Tests\TestCase;
  */
 final class PreparedCallTest extends TestCase
 {
+    private const string UNANSWERED = 'did not answer';
+
     private const string BODY = '{"jsonrpc":"2.0","id":1,"method":"ping"}';
 
     private const array PIN = ['JOURNAL_PROFILE' => 'main-agent', 'JOURNAL_PROFILE_REVISION' => '1'];
@@ -89,7 +91,7 @@ final class PreparedCallTest extends TestCase
         $this->assertThrows(
             fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->addSeconds(20)),
             JournalUnreachable::class,
-            'did not answer',
+            self::UNANSWERED,
         );
         $this->assertThrows(
             fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->subSecond()),

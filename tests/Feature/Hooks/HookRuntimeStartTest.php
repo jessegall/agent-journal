@@ -30,6 +30,8 @@ final class HookRuntimeStartTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string INVENTORY_ROW = '| %s | %s |';
+
     private const array SHELL_CALL = ['tool_input' => ['command' => 'git status'], 'tool_response' => []];
 
     private const array EVENT_FIELDS = [
@@ -137,7 +139,7 @@ final class HookRuntimeStartTest extends TestCase
         foreach ($this->app->make(DomainRegistry::class)->all() as $entry) {
             foreach ($entry->requires as $required) {
                 $this->assertStringContainsString(
-                    "| {$entry->name} | ".DomainEntry::nameOf($required).' |',
+                    sprintf(self::INVENTORY_ROW, $entry->name, DomainEntry::nameOf($required)),
                     $inventory,
                 );
             }

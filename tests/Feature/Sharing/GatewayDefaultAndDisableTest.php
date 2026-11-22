@@ -132,7 +132,9 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $configuration = $this->configure();
         $this->asOwner(new DisableShareGateway($configuration->configurationId, (string) Str::ulid()));
 
-        $this->assertThrows(fn () => $this->preview(), ShareGatewayUnavailable::class, 'No default gateway');
+        $noDefault = ShareGatewayUnavailable::noDefault()->getMessage();
+
+        $this->assertThrows(fn () => $this->preview(), ShareGatewayUnavailable::class, $noDefault);
     }
 
     public function test_a_closing_endpoint_version_is_never_opened_again(): void

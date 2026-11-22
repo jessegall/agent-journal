@@ -22,6 +22,10 @@ final class CallRoutesTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
+    private const string NOT_A_FIELD = 'is not a field of this call';
+
+    private const string KEY_REQUIRED = 'is required for a keyed write';
+
     private TestStart $start;
 
     protected function setUp(): void
@@ -48,10 +52,10 @@ final class CallRoutesTest extends TestCase
         $this->signed($this->start, '/agent/notes/book-1/write', $unknown)
             ->assertStatus(422)
             ->assertJsonPath('code', 'invalid_input')
-            ->assertJsonPath('details.fields.notebookId.0', 'is not a field of this call');
+            ->assertJsonPath('details.fields.notebookId.0', self::NOT_A_FIELD);
         $this->signed($this->start, '/agent/notes/book-1/write', ['text' => 'Hi.'])
             ->assertStatus(422)
-            ->assertJsonPath('details.fields.request_key.0', 'is required for a keyed write');
+            ->assertJsonPath('details.fields.request_key.0', self::KEY_REQUIRED);
     }
 
     public function test_a_keyed_write_that_takes_no_receipt_fails(): void

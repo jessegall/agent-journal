@@ -33,6 +33,8 @@ final class ShareScopeTest extends TestCase
     use RefreshHookDatabase;
     use RegistersShareDomains;
 
+    private const string FEWER_LINKS = 'Share a record with fewer links';
+
     private const array TARGET_TYPES = ['binders.sheet', 'binders.card', 'binders.tab'];
 
     protected function setUp(): void
@@ -85,7 +87,7 @@ final class ShareScopeTest extends TestCase
         $this->assertThrows(
             fn () => $this->scope()->discover($root, $this->budget()),
             ShareScopeTooLarge::class,
-            'Share a record with fewer links',
+            self::FEWER_LINKS,
         );
     }
 

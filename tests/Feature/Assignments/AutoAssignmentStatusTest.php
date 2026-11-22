@@ -40,6 +40,8 @@ final class AutoAssignmentStatusTest extends TestCase
     use CommitsHookRows;
     use HasAutoAssignmentWorker;
 
+    private const string POOL_LABEL = 'Open tasks';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -115,7 +117,7 @@ final class AutoAssignmentStatusTest extends TestCase
 
         $this->assertSame(AutoAssignmentState::Ready, $ready->state);
         $this->assertEquals(new AssignmentTotals(1, 1), $ready->totals->get());
-        $this->assertSame('Open tasks', $ready->pool->get()->label);
+        $this->assertSame(self::POOL_LABEL, $ready->pool->get()->label);
 
         $this->hold(TaskState::Blocked);
         $this->hold(TaskState::Finished);

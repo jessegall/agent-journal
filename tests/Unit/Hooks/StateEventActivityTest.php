@@ -20,7 +20,10 @@ final class StateEventActivityTest extends TestCase
             $this->nest($activity, 11);
             $this->fail('The eleventh level was accepted.');
         } catch (StateEventReentry $failure) {
-            $this->assertStringContainsString('at most 10 levels', $failure->getMessage());
+            $this->assertSame(
+                StateEventReentry::depth(10)->getMessage(),
+                $failure->getMessage(),
+            );
         }
 
         $this->assertSame(10, $this->nest($activity, 10));

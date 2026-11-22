@@ -50,6 +50,10 @@ final class ConditionalReviewStateTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string NO_RESTORED_FRAME = 'Switching the group on again brings back no removed frame.';
+
+    private const string ONE_READ = 'One request reads the owner once.';
+
     /**
      * Stacks and settings are committed for real by the stack transaction and the bus.
      */
@@ -105,7 +109,7 @@ final class ConditionalReviewStateTest extends TestCase
         $this->assertSame(
             ['hooks.ready'],
             $this->storedTypeKeys(),
-            'Switching the group on again brings back no removed frame.',
+            self::NO_RESTORED_FRAME,
         );
     }
 
@@ -125,7 +129,7 @@ final class ConditionalReviewStateTest extends TestCase
 
         $sameRequest = $factory->statesFor($references)->stateAt(0);
         $this->assertInstanceOf(ReviewState::class, $sameRequest);
-        $this->assertTrue($sameRequest->isEnabled(), 'One request reads the owner once.');
+        $this->assertTrue($sameRequest->isEnabled(), self::ONE_READ);
 
         $this->app->forgetScopedInstances();
         $nextRequest = $factory->statesFor($references)->stateAt(0);

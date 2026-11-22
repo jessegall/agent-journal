@@ -268,7 +268,9 @@ final class SettingsStoriesTest extends TestCase
         );
 
         $this->expectException(SettingDeclarationInvalid::class);
-        $this->expectExceptionMessage('more than '.SettingRegistry::GROUPS_PER_OWNER.' settings groups');
+        $this->expectExceptionMessage(
+            SettingDeclarationInvalid::tooManyGroups('Many', SettingRegistry::GROUPS_PER_OWNER)->getMessage(),
+        );
 
         SettingRegistry::from(['Core' => new CoreSettings(), 'Many' => $this->definitionOf($groups)]);
     }

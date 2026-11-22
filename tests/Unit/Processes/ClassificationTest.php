@@ -26,6 +26,8 @@ final class ClassificationTest extends TestCase
 {
     use ParsesBashLines;
 
+    private const string VERIFICATION_LABEL = 'Tests and checks';
+
     public function test_a_redirect_writes_while_the_program_reads_each_on_its_own_node(): void
     {
         $tree = $this->parse('cat a > b');
@@ -82,7 +84,7 @@ final class ClassificationTest extends TestCase
 
         $this->assertFalse($granted->contains(CommandClass::Write));
         $this->assertSame([CommandClass::Write], $wanted->missingFrom($granted)->classes);
-        $this->assertSame('Tests and checks', CommandClass::Verification->label());
+        $this->assertSame(self::VERIFICATION_LABEL, CommandClass::Verification->label());
         $this->assertSame(
             OutputRequirement::Full,
             new PartClassification(0, [], [], CommandType::Verification)->outputRequirement(),

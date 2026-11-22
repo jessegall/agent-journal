@@ -6,6 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Domains\Exceptions\SkillDeclarationRefused;
 use App\Domains\Support\DomainRegistry;
+use App\Skills\Contracts\Skill;
 use App\Skills\Support\CoreSkills;
 use App\Skills\Values\SkillOwner;
 use Tests\Fixtures\Domains\FalseSkills\FalseSkillsDomain;
@@ -21,6 +22,8 @@ use Tests\TestCase;
  */
 final class SkillDeclarationsTest extends TestCase
 {
+    private const string OUTSIDE_PACKAGE = "it lies outside the domain's own package";
+
     public function test_core_comes_first_and_a_domain_without_skills_contributes_none(): void
     {
         $domainClasses = DomainRegistry::installedClasses(base_path());
@@ -48,7 +51,9 @@ final class SkillDeclarationsTest extends TestCase
     public function test_a_skill_outside_the_declaring_package_stops_registration_naming_domain_and_class(): void
     {
         $this->expectException(SkillDeclarationRefused::class);
-        $this->expectExceptionMessage('StraySkills declares the skill '.NotesSkill::class);
+        $this->expectExceptionMessage(
+            SkillDeclarationRefused::for('StraySkills', NotesSkill::class, self::OUTSIDE_PACKAGE)->getMessage(),
+        );
 
         DomainRegistry::from([StraySkillsDomain::class]);
     }
@@ -57,7 +62,8 @@ final class SkillDeclarationsTest extends TestCase
     {
         $this->expectException(SkillDeclarationRefused::class);
         $this->expectExceptionMessage(
-            'FalseSkills declares the skill '.FalseSkillsDomain::class.', but it does not implement',
+            SkillDeclarationRefused::for('FalseSkills', FalseSkillsDomain::class, 'it does not implement '.Skill::class)
+                ->getMessage(),
         );
 
         DomainRegistry::from([FalseSkillsDomain::class]);

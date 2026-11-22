@@ -20,6 +20,8 @@ final class SkillAuthoringConsoleTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string NOTES_TEXT = 'Read the notes first.';
+
     private const string DISPATCH = AssignmentRecipientPolicy::class.':delegate';
 
     private const array TABLES = [
@@ -82,7 +84,7 @@ final class SkillAuthoringConsoleTest extends TestCase
 
         Artisan::call('skill:revision', ['number' => $number, 'revision' => 3]);
         $revision = Artisan::output();
-        $this->assertStringContainsString('Read the notes first.', $revision);
+        $this->assertStringContainsString(self::NOTES_TEXT, $revision);
         $this->assertStringContainsString('"keys":["journal-reviewer"]', $revision);
     }
 

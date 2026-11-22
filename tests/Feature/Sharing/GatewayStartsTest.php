@@ -22,6 +22,8 @@ use Tests\TestCase;
  */
 final class GatewayStartsTest extends TestCase
 {
+    private const string NO_ADDRESS = 'no public address';
+
     private Processes $processes;
 
     protected function setUp(): void
@@ -66,7 +68,7 @@ final class GatewayStartsTest extends TestCase
                 fn () => GatewayAddressCheck::Unexpected,
             ),
             GatewayOpenFailed::class,
-            'other than its fixed public origin',
+            GatewayOpenFailed::unexpectedAddress('fake')->getMessage(),
         );
         $this->assertTrue($child->hasReceivedSignal(15));
     }
@@ -83,7 +85,7 @@ final class GatewayStartsTest extends TestCase
                 fn () => GatewayAddressCheck::Waiting,
             ),
             GatewayOpenFailed::class,
-            'no public address',
+            self::NO_ADDRESS,
         );
         $this->assertFalse($child->hasReceivedSignal(15));
     }

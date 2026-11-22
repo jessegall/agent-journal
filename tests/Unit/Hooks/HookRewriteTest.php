@@ -33,14 +33,20 @@ use Tests\Support\TestActors;
 
 final class HookRewriteTest extends TestCase
 {
+    private const string ORIGINAL_LINE = 'composer test';
+
+    private const string REPLACEMENT_LINE = 'journal run tests';
+
+    private const string REFUSAL_REASON = 'The replacement is refused.';
+
     public function test_the_main_agent_admits_a_rewrite_to_a_command_alias(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'journal run tests']);
+        $rewriter = new RewritingState([self::ORIGINAL_LINE => self::REPLACEMENT_LINE]);
 
-        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command(self::ORIGINAL_LINE));
 
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
-        $this->assertSame('journal run tests', $answer->decision->replacementLine());
+        $this->assertSame(self::REPLACEMENT_LINE, $answer->decision->replacementLine());
         $this->assertSame(
             ['rewriter rewrite keep', 'rewriter delegate keep'],
             $this->stepsOf($answer),
@@ -50,12 +56,12 @@ final class HookRewriteTest extends TestCase
 
     public function test_a_replacement_a_lower_frame_refuses_is_denied(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'journal run tests --write']);
+        $rewriter = new RewritingState([self::ORIGINAL_LINE => 'journal run tests --write']);
 
-        $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command(self::ORIGINAL_LINE));
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
-        $this->assertSame('The replacement is refused.', $answer->decision->refusalReason());
+        $this->assertSame(self::REFUSAL_REASON, $answer->decision->refusalReason());
         $steps = ['rewriter rewrite keep', 'guard rewrite keep', 'rewriter delegate keep', 'guard deny keep'];
         $this->assertSame($steps, $this->stepsOf($answer));
         $this->assertSame(['Original context.', 'Refusal context.'], $answer->context);
@@ -64,9 +70,9 @@ final class HookRewriteTest extends TestCase
 
     public function test_a_refused_replacement_leaves_no_child_the_rewrite_pushed(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'journal run tests --write'], $this->guide());
+        $rewriter = new RewritingState([self::ORIGINAL_LINE => 'journal run tests --write'], $this->guide());
 
-        $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command(self::ORIGINAL_LINE));
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame(['ready', 'guard', 'rewriter'], $answer->stack->frameIds());
@@ -74,9 +80,9 @@ final class HookRewriteTest extends TestCase
 
     public function test_an_admitted_replacement_keeps_the_child_the_rewrite_pushed(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'journal run tests'], $this->guide());
+        $rewriter = new RewritingState([self::ORIGINAL_LINE => self::REPLACEMENT_LINE], $this->guide());
 
-        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command(self::ORIGINAL_LINE));
 
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame(['ready', 'rewriter', 'pushed-1'], $answer->stack->frameIds());
@@ -88,16 +94,16 @@ final class HookRewriteTest extends TestCase
 
     public function test_a_second_rewrite_is_an_error(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'git status', 'git status' => 'journal run tests']);
+        $rewriter = new RewritingState([self::ORIGINAL_LINE => 'git status', 'git status' => self::REPLACEMENT_LINE]);
 
         $this->expectException(RepeatedCommandRewrite::class);
 
-        $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
+        $this->rewrite()->answer($this->stack($rewriter), $this->command(self::ORIGINAL_LINE));
     }
 
     public function test_a_command_nobody_rewrites_is_walked_once(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'journal run tests']);
+        $rewriter = new RewritingState([self::ORIGINAL_LINE => self::REPLACEMENT_LINE]);
 
         $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('git status'));
 
@@ -107,12 +113,13 @@ final class HookRewriteTest extends TestCase
 
     public function test_marked_delegate_replaces_a_rewrite_before_the_parser_is_called(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'git status']);
+        $rewriter = new RewritingState([self::ORIGINAL_LINE => 'git status']);
         $guard = new MarkedShellState(fn () => Decision::message('Continue with the original line.'));
         $parser = $this->createMock(ShellCommandParser::class);
         $parser->expects($this->never())->method('parse');
 
-        $answer = new HookRewrite($parser)->answer($this->stack($rewriter, $guard), $this->command('composer test'));
+        $stack = $this->stack($rewriter, $guard);
+        $answer = new HookRewrite($parser)->answer($stack, $this->command(self::ORIGINAL_LINE));
 
         $this->assertTrue($answer->isAllowed());
         $this->assertSame(['rewriter rewrite keep', 'guard delegate keep'], $this->stepsOf($answer));
@@ -122,25 +129,26 @@ final class HookRewriteTest extends TestCase
 
     public function test_marked_denial_keeps_the_original_input_and_stops_rewrite_parsing(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'git status']);
+        $rewriter = new RewritingState([self::ORIGINAL_LINE => 'git status']);
         $guard = new MarkedShellState(fn (ShellCommandRequested $input) => Decision::deny($input->command->source));
         $parser = $this->createMock(ShellCommandParser::class);
         $parser->expects($this->never())->method('parse');
 
-        $answer = new HookRewrite($parser)->answer($this->stack($rewriter, $guard), $this->command('composer test'));
+        $stack = $this->stack($rewriter, $guard);
+        $answer = new HookRewrite($parser)->answer($stack, $this->command(self::ORIGINAL_LINE));
 
-        $this->assertSame('composer test', $answer->decision->refusalReason());
+        $this->assertSame(self::ORIGINAL_LINE, $answer->decision->refusalReason());
         $this->assertSame(['rewriter rewrite keep', 'guard deny keep'], $this->stepsOf($answer));
     }
 
     public function test_an_accepted_rewrite_keeps_both_walks_context_and_messages(): void
     {
         $rewriter = new MarkedShellState(fn (ShellCommandRequested $input) => match ($input->command->source) {
-            'composer test' => Decision::rewrite('git status')->withMessage('Original context.'),
+            self::ORIGINAL_LINE => Decision::rewrite('git status')->withMessage('Original context.'),
             default => Decision::allow()->withMessage('Accepted context.'),
         });
 
-        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command(self::ORIGINAL_LINE));
 
         $this->assertTrue($answer->isRewrite());
         $this->assertSame(['Original context.', 'Accepted context.'], $answer->context);
@@ -167,8 +175,8 @@ final class HookRewriteTest extends TestCase
     private function refusingStack(RewritingState $rewriter): AgentStack
     {
         $guard = new MarkedShellState(fn (ShellCommandRequested $input) => match ($input->command->source) {
-            'composer test' => Decision::rewrite('journal run tests --write')->withMessage('Original context.'),
-            default => Decision::deny('The replacement is refused.')->withMessage('Refusal context.'),
+            self::ORIGINAL_LINE => Decision::rewrite('journal run tests --write')->withMessage('Original context.'),
+            default => Decision::deny(self::REFUSAL_REASON)->withMessage('Refusal context.'),
         });
 
         return $this->stack($rewriter, $guard);

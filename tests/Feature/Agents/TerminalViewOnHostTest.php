@@ -35,6 +35,8 @@ final class TerminalViewOnHostTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const string LAPSED_VIEW = 'a view ended before the engine ran';
+
     private const array TABLES = [
         'agents',
         'agent_sessions',
@@ -99,7 +101,7 @@ final class TerminalViewOnHostTest extends TestCase
         $this->app->make(DriverRequestEndings::class)->closeAfterExit($stopping);
         $versions = [$watched->version('host-1'), $watched->version('host-2'), $watched->version('host-3')];
 
-        $this->assertNull($lapsed->refresh()->closed_at, 'a view ended before the engine ran');
+        $this->assertNull($lapsed->refresh()->closed_at, self::LAPSED_VIEW);
         $this->pass(fn () => $this->app->make(EngineTickedDelivery::class)->deliver(
             new EngineTicked(CarbonImmutable::now(), ElapsedTime::between(0, 1_000_000_000)),
         ));

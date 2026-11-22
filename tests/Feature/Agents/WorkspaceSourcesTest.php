@@ -46,7 +46,7 @@ final class WorkspaceSourcesTest extends TestCase
         $setting = ArrangementSetting::fromConfig('contained', 'acme', self::SOURCES);
 
         $this->expectException(WorkspaceSourceMissing::class);
-        $this->expectExceptionMessage('The environment review has no workspace source');
+        $this->expectExceptionMessage(WorkspaceSourceMissing::for('review')->getMessage());
 
         $setting->mountRules(null, 'review');
     }

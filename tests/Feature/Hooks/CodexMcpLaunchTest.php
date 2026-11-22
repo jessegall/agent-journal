@@ -21,6 +21,25 @@ use Tests\TestCase;
  */
 final class CodexMcpLaunchTest extends TestCase
 {
+    private const string JOURNAL_SERVER_TABLE = <<<'TOML'
+        [mcp_servers.journal]
+        command = "/protected/bin/php"
+        args = ["/protected/journal/bin/journal-mcp"]
+        env_vars = ["JOURNAL_URL", "JOURNAL_LAUNCH_REF"]
+        required = true
+        default_tools_approval_mode = "approve"
+        startup_timeout_sec = 15
+        tool_timeout_sec = 30
+        TOML;
+
+    private const string HOOKS_TABLE = "[hooks]\nsession_start = \"journal-hook\"";
+
+    private const string SECOND_ARGS = 'args = ["/protected-2/journal/bin/journal-mcp"]';
+
+    private const string DISABLED_TAIL = "tool_timeout_sec = 30\nenabled = false";
+
+    private const string DISABLED_FLAG = 'enabled = false';
+
     private const string PHP = '/protected/bin/php';
 
     private const string RELAY = '/protected/journal/bin/journal-mcp';
@@ -54,17 +73,8 @@ final class CodexMcpLaunchTest extends TestCase
         $this->assertSame(1, substr_count($config, CodexJournalServer::HEADER));
         $this->assertStringContainsString(sprintf('[projects."%s/roots/one"]', $this->base), $config);
         $this->assertStringContainsString(sprintf('[projects."%s/roots/two"]', $this->base), $config);
-        $this->assertStringContainsString("[hooks]\nsession_start = \"journal-hook\"", $config);
-        $this->assertStringContainsString(<<<'TOML'
-            [mcp_servers.journal]
-            command = "/protected/bin/php"
-            args = ["/protected/journal/bin/journal-mcp"]
-            env_vars = ["JOURNAL_URL", "JOURNAL_LAUNCH_REF"]
-            required = true
-            default_tools_approval_mode = "approve"
-            startup_timeout_sec = 15
-            tool_timeout_sec = 30
-            TOML, $config);
+        $this->assertStringContainsString(self::HOOKS_TABLE, $config);
+        $this->assertStringContainsString(self::JOURNAL_SERVER_TABLE, $config);
     }
 
     public function test_a_new_installation_path_replaces_the_entry_whole(): void
@@ -75,7 +85,7 @@ final class CodexMcpLaunchTest extends TestCase
         $config = $this->config();
         $this->assertSame(1, substr_count($config, CodexJournalServer::HEADER));
         $this->assertStringNotContainsString(self::RELAY, $config);
-        $this->assertStringContainsString('args = ["/protected-2/journal/bin/journal-mcp"]', $config);
+        $this->assertStringContainsString(self::SECOND_ARGS, $config);
         $this->assertStringContainsString(sprintf('[projects."%s/roots/one"]', $this->base), $config);
     }
 
@@ -83,12 +93,12 @@ final class CodexMcpLaunchTest extends TestCase
     {
         $server = CodexJournalServer::of(self::PHP, self::RELAY);
         $this->prepare('one', $server, TransportProfileType::Cli);
-        $this->assertStringContainsString("tool_timeout_sec = 30\nenabled = false", $this->config());
+        $this->assertStringContainsString(self::DISABLED_TAIL, $this->config());
 
         $this->prepare('two', $server);
         $config = $this->config();
         $this->assertSame(1, substr_count($config, CodexJournalServer::HEADER));
-        $this->assertStringNotContainsString('enabled = false', $config);
+        $this->assertStringNotContainsString(self::DISABLED_FLAG, $config);
         $this->assertStringContainsString(sprintf('[projects."%s/roots/one"]', $this->base), $config);
     }
 

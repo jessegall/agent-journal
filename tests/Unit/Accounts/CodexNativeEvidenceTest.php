@@ -13,6 +13,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class CodexNativeEvidenceTest extends TestCase
 {
+    private const string LOGIN_ANNOUNCEMENT = 'Logged in using';
+
     private const string FAKE_PROGRAM = __DIR__.'/../../Fixtures/Accounts/Codex/fake/codex';
 
     private string $accounts;
@@ -65,7 +67,7 @@ final class CodexNativeEvidenceTest extends TestCase
         $this->assertSame('pass', $results['sign-in-survives-restart']);
         $this->assertSame('missing', $results['account-b-signed-in']);
         $this->assertStringNotContainsString('fake-secret-token', $output);
-        $this->assertStringNotContainsString('Logged in using', $output);
+        $this->assertStringNotContainsString(self::LOGIN_ANNOUNCEMENT, $output);
     }
 
     /**

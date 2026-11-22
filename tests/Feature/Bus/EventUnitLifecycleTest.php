@@ -30,6 +30,8 @@ final class EventUnitLifecycleTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string INNER_FAILURE = 'inner command failed';
+
     private const array TABLES = [];
 
     protected function setUp(): void
@@ -78,7 +80,7 @@ final class EventUnitLifecycleTest extends TestCase
                 $row->rename('second');
 
                 try {
-                    $this->within(fn () => throw new RuntimeException('inner command failed'));
+                    $this->within(fn () => throw new RuntimeException(self::INNER_FAILURE));
                 } catch (RuntimeException $failure) {
                     $caught = $failure->getMessage();
                 }
@@ -86,7 +88,7 @@ final class EventUnitLifecycleTest extends TestCase
         };
 
         $this->assertThrows($commit, EventUnitRefused::class);
-        $this->assertSame('inner command failed', $caught);
+        $this->assertSame(self::INNER_FAILURE, $caught);
         $this->assertSame([], $unit?->batch());
         $this->assertSame('start', $row->refresh()->name);
     }

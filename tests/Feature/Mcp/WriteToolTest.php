@@ -34,6 +34,10 @@ final class WriteToolTest extends CommandBusTestCase
     use SendsMcpFrames;
     use SendsSignedCalls;
 
+    private const string QUOTA_REFUSAL = 'The note quota is full.';
+
+    private const string MIDDLEWARE_REFUSAL = 'Refused by the test middleware.';
+
     private const string PATH = '/agent/test/notes/write';
 
     private const string PROFILE = 'note-writer';
@@ -88,8 +92,7 @@ final class WriteToolTest extends CommandBusTestCase
         $this->assertThrows(
             fn () => $catalogue->registerTool(WriteNoteTool::class),
             McpCommandMissing::class,
-            'The MCP write tool '.WriteNoteTool::class.' declares command '.WriteNote::class
-                .', which has no registered handler.',
+            McpCommandMissing::for(WriteNoteTool::class, WriteNote::class)->getMessage(),
         );
         $this->assertSame([], $catalogue->toolClasses());
     }
@@ -103,7 +106,7 @@ final class WriteToolTest extends CommandBusTestCase
         $this->callMcpTool($start, 'write_note', ['text' => 'Over quota.', 'request_key' => 'quota-1'])
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'conflict')
-            ->assertJsonPath('result.structuredContent.message', 'The note quota is full.');
+            ->assertJsonPath('result.structuredContent.message', self::QUOTA_REFUSAL);
         $this->assertSame(0, $this->rowCount());
     }
 
@@ -116,7 +119,7 @@ final class WriteToolTest extends CommandBusTestCase
         $this->callMcpTool($start, 'write_note', ['text' => 'Refused.', 'request_key' => 'refusal-1'])
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'forbidden')
-            ->assertJsonPath('result.structuredContent.message', 'Refused by the test middleware.');
+            ->assertJsonPath('result.structuredContent.message', self::MIDDLEWARE_REFUSAL);
         $this->assertSame(0, $this->rowCount());
     }
 

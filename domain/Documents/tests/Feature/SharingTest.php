@@ -46,6 +46,12 @@ final class SharingTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string FOUND_TEXT = <<<'TEXT'
+        # Found
+        All good.
+
+        TEXT;
+
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
@@ -82,11 +88,7 @@ final class SharingTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new CreateDocument('Design', 'What we build', self::BODY));
 
-        $bus->run(new CreateReport('Check', 'What we found', <<<'TEXT'
-        # Found
-        All good.
-
-        TEXT));
+        $bus->run(new CreateReport('Check', 'What we found', self::FOUND_TEXT));
 
         $draft = $bus->run(new OpenDocument('1'));
 
@@ -141,11 +143,7 @@ final class SharingTest extends TestCase
             $this->budget(),
         );
 
-        $this->assertSame(<<<'TEXT'
-        # Found
-        All good.
-
-        TEXT, $content->body);
+        $this->assertSame(self::FOUND_TEXT, $content->body);
 
         $this->assertSame(['Check', '1'], [$content->card->title, $content->card->publicationVersion]);
     }

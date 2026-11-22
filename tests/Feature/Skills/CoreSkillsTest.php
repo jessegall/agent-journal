@@ -17,6 +17,27 @@ final class CoreSkillsTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string PURPOSE_SECTION = <<<'TEXT'
+            ## Purpose
+
+            Commands run through the journal, which keeps their output.
+
+            TEXT;
+
+    private const string TESTS_SECTION = <<<'TEXT'
+            ## Tests and checks
+
+            A test, check or build runs only when its rule has an approved, proven reader.
+            TEXT;
+
+    private const string READING_SECTION = <<<'TEXT'
+        ## Reading skills
+
+        - `skill:list` lists every skill
+        TEXT;
+
+    private const string SECOND_TITLE_ADVICE = 'a second `#` title, a title that differs from the skill\'s name';
+
     public function test_the_core_skills_are_listed_with_owner_core(): void
     {
         Artisan::call('skill:list', ['--json' => true]);
@@ -41,20 +62,11 @@ final class CoreSkillsTest extends TestCase
             $headings[1],
         );
         $this->assertStringContainsString(
-            <<<'TEXT'
-            ## Purpose
-
-            Commands run through the journal, which keeps their output.
-
-            TEXT,
+            self::PURPOSE_SECTION,
             $rendered,
         );
         $this->assertStringContainsString(
-            <<<'TEXT'
-            ## Tests and checks
-
-            A test, check or build runs only when its rule has an approved, proven reader.
-            TEXT,
+            self::TESTS_SECTION,
             $rendered,
         );
     }
@@ -66,11 +78,7 @@ final class CoreSkillsTest extends TestCase
         Artisan::call('skill:show', ['key' => 'journal-skills']);
 
         $this->assertSame($rendered, Artisan::output());
-        $this->assertStringContainsString(<<<'TEXT'
-        ## Reading skills
-
-        - `skill:list` lists every skill
-        TEXT, $rendered);
-        $this->assertStringContainsString('a second `#` title, a title that differs from the skill\'s name', $rendered);
+        $this->assertStringContainsString(self::READING_SECTION, $rendered);
+        $this->assertStringContainsString(self::SECOND_TITLE_ADVICE, $rendered);
     }
 }

@@ -35,6 +35,10 @@ use Tests\TestCase;
  */
 final class SkillContractsTest extends TestCase
 {
+    private const string PLANS_SELECTOR = 'plans.md > Failure > Retry';
+
+    private const string PLAN_PURPOSE = 'A plan orders the work.';
+
     public function test_core_exports_what_a_domain_needs_to_declare_skills_and_keeps_the_ports_private(): void
     {
         $exports = CoreApi::exports();
@@ -66,7 +70,7 @@ final class SkillContractsTest extends TestCase
             SkillPublisher::class,
             DriverSkills::class,
         ] as $port) {
-            $this->assertFalse($exports->has($port), "{$port} is exported.");
+            $this->assertFalse($exports->has($port), $port);
         }
     }
 
@@ -95,13 +99,10 @@ final class SkillContractsTest extends TestCase
             ProviderKey::from('openai'),
         );
 
-        $this->assertSame('plans.md > Failure > Retry', $part->selector());
+        $this->assertSame(self::PLANS_SELECTOR, $part->selector());
         $this->assertTrue(MarkdownPart::body('plans.md')->isWholeBody());
         $this->assertSame($part, $section->content);
-        $this->assertSame(
-            'A plan orders the work.',
-            SkillSection::text('purpose', 'Plans', 'A plan orders the work.')->content,
-        );
+        $this->assertSame(self::PLAN_PURPOSE, SkillSection::text('purpose', 'Plans', self::PLAN_PURPOSE)->content);
         $this->assertSame(ConditionOutcome::Match, Conditions::everyone()->evaluate($context)->outcome);
         $this->assertTrue($context->profile->isProfileFree());
     }

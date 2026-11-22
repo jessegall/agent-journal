@@ -21,6 +21,8 @@ final class ShareBudgetTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string RENDERED_OUTPUT = 'rendered output';
+
     public function test_a_read_budget_allows_32_queries_and_refuses_the_33rd(): void
     {
         $meter = $this->app->make(ScopedReadMeter::class);
@@ -77,10 +79,14 @@ final class ShareBudgetTest extends TestCase
         $preview->chargeLinks(2_000);
         $preview->assertHopsWithinBudget(4);
 
-        $this->assertThrows(fn () => $read->chargeRendered(1), ShareBudgetExceeded::class, 'rendered output');
-        $this->assertThrows(fn () => $preview->chargeRecords(1), ShareBudgetExceeded::class, '1000 records');
-        $this->assertThrows(fn () => $preview->chargeLinks(1), ShareBudgetExceeded::class, '2000 links');
-        $this->assertThrows(fn () => $preview->assertHopsWithinBudget(5), ShareBudgetExceeded::class, '4 relations');
+        $this->assertThrows(fn () => $read->chargeRendered(1), ShareBudgetExceeded::class, self::RENDERED_OUTPUT);
+        $nodes = ShareBudgetExceeded::forNodes(1_000)->getMessage();
+        $links = ShareBudgetExceeded::forLinks(2_000)->getMessage();
+        $hops = ShareBudgetExceeded::forHops(4)->getMessage();
+
+        $this->assertThrows(fn () => $preview->chargeRecords(1), ShareBudgetExceeded::class, $nodes);
+        $this->assertThrows(fn () => $preview->chargeLinks(1), ShareBudgetExceeded::class, $links);
+        $this->assertThrows(fn () => $preview->assertHopsWithinBudget(5), ShareBudgetExceeded::class, $hops);
     }
 
     public function test_work_after_two_seconds_is_refused(): void

@@ -18,6 +18,10 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 8, reason: 'It runs a stand-in program as a host process several times.')]
 final class CodexSignInTest extends TestCase
 {
+    private const string STORE_SETTING = 'cli_auth_credentials_store = "file"';
+
+    private const string MODEL_SETTING = 'model = "x"';
+
     private string $directory;
 
     protected function setUp(): void
@@ -50,9 +54,9 @@ final class CodexSignInTest extends TestCase
 
         $this->assertSame(['address' => 'https://auth.openai.com/codex/device', 'code' => 'ABCD-1234'], $deviceCode);
         $config = (string) file_get_contents($this->directory.'/config.toml');
-        $this->assertStringContainsString('cli_auth_credentials_store = "file"', $config);
+        $this->assertStringContainsString(self::STORE_SETTING, $config);
         $this->assertStringNotContainsString('keyring', $config);
-        $this->assertStringContainsString('model = "x"', $config);
+        $this->assertStringContainsString(self::MODEL_SETTING, $config);
         $this->assertTrue($protocol->verify($this->directory)->isSignedIn);
     }
 

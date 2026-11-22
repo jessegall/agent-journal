@@ -24,6 +24,8 @@ final class ValidateCommandTest extends CommandBusTestCase
 {
     use ClearsStartRows;
 
+    private const string TEXT_TOO_LONG = 'text: The text field must not be greater than 5 characters.';
+
     private const string KEY = '01JD8X0G9M3QZ6V4K2VA1DATE1';
 
     protected function setUp(): void
@@ -40,7 +42,7 @@ final class ValidateCommandTest extends CommandBusTestCase
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new LimitNote('sixsix')),
             CommandInputInvalid::class,
-            'text: The text field must not be greater than 5 characters.',
+            self::TEXT_TOO_LONG,
         );
         $this->assertSame(0, $this->rowCount());
     }

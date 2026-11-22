@@ -18,14 +18,20 @@ final class ExplanationsTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string LINE = 'cat a > b';
+
+    private const string REDIRECT = 'output 1 b';
+
+    private const string SECRET_TEXT = 'secret text';
+
     public function test_a_command_with_an_output_redirect_shows_the_part_and_the_redirect(): void
     {
-        $explanation = $this->explain('cat a > b');
+        $explanation = $this->explain(self::LINE);
         $command = collect($explanation->nodes)->firstWhere('type', 'simple_command');
 
         $this->assertSame(1, $explanation->executableParts);
-        $this->assertSame('cat a > b', $command?->snippet);
-        $this->assertSame(['output 1 b'], $command->redirects ?? []);
+        $this->assertSame(self::LINE, $command?->snippet);
+        $this->assertSame([self::REDIRECT], $command->redirects ?? []);
     }
 
     public function test_a_blank_line_has_no_executable_parts(): void
@@ -57,7 +63,9 @@ final class ExplanationsTest extends TestCase
         EOF
         TEXT);
 
-        $this->assertStringNotContainsString('secret text', json_encode($explanation->toArray(), JSON_THROW_ON_ERROR));
+        $shown = json_encode($explanation->toArray(), JSON_THROW_ON_ERROR);
+
+        $this->assertStringNotContainsString(self::SECRET_TEXT, $shown);
     }
 
     private function explain(string $line): ExplanationData

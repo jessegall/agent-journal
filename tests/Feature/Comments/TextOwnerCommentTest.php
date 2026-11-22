@@ -38,6 +38,8 @@ final class TextOwnerCommentTest extends TestCase
     use InstallsNotesModule;
     use StartsAgentRequests;
 
+    private const string SECOND_LINE = 'Second line.';
+
     private const array TABLES = ['comments', 'users', 'number_groups'];
 
     protected function setUp(): void
@@ -76,7 +78,7 @@ final class TextOwnerCommentTest extends TestCase
             ),
         );
         $this->assertStringContainsString(
-            'Second line.',
+            self::SECOND_LINE,
             $this->text()->read($page, '1', TextSelection::from(['firstLine' => 1]))->text,
         );
 

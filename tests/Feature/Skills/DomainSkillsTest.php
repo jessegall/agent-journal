@@ -19,6 +19,13 @@ final class DomainSkillsTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string PURPOSE_HEADING = <<<'TEXT'
+
+        ## Purpose
+
+
+        TEXT;
+
     /**
      * @return iterable<string, array{string, string, string}>
      */
@@ -59,12 +66,7 @@ final class DomainSkillsTest extends TestCase
             $this->app->make(SkillResolver::class)->find(SkillKey::from($key))->rendered->markdown,
             $shown,
         );
-        $this->assertStringContainsString(<<<'TEXT'
-
-        ## Purpose
-
-
-        TEXT, $shown);
+        $this->assertStringContainsString(self::PURPOSE_HEADING, $shown);
         $this->assertStringContainsString(<<<TEXT
 
         {$heading}

@@ -26,6 +26,17 @@ final class BoundaryCheckerTest extends TestCase
 {
     use JudgesFixtureFiles;
 
+    private const string FOUNDATION_REASON = 'uses Tests\Fixtures\Boundary\Chat\Message, '
+        .'but the core or the domain foundation does not require Chat';
+
+    private const string REPORT_HEAD = 'Domain boundary violations (7):';
+
+    private const string FORBIDDEN_LINE = '  tests/Fixtures/Boundary/Plans/UsesForbidden.php:7 '
+        .'uses Tests\\Fixtures\\Boundary\\Chat\\Message, but Plans does not require Chat';
+
+    private const string REPORT_QUESTION = "Is the dependency right (add it to the Domain class, with the user's yes), "
+        .'or is the code in the wrong domain?';
+
     /**
      * @return iterable<string, array{string, list<string>}>
      */
@@ -66,7 +77,7 @@ final class BoundaryCheckerTest extends TestCase
 
         $this->assertCount(1, $violations);
         $this->assertSame(
-            'uses Tests\Fixtures\Boundary\Chat\Message, but the core or the domain foundation does not require Chat',
+            self::FOUNDATION_REASON,
             $violations[0]->reason(),
         );
     }
@@ -190,13 +201,13 @@ final class BoundaryCheckerTest extends TestCase
             dirname($this->fixtureFolder(), 3),
         );
 
-        $this->assertStringStartsWith('Domain boundary violations (7):', $report);
+        $this->assertStringStartsWith(self::REPORT_HEAD, $report);
         $this->assertStringContainsString(
-            '  tests/Fixtures/Boundary/Plans/UsesForbidden.php:7 uses Tests\\Fixtures\\Boundary\\Chat\\Message, but Plans does not require Chat',
+            self::FORBIDDEN_LINE,
             $report,
         );
         $this->assertStringEndsWith(
-            "Is the dependency right (add it to the Domain class, with the user's yes), or is the code in the wrong domain?",
+            self::REPORT_QUESTION,
             $report,
         );
     }

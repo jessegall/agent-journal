@@ -39,6 +39,8 @@ final class SessionSkillsTest extends TestCase
     use InstallsBuiltInProfiles;
     use UsesTemporaryFolder;
 
+    private const string NEW_SESSION = 'start a new session';
+
     private const array TABLES = [
         'skill_publications',
         'skill_generations',
@@ -88,7 +90,7 @@ final class SessionSkillsTest extends TestCase
         $reminders = $this->boundary($session);
 
         $this->assertContains('user-probe', $this->latestKeys($session));
-        $this->assertStringContainsString('start a new session', implode("\n", $reminders->all()));
+        $this->assertStringContainsString(self::NEW_SESSION, implode("\n", $reminders->all()));
 
         $this->artisan(
             'skill:edit',

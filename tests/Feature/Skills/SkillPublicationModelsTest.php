@@ -26,6 +26,8 @@ final class SkillPublicationModelsTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string NEWER_WORKER = 'a newer worker owns it';
+
     private const array TABLES = ['skill_publications', 'skill_generations'];
 
     public function test_the_tables_exist_and_a_ready_generation_keeps_its_entries(): void
@@ -91,7 +93,7 @@ final class SkillPublicationModelsTest extends TestCase
             $first->recordProgress($old, 3);
             $this->fail('A stale fence was accepted.');
         } catch (SkillPublicationStale $refusal) {
-            $this->assertStringContainsString('a newer worker owns it', $refusal->getMessage());
+            $this->assertStringContainsString(self::NEWER_WORKER, $refusal->getMessage());
         }
 
         $second = $this->app->make(SkillPublications::class)->intend(

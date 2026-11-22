@@ -17,6 +17,10 @@ final class SharingHealthTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string NO_SUPERVISOR = 'No supervisor holds the gateways.';
+
+    private const string LISTENER_SILENT = 'The listener no longer answers.';
+
     private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
     public function test_the_service_is_healthy_only_with_an_answering_listener_and_a_fresh_run_lease(): void
@@ -26,13 +30,13 @@ final class SharingHealthTest extends TestCase
         $port = (int) substr((string) stream_socket_get_name($server, false), strlen('127.0.0.1:'));
         config(['sharing.listener.host' => '127.0.0.1', 'sharing.listener.port' => $port]);
 
-        $this->assertSame(1, $this->health(), 'No supervisor holds the gateways.');
+        $this->assertSame(1, $this->health(), self::NO_SUPERVISOR);
 
         ShareInstallation::create()->holdFor(self::RUN);
         $this->assertSame(0, $this->health());
 
         fclose($server);
-        $this->assertSame(1, $this->health(), 'The listener no longer answers.');
+        $this->assertSame(1, $this->health(), self::LISTENER_SILENT);
 
         $this->travel(91)->seconds();
         $this->assertSame(1, $this->health());

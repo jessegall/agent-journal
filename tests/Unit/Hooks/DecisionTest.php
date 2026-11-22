@@ -17,21 +17,23 @@ use PHPUnit\Framework\TestCase;
 
 final class DecisionTest extends TestCase
 {
+    private const string SAVE_FIRST = 'Save the test run first.';
+
     public function test_each_named_constructor_gives_its_answer(): void
     {
         $this->assertSame('delegate', Decision::delegate()->answerType()->value);
         $this->assertSame('allow', Decision::allow()->answerType()->value);
-        $this->assertSame('deny', Decision::deny('Save the test run first.')->answerType()->value);
+        $this->assertSame('deny', Decision::deny(self::SAVE_FIRST)->answerType()->value);
         $this->assertSame('deny', Decision::deny('Task 3 is still open.')->answerType()->value);
         $this->assertSame('rewrite', Decision::rewrite('journal run tests')->answerType()->value);
     }
 
     public function test_a_denial_carries_its_reason(): void
     {
-        $denied = Decision::deny('Save the test run first.')->answer;
+        $denied = Decision::deny(self::SAVE_FIRST)->answer;
 
         $this->assertInstanceOf(Denied::class, $denied);
-        $this->assertSame('Save the test run first.', $denied->reason()->text);
+        $this->assertSame(self::SAVE_FIRST, $denied->reason()->text);
     }
 
     public function test_a_reason_is_never_empty(): void

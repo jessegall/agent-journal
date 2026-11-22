@@ -8,6 +8,7 @@ use App\Processes\Calls\AdmitLineCall;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Values\AdmissionRefusal;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;
@@ -32,7 +33,7 @@ final class DirectRunTest extends TestCase
 
         $this->assertSame('admission_refused', $reply->json('code'));
         $this->assertSame('command-unknown', $reply->json('details.reason_code'));
-        $this->assertSame('Nothing in this request started.', $reply->json('details.notice'));
+        $this->assertSame(AdmissionRefusal::NOTICE, $reply->json('details.notice'));
         $this->assertSame(CommandRequest::query()->sole()->id, $reply->json('details.request_id'));
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }

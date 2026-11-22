@@ -14,13 +14,17 @@ use PHPUnit\Framework\TestCase;
  */
 final class RecordReferenceTest extends TestCase
 {
+    private const string PLAN_LABEL = 'plan 12';
+
+    private const string PHASE_LABEL = 'plan 12, phase 2';
+
     public function test_a_reference_reads_and_labels_as_people_say_it(): void
     {
-        $plan = RecordReference::parse('plan 12');
+        $plan = RecordReference::parse(self::PLAN_LABEL);
 
         $this->assertSame(['plan', 12], [$plan->type, $plan->number]);
-        $this->assertSame('plan 12', $plan->label());
-        $this->assertSame('plan 12, phase 2', RecordReference::within($plan, 'phase', 2)->label());
+        $this->assertSame(self::PLAN_LABEL, $plan->label());
+        $this->assertSame(self::PHASE_LABEL, RecordReference::within($plan, 'phase', 2)->label());
     }
 
     /**

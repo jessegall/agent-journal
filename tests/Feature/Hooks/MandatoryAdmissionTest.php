@@ -32,6 +32,12 @@ final class MandatoryAdmissionTest extends TestCase
 {
     use CommittedHookStack;
 
+    private const string ADMITTED_LINE = 'journal process run --admission %s';
+
+    private const string NO_REWRITE = 'cannot take a rewritten command line';
+
+    private const string NO_RUNTIME = 'no runtime';
+
     private CountedAdmission $admissions;
 
     protected function setUp(): void
@@ -48,7 +54,7 @@ final class MandatoryAdmissionTest extends TestCase
 
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $run = ProcessRun::query()->withoutGlobalScopes()->sole();
-        $this->assertSame("journal process run --admission {$run->id}", $answer->decision->replacementLine());
+        $this->assertSame(sprintf(self::ADMITTED_LINE, $run->id), $answer->decision->replacementLine());
     }
 
     public function test_an_allowed_line_cannot_skip_the_admission(): void
@@ -99,8 +105,8 @@ final class MandatoryAdmissionTest extends TestCase
         $session = $this->answerShell('git status');
 
         $this->assertStringStartsWith('runner-unavailable: ', $driver->decision->refusalReason());
-        $this->assertStringContainsString('cannot take a rewritten command line', $driver->decision->refusalReason());
-        $this->assertStringContainsString('no runtime', $session->decision->refusalReason());
+        $this->assertStringContainsString(self::NO_REWRITE, $driver->decision->refusalReason());
+        $this->assertStringContainsString(self::NO_RUNTIME, $session->decision->refusalReason());
         $this->assertSame([], $this->admissions->lines);
     }
 

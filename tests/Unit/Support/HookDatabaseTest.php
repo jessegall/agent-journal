@@ -94,9 +94,12 @@ final class HookDatabaseTest extends TestCase
     {
         $this->runAs('journal_hooks_test', '3');
 
-        $this->assertStringContainsString(
-            'php artisan test --parallel',
-            $this->refusalOf(fn () => HookDatabase::select($this->app))->getMessage(),
+        $refusal = $this->refusalOf(fn () => HookDatabase::select($this->app));
+
+        $this->assertSame(
+            HookDatabaseRefused::baseDatabaseInWorker(HookDatabase::NAME, HookDatabase::expectedName($this->app))
+                ->getMessage(),
+            $refusal->getMessage(),
         );
     }
 

@@ -20,6 +20,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 30, reason: 'It parses every PHP file of app and the domains.')]
 final class ModelRaiseCallerTest extends TestCase
 {
+    private const string HOW_TO_FIX = "Call a raising transition only inside a unit (%s):\n";
+
     /**
      * The guideline a failure points to.
      */
@@ -46,8 +48,7 @@ final class ModelRaiseCallerTest extends TestCase
         $this->assertSame(
             [],
             $violations,
-            'Call a raising transition only inside a unit ('.self::GUIDELINE."):\n"
-                .implode("\n", $violations),
+            sprintf(self::HOW_TO_FIX, self::GUIDELINE).implode("\n", $violations),
         );
     }
 

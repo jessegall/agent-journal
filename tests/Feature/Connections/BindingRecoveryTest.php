@@ -23,6 +23,8 @@ final class BindingRecoveryTest extends TestCase
     use CommitsHookRows;
     use ConnectsProjects;
 
+    private const string UNRECOVERABLE = 'This connection cannot be recovered.';
+
     private const array TABLES = [
         'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'project_environments',
         'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
@@ -86,6 +88,6 @@ final class BindingRecoveryTest extends TestCase
      */
     private function assertGeneric(TestResponse $response): void
     {
-        $response->assertNotFound()->assertJsonPath('message', 'This connection cannot be recovered.');
+        $response->assertNotFound()->assertJsonPath('message', self::UNRECOVERABLE);
     }
 }

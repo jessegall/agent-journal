@@ -42,6 +42,8 @@ final class NamedConditionsTest extends TestCase
     use CommitsHookRows;
     use InstallsNotesModule;
 
+    private const string PARAMETERS_REFUSAL = 'condition.parameters does not fit notes.has-notes';
+
     private const array TABLES = ['number_groups'];
 
     private const array HAS_TWO_NOTES = [
@@ -132,7 +134,7 @@ final class NamedConditionsTest extends TestCase
         $this->useRegistry($this->installedRegistry());
 
         $this->expectException(SkillConditionInvalid::class);
-        $this->expectExceptionMessage('condition.parameters does not fit notes.has-notes');
+        $this->expectExceptionMessage(self::PARAMETERS_REFUSAL);
 
         $this->app->make(ConditionTree::class)->hydrate(
             ['type' => 'named', 'version' => 1, 'key' => 'notes.has-notes', 'parameters' => ['atLeast' => 'many']],

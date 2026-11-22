@@ -17,6 +17,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class CodeFilesTest extends TestCase
 {
+    private const string CLOSE_SOURCE = '<?php // close';
+
     private string $folder;
 
     protected function setUp(): void
@@ -54,10 +56,10 @@ final class CodeFilesTest extends TestCase
         $code = CodeFiles::over($this->folder);
         $file = FilePath::in(Place::Project, 'app/Tasks/Console/Close.php');
 
-        $this->assertSame('<?php // close', $code->file($file));
+        $this->assertSame(self::CLOSE_SOURCE, $code->file($file));
         file_put_contents("{$this->folder}/app/Tasks/Console/Close.php", '<?php // changed');
 
-        $this->assertSame('<?php // close', $code->file($file));
+        $this->assertSame(self::CLOSE_SOURCE, $code->file($file));
         $this->assertSame(1, $code->readCount($file));
     }
 

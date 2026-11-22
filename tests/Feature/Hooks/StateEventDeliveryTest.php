@@ -48,8 +48,11 @@ final class StateEventDeliveryTest extends TestCase
         setUpCommittedHookStack as private setUpBaseStack;
         tearDownCommittedHookStack as private tearDownBaseStack;
     }
+
     use InstallsCommandModules;
     use RegistersNoteStates;
+
+    private const string EVALUATING_STACK = 'evaluating stack';
 
     protected function setUpCommittedHookStack(): void
     {
@@ -202,7 +205,7 @@ final class StateEventDeliveryTest extends TestCase
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
         $this->expectException(StateEventReentry::class);
-        $this->expectExceptionMessage('evaluating stack');
+        $this->expectExceptionMessage(self::EVALUATING_STACK);
 
         $this->machine()->answer(
             $this->stop(),

@@ -50,7 +50,7 @@ final class SharingModelsTest extends TestCase
             'share_gateway_operations',
             'share_audits',
         ] as $table) {
-            $this->assertTrue(Schema::hasTable($table), "{$table} is missing.");
+            $this->assertTrue(Schema::hasTable($table), $table);
         }
     }
 

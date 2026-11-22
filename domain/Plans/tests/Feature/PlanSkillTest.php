@@ -18,6 +18,26 @@ final class PlanSkillTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string PURPOSE_TEXT = <<<'TEXT'
+        # Plans
+
+        ## Purpose
+
+        A plan orders the work
+        TEXT;
+
+    private const string STATES_TEXT = <<<'TEXT'
+        ## States
+
+        A plan has a type (build, fix, research or cleanup)
+        TEXT;
+
+    private const string HOLDING_TEXT = <<<'TEXT'
+        ## Holding plan work
+
+        - `plan:assigned` lists the plans you hold.
+        TEXT;
+
     public function test_journal_plans_is_owned_by_plans_and_shows_its_sections_in_order(): void
     {
         Artisan::call('skill:list', ['--json' => true]);
@@ -33,26 +53,12 @@ final class PlanSkillTest extends TestCase
             $shown,
         );
 
-        $this->assertStringContainsString(<<<'TEXT'
-        # Plans
+        $this->assertStringContainsString(self::PURPOSE_TEXT, $shown);
 
-        ## Purpose
-
-        A plan orders the work
-        TEXT, $shown);
-
-        $this->assertStringContainsString(<<<'TEXT'
-        ## States
-
-        A plan has a type (build, fix, research or cleanup)
-        TEXT, $shown);
+        $this->assertStringContainsString(self::STATES_TEXT, $shown);
 
         $this->assertStringContainsString(
-            <<<'TEXT'
-            ## Holding plan work
-
-            - `plan:assigned` lists the plans you hold.
-            TEXT,
+            self::HOLDING_TEXT,
             $shown,
         );
 

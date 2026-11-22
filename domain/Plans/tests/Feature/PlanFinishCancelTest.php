@@ -70,7 +70,7 @@ final class PlanFinishCancelTest extends TestCase
         $this->assertThrows(
             fn () => $this->bus()->run(new FinishPlan($plan->id, 1, 'Done.')),
             PlanHasUnfinishedTasks::class,
-            '2 unfinished tasks',
+            PlanHasUnfinishedTasks::for($plan->number, 2)->getMessage(),
         );
 
         $this->assertSame(PlanState::Started, $plan->fresh()?->state);

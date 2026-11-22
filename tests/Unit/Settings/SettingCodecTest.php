@@ -194,9 +194,7 @@ final class SettingCodecTest extends TestCase
         $setting = $this->settings->{$property};
 
         $this->expectException(SettingStorageInvalid::class);
-        $this->expectExceptionMessage(
-            "The stored value of the setting {$setting->key()} of Reviews is not one it accepts",
-        );
+        $this->expectExceptionMessage(SettingStorageInvalid::for('Reviews', $setting->key())->getMessage());
 
         $this->codec->decode('Reviews', $setting, EncodedValue::of($stored));
     }
@@ -222,14 +220,14 @@ final class SettingCodecTest extends TestCase
                     SettingCodec $codec,
                     ReviewSettings $settings,
                 ) => $codec->encodeInteger('Reviews', $settings->retryLimit, 11),
-                'retry_limit',
+                'retryLimit',
             ],
             'an integer below its minimum' => [
                 fn (
                     SettingCodec $codec,
                     ReviewSettings $settings,
                 ) => $codec->encodeInteger('Reviews', $settings->retryLimit, -1),
-                'retry_limit',
+                'retryLimit',
             ],
             'a decimal past its scale' => [
                 fn (
@@ -295,7 +293,7 @@ final class SettingCodecTest extends TestCase
                     $settings->reviewLevel,
                     ReviewMode::Quick,
                 ),
-                'review_level',
+                'reviewLevel',
             ],
         ];
     }
@@ -306,10 +304,17 @@ final class SettingCodecTest extends TestCase
     #[DataProvider('valuesOneStepPastABound')]
     public function test_a_value_the_setting_does_not_accept_is_refused_naming_the_key_never_the_value(
         Closure $encode,
-        string $key,
+        string $property,
     ): void {
+        /**
+         * @var Setting $setting
+         */
+        $setting = $this->settings->{$property};
+
         $this->expectException(SettingValueInvalid::class);
-        $this->expectExceptionMessage("The value for the setting {$key} of Reviews is not a");
+        $this->expectExceptionMessage(
+            SettingValueInvalid::for('Reviews', $setting->key(), $setting->type())->getMessage(),
+        );
 
         $encode($this->codec, $this->settings);
     }

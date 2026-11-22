@@ -110,7 +110,7 @@ final class SaveSharePreviewTest extends TestCase
         $this->assertThrows(
             fn () => $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()),
             SharePreviewRefused::class,
-            'used already',
+            SharePreviewRefused::consumed($saved->previewId)->getMessage(),
         );
     }
 
@@ -122,12 +122,12 @@ final class SaveSharePreviewTest extends TestCase
         $this->assertThrows(
             fn () => $preview->consumeFor(TestIds::of(8), $saved->checksum, $this->current()),
             SharePreviewRefused::class,
-            'another owner',
+            SharePreviewRefused::foreign($saved->previewId)->getMessage(),
         );
         $this->assertThrows(
             fn () => $preview->consumeFor(TestIds::of(9), str_repeat('0', 64), $this->current()),
             SharePreviewRefused::class,
-            'has changed',
+            SharePreviewRefused::changed($saved->previewId)->getMessage(),
         );
 
         $this->publications->publish(TestIds::of(102), '2');
@@ -135,7 +135,7 @@ final class SaveSharePreviewTest extends TestCase
         $this->assertThrows(
             fn () => $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()),
             SharePreviewRefused::class,
-            'has changed',
+            SharePreviewRefused::changed($saved->previewId)->getMessage(),
         );
     }
 

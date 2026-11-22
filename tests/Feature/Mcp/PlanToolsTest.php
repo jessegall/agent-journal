@@ -9,6 +9,7 @@ use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Models\Task;
@@ -27,6 +28,12 @@ final class PlanToolsTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
     use SendsSignedCalls;
+
+    private const string RELEASE_NOTE = 'Release complete.';
+
+    private const string CANCEL_REASON = 'Work moved elsewhere.';
+
+    private const string PLAN_TITLE = 'New title';
 
     private const array TABLES = [
         'users', 'agents', 'agent_sessions', 'agent_stacks', 'start_tokens',
@@ -91,7 +98,7 @@ final class PlanToolsTest extends TestCase
             ->assertJsonPath('result.isError', false)->assertJsonPath('result.structuredContent.state', 'done');
         $this->signed($this->caller, '/agent/plans/finish', $finish)->assertOk()->assertJsonPath('plan_id', $id);
         $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])
-            ->assertJsonPath('result.structuredContent.finish_note', 'Release complete.');
+            ->assertJsonPath('result.structuredContent.finish_note', self::RELEASE_NOTE);
     }
 
     public function test_an_ineligible_start_returns_the_domain_refusal(): void
@@ -103,7 +110,7 @@ final class PlanToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.code', 'forbidden')
             ->assertJsonPath(
                 'result.structuredContent.message',
-                "Plan {$plan->number} is cancelled and cannot start; only a planned plan starts.",
+                StartDenied::inState($plan->number, PlanState::Cancelled->value)->getMessage(),
             );
         $this->assertSame(PlanState::Cancelled, $plan->refresh()->state);
     }
@@ -126,9 +133,9 @@ final class PlanToolsTest extends TestCase
         ])->assertOk();
 
         $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $plan->id, 'view' => 'context'])
-            ->assertJsonPath('result.structuredContent.title', 'New title')
+            ->assertJsonPath('result.structuredContent.title', self::PLAN_TITLE)
             ->assertJsonPath('result.structuredContent.type', 'fix')
-            ->assertJsonPath('result.structuredContent.cancel_reason', 'Work moved elsewhere.');
+            ->assertJsonPath('result.structuredContent.cancel_reason', self::CANCEL_REASON);
     }
 
     public function test_plan_authoring_is_hidden_from_a_writing_helper_while_plan_reads_remain_available(): void

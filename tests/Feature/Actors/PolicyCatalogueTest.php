@@ -55,7 +55,7 @@ final class PolicyCatalogueTest extends TestCase
         $this->registerNotes();
 
         $this->expectException(PolicyDefinitionConflict::class);
-        $this->expectExceptionMessage('Notes and Cards both register a policy for '.Note::class.'; one owner guards one model.');
+        $this->expectExceptionMessage(PolicyDefinitionConflict::forModel(Note::class, 'Notes', 'Cards')->getMessage());
 
         $this->app->make(PolicyCatalogue::class)->register(
             'Cards',

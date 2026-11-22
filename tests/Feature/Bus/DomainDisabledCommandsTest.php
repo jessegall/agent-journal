@@ -22,6 +22,10 @@ use Tests\Support\TestIds;
  */
 final class DomainDisabledCommandsTest extends CommandBusTestCase
 {
+    private const string HANDLER_BUILT = 'The handler of a switched-off domain was built.';
+
+    private const string MIDDLEWARE_BUILT = 'Middleware of a switched-off domain was built.';
+
     public function test_a_switched_off_domains_command_is_refused_for_everyone_without_building_its_handler(): void
     {
         $this->installCommandModules();
@@ -37,7 +41,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
         $this->startTestAgentRequest(2, 20);
         $this->assertRefusedAsDisabled(new StartPlan(TestIds::of(5)));
 
-        $this->assertFalse($built, 'The handler of a switched-off domain was built.');
+        $this->assertFalse($built, self::HANDLER_BUILT);
     }
 
     public function test_middleware_of_a_switched_off_domain_is_left_out_unbuilt(): void
@@ -52,7 +56,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run(new ShuffleDeck('red'));
 
-        $this->assertFalse($built, 'Middleware of a switched-off domain was built.');
+        $this->assertFalse($built, self::MIDDLEWARE_BUILT);
     }
 
     public function test_with_every_domain_on_the_middleware_runs_as_before(): void
@@ -84,7 +88,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
             $this->app->make(CommandBus::class)->run($command);
             $this->fail('A command of a switched-off domain ran.');
         } catch (DomainDisabled $refused) {
-            $this->assertSame('Plans is switched off, so '.StartPlan::class.' does not run.', $refused->getMessage());
+            $this->assertSame(DomainDisabled::for('Plans', StartPlan::class)->getMessage(), $refused->getMessage());
         }
     }
 }

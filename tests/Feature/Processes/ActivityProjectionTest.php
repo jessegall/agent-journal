@@ -31,6 +31,10 @@ final class ActivityProjectionTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string PART_NAME = 'acme verify';
+
+    private const string LATEST_LINE = '\x1B[31mlatest line';
+
     private PartRun $part;
 
     protected function setUp(): void
@@ -40,7 +44,7 @@ final class ActivityProjectionTest extends TestCase
         ProcessOutputDisk::fake();
         Event::fake([RunChanged::class]);
         $run = ProcessRun::create(ActorIdentity::system(), TestRunAdmissions::of());
-        $this->part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));
+        $this->part = PartRun::create($run, new PartKey(1, 1, self::PART_NAME));
         $this->part->start('host', 1);
         $bytes = <<<TEXT
         first
@@ -55,10 +59,10 @@ final class ActivityProjectionTest extends TestCase
     {
         $activity = $this->activity();
 
-        $this->assertSame('acme verify', $activity->name);
+        $this->assertSame(self::PART_NAME, $activity->name);
         $this->assertSame('running', $activity->lifecycle);
         $this->assertSame(['stdout' => 23], $activity->bytes);
-        $this->assertSame('\x1B[31mlatest line', $activity->latestLine);
+        $this->assertSame(self::LATEST_LINE, $activity->latestLine);
         $this->assertGreaterThanOrEqual(0, $activity->elapsedSeconds);
         $this->assertSame(
             ['partRunId', 'name', 'lifecycle', 'elapsedSeconds', 'bytes', 'lastActivityAt', 'latestLine'],

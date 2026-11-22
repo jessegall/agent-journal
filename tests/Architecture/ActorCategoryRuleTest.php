@@ -18,6 +18,10 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app and the domains.')]
 final class ActorCategoryRuleTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'Ask whether the actor may do the thing (an ability), never what kind it is.';
+
+    private const string ACTOR_TYPE_FINDING = 'chooses behaviour by an ActorType case';
+
     /**
      * Where an ActorType case stays allowed, each with why it chooses no behaviour; the list only shrinks.
      */
@@ -42,7 +46,7 @@ final class ActorCategoryRuleTest extends TestCase
             }
         }
 
-        $this->assertSame([], $findings, 'Ask whether the actor may do the thing (an ability), never what kind it is.');
+        $this->assertSame([], $findings, self::HOW_TO_FIX);
     }
 
     public function test_the_scan_finds_a_choice_on_the_agent_type(): void
@@ -52,6 +56,6 @@ final class ActorCategoryRuleTest extends TestCase
         $findings = ActorCategoryScan::findingsIn(ParsedFile::fromPath($fixture));
 
         $this->assertCount(1, $findings);
-        $this->assertStringContainsString('chooses behaviour by an ActorType case', $findings[0]);
+        $this->assertStringContainsString(self::ACTOR_TYPE_FINDING, $findings[0]);
     }
 }
