@@ -161,7 +161,7 @@ final class ProfileStartTest extends TestCase
     public function test_a_start_the_host_cannot_run_is_refused_before_a_session(): void
     {
         $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
-        Host::query()->update(['combinations' => []]);
+        Host::query()->update(['descriptors' => []]);
         $sessions = AgentSession::query()->count();
 
         try {
@@ -178,7 +178,7 @@ final class ProfileStartTest extends TestCase
     {
         $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
         $old = $this->start('default', null);
-        Host::query()->update(['combinations' => []]);
+        Host::query()->update(['descriptors' => []]);
         $requestId = strtolower((string) Str::ulid());
 
         $refused = $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
@@ -194,7 +194,7 @@ final class ProfileStartTest extends TestCase
     {
         $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
         $old = $this->start('default', null);
-        Host::query()->update(['combinations' => []]);
+        Host::query()->update(['descriptors' => []]);
         $codex = $this->accounts['codex'];
         $switch = [
             'requestId' => strtolower((string) Str::ulid()),

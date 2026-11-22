@@ -13,7 +13,6 @@ use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\HostCredentialRejected;
 use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Values\BrowserInputCapabilities;
-use App\Agents\Values\HostCombination;
 use App\Agents\Values\ProtectionReport;
 use App\Agents\Values\StartProposal;
 use App\Drivers\Enums\HookDriver;
@@ -37,7 +36,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ArrangementType $arrangement
  * @property array<string, StoredReport> $protection
  * @property int|null $protocol_version
- * @property list<array{driver: string, build: string, arrangement: string, placement: string, variant: string}> $combinations
+ * @property list<array{key: string, build: string, protocol_version: int, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}> $descriptors
  * @property CarbonImmutable|null $revoked_at
  * @property bool $browser_input
  * @property bool $browser_keys
@@ -63,7 +62,7 @@ final class Host extends Model implements ReadableModel
             'arrangement' => ArrangementType::class,
             'start_roots' => 'array',
             'protection' => 'array',
-            'combinations' => 'array',
+            'descriptors' => 'array',
             'browser_input' => 'boolean',
             'browser_keys' => 'boolean',
             'browser_paste' => 'boolean',
@@ -162,7 +161,7 @@ final class Host extends Model implements ReadableModel
     ): self {
         foreach (self::serving() as $host) {
             if ($host->runsPlacement($placement) && $host->speaksCurrentProtocol()
-                && $host->declaresCombination($driver, $build, $placement, $variant)) {
+                && $host->declaresRun($driver, $build, $placement, $variant)) {
                 return $host;
             }
         }
@@ -179,15 +178,14 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * Keeps the protocol version the host speaks and the combinations it reported it can run, in place of the ones it
-     * reported before.
+     * Keeps the protocol version the host speaks and the drivers it enrolled, in place of the ones it enrolled before.
      *
-     * @param  list<array{driver: string, build: string, arrangement: string, placement: string, variant: string}>  $combinations
+     * @param  list<array{key: string, build: string, protocol_version: int, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>  $descriptors
      */
-    public function recordCombinations(int $protocolVersion, array $combinations): void
+    public function recordDescriptors(int $protocolVersion, array $descriptors): void
     {
         $this->protocol_version = $protocolVersion;
-        $this->combinations = $combinations;
+        $this->descriptors = $descriptors;
         $this->save();
     }
 
@@ -264,39 +262,54 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * Whether the host reported it can run the proposed driver build, in its own arrangement, placement and variant.
+     * Whether the host enrolled the proposed driver build as available, in its own arrangement, placement and mode.
      */
     public function declares(StartProposal $proposal): bool
     {
-        return $this->declaresCombination($proposal->driver, $proposal->build, $proposal->placement, $proposal->variant);
+        return $this->declaresRun($proposal->driver, $proposal->build, $proposal->placement, $proposal->variant);
     }
 
     /**
-     * Whether the host reported it can run this driver build, in its own arrangement, the placement and the variant.
+     * Whether the host enrolled this driver build as available, in its own arrangement, the placement and the mode.
      */
-    public function declaresCombination(
-        HookDriver $driver,
-        string $build,
-        ExecutionModeType $placement,
-        DriverVariant $variant,
-    ): bool {
-        $combination = new HostCombination($driver, $build, $this->arrangement, $placement, $variant);
-
-        return in_array($combination->stored(), $this->combinations, false);
-    }
-
-    /**
-     * Whether the host reported it can run the driver at all, in any build, placement or variant.
-     */
-    public function declaresDriver(HookDriver $driver): bool
+    public function declaresRun(HookDriver $driver, string $build, ExecutionModeType $placement, DriverVariant $mode): bool
     {
-        foreach ($this->combinations as $combination) {
-            if ($combination['driver'] === $driver->value) {
+        foreach ($this->availableDescriptors() as $descriptor) {
+            if ($descriptor['family'] === $driver->value
+                && $descriptor['mode'] === $mode->value
+                && $descriptor['build'] === $build
+                && $descriptor['arrangement'] === $this->arrangement->value
+                && $descriptor['placement'] === $placement->value) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Whether the host enrolled any available driver of the family, in any build, placement or mode.
+     */
+    public function declaresDriver(HookDriver $driver): bool
+    {
+        foreach ($this->availableDescriptors() as $descriptor) {
+            if ($descriptor['family'] === $driver->value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<array{key: string, build: string, protocol_version: int, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>
+     */
+    private function availableDescriptors(): array
+    {
+        return array_values(array_filter(
+            $this->descriptors,
+            fn (array $descriptor) => $descriptor['unavailable_reason'] === null,
+        ));
     }
 
     /**

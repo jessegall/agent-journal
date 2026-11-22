@@ -117,7 +117,7 @@ func (binder bindingRelay) run(parent context.Context) error {
 	for sequence := 1; ctx.Err() == nil && time.Now().Before(idleEnds()); sequence++ {
 		receipt, err := journal.ReportPresence(ctx, binder.binding.BindingID, client.PresenceReport{
 			BootID: bootID, Sequence: sequence, Release: binder.release,
-			Protocol: client.RemoteProjectProtocolVersion, Combinations: isolatedCombinations(),
+			Protocol: client.RemoteProjectProtocolVersion, Descriptors: isolatedDescriptors(),
 			Provisioning: "succeeded", Takeover: sequence == 1,
 			SetupGeneration: project.Folder{Root: binder.binding.CanonicalRoot}.SetupGeneration(),
 			Reconciled:      reconciliation.reportNow(),
@@ -159,7 +159,7 @@ func (binder bindingRelay) serveClaims(
 	opener := runtimeOpener{stateFolder: folder, installationFolder: binder.installation.Folder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(),
 		hookCommand: filepath.Join(binder.installation.Folder, "bin", "journal-hook"), socket: socket,
-		declared:   isolatedCombinations(),
+		declared:   isolatedDescriptors(),
 		worktrees:  &host.NativeWorktrees{Root: binder.binding.CanonicalRoot, Git: "git"},
 		relayState: binder.state.Folder}
 	opener.usage = host.NewUsageReports(folder)

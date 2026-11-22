@@ -13,6 +13,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\ProjectInvitation;
 use App\Connections\Values\InstallTicket;
+use App\Drivers\Support\DefaultDrivers;
 use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Settings\Values\SettingReference;
 use Carbon\CarbonImmutable;
@@ -132,17 +133,17 @@ trait ConnectsProjects
     private function reportClaudeCode(string $nonce, string $bindingId): void
     {
         $this->reportPresence($nonce, $bindingId, [[
-            'driver' => 'claude-code', 'build' => '2.1.323', 'arrangement' => 'local',
-            'placement' => 'protected_host', 'variant' => 'terminal',
+            'key' => 'claude-code', 'build' => '2.1.323', 'protocolVersion' => DefaultDrivers::PROTOCOL_VERSION,
+            'arrangement' => 'local', 'placement' => 'protected_host',
         ]]);
     }
 
     /**
-     * Reports the binding's relay present on a set-up folder and reconciled, able to run the given combinations.
+     * Reports the binding's relay present on a set-up folder and reconciled, able to run the given drivers.
      *
-     * @param  list<array<string, string>>  $combinations
+     * @param  list<array<string, string|int>>  $descriptors
      */
-    private function reportPresence(string $nonce, string $bindingId, array $combinations): void
+    private function reportPresence(string $nonce, string $bindingId, array $descriptors): void
     {
         $this->signedRelayCall(
             $this->relayCredential($nonce),
@@ -152,7 +153,7 @@ trait ConnectsProjects
                 'sequence' => 1,
                 'release' => '1.0.0',
                 'protocol' => HostProtocolVersion::RemoteProject->value,
-                'combinations' => $combinations,
+                'descriptors' => $descriptors,
                 'provisioning' => 'succeeded',
                 'takeover' => false,
                 'setupGeneration' => 1,

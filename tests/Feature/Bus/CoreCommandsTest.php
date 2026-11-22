@@ -11,7 +11,7 @@ use App\Agents\Commands\FenceProfileRevision\FenceProfileRevisionCommand;
 use App\Agents\Commands\MergeReviewedWork\MergeReviewedWorkCommand;
 use App\Agents\Commands\RecheckDriverSwitch\RecheckDriverSwitchCommand;
 use App\Agents\Commands\ReconcileStarts\ReconcileStartsCommand;
-use App\Agents\Commands\RecordHostCombinations\RecordHostCombinationsCommand;
+use App\Agents\Commands\RecordHostDescriptors\RecordHostDescriptorsCommand;
 use App\Agents\Commands\RecordHostProtection\RecordHostProtectionCommand;
 use App\Agents\Commands\ReportCleanup\ReportCleanupCommand;
 use App\Agents\Commands\ReportFailure\ReportFailureCommand;
@@ -158,7 +158,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReportFailureCommand::class,
             ReconcileStartsCommand::class,
             RecordHostProtectionCommand::class,
-            RecordHostCombinationsCommand::class,
+            RecordHostDescriptorsCommand::class,
             ReportCleanupCommand::class,
             ReportWorkspaceReadCommand::class,
             RecordScriptStepResultCommand::class,

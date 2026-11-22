@@ -8,6 +8,10 @@ use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Exceptions\HostProtocolMismatch;
 use App\Agents\Models\Host;
 use App\Agents\Models\StartRecord;
+use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\HostDescriptorEnrollment;
+use App\Drivers\Support\DefaultDrivers;
+use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
@@ -46,25 +50,70 @@ final class HostProtocolTest extends TestCase
             ->assertJsonPath('protocolVersions', HostProtocolVersion::spoken());
     }
 
-    public function test_a_host_of_this_protocol_claims_and_keeps_its_version_and_combinations(): void
+    public function test_a_host_enrolls_the_four_default_drivers_it_advertises(): void
+    {
+        $host = $this->enrolledHost();
+        $this->hostCall($host, self::CLAIM)->assertOk();
+        $keys = ['claude-code', 'claude-code-headless', 'codex', 'codex-headless'];
+
+        $this->report($host, array_map(fn (string $key) => $this->descriptor($key), $keys))->assertNoContent();
+
+        $stored = Host::query()->findOrFail($host->hostId);
+        $this->assertSame(HostProtocolVersion::current()->value, $stored->protocol_version);
+        $this->assertSame($keys, array_column($stored->descriptors, 'key'));
+        $this->assertSame([null, null, null, null], array_column($stored->descriptors, 'unavailable_reason'));
+    }
+
+    public function test_an_incompatible_protocol_or_unknown_key_is_unavailable_while_the_others_stay_selectable(): void
     {
         $host = $this->enrolledHost();
         $this->hostCall($host, self::CLAIM)->assertOk();
 
-        $combination = [
-            'driver' => 'claude-code',
-            'build' => '2.1.323',
-            'arrangement' => 'local',
-            'placement' => 'protected_host',
-            'variant' => 'headless',
-        ];
-        $this->hostCall($host, '/host/reports/combinations', [
-            'protocolVersion' => HostProtocolVersion::current()->value,
-            'combinations' => [$combination],
+        $this->report($host, [
+            $this->descriptor('claude-code'),
+            $this->descriptor('codex-headless', DefaultDrivers::PROTOCOL_VERSION + 1),
+            $this->descriptor('acme/reader'),
         ])->assertNoContent();
 
-        $stored = Host::query()->findOrFail($host->hostId);
-        $this->assertSame(HostProtocolVersion::current()->value, $stored->protocol_version);
-        $this->assertEquals([$combination], $stored->combinations);
+        $this->assertSame(
+            [null, HostDescriptorEnrollment::PROTOCOL_INCOMPATIBLE, HostDescriptorEnrollment::UNKNOWN_DRIVER],
+            array_column(Host::query()->findOrFail($host->hostId)->descriptors, 'unavailable_reason'),
+        );
+    }
+
+    public function test_a_driver_advertised_twice_refuses_the_report(): void
+    {
+        $host = $this->enrolledHost();
+        $this->hostCall($host, self::CLAIM)->assertOk();
+
+        $this->report($host, [$this->descriptor('claude-code'), $this->descriptor('claude-code')])
+            ->assertStatus(409);
+
+        $this->assertSame([], Host::query()->findOrFail($host->hostId)->descriptors);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $descriptors
+     */
+    private function report(EnrolledHost $host, array $descriptors): TestResponse
+    {
+        return $this->hostCall($host, '/host/reports/descriptors', [
+            'protocolVersion' => HostProtocolVersion::current()->value,
+            'descriptors' => $descriptors,
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function descriptor(string $key, int $protocolVersion = DefaultDrivers::PROTOCOL_VERSION): array
+    {
+        return [
+            'key' => $key,
+            'build' => '2.1.323',
+            'protocolVersion' => $protocolVersion,
+            'arrangement' => 'local',
+            'placement' => 'protected_host',
+        ];
     }
 }

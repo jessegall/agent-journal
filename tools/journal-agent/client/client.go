@@ -585,24 +585,25 @@ func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport
 	return client.call(ctx, "/host/reports/heartbeat", report, nil)
 }
 
-// HostCombination mirrors App\Agents\Data\HostCombinationData: one way this host can run an agent.
-type HostCombination struct {
-	Driver      string `json:"driver"`
-	Build       string `json:"build"`
-	Arrangement string `json:"arrangement"`
-	Placement   string `json:"placement"`
-	Variant     string `json:"variant"`
+// HostDescriptor mirrors App\Agents\Data\HostDescriptorData: one driver registration this host runs, by its key,
+// with the build it pins, the driver protocol it speaks and where it runs it.
+type HostDescriptor struct {
+	Key             string `json:"key"`
+	Build           string `json:"build"`
+	ProtocolVersion int    `json:"protocolVersion"`
+	Arrangement     string `json:"arrangement"`
+	Placement       string `json:"placement"`
 }
 
-// HostCombinations mirrors App\Agents\Data\HostCombinationsData: the protocol version and what the host can run.
-type HostCombinations struct {
-	ProtocolVersion int               `json:"protocolVersion"`
-	Combinations    []HostCombination `json:"combinations"`
+// HostDescriptors mirrors App\Agents\Data\HostDescriptorsData: the host protocol and every driver this host runs.
+type HostDescriptors struct {
+	ProtocolVersion int              `json:"protocolVersion"`
+	Descriptors     []HostDescriptor `json:"descriptors"`
 }
 
-// ReportCombinations tells the journal which protocol this host speaks and which combinations it can run.
-func (client *Client) ReportCombinations(ctx context.Context, combinations []HostCombination) error {
-	return client.call(ctx, "/host/reports/combinations", HostCombinations{HostProtocolVersion, combinations}, nil)
+// ReportDescriptors tells the journal which protocol this host speaks and which drivers it runs.
+func (client *Client) ReportDescriptors(ctx context.Context, descriptors []HostDescriptor) error {
+	return client.call(ctx, "/host/reports/descriptors", HostDescriptors{HostProtocolVersion, descriptors}, nil)
 }
 
 func (client *Client) ReportProtection(ctx context.Context, report ProtectionReport) error {

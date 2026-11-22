@@ -13,10 +13,14 @@ use App\Agents\Enums\StartPreflightRefusal;
 use App\Agents\Exceptions\StartPreflightRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\Host;
-use App\Agents\Values\HostCombination;
+use App\Agents\Support\HostDescriptorEnrollment;
+use App\Agents\Values\EnrolledDescriptor;
+use App\Agents\Values\HostDescriptor;
 use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\StartProposal;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -81,15 +85,19 @@ final class StartPreflightTest extends TestCase
     private function containedHost(array $variants): void
     {
         $host = Host::create('contained host', 'secret', [base_path()], ArrangementType::Contained);
-        $host->recordCombinations(HostProtocolVersion::current()->value, array_map(
-            fn (DriverVariant $variant) => new HostCombination(
-                HookDriver::ClaudeCode,
+        $descriptors = array_map(
+            fn (DriverVariant $variant) => new HostDescriptor(
+                $this->app->make(DriverCatalogue::class)->keyFor(HookDriver::ClaudeCode->value, $variant),
                 self::BUILD,
+                DefaultDrivers::PROTOCOL_VERSION,
                 ArrangementType::Contained,
                 ExecutionModeType::RequiredContainer,
-                $variant,
-            )->stored(),
+            ),
             $variants,
+        );
+        $host->recordDescriptors(HostProtocolVersion::current()->value, array_map(
+            fn (EnrolledDescriptor $descriptor) => $descriptor->stored(),
+            $this->app->make(HostDescriptorEnrollment::class)->enroll($descriptors),
         ));
     }
 

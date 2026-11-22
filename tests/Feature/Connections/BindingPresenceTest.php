@@ -163,7 +163,7 @@ final class BindingPresenceTest extends TestCase
                 'sequence' => $sequence,
                 'release' => '1.0.0',
                 'protocol' => HostProtocolVersion::RemoteProject->value,
-                'combinations' => [],
+                'descriptors' => [],
                 'provisioning' => 'succeeded',
                 'takeover' => $takeover,
                 'setupGeneration' => $setupGeneration,

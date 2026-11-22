@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Connections;
 
-use App\Agents\Data\HostCombinationData;
+use App\Agents\Data\HostDescriptorData;
 use App\Connections\Values\PresenceReport;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\Validation\In;
@@ -21,7 +21,7 @@ use Spatie\LaravelData\Data;
 final class PresenceReportData extends Data
 {
     /**
-     * @param  list<HostCombinationData>  $combinations
+     * @param  list<HostDescriptorData>  $descriptors
      */
     public function __construct(
         #[Max(128)]
@@ -32,8 +32,8 @@ final class PresenceReportData extends Data
         public readonly string $release,
         public readonly int $protocol,
         #[Present]
-        #[DataCollectionOf(HostCombinationData::class)]
-        public readonly array $combinations,
+        #[DataCollectionOf(HostDescriptorData::class)]
+        public readonly array $descriptors,
         #[In(['succeeded', 'failed'])]
         public readonly string $provisioning,
         public readonly bool $takeover = false,
@@ -52,7 +52,7 @@ final class PresenceReportData extends Data
             $this->provisioning === 'succeeded',
             $this->takeover,
             $this->setupGeneration,
-            array_map(fn (HostCombinationData $combination) => $combination->combination(), $this->combinations),
+            array_map(fn (HostDescriptorData $descriptor) => $descriptor->descriptor(), $this->descriptors),
             $this->reconciled,
         );
     }

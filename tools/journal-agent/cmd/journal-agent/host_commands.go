@@ -148,7 +148,7 @@ func serve(arguments []string) error {
 	journal := client.New(enrollment).WithArrangement(string(arrangement)).WithBrowserInput()
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket,
-		declared: combinationsOf(arrangement)}
+		declared: descriptorsOf(arrangement)}
 	prerequisites := localPrerequisites(*stateFolder, *installationFolder)
 	if arrangement.IsContained() {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
@@ -186,8 +186,8 @@ func serve(arguments []string) error {
 		}
 	}
 	// The journal refuses every call of a host of another protocol, so this report fails first when the versions differ.
-	if err := journal.ReportCombinations(ctx, combinationsOf(arrangement)); err != nil {
-		return fmt.Errorf("the journal did not take this host's combinations: %w", err)
+	if err := journal.ReportDescriptors(ctx, descriptorsOf(arrangement)); err != nil {
+		return fmt.Errorf("the journal did not take this host's drivers: %w", err)
 	}
 	outcomes, err := host.ReconcileOnBoot(ctx, journal, preparation.States, reports, sessions)
 	if err != nil {
@@ -232,8 +232,8 @@ type runtimeOpener struct {
 	containers   host.Containers
 	installation host.InstallationName
 	reportExit   func(ctx context.Context, report client.LivenessReport) error
-	// declared is every combination this host told the journal it can run; a grant for any other is refused.
-	declared []client.HostCombination
+	// declared is every driver this host advertised to the journal; a grant for any other is refused.
+	declared []client.HostDescriptor
 	// usage queues what the usage readers of each start observed, for its own worker to send.
 	usage *host.UsageReports
 	// statusLines are the sockets where terminal starts' status-line readers hand their windows.
@@ -256,8 +256,9 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if !known {
 		return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Driver)
 	}
-	if !declares(opener.declared, grant.Runtime.Driver, grant.Runtime.DriverBuild, grant.Runtime.Variant) {
-		return nil, fmt.Errorf("runtime %s: %w", runtimeID, ErrCombinationNotDeclared)
+	if !advertises(opener.declared, grant.Runtime.DriverKey, grant.Runtime.DriverBuild) {
+		return nil, fmt.Errorf("runtime %s runs %s at %s: %w", runtimeID, grant.Runtime.DriverKey,
+			grant.Runtime.DriverBuild, ErrDriverNotAdvertised)
 	}
 	if err := pinnedBuild(profile, grant.Runtime.DriverBuild); err != nil {
 		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)

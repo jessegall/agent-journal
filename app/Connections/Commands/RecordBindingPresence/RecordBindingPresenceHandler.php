@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Connections\Commands\RecordBindingPresence;
 
-use App\Agents\Values\HostCombination;
+use App\Agents\Support\HostDescriptorEnrollment;
+use App\Agents\Values\EnrolledDescriptor;
 use App\Connections\Exceptions\PresenceRefused;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Values\PresenceReceipt;
@@ -16,6 +17,8 @@ use App\Contracts\CommandHandler;
  */
 final readonly class RecordBindingPresenceHandler implements CommandHandler
 {
+    public function __construct(private HostDescriptorEnrollment $enrollment) {}
+
     public function handle(RecordBindingPresenceCommand $command): PresenceReceipt
     {
         $binding = ProjectBinding::lockById($command->bindingId);
@@ -26,9 +29,12 @@ final readonly class RecordBindingPresenceHandler implements CommandHandler
 
         $receipt = $binding->recordPresence($command->report);
 
-        $binding->host->recordCombinations(
+        $binding->host->recordDescriptors(
             $command->report->protocol,
-            array_map(fn (HostCombination $combination) => $combination->stored(), $command->report->combinations),
+            array_map(
+                fn (EnrolledDescriptor $descriptor) => $descriptor->stored(),
+                $this->enrollment->enroll($command->report->descriptors),
+            ),
         );
 
         return $receipt;

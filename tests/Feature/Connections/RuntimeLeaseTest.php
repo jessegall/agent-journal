@@ -75,7 +75,7 @@ final class RuntimeLeaseTest extends TestCase
             "/host/bindings/{$binding->id}/presence",
             [
                 'bootId' => 'boot-1', 'sequence' => 1, 'release' => '1.0.0',
-                'protocol' => HostProtocolVersion::RemoteProject->value, 'combinations' => [],
+                'protocol' => HostProtocolVersion::RemoteProject->value, 'descriptors' => [],
                 'provisioning' => 'succeeded', 'takeover' => false,
             ],
             HostProtocolVersion::RemoteProject,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Connections\Values;
 
-use App\Agents\Values\HostCombination;
+use App\Agents\Values\HostDescriptor;
 
 /**
  * One presence report of a binding's relay: the boot that sends it, its monotonic sequence within that boot, the
@@ -15,7 +15,7 @@ use App\Agents\Values\HostCombination;
 final readonly class PresenceReport
 {
     /**
-     * @param  list<HostCombination>  $combinations
+     * @param  list<HostDescriptor>  $descriptors
      */
     public function __construct(
         public string $bootId,
@@ -25,7 +25,7 @@ final readonly class PresenceReport
         public bool $isProvisioned,
         public bool $takesOver,
         public int $setupGeneration,
-        public array $combinations = [],
+        public array $descriptors = [],
         public bool $isReconciled = false,
     ) {}
 }

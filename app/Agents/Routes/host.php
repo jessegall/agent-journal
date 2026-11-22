@@ -6,7 +6,7 @@ use App\Http\Controllers\Agents\Host\ActivityReportController;
 use App\Http\Controllers\Agents\Host\ClaimRequestsController;
 use App\Http\Controllers\Agents\Host\ClaimStartController;
 use App\Http\Controllers\Agents\Host\CleanupReportController;
-use App\Http\Controllers\Agents\Host\CombinationsReportController;
+use App\Http\Controllers\Agents\Host\DescriptorsReportController;
 use App\Http\Controllers\Agents\Host\ExitReportController;
 use App\Http\Controllers\Agents\Host\HeartbeatReportController;
 use App\Http\Controllers\Agents\Host\InterruptNavigationController;
@@ -58,7 +58,7 @@ Route::prefix('host')->middleware('journal.host:1,2')->name('agents.host.')->gro
     Route::post('/reports/exit', ExitReportController::class)->name('reports.exit');
     Route::post('/reports/screen', ScreenReportController::class)->name('reports.screen');
     Route::post('/reports/protection', ProtectionReportController::class)->name('reports.protection');
-    Route::post('/reports/combinations', CombinationsReportController::class)->name('reports.combinations');
+    Route::post('/reports/descriptors', DescriptorsReportController::class)->name('reports.descriptors');
     Route::get('/stop-attempts', PendingStopAttemptsController::class)->name('stop-attempts.pending');
     Route::post('/stop-attempts/{attempt}/results', StopResultsController::class)->name('stop-attempts.results');
     Route::post('/starts/claim', ClaimStartController::class)->name('starts.claim');

@@ -146,7 +146,7 @@ final class BindingStartTest extends TestCase
                 'sequence' => 1,
                 'release' => '1.0.0',
                 'protocol' => HostProtocolVersion::RemoteProject->value,
-                'combinations' => [],
+                'descriptors' => [],
                 'provisioning' => 'succeeded',
                 'takeover' => true,
                 'setupGeneration' => 1,

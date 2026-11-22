@@ -72,7 +72,7 @@ type PresenceReport struct {
 	Sequence     int               `json:"sequence"`
 	Release      string            `json:"release"`
 	Protocol     int               `json:"protocol"`
-	Combinations []HostCombination `json:"combinations"`
+	Descriptors  []HostDescriptor  `json:"descriptors"`
 	Provisioning string            `json:"provisioning"`
 	Takeover     bool              `json:"takeover"`
 	// SetupGeneration is the folder's setup generation, which rises on every setup or resume of it.
