@@ -21,6 +21,7 @@ final readonly class TaskGraphLock
     {
         $environmentOf = Task::query()->whereKey([$dependentId, $prerequisiteId])
             ->readExactly(2)->pluck('environment_id', 'id')->all();
+
         Task::lockWaitGraphs(array_values(array_map(strval(...), $environmentOf)));
 
         $ids = array_keys($environmentOf);

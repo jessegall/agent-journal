@@ -14,8 +14,8 @@ final readonly class StartRemedy
 {
     private function __construct(
         public StartRemedyType $type,
-        private string $text,
-        private bool $isForOperators,
+        public string $text,
+        public bool $isForOperators,
     ) {}
 
     public static function forEveryone(StartRemedyType $type, string $text): self

@@ -99,6 +99,7 @@ final class PlanTalliesTest extends TestCase
             $complete->id => $current[$complete->id],
             $cancelledFirst->id => $current[$cancelledFirst->id],
         ]);
+
         $this->assertArrayNotHasKey($bare->id, $current);
     }
 
@@ -116,6 +117,7 @@ final class PlanTalliesTest extends TestCase
     private function planWithTasks(string $title, int $count): Plan
     {
         $plan = Plan::factory()->create(['title' => $title]);
+
         $this->structure()->addTasks(
             $this->structure()->addPhase($plan, 'Work'),
             array_values(Task::factory()->count($count)->create()->modelKeys()),
@@ -132,9 +134,11 @@ final class PlanTalliesTest extends TestCase
     private function rowsLoadedReading(string $title): array
     {
         $models = 0;
+
         Event::listen('eloquent.retrieved: *', function () use (&$models): void {
             $models++;
         });
+
         DB::flushQueryLog();
         DB::enableQueryLog();
 

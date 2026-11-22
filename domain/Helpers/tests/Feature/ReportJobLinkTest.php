@@ -65,6 +65,7 @@ final class ReportJobLinkTest extends TestCase
         $this->linking()->link($report, $other, $this->startFor($job, $other));
 
         $this->assertSame(0, ReportJobLink::query()->count());
+
         $this->assertSame(
             ReportJobDiscrepancyReason::FilerMismatch,
             ReportJobDiscrepancy::query()->where('report_id', $report->id)->sole()->reason,

@@ -196,6 +196,7 @@ use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\CapabilityStatusType;
+use App\Agents\Enums\CapacityResource;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverFailure;
 use App\Agents\Enums\DriverOperation;
@@ -206,6 +207,8 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\HostCapabilityType;
+use App\Agents\Enums\HostRefusal;
+use App\Agents\Enums\HostWakeRefusal;
 use App\Agents\Enums\LaunchCandidateRank;
 use App\Agents\Enums\LaunchProfileType;
 use App\Agents\Enums\MenuEntryState;
@@ -226,6 +229,7 @@ use App\Agents\Enums\SessionState;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Enums\StartRefusalType;
+use App\Agents\Enums\StartRemedyType;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Enums\StatusActionType;
 use App\Agents\Enums\WorkspaceUse;
@@ -305,6 +309,7 @@ use App\Agents\Support\SecurityOptions;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRecordDetails;
+use App\Agents\Support\StartRemedy;
 use App\Agents\Support\StatusAction;
 use App\Agents\Support\StatusOperation;
 use App\Agents\Support\TerminalViewReceipt;
@@ -335,6 +340,7 @@ use App\Agents\Values\Operation as PolicyOperation;
 use App\Agents\Values\OperationGrant;
 use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\ReadRequest;
+use App\Agents\Values\RequestReportBinding;
 use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\ScriptGoal;
 use App\Agents\Values\ScriptParameter;
@@ -817,6 +823,7 @@ use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Data\PaginationData;
 use App\Http\Data\Profiles\EligibleAccountData;
 use App\Http\Data\Profiles\EligibleAccountsData;
+use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Links\Events\LinksRemoved;
 use App\Links\Exceptions\UnknownLinkType;
@@ -932,6 +939,7 @@ use App\Processes\Values\NextStep;
 use App\Processes\Values\OptionGrammar;
 use App\Processes\Values\OutputContract;
 use App\Processes\Values\PartClassification;
+use App\Processes\Values\PartProjection;
 use App\Processes\Values\ProcessGrants;
 use App\Processes\Values\ProgramIdentity;
 use App\Processes\Values\ProgramSpellings;
@@ -1664,7 +1672,6 @@ final class CoreApi
                 DockCard::class,
                 DockDestination::class,
                 DockIdentity::class,
-                DockablePublicationData::class,
                 DockLink::class,
                 Duration::class,
                 EnvironmentTask::class,
@@ -1775,7 +1782,6 @@ final class CoreApi
                 HeldAccountUses::class,
                 SignInStarted::class,
                 AccountProcessRole::class,
-                StartUnavailableReason::class,
                 DriverFailure::class,
                 ModelSelection::class,
                 HostCombination::class,
@@ -1786,7 +1792,6 @@ final class CoreApi
                 ProfileDefaults::class,
                 ModelSelectionType::class,
                 DriverSourceType::class,
-                StartRefusalType::class,
                 StartRequest::class,
                 StartReceipt::class,
                 StartRecordDetails::class,
@@ -1851,9 +1856,20 @@ final class CoreApi
                 SessionOption::class,
                 AgentOption::class,
                 AgentStatus::class,
+                LaunchOutcome::class,
+                StartUnavailableReason::class,
+                StartRefusalType::class,
+                StartRemedy::class,
+                StartRemedyType::class,
+                DockablePublicationData::class,
+                PublicationPage::class,
+                PartProjection::class,
+                HostWakeRefusal::class,
+                HostRefusal::class,
+                RequestReportBinding::class,
+                CapacityResource::class,
                 StatusAction::class,
                 StatusOperation::class,
-                LaunchOutcome::class,
                 ResumableConversation::class,
                 StackTarget::class,
                 Decision::class,
@@ -2083,7 +2099,6 @@ final class CoreApi
                 LayoutBodyData::class,
                 LayoutNativeData::class,
                 PublicationTab::class,
-                PublicationPage::class,
                 LayoutPartData::class,
                 LayoutRowData::class,
                 LayoutTag::class,
@@ -2693,6 +2708,7 @@ final class CoreApi
                 HasNumber::class,
                 AssignableListing::class,
                 TextSearch::class,
+                ReadsIdempotencyKey::class,
                 ReadsRouteNumber::class,
                 JournalTool::class,
                 JournalReadTool::class,

@@ -66,7 +66,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      * Writes the line against the run after the task's last line and tells it; the caller holds the task's row, so
      * two lines of one task never take the same place.
      */
-    public static function record(Task $task, TaskRun $run, ActorIdentity $actor, string $text): self
+    public static function create(Task $task, TaskRun $run, ActorIdentity $actor, string $text): self
     {
         $entry = new self([
             'task_id' => $task->id,
@@ -77,6 +77,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             'text' => $text,
             'sequence' => (int) self::query()->where('task_id', $task->id)->max('sequence') + 1,
         ]);
+
         $entry->assertSaved($entry->save());
         $entry->raise(new TaskLogged($task->id, $entry->id));
 

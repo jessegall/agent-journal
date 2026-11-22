@@ -18,6 +18,7 @@ use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentRootFinished;
+use App\Assignments\Models\WorkerReservation;
 use App\Assignments\Policies\AssignmentRecipientPolicy;
 use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AdmittedAssignment;
@@ -25,7 +26,6 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
 use App\Assignments\Support\AssignmentFacts;
-use App\Assignments\Models\WorkerReservation;
 use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentReference;
@@ -172,8 +172,10 @@ final readonly class WriteAssignments implements
             throw AssignmentConflict::heldByAnother($group->root);
         }
 
-        foreach ($reservations as $reservation) {
-            $reservation->occupy($group->root);
+        if ($root->isEmpty()) {
+            foreach ($reservations as $reservation) {
+                $reservation->occupy($group->root);
+            }
         }
 
         return $this->published(AssignmentReason::Assigned, $this->each(

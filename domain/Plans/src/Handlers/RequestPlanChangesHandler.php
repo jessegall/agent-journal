@@ -9,7 +9,7 @@ use Domain\Plans\Commands\RequestPlanChanges;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Handlers\Support\PlanCommandHandler;
-use Domain\Plans\Handlers\Support\PlanReviewDecision;
+use Domain\Plans\Support\PlanReviewDecision;
 
 final readonly class RequestPlanChangesHandler extends PlanCommandHandler
 {

@@ -14,7 +14,7 @@ final readonly class RemoveTaskWaitPageController
 {
     public function __invoke(TaskWaitRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new RemoveTaskWait($request->taskId(), $request->prerequisiteId(), $request->requestKey()));
+        $commands->run(new RemoveTaskWait($request->taskId(), $request->prerequisiteId()));
 
         return $redirect->back(303);
     }

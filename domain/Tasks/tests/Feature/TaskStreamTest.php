@@ -55,18 +55,22 @@ final class TaskStreamTest extends TestCase
         $page = $this->app->make(TaskStream::class)->page($task->id, '');
 
         $this->assertCount(4, $page->entries);
+
         $this->assertEqualsCanonicalizing(
             [TaskStreamEntryType::Change, TaskStreamEntryType::Change, TaskStreamEntryType::Log, TaskStreamEntryType::Log],
             array_map(fn (TaskStreamEntryData $entry) => $entry->type, $page->entries),
         );
+
         $this->assertSame(
             [1, 1, 1, 1],
             array_map(fn (TaskStreamEntryData $entry) => $entry->runNumber, $page->entries),
         );
+
         $this->assertContains(
             'Read <b>the</b> schema.',
             array_map(fn (TaskStreamEntryData $entry) => $entry->text, $page->entries),
         );
+
         $this->assertInstanceOf(Optional::class, $page->olderBefore);
     }
 }

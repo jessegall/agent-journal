@@ -42,7 +42,7 @@ final class PlanReviewPhase extends Model implements ReadableModel
         return ['position' => 'integer', 'phase_number' => 'integer', 'phase_revision' => 'integer'];
     }
 
-    public static function record(PlanReviewEdition $edition, int $position, Phase $phase): self
+    public static function create(PlanReviewEdition $edition, int $position, Phase $phase): self
     {
         return self::query()->create([
             'edition_id' => $edition->id,
@@ -64,6 +64,6 @@ final class PlanReviewPhase extends Model implements ReadableModel
     public static function pageOf(string $editionId, int $afterPosition, int $limit): Collection
     {
         return self::query()->where('edition_id', $editionId)->where('position', '>', $afterPosition)
-            ->orderBy('position')->orderBy('id')->limit($limit)->get();
+            ->orderBy('position')->orderBy('id')->readUpTo($limit)->get();
     }
 }

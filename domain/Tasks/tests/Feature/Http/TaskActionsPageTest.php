@@ -43,6 +43,7 @@ final class TaskActionsPageTest extends TestCase
     public function test_the_page_offers_start_and_a_start_and_block_go_through_the_task_page(): void
     {
         $offered = $this->actingAs($this->owner)->get("/tasks/{$this->task->number}")->assertOk();
+
         $offered->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.actions.mayStart', true)
             ->where('page.data.actions.mayCancel', true)

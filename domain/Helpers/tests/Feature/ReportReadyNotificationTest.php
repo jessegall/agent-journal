@@ -30,12 +30,14 @@ final class ReportReadyNotificationTest extends TestCase
     {
         $atlas = ActorIdentity::of(Agent::create('Atlas '.Str::random(6), 'main-agent'));
         $jo = $this->actAsUser('jo');
+
         $birch = HelperIdentity::create(
             $atlas,
             ActorIdentity::of(Agent::create('Birch '.Str::random(6), 'writing-helper')),
             'writing-helper',
             'writing-helper',
         );
+
         $forAtlas = $this->jobOf($birch, $atlas);
         $forJo = $this->jobOf($birch, $jo);
 

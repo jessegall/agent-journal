@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\StartDisposition;
-use App\Agents\Models\StartRecord;
 
 /**
  * An agent's latest launch: the start request it answers, where it stands, the session it started and the reason a
@@ -20,17 +19,6 @@ final readonly class LaunchOutcome
         public string|null $sessionId,
         public string|null $refusalReason,
     ) {}
-
-    public static function of(StartRecord $record): self
-    {
-        return new self(
-            $record->agent_id,
-            $record->request_id,
-            $record->disposition,
-            $record->session_id,
-            $record->refusal_reason,
-        );
-    }
 
     /**
      * The key a viewer's dismissal of an outcome is kept under: its request id and version.

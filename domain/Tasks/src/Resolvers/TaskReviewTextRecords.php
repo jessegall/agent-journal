@@ -21,6 +21,7 @@ final readonly class TaskReviewTextRecords implements TaskReviewTexts
     {
         $this->actors->actor();
         $ids = array_values(array_unique($taskIds));
+
         $tasks = Task::query()->whereKey($ids)->orderBy('id')->sharedLock()
             ->readExactly(count($ids))->get(['id', 'number', 'title', 'brief', 'revision'])->keyBy('id');
 

@@ -18,11 +18,11 @@ final readonly class PublicationPage
      * @param  list<PublicationTab>  $tabs
      */
     private function __construct(
-        private string $title,
-        private array $metadata,
-        private string $summary,
-        private Closure $body,
-        private array $tabs,
+        public string $title,
+        public array $metadata,
+        public string $summary,
+        public Closure $body,
+        public array $tabs,
     ) {}
 
     /**
@@ -58,6 +58,7 @@ final readonly class PublicationPage
         }
 
         $shown = $this->chosenTab($chosen);
+
         $tabs = array_map(
             fn (PublicationTab $tab) => new LayoutTabData($tab->key, $tab->label, $tab->key === $shown->key),
             $this->tabs,

@@ -19,7 +19,6 @@ use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
 use Spatie\LaravelData\Optional;
-use App\Communication\Resolvers\Support\NotificationChanges;
 
 /**
  * Reads the actor's notifications newest first by sequence, twenty to a page, each target authorized again on every

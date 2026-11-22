@@ -27,6 +27,7 @@ final readonly class RevisionWindowResolver implements PageResolver
     public function read(): DeclaredLayoutData
     {
         $revision = $this->documents->revision($this->request->documentNumber(), $this->request->revisionNumber());
+
         $metadata = [
             LayoutPartData::text('label', "doc {$revision->documentNumber}, revision {$revision->number}", 'code'),
             LayoutPartData::time('saved', 'Saved', $revision->closedAt),

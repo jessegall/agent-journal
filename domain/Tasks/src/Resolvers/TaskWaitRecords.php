@@ -33,10 +33,12 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
         $this->visibility->requireVisible($taskId);
         $waits = TaskWait::waitsOf($taskId, self::MOST_WAITS_SHOWN);
         $holds = TaskWait::holdersOf($taskId, self::MOST_WAITS_SHOWN);
+
         $others = self::tasksOf(array_values([
             ...array_map(strval(...), $waits->pluck('prerequisite_task_id')->all()),
             ...array_map(strval(...), $holds->pluck('dependent_task_id')->all()),
         ]));
+
         $self = Task::ofId($taskId);
 
         return new TaskWaits(
@@ -66,9 +68,11 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
     {
         $this->actors->actor();
         $waits = TaskWait::waitsOfTasks($ids);
+
         $prerequisites = self::tasksOf(
             array_values(array_map(strval(...), $waits->pluck('prerequisite_task_id')->all())),
         );
+
         $blocked = [];
 
         foreach ($waits as $wait) {

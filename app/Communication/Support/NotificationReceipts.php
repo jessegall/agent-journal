@@ -62,7 +62,9 @@ final readonly class NotificationReceipts
         $scope = NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->map(fn (NotificationScope $found) => NotificationScope::lockedById($found->id))
             ->getOrThrow(NotificationUnavailable::create());
+
         $scope->beginMarkAll($through);
+
         $batch = NotificationReceipt::unreadThrough(
             $scope->id,
             $scope->mark_all_after,

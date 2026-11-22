@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\AddTaskWait;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\RemoveTaskWait;
@@ -16,9 +15,9 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Tests\TestCase;
-use Illuminate\Support\Str;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 
 /**
@@ -29,6 +28,7 @@ final class TaskWaitsTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use StartsAgentRequests;
 
     private const array TABLES = [
@@ -61,28 +61,30 @@ final class TaskWaitsTest extends TestCase
 
     public function test_a_cycle_and_a_self_link_are_refused(): void
     {
-        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id, self::key()));
+        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id));
 
         $this->assertThrows(
-            fn () => $this->runCommand(new AddTaskWait($this->first->id, $this->second->id, self::key())),
+            fn () => $this->runCommand(new AddTaskWait($this->first->id, $this->second->id)),
             TaskWaitRefused::class,
         );
+
         $this->assertThrows(
-            fn () => $this->runCommand(new AddTaskWait($this->first->id, $this->first->id, self::key())),
+            fn () => $this->runCommand(new AddTaskWait($this->first->id, $this->first->id)),
             TaskWaitRefused::class,
         );
+
         $this->assertSame(1, TaskWait::query()->count());
     }
 
     public function test_a_waiver_needs_a_reason_and_keeps_who_and_when(): void
     {
-        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id, self::key()));
+        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id));
 
         $this->assertThrows(
-            fn () => $this->runCommand(new WaiveTaskWait($this->second->id, $this->first->id, self::key(), '')),
+            fn () => $this->runCommand(new WaiveTaskWait($this->second->id, $this->first->id, '')),
         );
 
-        $this->runCommand(new WaiveTaskWait($this->second->id, $this->first->id, self::key(), 'Done by hand.'));
+        $this->runCommand(new WaiveTaskWait($this->second->id, $this->first->id, 'Done by hand.'));
 
         $wait = TaskWait::between($this->second->id, $this->first->id);
         $this->assertNotNull($wait?->waived_at);
@@ -92,7 +94,7 @@ final class TaskWaitsTest extends TestCase
 
     public function test_a_cancelled_prerequisite_leaves_the_wait_outstanding_and_history_keeps_every_change(): void
     {
-        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id, self::key()));
+        $this->runCommand(new AddTaskWait($this->second->id, $this->first->id));
         $this->runCommand(new CancelTask($this->first->id, 'Not needed.'));
 
         $this->assertSame([], $this->waits()->readyAmong([$this->second->id]));
@@ -100,12 +102,13 @@ final class TaskWaitsTest extends TestCase
         $this->assertFalse($waits->waitsFor[0]->isSatisfied);
         $this->assertSame($this->second->id, $this->waits()->waitsOf($this->first->id)->holdsUp[0]->taskId);
 
-        $this->runCommand(new RemoveTaskWait($this->second->id, $this->first->id, self::key()));
+        $this->runCommand(new RemoveTaskWait($this->second->id, $this->first->id));
 
         $this->assertSame(
             [TaskWaitChange::Added, TaskWaitChange::Removed],
             TaskWaitHistory::query()->orderBy('created_at')->orderBy('id')->pluck('change')->all(),
         );
+
         $this->assertSame([$this->second->id], $this->waits()->readyAmong([$this->second->id]));
     }
 
@@ -116,11 +119,6 @@ final class TaskWaitsTest extends TestCase
 
     private function runCommand(object $command): void
     {
-        $this->app->make(CommandBus::class)->run($command);
-    }
-
-    private static function key(): string
-    {
-        return (string) Str::uuid();
+        $this->runOnBus($command);
     }
 }

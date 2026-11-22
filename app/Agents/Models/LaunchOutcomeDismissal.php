@@ -7,6 +7,7 @@ namespace App\Agents\Models;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Support\LaunchOutcome;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -35,21 +36,25 @@ final class LaunchOutcomeDismissal extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
 
     /**
-     * The viewer's dismissal of this version of the start's outcome; dismissing it again keeps the one already there.
+     * The viewer's dismissal of this version of the start's outcome; dismissing it again keeps the one already there, by the table's unique key.
      */
-    public static function dismiss(ActorIdentity $viewer, StartRecord $start, StartDisposition $version): self
+    public static function dismiss(ActorIdentity $viewer, StartRecord $start, StartDisposition $version): void
     {
-        return self::query()->firstOrCreate([
+        $dismissal = new self([
             ...$viewer->asColumns('viewer'),
             'agent_id' => $start->agent_id,
             'request_id' => $start->request_id,
             'outcome_version' => $version->value,
         ]);
+
+        $dismissal->id = $dismissal->newUniqueId();
+        $dismissal->insertIfAbsent();
     }
 
     // ----------[ Queries ]----------

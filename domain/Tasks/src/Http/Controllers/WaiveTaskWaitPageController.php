@@ -17,7 +17,6 @@ final readonly class WaiveTaskWaitPageController
         $commands->run(new WaiveTaskWait(
             $request->taskId(),
             $request->prerequisiteId(),
-            $request->requestKey(),
             $request->reason(),
         ));
 

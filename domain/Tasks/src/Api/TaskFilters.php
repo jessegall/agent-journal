@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Api;
 
 use App\Assignments\Support\NumberedPage;
+use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Enums\TaskState;
 
 /**

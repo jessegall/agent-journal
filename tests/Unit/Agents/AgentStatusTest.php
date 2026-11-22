@@ -19,7 +19,7 @@ use App\Agents\Enums\SessionStatus;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StatusActionType;
 use App\Agents\Support\AgentEvidence;
-use App\Agents\Support\AgentStatus;
+use App\Agents\Support\AgentStatusRules;
 use App\Agents\Support\LaunchOutcome;
 use App\Agents\Support\RuntimeEvidence;
 use App\Agents\Support\StartRemedyWords;
@@ -181,7 +181,7 @@ final class AgentStatusTest extends TestCase
         string $label,
         array $actions,
     ): void {
-        $status = AgentStatus::of($evidence, self::words(false));
+        $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame(
             [$state, $label, $actions],
@@ -197,8 +197,8 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = self::stopped(self::launch(StartDisposition::Refused, 'image-unverified'));
 
-        $member = AgentStatus::of($evidence, self::words(false));
-        $operator = AgentStatus::of($evidence, self::words(true));
+        $member = AgentStatusRules::of($evidence, self::words(false));
+        $operator = AgentStatusRules::of($evidence, self::words(true));
 
         $this->assertSame(
             [
@@ -214,7 +214,7 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired));
 
-        $status = AgentStatus::of($evidence, self::words(false));
+        $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame('Ask the host operator to finish setup in the running program.', $status->reason);
     }
@@ -237,8 +237,8 @@ final class AgentStatusTest extends TestCase
             true,
         );
 
-        $status = AgentStatus::of($allowed, self::words(false));
-        $refused = AgentStatus::of(self::live(self::runtime(RuntimeActivity::Running)), self::words(false));
+        $status = AgentStatusRules::of($allowed, self::words(false));
+        $refused = AgentStatusRules::of(self::live(self::runtime(RuntimeActivity::Running)), self::words(false));
 
         $this->assertSame(
             [
@@ -269,7 +269,7 @@ final class AgentStatusTest extends TestCase
             canReconcile: true,
         );
 
-        $status = AgentStatus::of($evidence, self::words(false));
+        $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame(
             ['Start could not be confirmed', 'If the host confirms this step, the approved switch can continue.'],
@@ -282,7 +282,7 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = new AgentEvidence(true, null, null, null, null, false, null, null, null, true, false);
 
-        $status = AgentStatus::of($evidence, self::words(false));
+        $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame([SessionState::Retired, []], [$status->sessionState, $status->actions]);
     }
@@ -291,7 +291,7 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = new AgentEvidence(false, null, null, null, null, false, null, null, null, true, false);
 
-        $status = AgentStatus::of($evidence, self::words(false));
+        $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame(
             [StatusActionType::Start, StatusActionType::Resume],

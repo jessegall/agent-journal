@@ -45,6 +45,6 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
             throw TaskCheckRefused::alreadyRegistered($command->processRunId);
         }
 
-        return TaskCheck::invoke($run, $command->operation, $caller, $command->processRunId)->id;
+        return TaskCheck::create($run, $command->operation, $caller, $command->processRunId)->id;
     }
 }

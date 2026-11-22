@@ -67,11 +67,13 @@ final readonly class RetireAgentHandler implements CommandHandler
             $this->commandFacts->publishAfterCommit(new AccountUseChanged($account));
         }
 
-        foreach (WorkerReservation::lockedFor([AssigneeIdentity::of($target)]) as $reservation) {
+        $assignee = AssigneeIdentity::of($target);
+
+        foreach (WorkerReservation::lockedFor([$assignee]) as $reservation) {
             $reservation->releaseAll();
         }
 
-        $released = $this->store->releaseAll(AssigneeIdentity::of($target));
+        $released = $this->store->releaseAll($assignee);
         $this->facts->publish($caller, AssignmentReason::Retired, $released);
 
         return $released;

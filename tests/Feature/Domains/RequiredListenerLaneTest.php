@@ -8,6 +8,8 @@ use App\Agents\Events\MergeOutcomeRecorded;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\SessionOpened;
 use App\Bus\Support\RequiredListenerRegistry;
+use App\Communication\Events\MessageAnswerRequired;
+use App\Communication\Events\MessageSent;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
@@ -18,10 +20,15 @@ use App\Domains\Support\ListenerOwnership;
 use App\Links\Events\LinksRemoved;
 use App\Pipelines\Contracts\PipelineRunner;
 use App\Processes\Events\OutputChunkCommitted;
+use App\Processes\Events\RunOutcomeRecorded;
 use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Listeners\ReleaseSignInWriter;
 use App\Reflection\Support\CatalogueReflectorFactory;
+use App\Supervision\Events\AskClosed;
+use App\Supervision\Events\AskHopAssigned;
 use App\Web\Listeners\BroadcastPageChange;
+use Domain\Documents\Api\Events\ReportFiled;
+use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Listeners\CountPhaseTaskStates;
@@ -87,6 +94,13 @@ final class RequiredListenerLaneTest extends TestCase
                 SessionClosed::class,
                 MergeOutcomeRecorded::class,
                 OutputChunkCommitted::class,
+                MessageAnswerRequired::class,
+                MessageSent::class,
+                RunOutcomeRecorded::class,
+                AskClosed::class,
+                AskHopAssigned::class,
+                ReportFiled::class,
+                ReportJobLinked::class,
             ],
             $registry->events(),
         );

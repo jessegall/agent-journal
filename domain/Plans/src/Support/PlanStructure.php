@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Phase;
@@ -55,7 +54,7 @@ final readonly class PlanStructure
             PhaseTask::create($phase, $taskId, $next + $offset);
         }
 
-        $placed = PlanProgress::fromTaskProgress($this->taskCounts->progressOfPlaced($ids));
+        $placed = PlanProgressCount::of($this->taskCounts->progressOfPlaced($ids));
         $phase->recordProgress($phase->progress->plus($placed));
         $phase->advanceRevision();
         $plan->recordProgress($plan->progress->plus($placed));

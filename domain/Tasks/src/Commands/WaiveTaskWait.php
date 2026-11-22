@@ -12,6 +12,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Waives a task's wait on another with the reason it no longer has to wait, for whoever may resolve the waiting task.
@@ -25,9 +26,7 @@ final readonly class WaiveTaskWait extends Command
     public function __construct(
         public string $dependentTaskId,
         public string $prerequisiteTaskId,
-        public string $requestKey,
-        #[Min(1), Max(Task::NOTE_CHARACTER_LIMIT)]
+        #[Required, Min(1), Max(Task::NOTE_CHARACTER_LIMIT)]
         public string $reason,
     ) {}
-
 }

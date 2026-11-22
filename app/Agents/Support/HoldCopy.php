@@ -26,6 +26,7 @@ final readonly class HoldCopy
     public static function of(HoldReason $hold, bool $hasTerminal): self
     {
         $open = $hasTerminal ? [StatusAction::of(StatusActionType::OpenTerminal)] : [];
+
         $inProgram = static fn (string $decision, string $withoutTerminal) => $hasTerminal
             ? "{$decision} Answer it in the running program."
             : $withoutTerminal;

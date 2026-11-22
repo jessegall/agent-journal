@@ -172,26 +172,6 @@ final class StartRecord extends Model implements ReadableModel
         ]);
     }
 
-    /**
-     * Keeps the refusal of this request as its receipt, on the record the start rolled back or on the one it kept.
-     *
-     * @param  Option<string>  $replyInboxId
-     *
-     * @throws StartRequestConflict
-     * @throws StartRefusalReplayed
-     */
-    public static function keepRefusal(
-        StartRequest $request,
-        ActorIdentity $requester,
-        Option $replyInboxId,
-        StartRefusal $refusal,
-    ): self {
-        $record = self::accept($request, $requester, $replyInboxId);
-        $record->refuse($refusal);
-
-        return $record;
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -307,11 +287,11 @@ final class StartRecord extends Model implements ReadableModel
      */
     public function forgetIntent(): void
     {
-        self::query()
-            ->whereKey($this->id)
-            ->where('disposition', StartDisposition::Accepted->value)
-            ->whereNull('session_id')
-            ->delete();
+        if ($this->disposition !== StartDisposition::Accepted || $this->session_id !== null) {
+            return;
+        }
+
+        $this->delete();
     }
 
     // ----------[ Answers ]----------

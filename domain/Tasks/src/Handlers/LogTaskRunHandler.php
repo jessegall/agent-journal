@@ -28,6 +28,6 @@ final readonly class LogTaskRunHandler extends TaskCommandHandler
             throw TaskRunNotYours::forRun($task->number, $command->runNumber);
         }
 
-        return TaskLogEntry::record($task, $run, ActorIdentity::of($command->dispatchedBy()), $command->text)->id;
+        return TaskLogEntry::create($task, $run, ActorIdentity::of($command->dispatchedBy()), $command->text)->id;
     }
 }

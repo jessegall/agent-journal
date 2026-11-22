@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Domain\Tasks\Handlers;
 
 use App\Actors\Support\ActorIdentity;
-use App\Contracts\CommandHandler;
 use Domain\Tasks\Commands\RemoveTaskWait;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
+use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Support\TaskGraphLock;
 
-final readonly class RemoveTaskWaitHandler implements CommandHandler
+final readonly class RemoveTaskWaitHandler extends TaskCommandHandler
 {
     public function __construct(private TaskGraphLock $lock) {}
 
@@ -35,7 +35,7 @@ final readonly class RemoveTaskWaitHandler implements CommandHandler
             throw TaskWaitRefused::noWait($dependent->number, Task::numberOf($command->prerequisiteTaskId));
         }
 
-        TaskWaitHistory::record($wait, TaskWaitChange::Removed, ActorIdentity::of($command->dispatchedBy()), null);
+        TaskWaitHistory::create($wait, TaskWaitChange::Removed, ActorIdentity::of($command->dispatchedBy()), null);
         $wait->remove();
     }
 }

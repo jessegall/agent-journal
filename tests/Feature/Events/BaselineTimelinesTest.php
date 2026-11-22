@@ -158,6 +158,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->assertSame([
             'saved Task',
             'saved TaskRun',
+            'saved Plan',
             'saved AgentStackRow',
             'commit',
             'TaskStarted',
@@ -179,6 +180,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->assertSame([
             'saved Task',
             'saved TaskRun',
+            'saved Plan',
             'saved AgentStackRow',
             'commit',
             'TaskStarted',
@@ -237,6 +239,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->assertSame([
             'saved Task',
             'saved TaskRun',
+            'saved Plan',
             'commit',
             'PlanProgressChanged',
             'TaskFinished',

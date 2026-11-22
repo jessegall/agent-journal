@@ -50,10 +50,7 @@ final class StartReceiptReadTest extends TestCase
     public function test_a_refused_start_without_a_session_answers_its_reason_by_key(): void
     {
         $request = $this->request();
-        StartRecord::keepRefusal(
-            $request,
-            $this->ownerIdentity(),
-            None::create(),
+        StartRecord::accept($request, $this->ownerIdentity(), None::create())->refuse(
             CapacityUnavailable::because(CapacityResource::Memory, 'its memory does not fit.'),
         );
 
