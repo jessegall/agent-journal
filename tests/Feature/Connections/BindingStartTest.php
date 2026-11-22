@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Enums\HostProtocolVersion;
+use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
+use App\Assignments\Contracts\AssignmentStorage;
+use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Connections\Models\ProjectBinding;
 use App\Desks\Commands\InstallDesks;
+use App\Desks\Models\DeskRecord;
+use App\Desks\Models\DeskSeat;
+use App\Desks\Support\BuiltInDesks;
+use App\Desks\Support\SeatOccupant;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
@@ -68,6 +77,27 @@ final class BindingStartTest extends TestCase
         $this->assertSame($first->json('runtime_id'), $again->json('runtime_id'));
         $this->assertSame($first->json('session_id'), $again->json('session_id'));
         $this->assertSame(1, AgentRuntime::query()->count());
+    }
+
+    public function test_a_binding_start_leaves_the_servers_main_agent_seated(): void
+    {
+        $serverMain = Agent::create('Server main', 'main-agent');
+        $this->app->make(AssignmentTransaction::class)->run(
+            fn () => $this->app->make(MainSeatTakeover::class)->takeOver($serverMain),
+        );
+        $binding = $this->connected('the-ticket', self::NONCE);
+
+        $this->start($binding, [])->assertCreated();
+
+        $main = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole();
+        $seat = DeskSeat::query()->ofDesk($main)->sole();
+        $occupant = $this->app->make(AssignmentTransaction::class)->run(
+            fn () => $this->app->make(AssignmentStorage::class)->lockCurrent($seat->assignmentIdentity()),
+        );
+
+        $this->assertTrue($occupant->isDefined());
+        $this->assertTrue(SeatOccupant::of($occupant->get())->isSameAs(ActorIdentity::of($serverMain)));
+        $this->assertTrue(Agent::query()->findOrFail($serverMain->id)->currentRuntime()->isEmpty());
     }
 
     public function test_a_start_of_a_revoked_binding_cannot_be_looked_up(): void

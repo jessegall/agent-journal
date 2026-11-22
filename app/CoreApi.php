@@ -133,6 +133,7 @@ use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\InterruptNavigation;
 use App\Agents\Commands\MarkMenuEntryStale;
 use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\OpenBindingMainRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\OpenTerminalView;
 use App\Agents\Commands\ProveNavigation;
@@ -2392,6 +2393,7 @@ final class CoreApi
                 ReportRuntimeExit::class,
                 ReportRuntimeScreen::class,
                 OpenHostMainRuntime::class,
+                OpenBindingMainRuntime::class,
                 MarkSilentSessions::class,
                 CertifyPassedStops::class,
                 EndTerminalViews::class,
