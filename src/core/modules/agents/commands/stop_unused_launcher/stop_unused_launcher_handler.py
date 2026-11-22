@@ -32,7 +32,10 @@ class StopUnusedLauncherHandler(Handler[StopUnusedLauncher, None]):
         key = f"launchers:{command.serving_pid}:{command.unused_pid}"
         if self.queries.query(ChatMark).filter(key=key).exists():
             return
+        LeftoverProcess.stop(command.unused_pid, self.processes.program)
+        # a journal with no project environment has no chat to show the mark in
+        if context.environment_id is None:
+            return
         text = MARK_TEXT.format(serving=command.serving_pid, unused=command.unused_pid)
         mark = ShowMark(AgentMarkType.LAUNCHER, AgentMarkVariant.STOPPED, key, text, outcome=MarkOutcome.PASSED, ended=True)
         self.bus.dispatch(mark, replace(context, actor=self.actors.actor(AGENTS_MODULE)))
-        LeftoverProcess.stop(command.unused_pid, self.processes.program)

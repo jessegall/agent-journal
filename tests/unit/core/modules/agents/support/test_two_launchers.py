@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -17,7 +18,7 @@ HOME = Path("/made-up/project/.journal")
 LAUNCHER = (str(HOME / "bin" / "journal"), "launcher-service")
 DIFFERENT_JOURNAL_LAUNCHER = ("/made-up/shop/.journal/bin/journal", "launcher-service")
 ACTOR = Actor(9, ActorType.MODULE)
-CONTEXT = Context(Actor.core(), Timestamp.parsed("2026-10-31T09:00:00+00:00"), StopUnusedLauncher(7001, 7002))
+CONTEXT = replace(Context(Actor.core(), Timestamp.parsed("2026-10-31T09:00:00+00:00"), StopUnusedLauncher(7001, 7002)), environment_id=1)
 TERMINAL_PID, FIRST_PID, SECOND_PID, THIRD_PID, PROGRAM_PID = 6900, 7001, 7002, 7003, 7100
 
 
@@ -55,3 +56,12 @@ def test_the_unused_launcher_is_stopped_the_first_time_it_is_shown_and_never_the
     handler.handle(StopUnusedLauncher(FIRST_PID, SECOND_PID), CONTEXT)
     assert stopped == [(SECOND_PID, LAUNCHER[0])]
     assert shown == [f"launchers:{FIRST_PID}:{SECOND_PID}"]
+
+
+def test_a_journal_with_no_project_environment_stops_the_unused_launcher_and_shows_no_mark(monkeypatch):
+    stopped, shown = list[int](), list[str]()
+    monkeypatch.setattr(LeftoverProcess, "stop", lambda pid, program: stopped.append(pid) or True)
+    bus = SimpleNamespace(dispatch=lambda command, context: shown.append(command.key))
+    marks = SimpleNamespace(query=lambda model: SimpleNamespace(filter=lambda key: SimpleNamespace(exists=lambda: False)))
+    StopUnusedLauncherHandler(bus, marks, processes([]), SimpleNamespace(actor=lambda module: ACTOR)).handle(StopUnusedLauncher(FIRST_PID, SECOND_PID), replace(CONTEXT, environment_id=None))
+    assert stopped == [SECOND_PID] and shown == []

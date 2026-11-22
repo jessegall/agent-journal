@@ -5,11 +5,17 @@ from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.agents.commands.stop_unused_launcher.stop_unused_launcher import StopUnusedLauncher
 from core.modules.agents.support.launcher_processes import LauncherProcesses
+from core.modules.agents.support.project_environment import ProjectEnvironment
 
 
+# a second launcher is the whole journal's, so its mark shows in the project's own environment
 def stop_unused_launchers(container: Container) -> None:
-    for serving, unused in container.get(LauncherProcesses).unused():
-        container.get(Bus).run(StopUnusedLauncher(serving.pid, unused.pid), Actor.core())
+    pairs = container.get(LauncherProcesses).unused()
+    if not pairs:
+        return
+    project = container.get(ProjectEnvironment).chosen()
+    for serving, unused in pairs:
+        container.get(Bus).run(StopUnusedLauncher(serving.pid, unused.pid), Actor.core(), environment_id=project.id if project is not None else None)
 
 
 class UnusedLauncherTickHandler(TickHandler):
