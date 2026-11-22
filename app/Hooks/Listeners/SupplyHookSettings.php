@@ -7,13 +7,16 @@ namespace App\Hooks\Listeners;
 use App\Agents\Events\StartSettingsRequested;
 use App\Contracts\Listener;
 use App\Drivers\Enums\HookDriver;
+use App\Hooks\Drivers\Contracts\DriverAdapters;
 
 /**
  * Adds the journal's hooks for a driver it supports to the start's isolated settings, allows the journal's own MCP
  * tools and turns off its child tools without identity.
  */
-final class SupplyHookSettings implements Listener
+final readonly class SupplyHookSettings implements Listener
 {
+    public function __construct(private DriverAdapters $adapters) {}
+
     public function handle(StartSettingsRequested $event): void
     {
         $driver = HookDriver::tryFrom($event->driver);
@@ -22,11 +25,13 @@ final class SupplyHookSettings implements Listener
             return;
         }
 
-        foreach ($driver->nativeEvents() as $eventName) {
+        $adapter = $this->adapters->for($driver->value);
+
+        foreach ($adapter->nativeEvents() as $eventName) {
             $event->settings->addHook($eventName, $driver->hookCommand());
         }
 
-        foreach ($driver->nativeChildTools() as $toolName) {
+        foreach ($adapter->nativeChildTools() as $toolName) {
             $event->settings->denyTool($toolName);
         }
 

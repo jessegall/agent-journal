@@ -52,6 +52,21 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 {
     private const string DRIVER = 'Claude Code';
 
+    /**
+     * The tools plan 26's start evidence found per build that start or reach another agent.
+     */
+    public const array NATIVE_CHILD_TOOLS = ['Agent', 'Task', 'Workflow', 'SendMessage', 'ListAgents', 'RemoteTrigger', 'Skill'];
+
+    public const array NATIVE_EVENTS = [
+        'SessionStart',
+        'UserPromptSubmit',
+        'PreToolUse',
+        'PostToolUse',
+        'Stop',
+        'StopFailure',
+        'SessionEnd',
+    ];
+
     public function __construct(
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
@@ -59,6 +74,21 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         private RecordDriverFailure $failures,
         private CheckProtectedResources $protection,
     ) {}
+
+    public function hookProtocol(): string
+    {
+        return HookDriver::ClaudeCode->value;
+    }
+
+    public function nativeEvents(): array
+    {
+        return self::NATIVE_EVENTS;
+    }
+
+    public function nativeChildTools(): array
+    {
+        return self::NATIVE_CHILD_TOOLS;
+    }
 
     public function capabilities(): DriverCapabilities
     {

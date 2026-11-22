@@ -19,8 +19,8 @@ use App\Agents\Support\StartedAgent;
 use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
-use App\Drivers\Enums\HookDriver;
 use App\Hooks\Calls\AgentStateMachine;
+use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;
 use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Enums\RewriteSupport;
@@ -78,7 +78,7 @@ final class HookStartTest extends TestCase
             $settings['hooks']['Stop'],
         );
         $this->assertSame(
-            ['allow' => ['mcp__journal__*'], 'deny' => HookDriver::ClaudeCode->nativeChildTools()],
+            ['allow' => ['mcp__journal__*'], 'deny' => ClaudeCodeAdapter::NATIVE_CHILD_TOOLS],
             $settings['permissions'],
         );
     }

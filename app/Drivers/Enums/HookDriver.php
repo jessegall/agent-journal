@@ -16,48 +16,6 @@ enum HookDriver: string
     case Codex = 'codex';
 
     /**
-     * The native hook events this driver's adapter maps, which its isolated settings register.
-     *
-     * @return list<string>
-     */
-    public function nativeEvents(): array
-    {
-        return match ($this) {
-            self::ClaudeCode => [
-                'SessionStart',
-                'UserPromptSubmit',
-                'PreToolUse',
-                'PostToolUse',
-                'Stop',
-                'StopFailure',
-                'SessionEnd',
-            ],
-            self::Codex => ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'],
-        };
-    }
-
-    /**
-     * The driver's own tools that start or reach another agent; they are always denied, since only the journal's
-     * helpers and workers are ever started (rule 36). The names are those plan 26's start evidence found per build.
-     *
-     * @return list<string>
-     */
-    public function nativeChildTools(): array
-    {
-        return match ($this) {
-            self::ClaudeCode => ['Agent', 'Task', 'Workflow', 'SendMessage', 'ListAgents', 'RemoteTrigger', 'Skill'],
-            self::Codex => [
-                'collaboration.spawn_agent',
-                'collaboration.wait_agent',
-                'collaboration.send_message',
-                'collaboration.followup_task',
-                'collaboration.interrupt_agent',
-                'collaboration.list_agents',
-            ],
-        };
-    }
-
-    /**
      * The allow rules that let the driver call the journal's own MCP tools without a native prompt: the literal
      * journal server prefix and never a wildcard for another server. Codex approves its journal entry in its account
      * configuration instead.

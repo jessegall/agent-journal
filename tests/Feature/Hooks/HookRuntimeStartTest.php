@@ -8,6 +8,8 @@ use App\Contracts\StartTransaction;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Drivers\Enums\HookDriver;
+use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;
+use App\Hooks\Drivers\Adapters\CodexAdapter;
 use App\Hooks\Drivers\Contracts\DriverAdapters;
 use App\Hooks\Drivers\Contracts\DriverCall;
 use App\Hooks\Drivers\HookPayload;
@@ -59,8 +61,13 @@ final class HookRuntimeStartTest extends TestCase
      */
     public static function programEvents(): iterable
     {
-        foreach (HookDriver::cases() as $driver) {
-            foreach ($driver->nativeEvents() as $event) {
+        $events = [
+            [HookDriver::ClaudeCode, ClaudeCodeAdapter::NATIVE_EVENTS],
+            [HookDriver::Codex, CodexAdapter::NATIVE_EVENTS],
+        ];
+
+        foreach ($events as [$driver, $nativeEvents]) {
+            foreach ($nativeEvents as $event) {
                 yield "{$driver->value} {$event}" => [$driver, $event];
             }
         }
@@ -80,7 +87,7 @@ final class HookRuntimeStartTest extends TestCase
     public function test_each_program_has_its_endpoint_and_an_adapter_mapping_only_real_hooks(
         HookDriver $driver,
     ): void {
-        $capabilities = $this->app->make(DriverAdapters::class)->for($driver)->capabilities();
+        $capabilities = $this->app->make(DriverAdapters::class)->for($driver->value)->capabilities();
 
         $this->assertTrue(Route::has('hooks.answer'));
         $this->assertSame("/hooks/{$driver->value}", route('hooks.answer', ['driver' => $driver->value], false));
@@ -96,7 +103,7 @@ final class HookRuntimeStartTest extends TestCase
             ['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$driver->value][$event]],
         );
 
-        $call = $this->app->make(DriverAdapters::class)->for($driver)->callFor(
+        $call = $this->app->make(DriverAdapters::class)->for($driver->value)->callFor(
             $payload,
             TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', $event)),
         );

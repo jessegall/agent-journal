@@ -47,12 +47,12 @@ final readonly class HookController
      */
     public function __invoke(HookRequest $request, StackAccess $access, AgentStateMachine $machine): JsonResponse
     {
-        $adapter = $this->adapters->for($request->driver());
+        $adapter = $this->adapters->for($request->driver()->value);
 
         try {
             $hookInput = $request->payload();
 
-            if ($hookInput->isFromNativeChild() || $hookInput->callsAnyOf($request->driver()->nativeChildTools())) {
+            if ($hookInput->isFromNativeChild() || $hookInput->callsAnyOf($adapter->nativeChildTools())) {
                 $refusal = DriverReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []);
 
                 return new JsonResponse(HookResponse::fromDriverReply($refusal)->toArray());

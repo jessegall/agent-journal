@@ -18,6 +18,26 @@ use App\Hooks\Stack\HookAnswer;
  */
 interface DriverAdapter
 {
+    /**
+     * The key of the native hook protocol this adapter reads, which every driver registration of it names.
+     */
+    public function hookProtocol(): string;
+
+    /**
+     * The native hook events this adapter maps, which a driver's isolated settings register.
+     *
+     * @return list<string>
+     */
+    public function nativeEvents(): array;
+
+    /**
+     * The driver's own tools that start or reach another agent; they are always denied, since only the journal's
+     * helpers and workers are ever started (rule 36).
+     *
+     * @return list<string>
+     */
+    public function nativeChildTools(): array;
+
     public function capabilities(): DriverCapabilities;
 
     /**

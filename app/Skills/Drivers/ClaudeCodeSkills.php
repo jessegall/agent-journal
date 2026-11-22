@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Skills\Drivers;
 
-use App\Drivers\Enums\HookDriver;
 use App\Skills\Contracts\DriverSkills;
 use App\Skills\Enums\SkillReload;
 use App\Skills\Values\PublishedSkill;
@@ -21,8 +20,6 @@ final readonly class ClaudeCodeSkills implements DriverSkills
     public const string PLUGIN_NAME = 'journal-session-skills';
 
     public const string FOLDER = 'journal-skills';
-
-    private const string SKILL_TOOL = 'Skill';
 
     public function skillFile(SkillKey $key): string
     {
@@ -51,11 +48,7 @@ final readonly class ClaudeCodeSkills implements DriverSkills
      */
     public function instruction(PublishedSkill $skill): string
     {
-        if (in_array(self::SKILL_TOOL, HookDriver::ClaudeCode->nativeChildTools(), true)) {
-            return "Read the skill {$skill->key->key} with the Read tool at {$skill->path} before work it covers.";
-        }
-
-        return 'Use the Skill tool with '.self::PLUGIN_NAME.":{$skill->key->key} before work it covers.";
+        return "Read the skill {$skill->key->key} with the Read tool at {$skill->path} before work it covers.";
     }
 
     public function reloadMode(): SkillReload

@@ -48,6 +48,17 @@ final readonly class CodexAdapter implements DriverAdapter
 {
     private const string DRIVER = 'Codex';
 
+    public const array NATIVE_EVENTS = ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'];
+
+    public const array NATIVE_CHILD_TOOLS = [
+        'collaboration.spawn_agent',
+        'collaboration.wait_agent',
+        'collaboration.send_message',
+        'collaboration.followup_task',
+        'collaboration.interrupt_agent',
+        'collaboration.list_agents',
+    ];
+
     private const string PATCH_FILE_LINE = '/^\*\*\* (Add|Update|Delete) File: (.+)$/m';
 
     private const string PATCH_MOVED_FILE = '/^\*\*\* Update File: (.+)\n\*\*\* Move to: (.+)$/m';
@@ -58,6 +69,21 @@ final readonly class CodexAdapter implements DriverAdapter
         private GuardedFiles $files,
         private CheckProtectedResources $protection,
     ) {}
+
+    public function hookProtocol(): string
+    {
+        return HookDriver::Codex->value;
+    }
+
+    public function nativeEvents(): array
+    {
+        return self::NATIVE_EVENTS;
+    }
+
+    public function nativeChildTools(): array
+    {
+        return self::NATIVE_CHILD_TOOLS;
+    }
 
     public function capabilities(): DriverCapabilities
     {

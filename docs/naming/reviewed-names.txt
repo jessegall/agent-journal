@@ -3418,6 +3418,7 @@ class	HookGuidance
 class	HookIdentity
 class	HookIdentityExpired
 class	HookPayload
+class	HookProtocolUnknown
 class	HookRelay
 class	HookRequest
 class	HookResponse
@@ -7019,9 +7020,10 @@ constant	ClaudeAccountProtection::SECRET_ITEMS
 constant	ClaudeAccountProtection::SIGN_IN_COMMANDS
 constant	ClaudeAccountSettings::OTHER_CREDENTIALS
 constant	ClaudeCodeAdapter::DRIVER
+constant	ClaudeCodeAdapter::NATIVE_CHILD_TOOLS
+constant	ClaudeCodeAdapter::NATIVE_EVENTS
 constant	ClaudeCodeSkills::FOLDER
 constant	ClaudeCodeSkills::PLUGIN_NAME
-constant	ClaudeCodeSkills::SKILL_TOOL
 constant	ClaudeCodeTool::DECLARATION_REVISION
 constant	ClaudeCodeTool::SURFACE
 constant	ClaudeDriver::NO_KEYCHAIN
@@ -7035,6 +7037,8 @@ constant	CodeReview::IMPORT_ATTEMPT_LIMIT
 constant	CodexAccountProtection::HIDDEN_VARIABLES
 constant	CodexAccountSettings::OTHER_CREDENTIALS
 constant	CodexAdapter::DRIVER
+constant	CodexAdapter::NATIVE_CHILD_TOOLS
+constant	CodexAdapter::NATIVE_EVENTS
 constant	CodexAdapter::PATCH_FILE_LINE
 constant	CodexAdapter::PATCH_MOVED_FILE
 constant	CodexHeadlessCapabilities::NO_EXACT_RESUME
@@ -11317,8 +11321,11 @@ method	ClaudeCodeAdapter::callFor()
 method	ClaudeCodeAdapter::callsJournalTools()
 method	ClaudeCodeAdapter::capabilities()
 method	ClaudeCodeAdapter::compatibility()
+method	ClaudeCodeAdapter::hookProtocol()
 method	ClaudeCodeAdapter::judgedTool()
 method	ClaudeCodeAdapter::modelArguments()
+method	ClaudeCodeAdapter::nativeChildTools()
+method	ClaudeCodeAdapter::nativeEvents()
 method	ClaudeCodeAdapter::refusesCommand()
 method	ClaudeCodeAdapter::renderShell()
 method	ClaudeCodeAdapter::renderStop()
@@ -11512,7 +11519,10 @@ method	CodexAdapter::callFor()
 method	CodexAdapter::callsJournalTools()
 method	CodexAdapter::capabilities()
 method	CodexAdapter::compatibility()
+method	CodexAdapter::hookProtocol()
 method	CodexAdapter::modelArguments()
+method	CodexAdapter::nativeChildTools()
+method	CodexAdapter::nativeEvents()
 method	CodexAdapter::patchChanges()
 method	CodexAdapter::renderShell()
 method	CodexAdapter::renderStop()
@@ -13502,7 +13512,10 @@ method	Driver::start()
 method	DriverAdapter::callFor()
 method	DriverAdapter::capabilities()
 method	DriverAdapter::compatibility()
+method	DriverAdapter::hookProtocol()
 method	DriverAdapter::modelArguments()
+method	DriverAdapter::nativeChildTools()
+method	DriverAdapter::nativeEvents()
 method	DriverAdapter::renderShell()
 method	DriverAdapter::renderStop()
 method	DriverAdapters::for()
@@ -14951,8 +14964,6 @@ method	HookDriver::journalToolRules()
 method	HookDriver::keepsOutputsBesideTranscript()
 method	HookDriver::modelArguments()
 method	HookDriver::namesTranscriptOf()
-method	HookDriver::nativeChildTools()
-method	HookDriver::nativeEvents()
 method	HookDriver::provider()
 method	HookEvent::isSessionStart()
 method	HookEvent::isToolCall()
@@ -14989,6 +15000,7 @@ method	HookPayload::toolArguments()
 method	HookPayload::toolNameText()
 method	HookPayload::toolOutcome()
 method	HookPayload::workFolder()
+method	HookProtocolUnknown::for()
 method	HookRelay::__construct()
 method	HookRelay::answerWithoutJournal()
 method	HookRelay::grantsOf()
@@ -24463,6 +24475,7 @@ method	SupplyHelperContext::__construct()
 method	SupplyHelperContext::handle()
 method	SupplyHookContext::__construct()
 method	SupplyHookContext::handle()
+method	SupplyHookSettings::__construct()
 method	SupplyHookSettings::handle()
 method	SupplyMemories::__construct()
 method	SupplyMemories::handle()
@@ -38728,14 +38741,14 @@ property	SupplyAccountSettings::$compatibilities
 property	SupplyAccountSettings::$config
 property	SupplyHelperContext::$jobs
 property	SupplyHookContext::$rules
+property	SupplyHookSettings::$adapters
 property	SupplyMemories::$memories
 property	SupportRecordRowData::$action
 property	SupportRecordRowData::$actor
 property	SupportRecordRowData::$at
 property	SupportRecordRowData::$projectId
 property	SupportSnapshot::$capabilities
-property	SupportedDriverAdapters::$claudeCode
-property	SupportedDriverAdapters::$codex
+property	SupportedDriverAdapters::$adapters
 property	SwitchAccountCommand::$accountId
 property	SwitchAccountCommand::$expectedChangeNumber
 property	SwitchAccountHandler::$notices

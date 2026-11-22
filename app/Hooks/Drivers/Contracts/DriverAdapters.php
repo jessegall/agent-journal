@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hooks\Drivers\Contracts;
 
-use App\Drivers\Enums\HookDriver;
-
 /**
- * The adapter that reads and answers each supported driver's hook calls.
+ * The adapter that reads and answers the hook calls of each native hook protocol, by the protocol's key.
  */
 interface DriverAdapters
 {
-    public function for(HookDriver $driver): DriverAdapter;
+    public function for(string $hookProtocol): DriverAdapter;
 }
