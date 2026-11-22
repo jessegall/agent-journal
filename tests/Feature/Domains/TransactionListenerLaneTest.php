@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Enums\ListenerLane;
 use App\Contracts\Bus\PipelineRunner;
 use App\CoreApi;
+use App\Enums\ListenerLane;
 use App\Events\AskClosed;
 use App\Events\AskHopAssigned;
 use App\Events\ChatMessageAccepted;
@@ -28,8 +28,8 @@ use App\Support\AvailableListener;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
 use App\Support\ListenerOwnership;
-use App\Support\Registration\ListenerPolicy;
 use App\Support\ListenerRegistry;
+use App\Support\Registration\ListenerPolicy;
 use Domain\Documents\Events\ReportFiled;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Plans\Events\PlanProgressChanged;
