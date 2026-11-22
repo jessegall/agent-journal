@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Models\AgentRuntime;
@@ -55,7 +54,7 @@ final readonly class AgentFacts
             $this->launch,
             $resumable,
             $session !== null && $isOwnerStart && $launchInProgress,
-            $this->runtime?->mode === DriverVariant::Terminal,
+            $this->runtime?->hasScreen() === true,
             $canStop && $session !== null,
             $this->waitsOnHelpers,
             $canStop,

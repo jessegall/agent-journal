@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Data;
 
-use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
 use Spatie\LaravelData\Data;
@@ -30,15 +29,8 @@ final class RuntimeStatus extends Data
         public readonly bool $isStale,
         public readonly int $processGeneration,
         public readonly bool $canReleaseHold,
-        public readonly DriverVariant $variant,
+        public readonly bool $hasScreen,
         public readonly int $watchers,
     ) {}
 
-    /**
-     * Whether the runtime runs in a terminal a user can watch.
-     */
-    public function hasTerminal(): bool
-    {
-        return $this->variant === DriverVariant::Terminal;
-    }
 }

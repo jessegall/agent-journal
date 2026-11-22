@@ -11,7 +11,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
-use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
@@ -208,13 +207,13 @@ final readonly class AgentRecords implements AgentDirectory
             AgentPresence::of($agent->isRetired(), $session !== null, $switch?->stage, $startRefusal !== null),
             $session?->id,
             $runtime === null ? 0 : $runtime->process_generation,
-            $runtime?->mode === DriverVariant::Terminal,
+            $runtime?->hasScreen() === true,
             $switch?->id,
             $switch?->stage,
             AgentAction::offeredFor(
                 $agent->isRetired(),
                 $session !== null,
-                $runtime?->mode === DriverVariant::Terminal,
+                $runtime?->hasScreen() === true,
                 $resumable !== [],
                 $switch?->stage,
             ),

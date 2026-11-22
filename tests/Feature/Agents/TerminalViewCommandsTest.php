@@ -274,7 +274,7 @@ final class TerminalViewCommandsTest extends TestCase
 
         $read = AgentRuntime::query()->withWatchers()->with('session')->findOrFail($runtime->id);
         $status = $read->status(CarbonImmutable::now());
-        $this->assertSame([2, DriverVariant::Terminal], [$status->watchers, $status->variant]);
+        $this->assertSame([2, true], [$status->watchers, $status->hasScreen]);
 
         $first->close(CarbonImmutable::now());
         $reread = AgentRuntime::query()->with('session')->findOrFail($runtime->id);

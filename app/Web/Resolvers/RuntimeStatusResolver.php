@@ -73,7 +73,7 @@ final readonly class RuntimeStatusResolver implements PageResolver
             ),
         ];
 
-        if ($status->hasTerminal()) {
+        if ($status->hasScreen) {
             $terminal = LayoutActionData::to(route('web.terminal', ['agent' => $status->agentId], false));
             $summary[] = LayoutPartData::action('terminal', 'Watch terminal', $terminal, 'ghost');
         }

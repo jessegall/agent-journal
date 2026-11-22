@@ -100,10 +100,10 @@ final class DriverRegistry implements DriverCatalogue
     {
         $driver = $this->forKey($this->keyFor($family, $mode));
         $registration = $driver->descriptor();
-        $driver->capabilities(BoundTarget::beforePlacement())
-            ->assertSupports([...$registration->profileRequirements, ...$neededCapabilities]);
+        $support = $driver->capabilities(BoundTarget::beforePlacement());
+        $support->assertSupports([...$registration->profileRequirements, ...$neededCapabilities]);
 
-        return new PinnedDriver($registration, $this->revision);
+        return new PinnedDriver($registration, $this->revision, $support);
     }
 
     /**

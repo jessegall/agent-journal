@@ -192,6 +192,20 @@ final class HostStartsTest extends TestCase
         );
     }
 
+    public function test_only_a_runtime_whose_driver_can_be_watched_has_a_screen(): void
+    {
+        [, $headless] = $this->openRuntime();
+        [, $terminal] = $this->openRuntime(variant: DriverVariant::Terminal);
+
+        $this->assertSame(
+            [false, true],
+            [
+                AgentRuntime::query()->findOrFail($headless->runtimeId)->hasScreen(),
+                AgentRuntime::query()->findOrFail($terminal->runtimeId)->hasScreen(),
+            ],
+        );
+    }
+
     public function test_a_codex_terminal_start_is_refused_before_anything_is_accepted(): void
     {
         $runtimes = AgentRuntime::query()->count();

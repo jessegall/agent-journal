@@ -17799,6 +17799,7 @@ method	PinnedBuilds::versionOf()
 method	PinnedCompatibilities::__construct()
 method	PinnedCompatibilities::for()
 method	PinnedDriver::__construct()
+method	PinnedDriver::hasScreen()
 method	PinnedDriverBuilds::versionOf()
 method	PipedCommands::__construct()
 method	PipedCommands::command()
@@ -21500,7 +21501,6 @@ method	RuntimeStart::__construct()
 method	RuntimeStart::of()
 method	RuntimeStart::toArray()
 method	RuntimeStatus::__construct()
-method	RuntimeStatus::hasTerminal()
 method	RuntimeStatusResolver::__construct()
 method	RuntimeStatusResolver::cardOf()
 method	RuntimeStatusResolver::read()
@@ -27098,6 +27098,7 @@ parameter	$hasNextPage
 parameter	$hasObservedProof
 parameter	$hasOlder
 parameter	$hasOpenWork
+parameter	$hasScreen
 parameter	$hasTerminal
 parameter	$hasWaits
 parameter	$hash
@@ -34436,6 +34437,7 @@ property	PinnedCompatibilities::$launchProfiles
 property	PinnedCompatibilities::$setting
 property	PinnedDriver::$catalogueRevision
 property	PinnedDriver::$registration
+property	PinnedDriver::$support
 property	PipedCommands::$commands
 property	PipedCommands::$start
 property	PipedCommandsToParse::$negationStart
@@ -36983,6 +36985,7 @@ property	RuntimeStatus::$agentId
 property	RuntimeStatus::$canReleaseHold
 property	RuntimeStatus::$driver
 property	RuntimeStatus::$effort
+property	RuntimeStatus::$hasScreen
 property	RuntimeStatus::$hold
 property	RuntimeStatus::$isStale
 property	RuntimeStatus::$model
@@ -36990,7 +36993,6 @@ property	RuntimeStatus::$observationAgeSeconds
 property	RuntimeStatus::$processGeneration
 property	RuntimeStatus::$runtimeId
 property	RuntimeStatus::$sessionId
-property	RuntimeStatus::$variant
 property	RuntimeStatus::$watchers
 property	RuntimeStatusResolver::$runtimes
 property	SampleApproved::$permitId

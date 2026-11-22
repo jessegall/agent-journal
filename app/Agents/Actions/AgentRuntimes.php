@@ -27,7 +27,7 @@ final readonly class AgentRuntimes
     public function open(AgentSession $session, RuntimeIntent $intent, string $startToken): array
     {
         $pin = $this->drivers->pinned($intent->driver, $intent->variant);
-        $runtime = AgentRuntime::create($session, $intent, $pin->registration);
+        $runtime = AgentRuntime::create($session, $intent, $pin);
         $runtime->begin();
         $runtime->holdStartGrant($startToken);
 

@@ -13,7 +13,7 @@ use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Values\RuntimeIntent;
-use App\Drivers\Values\DriverRegistration;
+use App\Drivers\Values\PinnedDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -40,6 +40,7 @@ use PhpOption\Option;
  * @property string $driver_key
  * @property string $family
  * @property string|null $driver_label
+ * @property bool $has_screen
  * @property string $driver_build
  * @property string $profile
  * @property string $canonical_folder
@@ -81,6 +82,7 @@ final class AgentRuntime extends Model implements ReadableModel
     {
         return [
             'mode' => DriverVariant::class,
+            'has_screen' => 'boolean',
             'start_grant' => 'encrypted',
             'activity' => RuntimeActivity::class,
             'hold_reason' => HoldReason::class,
@@ -90,8 +92,9 @@ final class AgentRuntime extends Model implements ReadableModel
         ];
     }
 
-    public static function create(AgentSession $session, RuntimeIntent $intent, DriverRegistration $registration): self
+    public static function create(AgentSession $session, RuntimeIntent $intent, PinnedDriver $pin): self
     {
+        $registration = $pin->registration;
         $runtime = new self();
         $runtime->agent_session_id = $session->id;
         $runtime->host_id = $intent->hostId;
@@ -100,6 +103,7 @@ final class AgentRuntime extends Model implements ReadableModel
         $runtime->driver_key = (string) $registration->key;
         $runtime->family = $registration->family;
         $runtime->driver_label = $registration->label;
+        $runtime->has_screen = $pin->hasScreen();
         $runtime->driver_build = $intent->driverBuild;
         $runtime->profile = $intent->profile;
         $runtime->canonical_folder = $intent->folder;
@@ -366,11 +370,11 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
-     * Whether the runtime's driver draws a screen a viewer can watch: only a terminal runtime does.
+     * Whether the runtime's driver draws a screen a viewer can watch, as its pinned capabilities said.
      */
     public function hasScreen(): bool
     {
-        return $this->mode === DriverVariant::Terminal;
+        return $this->has_screen;
     }
 
     /**
