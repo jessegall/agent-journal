@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Adapters;
 
+use App\Contracts\DriverCatalogue;
 use App\Exceptions\HookProtocolUnknown;
 use App\Support\Drivers\Contracts\DriverAdapter;
 use App\Support\Drivers\Contracts\DriverAdapters;
@@ -18,18 +19,24 @@ final readonly class SupportedDriverAdapters implements DriverAdapters
      */
     private array $adapters;
 
-    public function __construct(ClaudeCodeAdapter $claudeCode, CodexAdapter $codex)
-    {
+    public function __construct(
+        ClaudeCodeAdapter $claudeCode,
+        CodexAdapter $codex,
+        private DriverCatalogue $drivers,
+    ) {
         $this->adapters = [$claudeCode->hookProtocol() => $claudeCode, $codex->hookProtocol() => $codex];
     }
 
-    public function for(string $hookProtocol): DriverAdapter
+    public function for(string $family): DriverAdapter
     {
-        return $this->adapters[$hookProtocol] ?? throw HookProtocolUnknown::for($hookProtocol);
+        $protocol = $this->drivers->registrationOfFamily($family)->hookProtocol;
+
+        return $this->adapters[$protocol] ?? throw HookProtocolUnknown::for($protocol);
     }
 
-    public function supports(string $hookProtocol): bool
+    public function supports(string $family): bool
     {
-        return array_key_exists($hookProtocol, $this->adapters);
+        return $this->drivers->hasFamily($family)
+            && array_key_exists($this->drivers->registrationOfFamily($family)->hookProtocol, $this->adapters);
     }
 }

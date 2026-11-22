@@ -9,7 +9,13 @@ namespace App\Support\Drivers\Contracts;
  */
 interface DriverAdapters
 {
-    public function for(string $hookProtocol): DriverAdapter;
+    /**
+     * The adapter that reads the hook protocol the family's drivers speak.
+     */
+    public function for(string $family): DriverAdapter;
 
-    public function supports(string $hookProtocol): bool;
+    /**
+     * Whether an adapter reads the hook protocol of the family; a family nobody registered has none.
+     */
+    public function supports(string $family): bool;
 }

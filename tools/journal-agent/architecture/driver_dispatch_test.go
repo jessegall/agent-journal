@@ -21,7 +21,7 @@ var driverDispatch = regexp.MustCompile(
 )
 
 // driverDispatchAllowed are the places that may name a driver: the profiles, which are the drivers' own adapters,
-// and the journal command's verb a person types to start Codex locally.
+// and the journal command's verb the user types to start Codex locally.
 var driverDispatchAllowed = []string{
 	"profiles/",
 	"cmd/journal/main.go",

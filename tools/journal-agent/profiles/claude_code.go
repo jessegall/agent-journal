@@ -359,7 +359,7 @@ func (ClaudeCode) RejectContrary(extraArguments []string) error {
 	return nil
 }
 
-// OffersTerminal: Claude Code has terminal the host attaches a person to.
+// OffersTerminal: Claude Code has terminal the host attaches the user to.
 func (ClaudeCode) OffersTerminal() bool {
 	return true
 }

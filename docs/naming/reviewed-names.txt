@@ -14012,6 +14012,7 @@ method	DriverCatalogue::forKey()
 method	DriverCatalogue::hasFamily()
 method	DriverCatalogue::keyFor()
 method	DriverCatalogue::pinned()
+method	DriverCatalogue::registrationOfFamily()
 method	DriverCatalogue::revision()
 method	DriverChoiceData::__construct()
 method	DriverChoiceData::listed()
@@ -14077,6 +14078,7 @@ method	DriverRegistry::keyFor()
 method	DriverRegistry::pinned()
 method	DriverRegistry::register()
 method	DriverRegistry::registerFamily()
+method	DriverRegistry::registrationOfFamily()
 method	DriverRegistry::revision()
 method	DriverReplies::allowTool()
 method	DriverReplies::denyProtected()
@@ -29078,6 +29080,7 @@ parameter	$piece
 parameter	$pieces
 parameter	$pin
 parameter	$pinnable
+parameter	$pins
 parameter	$pipe
 parameter	$pipedInput
 parameter	$pipefail
@@ -40340,6 +40343,7 @@ property	SupportRecordRowData::$at
 property	SupportRecordRowData::$projectId
 property	SupportSnapshot::$capabilities
 property	SupportedDriverAdapters::$adapters
+property	SupportedDriverAdapters::$drivers
 property	SwitchAccountCommand::$accountId
 property	SwitchAccountCommand::$expectedChangeNumber
 property	SwitchAccountHandler::$notices

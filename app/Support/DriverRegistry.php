@@ -161,6 +161,17 @@ final class DriverRegistry implements DriverCatalogue
         return array_map(fn (DriverFamily $family) => $family->key, $this->families());
     }
 
+    public function registrationOfFamily(string $family): DriverRegistration
+    {
+        foreach ($this->catalogue() as $registration) {
+            if ($registration->family === $family) {
+                return $registration;
+            }
+        }
+
+        throw DriverFamilyUnknown::for($family);
+    }
+
     public function revision(): int
     {
         return $this->revision;

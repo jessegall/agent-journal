@@ -6,6 +6,7 @@ namespace App\Contracts;
 
 use App\Enums\DriverCapability;
 use App\Enums\DriverVariant;
+use App\Exceptions\DriverFamilyUnknown;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;
@@ -42,6 +43,13 @@ interface DriverCatalogue
      * The family registered under the key, such as claude-code.
      */
     public function family(string $key): DriverFamily;
+
+    /**
+     * A registration of the family, whose hook, skill and account protocols every driver of the family shares.
+     *
+     * @throws DriverFamilyUnknown when no driver of the family is registered
+     */
+    public function registrationOfFamily(string $family): DriverRegistration;
 
     /**
      * @return list<DriverFamily>

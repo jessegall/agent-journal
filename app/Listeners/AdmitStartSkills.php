@@ -20,6 +20,7 @@ use App\Support\SkillPublications;
 use App\Support\SkillSelection;
 use App\Support\SkillTargets;
 use App\Support\StartDriver;
+use App\Values\DriverKey;
 
 /**
  * Admits a start's skills inside its transaction: a driver the journal cannot hand skills to is refused, a required
@@ -43,9 +44,15 @@ final readonly class AdmitStartSkills implements Listener
     public function handle(SessionOpened $event): void
     {
         $session = AgentSession::byId($event->sessionId);
-        $driver = StartDriver::of($session->driver_key, $this->drivers)->driver;
+        $family = StartDriver::of($session->driver_key, $this->drivers)->driver;
 
-        if ($driver === null || ! $this->adapters->supports($driver)) {
+        if ($family === null || ! $this->drivers->hasFamily($family->key)) {
+            throw StartRefused::skillsUnsupported((string) $session->driver_key);
+        }
+
+        $driver = DriverKey::from($this->drivers->registrationOfFamily($family->key)->skillProtocol);
+
+        if (! $this->adapters->supports($driver)) {
             throw StartRefused::skillsUnsupported((string) $session->driver_key);
         }
 

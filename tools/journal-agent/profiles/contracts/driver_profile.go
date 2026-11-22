@@ -100,7 +100,7 @@ type DriverProfile interface {
 	// RejectContrary refuses extra arguments that would undo the profile, such as re-enabling a delegation tool.
 	RejectContrary(extraArguments []string) error
 
-	// OffersTerminal says whether the program has an interactive terminal a person can attach to.
+	// OffersTerminal says whether the program has an interactive terminal the user can attach to.
 	OffersTerminal() bool
 
 	// KeepsToolsFromSignIn says whether the program's sandbox keeps its tools from reading its own sign-in, as a

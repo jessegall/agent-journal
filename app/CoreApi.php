@@ -835,6 +835,7 @@ use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\DomainDisabled;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverConflict;
+use App\Exceptions\DriverFamilyUnknown;
 use App\Exceptions\DriverKeyInvalid;
 use App\Exceptions\DriverModeAmbiguous;
 use App\Exceptions\DriverRegisteredTwice;
@@ -2734,6 +2735,7 @@ final class CoreApi
             )
             ->exceptions(
                 WorkBudgetSpent::class,
+                DriverFamilyUnknown::class,
                 DriverRequestRefused::class,
                 StatementTimedOut::class,
                 ChatCursorRefused::class,

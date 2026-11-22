@@ -304,7 +304,7 @@ func codexHooks(hookFile, command string) ([]byte, string, error) {
 	return hooks, trust.String(), err
 }
 
-// OffersTerminal: Codex has no terminal the host attaches a person to.
+// OffersTerminal: Codex has no terminal the host attaches the user to.
 func (Codex) OffersTerminal() bool {
 	return false
 }
