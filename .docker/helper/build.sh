@@ -97,5 +97,9 @@ php -r '
     file_put_contents($path, json_encode($record, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL);
 ' "$architecture" "$digest" "$name" "$claude_code" "$codex"
 
+# The agent daemon loads the archive, so the build's own tag is only a second copy of it on this machine's disk; the
+# build cache the next build reuses stays.
+docker image rm "$tag" >/dev/null
+
 # Every build cleans up after itself, keeping the cache the next build reuses.
 sh .docker/helper/prune.sh
