@@ -62,6 +62,11 @@ final readonly class ChatInboxes
         return ChatInterval::of($interval);
     }
 
+    public function isActiveMember(Inbox $inbox, ActorIdentity $actor): bool
+    {
+        return InboxInterval::query()->activeFor($inbox->inboxId())->heldBy($actor)->exists();
+    }
+
     /**
      * The inbox's active intervals in the order their members joined, at most the given number.
      *

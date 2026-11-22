@@ -20,6 +20,7 @@ use App\Actors\Contracts\AuthoritySource;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\AuthorizerProvider;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
@@ -42,6 +43,7 @@ use App\Actors\Contracts\WorkspacePolicy;
 use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Contracts\WorkStacks;
 use App\Actors\Enums\ActorType;
+use App\Actors\Enums\ChatPermission;
 use App\Actors\Enums\ReadEntitlementType;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
 use App\Actors\Exceptions\ActorContextMissing;
@@ -1434,6 +1436,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                ChatEligibility::class,
                 MembershipEvidence::class,
                 TypeReflections::class,
                 ReflectedType::class,
@@ -1683,6 +1686,7 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                ChatPermission::class,
                 SeenSession::class,
                 RefusalReason::class,
                 RevokedBindings::class,
