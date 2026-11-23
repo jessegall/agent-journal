@@ -2168,6 +2168,55 @@
                 "outputSchema": null,
                 "title": "Unassign Plan Work Tool"
             },
+            "reminders_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "due_at": {
+                            "description": "The date and time it is due, such as 2026-11-24 09:00",
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "title": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "due_at",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reminders_create",
+                "outputSchema": null,
+                "title": "Create Reminder Tool"
+            },
+            "reminders_finish": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reminder_id": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "reminder_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reminders_finish",
+                "outputSchema": null,
+                "title": "Finish Reminder Tool"
+            },
             "reports_close": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -4736,6 +4785,55 @@
                 "name": "plans_read",
                 "outputSchema": null,
                 "title": "Plan Read Tool"
+            },
+            "reminders_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "due_at": {
+                            "description": "The date and time it is due, such as 2026-11-24 09:00",
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "title": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "due_at",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reminders_create",
+                "outputSchema": null,
+                "title": "Create Reminder Tool"
+            },
+            "reminders_finish": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reminder_id": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "reminder_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reminders_finish",
+                "outputSchema": null,
+                "title": "Finish Reminder Tool"
             },
             "reports_close": {
                 "inputSchema": {

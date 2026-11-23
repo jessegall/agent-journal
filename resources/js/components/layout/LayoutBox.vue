@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import LayoutPart from '@/components/layout/LayoutPart.vue';
 import ListReaderLayout from '@/components/kit/ListReaderLayout.vue';
 import Card from '@/components/kit/Card.vue';
+import Icon, { type IconName } from '@/components/kit/Icon.vue';
 import Reader from '@/components/kit/Reader.vue';
 import SettingGroup from '@/components/kit/SettingGroup.vue';
 import SettingRow from '@/components/kit/SettingRow.vue';
@@ -36,6 +37,10 @@ const sectionBody = computed(() => props.part.children.filter((child) => !sectio
 const sectionActions = computed(() => props.part.children.filter((child) => child.key === 'reset'));
 const rowControl = computed(() => props.part.children.filter((child) => !rowSlots.has(child.key)));
 const readerBody = computed(() => props.part.children.filter((child) => !readerSlots.has(child.key)));
+// A page that holds nothing yet: its subject's icon on a tile, the title, one sentence and the action that makes the
+// first one, centred in all of the page under its header.
+const firstSlots = new Set(['icon', 'empty']);
+const firstActions = computed(() => props.part.children.filter((child) => !firstSlots.has(child.key)));
 
 function readerPart(key: string): LayoutPartData | undefined {
     return props.part.children.find((child) => child.key === key);
@@ -181,6 +186,31 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
                 <template v-for="child in part.children" :key="child.key">
                     <LayoutPart :part="child" />
                 </template>
+            </div>
+        </template>
+        <template #page-empty>
+            <div
+                data-layout-box="page-empty"
+                role="region"
+                :aria-label="readerPart('empty')?.text ?? ''"
+                class="flex min-h-0 flex-1 items-center justify-center overflow-auto p-6"
+            >
+                <div class="flex max-w-[360px] flex-col items-center text-center text-empty text-text-3">
+                    <span
+                        class="mb-3.5 flex size-10 items-center justify-center rounded-card border border-line bg-bg-2 text-text-4"
+                    >
+                        <Icon :name="(readerPart('icon')?.text ?? 'info') as IconName" :size="20" />
+                    </span>
+                    <p class="mb-1 font-medium text-text-2">{{ readerPart('empty')?.text }}</p>
+                    <p>{{ readerPart('empty')?.detail }}</p>
+                    <template v-if="firstActions.length > 0">
+                        <div class="mt-4 flex items-center gap-2">
+                            <template v-for="child in firstActions" :key="child.key">
+                                <LayoutPart :part="child" />
+                            </template>
+                        </div>
+                    </template>
+                </div>
             </div>
         </template>
         <template #page-head>

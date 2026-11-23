@@ -113,6 +113,23 @@ final class ListPageTest extends TestCase
         $this->assertSame('empty', $informed->children[0]->style);
     }
 
+    public function test_a_list_with_nothing_yet_fills_the_page_under_its_header_with_no_split(): void
+    {
+        $back = new LayoutBackData('/tasks', 'Tasks');
+        $first = LayoutPartData::action('first', 'New task', LayoutActionData::to('/tasks/new'), 'primary');
+
+        $root = ListPage::make('Tasks', [], ListEmpty::nothingYet('No tasks yet', 'What a task is.', 'todos', $first))
+            ->counting(0)
+            ->withReader($back)
+            ->layout()->root;
+
+        $this->assertSame(['header', 'empty-page'], $this->keysOf($root->children));
+        $this->assertSame('page-empty', $root->children[1]->style);
+        $this->assertSame(['icon', 'empty', 'first'], $this->keysOf($root->children[1]->children));
+        $this->assertSame('todos', $root->children[1]->children[0]->text);
+        $this->assertSame('first', $root->children[1]->children[1]->style);
+    }
+
     public function test_the_header_puts_the_views_beside_the_title_and_the_search_and_creation_apart(): void
     {
         $header = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))

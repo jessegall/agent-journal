@@ -38,7 +38,11 @@ final readonly class ProfilesIndex
                 'isCurrent' => $profile->key === $selectedKey,
                 'trailing' => $profile->isRetired() ? [LayoutPartData::badge('state', 'Retired', 'quiet')] : [],
             ]), $profiles),
-            ListEmpty::informing('No profiles yet.', 'Profiles appear here once an owner activates them.'),
+            ListEmpty::nothingYet(
+                'No profiles yet',
+                'A profile is a kind of helper: the driver it runs, its models, its rules and whom it answers to.',
+                'users',
+            ),
         )
             ->counting(count($profiles))
             ->withReader(

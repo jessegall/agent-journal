@@ -98,8 +98,8 @@ final class LibraryPageTest extends TestCase
         $this->actingAs($this->owner)
             ->get('/documents')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where(self::CONTENT.'.0.key', 'empty')
-                ->missing(self::CONTENT.'.1'));
+                ->where('page.data.root.children.1.style', 'page-empty')
+                ->where('page.data.root.children.1.children.2.key', 'first-doc'));
     }
 
     private function file(): void

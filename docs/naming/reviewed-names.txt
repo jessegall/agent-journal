@@ -16788,7 +16788,9 @@ method	ListDocumentsCall::__construct()
 method	ListDocumentsController::__invoke()
 method	ListEmpty::__construct()
 method	ListEmpty::informing()
+method	ListEmpty::nothingYet()
 method	ListEmpty::offering()
+method	ListEmpty::page()
 method	ListEmpty::parts()
 method	ListHelperNoticesController::__invoke()
 method	ListItem::__construct()
@@ -28747,6 +28749,7 @@ parameter	$filedAt
 parameter	$filer
 parameter	$files
 parameter	$filesStaged
+parameter	$fillsPage
 parameter	$filter
 parameter	$filterValue
 parameter	$filters
@@ -29552,6 +29555,7 @@ parameter	$openRequestId
 parameter	$opened
 parameter	$openedVersion
 parameter	$opener
+parameter	$openerStyle
 parameter	$opening
 parameter	$opensIn
 parameter	$operand
@@ -35357,6 +35361,8 @@ property	ListDocumentsCall::$query
 property	ListDocumentsCall::$revisions
 property	ListEmpty::$actions
 property	ListEmpty::$detail
+property	ListEmpty::$fillsPage
+property	ListEmpty::$icon
 property	ListEmpty::$title
 property	ListItem::$node
 property	ListItem::$toParse
@@ -42247,6 +42253,7 @@ variable	$actorType
 variable	$actual
 variable	$adapter
 variable	$added
+variable	$adding
 variable	$additions
 variable	$address
 variable	$addressee

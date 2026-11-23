@@ -68,6 +68,8 @@
     "plans_reassign_work",
     "plans_start",
     "plans_unassign_work",
+    "reminders_create",
+    "reminders_finish",
     "reports_close",
     "reports_comment",
     "reports_create",

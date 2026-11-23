@@ -52,7 +52,7 @@ enum LayoutTag: string
             self::Box => [
                 'stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split', 'bar', 'reader',
                 'settings-page', 'settings', 'settings-group', 'setting', 'setting-block', 'settings-footer',
-                'page-head', 'page', 'page-list',
+                'page-head', 'page', 'page-list', 'page-empty',
             ],
             self::Text => [
                 'plain',
@@ -68,7 +68,7 @@ enum LayoutTag: string
                 'driver',
             ],
             self::Collection => ['list', 'facts', 'choices'],
-            self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal', 'skeleton', 'stale'],
+            self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'first', 'refusal', 'skeleton', 'stale'],
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],
             self::Field => ['search', 'text', 'secret', 'toggle', 'area', 'choice'],
             self::Form => ['stack', 'inline'],

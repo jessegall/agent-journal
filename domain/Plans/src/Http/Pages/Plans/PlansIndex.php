@@ -92,7 +92,12 @@ final readonly class PlansIndex
             );
         }
 
-        return ListEmpty::informing('No plans yet.');
+        return ListEmpty::nothingYet(
+            'No plans yet',
+            'A plan breaks bigger work into phases and tasks that agents can pick up.',
+            'plan',
+            $this->creation('first', 'primary'),
+        );
     }
 
     /**
@@ -107,7 +112,7 @@ final readonly class PlansIndex
      * Create plan: a dialog with Title, Goal and a required Type from the permitted types, sent to the registered plan
      * creation; plan assignment, dependencies and phases are left out until authorized operations exist.
      */
-    private function creation(string $key = 'creation'): LayoutPartData
+    private function creation(string $key = 'creation', string $openerStyle = 'bordered'): LayoutPartData
     {
         return LayoutPartData::dialog(
             $key,
@@ -118,7 +123,7 @@ final readonly class PlansIndex
                     'guidedNoun' => $this->producers->offersGuided('plan') ? 'plan' : Optional::create(),
                 ],
             ),
-            LayoutPartData::action('open', 'New plan', LayoutActionData::changing([])),
+            LayoutPartData::action('open', 'New plan', LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(
                 ['method' => ActionMethod::Post, 'href' => route('plans.create-plan', [], false), 'isKeyed' => true],
             ),

@@ -120,14 +120,19 @@ final readonly class TasksIndex
             );
         }
 
-        return ListEmpty::informing('No tasks yet.');
+        return ListEmpty::nothingYet(
+            'No tasks yet',
+            'A task is one piece of work an agent takes on, from start until it is tested.',
+            'todos',
+            $this->creation('first', 'primary'),
+        );
     }
 
     /**
      * Create task: a dialog with Title and Done when, sent to the registered task creation, offering the guided entry
      * only when a draft producer is registered for tasks.
      */
-    private function creation(string $key = 'creation'): LayoutPartData
+    private function creation(string $key = 'creation', string $openerStyle = 'bordered'): LayoutPartData
     {
         $dialog = LayoutDialogData::from(
             [
@@ -140,7 +145,7 @@ final readonly class TasksIndex
         return LayoutPartData::dialog(
             $key,
             $dialog,
-            LayoutPartData::action('open', 'New task', LayoutActionData::changing([])),
+            LayoutPartData::action('open', 'New task', LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(
                 ['method' => ActionMethod::Post, 'href' => route('tasks.create-task', [], false), 'isKeyed' => true],
             ),

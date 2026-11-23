@@ -27,7 +27,7 @@ final class ProfilesPageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
     }
 
-    public function test_with_no_profile_the_page_shows_an_informational_empty_state_and_nothing_selected(): void
+    public function test_with_no_profile_the_page_fills_with_its_empty_state_and_no_split(): void
     {
         // Starting an agent installs the built-in profiles, and a test that commits its rows may leave them behind.
         $this->emptyTables('profile_revisions', 'profiles');
@@ -35,9 +35,9 @@ final class ProfilesPageTest extends TestCase
         $this->actingAs($this->owner)->get('/accounts/profiles')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
                 ->component('layout/DeclaredLayout')
-                ->where('page.data.root.children.1.children.0.children.0.children.0.key', 'empty')
-                ->where('page.data.root.children.1.children.0.children.0.children.0.style', 'empty')
-                ->missing('page.data.root.children.1.children.1'),
+                ->where('page.data.root.children.1.style', 'page-empty')
+                ->where('page.data.root.children.1.children.1.style', 'first')
+                ->missing('page.data.root.children.2'),
         );
     }
 }

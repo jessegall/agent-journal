@@ -101,9 +101,11 @@ final readonly class DocumentsIndex
             );
         }
 
-        return ListEmpty::informing(
-            'No documents or reports yet.',
-            'A document is lasting knowledge kept as revisions; a report says what was checked or found, once.',
+        return ListEmpty::nothingYet(
+            'No documents yet',
+            'Designs, plans and notes that you and the agents write are kept here.',
+            'docs',
+            $this->creation('doc', 'New document', 'first', 'primary'),
         );
     }
 
@@ -111,18 +113,22 @@ final readonly class DocumentsIndex
      * A dialog that files a document or a report from its Title, One line about it and Text, sent to the registered
      * create action of its type.
      */
-    private function creation(string $type, string $label): LayoutPartData
-    {
+    private function creation(
+        string $type,
+        string $label,
+        string $key = 'create',
+        string $openerStyle = 'bordered',
+    ): LayoutPartData {
         $route = $type === 'doc' ? 'documents.create-document' : 'documents.create-report';
 
         return LayoutPartData::dialog(
-            "create-{$type}",
+            "{$key}-{$type}",
             LayoutDialogData::from([
                 'title' => $label,
                 'confirmation' => $type === 'doc' ? 'Document filed' : 'Report filed',
                 'guidedNoun' => $this->guidedNounOf($type),
             ]),
-            LayoutPartData::action('open', $label, LayoutActionData::changing([]), 'bordered'),
+            LayoutPartData::action('open', $label, LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(['method' => ActionMethod::Post, 'href' => route($route, [], false)]),
             [
                 LayoutPartData::field('title', 'Title', LayoutFieldData::from(['name' => 'title']), 'text'),

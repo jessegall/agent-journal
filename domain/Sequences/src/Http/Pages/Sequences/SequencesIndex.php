@@ -46,7 +46,17 @@ final readonly class SequencesIndex
                 'href' => route('sequences.sequence', ['sequence' => $sequence->id], false),
                 'isCurrent' => $sequence->id === $chosenId,
             ]), $sequences),
-            ListEmpty::informing('No sequences yet.', 'Sequences the agents follow appear here once one is written.'),
+            ListEmpty::nothingYet(
+                'No sequences yet',
+                'A sequence is a list of steps an agent follows the same way each time.',
+                'sequence',
+                LayoutPartData::action(
+                    'first',
+                    'New sequence',
+                    LayoutActionData::to(route('sequences.new', [], false)),
+                    'primary',
+                ),
+            ),
         )
             ->counting(count($sequences))
             ->withViews(...$this->views->of(false))

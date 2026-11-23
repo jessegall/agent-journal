@@ -43,13 +43,20 @@ final readonly class AccountsIndex
             ? [LayoutPartData::native('sign-in', LayoutNativeData::of('accounts/AddAccountPart', $accounts))]
             : $this->readerOf($accounts, $chosen);
 
+        $adding = LayoutActionData::changing(['add' => '1', 'account' => '']);
+
         return ListPage::make(
             'Accounts',
             array_map(fn (AccountRowData $row) => $this->rowOf($row, $chosen), $accounts->rows),
-            ListEmpty::informing('No accounts yet.'),
+            ListEmpty::nothingYet(
+                'No accounts yet',
+                'Agents run on an account. Add a Claude Code or Codex account so they can start work.',
+                'account',
+                LayoutPartData::action('add', 'Add account', $adding, 'primary'),
+            ),
         )
             ->counting(count($accounts->rows))
-            ->creating('Add account', LayoutActionData::changing(['add' => '1', 'account' => '']))
+            ->creating('Add account', $adding)
             ->withReader(new LayoutBackData(route('accounts.accounts', [], false), 'Accounts'), ...$reader)
             ->layout();
     }

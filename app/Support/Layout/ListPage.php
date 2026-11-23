@@ -134,6 +134,10 @@ final readonly class ListPage
 
     public function layout(): DeclaredLayoutData
     {
+        if ($this->rows === [] && $this->reader === [] && $this->empty->fillsPage) {
+            return DeclaredLayoutData::of(LayoutPartData::box('index', 'page', $this->header(), $this->empty->page()));
+        }
+
         $parts = [...$this->filters, $this->content()];
 
         if (! $this->back instanceof LayoutBackData) {
