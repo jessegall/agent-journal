@@ -76,8 +76,4 @@ type ComposerRegion interface {
 
 	// Text is what is typed in the composer, without its prompt marker, spaces trimmed; empty while it is not drawn.
 	Text(snapshot Snapshot) string
-
-	// ShowsFolded is whether the composer shows the typed text folded into the program's own marker for a pasted
-	// text of several lines, as some programs do in place of the text itself.
-	ShowsFolded(snapshot Snapshot, typed string) bool
 }

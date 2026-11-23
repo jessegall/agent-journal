@@ -30,6 +30,9 @@ const readyDeadline = 10 * time.Second
 // echoDeadline is how long a typed line waits to be drawn in the composer before its delivery is uncertain.
 const echoDeadline = 5 * time.Second
 
+// echoQuiet is how long the driver waits after the program drew a typed line before it presses Enter.
+const echoQuiet = 150 * time.Millisecond
+
 // pollInterval is how often the driver reads the screen again while it waits.
 const pollInterval = 50 * time.Millisecond
 
@@ -331,7 +334,11 @@ func (driver *TerminalDriver) prompt(
 		return failed(request), err
 	}
 
-	driver.waitUntil(echoDeadline, func() bool { return driver.runtime.Gate.Echoes(sanitizedText(text)) })
+	// The program has read the paste once it drew it; the Enter then follows as a key of its own, after the screen
+	// had a moment to go still, never in the same read as the paste.
+	if driver.waitUntil(echoDeadline, func() bool { return driver.runtime.Gate.Shows(line) }) {
+		driver.runtime.Clock.Sleep(echoQuiet)
+	}
 	delivery, err := driver.runtime.Gate.Submit(line, 0)
 	if errors.Is(err, terminal.ErrLineStranded) {
 		return driver.strandedResult(request, line), nil

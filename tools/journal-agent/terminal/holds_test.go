@@ -2,7 +2,6 @@ package terminal
 
 import (
 	"bytes"
-	"strings"
 	"testing"
 	"time"
 
@@ -82,20 +81,23 @@ func TestTheRecordedWelcomeScreenIsPassedWithItsRecordedEnterAndHoldsNothing(t *
 	}
 }
 
-func TestAPasteOfSeveralLinesIsEchoedByItsFoldMarkerOfThatManyLines(t *testing.T) {
+// User message 19571: a paste of several lines is drawn as the program's own fold marker, and the copy of the screen
+// may hold it with stray characters. The line counts as drawn once the composer changed and holds anything; its
+// characters are not compared.
+func TestAPasteOfSeveralLinesCountsAsDrawnOnceTheComposerChangedAndHoldsSomething(t *testing.T) {
 	reader, reading := replayed(t, "claude-code/2.1.323/screens/folded-paste")
 	layout := profiles.ClaudeCode{}.Screens()
 	gate := NewInputGate(&bytes.Buffer{}, reader, layout.Composer, func() time.Time { return time.Unix(0, 0) })
-	twelveLines := strings.TrimSuffix(strings.Repeat("a line\n", 12), "\n")
+	drawnNow := reader.Generation(layout.Composer.Name())
 
 	if reading.Kind == screen.MenuShown {
 		t.Fatalf("the folded paste read as the menu %q", reading.Menu)
 	}
-	if !gate.Echoes(twelveLines) {
-		t.Fatal("the fold marker of twelve lines was not taken as the echo of twelve typed lines")
+	if !gate.Shows(&TypedLine{drawnFrom: drawnNow - 1}) {
+		t.Fatal("a composer that changed and holds the fold marker was not taken as the pasted line drawn")
 	}
-	if gate.Echoes(twelveLines + "\none more") {
-		t.Fatal("the fold marker of twelve lines was taken as the echo of thirteen")
+	if gate.Shows(&TypedLine{drawnFrom: drawnNow}) {
+		t.Fatal("a composer the program has not redrawn since the paste was taken as the pasted line drawn")
 	}
 }
 

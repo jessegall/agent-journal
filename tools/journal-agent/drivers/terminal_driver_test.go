@@ -131,6 +131,24 @@ func TestTwoDeliveredPromptsAreTwoTurnsOfOneGeneration(t *testing.T) {
 	}
 }
 
+// User message 19571: the program need not draw a typed line character for character: it folds a long paste into a
+// marker of its own and redraws cell by cell. A line counts as drawn once the composer changed and holds something,
+// and then gets its Enter; here the recording draws other words than the ones delivered.
+func TestAPromptTheProgramDrawsInItsOwnWordsIsStillEntered(t *testing.T) {
+	driver, _, program := recordedTurn(t, 11*time.Second)
+	delivered := "words the recording never drew"
+
+	result, err := driver.Deliver(context.Background(),
+		contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(delivered)})
+
+	if err != nil || result.Progress != contracts.ProgressApplying {
+		t.Fatalf("the prompt ended %+v, %v", result, err)
+	}
+	if program.String() != pasted(delivered)+"\r" {
+		t.Fatalf("the program got %q, want the paste and its Enter", program.String())
+	}
+}
+
 func TestAnInterruptHoldsTheRuntimeAndAWakeDoesNotRestartWork(t *testing.T) {
 	driver, _, program := recordedTurn(t, 11*time.Second)
 	driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)})

@@ -1,7 +1,6 @@
 package profiles
 
 import (
-	"regexp"
 	"time"
 
 	"journal-agent/screen"
@@ -11,10 +10,6 @@ import (
 // claudeCodeSpinnerGlyphs are the glyphs Claude Code 2.1.323 cycles through before its working line, read from the
 // recorded turns.
 var claudeCodeSpinnerGlyphs = []string{"✻ ", "✶ ", "✳ ", "✢ ", "· ", "* ", "✽ "}
-
-// claudeCodePasteFold is how Claude Code 2.1.323 shows a pasted text of several lines in its composer, in place of
-// the text: "[Pasted text #1 +11 lines]" for twelve lines, recorded in screens/folded-paste.
-var claudeCodePasteFold = regexp.MustCompile(`\[Pasted text #\d+ \+(\d+) lines\]`)
 
 // claudeCodeHighlights are how Claude Code 2.1.323 marks the highlighted option: ❯ alone, or ❯ with the ✔ of the
 // entry in use where a list keeps a column for it, as the welcome screen's text styles do (screens/welcome-theme).
@@ -56,7 +51,7 @@ func asksForSecret(family screen.MenuFamily) screen.MenuFamily {
 func (ClaudeCode) Screens() screen.Layout {
 	return screen.Layout{
 		Buffer:            screencontracts.NormalBuffer,
-		Composer:          screen.FencedRow{Label: "composer", Marker: "❯ ", Fold: claudeCodePasteFold},
+		Composer:          screen.FencedRow{Label: "composer", Marker: "❯ "},
 		EmptyCursorColumn: 2,
 		ComposerStableFor: 300 * time.Millisecond,
 		Menus: []screen.MenuFamily{

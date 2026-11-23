@@ -7,6 +7,8 @@ type TypedLine struct {
 	RequestID   string
 	Attempt     int
 	Text        string
+	// drawnFrom is the composer's generation when the line was written into it: a later one means the program redrew.
+	drawnFrom   uint64
 	enters      int
 	invalidated bool
 	// stranded is a line a browser take found on its way; settled closes once the take settled it, and cancelled says
@@ -20,9 +22,9 @@ type TypedLine struct {
 type Delivery string
 
 const (
-	// Delivered is a line whose echo was seen in the composer before its one Enter.
+	// Delivered is a line the program drew in the composer before its one Enter.
 	Delivered Delivery = "delivered"
-	// DeliveryUncertain is a line whose echo was lost or changed, or whose Enter may already have submitted it: the
+	// DeliveryUncertain is a line the program never drew, or whose Enter may already have submitted it: the
 	// journal does not know, so it never retries blindly and never calls it the user's text.
 	DeliveryUncertain Delivery = "delivery-uncertain"
 )

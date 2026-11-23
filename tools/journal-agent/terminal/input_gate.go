@@ -108,14 +108,16 @@ func (gate *InputGate) typeLine(requestID string, attempt int, written, text str
 		return nil, err
 	}
 
-	gate.pending = &TypedLine{RequestID: requestID, Attempt: attempt, Text: text, settled: make(chan struct{})}
+	gate.pending = &TypedLine{
+		RequestID: requestID, Attempt: attempt, Text: text, drawnFrom: readGeneration, settled: make(chan struct{}),
+	}
 	gate.owner = DriverInput
 
 	return gate.pending, nil
 }
 
-// Submit presses Enter once for a typed line whose echo is in the composer. A line the user typed over is refused;
-// a line with no echo is DeliveryUncertain, and so is a second Enter beyond the profile's retry bound.
+// Submit presses Enter once for a typed line the program has drawn in the composer. A line the user typed over is
+// refused; a line the program never drew is DeliveryUncertain, and so is a second Enter beyond the profile's retry bound.
 func (gate *InputGate) Submit(line *TypedLine, enterRetries int) (Delivery, error) {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
@@ -143,10 +145,10 @@ func (gate *InputGate) Submit(line *TypedLine, enterRetries int) (Delivery, erro
 	return DeliveryUncertain, nil
 }
 
-// mayEnter is whether the line may be entered now: it is the pending one, the program shows its text, and it has
-// not used up its retries.
+// mayEnter is whether the line may be entered now: it is the pending one, the program has drawn it, and it has not
+// used up its retries.
 func (gate *InputGate) mayEnter(line *TypedLine, enterRetries int) bool {
-	return gate.pending == line && gate.echoes(line.Text) && line.enters <= enterRetries
+	return gate.pending == line && gate.shows(line) && line.enters <= enterRetries
 }
 
 // Keys sends a driver's keys, such as a menu move or a key script's step, unless someone else holds the input: a
@@ -220,44 +222,22 @@ func (gate *InputGate) Choose(choice DraftChoice, clearKeys string) (string, err
 	}
 }
 
-// Echoes is whether the composer shows the text, as the program draws it, spaces made plain.
-func (gate *InputGate) Echoes(text string) bool {
+// Shows is whether the program has drawn the pending line.
+func (gate *InputGate) Shows(line *TypedLine) bool {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 
-	return gate.echoes(text)
+	return gate.shows(line)
 }
 
-// echoes is whether the composer shows the text: folded into the program's marker for a paste of several lines, or
-// every typed character at its place after the marker. A program may
-// draw a typed space by moving the cursor, leaving an earlier placeholder's letter in that cell, so spaces are not
-// compared.
-func (gate *InputGate) echoes(text string) bool {
-	if gate.composer.ShowsFolded(gate.reader.Snapshot(), text) {
-		return true
-	}
+// shows is whether the program has drawn the line: the composer was empty and the driver's alone when the line went
+// in, so a composer that changed since and now holds anything holds that line. Its characters are not compared: the
+// program folds a paste of several lines into a marker of its own and redraws a line cell by cell, and the copy of
+// the screen need not follow that character for character.
+func (gate *InputGate) shows(line *TypedLine) bool {
+	changed := gate.reader.Generation(gate.composer.Name()) != line.drawnFrom
 
-	drawn := []rune(gate.composerText())
-	typed := []rune(strings.TrimSpace(text))
-
-	for start := 0; start+len(typed) <= len(drawn); start++ {
-		if matchesIgnoringSpaces(drawn[start:start+len(typed)], typed) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// matchesIgnoringSpaces is whether every typed character that is not a space is drawn in the same place.
-func matchesIgnoringSpaces(drawn, typed []rune) bool {
-	for index, character := range typed {
-		if character != ' ' && drawn[index] != character {
-			return false
-		}
-	}
-
-	return true
+	return changed && strings.TrimSpace(gate.composerText()) != ""
 }
 
 // composerText is the text in the composer after its marker, or nothing while the composer is not drawn.

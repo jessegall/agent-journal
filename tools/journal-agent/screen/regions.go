@@ -1,8 +1,6 @@
 package screen
 
 import (
-	"regexp"
-	"strconv"
 	"strings"
 
 	"journal-agent/screen/contracts"
@@ -14,9 +12,6 @@ import (
 type FencedRow struct {
 	Label  string
 	Marker string
-	// Fold is the marker the program draws in place of a pasted text of several lines, its one group the number of
-	// lines after the first; nil for a program that draws the text itself.
-	Fold *regexp.Regexp
 }
 
 func (region FencedRow) Name() string {
@@ -115,21 +110,6 @@ func (region FencedRow) Text(snapshot contracts.Snapshot) string {
 	}
 
 	return unmarked(snapshot.Rows[rows.First], []string{region.Marker})
-}
-
-// ShowsFolded is whether the composer holds the fold marker of a paste with as many lines as the typed text.
-func (region FencedRow) ShowsFolded(snapshot contracts.Snapshot, typed string) bool {
-	if region.Fold == nil {
-		return false
-	}
-	found := region.Fold.FindStringSubmatch(region.Text(snapshot))
-
-	return found != nil && found[1] == strconv.Itoa(strings.Count(strings.TrimSpace(typed), "\n"))
-}
-
-// ShowsFolded is never so: no recording shows this composer fold a paste.
-func (region MarkedRow) ShowsFolded(contracts.Snapshot, string) bool {
-	return false
 }
 
 // Text is the composer's typed text, without the prefix it starts with.
