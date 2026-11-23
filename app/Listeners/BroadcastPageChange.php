@@ -61,7 +61,7 @@ final readonly class BroadcastPageChange implements Listener
 
         return array_values(array_map(
             fn (ChatInterval $interval) => $interval->actor->id,
-            array_filter($intervals, fn (ChatInterval $interval) => $interval->actor->type->isUser()),
+            array_filter($intervals, fn (ChatInterval $interval) => $interval->actor->isUser()),
         ));
     }
 }
