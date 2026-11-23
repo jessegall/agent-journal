@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Textarea from '@kit/Textarea';
-import { nextTick, ref, useTemplateRef } from 'vue';
+import { computed, nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
 import { approveReview, requestChanges, requestReview, withdrawReview } from '@generated/routes/plans';
@@ -22,6 +22,9 @@ const props = defineProps<{
     state: PlanState;
     holder: { type: string; id: string; name: string; reference: string } | undefined;
 }>();
+
+const receipt = computed(() => props.review.receipt);
+const changesRequested = computed(() => props.review.changesRequested);
 
 const isAssigning = ref(false);
 
@@ -88,22 +91,22 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
 
 <template>
     <section class="mt-4 flex flex-col gap-2" aria-label="Review">
-        <template v-if="review.receipt">
+        <template v-if="receipt">
             <p class="text-small text-text-2">
-                <template v-if="review.receipt.isHistorical">
-                    Historical approval: the plan changed after review {{ review.receipt.editionNumber }} approved it.
+                <template v-if="receipt.isHistorical">
+                    Historical approval: the plan changed after review {{ receipt.editionNumber }} approved it.
                 </template>
                 <template v-else>
                     Approved by
-                    {{ decidedText(review.receipt.decidedById, review.receipt.decidedByType, review.receipt.decidedAt) }}
-                    (review {{ review.receipt.editionNumber }})
+                    {{ decidedText(receipt.decidedById, receipt.decidedByType, receipt.decidedAt) }}
+                    (review {{ receipt.editionNumber }})
                 </template>
             </p>
         </template>
-        <template v-if="review.changesRequested">
+        <template v-if="changesRequested">
             <p class="rounded-control border border-border-2 px-3 py-2 text-small text-text">
-                Changes requested in review {{ review.changesRequested.editionNumber }}:
-                <span class="whitespace-pre-wrap" v-text="review.changesRequested.reason" />
+                Changes requested in review {{ changesRequested.editionNumber }}:
+                <span class="whitespace-pre-wrap" v-text="changesRequested.reason" />
             </p>
         </template>
         <template v-if="review.reviewNumber">

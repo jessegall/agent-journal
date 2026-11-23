@@ -63,6 +63,13 @@ const figures = computed(() => ({
         concurrency: maxConcurrencyOf(props.nodes, props.suggestion?.edges ?? []),
     },
 }));
+
+/**
+ * One graph's figures as the comparison names them under its heading.
+ */
+function figuresLine(figure: { chain: number; concurrency: number }): string {
+    return `Longest chain ${figure.chain}, most at once ${figure.concurrency}`;
+}
 const waitsFor = computed(() =>
     props.edges
         .filter((edge) => edge.dependentId === selectedId.value)
@@ -227,7 +234,7 @@ function undo(): void {
                     <div class="flex min-w-0 flex-1 flex-col gap-2">
                         <h3 class="text-text">Now</h3>
                         <p class="text-small text-text-3">
-                            Longest chain {{ figures.now.chain }}, most at once {{ figures.now.concurrency }}
+                            {{ figuresLine(figures.now) }}
                         </p>
                         <TaskGraphCanvas
                             label="Now"
@@ -242,7 +249,7 @@ function undo(): void {
                     <div class="flex min-w-0 flex-1 flex-col gap-2">
                         <h3 class="text-text">Suggested</h3>
                         <p class="text-small text-text-3">
-                            Longest chain {{ figures.suggested.chain }}, most at once {{ figures.suggested.concurrency }}
+                            {{ figuresLine(figures.suggested) }}
                         </p>
                         <TaskGraphCanvas
                             label="Suggested"
