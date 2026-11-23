@@ -10,3 +10,8 @@ def test_a_long_section_shows_its_first_lines_and_how_to_read_the_rest():
     lines = OverviewSection("message reports", text).lines().splitlines()
     assert len(lines) == SECTION_LINES + 2
     assert lines[-1] == "40 more lines: journal message reports"
+
+
+def test_a_section_whose_command_names_its_limit_is_shown_whole():
+    text = "\n".join(f"memory:{number}" for number in range(SECTION_LINES + 40))
+    assert OverviewSection("memory list --state active --limit 1000", text).lines() == f"## memory list --state active --limit 1000\n{text}"
