@@ -48,8 +48,15 @@ func (clock *replayClock) Sleep(duration time.Duration) {
 // to a buffer: the recording plays the program's side.
 func recordedTurn(t *testing.T, until time.Duration) (*TerminalDriver, *replayClock, *bytes.Buffer) {
 	t.Helper()
+
+	return recorded(t, "turns/terminal-turn", until)
+}
+
+// recorded replays one recording of Claude Code 2.1.323 up to the given second, behind a terminal driver.
+func recorded(t *testing.T, name string, until time.Duration) (*TerminalDriver, *replayClock, *bytes.Buffer) {
+	t.Helper()
 	layout := profiles.ClaudeCode{}.Screens()
-	fixture, err := recording.Load("../testdata/recordings/claude-code/2.1.323/turns/terminal-turn")
+	fixture, err := recording.Load("../testdata/recordings/claude-code/2.1.323/" + name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,6 +78,7 @@ func recordedTurn(t *testing.T, until time.Duration) (*TerminalDriver, *replayCl
 		Classifier: classifier,
 		Gate:       gate,
 		Composer:   layout.Composer.Name(),
+		Layout:     layout,
 		Generation: reader.Generation,
 		Scripts:    scripts.Registered(),
 		Runner:     runner,
@@ -85,6 +93,23 @@ func pasted(prompt string) string {
 
 func request(id string) contracts.RequestIdentity {
 	return contracts.RequestIdentity{RuntimeID: "runtime-1", RequestID: id, Attempt: 1}
+}
+
+func TestAPromptThatMeetsAKnownMenuHandlesItAtOnceInsteadOfWaitingOutTheDeadline(t *testing.T) {
+	driver, clock, program := recorded(t, "screens/welcome-theme", time.Second)
+	met := clock.Now()
+
+	result, err := driver.Wake(context.Background(), contracts.WakeRequest{Request: request("one")})
+
+	if err != nil || result.Progress != contracts.ProgressStaged || result.IsHeld() {
+		t.Fatalf("the prompt behind the welcome screen ended %+v, %v", result, err)
+	}
+	if waited := clock.Now().Sub(met); waited >= readyDeadline/2 {
+		t.Fatalf("the welcome screen was handled after %s, not the moment it was read", waited)
+	}
+	if program.String() != "\r" {
+		t.Fatalf("the welcome screen got %q, not its recorded Enter", program.String())
+	}
 }
 
 func TestTwoDeliveredPromptsAreTwoTurnsOfOneGeneration(t *testing.T) {

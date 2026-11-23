@@ -316,7 +316,7 @@ func (driver *TerminalDriver) prompt(
 			Hold:     contracts.HoldInterrupted,
 		}, nil
 	}
-	if !driver.waitUntil(readyDeadline, driver.promptReady) {
+	if driver.waitUntil(readyDeadline, driver.screenDecided); !driver.promptReady() {
 		return driver.stagedBehindScreen(request)
 	}
 
@@ -398,6 +398,14 @@ func (driver *TerminalDriver) stagedBehindScreen(request contracts.RequestIdenti
 	result.Hold = contracts.Hold(report.Reason)
 
 	return result, nil
+}
+
+// screenDecided is whether the screen says what a prompt meets: a ready composer, or a known menu holding still,
+// which is handled the moment it is read instead of at the end of the wait.
+func (driver *TerminalDriver) screenDecided() bool {
+	reading := driver.runtime.Classifier.Classify(driver.runtime.Clock.Now())
+
+	return reading.Stable && (reading.Kind == screen.PromptReady || reading.Kind == screen.MenuShown)
 }
 
 func (driver *TerminalDriver) promptReady() bool {
