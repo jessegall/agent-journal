@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Rules\Providers;
 
 use App\Contracts\Authorization\ReadEntitlements;
+use App\Contracts\Sessions\ProfileRules;
 use App\Support\LinkTypeRegistry;
 use App\Values\ReadEntitlement;
 use Domain\Rules\Contracts\RuleDetailsResolver;
@@ -15,6 +16,7 @@ use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RuleDetailRecords;
 use Domain\Rules\Resolvers\RuleRecords;
+use Domain\Rules\Support\ProfileRuleRecords;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Routing\Redirector;
@@ -30,6 +32,7 @@ final class RulesServiceProvider extends ServiceProvider
     {
         $this->app->bind(RuleDetailsResolver::class, RuleDetailRecords::class);
         $this->app->bind(RuleResolver::class, RuleRecords::class);
+        $this->app->bind(ProfileRules::class, ProfileRuleRecords::class);
     }
 
     public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions, ReadEntitlements $reads): void

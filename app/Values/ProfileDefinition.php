@@ -16,7 +16,7 @@ final readonly class ProfileDefinition
     /**
      * The properties differsFrom leaves out: they name the profile or record where it came from, not how it is set up.
      */
-    private const array NOT_CONFIGURATION = ['key', 'label', 'start.provenance', 'start.requiresReview'];
+    private const array NOT_CONFIGURATION = ['key', 'label', 'description', 'start.provenance', 'start.requiresReview'];
 
     /**
      * @param  list<string>|null  $skillAllowlist
@@ -34,6 +34,7 @@ final readonly class ProfileDefinition
         public ProfileAuthorization $authorization,
         public SupervisorRoutes $supervisor = new SupervisorRoutes(),
         public InstancePolicy $instances = InstancePolicy::Reusable,
+        public string $description = '',
     ) {}
 
     /**

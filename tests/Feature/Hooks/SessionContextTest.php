@@ -60,7 +60,7 @@ final class SessionContextTest extends TestCase
         ] as [$callId, $source]) {
             $context = $this->start($callId, $source);
 
-            $this->assertStringContainsString(sprintf(self::RULE_REMINDER, $this->rule->id, self::RULE_TEXT), $context);
+            $this->assertStringContainsString(sprintf(self::RULE_REMINDER, $this->rule->number, self::RULE_TEXT), $context);
             $this->assertStringContainsString(sprintf(self::MEMORY_REMINDER, self::MEMORY_TEXT), $context);
         }
     }
@@ -84,7 +84,7 @@ final class SessionContextTest extends TestCase
 
         $context = $this->start('call-1', ContextStartType::Start);
 
-        $this->assertStringContainsString(sprintf(self::RULE_REMINDER, $this->rule->id, self::RULE_TEXT), $context);
+        $this->assertStringContainsString(sprintf(self::RULE_REMINDER, $this->rule->number, self::RULE_TEXT), $context);
         $this->assertStringNotContainsString(sprintf(self::MEMORY_REMINDER, self::MEMORY_TEXT), $context);
         $this->assertStringContainsString(
             self::OMITTED_NOTICE,

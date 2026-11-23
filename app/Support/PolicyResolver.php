@@ -84,6 +84,7 @@ final readonly class PolicyResolver
                 ->denying($this->applicationCommands($profile->key, $profile->deniedCommands)),
             $profile->supervisor,
             $profile->instances,
+            $profile->description,
         );
     }
 

@@ -33,7 +33,7 @@ final readonly class ProfilesIndex
             array_map(fn (Profile $profile) => new LayoutRowData(
                 $profile->id,
                 $profile->label,
-                detail: $profile->key,
+                detail: $profile->description === '' ? $profile->key : $profile->description,
                 href: route('accounts.profile', ['profile' => $profile->key], false),
                 isCurrent: $profile->key === $selectedKey,
                 trailing: $profile->isRetired() ? [LayoutPartData::badge('state', 'Retired', 'quiet')] : [],

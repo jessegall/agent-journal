@@ -43,7 +43,7 @@ final readonly class TaskDraftProducer implements DraftProducer
         return DraftedRecordData::from([
             'fields' => [
                 'title' => $draft->cutTo(1, Task::TITLE_CHARACTER_LIMIT),
-                'brief' => "Done when: {$draft->to(2)}\nLeaves alone: {$draft->to(3)}",
+                'brief' => rtrim($draft->to(2), '.')."; it must not touch: {$draft->to(3)}",
             ],
             'agent' => self::AGENT,
         ]);

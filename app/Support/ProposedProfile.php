@@ -45,5 +45,6 @@ final readonly class ProposedProfile
         public array $deniedCommands = [],
         public SupervisorRoutes $supervisor = new SupervisorRoutes(),
         public InstancePolicy $instances = InstancePolicy::Reusable,
+        public string $description = '',
     ) {}
 }

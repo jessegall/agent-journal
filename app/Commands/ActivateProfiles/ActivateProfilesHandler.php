@@ -193,7 +193,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         $profile = Profile::query()->withKey($definition->key)->lockForUpdate()->first()
             ?? new Profile(['key' => $definition->key->key]);
 
-        $profile->label = $definition->label;
+        $profile->name($definition->label, $definition->description);
         $profile->retired_at = null;
         $profile->save();
 

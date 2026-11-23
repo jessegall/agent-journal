@@ -408,6 +408,7 @@ use App\Contracts\Sessions\ConversationVisits;
 use App\Contracts\Sessions\CurrentSession;
 use App\Contracts\Sessions\LaunchCandidates;
 use App\Contracts\Sessions\ProfileResolver;
+use App\Contracts\Sessions\ProfileRules;
 use App\Contracts\Sessions\ProfileSelections;
 use App\Contracts\Sessions\RuntimeResolver;
 use App\Contracts\Sessions\SessionPolicyReader;
@@ -1408,6 +1409,9 @@ use App\Values\ProfileDefinition;
 use App\Values\ProfileKey;
 use App\Values\ProfileProvenance;
 use App\Values\ProfileRevisionReference;
+use App\Values\ProfileRule;
+use App\Values\ProfileRuleGroup;
+use App\Values\ProfileRuleGroups;
 use App\Values\ProfileSelection;
 use App\Values\ProfileSnapshot;
 use App\Values\ProfileStartPolicy;
@@ -1839,6 +1843,7 @@ final class CoreApi
                 OperationResolver::class,
                 OverviewContribution::class,
                 ProfileResolver::class,
+                ProfileRules::class,
                 ProfileSelections::class,
                 SkillProvider::class,
                 Skill::class,
@@ -1854,6 +1859,9 @@ final class CoreApi
                 ListPage::class,
                 DraftQuestionData::class,
                 DraftedRecordData::class,
+                ProfileRule::class,
+                ProfileRuleGroup::class,
+                ProfileRuleGroups::class,
                 DraftAnswers::class,
                 DetailPage::class,
                 ListEmpty::class,

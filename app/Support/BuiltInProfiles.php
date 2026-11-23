@@ -44,6 +44,7 @@ final class BuiltInProfiles
             null,
             PolicyOverride::none(),
             [],
+            description: $base->description,
         );
     }
 }

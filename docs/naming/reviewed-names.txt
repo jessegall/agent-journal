@@ -4649,6 +4649,10 @@ class	ProfileRevisionReference
 class	ProfileRevisionRevoked
 class	ProfileRevisionUnreadable
 class	ProfileRevokeCommand
+class	ProfileRule
+class	ProfileRuleGroup
+class	ProfileRuleGroups
+class	ProfileRuleRecords
 class	ProfileRun
 class	ProfileRunData
 class	ProfileRunExecution
@@ -7020,6 +7024,7 @@ class	UnlinkRecordsController
 class	UnlinkRecordsHandler
 class	UnpinMessageCommand
 class	UnpinMessageHandler
+class	UnreadProfileRules
 class	UnreadablePayload
 class	UnresolvedFact
 class	UnrestrictedAuthorizer
@@ -7790,6 +7795,7 @@ constant	ProfileListCommand::ROWS
 constant	ProfileProposal::UNSUPPORTED_FIELDS
 constant	ProfileRevision::LINK_TYPE
 constant	ProfileRevision::UPDATED_AT
+constant	ProfileRuleRecords::GROUP_LABEL
 constant	ProfileRunExecution::EVIDENCE_LIMIT
 constant	ProfileStartPolicy::FIELDS
 constant	ProfileStartPolicy::HELPER_IMAGE
@@ -8901,6 +8907,7 @@ interface	PresentsLayout
 interface	ProcessRunCallers
 interface	ProfileLanguage
 interface	ProfileResolver
+interface	ProfileRules
 interface	ProfileScripts
 interface	ProfileSelections
 interface	ProgramClassifier
@@ -9440,6 +9447,7 @@ method	ActiveEventUnits::open()
 method	ActiveRuleChange::project()
 method	ActiveRuleChange::staleReason()
 method	ActiveRules::__construct()
+method	ActiveRules::all()
 method	ActiveRules::approvedFor()
 method	ActiveRules::missingReplacements()
 method	ActiveRules::projectRules()
@@ -19266,6 +19274,7 @@ method	Profile::hasCurrent()
 method	Profile::isRetired()
 method	Profile::listed()
 method	Profile::lockByKey()
+method	Profile::name()
 method	Profile::retire()
 method	Profile::unretired()
 method	Profile::withKey()
@@ -19426,6 +19435,15 @@ method	ProfileRevisionReference::__construct()
 method	ProfileRevisionRevoked::__construct()
 method	ProfileRevisionUnreadable::forRevision()
 method	ProfileRevokeCommand::handle()
+method	ProfileRule::__construct()
+method	ProfileRuleGroup::__construct()
+method	ProfileRuleGroups::__construct()
+method	ProfileRuleGroups::isUnread()
+method	ProfileRuleGroups::read()
+method	ProfileRuleGroups::unread()
+method	ProfileRuleRecords::__construct()
+method	ProfileRuleRecords::of()
+method	ProfileRules::of()
 method	ProfileRun::casts()
 method	ProfileRun::finish()
 method	ProfileRun::forTrigger()
@@ -19514,7 +19532,9 @@ method	ProfilesServiceProvider::boot()
 method	ProfilesServiceProvider::register()
 method	ProfilesServiceProvider::scopeAccountsToOwner()
 method	ProfilesShow::__construct()
+method	ProfilesShow::answersTo()
 method	ProfilesShow::part()
+method	ProfilesShow::rulesOf()
 method	ProfilesSkill::condition()
 method	ProfilesSkill::description()
 method	ProfilesSkill::key()
@@ -20330,7 +20350,6 @@ method	ReadsRuleFilters::ruleFilters()
 method	ReadsRunsListAddress::follower()
 method	ReadsRunsListAddress::hasFollower()
 method	ReadsRunsListAddress::pageNumber()
-method	ReadsRunsListAddress::runsListRules()
 method	ReadsServiceProvider::boot()
 method	ReadsServiceProvider::countQueriesOn()
 method	ReadsServiceProvider::endEntry()
@@ -26940,6 +26959,7 @@ method	UnpinMessageCommand::__construct()
 method	UnpinMessageHandler::__construct()
 method	UnpinMessageHandler::handle()
 method	UnpinMessageHandler::unpinFor()
+method	UnreadProfileRules::of()
 method	UnreadablePayload::forValue()
 method	UnreadablePayload::missing()
 method	UnresolvedFact::__construct()
@@ -36569,6 +36589,7 @@ property	ProfileBase::$containedBudgets
 property	ProfileBase::$containerRequired
 property	ProfileBase::$coordinator
 property	ProfileBase::$defaultVariant
+property	ProfileBase::$description
 property	ProfileBase::$executionMode
 property	ProfileBase::$grants
 property	ProfileBase::$key
@@ -36592,6 +36613,7 @@ property	ProfileDefaults::$key
 property	ProfileDefaults::$revision
 property	ProfileDefinition::$authorization
 property	ProfileDefinition::$base
+property	ProfileDefinition::$description
 property	ProfileDefinition::$instances
 property	ProfileDefinition::$instructions
 property	ProfileDefinition::$key
@@ -36642,6 +36664,13 @@ property	ProfileRevisionRevoked::$revision
 property	ProfileRevisionRevoked::$revisionReference
 property	ProfileRevokeCommand::$description
 property	ProfileRevokeCommand::$signature
+property	ProfileRule::$number
+property	ProfileRule::$text
+property	ProfileRuleGroup::$label
+property	ProfileRuleGroup::$rules
+property	ProfileRuleGroups::$groups
+property	ProfileRuleGroups::$isRead
+property	ProfileRuleRecords::$rules
 property	ProfileRunData::$id
 property	ProfileRunData::$line
 property	ProfileRunData::$message
@@ -36704,6 +36733,7 @@ property	ProfileWindowResolver::$reader
 property	ProfileWindowResolver::$request
 property	Profiles::$keys
 property	ProfilesShow::$profiles
+property	ProfilesShow::$rules
 property	ProfilesWindowResolver::$index
 property	ProgramClassifiers::$classifiers
 property	ProgramIdentity::$family
@@ -36830,6 +36860,7 @@ property	ProposedProfile::$allowedModels
 property	ProposedProfile::$base
 property	ProposedProfile::$container
 property	ProposedProfile::$deniedCommands
+property	ProposedProfile::$description
 property	ProposedProfile::$driver
 property	ProposedProfile::$driverPinned
 property	ProposedProfile::$instances
@@ -36847,6 +36878,7 @@ property	ProposedProfileData::$allowedModels
 property	ProposedProfileData::$base
 property	ProposedProfileData::$container
 property	ProposedProfileData::$deniedCommands
+property	ProposedProfileData::$description
 property	ProposedProfileData::$driver
 property	ProposedProfileData::$driverPinned
 property	ProposedProfileData::$instances

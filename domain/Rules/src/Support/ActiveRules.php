@@ -16,10 +16,20 @@ final readonly class ActiveRules
      */
     public function reminders(): array
     {
-        $rules = Rule::query()->active()->orderBy('id')->readAll('every active rule is a reminder')->get(
-            ['id', 'text'],
-        );
+        return array_map(fn (Rule $rule) => "Rule {$rule->number}: {$rule->text}", $this->all());
+    }
 
-        return array_values($rules->map(fn (Rule $rule) => "Rule {$rule->id}: {$rule->text}")->all());
+    /**
+     * Every rule that holds now, oldest first.
+     *
+     * @return list<Rule>
+     */
+    public function all(): array
+    {
+        return array_values(
+            Rule::query()->active()->orderBy('id')->readAll('every active rule holds for every agent')->get(
+                ['id', 'number', 'text'],
+            )->all(),
+        );
     }
 }

@@ -25,6 +25,7 @@ final readonly class ProfileBase
     private function __construct(
         public string $key,
         public string $label,
+        public string $description,
         public string $model,
         public array $grants,
         public array $paths,
@@ -51,6 +52,7 @@ final readonly class ProfileBase
         return new self(
             'main-agent',
             'Main agent',
+            'Changes and runs the project on this machine, and coordinates the journal\'s work.',
             'opus',
             [
                 ...self::looking(),
@@ -80,6 +82,7 @@ final readonly class ProfileBase
         return new self(
             'read-only-helper',
             'Read-only helper',
+            'Reads, searches and runs commands in a container, and changes no file of the project.',
             'sonnet',
             [
                 ...self::journalWork(),
@@ -104,14 +107,22 @@ final readonly class ProfileBase
      */
     public static function writingHelper(): self
     {
-        return new self('writing-helper', 'Writing helper', 'sonnet', [
-            ...self::journalWork(),
-            ...self::running(),
-        ], [
-            HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
-        ], ExecutionModeType::RequiredContainer, true, [
-            StopCondition::cleanWorktree(),
-        ], OfflineReplyMode::Refuse, false, ExecutionBudgets::defaults(), false, DriverVariant::Headless);
+        return new self(
+            'writing-helper',
+            'Writing helper',
+            'Changes the project\'s files for one bounded job, in a container of its own.',
+            'sonnet',
+            [...self::journalWork(), ...self::running()],
+            [HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()])],
+            ExecutionModeType::RequiredContainer,
+            true,
+            [StopCondition::cleanWorktree()],
+            OfflineReplyMode::Refuse,
+            false,
+            ExecutionBudgets::defaults(),
+            false,
+            DriverVariant::Headless,
+        );
     }
 
     /**

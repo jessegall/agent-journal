@@ -15,23 +15,27 @@ return [
 
     'profiles' => [
         'journal-main' => [
+            'description' => 'The main agent that works the project\'s plans and talks with you.',
             'base' => 'main-agent',
             'model' => 'opus',
             'supervisor' => ['default' => 'owner'],
         ],
         'journal-worker' => [
+            'description' => 'Writes one assigned task or plan in a worktree of its own.',
             'base' => 'writing-helper',
             'model' => 'sonnet',
             'supervisor' => ['default' => 'profile:journal-code-reviewer'],
             'instances' => 'per_job',
         ],
         'journal-code-reviewer' => [
+            'description' => 'Reviews a worker\'s changes before they are merged.',
             'base' => 'read-only-helper',
             'model' => 'sonnet',
             'supervisor' => ['default' => 'profile:journal-main', 'merge.ready' => 'profile:journal-merger'],
             'instances' => 'single',
         ],
         'journal-merger' => [
+            'description' => 'Checks a finished worker\'s proofs and merges its work.',
             'base' => 'writing-helper',
             'model' => 'sonnet',
             'supervisor' => ['default' => 'profile:journal-main'],

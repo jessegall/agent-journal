@@ -44,7 +44,7 @@ final readonly class PlanDraftProducer implements DraftProducer
         return DraftedRecordData::from([
             'fields' => [
                 'title' => $draft->cutTo(1, Plan::TITLE_CHARACTER_LIMIT),
-                'brief' => "Done when: {$draft->to(2)}\nStarts after: {$draft->to(3)}",
+                'brief' => rtrim($draft->to(2), '.')."; before it starts: {$draft->to(3)}",
                 'type' => PlanType::cases()[0]->value,
             ],
             'agent' => self::AGENT,

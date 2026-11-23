@@ -66,9 +66,9 @@ final class HookCompactionTest extends TestCase
     {
         $context = json_decode($this->compact('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
-        $ruleId = Rule::query()->where('text', self::RULE_TEXT)->value('id');
+        $ruleNumber = Rule::query()->where('text', self::RULE_TEXT)->value('number');
 
-        $this->assertContains(sprintf(self::RULE_REMINDER, $ruleId, self::RULE_TEXT), $context);
+        $this->assertContains(sprintf(self::RULE_REMINDER, $ruleNumber, self::RULE_TEXT), $context);
         $this->assertContains(sprintf(self::MEMORY_REMINDER, self::MEMORY_TEXT), $context);
         $this->assertContains(sprintf(self::MEMORY_REMINDER, self::QUESTION_TEXT), $context);
         $this->assertSame(

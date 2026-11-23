@@ -24,12 +24,13 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $key
  * @property string $label
+ * @property string $description
  * @property string|null $current_revision_id
  * @property CarbonImmutable|null $retired_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['key', 'label', 'current_revision_id', 'retired_at'])]
+#[Fillable(['key', 'label', 'description', 'current_revision_id', 'retired_at'])]
 final class Profile extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -123,5 +124,14 @@ final class Profile extends Model implements ReadableModel
     protected function unretired(Builder $query): void
     {
         $query->whereNull('retired_at');
+    }
+
+    /**
+     * Names the profile as a reader sees it: its label and the sentence that describes it, empty when none was given.
+     */
+    public function name(string $label, string $description): void
+    {
+        $this->label = $label;
+        $this->description = $description;
     }
 }

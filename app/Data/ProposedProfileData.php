@@ -30,6 +30,7 @@ final class ProposedProfileData extends Data
         public readonly string $base,
         public readonly string $model,
         public readonly string|null $label = null,
+        public readonly string $description = '',
         public readonly string $instructions = '',
         public readonly string|null $driver = null,
         public readonly bool $driverPinned = false,

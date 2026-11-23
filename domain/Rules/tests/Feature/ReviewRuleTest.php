@@ -61,7 +61,7 @@ final class ReviewRuleTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($this->proposed->id));
 
         $this->assertSame(
-            ["Rule {$this->proposed->id}: No phase waits on the user."],
+            ["Rule {$this->proposed->number}: No phase waits on the user."],
             $this->app->make(ActiveRules::class)->reminders(),
         );
 

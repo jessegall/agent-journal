@@ -14,6 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('key', 64)->unique();
             $table->string('label');
+            $table->text('description')->default('');
             $table->ulid('current_revision_id')->nullable();
             $table->timestampTz('retired_at')->nullable();
             $table->timestampsTz();

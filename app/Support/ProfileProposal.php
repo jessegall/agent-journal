@@ -128,6 +128,7 @@ final readonly class ProfileProposal
             $fields->deniedCommands,
             self::supervisors($profile),
             $fields->instancePolicy($key),
+            $fields->description,
         );
     }
 
