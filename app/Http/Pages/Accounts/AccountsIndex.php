@@ -36,6 +36,10 @@ use Carbon\CarbonInterface;
  */
 final readonly class AccountsIndex
 {
+    public const string WEEK_LABEL = 'This week';
+
+    public const string SESSION_LABEL = 'This session, the last 5 hours';
+
     private const int WEEK_MINUTES = 10080;
 
     private const int SESSION_MINUTES = 300;
@@ -224,8 +228,8 @@ final readonly class AccountsIndex
         $isSession = $window->slot === UsageWindowSlot::FiveHour || $window->windowMinutes === self::SESSION_MINUTES;
 
         return match (true) {
-            $isWeek => 'This week',
-            $isSession => 'This session, the last 5 hours',
+            $isWeek => self::WEEK_LABEL,
+            $isSession => self::SESSION_LABEL,
             default => ucfirst(str_replace('_', ' ', $window->slot->value)),
         };
     }

@@ -81,9 +81,7 @@ final readonly class TaskWindowResolver implements PageResolver
                 $this->slots->sectionsIn('tasks.task', 'inspector'),
                 $this->logsOf($taskId),
                 $this->proofsOf($taskId),
-                $this->request->isAskingForWaits()
-                    ? TaskWaitsData::ofWaits($this->waits->waitsOf($taskId))
-                    : Optional::create(),
+                TaskWaitsData::ofWaits($this->waits->waitsOf($taskId)),
                 $this->request->isAskingForWaits() ? $this->waitActionsOf($taskId) : Optional::create(),
             );
 

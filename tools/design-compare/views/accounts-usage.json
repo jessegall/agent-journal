@@ -1,0 +1,16 @@
+{
+    "name": "accounts-usage",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "design": {
+        "url": "docs/designs/home-v6/index.html",
+        "steps": [{"click": "role=button[name='Accounts']"}, {"click": "text=Work (Max)"}],
+        "part": ".sgroup:has(.ubar)"
+    },
+    "app": {
+        "url": "http://localhost:54700/login",
+        "steps": [{"login": "owner@journal.local"}, {"goto": "http://localhost:54700/accounts"}, {"click": "li:has(a[data-row-key]) >> nth=0"}],
+        "part": "[role='group']:has([role='meter'])"
+    }
+}

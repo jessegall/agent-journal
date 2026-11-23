@@ -25,7 +25,7 @@ enum TaskState: string
     {
         return match ($this) {
             self::Open => new StateLabel('state', 'Open', Tone::Neutral),
-            self::Started => new StateLabel('state', 'Started', Tone::Note),
+            self::Started => new StateLabel('state', 'Working', Tone::Note),
             self::Blocked => new StateLabel('state', 'Blocked', Tone::Warn),
             self::Finished => new StateLabel('state', 'Done', Tone::Good),
             self::Cancelled => new StateLabel('state', 'Cancelled', Tone::Muted),
@@ -41,9 +41,9 @@ enum TaskState: string
     {
         return match ($this) {
             self::Open => ['Open', 'quiet'],
-            self::Started => ['Started', 'busy'],
+            self::Started => ['Working', 'busy'],
             self::Blocked => ['Blocked', 'warn'],
-            self::Finished => ['Finished', 'good'],
+            self::Finished => ['Done', 'good'],
             self::Cancelled => ['Cancelled', 'quiet'],
         };
     }

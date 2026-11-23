@@ -51,7 +51,6 @@ final readonly class TasksIndex
             $this->emptyFor($settled),
         )
             ->counting($page->total)
-            ->searching('Search tasks', new LayoutFieldData('q', $settled->search, ['page', 'task']))
             ->filteredBy($this->choicesOf($settled))
             ->creatingWith($this->creation())
             ->paged(ListPaging::numbered(
@@ -157,7 +156,7 @@ final readonly class TasksIndex
             ),
             [
                 LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),
-                LayoutPartData::field('brief', 'Done when', new LayoutFieldData('brief'), 'text'),
+                LayoutPartData::field('brief', 'Done when', new LayoutFieldData('brief'), 'area'),
             ],
             [LayoutPartData::action('send', 'Create task', LayoutActionData::submitting(), 'primary')],
         );

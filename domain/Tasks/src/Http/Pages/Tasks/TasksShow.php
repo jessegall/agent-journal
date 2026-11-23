@@ -7,6 +7,7 @@ namespace Domain\Tasks\Http\Pages\Tasks;
 use App\Enums\ActionMethod;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutFactValueData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;
@@ -17,6 +18,7 @@ use Domain\Tasks\Data\TaskCommentsData;
 use Domain\Tasks\Data\TaskLogsPartData;
 use Domain\Tasks\Data\TaskProofsPartData;
 use Domain\Tasks\Data\TaskReaderData;
+use Domain\Tasks\Data\TaskWaitItemData;
 use Domain\Tasks\Data\TaskWaitsPartData;
 use Domain\Tasks\Values\TaskBriefPassage;
 use Spatie\LaravelData\Optional;
@@ -128,10 +130,15 @@ final readonly class TasksShow
      */
     private function factsOf(TaskReaderData $reader): array
     {
-        $facts = [self::factRow('state', 'State', ucfirst($reader->state->value))];
+        $facts = [self::factRow('state', 'State', $reader->state->badge()[0])];
 
         $holder = $reader->holder instanceof Optional ? 'Nobody yet' : $reader->holder->label();
-        $facts[] = self::factRow('holder', 'Held by', $holder);
+        $facts[] = self::factRow('holder', 'Holder', $holder);
+
+        if (! $reader->waits instanceof Optional) {
+            $facts[] = self::taskLinksRow('waits', 'Waits for', $reader->waits->waitsFor);
+            $facts[] = self::taskLinksRow('holds-up', 'Holds up', $reader->waits->holdsUp);
+        }
 
         if (! $reader->latestRun instanceof Optional) {
             $facts[] = self::factRow('run', 'Latest run', (string) $reader->latestRun);
@@ -188,6 +195,32 @@ final readonly class TasksShow
             'proofs',
             LayoutNativeData::of('tasks/TaskProofsTab', TaskProofsPartData::from(['proofs' => $reader->proofs])),
         );
+    }
+
+    /**
+     * A fact whose value is the numbers of the tasks on the other side of a wait, each opening its task; none says so.
+     *
+     * @param  list<TaskWaitItemData>  $items
+     */
+    private static function taskLinksRow(string $key, string $label, array $items): LayoutRowData
+    {
+        $numbers = array_values(array_filter(
+            array_map(fn (TaskWaitItemData $item) => $item->number, $items),
+            fn (string|Optional $number) => ! $number instanceof Optional,
+        ));
+
+        if ($numbers === []) {
+            return self::factRow($key, $label, 'None');
+        }
+
+        return LayoutRowData::from([
+            'key' => $key,
+            'label' => $label,
+            'fact' => LayoutFactValueData::of(array_map(
+                fn (string $number) => [$number, route('tasks.task', ['task' => $number], false)],
+                $numbers,
+            )),
+        ]);
     }
 
     private static function factRow(string $key, string $label, string $value): LayoutRowData

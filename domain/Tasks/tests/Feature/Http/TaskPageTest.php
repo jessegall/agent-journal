@@ -74,7 +74,30 @@ final class TaskPageTest extends TestCase
             ->where(self::READER.'.2.text', "First part.\n\nSecond part.")
             ->where(self::READER.'.4.rows.0.value', 'Open')
             ->where(self::READER.'.4.rows.1.value', fn (string $held) => str_contains($held, $this->owner->name))
-            ->missing(self::READER.'.4.rows.2'));
+            ->where(self::READER.'.4.rows.2.key', 'waits')
+            ->where(self::READER.'.4.rows.2.value', 'None')
+            ->where(self::READER.'.4.rows.3.key', 'holds-up')
+            ->missing(self::READER.'.4.rows.4'));
+    }
+
+    public function test_the_facts_name_the_tasks_it_waits_for_and_holds_up_as_links(): void
+    {
+        $first = Task::factory()->create(['title' => 'Prepare records']);
+        $second = Task::factory()->create(['title' => 'Publish records']);
+        $this->startUserRequestAs($this->owner->id);
+        $this->runOnBus(new AddTaskWaitCommand($second->id, $first->id));
+
+        $waiting = $this->actingAs($this->owner)->get("/tasks/{$second->number}")->assertOk();
+
+        $waiting->assertInertia(fn (AssertableInertia $page) => $page
+            ->where(self::READER.'.4.rows.2.fact.pieces.0.label', (string) $first->number)
+            ->where(self::READER.'.4.rows.2.fact.pieces.0.href', "/tasks/{$first->number}")
+            ->where(self::READER.'.4.rows.3.value', 'None'));
+
+        $holding = $this->actingAs($this->owner)->get("/tasks/{$first->number}")->assertOk();
+
+        $holding->assertInertia(fn (AssertableInertia $page) => $page
+            ->where(self::READER.'.4.rows.3.fact.pieces.0.label', (string) $second->number));
     }
 
     public function test_the_waits_tab_lists_the_prerequisite_and_the_holder_both_ways(): void
