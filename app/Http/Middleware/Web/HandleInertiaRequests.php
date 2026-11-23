@@ -9,6 +9,7 @@ use App\Contracts\Actors\CurrentUserResolver;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Drivers\InstalledVersion;
 use App\Contracts\Navigation\NavigationRecords;
+use App\Contracts\Settings\SettingsResolver;
 use App\Contracts\Sharing\SharePolicy;
 use App\Data\CurrentUserData;
 use App\Data\SharedData;
@@ -16,8 +17,8 @@ use App\Http\Responses\NotificationProps;
 use App\Http\Responses\PageReadProps;
 use App\Http\Responses\SearchProps;
 use App\Support\ActorContext;
+use App\Support\CoreSettings;
 use App\Values\ChatMemberAuthority;
-use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Inertia\ResponseFactory;
@@ -37,8 +38,8 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     public function __construct(
-        #[Config('app.name')]
-        private readonly string $appName,
+        private readonly SettingsResolver $settings,
+        private readonly CoreSettings $core,
         private readonly CurrentUserResolver $users,
         private readonly NavigationRecords $navigation,
         private readonly ResponseFactory $inertia,
@@ -74,7 +75,7 @@ class HandleInertiaRequests extends Middleware
         if ($user->isEmpty()) {
             return [
                 ...parent::share($request),
-                ...SharedData::from(['name' => $this->appName, 'version' => $this->version->label()])->toArray(),
+                ...SharedData::from(['name' => $this->settings->string($this->core->displayName), 'version' => $this->version->label()])->toArray(),
             ];
         }
 
@@ -82,7 +83,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             ...SharedData::from(
                 [
-                    'name' => $this->appName,
+                    'name' => $this->settings->string($this->core->displayName),
                     'version' => $this->version->label(),
                     'currentUser' => CurrentUserData::from($user->get()),
                     'canShare' => $this->sharing->mayManage(ActorContext::forUser($user->get()->id)),

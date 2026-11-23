@@ -27320,7 +27320,6 @@ parameter	$answersParent
 parameter	$any
 parameter	$app
 parameter	$appKey
-parameter	$appName
 parameter	$apparmor
 parameter	$appends
 parameter	$applied
@@ -33955,13 +33954,14 @@ property	HandOffCodeReviewsOnTick::$commands
 property	HandStartSkillsToHost::$adapters
 property	HandStartSkillsToHost::$targets
 property	HandleInertiaRequests::$actors
-property	HandleInertiaRequests::$appName
+property	HandleInertiaRequests::$core
 property	HandleInertiaRequests::$inertia
 property	HandleInertiaRequests::$navigation
 property	HandleInertiaRequests::$notifications
 property	HandleInertiaRequests::$pageReads
 property	HandleInertiaRequests::$rootView
 property	HandleInertiaRequests::$search
+property	HandleInertiaRequests::$settings
 property	HandleInertiaRequests::$sharing
 property	HandleInertiaRequests::$users
 property	HandleInertiaRequests::$version

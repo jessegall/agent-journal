@@ -5,7 +5,7 @@ import { pressedButtons } from '@/framework/pressedButtons';
 import { components, declaredPages } from '@/generated/ui-manifest';
 import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Journal';
 
 /**
  * The pages that sit outside the app shell: signing in.

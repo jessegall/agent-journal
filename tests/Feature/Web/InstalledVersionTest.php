@@ -10,10 +10,13 @@ use App\Support\InstalledVersion as CachedVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Process;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class InstalledVersionTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_checkout_shows_the_short_hash_of_its_head(): void
     {
         Process::fake(['*' => Process::result("0123456789abcdef0123456789abcdef01234567\n")]);
