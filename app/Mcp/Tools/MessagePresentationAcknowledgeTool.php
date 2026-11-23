@@ -8,6 +8,7 @@ use App\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
 use App\Contracts\Bus\Command;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -17,9 +18,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
 #[Name(self::NAME)]
-#[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Dispatches(AcknowledgePresentationCommand::class)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 #[Description('Confirm the pieces of chat text your driver showed, by batch id and the handles of its pieces; a chat '
     .'message is read only once its whole body was confirmed in this driver context.')]
 final class MessagePresentationAcknowledgeTool extends MessageWriteTool

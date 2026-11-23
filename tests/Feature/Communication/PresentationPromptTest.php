@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Contracts\Domains\JournalToolNames;
+use App\Mcp\Enums\DiscoveryProfile;
+use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Tools\MessageClaimTool;
 use App\Mcp\Tools\MessagePresentationAcknowledgeTool;
 use App\Models\AgentRuntime;
@@ -47,9 +48,14 @@ final class PresentationPromptTest extends MessagingTestCase
         $prompt = (string) $this->app->make(PresentationPrompts::class)->promptFor($runtime, CarbonImmutable::now());
 
         $batchId = PresentationBatch::query()->sole()->id;
-        $tools = $this->app->make(JournalToolNames::class)->toolNames();
-        $this->assertContains(MessageClaimTool::NAME, $tools);
-        $this->assertContains(MessagePresentationAcknowledgeTool::NAME, $tools);
+        $catalogue = $this->app->make(McpCatalogue::class);
+
+        // Every kind of agent can be shown chat text, so each is offered the two tools the text names.
+        foreach (DiscoveryProfile::cases() as $profile) {
+            $offered = array_keys($catalogue->toolDefinitionsFor($profile));
+            $this->assertContains(MessageClaimTool::NAME, $offered);
+            $this->assertContains(MessagePresentationAcknowledgeTool::NAME, $offered);
+        }
 
         foreach ([
             MessageClaimTool::NAME,

@@ -1135,6 +1135,42 @@
                 "outputSchema": null,
                 "title": "Menu Show Tool"
             },
+            "messages_acknowledge_presented": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "batch_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "context_key": {
+                            "maxLength": 255,
+                            "type": "string"
+                        },
+                        "handles": {
+                            "items": {
+                                "maxLength": 64,
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "batch_id",
+                        "handles",
+                        "context_key",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_acknowledge_presented",
+                "outputSchema": null,
+                "title": "Message Presentation Acknowledge Tool"
+            },
             "messages_answer": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -1162,6 +1198,44 @@
                 "name": "messages_answer",
                 "outputSchema": null,
                 "title": "Answer Message Tool"
+            },
+            "messages_claim": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "batch_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "claim_grant": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "inbox_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "root_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "inbox_id",
+                        "root_id",
+                        "batch_id",
+                        "claim_grant",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_claim",
+                "outputSchema": null,
+                "title": "Message Claim Tool"
             },
             "messages_context": {
                 "inputSchema": {
@@ -3189,6 +3263,80 @@
                 "outputSchema": null,
                 "title": "Read Document Tool"
             },
+            "messages_acknowledge_presented": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "batch_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "context_key": {
+                            "maxLength": 255,
+                            "type": "string"
+                        },
+                        "handles": {
+                            "items": {
+                                "maxLength": 64,
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "batch_id",
+                        "handles",
+                        "context_key",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_acknowledge_presented",
+                "outputSchema": null,
+                "title": "Message Presentation Acknowledge Tool"
+            },
+            "messages_claim": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "batch_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "claim_grant": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "inbox_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "root_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "inbox_id",
+                        "root_id",
+                        "batch_id",
+                        "claim_grant",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_claim",
+                "outputSchema": null,
+                "title": "Message Claim Tool"
+            },
             "messages_context": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -4491,6 +4639,42 @@
                 "outputSchema": null,
                 "title": "Remove Memory Tool"
             },
+            "messages_acknowledge_presented": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "batch_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "context_key": {
+                            "maxLength": 255,
+                            "type": "string"
+                        },
+                        "handles": {
+                            "items": {
+                                "maxLength": 64,
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "batch_id",
+                        "handles",
+                        "context_key",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_acknowledge_presented",
+                "outputSchema": null,
+                "title": "Message Presentation Acknowledge Tool"
+            },
             "messages_answer": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -4518,6 +4702,44 @@
                 "name": "messages_answer",
                 "outputSchema": null,
                 "title": "Answer Message Tool"
+            },
+            "messages_claim": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "batch_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "claim_grant": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "inbox_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "root_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "inbox_id",
+                        "root_id",
+                        "batch_id",
+                        "claim_grant",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_claim",
+                "outputSchema": null,
+                "title": "Message Claim Tool"
             },
             "messages_context": {
                 "inputSchema": {
