@@ -212,6 +212,19 @@ describe('ConnectProjectWindow', () => {
         ).not.toContain('Generate install line');
     });
 
+    it('drawn inside Settings it has no header or opener and shows the install line action in place', () => {
+        const wrapper = mount(ConnectProjectWindow, {
+            props: { data: windowData(true), embedded: true },
+            global: { stubs: { teleport: true } },
+        });
+
+        expect(wrapper.find('h1').exists()).toBe(false);
+        expect(
+            wrapper.findAll('button').map((each) => each.text()),
+        ).toContain('Generate install line');
+        expect(wrapper.text()).toContain('Owner laptop');
+    });
+
     it('opens again with no line and a new action', async () => {
         const first = await openedWindow();
         await button(first, 'Generate install line').trigger('click');

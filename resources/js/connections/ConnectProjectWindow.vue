@@ -24,9 +24,11 @@ import ReleasePlatforms from './ReleasePlatforms.vue';
  * a new project or an environment to join, and keeps it to itself. Below are the connected folders, each with Revoke;
  * several are revoked at once by choosing them, or every one on a machine. When a reread fails the window keeps the
  * last verified list, says the journal is unreachable with when that list was read, and holds back every action that
- * needs the journal's word until a retry answers; a folder's state is never changed by a failed read.
+ * needs the journal's word until a retry answers; a folder's state is never changed by a failed read. Embedded in
+ * Settings' Connected projects section it has no page header or Back, and the install line stands in the section
+ * instead of a dialog, as the design draws it.
  */
-const props = defineProps<{ data: ConnectProjectWindowData }>();
+const props = withDefaults(defineProps<{ data: ConnectProjectWindowData; embedded?: boolean }>(), { embedded: false });
 
 const refusal = ref<string | null>(null);
 
@@ -261,17 +263,19 @@ function revokeBinding(bindingId: string, deviceName: string): void {
 </script>
 
 <template>
-    <div class="mx-auto flex w-full max-w-[760px] flex-col gap-4 sm:pt-4">
-        <template v-if="backAddress !== null">
+    <div class="flex w-full flex-col gap-4" :class="embedded ? '' : 'mx-auto max-w-[760px] sm:pt-4'">
+        <template v-if="backAddress !== null && !embedded">
             <div class="px-4 sm:px-0">
                 <Button :href="backAddress" size="small" variant="ghost">Back</Button>
             </div>
         </template>
-        <PageHeader title="Connect a project" :count="data.bindings.rows.length">
-            <template #actions>
-                <Button :disabled="!data.canIssue" @click="connecting = true">Connect a project</Button>
-            </template>
-        </PageHeader>
+        <template v-if="!embedded">
+            <PageHeader title="Connect a project" :count="data.bindings.rows.length">
+                <template #actions>
+                    <Button :disabled="!data.canIssue" @click="connecting = true">Connect a project</Button>
+                </template>
+            </PageHeader>
+        </template>
         <section class="flex flex-col gap-3 px-4 sm:px-0">
             <p>
                 Run a project on your own computer and keep its tasks, plans and
@@ -281,6 +285,9 @@ function revokeBinding(bindingId: string, deviceName: string): void {
                 <p class="text-small text-muted-foreground">{{ reason }}</p>
             </template>
             <ReleasePlatforms :release="data.release" />
+            <template v-if="embedded">
+                <InstallLinePanel :projects="data.projects" :attempts="data.attempts.rows" :fresh="fresh" />
+            </template>
             <template v-if="refusal !== null">
                 <p class="text-small text-danger">{{ refusal }}</p>
             </template>
@@ -300,7 +307,9 @@ function revokeBinding(bindingId: string, deviceName: string): void {
                 title="No projects connected yet"
                 text="Connect a project to keep its work on this journal while it runs on your computer."
             >
-                <Button :disabled="!data.canIssue" @click="connecting = true">Connect a project</Button>
+                <template v-if="!embedded">
+                    <Button :disabled="!data.canIssue" @click="connecting = true">Connect a project</Button>
+                </template>
             </EmptyState>
         </template>
         <template v-else>
@@ -348,7 +357,7 @@ function revokeBinding(bindingId: string, deviceName: string): void {
                 </div>
             </template>
         </template>
-        <Dialog :open="connecting" title="Connect a project" @close="connecting = false">
+        <Dialog :open="connecting && !embedded" title="Connect a project" @close="connecting = false">
             <div class="flex flex-col gap-3">
                 <p class="text-small text-muted-foreground">
                     Run this command in a terminal inside your project folder. It

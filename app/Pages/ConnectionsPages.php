@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Contracts\Drivers\NativePartProvider;
 use App\Contracts\Navigation\NavigationProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Records\TypeProvider;
@@ -50,8 +51,18 @@ use App\Support\ConnectionsOwnerCheck;
 /**
  * The pages Core's Connections declares, for the owner alone, under /connections: the Connect a project window.
  */
-final class ConnectionsPages implements NavigationProvider, PageProvider, TypeProvider
+final class ConnectionsPages implements NativePartProvider, NavigationProvider, PageProvider, TypeProvider
 {
+    /**
+     * The Connected projects part Settings draws from the window's own data.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['ConnectedProjectsPart.vue'];
+    }
+
     public function pages(): array
     {
         return [
