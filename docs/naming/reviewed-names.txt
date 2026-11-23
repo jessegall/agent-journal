@@ -7753,10 +7753,12 @@ constant	MergeAskNotificationTarget::KEY
 constant	Message::LINK_TYPE
 constant	MessageAnswerActivation::LARGEST_PASS
 constant	MessageBody::MOST_BYTES
+constant	MessageClaimTool::NAME
 constant	MessagePage::DEFAULT_LIMIT
 constant	MessagePage::LARGEST_LIMIT
 constant	MessagePin::DEFAULT_LIMIT
 constant	MessagePin::LARGEST_LIMIT
+constant	MessagePresentationAcknowledgeTool::NAME
 constant	MessageReaction::READ_LIMIT
 constant	MessageReadResult::TOOL
 constant	MessageSearchAccess::ID_ARGUMENT
@@ -42565,6 +42567,7 @@ variable	$chunk
 variable	$chunks
 variable	$claim
 variable	$claimIds
+variable	$claimTool
 variable	$claimable
 variable	$claimed
 variable	$claimedRevision
@@ -42636,6 +42639,7 @@ variable	$configured
 variable	$configuredField
 variable	$confined
 variable	$confirm
+variable	$confirmTool
 variable	$confirmed
 variable	$conflict
 variable	$conflictingAttributes

@@ -16,14 +16,16 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
+#[Name(self::NAME)]
 #[VisibleToProfiles]
 #[IsDestructive(false)]
-#[Name('messages_acknowledge_presented')]
 #[Dispatches(AcknowledgePresentationCommand::class)]
 #[Description('Confirm the pieces of chat text your driver showed, by batch id and the handles of its pieces; a chat '
     .'message is read only once its whole body was confirmed in this driver context.')]
 final class MessagePresentationAcknowledgeTool extends MessageWriteTool
 {
+    public const string NAME = 'messages_acknowledge_presented';
+
     protected function writeSchema(JsonSchema $schema): array
     {
         return [

@@ -14,9 +14,9 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 
+#[Name(self::NAME)]
 #[VisibleToProfiles]
 #[IsDestructive(false)]
-#[Name('messages_claim')]
 #[Dispatches(ClaimSpeechCommand::class)]
 #[Description('Claim your turn to speak on one user message of a chat for two minutes. Give the batch_id and '
     .'claim_grant from the chat messages this turn was shown: they prove the claim comes from the turn that read '
@@ -24,6 +24,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
     .'answer or post in that chat.')]
 final class MessageClaimTool extends MessageWriteTool
 {
+    public const string NAME = 'messages_claim';
+
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
