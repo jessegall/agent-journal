@@ -51,8 +51,10 @@ func (container printingContainer) TurnCommand(profilecontracts.Start, int) (*ex
 func containedTurn(t *testing.T, container printingContainer) (*recordedUsage, error) {
 	t.Helper()
 	usage := &recordedUsage{}
-	driver := NewHeadlessDriver(HeadlessRuntime{ConversationID: "conversation", Profile: profiles.ClaudeCode{},
-		Container: container, Usage: usage}, 1)
+	driver := NewHeadlessDriver(HeadlessRuntime{
+		Start: profilecontracts.BaseStart{SessionID: "conversation"}, Profile: profiles.ClaudeCode{},
+		Container: container, Usage: usage,
+	}, 1)
 	if _, err := driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Parts: contracts.TextParts("hi")}); err != nil {
 		t.Fatal(err)
 	}
@@ -97,11 +99,14 @@ func (recordingConfinement) Wrap(command *exec.Cmd) {
 
 func TestAConfinedChildTurnRunsUnderItsConfinementInPlaceOfTheSessionSandbox(t *testing.T) {
 	settings := t.TempDir()
-	driver := NewHeadlessDriver(HeadlessRuntime{ConversationID: "conversation", Profile: profiles.ClaudeCode{},
-		Account: &profilecontracts.AccountStart{Folder: t.TempDir()}, WorkingFolder: t.TempDir(),
-		Executable: "/opt/claude", Confinement: recordingConfinement{}}, 1)
+	turn := profilecontracts.BaseStart{SettingsFolder: settings, SessionID: "conversation"}
+	runtime := turn
+	runtime.WorkFolder, runtime.Account = t.TempDir(), &profilecontracts.AccountStart{Folder: t.TempDir()}
+	driver := NewHeadlessDriver(HeadlessRuntime{
+		Start: runtime, Profile: profiles.ClaudeCode{}, Executable: "/opt/claude", Confinement: recordingConfinement{},
+	}, 1)
 
-	command, err := driver.command(profilecontracts.Start{SettingsFolder: settings, SessionID: "conversation"})
+	command, err := driver.command(turn.Turn("", false))
 
 	if err != nil {
 		t.Fatal(err)

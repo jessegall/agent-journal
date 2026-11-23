@@ -10,7 +10,7 @@ import (
 
 func TestTheCodexSettingsNameNoSignIn(t *testing.T) {
 	for _, mode := range []recording.Mode{recording.ProcessMode, recording.TerminalMode} {
-		files, err := Codex{}.SettingsFiles(contracts.Start{Mode: mode, SettingsFolder: t.TempDir()})
+		files, err := Codex{}.SettingsFiles(contracts.BaseStart{SettingsFolder: t.TempDir()}.In(mode, "", false))
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -15,7 +15,6 @@ import (
 
 	"journal-agent/profiles"
 	"journal-agent/profiles/contracts"
-	"journal-agent/recording"
 )
 
 // ErrSettingsOverride refuses an argument that would replace the journal's settings, hooks, tools or session.
@@ -81,14 +80,12 @@ func (session Session) Command(extra []string) (*exec.Cmd, error) {
 	}
 
 	profile := profiles.ClaudeCode{}
-	start := contracts.Start{
-		Mode:           recording.TerminalMode,
+	start := contracts.BaseStart{
 		SettingsFolder: home,
 		SessionID:      session.SessionID,
-		Resume:         session.Resume,
 		HookCommand:    profiles.LocalProjectHookCommand(session.Installation),
 		WorkFolder:     session.Root,
-	}
+	}.Terminal(session.Resume)
 	if err := writeSettings(profile, start); err != nil {
 		return nil, err
 	}

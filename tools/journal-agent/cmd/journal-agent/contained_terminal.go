@@ -16,7 +16,6 @@ import (
 	drivercontracts "journal-agent/drivers/contracts"
 	"journal-agent/host"
 	"journal-agent/profiles/contracts"
-	"journal-agent/recording"
 	"journal-agent/serving"
 )
 
@@ -52,15 +51,14 @@ func (opener runtimeOpener) containedTerminalRuntime(
 		return nil, err
 	}
 
-	start := containedTerminalStart(conversationID, prepared, manifest)
-	process, err := containedProcessOf(profile, opener.sessionJournalURL, prepared, runtimeID, start,
+	base := startInContainer(prepared.Grant, conversationID, manifest)
+	process, err := containedProcessOf(profile, opener.sessionJournalURL, prepared, runtimeID, base.Terminal(false),
 		prepared.Grant.Runtime.ProcessGeneration, os.Environ())
 	if err != nil {
 		return nil, err
 	}
 
-	start.Resume = true
-	resumed, err := containedProcessOf(profile, opener.sessionJournalURL, prepared, runtimeID, start,
+	resumed, err := containedProcessOf(profile, opener.sessionJournalURL, prepared, runtimeID, base.Terminal(true),
 		prepared.Grant.Runtime.ProcessGeneration, os.Environ())
 	if err != nil {
 		return nil, err
@@ -124,15 +122,14 @@ func (opener runtimeOpener) containedHeadlessRuntime(
 	container := opener.sessionContainer(runtimeID, prepared, manifest)
 	grant := prepared.Grant
 	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
-		ConversationID: conversationID,
-		Profile:        profile,
+		Start:   startInContainer(grant, conversationID, manifest),
+		Profile: profile,
 		Container: containedTurns{
 			container: container, manifest: manifest, profile: profile, journalURL: opener.sessionJournalURL,
 			prepared: prepared, runtimeID: runtimeID,
 		},
 		Usage: opener.usageOf(prepared),
 	}, grant.Runtime.ProcessGeneration)
-	startOnRequestedSettings(driver, runtimeID, grant.Runtime)
 
 	return &containedRuntime{Runtime: driver, container: container, manifest: manifest}, nil
 }
@@ -188,7 +185,6 @@ type containedTurns struct {
 }
 
 func (turns containedTurns) TurnCommand(start contracts.Start, generation int) (*exec.Cmd, error) {
-	start.Protected = turns.manifest.IsProtected()
 	process, err := containedProcessOf(turns.profile, turns.journalURL, turns.prepared, turns.runtimeID, start,
 		generation, os.Environ())
 	if err != nil {
@@ -203,19 +199,6 @@ func (turns containedTurns) TurnCommand(start contracts.Start, generation int) (
 // settings inline, the image's paths for its home, account and relays, and an environment that names no path of the
 // host: the account recipe's settings with the account folder at the account home, the start's credential and
 // generation, its pinned profile and the egress proxy.
-// containedTerminalStart is the terminal start of a contained runtime: a new conversation on the model and effort
-// the journal asked for, so the program never falls back to the account's own default model.
-func containedTerminalStart(
-	conversationID string,
-	prepared host.PreparedStart,
-	manifest host.ContainerManifest,
-) contracts.Start {
-	return contracts.Start{
-		Mode: recording.TerminalMode, SessionID: conversationID, Protected: manifest.IsProtected(),
-		Model: prepared.Grant.Runtime.RequestedModel(), Effort: prepared.Grant.Runtime.RequestedEffort(),
-	}
-}
-
 func containedProcessOf(
 	profile contracts.DriverProfile,
 	journalURL string,

@@ -4,9 +4,9 @@ import "errors"
 
 // TypedLine is a line the journal typed into the composer for one request attempt, before it is submitted.
 type TypedLine struct {
-	RequestID   string
-	Attempt     int
-	Text        string
+	RequestID string
+	Attempt   int
+	Text      string
 	// drawnFrom is the composer's generation when the line was written into it: a later one means the program redrew.
 	drawnFrom   uint64
 	enters      int

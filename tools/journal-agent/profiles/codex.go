@@ -15,7 +15,7 @@ import (
 )
 
 // Codex is the start profile of codex-cli 0.165.0: an isolated CODEX_HOME whose config turns every agent-spawning
-// feature off, a workspace-write sandbox, native approvals in the terminal and none asked in a one-shot turn, and a
+// feature off, a workspace-write sandbox, no approval asked of a person in the terminal or in a one-shot turn, and a
 // resume only by the conversation ID Codex acknowledged.
 type Codex struct{}
 
@@ -114,6 +114,11 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 	}
 
 	arguments = append(arguments, "--sandbox", codexSandboxOf(start))
+	// In the terminal Codex asks no person: the journal's hook decides each call, and a command its sandbox stops
+	// fails back to the model. A one-shot turn never asks and takes no such option.
+	if start.Mode != recording.ProcessMode {
+		arguments = append(arguments, "--ask-for-approval", "never")
+	}
 	if start.Model != "" {
 		arguments = append(arguments, "-m", start.Model)
 	}

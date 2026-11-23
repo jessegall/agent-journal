@@ -6,14 +6,14 @@ import (
 	"journal-agent/screen"
 )
 
-// Start is what one start of a program needs: its isolated settings folder and the exact conversation it starts
-// or resumes. A resume always names its conversation; "the latest" is never resumed.
-type Start struct {
-	Mode           recording.Mode
+// BaseStart is what every start of one runtime's program has, however the program runs: where its settings and its
+// work live, the exact conversation, the account, and the model and effort the journal asked for. A terminal and a
+// headless turn each take their start from it and add only what is theirs, so a value such as the model is never in
+// one and missing in the other.
+type BaseStart struct {
 	SettingsFolder string
-	SessionID      string
-	Resume         bool
-	Prompt         string
+	// SessionID is the exact conversation the start begins or resumes; "the latest" is never resumed.
+	SessionID string
 	// HookCommand, when set, is the command each native hook runs, such as the evidence harness's capture hook.
 	HookCommand string
 	Model       string
@@ -27,6 +27,30 @@ type Start struct {
 	// Protected is whether the start runs under the protected-account launch profile: the program alone reads the
 	// sign-in, and every command the model runs goes to the executor's user.
 	Protected bool
+}
+
+// Terminal is the base's interactive start; resume restarts the conversation the base names.
+func (base BaseStart) Terminal(resume bool) Start {
+	return base.In(recording.TerminalMode, "", resume)
+}
+
+// Turn is one headless turn of the base's conversation with its prompt; resume goes on from an earlier turn.
+func (base BaseStart) Turn(prompt string, resume bool) Start {
+	return base.In(recording.ProcessMode, prompt, resume)
+}
+
+// In is the base's start in the mode given, for a caller that takes the mode from outside, such as a recording.
+func (base BaseStart) In(mode recording.Mode, prompt string, resume bool) Start {
+	return Start{BaseStart: base, Mode: mode, Prompt: prompt, Resume: resume}
+}
+
+// Start is one start of a program: its base and what the way it runs adds, the mode, the prompt of a headless turn
+// and whether it resumes its conversation. It is made from a BaseStart, never written out field by field.
+type Start struct {
+	BaseStart
+	Mode   recording.Mode
+	Resume bool
+	Prompt string
 }
 
 // JournalServer is how a start runs the journal's MCP server, by absolute path, with no token or placeholder: the

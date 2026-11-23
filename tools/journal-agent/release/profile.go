@@ -128,7 +128,7 @@ type HookTemplate struct {
 }
 
 func (template HookTemplate) write(_ Sources, _ Target, path string) error {
-	files, err := template.Profile.SettingsFiles(contracts.Start{HookCommand: HookEntryPlaceholder})
+	files, err := template.Profile.SettingsFiles(contracts.BaseStart{HookCommand: HookEntryPlaceholder}.Terminal(false))
 	if err != nil {
 		return err
 	}

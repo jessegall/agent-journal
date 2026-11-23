@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"journal-agent/recording"
 	"journal-agent/shellwords"
 	"log"
 	"net"
@@ -472,18 +471,15 @@ func (opener runtimeOpener) headlessRuntime(
 		return nil, err
 	}
 	headless := drivers.HeadlessRuntime{
-		JournalURL:          opener.journalURL,
-		Credential:          grant.Token,
-		ProfilePin:          grant.ProfileEnvironment(),
-		ConversationID:      conversationID,
+		JournalURL: opener.journalURL,
+		Credential: grant.Token,
+		ProfilePin: grant.ProfileEnvironment(),
+		Start: startOnThisMachine(grant, conversationID, settingsFolder, opener.hookCommand,
+			accountOf(prepared, opener.installationFolder, runtimeID)),
 		ResumesConversation: resumes,
-		SettingsFolder:      settingsFolder,
-		WorkingFolder:       grant.Runtime.Folder,
-		HookCommand:         opener.hookCommand,
 		Profile:             profile,
 		Environment:         environment,
 		ReadFiles:           prepared.Claim.Recipe.ReadFiles,
-		Account:             accountOf(prepared, opener.installationFolder, runtimeID),
 		RelayVariables:      prepared.RelayVariables(settingsFolder),
 		Executable:          installedProgram(opener.installationFolder, profile),
 		Usage:               opener.usageOf(prepared),
@@ -492,23 +488,7 @@ func (opener runtimeOpener) headlessRuntime(
 	if confined != nil {
 		headless.Confinement = confined
 	}
-	driver := drivers.NewHeadlessDriver(headless, grant.Runtime.ProcessGeneration)
-	startOnRequestedSettings(driver, runtimeID, grant.Runtime)
-	return driver, nil
-}
-
-// startOnRequestedSettings gives a headless driver the model and effort the journal asked for, so its first turn
-// already runs on them, on this machine and in a container alike.
-func startOnRequestedSettings(driver *drivers.HeadlessDriver, runtimeID string, runtime client.RuntimeStart) {
-	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
-	if runtime.Model != nil {
-		change := drivercontracts.ModelChange{Request: identity, Model: *runtime.Model}
-		_, _ = driver.ChangeModel(context.Background(), change)
-	}
-	if runtime.Effort != nil {
-		change := drivercontracts.EffortChange{Request: identity, Effort: *runtime.Effort}
-		_, _ = driver.ChangeEffort(context.Background(), change)
-	}
+	return drivers.NewHeadlessDriver(headless, grant.Runtime.ProcessGeneration), nil
 }
 
 // terminalRuntime starts the runtime's program on a PTY the attach socket owns, or takes the one a user attached
@@ -877,16 +857,8 @@ func startOf(
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	start := contracts.Start{
-		Mode:           recording.TerminalMode,
-		SettingsFolder: filepath.Join(stateFolder, "runtimes", runtimeID),
-		SessionID:      conversationID,
-		HookCommand:    hookCommand,
-		WorkFolder:     grant.Runtime.Folder,
-		Account:        account,
-		Model:          grant.Runtime.RequestedModel(),
-		Effort:         grant.Runtime.RequestedEffort(),
-	}
+	settingsFolder := filepath.Join(stateFolder, "runtimes", runtimeID)
+	start := startOnThisMachine(grant, conversationID, settingsFolder, hookCommand, account).Terminal(false)
 	if err := host.RequireNoLinks(stateFolder, start.SettingsFolder); err != nil {
 		return host.AttachRequest{}, err
 	}

@@ -1,7 +1,6 @@
 package profiles
 
 import (
-	"journal-agent/recording"
 	"slices"
 	"strings"
 	"testing"
@@ -10,10 +9,7 @@ import (
 )
 
 func TestACodexAccountStartUsesTheAccountHomeAndWritesNoSettings(t *testing.T) {
-	start := contracts.Start{
-		Mode: recording.ProcessMode, SettingsFolder: "/state/runtimes/r1",
-		Account: &contracts.AccountStart{Folder: "/accounts/codex-a"},
-	}
+	start := contracts.BaseStart{SettingsFolder: "/state/runtimes/r1", Account: &contracts.AccountStart{Folder: "/accounts/codex-a"}}.Turn("", false)
 
 	files, err := Codex{}.SettingsFiles(start)
 	if err != nil {
@@ -47,8 +43,8 @@ func TestTheAccountHooksComeWithOneTrustTableEach(t *testing.T) {
 }
 
 func TestAProtectedCodexStartRunsEveryToolThroughTheExecutorAndNothingInProcess(t *testing.T) {
-	protected := contracts.Start{Mode: recording.ProcessMode, Protected: true, Account: &contracts.AccountStart{Folder: "/account"}}
-	plain := contracts.Start{Mode: recording.ProcessMode, Account: &contracts.AccountStart{Folder: "/account"}}
+	protected := contracts.BaseStart{Protected: true, Account: &contracts.AccountStart{Folder: "/account"}}.Turn("", false)
+	plain := contracts.BaseStart{Account: &contracts.AccountStart{Folder: "/account"}}.Turn("", false)
 
 	protectedArguments, err := Codex{}.Arguments(protected)
 	if err != nil {
@@ -96,9 +92,34 @@ func TestCodexRefusesEveryArgumentThatWouldMoveAToolOffTheExecutorRoute(t *testi
 	}
 }
 
+// User message 19438: a session never waits on a person's approval; the journal's hook decides each call.
+func TestCodexInTheTerminalAsksNoPersonForApprovalAndAOneShotTurnTakesNoSuchOption(t *testing.T) {
+	for _, start := range []contracts.Start{
+		contracts.BaseStart{}.Terminal(false),
+		contracts.BaseStart{SessionID: "thread-1"}.Terminal(true),
+	} {
+		arguments, err := Codex{}.Arguments(start)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		asked := slices.Index(arguments, "--ask-for-approval")
+		if asked < 0 || arguments[asked+1] != "never" {
+			t.Fatalf("a terminal start may still ask a person: %v", arguments)
+		}
+	}
+
+	oneShot, err := Codex{}.Arguments(contracts.BaseStart{}.Turn("go on", false))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(oneShot, "--ask-for-approval") {
+		t.Fatalf("codex exec takes no approval option: %v", oneShot)
+	}
+}
+
 func TestAOneShotCodexResumeNamesItsThreadAfterExecsOptions(t *testing.T) {
-	start := contracts.Start{Mode: recording.ProcessMode, Resume: true, SessionID: "thread-1", Prompt: "go on",
-		Protected: true, Account: &contracts.AccountStart{Folder: "/account"}}
+	start := contracts.BaseStart{SessionID: "thread-1", Protected: true, Account: &contracts.AccountStart{Folder: "/account"}}.Turn("go on", true)
 
 	arguments, err := Codex{}.Arguments(start)
 	if err != nil {

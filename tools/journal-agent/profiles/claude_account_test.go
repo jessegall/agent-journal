@@ -17,12 +17,9 @@ const accountProtection = `{"permissions":{"deny":["Read(//accounts/a/.credentia
 	`"disableBypassPermissionsMode":"disable"},"sandbox":{"enabled":true,"allowUnsandboxedCommands":false}}`
 
 func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing.T) {
-	start := contracts.Start{
-		Mode: recording.ProcessMode, SettingsFolder: "/state/runtimes/r1", SessionID: "session",
-		Account: &contracts.AccountStart{
-			Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer, LaunchReference: "r1",
-		},
-	}
+	start := contracts.BaseStart{SettingsFolder: "/state/runtimes/r1", SessionID: "session", Account: &contracts.AccountStart{
+		Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer, LaunchReference: "r1",
+	}}.Turn("", false)
 
 	files, err := ClaudeCode{}.SettingsFiles(start)
 	if err != nil {
@@ -61,10 +58,7 @@ func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing
 }
 
 func TestAnAccountSettingThatWouldReplaceTheStartsOwnIsRefused(t *testing.T) {
-	start := contracts.Start{
-		Mode: recording.ProcessMode, SettingsFolder: "/state", SessionID: "session", Effort: "high",
-		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: `{"effortLevel":"low"}`, JournalServer: &journalServer},
-	}
+	start := contracts.BaseStart{SettingsFolder: "/state", SessionID: "session", Effort: "high", Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: `{"effortLevel":"low"}`, JournalServer: &journalServer}}.Turn("", false)
 
 	if _, err := (ClaudeCode{}).SettingsFiles(start); err == nil {
 		t.Fatal("an account setting replaced the start's own effort")
@@ -72,10 +66,7 @@ func TestAnAccountSettingThatWouldReplaceTheStartsOwnIsRefused(t *testing.T) {
 }
 
 func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T) {
-	start := contracts.Start{
-		Mode: recording.ProcessMode, SettingsFolder: "/state", SessionID: "session",
-		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: `{"sandbox":{"enabled":false}}`, JournalServer: &journalServer},
-	}
+	start := contracts.BaseStart{SettingsFolder: "/state", SessionID: "session", Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: `{"sandbox":{"enabled":false}}`, JournalServer: &journalServer}}.Turn("", false)
 
 	if _, err := (ClaudeCode{}).SettingsFiles(start); err == nil {
 		t.Fatal("an account start without the sandbox was prepared")
@@ -85,10 +76,7 @@ func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T)
 // A protected start runs every command as the executor's user through the shell bridge, so Claude Code's own sandbox,
 // which cannot start in the agent container, is off; its permission rules still may not be skipped.
 func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndKeepsItsPermissionRules(t *testing.T) {
-	start := contracts.Start{
-		Mode: recording.ProcessMode, SettingsFolder: "/state", SessionID: "session", Protected: true,
-		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer},
-	}
+	start := contracts.BaseStart{SettingsFolder: "/state", SessionID: "session", Protected: true, Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer}}.Turn("", false)
 
 	files, err := (ClaudeCode{}).SettingsFiles(start)
 	if err != nil {
@@ -111,12 +99,9 @@ func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndKeepsItsPermissionR
 }
 
 func accountStartWith(server *contracts.JournalServer, hookCommand string) contracts.Start {
-	return contracts.Start{
-		Mode: recording.ProcessMode, SettingsFolder: "/state/runtimes/r1", SessionID: "session", HookCommand: hookCommand,
-		Account: &contracts.AccountStart{
-			Folder: "/accounts/a", Protection: accountProtection, JournalServer: server, LaunchReference: "r1",
-		},
-	}
+	return contracts.BaseStart{SettingsFolder: "/state/runtimes/r1", SessionID: "session", HookCommand: hookCommand, Account: &contracts.AccountStart{
+		Folder: "/accounts/a", Protection: accountProtection, JournalServer: server, LaunchReference: "r1",
+	}}.Turn("", false)
 }
 
 func TestAnAccountLaunchLoadsOnlyTheJournalServerByAbsolutePathWithNoToken(t *testing.T) {
@@ -266,11 +251,8 @@ func TestBareAndPermissionModeArgumentsAreRefused(t *testing.T) {
 
 func statusLineOf(t *testing.T, mode recording.Mode, protection, reader string) map[string]any {
 	t.Helper()
-	start := contracts.Start{
-		Mode: mode, SettingsFolder: "/state/runtimes/r1", SessionID: "session",
-		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: protection, JournalServer: &journalServer,
-			LaunchReference: "r1", StatusLine: reader},
-	}
+	start := contracts.BaseStart{SettingsFolder: "/state/runtimes/r1", SessionID: "session", Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: protection, JournalServer: &journalServer,
+		LaunchReference: "r1", StatusLine: reader}}.In(mode, "", false)
 	files, err := ClaudeCode{}.SettingsFiles(start)
 	if err != nil {
 		t.Fatal(err)

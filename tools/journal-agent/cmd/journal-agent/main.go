@@ -329,7 +329,7 @@ func exitCodeOf(err error) (int, error) {
 // profiledCommand builds the start of a program through its pinned profile: it refuses another build, writes the
 // isolated settings files into the recording folder and gives the full command line with the start it made.
 func profiledCommand(profile contracts.DriverProfile, mode recording.Mode, out, sessionID string, resume bool, prompt, hookCommand string) ([]string, contracts.Start, error) {
-	start := contracts.Start{Mode: mode, SessionID: sessionID, Resume: resume, Prompt: prompt, HookCommand: hookCommand}
+	start := contracts.BaseStart{SessionID: sessionID, HookCommand: hookCommand}.In(mode, prompt, resume)
 
 	if err := profile.CheckBuild(programVersion(profile.Driver())); err != nil {
 		return nil, start, err

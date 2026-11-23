@@ -9,7 +9,6 @@ import (
 	"journal-agent/host"
 	"journal-agent/profiles"
 	"journal-agent/profiles/contracts"
-	"journal-agent/recording"
 )
 
 func containedStart() host.PreparedStart {
@@ -45,11 +44,9 @@ func TestAContainedTerminalStartRunsOnTheModelTheJournalAskedFor(t *testing.T) {
 		profile contracts.DriverProfile
 		option  string
 	}{{profiles.ClaudeCode{}, "--model"}, {profiles.Codex{}, "-m"}} {
-		start := containedTerminalStart("conversation-7", prepared, host.ContainerManifest{})
-		resumed := start
-		resumed.Resume = true
+		base := startInContainer(prepared.Grant, "conversation-7", host.ContainerManifest{})
 
-		for _, each := range []contracts.Start{start, resumed} {
+		for _, each := range []contracts.Start{base.Terminal(false), base.Terminal(true)} {
 			process, err := containedProcessOf(driver.profile, "http://journal:8000", prepared, "runtime-7", each, 2, nil)
 			if err != nil {
 				t.Fatal(err)
@@ -67,7 +64,7 @@ func TestAContainedProgramIsTheProfilesCommandWithItsSettingsInlineAndNoHostPath
 	inherited := []string{"HTTPS_PROXY=http://egress:3128", "SECRET_OF_THE_HOST=x", "HOME=/root"}
 
 	process, err := containedProcessOf(profiles.ClaudeCode{}, "http://journal:8000", containedStart(), "runtime-7",
-		contracts.Start{Mode: recording.TerminalMode, SessionID: "conversation-7"}, 2, inherited)
+		contracts.BaseStart{SessionID: "conversation-7"}.Terminal(false), 2, inherited)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,11 +96,7 @@ func TestAContainedProgramIsTheProfilesCommandWithItsSettingsInlineAndNoHostPath
 }
 
 func TestAHeadlessTurnInItsContainerRunsThePromptAtItsGenerationWithNoHostPath(t *testing.T) {
-	hostStart := contracts.Start{
-		Mode: recording.ProcessMode, SessionID: "conversation-7", Prompt: "Check your pending journal work.",
-		SettingsFolder: "/var/lib/journal-agent/runtimes/r7", HookCommand: "/var/lib/journal-agent/bin/journal-hook",
-		WorkFolder: "/var/lib/journal-agent/work",
-	}
+	hostStart := contracts.BaseStart{SessionID: "conversation-7", SettingsFolder: "/var/lib/journal-agent/runtimes/r7", HookCommand: "/var/lib/journal-agent/bin/journal-hook", WorkFolder: "/var/lib/journal-agent/work"}.Turn("Check your pending journal work.", false)
 
 	process, err := containedProcessOf(profiles.ClaudeCode{}, "http://journal:8000", containedStart(), "runtime-7",
 		hostStart, 5, nil)

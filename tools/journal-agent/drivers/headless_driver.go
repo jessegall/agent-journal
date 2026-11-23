@@ -5,7 +5,6 @@ package drivers
 import (
 	"context"
 	"errors"
-	"journal-agent/recording"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,23 +32,20 @@ var ErrTurnRunning = errors.New("a turn is still running")
 
 // HeadlessRuntime is what the headless driver needs to know about its runtime.
 type HeadlessRuntime struct {
-	JournalURL     string
-	Credential     string
-	ProfilePin     []string
-	ConversationID string
-	// ResumesConversation is set when ConversationID names an earlier conversation the host verified, so even the
+	JournalURL string
+	Credential string
+	ProfilePin []string
+	// Start is the base of every turn's start: the conversation, the settings and work folders, the hook command,
+	// the account, and the model and effort the journal asked for.
+	Start profilecontracts.BaseStart
+	// ResumesConversation is set when the start's conversation is an earlier one the host verified, so even the
 	// first turn resumes it.
 	ResumesConversation bool
-	SettingsFolder      string
-	WorkingFolder       string
-	HookCommand         string
 	Profile             profilecontracts.DriverProfile
 	// Environment is the prepared start's clean environment the child starts from; the host's own never reaches it.
 	Environment []string
 	// ReadFiles are the files the host opens for each turn's program to read, the first on descriptor 3.
 	ReadFiles []string
-	// Account is the saved account each child signs in with.
-	Account *profilecontracts.AccountStart
 	// RelayVariables tell the hook relay the start's key and where its sealed output grants are.
 	RelayVariables []string
 	// Executable is the absolute path of the program in the protected installation; an account start runs nothing
@@ -97,7 +93,7 @@ func NewHeadlessDriver(runtime HeadlessRuntime, generation int) *HeadlessDriver 
 // Generation is the process generation of the latest child.
 // NativeIdentity is the conversation every child of the runtime continues, which the start's bootstrap proves.
 func (driver *HeadlessDriver) NativeIdentity() string {
-	return driver.runtime.ConversationID
+	return driver.runtime.Start.SessionID
 }
 
 func (driver *HeadlessDriver) Generation() int {
@@ -162,22 +158,11 @@ func (driver *HeadlessDriver) startTurn(request contracts.RequestIdentity, promp
 	if driver.child != nil {
 		return contracts.OperationResult{}, ErrTurnRunning
 	}
-	if driver.runtime.ConversationID == "" {
+	if driver.runtime.Start.SessionID == "" {
 		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}, ErrConversationUnknown
 	}
 
-	start := profilecontracts.Start{
-		Mode:           recording.ProcessMode,
-		SettingsFolder: driver.runtime.SettingsFolder,
-		SessionID:      driver.runtime.ConversationID,
-		Resume:         driver.turns > 0 || driver.runtime.ResumesConversation,
-		Prompt:         prompt,
-		HookCommand:    driver.runtime.HookCommand,
-		Model:          driver.model,
-		Effort:         driver.effort,
-		WorkFolder:     driver.runtime.WorkingFolder,
-		Account:        driver.runtime.Account,
-	}
+	start := driver.stagedStart().Turn(prompt, driver.turns > 0 || driver.runtime.ResumesConversation)
 	driver.generation++
 	command, err := driver.turnCommand(start)
 	if err != nil {
@@ -225,7 +210,7 @@ func (driver *HeadlessDriver) turnCommand(start profilecontracts.Start) (*exec.C
 		"JOURNAL_URL="+driver.runtime.JournalURL,
 		"JOURNAL_START_TOKEN="+driver.runtime.Credential,
 		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(driver.generation),
-		"JOURNAL_BYPASS_LOG="+filepath.Join(driver.runtime.SettingsFolder, BypassLogName),
+		"JOURNAL_BYPASS_LOG="+filepath.Join(driver.runtime.Start.SettingsFolder, BypassLogName),
 	)
 	command.Env = append(command.Env, driver.runtime.ProfilePin...)
 	command.Env = append(command.Env, driver.runtime.RelayVariables...)
@@ -255,7 +240,7 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 	if driver.runtime.Executable != "" {
 		command.Path, command.Args[0] = driver.runtime.Executable, driver.runtime.Executable
 	}
-	command.Dir = driver.runtime.WorkingFolder
+	command.Dir = driver.runtime.Start.WorkFolder
 	command.Env = profile.Environment(WithoutJournalVariables(driver.runtime.Environment), start)
 	readFiles, err := host.OpenReadFiles(driver.runtime.ReadFiles)
 	if err != nil {
@@ -271,8 +256,8 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 	if driver.claudeAccountStart() && runtime.GOOS == "darwin" {
 		sandbox, err := host.WriteSessionSandbox(
 			start.SettingsFolder,
-			driver.runtime.Account.Folder,
-			driver.runtime.WorkingFolder,
+			driver.runtime.Start.Account.Folder,
+			driver.runtime.Start.WorkFolder,
 		)
 		if err != nil {
 			return nil, err
@@ -282,10 +267,24 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 	return command, nil
 }
 
+// stagedStart is the runtime's base start with the model and effort asked for since it opened, which the next turn
+// runs on.
+func (driver *HeadlessDriver) stagedStart() profilecontracts.BaseStart {
+	base := driver.runtime.Start
+	if driver.model != "" {
+		base.Model = driver.model
+	}
+	if driver.effort != "" {
+		base.Effort = driver.effort
+	}
+
+	return base
+}
+
 // claudeAccountStart is whether the runtime runs Claude Code on a saved account, whose sign-in and turn results the
 // driver checks itself.
 func (driver *HeadlessDriver) claudeAccountStart() bool {
-	return driver.runtime.Account != nil && driver.runtime.Profile.ReportsTurnResults()
+	return driver.runtime.Start.Account != nil && driver.runtime.Profile.ReportsTurnResults()
 }
 
 // checkSignIn refuses the first turn of a Claude account start whose account is not signed in to claude.ai in its
@@ -295,7 +294,7 @@ func (driver *HeadlessDriver) checkSignIn(command *exec.Cmd) error {
 		return nil
 	}
 	runtime := driver.runtime
-	if err := CheckClaudeSignIn(context.Background(), command.Path, command.Env, runtime.ReadFiles, runtime.Account.Folder); err != nil {
+	if err := CheckClaudeSignIn(context.Background(), command.Path, command.Env, runtime.ReadFiles, runtime.Start.Account.Folder); err != nil {
 		return err
 	}
 	driver.signedIn = true

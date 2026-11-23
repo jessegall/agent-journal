@@ -289,11 +289,12 @@ func (container modelRecordingContainer) TurnCommand(start profilecontracts.Star
 func TestAHeadlessStartsFirstTurnRunsOnTheRequestedModel(t *testing.T) {
 	var models []string
 	model := "haiku"
+	granted := client.Grant{Runtime: client.RuntimeStart{Model: &model}}
 	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
-		ConversationID: "conversation-1", Profile: profiles.ClaudeCode{}, Container: modelRecordingContainer{&models},
+		Start:   startInContainer(granted, "conversation-1", host.ContainerManifest{}),
+		Profile: profiles.ClaudeCode{}, Container: modelRecordingContainer{&models},
 	}, 1)
 
-	startOnRequestedSettings(driver, "runtime-1", client.RuntimeStart{Model: &model})
 	_, _ = driver.Wake(context.Background(), contracts.WakeRequest{})
 
 	if !slices.Equal(models, []string{model}) {
