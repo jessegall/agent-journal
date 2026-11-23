@@ -40,7 +40,7 @@ final readonly class AccountsLayout
     public function of(AccountListData $accounts, string $chosen, bool $isAdding): DeclaredLayoutData
     {
         $reader = $isAdding
-            ? [LayoutPartData::native('sign-in', LayoutNativeData::of('accounts/AccountsWindow', $accounts))]
+            ? [LayoutPartData::native('sign-in', LayoutNativeData::of('accounts/AddAccountPart', $accounts))]
             : $this->readerOf($accounts, $chosen);
 
         return ListPage::make(

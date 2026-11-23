@@ -80,13 +80,14 @@ use App\Support\AccountOwnerCheck;
 final class ProfilesPages implements NativePartProvider, NavigationProvider, PageProvider, SectionProvider, TypeProvider
 {
     /**
-     * The native part the Accounts layout mounts: the account list with its setup, sign-in and recovery.
+     * The native parts the Accounts layout mounts: the account list with its setup, sign-in and recovery, and the
+     * add-account wizard its Add account action opens.
      *
      * @return list<string>
      */
     public function nativeParts(): array
     {
-        return ['AccountsWindow.vue'];
+        return ['AccountsWindow.vue', 'AddAccountPart.vue'];
     }
 
     public function pages(): array
