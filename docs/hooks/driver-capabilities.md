@@ -63,12 +63,13 @@ The adapters share these reply shapes, checked against the vendor documentation 
 
 | Journal answer | Pre-tool reply | Stop reply |
 |---|---|---|
-| Allow (no objection) | `{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}`, plus `additionalContext` when there is context; never a permission decision | `{}` |
+| Allow (the journal admitted the call) | `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}`, plus `additionalContext` when there is context | `{}` |
+| Undecided (nobody judged the call, as during an outage a start may pass) | `{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}`: no permission decision, so the driver's own rules decide | `{}` |
 | Deny | `permissionDecision: "deny"` with `permissionDecisionReason` | not a stop answer |
 | Prevent stop | not a pre-tool answer | `{"decision":"block","reason":"..."}` with one reason, context after it |
-| Rewrite | `updatedInput` with every original argument kept, only when the driver takes it without a native approval; otherwise a denial pointing to `journal run` | not a stop answer |
+| Rewrite | `updatedInput` with every original argument kept and `permissionDecision: "allow"`, for Claude Code; for Codex still a denial pointing to `journal run`, until a rewrite is checked against a running Codex | not a stop answer |
 
-The journal never sends `allow`, `ask`, `continue: false` or any other native approval. A journal allow means only that the journal has no objection, so the driver's own permission prompt still applies.
+A call the journal's admission passed is answered `allow`, so a driver never asks a person (user message 19438, task 2865). The driver's own deny rules still refuse such a call: Claude Code evaluates deny and ask rules whatever a hook returns (its permissions documentation, "Precedence among rules, hooks, and mods", read 2026-11-23), which is how a saved account's sign-in stays closed. The journal never sends `ask` or `continue: false`. Codex is started in the terminal with `--ask-for-approval never`, so it asks nobody either; a one-shot `codex exec` never asks.
 
 ## How a call proves who sent it (plan 2, task 57)
 

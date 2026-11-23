@@ -80,7 +80,7 @@ final class JournalToolRecognitionTest extends TestCase
             $this->assertInstanceOf(JournalToolCall::class, $starting);
             $this->assertInstanceOf(JournalToolCall::class, $finished);
             $this->assertSame(
-                '{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}',
+                '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}',
                 $starting->replyWith(fn () => $this->fail('A journal call walked the stack.'))->stdout,
             );
             $this->assertSame(

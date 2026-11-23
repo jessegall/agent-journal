@@ -98,10 +98,10 @@ final class CodexTest extends TestCase
         $this->assertTrue($input->stop->isContinuation);
     }
 
-    public function test_a_journal_allow_is_neutral_and_names_no_permission(): void
+    public function test_a_journal_allow_answers_allow_so_no_approval_is_asked(): void
     {
         $this->assertSame(
-            '{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}',
+            '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}',
             $this->render('shell command', Decision::allow())->stdout,
         );
     }

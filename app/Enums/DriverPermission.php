@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * The only native permission decision the journal sends: a denial. It never grants a native approval.
+ * The native permission decisions the journal sends for a tool call: allow for a call its own admission passed, so
+ * the driver asks no person, and deny with a reason. The driver's own deny rules still refuse a call the journal
+ * allowed, which is how a saved account's sign-in stays closed.
  */
 enum DriverPermission: string
 {
+    case Allow = 'allow';
     case Deny = 'deny';
 }

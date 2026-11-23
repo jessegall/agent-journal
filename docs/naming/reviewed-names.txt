@@ -397,6 +397,7 @@ case	DriverOutcome::Held
 case	DriverOutcome::StaleGeneration
 case	DriverOutcome::Unavailable
 case	DriverOutcome::Uncertain
+case	DriverPermission::Allow
 case	DriverPermission::Deny
 case	DriverSourceType::Explicit
 case	DriverSourceType::ParentSession
@@ -14432,6 +14433,7 @@ method	DriverReplies::rewrite()
 method	DriverReplies::rewriteTool()
 method	DriverReplies::shell()
 method	DriverReplies::stop()
+method	DriverReplies::undecidedTool()
 method	DriverReply::__construct()
 method	DriverReply::emptyObject()
 method	DriverReply::fromJournal()

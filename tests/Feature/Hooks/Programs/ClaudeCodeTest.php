@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Drivers;
 
 use App\Enums\CommandType;
+use App\Enums\DriverPermission;
 use App\Enums\FileOperation;
 use App\Exceptions\UnsupportedHook;
 use App\Support\Decisions\Decision;
@@ -107,11 +108,11 @@ final class ClaudeCodeTest extends TestCase
         $this->assertSame('call-1', $input->compactionId());
     }
 
-    public function test_a_journal_allow_keeps_the_native_permission_prompt(): void
+    public function test_a_journal_allow_answers_allow_so_no_person_is_asked(): void
     {
         $reply = $this->render('shell command', Decision::allow());
 
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $reply->stdout);
+        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}', $reply->stdout);
     }
 
     public function test_a_denied_shell_command_carries_its_reason(): void
@@ -128,7 +129,7 @@ final class ClaudeCodeTest extends TestCase
         );
     }
 
-    public function test_a_rewrite_keeps_every_other_argument_and_grants_nothing(): void
+    public function test_a_rewrite_keeps_every_other_argument_and_allows_the_rewritten_line(): void
     {
         $reply = json_decode($this->render('shell command', Decision::rewrite('journal run tests'))->stdout, true);
 
@@ -136,7 +137,7 @@ final class ClaudeCodeTest extends TestCase
             ['command' => 'journal run tests', 'description' => 'Run echo hello'],
             $reply['hookSpecificOutput']['updatedInput'],
         );
-        $this->assertArrayNotHasKey('permissionDecision', $reply['hookSpecificOutput']);
+        $this->assertSame(DriverPermission::Allow->value, $reply['hookSpecificOutput']['permissionDecision']);
     }
 
     public function test_a_denied_prompt_is_blocked_with_its_reason(): void

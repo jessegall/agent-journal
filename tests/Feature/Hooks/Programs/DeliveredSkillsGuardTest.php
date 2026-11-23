@@ -92,7 +92,7 @@ final class DeliveredSkillsGuardTest extends TestCase
             $this->hookIdentity(),
         );
 
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $read->stdout);
+        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}', $read->stdout);
         $this->assertInstanceOf(JudgedCall::class, $edit);
         $this->assertInstanceOf(FileEditRequested::class, $edit->input);
     }

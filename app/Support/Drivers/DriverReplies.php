@@ -27,13 +27,25 @@ final class DriverReplies
         .'Run the command through its alias with journal run instead.';
 
     /**
+     * The reply to a tool call the journal admitted: the driver runs it without asking a person.
+     *
      * @param  list<string>  $context
      */
     public static function allowTool(array $context): DriverReply
     {
         return DriverReply::json(PreToolBody::from(['hookSpecificOutput' => [
+            'permissionDecision' => DriverPermission::Allow,
             'additionalContext' => PreToolOutput::contextText($context),
         ]]));
+    }
+
+    /**
+     * The reply to a tool call nobody judged, as while the journal is away: no decision, so the driver's own
+     * permission rules decide it.
+     */
+    public static function undecidedTool(): DriverReply
+    {
+        return DriverReply::json(PreToolBody::from(['hookSpecificOutput' => []]));
     }
 
     /**
@@ -63,6 +75,7 @@ final class DriverReplies
     public static function rewriteTool(array $updatedInput, array $context): DriverReply
     {
         return DriverReply::json(PreToolBody::from(['hookSpecificOutput' => [
+            'permissionDecision' => DriverPermission::Allow,
             'additionalContext' => PreToolOutput::contextText($context),
             'updatedInput' => $updatedInput,
         ]]));

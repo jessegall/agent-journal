@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Drivers;
 
+use App\Enums\DriverPermission;
 use App\Enums\HookEvent;
 use App\Enums\RewriteSupport;
 use App\Exceptions\InvalidStopAnswer;
@@ -21,20 +22,21 @@ final class ProgramRepliesTest extends TestCase
 {
     private const string RUN_ALIAS_ADVICE = 'journal run';
 
-    public function test_a_journal_allow_is_a_neutral_reply_that_names_no_permission(): void
+    public function test_a_journal_allow_answers_allow_so_the_driver_asks_no_person(): void
     {
         $reply = $this->shell(Decision::allow());
 
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $reply->stdout);
+        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}', $reply->stdout);
         $this->assertSame(['', 0], [$reply->stderr, $reply->exitCode]);
     }
 
-    public function test_context_rides_along_on_a_neutral_reply(): void
+    public function test_context_rides_along_on_an_allow(): void
     {
         $reply = $this->shell(Decision::allow(), ['Remember rule 7.', 'Task 42 is open.']);
 
         $this->assertSame(['hookSpecificOutput' => [
             'hookEventName' => 'PreToolUse',
+            'permissionDecision' => 'allow',
             'additionalContext' => "Remember rule 7.\nTask 42 is open.",
         ]], json_decode($reply->stdout, true));
     }
@@ -64,6 +66,7 @@ final class ProgramRepliesTest extends TestCase
 
         $this->assertSame(['hookSpecificOutput' => [
             'hookEventName' => 'PreToolUse',
+            'permissionDecision' => 'allow',
             'updatedInput' => ['command' => 'journal run tests', 'description' => 'Run the tests', 'timeout' => 120],
         ]], json_decode($reply->stdout, true));
     }
@@ -120,22 +123,40 @@ final class ProgramRepliesTest extends TestCase
         DriverReplies::stop($this->answer(Decision::rewrite('ls')));
     }
 
-    public function test_no_reply_ever_grants_a_native_approval(): void
+    /**
+     * User message 19438: only a call the journal admitted is answered allow; a call nobody judged gets no decision,
+     * and no reply ever asks a person or ends the driver's turn.
+     */
+    public function test_only_an_admitted_call_is_allowed_and_no_reply_asks_a_person_or_ends_the_turn(): void
     {
-        $replies = [
+        $admitted = [
             $this->shell(Decision::allow(), ['context']),
-            $this->shell(Decision::deny('No.')),
             DriverReplies::shell(
                 $this->answer(Decision::rewrite('journal run tests')),
                 new DriverToolInput(['command' => 'x']),
                 RewriteSupport::WithoutApproval,
             ),
+        ];
+        $others = [
+            $this->shell(Decision::deny('No.')),
+            DriverReplies::undecidedTool(),
             DriverReplies::stop($this->answer(Decision::allow())),
             DriverReplies::stop($this->answer(Decision::deny('Wait.'))),
         ];
 
-        foreach ($replies as $reply) {
-            $this->assertDoesNotMatchRegularExpression('/"(allow|ask)"|"continue"/', $reply->stdout);
+        foreach ($admitted as $reply) {
+            $this->assertSame(
+                DriverPermission::Allow->value,
+                json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision'],
+            );
+        }
+
+        foreach ($others as $reply) {
+            $this->assertStringNotContainsString('"allow"', $reply->stdout);
+        }
+
+        foreach ([...$admitted, ...$others] as $reply) {
+            $this->assertDoesNotMatchRegularExpression('/"ask"|"continue"/', $reply->stdout);
         }
     }
 
