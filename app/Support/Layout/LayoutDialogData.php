@@ -11,7 +11,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * A dialog a layout opens from one of its own parts: its title, the sentence a toast says once the form is accepted,
  * the inverse action that toast offers as Undo, only when the record's domain has one, and the noun whose registered
- * draft producer offers the guided entry, only when there is one.
+ * draft producer offers the guided entry, only when there is one. A dialog opened from a page header names the words of
+ * its other ways, and its opener is then drawn as a split button with a menu of them.
  */
 #[TypeScript]
 final class LayoutDialogData extends Data
@@ -21,5 +22,6 @@ final class LayoutDialogData extends Data
         public readonly string $confirmation,
         public readonly LayoutFormData|Optional $undo = new Optional(),
         public readonly string|Optional $guidedNoun = new Optional(),
+        public readonly LayoutWaysData|Optional $ways = new Optional(),
     ) {}
 }

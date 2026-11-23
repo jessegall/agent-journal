@@ -14,6 +14,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
@@ -114,13 +115,18 @@ final readonly class PlansIndex
      */
     private function creation(string $key = 'creation', string $openerStyle = 'bordered'): LayoutPartData
     {
+        $isGuided = $this->producers->offersGuided('plan');
+
         return LayoutPartData::dialog(
             $key,
             LayoutDialogData::from(
                 [
                     'title' => 'New plan',
                     'confirmation' => 'Plan created',
-                    'guidedNoun' => $this->producers->offersGuided('plan') ? 'plan' : Optional::create(),
+                    'guidedNoun' => $isGuided ? 'plan' : Optional::create(),
+                    'ways' => $isGuided && $key === 'creation'
+                        ? new LayoutWaysData('Write it yourself', 'Plan it with an agent')
+                        : Optional::create(),
                 ],
             ),
             LayoutPartData::action('open', 'New plan', LayoutActionData::changing([]), $openerStyle),

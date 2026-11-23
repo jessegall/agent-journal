@@ -14,6 +14,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use Domain\Sequences\Http\Pages\SequencePageViews;
@@ -60,7 +61,7 @@ final readonly class SequencesIndex
         )
             ->counting(count($sequences))
             ->withViews(...$this->views->of(false))
-            ->creatingWith(...$this->creations())
+            ->creatingWith($this->creation())
             ->withReader(
                 LayoutBackData::from(['href' => route('sequences.index', [], false), 'label' => 'Sequences']),
                 ...$reader,
@@ -69,12 +70,10 @@ final readonly class SequencesIndex
     }
 
     /**
-     * New sequence opens the editor; beside it, when a draft producer is registered for sequences, Guided asks three
-     * questions and opens the editor with the drafted steps.
-     *
-     * @return list<LayoutPartData>
+     * New sequence opens the editor; when a draft producer is registered for sequences, its chevron menu offers the
+     * plain way and Build it with an agent, which asks three questions and opens the editor with the drafted steps.
      */
-    private function creations(): array
+    private function creation(): LayoutPartData
     {
         $plain = LayoutPartData::action(
             'creation',
@@ -84,17 +83,18 @@ final readonly class SequencesIndex
         );
 
         if (! $this->producers->offersGuided('sequence')) {
-            return [$plain];
+            return $plain;
         }
 
-        $guided = LayoutPartData::dialog(
-            'guided-sequence',
+        return LayoutPartData::dialog(
+            'creation',
             LayoutDialogData::from([
-                'title' => 'Guided sequence',
+                'title' => 'New sequence',
                 'confirmation' => 'Draft opened in the editor',
                 'guidedNoun' => 'sequence',
+                'ways' => new LayoutWaysData('Write the steps yourself', 'Build it with an agent'),
             ]),
-            LayoutPartData::action('open', 'Guided', LayoutActionData::changing([])),
+            $plain,
             LayoutFormData::from(['method' => ActionMethod::Get, 'href' => route('sequences.new', [], false)]),
             [
                 LayoutPartData::field('name', 'Name', LayoutFieldData::from(['name' => 'name']), 'text'),
@@ -114,7 +114,5 @@ final readonly class SequencesIndex
             ],
             [LayoutPartData::action('send', 'Open in the editor', LayoutActionData::submitting(), 'primary')],
         );
-
-        return [$plain, $guided];
     }
 }
