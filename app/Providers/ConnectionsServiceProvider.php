@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Hosts\HostOperatorAccess;
 use App\Contracts\Hosts\LocalProjectHosts;
@@ -35,6 +36,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class ConnectionsServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->bind(LocalProjectHosts::class, BindingHosts::class);
@@ -69,7 +72,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
 
         $records->register(ProjectFile::LINK_TYPE, ProjectFileLinkRecords::class);
 
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/connections/connections.php');
+        $this->loadCoreRoutes('connections/connections.php');
 
         $this->callAfterResolving(
             Schedule::class,

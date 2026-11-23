@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
+use App\Concerns\LinksTargetsOneByOne;
 use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Data\NotificationLink;
@@ -18,6 +19,8 @@ use PhpOption\Option;
  */
 final readonly class RunNotificationTarget implements NotificationTargetResolver
 {
+    use LinksTargetsOneByOne;
+
     public const string KEY = 'run';
 
     private const string OUTCOME_PAGE = 'processes.run-outcome';
@@ -26,22 +29,6 @@ final readonly class RunNotificationTarget implements NotificationTargetResolver
         private RunOutcomeSummaries $summaries,
         private DeclaredPages $pages,
     ) {}
-
-    /**
-     * A page holds few of these, so each is read on its own.
-     */
-    public function linksFor(array $ids): array
-    {
-        $links = [];
-
-        foreach ($ids as $targetId) {
-            $this->linkFor($targetId)->forAll(function (NotificationLink $link) use (&$links, $targetId): void {
-                $links[$targetId] = $link;
-            });
-        }
-
-        return $links;
-    }
 
     /**
      * @return Option<NotificationLink>

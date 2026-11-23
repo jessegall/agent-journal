@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\PruneHookHistoryCommand;
 use App\Console\Commands\RelayHookCommand;
 use App\Contracts\Actors\ActorGuidance;
@@ -86,6 +87,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class HooksServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->extend(
@@ -162,7 +165,7 @@ final class HooksServiceProvider extends ServiceProvider
     ): void {
         $pendingWork->register(PendingAgentMessages::class);
         $actors->registerWorkStack(ActorType::Agent, AgentWorkStack::class);
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/hooks/hooks.php');
+        $this->loadCoreRoutes('hooks/hooks.php');
         $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
 
         $this->callAfterResolving(

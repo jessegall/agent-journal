@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Scripts\ScriptChecks;
 use App\Contracts\Scripts\ScriptCompilation;
@@ -28,6 +29,8 @@ use Illuminate\Support\ServiceProvider;
 
 final class ScriptsServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->singleton(ObjectRegistry::class);
@@ -43,8 +46,8 @@ final class ScriptsServiceProvider extends ServiceProvider
 
     public function boot(ObjectRegistry $objects, KeywordRegistry $keywords): void
     {
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/scripts/agent.php');
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/scripts/web.php');
+        $this->loadCoreRoutes('scripts/agent.php');
+        $this->loadCoreRoutes('scripts/web.php');
 
         $objects->register(WorkspaceObject::class);
         $keywords->register(KeywordDefinition::structure('ON', SyntaxForm::Handler, 'Open a trigger handler.'));

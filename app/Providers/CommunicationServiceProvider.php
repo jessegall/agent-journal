@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\ReadEntitlements;
@@ -58,6 +59,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CommunicationServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->singleton(RegisteredInboxes::class);
@@ -135,7 +138,7 @@ final class CommunicationServiceProvider extends ServiceProvider
                 ->everyMinute(),
         );
 
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/communication/communication.php');
+        $this->loadCoreRoutes('communication/communication.php');
         $incoming->register(MessageAnswerActivation::class);
         $assignments->registerOwner('Communication', []);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Assignments\AssignedWorkResolver;
 use App\Contracts\Assignments\AssigneeLocks;
 use App\Contracts\Assignments\AssigneeResolver;
@@ -59,6 +60,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class AssignmentsServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->singleton(AssignmentRegistry::class);
@@ -104,7 +107,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
             [AccessType::Create, AccessType::Delegate, AccessType::Delete],
         ));
 
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/assignments/assignments.php');
+        $this->loadCoreRoutes('assignments/assignments.php');
 
         $this->app->booted(function (): void {
             $registry = $this->app->make(AssignmentRegistry::class);

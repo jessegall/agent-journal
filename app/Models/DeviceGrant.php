@@ -10,6 +10,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\BindingReadiness;
 use App\Enums\DeviceGrantState;
 use App\Exceptions\DeviceGrantRefused;
+use App\Support\ShortReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -68,11 +69,6 @@ final class DeviceGrant extends Model implements ReadableModel
 
     public const array SCOPES = ['commands'];
 
-    /**
-     * The letters a reference is made of: no 0, O, 1, I or L, which read alike.
-     */
-    private const string REFERENCE_LETTERS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
-
     // ----------[ Constructors ]----------
 
     /**
@@ -97,7 +93,7 @@ final class DeviceGrant extends Model implements ReadableModel
     {
         $grant = new self();
         $grant->binding_id = $binding->id;
-        $grant->reference = self::newReference();
+        $grant->reference = ShortReference::withPrefix('TS');
         $grant->generation = self::nextGenerationOf($binding);
         $grant->start_key = $startKey;
         $grant->environment_id = $binding->environment_id;
@@ -325,18 +321,5 @@ final class DeviceGrant extends Model implements ReadableModel
     public function environment(): BelongsTo
     {
         return $this->belongsTo(Environment::class);
-    }
-
-    // ----------[ Internals ]----------
-
-    private static function newReference(): string
-    {
-        $letters = '';
-
-        for ($index = 0; $index < 8; $index++) {
-            $letters .= self::REFERENCE_LETTERS[random_int(0, strlen(self::REFERENCE_LETTERS) - 1)];
-        }
-
-        return 'TS-'.$letters;
     }
 }

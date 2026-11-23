@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
+use App\Concerns\LinksTargetsOneByOne;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
@@ -21,6 +22,8 @@ use PhpOption\Option;
  */
 final readonly class MergeAskNotificationTarget implements NotificationTargetResolver
 {
+    use LinksTargetsOneByOne;
+
     public const string KEY = 'merge.ask';
 
     private const string ASK_PAGE = 'web.ask';
@@ -29,22 +32,6 @@ final readonly class MergeAskNotificationTarget implements NotificationTargetRes
         private CurrentActor $actors,
         private DeclaredPages $pages,
     ) {}
-
-    /**
-     * A page holds few of these, so each is read on its own.
-     */
-    public function linksFor(array $ids): array
-    {
-        $links = [];
-
-        foreach ($ids as $targetId) {
-            $this->linkFor($targetId)->forAll(function (NotificationLink $link) use (&$links, $targetId): void {
-                $links[$targetId] = $link;
-            });
-        }
-
-        return $links;
-    }
 
     /**
      * @return Option<NotificationLink>

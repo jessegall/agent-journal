@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\GenerateUiManifest;
 use App\Contracts\Actors\CurrentUserResolver;
 use App\Contracts\Assignments\AutoAssignmentAccess;
@@ -70,6 +71,8 @@ use Throwable;
  */
 final class WebServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->bind(NavigationRecordsContract::class, WebNavigationRecords::class);
@@ -125,7 +128,7 @@ final class WebServiceProvider extends ServiceProvider
         $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserResolver::class));
         $events->listen('eloquent.booted: '.Layout::class, fn () => Layout::addGlobalScope($scope));
 
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/web/web.php');
+        $this->loadCoreRoutes('web/web.php');
         $this->commands([GenerateUiManifest::class]);
         $router->aliasMiddleware('journal.visible', CheckPageVisibility::class);
 

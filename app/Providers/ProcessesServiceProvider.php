@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\CommandTypeApproveCommand;
 use App\Console\Commands\CommandTypeImportCommand;
 use App\Console\Commands\CommandTypeListCommand;
@@ -92,6 +93,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class ProcessesServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->scoped(ShellCommandParser::class, ShellParser::class);
@@ -170,7 +173,7 @@ final class ProcessesServiceProvider extends ServiceProvider
             'processes.result-receipt' => ResultReceipt::class,
         ]);
 
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/processes/processes.php');
+        $this->loadCoreRoutes('processes/processes.php');
 
         $this->commands([
             ExplainCommandTypeCommand::class,

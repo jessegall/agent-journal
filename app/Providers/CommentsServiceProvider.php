@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\CommentListCommand;
 use App\Console\Commands\CommentLocationCommand;
 use App\Console\Commands\CommentPostCommand;
@@ -30,6 +31,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CommentsServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->bind(CommentResolver::class, CommentRecords::class);
@@ -57,7 +60,7 @@ final class CommentsServiceProvider extends ServiceProvider
             ),
         );
 
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/comments/comments.php');
+        $this->loadCoreRoutes('comments/comments.php');
 
         if ($this->app->runningInConsole()) {
             $this->commands([CommentPostCommand::class, CommentListCommand::class, CommentLocationCommand::class]);

@@ -16,6 +16,7 @@ use App\Events\InstallAttemptOpened;
 use App\Events\InstallAttemptReplaced;
 use App\Events\InstallAttemptSpent;
 use App\Exceptions\InstallAttemptRefused;
+use App\Support\ShortReference;
 use App\Values\RelationRead;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\CursorPaginator;
@@ -76,11 +77,6 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public const int PAGE_LIMIT = 25;
 
-    /**
-     * The letters a reference is made of: no 0, O, 1, I or L, which read alike.
-     */
-    private const string REFERENCE_LETTERS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
-
     // ----------[ Constructors ]----------
 
     /**
@@ -112,7 +108,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         $attempt = self::query()->createOrFirst(
             ['owner_user_id' => $userId, 'idempotency_key' => $idempotencyKey],
             [
-                'reference' => self::newReference(),
+                'reference' => ShortReference::withPrefix('IA'),
                 'mode' => $joins === null ? InvitationMode::New : InvitationMode::Join,
                 'project_id' => $joins?->project_id,
                 'environment_id' => $joins?->id,
@@ -294,17 +290,6 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         if ($seenVersion !== null && $seenVersion !== $this->version) {
             throw InstallAttemptRefused::movedOn($this->reference, $this->version);
         }
-    }
-
-    private static function newReference(): string
-    {
-        $letters = '';
-
-        for ($index = 0; $index < 8; $index++) {
-            $letters .= self::REFERENCE_LETTERS[random_int(0, strlen(self::REFERENCE_LETTERS) - 1)];
-        }
-
-        return 'IA-'.$letters;
     }
 
     // ----------[ Scopes ]----------

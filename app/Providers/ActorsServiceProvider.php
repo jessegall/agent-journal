@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Actors\ActiveActorRegistration;
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\ActorProviderRegistration;
@@ -51,6 +52,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class ActorsServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->singleton(SystemEntryPolicies::class);
@@ -93,6 +96,6 @@ final class ActorsServiceProvider extends ServiceProvider
         $actors->registerVisibility(ActorType::Engine, JournalVisibility::class);
         $authorizers->register(ActorType::System, SystemAuthorizerProvider::class);
         $this->app->booted(fn () => $authorizers->requireEveryType());
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/actors/actors.php');
+        $this->loadCoreRoutes('actors/actors.php');
     }
 }

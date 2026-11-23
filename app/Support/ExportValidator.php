@@ -27,6 +27,7 @@ final class ExportValidator
         'App\Concerns\HasAssignables',
         'App\Concerns\HasLinkRecords',
         'App\Concerns\HasStates',
+        'App\Concerns\GrantedInEnvironment',
         'App\Models\Support\BelongsToOneActor',
         'App\Concerns\HasComments',
         'App\Support\States\AgentState',

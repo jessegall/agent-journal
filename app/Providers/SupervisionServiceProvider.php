@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Admission\AskAdmission;
 use App\Contracts\Admission\MergeAdmission;
 use App\Contracts\Authorization\PolicyCatalogue;
@@ -45,6 +46,8 @@ use Illuminate\Support\ServiceProvider;
 
 final class SupervisionServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         // The implementation belongs to a higher area; a Bind attribute here would create a reverse dependency.
@@ -70,7 +73,7 @@ final class SupervisionServiceProvider extends ServiceProvider
         $engineListeners->add(AdvanceDueAsksOnTick::class);
         $engineListeners->add(HandOffCodeReviewsOnTick::class);
         $engineListeners->add(SettleMergeOutcomesOnTick::class);
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/supervision/asks.php');
+        $this->loadCoreRoutes('supervision/asks.php');
 
         $this->callAfterResolving(
             Schedule::class,

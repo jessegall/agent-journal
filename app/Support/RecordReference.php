@@ -53,14 +53,21 @@ final readonly class RecordReference
      */
     public static function number(string $text): int
     {
-        $isPositiveNumber = preg_match('/^[1-9][0-9]{0,18}$/', $text) === 1;
-        $fitsInAnInteger = strlen($text) < 19 || strcmp($text, (string) PHP_INT_MAX) <= 0;
-
-        if (! $isPositiveNumber || ! $fitsInAnInteger) {
+        if (! self::isNumber($text)) {
             throw InvalidRecordReference::number($text);
         }
 
         return (int) $text;
+    }
+
+    /**
+     * Whether the text is a record number: positive decimal digits with no leading zero that fit in an integer.
+     */
+    public static function isNumber(string $text): bool
+    {
+        $isPositiveNumber = preg_match('/^[1-9][0-9]{0,18}$/', $text) === 1;
+
+        return $isPositiveNumber && (strlen($text) < 19 || strcmp($text, (string) PHP_INT_MAX) <= 0);
     }
 
     public static function idOrNumber(string $text): int|string

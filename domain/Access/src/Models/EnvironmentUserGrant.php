@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Models;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\GrantedInEnvironment;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ChatPermission;
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\Model;
 final class EnvironmentUserGrant extends Model implements ReadableModel
 {
     use BoundedReads;
+    use GrantedInEnvironment;
     use HasUlids;
     use Linkable;
 
@@ -131,16 +133,5 @@ final class EnvironmentUserGrant extends Model implements ReadableModel
     protected function activeFor(Builder $query, string $userId, string|null $environmentId): void
     {
         $query->where('user_id', $userId)->inEnvironment($environmentId);
-    }
-
-    /**
-     * The active grants of an environment.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function inEnvironment(Builder $query, string|null $environmentId): void
-    {
-        $query->where('environment_key', $environmentId ?? self::LOCAL_ENVIRONMENT)->whereNull('revoked_at');
     }
 }

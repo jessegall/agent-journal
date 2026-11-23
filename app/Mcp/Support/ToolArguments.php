@@ -7,6 +7,7 @@ namespace App\Mcp\Support;
 use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
+use App\Support\RecordReference;
 use BackedEnum;
 use Illuminate\Support\Str;
 use Laravel\Mcp\Request;
@@ -138,8 +139,7 @@ final readonly class ToolArguments
             return $this->positiveInteger($name);
         }
 
-        if (is_string($argument) && preg_match('/^[1-9][0-9]{0,18}$/', $argument) === 1
-            && (strlen($argument) < 19 || strcmp($argument, (string) PHP_INT_MAX) <= 0)) {
+        if (is_string($argument) && RecordReference::isNumber($argument)) {
             return (int) $argument;
         }
 

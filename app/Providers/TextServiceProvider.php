@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\TextReadCommand;
 use App\Console\Commands\TextSectionsCommand;
 use App\Console\Commands\TextVersionCommand;
@@ -16,6 +17,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class TextServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->bind(TextResolver::class, TextRecords::class);
@@ -23,7 +26,7 @@ final class TextServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/text/text.php');
+        $this->loadCoreRoutes('text/text.php');
 
         if ($this->app->runningInConsole()) {
             $this->commands([TextVersionCommand::class, TextSectionsCommand::class, TextReadCommand::class]);

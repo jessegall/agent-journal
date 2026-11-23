@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Activity\ActivityLog;
@@ -157,6 +158,8 @@ use PhpOption\Some;
  */
 final class AgentsServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     private const string OWNER = 'Agents';
 
     public function register(): void
@@ -358,9 +361,9 @@ final class AgentsServiceProvider extends ServiceProvider
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agents/agents.php');
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agents/host.php');
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agents/releases.php');
+        $this->loadCoreRoutes('agents/agents.php');
+        $this->loadCoreRoutes('agents/host.php');
+        $this->loadCoreRoutes('agents/releases.php');
 
         $assignments->registerAssignees(new AssigneeDefinition(ActorType::Agent->value, AgentAssignees::class));
 

@@ -203,6 +203,7 @@ use App\Commands\WithdrawCommandRequest\WithdrawCommandRequestCommand;
 use App\Concerns\BoundedReads;
 use App\Concerns\CountsLoads;
 use App\Concerns\CountsPivotLoads;
+use App\Concerns\GrantedInEnvironment;
 use App\Concerns\HasAssignables;
 use App\Concerns\HasComments;
 use App\Concerns\HasLinkRecords;
@@ -3045,6 +3046,7 @@ final class CoreApi
                 MessageSearchAccess::class,
                 NumberedReferenceRecognizer::class,
                 HasNumber::class,
+                GrantedInEnvironment::class,
                 AssignableListing::class,
                 TextSearch::class,
                 ReadsIdempotencyKey::class,

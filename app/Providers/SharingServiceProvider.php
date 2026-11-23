@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Sharing\ShareGatewayProvider;
 use App\Contracts\Sharing\SharePolicy;
@@ -29,6 +30,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class SharingServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->bind(ShareStatusResolver::class, LiveShareStatus::class);
@@ -55,6 +58,6 @@ final class SharingServiceProvider extends ServiceProvider
         $gateways->register(NgrokGateway::KEY, NgrokGateway::class);
 
         $this->app->booted(fn () => $this->app->make(ShareRecordRegistry::class)->checkRelations());
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/sharing/sharing.php');
+        $this->loadCoreRoutes('sharing/sharing.php');
     }
 }

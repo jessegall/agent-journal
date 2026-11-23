@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\GrantedInEnvironment;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class AgentChatPermission extends Model implements ReadableModel
 {
     use BoundedReads;
+    use GrantedInEnvironment;
     use HasUlids;
     use Linkable;
 
@@ -102,14 +104,5 @@ final class AgentChatPermission extends Model implements ReadableModel
     protected function activeFor(Builder $query, string $agentId, string|null $environmentId): void
     {
         $query->where('agent_id', $agentId)->inEnvironment($environmentId);
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function inEnvironment(Builder $query, string|null $environmentId): void
-    {
-        $query->where('environment_key', $environmentId ?? self::LOCAL_ENVIRONMENT)->whereNull('revoked_at');
     }
 }

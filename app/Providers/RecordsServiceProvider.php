@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\LinkAddCommand;
 use App\Console\Commands\LinkRemoveCommand;
 use App\Contracts\Actors\IdentityLinks;
@@ -27,6 +28,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class RecordsServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->bind(RecordLinker::class, TransactionalRecordLinker::class);
@@ -43,7 +46,7 @@ final class RecordsServiceProvider extends ServiceProvider
             new PolicyDefinition(RecordLinkPolicy::class, [AccessType::Create, AccessType::Edit]),
         );
 
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/records/links.php');
+        $this->loadCoreRoutes('records/links.php');
 
         if ($this->app->runningInConsole()) {
             $this->commands([LinkAddCommand::class, LinkRemoveCommand::class]);

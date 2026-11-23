@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Accounts\StartAccounts;
 use App\Contracts\Actors\CurrentActor;
@@ -73,6 +74,8 @@ use Illuminate\Support\ServiceProvider;
  */
 final class ProfilesServiceProvider extends ServiceProvider
 {
+    use LoadsCoreRoutes;
+
     public function register(): void
     {
         $this->app->bind(CommandAdmission::class, StackCommandAdmission::class);
@@ -150,8 +153,8 @@ final class ProfilesServiceProvider extends ServiceProvider
         );
 
         $authorizers->register(ActorType::Agent, ProfileAuthorizerProvider::class);
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/profiles/web.php');
-        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/profiles/sign-in-host.php');
+        $this->loadCoreRoutes('profiles/web.php');
+        $this->loadCoreRoutes('profiles/sign-in-host.php');
     }
 
     /**
