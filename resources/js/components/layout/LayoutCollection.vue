@@ -11,8 +11,8 @@ import LayoutPart from './LayoutPart.vue';
 import { useLayoutAppend } from './layoutAppend';
 import { rememberRow, restoreRow } from './listReturn';
 
-// The keyed rows of a declared layout: facts as term and value pairs, choices that each set the window's query, the
-// chosen one marked current, or a list whose rows open their own page or their own window query. A row with an actions
+// The keyed rows of a declared layout: facts as term and value pairs, choices that each set the window's query or open
+// their own page, the chosen one marked current, or a list whose rows open their own page or their own window query. A row with an actions
 // menu shows its actions button beside it, and a right click on the row, or the Menu key or Shift+F10 on it when it is
 // focused, opens the same menu, bound to that row's record. A list keeps the rows it shows when a Show more is waiting
 // for its answer, and adds the rows that answer brings; any other read replaces them. Every list row is drawn in a
@@ -124,7 +124,7 @@ function destinationOf(row: LayoutRowData): string | null {
                 <template v-for="row in shown" :key="row.key">
                     <li class="flex">
                         <Link
-                            :href="windowQuery(row.query)"
+                            :href="row.href ?? windowQuery(row.query)"
                             preserve-scroll
                             :aria-current="row.isCurrent ? 'true' : undefined"
                             class="block py-[7px] text-badge tracking-[.03em] focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-focus"

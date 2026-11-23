@@ -20,6 +20,19 @@ final readonly class SequenceRunsShow
 {
     public function of(SequenceRun $run): DeclaredLayoutData
     {
+        return $this->detailOf($run)->layout();
+    }
+
+    /**
+     * The run's reader, to stand beside the runs list.
+     */
+    public function part(SequenceRun $run): LayoutPartData
+    {
+        return $this->detailOf($run)->part();
+    }
+
+    private function detailOf(SequenceRun $run): DetailPage
+    {
         $isRunning = $run->state === SequenceRunState::Running;
         $steps = [];
 
@@ -39,8 +52,7 @@ final readonly class SequenceRunsShow
         return DetailPage::make($run->name)
             ->above(LayoutPartData::text('label', "sequence run {$run->number}", 'code'))
             ->withFacts(new LayoutRowData('state', 'State', ucfirst($run->state->value)))
-            ->withStanding(LayoutPartData::collection('steps', 'list', $steps))
-            ->layout();
+            ->withStanding(LayoutPartData::collection('steps', 'list', $steps));
     }
 
     private function markOf(int $position, int $current, SequenceRunState $state): LayoutPartData

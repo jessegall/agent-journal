@@ -13,6 +13,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Alignment;
 use App\Enums\Tone;
+use App\Exceptions\CrossOwnerReadRefused;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockCard;
@@ -36,6 +37,8 @@ use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Support\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -75,6 +78,11 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
     public const string LINK_TYPE = 'sequences.sequence-run';
 
     /**
+     * The most actors the runs list offers to choose from.
+     */
+    public const int FOLLOWER_LIMIT = 200;
+
+    /**
      * @var array<string, mixed>
      */
     protected $attributes = ['current_step' => 1, 'state' => 'running'];
@@ -91,6 +99,38 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
             'current_step' => 'integer',
             'state' => SequenceRunState::class,
         ];
+    }
+
+    /**
+     * The actors that follow runs, each once, for a caller that may read every owner's runs.
+     *
+     * @return list<ActorIdentity>
+     *
+     * @throws CrossOwnerReadRefused
+     */
+    public static function followers(): array
+    {
+        $runs = self::query()
+            ->acrossOwners()
+            ->whereNotNull('actor_id')
+            ->select(['actor_type', 'actor_id'])
+            ->groupBy('actor_type', 'actor_id')
+            ->readUpTo(self::FOLLOWER_LIMIT)
+            ->get();
+
+        return array_values($runs->map(fn (self $run) => $run->owningActor())->all());
+    }
+
+    /**
+     * The runs this actor follows, within a read already across owners.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function followedBy(Builder $query, ActorIdentity $actor): void
+    {
+        $query->where($query->qualifyColumn('actor_type'), $actor->type->value)
+            ->where($query->qualifyColumn('actor_id'), $actor->id);
     }
 
     /**

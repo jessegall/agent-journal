@@ -44,7 +44,7 @@ final readonly class SupervisorTarget
 
     public static function forActor(ActorIdentity $actor): self
     {
-        return self::parse($actor->type->value.':'.$actor->id);
+        return self::parse($actor->text());
     }
 
     public function isOwner(): bool

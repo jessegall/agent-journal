@@ -15,7 +15,7 @@ use Tests\Support\RefreshHookDatabase;
 
 /**
  * The Sequences page lists the stored sequences and a chosen one shows its steps and its runs; a run page opens only
- * for a run the reader may read.
+ * for a run the reader may read, and every run is one a user may read.
  */
 final class SequenceRunPageTest extends TestCase
 {
@@ -64,10 +64,15 @@ final class SequenceRunPageTest extends TestCase
         $this->actingAs($this->owner)->get('/sequences/01ARZ3NDEKTSV4RRFFQ69G5FAV')->assertNotFound();
     }
 
-    public function test_a_run_the_reader_may_not_read_is_not_found(): void
+    public function test_a_run_nobody_follows_yet_opens_from_its_sequence(): void
     {
         $run = SequenceRun::create('Release', ['Read the brief.', 'Run the tests.']);
 
-        $this->actingAs($this->owner)->get("/sequences/runs/{$run->number}")->assertNotFound();
+        $this->actingAs($this->owner)->get("/sequences/runs/{$run->number}")->assertOk();
+    }
+
+    public function test_an_unknown_run_is_not_found(): void
+    {
+        $this->actingAs($this->owner)->get('/sequences/runs/999')->assertNotFound();
     }
 }

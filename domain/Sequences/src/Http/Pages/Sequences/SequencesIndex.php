@@ -16,6 +16,7 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
+use Domain\Sequences\Http\Pages\SequencePageViews;
 use Domain\Sequences\Models\Sequence;
 use Spatie\LaravelData\Optional;
 
@@ -27,7 +28,7 @@ final readonly class SequencesIndex
 {
     private const int LIST_LIMIT = 200;
 
-    public function __construct(private DraftProducers $producers) {}
+    public function __construct(private DraftProducers $producers, private SequencePageViews $views) {}
 
     /**
      * @param  list<LayoutPartData>  $reader  the chosen sequence's reader, none for the index address
@@ -48,6 +49,7 @@ final readonly class SequencesIndex
             ListEmpty::informing('No sequences yet.', 'Sequences the agents follow appear here once one is written.'),
         )
             ->counting(count($sequences))
+            ->withViews(...$this->views->of(false))
             ->creatingWith(...$this->creations())
             ->withReader(new LayoutBackData(route('sequences.index', [], false), 'Sequences'), ...$reader)
             ->layout();

@@ -32,6 +32,11 @@ final readonly class JournalVisibility implements ActorVisibilityProvider
         throw CrossOwnerReadRefused::forActor('journal');
     }
 
+    public function readsAcrossOwners(): bool
+    {
+        return false;
+    }
+
     /**
      * @param  Builder<covariant Model>  $query
      * @param  Closure(Builder<covariant Model>): void  $narrowToOwnRows

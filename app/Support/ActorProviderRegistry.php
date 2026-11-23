@@ -158,6 +158,13 @@ final class ActorProviderRegistry implements
         Container::getInstance()->make($providerClass)->readAcrossOwners($query, $scope);
     }
 
+    public function readsAcrossOwners(): bool
+    {
+        $type = Container::getInstance()->make(CurrentActor::class)->actor()->actorType();
+
+        return Container::getInstance()->make($this->visibilityProviders->get($type->value))->readsAcrossOwners();
+    }
+
     /**
      * With nobody acting the caller's own narrowing applies, which asks its own context; a type with no provider finds
      * nothing.

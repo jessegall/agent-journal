@@ -13,4 +13,9 @@ final class SequenceRunMissing extends RuntimeException implements CommandRefusa
     {
         return new self("Sequence run {$runId} does not exist.");
     }
+
+    public static function forNumber(int $number): self
+    {
+        return new self("Sequence run {$number} does not exist, or you may not read it.");
+    }
 }

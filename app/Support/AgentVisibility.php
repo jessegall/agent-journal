@@ -32,6 +32,11 @@ final readonly class AgentVisibility implements ActorVisibilityProvider
         throw CrossOwnerReadRefused::forActor(ActorType::Agent->value);
     }
 
+    public function readsAcrossOwners(): bool
+    {
+        return false;
+    }
+
     /**
      * @param  Builder<covariant Model>  $query
      * @param  Closure(Builder<covariant Model>): void  $narrowToOwnRows

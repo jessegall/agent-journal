@@ -30,6 +30,11 @@ interface ActorVisibility
     public function readAcrossOwners(Builder $query, string $ownerScope): void;
 
     /**
+     * Whether the acting actor may read every owner's rows, so a page offers only the reads that would be allowed.
+     */
+    public function readsAcrossOwners(): bool;
+
+    /**
      * Narrows a read of ordinary content to the acting actor's own rows, by the narrowing the caller gives; an actor
      * that sees no ordinary content gets none.
      *

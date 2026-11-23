@@ -33,6 +33,11 @@ final readonly class UserVisibility implements ActorVisibilityProvider
         $query->withoutGlobalScope($scope);
     }
 
+    public function readsAcrossOwners(): bool
+    {
+        return true;
+    }
+
     /**
      * @param  Builder<covariant Model>  $query
      * @param  Closure(Builder<covariant Model>): void  $narrowToOwnRows

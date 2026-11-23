@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Spatie\LaravelData\Optional;
 
 /**
  * The new-sequence editor's address, which may carry a guided draft to start from: a name, the steps one per line,
@@ -52,8 +53,11 @@ final class NewSequenceRequest extends FormRequest
         return $this->string('doneWhen')->trim()->toString();
     }
 
-    public function draftedBy(): string
+    /**
+     * The agent that drafted the steps, when the editor opens from a guided draft.
+     */
+    public function draftedBy(): string|Optional
     {
-        return $this->string('draftedBy')->trim()->toString();
+        return $this->filled('draftedBy') ? $this->string('draftedBy')->trim()->toString() : Optional::create();
     }
 }

@@ -96,7 +96,7 @@ final readonly class CommandCall
      */
     public function actorText(): string|null
     {
-        return $this->actor === null ? null : $this->actor->type->value.':'.$this->actor->id;
+        return $this->actor === null ? null : ActorIdentity::of($this->actor)->text();
     }
 
     /**

@@ -49,6 +49,14 @@ final readonly class ActorIdentity
     }
 
     /**
+     * This actor as the text fromText reads back, such as agent:01j...
+     */
+    public function text(): string
+    {
+        return "{$this->type->value}:{$this->id}";
+    }
+
+    /**
      * This actor as the two fields of a call body that the prefix names, such as recipientType and recipientId.
      *
      * @return array<string, string|int>

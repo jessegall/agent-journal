@@ -30,6 +30,7 @@ use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Resolvers\NewSequenceResolver;
 use Domain\Sequences\Resolvers\SequenceEditorResolver;
 use Domain\Sequences\Resolvers\SequenceIndexResolver;
+use Domain\Sequences\Resolvers\SequenceRunsResolver;
 use Domain\Sequences\Resolvers\SequenceRunWindowResolver;
 use Domain\Sequences\Resolvers\SequenceWindowResolver;
 use Domain\Sequences\Support\SequenceDraftProducer;
@@ -114,6 +115,7 @@ final class SequencesDomain extends Domain implements
                 ->at('')
                 ->actions(ActionRoute::post('create', DefineSequenceController::class, 'define-sequence')),
             Page::layout('new', 'New sequence', Icon::Sequence, NewSequenceResolver::class)->at('new'),
+            Page::layout('runs', 'Runs', Icon::Activity, SequenceRunsResolver::class)->at('runs'),
             Page::layout('edit', 'Edit steps', Icon::Sequence, SequenceEditorResolver::class)->at('{sequence}/edit'),
             Page::layout('sequence', 'Sequence', Icon::Sequence, SequenceWindowResolver::class)
                 ->at('{sequence}')

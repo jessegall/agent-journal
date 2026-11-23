@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Domain\Sequences\Http\Requests;
 
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
-use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Http\Requests\Concerns\ReadsRunsListAddress;
 use Illuminate\Foundation\Http\FormRequest;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * The run a page shows, named by its number in the route; a number no run has is not found.
@@ -15,17 +14,18 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class SequenceRunRequest extends FormRequest
 {
     use ReadsRouteNumber;
+    use ReadsRunsListAddress;
 
     /**
      * @return array<string, list<string>>
      */
     public function rules(): array
     {
-        return [];
+        return ['actor' => ['nullable', 'string'], 'page' => ['nullable', 'integer', 'min:1']];
     }
 
-    public function runId(): string
+    public function runNumber(): int
     {
-        return SequenceRun::idOfNumber($this->routeNumber('run')) ?? throw new NotFoundHttpException();
+        return $this->routeNumber('run');
     }
 }

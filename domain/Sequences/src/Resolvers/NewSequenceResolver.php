@@ -9,6 +9,7 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use Domain\Sequences\Data\SequenceEditorPartData;
+use Domain\Sequences\Data\SequenceStepData;
 use Domain\Sequences\Http\Pages\Sequences\SequencesIndex;
 use Domain\Sequences\Http\Requests\NewSequenceRequest;
 use Illuminate\Support\Str;
@@ -22,24 +23,19 @@ final readonly class NewSequenceResolver implements PageResolver
 
     public function read(): DeclaredLayoutData
     {
-        $editor = [
+        $editor = SequenceEditorPartData::from([
             'name' => $this->request->name(),
-            'steps' => array_map(fn (string $title) => [
+            'steps' => array_map(fn (string $title) => SequenceStepData::from([
                 'id' => strtolower((string) Str::ulid()),
                 'title' => $title,
                 'runsWhen' => 'The step before it is done',
                 'doneWhen' => $this->request->doneWhen(),
-            ], $this->request->stepTitles()),
+            ]), $this->request->stepTitles()),
             'saveAddress' => route('sequences.define-sequence', [], false),
             'method' => 'POST',
             'cancelAddress' => route('sequences.index', [], false),
-        ];
-
-        if ($this->request->draftedBy() !== '') {
-            $editor['draftedBy'] = $this->request->draftedBy();
-        }
-
-        $editor = SequenceEditorPartData::from($editor);
+            'draftedBy' => $this->request->draftedBy(),
+        ]);
 
         return $this->index->of(
             '',
