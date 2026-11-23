@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/kit/Input.vue';
 import Textarea from '@/components/kit/Textarea.vue';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
@@ -103,12 +104,12 @@ function checkTask(): void {
             <p class="text-body text-text-2">{{ effect }}</p>
             <template v-if="change === 'add'">
                 <form class="flex gap-2" role="search" @submit.prevent="find">
-                    <input
+                    <Input
                         v-model="search"
                         type="search"
                         aria-label="Find a task"
                         placeholder="Find a task"
-                        class="h-[30px] flex-1 rounded-control border border-border-2 bg-bg-2 px-2.5 text-body text-text"
+                        class="flex-1"
                     />
                     <Button type="submit" variant="bordered" size="small">Find</Button>
                 </form>

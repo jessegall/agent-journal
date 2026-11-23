@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/kit/Input.vue';
 import { useForm } from '@inertiajs/vue3';
 import type { RecoverDraftPartData } from '@generated/types/documents';
 import Button from '@kit/Button';
@@ -32,9 +33,9 @@ function recover(): void {
             {{ held.savedAt }}. Recovering keeps this text:
         </p>
         <pre class="input font-mono whitespace-pre-wrap">{{ held.body }}</pre>
-        <input
+        <Input
             v-model="form.reason"
-            class="input"
+           
             required
             maxlength="2000"
             placeholder="Why you close this draft"

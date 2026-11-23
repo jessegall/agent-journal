@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/kit/Input.vue';
 import { router } from "@inertiajs/vue3";
 import { ref } from "vue";
 import Button from "@kit/Button";
@@ -27,7 +28,7 @@ function create(): void {
 
 <template>
   <form class="flex items-center gap-2" @submit.prevent="create">
-    <input
+    <Input
       v-model="title"
       name="title"
       aria-label="New chat title"

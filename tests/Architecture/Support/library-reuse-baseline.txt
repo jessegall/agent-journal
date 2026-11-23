@@ -8,11 +8,7 @@ domain/Chat/resources/js/MessageList.vue:button
 domain/Chat/resources/js/MessageReactions.vue:button
 domain/Chat/resources/js/SessionForm.vue:input
 domain/Chat/resources/js/SessionForm.vue:select
-domain/Chat/resources/js/chats/CreateChatForm.vue:input
 domain/Chat/resources/js/dock/parts/ButtonPart.vue:button
-domain/Documents/resources/js/DraftEditor.vue:input
-domain/Documents/resources/js/LinksPanel.vue:input
-domain/Documents/resources/js/RecoverForm.vue:input
 domain/Plans/resources/js/PlanWorkDialog.vue:input
 domain/Sequences/resources/js/SequenceEditor.vue:button
 domain/Tasks/resources/js/TaskGraphCanvas.vue:button
@@ -42,7 +38,6 @@ resources/js/connections/InstallLinePanel.vue:select
 resources/js/framework/DockOfferPicker.vue:input
 resources/js/pages/Login.vue:button
 resources/js/pages/Login.vue:input
-resources/js/processes/ReviewRequestForm.vue:input
 resources/js/sharing/GatewayConfigureForm.vue:input
 resources/js/sharing/GatewayConfigureForm.vue:select
 resources/js/sharing/SharePreview.vue:input

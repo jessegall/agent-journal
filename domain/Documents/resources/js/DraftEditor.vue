@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/kit/Input.vue';
 import Textarea from '@/components/kit/Textarea.vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -140,15 +141,15 @@ onBeforeUnmount(() => {
                 here is kept: copy it, then refresh to see the newer one.
             </p>
         </template>
-        <input
+        <Input
             v-model="form.title"
-            class="input"
+           
             aria-label="Title"
             placeholder="Title"
         />
-        <input
+        <Input
             v-model="form.abstract"
-            class="input"
+           
             aria-label="Abstract"
             placeholder="One line saying what it is"
         />

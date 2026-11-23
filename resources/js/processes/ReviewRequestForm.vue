@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/kit/Input.vue';
 import Textarea from '@/components/kit/Textarea.vue';
 import Button from '@/components/kit/Button.vue';
 import type {
@@ -83,11 +84,11 @@ function reject(): void {
         <template v-if="isCheck">
             <label class="flex flex-col">
                 <span>Checked reader revision</span>
-                <input v-model="readerRevision" type="text" />
+                <Input v-model="readerRevision" />
             </label>
             <label class="flex flex-col">
                 <span>Reader proof</span>
-                <input v-model="proof" type="text" />
+                <Input v-model="proof" />
             </label>
         </template>
         <label class="flex flex-col">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/kit/Input.vue';
 import { sendPageAction } from '@kit/pageActions';
 import { useForm } from '@inertiajs/vue3';
 import type { RecordCard } from '@kit/CoreTypes';
@@ -41,9 +42,9 @@ function remove(link: RecordCard): void {
             </div>
         </template>
         <form class="flex gap-2" @submit.prevent="add">
-            <input
+            <Input
                 v-model="form.target"
-                class="input flex-1"
+                class="flex-1"
                 maxlength="64"
                 placeholder="Link to, such as task 7 or plan 3"
             />

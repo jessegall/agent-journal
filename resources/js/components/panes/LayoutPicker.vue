@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/kit/Input.vue';
 import { useCloseOutside } from '@/composables/useCloseOutside';
 import { useMenuKeys } from '@/composables/useMenuKeys';
 import { router } from '@inertiajs/vue3';
@@ -242,7 +243,7 @@ useCloseOutside(panel, () => emit('done'));
                     </template>
                 </button>
                 <template v-if="renaming?.id === layout.id">
-                    <input
+                    <Input
                         v-model="renaming.name"
                         aria-label="Layout name"
                         maxlength="80"
@@ -301,7 +302,7 @@ useCloseOutside(panel, () => emit('done'));
             class="mt-1.5 flex items-center gap-1.5 border-t border-border px-1 pt-2"
         >
             <template v-if="newName !== null">
-                <input
+                <Input
                     v-model="newName"
                     aria-label="Name of the new layout"
                     placeholder="Name of the layout"

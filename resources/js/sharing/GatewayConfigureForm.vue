@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/kit/Input.vue';
 import type { GatewayConfigurePartData } from '@generated/types/sharing';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
@@ -53,15 +54,15 @@ function addSecret(): void {
         </label>
         <label class="flex flex-col"
             ><span>Program version</span
-            ><input v-model="form.executableVersion" type="text"
+            ><Input v-model="form.executableVersion"
         /></label>
         <label class="flex flex-col"
             ><span>Provider host</span
-            ><input v-model="form.providerHost" type="text"
+            ><Input v-model="form.providerHost"
         /></label>
         <label class="flex flex-col"
             ><span>Fixed public address</span
-            ><input v-model="form.publicOrigin" type="url"
+            ><Input v-model="form.publicOrigin" type="url"
         /></label>
         <label class="flex flex-col"
             ><span>Listener port</span
@@ -71,12 +72,12 @@ function addSecret(): void {
             <legend>Secrets</legend>
             <template v-for="(secret, index) in form.secrets" :key="index">
                 <div class="flex gap-2">
-                    <input
+                    <Input
                         v-model="secret.name"
-                        type="text"
+                       
                         placeholder="Name"
                     />
-                    <input
+                    <Input
                         v-model="secret.value"
                         type="password"
                         autocomplete="new-password"
