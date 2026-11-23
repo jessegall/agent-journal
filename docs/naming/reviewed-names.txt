@@ -2986,6 +2986,7 @@ class	DocumentDockCard
 class	DocumentDockResolver
 class	DocumentDocking
 class	DocumentDraft
+class	DocumentDraftProducer
 class	DocumentDraftSaved
 class	DocumentFilters
 class	DocumentLinkRecords
@@ -3030,6 +3031,8 @@ class	DomainSwitches
 class	DomainTickableStateType
 class	DomainTypeWriter
 class	DomainUi
+class	DraftAnswerMissing
+class	DraftAnswers
 class	DraftAnswersRequest
 class	DraftClosed
 class	DraftClosing
@@ -4123,6 +4126,7 @@ class	NavigationUncertainty
 class	NestedCommandFailureIgnored
 class	NetworkRules
 class	NewMessage
+class	NewSequenceRequest
 class	NewSequenceResolver
 class	NextAction
 class	NextStep
@@ -4434,6 +4438,7 @@ class	PlanCommandHandler
 class	PlanDetailRecords
 class	PlanDetails
 class	PlanDocking
+class	PlanDraftProducer
 class	PlanEdited
 class	PlanEndRequest
 class	PlanFilters
@@ -5153,6 +5158,7 @@ class	RegisterAnsweringState
 class	RegisterAssignables
 class	RegisterAwaitingSkillsState
 class	RegisterCommands
+class	RegisterDraftProducers
 class	RegisterIncomingWork
 class	RegisterLinkRecords
 class	RegisterPendingStart
@@ -5862,6 +5868,7 @@ class	SequenceChanged
 class	SequenceChangedMeanwhile
 class	SequenceCommandHandler
 class	SequenceDefined
+class	SequenceDraftProducer
 class	SequenceEditorPartData
 class	SequenceEditorResolver
 class	SequenceEnded
@@ -6727,6 +6734,7 @@ class	TaskDetailRecords
 class	TaskDetails
 class	TaskDetailsFactory
 class	TaskDocking
+class	TaskDraftProducer
 class	TaskEdited
 class	TaskExecution
 class	TaskExecutionData
@@ -7406,6 +7414,7 @@ constant	Document::TITLE_CHARACTER_LIMIT
 constant	DocumentClose::LINK_TYPE
 constant	DocumentDockResolver::SUGGESTIONS_SHOWN
 constant	DocumentDraft::LINK_TYPE
+constant	DocumentDraftProducer::AGENT
 constant	DocumentPages::KEY
 constant	DocumentPages::REVISIONS
 constant	DocumentPages::TOOL
@@ -7667,6 +7676,7 @@ constant	NavigationRoundReportData::STEP_LIMIT
 constant	NavigationUncertainty::FINGERPRINT
 constant	NavigationUncertainty::MOST_ROWS
 constant	NavigationUncertainty::MOST_ROW_CHARACTERS
+constant	NewSequenceRequest::STEPS_CHARACTER_LIMIT
 constant	NgrokGateway::KEY
 constant	NgrokGateway::VERSION_SECONDS
 constant	Not::TYPE
@@ -7727,6 +7737,7 @@ constant	PlanBuilder::BUILTINS
 constant	PlanBuilder::SHELLS
 constant	PlanCascadeTool::ROOT_TYPES
 constant	PlanDetailsResolver::TASKS_PER_READ
+constant	PlanDraftProducer::AGENT
 constant	PlanFilters::PAGE_SIZE
 constant	PlanGraphChanges::KEPT_SECONDS
 constant	PlanOutline::PHASES_PER_PAGE
@@ -7988,6 +7999,7 @@ constant	SendDriverRequestAgainHandler::KEY_PREFIX
 constant	SentMessageAnswer::REQUEST_KEY
 constant	SentMessageAnswer::SENT_MESSAGE
 constant	SeparateTransactionListeners::DEFERRING_INTERFACES
+constant	SequenceDraftProducer::AGENT
 constant	SequenceRun::LINK_TYPE
 constant	SequenceWindowResolver::RUN_LIMIT
 constant	SequencesIndex::LIST_LIMIT
@@ -8175,6 +8187,7 @@ constant	TaskBriefPassage::CONTEXT_CHARACTERS
 constant	TaskBriefPassage::FIELD
 constant	TaskBriefPassage::ID_PATTERN
 constant	TaskCheck::UPDATED_AT
+constant	TaskDraftProducer::AGENT
 constant	TaskHistoryEntry::UPDATED_AT
 constant	TaskHistoryRecords::LARGEST_PAGE
 constant	TaskLogEntry::UPDATED_AT
@@ -8761,6 +8774,7 @@ interface	DocumentResolver
 interface	DomainAvailability
 interface	DomainBootstrapper
 interface	DraftProducer
+interface	DraftProducerProvider
 interface	DraftProducers
 interface	DraftReader
 interface	DraftResolver
@@ -13703,6 +13717,8 @@ method	DocumentDraft::isEditedBy()
 method	DocumentDraft::reference()
 method	DocumentDraft::saveText()
 method	DocumentDraft::view()
+method	DocumentDraftProducer::draft()
+method	DocumentDraftProducer::questions()
 method	DocumentDraftSaved::__construct()
 method	DocumentFilters::__construct()
 method	DocumentFilters::pageSize()
@@ -13782,6 +13798,7 @@ method	DocumentWindowResolver::__construct()
 method	DocumentWindowResolver::read()
 method	DocumentsDomain::commands()
 method	DocumentsDomain::description()
+method	DocumentsDomain::draftProducers()
 method	DocumentsDomain::exports()
 method	DocumentsDomain::linkRecords()
 method	DocumentsDomain::mcpResources()
@@ -13800,6 +13817,7 @@ method	DocumentsDomain::shareRecords()
 method	DocumentsIndex::__construct()
 method	DocumentsIndex::creation()
 method	DocumentsIndex::emptyFor()
+method	DocumentsIndex::guidedNounOf()
 method	DocumentsIndex::nextOf()
 method	DocumentsIndex::of()
 method	DocumentsIndex::rowsOf()
@@ -13954,6 +13972,13 @@ method	DomainUi::owns()
 method	DomainUi::presentationFile()
 method	DomainUi::presentationName()
 method	DomainUi::uri()
+method	DraftAnswerMissing::forQuestion()
+method	DraftAnswerMissing::refusalCode()
+method	DraftAnswerMissing::status()
+method	DraftAnswers::__construct()
+method	DraftAnswers::cutTo()
+method	DraftAnswers::of()
+method	DraftAnswers::to()
 method	DraftAnswersRequest::answers()
 method	DraftAnswersRequest::noun()
 method	DraftAnswersRequest::rules()
@@ -13997,6 +14022,7 @@ method	DraftPageRequest::title()
 method	DraftProducer::draft()
 method	DraftProducer::questions()
 method	DraftProducerMissing::forNoun()
+method	DraftProducerProvider::draftProducers()
 method	DraftProducerRegistry::__construct()
 method	DraftProducerRegistry::offersGuided()
 method	DraftProducerRegistry::producerFor()
@@ -17637,6 +17663,11 @@ method	NestedCommandFailureIgnored::for()
 method	NetworkRules::all()
 method	NetworkRules::curl()
 method	NewMessage::__construct()
+method	NewSequenceRequest::doneWhen()
+method	NewSequenceRequest::draftedBy()
+method	NewSequenceRequest::name()
+method	NewSequenceRequest::rules()
+method	NewSequenceRequest::stepTitles()
 method	NewSequenceResolver::__construct()
 method	NewSequenceResolver::read()
 method	NextAction::__construct()
@@ -18602,6 +18633,8 @@ method	PlanDocking::__construct()
 method	PlanDocking::cardsFor()
 method	PlanDocking::docked()
 method	PlanDocking::requireReadable()
+method	PlanDraftProducer::draft()
+method	PlanDraftProducer::questions()
 method	PlanEdited::__construct()
 method	PlanEndRequest::expectedRevision()
 method	PlanEndRequest::expectedState()
@@ -18635,6 +18668,7 @@ method	PlanGraphEditing::offered()
 method	PlanGraphEditing::pairsOnlyIn()
 method	PlanGraphEditing::suggest()
 method	PlanGraphEditing::undo()
+method	PlanGraphEditing::waitKeyOf()
 method	PlanGraphRequest::plan()
 method	PlanGraphRequest::rules()
 method	PlanGraphUndo::__construct()
@@ -18811,6 +18845,7 @@ method	PlansDomain::assignmentPools()
 method	PlansDomain::autoAssigners()
 method	PlansDomain::commands()
 method	PlansDomain::description()
+method	PlansDomain::draftProducers()
 method	PlansDomain::exports()
 method	PlansDomain::linkRecords()
 method	PlansDomain::mcpResources()
@@ -20928,6 +20963,8 @@ method	RegisterAwaitingSkillsState::handle()
 method	RegisterCommands::__construct()
 method	RegisterCommands::handle()
 method	RegisterCommands::middlewareFor()
+method	RegisterDraftProducers::__construct()
+method	RegisterDraftProducers::__invoke()
 method	RegisterIncomingWork::__construct()
 method	RegisterIncomingWork::__invoke()
 method	RegisterLinkRecords::__construct()
@@ -22857,6 +22894,8 @@ method	Sequence::stored()
 method	SequenceChanged::__construct()
 method	SequenceChangedMeanwhile::since()
 method	SequenceDefined::__construct()
+method	SequenceDraftProducer::draft()
+method	SequenceDraftProducer::questions()
 method	SequenceEditorPartData::__construct()
 method	SequenceEditorResolver::__construct()
 method	SequenceEditorResolver::read()
@@ -22918,6 +22957,7 @@ method	SequenceWork::currentInstruction()
 method	SequenceWork::needsWork()
 method	SequencesDomain::commands()
 method	SequencesDomain::description()
+method	SequencesDomain::draftProducers()
 method	SequencesDomain::exports()
 method	SequencesDomain::nativeParts()
 method	SequencesDomain::navigation()
@@ -22926,6 +22966,8 @@ method	SequencesDomain::policies()
 method	SequencesDomain::requires()
 method	SequencesDomain::skills()
 method	SequencesDomain::states()
+method	SequencesIndex::__construct()
+method	SequencesIndex::creations()
 method	SequencesIndex::of()
 method	SequencesServiceProvider::boot()
 method	SequencesShow::__construct()
@@ -25821,6 +25863,8 @@ method	TaskDocking::__construct()
 method	TaskDocking::cardsFor()
 method	TaskDocking::docked()
 method	TaskDocking::requireReadable()
+method	TaskDraftProducer::draft()
+method	TaskDraftProducer::questions()
 method	TaskEdited::__construct()
 method	TaskExecution::__construct()
 method	TaskExecutionData::__construct()
@@ -26141,6 +26185,7 @@ method	TasksDomain::assignmentPools()
 method	TasksDomain::autoAssigners()
 method	TasksDomain::commands()
 method	TasksDomain::description()
+method	TasksDomain::draftProducers()
 method	TasksDomain::exports()
 method	TasksDomain::internalAssignables()
 method	TasksDomain::linkRecords()
@@ -33287,6 +33332,7 @@ property	DocumentWindowResolver::$records
 property	DocumentWindowResolver::$request
 property	DocumentWindowResolver::$shares
 property	DocumentsIndex::$menus
+property	DocumentsIndex::$producers
 property	DocumentsListTool::$publications
 property	DocumentsShow::$menus
 property	DomainEntry::$domain
@@ -33324,6 +33370,7 @@ property	DomainUi::$scriptFolder
 property	DomainUi::$sections
 property	DomainUi::$sidebarGroups
 property	DomainUi::$types
+property	DraftAnswers::$answers
 property	DraftClosed::$published
 property	DraftClosed::$revisionNumber
 property	DraftClosing::$editors
@@ -35413,6 +35460,7 @@ property	NewMessage::$body
 property	NewMessage::$destinationInboxId
 property	NewMessage::$sourceInboxId
 property	NewSequenceResolver::$index
+property	NewSequenceResolver::$request
 property	NextAction::$arguments
 property	NextAction::$tool
 property	NextStep::$command
@@ -37559,6 +37607,7 @@ property	RegisterAnsweringState::$factory
 property	RegisterAssignables::$assignments
 property	RegisterAwaitingSkillsState::$factory
 property	RegisterCommands::$propertyRules
+property	RegisterDraftProducers::$producers
 property	RegisterIncomingWork::$incoming
 property	RegisterLinkRecords::$providers
 property	RegisterPendingStart::$config
@@ -39056,6 +39105,7 @@ property	SequenceWork::$runNumber
 property	SequenceWork::$state
 property	SequenceWork::$stepInstruction
 property	SequenceWork::$stepNumber
+property	SequencesIndex::$producers
 property	SequencesShow::$index
 property	ServerOrigin::$configured
 property	ServerOrigin::$runsLocally
@@ -42261,6 +42311,7 @@ variable	$grouped
 variable	$groups
 variable	$grown
 variable	$guard
+variable	$guided
 variable	$handle
 variable	$handler
 variable	$handlerEntries
@@ -42725,6 +42776,7 @@ variable	$normalizedDefault
 variable	$notYetObservable
 variable	$notice
 variable	$notices
+variable	$noun
 variable	$now
 variable	$npm
 variable	$npmOptions

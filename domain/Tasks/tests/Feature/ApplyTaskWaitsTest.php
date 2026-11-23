@@ -59,6 +59,7 @@ final class ApplyTaskWaitsTest extends TestCase
             fn (int $place) => Task::factory()->create(['title' => "Step {$place}"]),
             [1, 2, 3, 4],
         );
+
         $this->startUserRequestAs($this->owner->id);
         $this->runOnBus(new AddTaskWaitCommand($this->tasks[1]->id, $this->tasks[0]->id));
         $this->runOnBus(new AddTaskWaitCommand($this->tasks[2]->id, $this->tasks[0]->id));

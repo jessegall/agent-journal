@@ -9,6 +9,7 @@ use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\DraftProducerProvider;
 use App\Contracts\Navigation\MenuProvider;
 use App\Contracts\Navigation\NavigationProvider;
 use App\Contracts\Navigation\PageProvider;
@@ -106,6 +107,7 @@ use Domain\Documents\Resolvers\DocumentWindowResolver;
 use Domain\Documents\Resolvers\LibraryWindowResolver;
 use Domain\Documents\Resolvers\ReportWindowResolver;
 use Domain\Documents\Resolvers\RevisionWindowResolver;
+use Domain\Documents\Support\DocumentDraftProducer;
 use Domain\Documents\Support\DocumentReferenceRecognizer;
 use Domain\Documents\Support\DocumentSearchAccess;
 use Domain\Documents\Support\DocumentSearchProvider;
@@ -125,6 +127,7 @@ use Domain\Documents\Values\RetainedDraftView;
 
 final class DocumentsDomain extends Domain implements
     CommandProvider,
+    DraftProducerProvider,
     LinkRecordProvider,
     McpToolProvider,
     MenuProvider,
@@ -147,6 +150,11 @@ final class DocumentsDomain extends Domain implements
     public function description(): string
     {
         return 'Documents that keep every revision of their text, and reports filed once.';
+    }
+
+    public function draftProducers(): array
+    {
+        return ['document' => DocumentDraftProducer::class];
     }
 
     public function requires(): array

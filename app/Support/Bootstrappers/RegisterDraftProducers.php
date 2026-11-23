@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support\Bootstrappers;
+
+use App\Contracts\Domains\DomainBootstrapper;
+use App\Contracts\Navigation\DraftProducerProvider;
+use App\Support\DomainEntry;
+use App\Support\DraftProducerRegistry;
+
+/**
+ * Registers the draft producers a domain declares, so its nouns offer guided creation; a noun claimed twice is refused.
+ */
+final readonly class RegisterDraftProducers implements DomainBootstrapper
+{
+    public function __construct(private DraftProducerRegistry $producers) {}
+
+    public function __invoke(DomainEntry $domain): void
+    {
+        if (! $domain->domain instanceof DraftProducerProvider) {
+            return;
+        }
+
+        foreach ($domain->domain->draftProducers() as $noun => $class) {
+            $this->producers->register($noun, $class);
+        }
+    }
+}

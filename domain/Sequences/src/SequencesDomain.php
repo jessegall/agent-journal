@@ -9,6 +9,7 @@ use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\DraftProducerProvider;
 use App\Contracts\Navigation\NavigationProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Records\StateProvider;
@@ -31,12 +32,14 @@ use Domain\Sequences\Resolvers\SequenceEditorResolver;
 use Domain\Sequences\Resolvers\SequenceIndexResolver;
 use Domain\Sequences\Resolvers\SequenceRunWindowResolver;
 use Domain\Sequences\Resolvers\SequenceWindowResolver;
+use Domain\Sequences\Support\SequenceDraftProducer;
 use Domain\Sequences\Support\Skills\SequencesSkill;
 use Domain\Sequences\Support\States\Support\FollowingSequenceStateFactory;
 use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;
 
 final class SequencesDomain extends Domain implements
     CommandProvider,
+    DraftProducerProvider,
     NativePartProvider,
     NavigationProvider,
     PageProvider,
@@ -49,6 +52,11 @@ final class SequencesDomain extends Domain implements
     public function description(): string
     {
         return 'Steps an agent follows one at a time.';
+    }
+
+    public function draftProducers(): array
+    {
+        return ['sequence' => SequenceDraftProducer::class];
     }
 
     public function policies(): array

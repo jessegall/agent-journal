@@ -352,6 +352,8 @@ use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Hosts\ServedEnvironment;
 use App\Contracts\Navigation\DeclaredPages;
+use App\Contracts\Navigation\DraftProducer;
+use App\Contracts\Navigation\DraftProducerProvider;
 use App\Contracts\Navigation\DraftProducers;
 use App\Contracts\Navigation\GroupDeclaration;
 use App\Contracts\Navigation\MenuProvider;
@@ -477,6 +479,8 @@ use App\Data\DeliveryView;
 use App\Data\DockablePublicationData;
 use App\Data\DockDestinationOptionData;
 use App\Data\DockOfferData;
+use App\Data\DraftedRecordData;
+use App\Data\DraftQuestionData;
 use App\Data\DriverRequestStatus;
 use App\Data\InboxCounts;
 use App\Data\InboxView;
@@ -836,6 +840,7 @@ use App\Exceptions\DockCardInvalid;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\DomainDisabled;
+use App\Exceptions\DraftAnswerMissing;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverConflict;
 use App\Exceptions\DriverFamilyUnknown;
@@ -1123,6 +1128,7 @@ use App\Support\Decisions\StateReferences;
 use App\Support\DeskSeatEvidence;
 use App\Support\DisabledSettingsGroup;
 use App\Support\Domain;
+use App\Support\DraftAnswers;
 use App\Support\DriverConversationSummary;
 use App\Support\EnrolledHost;
 use App\Support\ExecutionReceipt;
@@ -1581,6 +1587,8 @@ final class CoreApi
                 StateProvider::class,
                 OwnerCommands::class,
                 DraftProducers::class,
+                DraftProducer::class,
+                DraftProducerProvider::class,
                 ChatDepartures::class,
                 ChatTimeline::class,
                 ChatParticipationEnding::class,
@@ -1844,6 +1852,9 @@ final class CoreApi
                 NarrowView::class,
                 LayoutFactPieceData::class,
                 ListPage::class,
+                DraftQuestionData::class,
+                DraftedRecordData::class,
+                DraftAnswers::class,
                 DetailPage::class,
                 ListEmpty::class,
                 ListPaging::class,
@@ -2738,6 +2749,7 @@ final class CoreApi
                 ResetSettingGroupCommand::class,
             )
             ->exceptions(
+                DraftAnswerMissing::class,
                 WorkBudgetSpent::class,
                 DriverFamilyUnknown::class,
                 DriverRequestRefused::class,

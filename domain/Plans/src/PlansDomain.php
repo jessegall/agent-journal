@@ -13,6 +13,7 @@ use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\DraftProducerProvider;
 use App\Contracts\Navigation\NavigationProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Navigation\SectionProvider;
@@ -83,6 +84,7 @@ use Domain\Plans\Support\Mcp\HeldPlansOverview;
 use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PhaseRecords;
 use Domain\Plans\Support\PlanAssignmentProvider;
+use Domain\Plans\Support\PlanDraftProducer;
 use Domain\Plans\Support\PlanRecords;
 use Domain\Plans\Support\PlanReferenceRecognizer;
 use Domain\Plans\Support\PlanSearchAccess;
@@ -110,6 +112,7 @@ final class PlansDomain extends Domain implements
     AssignableContributor,
     AutoAssignmentProvider,
     CommandProvider,
+    DraftProducerProvider,
     LinkRecordProvider,
     McpToolProvider,
     NativePartProvider,
@@ -128,6 +131,11 @@ final class PlansDomain extends Domain implements
     public function description(): string
     {
         return 'A goal with phases and the tasks in each phase.';
+    }
+
+    public function draftProducers(): array
+    {
+        return ['plan' => PlanDraftProducer::class];
     }
 
     /**

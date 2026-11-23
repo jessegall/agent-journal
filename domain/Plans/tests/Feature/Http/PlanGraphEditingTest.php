@@ -49,10 +49,12 @@ final class PlanGraphEditingTest extends TestCase
 
         $structure = $this->app->make(PlanStructure::class);
         $structure->addTasks($structure->addPhase($this->plan, 'Design'), [$this->tasks['design']->id]);
+
         $structure->addTasks(
             $structure->addPhase($this->plan, 'Build'),
             [$this->tasks['build']->id, $this->tasks['ship']->id],
         );
+
         $this->wait('ship', 'design');
         $this->wait('ship', 'build');
         $this->wait('build', 'design');

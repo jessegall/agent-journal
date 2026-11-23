@@ -13,7 +13,7 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class SaveSequenceRequest extends FormRequest
 {
-    private const int TEXT_CHARACTER_LIMIT = 255;
+    public const int TEXT_CHARACTER_LIMIT = 255;
 
     /**
      * @return array<string, list<string>>

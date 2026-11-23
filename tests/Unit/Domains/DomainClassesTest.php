@@ -84,6 +84,10 @@ final class DomainClassesTest extends TestCase
             'TaskWaits',
             'TaskWaitLink',
             'TaskWaitChange',
+            'ApplyTaskWaitsCommand',
+            'TaskWaitPair',
+            'TaskGraphChanged',
+            'TaskWaitRefused',
         ]];
 
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class], [

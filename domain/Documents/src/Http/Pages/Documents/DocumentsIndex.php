@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Documents;
 
+use App\Contracts\Navigation\DraftProducers;
 use App\Contracts\Navigation\RecordMenus;
 use App\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
@@ -23,6 +24,7 @@ use Domain\Documents\Data\PublicationList;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\LibraryTypeFilter;
+use Spatie\LaravelData\Optional;
 
 /**
  * The library on the shared list recipe: who sees its records, the search over titles, abstracts and text, the type and
@@ -32,7 +34,7 @@ use Domain\Documents\Enums\LibraryTypeFilter;
  */
 final readonly class DocumentsIndex
 {
-    public function __construct(private RecordMenus $menus) {}
+    public function __construct(private RecordMenus $menus, private DraftProducers $producers) {}
 
     public function of(
         DocumentFilters $filters,
@@ -104,15 +106,19 @@ final readonly class DocumentsIndex
 
     /**
      * A dialog that files a document or a report from its Title, One line about it and Text, sent to the registered
-     * create action of its kind.
+     * create action of its type.
      */
-    private function creation(string $kind, string $label, string $key = ''): LayoutPartData
+    private function creation(string $type, string $label, string $key = ''): LayoutPartData
     {
-        $route = $kind === 'doc' ? 'documents.create-document' : 'documents.create-report';
+        $route = $type === 'doc' ? 'documents.create-document' : 'documents.create-report';
 
         return LayoutPartData::dialog(
-            $key === '' ? "create-{$kind}" : $key,
-            new LayoutDialogData($label, $kind === 'doc' ? 'Document filed' : 'Report filed'),
+            $key === '' ? "create-{$type}" : $key,
+            new LayoutDialogData(
+                $label,
+                $type === 'doc' ? 'Document filed' : 'Report filed',
+                guidedNoun: $this->guidedNounOf($type),
+            ),
             LayoutPartData::action('open', $label, LayoutActionData::changing([]), 'bordered'),
             new LayoutFormData(ActionMethod::Post, route($route, [], false)),
             [
@@ -123,11 +129,19 @@ final readonly class DocumentsIndex
             [
                 LayoutPartData::action(
                     'send',
-                    $kind === 'doc' ? 'File document' : 'File report',
+                    $type === 'doc' ? 'File document' : 'File report',
                     LayoutActionData::submitting(),
                     'primary',
                 ),
             ],
         );
+    }
+
+    /**
+     * Guided entry for a document when a draft producer is registered for documents; a report is never drafted.
+     */
+    private function guidedNounOf(string $type): string|Optional
+    {
+        return $type === 'doc' && $this->producers->offersGuided('document') ? 'document' : Optional::create();
     }
 }

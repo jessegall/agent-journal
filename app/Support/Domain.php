@@ -11,6 +11,7 @@ use App\Contracts\Assignments\AssigneeContributor;
 use App\Contracts\Assignments\AutoAssignmentProvider;
 use App\Contracts\Assignments\InternalAssignableContributor;
 use App\Contracts\Domains\DomainBootstrapper;
+use App\Contracts\Navigation\DraftProducerProvider;
 use App\Contracts\Records\StateProvider;
 use App\Contracts\Scripts\ScriptKeywordProvider;
 use App\Contracts\Scripts\ScriptObjectProvider;
@@ -18,6 +19,7 @@ use App\Exceptions\CapabilityWithoutTrait;
 use App\Mcp\Support\McpToolDirectory;
 use App\Mcp\Tools\JournalTool;
 use App\Support\Bootstrappers\LoadMigrations;
+use App\Support\Bootstrappers\RegisterDraftProducers;
 use App\Support\Bootstrappers\RegisterScriptDefinitions;
 
 /**
@@ -129,10 +131,13 @@ abstract class Domain
             ? [RegisterScriptDefinitions::class]
             : [];
 
+        $drafts = $this instanceof DraftProducerProvider ? [RegisterDraftProducers::class] : [];
+
         return array_values(array_unique([
             LoadMigrations::class,
             ...$fromTraits,
             ...$scripts,
+            ...$drafts,
             ...$this->bootstrappers(),
         ]));
     }

@@ -29,6 +29,7 @@ watch(
             form[name] = value;
         }
     },
+    { immediate: true },
 );
 provideLayoutForm(form);
 

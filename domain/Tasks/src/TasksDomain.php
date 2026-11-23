@@ -14,6 +14,7 @@ use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\DraftProducerProvider;
 use App\Contracts\Navigation\NavigationProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Records\LinkRecordProvider;
@@ -92,6 +93,7 @@ use Domain\Tasks\Support\Mcp\HeldTasksOverview;
 use Domain\Tasks\Support\Skills\TasksSkill;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\TaskDraftProducer;
 use Domain\Tasks\Support\TaskLogSearchAccess;
 use Domain\Tasks\Support\TaskLogSearchProvider;
 use Domain\Tasks\Support\TaskReferenceRecognizer;
@@ -119,6 +121,7 @@ final class TasksDomain extends Domain implements
     AssignableContributor,
     AutoAssignmentProvider,
     CommandProvider,
+    DraftProducerProvider,
     InternalAssignableContributor,
     LinkRecordProvider,
     McpToolProvider,
@@ -136,6 +139,11 @@ final class TasksDomain extends Domain implements
     public function description(): string
     {
         return 'A task, its state, its log and what it waits on.';
+    }
+
+    public function draftProducers(): array
+    {
+        return ['task' => TaskDraftProducer::class];
     }
 
     /**

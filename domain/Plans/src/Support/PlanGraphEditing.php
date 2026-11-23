@@ -65,6 +65,7 @@ final readonly class PlanGraphEditing
         $this->commands->run(
             new ApplyTaskWaitsCommand($plan->taskIds(), $undo->version, $undo->added, $undo->removed),
         );
+
         $this->changes->forgetUndo($plan->id, $this->actorId());
     }
 
@@ -109,15 +110,15 @@ final readonly class PlanGraphEditing
      */
     private function pairsOnlyIn(array $edges, array $others): array
     {
-        $present = array_flip(array_map(fn (TaskGraphEdge $edge) => self::keyOf($edge), $others));
+        $present = array_flip(array_map(fn (TaskGraphEdge $edge) => self::waitKeyOf($edge), $others));
 
         return array_values(array_map(
             fn (TaskGraphEdge $edge) => new TaskWaitPair($edge->dependentId, $edge->prerequisiteId),
-            array_filter($edges, fn (TaskGraphEdge $edge) => ! isset($present[self::keyOf($edge)])),
+            array_filter($edges, fn (TaskGraphEdge $edge) => ! isset($present[self::waitKeyOf($edge)])),
         ));
     }
 
-    private static function keyOf(TaskGraphEdge $edge): string
+    private static function waitKeyOf(TaskGraphEdge $edge): string
     {
         return "{$edge->prerequisiteId}>{$edge->dependentId}";
     }

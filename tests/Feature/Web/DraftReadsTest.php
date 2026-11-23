@@ -8,7 +8,12 @@ use App\Http\Responses\PageReadProps;
 use App\Support\DraftProducerRegistry;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Documents\Support\DocumentDraftProducer;
+use Domain\Plans\Support\PlanDraftProducer;
+use Domain\Sequences\Support\SequenceDraftProducer;
+use Domain\Tasks\Support\TaskDraftProducer;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\UiDeclarations\StubDraftProducer;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -43,6 +48,34 @@ final class DraftReadsTest extends TestCase
         $this->assertCount(3, $questions->json('props.read_web_draft_questions.questions'));
         $this->assertSame(self::TITLE, $record->json('props.read_web_draft_record.fields.title'));
         $this->assertSame(StubDraftProducer::AGENT, $record->json('props.read_web_draft_record.agent'));
+    }
+
+    /**
+     * @return array<string, array{string, list<string>, string}>
+     */
+    public static function installedNouns(): array
+    {
+        return [
+            'task' => ['task', ['title', 'brief'], TaskDraftProducer::AGENT],
+            'plan' => ['plan', ['title', 'brief', 'type'], PlanDraftProducer::AGENT],
+            'document' => ['document', ['title', 'abstract', 'body'], DocumentDraftProducer::AGENT],
+            'sequence' => ['sequence', ['name', 'steps', 'doneWhen', 'draftedBy'], SequenceDraftProducer::AGENT],
+        ];
+    }
+
+    /**
+     * @param  list<string>  $fields
+     */
+    #[DataProvider('installedNouns')]
+    public function test_each_domain_drafts_its_noun_from_three_answers(string $noun, array $fields, string $agent): void
+    {
+        $questions = $this->pageRead('web.draft-questions', ['noun' => $noun])->assertOk();
+        $record = $this->pageRead('web.draft-record', ['noun' => $noun, 'answers' => ['Plan, build', 'Tested', 'Nothing']])
+            ->assertOk();
+
+        $this->assertCount(3, $questions->json('props.read_web_draft_questions.questions'));
+        $this->assertSame($fields, array_keys($record->json('props.read_web_draft_record.fields')));
+        $this->assertSame($agent, $record->json('props.read_web_draft_record.agent'));
     }
 
     public function test_a_read_that_names_no_noun_is_refused_as_missing(): void
