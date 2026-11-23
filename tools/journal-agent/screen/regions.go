@@ -154,6 +154,11 @@ func isRule(text string) bool {
 	return len([]rune(text)) >= 10 && strings.Trim(text, "─") == ""
 }
 
+// IsBlank is whether nothing is drawn on the screen yet, as while a program is still starting.
+func IsBlank(snapshot contracts.Snapshot) bool {
+	return lastDrawnRow(snapshot) < 0
+}
+
 func lastDrawnRow(snapshot contracts.Snapshot) int {
 	for row := len(snapshot.Rows) - 1; row >= 0; row-- {
 		if strings.TrimSpace(snapshot.Rows[row]) != "" {

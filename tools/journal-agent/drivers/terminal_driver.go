@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"slices"
 	"sync"
 	"time"
@@ -25,10 +26,6 @@ const stopKeys = "\x1b\x04"
 
 // readyDeadline is how long a delivery waits for an empty, still composer before it stays staged for later.
 const readyDeadline = 10 * time.Second
-
-// passableScreens is how many screens that hold nothing, such as a menu passed with its recorded keys, one prompt
-// waits past before it stays staged.
-const passableScreens = 3
 
 // echoDeadline is how long a typed line waits to be drawn in the composer before its delivery is uncertain.
 const echoDeadline = 5 * time.Second
@@ -319,11 +316,8 @@ func (driver *TerminalDriver) prompt(
 			Hold:     contracts.HoldInterrupted,
 		}, nil
 	}
-	for passed := 0; !driver.waitUntil(readyDeadline, driver.promptReady); passed++ {
-		result, err := driver.stagedBehindScreen(request)
-		if err != nil || result.IsHeld() || passed == passableScreens {
-			return result, err
-		}
+	if !driver.waitUntil(readyDeadline, driver.promptReady) {
+		return driver.stagedBehindScreen(request)
 	}
 
 	generation := driver.runtime.Generation(driver.runtime.Composer)
@@ -384,9 +378,16 @@ func (driver *TerminalDriver) awaitTurnEnd(current *turnEnd) {
 
 // stagedBehindScreen is a prompt the screen did not let in: it stays staged and is held by what the screen shows, a
 // menu's own reason or an unknown screen, so the journal says what waits for a user instead of nothing. A menu with a
-// recorded Later is answered with it, as for any hold.
+// recorded Later is answered with it, as for any hold. A screen with nothing on it yet, or one still being drawn, is
+// a program that is starting and holds nothing.
 func (driver *TerminalDriver) stagedBehindScreen(request contracts.RequestIdentity) (contracts.OperationResult, error) {
 	reading := driver.runtime.Classifier.Classify(driver.runtime.Clock.Now())
+	snapshot := driver.runtime.Classifier.Snapshot()
+	log.Printf("request %s waits behind the screen: %s, menu %q, stable %t, on the %s buffer with the cursor at %+v",
+		request.RequestID, reading.Kind, reading.Menu, reading.Stable, snapshot.Buffer, snapshot.Cursor)
+	if reading.Kind == screen.Unknown && (!reading.Stable || screen.IsBlank(driver.runtime.Classifier.Snapshot())) {
+		return staged(request), nil
+	}
 	holds := terminal.NewHolds(driver.runtime.Layout, "", driver.runtime.Gate)
 	report, err := holds.Observe(reading, request.RequestID, 0)
 	if err != nil {

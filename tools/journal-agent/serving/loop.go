@@ -63,6 +63,8 @@ type Loop struct {
 	opening map[string]*sync.Mutex
 	// raiseRetryDelay is how long a raise whose answer was lost waits before it is sent again.
 	raiseRetryDelay time.Duration
+	// screenRetryPause is how long a turn the screen did not let in waits before it is tried again.
+	screenRetryPause time.Duration
 	// sequences is the number of the last report sent for each runtime: its reports are numbered in the order sent.
 	sequences map[string]uint64
 }
@@ -87,14 +89,15 @@ type liveRuntime struct {
 // NewLoop returns a loop that reports to the journal and opens drivers with open.
 func NewLoop(journal Journal, prepare Preparer, open Opener) *Loop {
 	return &Loop{
-		journal:         journal,
-		prepare:         prepare,
-		open:            open,
-		scheduler:       host.NewScheduler(),
-		runtimes:        map[string]*liveRuntime{},
-		sequences:       map[string]uint64{},
-		opening:         map[string]*sync.Mutex{},
-		raiseRetryDelay: time.Second,
+		journal:          journal,
+		prepare:          prepare,
+		open:             open,
+		scheduler:        host.NewScheduler(),
+		runtimes:         map[string]*liveRuntime{},
+		sequences:        map[string]uint64{},
+		opening:          map[string]*sync.Mutex{},
+		raiseRetryDelay:  time.Second,
+		screenRetryPause: 2 * time.Second,
 	}
 }
 
@@ -291,12 +294,14 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 	} else {
 		result, err = runtime.driver.Wake(ctx, contracts.WakeRequest{Request: first, Prompt: wakePrompt(admission.Wakes)})
 	}
+	if err == nil && result.Progress == contracts.ProgressStaged && result.Hold != contracts.HoldInterrupted {
+		loop.retryBehindScreen(ctx, runtime, admission, result.Hold)
+		return
+	}
 	if err != nil || result.Progress != contracts.ProgressApplying {
+		loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 		for _, request := range requests {
 			loop.reportResult(ctx, request, result, err)
-		}
-		if err == nil && result.IsHeld() {
-			loop.heldByScreen(ctx, runtime, result.Hold)
 		}
 		return
 	}
@@ -631,14 +636,35 @@ func (loop *Loop) exited(ctx context.Context, runtime *liveRuntime, evidence str
 	}
 }
 
-// heldByScreen keeps what a screen holds the runtime with and tells the journal, so a start or a delivery the
-// screen did not let in shows what waits for a user: the program is up and does nothing until then.
-func (loop *Loop) heldByScreen(ctx context.Context, runtime *liveRuntime, hold contracts.Hold) {
+// retryBehindScreen keeps a turn the screen did not let in instead of giving it up: the turn is tried again after a
+// pause, nothing else starts on the runtime meanwhile, and what the screen holds the runtime with is told to the
+// journal once per change. So a start's first prompt waits for its program to come up, and a menu a user answers in
+// the terminal lets the waiting prompt in. A runtime that ended meanwhile has its waiting requests reported staged.
+func (loop *Loop) retryBehindScreen(ctx context.Context, runtime *liveRuntime, admission host.Admission, hold contracts.Hold) {
 	loop.mutex.Lock()
-	runtime.hold = hold
-	runtime.screenHold = true
+	told := runtime.screenHold && runtime.hold == hold
+	runtime.hold, runtime.screenHold = hold, true
 	loop.mutex.Unlock()
-	loop.activity(ctx, runtime, "idle")
+	if !told {
+		loop.activity(ctx, runtime, "idle")
+	}
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
+	time.AfterFunc(loop.screenRetryPause, func() {
+		if ctx.Err() == nil && loop.isLive(runtime) {
+			loop.startTurn(ctx, runtime, admission)
+			return
+		}
+		loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
+		loop.failAll(ctx, admission, contracts.ProgressStaged)
+	})
+}
+
+// isLive is whether the runtime is still the one the loop serves under its id.
+func (loop *Loop) isLive(runtime *liveRuntime) bool {
+	loop.mutex.Lock()
+	defer loop.mutex.Unlock()
+
+	return loop.runtimes[runtime.id] == runtime
 }
 
 // releaseScreenHold ends a hold a screen raised once a turn starts: the screen let the prompt in.

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -30,6 +31,18 @@ type fakeJournal struct {
 	stale map[string]client.EntryStaleReport
 	// answers are the replies to the raises in turn; past the last one a raise is opened.
 	answers []raiseReply
+}
+
+// activities are the activity reports so far, each with the hold it carried.
+func (journal *fakeJournal) activities() []string {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	reported := make([]string, len(journal.activity))
+	for index, activity := range journal.activity {
+		reported[index] = activity + " " + journal.holds[index]
+	}
+
+	return reported
 }
 
 // raiseReply is one reply of the journal to a raise: an answer, or the error its call ended with.
@@ -291,33 +304,57 @@ func TestATurnWhoseProgramFailsLeavesItsDeliveryUncertain(t *testing.T) {
 // menuRuntime is a program whose screen shows a menu: no prompt gets in until a user answers it.
 type menuRuntime struct {
 	fakeRuntime
-	answered bool
+	answered atomic.Bool
+	asked    atomic.Int32
 }
 
 func (runtime *menuRuntime) Wake(ctx context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	if !runtime.answered {
+	runtime.asked.Add(1)
+	if !runtime.answered.Load() {
 		return contracts.OperationResult{Request: wake.Request, Progress: contracts.ProgressStaged, Hold: "onboarding_required"}, nil
 	}
 
 	return runtime.fakeRuntime.Wake(ctx, wake)
 }
 
-func TestAStartThatMeetsAMenuIsReportedHeldByItAndTheHoldEndsWithTheNextTurn(t *testing.T) {
+func TestAStartThatMeetsAMenuIsReportedHeldByItAndItsWakeGetsInOnceTheMenuIsAnswered(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &menuRuntime{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+	loop.screenRetryPause = 5 * time.Millisecond
 
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
-	runtime.answered = true
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("b", 2, "wake", "")})
-
-	journal.mutex.Lock()
-	defer journal.mutex.Unlock()
-	if len(journal.activity) < 2 || journal.activity[0] != "idle" || journal.holds[0] != "onboarding_required" {
-		t.Fatalf("the held start was reported as %v with holds %v", journal.activity, journal.holds)
+	waitFor(t, func() bool { return runtime.asked.Load() > 2 })
+	if held := journal.activities(); len(held) != 1 || held[0] != "idle onboarding_required" {
+		t.Fatalf("the held start was reported as %v, not once as idle and held by the menu", held)
 	}
-	if journal.activity[1] != "running" || journal.holds[1] != string(contracts.HoldNone) {
-		t.Fatalf("the turn after the menu was reported as %v with holds %v", journal.activity, journal.holds)
+	if reported := journal.progressOf("a"); len(reported) != 0 {
+		t.Fatalf("the waiting wake was reported %v: a staged report gives the start up", reported)
+	}
+
+	runtime.answered.Store(true)
+	waitFor(t, func() bool { return len(journal.activities()) == 2 })
+
+	if started := journal.activities()[1]; started != "running "+string(contracts.HoldNone) {
+		t.Fatalf("the turn after the menu was reported as %q", started)
+	}
+	if reported := journal.progressOf("a"); len(reported) != 1 || reported[0] != string(contracts.ProgressApplying) {
+		t.Fatalf("the wake that got in was reported %v", reported)
+	}
+}
+
+func TestAWakeWaitingBehindAScreenIsGivenUpWhenItsRuntimeEnds(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := &menuRuntime{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+	loop.screenRetryPause = 5 * time.Millisecond
+
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("stop", 2, "stop", "")})
+
+	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
+	if reported := journal.progressOf("a"); reported[0] != string(contracts.ProgressStaged) {
+		t.Fatalf("the wake of the ended runtime was reported %v", reported)
 	}
 }
 
