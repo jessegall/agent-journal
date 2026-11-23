@@ -33,6 +33,15 @@ const echoDeadline = 5 * time.Second
 // echoQuiet is how long the driver waits after the program drew a typed line before it presses Enter.
 const echoQuiet = 150 * time.Millisecond
 
+// unsentLook is how long the driver watches the composer after an Enter before it takes the line as still unsent,
+// and unsentEnters is how many more Enters such a line gets: a busy program can read the first Enter as part of the
+// paste and keep the line in its box.
+const (
+	unsentLook   = 2 * time.Second
+	unsentEnters = 3
+	enterKey     = "\r"
+)
+
 // pollInterval is how often the driver reads the screen again while it waits.
 const pollInterval = 50 * time.Millisecond
 
@@ -339,11 +348,12 @@ func (driver *TerminalDriver) prompt(
 	if driver.waitUntil(echoDeadline, func() bool { return driver.runtime.Gate.Shows(line) }) {
 		driver.runtime.Clock.Sleep(echoQuiet)
 	}
+	entered := driver.runtime.Generation(driver.runtime.Composer)
 	delivery, err := driver.runtime.Gate.Submit(line, 0)
 	if errors.Is(err, terminal.ErrLineStranded) {
 		return driver.strandedResult(request, line), nil
 	}
-	if err != nil || delivery != terminal.Delivered {
+	if err != nil || delivery != terminal.Delivered || !driver.tookLine(entered) {
 		return contracts.OperationResult{Request: request, Progress: contracts.ProgressDeliveryUncertain}, err
 	}
 
@@ -353,6 +363,24 @@ func (driver *TerminalDriver) prompt(
 	driver.mutex.Unlock()
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying}, nil
+}
+
+// tookLine is whether the program took the entered line: its composer changed after the Enter. A composer that
+// stays exactly as it was when Enter was pressed still holds the line, so it gets Enter again, unsentEnters times
+// at most; a user or a browser writer who holds the input by then ends it.
+func (driver *TerminalDriver) tookLine(entered uint64) bool {
+	changed := func() bool { return driver.runtime.Generation(driver.runtime.Composer) != entered }
+
+	for again := 0; again < unsentEnters; again++ {
+		if driver.waitUntil(unsentLook, changed) {
+			return true
+		}
+		if err := driver.runtime.Gate.Keys(enterKey); err != nil {
+			return false
+		}
+	}
+
+	return driver.waitUntil(unsentLook, changed)
 }
 
 // strandedSettleWait is how long a driver waits for a browser take to settle its stranded line.

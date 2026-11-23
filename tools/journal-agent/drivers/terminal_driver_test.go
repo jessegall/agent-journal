@@ -55,6 +55,19 @@ func recordedTurn(t *testing.T, until time.Duration) (*TerminalDriver, *replayCl
 // recorded replays one recording of Claude Code 2.1.323 up to the given second, behind a terminal driver.
 func recorded(t *testing.T, name string, until time.Duration) (*TerminalDriver, *replayClock, *bytes.Buffer) {
 	t.Helper()
+
+	return recordedWith(t, name, until, func(*TerminalRuntime) {})
+}
+
+// recordedWith is recorded with the runtime changed before the driver takes it, such as a composer that never
+// changes again.
+func recordedWith(
+	t *testing.T,
+	name string,
+	until time.Duration,
+	change func(*TerminalRuntime),
+) (*TerminalDriver, *replayClock, *bytes.Buffer) {
+	t.Helper()
 	layout := profiles.ClaudeCode{}.Screens()
 	fixture, err := recording.Load("../testdata/recordings/claude-code/2.1.323/" + name)
 	if err != nil {
@@ -73,7 +86,7 @@ func recorded(t *testing.T, name string, until time.Duration) (*TerminalDriver, 
 	runner := keyscripts.NewRunner(gate, classifier, clock, view, keyscripts.Driver{Name: "claude", Layout: layout},
 		func(keyscripts.Progress) {})
 
-	return NewTerminalDriver(TerminalRuntime{
+	runtime := TerminalRuntime{
 		Profile:    "claude@2.1.323",
 		Classifier: classifier,
 		Gate:       gate,
@@ -83,7 +96,10 @@ func recorded(t *testing.T, name string, until time.Duration) (*TerminalDriver, 
 		Scripts:    scripts.Registered(),
 		Runner:     runner,
 		Clock:      clock,
-	}), clock, program
+	}
+	change(&runtime)
+
+	return NewTerminalDriver(runtime), clock, program
 }
 
 // pasted is a prompt as the input gate types it: one bracketed paste.
@@ -146,6 +162,25 @@ func TestAPromptTheProgramDrawsInItsOwnWordsIsStillEntered(t *testing.T) {
 	}
 	if program.String() != pasted(delivered)+"\r" {
 		t.Fatalf("the program got %q, want the paste and its Enter", program.String())
+	}
+}
+
+// As version 5 does: a line that stays in the composer after its Enter gets Enter again, three times at most, and
+// only then is its delivery uncertain. Here the composer never changes after the line went in.
+func TestALineThatStaysInTheComposerGetsEnterAgainAndIsUncertainOnlyAfterThat(t *testing.T) {
+	driver, _, program := recordedWith(t, "turns/terminal-turn", 11*time.Second, func(runtime *TerminalRuntime) {
+		still := runtime.Generation(runtime.Composer)
+		runtime.Generation = func(string) uint64 { return still }
+	})
+
+	result, err := driver.Deliver(context.Background(),
+		contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)})
+
+	if err != nil || result.Progress != contracts.ProgressDeliveryUncertain {
+		t.Fatalf("the prompt ended %+v, %v", result, err)
+	}
+	if program.String() != pasted(firstPrompt)+strings.Repeat("\r", 1+unsentEnters) {
+		t.Fatalf("the program got %q, want the paste, its Enter and %d more", program.String(), unsentEnters)
 	}
 }
 
