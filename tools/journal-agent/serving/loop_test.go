@@ -33,6 +33,14 @@ type fakeJournal struct {
 	answers []raiseReply
 }
 
+// exitsReported is how many runtime exits were reported so far.
+func (journal *fakeJournal) exitsReported() int {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+
+	return journal.exits
+}
+
 // activities are the activity reports so far, each with the hold it carried.
 func (journal *fakeJournal) activities() []string {
 	journal.mutex.Lock()
@@ -355,6 +363,41 @@ func TestAWakeWaitingBehindAScreenIsGivenUpWhenItsRuntimeEnds(t *testing.T) {
 	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
 	if reported := journal.progressOf("a"); reported[0] != string(contracts.ProgressStaged) {
 		t.Fatalf("the wake of the ended runtime was reported %v", reported)
+	}
+}
+
+// endingRuntime is a runtime whose program can end on its own, as a session container that is removed does, while a
+// menu keeps its wake waiting.
+type endingRuntime struct {
+	menuRuntime
+	ended chan string
+}
+
+func (runtime *endingRuntime) Ended() <-chan string { return runtime.ended }
+
+// A session container removed under a waiting wake left the host trying that wake on the dead runtime for ever.
+func TestARuntimeWhoseProgramEndsOnItsOwnLeavesTheLoopAndItsWaitingWakeIsGivenUp(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := &endingRuntime{ended: make(chan string, 1)}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+	loop.screenRetryPause = 5 * time.Millisecond
+
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+	waitFor(t, func() bool { return runtime.asked.Load() > 1 })
+	runtime.ended <- "the session container's program exited with 137"
+
+	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
+	asked := runtime.asked.Load()
+	time.Sleep(10 * loop.screenRetryPause)
+
+	if journal.exitsReported() != 1 || runtime.stopped {
+		t.Fatalf("%d exits reported, stopped %v", journal.exitsReported(), runtime.stopped)
+	}
+	if reported := journal.progressOf("a"); reported[0] != string(contracts.ProgressStaged) {
+		t.Fatalf("the waiting wake was reported %v", reported)
+	}
+	if again := runtime.asked.Load(); again != asked {
+		t.Fatalf("the wake was tried %d more times on the ended runtime", again-asked)
 	}
 }
 

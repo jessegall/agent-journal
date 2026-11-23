@@ -96,8 +96,9 @@ func (opener runtimeOpener) containedTerminalRuntime(
 		Runtime:   terminalDriverOf(profile, opened, prepared.Grant.Runtime.ProcessGeneration, conversationID),
 		container: container,
 		manifest:  manifest,
+		ended:     make(chan string, 1),
 	}
-	go runtime.reportExit(runtimeID, opener.reportExit)
+	go runtime.watchEnd(runtimeID)
 
 	return runtime, nil
 }
@@ -302,7 +303,12 @@ type containedRuntime struct {
 	manifest  host.ContainerManifest
 	// stopped is set by a requested stop, whose end the serving loop reports itself.
 	stopped atomic.Bool
+	// ended says how the container's program ended on its own; a headless runtime, with a container a turn, has none.
+	ended chan string
 }
+
+// Ended gives how the session container's program ended without a stop, for the serving loop to end the runtime.
+func (runtime *containedRuntime) Ended() <-chan string { return runtime.ended }
 
 func (runtime *containedRuntime) Stop(
 	ctx context.Context,
@@ -323,27 +329,17 @@ func (runtime *containedRuntime) Stop(
 	}, nil
 }
 
-// reportExit waits for the container's program to end and reports how as the runtime's exit, so a crash or an
-// out-of-memory kill ends the session like any other exit.
-func (runtime *containedRuntime) reportExit(
-	runtimeID string,
-	report func(ctx context.Context, report client.LivenessReport) error,
-) {
-	ctx := context.Background()
-	exit, err := runtime.container.Wait(ctx, runtime.manifest.Network)
+// watchEnd waits for the container's program to end and says how, so a crash, a removal or an out-of-memory kill
+// ends the runtime in the serving loop like any other exit; after a requested stop it says nothing.
+func (runtime *containedRuntime) watchEnd(runtimeID string) {
+	defer close(runtime.ended)
+	exit, err := runtime.container.Wait(context.Background(), runtime.manifest.Network)
 	if err != nil {
 		log.Printf("the end of runtime %s's container could not be read: %v", runtimeID, err)
 		return
 	}
-
-	if report == nil || runtime.stopped.Load() {
+	if runtime.stopped.Load() {
 		return
 	}
-
-	liveness := client.LivenessReport{
-		RuntimeID: runtimeID, ProcessGeneration: runtime.Generation(), Evidence: exit.Evidence(),
-	}
-	if err := report(ctx, liveness); err != nil {
-		log.Printf("the exit of runtime %s could not be reported: %v", runtimeID, err)
-	}
+	runtime.ended <- exit.Evidence()
 }

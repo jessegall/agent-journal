@@ -37,6 +37,13 @@ type Runtime interface {
 	NativeIdentity() string
 }
 
+// Ending is a runtime whose program can end without a stop, such as a session container that crashes or is removed.
+// Ended gives how it ended, once; it is nil for a runtime with nothing to watch, and closes without a word when the
+// end was a stop the loop asked for, which the loop reports itself.
+type Ending interface {
+	Ended() <-chan string
+}
+
 // Opener starts the driver of a runtime from its start grant; it is the one place that chooses by driver type.
 type Opener func(runtimeID string, prepared host.PreparedStart) (Runtime, error)
 
@@ -601,8 +608,21 @@ func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime
 	loop.mutex.Lock()
 	loop.runtimes[runtimeID] = runtime
 	loop.mutex.Unlock()
+	if ending, ends := driver.(Ending); ends && ending.Ended() != nil {
+		go loop.awaitEnd(ctx, runtime, ending.Ended())
+	}
 
 	return runtime, nil
+}
+
+// awaitEnd ends a runtime whose program ended on its own: it leaves the runtimes the loop serves, so no turn is
+// tried on it again, and its exit is reported with how it ended.
+func (loop *Loop) awaitEnd(ctx context.Context, runtime *liveRuntime, ended <-chan string) {
+	evidence, said := <-ended
+	if !said || !loop.isLive(runtime) {
+		return
+	}
+	loop.exited(ctx, runtime, evidence)
 }
 
 func (loop *Loop) liveRuntime(runtimeID string) (*liveRuntime, bool) {

@@ -162,7 +162,6 @@ func serve(arguments []string) error {
 		opener.containers = host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
 		socket.InstanceRuns = instanceRunsOn(opener.containers)
 		opener.installation = installation
-		opener.reportExit = journal.ReportExit
 		prerequisites = containedPrerequisites(*stateFolder, *seccomp, trialDrivers(*protectedTrial), opener.containers)
 	}
 	preparation := startPreparation(journal, *stateFolder, prerequisites)
@@ -237,11 +236,9 @@ type runtimeOpener struct {
 	sessionJournalURL string
 	hookCommand       string
 	socket            *host.AttachSocket
-	// containers, installation and reportExit run a contained session's program in its own container and report its
-	// end; a local host has none of them.
+	// containers and installation run a contained session's program in its own container; a local host has neither.
 	containers   host.Containers
 	installation host.InstallationName
-	reportExit   func(ctx context.Context, report client.LivenessReport) error
 	// declared is every driver this host advertised to the journal; a grant for any other is refused.
 	declared []client.HostDescriptor
 	// usage queues what the usage readers of each start observed, for its own worker to send.
