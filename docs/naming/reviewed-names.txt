@@ -18615,7 +18615,7 @@ method	PlanReadTool::read()
 method	PlanReadTool::readRequest()
 method	PlanReadTool::schema()
 method	PlanReaderData::__construct()
-method	PlanReaderData::ofSelection()
+method	PlanReaderData::forPlan()
 method	PlanRecords::__construct()
 method	PlanRecords::assignedToCaller()
 method	PlanRecords::cardOf()
@@ -42760,6 +42760,7 @@ variable	$placements
 variable	$places
 variable	$plain
 variable	$plan
+variable	$planCard
 variable	$planId
 variable	$planPage
 variable	$planPhases
