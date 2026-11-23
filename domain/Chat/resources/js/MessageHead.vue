@@ -5,7 +5,8 @@ import type { SpeakerData } from "@generated/types/chat";
 
 /**
  * The line that heads another's message: the speaker's avatar (an agent's driver mark, or the user's initial), name
- * and time, and whom it was addressed to.
+ * and time, whom it was addressed to, and at its right end the message's hover controls. The controls keep their room
+ * while hidden, so this line sets the message's width when its text is shorter and nothing moves on hover.
  */
 const props = defineProps<{
   speaker: SpeakerData;
@@ -27,6 +28,14 @@ const participant = computed(() => ({
     <span>· {{ time }}</span>
     <template v-if="addressee !== null">
       <span>→ {{ addressee }}</span>
+    </template>
+    <template v-if="$slots.actions">
+      <span
+        data-message-actions
+        class="-my-px ml-auto flex h-[18px] items-center gap-0.5 pl-2.5 opacity-0 transition-opacity duration-(--duration-hover) group-focus-within/message:opacity-100 group-hover/message:opacity-100"
+      >
+        <slot name="actions" />
+      </span>
     </template>
   </span>
 </template>

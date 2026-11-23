@@ -178,6 +178,7 @@ describe("MessageList", () => {
           rangeId: retryDelivery ? "range-1" : null,
         },
       ],
+      reactions: [],
     });
     const props = {
       lines: [],
@@ -204,6 +205,53 @@ describe("MessageList", () => {
     );
     expect(sender.text()).toContain("Codex: Not delivered");
     expect(sender.text()).not.toContain("Retry");
+  });
+
+  it("keeps an agent's steps and answer in one turn, with React and Reply on the answer's name line", () => {
+    const message = (id: string, sequence: number, driver: string | null) => ({
+      id,
+      sequence,
+      rootId: null,
+      speaker: { actor: driver === null ? "user:ada" : "agent:main", label: id, driver },
+      addressedTo: null,
+      body: `Body ${id}`,
+      state: "sent",
+      stateVersion: 0,
+      respondent: null,
+      actions: { answer: false, decline: false, retryDelivery: false },
+      readByMe: true,
+      sentAt: "2026-11-22T13:42:00Z",
+      requestKey: null,
+      deliveries: [],
+      reactions: [],
+    });
+    const step = {
+      sequence: 2,
+      subject: "Ship",
+      line: "Step 1 of 4",
+      postedAt: "2026-11-22T13:43:00Z",
+      card: null,
+      cardPlacement: "inline" as const,
+    };
+    const list = mount(MessageList, {
+      props: {
+        lines: [step],
+        messages: [message("asked", 1, null), message("answered", 3, "claude-code")],
+        pending: [],
+        refused: [],
+        viewer: "user:bea",
+        participants: [],
+        questionUrl: () => "#",
+      } as never,
+    });
+    const turns = list.findAll("[data-turn]");
+    const controls = list.find("#message-answered [data-message-actions]");
+
+    expect(turns).toHaveLength(2);
+    expect(turns[0].text()).toContain("Body asked");
+    expect(turns[1].text()).toContain(step.line);
+    expect(turns[1].text()).toContain("Body answered");
+    expect(controls.findAll("button").map((button) => button.text())).toEqual(["React", "Reply"]);
   });
 
   it("shows a plain line between the messages at its timeline position", () => {

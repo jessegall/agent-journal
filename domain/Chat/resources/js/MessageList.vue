@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import TextLink from '@kit/TextLink';
-import { Link } from "@inertiajs/vue3";
 import { computed } from "vue";
-import Button from "@kit/Button";
 import Card from "@kit/Card";
 import type { DockCardEnvelope } from "@kit/dockCards";
-import Icon from "@kit/Icon";
+import { ACTING_AGENT, groupTurns } from "./chatTurns";
 import LineWords from "./LineWords.vue";
 import RecordCard from "./RecordCard.vue";
 import type {
@@ -15,9 +13,7 @@ import type {
 } from "@generated/types/chat";
 import type { ConversationIntent } from "./composables/useConversationIntents";
 import type { RecoveryEntry } from "./composables/useMessageDrafts";
-import MessageDeliveries from "./MessageDeliveries.vue";
-import MessageHead from "./MessageHead.vue";
-import MessageReactions from "./MessageReactions.vue";
+import MessageRow from "./MessageRow.vue";
 import NoMessages from "./NoMessages.vue";
 import PendingMessage from "./PendingMessage.vue";
 import RefusedSend from "./RefusedSend.vue";
@@ -133,14 +129,26 @@ const rows = computed((): LogRow[] => {
   });
 });
 
-/** A question someone asked you that waits for your answer: drawn as a card with its Answer button. */
-function isQuestionToMe(message: ChatMessageData): boolean {
-  return (
-    !isOwn(message) &&
-    message.state === "waiting_for_answer" &&
-    message.actions.answer
-  );
+/**
+ * The agent whose turn a row belongs to: an agent's own message names it, a plain line or card belongs to whichever
+ * agent is acting, and a person's message is no part of a turn.
+ */
+function turnOf(row: LogRow): string | null {
+  if (row.message === null) {
+    return ACTING_AGENT;
+  }
+
+  return row.message.speaker.driver === null || isOwn(row.message) ? null : row.message.speaker.actor;
 }
+
+/** The rows as the design spaces them: each agent turn close together, with the day that starts above it. */
+const turns = computed(() =>
+  groupTurns(rows.value, turnOf, (row) => row.day !== null).map((turn) => ({
+    key: turn[0].key,
+    day: turn[0].day,
+    rows: turn,
+  })),
+);
 
 function isOwn(message: ChatMessageData): boolean {
   return message.speaker.actor === props.viewer;
@@ -177,32 +185,12 @@ function rowLabel(message: ChatMessageData): string {
  * What the reply link says: the original's speaker and its first words, when this view holds it.
  */
 function originalLabel(message: ChatMessageData): string {
-  const original = props.messages.find(
-    (shown) => shown.id === message.replyTo?.id,
-  );
+  const original =
+    message.replyTo === undefined ? undefined : props.messages.find((shown) => shown.id === message.replyTo?.id);
 
   return original === undefined
     ? "Go to the original message"
     : `Go to the original from ${original.speaker.label}: ${original.body.slice(0, 80)}`;
-}
-
-/**
- * Follows a reply to its original and gives the original the focus, so the keyboard continues from there.
- */
-function goToOriginal(originalId: string | null): void {
-  if (originalId === null) {
-    return;
-  }
-
-  document.getElementById(`message-${originalId}`)?.focus();
-}
-
-function stateOf(message: ChatMessageData): string | null {
-  if (message.state === "waiting_for_answer") {
-    return isOwn(message) ? "Waiting for an answer" : "Waiting for your answer";
-  }
-
-  return isOwn(message) || message.readByMe ? null : "Unread";
 }
 
 // Nothing to show yet: no message, no plain line, none being sent and none refused.
@@ -216,7 +204,7 @@ const isEmpty = computed(
 
 <template>
   <div
-    class="flex flex-1 flex-col gap-3.5 overflow-y-auto pt-[22px] pb-[18px]"
+    class="flex flex-1 flex-col gap-6 overflow-y-auto pt-[22px] pb-[18px]"
     role="log"
     aria-live="polite"
     aria-label="Messages"
@@ -233,170 +221,56 @@ const isEmpty = computed(
         Show earlier messages
       </TextLink>
     </template>
-    <template v-for="{ key, message, line, time, day } in rows" :key="key">
-      <template v-if="day !== null">
-        <p class="self-center text-badge text-text-3">{{ day }}</p>
+    <template v-for="turn in turns" :key="turn.key">
+      <template v-if="turn.day !== null">
+        <p class="self-center text-badge text-text-3">{{ turn.day }}</p>
       </template>
-      <template
-        v-if="
-          line !== null && line.card !== null && line.cardPlacement === 'inline'
-        "
-      >
-        <Card tone="plain" class="w-full max-w-[92%] self-start px-3 py-2">
-          <RecordCard :card="line.card" />
-        </Card>
-      </template>
-      <template v-else-if="line !== null && line.card !== null">
-        <button
-          type="button"
-          class="flex w-fit items-center gap-1.75 self-start text-left text-badge text-text-3 hover:text-text-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          :title="time"
-          @click="emit('openRecord', line.card)"
-        >
-          <LineWords :subject="line.subject" :words="line.line" />
-        </button>
-      </template>
-      <template v-else-if="line !== null">
-        <p
-          class="flex items-center gap-1.75 self-start text-badge text-text-3"
-          :title="time"
-        >
-          <LineWords :subject="line.subject" :words="line.line" />
-        </p>
-      </template>
-      <template v-if="message !== null">
-        <article
-          :id="`message-${message.id}`"
-          tabindex="0"
-          :aria-label="rowLabel(message)"
-          :class="[
-            'group/message relative flex flex-col gap-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus',
-            isOwn(message)
-              ? 'max-w-[78%] self-end rounded-[10px_10px_4px_10px] bg-bubble px-3 py-2'
-              : 'max-w-[92%] self-start',
-          ]"
-        >
-          <template v-if="!isOwn(message)">
-            <MessageHead
-              :speaker="message.speaker"
-              :time="time"
-              :addressee="
-                message.addressedTo === null
-                  ? null
-                  : labelOf(message.addressedTo)
-              "
-            />
-          </template>
-          <template v-if="message.replyTo !== undefined && message.replyTo.visible">
-            <a
-              :href="`#message-${message.replyTo.id}`"
-              class="text-small text-text-3 underline"
-              :aria-label="originalLabel(message)"
-              @click.prevent="goToOriginal(message.replyTo.id)"
-            >
-              Replying to an earlier message
-            </a>
-          </template>
-          <template v-if="message.replyTo !== undefined && !message.replyTo.visible">
-            <span class="text-small text-text-3"
-              >The original was removed or is hidden from you</span
-            >
-          </template>
-          <template v-if="isQuestionToMe(message)">
-            <Card padding="sm" class="flex items-center gap-2.5">
-              <Icon name="question" :size="16" class="flex-none text-text-3" />
-              <span class="min-w-0 flex-1">
-                <span class="block text-body whitespace-pre-wrap text-text">{{
-                  message.body
-                }}</span>
-                <small class="block text-badge text-text-3"
-                  >Question · asked {{ time }}</small
-                >
-              </span>
-              <Button
-                size="small"
-                variant="bordered"
-                @click="emit('reply', message)"
-                >Answer</Button
-              >
-              <template v-if="message.actions.decline">
-                <Button
-                  size="small"
-                  variant="ghost"
-                  @click="emit('decline', message)"
-                  >Decline</Button
-                >
-              </template>
+      <div class="flex flex-col gap-2" data-turn>
+        <template v-for="{ key, message, line, time } in turn.rows" :key="key">
+          <template
+            v-if="
+              line !== null && line.card !== null && line.cardPlacement === 'inline'
+            "
+          >
+            <Card tone="plain" class="w-full px-3 py-2">
+              <RecordCard :card="line.card" />
             </Card>
           </template>
-          <template v-else>
-            <p class="text-body whitespace-pre-wrap text-text">
-              {{ message.body }}
+          <template v-else-if="line !== null && line.card !== null">
+            <button
+              type="button"
+              class="flex w-fit items-center gap-1.75 self-start text-left text-badge text-text-3 hover:text-text-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              :title="time"
+              @click="emit('openRecord', line.card)"
+            >
+              <LineWords :subject="line.subject" :words="line.line" />
+            </button>
+          </template>
+          <template v-else-if="line !== null">
+            <p
+              class="flex items-center gap-1.75 self-start text-badge text-text-3"
+              :title="time"
+            >
+              <LineWords :subject="line.subject" :words="line.line" />
             </p>
           </template>
-          <template
-            v-if="
-              stateOf(message) !== null ||
-              message.state === 'waiting_for_answer'
-            "
-          >
-            <span class="flex gap-2 text-small text-text-3">
-              <template v-if="stateOf(message) !== null">
-                <span>{{ stateOf(message) }}</span>
-              </template>
-              <template v-if="message.state === 'waiting_for_answer'">
-                <Link
-                  :href="questionUrl(message.id)"
-                  class="underline"
-                  preserve-scroll
-                >
-                  Open question
-                </Link>
-              </template>
-            </span>
-          </template>
-          <template v-if="!isOwn(message) && !isQuestionToMe(message)">
-            <span
-              class="absolute -top-3 -right-1 inline-flex gap-1 opacity-0 transition-opacity duration-(--duration-hover) group-focus-within/message:opacity-100 group-hover/message:opacity-100"
-            >
-              <Button
-                variant="bordered"
-                size="sm"
-                @click="emit('reply', message)"
-              >
-                <template #icon><Icon name="reply" :size="14" /></template>
-                {{ message.actions.answer ? "Answer" : "Reply" }}
-              </Button>
-              <template v-if="message.actions.decline">
-                <Button
-                  variant="bordered"
-                  size="sm"
-                  @click="emit('decline', message)"
-                >
-                  Decline
-                </Button>
-              </template>
-            </span>
-          </template>
-          <MessageReactions
-            :message="message"
-            :inbox-id="inboxId"
-            :conversation-prop="conversationProp"
-          />
-          <template
-            v-if="
-              message.deliveries.some(
-                (delivery) => delivery.state !== 'accepted',
-              )
-            "
-          >
-            <MessageDeliveries
+          <template v-if="message !== null">
+            <MessageRow
               :message="message"
+              :time="time"
+              :is-own="isOwn(message)"
+              :label="rowLabel(message)"
+              :addressee="message.addressedTo === null ? null : labelOf(message.addressedTo)"
+              :original-label="originalLabel(message)"
+              :question-url="questionUrl(message.id)"
+              :inbox-id="inboxId"
               :conversation-prop="conversationProp"
+              @reply="emit('reply', message)"
+              @decline="emit('decline', message)"
             />
           </template>
-        </article>
-      </template>
+        </template>
+      </div>
     </template>
     <template v-for="intent in pending" :key="intent.key">
       <PendingMessage
