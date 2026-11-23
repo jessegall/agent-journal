@@ -117,13 +117,6 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
         return self::query()->ofRecipient($key, $recipient)->lockForUpdate()->firstOrFail();
     }
 
-    /**
-     * The scope under its row lock, by id.
-     */
-    public static function lockedById(string $id): self
-    {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
-    }
 
     // ----------[ Mutations ]----------
 

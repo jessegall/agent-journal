@@ -52,7 +52,7 @@ final readonly class InboxIntervals
     public function leave(ChatInterval $interval, LeaveReason $reason): void
     {
         $sequence = InboxRecord::lockedForSequence($interval->inboxId)->takeSequence();
-        $record = InboxInterval::query()->whereKey($interval->intervalId)->lockForUpdate()->firstOrFail();
+        $record = InboxInterval::lockedById($interval->intervalId);
         $record->end($reason, CarbonImmutable::now());
 
         TimelineEvent::create(
@@ -74,10 +74,10 @@ final readonly class InboxIntervals
     {
         $sequence = InboxRecord::lockedForSequence($from->inboxId)->takeSequence();
 
-        InboxInterval::query()->whereKey($from->intervalId)->lockForUpdate()->firstOrFail()
+        InboxInterval::lockedById($from->intervalId)
             ->takeRole(IntervalRole::Member);
 
-        InboxInterval::query()->whereKey($to->intervalId)->lockForUpdate()->firstOrFail()
+        InboxInterval::lockedById($to->intervalId)
             ->takeRole(IntervalRole::Owner);
 
         TimelineEvent::create($from->inboxId, $sequence, TimelineEventType::Transferred, $to->actor, $to->intervalId);

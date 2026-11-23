@@ -242,7 +242,7 @@ final class AgentSession extends Model implements ReadableModel
 
     public static function lockedForUpdate(string $sessionId): self
     {
-        return self::query()->whereKey($sessionId)->lockForUpdate()->firstOrFail();
+        return self::lockedById($sessionId);
     }
 
     /**

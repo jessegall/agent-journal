@@ -24,7 +24,7 @@ final readonly class DriverRequestRecovery
      */
     public function lockedAt(string $requestId, int $expectedRowVersion): DriverRequest
     {
-        $request = DriverRequest::query()->whereKey($requestId)->lockForUpdate()->firstOrFail();
+        $request = DriverRequest::lockedById($requestId);
 
         if (! $request->isAtRowVersion($expectedRowVersion)) {
             throw DriverRequestRefused::changedSinceRead($requestId, $expectedRowVersion, $request->row_version);

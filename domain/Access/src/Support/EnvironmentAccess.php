@@ -55,7 +55,7 @@ final readonly class EnvironmentAccess
 
     public function disable(string $userId): void
     {
-        $user = User::query()->whereKey($userId)->lockForUpdate()->firstOrFail();
+        $user = User::lockedById($userId);
         $user->disable(CarbonImmutable::now());
         $this->chats->endEverywhere(ActorIdentity::of($user));
     }

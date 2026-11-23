@@ -111,7 +111,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public static function lockById(string $configurationId): self
     {
-        return self::query()->whereKey($configurationId)->lockForUpdate()->firstOrFail();
+        return self::lockedById($configurationId);
     }
 
     /**

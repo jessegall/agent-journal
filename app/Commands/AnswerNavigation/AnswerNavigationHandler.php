@@ -69,7 +69,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
      */
     private function recordAnswered(NavigationRequest $navigation): void
     {
-        $stalled = DriverRequest::query()->whereKey($navigation->driver_request_id)->lockForUpdate()->firstOrFail();
+        $stalled = DriverRequest::lockedById($navigation->driver_request_id);
         $generation = $navigation->screen->generation;
 
         $stalled->recordScriptProgress(

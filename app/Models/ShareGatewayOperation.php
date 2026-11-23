@@ -139,7 +139,7 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public static function lockById(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+        return self::lockedById($id);
     }
 
     // ----------[ Mutations ]----------

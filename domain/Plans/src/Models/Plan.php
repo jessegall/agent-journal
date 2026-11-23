@@ -172,7 +172,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public static function lockStructure(string $planId): self
     {
-        return self::query()->whereKey($planId)->lockForUpdate()->firstOrFail();
+        return self::lockedById($planId);
     }
 
     /**

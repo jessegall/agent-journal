@@ -40,6 +40,14 @@ trait BoundedReads
     }
 
     /**
+     * The row with this id, locked for update until the transaction ends; a missing row fails the read.
+     */
+    public static function lockedById(string $id): static
+    {
+        return static::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
      * An accessor's value comes from what is loaded; a query inside it is refused.
      *
      * @param  string  $key

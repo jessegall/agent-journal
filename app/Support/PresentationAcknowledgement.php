@@ -56,7 +56,7 @@ final readonly class PresentationAcknowledgement
 
         $inbox = $this->inboxes->resolve($interval->inbox_id);
         $this->inboxes->accessFor($inbox)->lockExclusive($inbox);
-        $locked = PresentationBatch::query()->whereKey($batch->id)->lockForUpdate()->firstOrFail();
+        $locked = PresentationBatch::lockedById($batch->id);
 
         $changed = 0;
         $receiptIds = [];

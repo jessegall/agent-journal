@@ -31,7 +31,7 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
 
     public function handle(ReportRequestProgressCommand $command): void
     {
-        $request = DriverRequest::query()->whereKey($command->requestId)->lockForUpdate()->firstOrFail();
+        $request = DriverRequest::lockedById($command->requestId);
         $runtime = $this->runtimes->lockedFor($command->hostId, $request->agent_runtime_id);
 
         if ($command->attempt < $request->attempt_version) {

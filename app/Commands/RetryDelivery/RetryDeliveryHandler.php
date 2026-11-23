@@ -13,7 +13,7 @@ final readonly class RetryDeliveryHandler implements CommandHandler
 {
     public function handle(RetryDeliveryCommand $command): void
     {
-        $range = OutstandingRange::query()->whereKey($command->outstandingRangeId)->lockForUpdate()->firstOrFail();
+        $range = OutstandingRange::lockedById($command->outstandingRangeId);
         $range->reopen();
 
         ReceiptDelivery::query()

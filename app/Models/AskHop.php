@@ -237,7 +237,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
 
     public function lockDelivery(): self
     {
-        return self::query()->whereKey($this->id)->lockForUpdate()->firstOrFail();
+        return self::lockedById($this->id);
     }
 
     // ----------[ Scopes ]----------

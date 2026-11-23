@@ -139,7 +139,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
 
     public static function lockById(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+        return self::lockedById($id);
     }
 
     /**

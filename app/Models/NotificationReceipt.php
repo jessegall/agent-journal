@@ -214,13 +214,6 @@ final class NotificationReceipt extends Model implements ReadableModel
             ->first());
     }
 
-    /**
-     * The receipt under its row lock, taken after its scope's lock.
-     */
-    public static function lockedById(string $id): self
-    {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
-    }
 
     // ----------[ Mutations ]----------
 

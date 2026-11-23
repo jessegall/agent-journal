@@ -163,10 +163,6 @@ final class MergeAttempt extends Model implements ReadableModel
         return self::query()->where('ask_id', $askId)->where('state', MergeAttemptState::Merged)->exists();
     }
 
-    public static function lockedById(string $id): self
-    {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
-    }
 
     // ----------[ Mutations ]----------
 
