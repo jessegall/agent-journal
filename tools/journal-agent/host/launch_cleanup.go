@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // LaunchLabels name a container launch's resources, so reconciliation finds exactly those of this installation and
@@ -114,8 +115,23 @@ func (containers Containers) Remove(ctx context.Context, name string, stopSecond
 	if output, err := stop.CombinedOutput(); err != nil {
 		return absentIsDone(output, err)
 	}
-	return absentIsDone(containers.command(ctx, "rm", "--volumes", name).CombinedOutput())
+	output, err := containers.command(ctx, "rm", "--volumes", name).CombinedOutput()
+	for tries := 0; err != nil && strings.Contains(string(output), removalUnderWay) && tries < removalTries; tries++ {
+		time.Sleep(removalPause)
+		output, err = containers.command(ctx, "rm", "--volumes", name).CombinedOutput()
+	}
+	return absentIsDone(output, err)
 }
+
+// removalUnderWay is how Docker refuses to remove a container another caller is removing at that moment, such as a
+// stop and the watch of the container's exit both cleaning up: the removal is asked for again after a pause, until
+// the container is gone, and not failed on.
+const removalUnderWay = "is already in progress"
+
+const (
+	removalPause = 250 * time.Millisecond
+	removalTries = 40
+)
 
 // RemoveNetwork removes the launch network; a network already gone counts as removed.
 func (containers Containers) RemoveNetwork(ctx context.Context, name string) error {

@@ -41,6 +41,21 @@ func calls(t *testing.T, log string) []string {
 	return strings.Split(strings.TrimSpace(string(content)), "\n")
 }
 
+func TestAContainerAnotherCallerIsRemovingIsAskedForAgainUntilItIsGone(t *testing.T) {
+	asked := filepath.Join(t.TempDir(), "asked")
+	racing := fakeImageDocker(t, "[ \"$3\" = rm ] || exit 0; echo again >> "+asked+"; "+
+		"[ \"$(wc -l < "+asked+")\" -gt 1 ] && { echo 'Error response from daemon: No such container: c1' >&2; exit 1; }; "+
+		"echo 'Error response from daemon: removal of container c1 is already in progress' >&2; exit 1")
+
+	if err := racing.Remove(context.Background(), "c1", 1); err != nil {
+		t.Fatalf("a removal already under way gave %v", err)
+	}
+
+	if times, _ := os.ReadFile(asked); strings.Count(string(times), "\n") != 2 {
+		t.Fatalf("the removal was asked for %q, not once more after the one under way", times)
+	}
+}
+
 func TestACreatedContainerCarriesTheLaunchLabels(t *testing.T) {
 	arguments, err := manifest().DockerCreateArguments("helper-7", labels(), localRules)
 	if err != nil {
