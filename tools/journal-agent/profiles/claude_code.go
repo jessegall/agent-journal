@@ -188,7 +188,10 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 		return nil, err
 	}
 	addStatusLine(settings, start)
-	if err := requireSandbox(settings); err != nil {
+	if start.Protected {
+		leaveCommandsToExecutor(settings)
+	}
+	if err := requireBoundary(settings, start.Protected); err != nil {
 		return nil, err
 	}
 	content, err := json.MarshalIndent(settings, "", "  ")
@@ -301,13 +304,23 @@ func mergeProtection(settings map[string]any, protection string) error {
 	return nil
 }
 
-// requireSandbox refuses an account start whose effective settings would let a tool run outside Claude Code's
-// sandbox or skip its permission rules: the boundary must hold before any tool runs, not only on paper.
-func requireSandbox(settings map[string]any) error {
+// leaveCommandsToExecutor turns Claude Code's own sandbox off for a protected start: bubblewrap cannot make its
+// namespaces in the agent container, and every command already runs as the executor's user through the shell bridge,
+// which with the container is the boundary there.
+func leaveCommandsToExecutor(settings map[string]any) {
+	settings["sandbox"] = map[string]any{"enabled": false}
+}
+
+// requireBoundary refuses an account start whose effective settings would let a tool skip its permission rules, or,
+// outside a protected start, run outside Claude Code's sandbox: the boundary must hold before any tool runs, not only
+// on paper.
+func requireBoundary(settings map[string]any, protected bool) error {
 	sandbox, _ := settings["sandbox"].(map[string]any)
 	permissions, _ := settings["permissions"].(map[string]any)
-	if sandbox["enabled"] != true || sandbox["allowUnsandboxedCommands"] != false ||
-		permissions["disableBypassPermissionsMode"] != "disable" {
+	if permissions["disableBypassPermissionsMode"] != "disable" {
+		return errors.New("the account start's settings let a tool skip its permission rules: it is not started")
+	}
+	if !protected && (sandbox["enabled"] != true || sandbox["allowUnsandboxedCommands"] != false) {
 		return errors.New("the account start's settings do not keep every tool in the sandbox: it is not started")
 	}
 	return nil

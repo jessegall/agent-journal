@@ -82,6 +82,34 @@ func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T)
 	}
 }
 
+// A protected start runs every command as the executor's user through the shell bridge, so Claude Code's own sandbox,
+// which cannot start in the agent container, is off; its permission rules still may not be skipped.
+func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndKeepsItsPermissionRules(t *testing.T) {
+	start := contracts.Start{
+		Mode: recording.ProcessMode, SettingsFolder: "/state", SessionID: "session", Protected: true,
+		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer},
+	}
+
+	files, err := (ClaudeCode{}).SettingsFiles(start)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var settings struct {
+		Sandbox map[string]any `json:"sandbox"`
+	}
+	if err := json.Unmarshal(files[0].Content, &settings); err != nil {
+		t.Fatal(err)
+	}
+	if settings.Sandbox["enabled"] != false {
+		t.Fatalf("a protected start kept Claude Code's sandbox on: %v", settings.Sandbox)
+	}
+
+	start.Account.Protection = `{"sandbox":{"enabled":true,"allowUnsandboxedCommands":false}}`
+	if _, err := (ClaudeCode{}).SettingsFiles(start); err == nil {
+		t.Fatal("a protected start whose permission rules can be skipped was prepared")
+	}
+}
+
 func accountStartWith(server *contracts.JournalServer, hookCommand string) contracts.Start {
 	return contracts.Start{
 		Mode: recording.ProcessMode, SettingsFolder: "/state/runtimes/r1", SessionID: "session", HookCommand: hookCommand,
