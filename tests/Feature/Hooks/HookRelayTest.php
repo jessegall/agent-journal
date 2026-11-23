@@ -125,6 +125,16 @@ final class HookRelayTest extends TestCase
         $this->assertFileDoesNotExist($this->bypassLog);
     }
 
+    public function test_during_an_outage_a_tool_call_the_relay_cannot_read_is_refused(): void
+    {
+        Http::fake(fn () => throw JournalUnreachable::now());
+
+        $reply = $this->relay('{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Read","tool_input":"unreadable"}');
+
+        $this->assertEquals(OutageReply::protectedRefusal('PreToolUse'), $reply);
+        $this->assertFileDoesNotExist($this->bypassLog);
+    }
+
     public function test_a_gateway_failure_counts_as_an_outage(): void
     {
         Http::fake(['*' => Http::response('', 502)]);
