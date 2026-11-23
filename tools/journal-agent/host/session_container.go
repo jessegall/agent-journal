@@ -74,7 +74,7 @@ func (container SessionContainer) Turn(
 	process ContainerProcess,
 ) (*exec.Cmd, error) {
 	if manifest.Attachable {
-		return nil, ErrSessionContainerAttachable
+		return nil, contracts.RefuseStart(contracts.RefusalContainerUnavailable, ErrSessionContainerAttachable)
 	}
 
 	if err := container.Containers.Remove(ctx, container.Name, StopSeconds); err != nil {

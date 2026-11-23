@@ -12,6 +12,8 @@ namespace App\Values;
  */
 final readonly class ProtectedItem
 {
+    public const string EVIDENCE_MISSING = 'native evidence missing';
+
     public function __construct(
         public string $item,
         public bool $enforced,
@@ -25,6 +27,15 @@ final readonly class ProtectedItem
     public static function fromStored(array $stored): self
     {
         return new self($stored['item'], $stored['enforced'], $stored['evidence'], $stored['reason']);
+    }
+
+    /**
+     * Whether the pinned client has a native mechanism for this item and only the recorded run that shows it hold is
+     * missing, as the host words it (tools/journal-agent/host/protection.go, judgeItem).
+     */
+    public function awaitsEvidenceOnly(): bool
+    {
+        return ! $this->enforced && str_starts_with($this->reason, self::EVIDENCE_MISSING);
     }
 
     /**

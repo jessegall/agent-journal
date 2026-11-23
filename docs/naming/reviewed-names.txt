@@ -7945,6 +7945,7 @@ constant	ProjectWindowRequest::OPEN_FOLDER_LIMIT
 constant	PropertyRules::LOOKUP_RULES
 constant	PropertyRules::TYPE_RULES
 constant	ProtectedAccounts::SIGN_IN_COMMAND
+constant	ProtectedItem::EVIDENCE_MISSING
 constant	ProtectedMerge::SAFE_SETTINGS
 constant	ProtectedMerge::STEP_SECONDS_LIMIT
 constant	ProtectedViewInvalidated::NAME
@@ -15009,6 +15010,7 @@ method	ExecutionPlanRefused::unsupportedNode()
 method	ExecutionPlanner::__construct()
 method	ExecutionPlanner::plan()
 method	ExecutionPolicy::__construct()
+method	ExecutionPolicy::forDriverScreen()
 method	ExecutionPolicy::make()
 method	ExecutionPolicyInvalid::imageMissing()
 method	ExecutionReceipt::__construct()
@@ -16571,6 +16573,7 @@ method	LaunchProfileType::user()
 method	LaunchProfiles::__construct()
 method	LaunchProfiles::for()
 method	LaunchProfiles::forSignedIn()
+method	LaunchProfiles::isOnTrial()
 method	LaunchProfiles::trialOf()
 method	Layout::casts()
 method	Layout::create()
@@ -20064,6 +20067,7 @@ method	ProtectedFileRead::inFolder()
 method	ProtectedFileRead::patternFolder()
 method	ProtectedFileRead::resolve()
 method	ProtectedItem::__construct()
+method	ProtectedItem::awaitsEvidenceOnly()
 method	ProtectedItem::fromStored()
 method	ProtectedItem::stored()
 method	ProtectedItemData::__construct()
@@ -20079,6 +20083,7 @@ method	ProtectedViewInvalidated::broadcastAs()
 method	ProtectedViewInvalidated::broadcastOn()
 method	ProtectedViewInvalidated::broadcastWith()
 method	ProtectionReport::__construct()
+method	ProtectionReport::awaitsEvidenceOnly()
 method	ProtectionReport::fromStored()
 method	ProtectionReport::isEnforcedInContainer()
 method	ProtectionReport::isReported()

@@ -132,6 +132,7 @@ func (opener runtimeOpener) containedHeadlessRuntime(
 		},
 		Usage: opener.usageOf(prepared),
 	}, grant.Runtime.ProcessGeneration)
+	startOnRequestedSettings(driver, runtimeID, grant.Runtime)
 
 	return &containedRuntime{Runtime: driver, container: container, manifest: manifest}, nil
 }

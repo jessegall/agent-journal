@@ -31,7 +31,7 @@ return new class extends Migration
             $table->ulid('possible_duplicate_of_id')->nullable();
             $table->string('expected_timing', 32);
             $table->timestampTz('expected_observed_at')->nullable();
-            $table->string('actual_binding', 32)->nullable();
+            $table->string('actual_binding')->nullable();
             $table->unsignedInteger('attempt_version')->default(0);
             $table->unsignedBigInteger('wake_requested')->default(0);
             $table->unsignedBigInteger('wake_acknowledged')->default(0);

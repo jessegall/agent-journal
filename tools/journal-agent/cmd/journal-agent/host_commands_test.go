@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -18,10 +19,12 @@ import (
 	"golang.org/x/term"
 
 	"journal-agent/client"
+	"journal-agent/drivers"
 	"journal-agent/drivers/contracts"
 	"journal-agent/host"
 	"journal-agent/keyscripts"
 	"journal-agent/profiles"
+	profilecontracts "journal-agent/profiles/contracts"
 )
 
 // rule is the row of ─ Claude Code draws above and below its composer.
@@ -199,6 +202,24 @@ func TestACodexTerminalStartLaunchesTheInteractiveClient(t *testing.T) {
 	}
 }
 
+// A driver on the protected-account trial starts its protected container before any evidence is recorded, since
+// the trial is where that evidence is made; a driver that is not named stays refused.
+func TestADriverOnTrialStartsItsProtectedContainerBeforeItsEvidenceIsRecorded(t *testing.T) {
+	containers := host.Containers{Rules: host.ContainerRules{AgentImage: "sha256:image"}}
+	grant := client.Grant{
+		Runtime:   client.RuntimeStart{Driver: "claude", DriverKey: "claude-code-headless", DriverBuild: "2.1.323"},
+		Container: json.RawMessage(`{"launchProfile":"protected-account"}`),
+	}
+	claim := client.ClaimedStart{Recipe: client.AccountRecipe{DriverVersion: "2.1.323"}}
+
+	if err := containedPrerequisites(t.TempDir(), "", trialDrivers(" claude-code, "), containers)(grant, claim); err != nil {
+		t.Fatalf("a trial driver's protected start was refused: %v", err)
+	}
+	if err := containedPrerequisites(t.TempDir(), "", trialDrivers("codex"), containers)(grant, claim); err == nil {
+		t.Fatal("a driver that is not on trial started without evidence")
+	}
+}
+
 // A contained host checks an account start in a protected-account container against the protected platform's
 // native evidence, needs no local installation for it, and refuses a grant that names no container.
 func TestAContainedAccountStartIsCheckedAgainstItsContainersProtection(t *testing.T) {
@@ -209,7 +230,7 @@ func TestAContainedAccountStartIsCheckedAgainstItsContainersProtection(t *testin
 		Container: json.RawMessage(`{"launchProfile":"protected-account"}`),
 	}
 	claim := client.ClaimedStart{Recipe: client.AccountRecipe{DriverVersion: "2.1.323"}}
-	allowed := containedPrerequisites(state, "", containers)
+	allowed := containedPrerequisites(state, "", nil, containers)
 
 	if err := allowed(grant, claim); err == nil || errors.Is(err, errNoInstallation) {
 		t.Fatalf("a protected start without evidence was answered %v, want a refusal for the missing evidence", err)
@@ -228,5 +249,30 @@ func TestAContainedAccountStartIsCheckedAgainstItsContainersProtection(t *testin
 	grant.Container = nil
 	if err := allowed(grant, claim); !errors.Is(err, errNoContainer) {
 		t.Fatalf("a start with no container was answered %v, want errNoContainer", err)
+	}
+}
+
+// modelRecordingContainer keeps the model each turn's start names and starts nothing.
+type modelRecordingContainer struct{ models *[]string }
+
+func (container modelRecordingContainer) TurnCommand(start profilecontracts.Start, _ int) (*exec.Cmd, error) {
+	*container.models = append(*container.models, start.Model)
+
+	return nil, errors.New("no turn is started in this test")
+}
+
+// A headless start's first turn runs on the model the journal asked for, in a container as on this machine.
+func TestAHeadlessStartsFirstTurnRunsOnTheRequestedModel(t *testing.T) {
+	var models []string
+	model := "haiku"
+	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
+		ConversationID: "conversation-1", Profile: profiles.ClaudeCode{}, Container: modelRecordingContainer{&models},
+	}, 1)
+
+	startOnRequestedSettings(driver, "runtime-1", client.RuntimeStart{Model: &model})
+	_, _ = driver.Wake(context.Background(), contracts.WakeRequest{})
+
+	if !slices.Equal(models, []string{model}) {
+		t.Fatalf("the first turn's start named the models %v, want %s", models, model)
 	}
 }

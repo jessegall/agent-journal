@@ -239,6 +239,10 @@ func TestAFolderMakeSentAgainFindsItsOwnFolderAndAnotherMakeIsRefused(t *testing
 	if err != nil || info.Mode().Perm() != 0o700 {
 		t.Fatalf("the folder sent again was left %v, %v", info, err)
 	}
+	mark, err := os.Stat(filepath.Join(accounts, "a1", folderOperationMark))
+	if err != nil || mark.Mode().Perm() != 0o600 {
+		t.Fatalf("the operation mark was left %v, %v: the start's folder check refuses a file others can read", mark, err)
+	}
 	if output, err := run("operation-2"); err == nil || !strings.Contains(output, "another sign-in made this folder") {
 		t.Fatalf("another make of the same folder was answered %v: %s", err, output)
 	}

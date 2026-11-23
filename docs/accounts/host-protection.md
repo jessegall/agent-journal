@@ -34,6 +34,14 @@ bubblewrap with Claude Code's sandbox flags in throwaway containers of the agent
 network and no account, and never looks at the host's own PATH. Its evidence is kept under
 `linux-container@<agent image id>`, so a new image needs new evidence.
 
+## The protected-account trial
+
+Evidence for the protected container can only be made by running a protected session, so a driver named in
+`AGENTS_PROTECTED_ACCOUNT_TRIAL` (a family such as `claude-code`, which covers `claude-code-headless`) starts its
+protected container once every item has its native mechanism, before any run is recorded. The journal reads the
+setting itself and the contained host gets it as `--protected-trial`. A driver that is not named, and any item with no
+mechanism, stays refused, and the refusal names each item with its reason.
+
 ## What the pinned clients have today
 
 On macOS, Claude Code 2.1.323's sandbox (`sandbox.enabled`, a Seatbelt profile for Bash and its children) and its

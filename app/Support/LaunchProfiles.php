@@ -36,6 +36,14 @@ final readonly class LaunchProfiles
         return array_values(array_filter(array_map(trim(...), explode(',', $drivers))));
     }
 
+    /**
+     * Whether the installation runs this driver's protected-account profile on trial, before its evidence is recorded.
+     */
+    public function isOnTrial(string $driver): bool
+    {
+        return in_array($driver, $this->trialDrivers, true);
+    }
+
     public function for(string $driver, SelectedAccount|null $account): LaunchProfileType
     {
         if ($account === null) {
@@ -62,7 +70,7 @@ final readonly class LaunchProfiles
             ExecutionModeType::RequiredContainer,
         ));
 
-        return $isolation->isSupported() || in_array($driver, $this->trialDrivers, true)
+        return $isolation->isSupported() || $this->isOnTrial($driver)
             ? LaunchProfileType::ProtectedAccount
             : LaunchProfileType::Standard;
     }

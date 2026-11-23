@@ -90,6 +90,7 @@ use App\Values\StartPolicy;
 use App\Values\StopConditions;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -422,6 +423,8 @@ final class AgentDriverLedgerTest extends TestCase
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
         ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
         [$host, $opened] = $this->openRuntime();
+        // The driver runs in a terminal of its own, which is what makes a main session's container attachable.
+        AgentRuntime::query()->findOrFail($opened->runtimeId)->forceFill(['has_screen' => true])->save();
         $this->app->instance(
             ArrangementSetting::class,
             ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
@@ -483,6 +486,32 @@ final class AgentDriverLedgerTest extends TestCase
             fn () => $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId)),
             AccountFolderInvalid::class,
         );
+    }
+
+    public function test_an_applied_request_keeps_the_drivers_whole_session_id(): void
+    {
+        [, $opened] = $this->openRuntime();
+        $request = DriverRequest::query()->findOrFail($this->deliver($opened, 'key-1', 'Hello')->requestId);
+        $sessionId = (string) Str::uuid();
+
+        $request->markApplied($sessionId);
+
+        $this->assertSame($sessionId, $request->refresh()->actual_binding);
+    }
+
+    public function test_a_driver_without_a_screen_gets_a_container_without_a_terminal_whatever_its_profile(): void
+    {
+        $execution = ExecutionPolicy::make(
+            ExecutionModeType::RequiredContainer,
+            'journal-agent@sha256:'.str_repeat('a', 64),
+            ProfileStartPolicy::WORKSPACE,
+            ExecutionBudgets::mainAgent(),
+            [],
+            ProfileBase::mainAgent()->isAttachable(),
+        );
+
+        $this->assertTrue($execution->forDriverScreen(true)->attachable);
+        $this->assertFalse($execution->forDriverScreen(false)->attachable);
     }
 
     public function test_helpers_are_never_attachable(): void

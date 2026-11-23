@@ -148,6 +148,9 @@ func makeAccountFolderScript(root, accountID, operation, user string) string {
 		`fi`,
 		`chown ` + owner + ` "$folder" && chmod 0700 "$folder"`,
 		`[ -f "$mark" ] || printf '%s' "` + operation + `" > "$mark"`,
+		// The mark is the program's user's and private like every file of the folder, or the start's own check of the
+		// folder refuses it; set on every make, so a folder made before this heals on its next sign-in.
+		`chown ` + owner + ` "$mark" && chmod 0600 "$mark"`,
 		`[ -e "$folder/` + historyFolder + `" ] || { mkdir -m 0700 "$folder/` + historyFolder + `"; chown ` + owner + ` "$folder/` +
 			historyFolder + `"; }`,
 	}, "\n")

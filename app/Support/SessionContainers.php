@@ -55,7 +55,7 @@ final readonly class SessionContainers
             $runtime->agent_session_id,
             $runtime->canonical_folder,
             $runtime->session->workspaceUse($policy->access),
-            $policy->execution,
+            $policy->execution->forDriverScreen($runtime->has_screen),
             $this->arrangement->sessionContainerName($runtime->agent_session_id),
             $rules,
             null,

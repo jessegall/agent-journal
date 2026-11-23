@@ -349,6 +349,7 @@ services:
             - --agent-image=${AGENT_IMAGE:-}
             - --runner-image=${RUNNER_IMAGE:-}
             - --seccomp-profile=/etc/journal/security/seccomp-agent.json
+            - --protected-trial=${AGENTS_PROTECTED_ACCOUNT_TRIAL:-}
         # Each environment's deploy key, for its workspace clone (secrets below); only agent-host mounts them.
         # secrets:
         #     - deploy_key_main

@@ -48,4 +48,13 @@ final readonly class ExecutionPolicy
 
         return new self($mode, $imageReference, $worktree, $budgets, $networkCapabilities, $attachable);
     }
+
+    /**
+     * The same policy for a start of a driver with or without a screen: a container is attachable only for a driver
+     * that runs in a terminal of its own, whatever its profile allows; a driver without one runs a turn at a time.
+     */
+    public function forDriverScreen(bool $hasScreen): self
+    {
+        return clone ($this, ['attachable' => $this->attachable && $hasScreen]);
+    }
 }

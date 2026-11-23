@@ -96,6 +96,18 @@ final readonly class ProtectionReport
     }
 
     /**
+     * Whether the pinned client has a native mechanism for every item and all that is missing is the recorded run that
+     * shows each hold on this agent image: the state a protected-account trial starts in, to make that run.
+     */
+    public function awaitsEvidenceOnly(): bool
+    {
+        return $this->items !== [] && array_all(
+            $this->unenforced(),
+            fn (ProtectedItem $item) => $item->awaitsEvidenceOnly(),
+        );
+    }
+
+    /**
      * What stands between this driver and a contained start, for the refusal to name.
      */
     public function shortfall(): string

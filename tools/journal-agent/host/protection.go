@@ -51,6 +51,28 @@ type ProtectionCapability struct {
 	Available bool             `json:"available"`
 }
 
+// AwaitsEvidenceOnly reports whether every item has a native mechanism and all that is missing is the recorded run
+// that shows each hold: the state a protected-account trial starts in, to make that run.
+func (capability ProtectionCapability) AwaitsEvidenceOnly() bool {
+	for _, item := range capability.Items {
+		if !item.Enforced && item.Mechanism.Native == "" {
+			return false
+		}
+	}
+	return len(capability.Items) > 0
+}
+
+// Shortfalls names each item that is not enforced with the reason it is not, for a refusal to say exactly why.
+func (capability ProtectionCapability) Shortfalls() []string {
+	var shortfalls []string
+	for _, item := range capability.Items {
+		if !item.Enforced {
+			shortfalls = append(shortfalls, string(item.Item)+": "+item.Reason)
+		}
+	}
+	return shortfalls
+}
+
 // ErrUnknownDriver is returned for a program the host has no protection specification for.
 var ErrUnknownDriver = errors.New("no protection specification for this program")
 

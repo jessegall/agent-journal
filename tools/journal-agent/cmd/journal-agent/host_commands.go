@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"syscall"
@@ -111,6 +112,7 @@ func serve(arguments []string) error {
 	agentImage := flags.String("agent-image", "", "the agent image a contained host runs, by digest")
 	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
 	seccomp := flags.String("seccomp-profile", "", "the seccomp profile a contained host's agent containers run under")
+	protectedTrial := flags.String("protected-trial", "", "drivers on the protected-account trial, by key, split by commas")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -156,7 +158,7 @@ func serve(arguments []string) error {
 		socket.InstanceRuns = instanceRunsOn(opener.containers)
 		opener.installation = installation
 		opener.reportExit = journal.ReportExit
-		prerequisites = containedPrerequisites(*stateFolder, *seccomp, opener.containers)
+		prerequisites = containedPrerequisites(*stateFolder, *seccomp, trialDrivers(*protectedTrial), opener.containers)
 	}
 	preparation := startPreparation(journal, *stateFolder, prerequisites)
 	reports := &host.StartReports{Folder: *stateFolder}
@@ -486,16 +488,22 @@ func (opener runtimeOpener) headlessRuntime(
 		headless.Confinement = confined
 	}
 	driver := drivers.NewHeadlessDriver(headless, grant.Runtime.ProcessGeneration)
+	startOnRequestedSettings(driver, runtimeID, grant.Runtime)
+	return driver, nil
+}
+
+// startOnRequestedSettings gives a headless driver the model and effort the journal asked for, so its first turn
+// already runs on them, on this machine and in a container alike.
+func startOnRequestedSettings(driver *drivers.HeadlessDriver, runtimeID string, runtime client.RuntimeStart) {
 	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
-	if grant.Runtime.Model != nil {
-		change := drivercontracts.ModelChange{Request: identity, Model: *grant.Runtime.Model}
+	if runtime.Model != nil {
+		change := drivercontracts.ModelChange{Request: identity, Model: *runtime.Model}
 		_, _ = driver.ChangeModel(context.Background(), change)
 	}
-	if grant.Runtime.Effort != nil {
-		change := drivercontracts.EffortChange{Request: identity, Effort: *grant.Runtime.Effort}
+	if runtime.Effort != nil {
+		change := drivercontracts.EffortChange{Request: identity, Effort: *runtime.Effort}
 		_, _ = driver.ChangeEffort(context.Background(), change)
 	}
-	return driver, nil
 }
 
 // terminalRuntime starts the runtime's program on a PTY the attach socket owns, or takes the one a user attached
@@ -732,13 +740,14 @@ func localPrerequisites(stateFolder, installationFolder string) host.StartPrereq
 		if _, err := (host.Installation{Folder: installationFolder}).Verify(); err != nil {
 			return err
 		}
-		return protectionProved(host.LocalPlatform(), stateFolder, grant, claim)
+		return protectionProved(host.LocalPlatform(), stateFolder, false, grant, claim)
 	}
 }
 
 // containedPrerequisites allows a contained host's account start on the platform its container launches: the
-// protected profile's own platform for a protected-account container, the agent image's sandbox otherwise.
-func containedPrerequisites(stateFolder, seccomp string, containers host.Containers) host.StartPrerequisites {
+// protected profile's own platform for a protected-account container, the agent image's sandbox otherwise. A driver
+// on the protected-account trial starts its protected container before its evidence is recorded.
+func containedPrerequisites(stateFolder, seccomp string, trial []string, containers host.Containers) host.StartPrerequisites {
 	return func(grant client.Grant, claim client.ClaimedStart) error {
 		manifest, named, err := (host.PreparedStart{Grant: grant, Claim: claim}).ContainerManifest()
 		if err != nil {
@@ -748,15 +757,43 @@ func containedPrerequisites(stateFolder, seccomp string, containers host.Contain
 			return errNoContainer
 		}
 		if manifest.IsProtected() {
-			return protectionProved(host.ProtectedPlatform(containers), stateFolder, grant, claim)
+			onTrial := isOnTrial(trial, grant.Runtime.DriverKey)
+			return protectionProved(host.ProtectedPlatform(containers), stateFolder, onTrial, grant, claim)
 		}
-		return protectionProved(host.ContainedPlatform(context.Background(), containers, seccomp), stateFolder, grant, claim)
+		platform := host.ContainedPlatform(context.Background(), containers, seccomp)
+		return protectionProved(platform, stateFolder, false, grant, claim)
 	}
 }
 
+// isOnTrial reports whether the trial names the driver or the family it is a mode of: claude-code covers
+// claude-code-headless.
+func isOnTrial(trial []string, driverKey string) bool {
+	return slices.ContainsFunc(trial, func(named string) bool {
+		return driverKey == named || strings.HasPrefix(driverKey, named+"-")
+	})
+}
+
+// trialDrivers reads the drivers named on the protected-account trial, split by commas.
+func trialDrivers(named string) []string {
+	var drivers []string
+	for _, driver := range strings.Split(named, ",") {
+		if trimmed := strings.TrimSpace(driver); trimmed != "" {
+			drivers = append(drivers, trimmed)
+		}
+	}
+	return drivers
+}
+
 // protectionProved refuses the start unless the program's pinned build has every item of its protection enforced on
-// the platform it runs on.
-func protectionProved(platform host.ProtectionPlatform, stateFolder string, grant client.Grant, claim client.ClaimedStart) error {
+// the platform it runs on. A driver on trial starts once every item has its mechanism, since the trial is where the
+// runs that show each hold are made.
+func protectionProved(
+	platform host.ProtectionPlatform,
+	stateFolder string,
+	onTrial bool,
+	grant client.Grant,
+	claim client.ClaimedStart,
+) error {
 	profile, known := profileFor[grant.Runtime.Driver]
 	if !known {
 		return fmt.Errorf("%q has no pinned profile", grant.Runtime.Driver)
@@ -770,11 +807,12 @@ func protectionProved(platform host.ProtectionPlatform, stateFolder string, gran
 	if err != nil {
 		return err
 	}
-	if !capability.Available {
-		return fmt.Errorf("the protected arrangement of %s %s is not available on this host: journal-agent protection "+
-			"names what is missing", profile.Driver(), claim.Recipe.DriverVersion)
+	if capability.Available || (onTrial && capability.AwaitsEvidenceOnly()) {
+		return nil
 	}
-	return nil
+	return fmt.Errorf("the protected arrangement of %s %s is not available on %s (driver %s, on trial: %t): %s",
+		profile.Driver(), claim.Recipe.DriverVersion, platform.Name, grant.Runtime.DriverKey, onTrial,
+		strings.Join(capability.Shortfalls(), "; "))
 }
 
 // openMainRuntime asks the journal for the main runtime, prepares its start like any other runtime's and builds the
