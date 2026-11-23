@@ -86,8 +86,20 @@ final readonly class AffectedTests
             fn (string $path) => file_exists("{$this->root}/{$path}"),
         )));
         sort($selected);
+        $outermost = array_filter($selected, fn (string $path) => ! self::liesInAnyOf($path, $selected));
 
-        return [self::ARCHITECTURE, ...array_values(array_diff($selected, [self::ARCHITECTURE]))];
+        return [self::ARCHITECTURE, ...array_values(array_diff($outermost, [self::ARCHITECTURE]))];
+    }
+
+    /**
+     * Whether a test path lies inside another of the selected folders, which runs it already; PHPUnit refuses a file
+     * added to its suite twice.
+     *
+     * @param  list<string>  $selected
+     */
+    private static function liesInAnyOf(string $path, array $selected): bool
+    {
+        return array_any($selected, fn (string $folder) => str_starts_with($path, "{$folder}/"));
     }
 
     /**

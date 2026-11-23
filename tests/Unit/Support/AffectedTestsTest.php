@@ -67,6 +67,14 @@ final class AffectedTestsTest extends TestCase
         $this->assertSame(['tests/Architecture', 'tests/Feature/Profiles/SignInSecretTest.php'], $affected);
     }
 
+    public function test_a_test_file_inside_a_selected_folder_is_not_listed_again(): void
+    {
+        $affected = $this->affectedBy('app/Models/NotificationReceipt.php');
+
+        $this->assertContains('tests/Feature/Communication', $affected);
+        $this->assertNotContains('tests/Feature/Communication/NotificationFeedTest.php', $affected);
+    }
+
     /**
      * @return list<string>
      */
