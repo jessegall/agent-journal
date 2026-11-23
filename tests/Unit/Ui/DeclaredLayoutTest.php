@@ -289,4 +289,24 @@ final class DeclaredLayoutTest extends TestCase
         $this->assertSame(72.0, $meter->progress->value);
         $this->assertSame(8.0, $counted->progress->max);
     }
+
+    public function test_a_usage_part_is_a_meter_with_its_percent_and_in_a_row_carries_its_tip(): void
+    {
+        $reader = LayoutPartData::usage('week', 72, 'This week used');
+        $row = LayoutPartData::usage('usage', 72, 'Usage', 'This week 72% used');
+
+        $this->assertSame(1, $reader->assertWithinCatalogue());
+        $this->assertSame(['usage', null], [$reader->style, $reader->detail]);
+        $this->assertSame(['usage-row', 'This week 72% used'], [$row->style, $row->detail]);
+        $this->assertSame(100.0, $row->progress->max);
+    }
+
+    public function test_a_share_part_is_a_short_meter_of_the_pieces_finished(): void
+    {
+        $share = LayoutPartData::share('progress', 3, 8, 'Plan 4', 'tasks');
+
+        $this->assertSame(1, $share->assertWithinCatalogue());
+        $this->assertSame('share', $share->style);
+        $this->assertSame([3.0, 8.0], [$share->progress->value, $share->progress->max]);
+    }
 }

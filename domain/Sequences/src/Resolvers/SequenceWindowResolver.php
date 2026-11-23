@@ -13,13 +13,11 @@ use Domain\Sequences\Models\Sequence;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The Sequences page with one sequence chosen: the sequence and its newest runs. A sequence that is not there is not
+ * The Sequences page with one sequence chosen: the sequence and its steps. A sequence that is not there is not
  * found.
  */
 final readonly class SequenceWindowResolver implements PageResolver
 {
-    private const int RUN_LIMIT = 20;
-
     public function __construct(
         private SequenceRequest $request,
         private SequencesShow $page,
@@ -33,8 +31,6 @@ final readonly class SequenceWindowResolver implements PageResolver
             throw new NotFoundHttpException(previous: $missing);
         }
 
-        $runs = array_values($sequence->runs()->acrossActors()->limit(self::RUN_LIMIT)->get()->all());
-
-        return $this->page->of($sequence, $runs);
+        return $this->page->of($sequence);
     }
 }

@@ -420,6 +420,57 @@ describe('a declared layout', () => {
         expect(view.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('3');
     });
 
+    it('draws an allowance in use as its meter with the percent used, or in a row as the meter alone', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'root',
+                        style: 'stack',
+                        children: [
+                            part({
+                                tag: 'progress',
+                                key: 'week',
+                                style: 'usage',
+                                progress: { value: 72, max: 100, label: 'This week used', unit: 'percent' },
+                            }),
+                            part({
+                                tag: 'progress',
+                                key: 'row',
+                                style: 'usage-row',
+                                detail: 'This week 72% used',
+                                progress: { value: 40, max: 100, label: 'Usage', unit: 'percent' },
+                            }),
+                        ],
+                    }),
+                },
+            },
+        });
+        const meters = view.findAll('[role="meter"]');
+
+        expect(view.text()).toContain('72% used');
+        expect(meters.map((meter) => meter.attributes('aria-valuenow'))).toEqual(['72', '40']);
+    });
+
+    it('draws the share of pieces finished as a short meter with its rounded percent beside it', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'progress',
+                        key: 'plan',
+                        style: 'share',
+                        progress: { value: 3, max: 8, label: 'Plan 4', unit: 'tasks' },
+                    }),
+                },
+            },
+        });
+
+        expect(view.get('[role="meter"]').attributes('aria-valuetext')).toBe('3 of 8 tasks');
+        expect(view.text()).toContain('38%');
+    });
+
     it('draws the leading and trailing parts of a row with only its title linking, and each fact piece as its own link', () => {
         const view = mount(DeclaredLayout, {
             props: {

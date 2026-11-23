@@ -33,7 +33,7 @@ final class SequenceRunPageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
     }
 
-    public function test_the_index_lists_the_stored_sequences_and_a_chosen_one_shows_its_steps_and_runs(): void
+    public function test_the_index_lists_the_stored_sequences_and_a_chosen_one_shows_its_numbered_steps_and_no_runs(): void
     {
         $sequence = Sequence::create('Release', 'Ship a version', [
             new SequenceStep(...['id' => 'tests', 'title' => 'Tests', 'runsWhen' => 'held', 'doneWhen' => 'green']),
@@ -48,8 +48,9 @@ final class SequenceRunPageTest extends TestCase
             ->get("/sequences/{$sequence->id}")
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where(self::READER.'.4.rows.0.key', 'tests')
-                ->where(self::READER.'.6.rows.0.href', "/sequences/runs/{$run->number}"));
+                ->where(self::READER.'.3.rows.0.key', 'tests')
+                ->where(self::READER.'.3.rows.0.leading.0.text', '1')
+                ->missing(self::READER.'.4'));
     }
 
     public function test_a_sequence_without_a_summary_is_listed_by_its_name_alone(): void

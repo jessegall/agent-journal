@@ -17,19 +17,17 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
-use Domain\Sequences\Http\Pages\SequencePageViews;
 use Domain\Sequences\Models\Sequence;
-use Spatie\LaravelData\Optional;
 
 /**
  * The Sequences page as the design draws it: the stored sequences, newest first, each a two-line row of its name and
- * summary, beside the reader of the one chosen.
+ * its step count with what it is about, beside the reader of the one chosen.
  */
 final readonly class SequencesIndex
 {
     private const int LIST_LIMIT = 200;
 
-    public function __construct(private DraftProducers $producers, private SequencePageViews $views) {}
+    public function __construct(private DraftProducers $producers) {}
 
     /**
      * @param  list<LayoutPartData>  $reader  the chosen sequence's reader, none for the index address
@@ -43,7 +41,7 @@ final readonly class SequencesIndex
             array_map(fn (Sequence $sequence) => LayoutRowData::from([
                 'key' => $sequence->id,
                 'label' => $sequence->name,
-                'detail' => $sequence->summary === '' ? Optional::create() : $sequence->summary,
+                'detail' => $this->detailOf($sequence),
                 'href' => route('sequences.sequence', ['sequence' => $sequence->id], false),
                 'isCurrent' => $sequence->id === $chosenId,
             ]), $sequences),
@@ -60,13 +58,23 @@ final readonly class SequencesIndex
             ),
         )
             ->counting(count($sequences))
-            ->withViews(...$this->views->of(false))
             ->creatingWith($this->creation())
             ->withReader(
                 LayoutBackData::from(['href' => route('sequences.index', [], false), 'label' => 'Sequences']),
                 ...$reader,
             )
             ->layout();
+    }
+
+    /**
+     * The row's second line: how many steps the sequence has, then what it is about when it says.
+     */
+    private function detailOf(Sequence $sequence): string
+    {
+        $count = count($sequence->stepList());
+        $steps = $count === 1 ? '1 step' : "{$count} steps";
+
+        return $sequence->summary === '' ? $steps : "{$steps} · {$sequence->summary}";
     }
 
     /**
