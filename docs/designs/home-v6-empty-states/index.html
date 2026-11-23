@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home, version 6 · empty states</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Extends 'Home, version 6 · round 4'. Every rule up to "New in this design" is copied unchanged from that page:
+   the app.css tokens (Stone mono, light and dark), the shell, the sidebar, the top bar, page headers, list rows,
+   readers, setting rows and buttons. Only .emptyfull and the words table below it are new. */
+*{box-sizing:border-box}
+body{margin:0;font-family:'Geist',-apple-system,'Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased;background:var(--page);color:var(--page-text);--page:#eceae8;--page-text:#1c1a18}
+body.dk{--page:#060505;--page-text:#e9e6e2}
+.top{position:sticky;top:0;z-index:300;background:color-mix(in srgb,var(--page) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid color-mix(in srgb,var(--page-text) 10%,transparent)}
+.top .in{padding:9px 24px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.top h1{margin:0 6px 0 0;font-size:14px;font-weight:600}
+.seg2{display:flex;border:1px solid color-mix(in srgb,var(--page-text) 16%,transparent);border-radius:7px;overflow:hidden;flex-wrap:wrap}
+.seg2 button,.tbtn{font:inherit;font-size:12px;padding:5px 9px;border:0;background:transparent;color:inherit;cursor:pointer}
+.seg2 button[aria-pressed=true],.tbtn[aria-pressed=true]{background:color-mix(in srgb,var(--page-text) 14%,transparent);font-weight:500}
+.seg2 button:focus-visible,.tbtn:focus-visible{outline:2px solid var(--page-text);outline-offset:-2px}
+.lbl{font-size:11px;opacity:.65;margin-left:6px}
+.wrap{padding:14px 24px 80px}
+.lead{max-width:1100px;margin:0 0 8px;opacity:.85}
+.stage{overflow-x:auto;padding-bottom:6px}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-top:14px;max-width:1500px}
+.notes div{border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent);border-radius:10px;padding:10px 12px;font-size:12px}
+.notes b{display:block;font-size:12.5px;margin-bottom:2px}
+.small{font-size:11.5px;opacity:.7;margin-top:10px}
+code{font-family:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;font-size:.92em}
+
+/* ---------- app.css tokens ---------- */
+.app{--font-sans:'Geist',-apple-system,'Segoe UI',system-ui,sans-serif;--font-mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --text-reader:17px;--text-title:16px;--text-empty:14px;--text-card:13.5px;--text-body:13px;--text-field:12.5px;--text-small:12px;--text-badge:11.5px;--text-meta:11px;--text-group:10.5px;
+  --radius-badge:4px;--radius-seg:5px;--radius-control:6px;--radius-button:7px;--radius-field:8px;--radius-menu:9px;--radius-bubble:10px;--radius-card:12px;--radius-composer:14px;
+  --ease-journal:cubic-bezier(0.2,0,0,1);--duration-hover:120ms;--duration-pop:180ms;--duration-view:240ms;--duration-panel:340ms;
+  --focus:#262422;--side:#f6f5f3;--bg:#ffffff;--bg-2:#fbfaf9;--raised:#f7f6f4;--hover:#efedea;--sel:#e8e5e1;--chip:#edeae6;--bubble:#f4f2ef;--code-bg:#f6f5f2;--term:#181715;
+  --border:#e9e6e2;--border-2:#dcd8d3;--border-3:#ccc7c1;--line:#e9e6e2;
+  --text:#1c1a18;--text-2:#4a4540;--text-3:#625c56;--text-4:#6f6962;--brand:#262422;--on-brand:#ffffff;--danger:#bf4f3d;
+  --shadow-window:0 10px 30px rgba(20,22,30,.14),0 1px 3px rgba(20,22,30,.08);--shadow-pop:0 6px 20px rgba(20,22,30,.13)}
+.app.dark{--focus:#e8e6e3;--side:#0e0d0c;--bg:#141312;--bg-2:#11100f;--raised:#1a1817;--hover:#201e1c;--sel:#252220;--chip:#282523;--bubble:#1c1a18;--code-bg:#131211;--term:#0b0a0a;
+  --border:#282523;--border-2:#33302d;--border-3:#3f3b37;--line:#252220;
+  --text:#e9e6e2;--text-2:#b0aaa3;--text-3:#a09a93;--text-4:#9a948d;--brand:#e8e6e3;--on-brand:#100f0e;--danger:#df8b7e;
+  --shadow-window:0 14px 36px rgba(0,0,0,.55),0 1px 3px rgba(0,0,0,.4);--shadow-pop:0 8px 22px rgba(0,0,0,.5)}
+
+/* ---------- the shell ---------- */
+.app{display:flex;height:760px;border-radius:var(--radius-card);overflow:hidden;border:1px solid var(--border-2);background:var(--bg);color:var(--text);position:relative;margin:0 auto;font-family:var(--font-sans);font-size:var(--text-body)}
+svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+svg.s13{width:13px;height:13px}svg.s14{width:14px;height:14px}
+.prog-claude{color:#D97757}.prog-codex{color:var(--text)}
+.side{width:216px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:1px;position:relative;z-index:100}
+.brandrow{display:flex;align-items:center;gap:8px;padding:2px 8px 14px;font-weight:600;white-space:nowrap;overflow:hidden}
+.brandrow b{width:20px;height:20px;flex:none;border-radius:var(--radius-control);background:var(--brand);color:var(--on-brand);display:inline-flex;align-items:center;justify-content:center;font-size:var(--text-meta)}
+.nav{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:var(--radius-button);color:var(--text-3);position:relative;white-space:nowrap;border:0;background:transparent;font:inherit;text-align:left;cursor:pointer;width:100%}
+.nav:hover{background:var(--hover);color:var(--text-2)}
+.nav[aria-current=page]{background:var(--sel);color:var(--text);font-weight:500}
+.nav[aria-current=page]::before{content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:2px;border-radius:2px;background:var(--brand)}
+.nav:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.topbar{min-height:40px;flex:none;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);padding:0 10px 0 16px;color:var(--text-2)}
+.crumb{display:flex;align-items:center;gap:8px;min-width:0}
+.crumb .sq{width:8px;height:8px;border-radius:2px;background:var(--brand)}
+.crumb .sep{color:var(--text-4)}
+.crumb b{font-weight:500;color:var(--text)}
+.topbar .r{margin-left:auto;display:flex;align-items:center;gap:4px}
+.who-me{font-size:var(--text-small);color:var(--text-3);margin:0 4px}
+.ib{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius-control);color:var(--text-3);cursor:pointer;border:0;background:transparent;padding:0;font:inherit;flex:none;position:relative}
+.ib:hover{background:var(--hover);color:var(--text)}
+.ib:focus-visible,.btn:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:var(--text-small);color:var(--text-3);white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--text-4);flex:none}
+.dot.solid{background:var(--text-3)}
+.btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;font:inherit;font-size:var(--text-field);border-radius:var(--radius-button);border:1px solid transparent;background:transparent;color:var(--text-2);white-space:nowrap;cursor:pointer;transition:background var(--duration-hover) var(--ease-journal)}
+.btn.sm{height:24px;padding:0 9px;font-size:var(--text-small)}
+.btn:hover{background:var(--hover);color:var(--text)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.btn.primary:hover{filter:brightness(1.12);background:var(--brand);color:var(--on-brand)}
+.btn.bordered{border-color:var(--border-2);background:var(--bg);color:var(--text)}
+.meter{height:4px;border-radius:2px;background:var(--sel);overflow:hidden;display:inline-block}
+.meter i{display:block;height:100%;background:var(--brand)}
+
+/* Lists, readers */
+.lrow{display:flex;align-items:center;gap:10px;padding:7px 12px;border:0;border-bottom:1px solid var(--line);font:inherit;font-size:var(--text-field);width:100%;background:transparent;color:var(--text);text-align:left;cursor:pointer}
+.lrow:hover{background:var(--hover)}
+.lrow[aria-selected=true]{background:var(--sel)}
+.lrow:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.lrow.agrid{display:grid;grid-template-columns:16px minmax(0,1fr) 84px 96px;gap:12px;align-items:center;padding:8px 12px}
+.nm2{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px}
+.nm2 .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm2 small{font-size:var(--text-small);color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agrid .ucol{display:flex;align-items:center}
+.agrid .meter.um{width:84px;height:5px;border-radius:3px}
+.agrid>.st{width:auto}
+.lrow[aria-selected=true] .meter{background:var(--border-3)}
+.reader{padding:18px 22px;max-width:760px}
+.reader h2{margin:0 0 4px;font-size:var(--text-title);font-weight:600}
+.reader .meta{color:var(--text-3);font-size:var(--text-badge)}
+
+/* Pages */
+.pghead{height:52px;flex:none;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line)}
+.pghead h3{margin:0;font-size:var(--text-title);font-weight:600}
+.pghead .sub{color:var(--text-3);font-size:var(--text-small)}
+.pghead .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+.pgbody{flex:1;min-height:0;display:flex}
+.pglist{width:430px;flex:none;border-right:1px solid var(--line);overflow:auto}
+.pgread{flex:1;min-width:0;overflow:auto;display:flex;flex-direction:column}
+.empty{padding:48px 24px;text-align:center;color:var(--text-3);font-size:var(--text-empty)}
+.empty b{display:block;color:var(--text-2);font-weight:500;margin-bottom:4px}
+.empty .btn{margin-top:12px}
+.sgroup{border:1px solid var(--line);border-radius:var(--radius-card);margin:0 0 18px;overflow:hidden}
+.srow{display:flex;align-items:center;gap:16px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:0}
+.srow .t{flex:1}.srow .t small{display:block;color:var(--text-3);font-size:var(--text-small)}
+.sec{font-size:var(--text-group);letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-3);margin:18px 0 8px}
+.field{height:30px;border:1px solid var(--border-3);border-radius:var(--radius-field);display:inline-flex;align-items:center;padding:0 10px;color:var(--text);background:var(--bg);font:inherit;font-size:var(--text-field);width:180px}
+.field:focus{outline:2px solid var(--focus);outline-offset:1px}
+.toggle{width:30px;height:18px;border-radius:9px;background:var(--border-3);position:relative;flex:none;cursor:pointer;border:0;padding:0}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--bg);transition:left var(--duration-hover) var(--ease-journal)}
+.toggle[aria-checked=true]{background:var(--brand)}
+.toggle[aria-checked=true]::after{left:14px;background:var(--on-brand)}
+.use{display:inline-flex;align-items:center;gap:6px;font-size:var(--text-badge);color:var(--text-3);white-space:nowrap}
+.ubar{display:flex;align-items:center;gap:10px;margin-top:6px}
+.ubar .meter{width:220px;height:6px;border-radius:3px}
+.splitb{display:inline-flex;align-items:stretch}
+.splitb .btn{border-color:var(--border-2);background:var(--bg);color:var(--text)}
+.splitb .sb-main{border-radius:var(--radius-button) 0 0 var(--radius-button)}
+.splitb .more{border-radius:0 var(--radius-button) var(--radius-button) 0;border-left:0;padding:0 6px}
+.splitb .btn:hover{background:var(--hover)}
+
+/* ---------- New in this design ---------- */
+/* A list page with no rows: one region under the page header, the empty state centred both ways. The text and the
+   icon use the same tokens as .empty: --text-empty, --text-2 for the title, --text-3 for the sentence. */
+.emptyfull{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
+.emptyfull .in{max-width:360px;text-align:center;color:var(--text-3);font-size:var(--text-empty);display:flex;flex-direction:column;align-items:center}
+.emptyfull .mark{width:40px;height:40px;border-radius:var(--radius-card);border:1px solid var(--line);background:var(--bg-2);color:var(--text-4);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.emptyfull .mark svg.i{width:20px;height:20px}
+.emptyfull b{display:block;color:var(--text-2);font-weight:500;margin-bottom:4px}
+.emptyfull .btn{margin-top:16px}
+.app.frame{height:560px;width:1180px}
+h2.part{font-size:13px;font-weight:600;margin:28px 0 4px}
+p.part{margin:0 0 10px;opacity:.8;max-width:900px;font-size:12.5px}
+.pair{display:flex;flex-direction:column;gap:14px}
+.tag{font-size:11px;opacity:.65;margin:0 0 4px}
+table.words{border-collapse:collapse;font-size:12.5px;max-width:1180px;width:100%}
+table.words th,table.words td{text-align:left;padding:8px 10px;border-bottom:1px solid color-mix(in srgb,var(--page-text) 12%,transparent);vertical-align:top}
+table.words th{font-size:11px;font-weight:600;opacity:.7}
+table.words td:first-child{white-space:nowrap;font-weight:500}
+table.words td:last-child{white-space:nowrap}
+</style>
+</head>
+<body class="dk">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="home" viewBox="0 0 16 16"><path d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/></symbol>
+  <symbol id="todos" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></symbol>
+  <symbol id="plan" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/></symbol>
+  <symbol id="docs" viewBox="0 0 16 16"><path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/></symbol>
+  <symbol id="users" viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.2"/><path d="M2.2 13c.4-2.2 1.9-3.5 3.8-3.5s3.4 1.3 3.8 3.5"/><circle cx="11.2" cy="6" r="1.8"/><path d="M11 9.6c1.6 0 2.8 1.1 3.1 3"/></symbol>
+  <symbol id="account" viewBox="0 0 16 16"><circle cx="8" cy="5.8" r="2.6"/><path d="M3 13.5c.5-2.6 2.5-4 5-4s4.5 1.4 5 4"/></symbol>
+  <symbol id="cog" viewBox="0 0 16 16"><path d="M2.75 5h3.5M9.75 5h3.5M2.75 11h1.5M7.75 11h5.5"/><circle cx="8" cy="5" r="1.75"/><circle cx="6" cy="11" r="1.75"/></symbol>
+  <symbol id="plus" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></symbol>
+  <symbol id="spark" viewBox="0 0 16 16"><path d="M8 1.5v13M1.5 8h13M3.4 3.4l9.2 9.2M12.6 3.4l-9.2 9.2" stroke-width="1.9"/></symbol>
+  <symbol id="bell" viewBox="0 0 16 16"><path d="M4 11V7a4 4 0 0 1 8 0v4l1 1.5H3L4 11Z"/><path d="M6.8 14h2.4"/></symbol>
+  <symbol id="list" viewBox="0 0 16 16"><path d="M3 4.5h10M3 8h10M3 11.5h10"/></symbol>
+  <symbol id="scheme" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5a5.5 5.5 0 0 0 0 11Z" fill="currentColor"/></symbol>
+  <symbol id="caret" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></symbol>
+  <symbol id="power" viewBox="0 0 16 16"><path d="M8 2v6"/><path d="M4.5 4.2a5 5 0 1 0 7 0"/></symbol>
+  <symbol id="seq" viewBox="0 0 16 16"><circle cx="3.5" cy="4" r="1.5"/><circle cx="3.5" cy="12" r="1.5"/><path d="M3.5 5.5v5M6.5 4h7M6.5 12h7M6.5 8h5"/></symbol>
+  <symbol id="comment" viewBox="0 0 16 16"><path d="M3 3.5h10v7H7.5L4.5 13v-2.5H3z"/></symbol>
+</defs></svg>
+
+<div class="top"><div class="in">
+  <h1>Home, version 6 · empty states</h1>
+  <span class="lbl">Page and the after frame</span>
+  <div class="seg2" style="margin-left:auto"><button id="mL">Light</button><button id="mD" aria-pressed="true">Dark</button></div>
+</div></div>
+
+<div class="wrap">
+  <p class="lead">When a list page has no rows yet, it does not split into a list and a reader. Everything under the page header is one region, and one empty state sits in its middle: a muted icon for the subject, a short title, one sentence on what the thing is for, and the action that makes the first one. The page header keeps its title, its count of 0 and its own action. This extends <b>Home, version 6 · round 4</b> and uses its tokens and components unchanged.</p>
+
+  <h2 class="part">Accounts, empty</h2>
+  <p class="part">The header keeps <i>Add account</i> with its menu of other ways. The button in the middle opens the same dialog as the header's main button.</p>
+  <div class="pair"><div><p class="tag">Dark</p><div class="stage" id="accD"></div></div><div><p class="tag">Light</p><div class="stage" id="accL"></div></div></div>
+
+  <h2 class="part">Profiles, empty</h2>
+  <p class="part">Profiles has no header action in round 4, so the header shows only the title and 0. The empty state carries <i>New profile</i>.</p>
+  <div class="pair"><div><p class="tag">Dark</p><div class="stage" id="proD"></div></div><div><p class="tag">Light</p><div class="stage" id="proL"></div></div></div>
+
+  <h2 class="part">The same pattern on the other list pages</h2>
+  <p class="part">Same layout as above. Only the icon and the words change. The action is the same as the page header's main action.</p>
+  <table class="words">
+    <thead><tr><th>Page</th><th>Title</th><th>Sentence</th><th>Action</th></tr></thead>
+    <tbody id="words"></tbody>
+  </table>
+
+  <h2 class="part">Accounts after its first account</h2>
+  <p class="part">As soon as a row exists, the split comes back: the list on the left with the new account selected, its settings on the right. The count reads 1. This frame follows the Light and Dark switch at the top.</p>
+  <div class="stage" id="after"></div>
+
+  <h2 class="part">Rules for builders</h2>
+  <div class="notes">
+    <div><b>When it shows</b>Only when the page has no rows at all. The page draws <code>.emptyfull</code> in place of <code>.pgbody</code>, so there is no list column, no divider and no "Nothing selected" reader.</div>
+    <div><b>Centred in the whole content area</b>Centred both ways in everything under the page header, not in the old list column. On a narrow window it stays centred and the text wraps.</div>
+    <div><b>Width and type</b>The text is at most 360 px wide. Title in <code>--text-2</code>, weight 500; sentence in <code>--text-3</code>; both at <code>--text-empty</code>. The icon is 20 px in <code>--text-4</code> on a 40 px tile.</div>
+    <div><b>Words</b>Title: "No <i>things</i> yet". One plain sentence on what the thing is for. The action uses the header's own words, such as Add account or New plan, and does the same thing.</div>
+    <div><b>The header stays</b>Title, count 0 and the header's action stay as they are, so the page looks the same before and after the first row.</div>
+    <div><b>A filter with no matches is different</b>When rows exist but a filter or search hides them all, the split stays. The list column says "No matches" with the filter named, and offers Clear filter. The reader keeps its own state. Never show the full empty state for this.</div>
+    <div><b>After the first one</b>When the first row is made, the split comes back with that row selected and open in the reader, and the count goes to 1.</div>
+    <div><b>Loading is not empty</b>While the rows are still loading, show nothing in the region. Show the empty state only once the page knows there are no rows.</div>
+  </div>
+  <p class="small">Profiles: the project has no route or form to make a profile yet (routes/profiles/web.php only starts and switches them). New profile needs that flow before it can work.</p>
+</div>
+
+<script>
+const I=(n,c='')=>`<svg class="i ${c}" aria-hidden="true"><use href="#${n}"/></svg>`;
+const CLAUDE=(c='')=>`<svg class="i prog-claude ${c}" aria-hidden="true"><use href="#spark"/></svg>`;
+const NAVS=[['home','Home','home'],['tasks','Tasks','todos'],['plans','Plans','plan'],['docs','Documents','docs'],['sequences','Sequences','seq'],['profiles','Profiles','users'],['accounts','Accounts','account'],['settings','Settings','cog']];
+const sideHtml=page=>`<div class="brandrow"><b>J</b>Journal</div>`+NAVS.map(([id,t,ic])=>`<button class="nav" aria-label="${t}" ${page===id?'aria-current="page"':''}>${I(ic)}${t}</button>`).join('');
+const topbarHtml=title=>`<header class="topbar"><nav class="crumb" aria-label="Breadcrumb"><span class="sq" aria-hidden="true"></span><span>Journal</span><span class="sep" aria-hidden="true">/</span><b aria-current="page">${title}</b></nav>
+  <div class="r"><button class="ib" aria-label="Notifications" title="Notifications">${I('bell','s13')}</button><button class="ib" aria-label="Hide the page names" title="Hide the page names">${I('list','s13')}</button><button class="ib" aria-haspopup="menu" aria-label="Color scheme" title="Color scheme">${I('scheme','s13')}</button><span class="who-me">You</span><button class="ib" aria-label="Sign out" title="Sign out">${I('power','s13')}</button></div></header>`;
+const splitBtn=(title,noun)=>`<span class="splitb"><button class="btn sm sb-main">${I('plus','s14')}${title}</button><button class="btn sm more" aria-haspopup="menu" aria-label="More ways to create ${noun}" title="More ways">${I('caret','s14')}</button></span>`;
+const head=(title,count,actions)=>`<div class="pghead"><h3>${title}</h3><span class="sub">${count}</span><div class="r">${actions}</div></div>`;
+const emptyFull=(title,ic,t,line,action)=>`<div class="emptyfull" role="region" aria-label="${title}"><div class="in"><span class="mark">${I(ic)}</span><b>${t}</b>${line}${action?`<button class="btn sm primary">${I('plus','s14')}${action}</button>`:''}</div></div>`;
+const frame=(dark,page,title,inner)=>`<div class="app frame ${dark?'dark':''}"><nav class="side" aria-label="Pages">${sideHtml(page)}</nav><div class="main">${topbarHtml(title)}<div style="flex:1;min-height:0;display:flex;flex-direction:column">${inner}</div></div></div>`;
+
+const WORDS=[
+  ['Accounts','account','No accounts yet','Agents run on an account. Add a Claude Code or Codex account so they can start work.','Add account'],
+  ['Profiles','users','No profiles yet','A profile is a kind of helper: the program it runs, its models, its rules and whom it answers to.','New profile'],
+  ['Documents','docs','No documents yet','Designs, plans and notes that you and the agents write are kept here.','New document'],
+  ['Tasks','todos','No tasks yet','A task is one piece of work an agent takes on, from start until it is tested.','New task'],
+  ['Plans','plan','No plans yet','A plan breaks bigger work into phases and tasks that agents can pick up.','New plan'],
+  ['Sequences','seq','No sequences yet','A sequence is a list of steps an agent follows the same way each time.','New sequence'],
+  ['Reports','comment','No reports yet','Agents file a report when they finish checking something, so you can read what they found.','Ask for a review'],
+  ['Reminders','bell','No reminders yet','A reminder brings something back to you or an agent at the time you choose.','New reminder']];
+const W=n=>WORDS.find(w=>w[0]===n);
+
+const accEmpty=d=>{const w=W('Accounts');return frame(d,'accounts','Accounts',head('Accounts','0',splitBtn('Add account','an account'))+emptyFull('Accounts',w[1],w[2],w[3],w[4]))};
+const proEmpty=d=>{const w=W('Profiles');return frame(d,'profiles','Profiles',head('Profiles','0','')+emptyFull('Profiles',w[1],w[2],w[3],w[4]))};
+const accAfter=d=>frame(d,'accounts','Accounts',head('Accounts','1',splitBtn('Add account','an account'))+
+  `<div class="pgbody"><div class="pglist" role="region" aria-label="Accounts"><button class="lrow agrid" aria-selected="true">${CLAUDE()}<span class="nm2"><span class="t">Work (Max)</span><small>Claude Code subscription · default</small></span><span class="ucol"><span class="meter um" role="img" aria-label="0% used" title="This week 0% used · this session, the last 5 hours, 0% used"><i style="width:0%"></i></span></span><span class="st"><span class="dot solid"></span>Signed in</span></button></div>
+  <div class="pgread"><div class="reader"><h2>Work (Max)</h2><div class="meta">Claude Code subscription · Expires 18 Dec 2026</div>
+  <div class="sgroup" style="margin-top:16px"><div class="srow"><div class="t">Name<small>Shown in the account list and the agent bar.</small></div><input class="field" value="Work (Max)" aria-label="Name"></div>
+  <div class="srow"><div class="t">Make default<small>Agents use this account when no other is named. The first account is the default.</small></div><button class="toggle" role="switch" aria-checked="true" aria-label="Make default"></button></div>
+  <div class="srow"><div class="t">Sign-in<small>Signed in. It expires on 18 Dec 2026.</small></div><span class="st"><span class="dot solid"></span>Signed in</span></div></div>
+  <div class="sec">Usage</div><div class="sgroup"><div class="srow"><div class="t">This week<small>Resets on Monday at 09:00.</small><div class="ubar"><span class="meter"><i style="width:0%"></i></span><span class="use">0% used</span></div></div></div>
+  <div class="srow"><div class="t">This session, the last 5 hours<small>Resets in 5 hours.</small><div class="ubar"><span class="meter"><i style="width:0%"></i></span><span class="use">0% used</span></div></div></div></div></div></div></div>`);
+
+document.getElementById('accD').innerHTML=accEmpty(true);
+document.getElementById('accL').innerHTML=accEmpty(false);
+document.getElementById('proD').innerHTML=proEmpty(true);
+document.getElementById('proL').innerHTML=proEmpty(false);
+document.getElementById('words').innerHTML=WORDS.map(([p,,t,l,a])=>`<tr><td>${p}</td><td>${t}</td><td>${l}</td><td>${a}</td></tr>`).join('');
+let dark=true;
+const draw=()=>{document.body.classList.toggle('dk',dark);document.getElementById('after').innerHTML=accAfter(dark);
+  document.getElementById('mL').setAttribute('aria-pressed',!dark);document.getElementById('mD').setAttribute('aria-pressed',dark)};
+document.getElementById('mL').onclick=()=>{dark=false;draw()};
+document.getElementById('mD').onclick=()=>{dark=true;draw()};
+draw();
+</script>
+</body>
+</html>
