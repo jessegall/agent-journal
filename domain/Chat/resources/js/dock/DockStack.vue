@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TextLink from '@/components/kit/TextLink.vue';
 import { router } from "@inertiajs/vue3";
 import { computed, onMounted, ref, watch } from "vue";
 import { undock as undockRoute } from "@generated/routes/chat";
@@ -110,9 +111,9 @@ function undock(card: DockCardEnvelope): void {
         <Icon name="pin" :size="14" />
         <span>{{ loaded.length }} docked</span>
         <span class="flex-1"></span>
-        <button type="button" class="hover:text-text" @click="more">
+        <TextLink variant="quiet" @click="more">
           Check for more
-        </button>
+        </TextLink>
         <template v-if="loaded.length > 1">
           <Button
             size="small"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TextLink from '@/components/kit/TextLink.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import IconAction from '@/components/kit/IconAction.vue';
 import Sheet from '@/components/kit/Sheet.vue';
@@ -129,9 +130,9 @@ function followed(receiptId: string): void {
                     @mark-all="notifications.markAll()"
                 />
                 <template v-if="isQuiet">
-                    <button type="button" class="px-2 pt-1 text-small text-text-3 underline" @click="resumeForUser">
+                    <TextLink variant="quiet" class="px-2 pt-1" @click="resumeForUser">
                         Show pop-ups again
-                    </button>
+                    </TextLink>
                 </template>
             </div>
         </template>
@@ -156,9 +157,9 @@ function followed(receiptId: string): void {
                     @mark-all="notifications.markAll()"
                 />
                 <template v-if="isQuiet">
-                    <button type="button" class="text-small text-text-3 underline" @click="resumeForUser">
+                    <TextLink variant="quiet" @click="resumeForUser">
                         Show pop-ups again
-                    </button>
+                    </TextLink>
                 </template>
             </Sheet>
         </template>

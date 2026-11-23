@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/kit/Button.vue';
 import type { RunWindowData } from '@generated/types/processes';
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -78,14 +79,14 @@ function stop(): void {
             <p role="alert">{{ refusal }}</p>
         </template>
         <template v-if="running">
-            <button type="button" :disabled="isStopAsked" @click="stop">
+            <Button variant="bordered" :disabled="isStopAsked" @click="stop">
                 {{ isStopAsked ? 'Stopping…' : 'Stop this run' }}
-            </button>
+            </Button>
         </template>
         <template v-else>
-            <button type="button" @click="clean">
+            <Button variant="bordered" @click="clean">
                 Remove stored output ({{ storedBytes }} bytes)
-            </button>
+            </Button>
         </template>
         <template v-for="part in data.snapshot.parts" :key="part.id">
             <PartCard

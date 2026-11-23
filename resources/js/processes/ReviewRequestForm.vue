@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/kit/Button.vue';
 import type {
     ProposalData,
     RequestWindowData,
@@ -74,9 +75,9 @@ function reject(): void {
                 state === 'awaiting_proof'
             "
         >
-            <button type="button" @click="approveSample">
+            <Button variant="bordered" @click="approveSample">
                 Allow one sample run of this exact line
-            </button>
+            </Button>
         </template>
         <template v-if="isCheck">
             <label class="flex flex-col">
@@ -93,10 +94,10 @@ function reject(): void {
             <textarea v-model="reason" rows="2" />
         </label>
         <div class="flex gap-2">
-            <button type="submit" :disabled="!mayApprove">
+            <Button variant="primary" type="submit" :disabled="!mayApprove">
                 Approve revision {{ proposal.currentRevision }}
-            </button>
-            <button type="button" @click="reject">Reject</button>
+            </Button>
+            <Button variant="bordered" @click="reject">Reject</Button>
         </div>
         <template v-if="!mayApprove">
             <p>

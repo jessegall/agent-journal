@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TextLink from '@/components/kit/TextLink.vue';
 import { Link } from "@inertiajs/vue3";
 import { computed } from "vue";
 import Button from "@kit/Button";
@@ -224,13 +225,13 @@ const isEmpty = computed(
       <NoMessages />
     </template>
     <template v-if="hasOlder">
-      <button
-        type="button"
-        class="self-center text-small text-text-3 underline"
+      <TextLink
+        variant="quiet"
+        class="self-center"
         @click="emit('older')"
       >
         Show earlier messages
-      </button>
+      </TextLink>
     </template>
     <template v-for="{ key, message, line, time, day } in rows" :key="key">
       <template v-if="day !== null">
@@ -358,22 +359,22 @@ const isEmpty = computed(
             <span
               class="absolute -top-3 -right-1 inline-flex gap-1 opacity-0 transition-opacity duration-(--duration-hover) group-focus-within/message:opacity-100 group-hover/message:opacity-100"
             >
-              <button
-                type="button"
-                class="inline-flex h-6 items-center gap-1 rounded-control border border-border-2 bg-raised px-2 text-badge text-text-2 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+              <Button
+                variant="bordered"
+                size="sm"
                 @click="emit('reply', message)"
               >
-                <Icon name="reply" :size="14" />
+                <template #icon><Icon name="reply" :size="14" /></template>
                 {{ message.actions.answer ? "Answer" : "Reply" }}
-              </button>
+              </Button>
               <template v-if="message.actions.decline">
-                <button
-                  type="button"
-                  class="inline-flex h-6 items-center rounded-control border border-border-2 bg-raised px-2 text-badge text-text-2 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+                <Button
+                  variant="bordered"
+                  size="sm"
                   @click="emit('decline', message)"
                 >
                   Decline
-                </button>
+                </Button>
               </template>
             </span>
           </template>

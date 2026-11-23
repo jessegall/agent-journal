@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TextLink from '@/components/kit/TextLink.vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { nextTick, onBeforeUnmount, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
@@ -129,9 +130,9 @@ function quiet(event: Event): void {
                         <Button variant="bordered" size="sm" @click="dismissSummary">Dismiss</Button>
                     </div>
                 </template>
-                <button type="button" class="self-end text-small text-text-3 underline" @click="quiet">
+                <TextLink variant="quiet" class="self-end" @click="quiet">
                     Hide pop-ups for now
-                </button>
+                </TextLink>
             </section>
         </template>
     </div>

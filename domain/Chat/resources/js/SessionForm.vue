@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TextLink from '@/components/kit/TextLink.vue';
 import { dateTime } from "@kit/format";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
@@ -806,13 +807,13 @@ onBeforeUnmount(() => following?.stop());
         <template
           v-if="modeDraft !== 'inherit' && preview?.isModeLocked !== true"
         >
-          <button
-            type="button"
-            class="self-start text-small text-text-2 underline"
+          <TextLink
+            variant="quiet"
+            class="self-start"
             @click="modeDraft = 'inherit'"
           >
             Use saved or profile setting
-          </button>
+          </TextLink>
         </template>
       </div>
       <Field

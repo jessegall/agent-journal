@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/kit/Button.vue';
 import type {
     BundleListPartData,
     BundleRowData,
@@ -53,9 +54,9 @@ function approveBundle(bundle: BundleRowData): void {
                             }}):</span
                         >
                         <span>{{ bundle.rules.join(', ') }}</span>
-                        <button type="button" @click="approveBundle(bundle)">
+                        <Button variant="bordered" @click="approveBundle(bundle)">
                             Activate this bundle
-                        </button>
+                        </Button>
                     </li>
                 </template>
             </ul>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/kit/Button.vue';
 import { dateTime } from '@kit/format';
 import type { ShareAuditData } from '@generated/types/sharing';
 import { useWindowReload } from '@kit/useWindowQuery';
@@ -64,7 +65,7 @@ function older(): void {
             </tbody>
         </table>
         <template v-if="audit.nextAfter">
-            <button type="button" @click="older">Older entries</button>
+            <Button variant="bordered" @click="older">Older entries</Button>
         </template>
         <template v-if="audit.lastPrunedAt">
             <p>

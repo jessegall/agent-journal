@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/kit/Button.vue';
 import type { DriverRequestStatus, RuntimeStatus } from '@/types/generated';
 import { recover } from './runtimeRecovery';
 import RuntimeSettingDetail from './RuntimeSettingDetail.vue';
@@ -25,9 +26,9 @@ function releaseHold(): void {
 <template>
     <section class="flex flex-col gap-2">
         <template v-if="status.canReleaseHold">
-            <button type="button" class="self-start" @click="releaseHold">
+            <Button variant="bordered" class="self-start" @click="releaseHold">
                 Release hold
-            </button>
+            </Button>
         </template>
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 text-sm">
             <dt class="text-text-3">model</dt>

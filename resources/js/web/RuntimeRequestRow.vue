@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/kit/Button.vue';
 import type { DriverRequestStatus } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
 import { recover } from './runtimeRecovery';
@@ -37,24 +38,24 @@ function run(
         </td>
         <td class="flex gap-2">
             <template v-if="request.canRetry">
-                <button
-                    type="button"
+                <Button
+                    variant="bordered"
                     @click="run('retry', 'Why send this request again?')"
                 >
                     Retry
-                </button>
+                </Button>
             </template>
             <template v-if="request.canCancel">
-                <button
-                    type="button"
+                <Button
+                    variant="bordered"
                     @click="run('cancel', 'Why cancel this request?')"
                 >
                     Cancel
-                </button>
+                </Button>
             </template>
             <template v-if="request.canResolve">
-                <button
-                    type="button"
+                <Button
+                    variant="bordered"
                     @click="
                         run(
                             'resolve',
@@ -64,9 +65,9 @@ function run(
                     "
                 >
                     It arrived
-                </button>
-                <button
-                    type="button"
+                </Button>
+                <Button
+                    variant="bordered"
                     @click="
                         run(
                             'resolve',
@@ -76,12 +77,12 @@ function run(
                     "
                 >
                     It never arrived
-                </button>
+                </Button>
             </template>
             <template v-if="request.canSendAgain">
-                <button type="button" @click="router.reload()">Check status</button>
-                <button
-                    type="button"
+                <Button variant="bordered" @click="router.reload()">Check status</Button>
+                <Button
+                    variant="bordered"
                     @click="
                         run(
                             'send-again',
@@ -91,23 +92,23 @@ function run(
                     "
                 >
                     Send again
-                </button>
+                </Button>
             </template>
             <template v-if="request.canResumeScript">
-                <button
-                    type="button"
+                <Button
+                    variant="bordered"
                     @click="run('resume-script', 'Why resume this key script?')"
                 >
                     Resume
-                </button>
+                </Button>
             </template>
             <template v-if="request.canCancelScript">
-                <button
-                    type="button"
+                <Button
+                    variant="bordered"
                     @click="run('cancel-script', 'Why cancel this key script?')"
                 >
                     Cancel script
-                </button>
+                </Button>
             </template>
         </td>
     </tr>
