@@ -48,7 +48,10 @@ final readonly class DocumentsIndex
         ];
 
         return ListPage::make('Documents', $rows, $this->emptyFor($filters))
-            ->searching('Search documents', LayoutFieldData::from(['name' => 'query', 'value' => $filters->query, 'clears' => ['after', 'page']]))
+            ->searching(
+                'Search documents',
+                LayoutFieldData::from(['name' => 'query', 'value' => $filters->query, 'clears' => ['after', 'page']]),
+            )
             ->creatingWith($this->creation('doc', 'New document'), $this->creation('report', 'New report'))
             ->paged(ListPaging::cursor($type === LibraryTypeFilter::All ? null : $this->nextOf($documents ?? $reports)))
             ->withReader(LayoutBackData::from(['href' => '/documents', 'label' => 'Documents']))
@@ -123,7 +126,12 @@ final readonly class DocumentsIndex
             LayoutFormData::from(['method' => ActionMethod::Post, 'href' => route($route, [], false)]),
             [
                 LayoutPartData::field('title', 'Title', LayoutFieldData::from(['name' => 'title']), 'text'),
-                LayoutPartData::field('abstract', 'One line about it', LayoutFieldData::from(['name' => 'abstract']), 'text'),
+                LayoutPartData::field(
+                    'abstract',
+                    'One line about it',
+                    LayoutFieldData::from(['name' => 'abstract']),
+                    'text',
+                ),
                 LayoutPartData::field('body', 'Text', LayoutFieldData::from(['name' => 'body']), 'area'),
             ],
             [

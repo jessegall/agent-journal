@@ -51,7 +51,10 @@ final readonly class SequencesIndex
             ->counting(count($sequences))
             ->withViews(...$this->views->of(false))
             ->creatingWith(...$this->creations())
-            ->withReader(LayoutBackData::from(['href' => route('sequences.index', [], false), 'label' => 'Sequences']), ...$reader)
+            ->withReader(
+                LayoutBackData::from(['href' => route('sequences.index', [], false), 'label' => 'Sequences']),
+                ...$reader,
+            )
             ->layout();
     }
 
@@ -76,14 +79,28 @@ final readonly class SequencesIndex
 
         $guided = LayoutPartData::dialog(
             'guided-sequence',
-            LayoutDialogData::from(['title' => 'Guided sequence', 'confirmation' => 'Draft opened in the editor', 'guidedNoun' => 'sequence']),
+            LayoutDialogData::from([
+                'title' => 'Guided sequence',
+                'confirmation' => 'Draft opened in the editor',
+                'guidedNoun' => 'sequence',
+            ]),
             LayoutPartData::action('open', 'Guided', LayoutActionData::changing([])),
             LayoutFormData::from(['method' => ActionMethod::Get, 'href' => route('sequences.new', [], false)]),
             [
                 LayoutPartData::field('name', 'Name', LayoutFieldData::from(['name' => 'name']), 'text'),
-                LayoutPartData::field('steps', 'Steps, one per line', LayoutFieldData::from(['name' => 'steps']), 'area'),
+                LayoutPartData::field(
+                    'steps',
+                    'Steps, one per line',
+                    LayoutFieldData::from(['name' => 'steps']),
+                    'area',
+                ),
                 LayoutPartData::field('doneWhen', 'Done when', LayoutFieldData::from(['name' => 'doneWhen']), 'text'),
-                LayoutPartData::field('draftedBy', 'Drafted by', LayoutFieldData::from(['name' => 'draftedBy']), 'text'),
+                LayoutPartData::field(
+                    'draftedBy',
+                    'Drafted by',
+                    LayoutFieldData::from(['name' => 'draftedBy']),
+                    'text',
+                ),
             ],
             [LayoutPartData::action('send', 'Open in the editor', LayoutActionData::submitting(), 'primary')],
         );
