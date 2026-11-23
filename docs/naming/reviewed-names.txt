@@ -7723,6 +7723,7 @@ constant	LimitMcpMessage::BYTE_LIMIT
 constant	LimitMcpMessage::MAX_DEPTH
 constant	LimitUsageReport::MOST_BYTES
 constant	LineAdmission::EXPLAIN
+constant	LineAdmission::NEEDS_RUNNER
 constant	ListenerOwnership::CORE
 constant	ListenerOwnership::EXPANDED_INTERFACES
 constant	LoggedMcpCall::OUTCOME_OK
@@ -14916,10 +14917,10 @@ method	EventUnit::stagedBatch()
 method	EventUnit::takePending()
 method	EventUnitLifecycle::__construct()
 method	EventUnitLifecycle::holdUntilReturn()
-method	EventUnitLifecycle::join()
 method	EventUnitLifecycle::publishAfterCommit()
 method	EventUnitLifecycle::run()
 method	EventUnitLifecycle::runTransactionListeners()
+method	EventUnitLifecycle::within()
 method	EventUnitRefused::failedBeforeCommit()
 method	EventUnitRefused::nothingPending()
 method	EventUnitRefused::readyTwice()
@@ -15014,6 +15015,7 @@ method	ExecutionPlanner::__construct()
 method	ExecutionPlanner::plan()
 method	ExecutionPolicy::__construct()
 method	ExecutionPolicy::forDriverScreen()
+method	ExecutionPolicy::isOwnContainer()
 method	ExecutionPolicy::make()
 method	ExecutionPolicyInvalid::imageMissing()
 method	ExecutionReceipt::__construct()
@@ -15904,7 +15906,9 @@ method	HookRewrite::answer()
 method	HookShellAdmission::__construct()
 method	HookShellAdmission::admit()
 method	HookShellAdmission::admitted()
+method	HookShellAdmission::judgedInContainer()
 method	HookShellAdmission::runnerUnavailable()
+method	HookShellAdmission::runsInItsOwnContainer()
 method	HooksServiceProvider::boot()
 method	HooksServiceProvider::register()
 method	Host::advertiseBrowserInput()
@@ -16716,10 +16720,12 @@ method	LimitUsageReport::handle()
 method	LineAdmission::__construct()
 method	LineAdmission::admit()
 method	LineAdmission::admitted()
+method	LineAdmission::deniedOrMistimed()
 method	LineAdmission::failed()
 method	LineAdmission::firstRefusal()
 method	LineAdmission::hasApprovedReader()
 method	LineAdmission::held()
+method	LineAdmission::judge()
 method	LineAdmission::partRefusal()
 method	LineAdmission::permissionRefusal()
 method	LineAdmission::refusal()
@@ -16727,6 +16733,8 @@ method	LineAdmission::refused()
 method	LineAdmission::repeated()
 method	LineAdmission::runOf()
 method	LineAdmission::unknown()
+method	LineAdmission::unknownRefusal()
+method	LineAdmission::unreadable()
 method	LineAdmitted::__construct()
 method	LineNormalizer::hasUnsupportedControl()
 method	LineNormalizer::normalize()
@@ -17383,8 +17391,10 @@ method	MessageAskTool::payload()
 method	MessageAskTool::writeSchema()
 method	MessageAttention::actorsAskedFor()
 method	MessageAttention::casts()
+method	MessageAttention::create()
+method	MessageAttention::ofOriginFor()
 method	MessageAttention::outcomeFields()
-method	MessageAttention::record()
+method	MessageAttention::recordAgain()
 method	MessageAttention::unsaved()
 method	MessageAttention::wakeStatus()
 method	MessageBody::__construct()
@@ -24250,6 +24260,7 @@ method	SharingSupervisor::pruneAudit()
 method	SharingSupervisor::stopAll()
 method	SharingSupervisor::work()
 method	ShellAdmission::admit()
+method	ShellAdmission::judge()
 method	ShellCommand::__construct()
 method	ShellCommand::mayChangeFiles()
 method	ShellCommandParser::parse()
@@ -25204,6 +25215,7 @@ method	StartPlanTool::writeSchema()
 method	StartPolicy::__construct()
 method	StartPolicy::digest()
 method	StartPolicy::mainOnHost()
+method	StartPolicy::runsInOwnContainer()
 method	StartPolicy::withoutProfile()
 method	StartPreflight::assertAdmitted()
 method	StartPreflight::refusals()
@@ -27329,8 +27341,8 @@ method	UndockInput::__construct()
 method	UndockSourceCommand::__construct()
 method	UndockSourceHandler::__construct()
 method	UndockSourceHandler::handle()
-method	UnitOfWork::join()
 method	UnitOfWork::run()
+method	UnitOfWork::within()
 method	UnjudgedCall::__construct()
 method	UnjudgedCall::replyWith()
 method	UnknownAccessType::forKey()
@@ -34923,6 +34935,7 @@ property	HookRetryWindow::$seconds
 property	HookRewrite::$parser
 property	HookShellAdmission::$access
 property	HookShellAdmission::$admission
+property	HookShellAdmission::$policies
 property	HookShellAdmission::$runtimes
 property	HostAccess::$accesses
 property	HostAccess::$scope
@@ -43132,6 +43145,7 @@ variable	$isClosure
 variable	$isComparison
 variable	$isConcreteCommand
 variable	$isConcreteEvent
+variable	$isContained
 variable	$isCoreBase
 variable	$isCoreListener
 variable	$isCurrent

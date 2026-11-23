@@ -50,3 +50,16 @@ yours to resolve at its source.
 - **Never rerun the full suite to check a fix** (user messages 15226, 15229, rule 63). A run that stopped on Pint, PHPStan, types or a fatal error before its tests: rerun just that check. A full run with failures: write every failed test to one list, fix them, rerun only the failed tests by name, and run the full suite again only once the list is empty.
 - At the end of the whole plan, once: the full suite, `composer test`. Never the full suite between phases, never in a loop.
 - Commit after each phase, then go straight on to the next phase without stopping to report.
+
+## Docker steps are tested with a stand-in Docker (rule 76; user messages 19244 to 19255, 19359, 19364)
+
+- Everything an installation does with Docker is tested against a stand-in Docker in the normal suite: install, update, boot, start, stop, image builds and pins, the scripts in `.docker` and `scripts`, and the scripts compose runs.
+- A change to such a script or step ships with its stand-in scenario in the same commit. Never push a pipeline change that no scenario runs.
+- The same scenarios run against a real Docker only from the separate installation suite, never from `composer test`.
+
+## Shell scripts (rule 77; user messages 19357, 19362, 19364)
+
+- A script reads as a list of named steps: a header of at most three lines, a `main` that calls plainly named step functions in order, and `main "$@"` on the last line.
+- Each step is small, with at most one line of why above it. No comment block longer than three lines.
+- Code two scripts need lives once in the shared shell library and is sourced, never copied.
+- No script body inside `compose.yaml`: it is a file of its own.
