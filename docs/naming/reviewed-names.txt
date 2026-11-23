@@ -6007,6 +6007,7 @@ class	SequencesSkill
 class	ServedActivityLog
 class	ServerOrigin
 class	ServerOriginInvalid
+class	SessionAdvisoryLocks
 class	SessionClosed
 class	SessionContainers
 class	SessionEndDetails
@@ -7287,7 +7288,6 @@ constant	AdmissionRefusal::NOTICE
 constant	AdmissionRefused::CODE
 constant	AdvanceAskCommand::MAINTENANCE_SCOPE
 constant	AdvanceDueAsksOnTick::PASS_LIMIT
-constant	AdvisoryStackAdmission::LOCK_NOT_AVAILABLE
 constant	AdvisoryStackAdmission::NAMESPACE
 constant	AgentChatPermission::LOCAL_ENVIRONMENT
 constant	AgentMessageReader::CONTEXT_TOOL
@@ -8143,6 +8143,7 @@ constant	SequenceRun::LINK_TYPE
 constant	SequenceRunsIndex::EMPTY_TEXT
 constant	SequenceWindowResolver::RUN_LIMIT
 constant	SequencesIndex::LIST_LIMIT
+constant	SessionAdvisoryLocks::LOCK_NOT_AVAILABLE
 constant	SessionOutputGrant::MOST_GRANTS
 constant	SessionOutputPaths::DOT_SEGMENT
 constant	SessionProvenance::SESSION
@@ -8260,7 +8261,6 @@ constant	StartReceipt::ACTUAL_MODEL_NOT_REPORTED
 constant	StartReceiptController::UNAVAILABLE
 constant	StartRecordResolver::MOST_PER_OWNER
 constant	StartRefusalCodes::REASONS
-constant	StartRequestLock::LOCK_NOT_AVAILABLE
 constant	StartRequestLock::NAMESPACE
 constant	StateBlocked::CODE
 constant	StateEffectScan::FUNCTIONS
@@ -9841,8 +9841,6 @@ method	AdvisoryEngineLock::release()
 method	AdvisoryStackAdmission::__construct()
 method	AdvisoryStackAdmission::admit()
 method	AdvisoryStackAdmission::admitCaller()
-method	AdvisoryStackAdmission::lock()
-method	AdvisoryStackAdmission::unlock()
 method	AdvisoryStackAdmission::withEventTargets()
 method	Agent::actorId()
 method	Agent::actorType()
@@ -16088,6 +16086,7 @@ method	InboxProviderInvalid::withoutAccess()
 method	InboxRecord::casts()
 method	InboxRecord::create()
 method	InboxRecord::isChatInbox()
+method	InboxRecord::lockedById()
 method	InboxRecord::lockedForSequence()
 method	InboxRecord::lockedForSequences()
 method	InboxRecord::takeSequence()
@@ -18071,6 +18070,7 @@ method	NumberedPages::answer()
 method	NumberedReferenceRecognizer::hint()
 method	NumberedReferenceRecognizer::recognize()
 method	NumberedReferenceRecognizer::word()
+method	NumberedTypeRegistry::__construct()
 method	NumberedTypeRegistry::assertNumbered()
 method	NumberedTypeRegistry::checkDeclarations()
 method	NumbersServiceProvider::boot()
@@ -23355,6 +23355,9 @@ method	ServerOrigin::isUsable()
 method	ServerOrigin::name()
 method	ServerOrigin::scheme()
 method	ServerOriginInvalid::for()
+method	SessionAdvisoryLocks::__construct()
+method	SessionAdvisoryLocks::lock()
+method	SessionAdvisoryLocks::unlock()
 method	SessionClosed::__construct()
 method	SessionContainers::__construct()
 method	SessionContainers::accountOf()
@@ -25283,8 +25286,6 @@ method	StartRequest::neededCapabilities()
 method	StartRequestConflict::forRequest()
 method	StartRequestLock::__construct()
 method	StartRequestLock::hold()
-method	StartRequestLock::lock()
-method	StartRequestLock::unlock()
 method	StartReservations::hasRetired()
 method	StartReservations::reserve()
 method	StartRootRefused::foreignToAgent()
@@ -30777,6 +30778,7 @@ parameter	$unprovenStatuses
 parameter	$unread
 parameter	$unreadCount
 parameter	$unreadable
+parameter	$unreported
 parameter	$unresolved
 parameter	$unresolvedRedirects
 parameter	$unsampledStatuses
@@ -31339,6 +31341,7 @@ property	AdvisoryStackAdmission::$admitted
 property	AdvisoryStackAdmission::$databases
 property	AdvisoryStackAdmission::$engine
 property	AdvisoryStackAdmission::$eventScope
+property	AdvisoryStackAdmission::$locks
 property	AdvisoryStackAdmission::$workStacks
 property	AgentAssignees::$actors
 property	AgentAssignees::$lifecycle
@@ -39665,6 +39668,7 @@ property	ServedActivityLog::$events
 property	ServedActivityLog::$served
 property	ServerOrigin::$configured
 property	ServerOrigin::$runsLocally
+property	SessionAdvisoryLocks::$databases
 property	SessionClosed::$agentId
 property	SessionClosed::$sessionId
 property	SessionContainers::$arrangement
@@ -40639,6 +40643,7 @@ property	StartRequest::$selection
 property	StartRequest::$variant
 property	StartRequestLock::$databases
 property	StartRequestLock::$deadline
+property	StartRequestLock::$locks
 property	StartSampleCall::$commandRequest
 property	StartSampleCall::$permit
 property	StartSampleCall::$requestKey

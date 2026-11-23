@@ -75,6 +75,16 @@ final class InboxRecord extends Model implements ReadableModel
      */
     public static function lockedForSequence(string $id): self
     {
+        return self::lockedById($id);
+    }
+
+    /**
+     * The inbox row locked for update until the transaction ends; a missing inbox is refused by its id.
+     *
+     * @throws InboxUnavailable
+     */
+    public static function lockedById(string $id): static
+    {
         return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw InboxUnavailable::forId($id));
     }
 

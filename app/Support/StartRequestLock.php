@@ -7,7 +7,6 @@ namespace App\Support;
 use App\Exceptions\StackLockTimedOut;
 use Closure;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Database\QueryException;
 
 /**
  * Runs one start request at a time per request id, as a PostgreSQL advisory lock in its own namespace: a session lock
@@ -20,10 +19,9 @@ final readonly class StartRequestLock
      */
     public const int NAMESPACE = 410_027;
 
-    private const string LOCK_NOT_AVAILABLE = '55P03';
-
     public function __construct(
         private DatabaseManager $databases,
+        private SessionAdvisoryLocks $locks,
         private OperationDeadline $deadline,
     ) {}
 
@@ -45,50 +43,12 @@ final readonly class StartRequestLock
             return $work();
         }
 
-        $this->lock($requestId);
+        $this->locks->lock(self::NAMESPACE, $requestId, $this->deadline);
 
         try {
             return $work();
         } finally {
-            $this->unlock($requestId);
-        }
-    }
-
-    /**
-     * @throws StackLockTimedOut
-     */
-    private function lock(string $requestId): void
-    {
-        $connection = $this->databases->connection();
-        $connection->statement("SET lock_timeout = '{$this->deadline->lockMilliseconds()}ms'");
-
-        try {
-            $connection->select('SELECT pg_advisory_lock(?, hashtext(?))', [self::NAMESPACE, $requestId]);
-        } catch (QueryException $failure) {
-            if ($failure->getCode() === self::LOCK_NOT_AVAILABLE) {
-                throw StackLockTimedOut::held($this->deadline->lockMilliseconds(), $failure);
-            }
-
-            throw $failure;
-        } finally {
-            $connection->statement('RESET lock_timeout');
-        }
-    }
-
-    /**
-     * A connection that cannot give the lock back is disconnected, never reused.
-     */
-    private function unlock(string $requestId): void
-    {
-        $connection = $this->databases->connection();
-
-        $released = $connection->selectOne(
-            'SELECT pg_advisory_unlock(?, hashtext(?)) AS released',
-            [self::NAMESPACE, $requestId],
-        );
-
-        if ($released?->released !== true) {
-            $connection->disconnect();
+            $this->locks->unlock(self::NAMESPACE, $requestId);
         }
     }
 }

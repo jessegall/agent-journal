@@ -8,13 +8,12 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\StackAdmission;
 use App\Contracts\Authorization\EngineTargetAccess;
 use App\Contracts\Work\WorkStacks;
-use App\Exceptions\StackLockTimedOut;
 use App\Support\OperationDeadline;
+use App\Support\SessionAdvisoryLocks;
 use App\Support\StateEvents\StateEventScope;
 use App\Values\StackTarget;
 use Closure;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Database\QueryException;
 
 /**
  * Admission to a session's stack as a PostgreSQL session advisory lock in the journal's own namespace, taken in
@@ -29,8 +28,6 @@ final class AdvisoryStackAdmission implements StackAdmission
      */
     public const int NAMESPACE = 410_016;
 
-    private const string LOCK_NOT_AVAILABLE = '55P03';
-
     /**
      * @var array<string, true>
      */
@@ -38,6 +35,7 @@ final class AdvisoryStackAdmission implements StackAdmission
 
     public function __construct(
         private readonly DatabaseManager $databases,
+        private readonly SessionAdvisoryLocks $locks,
         private readonly WorkStacks $workStacks,
         private readonly CurrentActor $actors,
         private readonly EngineTargetAccess $engine,
@@ -52,14 +50,14 @@ final class AdvisoryStackAdmission implements StackAdmission
             return $work();
         }
 
-        $this->lock($sessionId, $deadline);
+        $this->locks->lock(self::NAMESPACE, $sessionId, $deadline);
         $this->admitted[$sessionId] = true;
 
         try {
             return $work();
         } finally {
             unset($this->admitted[$sessionId]);
-            $this->unlock($sessionId);
+            $this->locks->unlock(self::NAMESPACE, $sessionId);
         }
     }
 
@@ -104,40 +102,5 @@ final class AdvisoryStackAdmission implements StackAdmission
         $targets = array_map(fn (string $session) => new StackTarget($actor->id, $session), $sessions);
 
         return $this->eventScope->admit($targets, $work);
-    }
-
-    /**
-     * @throws StackLockTimedOut
-     */
-    private function lock(string $sessionId, OperationDeadline $deadline): void
-    {
-        $connection = $this->databases->connection();
-        $connection->statement("SET lock_timeout = '{$deadline->lockMilliseconds()}ms'");
-
-        try {
-            $connection->select('SELECT pg_advisory_lock(?, hashtext(?))', [self::NAMESPACE, $sessionId]);
-        } catch (QueryException $failure) {
-            if ($failure->getCode() === self::LOCK_NOT_AVAILABLE) {
-                throw StackLockTimedOut::held($deadline->lockMilliseconds(), $failure);
-            }
-
-            throw $failure;
-        } finally {
-            $connection->statement('RESET lock_timeout');
-        }
-    }
-
-    private function unlock(string $sessionId): void
-    {
-        $connection = $this->databases->connection();
-
-        $released = $connection->selectOne(
-            'SELECT pg_advisory_unlock(?, hashtext(?)) AS released',
-            [self::NAMESPACE, $sessionId],
-        );
-
-        if ($released?->released !== true) {
-            $connection->disconnect();
-        }
     }
 }

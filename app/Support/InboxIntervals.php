@@ -99,8 +99,6 @@ final readonly class InboxIntervals
      */
     private function lock(Inbox $inbox): void
     {
-        InboxRecord::query()->whereKey($inbox->inboxId())->lockForUpdate()->firstOr(
-            fn () => throw InboxUnavailable::forId($inbox->inboxId()),
-        );
+        InboxRecord::lockedById($inbox->inboxId());
     }
 }

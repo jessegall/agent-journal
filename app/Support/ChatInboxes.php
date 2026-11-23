@@ -41,9 +41,7 @@ final readonly class ChatInboxes
      */
     public function lockExclusive(Inbox $inbox): void
     {
-        InboxRecord::query()->whereKey($inbox->inboxId())->lockForUpdate()->firstOr(
-            fn () => throw InboxUnavailable::forId($inbox->inboxId()),
-        );
+        InboxRecord::lockedById($inbox->inboxId());
     }
 
     /**
