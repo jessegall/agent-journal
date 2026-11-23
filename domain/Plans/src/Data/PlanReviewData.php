@@ -25,7 +25,7 @@ final class PlanReviewData extends Data
         public readonly bool $mayFinish,
         public readonly int $revision,
         public readonly PlanWorkPreviewData $work,
-        public readonly int|Optional $reviewNumber = new Optional(),
+        public readonly int|null $reviewNumber = null,
         public readonly PlanReviewReceiptData|Optional $receipt = new Optional(),
         public readonly PlanReviewReceiptData|Optional $changesRequested = new Optional(),
     ) {}

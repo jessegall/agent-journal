@@ -36,6 +36,7 @@ use Domain\Chat\Data\ReplyTargetData;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\MessageReaction;
 use Domain\Chat\Support\DockProjection;
+use Spatie\LaravelData\Optional;
 
 /**
  * The chat window's conversation at one chat inbox, a pair or a group: its members with their names and
@@ -314,10 +315,10 @@ final readonly class ChatConversations
         ), $grouped);
     }
 
-    private static function replyTargetOf(MessageView $message): ReplyTargetData|null
+    private static function replyTargetOf(MessageView $message): ReplyTargetData|Optional
     {
         if ($message->replyToId === null && ! $message->replyUnavailable) {
-            return null;
+            return Optional::create();
         }
 
         return ReplyTargetData::from(['id' => $message->replyToId, 'visible' => ! $message->replyUnavailable]);

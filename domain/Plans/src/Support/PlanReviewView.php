@@ -52,8 +52,8 @@ final readonly class PlanReviewView
             'mayFinish' => $mayEdit && $plan->state === PlanState::Started && $plan->progress->unfinished() === 0,
             'revision' => $plan->revision,
             'work' => $this->workOf($plan, $mayEdit),
-            'reviewNumber' => $requested === null ? Optional::create() : $requested->number,
-            'receipt' => $approval === null ? Optional::create() : self::receiptOf($approval),
+            'reviewNumber' => $requested?->number,
+            'receipt' => self::receiptOrMissing($approval),
             'changesRequested' => $latest !== null && $latest->state === PlanReviewState::ChangesRequested
                 ? self::receiptOf($latest)
                 : Optional::create(),
@@ -77,6 +77,11 @@ final readonly class PlanReviewView
             fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
             $this->assignees->eligible('agent', new Page(null, self::RECIPIENTS_SHOWN))->assignees,
         )]);
+    }
+
+    private static function receiptOrMissing(PlanReviewEdition|null $edition): PlanReviewReceiptData|Optional
+    {
+        return $edition === null ? Optional::create() : self::receiptOf($edition);
     }
 
     private static function receiptOf(PlanReviewEdition $edition): PlanReviewReceiptData

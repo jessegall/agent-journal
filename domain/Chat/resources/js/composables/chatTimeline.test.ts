@@ -9,7 +9,6 @@ function row(sequence: number, readByMe = false): ChatMessageData {
     rootId: null,
     speaker: { actor: "user:bea", label: "Bea", driver: null },
     addressedTo: null,
-    replyTo: null,
     body: `Row ${sequence}`,
     state: "sent",
     stateVersion: 1,

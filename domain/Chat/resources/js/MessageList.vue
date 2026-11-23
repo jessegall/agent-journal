@@ -287,7 +287,7 @@ const isEmpty = computed(
               "
             />
           </template>
-          <template v-if="message.replyTo !== null && message.replyTo.visible">
+          <template v-if="message.replyTo !== undefined && message.replyTo.visible">
             <a
               :href="`#message-${message.replyTo.id}`"
               class="text-small text-text-3 underline"
@@ -297,7 +297,7 @@ const isEmpty = computed(
               Replying to an earlier message
             </a>
           </template>
-          <template v-if="message.replyTo !== null && !message.replyTo.visible">
+          <template v-if="message.replyTo !== undefined && !message.replyTo.visible">
             <span class="text-small text-text-3"
               >The original was removed or is hidden from you</span
             >

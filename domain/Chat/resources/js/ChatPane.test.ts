@@ -117,7 +117,6 @@ function chatWith(inboxId: string): ChatData {
             driver: null,
           },
           readByMe: false,
-          replyTo: null,
         },
       ],
     },

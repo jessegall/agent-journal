@@ -141,19 +141,15 @@ final readonly class CodexSignIn implements SignInProtocol
             return null;
         }
 
-        foreach (self::messagesIn($output) as $message) {
-            if ($message->method !== 'account/login/completed') {
-                continue;
-            }
+        $completions = CodexLoginCompletedData::collect(array_values(array_map(
+            fn ($message) => $message->params,
+            array_filter(self::messagesIn($output), fn ($message) => $message->method === 'account/login/completed'),
+        )));
 
-            $completion = CodexLoginCompletedData::from($message->params);
-
-            if ($completion->loginId === $start->loginId) {
-                return $completion;
-            }
-        }
-
-        return null;
+        return array_find(
+            $completions,
+            fn (CodexLoginCompletedData $completion) => $completion->loginId === $start->loginId,
+        );
     }
 
     /**

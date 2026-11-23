@@ -69,11 +69,14 @@ final readonly class RecordMenus implements RecordMenusContract
             $other['key'],
         ]);
 
-        return new LayoutMenuData(
-            $menu->key,
-            $menu->label,
-            array_map(fn (array $group) => LayoutMenuGroupData::from(['key' => $group['key'], 'items' => array_map(fn (RegisteredMenuItem $item) => $this->itemData($item, $routeValues), $group['items'])]), $groups),
-        );
+        return LayoutMenuData::from([
+            'key' => $menu->key,
+            'label' => $menu->label,
+            'groups' => array_map(fn (array $group) => LayoutMenuGroupData::from([
+                'key' => $group['key'],
+                'items' => array_map(fn (RegisteredMenuItem $item) => $this->itemData($item, $routeValues), $group['items']),
+            ]), $groups),
+        ]);
     }
 
     /**

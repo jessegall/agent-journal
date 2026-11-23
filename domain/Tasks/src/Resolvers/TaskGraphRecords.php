@@ -56,7 +56,7 @@ final readonly class TaskGraphRecords implements TaskGraphResolver
         $mayEdit = $this->rules->mayChange($task);
 
         return TaskGraphNode::from(
-            ['id' => $task->id, 'number' => $task->number, 'title' => $task->title, 'state' => $task->state, 'address' => "/tasks/{$task->number}", 'mayEditWaits' => $mayEdit, 'reason' => $mayEdit ? new Optional() : $this->reasonFor($task)],
+            ['id' => $task->id, 'number' => $task->number, 'title' => $task->title, 'state' => $task->state, 'address' => "/tasks/{$task->number}", 'mayEditWaits' => $mayEdit, 'reason' => $mayEdit ? Optional::create() : $this->reasonFor($task)],
         );
     }
 

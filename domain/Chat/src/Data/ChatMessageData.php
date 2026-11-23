@@ -7,6 +7,7 @@ namespace Domain\Chat\Data;
 use App\Enums\MessageState;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -27,7 +28,6 @@ final class ChatMessageData extends Data
         public readonly string|null $rootId,
         public readonly SpeakerData $speaker,
         public readonly string|null $addressedTo,
-        public readonly ReplyTargetData|null $replyTo,
         public readonly string $body,
         public readonly MessageState $state,
         public readonly int $stateVersion,
@@ -41,5 +41,6 @@ final class ChatMessageData extends Data
         public readonly array $deliveries = [],
         #[DataCollectionOf(ReactionData::class)]
         public readonly array $reactions = [],
+        public readonly ReplyTargetData|Optional $replyTo = new Optional(),
     ) {}
 }
