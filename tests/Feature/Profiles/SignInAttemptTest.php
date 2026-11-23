@@ -132,11 +132,13 @@ final class SignInAttemptTest extends TestCase
         $again = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-3');
         $renewal = SignInAttempt::query()->whereKey($again->attemptId)->sole();
         $renewal->waitForUser();
+
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new CompleteSignInCommand($again->attemptId, $renewal->generation, new SignInIdentity('a@example.test', 'subject-1', null)),
         );
+
         $this->actAsOwner();
 
         $this->assertSame([null, $account->id], $this->targetAndResultOf($added));
@@ -147,17 +149,13 @@ final class SignInAttemptTest extends TestCase
         $this->assertSame([null, null], $this->targetAndResultOf($added));
     }
 
-    public function test_a_login_named_only_by_email_is_a_new_row_that_says_it_cannot_be_matched(): void
+    public function test_a_login_named_only_by_email_is_a_new_row(): void
     {
         $this->completeNew('request-1', SignInIdentity::shown('same@example.test'));
         $second = $this->completeNew('request-2', SignInIdentity::shown('same@example.test'));
 
         $this->assertSame(2, Account::query()->count());
-        $attempt = SignInAttemptData::fromAttempt(
-            SignInAttempt::query()->whereKey($second)->with('resultAccount')->sole(),
-        );
-        $this->assertSame(SignInState::Complete, $attempt->state);
-        $this->assertTrue($attempt->isResultUnmatchable);
+        $this->assertSame(SignInState::Complete, SignInAttempt::query()->whereKey($second)->sole()->state);
     }
 
     public function test_an_attempt_no_sign_in_service_took_up_says_so_after_a_while(): void
@@ -229,11 +227,13 @@ final class SignInAttemptTest extends TestCase
     {
         $started = $this->begin($requestKey);
         SignInAttempt::query()->whereKey($started->attemptId)->sole()->waitForUser();
+
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new CompleteSignInCommand($started->attemptId, 0, $identity),
         );
+
         $this->actAsOwner();
 
         return $started->attemptId;
@@ -246,6 +246,7 @@ final class SignInAttemptTest extends TestCase
             'test host',
             new CompleteSignInCommand($attemptId, $generation, SignInIdentity::shown($display)),
         );
+
         $this->actAsOwner();
     }
 

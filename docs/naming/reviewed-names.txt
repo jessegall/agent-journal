@@ -9295,7 +9295,6 @@ method	Account::isGeneration()
 method	Account::isHeldForCheck()
 method	Account::isSamePrincipal()
 method	Account::labelIsTaken()
-method	Account::lacksProviderIdentity()
 method	Account::listed()
 method	Account::lockedChosenForStart()
 method	Account::lockedForChange()
@@ -29095,7 +29094,6 @@ parameter	$isReconciled
 parameter	$isReference
 parameter	$isReplay
 parameter	$isRequired
-parameter	$isResultUnmatchable
 parameter	$isRevisionChanged
 parameter	$isRoot
 parameter	$isRunning
@@ -40176,7 +40174,6 @@ property	SignInAttemptData::$accountId
 property	SignInAttemptData::$driver
 property	SignInAttemptData::$expiresAt
 property	SignInAttemptData::$id
-property	SignInAttemptData::$isResultUnmatchable
 property	SignInAttemptData::$isUnclaimed
 property	SignInAttemptData::$isWaitingForAgents
 property	SignInAttemptData::$method

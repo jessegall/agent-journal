@@ -61,18 +61,6 @@ defineProps<{
                     Signed in as {{ accountIdentity }}.
                 </p>
             </template>
-            <template
-                v-if="
-                    attempt.type === 'new_account' &&
-                    attempt.isResultUnmatchable
-                "
-            >
-                <p class="max-w-[340px] text-small leading-relaxed text-text-3">
-                    {{ driverName(driver) }} does not say which provider account
-                    this is, so signing in to the same account again adds
-                    another one.
-                </p>
-            </template>
         </template>
         <template v-else-if="attempt.state === 'already_added'">
             <span

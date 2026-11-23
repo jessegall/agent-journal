@@ -655,14 +655,6 @@ final class Account extends Model implements EventSource, ReadableModel
         return $this->subject !== null && $identity->subject !== null;
     }
 
-    /**
-     * Whether the account was added without the provider's own subject, so a later sign-in to it cannot be recognised.
-     */
-    public function lacksProviderIdentity(): bool
-    {
-        return $this->subject === null;
-    }
-
     public function isSamePrincipal(SignInIdentity $identity): bool
     {
         return $this->subject !== null

@@ -128,7 +128,6 @@ function attempt(
         type: 'new_account',
         accountId: null,
         resultAccountId: null,
-        isResultUnmatchable: false,
         isWaitingForAgents: false,
         isUnclaimed: false,
         state,
