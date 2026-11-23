@@ -78,11 +78,13 @@ fi
 installation="$HOME/.journal-agent/releases/$version"
 dispatcher="$installation/bin/journal"
 
-# Where the journal command will come from: a dispatcher of this journal already wins on PATH, a writable folder that
-# wins on PATH, or ~/.local/bin with one owned PATH line in the shell's startup file.
+# Where the journal command will come from: a dispatcher of this journal already wins on PATH, the agent-journal
+# launcher wins on PATH and runs the .journal/journal it finds in the folder, a writable folder that wins on PATH, or
+# ~/.local/bin with one owned PATH line in the shell's startup file.
 winner=$(command -v journal 2>/dev/null || true)
 link_folder=""
 startup_file=""
+beside_launcher=0
 case "$winner" in
     "")
         saved_ifs=$IFS
@@ -112,7 +114,13 @@ case "$winner" in
     /*)
         case "$(readlink "$winner" 2>/dev/null || true)" in
             "$HOME"/.journal-agent/releases/*/bin/journal) ;;
-            *) refuse "another journal command wins on PATH at $winner. Remove it or put it later on PATH, then run the install line again." ;;
+            *)
+                if grep -q '^# agent-journal: the journal command' "$winner" 2>/dev/null; then
+                    beside_launcher=1
+                else
+                    refuse "another journal command wins on PATH at $winner. Remove it or put it later on PATH, then run the install line again."
+                fi
+                ;;
         esac
         ;;
     *) refuse "journal is an alias or a function in this shell ($winner). Remove it, then run the install line again." ;;
@@ -154,6 +162,13 @@ if [ -n "$link_folder" ]; then
     [ -e "$link_folder/journal" ] || [ -L "$link_folder/journal" ] || printf 'link\t%s\n' "$link_folder/journal" >>"$changes"
     mkdir -p "$link_folder" && ln -sf "$dispatcher" "$link_folder/journal" ||
         refuse "the link step failed: the journal command could not be linked into $link_folder."
+fi
+
+# The agent-journal launcher runs the .journal/journal of the folder it is started in, so the folder holds a link to
+# this journal's dispatcher; disconnecting removes it with the folder's .journal.
+if [ "$beside_launcher" = 1 ]; then
+    ln -sf "$dispatcher" "$root/.journal/journal" ||
+        refuse "the link step failed: the journal command could not be linked into $root/.journal."
 fi
 
 if [ -n "$startup_file" ] && ! grep -qF '# journal: the journal command' "$startup_file" 2>/dev/null; then
