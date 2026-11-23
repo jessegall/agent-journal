@@ -61,10 +61,12 @@ final class ConnectionsServiceProvider extends ServiceProvider
         ));
 
         $policies->register('Core', new PolicyDefinition(ProjectFilesPolicy::class, [AccessType::Read]));
+
         $links->register([
             ProjectFile::LINK_TYPE => ProjectFile::class,
             ProjectFileVersion::LINK_TYPE => ProjectFileVersion::class,
         ]);
+
         $records->register(ProjectFile::LINK_TYPE, ProjectFileLinkRecords::class);
 
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/connections/connections.php');

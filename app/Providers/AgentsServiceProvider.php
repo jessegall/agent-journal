@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Accounts\ActiveAccountReader;
+use App\Contracts\Activity\ActivityLog;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\CurrentActor;
@@ -57,10 +58,12 @@ use App\Enums\ActorType;
 use App\Enums\AssignmentPurpose;
 use App\Enums\Place;
 use App\Exceptions\AgentContextMissing;
+use App\Models\ActivityEntry;
 use App\Models\Agent;
 use App\Models\NavigationRequest;
 use App\Models\ProcessStart;
 use App\Models\Support\ProcessStartScope;
+use App\Policies\ActivityPolicy;
 use App\Policies\AgentMaintenancePolicy;
 use App\Policies\AgentPolicy;
 use App\Policies\AgentTerminalControlPolicy;
@@ -81,6 +84,7 @@ use App\Resolvers\Support\PendingStartSecrets;
 use App\Resolvers\UnconfiguredAccounts;
 use App\Support\ActiveActorCounterRegistry;
 use App\Support\ActivityDefinition;
+use App\Support\ActivityEntryPruning;
 use App\Support\AgentActivity;
 use App\Support\AgentActors;
 use App\Support\AgentAssignees;
@@ -119,6 +123,7 @@ use App\Support\ReadinessCheckSweep;
 use App\Support\RequestSession;
 use App\Support\ReserveStarts;
 use App\Support\RetainedWorkspaceReads;
+use App\Support\ServedActivityLog;
 use App\Support\ServerOrigin;
 use App\Support\SessionProvenance;
 use App\Support\SessionToolDiscovery;
@@ -158,6 +163,7 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $this->app->bind(ReadGrantContract::class, ReadGrant::class);
         $this->app->bind(AgentResolver::class, AgentLabels::class);
+        $this->app->bind(ActivityLog::class, ServedActivityLog::class);
 
         $this->app->scoped(RequestSession::class, static fn (Container $app) => new RequestSession(
             static fn (): Option => $app->resolved(AgentContext::class)
@@ -322,8 +328,17 @@ final class AgentsServiceProvider extends ServiceProvider
                 ->everyMinute(),
         );
 
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (ActivityEntryPruning $pruning) => $pruning->prune())
+                ->hourly(),
+        );
+
         $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
         $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));
+
+        $policies->register('Core', new PolicyDefinition(ActivityPolicy::class, [AccessType::Read]));
 
         $policies->register('Core', new PolicyDefinition(
             AgentPolicy::class,
@@ -348,7 +363,12 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agents/releases.php');
 
         $assignments->registerAssignees(new AssigneeDefinition(ActorType::Agent->value, AgentAssignees::class));
-        $links->register([NavigationRequest::LINK_TYPE => NavigationRequest::class]);
+
+        $links->register([
+            NavigationRequest::LINK_TYPE => NavigationRequest::class,
+            ActivityEntry::LINK_TYPE => ActivityEntry::class,
+        ]);
+
         $assignments->registerOwner(self::OWNER, []);
 
         $assignments->registerRecord(

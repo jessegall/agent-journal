@@ -11,9 +11,11 @@ use App\Contracts\Navigation\PresentsLayout;
 use App\Enums\Icon;
 use App\Enums\PageDestination;
 use App\Enums\PageSkeleton;
+use App\Enums\WindowPlace;
 use App\Exceptions\InvalidPageDeclaration;
 use App\Support\Reflector;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 
 /**
  * A page a domain owns, keyed within its domain: where it lives under the domain's prefix, the resolver and component
@@ -29,6 +31,7 @@ final class Page
      * @param  list<Slot>  $slots
      * @param  list<ActionRoute>  $actions
      * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone signed in sees the page
+     * @param  WindowPlace|Optional  $place  absent when a work layout has no place for the window
      */
     private function __construct(
         public readonly string $key,
@@ -47,6 +50,7 @@ final class Page
         public readonly array $actions = [],
         public readonly string|null $visibility = null,
         public readonly bool $isDeclared = false,
+        public readonly WindowPlace|Optional $place = new Optional(),
     ) {}
 
     /**
@@ -114,6 +118,11 @@ final class Page
     public function onHome(int $position): self
     {
         return clone ($this, ['homePosition' => $position]);
+    }
+
+    public function placedAs(WindowPlace $place): self
+    {
+        return clone ($this, ['place' => $place]);
     }
 
     public function floating(FloatSize $size): self

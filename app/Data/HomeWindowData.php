@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Enums\Icon;
+use App\Enums\WindowPlace;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -22,5 +24,6 @@ final class HomeWindowData extends Data
         public readonly string $component,
         public readonly string $title,
         public readonly Icon $icon,
+        public readonly WindowPlace|Optional $place = new Optional(),
     ) {}
 }

@@ -1,0 +1,153 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\Records\ReadableModel;
+use App\Enums\ActivityLevel;
+use App\Enums\ActivityType;
+use App\Models\Support\HasActorColumns;
+use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * One thing an agent did in an environment: a file it read or edited, a command it ran, a helper it started or that
+ * finished, or a line it posted, with how much it matters and up to five short things it found.
+ *
+ * @property string $id
+ * @property string $actor_type
+ * @property string $actor_id
+ * @property string|null $environment_id
+ * @property ActivityLevel $level
+ * @property ActivityType $type
+ * @property string $subject
+ * @property list<string>|null $found
+ * @property CarbonImmutable $occurred_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ */
+#[Fillable(['subject'])]
+#[Table('activity_entries')]
+final class ActivityEntry extends Model implements ReadableModel
+{
+    use BoundedReads;
+    use HasActorColumns;
+    use HasUlids;
+    use Linkable;
+
+    public const string LINK_TYPE = 'activity.entry';
+
+    /**
+     * The most entries one read returns.
+     */
+    public const int READ_ENTRY_LIMIT = 100;
+
+    /**
+     * The most entries kept for one environment; older ones are pruned.
+     */
+    public const int KEPT_ENTRY_LIMIT = 2000;
+
+    /**
+     * The longest a subject may be: a command or a chat line is cut to this many characters.
+     */
+    public const int SUBJECT_CHARACTER_LIMIT = 200;
+
+    /**
+     * The most things found one entry keeps.
+     */
+    public const int FOUND_COUNT_LIMIT = 5;
+
+    /**
+     * The longest one thing found may be.
+     */
+    public const int FOUND_CHARACTER_LIMIT = 120;
+
+    // ----------[ Constructors ]----------
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'level' => ActivityLevel::class,
+            'type' => ActivityType::class,
+            'found' => 'array',
+            'occurred_at' => 'immutable_datetime',
+            'created_at' => 'immutable_datetime',
+            'updated_at' => 'immutable_datetime',
+        ];
+    }
+
+    /**
+     * What an agent just did, at its type's level, its subject and what it found cut to their limits.
+     *
+     * @param  list<string>  $found
+     */
+    public static function create(
+        ActorIdentity $actor,
+        ActivityType $type,
+        string $subject,
+        string|null $environmentId,
+        array $found = [],
+    ): self {
+        $entry = new self();
+        $entry->actor_type = $actor->type->value;
+        $entry->actor_id = $actor->id;
+        $entry->environment_id = $environmentId;
+        $entry->level = $type->defaultLevel();
+        $entry->type = $type;
+        $entry->subject = mb_substr($subject, 0, self::SUBJECT_CHARACTER_LIMIT);
+
+        $entry->found = $found === [] ? null : array_map(
+            fn (string $each) => mb_substr($each, 0, self::FOUND_CHARACTER_LIMIT),
+            array_slice($found, 0, self::FOUND_COUNT_LIMIT),
+        );
+
+        $entry->occurred_at = CarbonImmutable::now();
+        $entry->save();
+
+        return $entry;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * An environment's entries older than the entry a reader saw last, newest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestBefore(Builder $query, string|null $environmentId, self|null $cursor): void
+    {
+        $query
+            ->where('environment_id', $environmentId)
+            ->when($cursor !== null, fn (Builder $older) => $older->where(fn (Builder $before) => $before
+                ->where('occurred_at', '<', $cursor->occurred_at)
+                ->orWhere(fn (Builder $same) => $same
+                    ->where('occurred_at', $cursor->occurred_at)
+                    ->where('id', '<', $cursor->id))))
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id');
+    }
+
+    /**
+     * An environment's entries made after the one with this id, oldest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function after(Builder $query, string|null $environmentId, string $entryId): void
+    {
+        $query->where('environment_id', $environmentId)->where('id', '>', $entryId)->orderBy('id');
+    }
+}

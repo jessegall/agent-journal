@@ -1,4 +1,5 @@
 import type { IconName } from '@/components/kit/Icon.vue';
+import type { WindowPlace } from '@/types/generated';
 
 /**
  * Home lays out windows in a tree. Leaves are panes that hold windows as tabs. Each split divides the available
@@ -41,6 +42,8 @@ export type PaneWindow = {
     title: string;
     icon: IconName;
     count?: number;
+    // Where the window sits in a work layout, when it declares a place.
+    place?: WindowPlace;
 };
 
 export type SplitSide = 'left' | 'right' | 'above' | 'below';

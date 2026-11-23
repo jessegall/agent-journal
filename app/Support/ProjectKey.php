@@ -43,9 +43,14 @@ final class ProjectKey implements ServedEnvironment
      */
     public function environmentIds(): array
     {
-        $environmentId = $this->connectedProject?->environmentId;
+        $environmentId = $this->environmentId();
 
         return $environmentId === null ? [] : [$environmentId];
+    }
+
+    public function environmentId(): string|null
+    {
+        return $this->connectedProject?->environmentId;
     }
 
     /**

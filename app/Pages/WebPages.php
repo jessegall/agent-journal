@@ -8,6 +8,8 @@ use App\Contracts\Drivers\NativePartProvider;
 use App\Contracts\Navigation\NavigationProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Records\TypeProvider;
+use App\Data\Activity\ActivityEventData;
+use App\Data\Activity\ActivityWindowData;
 use App\Data\CurrentUserData;
 use App\Data\DeniedWindow;
 use App\Data\FailedWindow;
@@ -32,6 +34,7 @@ use App\Declarations\Page;
 use App\Declarations\Slot;
 use App\Enums\Icon;
 use App\Enums\SlotContextType;
+use App\Enums\WindowPlace;
 use App\Enums\WindowState;
 use App\Http\Controllers\Agents\CheckCapacityController;
 use App\Http\Controllers\Agents\StartPreviewController;
@@ -61,11 +64,13 @@ use App\Http\Controllers\Terminal\SubmitPrivateInputController;
 use App\Http\Controllers\Terminal\TakeTerminalControlController;
 use App\Http\Controllers\Terminal\TerminalControlReceiptController;
 use App\Http\Controllers\Terminal\TerminalFrameController;
+use App\Resolvers\ActivityWindowResolver;
 use App\Resolvers\AskDetailResolver;
 use App\Resolvers\AskInboxResolver;
 use App\Resolvers\HomeWindowResolver;
 use App\Resolvers\RuntimeStatusResolver;
 use App\Resolvers\TerminalWindowResolver;
+use App\Support\ActivityOwnerCheck;
 
 /**
  * The pages Core's Web declares itself, served beside the domains' pages: Home, at /, and the runtime status, at
@@ -80,6 +85,8 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
     public function types(): array
     {
         return [
+            ActivityEventData::class,
+            ActivityWindowData::class,
             CurrentUserData::class,
             DeniedWindow::class,
             FailedWindow::class,
@@ -179,6 +186,11 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                         'cancel-runtime-script',
                     ),
                 ),
+            Page::make('activity', 'Activity', Icon::Activity, ActivityWindowResolver::class, 'ActivityPanel.vue')
+                ->at('activity')
+                ->onHome(62)
+                ->placedAs(WindowPlace::Feed)
+                ->visibleWhen(ActivityOwnerCheck::class),
             Page::make('terminal', 'Terminal', Icon::Activity, TerminalWindowResolver::class, 'TerminalWindow.vue')
                 ->at('agents/{agent}/terminal')
                 ->actions(

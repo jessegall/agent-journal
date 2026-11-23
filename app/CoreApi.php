@@ -713,6 +713,7 @@ use App\Enums\ToolType;
 use App\Enums\UnresolvedType;
 use App\Enums\WakeState;
 use App\Enums\WholeRecord;
+use App\Enums\WindowPlace;
 use App\Enums\WordSegmentType;
 use App\Enums\WorkRepairOutcome;
 use App\Enums\WorkspaceUse;
@@ -2386,6 +2387,7 @@ final class CoreApi
                 LayoutTag::class,
                 ChoiceOption::class,
                 FloatSize::class,
+                WindowPlace::class,
                 NavigationItem::class,
                 SidebarGroup::class,
                 UiMenu::class,

@@ -7,11 +7,9 @@ namespace App\Support\Drivers\Adapters;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\CodexTool;
 use App\Enums\FileAccess;
-use App\Enums\FileOperation;
 use App\Enums\HookEvent;
 use App\Enums\RewriteSupport;
 use App\Enums\ShellDialect;
-use App\Exceptions\UnreadablePayload;
 use App\Exceptions\UnsupportedHook;
 use App\Support\CheckProtectedResources;
 use App\Support\Compatibility\DriverCompatibility;
@@ -31,7 +29,6 @@ use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Inputs\Values\FileChange;
 use App\Support\Inputs\Values\FileChanges;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\PromptDetails;
@@ -58,10 +55,6 @@ final readonly class CodexAdapter implements DriverAdapter
         'collaboration.interrupt_agent',
         'collaboration.list_agents',
     ];
-
-    private const string PATCH_FILE_LINE = '/^\*\*\* (Add|Update|Delete) File: (.+)$/m';
-
-    private const string PATCH_MOVED_FILE = '/^\*\*\* Update File: (.+)\n\*\*\* Move to: (.+)$/m';
 
     public function __construct(
         private ShellCommandParser $parser,
@@ -233,7 +226,7 @@ final readonly class CodexAdapter implements DriverAdapter
             ));
         }
 
-        $changes = $this->patchChanges($hookInput->argument('command'));
+        $changes = FileChanges::fromPatch($hookInput->argument('command'));
 
         foreach ($changes->paths() as $path) {
             if ($this->protection->refusesChange(ProtectedFileRead::resolve($folder, $path))) {
@@ -249,32 +242,5 @@ final readonly class CodexAdapter implements DriverAdapter
             $changes->paths(),
             fn () => new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original)),
         );
-    }
-
-    /**
-     * Every file a patch adds, updates or deletes, in the order the patch names them; a moved file is deleted at its
-     * source and written at its destination.
-     */
-    private function patchChanges(string $patch): FileChanges
-    {
-        preg_match_all(self::PATCH_FILE_LINE, $patch, $matches, PREG_SET_ORDER);
-
-        if ($matches === []) {
-            throw UnreadablePayload::forValue('patch', 'without a file');
-        }
-
-        preg_match_all(self::PATCH_MOVED_FILE, $patch, $moves, PREG_SET_ORDER);
-        $movedSources = array_map(fn (array $move) => trim($move[1]), $moves);
-
-        $changes = array_map(
-            fn (array $match) => in_array(trim($match[2]), $movedSources, true)
-                ? new FileChange(trim($match[2]), FileOperation::Delete)
-                : new FileChange(trim($match[2]), FileOperation::fromPatchAction($match[1])),
-            $matches,
-        );
-
-        $destinations = array_map(fn (array $move) => new FileChange(trim($move[2]), FileOperation::Write), $moves);
-
-        return new FileChanges([...$changes, ...$destinations]);
     }
 }

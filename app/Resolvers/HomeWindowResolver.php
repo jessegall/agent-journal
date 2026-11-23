@@ -48,6 +48,7 @@ final readonly class HomeWindowResolver implements PageResolver
                 'component' => $page->componentName(),
                 'title' => $page->page->title,
                 'icon' => $page->page->icon,
+                'place' => $page->page->place,
             ]), $windows),
             'barSections' => $this->declarations->sectionsIn(RegisteredPage::HOME, 'bar'),
         ]);

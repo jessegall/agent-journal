@@ -2,11 +2,11 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import ActivityWindow from './ActivityWindow.vue';
-import type { ActivityEvent } from './ActivityWindow.vue';
+import type { ActivityEventData } from '@/types/generated';
 
-const events: ActivityEvent[] = [
-    { id: '1', time: '10:00', level: 3, icon: 'chat', who: 'Agent 1', text: 'answered' },
-    { id: '2', time: '10:01', level: 1, icon: 'file', who: 'Agent 1', text: 'read a file' },
+const events: ActivityEventData[] = [
+    { id: '1', occurredAt: '2026-11-23T10:00:00+00:00', level: 3, icon: 'chat', who: 'Agent 1', text: 'answered', found: [] },
+    { id: '2', occurredAt: '2026-11-23T10:01:00+00:00', level: 1, icon: 'file', who: 'Agent 1', text: 'read a file', found: [] },
 ];
 
 describe('the activity window', () => {
@@ -33,5 +33,16 @@ describe('the activity window', () => {
 
         await view.findAll('button').find((button) => button.text() === 'Reconnect')?.trigger('click');
         expect(view.emitted('reconnect')).toHaveLength(1);
+    });
+
+    it('asks for older events once the reader reaches the top while there are more', async () => {
+        const view = mount(ActivityWindow, { props: { events, connection: 'connected', hasOlder: true } });
+
+        await view.find('.overflow-y-auto').trigger('scroll');
+        expect(view.emitted('older')).toHaveLength(1);
+
+        await view.setProps({ hasOlder: false });
+        await view.find('.overflow-y-auto').trigger('scroll');
+        expect(view.emitted('older')).toHaveLength(1);
     });
 });

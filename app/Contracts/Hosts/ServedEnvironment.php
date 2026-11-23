@@ -14,4 +14,9 @@ interface ServedEnvironment
      * @return list<string>
      */
     public function environmentIds(): array;
+
+    /**
+     * The one environment the request serves, none for this installation's own project.
+     */
+    public function environmentId(): string|null;
 }

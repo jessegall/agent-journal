@@ -40,6 +40,7 @@ use App\Enums\Icon;
 use App\Enums\InstallAttemptState;
 use App\Enums\InvitationMode;
 use App\Enums\ProjectWindowState;
+use App\Enums\WindowPlace;
 use App\Resolvers\ConnectProjectWindowResolver;
 use App\Resolvers\DeviceApprovalWindowResolver;
 use App\Resolvers\FileWindowResolver;
@@ -75,10 +76,12 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
             Page::make('project', 'Project', Icon::Project, ProjectWindowResolver::class, 'ProjectWindow.vue')
                 ->at('project')
                 ->onHome(60)
+                ->placedAs(WindowPlace::Tree)
                 ->visibleWhen(ConnectionsOwnerCheck::class),
             Page::make('file', 'File', Icon::File, FileWindowResolver::class, 'FileWindow.vue')
                 ->at('file')
                 ->onHome(61)
+                ->placedAs(WindowPlace::Editor)
                 ->visibleWhen(ConnectionsOwnerCheck::class),
         ];
     }

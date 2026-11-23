@@ -167,6 +167,14 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
     // ----------[ Scopes ]----------
 
     /**
+     * Whether a user is still a member of the inbox's chat.
+     */
+    public static function hasUserIn(string $inboxId): bool
+    {
+        return self::query()->activeFor($inboxId)->where('actor_type', ActorType::User->value)->exists();
+    }
+
+    /**
      * The intervals of an inbox's current members.
      *
      * @param  Builder<self>  $query

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Events\AccountSettingsRequested;
 use App\Events\AccountUseChanged;
+use App\Events\ActivityRecorded;
 use App\Events\AgentHoldReleased;
 use App\Events\AgentRuntimeReassigned;
 use App\Events\ChildCheckoutRequested;
@@ -28,6 +29,13 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    ActivityRecorded::class => [
+        'role' => EventRole::Projection,
+        'migrated' => false,
+        'producers' => [
+            'app/Support/ServedActivityLog.php',
+        ],
+    ],
     AccountSettingsRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,

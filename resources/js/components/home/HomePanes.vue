@@ -47,6 +47,7 @@ const layout = providePaneLayout('home-layout', () =>
             key: window.paneKey,
             title: window.title,
             icon: window.icon,
+            place: window.place,
             count:
                 result?.state === 'ready'
                     ? result.data.pagination?.total

@@ -4,27 +4,23 @@ import ActivityItem from '@/components/kit/ActivityItem.vue';
 import Button from '@/components/kit/Button.vue';
 import EmptyState from '@/components/kit/EmptyState.vue';
 import type { IconName } from '@/components/kit/Icon.vue';
+import type { ActivityEventData } from '@/types/generated';
 import PanelToolbar from '@/components/kit/PanelToolbar.vue';
 import Tabs from '@/components/kit/Tabs.vue';
 
 /**
- * What the agents do, as it happens: level tabs over a feed that scrolls inside its window. It keeps the reader where
- * they are as events arrive, following the newest only while the reader is at the bottom. A connected feed with nothing
- * in it says it is waiting; a level that matches nothing offers Show all; when the connection drops the events stay,
- * with Reconnect. The window is told its events and the state of its connection; it listens to nothing itself.
+ * What the agents do, as it happens: level tabs over a feed that scrolls inside its window, each time shown on the
+ * viewer's own clock. It keeps the reader where they are as events arrive, following the newest only while the reader
+ * is at the bottom, and asks for older events when the reader reaches the top while there are more, keeping the
+ * reader's place as they are added above. A connected feed with nothing in it says it is waiting; a level that
+ * matches nothing offers Show all; when the connection drops the events stay, with Reconnect.
  */
-export type ActivityEvent = {
-    id: string;
-    time: string;
-    level: 1 | 2 | 3;
-    icon: IconName;
-    who: string;
-    text: string;
-    found?: string[];
-};
-
-const props = defineProps<{ events: ActivityEvent[]; connection: 'connected' | 'disconnected' }>();
-const emit = defineEmits<{ reconnect: [] }>();
+const props = defineProps<{
+    events: ActivityEventData[];
+    connection: 'connected' | 'disconnected';
+    hasOlder?: boolean;
+}>();
+const emit = defineEmits<{ reconnect: []; older: [] }>();
 
 const levels = [
     { key: 'all', label: 'All' },
@@ -33,6 +29,8 @@ const levels = [
     { key: '1', label: 'Detail' },
 ] as const;
 
+const clock = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+
 const chosen = ref<string>('all');
 const feed = useTemplateRef<HTMLElement>('feed');
 const shown = computed(() =>
@@ -40,18 +38,32 @@ const shown = computed(() =>
 );
 
 watch(
-    () => props.events.length,
-    async () => {
+    () => props.events.map((event) => event.id),
+    async (ids, previous) => {
         const element = feed.value;
         const wasAtBottom = element === null || element.scrollTop + element.clientHeight >= element.scrollHeight - 8;
+        const addedAbove = previous !== undefined && previous.length > 0 && ids[0] !== previous[0];
+        const heightBefore = element?.scrollHeight ?? 0;
 
         await nextTick();
 
-        if (wasAtBottom && element !== null) {
+        if (element === null) {
+            return;
+        }
+
+        if (addedAbove) {
+            element.scrollTop += element.scrollHeight - heightBefore;
+        } else if (wasAtBottom) {
             element.scrollTop = element.scrollHeight;
         }
     },
 );
+
+function readOlderAtTop(): void {
+    if (props.hasOlder === true && feed.value !== null && feed.value.scrollTop === 0) {
+        emit('older');
+    }
+}
 </script>
 
 <template>
@@ -65,7 +77,7 @@ watch(
                 <Button size="small" variant="bordered" @click="emit('reconnect')">Reconnect</Button>
             </p>
         </template>
-        <div ref="feed" class="min-h-0 flex-1 overflow-y-auto">
+        <div ref="feed" class="min-h-0 flex-1 overflow-y-auto" @scroll="readOlderAtTop">
             <template v-if="events.length === 0">
                 <EmptyState icon="activity" title="Waiting for activity" />
             </template>
@@ -79,9 +91,9 @@ watch(
                     <template v-for="event in shown" :key="event.id">
                         <ActivityItem
                             density="row"
-                            :time="event.time"
-                            :level="event.level"
-                            :icon="event.icon"
+                            :time="clock.format(new Date(event.occurredAt))"
+                            :level="event.level as 1 | 2 | 3"
+                            :icon="event.icon as IconName"
                             :who="event.who"
                             :text="event.text"
                             :found="event.found"
