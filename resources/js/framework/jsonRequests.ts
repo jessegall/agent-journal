@@ -12,8 +12,30 @@ export class JsonRequestFailed extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
+    options?: ErrorOptions,
   ) {
-    super(message);
+    super(message, options);
+  }
+
+  /**
+   * The request never reached the journal, or its answer never came back.
+   */
+  static unanswered(cause: unknown): JsonRequestFailed {
+    return new JsonRequestFailed("lost", 0, "", "No answer came from the journal.", { cause });
+  }
+
+  /**
+   * The journal took the request and failed on its side.
+   */
+  static failedOnServer(status: number): JsonRequestFailed {
+    return new JsonRequestFailed("lost", status, "", "The journal could not answer.");
+  }
+
+  /**
+   * The journal refused the request, with its own code and reason when it gave them.
+   */
+  static refused(status: number, code: string | undefined, reason: string | undefined): JsonRequestFailed {
+    return new JsonRequestFailed("refused", status, code ?? "", reason ?? "The journal refused the request.");
   }
 }
 
@@ -61,21 +83,11 @@ async function requestJson(url: string, init: RequestInit): Promise<unknown> {
       throw failure;
     }
 
-    throw new JsonRequestFailed(
-      "lost",
-      0,
-      "",
-      "No answer came from the journal.",
-    );
+    throw JsonRequestFailed.unanswered(failure);
   }
 
   if (response.status >= 500) {
-    throw new JsonRequestFailed(
-      "lost",
-      response.status,
-      "",
-      "The journal could not answer.",
-    );
+    throw JsonRequestFailed.failedOnServer(response.status);
   }
 
   if (!response.ok) {
@@ -84,12 +96,7 @@ async function requestJson(url: string, init: RequestInit): Promise<unknown> {
       message?: string;
     };
 
-    throw new JsonRequestFailed(
-      "refused",
-      response.status,
-      refusal.code ?? "",
-      refusal.message ?? "The journal refused the request.",
-    );
+    throw JsonRequestFailed.refused(response.status, refusal.code, refusal.message);
   }
 
   if (response.status === 204) {
