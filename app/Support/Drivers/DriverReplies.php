@@ -132,7 +132,8 @@ final class DriverReplies
     }
 
     /**
-     * The reply to a hook that only reports: an empty object, or the context for the agent to read.
+     * The reply to a hook that only reports: the context for the agent to read, or an empty object when there is none
+     * or nobody reads on after the event.
      */
     public static function observation(HookEvent $event, HookAnswer $answer): DriverReply
     {
@@ -142,7 +143,7 @@ final class DriverReplies
             throw InvalidObservationAnswer::forAnswer($type->value);
         }
 
-        if ($answer->context === []) {
+        if ($answer->context === [] || ! $event->hasReaderAfterIt()) {
             return DriverReply::emptyObject();
         }
 

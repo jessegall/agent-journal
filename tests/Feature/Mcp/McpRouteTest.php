@@ -4,7 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\Mcp\Servers\JournalServer;
+use App\Support\AgentContext;
+use App\Support\SignedCall;
+use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiter;
+use Illuminate\Container\Container;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Registrar;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
@@ -180,5 +188,26 @@ final class McpRouteTest extends TestCase
         }
 
         $this->sendMcp($this->start, 'ping')->assertStatus(429)->assertJsonStructure(['retry_after_seconds']);
+    }
+
+    public function test_the_rate_limit_reads_the_agent_from_the_container_of_the_request_in_hand(): void
+    {
+        $booted = $this->app;
+        $requestContainer = clone $booted;
+        $requestContainer->instance(AgentContext::class, new AgentContext(
+            (string) Str::ulid(),
+            (string) Str::ulid(),
+            new SignedCall((string) Str::ulid(), CarbonImmutable::now(), str_repeat('a', 64)),
+            null,
+        ));
+        Container::setInstance($requestContainer);
+
+        try {
+            $limit = $booted->make(RateLimiter::class)->limiter('journal-mcp')(Request::create(JournalServer::PATH));
+        } finally {
+            Container::setInstance($booted);
+        }
+
+        $this->assertSame($requestContainer->make(AgentContext::class)->sessionId, $limit->key);
     }
 }

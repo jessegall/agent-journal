@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Drivers;
 
+use App\Enums\HookEvent;
 use App\Enums\RewriteSupport;
 use App\Exceptions\InvalidStopAnswer;
 use App\Support\Decisions\Decision;
@@ -98,6 +99,18 @@ final class ProgramRepliesTest extends TestCase
     public function test_an_allowed_stop_is_an_empty_object(): void
     {
         $this->assertSame('{}', DriverReplies::stop($this->answer(Decision::allow(), ['Optional context.']))->stdout);
+    }
+
+    public function test_context_goes_to_an_event_the_agent_reads_on_after_and_never_to_a_session_end(): void
+    {
+        $answer = $this->answer(Decision::allow(), ['Read the overview.']);
+
+        $started = json_decode(DriverReplies::observation(HookEvent::SessionStart, $answer)->stdout, true);
+        $ended = DriverReplies::observation(HookEvent::SessionEnd, $answer);
+
+        $this->assertSame(HookEvent::SessionStart->value, $started['hookSpecificOutput']['hookEventName']);
+        $this->assertSame(implode("\n", $answer->context), $started['hookSpecificOutput']['additionalContext']);
+        $this->assertEquals(DriverReply::emptyObject(), $ended);
     }
 
     public function test_a_rewrite_has_no_stop_reply(): void

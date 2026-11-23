@@ -29,4 +29,16 @@ enum HookEvent: string
     {
         return $this === self::SessionStart;
     }
+
+    /**
+     * Whether the agent goes on after the event and so reads context a reply carries. After SessionEnd nobody reads
+     * it, and a driver refuses a reply that carries any.
+     */
+    public function hasReaderAfterIt(): bool
+    {
+        return match ($this) {
+            self::SessionStart, self::UserPromptSubmit, self::PreToolUse, self::PostToolUse, self::Stop => true,
+            self::StopFailure, self::SessionEnd => false,
+        };
+    }
 }

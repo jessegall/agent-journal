@@ -23,6 +23,7 @@ use App\Support\AgentContext;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Container\Container;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
@@ -55,8 +56,10 @@ final class McpServiceProvider extends ServiceProvider
             fn (Schedule $schedule) => $schedule->command('model:prune', ['--model' => [RetainedPage::class]])->daily(),
         );
 
-        $limiter->for('journal-mcp', fn (Request $request): Limit => Limit::perMinute(self::CALLS_PER_MINUTE)
-            ->by($this->app->make(AgentContext::class)->sessionId)
+        // The calling agent lives in the container of the request in hand, which under a long-lived worker is not
+        // the one this provider was booted with.
+        $limiter->for('journal-mcp', static fn (Request $request) => Limit::perMinute(self::CALLS_PER_MINUTE)
+            ->by(Container::getInstance()->make(AgentContext::class)->sessionId)
             ->response(fn (Request $request, array $headers) => new JsonResponse(
                 ['message' => 'Too many calls.', 'retry_after_seconds' => (int) ($headers['Retry-After'] ?? 0)],
                 JsonResponse::HTTP_TOO_MANY_REQUESTS,
