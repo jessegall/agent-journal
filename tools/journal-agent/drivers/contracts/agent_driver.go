@@ -104,6 +104,12 @@ type BrowserControlled interface {
 	ControlFromBrowser(ctx context.Context, control BrowserControl) (OperationResult, error)
 }
 
+// Bootstrapper proves a start's conversation without a turn: it binds the program's own conversation, sends no text,
+// and answers the binding it holds. A driver without it proves its conversation with its first turn.
+type Bootstrapper interface {
+	Bootstrap(ctx context.Context, request RequestIdentity) (OperationResult, error)
+}
+
 // KeyScriptRunner runs registered key scripts; a driver with no terminal answers with OutcomeTerminalRequired.
 type KeyScriptRunner interface {
 	RunKeyScript(ctx context.Context, request KeyScriptRequest) (OperationResult, error)

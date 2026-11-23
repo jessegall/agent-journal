@@ -469,9 +469,10 @@ final class DriverRequest extends Model implements ReadableModel
 
     /**
      * The request as its host receives it to carry out, bound to the runtime's session and process generation and the
-     * session's supervised start, if it has one.
+     * session's supervised start, if it has one; a bootstrap is the initial wake of a start still proving its
+     * conversation.
      */
-    public function claimed(AgentRuntime $runtime, string|null $processStartId): ClaimedRequest
+    public function claimed(AgentRuntime $runtime, string|null $processStartId, bool $isBootstrap): ClaimedRequest
     {
         return new ClaimedRequest(
             $this->agent_runtime_id,
@@ -492,6 +493,7 @@ final class DriverRequest extends Model implements ReadableModel
             $runtime->agent_session_id,
             $processStartId,
             $runtime->process_generation,
+            $isBootstrap,
         );
     }
 

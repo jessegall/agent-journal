@@ -100,7 +100,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
             $claimed[] = $this->privateValues->carriedBy(
                 $request,
-                $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null),
+                $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, false),
             );
         }
 
@@ -122,7 +122,9 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
                 $sessionId = $runtime->agent_session_id;
 
                 // Until a start's driver proves its conversation, only its bootstrap goes out; the rest waits.
-                if (in_array($sessionId, $held, true)) {
+                $isBootstrap = in_array($sessionId, $held, true);
+
+                if ($isBootstrap) {
                     if (! $request->isInitialWakeOf($sessionId)) {
                         continue;
                     }
@@ -131,7 +133,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
                 }
 
                 $request->stage($now);
-                $claim = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null);
+                $claim = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, $isBootstrap);
                 $claimed[] = $this->withPresentation($request, $runtime, $claim, $now);
 
                 if (count($claimed) === $command->limit) {
@@ -160,7 +162,8 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
     /**
      * A wake carries the next batch of chat text for the runtime's driver when one waits; otherwise it keeps the
-     * generic pending-work prompt, so desk work is never starved by a chat backlog.
+     * generic pending-work prompt, so desk work is never starved by a chat backlog. A bootstrap carries no chat text:
+     * the backlog waits for the first wake after the start is ready.
      */
     private function withPresentation(
         DriverRequest $request,
@@ -168,7 +171,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         ClaimedRequest $claim,
         CarbonImmutable $now,
     ): ClaimedRequest {
-        if ($request->operation !== DriverOperation::Wake) {
+        if ($request->operation !== DriverOperation::Wake || $claim->bootstrap) {
             return $claim;
         }
 

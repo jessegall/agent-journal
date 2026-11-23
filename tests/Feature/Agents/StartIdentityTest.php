@@ -77,6 +77,41 @@ final class StartIdentityTest extends TestCase
         $this->assertSame([StartReadiness::Ready, self::CONVERSATION], [$record->refresh()->readiness, $record->native_id]);
     }
 
+    public function test_only_the_initial_wake_of_a_preparing_start_is_claimed_as_its_bootstrap(): void
+    {
+        [$host, $opened, $wake] = $this->startWithMessage();
+
+        $bootstrap = $this->claimed($host);
+        $this->reportApplied($host, $wake, self::CONVERSATION);
+        $after = $this->claimed($host);
+
+        $this->assertSame([[$wake->id, true, null]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->bootstrap, $request->message], $bootstrap));
+        $this->assertSame([[$opened->firstRequestId, false]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->bootstrap], $after));
+    }
+
+    public function test_a_failed_bootstrap_leaves_the_start_holding_its_message(): void
+    {
+        [$host, $opened, $wake, $record] = $this->startWithMessage();
+        $this->claimedIds($host);
+        $wake->refresh();
+
+        $this->asSystem(new ReportRequestProgressCommand(
+            $host->hostId,
+            $wake->id,
+            $wake->attempt_version,
+            RequestProgress::Failed,
+            null,
+            null,
+        ));
+
+        $this->assertNotSame(StartReadiness::Ready, $record->refresh()->readiness);
+        $this->assertNotContains($opened->firstRequestId, $this->claimedIds($host));
+        $this->assertSame(
+            RequestProgress::Accepted,
+            DriverRequest::query()->findOrFail($opened->firstRequestId)->progress,
+        );
+    }
+
     public function test_another_conversation_refuses_the_start_and_the_message_stays_held(): void
     {
         [$host, $opened, $wake, $record] = $this->startWithMessage();
@@ -159,9 +194,15 @@ final class StartIdentityTest extends TestCase
      */
     private function claimedIds(EnrolledHost $host): array
     {
-        $claimed = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        return array_map(fn (ClaimedRequest $request) => $request->requestId, $this->claimed($host));
+    }
 
-        return array_map(fn (ClaimedRequest $request) => $request->requestId, $claimed->requests);
+    /**
+     * @return list<ClaimedRequest>
+     */
+    private function claimed(EnrolledHost $host): array
+    {
+        return $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()))->requests;
     }
 
     private function reportApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void

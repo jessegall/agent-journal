@@ -18,6 +18,8 @@ type fakeOwner struct {
 	threads     int
 	ends        map[string]chan host.CodexTurnEnd
 	interrupted []string
+	// threadRefusal, when set, fails every thread start.
+	threadRefusal error
 }
 
 func newFakeOwner() *fakeOwner { return &fakeOwner{ends: map[string]chan host.CodexTurnEnd{}} }
@@ -25,6 +27,9 @@ func newFakeOwner() *fakeOwner { return &fakeOwner{ends: map[string]chan host.Co
 func (owner *fakeOwner) StartThread(context.Context, host.CodexThreadSettings) (string, error) {
 	owner.mutex.Lock()
 	defer owner.mutex.Unlock()
+	if owner.threadRefusal != nil {
+		return "", owner.threadRefusal
+	}
 	owner.threads++
 	id := "thread-" + strconv.Itoa(owner.threads)
 	owner.ends[id] = make(chan host.CodexTurnEnd, 4)
@@ -120,5 +125,44 @@ func TestAnOwnerThatExitsFailsTheRunningTurn(t *testing.T) {
 
 	if err := endOf(t, driver); !errors.Is(err, ErrProviderTurnFailed) {
 		t.Fatalf("got %v", err)
+	}
+}
+
+func TestABootstrapStartsTheThreadOnceAndTheFirstTurnRunsOnIt(t *testing.T) {
+	owner := newFakeOwner()
+	driver := NewCodexDriver(owner, host.CodexThreadSettings{}, 1)
+
+	first, err := driver.Bootstrap(context.Background(), contracts.RequestIdentity{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	again, err := driver.Bootstrap(context.Background(), contracts.RequestIdentity{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := driver.Wake(context.Background(), contracts.WakeRequest{}); err != nil {
+		t.Fatal(err)
+	}
+
+	if first.Progress != contracts.ProgressApplied || first.Outcome != contracts.OutcomeConfirmed {
+		t.Fatalf("the bootstrap answered %+v", first)
+	}
+	if first.ActualBinding != "thread-1" || again.ActualBinding != "thread-1" || owner.threads != 1 {
+		t.Fatalf("bootstraps bound %q and %q over %d threads", first.ActualBinding, again.ActualBinding, owner.threads)
+	}
+	if driver.NativeIdentity() != "thread-1" {
+		t.Fatalf("the turn ran on %q", driver.NativeIdentity())
+	}
+}
+
+func TestAFailedBootstrapBindsNothing(t *testing.T) {
+	owner := newFakeOwner()
+	owner.threadRefusal = errors.New("the app-server refused the thread")
+	driver := NewCodexDriver(owner, host.CodexThreadSettings{}, 1)
+
+	_, err := driver.Bootstrap(context.Background(), contracts.RequestIdentity{})
+
+	if err == nil || driver.NativeIdentity() != "" || owner.threads != 0 {
+		t.Fatalf("a refused thread start answered %v and bound %q", err, driver.NativeIdentity())
 	}
 }

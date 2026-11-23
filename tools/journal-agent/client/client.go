@@ -52,6 +52,9 @@ type ClaimedRequest struct {
 	SessionID         string  `json:"sessionId"`
 	ProcessStartID    *string `json:"processStartId"`
 	ProcessGeneration int     `json:"processGeneration"`
+	// Bootstrap marks the start's bootstrap: the initial wake of a start still proving its conversation, which carries
+	// no chat text; the driver proves its conversation without a turn.
+	Bootstrap bool `json:"bootstrap"`
 }
 
 // browserControlOperations are the operations a browser writer's grant sends, App\Agents\Enums\DriverOperation's

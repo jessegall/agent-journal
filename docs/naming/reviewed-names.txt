@@ -4572,6 +4572,7 @@ class	ProcessRestoreCheckCommand
 class	ProcessRules
 class	ProcessRun
 class	ProcessRunOutlasted
+class	ProcessRunsShow
 class	ProcessShowCommand
 class	ProcessStart
 class	ProcessStartScope
@@ -5661,7 +5662,6 @@ class	RunnerUnavailable
 class	RunningCommand
 class	RunningCommandTransaction
 class	RunningRuntime
-class	RunsShow
 class	RuntimeActivityReportData
 class	RuntimeEntryData
 class	RuntimeEvent
@@ -19106,6 +19106,8 @@ method	ProcessRun::unfinishedIn()
 method	ProcessRun::withDockParts()
 method	ProcessRunCallers::callerOf()
 method	ProcessRunOutlasted::__construct()
+method	ProcessRunsShow::of()
+method	ProcessRunsShow::removed()
 method	ProcessShowCommand::handle()
 method	ProcessStart::accountIdentity()
 method	ProcessStart::advanceOutputGeneration()
@@ -22161,8 +22163,6 @@ method	RunsCallPipelines::runCall()
 method	RunsCallPipelines::runCalls()
 method	RunsCallPipelines::runReport()
 method	RunsCallPipelines::sendCall()
-method	RunsShow::of()
-method	RunsShow::removed()
 method	RuntimeActivity::expectedTiming()
 method	RuntimeActivity::isStopping()
 method	RuntimeActivityReportData::__construct()
@@ -27489,6 +27489,7 @@ parameter	$bodyHtml
 parameter	$bodyLength
 parameter	$bold
 parameter	$bootId
+parameter	$bootstrap
 parameter	$bottom
 parameter	$bound
 parameter	$boundAt
@@ -28484,6 +28485,7 @@ parameter	$isBase64
 parameter	$isBeforeArguments
 parameter	$isBindingRevoked
 parameter	$isBlock
+parameter	$isBootstrap
 parameter	$isBottom
 parameter	$isCertain
 parameter	$isChanged
@@ -29031,6 +29033,7 @@ parameter	$other
 parameter	$otherId
 parameter	$otherOwner
 parameter	$others
+parameter	$out
 parameter	$outcome
 parameter	$outcomeUserId
 parameter	$outcomes
@@ -32027,6 +32030,7 @@ property	ClaimedCleanup::$target
 property	ClaimedGatewayOperation::$operation
 property	ClaimedGatewayOperation::$type
 property	ClaimedRequest::$attempt
+property	ClaimedRequest::$bootstrap
 property	ClaimedRequest::$effort
 property	ClaimedRequest::$message
 property	ClaimedRequest::$model
@@ -42256,6 +42260,7 @@ variable	$isAwaitingReview
 variable	$isBacktick
 variable	$isBadge
 variable	$isBareEsac
+variable	$isBootstrap
 variable	$isCall
 variable	$isCallOnThis
 variable	$isCancelled

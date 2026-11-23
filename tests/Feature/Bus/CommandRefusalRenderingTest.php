@@ -12,6 +12,7 @@ use App\Support\OneLineRule;
 use App\Support\RefusalMapper;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,8 @@ use Tests\TestCase;
  */
 final class CommandRefusalRenderingTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string REFUSED_HEAD = "The input was refused.\ntitle: The title must be one line";
 
     private const string REVISION_LINE = "\nexpectedRevision: The expected revision field must be at least 1.";

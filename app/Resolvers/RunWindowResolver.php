@@ -8,7 +8,7 @@ use App\Contracts\Navigation\PageResolver;
 use App\Data\PartOutputData;
 use App\Data\ProblemData;
 use App\Data\RunWindowData;
-use App\Http\Pages\Runs\RunsShow;
+use App\Http\Pages\ProcessRuns\ProcessRunsShow;
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Models\OutputAssessment;
 use App\Models\PartRun;
@@ -29,7 +29,7 @@ final readonly class RunWindowResolver implements PageResolver
         private RunPageRequest $page,
         private RunSnapshotResolver $snapshots,
         private StoredOutput $output,
-        private RunsShow $layout,
+        private ProcessRunsShow $layout,
     ) {}
 
     public function read(): DeclaredLayoutData

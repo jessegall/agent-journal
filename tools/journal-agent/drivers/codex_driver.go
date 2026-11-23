@@ -40,7 +40,7 @@ func NewCodexDriver(owner CodexThreads, settings host.CodexThreadSettings, gener
 
 func (driver *CodexDriver) Generation() int { return driver.generation }
 
-// NativeIdentity is the thread the app-server acknowledged, empty until the first turn made it.
+// NativeIdentity is the thread the app-server acknowledged, empty until the bootstrap or the first turn made it.
 func (driver *CodexDriver) NativeIdentity() string {
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
@@ -105,6 +105,25 @@ func (driver *CodexDriver) RunKeyScript(
 ) (contracts.OperationResult, error) {
 	return contracts.OperationResult{
 		Request: request.Request, Progress: contracts.ProgressUnavailable, Outcome: contracts.OutcomeTerminalRequired,
+	}, nil
+}
+
+// Bootstrap starts the thread once and binds it, or answers the thread already bound; it starts no turn and sends no
+// text. A failed thread start binds nothing and is never retried here with another thread.
+func (driver *CodexDriver) Bootstrap(ctx context.Context, request contracts.RequestIdentity) (contracts.OperationResult,
+	error) {
+	driver.mutex.Lock()
+	defer driver.mutex.Unlock()
+	if driver.threadID == "" {
+		threadID, err := driver.owner.StartThread(ctx, driver.settings)
+		if err != nil {
+			return contracts.OperationResult{}, err
+		}
+		driver.threadID = threadID
+	}
+	return contracts.OperationResult{
+		Request: request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed,
+		ActualBinding: driver.threadID,
 	}, nil
 }
 

@@ -287,3 +287,47 @@ func TestATurnWhoseProgramFailsLeavesItsDeliveryUncertain(t *testing.T) {
 		t.Fatalf("the failed turn was reported %v", got)
 	}
 }
+
+// bootstrappingRuntime proves its conversation without a turn.
+type bootstrappingRuntime struct {
+	fakeRuntime
+	bootstraps int
+}
+
+func (runtime *bootstrappingRuntime) Bootstrap(_ context.Context, request contracts.RequestIdentity) (contracts.OperationResult, error) {
+	runtime.bootstraps++
+	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed, ActualBinding: "thread-1"}, nil
+}
+
+func TestABootstrapWakeIsAppliedWithItsBindingAndStartsNoTurn(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := &bootstrappingRuntime{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+	bootstrap := claimed("a", 1, "wake", "")
+	bootstrap.Bootstrap = true
+
+	loop.Take(context.Background(), []client.ClaimedRequest{bootstrap})
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("b", 2, "deliver", "hello")})
+
+	journal.mutex.Lock()
+	applied := journal.reports[0]
+	journal.mutex.Unlock()
+	if runtime.bootstraps != 1 || applied.Progress != "applied" || applied.ActualBinding == nil || *applied.ActualBinding != "thread-1" {
+		t.Fatalf("the bootstrap ran %d times and was reported %+v", runtime.bootstraps, applied)
+	}
+	if len(runtime.prompts) != 1 || runtime.prompts[0] != "hello" {
+		t.Fatalf("the program got %q; want only the delivery after the bootstrap", runtime.prompts)
+	}
+}
+
+func TestAWakeThatIsNoBootstrapStillStartsATurn(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := &bootstrappingRuntime{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+
+	if runtime.bootstraps != 0 || len(runtime.prompts) != 1 {
+		t.Fatalf("a plain wake bootstrapped %d times and ran %d turns", runtime.bootstraps, len(runtime.prompts))
+	}
+}

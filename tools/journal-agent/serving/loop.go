@@ -147,6 +147,7 @@ func (loop *Loop) run(ctx context.Context, runtime *liveRuntime, admission host.
 
 		return false
 	}
+	admission.Wakes = loop.bootstrap(ctx, runtime, admission.Wakes)
 	if !admission.ShouldStartTurn() {
 		return true
 	}
@@ -237,6 +238,30 @@ func (loop *Loop) setting(ctx context.Context, runtime *liveRuntime, request cli
 		runtime.staged = append(runtime.staged, request)
 	}
 	loop.reportResult(ctx, request, result, err)
+}
+
+// bootstrap proves a start's conversation for each bootstrap wake when the driver can without a turn, and reports it
+// with the binding; the runtime stays idle, so a delivery the journal releases once the start is ready runs as a turn
+// on that conversation. It answers the wakes still to run as a turn: all of them for a driver that cannot bootstrap.
+func (loop *Loop) bootstrap(
+	ctx context.Context,
+	runtime *liveRuntime,
+	wakes []client.ClaimedRequest,
+) []client.ClaimedRequest {
+	bootstrapper, ok := runtime.driver.(contracts.Bootstrapper)
+	if !ok {
+		return wakes
+	}
+	rest := make([]client.ClaimedRequest, 0, len(wakes))
+	for _, wake := range wakes {
+		if !wake.Bootstrap {
+			rest = append(rest, wake)
+			continue
+		}
+		result, err := bootstrapper.Bootstrap(ctx, identityOf(wake))
+		loop.reportResult(ctx, wake, result, err)
+	}
+	return rest
 }
 
 // startTurn hands the turn's deliveries to the program as one prompt, or the wake's pending-work prompt when no

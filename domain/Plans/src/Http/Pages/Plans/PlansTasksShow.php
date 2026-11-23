@@ -21,10 +21,10 @@ final readonly class PlansTasksShow
 {
     public function __construct(private PlansIndex $index) {}
 
-    public function of(PlanFiltersData $filters, int $planNumber, string $back, TaskDetails $task): DeclaredLayoutData
+    public function of(PlanFiltersData $filters, int $number, string $back, TaskDetails $task): DeclaredLayoutData
     {
         $reader = DetailPage::make($task->title)
-            ->above(LayoutPartData::action('back', "Back to plan {$planNumber}", LayoutActionData::to($back)))
+            ->above(LayoutPartData::action('back', "Back to plan {$number}", LayoutActionData::to($back)))
             ->summarising($task->text instanceof TaskText ? $task->text->brief : '')
             ->withActions(LayoutPartData::action('open', 'Open task', LayoutActionData::to("/tasks/{$task->number}")))
             ->withFacts(

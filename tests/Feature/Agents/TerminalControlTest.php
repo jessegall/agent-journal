@@ -182,8 +182,8 @@ final class TerminalControlTest extends TestCase
 
         $request = DriverRequest::query()->where('operation', DriverOperation::PrivateInput)->sole();
         $this->assertStringNotContainsString($secret, (string) $request->message);
-        $claimed = $values->carriedBy($request, $request->claimed($runtime, null));
-        $again = $values->carriedBy($request, $request->claimed($runtime, null));
+        $claimed = $values->carriedBy($request, $request->claimed($runtime, null, false));
+        $again = $values->carriedBy($request, $request->claimed($runtime, null, false));
         $this->assertStringContainsString($secret, (string) $claimed->message);
         $this->assertStringNotContainsString($secret, (string) $again->message);
         $this->assertSame(0, DriverRequest::query()->where('message', 'like', '%'.$secret.'%')->count());

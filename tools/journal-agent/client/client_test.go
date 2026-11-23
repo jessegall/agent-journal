@@ -51,6 +51,20 @@ func TestAClaimSendsTheWatchedVersionAndReadsTheWatchedList(t *testing.T) {
 	}
 }
 
+func TestAClaimReadsWhetherARequestIsTheStartsBootstrap(t *testing.T) {
+	journal, _, _ := fakeJournal(t, `{"requests":[{"runtimeId":"runtime-1","requestId":"request-1","bootstrap":true},`+
+		`{"runtimeId":"runtime-1","requestId":"request-2"}],"watched":[],"watched_version":1}`)
+
+	claim, err := journal.Claim(context.Background(), 10, 5, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(claim.Requests) != 2 || !claim.Requests[0].Bootstrap || claim.Requests[1].Bootstrap {
+		t.Fatalf("requests %+v", claim.Requests)
+	}
+}
+
 func TestAScreenReportPostsTheFrameToTheScreenRoute(t *testing.T) {
 	journal, target, body := fakeJournal(t, `{"status":"accepted"}`)
 	frame := screen.Frame{Epoch: "epoch", Sequence: 7, Columns: 20, Rows: [][]screen.Run{{{Text: "hello"}}}}

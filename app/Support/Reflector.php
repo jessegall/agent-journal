@@ -603,16 +603,16 @@ final class Reflector implements ReflectedType
     /**
      * The left-out paths below a property, without its name: start.provenance below start is provenance.
      *
-     * @param  list<string>  $leftOut
+     * @param  list<string>  $out
      * @return list<string>
      */
-    private static function leftOutBelow(array $leftOut, string $name): array
+    private static function leftOutBelow(array $out, string $name): array
     {
         $prefix = "{$name}.";
 
         return array_values(array_map(
             fn (string $path) => substr($path, strlen($prefix)),
-            array_filter($leftOut, fn (string $path) => str_starts_with($path, $prefix)),
+            array_filter($out, fn (string $path) => str_starts_with($path, $prefix)),
         ));
     }
 }
