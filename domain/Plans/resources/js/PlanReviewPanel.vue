@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Textarea from '@/components/kit/Textarea.vue';
 import { nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
@@ -28,7 +29,7 @@ const ending = ref<'cancel' | 'finish' | null>(null);
 const notice = ref('');
 
 const pane = useHostProp();
-const reasonField = useTemplateRef<HTMLTextAreaElement>('reasonField');
+const reasonField = useTemplateRef<InstanceType<typeof Textarea>>('reasonField');
 const reason = ref('');
 const refusal = ref('');
 const pending = ref(false);
@@ -157,12 +158,7 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
         <template v-if="review.mayDecide && review.reviewNumber">
             <label class="flex flex-col gap-1 text-small text-text-2">
                 <span>What has to change</span>
-                <textarea
-                    ref="reasonField"
-                    v-model="reason"
-                    rows="2"
-                    class="rounded-control border border-border-2 bg-bg-2 px-2.5 py-1.5 text-body text-text"
-                />
+                <Textarea ref="reasonField" v-model="reason" :rows="2" />
             </label>
             <div>
                 <Button size="small" :pending="pending" @click="askForChanges(review.reviewNumber)">Request changes</Button>

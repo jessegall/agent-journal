@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Textarea from '@/components/kit/Textarea.vue';
 import Button from '@/components/kit/Button.vue';
 import type {
     ProposalData,
@@ -91,7 +92,7 @@ function reject(): void {
         </template>
         <label class="flex flex-col">
             <span>Reason</span>
-            <textarea v-model="reason" rows="2" />
+            <Textarea v-model="reason" :rows="2" />
         </label>
         <div class="flex gap-2">
             <Button variant="primary" type="submit" :disabled="!mayApprove">

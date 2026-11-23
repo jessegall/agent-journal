@@ -11,16 +11,12 @@ domain/Chat/resources/js/SessionForm.vue:select
 domain/Chat/resources/js/chats/CreateChatForm.vue:input
 domain/Chat/resources/js/dock/parts/ButtonPart.vue:button
 domain/Documents/resources/js/DraftEditor.vue:input
-domain/Documents/resources/js/DraftEditor.vue:textarea
 domain/Documents/resources/js/LinksPanel.vue:input
 domain/Documents/resources/js/RecoverForm.vue:input
-domain/Plans/resources/js/PlanEndDialog.vue:textarea
-domain/Plans/resources/js/PlanReviewPanel.vue:textarea
 domain/Plans/resources/js/PlanWorkDialog.vue:input
 domain/Sequences/resources/js/SequenceEditor.vue:button
 domain/Tasks/resources/js/TaskGraphCanvas.vue:button
 domain/Tasks/resources/js/TaskWaitDialog.vue:input
-domain/Tasks/resources/js/TaskWaitDialog.vue:textarea
 resources/js/components/comments/CommentItem.vue:button
 resources/js/components/home/InformationBar.vue:button
 resources/js/components/layout/LayoutFormField.vue:select
@@ -39,9 +35,7 @@ resources/js/components/panes/PaneTabs.vue:role=tablist
 resources/js/components/panes/SplitOffer.vue:role=dialog
 resources/js/components/shell/NotificationRow.vue:button
 resources/js/components/terminal/TerminalControlBar.vue:input
-resources/js/components/terminal/TerminalView.vue:textarea
 resources/js/components/text/SourcePane.vue:input
-resources/js/components/text/TextComposer.vue:textarea
 resources/js/connections/BindingRow.vue:input
 resources/js/connections/InstallLineField.vue:input
 resources/js/connections/InstallLinePanel.vue:select
@@ -49,7 +43,6 @@ resources/js/framework/DockOfferPicker.vue:input
 resources/js/pages/Login.vue:button
 resources/js/pages/Login.vue:input
 resources/js/processes/ReviewRequestForm.vue:input
-resources/js/processes/ReviewRequestForm.vue:textarea
 resources/js/sharing/GatewayConfigureForm.vue:input
 resources/js/sharing/GatewayConfigureForm.vue:select
 resources/js/sharing/SharePreview.vue:input

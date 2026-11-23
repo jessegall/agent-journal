@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Textarea from '@/components/kit/Textarea.vue';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
@@ -24,7 +25,7 @@ const emit = defineEmits<{ close: [] }>();
 
 const reload = useWindowReload();
 const pane = useHostProp();
-const reasonField = useTemplateRef<HTMLTextAreaElement>('reasonField');
+const reasonField = useTemplateRef<InstanceType<typeof Textarea>>('reasonField');
 const key = ref(crypto.randomUUID());
 const search = ref('');
 const chosen = ref(props.prerequisite ?? '');
@@ -127,13 +128,7 @@ function checkTask(): void {
             <template v-if="change === 'waive'">
                 <label class="flex flex-col gap-1 text-small text-text-2">
                     <span>Reason</span>
-                    <textarea
-                        ref="reasonField"
-                        v-model="reason"
-                        rows="3"
-                        required
-                        class="rounded-control border border-border-2 bg-bg-2 px-2.5 py-1.5 text-body text-text"
-                    />
+                    <Textarea ref="reasonField" v-model="reason" :rows="3" required />
                 </label>
             </template>
             <template v-if="refusal !== ''">

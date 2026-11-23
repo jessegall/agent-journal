@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Textarea from '@/components/kit/Textarea.vue';
 import Button from '@/components/kit/Button.vue';
 import FormErrors from '@/components/kit/FormErrors.vue';
 
@@ -25,7 +26,7 @@ const text = defineModel<string>({ required: true });
 <template>
     <form class="flex flex-col gap-2" @submit.prevent="$emit('send')">
         <slot name="before" />
-        <textarea v-model="text" class="input" rows="3" :placeholder="placeholder" />
+        <Textarea v-model="text" :rows="3" :placeholder="placeholder" />
         <div class="flex flex-wrap gap-2">
             <slot name="actions" />
             <Button type="submit" variant="primary" :pending="pending" :disabled="pending || sendDisabled">{{ sendLabel }}</Button>

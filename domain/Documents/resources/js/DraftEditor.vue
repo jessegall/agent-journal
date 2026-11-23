@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Textarea from '@/components/kit/Textarea.vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { DraftEditorPartData } from '@generated/types/documents';
@@ -151,11 +152,11 @@ onBeforeUnmount(() => {
             aria-label="Abstract"
             placeholder="One line saying what it is"
         />
-        <textarea
+        <Textarea
             v-model="form.body"
-            class="input font-mono"
+            class="font-mono"
             aria-label="Text"
-            rows="16"
+            :rows="16"
         />
         <div class="flex gap-2">
             <Button

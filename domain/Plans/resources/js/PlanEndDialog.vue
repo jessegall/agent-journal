@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Textarea from '@/components/kit/Textarea.vue';
 import { nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
@@ -24,7 +25,7 @@ const emit = defineEmits<{ close: []; refused: [message: string] }>();
 
 const pane = useHostProp();
 const reload = useWindowReload();
-const textField = useTemplateRef<HTMLTextAreaElement>('textField');
+const textField = useTemplateRef<InstanceType<typeof Textarea>>('textField');
 const text = ref('');
 const refusal = ref('');
 const status = ref<'editing' | 'sending' | 'unknown'>('editing');
@@ -75,12 +76,7 @@ async function send(): Promise<void> {
             </p>
             <label class="flex flex-col gap-1 text-small text-text-2">
                 <span>{{ change === 'cancel' ? 'Reason' : 'What the plan achieved' }}</span>
-                <textarea
-                    ref="textField"
-                    v-model="text"
-                    rows="3"
-                    class="rounded-control border border-border-2 bg-bg-2 px-2.5 py-1.5 text-body text-text"
-                />
+                <Textarea ref="textField" v-model="text" :rows="3" />
             </label>
             <template v-if="refusal !== ''">
                 <p role="alert" class="text-small text-danger">{{ refusal }}</p>

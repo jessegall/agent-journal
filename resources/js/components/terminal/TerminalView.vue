@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Textarea from '@/components/kit/Textarea.vue';
 import { computed, ref, useId, watch } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import TerminalRow from './TerminalRow.vue';
@@ -116,12 +117,12 @@ const cursorStyle = computed(() => {
                     <Button variant="bordered" size="sm" @click="readScreen">Refresh</Button>
                     <Button variant="ghost" size="sm" @click="closeReader">Close reader</Button>
                 </div>
-                <textarea
-                    class="max-h-[40vh] min-h-24 w-full resize-y rounded border border-border-2 bg-bg p-2 font-mono text-small"
+                <Textarea
+                    class="max-h-[40vh] w-full font-mono text-small"
                     readonly
-                    :value="snapshot"
+                    :model-value="snapshot"
                     aria-label="Terminal screen as text"
-                ></textarea>
+                />
             </section>
         </template>
         <template v-if="screen.restarted">
