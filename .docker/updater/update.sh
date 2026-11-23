@@ -99,7 +99,7 @@ install() {
 enroll_rebuilt_host() {
     [ "$arrangement" = contained ] && [ "$schema_rebuilt" = yes ] || return 0
     name=$(sed -n 's/^AGENTS_INSTALLATION_NAME=//p' .env | tail -n 1)
-    enrolled=$(docker compose run --rm -T app php artisan agents:host-enroll "${name:-journal}" --contained) || return 1
+    enrolled=$(docker compose run --rm -T app php artisan agents:host-enroll "${name:-journal}" --contained --root /workspace) || return 1
     host_id=$(printf '%s\n' "$enrolled" | sed -n 's/^Host \([0-9a-z]*\) is enrolled.*/\1/p')
     secret=$(printf '%s\n' "$enrolled" | tail -n 1 | tr -d '\r')
     [ -n "$host_id" ] && [ -n "$secret" ] || { echo "the rebuilt host's enrolment printed no id or secret"; return 1; }
