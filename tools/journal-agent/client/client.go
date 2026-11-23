@@ -562,6 +562,24 @@ type RuntimeStart struct {
 	Effort            *string `json:"effort"`
 }
 
+// RequestedModel is the model the journal asked this start to run on; empty when it leaves the choice to the program.
+func (runtime RuntimeStart) RequestedModel() string {
+	if runtime.Model == nil {
+		return ""
+	}
+
+	return *runtime.Model
+}
+
+// RequestedEffort is the effort the journal asked this start to run with; empty when it named none.
+func (runtime RuntimeStart) RequestedEffort() string {
+	if runtime.Effort == nil {
+		return ""
+	}
+
+	return *runtime.Effort
+}
+
 // DriverBuild is the build of the program the grant starts.
 func (grant Grant) DriverBuild() string {
 	return grant.Runtime.DriverBuild

@@ -52,7 +52,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 		return nil, err
 	}
 
-	start := contracts.Start{Mode: recording.TerminalMode, SessionID: conversationID, Protected: manifest.IsProtected()}
+	start := containedTerminalStart(conversationID, prepared, manifest)
 	process, err := containedProcessOf(profile, opener.sessionJournalURL, prepared, runtimeID, start,
 		prepared.Grant.Runtime.ProcessGeneration, os.Environ())
 	if err != nil {
@@ -203,6 +203,19 @@ func (turns containedTurns) TurnCommand(start contracts.Start, generation int) (
 // settings inline, the image's paths for its home, account and relays, and an environment that names no path of the
 // host: the account recipe's settings with the account folder at the account home, the start's credential and
 // generation, its pinned profile and the egress proxy.
+// containedTerminalStart is the terminal start of a contained runtime: a new conversation on the model and effort
+// the journal asked for, so the program never falls back to the account's own default model.
+func containedTerminalStart(
+	conversationID string,
+	prepared host.PreparedStart,
+	manifest host.ContainerManifest,
+) contracts.Start {
+	return contracts.Start{
+		Mode: recording.TerminalMode, SessionID: conversationID, Protected: manifest.IsProtected(),
+		Model: prepared.Grant.Runtime.RequestedModel(), Effort: prepared.Grant.Runtime.RequestedEffort(),
+	}
+}
+
 func containedProcessOf(
 	profile contracts.DriverProfile,
 	journalURL string,

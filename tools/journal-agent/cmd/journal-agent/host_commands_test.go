@@ -182,6 +182,30 @@ func TestATerminalStartCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
 	}
 }
 
+// User message 19542: a terminal start on this machine names the model the journal asked for, for both programs.
+func TestATerminalStartRunsOnTheModelTheJournalAskedFor(t *testing.T) {
+	asked := "haiku"
+
+	for _, driver := range []struct {
+		profile profilecontracts.DriverProfile
+		option  string
+	}{{profiles.ClaudeCode{}, "--model"}, {profiles.Codex{}, "-m"}} {
+		folder := t.TempDir()
+		grant := client.Grant{Token: "launch-token", Runtime: client.RuntimeStart{Folder: folder, Model: &asked}}
+
+		launch, err := startOf(driver.profile, folder, "http://journal.test", "", "runtime-1", grant,
+			[]string{"LANG=C"}, nil, nil, driver.profile.Driver())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		option := slices.Index(launch.Command, driver.option)
+		if option < 0 || launch.Command[option+1] != asked {
+			t.Fatalf("%s starts without the model asked for: %v", driver.profile.Driver(), launch.Command)
+		}
+	}
+}
+
 // The Codex terminal starts the interactive client in its own PTY: no exec, no JSON stream, and the grant's
 // credential and generation in its environment like every terminal start.
 func TestACodexTerminalStartLaunchesTheInteractiveClient(t *testing.T) {

@@ -34,6 +34,35 @@ func containedStart() host.PreparedStart {
 	}
 }
 
+// User message 19542: a terminal session started as haiku ran the account's default model, because the terminal
+// start named no model. Every terminal start names the model the journal asked for, new and resumed alike.
+func TestAContainedTerminalStartRunsOnTheModelTheJournalAskedFor(t *testing.T) {
+	asked := "haiku"
+	prepared := containedStart()
+	prepared.Grant.Runtime.Model = &asked
+
+	for _, driver := range []struct {
+		profile contracts.DriverProfile
+		option  string
+	}{{profiles.ClaudeCode{}, "--model"}, {profiles.Codex{}, "-m"}} {
+		start := containedTerminalStart("conversation-7", prepared, host.ContainerManifest{})
+		resumed := start
+		resumed.Resume = true
+
+		for _, each := range []contracts.Start{start, resumed} {
+			process, err := containedProcessOf(driver.profile, "http://journal:8000", prepared, "runtime-7", each, 2, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			option := slices.Index(process.Command, driver.option)
+			if option < 0 || process.Command[option+1] != asked {
+				t.Fatalf("%s starts without the model asked for: %v", driver.profile.Driver(), process.Command)
+			}
+		}
+	}
+}
+
 func TestAContainedProgramIsTheProfilesCommandWithItsSettingsInlineAndNoHostPath(t *testing.T) {
 	inherited := []string{"HTTPS_PROXY=http://egress:3128", "SECRET_OF_THE_HOST=x", "HOME=/root"}
 

@@ -884,6 +884,8 @@ func startOf(
 		HookCommand:    hookCommand,
 		WorkFolder:     grant.Runtime.Folder,
 		Account:        account,
+		Model:          grant.Runtime.RequestedModel(),
+		Effort:         grant.Runtime.RequestedEffort(),
 	}
 	if err := host.RequireNoLinks(stateFolder, start.SettingsFolder); err != nil {
 		return host.AttachRequest{}, err
