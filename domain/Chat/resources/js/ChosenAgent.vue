@@ -11,6 +11,7 @@ import { agentUrl } from "./agentLinks";
 import { carriesRecord } from "./composables/useHandOver";
 import AgentMenu from "./AgentMenu.vue";
 import AgentSessionActions from "./AgentSessionActions.vue";
+import { AGENT_BAR_MEMBERS } from "./agentBarMembers";
 import { useStatusAnnouncement } from "./composables/useStatusAnnouncement";
 
 /**
@@ -52,10 +53,22 @@ const isMain = computed(
     selected.value !== undefined &&
     selected.value.id === props.data.mainAgentId,
 );
-// The second line names what runs the agent: its driver while a session runs, else the profile it starts from.
-const subline = computed(
-  () => selected.value?.sessionDriverLabel ?? selected.value?.profileKey ?? "",
-);
+// The second line names what runs the agent: its driver and model while a session runs, else the profile it starts from.
+const subline = computed(() => {
+  const agent = selected.value;
+
+  if (agent === undefined) {
+    return "";
+  }
+
+  if (agent.sessionDriverLabel === null) {
+    return agent.profileKey;
+  }
+
+  return [agent.sessionDriverLabel, agent.sessionModel]
+    .filter((part) => part !== null && part !== "")
+    .join(" · ");
+});
 </script>
 
 <template>
@@ -119,6 +132,7 @@ const subline = computed(
         />
       </template>
     </div>
+    <span :id="AGENT_BAR_MEMBERS" class="flex items-center"></span>
     <template v-if="status">
       <Status :state="looks[status.sessionState]" :label="status.label" />
     </template>

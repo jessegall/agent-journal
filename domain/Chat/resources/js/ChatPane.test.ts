@@ -144,6 +144,23 @@ describe("ChatPane", () => {
     reads.length = 0;
   });
 
+  it("shows who is in the chat in the agent bar while the bar is there, and above the chat without it", async () => {
+    const bar = document.createElement("span");
+    bar.id = "agent-bar-members";
+    document.body.appendChild(bar);
+
+    mountPane();
+    await flushPromises();
+
+    expect(bar.querySelector('[aria-label="Who is in this chat"]')).not.toBeNull();
+    bar.remove();
+
+    const pane = mountPane();
+    await flushPromises();
+
+    expect(pane.find('[aria-label="Who is in this chat"]').exists()).toBe(true);
+  });
+
   it("keeps the conversation hidden and reads nothing until a read that included its prop answered", async () => {
     const pane = mountPane();
 

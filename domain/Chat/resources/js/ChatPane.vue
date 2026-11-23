@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
 import { router, usePage } from "@inertiajs/vue3";
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from "vue";
 import { arrivalAnnouncement } from "./composables/arrivalAnnouncement";
 import { useChatTimeline } from "./composables/useChatTimeline";
 import { openedRecordOf, recordKey } from "./recordPanel";
@@ -31,6 +31,7 @@ import DockStack from "./dock/DockStack.vue";
 import FocusedQuestion from "./FocusedQuestion.vue";
 import MessageList from "./MessageList.vue";
 import ChatRoster from "./chats/ChatRoster.vue";
+import { AGENT_BAR_MEMBERS } from "./agentBarMembers";
 import InboxSelector from "./chats/InboxSelector.vue";
 
 /**
@@ -294,6 +295,13 @@ function readOnOpen(): void {
 }
 
 onMounted(readOnOpen);
+
+// The members of this chat sit in Home's agent bar, right after the agent, while the bar shows; elsewhere above the chat.
+const isBarShown = ref(false);
+const membersRow = useTemplateRef<HTMLElement>("membersRow");
+onMounted(() => {
+  isBarShown.value = document.getElementById(AGENT_BAR_MEMBERS) !== null;
+});
 watch(
   () => conversation.value?.inboxId,
   () => {
@@ -367,43 +375,50 @@ function retryFocused(): void {
           Session controls for {{ selected.name }}
         </p>
       </template>
-      <div
-        class="relative flex items-center justify-end gap-1.5"
-        aria-label="Who is in this chat"
-      >
-        <template v-if="conversation.participants.length > 2">
-          <Button
-            size="small"
-            variant="ghost"
-            :aria-expanded="isRosterOpen"
-            aria-haspopup="dialog"
-            @click="isRosterOpen = !isRosterOpen"
-          >
-            <AvatarStack :members="members" />
-            {{ conversation.participants.length }} in this chat
-          </Button>
-        </template>
-        <IconButton
-          icon="users"
-          label="Add someone to this chat"
-          size="sm"
-          haspopup="dialog"
-          :expanded="isRosterOpen"
-          @click="isRosterOpen = !isRosterOpen"
-        />
-        <Popover
-          v-model:open="isRosterOpen"
-          label="Members of this chat"
-          align="right"
+      <Teleport :to="`#${AGENT_BAR_MEMBERS}`" :disabled="!isBarShown">
+        <div
+          ref="membersRow"
+          class="flex items-center justify-end gap-1.5"
+          aria-label="Who is in this chat"
         >
-          <ChatRoster
-            :conversation="conversation"
-            :conversation-prop="protectedProp"
-            :chosen-agent-id="selected?.id ?? null"
-            @choose-agent="chooseAgent"
+          <template v-if="conversation.participants.length > 2">
+            <Button
+              size="small"
+              variant="ghost"
+              :aria-expanded="isRosterOpen"
+              aria-haspopup="dialog"
+              @click="isRosterOpen = !isRosterOpen"
+            >
+              <AvatarStack :members="members" />
+              {{ conversation.participants.length }} in this chat
+            </Button>
+          </template>
+          <IconButton
+            icon="users"
+            label="Add someone to this chat"
+            size="sm"
+            haspopup="dialog"
+            :expanded="isRosterOpen"
+            @click="isRosterOpen = !isRosterOpen"
           />
-        </Popover>
-      </div>
+          <Teleport to="body">
+            <Popover
+              v-model:open="isRosterOpen"
+              label="Members of this chat"
+              :anchor="membersRow"
+              :align="isBarShown ? 'left' : 'right'"
+              :width="320"
+            >
+              <ChatRoster
+                :conversation="conversation"
+                :conversation-prop="protectedProp"
+                :chosen-agent-id="selected?.id ?? null"
+                @choose-agent="chooseAgent"
+              />
+            </Popover>
+          </Teleport>
+        </div>
+      </Teleport>
       <template v-if="isShown">
         <template v-if="chat.focusedQuestionId !== undefined">
           <FocusedQuestion

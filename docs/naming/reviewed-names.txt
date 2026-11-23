@@ -29801,6 +29801,7 @@ parameter	$sessionDriverLabel
 parameter	$sessionGeneration
 parameter	$sessionId
 parameter	$sessionIds
+parameter	$sessionModel
 parameter	$sessionStart
 parameter	$sessionState
 parameter	$sessionStatus
@@ -30845,6 +30846,7 @@ property	AgentOption::$sessionDriver
 property	AgentOption::$sessionDriverLabel
 property	AgentOption::$sessionGeneration
 property	AgentOption::$sessionId
+property	AgentOption::$sessionModel
 property	AgentOption::$startRefusal
 property	AgentOption::$status
 property	AgentOption::$switchId
@@ -30864,6 +30866,7 @@ property	AgentOptionData::$sessionDriver
 property	AgentOptionData::$sessionDriverLabel
 property	AgentOptionData::$sessionGeneration
 property	AgentOptionData::$sessionId
+property	AgentOptionData::$sessionModel
 property	AgentOptionData::$startRefusal
 property	AgentOptionData::$status
 property	AgentOptionData::$switchId

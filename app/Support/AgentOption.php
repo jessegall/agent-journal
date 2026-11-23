@@ -41,6 +41,8 @@ final readonly class AgentOption
         public string|null $sessionDriver = null,
         // The label of the driver the session was launched on, as stored then.
         public string|null $sessionDriverLabel = null,
+        // The model the session runs on, as the driver names it; none without a session.
+        public string|null $sessionModel = null,
         // What holds the current runtime now, with the session and generation above it belongs to.
         public HoldReason $hold = HoldReason::None,
     ) {}

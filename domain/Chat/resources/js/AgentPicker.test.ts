@@ -35,6 +35,7 @@ function agent(
     startRefusal: null,
     sessionDriver: null,
     sessionDriverLabel: null,
+    sessionModel: null,
     needsAttention: false,
     status: {
       sessionState: presenceLabel === "Working" ? "working" : "idle",

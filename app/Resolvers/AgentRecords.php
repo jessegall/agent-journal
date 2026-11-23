@@ -225,6 +225,7 @@ final readonly class AgentRecords implements AgentDirectory
             ),
             $session?->driver_key,
             $session?->driver_label,
+            $session?->model,
             $runtime === null ? HoldReason::None : $runtime->hold_reason,
         );
     }

@@ -33,6 +33,7 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
     startRefusal: null,
     sessionDriver: null,
     sessionDriverLabel: null,
+    sessionModel: null,
     needsAttention: false,
     status: {
       sessionState: retired ? "retired" : "idle",

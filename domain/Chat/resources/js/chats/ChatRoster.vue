@@ -79,7 +79,7 @@ function findCandidates(): void {
 </script>
 
 <template>
-  <section class="flex flex-col gap-1.5" aria-label="Members">
+  <section class="flex flex-col gap-1.5 p-2" aria-label="Members">
     <ul
       ref="membersList"
       class="flex flex-col gap-1"
