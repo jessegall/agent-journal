@@ -234,7 +234,7 @@ func (connection projectConnection) recover(
 		return client.Redemption{}, errors.Join(redeemFailure, err)
 	}
 
-	return client.Redemption{}, errLineUnusable
+	return client.Redemption{}, fmt.Errorf("%w (%w)", errLineUnusable, redeemFailure)
 }
 
 func redeemRequest(ticket string, pending host.PendingConnection) client.RedeemRequest {

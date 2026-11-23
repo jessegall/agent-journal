@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Connections;
 
 use App\Commands\RedeemProjectInvitation\RedeemProjectInvitationCommand;
+use App\Support\ServerOrigin;
 use App\Values\BindingFolder;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -14,9 +15,12 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class RedeemProjectInvitationRequest extends FormRequest
 {
-    public function authorize(): bool
+    /**
+     * Only over https, or plain http while the journal runs locally for a test on this machine or network.
+     */
+    public function authorize(ServerOrigin $origin): bool
     {
-        return $this->isSecure();
+        return $this->isSecure() || $origin->admitsPlainHttp();
     }
 
     /**

@@ -245,6 +245,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
             $this->app->make('config')->string('agents.server_origin'),
+            $this->app->isLocal(),
         ));
 
         $this->app->bind(LaunchProfiles::class, fn () => new LaunchProfiles(

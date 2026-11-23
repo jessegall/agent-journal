@@ -5,7 +5,7 @@
 # Downloads one file from the journal's exact origin: no redirect is followed, and any answer but 200 stops the
 # install before the file is used.
 journal_fetch() {
-    status=$(curl -sS --proto '=https' --max-redirs 0 -o "$2" -w '%{http_code}' "$1") || return 1
+    status=$(curl -sS --proto "=${1%%://*}" --max-redirs 0 -o "$2" -w '%{http_code}' "$1") || return 1
     if [ "$status" != 200 ]; then
         echo "journal: $1 answered $status instead of the file itself; the journal must serve it directly, with no redirect. Nothing was installed." >&2
         return 1

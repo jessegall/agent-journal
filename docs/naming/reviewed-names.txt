@@ -22844,9 +22844,13 @@ method	SequencesSkill::sections()
 method	ServedEnvironment::environmentIds()
 method	ServerClock::now()
 method	ServerOrigin::__construct()
+method	ServerOrigin::admitsPlainHttp()
 method	ServerOrigin::canonical()
-method	ServerOrigin::isHttps()
+method	ServerOrigin::hasPlainHost()
+method	ServerOrigin::isLocalHttp()
+method	ServerOrigin::isUsable()
 method	ServerOrigin::name()
+method	ServerOrigin::scheme()
 method	ServerOriginInvalid::for()
 method	SessionClosed::__construct()
 method	SessionContainers::__construct()
@@ -29669,6 +29673,7 @@ parameter	$runningCount
 parameter	$runningNow
 parameter	$runningSessionIds
 parameter	$runs
+parameter	$runsLocally
 parameter	$runsOnSuccess
 parameter	$runsWhen
 parameter	$runtime
@@ -38887,6 +38892,7 @@ property	SequenceWork::$state
 property	SequenceWork::$stepInstruction
 property	SequenceWork::$stepNumber
 property	ServerOrigin::$configured
+property	ServerOrigin::$runsLocally
 property	SessionClosed::$agentId
 property	SessionClosed::$sessionId
 property	SessionContainers::$arrangement
@@ -43022,6 +43028,7 @@ variable	$sawPurpose
 variable	$scaled
 variable	$scan
 variable	$scanned
+variable	$scheme
 variable	$scope
 variable	$scopeOfShare
 variable	$scopes

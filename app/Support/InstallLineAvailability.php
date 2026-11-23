@@ -35,7 +35,7 @@ final readonly class InstallLineAvailability
     {
         return array_values(array_filter([
             $this->settings->boolean($this->core->remoteProjects) ? null : InstallLineHold::SwitchedOff,
-            $this->origin->isHttps() ? null : InstallLineHold::OriginNotHttps,
+            $this->origin->isUsable() ? null : InstallLineHold::OriginNotHttps,
             $this->releases->hasCompatibleRelease() ? null : InstallLineHold::NoRelease,
         ]));
     }
