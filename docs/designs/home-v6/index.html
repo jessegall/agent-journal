@@ -223,8 +223,10 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 .mact:hover{color:var(--text)}
 .msg:hover .mact,.mact:focus-visible{opacity:1}
 .mact:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-/* Your message: Reply at the side of the bubble, level with its first line. */
-.me .mact{right:calc(100% + 6px);top:6px}
+/* Your message has no name line, so Reply sits where the name line would be: just above the bubble, its right edge on
+   the bubble's right edge, like React and Reply at the right end of another message's name line. It stands in the
+   gap above the bubble and never covers its text or its reply line. */
+.me .mact{right:0;bottom:calc(100% + 2px)}
 /* An agent message: React and Reply in one row at the right end of its name and time line, above the text. They take
    their room in that line even while hidden, so the name line (name, time, controls) sets the message's width when
    the text is shorter, the controls end at the message's right edge, and nothing moves on hover. */
@@ -236,9 +238,16 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 .macts .mact{position:static}
 .macts .tm{align-self:center;font-size:var(--text-badge);color:var(--text-3);font-variant-numeric:tabular-nums;opacity:0;padding:0 4px}
 .msg:hover .macts .tm{opacity:1}
-/* A reply to something further up: only a small "↩ name" link. */
-.rq{display:inline-flex;border:0;background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-3);padding:0;margin:0 0 3px;cursor:pointer;text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px}
-.rq:hover{color:var(--text-2)}
+/* A reply to something further up: its own line above the text, in your bubble and in every other message alike.
+   Quiet and smaller than the text: the reply mark, who it answers, and one line of the original cut off with an
+   ellipsis. The excerpt is capped, so a long original never widens a short message past it. */
+.rq{display:flex;align-items:center;gap:5px;max-width:100%;min-width:0;border:0;background:transparent;font:inherit;font-size:var(--text-badge);line-height:16px;color:var(--text-3);padding:0;margin:0 0 4px;cursor:pointer;text-align:left}
+.rq svg.i{color:var(--text-4)}
+.rq b{flex:none;font-weight:500;color:var(--text-2)}
+.rq .ex{min-width:0;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rq:hover .ex{color:var(--text-2);text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px}
+.rq.gone{cursor:default}
+.rq.gone .ex{font-style:italic}
 .msg:hover .macts .mact,.macts:focus-within .mact{opacity:1}
 /* Reactions: one chip per emoji with its count; yours are marked; the + adds one. */
 .reacts{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
@@ -868,7 +877,16 @@ function freshConvs(){CONV={main:{name:'Agent 1',msgs:BASE()},
     ['say','a1','14:11','Good catch. I\'ll add the filter to the task.',3],
     ['sys','Sam joined'],
     ['say','sam','14:14','From the support side: the count should only include what waits on you, not every unread line.'],
-    ['say','cx1','14:15','That matches Designer 262\'s question. I\'ll make the count filter on waits-on-you.',6]]}}}
+    ['say','cx1','14:15','That matches Designer 262\'s question. I\'ll make the count filter on waits-on-you.',6],
+    ['me','Yes, keep it there.',2],
+    ['say','a1','14:16','Then the bell stays in the topbar and the toast stays as it is.',1],
+    ['me','The count should reset when you open the bell.'],
+    ['say','cx1','14:17','The unread rows already clear on open, so that comes for free.'],
+    ['me','Correction: reset it when the list is read, not when the bell opens.',10],
+    ['gone','sam','14:17','removed'],
+    ['say','a1','14:18','Noted, I\'ll leave that out of the task.',13],
+    ['gone','cx1','14:18','hidden'],
+    ['say','sam','14:19','Fine by me, as long as support sees the same number.',15]]}}}
 const STATE={main:'Working on task 1702',h262:'Designing the notifications bell',w3:'Writing the test for Enter',g1:'Agent 1 working · Codex 1 reading'};
 const REPLY={a1:'On it. I\'ll fold that into the plan.',cx1:'Checked against the code: that works with what is there.',h262:'Noted for the bell design.',w3:'I\'ll cover that in task 1702.',sam:'Sounds right to me.'};
 const COMMENT_ON={a1:'Agreeing with Codex 1 here; I\'ll keep it.',cx1:'One addition to Agent 1\'s point: it needs a test.'};
@@ -1010,8 +1028,15 @@ function avatar(id,big){const p=MEM[id];if(p.kind!=='agent')return `<span class=
   const mark=p.prog==='codex'?CODEX(big?'':'s14'):id==='a1'?CLAUDE(big?'':'s14'):I('users',big?'':'s14');
   return big?`<span class="av" title="${p.name} · ${p.role}">${mark}</span>`:`<span class="avs" title="${p.name} · ${p.role}">${mark}</span>`}
 const stack=c=>`<span class="stack">${members(c).slice(0,4).map(m=>avatar(m,true)).join('')}</span>`;
-function snippet(c,j){const m=CONV[c].msgs[j];if(!m)return '';const t=plain(m[0]==='me'?m[1]:m[0]==='ag'?m[2]:m[3]);return t.length>64?t.slice(0,64)+'…':t}
-const quote=(c,j)=>`<button class="rq" data-jump="${j}" title="Answers: ${esc(snippet(c,j))}" aria-label="Answers ${MEM[speaker(c,CONV[c].msgs[j])].name}: ${esc(snippet(c,j))}. Show it">↩ ${MEM[speaker(c,CONV[c].msgs[j])].name}</button>`;
+/* The original's text for a reply line: whole, plain; the line itself cuts it off with an ellipsis. */
+function excerpt(c,j){const m=CONV[c].msgs[j];return m?plain(m[0]==='me'?m[1]:m[0]==='ag'?m[2]:m[3]):''}
+/* A message that was removed, or is hidden from you, stays in the list as ['gone', who, time, 'removed' or 'hidden']
+   and draws nothing; a reply to it says so in the reply line. */
+const GONE={removed:'The original message was removed.',hidden:'The original message is hidden from you.'};
+/* A reply's line above its text: who it answers and one line of the original. Pressing it shows the original. */
+const quote=(c,j)=>{const m=CONV[c].msgs[j],who=MEM[speaker(c,m)].name;
+  if(m[0]==='gone')return `<span class="rq gone">${I('reply','s13')}<b>${who}</b><span class="ex">${GONE[m[3]]}</span></span>`;
+  const t=excerpt(c,j);return `<button class="rq" data-jump="${j}" title="${esc(t)}" aria-label="Answers ${who}: ${esc(t)}. Show it">${I('reply','s13')}<b>${who}</b><span class="ex">${esc(t)}</span></button>`};
 const docbar=n=>{const d=DOCS.find(x=>x[0]===n);return d?`<div class="docbar" data-docbar="${n}" data-fk="docbar:${n}" tabindex="0" role="button" aria-label="Doc ${n}: ${esc(d[1])}. Enter opens it; drag it onto an agent to hand it over.">${I('docs','s14')}<span class="t">Doc ${n} · ${esc(d[1])}<br><small>Revision ${d[4]} · ${d[2]} · drag onto an agent to hand it over</small></span><button class="btn sm" data-opendoc="${n}" tabindex="-1">Open</button></div>`:''};
 /* The journal's offer to open a helper's chat rides on the agent's own message: one quiet chip for every start. */
 function chipHtml(convs){const open=convs.filter(c=>CHIP[c]==='opened'),offer=convs.filter(c=>!CHIP[c]);if(!offer.length&&!open.length)return '';
@@ -1022,6 +1047,7 @@ function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
     if(k==='day'){last=null;return `<div class="day">${m[1]}</div>`}
     if(k==='sys'){last=null;return `<div class="sys">${m[1]}</div>`}
     if(k==='act'){const e=ACTV.find(x=>x.id===m[1]);if(!e||!shown(e))return '';last=null;return actLineHtml(e)}
+    if(k==='gone')return '';
     if(k==='typing')return `<div class="typing">${avatar(m[1])}${MEM[m[1]].name} is writing…</div>`;
     if(k==='code'){last='you';return codeCardHtml(m[1])}
     if(k==='card'){last=null;return `<div class="rowcard">${I('question')}<div class="t">Which save behaviour for the name?<small>Question · asked 13:44</small></div><button class="btn sm bordered">Answer</button></div>`}
@@ -1055,7 +1081,7 @@ function groupTurns(c,parts){const msgs=CONV[c].msgs;let out='',run=[],who=null;
 /* Kinds of chat line added by later sections (sequences, docked cards, processes); each draws itself. */
 const EXTRA_KIND={};
 function composer(c){const ph=`Message ${convName(c)}`;
-  const rp=REPLYTO&&REPLYTO.conv===c?`<div class="replying">${I('reply','s14')}<span>Replying to <b>${MEM[speaker(c,CONV[c].msgs[REPLYTO.i])].name}</b> · “${esc(snippet(c,REPLYTO.i))}”</span><button class="ib" style="width:20px;height:20px" data-unreply aria-label="Stop replying">${I('close','s14')}</button></div>`:'';
+  const rp=REPLYTO&&REPLYTO.conv===c?`<div class="replying">${I('reply','s14')}<span>Replying to <b>${MEM[speaker(c,CONV[c].msgs[REPLYTO.i])].name}</b> <span class="ex">${esc(excerpt(c,REPLYTO.i))}</span></span><button class="ib" style="width:20px;height:20px" data-unreply aria-label="Stop replying">${I('close','s14')}</button></div>`:'';
   return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span data-beside hidden></span><button class="btn sm send" data-send="${c}" data-fk="send:${c}">${I('arrow','s14')}Send</button></div></div>`}
 /* Hooks for later sections: content above the composer (docked cards) and a terminal beside the chat. */
 const ABOVE_COMPOSER=[];
@@ -2288,6 +2314,7 @@ const NOTE_CARDS=[
   ['Documents','Documents, reports and Markdown files open in a reader. Select text to comment on it to any agent, ask an agent for feedback, or drag a document\'s bar from the chat onto an agent to hand it over.'],
   ['The task graph','Tasks and Plans show what waits on what. Click a task to light its whole chain, everything it waits on and everything waiting on it, with its holder and its waits beside it; click again, on empty space, or press Escape to clear. Show bottlenecks finds the tasks that hold up many others; Suggest improvement shows waits that can go, as a before and after.'],
   ['React and Reply belong to the message','An agent message is only as wide as its text, up to the column. React and Reply sit at the right end of its name and time line, above the text, so they never cover it. Their right edge is the message\'s right edge: the column\'s edge for a long message. When the text is shorter than the name, the time and the two controls together, that line sets the message\'s width, so the controls end just past the time. They keep their room while hidden, so nothing moves when they appear. In a group chat, a later message in a run has no name line; there they sit at the top right of its first line, which wraps before them. They show on hover and when a key moves focus onto them.'],
+  ['Replies','A reply shows, on its own line above its text, who it answers and one line of the original, cut off with an ellipsis. It looks the same in your bubble and in every other message. Pressing it scrolls to the original and marks it. The line shows only when the original is not the message right above: there the original is already in view, and repeating it would only double the text. When the original was removed or is hidden from you, the line says so and cannot be pressed. On your own message, Reply sits just above the bubble at its right edge, where another message has its name line; the composer\'s "Replying to" line shows the same name and excerpt. The group chat Bell design shows each case.'],
   ['One signal per fact; safe keys','The agent bar owns the agent\'s state, and the topbar\'s bell is the only bell. Toasts only offer Undo. ⌘K opens everything; ⌥1, ⌥2 and ⌥` are read by key position. There is no ⌘B, ⌘1, ⌘⇧B, ⌃⌥ arrow or Space shortcut.']].concat(SECTION_NOTES);
 STEPS.docs[2]='<button class="tbtn" id="playBtn" style="margin-left:6px">▶ Play</button>';
 startChrome();
