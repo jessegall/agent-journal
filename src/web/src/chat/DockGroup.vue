@@ -60,7 +60,7 @@ const foldedRun = (message) => props.folded || Boolean(chosen.value && chosen.va
                         </span>
                     </template>
                 </ChatDockCard>
-                <div v-else key="cards" class="dock-group-cards">
+                <div v-else key="cards" :class="['dock-group-cards', {scrolls: grouped}]">
                     <template v-if="grouped">
                         <div class="dock-group-head">
                             <button type="button" class="dock-group-toggle" aria-expanded="true" :title="`Fold the ${noun} into one line`" @click="toggle">
@@ -122,6 +122,20 @@ const foldedRun = (message) => props.folded || Boolean(chosen.value && chosen.va
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+/* an opened group of many cards scrolls within the most room a stack takes, its line to fold them back staying in view on top */
+.dock-group-cards.scrolls {
+    max-height: var(--dock-group-max, 45vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.dock-group-cards.scrolls .dock-group-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg);
 }
 
 .dock-group-toggle {
