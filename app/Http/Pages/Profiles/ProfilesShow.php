@@ -19,13 +19,16 @@ use App\Values\ProfileRuleGroup;
 use App\Values\SupervisorRoutes;
 
 /**
- * One profile as a read-only reader: its label, then its supplied facts in order: Key, Model, Models it may use,
- * Driver, How many run, and Rules it works under. A fact no read supplies is left out, and the rules, which nothing
- * reads for a profile yet, say they are not available instead of looking empty.
+ * One profile as a read-only reader: its label and description, then its supplied facts in order: Program, Model,
+ * Models it may use, Driver, Answers to and How many run, then a group of Rules it works under with its Scripts. A fact
+ * no read supplies is left out, and the rules, which nothing reads for a profile yet, say they are not available
+ * instead of looking empty.
  */
 final readonly class ProfilesShow
 {
     private const string MODELS_HELP = 'Others can be chosen when it starts.';
+
+    private const string ANSWERS_HELP = 'Its supervisor, who gets its reports and questions.';
 
     public function __construct(private ProfileResolver $profiles, private ProfileRules $rules) {}
 
@@ -33,8 +36,7 @@ final readonly class ProfilesShow
     {
         $profile = Profile::byKey($key);
 
-        $page = DetailPage::make($profile->label)
-            ->above(LayoutPartData::text('key', $profile->key, 'code'));
+        $page = DetailPage::make($profile->label);
 
         if ($profile->description !== '') {
             $page = $page->summarising($profile->description);
@@ -49,7 +51,7 @@ final readonly class ProfilesShow
         $script = ProfileRevision::currentOf($profile)->scriptSource();
 
         $rows = [
-            SettingsRow::value('type', 'Type', $snapshot->base->label),
+            SettingsRow::value('type', 'Program', $snapshot->base->label, 'What it runs on.'),
             SettingsRow::value('model', 'Model', $snapshot->model, 'The model it starts with.'),
             $models === []
                 ? SettingsRow::value('models', 'Models it may use', 'Any model', self::MODELS_HELP)->inBlock()
@@ -69,13 +71,16 @@ final readonly class ProfilesShow
             'Whether one is reused or a new one starts for each job.',
         );
 
-        array_push($rows, ...$this->rulesOf($key));
+        $rules = $this->rulesOf($key);
 
         if (! $script->isEmpty()) {
-            $rows[] = SettingsRow::code('script', 'Script', $script->text)->inBlock();
+            $rules[] = SettingsRow::code('script', 'Scripts', $script->text)->inBlock();
         }
 
-        return $page->withStanding(SettingsGroup::make('profile', 'Profile')->withRows(...$rows)->part())->part();
+        return $page->withStanding(
+            SettingsGroup::make('profile', 'Profile')->withRows(...$rows)->part(),
+            SettingsGroup::make('rules', 'Rules it works under')->withRows(...$rules)->part(),
+        )->part();
     }
 
     /**
@@ -90,11 +95,11 @@ final readonly class ProfilesShow
         }
 
         if ($routes->default->isOwner()) {
-            return [SettingsRow::value('answers-to', 'Answers to', 'You')];
+            return [SettingsRow::value('answers-to', 'Answers to', 'You', self::ANSWERS_HELP)];
         }
 
         if ($routes->default->isProfile()) {
-            return [SettingsRow::value('answers-to', 'Answers to', $routes->default->profileKey()->key)];
+            return [SettingsRow::value('answers-to', 'Answers to', $routes->default->profileKey()->key, self::ANSWERS_HELP)];
         }
 
         return [];

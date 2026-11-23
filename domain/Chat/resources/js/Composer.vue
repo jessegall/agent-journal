@@ -35,7 +35,7 @@ const props = defineProps<{
   viewer: string;
 }>();
 
-const emit = defineEmits<{ replied: [] }>();
+const emit = defineEmits<{ replied: []; cancelReply: [] }>();
 
 const drafts = useMessageDrafts();
 const body = ref("");
@@ -147,9 +147,15 @@ function sendOnEnter(event: KeyboardEvent): void {
     <template v-if="replyingTo">
       <p class="mb-1.5 flex items-center gap-1.5 text-small text-text-3">
         <Icon name="reply" :size="14" />
-        <span class="truncate"
+        <span class="min-w-0 flex-1 truncate"
           >Replying to “{{ replyingTo.body.slice(0, 80) }}”</span
         >
+        <IconButton
+          icon="close"
+          label="Stop replying"
+          size="sm"
+          @click="emit('cancelReply')"
+        />
       </p>
     </template>
     <textarea

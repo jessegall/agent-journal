@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles\Http;
 
+use App\Enums\UsageWindowSlot;
+use App\Http\Pages\Accounts\AccountsIndex;
 use App\Models\Account;
 use App\Models\ActiveAccount;
 use App\Support\DefaultDrivers;
 use App\Support\UiDeclarations;
+use App\Support\UsageReadings;
 use App\Values\AccountLabel;
+use App\Values\UsageSource;
+use App\Values\UsageWindowReading;
+use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Process;
@@ -26,7 +32,7 @@ final class AccountsPageTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts', 'users'];
+    private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts', 'users', 'account_usage_windows'];
 
     private const string ROWS = 'page.data.root.children.1.children.0.children.0.children.0.rows';
 
@@ -93,7 +99,35 @@ final class AccountsPageTest extends TestCase
                 ->where(self::ROWS.'.0.label', 'Office')
                 ->where(self::ROWS.'.0.isCurrent', true)
                 ->where('page.data.root.children.1.children.1.key', 'detail')
-                ->where('page.data.root.children.1.children.1.children.2.children.0.key', 'active'),
+                ->where('page.data.root.children.1.children.1.children.2.key', 'account')
+                ->where('page.data.root.children.1.children.1.children.2.children.1.children.0.key', 'name')
+                ->where('page.data.root.children.1.children.1.children.2.children.1.children.1.key', 'default'),
+        );
+    }
+
+    public function test_a_row_shows_the_most_used_window_as_a_meter_and_the_reader_names_both_windows(): void
+    {
+        $work = $this->account('Work', '/journal/accounts/work');
+        $source = UsageSource::of('start-1', 1, CarbonImmutable::now());
+        $resets = CarbonImmutable::now()->addDay()->getTimestamp();
+        $readings = $this->app->make(UsageReadings::class);
+        $readings->recordWindow($work, 1, new UsageWindowReading('claude', UsageWindowSlot::SevenDay, 72.0, 10080, $resets, $source));
+        $readings->recordWindow($work, 1, new UsageWindowReading('claude', UsageWindowSlot::FiveHour, 30.0, 300, $resets, $source));
+
+        $this->actingAs($this->owner)->get("/accounts?account={$work->id}")->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->where(self::ROWS.'.0.trailing.1.style', 'usage-row')
+                ->where(self::ROWS.'.0.trailing.1.progress.value', 72)
+                ->where(
+                    self::ROWS.'.0.trailing.1.detail',
+                    fn ($tip) => str_contains($tip, AccountsIndex::WEEK_LABEL.' 72% used')
+                        && str_contains($tip, AccountsIndex::SESSION_LABEL.' 30% used'),
+                )
+                ->where(
+                    'page.data.root.children.1.children.1',
+                    fn ($reader) => str_contains(json_encode($reader), AccountsIndex::WEEK_LABEL)
+                        && str_contains(json_encode($reader), AccountsIndex::SESSION_LABEL),
+                ),
         );
     }
 

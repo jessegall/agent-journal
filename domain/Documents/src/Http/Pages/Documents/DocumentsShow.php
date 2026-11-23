@@ -39,9 +39,8 @@ use Spatie\LaravelData\Optional;
 /**
  * A document's page as a publication: its title, label, revision, actions menu and abstract; under them the editing
  * part, which stays mounted whichever tab is shown, so a held draft survives a tab change; then the tab the window
- * chose. Text is the numbered lines to comment on, the public-comment notice and the record's comments; Links its
- * linked records; Details its editing and attention, settlements, Settle and Share; History its revisions, each linking
- * to its own page.
+ * chose. Text is the numbered lines to comment on, the public-comment notice and the record's comments; History its revisions, each
+ * linking to its own page; Links its linked records; Details its editing and attention, settlements, Settle and Share.
  */
 final readonly class DocumentsShow
 {
@@ -89,6 +88,7 @@ final readonly class DocumentsShow
                     'Text',
                     fn () => $this->textOf($document, $label, $isPublic(), $comments(), $reads()),
                 ),
+                PublicationTab::deferred('history', 'History', fn () => $this->historyOf($number, $revisions())),
                 PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::native(
                     'links',
                     LayoutNativeData::of('documents/RecordLinks', RecordLinksPartData::from([
@@ -101,7 +101,6 @@ final readonly class DocumentsShow
                     'Details',
                     fn () => $this->detailsOf($document, $editing, $label, $inspection()),
                 ),
-                PublicationTab::deferred('history', 'History', fn () => $this->historyOf($number, $revisions())),
             ],
         )->withStanding($this->editingOf($document, $editing))->layout($tab);
     }

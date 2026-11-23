@@ -67,6 +67,18 @@ final class ProfileDescriptionTest extends TestCase
         $this->assertStringContainsString(ProfileRuleRecords::GROUP_LABEL, $reader);
     }
 
+    public function test_the_reader_keeps_the_rules_in_a_group_of_their_own_and_the_rows_show_no_state(): void
+    {
+        $this->activate();
+
+        $index = $this->pageOf('/accounts/profiles');
+        $reader = $this->pageOf('/accounts/profiles/reviewer');
+
+        $this->assertStringContainsString('"key":"profile"', $reader);
+        $this->assertStringContainsString('"key":"rules"', $reader);
+        $this->assertStringNotContainsString('"key":"state"', $index);
+    }
+
     public function test_rules_with_no_domain_to_read_them_are_unread_and_the_rules_domain_answers_a_known_group(): void
     {
         $key = ProfileKey::from('reviewer');

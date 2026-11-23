@@ -34,7 +34,7 @@ final readonly class ListPage
         public LayoutPartData|null $creation = null,
         public ListPaging|null $paging = null,
         public LayoutBackData|null $back = null,
-        public ReaderWidth $readerWidth = ReaderWidth::Unrestricted,
+        public ReaderWidth $readerWidth = ReaderWidth::Standard,
         public array $reader = [],
     ) {}
 

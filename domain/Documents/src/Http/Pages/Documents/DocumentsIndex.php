@@ -15,6 +15,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
@@ -120,13 +121,17 @@ final readonly class DocumentsIndex
         string $openerStyle = 'bordered',
     ): LayoutPartData {
         $route = $type === 'doc' ? 'documents.create-document' : 'documents.create-report';
+        $guidedNoun = $this->guidedNounOf($type);
 
         return LayoutPartData::dialog(
             "{$key}-{$type}",
             LayoutDialogData::from([
                 'title' => $label,
                 'confirmation' => $type === 'doc' ? 'Document filed' : 'Report filed',
-                'guidedNoun' => $this->guidedNounOf($type),
+                'guidedNoun' => $guidedNoun,
+                'ways' => is_string($guidedNoun)
+                    ? new LayoutWaysData('Write it yourself', 'Write it with an agent', $key === 'create')
+                    : Optional::create(),
             ]),
             LayoutPartData::action('open', $label, LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(['method' => ActionMethod::Post, 'href' => route($route, [], false)]),
@@ -143,7 +148,7 @@ final readonly class DocumentsIndex
             [
                 LayoutPartData::action(
                     'send',
-                    $type === 'doc' ? 'File document' : 'File report',
+                    $type === 'doc' ? 'Create document' : 'Create report',
                     LayoutActionData::submitting(),
                     'primary',
                 ),

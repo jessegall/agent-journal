@@ -12,14 +12,14 @@ use Tests\TestCase;
 
 /**
  * The settings page shows the owner a section for each settings group in one column under its header, with the
- * Connected projects switch and the way into the connection window that leads back to its own group, and shows no one
+ * Connected projects switch and the connect line with the connected projects inside that section, and shows no one
  * else anything.
  */
 final class SettingsPageTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_the_owner_sees_the_groups_and_the_way_into_the_connection_window(): void
+    public function test_the_owner_sees_the_groups_and_the_connected_projects_inside_their_section(): void
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
@@ -29,7 +29,7 @@ final class SettingsPageTest extends TestCase
             ->where('page.data.root.style', 'page')
             ->where('page.data.root.children.1.children', fn ($groups) => collect($groups)->contains(
                 fn ($group) => $group['key'] === 'connected_projects'
-                    && str_contains((string) json_encode($group), 'return=')
+                    && str_contains((string) json_encode($group), 'connections\\/ConnectedProjectsPart')
                     && str_contains((string) json_encode($group), '"key":"switch"'),
             )));
     }

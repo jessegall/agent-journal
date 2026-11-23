@@ -71,7 +71,7 @@ final class DocumentPageTest extends TestCase
                 ->where('page.data.root.children.1.tag', 'form')
                 ->where('page.data.root.children.2.tabs.0.key', 'text')
                 ->where('page.data.root.children.2.tabs.0.isChosen', true)
-                ->where('page.data.root.children.2.tabs.3.key', 'history')
+                ->where('page.data.root.children.2.tabs.1.key', 'history')
                 ->where('page.data.root.children.2.children.0.key', 'text'));
     }
 
@@ -81,7 +81,7 @@ final class DocumentPageTest extends TestCase
             ->get('/documents/docs/1?tab=history')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.2.tabs.3.isChosen', true)
+                ->where('page.data.root.children.2.tabs.1.isChosen', true)
                 ->where('page.data.root.children.2.children.0.key', 'history')
                 ->where('page.data.root.children.2.children.0.rows.0.href', '/documents/docs/1/revisions/1'));
 

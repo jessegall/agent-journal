@@ -17,12 +17,13 @@ use App\Enums\ActionMethod;
 use App\Enums\GroupAvailability;
 use App\Enums\SettingSource;
 use App\Enums\SettingType;
+use App\Resolvers\ConnectProjectWindowResolver;
 use App\Support\ConnectionsOwnerCheck;
 use App\Support\CoreSettings;
 use App\Support\Layout\DeclaredLayoutData;
-use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
+use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\SettingsGroup;
 use App\Support\Layout\SettingsPage;
@@ -52,6 +53,7 @@ final readonly class SettingsIndex
         private CurrentActor $actors,
         private ConnectionsOwnerCheck $connections,
         private CoreSettings $core,
+        private ConnectProjectWindowResolver $connectWindow,
     ) {}
 
     public function layout(): DeclaredLayoutData
@@ -147,7 +149,7 @@ final readonly class SettingsIndex
     }
 
     /**
-     * A row for each setting, and for Connected projects the way into the connection window after them.
+     * A row for each setting, and for Connected projects the connect line and the connected projects after them.
      *
      * @param  list<SettingData>  $settings
      * @return list<SettingsRow>
@@ -176,7 +178,8 @@ final readonly class SettingsIndex
     }
 
     /**
-     * The way into the connection window, for the owner, which leads back here to this group.
+     * The connect line and the connected projects, for the owner, drawn in the section as the connection window shows
+     * them.
      *
      * @return list<SettingsRow>
      */
@@ -186,14 +189,12 @@ final readonly class SettingsIndex
             return [];
         }
 
-        $opener = LayoutPartData::action(
-            'open',
-            'Connect a project',
-            LayoutActionData::to(route('connections.connect', ['return' => '/settings#connected_projects'], false)),
-            'bordered',
+        $panel = LayoutPartData::native(
+            'projects',
+            LayoutNativeData::of('connections/ConnectedProjectsPart', $this->connectWindow->read()),
         );
 
-        return [SettingsRow::control('open', 'Projects', $opener, 'Connect a project or see the ones connected.')];
+        return [SettingsRow::reading('projects', 'Connect a project', $panel)];
     }
 
     /**

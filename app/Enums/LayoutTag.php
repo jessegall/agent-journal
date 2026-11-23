@@ -76,7 +76,7 @@ enum LayoutTag: string
             self::Body => ['prose'],
             self::Native => ['native'],
             self::Menu => ['dropdown'],
-            self::Progress => ['meter', 'counted'],
+            self::Progress => ['meter', 'counted', 'share', 'usage', 'usage-row'],
             self::Dialog => ['dialog'],
         };
     }

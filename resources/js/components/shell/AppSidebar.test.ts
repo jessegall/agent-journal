@@ -116,4 +116,16 @@ describe('the sidebar', () => {
         expect(view.get('aside').classes()).toContain('w-14');
         isMini.value = false;
     });
+
+    it('draws the icon of a page at 16 px, as the design does', () => {
+        page.props.navigation = {
+            items: [item({ key: 'plans.list', label: 'Plans', url: '/plans', icon: 'plan' })],
+            groups: [],
+            current: [],
+        };
+
+        const icon = mount(AppSidebar).get('a[href="/plans"] svg');
+
+        expect(icon.attributes('style')).toContain('width: 16px');
+    });
 });

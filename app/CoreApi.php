@@ -1196,6 +1196,7 @@ use App\Support\Layout\LayoutProgressData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\LayoutSplitData;
 use App\Support\Layout\LayoutTabData;
+use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
@@ -1878,6 +1879,7 @@ final class CoreApi
                 LayoutSplitData::class,
                 LayoutProgressData::class,
                 LayoutDialogData::class,
+                LayoutWaysData::class,
                 LayoutFactValueData::class,
                 BrowserInputCapabilities::class,
                 ChatMemberAuthority::class,

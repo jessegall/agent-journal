@@ -80,9 +80,9 @@ final class SequenceRunsListTest extends TestCase
         $this->actingAs($this->owner)->get('/sequences/runs?actor=nobody')->assertNotFound();
     }
 
-    public function test_the_sequences_page_offers_the_runs_view(): void
+    public function test_the_sequences_page_shows_the_sequences_only_and_offers_no_runs_view(): void
     {
-        $this->assertStringContainsString('"href":"/sequences/runs"', $this->pageOf('/sequences'));
+        $this->assertStringNotContainsString('"href":"/sequences/runs"', $this->pageOf('/sequences'));
     }
 
     private function pageOf(string $address): string

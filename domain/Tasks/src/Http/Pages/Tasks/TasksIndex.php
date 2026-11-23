@@ -14,6 +14,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
@@ -50,7 +51,6 @@ final readonly class TasksIndex
             $this->emptyFor($settled),
         )
             ->counting($page->total)
-            ->searching('Search tasks', new LayoutFieldData('q', $settled->search, ['page', 'task']))
             ->filteredBy($this->choicesOf($settled))
             ->creatingWith($this->creation())
             ->paged(ListPaging::numbered(
@@ -134,11 +134,16 @@ final readonly class TasksIndex
      */
     private function creation(string $key = 'creation', string $openerStyle = 'bordered'): LayoutPartData
     {
+        $isGuided = $this->producers->offersGuided('task');
+
         $dialog = LayoutDialogData::from(
             [
                 'title' => 'New task',
                 'confirmation' => 'Task created',
-                'guidedNoun' => $this->producers->offersGuided('task') ? 'task' : Optional::create(),
+                'guidedNoun' => $isGuided ? 'task' : Optional::create(),
+                'ways' => $isGuided
+                    ? new LayoutWaysData('Write it yourself', 'Plan it with an agent', $key === 'creation')
+                    : Optional::create(),
             ],
         );
 
@@ -151,7 +156,7 @@ final readonly class TasksIndex
             ),
             [
                 LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),
-                LayoutPartData::field('brief', 'Done when', new LayoutFieldData('brief'), 'text'),
+                LayoutPartData::field('brief', 'Done when', new LayoutFieldData('brief'), 'area'),
             ],
             [LayoutPartData::action('send', 'Create task', LayoutActionData::submitting(), 'primary')],
         );

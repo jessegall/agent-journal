@@ -482,6 +482,7 @@ function retryFocused(): void {
           :viewer="conversation.viewer"
           :conversation-prop="protectedProp"
           @replied="replyingTo = null"
+          @cancel-reply="replyingTo = null"
         />
         <template v-if="liveStage === 'refused'">
           <p
