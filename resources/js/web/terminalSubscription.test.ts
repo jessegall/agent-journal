@@ -129,7 +129,7 @@ describe('TerminalSubscription', () => {
         client.reads[0].answer.resolve(liveAnswer(1));
         await settled();
 
-        expect(client.reads[0].held).toEqual({ interest: 'interest-1', epoch: '', stream: '', after: 0 });
+        expect(client.reads[0].held).toStrictEqual({ interest: 'interest-1', epoch: undefined, stream: undefined, after: 0 });
         expect(subscription.screen().state).toBe('live');
         expect(subscription.screen().frame?.sequence).toBe(1);
     });

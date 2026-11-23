@@ -7,9 +7,10 @@ import type {
 import { supersedes } from './terminalFrameOrder';
 
 /**
- * The frame a read holds when it asks for the next one: the interest it reads through and the frame's place.
+ * The frame a read holds when it asks for the next one: the interest it reads through and the frame's place. A view
+ * that holds no frame yet names no epoch and no stream.
  */
-export type HeldFrame = { interest: string; epoch: string; stream: string; after: number };
+export type HeldFrame = { interest: string; epoch?: string; stream?: string; after: number };
 
 /**
  * How the terminal reaches the journal for one agent: open, renew and close one read interest, and read its frames.
@@ -180,8 +181,8 @@ export class TerminalSubscription {
             .frame(
                 {
                     interest: this.interest,
-                    epoch: drawn?.epoch ?? '',
-                    stream: drawn?.stream ?? '',
+                    epoch: drawn?.epoch,
+                    stream: drawn?.stream ?? undefined,
                     after: drawn?.sequence ?? 0,
                 },
                 this.reads.signal,
