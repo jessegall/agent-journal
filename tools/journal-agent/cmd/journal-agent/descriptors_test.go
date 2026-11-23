@@ -27,11 +27,6 @@ func TestALocalHostAdvertisesCodexOnlyHeadlessAndAContainedHostNoCodex(t *testin
 	if !advertises(contained, "claude-code", claude) || !advertises(contained, "claude-code-headless", claude) {
 		t.Fatalf("a contained host advertises %v; want both Claude Code drivers", contained)
 	}
-	for _, descriptor := range local {
-		if descriptor.ProtocolVersion != DriverProtocolVersion {
-			t.Fatalf("%s advertises protocol %d", descriptor.Key, descriptor.ProtocolVersion)
-		}
-	}
 }
 
 func TestAGrantForADriverTheHostDidNotAdvertiseStartsNothing(t *testing.T) {

@@ -131,7 +131,6 @@ final class AccountSharingTest extends TestCase
                 'example',
                 $variant,
                 'Echo',
-                $headless->protocolVersion,
                 [],
                 $headless->hookProtocol,
                 $headless->accountProtocol,

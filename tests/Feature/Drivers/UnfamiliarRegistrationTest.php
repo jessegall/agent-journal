@@ -146,7 +146,6 @@ final class UnfamiliarRegistrationTest extends TestCase
             'example',
             DriverVariant::Headless,
             'Echo',
-            $headless->protocolVersion,
             [],
             $headless->hookProtocol,
             $headless->accountProtocol,

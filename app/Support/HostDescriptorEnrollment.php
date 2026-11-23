@@ -12,15 +12,13 @@ use App\Values\EnrolledDescriptor;
 use App\Values\HostDescriptor;
 
 /**
- * Matches the drivers a host advertises against the journal's catalogue: an unknown key, an incompatible protocol or
- * an unapproved build is enrolled unavailable with its reason, while the others stay selectable; a key advertised
+ * Matches the drivers a host advertises against the journal's catalogue: an unknown key or an unapproved build is
+ * enrolled unavailable with its reason, while the others stay selectable; a key advertised
  * twice refuses the whole report.
  */
 final readonly class HostDescriptorEnrollment
 {
     public const string UNKNOWN_DRIVER = 'This journal has no driver registered under that key.';
-
-    public const string PROTOCOL_INCOMPATIBLE = 'The host speaks another version of this driver\'s protocol.';
 
     public const string BUILD_UNAPPROVED = 'The host runs a build of this driver the journal has not approved.';
 
@@ -71,10 +69,6 @@ final readonly class HostDescriptorEnrollment
     ): EnrolledDescriptor {
         if ($registration === null) {
             return EnrolledDescriptor::unavailable($descriptor, self::UNKNOWN_DRIVER, null);
-        }
-
-        if ($registration->protocolVersion !== $descriptor->protocolVersion) {
-            return EnrolledDescriptor::unavailable($descriptor, self::PROTOCOL_INCOMPATIBLE, $registration);
         }
 
         $key = (string) $registration->key;

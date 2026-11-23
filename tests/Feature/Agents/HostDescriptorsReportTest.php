@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Models\Host;
-use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\HostDescriptorEnrollment;
 use Illuminate\Testing\TestResponse;
@@ -40,19 +39,18 @@ final class HostDescriptorsReportTest extends TestCase
         $this->assertSame([null, null, null, null], array_column($stored->descriptors, 'unavailable_reason'));
     }
 
-    public function test_an_incompatible_protocol_or_unknown_key_is_unavailable_while_the_others_stay_selectable(): void
+    public function test_an_unknown_key_is_unavailable_while_the_others_stay_selectable(): void
     {
         $host = $this->enrolledHost();
         $this->hostCall($host, self::CLAIM)->assertOk();
 
         $this->report($host, [
             $this->descriptor('claude-code'),
-            $this->descriptor('codex-headless', DefaultDrivers::PROTOCOL_VERSION + 1),
             $this->descriptor('acme/reader'),
         ])->assertNoContent();
 
         $this->assertSame(
-            [null, HostDescriptorEnrollment::PROTOCOL_INCOMPATIBLE, HostDescriptorEnrollment::UNKNOWN_DRIVER],
+            [null, HostDescriptorEnrollment::UNKNOWN_DRIVER],
             array_column(Host::query()->findOrFail($host->hostId)->descriptors, 'unavailable_reason'),
         );
     }
@@ -79,12 +77,11 @@ final class HostDescriptorsReportTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    private function descriptor(string $key, int $protocolVersion = DefaultDrivers::PROTOCOL_VERSION): array
+    private function descriptor(string $key): array
     {
         return [
             'key' => $key,
             'build' => '2.1.323',
-            'protocolVersion' => $protocolVersion,
             'arrangement' => 'local',
             'placement' => 'protected_host',
         ];

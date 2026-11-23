@@ -87,7 +87,6 @@ final class StartPreflightTest extends TestCase
             fn (DriverVariant $variant) => new HostDescriptor(
                 $this->app->make(DriverCatalogue::class)->keyFor(DefaultDrivers::CLAUDE_CODE, $variant),
                 self::BUILD,
-                DefaultDrivers::PROTOCOL_VERSION,
                 ArrangementType::Contained,
                 ExecutionModeType::RequiredContainer,
             ),

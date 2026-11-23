@@ -21,8 +21,6 @@ use App\Values\ProviderKey;
  */
 final readonly class DefaultDrivers
 {
-    public const int PROTOCOL_VERSION = 1;
-
     public const string CLAUDE_CODE = 'claude-code';
 
     public const string CODEX = 'codex';
@@ -77,7 +75,6 @@ final readonly class DefaultDrivers
             $family,
             $mode,
             $label,
-            self::PROTOCOL_VERSION,
             [],
             $family,
             $family,

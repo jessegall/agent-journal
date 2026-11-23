@@ -590,14 +590,13 @@ func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport
 	return client.call(ctx, "/host/reports/heartbeat", report, nil)
 }
 
-// HostDescriptor mirrors App\Agents\Data\HostDescriptorData: one driver registration this host runs, by its key,
-// with the build it pins, the driver protocol it speaks and where it runs it.
+// HostDescriptor mirrors App\Data\HostDescriptorData: one driver registration this host runs, by its key, with the
+// build it pins and where it runs it.
 type HostDescriptor struct {
-	Key             string `json:"key"`
-	Build           string `json:"build"`
-	ProtocolVersion int    `json:"protocolVersion"`
-	Arrangement     string `json:"arrangement"`
-	Placement       string `json:"placement"`
+	Key         string `json:"key"`
+	Build       string `json:"build"`
+	Arrangement string `json:"arrangement"`
+	Placement   string `json:"placement"`
 }
 
 // HostDescriptors mirrors App\Data\HostDescriptorsData: every driver this host runs.

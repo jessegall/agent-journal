@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('driver_key', 128);
             $table->string('driver_label', 64);
             $table->string('family', 64);
-            $table->unsignedInteger('protocol_version')->nullable();
             $table->string('driver_build', 64)->nullable();
             $table->ulid('host_id')->nullable();
             $table->unsignedInteger('proposed_generation')->nullable();

@@ -104,7 +104,6 @@ final class StartPreviewsTest extends TestCase
             'acme',
             DriverVariant::Headless,
             'Acme headless',
-            $headless->protocolVersion,
             [],
             $headless->hookProtocol,
             $headless->accountProtocol,

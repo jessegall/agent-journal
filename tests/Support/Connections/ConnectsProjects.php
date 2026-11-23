@@ -10,7 +10,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\InstallAttempt;
 use App\Models\ProjectInvitation;
 use App\Support\ActorContext;
-use App\Support\DefaultDrivers;
 use App\Support\SignedCall;
 use App\Values\InstallTicket;
 use App\Values\OwnerAuthority;
@@ -131,7 +130,7 @@ trait ConnectsProjects
     private function reportClaudeCode(string $nonce, string $bindingId): void
     {
         $this->reportPresence($nonce, $bindingId, [[
-            'key' => 'claude-code', 'build' => '2.1.323', 'protocolVersion' => DefaultDrivers::PROTOCOL_VERSION,
+            'key' => 'claude-code', 'build' => '2.1.323',
             'arrangement' => 'local', 'placement' => 'protected_host',
         ]]);
     }

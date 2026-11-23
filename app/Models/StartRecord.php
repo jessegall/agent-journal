@@ -49,7 +49,6 @@ use PhpOption\Option;
  * @property string $driver_key
  * @property string $family
  * @property string $driver_label
- * @property int|null $protocol_version
  * @property int|null $catalogue_revision
  * @property string $model
  * @property ModelSelectionType $requested_model_type
@@ -85,7 +84,6 @@ use PhpOption\Option;
     'driver_key',
     'family',
     'driver_label',
-    'protocol_version',
     'catalogue_revision',
     'model',
     'requested_model_type',
@@ -174,7 +172,6 @@ final class StartRecord extends Model implements ReadableModel
             'driver_key' => (string) $pin->registration->key,
             'family' => $pin->registration->family,
             'driver_label' => $pin->registration->label,
-            'protocol_version' => $pin->registration->protocolVersion,
             'catalogue_revision' => $pin->catalogueRevision,
             'model' => $selection->model,
             'requested_model_type' => $requested->type,

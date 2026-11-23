@@ -15,7 +15,6 @@ final readonly class HostDescriptor
     public function __construct(
         public DriverKey $key,
         public string $build,
-        public int $protocolVersion,
         public ArrangementType $arrangement,
         public ExecutionModeType $placement,
     ) {}

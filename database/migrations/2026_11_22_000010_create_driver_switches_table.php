@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('target_driver_key', 128);
             $table->string('target_family', 64);
             $table->string('target_build', 64)->nullable();
-            $table->unsignedInteger('target_protocol_version')->nullable();
             $table->string('mode', 16);
             $table->string('mode_intent', 16)->default('inherit');
             $table->ulid('account_id');

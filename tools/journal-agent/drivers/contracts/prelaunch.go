@@ -45,11 +45,10 @@ type BoundTarget struct{ HostID string }
 
 // Descriptor is what a registered driver is: its opaque key, the family and mode it is chosen by, and its label.
 type Descriptor struct {
-	Key             string
-	Family          string
-	Mode            string
-	Label           string
-	ProtocolVersion int
+	Key    string
+	Family string
+	Mode   string
+	Label  string
 }
 
 // BindingIdentity names the running generation of one binding that every operation is fenced by.

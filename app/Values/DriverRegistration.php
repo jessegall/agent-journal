@@ -28,7 +28,6 @@ final readonly class DriverRegistration
         public string $family,
         public DriverVariant $mode,
         public string $label,
-        public int $protocolVersion,
         public array $buildPins,
         public string $hookProtocol,
         public string $accountProtocol,

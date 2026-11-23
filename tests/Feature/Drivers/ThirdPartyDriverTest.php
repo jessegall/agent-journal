@@ -118,7 +118,6 @@ final class ThirdPartyDriverTest extends TestCase
             'acme',
             $mode,
             $mode === DriverVariant::Headless ? 'Acme reader' : 'Acme reader terminal',
-            $headless->protocolVersion,
             [],
             $headless->hookProtocol,
             $headless->accountProtocol,
@@ -135,7 +134,6 @@ final class ThirdPartyDriverTest extends TestCase
         return new HostDescriptor(
             DriverKey::from('acme/reader'),
             $build,
-            $registry->forKey(DriverKey::from('acme/reader'))->descriptor()->protocolVersion,
             ArrangementType::Local,
             ExecutionModeType::ProtectedHost,
         );

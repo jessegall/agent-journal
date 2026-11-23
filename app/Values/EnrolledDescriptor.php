@@ -29,7 +29,7 @@ final readonly class EnrolledDescriptor
     }
 
     /**
-     * @return array{key: string, build: string, protocol_version: int, arrangement: string, placement: string,
+     * @return array{key: string, build: string, arrangement: string, placement: string,
      *     family: string|null, mode: string|null, unavailable_reason: string|null}
      */
     public function stored(): array
@@ -37,7 +37,6 @@ final readonly class EnrolledDescriptor
         return [
             'key' => (string) $this->descriptor->key,
             'build' => $this->descriptor->build,
-            'protocol_version' => $this->descriptor->protocolVersion,
             'arrangement' => $this->descriptor->arrangement->value,
             'placement' => $this->descriptor->placement->value,
             'family' => $this->family,

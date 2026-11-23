@@ -36,7 +36,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @property list<string> $start_roots
  * @property ArrangementType $arrangement
  * @property array<string, StoredReport> $protection
- * @property list<array{key: string, build: string, protocol_version: int, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}> $descriptors
+ * @property list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}> $descriptors
  * @property CarbonImmutable|null $revoked_at
  * @property bool $browser_input
  * @property bool $browser_keys
@@ -185,7 +185,7 @@ final class Host extends Model implements ReadableModel
     /**
      * Keeps the drivers the host enrolled, in place of the ones it enrolled before.
      *
-     * @param  list<array{key: string, build: string, protocol_version: int, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>  $descriptors
+     * @param  list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>  $descriptors
      */
     public function recordDescriptors(array $descriptors): void
     {
@@ -301,7 +301,7 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * @return list<array{key: string, build: string, protocol_version: int, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>
+     * @return list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>
      */
     private function availableDescriptors(): array
     {

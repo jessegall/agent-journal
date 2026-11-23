@@ -8,9 +8,6 @@ import (
 	"journal-agent/profiles"
 )
 
-// DriverProtocolVersion is the version of the driver protocol every registration of this host speaks.
-const DriverProtocolVersion = 1
-
 // ErrDriverNotAdvertised refuses a grant for a driver key or build this host did not advertise it runs.
 var ErrDriverNotAdvertised = errors.New("this host did not advertise that driver and build, so it starts nothing")
 
@@ -34,7 +31,7 @@ func descriptorsOf(arrangement host.Arrangement) []client.HostDescriptor {
 		placement = "required_container"
 	}
 	descriptor := func(key, build string) client.HostDescriptor {
-		return client.HostDescriptor{Key: key, Build: build, ProtocolVersion: DriverProtocolVersion,
+		return client.HostDescriptor{Key: key, Build: build,
 			Arrangement: string(arrangement), Placement: placement}
 	}
 	descriptors := []client.HostDescriptor{

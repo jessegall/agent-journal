@@ -178,7 +178,6 @@ final class DriverRegistryTest extends TestCase
             $registration->family,
             DriverVariant::Terminal,
             $registration->label,
-            $registration->protocolVersion,
             $registration->buildPins,
             $registration->hookProtocol,
             $registration->accountProtocol,

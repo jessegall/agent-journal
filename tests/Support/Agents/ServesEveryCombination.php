@@ -32,7 +32,6 @@ trait ServesEveryCombination
                 $descriptors[] = new HostDescriptor(
                     $drivers->keyFor($driver, $variant),
                     DriverCompatibility::pinned($driver)->version,
-                    DefaultDrivers::PROTOCOL_VERSION,
                     ArrangementType::Local,
                     ExecutionModeType::ProtectedHost,
                 );

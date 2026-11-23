@@ -39,7 +39,6 @@ final class DriverFamilyTest extends TestCase
                 'extension-family',
                 $claude->mode,
                 $claude->label,
-                $claude->protocolVersion,
                 [],
                 $claude->hookProtocol,
                 $claude->accountProtocol,

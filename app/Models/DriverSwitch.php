@@ -33,7 +33,6 @@ use Illuminate\Support\Carbon;
  * @property int $expected_generation
  * @property string $target_driver_key
  * @property string $target_family
- * @property int|null $target_protocol_version
  * @property DriverVariant $mode
  * @property string $account_id
  * @property int $account_revision
@@ -54,7 +53,6 @@ use Illuminate\Support\Carbon;
     'expected_generation',
     'target_driver_key',
     'target_family',
-    'target_protocol_version',
     'mode',
     'account_id',
     'account_revision',
@@ -106,7 +104,6 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $switch->expected_generation = $generation;
         $switch->target_driver_key = (string) $pin->registration->key;
         $switch->target_family = $pin->registration->family;
-        $switch->target_protocol_version = $pin->registration->protocolVersion;
         $switch->mode = $target->variant;
         $switch->account_id = $target->account->accountId;
         $switch->account_revision = $target->account->reviewedSignIn;

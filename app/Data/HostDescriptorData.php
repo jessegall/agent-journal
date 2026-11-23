@@ -19,7 +19,6 @@ final class HostDescriptorData extends Data
     public function __construct(
         public readonly string $key,
         public readonly string $build,
-        public readonly int $protocolVersion,
         public readonly ArrangementType $arrangement,
         public readonly ExecutionModeType $placement,
     ) {}
@@ -29,7 +28,6 @@ final class HostDescriptorData extends Data
         return new HostDescriptor(
             DriverKey::from($this->key),
             $this->build,
-            $this->protocolVersion,
             $this->arrangement,
             $this->placement,
         );

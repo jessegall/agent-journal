@@ -295,8 +295,8 @@ final class ProfileStartTest extends TestCase
         $switch = DriverSwitch::query()->where('request_id', $requestId)->sole();
         $pin = $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverVariant::Headless);
         $this->assertSame(
-            [(string) $pin->registration->key, $pin->registration->family, $pin->registration->protocolVersion],
-            [$switch->target_driver_key, $switch->target_family, $switch->target_protocol_version],
+            [(string) $pin->registration->key, $pin->registration->family],
+            [$switch->target_driver_key, $switch->target_family],
         );
     }
 

@@ -11,7 +11,6 @@ ${option.description} ${option.billingNote}
 : {{ step.action }} by {{ step.actor }}, project {{ step.projectId ?? 'not recorded' }}
 = range.from && line
 A sample run: it shows what the command does and gives no result.
-API key
 About the whole record
 About {{ describeRange(text.range) }}
 Access
@@ -149,7 +148,6 @@ Dropped compared with the rule in use: {{ revision.removedClasses.join(', ') || 
 Edit
 Email
 Ended
-Enter a short code on OpenAI's site. The rest happens by itself.
 Enter this code there when it asks.
 Environment
 Estimated USD value observed by the journal. It covers only the sessions the journal ran.
@@ -235,7 +233,6 @@ Name
 Name of the layout
 Name of the new layout
 Name this account
-Needs an update
 Needs sign-in
 Network
 New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
@@ -305,9 +302,6 @@ Over capacity
 Package install
 Pages
 Password
-Paste a key from the Anthropic Console.
-Paste a key from the OpenAI platform.
-Paste a token made with claude setup-token.
 Paste it
 Paste it below and send it.
 Paste it in a terminal in the project folder. It works once, until {{ timeOfDay(expiresAt) }}.
@@ -416,7 +410,6 @@ Send presses Enter on the line; Save and clear keeps it in this tab only and emp
 Send privately
 Setting up
 Settled
-Setup token
 Share
 Share for
 Shell actions
@@ -435,9 +428,6 @@ Showing the last update.
 Side by side
 Sign in
 Sign in first to make it the default
-Sign in on Claude's site, then paste the code it gives you.
-Sign in with ChatGPT
-Sign in with Claude
 Sign out
 Sign-in
 Signed in
@@ -469,7 +459,6 @@ Stopping
 Stopping the old session
 Stopping…
 Stops after {{ sample.byteCap }} bytes or {{ sample.secondsCap }} seconds
-Suits a server.
 Support record
 Support record of {{ binding.projectLabel }} on {{ binding.machineLabel }}
 Switch
@@ -498,7 +487,6 @@ The desk
 The draft is ready. Drafted by {{ draft.agent }}.
 The gateway provider can see the public address and everything this share shows.
 The host has not said it can run this driver this way.
-The host speaks another protocol version; upgrade journal-agent.
 The journal cannot be reached to check this line is still valid, so it cannot be copied now.
 The new session failed to start
 The place this comment points at is not available: {{ unavailable.message }}
