@@ -394,6 +394,10 @@ func (containers Containers) command(ctx context.Context, arguments ...string) *
 	return exec.CommandContext(ctx, containers.Docker, arguments...)
 }
 
+// ErrContainerNotCreated is returned when the agent daemon refuses to create a container; the error carries the
+// daemon's own first line, which says why.
+var ErrContainerNotCreated = errors.New("the agent daemon did not create the container")
+
 // ErrAgentDaemonUnreachable is returned when a Docker command cannot reach the agent daemon at all, which says nothing
 // about the images it holds (doc 61, story 64).
 var ErrAgentDaemonUnreachable = errors.New("the agent container runtime cannot be reached")
@@ -538,8 +542,15 @@ func (containers Containers) Create(
 		return "", err
 	}
 
-	output, err := containers.command(ctx, process.arguments(arguments, manifest.IsProtected())...).Output()
-	return strings.TrimSpace(string(output)), err
+	create := containers.command(ctx, process.arguments(arguments, manifest.IsProtected())...)
+	var refusal strings.Builder
+	create.Stderr = &refusal
+	output, err := create.Output()
+	if err != nil {
+		return "", fmt.Errorf("%w: %s", ErrContainerNotCreated, failureLine(refusal.String(), err))
+	}
+
+	return strings.TrimSpace(string(output)), nil
 }
 
 // EnsureNetwork makes the session's own network when the agent daemon lacks it, labelled with the installation and

@@ -261,6 +261,21 @@ func TestAnAgentContainerIsNotCreatedOnADaemonThatDiscardsItsBudgets(t *testing.
 	}
 }
 
+func TestAContainerTheDaemonRefusesToCreateIsReportedWithTheDaemonsOwnWords(t *testing.T) {
+	refusing := fakeImageDocker(t, "[ \"$3\" = info ] && { echo cgroupfs; exit 0; }; "+
+		"[ \"$3\" = create ] && { echo 'Error response from daemon: invalid mount config' >&2; exit 1; }; echo ok")
+	refusing.Rules = containedRules
+
+	_, err := refusing.Create(context.Background(), containedManifest(), "journal-session-7", accountLabels("7"), ContainerProcess{})
+	if !errors.Is(err, ErrContainerNotCreated) {
+		t.Fatalf("a refused create gave %v", err)
+	}
+
+	if !strings.Contains(err.Error(), "invalid mount config") {
+		t.Fatalf("the daemon's own words are missing from %v", err)
+	}
+}
+
 func TestAContainedStartIsProvenByItsContainer(t *testing.T) {
 	record := StartRecord{SessionID: "s1", Stage: ExecutionKnown, Claim: &client.ClaimedStart{StartKey: "k1"},
 		Grant: client.Grant{Container: json.RawMessage(`{"image":"sha256:image"}`)}}
