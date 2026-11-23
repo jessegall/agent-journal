@@ -16,6 +16,7 @@ use App\Events\LaunchEnded;
 use App\Events\MergeOutcomeRecorded;
 use App\Events\SessionClosed;
 use App\Events\SessionOpened;
+use App\Events\SessionStateChanged;
 use App\Events\StartAccepted;
 use App\Events\StartGrantRequested;
 use App\Events\StartRefused;
@@ -48,6 +49,18 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Support/StartExtensionRequests.php',
+        ],
+    ],
+    SessionStateChanged::class => [
+        'role' => EventRole::Projection,
+        'migrated' => false,
+        'producers' => [
+            'app/Commands/ReportRequestProgress/ReportRequestProgressHandler.php',
+            'app/Commands/ReportRunning/ReportRunningHandler.php',
+            'app/Commands/ReportRuntimeActivity/ReportRuntimeActivityHandler.php',
+            'app/Commands/ReportRuntimeExit/ReportRuntimeExitHandler.php',
+            'app/Commands/ReportRuntimeHeartbeat/ReportRuntimeHeartbeatHandler.php',
+            'app/Commands/ReportStopped/ReportStoppedHandler.php',
         ],
     ],
     AccountUseChanged::class => [

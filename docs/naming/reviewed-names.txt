@@ -6033,6 +6033,7 @@ class	SessionSkillsIntended
 class	SessionStartDetails
 class	SessionStartStep
 class	SessionStarted
+class	SessionStateChanged
 class	SessionToolDiscovery
 class	SetBooleanSettingCommand
 class	SetBooleanSettingHandler
@@ -21835,6 +21836,7 @@ method	ReportResource::shouldRegister()
 method	ReportResource::uriTemplate()
 method	ReportRunningCommand::__construct()
 method	ReportRunningController::__invoke()
+method	ReportRunningHandler::__construct()
 method	ReportRunningHandler::handle()
 method	ReportRunningHandler::variantToKeep()
 method	ReportRuntimeActivityCommand::__construct()
@@ -23515,6 +23517,7 @@ method	SessionStarted::recordTurn()
 method	SessionStarted::recordVisit()
 method	SessionState::label()
 method	SessionState::reason()
+method	SessionStateChanged::__construct()
 method	SessionStatus::isRunning()
 method	SessionStatus::running()
 method	SessionToolDiscovery::discoveredSince()
@@ -38668,6 +38671,7 @@ property	ReportRequestProgressCommand::$refusal
 property	ReportRequestProgressCommand::$requestId
 property	ReportRequestProgressCommand::$script
 property	ReportRequestProgressCommand::$sequence
+property	ReportRequestProgressHandler::$facts
 property	ReportRequestProgressHandler::$initialWakes
 property	ReportRequestProgressHandler::$navigationReports
 property	ReportRequestProgressHandler::$runtimes
@@ -38678,23 +38682,27 @@ property	ReportResource::$reports
 property	ReportRunningCommand::$executionId
 property	ReportRunningCommand::$hostId
 property	ReportRunningCommand::$startKey
+property	ReportRunningHandler::$facts
 property	ReportRuntimeActivityCommand::$activity
 property	ReportRuntimeActivityCommand::$hold
 property	ReportRuntimeActivityCommand::$hostId
 property	ReportRuntimeActivityCommand::$processGeneration
 property	ReportRuntimeActivityCommand::$runtimeId
 property	ReportRuntimeActivityCommand::$sequence
+property	ReportRuntimeActivityHandler::$facts
 property	ReportRuntimeActivityHandler::$runtimes
 property	ReportRuntimeExitCommand::$evidence
 property	ReportRuntimeExitCommand::$hostId
 property	ReportRuntimeExitCommand::$processGeneration
 property	ReportRuntimeExitCommand::$runtimeId
+property	ReportRuntimeExitHandler::$facts
 property	ReportRuntimeExitHandler::$heartbeats
 property	ReportRuntimeExitHandler::$runtimes
 property	ReportRuntimeHeartbeatCommand::$evidence
 property	ReportRuntimeHeartbeatCommand::$hostId
 property	ReportRuntimeHeartbeatCommand::$processGeneration
 property	ReportRuntimeHeartbeatCommand::$runtimeId
+property	ReportRuntimeHeartbeatHandler::$facts
 property	ReportRuntimeHeartbeatHandler::$heartbeats
 property	ReportRuntimeHeartbeatHandler::$runtimes
 property	ReportRuntimeScreenCommand::$body
@@ -39858,6 +39866,7 @@ property	SessionStartDetails::$vendorSessionId
 property	SessionStartStep::$visits
 property	SessionStarted::$hook
 property	SessionStarted::$start
+property	SessionStateChanged::$sessionId
 property	SetBooleanSettingCommand::$enabled
 property	SetBooleanSettingCommand::$expectedRevision
 property	SetBooleanSettingCommand::$setting
@@ -44391,6 +44400,7 @@ variable	$wasAtCommandStart
 variable	$wasCounted
 variable	$wasHeld
 variable	$wasLive
+variable	$wasStale
 variable	$watchFlag
 variable	$watchedTerminals
 variable	$watermark

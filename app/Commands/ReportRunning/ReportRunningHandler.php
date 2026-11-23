@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportRunning;
 
+use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverVariant;
+use App\Events\SessionStateChanged;
 use App\Models\AgentRuntime;
 use App\Models\AgentSession;
 use App\Models\DriverSwitch;
@@ -14,6 +16,8 @@ use App\Models\StartRecord;
 
 final readonly class ReportRunningHandler implements CommandHandler
 {
+    public function __construct(private CommandFacts $facts) {}
+
     public function handle(ReportRunningCommand $command): void
     {
         $start = ProcessStart::claimedBy($command->hostId, $command->startKey);
@@ -24,6 +28,7 @@ final readonly class ReportRunningHandler implements CommandHandler
             return;
         }
 
+        $this->facts->publishAfterCommit(new SessionStateChanged($start->session_id));
         DriverSwitch::startingOf($start->session_id)?->confirm();
         $saved = $this->variantToKeep($start->session_id);
 

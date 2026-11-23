@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportRuntimeActivity;
 
+use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\RuntimeActivity;
 use App\Enums\RuntimeEventType;
+use App\Events\SessionStateChanged;
 use App\Exceptions\HostReportRefused;
 use App\Models\DriverRequest;
 use App\Models\RuntimeEvent;
@@ -15,7 +17,7 @@ use Carbon\CarbonImmutable;
 
 final readonly class ReportRuntimeActivityHandler implements CommandHandler
 {
-    public function __construct(private HostRuntimes $runtimes) {}
+    public function __construct(private HostRuntimes $runtimes, private CommandFacts $facts) {}
 
     public function handle(ReportRuntimeActivityCommand $command): void
     {
@@ -57,5 +59,7 @@ final readonly class ReportRuntimeActivityHandler implements CommandHandler
                 $runtime->process_generation,
             );
         }
+
+        $this->facts->publishAfterCommit(new SessionStateChanged($runtime->agent_session_id));
     }
 }

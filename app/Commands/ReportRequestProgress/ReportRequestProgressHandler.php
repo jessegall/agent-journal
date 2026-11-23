@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportRequestProgress;
 
+use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
 use App\Enums\RuntimeEventType;
+use App\Events\SessionStateChanged;
 use App\Exceptions\HostReportRefused;
 use App\Models\DriverRequest;
 use App\Models\RuntimeEvent;
@@ -27,6 +29,7 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
         private InitialWakeSettlement $initialWakes,
         private TerminalGrantReports $terminalGrants,
         private StartIdentity $startIdentity,
+        private CommandFacts $facts,
     ) {}
 
     public function handle(ReportRequestProgressCommand $command): void
@@ -94,5 +97,7 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
         if ($request->isInitialWakeOf($runtime->agent_session_id)) {
             $this->startIdentity->settle($runtime, $command);
         }
+
+        $this->facts->publishAfterCommit(new SessionStateChanged($runtime->agent_session_id));
     }
 }

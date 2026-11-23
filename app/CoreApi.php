@@ -745,6 +745,7 @@ use App\Events\MessageTakenUp;
 use App\Events\ProfileRevisionRevoked;
 use App\Events\RunChanged;
 use App\Events\SessionClosed;
+use App\Events\SessionStateChanged;
 use App\Events\SettingsChanged;
 use App\Events\ShareActivated;
 use App\Events\ShareCreated;
@@ -1568,6 +1569,7 @@ final class CoreApi
                 LaunchEnded::class,
                 DriverFailed::class,
                 AccountUseChanged::class,
+                SessionStateChanged::class,
                 AccountsChanged::class,
                 RunChanged::class,
                 EngineTicked::class,

@@ -49,6 +49,7 @@ use App\Enums\RequestProgress;
 use App\Enums\RuntimeActivity;
 use App\Enums\SessionStatus;
 use App\Events\DriverRequestRecovered;
+use App\Events\SessionStateChanged;
 use App\Exceptions\AccountFolderInvalid;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\DriverRequestRefused;
@@ -735,6 +736,37 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->assertFalse($runtime->refresh()->isStale(CarbonImmutable::now()));
         $this->assertSame(RuntimeActivity::Idle, $runtime->activity);
+    }
+
+    /**
+     * User message 19457: a page learns that a session's state changed from the host's report itself, so its header
+     * never waits for a reload; a beat that only keeps a fresh report fresh says nothing.
+     */
+    public function test_a_report_that_changes_a_sessions_state_tells_the_pages_and_a_plain_beat_does_not(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
+        $idle = new ReportRuntimeActivityCommand(
+            $host->hostId,
+            $opened->runtimeId,
+            RuntimeActivity::Idle,
+            HoldReason::None,
+            $generation,
+        );
+        $beat = new ReportRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation, 'owned process alive');
+        $told = fn (SessionStateChanged $change) => $change->sessionId === $opened->sessionId;
+        Event::fake([SessionStateChanged::class]);
+
+        $this->asSystem($idle);
+        Event::assertDispatchedTimes(SessionStateChanged::class, 1);
+        Event::assertDispatched(SessionStateChanged::class, $told);
+
+        $this->asSystem($beat);
+        Event::assertDispatchedTimes(SessionStateChanged::class, 1);
+
+        $this->travel(AgentRuntime::FRESH_SECONDS + 1)->seconds();
+        $this->asSystem($beat);
+        Event::assertDispatchedTimes(SessionStateChanged::class, 2);
     }
 
     public function test_a_heartbeat_of_another_generation_is_refused(): void
