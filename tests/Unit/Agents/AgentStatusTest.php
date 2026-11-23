@@ -322,6 +322,36 @@ final class AgentStatusTest extends TestCase
         );
     }
 
+    /**
+     * User message 19457: a session nobody can vouch for can still be ended; Status unknown was a dead end.
+     */
+    public function test_an_unknown_state_offers_stop_beside_check_status_to_an_actor_allowed_to_stop(): void
+    {
+        $unvouched = new AgentEvidence(
+            false,
+            self::SESSION,
+            SessionStatus::Active,
+            ProcessStartState::Running,
+            self::runtime(RuntimeActivity::Idle, isStale: true),
+            true,
+            null,
+            null,
+            null,
+            false,
+            false,
+            false,
+            true,
+        );
+
+        $status = AgentStatusRules::of($unvouched, self::words(false));
+
+        $this->assertSame(SessionState::Unknown, $status->sessionState);
+        $this->assertSame(
+            [StatusActionType::CheckStatus, StatusActionType::Stop],
+            array_map(fn (StatusAction $action) => $action->type, $status->actions),
+        );
+    }
+
     public function test_a_live_session_offers_stop_only_to_an_actor_allowed_to_stop(): void
     {
         $allowed = new AgentEvidence(

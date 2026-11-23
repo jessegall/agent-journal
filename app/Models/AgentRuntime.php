@@ -271,6 +271,17 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
+     * The host proved the runtime's process still lives: what it last reported still holds, so the report is fresh
+     * again. An idle runtime reports nothing else between two turns.
+     */
+    public function confirmAlive(CarbonImmutable $at): void
+    {
+        $this->last_observed_at = $at;
+        $this->row_version++;
+        $this->save();
+    }
+
+    /**
      * Records what the host saw, unless the report comes from an older process generation than the one recorded.
      */
     public function recordObservation(

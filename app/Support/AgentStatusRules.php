@@ -364,14 +364,19 @@ final class AgentStatusRules
         );
     }
 
+    /**
+     * A state nobody can vouch for offers a fresh look, and Stop while its session still stands: not knowing what a
+     * session does is no reason to be unable to end it.
+     */
     private static function unknown(AgentEvidence $evidence, StatusOperation|null $operation = null): AgentStatus
     {
-        return self::plain(
-            SessionState::Unknown,
-            $evidence,
-            [StatusAction::of(StatusActionType::CheckStatus)],
-            $operation,
-        );
+        $actions = [StatusAction::of(StatusActionType::CheckStatus)];
+
+        if ($evidence->canStop && $evidence->hasLiveSession()) {
+            $actions[] = StatusAction::of(StatusActionType::Stop);
+        }
+
+        return self::plain(SessionState::Unknown, $evidence, $actions, $operation);
     }
 
     private static function operationOf(DriverRequestStatus $request): StatusOperation

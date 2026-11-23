@@ -9,6 +9,7 @@ use App\Models\AgentSession;
 use App\Support\DriverHeartbeatSource;
 use App\Support\HeartbeatEvidence;
 use App\Support\HostRuntimes;
+use Carbon\CarbonImmutable;
 
 final readonly class ReportRuntimeHeartbeatHandler implements CommandHandler
 {
@@ -21,5 +22,6 @@ final readonly class ReportRuntimeHeartbeatHandler implements CommandHandler
 
         $evidence = new HeartbeatEvidence($command->hostId, $command->processGeneration, $command->evidence);
         $this->heartbeats->record($session, $evidence, $command->dispatchedBy());
+        $runtime->confirmAlive(CarbonImmutable::now());
     }
 }

@@ -703,6 +703,40 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertNotNull(AgentSession::query()->findOrFail($opened->sessionId)->last_heartbeat_at);
     }
 
+    /**
+     * User message 19457: an idle runtime reports nothing between two turns, so its last report grew stale after a
+     * minute and its session read as Status unknown though nothing was wrong.
+     */
+    public function test_a_heartbeat_keeps_an_idle_runtimes_report_fresh(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+        $this->asSystem(
+            new ReportRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Idle,
+                HoldReason::None,
+                $runtime->process_generation,
+            ),
+        );
+
+        $this->travel(AgentRuntime::FRESH_SECONDS + 1)->seconds();
+        $this->assertTrue($runtime->refresh()->isStale(CarbonImmutable::now()));
+
+        $this->asSystem(
+            new ReportRuntimeHeartbeatCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                $runtime->process_generation,
+                'owned process alive',
+            ),
+        );
+
+        $this->assertFalse($runtime->refresh()->isStale(CarbonImmutable::now()));
+        $this->assertSame(RuntimeActivity::Idle, $runtime->activity);
+    }
+
     public function test_a_heartbeat_of_another_generation_is_refused(): void
     {
         [$host, $opened] = $this->openRuntime();
