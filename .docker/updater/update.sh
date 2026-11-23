@@ -14,7 +14,10 @@ set -eu
 root=${JOURNAL_ROOT:?the updater names the installation folder}
 branch=${JOURNAL_BRANCH:?the updater names the branch}
 repository=${JOURNAL_REPOSITORY:?the updater names the repository}
-mirror=/var/lib/journal-updater/mirror.git
+# Where the updater keeps its own files, and the loop it runs: fixed on a server, named by a test.
+state=${JOURNAL_UPDATER_STATE:-/var/lib/journal-updater}
+running_loop=${JOURNAL_UPDATER_LOOP:-/usr/local/bin/journal-updater}
+mirror=$state/mirror.git
 cd "$root"
 
 newest=$(git ls-remote "$repository" "refs/heads/$branch" | cut -f1)
@@ -78,6 +81,7 @@ install() {
     sh .docker/helper/prune.sh >/dev/null &&
         docker compose --progress=quiet build app share web &&
         { [ "$arrangement" != contained ] || pin_runner; } &&
+        { [ "$arrangement" != contained ] || pin_agent; } &&
         { [ "$migrations_changed" = no ] || [ "$schema_rebuilt" = yes ] ||
             docker compose run --rm -T app php artisan migrate --force; } &&
         { [ "$schema_rebuilt" = no ] || docker compose run --rm -T app php artisan migrate:fresh --force; } &&
@@ -114,15 +118,15 @@ enroll_rebuilt_host() {
 # three newest releases are kept, so a line issued just before an install still downloads.
 publish_release() {
     version=$(printf '%.12s' "$newest")
-    key=/var/lib/journal-updater/release.key
-    source=/var/lib/journal-updater/release-source
+    key=$state/release.key
+    source=$state/release-source
     [ -f "$key" ] || { echo "no release signing key at $key on the updater volume: put the ed25519 key there"; return 1; }
     project=$(docker compose config --format json | python3 -c 'import json, sys; print(json.load(sys.stdin)["name"])')
     rm -rf "$source" &&
         git clone --quiet --shared "$mirror" "$source" &&
         git -C "$source" checkout --quiet "$newest" &&
         docker run --rm \
-            -v "${project}_updater-mirror:/var/lib/journal-updater" \
+            -v "${project}_updater-mirror:$state" \
             -v "${project}_releases:/releases" \
             -v journal-release-go-cache:/root/.cache \
             -v journal-release-go-modules:/go/pkg/mod \
@@ -139,11 +143,11 @@ publish_release() {
 # so every running service with a mounted file the installed commits changed is restarted.
 restart_changed_mounts() {
     [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null || return 0
-    git -C "$mirror" diff --name-only "$installed" "$newest" > /tmp/changed-files
+    git -C "$mirror" diff --name-only "$installed" "$newest" > "$state/changed-files"
     services=$(docker compose $profiles config --format json | python3 -c '
 import json, os, sys
 root = os.path.realpath(sys.argv[1])
-changed = set(open("/tmp/changed-files").read().split())
+changed = set(open(sys.argv[2]).read().split())
 for name, service in json.load(sys.stdin)["services"].items():
     for volume in service.get("volumes", []):
         source = os.path.realpath(volume.get("source", ""))
@@ -152,7 +156,7 @@ for name, service in json.load(sys.stdin)["services"].items():
             if any(path == mounted or path.startswith(mounted + "/") for path in changed):
                 print(name)
                 break
-' "$root")
+' "$root" "$state/changed-files")
     [ -z "$services" ] || docker compose $profiles restart $services
 }
 
@@ -200,10 +204,28 @@ wait_healthy() {
 }
 
 pin_runner() {
+    build_and_pin runner RUNNER_IMAGE
+}
+
+# Builds the agent image only when its own sources changed since the pinned one was built.
+pin_agent() {
+    agent_sources=$(agent_image_sources) || return 1
+    [ "$(cat images/agent.source 2>/dev/null)" != "$agent_sources" ] || return 0
+    build_and_pin agent AGENT_IMAGE &&
+        printf '%s\n' "$agent_sources" > images/agent.source
+}
+
+# The folders that go into the agent image, as the commit holds them.
+agent_image_sources() {
+    git -C "$mirror" rev-parse "$newest:.docker/helper" "$newest:tools/journal-agent" "$newest:tools/journal-check"
+}
+
+# Builds one image for this server and writes its id into .env under the setting named.
+build_and_pin() {
     platform=$(docker version --format '{{.Server.Os}}/{{.Server.Arch}}') &&
-        sh .docker/helper/build.sh "$platform" runner &&
-        runner=$(python3 -c 'import json; print(json.load(open("docs/accounts/docker-images.json"))["images"][-1]["reference"])') &&
-        sed -i "s|^RUNNER_IMAGE=.*|RUNNER_IMAGE=$runner|" .env
+        sh .docker/helper/build.sh "$platform" "$1" &&
+        built=$(python3 .docker/updater/newest-image-reference.py "$images") &&
+        sed -i "s|^$2=.*|$2=$built|" .env
 }
 
 # The new updater is put in place by a short-lived container of its own image: compose run inside this container would
@@ -218,7 +240,7 @@ replace_updater() {
 # The updater rebuilds itself, as the last step, when the loop it runs is not the installed commit's: the new container
 # takes over from this one. Comparing the files, not the commits, also catches a change an earlier install missed.
 updater_changed=no
-cmp -s /usr/local/bin/journal-updater "$root/.docker/updater/loop.sh" || updater_changed=yes
+cmp -s "$running_loop" "$root/.docker/updater/loop.sh" || updater_changed=yes
 
 if install; then
     echo "$newest" > .installed-commit

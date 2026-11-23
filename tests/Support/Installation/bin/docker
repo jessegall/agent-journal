@@ -1,0 +1,107 @@
+#!/bin/sh
+# A stand-in for the docker program in tests: it records each call in $STAND_IN/calls.log and answers as a healthy
+# Docker with well-built images would. A call that holds a line of $STAND_IN/failing fails instead.
+set -eu
+here=$(dirname "$0")
+answers=$here/../answers
+. "$here/../../../../scripts/lib/templates.sh"
+
+main() {
+    record_call "$@"
+    fail_when_asked "$@"
+    case "$1" in
+        version) echo linux/amd64 ;;
+        buildx) remember_build "$@" ;;
+        run) answer_run "$@" ;;
+        save) save_archive "$@" ;;
+        inspect) echo healthy ;;
+        compose) shift; answer_compose "$@" ;;
+    esac
+}
+
+record_call() {
+    printf '%s\n' "$(printf '%s' "$*" | tr '\n' ' ')" >> "$STAND_IN/calls.log"
+}
+
+fail_when_asked() {
+    [ -f "$STAND_IN/failing" ] || return 0
+    while IFS= read -r part; do
+        case "$*" in *"$part"*) echo "stand-in docker: told to fail a call that holds: $part" >&2; exit 1 ;; esac
+    done < "$STAND_IN/failing"
+}
+
+# The value that follows an option, such as the tag after --tag.
+option_after() {
+    wanted=$1
+    shift
+    while [ "$#" -gt 1 ]; do
+        if [ "$1" = "$wanted" ]; then echo "$2"; return 0; fi
+        shift
+    done
+}
+
+# A build counts, so each one saves an image of its own digest, and keeps the client versions it was given.
+remember_build() {
+    echo $(($(built_images) + 1)) > "$STAND_IN/builds"
+    for argument in "$@"; do
+        case "$argument" in
+            CLAUDE_CODE_VERSION=*) echo "${argument#*=} (Claude Code)" > "$STAND_IN/claude-version" ;;
+            CODEX_VERSION=*) echo "codex-cli ${argument#*=}" > "$STAND_IN/codex-version" ;;
+        esac
+    done
+}
+
+built_images() {
+    cat "$STAND_IN/builds" 2>/dev/null || echo 0
+}
+
+# What a command run in a well-built image prints, or how it ends.
+answer_run() {
+    case "$*" in
+        *" composer:2 php "*) run_php_here "$@" ;;
+        *"--entrypoint claude "*) cat "$STAND_IN/claude-version" ;;
+        *"--entrypoint codex "*) cat "$STAND_IN/codex-version" ;;
+        *"--entrypoint id "*journal-tools) cat "$answers/tools-user.txt" ;;
+        *"--entrypoint id "*) echo 10001 ;;
+        *"--entrypoint test "*"-e /app/.env") exit 1 ;;
+        *"--entrypoint stat "*managed-settings.json) echo "root:root 444" ;;
+        *"--entrypoint stat "*/workspace) echo "10001:10010 2770" ;;
+        *"--entrypoint stat "*/home/journal/.account/projects) echo "10001:10001 700" ;;
+        *"--entrypoint stat "*) echo "root:root 555" ;;
+        *"--entrypoint /opt/journal/bin/journal-hook "*) cat "$answers/hook-refusal.json" ;;
+        *"--entrypoint sh "*"command -v "* | *"--entrypoint sh "*"-name artisan"*) exit 1 ;;
+    esac
+}
+
+# PHP asked for in a composer container runs here, with the folder mounted at /accounts in its place.
+run_php_here() {
+    accounts=$(option_after --volume "$@")
+    accounts=${accounts%:/accounts}
+    while [ "$1" != php ]; do shift; done
+    code=$(printf '%s' "$3" | sed "s|\"/accounts/|\"$accounts/|")
+    shift 3
+    php -r "$code" "$@"
+}
+
+save_archive() {
+    archive=$(option_after -o "$@")
+    folder=$(mktemp -d)
+    digest=$(printf 'image %s' "$(built_images)" | sha256sum | cut -d' ' -f1)
+    for last; do :; done
+    fill_template "$answers/manifest.json" "digest=$digest" "tag=$last" > "$folder/manifest.json"
+    tar -cf "$archive" -C "$folder" manifest.json
+    rm -rf "$folder"
+}
+
+answer_compose() {
+    case "$*" in
+        *"config --format json"*) cat "$answers/compose-config.json" ;;
+        *"config --images"*) echo journal-updater ;;
+        *"ps -q app"*) cat "$STAND_IN/app-containers" 2>/dev/null || true ;;
+        *"--scale app=2"*) printf 'app-old\napp-new\n' > "$STAND_IN/app-containers" ;;
+        *"--scale app=1"*) echo app-new > "$STAND_IN/app-containers" ;;
+        *agents:host-enroll*) fill_template "$answers/host-enrolled.txt" host=01standinhost secret=stand-in-secret ;;
+    esac
+}
+
+main "$@"

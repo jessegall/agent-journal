@@ -1,0 +1,151 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Installation;
+
+use Tests\Support\Installation\StandInInstallation;
+use Tests\Support\TimeLimits\TimeLimit;
+use Tests\TestCase;
+
+/**
+ * The update script an installation runs on every push, run for real against a stand-in Docker (rule 76): what it
+ * builds, pins and records for a push, and what it leaves alone when a step fails.
+ */
+#[TimeLimit(seconds: 30, reason: 'Each test runs the real update script, which starts a few hundred small programs.')]
+final class UpdateTest extends TestCase
+{
+    private const string AGENT = 'agent';
+
+    private const string RUNNER = 'runner';
+
+    private const string AGENT_PIN = 'AGENT_IMAGE';
+
+    private const string RUNNER_PIN = 'RUNNER_IMAGE';
+
+    private const string MIGRATE = 'migrate';
+
+    private const string UPDATER_PROFILE = '--profile updater';
+
+    private const string BUILD = 'build updater';
+
+    private StandInInstallation $installation;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->installation = StandInInstallation::contained();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->installation->remove();
+
+        parent::tearDown();
+    }
+
+    public function test_a_first_install_builds_and_pins_both_images_and_records_the_commit(): void
+    {
+        $earlierAgent = $this->installation->setting(self::AGENT_PIN);
+        $earlierRunner = $this->installation->setting(self::RUNNER_PIN);
+        $pushed = $this->installation->push(['README.md' => 'first']);
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+        $this->assertSame($pushed, $this->installation->installedCommit());
+        $this->assertTrue($this->installation->hasBuilt(self::AGENT));
+        $this->assertTrue($this->installation->hasBuilt(self::RUNNER));
+        $this->assertNotSame($earlierAgent, $this->installation->setting(self::AGENT_PIN));
+        $this->assertNotSame($earlierRunner, $this->installation->setting(self::RUNNER_PIN));
+        $this->assertNotSame(
+            $this->installation->setting(self::AGENT_PIN),
+            $this->installation->setting(self::RUNNER_PIN),
+        );
+    }
+
+    public function test_a_push_that_changes_the_agents_sources_builds_and_pins_a_new_agent_image(): void
+    {
+        $this->installation->update();
+        $pinned = $this->installation->setting(self::AGENT_PIN);
+        $this->installation->forgetCalls();
+        $pushed = $this->installation->push(['tools/journal-agent/relay.go' => 'package relay']);
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+        $this->assertSame($pushed, $this->installation->installedCommit());
+        $this->assertTrue($this->installation->hasBuilt(self::AGENT));
+        $this->assertNotSame($pinned, $this->installation->setting(self::AGENT_PIN));
+    }
+
+    public function test_a_push_that_changes_nothing_of_the_agent_keeps_its_image(): void
+    {
+        $this->installation->update();
+        $pinned = $this->installation->setting(self::AGENT_PIN);
+        $this->installation->forgetCalls();
+        $pushed = $this->installation->push(['app/Models/Task.php' => '<?php']);
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+        $this->assertSame($pushed, $this->installation->installedCommit());
+        $this->assertFalse($this->installation->hasBuilt(self::AGENT));
+        $this->assertTrue($this->installation->hasBuilt(self::RUNNER));
+        $this->assertSame($pinned, $this->installation->setting(self::AGENT_PIN));
+    }
+
+    public function test_an_agent_image_that_fails_to_build_keeps_its_pin_and_records_the_failed_commit(): void
+    {
+        $this->installation->update();
+        $installed = $this->installation->installedCommit();
+        $pinned = $this->installation->setting(self::AGENT_PIN);
+        $pushed = $this->installation->push(['tools/journal-agent/relay.go' => 'package relay']);
+        $this->installation->failCallsHolding('--file .docker/helper/Dockerfile');
+
+        $update = $this->installation->update();
+
+        $this->assertNotSame(0, $update->getExitCode());
+        $this->assertSame($pushed, $this->installation->failedCommit());
+        $this->assertSame($installed, $this->installation->installedCommit());
+        $this->assertSame($pinned, $this->installation->setting(self::AGENT_PIN));
+    }
+
+    public function test_a_migration_that_fails_keeps_the_installed_commit_and_records_the_failed_one(): void
+    {
+        $this->installation->update();
+        $installed = $this->installation->installedCommit();
+        $pushed = $this->installation->push(['database/migrations/2026_01_01_000000_create_notes_table.php' => '<?php']);
+        $this->installation->failCallsHolding(self::MIGRATE);
+
+        $update = $this->installation->update();
+
+        $this->assertNotSame(0, $update->getExitCode());
+        $this->assertSame($pushed, $this->installation->failedCommit());
+        $this->assertSame($installed, $this->installation->installedCommit());
+    }
+
+    public function test_a_push_without_a_migration_runs_none(): void
+    {
+        $this->installation->update();
+        $this->installation->forgetCalls();
+        $this->installation->push(['app/Models/Task.php' => '<?php']);
+
+        $this->installation->update();
+
+        $this->assertFalse($this->installation->wasAsked(self::MIGRATE));
+    }
+
+    public function test_the_updater_replaces_itself_only_when_its_loop_changed(): void
+    {
+        $this->installation->update();
+        $replacedBefore = $this->installation->wasAsked(self::UPDATER_PROFILE, self::BUILD);
+        $this->installation->push(['.docker/updater/loop.sh' => '#!/bin/sh']);
+
+        $this->installation->update();
+
+        $this->assertFalse($replacedBefore);
+        $this->assertTrue($this->installation->wasAsked(self::UPDATER_PROFILE, self::BUILD));
+    }
+}

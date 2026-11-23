@@ -1,0 +1,9 @@
+#!/bin/sh
+# A stand-in for curl in tests: every address answers with an empty page, and the call is recorded.
+set -eu
+
+main() {
+    printf '%s\n' "$*" >> "$STAND_IN/requests.log"
+}
+
+main "$@"

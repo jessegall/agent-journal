@@ -106,6 +106,10 @@ RUN WAYFINDER_GENERATED=1 npm run build:frontend
 # commands run in the app container. The source is mounted over /app.
 FROM console AS development
 
+# python3 for the tests that run the installation's own scripts against a stand-in Docker (rule 76)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update && apt-get install -y --no-install-recommends python3
+
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
