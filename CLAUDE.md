@@ -73,3 +73,4 @@ yours to resolve at its source.
 - Before fixing a start that hangs on a screen, look at what is recorded. A screen that is missing is recorded and added to the screens the navigation knows. Never write a new mechanism for it.
 - No other code reads, guesses or answers a driver's screens, sends it keys, or writes a driver's own state files (such as `.claude.json` and its onboarding and trust fields) to make a screen go away.
 - A screen the navigation does not know ends the start with what the screen shows; it never waits forever.
+- One exception (rule 81; user message 19430): a first-run screen may also be avoided by settling the account once, in exactly one named place, the account's first-run step of the sign-in service, and only together with the navigation knowing the same screen. Both exist: the account is left ready so the screen never shows, and the navigation can still pass it if it does.
