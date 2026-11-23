@@ -116,9 +116,7 @@ const account = computed(() =>
 const review = computed(() => {
   return `${preview.value?.label ?? "its driver"}, on ${account.value?.label ?? "no account"}`;
 });
-const isSwitchOpen = computed(() =>
-  ["sending", "following", "uncertain"].includes(switching.state.value),
-);
+const isSwitchOpen = computed(() => switching.isOut());
 const canSubmit = computed(
   () =>
     account.value !== undefined &&
@@ -502,6 +500,10 @@ function showStart(): boolean {
   const shown = props.agent;
   const status = shown.status;
   const isThisStart = status.operation?.id === requestId;
+  const isStartedSessionShown =
+    startedSessionId !== null && shown.sessionId === startedSessionId;
+  const isOtherSessionShown =
+    shown.sessionId !== null && shown.sessionId !== startedSessionId;
 
   if (
     isThisStart &&
@@ -516,32 +518,23 @@ function showStart(): boolean {
   }
 
   // A refused start ends its session, so the refusal shows on the agent once the page reads it again.
-  if (
-    startedSessionId !== null &&
-    shown.sessionId !== startedSessionId &&
-    shown.startRefusal !== null
-  ) {
+  const hasStartedSessionEnded =
+    startedSessionId !== null && shown.sessionId !== startedSessionId;
+
+  if (hasStartedSessionEnded && shown.startRefusal !== null) {
     progress.value = null;
     refusal.value = shown.startRefusal;
 
     return true;
   }
 
-  if (
-    startedSessionId !== null &&
-    shown.sessionId === startedSessionId &&
-    status.isProcessConfirmed
-  ) {
+  if (isStartedSessionShown && status.isProcessConfirmed) {
     progress.value = "Ready";
 
     return true;
   }
 
-  if (
-    shown.sessionId !== null &&
-    shown.sessionId !== startedSessionId &&
-    status.isProcessConfirmed
-  ) {
+  if (isOtherSessionShown && status.isProcessConfirmed) {
     progress.value =
       "Another session is running; this start is not confirmed yet";
   }

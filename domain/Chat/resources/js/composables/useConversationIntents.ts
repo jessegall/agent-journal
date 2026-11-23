@@ -367,10 +367,12 @@ export type ConversationIntents = ReturnType<typeof createOwner>;
 // A chat this tab lost takes its sends, its drafts and its recoveries with it.
 onChatAccessEnded((inboxId) => {
   for (const [key, owner] of [...owners]) {
-    if (key.endsWith(`/${inboxId}`)) {
-      owner.purge();
-      owners.delete(key);
+    if (!key.endsWith(`/${inboxId}`)) {
+      continue;
     }
+
+    owner.purge();
+    owners.delete(key);
   }
 
   useMessageDrafts().purgeChat(inboxId);

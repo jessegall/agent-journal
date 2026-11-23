@@ -348,7 +348,7 @@ export class TerminalControl {
     private async settleTake(answer: TerminalControlData): Promise<void> {
         let current = answer;
 
-        while (current.grantId === null && current.state === 'taking' && !this.cancelled) {
+        while (isStillTaking(current) && !this.cancelled) {
             await this.wait(RECEIPT_POLL_MILLISECONDS);
             current = await this.client.receipt(this.takeId, 0);
         }
@@ -435,4 +435,11 @@ export class TerminalControl {
         this.current = { ...this.current, ...change };
         this.show(this.current);
     }
+}
+
+/**
+ * Whether a take is still waiting for its grant.
+ */
+function isStillTaking(answer: TerminalControlData): boolean {
+    return answer.grantId === null && answer.state === 'taking';
 }
