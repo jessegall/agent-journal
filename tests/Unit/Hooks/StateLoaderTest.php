@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\NoSubject;
 use App\Events\StateTypesRequested;
 use App\Exceptions\StateTypeRepeated;
@@ -16,13 +17,16 @@ use App\Support\Stack\RegisteredStateFactory;
 use App\Support\Stack\StateTypes;
 use App\Support\StateCatalog\StateTypeRegistry;
 use App\Support\StateLoading\Loaders\ReadyStateLoader;
+use App\Support\States\Contracts\StopConditionGate;
 use App\Support\States\ReadyState;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Support\States\WorkingOnTaskState;
+use Illuminate\Container\Container;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\TestFailure;
@@ -94,6 +98,36 @@ final class StateLoaderTest extends TestCase
         $ready = new StateReferences([new StateReference(ReadyState::TYPE_KEY, NoSubject::None)]);
 
         $this->assertSame(ReadyState::class, $readyType->statesFor($ready)->stateAt(0)::class);
+    }
+
+    // Found on the local journal (23 Nov): under the long-running app server the loader lives across requests. It had
+    // kept the container it was built with, so every later tool call was judged by a request that was over, with no
+    // actor, and each file read was refused. Each request's state takes its policy from that request's container.
+    public function test_the_ready_state_of_each_request_is_built_from_that_requests_own_container(): void
+    {
+        $asked = [];
+        $containerOf = function (string $request) use (&$asked): Container {
+            $container = new Container();
+            $container->bind(OperationPolicy::class, function () use (&$asked, $request): OperationPolicy {
+                $asked[] = $request;
+
+                return new FixedOperationPolicy();
+            });
+            $container->instance(StopConditionGate::class, new AllowedStops());
+
+            return $container;
+        };
+        $inHand = $containerOf('first');
+        $loader = new ReadyStateLoader(function () use (&$inHand): Container {
+            return $inHand;
+        });
+        $ready = new StateReferences([new StateReference(ReadyState::TYPE_KEY, NoSubject::None)]);
+
+        $loader->statesFor($ready)->stateAt(0);
+        $inHand = $containerOf('second');
+        $loader->statesFor($ready)->stateAt(0);
+
+        $this->assertSame(['first', 'second'], $asked);
     }
 
     public function test_a_failed_build_is_not_kept_and_the_next_use_builds_again(): void

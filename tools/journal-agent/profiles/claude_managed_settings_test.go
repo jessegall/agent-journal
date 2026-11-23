@@ -10,16 +10,17 @@ import (
 
 // managedSettings is Claude Code's managed policy as the agent image installs it at /etc/claude-code.
 type managedSettings struct {
-	AllowManagedPermissionRulesOnly bool `json:"allowManagedPermissionRulesOnly"`
-	AllowManagedHooksOnly           bool `json:"allowManagedHooksOnly"`
-	AllowManagedMcpServersOnly      bool `json:"allowManagedMcpServersOnly"`
-	AllowedMcpServers               []struct {
+	AllowManagedPermissionRulesOnly   bool `json:"allowManagedPermissionRulesOnly"`
+	AllowManagedHooksOnly             bool `json:"allowManagedHooksOnly"`
+	AllowManagedMcpServersOnly        bool `json:"allowManagedMcpServersOnly"`
+	SkipDangerousModePermissionPrompt bool `json:"skipDangerousModePermissionPrompt"`
+	AllowedMcpServers                 []struct {
 		ServerName string `json:"serverName"`
 	} `json:"allowedMcpServers"`
 	Permissions struct {
-		DisableBypassPermissionsMode string   `json:"disableBypassPermissionsMode"`
-		Allow                        []string `json:"allow"`
-		Deny                         []string `json:"deny"`
+		DefaultMode string   `json:"defaultMode"`
+		Allow       []string `json:"allow"`
+		Deny        []string `json:"deny"`
 	} `json:"permissions"`
 	Hooks map[string][]struct {
 		Hooks []struct {
@@ -48,9 +49,12 @@ func readManagedSettings(t *testing.T) managedSettings {
 func TestTheManagedPolicyCarriesEveryRuleAndHookOfTheLaunch(t *testing.T) {
 	settings := readManagedSettings(t)
 
-	if !settings.AllowManagedPermissionRulesOnly || !settings.AllowManagedHooksOnly || !settings.AllowManagedMcpServersOnly ||
-		settings.Permissions.DisableBypassPermissionsMode != "disable" {
+	if !settings.AllowManagedPermissionRulesOnly || !settings.AllowManagedHooksOnly || !settings.AllowManagedMcpServersOnly {
 		t.Fatalf("the policy leaves a setting source open: %+v", settings)
+	}
+	// User messages 19631 and 19636: every session in a container runs without permission questions, set here.
+	if settings.Permissions.DefaultMode != claudeCodeNeverAsks || !settings.SkipDangerousModePermissionPrompt {
+		t.Fatalf("a session in the container would ask a person: %+v", settings)
 	}
 	if len(settings.AllowedMcpServers) != 1 || settings.AllowedMcpServers[0].ServerName != claudeCodeJournalServer {
 		t.Fatalf("MCP servers allowed: %+v", settings.AllowedMcpServers)

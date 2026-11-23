@@ -11,14 +11,20 @@ use App\Support\StateLoading\Contracts\StateLoader;
 use App\Support\StateLoading\StateSet;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Support\States\ReadyState;
+use Closure;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * Builds the ready bottom of a stack for the agent acting now, with what its profile lets it change.
+ * Builds the ready bottom of a stack for the agent acting now, with what its profile lets it change. The loader lives
+ * as long as its worker, so it asks for the container of the request in hand at each call and keeps none: a kept one
+ * would judge every later request by a request that is over, with no actor.
  */
 final readonly class ReadyStateLoader implements StateLoader
 {
-    public function __construct(private Container $container) {}
+    /**
+     * @param  Closure(): Container  $containerOfRequest
+     */
+    public function __construct(private Closure $containerOfRequest) {}
 
     public function stateClass(): string
     {
@@ -27,9 +33,11 @@ final readonly class ReadyStateLoader implements StateLoader
 
     public function statesFor(StateReferences $references): StateSet
     {
+        $container = ($this->containerOfRequest)();
+
         return StateSet::build($references, fn () => new ReadyState(
-            $this->container->make(OperationPolicy::class),
-            $this->container->make(StopConditionGate::class),
+            $container->make(OperationPolicy::class),
+            $container->make(StopConditionGate::class),
         ));
     }
 

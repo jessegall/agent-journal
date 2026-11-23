@@ -31,7 +31,7 @@ final readonly class FixedOperationPolicy implements OperationPolicy
         $container->instance(OperationPolicy::class, new self($mayChangeFiles));
         $container->instance(StopConditionGate::class, new AllowedStops());
 
-        return new ReadyStateLoader($container);
+        return new ReadyStateLoader(static fn () => $container);
     }
 
     public function assess(Operation $operation): AccessDecision

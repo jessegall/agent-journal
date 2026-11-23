@@ -13,8 +13,8 @@ import (
 
 var journalServer = contracts.JournalServer{Command: "/protected/bin/php", Relay: "/protected/journal/bin/journal-mcp"}
 
-const accountProtection = `{"permissions":{"deny":["Read(//accounts/a/.credentials.json)","Bash(security:*)"],` +
-	`"disableBypassPermissionsMode":"disable"},"sandbox":{"enabled":true,"allowUnsandboxedCommands":false}}`
+const accountProtection = `{"permissions":{"deny":["Read(//accounts/a/.credentials.json)","Bash(security:*)"]},` +
+	`"sandbox":{"enabled":true,"allowUnsandboxedCommands":false}}`
 
 func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing.T) {
 	start := contracts.BaseStart{SettingsFolder: "/state/runtimes/r1", SessionID: "session", Account: &contracts.AccountStart{
@@ -32,9 +32,9 @@ func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing
 
 	var settings struct {
 		Permissions struct {
-			Allow                        []string `json:"allow"`
-			Deny                         []string `json:"deny"`
-			DisableBypassPermissionsMode string   `json:"disableBypassPermissionsMode"`
+			Allow       []string `json:"allow"`
+			Deny        []string `json:"deny"`
+			DefaultMode string   `json:"defaultMode"`
 		} `json:"permissions"`
 		Sandbox map[string]bool `json:"sandbox"`
 	}
@@ -45,14 +45,15 @@ func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing
 		!slices.Contains(settings.Permissions.Deny, claudeCodeDelegationTools[0]) {
 		t.Fatalf("the deny rules lost a side: %v", settings.Permissions.Deny)
 	}
-	if len(settings.Permissions.Allow) == 0 || settings.Permissions.DisableBypassPermissionsMode != "disable" ||
+	if len(settings.Permissions.Allow) == 0 || settings.Permissions.DefaultMode != claudeCodeNeverAsks ||
 		!settings.Sandbox["enabled"] {
 		t.Fatalf("settings %+v", settings)
 	}
 	if len(files) != 2 || files[1].Name != "mcp.json" {
 		t.Fatalf("files %+v", files)
 	}
-	if !slices.Contains(arguments, "--restricted") || !slices.Contains(arguments, "/state/runtimes/r1/mcp.json") {
+	// Restricted mode refuses the mode every session runs in (user messages 19631, 19636), so no start names it.
+	if slices.Contains(arguments, "--restricted") || !slices.Contains(arguments, "/state/runtimes/r1/mcp.json") {
 		t.Fatalf("arguments %v", arguments)
 	}
 }
@@ -74,8 +75,9 @@ func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T)
 }
 
 // A protected start runs every command as the executor's user through the shell bridge, so Claude Code's own sandbox,
-// which cannot start in the agent container, is off; its permission rules still may not be skipped.
-func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndKeepsItsPermissionRules(t *testing.T) {
+// which cannot start in the agent container, is off; and an account that switches off the mode every session runs
+// in, so that Claude Code would ask a person, is not started (user messages 19631, 19636).
+func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndNeverAsksAPerson(t *testing.T) {
 	start := contracts.BaseStart{SettingsFolder: "/state", SessionID: "session", Protected: true, Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer}}.Turn("", false)
 
 	files, err := (ClaudeCode{}).SettingsFiles(start)
@@ -92,9 +94,9 @@ func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndKeepsItsPermissionR
 		t.Fatalf("a protected start kept Claude Code's sandbox on: %v", settings.Sandbox)
 	}
 
-	start.Account.Protection = `{"sandbox":{"enabled":true,"allowUnsandboxedCommands":false}}`
+	start.Account.Protection = `{"permissions":{"disableBypassPermissionsMode":"disable"}}`
 	if _, err := (ClaudeCode{}).SettingsFiles(start); err == nil {
-		t.Fatal("a protected start whose permission rules can be skipped was prepared")
+		t.Fatal("a start that would ask a person was prepared")
 	}
 }
 
@@ -152,7 +154,7 @@ func TestAnAccountLaunchLoadsOnlyTheJournalServerByAbsolutePathWithNoToken(t *te
 			t.Fatalf("%s names a token: %s", file.Name, file.Content)
 		}
 	}
-	for _, wanted := range []string{"--restricted", "--strict-mcp-config", "--mcp-config", "--settings", "--tools"} {
+	for _, wanted := range []string{"--strict-mcp-config", "--mcp-config", "--settings", "--tools"} {
 		if !slices.Contains(arguments, wanted) {
 			t.Fatalf("arguments %v lack %s", arguments, wanted)
 		}
@@ -194,7 +196,7 @@ func TestCliLaunchKeepsClaudeProtectionWithoutJournalMcp(t *testing.T) {
 		t.Fatal(err)
 	}
 	if slices.Contains(arguments, "--strict-mcp-config") || slices.Contains(arguments, "--mcp-config") ||
-		!slices.Contains(arguments, "--restricted") {
+		slices.Contains(arguments, "--restricted") {
 		t.Fatalf("CLI arguments %v", arguments)
 	}
 

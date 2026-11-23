@@ -31,6 +31,13 @@ var claudeCodeDelegationTools = []string{"Agent", "Task", "Workflow", "SendMessa
 // nativeHookEvents are the hook events both programs send, the ones the journal answers.
 var nativeHookEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop", "SessionEnd"}
 
+// claudeCodeNeverAsks is the permission mode every session runs in: Claude Code asks no person before a tool call.
+// claudeCodeInContainer tells Claude Code it runs in a container, where it accepts that mode as the root user.
+const (
+	claudeCodeNeverAsks   = "bypassPermissions"
+	claudeCodeInContainer = "IS_SANDBOX=1"
+)
+
 // claudeCodeAllowedWithoutAsking is the pinned noninteractive allowlist of a one-shot turn, which has nobody to
 // answer a prompt: reading and editing files, the journal's own commands and read-only git. Anything else is refused.
 var claudeCodeAllowedWithoutAsking = []string{"Read", "Edit", "Write", "NotebookEdit", "Bash(journal:*)", "Bash(ls:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"}
@@ -101,9 +108,6 @@ func (profile ClaudeCode) Arguments(start contracts.Start) ([]string, error) {
 	if start.Account == nil || start.Account.Transport != contracts.CliTransport {
 		arguments = append(arguments, "--strict-mcp-config")
 	}
-	if start.Account != nil {
-		arguments = append(arguments, "--restricted")
-	}
 	if startsJournalServer(start) {
 		arguments = append(arguments, "--mcp-config", filepath.Join(start.SettingsFolder, "mcp.json"))
 	}
@@ -152,7 +156,7 @@ func (ClaudeCode) Environment(inherited []string, start contracts.Start) []strin
 		kept = append(kept, "JOURNAL_LAUNCH_REF="+start.Account.LaunchReference)
 	}
 	if start.Protected {
-		kept = append(kept, "CLAUDE_CODE_SHELL="+claudeCodeProtectedShell)
+		kept = append(kept, "CLAUDE_CODE_SHELL="+claudeCodeProtectedShell, claudeCodeInContainer)
 	}
 
 	return kept
@@ -161,9 +165,12 @@ func (ClaudeCode) Environment(inherited []string, start contracts.Start) []strin
 func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile, error) {
 	settings := map[string]any{
 		"permissions": map[string]any{
-			"allow": claudeCodeAllowedWithoutAsking,
-			"deny":  append(slices.Clone(claudeCodeDelegationTools), claudeCodeNestedDrivers...),
+			"allow":       claudeCodeAllowedWithoutAsking,
+			"deny":        append(slices.Clone(claudeCodeDelegationTools), claudeCodeNestedDrivers...),
+			"defaultMode": claudeCodeNeverAsks,
 		},
+		// The mode's own warning is answered here once, so no session opens on it.
+		"skipDangerousModePermissionPrompt": true,
 	}
 
 	if start.Effort != "" {
@@ -318,14 +325,15 @@ func leaveCommandsToExecutor(settings map[string]any) {
 	settings["sandbox"] = map[string]any{"enabled": false}
 }
 
-// requireBoundary refuses an account start whose effective settings would let a tool skip its permission rules, or,
-// outside a protected start, run outside Claude Code's sandbox: the boundary must hold before any tool runs, not only
-// on paper.
+// requireBoundary refuses an account start whose effective settings would make Claude Code ask a person, or, outside
+// a protected start, run a tool outside Claude Code's sandbox: every session runs without permission questions (user
+// messages 19438, 19631, 19636), and what a tool may do is decided by the journal's hook, the deny rules and the
+// sandbox or the container.
 func requireBoundary(settings map[string]any, protected bool) error {
 	sandbox, _ := settings["sandbox"].(map[string]any)
 	permissions, _ := settings["permissions"].(map[string]any)
-	if permissions["disableBypassPermissionsMode"] != "disable" {
-		return errors.New("the account start's settings let a tool skip its permission rules: it is not started")
+	if permissions["defaultMode"] != claudeCodeNeverAsks || permissions["disableBypassPermissionsMode"] == "disable" {
+		return errors.New("the account start's settings would make Claude Code ask a person: it is not started")
 	}
 	if !protected && (sandbox["enabled"] != true || sandbox["allowUnsandboxedCommands"] != false) {
 		return errors.New("the account start's settings do not keep every tool in the sandbox: it is not started")
@@ -359,7 +367,7 @@ func joinRules(own any, account []any) []string {
 
 func (ClaudeCode) RejectContrary(extraArguments []string) error {
 	for _, argument := range extraArguments {
-		for _, refused := range []string{"--dangerously-skip-permissions", "--allowedTools", "--allowed-tools", "--tools", "--agents", "--setting-sources", "--continue", "-c", "--mcp-config", "--bare", "--permission-mode"} {
+		for _, refused := range []string{"--allowedTools", "--allowed-tools", "--tools", "--agents", "--setting-sources", "--continue", "-c", "--mcp-config", "--bare", "--permission-mode"} {
 			if argument == refused || strings.HasPrefix(argument, refused+"=") {
 				return fmt.Errorf("the argument %s would undo the claude profile", argument)
 			}

@@ -7905,6 +7905,8 @@ constant	PresentationBatches::CHARACTER_LIMIT
 constant	PresentationBatches::HANDLE_BYTES
 constant	PresentationBatches::LEASE_SECONDS
 constant	PresentationBatches::POST_LIMIT
+constant	PresentationItemData::AGENT_FENCE
+constant	PresentationItemData::PERSON_FENCE
 constant	PresentationSweep::ALLOWED_FAILURES
 constant	PresentationSweep::PASS_LIMIT
 constant	PrintsHelperReceipts::MODEL_REQUIRED
@@ -19338,6 +19340,7 @@ method	PresentationBatches::nextInterval()
 method	PresentationBatches::parentReference()
 method	PresentationBatches::sequenceOf()
 method	PresentationItemData::__construct()
+method	PresentationItemData::fence()
 method	PresentationPrompts::__construct()
 method	PresentationPrompts::contextOf()
 method	PresentationPrompts::itemText()
@@ -28398,11 +28401,11 @@ parameter	$containedBudgets
 parameter	$containedShortfall
 parameter	$container
 parameter	$containerInstance
+parameter	$containerOfRequest
 parameter	$containerRequired
 parameter	$containers
 parameter	$content
 parameter	$contentDigest
-parameter	$contentLabel
 parameter	$contents
 parameter	$context
 parameter	$contextCharacters
@@ -29162,6 +29165,7 @@ parameter	$isFailed
 parameter	$isFolder
 parameter	$isForOperators
 parameter	$isFound
+parameter	$isFromPerson
 parameter	$isGuarded
 parameter	$isHealthy
 parameter	$isHeld
@@ -37068,9 +37072,9 @@ property	PresentationBatches::$labels
 property	PresentationItemData::$body
 property	PresentationItemData::$bodyLength
 property	PresentationItemData::$claimableRootId
-property	PresentationItemData::$contentLabel
 property	PresentationItemData::$endOffset
 property	PresentationItemData::$handle
+property	PresentationItemData::$isFromPerson
 property	PresentationItemData::$isReference
 property	PresentationItemData::$messageId
 property	PresentationItemData::$sequence
@@ -37851,7 +37855,7 @@ property	ReadinessCheckSweep::$database
 property	ReadsServiceProvider::$countedConnections
 property	ReadyState::$policy
 property	ReadyState::$stops
-property	ReadyStateLoader::$container
+property	ReadyStateLoader::$containerOfRequest
 property	ReadyWindow::$dockOffer
 property	ReadyWindow::$state
 property	ReadyWindow::$windowFields
@@ -43675,6 +43679,7 @@ variable	$permissions
 variable	$permit
 variable	$permits
 variable	$permitted
+variable	$person
 variable	$phase
 variable	$phaseCount
 variable	$phaseIds

@@ -26,7 +26,7 @@ func containedStart() host.PreparedStart {
 					{Name: "SOME_HOST_FOLDER", Value: "/var/lib/journal-agent/runtimes/r7"},
 				},
 				EmptyFolderVariables: []string{"ANTHROPIC_CONFIG_DIR"},
-				ProtectionSettings: `{"permissions":{"deny":["Read(//srv/journal/accounts/a7/.credentials.json)"],"disableBypassPermissionsMode":"disable"},` +
+				ProtectionSettings: `{"permissions":{"deny":["Read(//srv/journal/accounts/a7/.credentials.json)"]},` +
 					`"sandbox":{"enabled":true,"allowUnsandboxedCommands":false}}`,
 			},
 		},

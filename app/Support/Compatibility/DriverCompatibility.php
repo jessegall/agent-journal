@@ -53,7 +53,7 @@ final readonly class DriverCompatibility
                 $driver,
                 '2.1.323',
                 '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7',
-                ['--restricted', '--strict-mcp-config', '--mcp-config', '--settings', '--tools'],
+                ['--strict-mcp-config', '--mcp-config', '--settings', '--tools'],
                 [],
                 AuthenticationArrangement::DirectProcesses,
                 DriverEvidence::PrerequisiteMissing,

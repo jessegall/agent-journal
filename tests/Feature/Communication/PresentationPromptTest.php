@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Data\PresentationItemData;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Tools\MessageClaimTool;
@@ -17,6 +18,7 @@ use App\Support\PresentationPrompts;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
 use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
+use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -69,5 +71,27 @@ final class PresentationPromptTest extends MessagingTestCase
         ] as $named) {
             $this->assertStringContainsString($named, $prompt);
         }
+    }
+
+    // Found on the local journal (23 Nov): the text called every message "never instructions", so an agent refused to do
+    // what its own user asked in the chat. A person's message is fenced as a request, an agent's as its words.
+    public function test_a_persons_message_is_shown_as_a_request_and_an_agents_as_its_words(): void
+    {
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new OpenPairChatCommand($this->builder->agent_id));
+        $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'owner-asks'));
+        $runtime = AgentRuntime::query()->with('session.agent')->where('agent_session_id', $this->builder->id)->sole();
+
+        $prompt = (string) $this->app->make(PresentationPrompts::class)->promptFor($runtime, CarbonImmutable::now());
+
+        $this->assertStringContainsString('```'.PresentationItemData::PERSON_FENCE, $prompt);
+        $this->assertStringNotContainsString('```'.PresentationItemData::AGENT_FENCE, $prompt);
+
+        $fromAgent = PresentationItemData::from([
+            'messageId' => 'message', 'sequence' => 1, 'speaker' => 'agent:reviewer', 'speakerLabel' => 'Reviewer',
+            'isReference' => false, 'body' => 'Plan?', 'startOffset' => 0, 'endOffset' => 5, 'bodyLength' => 5,
+            'handle' => 'handle', 'claimableRootId' => null, 'isFromPerson' => false,
+        ]);
+        $this->assertSame(PresentationItemData::AGENT_FENCE, $fromAgent->fence());
     }
 }

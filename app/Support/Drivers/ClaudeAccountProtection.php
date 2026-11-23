@@ -46,7 +46,6 @@ final class ClaudeAccountProtection
         return (string) json_encode([
             'permissions' => [
                 'deny' => [...$deny, ...self::SIGN_IN_COMMANDS],
-                'disableBypassPermissionsMode' => 'disable',
             ],
             'sandbox' => [
                 'enabled' => true,
