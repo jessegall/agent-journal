@@ -97,7 +97,7 @@ final class StartPreviewsTest extends TestCase
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
         $registry->registerFamily(
-            new DriverFamily('acme', 'Acme', ProviderKey::from('acme'), 'acme', $claude->isolatesHooksPerSession),
+            new DriverFamily('acme', 'Acme', ProviderKey::from('acme'), 'acme', $claude->isolatesHooksPerSession, []),
         );
         $registry->register(new DriverRegistration(
             DriverKey::from('acme-headless'),

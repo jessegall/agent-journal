@@ -101,7 +101,7 @@ final class ThirdPartyDriverTest extends TestCase
         $this->assertInstanceOf(DriverRegistry::class, $registry);
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $registry->registerFamily(
-            new DriverFamily('acme', 'Acme', ProviderKey::from('acme'), 'acme', $claude->isolatesHooksPerSession),
+            new DriverFamily('acme', 'Acme', ProviderKey::from('acme'), 'acme', $claude->isolatesHooksPerSession, []),
         );
         $registry->register($this->acme('acme/reader', DriverVariant::Headless));
 

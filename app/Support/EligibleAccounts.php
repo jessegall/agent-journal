@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Accounts\StartAccounts;
 use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Data\Profiles\EligibleAccountsData;
 use App\Enums\AccessType;
@@ -14,6 +15,7 @@ use App\Models\ActiveAccount;
 use App\Models\Profile;
 use App\Policies\ProfileAdministrationPolicy;
 use App\Values\ProfileKey;
+use App\Values\ProfileSnapshot;
 
 /**
  * The accounts the owner may choose for a start of one driver, read under the authority the start itself needs, so
@@ -24,6 +26,7 @@ final readonly class EligibleAccounts implements StartAccounts
     public function __construct(
         private CurrentAuthorizer $authorizer,
         private ProfileResolver $profiles,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function forProfileStart(string $driver, string $profileKey): EligibleAccountsData
@@ -34,8 +37,22 @@ final readonly class EligibleAccounts implements StartAccounts
         return EligibleAccountsData::from([
             'driver' => $accounts->driver,
             'accounts' => $accounts->accounts,
-            'modelChoices' => array_values(array_unique([$profile->model, ...$profile->start->allowedModels])),
+            'modelChoices' => $this->modelChoices($driver, $profile),
         ]);
+    }
+
+    /**
+     * The models a start may choose: the profile's own and those it allows, or, when it allows any, the profile's
+     * own and every model the driver's family runs.
+     *
+     * @return list<string>
+     */
+    private function modelChoices(string $driver, ProfileSnapshot $profile): array
+    {
+        $allowed = $profile->start->allowedModels;
+        $offered = $allowed === [] ? $this->drivers->family($driver)->models : $allowed;
+
+        return array_values(array_unique([$profile->model, ...$offered]));
     }
 
     public function forDriver(string $driver): EligibleAccountsData

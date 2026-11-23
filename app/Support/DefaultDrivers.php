@@ -41,10 +41,25 @@ final readonly class DefaultDrivers
     public static function families(): array
     {
         return [
-            new DriverFamily(self::CLAUDE_CODE, 'Claude Code', ProviderKey::from('anthropic'), 'claude', true),
+            new DriverFamily(
+                self::CLAUDE_CODE,
+                'Claude Code',
+                ProviderKey::from('anthropic'),
+                'claude',
+                true,
+                ['haiku', 'sonnet', 'opus', 'fable'],
+            ),
+
             // Codex scopes its hooks per installation, not per thread, so a connected folder cannot run it isolated
             // yet.
-            new DriverFamily(self::CODEX, 'Codex', ProviderKey::from('openai'), 'codex', false),
+            new DriverFamily(
+                self::CODEX,
+                'Codex',
+                ProviderKey::from('openai'),
+                'codex',
+                false,
+                ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.2-sol', 'gpt-6.2-astra'],
+            ),
         ];
     }
 

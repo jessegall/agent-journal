@@ -16,6 +16,8 @@ final readonly class DriverFamily
      * @param  string  $hostName  the name the protected host knows the family by, as its profiles and start protocol write it
      * @param  bool  $isolatesHooksPerSession  whether the family's drivers scope their hooks to one session, as a connected
      *                                         project folder needs to run it isolated
+     * @param  list<string>  $models  the models the family's program runs, cheapest first, offered at a start whose
+     *                                profile allows any model
      */
     public function __construct(
         public string $key,
@@ -23,5 +25,6 @@ final readonly class DriverFamily
         public ProviderKey $provider,
         public string $hostName,
         public bool $isolatesHooksPerSession,
+        public array $models,
     ) {}
 }
