@@ -59,7 +59,11 @@ final readonly class InboxPageResolver implements PageResolver
 
         if ($counts->unclaimed > 0) {
             $takeNext = LayoutFormData::from(
-                ['method' => ActionMethod::Post, 'href' => route('chat.take-next', [], false), 'fixed' => ['inboxId' => $inbox->inboxId]],
+                [
+                    'method' => ActionMethod::Post,
+                    'href' => route('chat.take-next', [], false),
+                    'fixed' => ['inboxId' => $inbox->inboxId],
+                ],
             );
 
             $header[] = LayoutPartData::form(

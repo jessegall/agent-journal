@@ -56,12 +56,23 @@ final readonly class AccountsIndex
 
     private function rowOf(AccountRowData $row, string $chosen): LayoutRowData
     {
-        return LayoutRowData::from(['key' => $row->id, 'label' => $row->label, 'detail' => "{$row->driver} · {$row->signIn->title}", 'query' => ['account' => $row->id, 'add' => ''], 'isCurrent' => $row->id === $chosen, 'leading' => [
-            LayoutPartData::text('driver', $row->driver, 'driver'),
-        ], 'trailing' => [
-            LayoutPartData::badge('state', $this->stateWord($row->state), $this->stateTone($row->state)),
-            ...$this->usageMeterOf($row),
-        ]]);
+        return LayoutRowData::from([
+            'key' => $row->id,
+            'label' => $row->label,
+            'detail' => "{$row->driver} · {$row->signIn->title}",
+            'query' => [
+                'account' => $row->id,
+                'add' => '',
+            ],
+            'isCurrent' => $row->id === $chosen,
+            'leading' => [
+                LayoutPartData::text('driver', $row->driver, 'driver'),
+            ],
+            'trailing' => [
+                LayoutPartData::badge('state', $this->stateWord($row->state), $this->stateTone($row->state)),
+                ...$this->usageMeterOf($row),
+            ],
+        ]);
     }
 
     /**
@@ -96,10 +107,11 @@ final readonly class AccountsIndex
             return [];
         }
 
-        $groups = [
-            $this->identityGroup($row),
-            ...($row->usage instanceof AccountUsageData ? [$this->usageGroup($row->usage)] : []),
-        ];
+        $groups = [$this->identityGroup($row)];
+
+        if ($row->usage instanceof AccountUsageData) {
+            $groups[] = $this->usageGroup($row->usage);
+        }
 
         return [
             DetailPage::make($row->label)
@@ -112,11 +124,17 @@ final readonly class AccountsIndex
 
     private function identityGroup(AccountRowData $row): SettingsGroup
     {
-        return SettingsGroup::make('account', 'Account')->withRows(
-            SettingsRow::value('state', 'Status', $this->stateWord($row->state)),
-            ...($row->identity === null ? [] : [SettingsRow::value('identity', 'Signed in as', $row->identity)]),
-            ...($row->workspace === null ? [] : [SettingsRow::value('workspace', 'Workspace', $row->workspace)]),
-        );
+        $rows = [SettingsRow::value('state', 'Status', $this->stateWord($row->state))];
+
+        if ($row->identity !== null) {
+            $rows[] = SettingsRow::value('identity', 'Signed in as', $row->identity);
+        }
+
+        if ($row->workspace !== null) {
+            $rows[] = SettingsRow::value('workspace', 'Workspace', $row->workspace);
+        }
+
+        return SettingsGroup::make('account', 'Account')->withRows(...$rows);
     }
 
     /**
@@ -192,7 +210,11 @@ final readonly class AccountsIndex
         return LayoutPartData::form(
             $key,
             LayoutFormData::from(
-                ['method' => ActionMethod::Post, 'href' => route($route, ['account' => $account], false), 'isKeyed' => true],
+                [
+                    'method' => ActionMethod::Post,
+                    'href' => route($route, ['account' => $account], false),
+                    'isKeyed' => true,
+                ],
             ),
             'inline',
             LayoutPartData::action("{$key}-send", $label, LayoutActionData::submitting()),

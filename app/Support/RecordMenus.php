@@ -55,6 +55,7 @@ final readonly class RecordMenus implements RecordMenusContract
 
         $grouped = array_map(fn (array $items) => self::inOrder($items), $grouped);
         $firstOf = $grouped;
+
         uksort($grouped, fn (int|string $one, int|string $other) => [
             $firstOf[$one][0]->menuItem->position,
             (string) $one,

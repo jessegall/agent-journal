@@ -109,7 +109,9 @@ final readonly class ReportsShow
         RecordInspection $inspection,
     ): LayoutPartData {
         $settlements = array_map(
-            fn (SettlementCard $settlement) => LayoutRowData::from(['key' => $settlement->settledAt, 'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}", 'value' => $settlement->reason]),
+            fn (SettlementCard $settlement) => LayoutRowData::from(
+                ['key' => $settlement->settledAt, 'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}", 'value' => $settlement->reason],
+            ),
             $inspection->settlements,
         );
 
@@ -130,7 +132,11 @@ final readonly class ReportsShow
             $parts[] = LayoutPartData::form(
                 'settle',
                 LayoutFormData::from(
-                    ['method' => ActionMethod::Post, 'href' => route('documents.settle-report', ['report' => $number], false), 'fixed' => ['revision' => 1]],
+                    [
+                        'method' => ActionMethod::Post,
+                        'href' => route('documents.settle-report', ['report' => $number], false),
+                        'fixed' => ['revision' => 1],
+                    ],
                 ),
                 'inline',
                 LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason'), 'text'),

@@ -102,7 +102,10 @@ final class PlanReviewPageTest extends TestCase
                 'page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.editionNumber',
                 1,
             )
-            ->where('page.data.root.children.1.children.1.children.3.children.0.native.props.review.reviewNumber', null));
+            ->where(
+                'page.data.root.children.1.children.1.children.3.children.0.native.props.review.reviewNumber',
+                null,
+            ));
     }
 
     /**

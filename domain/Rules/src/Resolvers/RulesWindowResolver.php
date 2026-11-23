@@ -83,7 +83,9 @@ final readonly class RulesWindowResolver implements PageResolver
         $isAwaitingReview = array_any($page->rules, fn (RuleView $rule) => $rule->state === RuleState::Proposed);
 
         $rows = array_map(
-            fn (RuleView $rule) => LayoutRowData::from(['key' => $rule->id, 'label' => $rule->text, 'value' => "{$rule->number} · {$rule->state->label()}", 'query' => ['rule' => $rule->id], 'isCurrent' => $rule->id === $selected]),
+            fn (RuleView $rule) => LayoutRowData::from(
+                ['key' => $rule->id, 'label' => $rule->text, 'value' => "{$rule->number} · {$rule->state->label()}", 'query' => ['rule' => $rule->id], 'isCurrent' => $rule->id === $selected],
+            ),
             $page->rules,
         );
 

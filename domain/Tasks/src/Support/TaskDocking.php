@@ -41,7 +41,11 @@ final readonly class TaskDocking implements DockableProvider
             ->readExactly(count($ids))
             ->get()
             ->filter(
-                fn (Task $task) => $this->authorizer->filterActions(TaskPolicy::class, $task, [AccessType::Read]) !== [],
+                fn (Task $task) => $this->authorizer->filterActions(
+                    TaskPolicy::class,
+                    $task,
+                    [AccessType::Read],
+                ) !== [],
             );
 
         foreach ($this->docked($readable) as $task) {

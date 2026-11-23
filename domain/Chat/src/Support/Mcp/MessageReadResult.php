@@ -55,7 +55,7 @@ final readonly class MessageReadResult
      */
     public static function card(AgentMessageCard $message): array
     {
-        return [
+        $card = [
             'message_id' => $message->id,
             'number' => $message->number,
             'preview' => $message->preview,
@@ -71,7 +71,12 @@ final readonly class MessageReadResult
             'reply_to_id' => $message->replyToId,
             'answer_id' => $message->answerId,
             'dismissal_reason' => $message->dismissalReason,
-            ...($message->chat === null ? [] : ['chat' => $message->chat->toArray()]),
         ];
+
+        if ($message->chat !== null) {
+            $card['chat'] = $message->chat->toArray();
+        }
+
+        return $card;
     }
 }

@@ -46,7 +46,9 @@ final readonly class HelperJobsLayoutResolver implements PageResolver
             LayoutPartData::collection(
                 'jobs',
                 'list',
-                array_values($jobs->map(fn (HelperJob $job) => LayoutRowData::from(['key' => $job->id, 'label' => Str::limit($job->brief, 80), 'value' => $job->state->label()]))->all()),
+                array_values(
+                    $jobs->map(fn (HelperJob $job) => LayoutRowData::from(['key' => $job->id, 'label' => Str::limit($job->brief, 80), 'value' => $job->state->label()]))->all(),
+                ),
             ),
         ));
     }

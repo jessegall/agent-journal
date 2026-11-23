@@ -59,25 +59,24 @@ final readonly class PlansIndex
 
     private function rowOf(PlanCardData $card, PlanFiltersData $filters): LayoutRowData
     {
-        $isCancelled = $card->state === PlanState::Cancelled;
+        $trailing = [];
 
-        return LayoutRowData::from(['key' => $card->id, 'label' => $card->title, 'href' => route(
-            'plans.plan',
-            ['plan' => $card->number, ...$filters->toQuery()],
-            false,
-        ), 'isCurrent' => $filters->plan === $card->number, 'leading' => [LayoutPartData::text('number', $card->number, 'muted')], 'trailing' => [
-            ...($isCancelled ? [LayoutPartData::badge('state', 'Cancelled', 'quiet')] : []),
-            $card->totalTasks === 0
-                ? LayoutPartData::text('progress', 'No tasks', 'muted')
-                : LayoutPartData::progress(
-                    'progress',
-                    $card->finishedTasks,
-                    $card->totalTasks,
-                    "Plan {$card->number}",
-                    'tasks',
-                    true,
-                ),
-        ]]);
+        if ($card->state === PlanState::Cancelled) {
+            $trailing[] = LayoutPartData::badge('state', 'Cancelled', 'quiet');
+        }
+
+        $trailing[] = $card->totalTasks === 0
+            ? LayoutPartData::text('progress', 'No tasks', 'muted')
+            : LayoutPartData::progress('progress', $card->finishedTasks, $card->totalTasks, "Plan {$card->number}", 'tasks', true);
+
+        return LayoutRowData::from([
+            'key' => $card->id,
+            'label' => $card->title,
+            'href' => route('plans.plan', ['plan' => $card->number, ...$filters->toQuery()], false),
+            'isCurrent' => $filters->plan === $card->number,
+            'leading' => [LayoutPartData::text('number', $card->number, 'muted')],
+            'trailing' => $trailing,
+        ]);
     }
 
     private function emptyFor(PlanFiltersData $filters): ListEmpty
@@ -113,7 +112,11 @@ final readonly class PlansIndex
         return LayoutPartData::dialog(
             $key,
             LayoutDialogData::from(
-                ['title' => 'New plan', 'confirmation' => 'Plan created', 'guidedNoun' => $this->producers->offersGuided('plan') ? 'plan' : Optional::create()],
+                [
+                    'title' => 'New plan',
+                    'confirmation' => 'Plan created',
+                    'guidedNoun' => $this->producers->offersGuided('plan') ? 'plan' : Optional::create(),
+                ],
             ),
             LayoutPartData::action('open', 'New plan', LayoutActionData::changing([])),
             LayoutFormData::from(

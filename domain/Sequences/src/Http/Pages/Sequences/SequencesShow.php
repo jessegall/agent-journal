@@ -52,7 +52,9 @@ final readonly class SequencesShow
     private function stepRows(Sequence $sequence): array
     {
         return array_map(
-            fn (SequenceStepData $step) => LayoutRowData::from(['key' => $step->id, 'label' => $step->title, 'detail' => "Runs when {$step->runsWhen} · done when {$step->doneWhen}"]),
+            fn (SequenceStepData $step) => LayoutRowData::from(
+                ['key' => $step->id, 'label' => $step->title, 'detail' => "Runs when {$step->runsWhen} · done when {$step->doneWhen}"],
+            ),
             $sequence->stepList(),
         );
     }
@@ -67,14 +69,21 @@ final readonly class SequencesShow
             return [LayoutPartData::notice('no-runs', 'empty', 'No runs yet.')];
         }
 
-        return [LayoutPartData::collection('runs', 'list', array_map(fn (SequenceRun $run) => LayoutRowData::from(['key' => $run->id, 'label' => "Run {$run->number}", 'href' => route(
-            'sequences.run',
-            ['run' => $run->number],
-            false,
-        ), 'trailing' => [
-            $run->state === SequenceRunState::Running
-                ? LayoutPartData::text('step', $run->stepLine($run->current_step), 'chip')
-                : LayoutPartData::badge('state', ucfirst($run->state->value), 'quiet'),
-        ]]), $runs))];
+        return [LayoutPartData::collection('runs', 'list', array_map(fn (
+            SequenceRun $run,
+        ) => LayoutRowData::from([
+            'key' => $run->id,
+            'label' => "Run {$run->number}",
+            'href' => route(
+                'sequences.run',
+                ['run' => $run->number],
+                false,
+            ),
+            'trailing' => [
+                $run->state === SequenceRunState::Running
+                    ? LayoutPartData::text('step', $run->stepLine($run->current_step), 'chip')
+                    : LayoutPartData::badge('state', ucfirst($run->state->value), 'quiet'),
+            ],
+        ]), $runs))];
     }
 }

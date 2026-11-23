@@ -168,7 +168,10 @@ final readonly class DocumentsShow
         return LayoutPartData::form(
             'editing',
             LayoutFormData::from(
-                ['method' => ActionMethod::Post, 'href' => route('documents.open-document', ['document' => $document->number], false)],
+                [
+                    'method' => ActionMethod::Post,
+                    'href' => route('documents.open-document', ['document' => $document->number], false),
+                ],
             ),
             'inline',
             LayoutPartData::action('send', 'Edit', LayoutActionData::submitting()),
@@ -186,14 +189,20 @@ final readonly class DocumentsShow
         RecordInspection $inspection,
     ): LayoutPartData {
         $settlements = array_map(
-            fn (SettlementCard $settlement) => LayoutRowData::from(['key' => $settlement->settledAt, 'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}", 'value' => $settlement->reason]),
+            fn (SettlementCard $settlement) => LayoutRowData::from(
+                ['key' => $settlement->settledAt, 'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}", 'value' => $settlement->reason],
+            ),
             $inspection->settlements,
         );
 
         $parts = [
             LayoutPartData::collection('facts', 'facts', [
                 LayoutRowData::from(
-                    ['key' => 'editing', 'label' => 'Editing', 'value' => $editing->state->word($this->holderOf($editing))],
+                    [
+                        'key' => 'editing',
+                        'label' => 'Editing',
+                        'value' => $editing->state->word($this->holderOf($editing)),
+                    ],
                 ),
                 LayoutRowData::from(
                     ['key' => 'attention', 'label' => 'Attention', 'value' => $document->attention->value],
@@ -209,7 +218,11 @@ final readonly class DocumentsShow
             $parts[] = LayoutPartData::form(
                 'settle',
                 LayoutFormData::from(
-                    ['method' => ActionMethod::Post, 'href' => route('documents.settle-document', ['document' => $document->number], false), 'fixed' => ['revision' => (int) $document->revision]],
+                    [
+                        'method' => ActionMethod::Post,
+                        'href' => route('documents.settle-document', ['document' => $document->number], false),
+                        'fixed' => ['revision' => (int) $document->revision],
+                    ],
                 ),
                 'inline',
                 LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason'), 'text'),

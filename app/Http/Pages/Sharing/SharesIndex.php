@@ -49,10 +49,17 @@ final readonly class SharesIndex
 
         $states = [
             LayoutRowData::from(
-                ['key' => 'any', 'label' => 'Any', 'query' => ['state' => '', 'after' => ''], 'isCurrent' => $chosen === ''],
+                [
+                    'key' => 'any',
+                    'label' => 'Any',
+                    'query' => ['state' => '', 'after' => ''],
+                    'isCurrent' => $chosen === '',
+                ],
             ),
             ...array_map(
-                fn (ShareState $state) => LayoutRowData::from(['key' => $state->value, 'label' => $state->value, 'query' => ['state' => $state->value, 'after' => ''], 'isCurrent' => $chosen === $state->value]),
+                fn (ShareState $state) => LayoutRowData::from(
+                    ['key' => $state->value, 'label' => $state->value, 'query' => ['state' => $state->value, 'after' => ''], 'isCurrent' => $chosen === $state->value],
+                ),
                 ShareState::cases(),
             ),
         ];
@@ -90,11 +97,17 @@ final readonly class SharesIndex
     {
         return array_map(fn (
             ShareRowData $row,
-        ) => LayoutRowData::from(['key' => $row->id, 'label' => ($row->isProposal ? 'Proposal' : 'Share')." {$row->number}", 'value' => $row->state->value, 'detail' => implode(' · ', array_filter([
-            $row->rootType,
-            $row->gatewayKey,
-            'expires '.CarbonImmutable::parse($row->expiresAt)->toDateString(),
-        ])), 'href' => "/sharing/shares/{$row->id}"]), $rows);
+        ) => LayoutRowData::from([
+            'key' => $row->id,
+            'label' => ($row->isProposal ? 'Proposal' : 'Share')." {$row->number}",
+            'value' => $row->state->value,
+            'detail' => implode(' · ', array_filter([
+                $row->rootType,
+                $row->gatewayKey,
+                'expires '.CarbonImmutable::parse($row->expiresAt)->toDateString(),
+            ])),
+            'href' => "/sharing/shares/{$row->id}",
+        ]), $rows);
     }
 
     /**

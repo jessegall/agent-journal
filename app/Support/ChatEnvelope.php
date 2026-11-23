@@ -58,7 +58,7 @@ final readonly class ChatEnvelope
      */
     public function underRoot(string $userRootId): self
     {
-        return clone($this, ['userRootId' => $userRootId]);
+        return clone ($this, ['userRootId' => $userRootId]);
     }
 
     /**
@@ -66,7 +66,7 @@ final readonly class ChatEnvelope
      */
     public function askedOf(ActorIdentity $respondent): self
     {
-        return clone($this, ['addressee' => $this->addressee ?? $respondent, 'respondent' => $respondent]);
+        return clone ($this, ['addressee' => $this->addressee ?? $respondent, 'respondent' => $respondent]);
     }
 
     public function isQuestion(): bool

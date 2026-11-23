@@ -197,10 +197,13 @@ final class AgentStatusRules
     {
         $runtime = $evidence->runtime;
 
-        $switch = [
-            ...($evidence->canStop ? [StatusAction::of(StatusActionType::Stop)] : []),
-            StatusAction::of(StatusActionType::Switch),
-        ];
+        $switch = [StatusAction::of(StatusActionType::Switch)];
+
+        if ($evidence->canStop) {
+            array_unshift($switch, StatusAction::of(StatusActionType::Stop));
+        }
+
+        $working = $evidence->canStop ? [...$switch, StatusAction::of(StatusActionType::Interrupt)] : $switch;
 
         if ($evidence->processStart?->isStarting() === true) {
             return self::isWakeRefused($evidence->request) ? self::unknown($evidence) : self::starting($evidence);
@@ -233,10 +236,7 @@ final class AgentStatusRules
         }
 
         return match ($runtime->activity) {
-            RuntimeActivity::Running => self::plain(SessionState::Working, $evidence, [
-                ...$switch,
-                ...($evidence->canStop ? [StatusAction::of(StatusActionType::Interrupt)] : []),
-            ]),
+            RuntimeActivity::Running => self::plain(SessionState::Working, $evidence, $working),
             RuntimeActivity::Idle => self::plain(SessionState::Idle, $evidence, $switch),
             RuntimeActivity::Starting => self::plain(SessionState::Starting, $evidence, []),
             RuntimeActivity::Interrupting => self::plain(SessionState::Interrupting, $evidence, []),

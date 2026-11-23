@@ -66,9 +66,9 @@ final readonly class DocumentsIndex
             'value' => $card->attention->value,
             'detail' => $card->summaryLine(),
             'href' => "/documents/{$path}/{$card->number}",
-            ...($hasMenu
-                ? ['menu' => $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, $card->number)]
-                : []),
+            'menu' => $hasMenu
+                ? $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, $card->number)
+                : Optional::create(),
         ]), $list->rows);
     }
 

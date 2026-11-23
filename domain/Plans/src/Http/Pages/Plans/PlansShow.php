@@ -67,9 +67,13 @@ final readonly class PlansShow
     {
         $rows = [
             LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => $card->state->value]),
-            LayoutRowData::from(['key' => 'tasks', 'label' => 'Tasks', 'value' => $card->totalTasks === 0
+            LayoutRowData::from([
+                'key' => 'tasks',
+                'label' => 'Tasks',
+                'value' => $card->totalTasks === 0
                     ? 'No tasks'
-                    : "{$card->finishedTasks} of {$card->totalTasks} finished, {$card->cancelledTasks} cancelled"]),
+                    : "{$card->finishedTasks} of {$card->totalTasks} finished, {$card->cancelledTasks} cancelled",
+            ]),
         ];
 
         if (is_string($card->phase)) {

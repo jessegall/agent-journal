@@ -47,7 +47,14 @@ final readonly class TaskGraphRecords implements TaskGraphResolver
         $nodes = array_values(array_map(fn (Task $task) => $this->nodeOf($task), $tasks));
 
         return TaskGraph::from(
-            ['planId' => $planId, 'version' => $this->version->of($tasks, $waits), 'nodes' => $nodes, 'edges' => $edges, 'returnAddress' => $returnAddress, 'selectedId' => $selectedId],
+            [
+                'planId' => $planId,
+                'version' => $this->version->of($tasks, $waits),
+                'nodes' => $nodes,
+                'edges' => $edges,
+                'returnAddress' => $returnAddress,
+                'selectedId' => $selectedId,
+            ],
         );
     }
 
@@ -56,7 +63,15 @@ final readonly class TaskGraphRecords implements TaskGraphResolver
         $mayEdit = $this->rules->mayChange($task);
 
         return TaskGraphNode::from(
-            ['id' => $task->id, 'number' => $task->number, 'title' => $task->title, 'state' => $task->state, 'address' => "/tasks/{$task->number}", 'mayEditWaits' => $mayEdit, 'reason' => $mayEdit ? Optional::create() : $this->reasonFor($task)],
+            [
+                'id' => $task->id,
+                'number' => $task->number,
+                'title' => $task->title,
+                'state' => $task->state,
+                'address' => "/tasks/{$task->number}",
+                'mayEditWaits' => $mayEdit,
+                'reason' => $mayEdit ? Optional::create() : $this->reasonFor($task),
+            ],
         );
     }
 

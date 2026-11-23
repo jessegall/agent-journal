@@ -83,12 +83,12 @@ final readonly class SettingsRow
 
     public function inBlock(): self
     {
-        return clone($this, ['isBlock' => true]);
+        return clone ($this, ['isBlock' => true]);
     }
 
     public function changed(): self
     {
-        return clone($this, ['isChanged' => true]);
+        return clone ($this, ['isChanged' => true]);
     }
 
     public function part(): LayoutPartData

@@ -46,6 +46,6 @@ final readonly class ClaimedRequest
      */
     public function withMessage(string $message): self
     {
-        return clone($this, ['message' => $message]);
+        return clone ($this, ['message' => $message]);
     }
 }

@@ -87,7 +87,9 @@ final readonly class RequestListResolver implements PageResolver
             'rows',
             'list',
             array_map(
-                fn (RequestRowData $request) => LayoutRowData::from(['key' => $request->id, 'label' => $request->operation, 'value' => $request->state, 'detail' => "{$request->line} · {$request->holdReason} · next: {$request->next}", 'href' => "/processes/requests/{$request->id}"]),
+                fn (RequestRowData $request) => LayoutRowData::from(
+                    ['key' => $request->id, 'label' => $request->operation, 'value' => $request->state, 'detail' => "{$request->line} · {$request->holdReason} · next: {$request->next}", 'href' => "/processes/requests/{$request->id}"],
+                ),
                 $requests,
             ),
         ));
@@ -113,7 +115,9 @@ final readonly class RequestListResolver implements PageResolver
             'rows',
             'list',
             array_map(
-                fn (ClassificationRuleRowData $rule) => LayoutRowData::from(['key' => $rule->id, 'label' => "{$rule->ruleId} ({$rule->owner}) revision {$rule->revision}", 'value' => $rule->state, 'detail' => $rule->reason]),
+                fn (ClassificationRuleRowData $rule) => LayoutRowData::from(
+                    ['key' => $rule->id, 'label' => "{$rule->ruleId} ({$rule->owner}) revision {$rule->revision}", 'value' => $rule->state, 'detail' => $rule->reason],
+                ),
                 $rules,
             ),
         ));
