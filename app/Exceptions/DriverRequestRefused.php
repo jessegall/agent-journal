@@ -7,6 +7,7 @@ namespace App\Exceptions;
 use App\Contracts\Bus\CommandRefusal;
 use App\Values\StackTarget;
 use RuntimeException;
+use Throwable;
 
 /**
  * A driver request refused before it is accepted, so nothing of it is stored.
@@ -128,9 +129,9 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
         return new self('A delivery holds at least one text or attachment.');
     }
 
-    public static function attachmentMissing(string $attachmentId): self
+    public static function attachmentMissing(string $attachmentId, Throwable|null $cause = null): self
     {
-        return new self("Attachment {$attachmentId} is not there or has not finished uploading.");
+        return new self("Attachment {$attachmentId} is not there or has not finished uploading.", previous: $cause);
     }
 
     public static function attachmentChanged(string $attachmentId): self

@@ -23,8 +23,8 @@ final readonly class SealedAttachments implements AttachmentReferences
     {
         try {
             $upload = TextUpload::sealedFor($this->sessions, $recipientSessionId, $part->attachmentId());
-        } catch (UploadExpired) {
-            throw DriverRequestRefused::attachmentMissing($part->attachmentId());
+        } catch (UploadExpired $expired) {
+            throw DriverRequestRefused::attachmentMissing($part->attachmentId(), $expired);
         }
 
         if (! hash_equals($upload->digest, $part->digest())) {

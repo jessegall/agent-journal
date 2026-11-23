@@ -181,8 +181,8 @@ final readonly class ChatWindowResolver implements PageResolver
     {
         try {
             return $this->agents->visibleAgent($agentId);
-        } catch (StackTargetRefused) {
-            throw PrivateRecordMissing::forReader();
+        } catch (StackTargetRefused $refused) {
+            throw PrivateRecordMissing::forReader($refused);
         }
     }
 

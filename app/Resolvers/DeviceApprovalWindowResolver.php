@@ -32,8 +32,8 @@ final readonly class DeviceApprovalWindowResolver implements PageResolver
     {
         try {
             $grant = DeviceGrant::ofUserCode($this->page->userCode());
-        } catch (ModelNotFoundException) {
-            throw PrivateRecordMissing::forReader();
+        } catch (ModelNotFoundException $missing) {
+            throw PrivateRecordMissing::forReader($missing);
         }
 
         return DeviceApprovalData::from([

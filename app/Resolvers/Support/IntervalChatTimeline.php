@@ -161,7 +161,7 @@ final readonly class IntervalChatTimeline implements ChatTimeline
         try {
             $decoded = $this->encrypter->decrypt($cursor);
         } catch (DecryptException $unreadable) {
-            throw ChatCursorRefused::forInbox($interval->inboxId);
+            throw ChatCursorRefused::forInbox($interval->inboxId, $unreadable);
         }
 
         if (! is_array($decoded)

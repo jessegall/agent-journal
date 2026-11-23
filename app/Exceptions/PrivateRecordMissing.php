@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * A reader's record that does not exist or that the signed-in user may not see; both answer alike, as a denied
@@ -12,8 +13,8 @@ use RuntimeException;
  */
 final class PrivateRecordMissing extends RuntimeException
 {
-    public static function forReader(): self
+    public static function forReader(Throwable|null $cause = null): self
     {
-        return new self('This item is unavailable.');
+        return new self('This item is unavailable.', previous: $cause);
     }
 }
