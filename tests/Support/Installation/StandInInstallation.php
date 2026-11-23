@@ -113,6 +113,14 @@ final readonly class StandInInstallation
         File::append("{$this->folder}/stand-in/failing", $part."\n");
     }
 
+    /**
+     * Makes every later build come out of Docker's cache: the same image as the build before it.
+     */
+    public function buildFromCache(): void
+    {
+        File::put("{$this->folder}/stand-in/cached", '');
+    }
+
     public function hasBuilt(string $image): bool
     {
         $tag = sprintf(self::BUILD_TAG, $image);

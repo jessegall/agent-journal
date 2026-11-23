@@ -16,6 +16,7 @@ main() {
         run) answer_run "$@" ;;
         save) save_archive "$@" ;;
         inspect) echo healthy ;;
+        image) answer_image "$@" ;;
         compose) shift; answer_compose "$@" ;;
     esac
 }
@@ -32,10 +33,12 @@ fail_when_asked() {
     done < "$STAND_IN/failing"
 }
 
-# A build counts, so each one saves an image of its own digest, and keeps the client versions it was given.
+# A build counts, so each one gives an image of its own digest, unless the test said its layers are all cached; it
+# keeps the client versions it was given.
 remember_build() {
-    local argument
-    echo $(($(built_images) + 1)) > "$STAND_IN/builds"
+    local argument tag
+    tag=$(option_after --tag "$@")
+    [ -f "$STAND_IN/cached" ] || echo $(($(count_builds "$tag") + 1)) > "$(builds_file "$tag")"
     for argument in "$@"; do
         case "$argument" in
             CLAUDE_CODE_VERSION=*) echo "${argument#*=} (Claude Code)" > "$STAND_IN/claude-version" ;;
@@ -44,8 +47,25 @@ remember_build() {
     done
 }
 
-built_images() {
-    cat "$STAND_IN/builds" 2>/dev/null || echo 0
+builds_file() {
+    echo "$STAND_IN/builds-$(printf '%s' "$1" | tr ':/' '--')"
+}
+
+count_builds() {
+    cat "$(builds_file "$1")" 2>/dev/null || echo 0
+}
+
+# The digest of a tag's newest build: image_digest <tag>
+image_digest() {
+    printf 'image %s %s' "$1" "$(count_builds "$1")" | sha256sum | cut -d' ' -f1
+}
+
+answer_image() {
+    local last
+    for last; do :; done
+    case "$2" in
+        inspect) echo "sha256:$(image_digest "$last")" ;;
+    esac
 }
 
 # What a command run in a well-built image prints, or how it ends.
@@ -69,8 +89,8 @@ save_archive() {
     local archive folder digest last
     archive=$(option_after -o "$@")
     folder=$(mktemp -d)
-    digest=$(printf 'image %s' "$(built_images)" | sha256sum | cut -d' ' -f1)
     for last; do :; done
+    digest=$(image_digest "$last")
     fill_template "$answers/manifest.json" "digest=$digest" "tag=$last" > "$folder/manifest.json"
     tar -cf "$archive" -C "$folder" manifest.json
     rm -rf "$folder"

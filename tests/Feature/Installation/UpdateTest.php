@@ -29,6 +29,10 @@ final class UpdateTest extends TestCase
 
     private const string SANDBOX_TOOL_CHECK = '--entrypoint socat';
 
+    private const string RUN_IN_IMAGE_CALL = '--entrypoint';
+
+    private const string SAVE_CALL = 'save -o';
+
     private const string UPDATER_PROFILE = '--profile updater';
 
     private const string BUILD = 'build updater';
@@ -105,6 +109,30 @@ final class UpdateTest extends TestCase
         $this->assertSame($pushed, $this->installation->installedCommit());
         $this->assertTrue($this->installation->hasBuilt(self::AGENT));
         $this->assertNotSame($pinned, $this->installation->setting(self::AGENT_PIN));
+    }
+
+    /**
+     * Rule 82: a change to the agent's sources that leaves its image the same, such as a test file, costs a cached
+     * build and nothing more: no check runs in the image and no archive is written.
+     */
+    public function test_an_agent_image_that_comes_out_the_same_is_not_checked_or_archived_again(): void
+    {
+        $this->installation->update();
+        $pinned = $this->installation->setting(self::AGENT_PIN);
+        $recorded = $this->installation->recordedImages();
+        $this->installation->forgetCalls();
+        $this->installation->buildFromCache();
+        $pushed = $this->installation->push(['tools/journal-agent/relay_test.go' => 'package relay']);
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+        $this->assertSame($pushed, $this->installation->installedCommit());
+        $this->assertTrue($this->installation->hasBuilt(self::AGENT));
+        $this->assertFalse($this->installation->wasAsked(self::SAVE_CALL));
+        $this->assertFalse($this->installation->wasAsked(self::RUN_IN_IMAGE_CALL));
+        $this->assertSame($pinned, $this->installation->setting(self::AGENT_PIN));
+        $this->assertSame($recorded, $this->installation->recordedImages());
     }
 
     public function test_a_push_that_changes_nothing_of_the_agent_keeps_its_image(): void

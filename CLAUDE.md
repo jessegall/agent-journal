@@ -57,6 +57,12 @@ yours to resolve at its source.
 - A change to such a script or step ships with its stand-in scenario in the same commit. Never push a pipeline change that no scenario runs.
 - The same scenarios run against a real Docker only from the separate installation suite, never from `composer test`.
 
+## A local rebuild does only what the change needs (rule 82; user messages 19439, 19442)
+
+- After a change to the Go host only, swap it in with `sh scripts/dev-watch-host.sh --once` and restart the host service: seconds. Never run `journal local-host` for that.
+- `journal local-host` is for a change to an image or to the setup. It builds an image only when what goes into it changed, and `.docker/helper/build.sh` checks, archives and records an image only when it came out different from the archived one.
+- A stand-in scenario fails when an unchanged image is checked or archived again. A run that changes nothing ends in seconds.
+
 ## Shell scripts (rule 77; user messages 19357, 19362, 19364)
 
 - A script reads as a list of named steps: a header of at most three lines, a `main` that calls plainly named step functions in order, and `main "$@"` on the last line.

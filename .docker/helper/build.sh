@@ -1,6 +1,7 @@
 #!/bin/sh
 # Builds the agent image (the default) or the runner image for one architecture, checks it, saves it as an archive in
-# images/ and records its id in docs/accounts/docker-images.json. A check that fails stops the build unrecorded.
+# images/ and records its id in docs/accounts/docker-images.json. A check that fails stops the build unrecorded, and
+# an image that came out the same as the archived one is not checked, archived or recorded again.
 #   sh .docker/helper/build.sh linux/arm64 [agent|runner]
 set -eu
 
@@ -11,14 +12,20 @@ main() {
     name="${2:-agent}"
     tag="journal-$name:build"
     archive="images/$name-$(echo "$architecture" | tr / -).tar"
+    archived_image="${archive%.tar}.image"
     dockerfile_options=$(select_dockerfile)
 
     build_image
-    check_clients
-    "check_${name}_image"
-    check_no_credentials
-    save_archive
-    record_image
+    built_image=$(read_built_image)
+    if is_archived; then
+        echo "The $name image did not change: its archive and its record are kept."
+    else
+        check_clients
+        "check_${name}_image"
+        check_no_credentials
+        save_archive
+        record_image
+    fi
     remove_build_tag
     sh .docker/helper/prune.sh
 }
@@ -35,6 +42,15 @@ select_dockerfile() {
 build_image() {
     docker buildx build --platform "$architecture" $dockerfile_options \
         --build-arg "CLAUDE_CODE_VERSION=$claude_code" --build-arg "CODEX_VERSION=$codex" --tag "$tag" --load .
+}
+
+read_built_image() {
+    docker image inspect --format '{{.Id}}' "$tag"
+}
+
+# The archive holds this very image when the id kept beside it is the built one.
+is_archived() {
+    [ -f "$archive" ] && [ "$(cat "$archived_image" 2>/dev/null)" = "$built_image" ]
 }
 
 # Runs a program in the image, with docker run options before the program's name.
@@ -132,6 +148,7 @@ save_archive() {
     mkdir -p images
     docker save -o "$archive" "$tag"
     chmod 0644 "$archive"
+    printf '%s\n' "$built_image" > "$archived_image"
 }
 
 # An image is pinned by its config digest, the id a loaded image keeps.
