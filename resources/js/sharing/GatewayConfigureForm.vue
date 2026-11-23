@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Input from '@/components/kit/Input.vue';
+import Input from '@kit/Input';
 import type { GatewayConfigurePartData } from '@generated/types/sharing';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';

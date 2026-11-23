@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from "@/components/kit/TextLink.vue";
+import TextLink from "@kit/TextLink";
 import { router, usePage } from "@inertiajs/vue3";
 import { onMounted, ref, watch } from "vue";
 import { newRequestId } from "@kit/requestId";

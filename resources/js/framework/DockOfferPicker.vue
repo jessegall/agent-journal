@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from "@/components/kit/TextLink.vue";
+import TextLink from "@kit/TextLink";
 import { ref } from "vue";
 import type { DockOfferData } from "@/generated/types/core";
 import { keyedPost } from "./keyedPost";

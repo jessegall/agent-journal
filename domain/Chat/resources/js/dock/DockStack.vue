@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from '@/components/kit/TextLink.vue';
+import TextLink from '@kit/TextLink';
 import { router } from "@inertiajs/vue3";
 import { computed, onMounted, ref, watch } from "vue";
 import { undock as undockRoute } from "@generated/routes/chat";

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from "@/components/kit/TextLink.vue";
+import TextLink from "@kit/TextLink";
 import type { FocusedQuestionData } from "@generated/types/chat";
 import type { MessageView } from "@kit/CoreTypes";
 import { LEASE_MILLISECONDS, useNotifications } from "@kit/notifications";

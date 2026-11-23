@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from '@/components/kit/TextLink.vue';
+import TextLink from '@kit/TextLink';
 import { dateTime } from "@kit/format";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";

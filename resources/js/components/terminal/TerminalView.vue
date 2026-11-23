@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Textarea from '@/components/kit/Textarea.vue';
+import Textarea from '@kit/Textarea';
 import { computed, ref, useId, watch } from 'vue';
-import Button from '@/components/kit/Button.vue';
+import Button from '@kit/Button';
 import TerminalRow from './TerminalRow.vue';
 import type { TerminalPresentation } from './useTerminalController';
 

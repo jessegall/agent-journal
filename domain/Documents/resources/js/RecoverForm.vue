@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Input from '@/components/kit/Input.vue';
+import Input from '@kit/Input';
 import { useForm } from '@inertiajs/vue3';
 import type { RecoverDraftPartData } from '@generated/types/documents';
 import Button from '@kit/Button';

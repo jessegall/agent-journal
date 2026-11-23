@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Button from '@/components/kit/Button.vue';
+import Button from '@kit/Button';
 import type { RunWindowData } from '@generated/types/processes';
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';

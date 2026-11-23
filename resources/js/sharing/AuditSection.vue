@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Button from '@/components/kit/Button.vue';
+import Button from '@kit/Button';
 import { dateTime } from '@kit/format';
 import type { ShareAuditData } from '@generated/types/sharing';
 import { useWindowReload } from '@kit/useWindowQuery';

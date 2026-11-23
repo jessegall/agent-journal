@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Input from '@/components/kit/Input.vue';
+import Input from '@kit/Input';
 import { sendPageAction } from '@kit/pageActions';
 import { useForm } from '@inertiajs/vue3';
 import type { RecordCard } from '@kit/CoreTypes';

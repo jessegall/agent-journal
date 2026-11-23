@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Textarea from '@/components/kit/Textarea.vue';
+import Textarea from '@kit/Textarea';
 import { nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Input from '@/components/kit/Input.vue';
-import Textarea from '@/components/kit/Textarea.vue';
+import Input from '@kit/Input';
+import Textarea from '@kit/Textarea';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';

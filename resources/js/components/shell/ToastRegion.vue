@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import TextLink from '@/components/kit/TextLink.vue';
+import TextLink from '@kit/TextLink';
 import { router, usePage } from '@inertiajs/vue3';
 import { nextTick, onBeforeUnmount, ref } from 'vue';
-import Button from '@/components/kit/Button.vue';
+import Button from '@kit/Button';
 import Icon from '@/components/kit/Icon.vue';
 import { flashedNoticeToast } from '@/composables/flashedNotice';
 import { notificationToasts } from '@/composables/notificationToasts';

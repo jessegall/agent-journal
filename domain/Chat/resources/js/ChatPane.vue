@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from "@/components/kit/TextLink.vue";
+import TextLink from "@kit/TextLink";
 import { router, usePage } from "@inertiajs/vue3";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { arrivalAnnouncement } from "./composables/arrivalAnnouncement";

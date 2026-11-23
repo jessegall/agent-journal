@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from "@/components/kit/TextLink.vue";
+import TextLink from "@kit/TextLink";
 import { usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 import GuidedChatDialog from "@/components/creation/GuidedChatDialog.vue";

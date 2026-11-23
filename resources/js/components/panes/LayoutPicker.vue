@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Input from '@/components/kit/Input.vue';
+import Input from '@kit/Input';
 import { useCloseOutside } from '@/composables/useCloseOutside';
 import { useMenuKeys } from '@/composables/useMenuKeys';
 import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import Button from '@/components/kit/Button.vue';
+import Button from '@kit/Button';
 import Icon from '@/components/kit/Icon.vue';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import layoutRoutes from '@/routes/layouts';

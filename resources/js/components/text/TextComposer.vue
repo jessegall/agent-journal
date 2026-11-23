@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Textarea from '@/components/kit/Textarea.vue';
-import Button from '@/components/kit/Button.vue';
+import Textarea from '@kit/Textarea';
+import Button from '@kit/Button';
 import FormErrors from '@/components/kit/FormErrors.vue';
 
 /**

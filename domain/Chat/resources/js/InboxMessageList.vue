@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from "@/components/kit/TextLink.vue";
+import TextLink from "@kit/TextLink";
 import { Link } from "@inertiajs/vue3";
 import { computed } from "vue";
 import type { MessageView } from "@kit/CoreTypes";

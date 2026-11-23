@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from "@/components/kit/TextLink.vue";
+import TextLink from "@kit/TextLink";
 import { router } from "@inertiajs/vue3";
 import { readPage } from "@kit/pageReads";
 import { computed, ref } from "vue";

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Button from '@/components/kit/Button.vue';
+import Button from '@kit/Button';
 import type { DriverRequestStatus } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
 import { recover } from './runtimeRecovery';

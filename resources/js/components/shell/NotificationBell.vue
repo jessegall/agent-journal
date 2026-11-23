@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextLink from '@/components/kit/TextLink.vue';
+import TextLink from '@kit/TextLink';
 import { computed, nextTick, ref, watch } from 'vue';
 import IconAction from '@/components/kit/IconAction.vue';
 import Sheet from '@/components/kit/Sheet.vue';

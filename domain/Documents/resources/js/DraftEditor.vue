@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Input from '@/components/kit/Input.vue';
-import Textarea from '@/components/kit/Textarea.vue';
+import Input from '@kit/Input';
+import Textarea from '@kit/Textarea';
 import { router, useForm } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { DraftEditorPartData } from '@generated/types/documents';

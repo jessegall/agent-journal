@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Input from '@/components/kit/Input.vue';
+import Input from '@kit/Input';
 import { router } from "@inertiajs/vue3";
 import { ref } from "vue";
 import Button from "@kit/Button";
