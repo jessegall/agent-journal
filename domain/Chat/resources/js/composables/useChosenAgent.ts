@@ -5,13 +5,7 @@ import { forgetStored, keepStored, readStored } from "@kit/browserStorage";
  * show the same agent's controls; an agent no longer in the chat is forgotten there.
  */
 export function useChosenAgent(viewerId: string, inboxId: string) {
-  const key = `journal.chosen-agent.${viewerId}.${inboxId}`;
-
-  return {
-    read: (): string | null => readStored("session", key),
-    keep: (agentId: string): void => keepStored("session", key, agentId),
-    forget: (): void => forgetStored("session", key),
-  };
+  return storedForThisTab(`journal.chosen-agent.${viewerId}.${inboxId}`);
 }
 
 /**
@@ -19,11 +13,16 @@ export function useChosenAgent(viewerId: string, inboxId: string) {
  * it follows, come back after switching chats or a reload; closing the dialog forgets it.
  */
 export function useOpenSessionDialog(viewerId: string, agentId: string) {
-  const key = `journal.session-dialog-open.${viewerId}.${agentId}`;
+  return storedForThisTab(`journal.session-dialog-open.${viewerId}.${agentId}`);
+}
 
+/**
+ * One text kept under a key for this tab: read it, keep a new one, or forget it.
+ */
+function storedForThisTab(key: string) {
   return {
     read: (): string | null => readStored("session", key),
-    keep: (mode: string): void => keepStored("session", key, mode),
+    keep: (text: string): void => keepStored("session", key, text),
     forget: (): void => forgetStored("session", key),
   };
 }

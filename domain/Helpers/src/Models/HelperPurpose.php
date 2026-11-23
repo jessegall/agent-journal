@@ -127,7 +127,7 @@ final class HelperPurpose extends Model implements ReadableModel
      */
     protected function subjectRecord(): Attribute
     {
-        return Attribute::get(fn (): Option => $this->subjectRecordOf($this->subject_type, $this->subject_id));
+        return Attribute::get(fn () => $this->subjectRecordOf($this->subject_type, $this->subject_id));
     }
 
     // ----------[ Internals ]----------

@@ -228,7 +228,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     protected function targetLabel(): Attribute
     {
-        return Attribute::get(fn (): string => $this->targetText());
+        return Attribute::get(fn () => $this->targetText());
     }
 
     // ----------[ Relations ]----------
