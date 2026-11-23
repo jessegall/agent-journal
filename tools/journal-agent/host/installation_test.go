@@ -40,6 +40,25 @@ func TestAnInstallationIsPublishedSealedAndVerified(t *testing.T) {
 	}
 }
 
+// A first install has no releases folder yet, as ~/.journal-agent/releases on a new machine: it is made.
+func TestAFirstInstallMakesTheReleasesFolder(t *testing.T) {
+	sources := realTempDir(t)
+	program := writeSource(t, sources, "claude", "#!/bin/sh\necho 2.1.323\n")
+	folder := filepath.Join(realTempDir(t), ".journal-agent", "releases", "1.0.0")
+
+	err := Install(InstallationManifest{Artifacts: []Artifact{
+		{Name: "bin/claude", Source: program.path, SHA256: program.digest, Executable: true},
+	}}, folder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { unseal(folder) })
+
+	if _, err := (Installation{Folder: folder}).Verify(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestADigestThatDiffersInstallsNothing(t *testing.T) {
 	sources := realTempDir(t)
 	program := writeSource(t, sources, "claude", "#!/bin/sh\n")

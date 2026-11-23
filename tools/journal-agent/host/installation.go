@@ -72,9 +72,13 @@ func Install(manifest InstallationManifest, folder string) error {
 	if err := checkArtifactNames(manifest); err != nil {
 		return err
 	}
+	// The folder that holds every installed release does not exist before the first install.
+	if err := os.MkdirAll(filepath.Dir(folder), 0o700); err != nil {
+		return fmt.Errorf("making the releases folder %s failed: %w", filepath.Dir(folder), err)
+	}
 	staging, err := os.MkdirTemp(filepath.Dir(folder), "."+filepath.Base(folder)+".staging-")
 	if err != nil {
-		return err
+		return fmt.Errorf("making a staging folder beside %s failed: %w", folder, err)
 	}
 	defer removeStaging(staging)
 
