@@ -21,11 +21,17 @@ fresh=false
 architecture="linux/$(docker info --format '{{.Architecture}}' | sed 's/x86_64/amd64/; s/aarch64/arm64/')"
 suffix=$(echo "$architecture" | tr / -)
 
-# An image is built again whenever the checkout differs from the one its saved archive was built from (its commit and
-# uncommitted changes), so the sign-in service never runs code older than the checkout; the build's layer cache keeps
-# an unchanged rebuild quick.
-source_state="$(git rev-parse HEAD) $(git status --porcelain | shasum | cut -d' ' -f1)"
+# An image is built again only when what goes into it changed, committed or not, so no other change costs a build.
+# The agent image holds its own folder and the Go programs; the runner image holds the application too, so it follows
+# the whole checkout.
+content_state() {
+    git ls-files -co --exclude-standard -z -- "$@" | xargs -0 shasum 2>/dev/null | shasum | cut -d' ' -f1
+}
 for name in agent runner; do
+    case "$name" in
+        agent) source_state=$(content_state .docker/helper tools/journal-agent tools/journal-check) ;;
+        runner) source_state="$(git rev-parse HEAD) $(git status --porcelain | shasum | cut -d' ' -f1)" ;;
+    esac
     built_from="images/$name-$suffix.source"
     if [ ! -f "images/$name-$suffix.tar" ] || [ "$(cat "$built_from" 2>/dev/null)" != "$source_state" ]; then
         sh .docker/helper/build.sh "$architecture" "$name"
@@ -59,6 +65,8 @@ setting AGENTS_WORKSPACES '{"main":{"folder":"main"}}'
 pin() {
     tar -xOf "images/$1-$suffix.tar" manifest.json | sed -n 's#.*"Config":"blobs/sha256/\([0-9a-f]*\)".*#sha256:\1#p'
 }
+# A session container reaches the Mac's published port, never the app's internal name.
+setting AGENTS_SESSION_JOURNAL_URL "http://host.docker.internal:${APP_PORT:-54700}"
 setting AGENT_IMAGE "$(pin agent)"
 setting RUNNER_IMAGE "$(pin runner)"
 
