@@ -148,7 +148,7 @@ final readonly class DocumentsIndex
             [
                 LayoutPartData::action(
                     'send',
-                    $type === 'doc' ? 'File document' : 'File report',
+                    $type === 'doc' ? 'Create document' : 'Create report',
                     LayoutActionData::submitting(),
                     'primary',
                 ),
