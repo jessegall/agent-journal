@@ -551,6 +551,9 @@ case	InstallAttemptState::Cancelled
 case	InstallAttemptState::Expired
 case	InstallAttemptState::Open
 case	InstallAttemptState::Spent
+case	InstallLineHold::NoRelease
+case	InstallLineHold::OriginNotHttps
+case	InstallLineHold::SwitchedOff
 case	InstancePolicy::PerJob
 case	InstancePolicy::Reusable
 case	InstancePolicy::Single
@@ -3180,6 +3183,7 @@ class	EnrollHostCommand
 class	EnrollHostHandler
 class	EnrolledDescriptor
 class	EnrolledHost
+class	EnsureOwnerCommand
 class	Entry
 class	EntryDispatcher
 class	EntryDispatchers
@@ -7320,7 +7324,6 @@ constant	DeclaredSearch::RETIRED_ARGUMENTS
 constant	DeclaredSearch::TOOL
 constant	DefaultDrivers::CLAUDE_CODE
 constant	DefaultDrivers::CODEX
-constant	DefaultDrivers::PROTOCOL_VERSION
 constant	DeliverReportReadyNotification::REPORT_TARGET
 constant	DeliveredSkillsAccess::DELIVERED_SKILL
 constant	DeliveredSkillsAccess::OTHER_RUNTIME
@@ -7486,7 +7489,6 @@ constant	HookRelay::READ_TOOL
 constant	HookShellAdmission::RUNNER_UNAVAILABLE
 constant	HostCapacityLock::LOCK_KEY
 constant	HostDescriptorEnrollment::BUILD_UNAPPROVED
-constant	HostDescriptorEnrollment::PROTOCOL_INCOMPATIBLE
 constant	HostDescriptorEnrollment::REGISTRATION_UNAPPROVED
 constant	HostDescriptorEnrollment::UNKNOWN_DRIVER
 constant	HostSkillPublisher::GENERATIONS
@@ -8364,6 +8366,7 @@ enum	HostRouteRole
 enum	HostWakeRefusal
 enum	Icon
 enum	InstallAttemptState
+enum	InstallLineHold
 enum	InstancePolicy
 enum	InterpretationState
 enum	IntervalRole
@@ -14473,6 +14476,7 @@ method	EnrolledDescriptor::available()
 method	EnrolledDescriptor::stored()
 method	EnrolledDescriptor::unavailable()
 method	EnrolledHost::__construct()
+method	EnsureOwnerCommand::handle()
 method	Entry::__construct()
 method	EntryDispatcher::__construct()
 method	EntryDispatcher::run()
@@ -15873,6 +15877,8 @@ method	InstallLine::__construct()
 method	InstallLine::for()
 method	InstallLineAvailability::__construct()
 method	InstallLineAvailability::canIssue()
+method	InstallLineAvailability::holds()
+method	InstallLineHold::sentence()
 method	InstallLinesUnavailable::now()
 method	InstallLinesUnavailable::refusalCode()
 method	InstallLinesUnavailable::status()
@@ -28321,6 +28327,7 @@ parameter	$hitOf
 parameter	$hits
 parameter	$hold
 parameter	$holdReason
+parameter	$holdReasons
 parameter	$holder
 parameter	$holderId
 parameter	$holderName
@@ -32389,6 +32396,7 @@ property	ConfiguredOperations::$operations
 property	ConnectProjectWindowData::$attempts
 property	ConnectProjectWindowData::$bindings
 property	ConnectProjectWindowData::$canIssue
+property	ConnectProjectWindowData::$holdReasons
 property	ConnectProjectWindowData::$origin
 property	ConnectProjectWindowData::$projects
 property	ConnectProjectWindowData::$release
@@ -33284,7 +33292,6 @@ property	DriverRegistration::$key
 property	DriverRegistration::$label
 property	DriverRegistration::$mode
 property	DriverRegistration::$profileRequirements
-property	DriverRegistration::$protocolVersion
 property	DriverRegistration::$skillProtocol
 property	DriverRegistry::$container
 property	DriverRegistry::$families
@@ -33524,6 +33531,8 @@ property	EnrolledDescriptor::$mode
 property	EnrolledDescriptor::$unavailableReason
 property	EnrolledHost::$hostId
 property	EnrolledHost::$secret
+property	EnsureOwnerCommand::$description
+property	EnsureOwnerCommand::$signature
 property	Entry::$entry
 property	EntryDispatcher::$bus
 property	EntryDispatcher::$entrance
@@ -34179,12 +34188,10 @@ property	HostDescriptor::$arrangement
 property	HostDescriptor::$build
 property	HostDescriptor::$key
 property	HostDescriptor::$placement
-property	HostDescriptor::$protocolVersion
 property	HostDescriptorData::$arrangement
 property	HostDescriptorData::$build
 property	HostDescriptorData::$key
 property	HostDescriptorData::$placement
-property	HostDescriptorData::$protocolVersion
 property	HostDescriptorEnrollment::$drivers
 property	HostDescriptorsData::$descriptors
 property	HostRefusalData::$refusal
