@@ -31,6 +31,10 @@ func (containers Containers) CheckAccountFolder(ctx context.Context, accountID s
 		return err
 	}
 
+	if err := containers.keepAccountFilesPrivate(ctx, accountID); err != nil {
+		return err
+	}
+
 	rootMount := []string{"--mount", "type=bind,source=" + journalRoot + ",target=" + journalRoot + ",readonly"}
 	output, err := containers.runCheckWith(ctx, rootMount, "sh", "-c",
 		accountFolderScript(journalRoot, accountID, agentUID, 0))
@@ -95,6 +99,25 @@ func (containers Containers) makeHistoryMountPoint(ctx context.Context, accountI
 	}
 
 	return nil
+}
+
+// keepAccountFilesPrivate takes the group and other bits off everything in the account's folder, as the program's
+// user and with only that folder mounted. The client makes some of its own folders, such as its cache, with the wider
+// mode of its file mask (the workspace it shares with the executor needs that mask); under the 0700 folder they were
+// never reachable, and the check that follows refuses any that are left. Links are not followed.
+func (containers Containers) keepAccountFilesPrivate(ctx context.Context, accountID string) error {
+	accountMount := []string{"--mount", "type=bind,source=" + journalRoot + "/accounts/" + accountID + ",target=/account"}
+	output, err := containers.runCheckWith(ctx, accountMount, "sh", "-c", keepPrivateScript("/account"))
+	if err != nil {
+		return fmt.Errorf("%w: keeping its files private failed: %v: %s", ErrAccountFolderUnsafe, err, output)
+	}
+
+	return nil
+}
+
+// keepPrivateScript takes the group and other bits off every file and folder under the folder.
+func keepPrivateScript(folder string) string {
+	return `find ` + shellwords.Quoted(folder) + ` -mindepth 1 ! -type l -exec chmod go-rwx {} +`
 }
 
 // accountsFolder is the agent daemon's folder of every account's own sign-in folder.

@@ -122,10 +122,14 @@ func TestTheHostMakesTheHistoryFolderAsTheProgramBeforeItChecksTheAccount(t *tes
 		t.Fatal(err)
 	}
 	runs := strings.Split(strings.TrimPrefix(string(content), "run "), "\nrun ")
-	if len(runs) != 2 {
+	if len(runs) != 3 {
 		t.Fatalf("docker ran %d times: %v", len(runs), runs)
 	}
-	made, checked := runs[0], runs[1]
+	made, keptPrivate, checked := runs[0], runs[1], runs[2]
+	if !strings.Contains(keptPrivate, "--user "+agentUser) || !strings.Contains(keptPrivate, "chmod go-rwx") ||
+		!strings.Contains(keptPrivate, "source=/srv/journal/accounts/a1,target=/account") {
+		t.Fatalf("the account's files were kept private by %q", keptPrivate)
+	}
 	if !strings.Contains(made, "--user "+agentUser) || !strings.Contains(made, "source=/srv/journal/accounts/a1,target=/account") ||
 		!strings.Contains(made, "mkdir -m 0700 /account/projects") || strings.Contains(made, "target=/srv/journal") {
 		t.Fatalf("the history folder was made by %q", made)
@@ -245,5 +249,37 @@ func TestAFolderMakeSentAgainFindsItsOwnFolderAndAnotherMakeIsRefused(t *testing
 	}
 	if output, err := run("operation-2"); err == nil || !strings.Contains(output, "another sign-in made this folder") {
 		t.Fatalf("another make of the same folder was answered %v: %s", err, output)
+	}
+}
+
+// A folder the client made with a wider mode, such as its cache, is made private before the check, a link is left
+// alone, and a file that was private stays as it was.
+func TestFilesTheClientLeftOpenAreMadePrivateBeforeTheCheck(t *testing.T) {
+	folder := t.TempDir()
+	cache := filepath.Join(folder, "cache")
+	if err := os.Mkdir(cache, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	open := filepath.Join(cache, "entry")
+	if err := os.WriteFile(open, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	outside := filepath.Join(t.TempDir(), "outside")
+	if err := os.WriteFile(outside, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(folder, "link")); err != nil {
+		t.Fatal(err)
+	}
+
+	if output, err := exec.Command("sh", "-c", keepPrivateScript(folder)).CombinedOutput(); err != nil {
+		t.Fatalf("keeping the files private failed: %v: %s", err, output)
+	}
+
+	for path, want := range map[string]os.FileMode{cache: 0o700, open: 0o600, outside: 0o644} {
+		info, err := os.Stat(path)
+		if err != nil || info.Mode().Perm() != want {
+			t.Fatalf("%s was left %v, %v, want %o", path, info, err, want)
+		}
 	}
 }
