@@ -32,7 +32,7 @@ func TestTheBundleOfAFailedStartNamesItsIdsAndSideAndHoldsNoSecret(t *testing.T)
 		t.Fatal(err)
 	}
 
-	path, err := Write(binding, state, Install{Release: "1.4.0", Protocol: 2}, t.TempDir())
+	path, err := Write(binding, state, Install{Release: "1.4.0"}, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestTheBundleCarriesTheRelaysLastReportAndStrikesTheStagedInstallSecrets(t 
 		t.Fatal(err)
 	}
 
-	path, err := Write(binding, state, Install{Release: "1.4.0", Protocol: 2}, t.TempDir())
+	path, err := Write(binding, state, Install{Release: "1.4.0"}, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}

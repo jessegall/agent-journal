@@ -117,7 +117,7 @@ func (binder bindingRelay) run(parent context.Context) error {
 	for sequence := 1; ctx.Err() == nil && time.Now().Before(idleEnds()); sequence++ {
 		receipt, err := journal.ReportPresence(ctx, binder.binding.BindingID, client.PresenceReport{
 			BootID: bootID, Sequence: sequence, Release: binder.release,
-			Protocol: client.RemoteProjectProtocolVersion, Descriptors: isolatedDescriptors(),
+			Descriptors:  isolatedDescriptors(),
 			Provisioning: "succeeded", Takeover: sequence == 1,
 			SetupGeneration: project.Folder{Root: binder.binding.CanonicalRoot}.SetupGeneration(),
 			Reconciled:      reconciliation.reportNow(),

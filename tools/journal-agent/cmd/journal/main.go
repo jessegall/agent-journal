@@ -823,7 +823,7 @@ func diagnose(binding host.Binding, state host.ConnectionState, folder project.F
 	if installation, err := ownInstallation(); err == nil {
 		release = filepath.Base(installation)
 	}
-	install := diagnostics.Install{Release: release, Protocol: client.RemoteProjectProtocolVersion}
+	install := diagnostics.Install{Release: release}
 	path, err := diagnostics.Write(binding, state, install, folder.Root)
 	if err != nil {
 		fmt.Fprintln(stderr, "journal:", err)

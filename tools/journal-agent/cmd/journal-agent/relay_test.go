@@ -27,7 +27,7 @@ func (journal *presenceJournal) ServeHTTP(writer http.ResponseWriter, request *h
 	var report client.PresenceReport
 	_ = json.NewDecoder(request.Body).Decode(&report)
 	journal.reports = append(journal.reports, report)
-	journal.paths = append(journal.paths, request.URL.Path+" "+request.Header.Get("Journal-Host-Protocol"))
+	journal.paths = append(journal.paths, request.URL.Path)
 	_ = json.NewEncoder(writer).Encode(map[string]any{
 		"generation":        1,
 		"presenceExpiresAt": time.Now().Add(2 * time.Second).Format(time.RFC3339Nano),
@@ -69,7 +69,7 @@ func TestTheRelayReportsAndRefreshesPresenceWithOneBootUntilItsIdleWindowEnds(t 
 	if first.BootID != second.BootID || first.Sequence != 1 || second.Sequence != 2 || !first.Takeover || second.Takeover {
 		t.Fatalf("reports %+v then %+v", first, second)
 	}
-	if journal.paths[0] != "/host/bindings/binding-1/presence 2" || first.Provisioning != "succeeded" {
+	if journal.paths[0] != "/host/bindings/binding-1/presence" || first.Provisioning != "succeeded" {
 		t.Fatalf("the report went to %q with %+v", journal.paths[0], first)
 	}
 	if report, err := binder.state.RelayReport(); err != nil || report.BootID != first.BootID {

@@ -202,7 +202,7 @@ func (connection projectConnection) setUp(binding host.Binding, installation hos
 
 	folder := project.Folder{Root: connection.state.CanonicalRoot}
 
-	return folder.SetUp(project.ConnectionOf(binding, client.RemoteProjectProtocolVersion), installation)
+	return folder.SetUp(project.ConnectionOf(binding), installation)
 }
 
 // ownInstallation is the sealed installation this program runs from: the folder above its bin folder.
@@ -246,7 +246,6 @@ func redeemRequest(ticket string, pending host.PendingConnection) client.RedeemR
 		CanonicalRoot:     pending.CanonicalRoot,
 		ProjectLabel:      filepath.Base(pending.CanonicalRoot),
 		MachineLabel:      host.MachineLabel(),
-		Protocol:          client.RemoteProjectProtocolVersion,
 	}
 }
 

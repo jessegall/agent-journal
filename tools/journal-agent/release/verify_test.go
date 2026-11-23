@@ -19,7 +19,7 @@ func signedRelease(t *testing.T) (string, []byte, []byte, ed25519.PublicKey) {
 	}
 
 	folder := t.TempDir()
-	manifest := Manifest{Version: "1.0.0", HostProtocolVersion: 1}
+	manifest := Manifest{Version: "1.0.0"}
 	for _, target := range Targets {
 		source := filepath.Join(target.Folder(), ProgramName)
 		path := filepath.Join(folder, source)

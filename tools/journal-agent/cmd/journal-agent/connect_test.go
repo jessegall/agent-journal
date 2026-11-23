@@ -60,7 +60,7 @@ func (journal *fakeJournal) answer(request *http.Request) (any, int) {
 		}
 		journal.tickets[redeem.Ticket] = false
 		journal.hosts++
-		redemption := client.Redemption{HostID: "host-" + redeem.InstallationNonce, ProjectID: "project", BindingID: "binding-" + redeem.InstallationNonce, Protocol: 2, CanonicalOrigin: "https://journal.example.com"}
+		redemption := client.Redemption{HostID: "host-" + redeem.InstallationNonce, ProjectID: "project", BindingID: "binding-" + redeem.InstallationNonce, CanonicalOrigin: "https://journal.example.com"}
 		journal.bindings[redeem.HostCredential+" "+redeem.InstallationNonce] = redemption
 		return redemption, http.StatusCreated
 	case "/api/project-connections/recover":
@@ -70,7 +70,7 @@ func (journal *fakeJournal) answer(request *http.Request) (any, int) {
 		_ = json.NewDecoder(request.Body).Decode(&recover)
 		credential := strings.TrimPrefix(request.Header.Get("Authorization"), "Bearer ")
 		redemption, found := journal.bindings[credential+" "+recover.InstallationNonce]
-		if !found || request.Header.Get("Journal-Host-Protocol") != "2" {
+		if !found {
 			return map[string]string{"message": "This connection cannot be recovered."}, http.StatusNotFound
 		}
 		return redemption, http.StatusOK

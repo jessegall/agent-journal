@@ -102,10 +102,9 @@ func (log Log) path() string {
 	return filepath.Join(log.State.Folder, "diagnostics", key+"-"+logName)
 }
 
-// Install names one installation's release and protocol for the bundle.
+// Install names one installation's release for the bundle.
 type Install struct {
-	Release  string
-	Protocol int
+	Release string
 }
 
 // Bundle is what journal diagnostics writes: the ids and versions that name the install, the relay's state (whether
@@ -118,7 +117,6 @@ type Bundle struct {
 	BindingID    string    `json:"binding_id"`
 	MainAgentID  string    `json:"main_agent_id"`
 	Release      string    `json:"release"`
-	Protocol     int       `json:"protocol"`
 	RelayRunning bool      `json:"relay_running"`
 	// LastReport is the relay's last presence report the journal acknowledged; zero when there was none.
 	LastReport   host.RelayReport `json:"last_report"`
@@ -142,7 +140,6 @@ func Write(binding host.Binding, state host.ConnectionState, install Install, fo
 		BindingID:    binding.BindingID,
 		MainAgentID:  binding.MainAgentID,
 		Release:      install.Release,
-		Protocol:     install.Protocol,
 		RelayRunning: state.RelayIsRunning(),
 		LastReport:   lastReport,
 		RecentEvents: events,

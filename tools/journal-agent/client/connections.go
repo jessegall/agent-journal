@@ -20,18 +20,16 @@ type RedeemRequest struct {
 	CanonicalRoot     string `json:"canonicalRoot"`
 	ProjectLabel      string `json:"projectLabel"`
 	MachineLabel      string `json:"machineLabel"`
-	Protocol          int    `json:"protocol"`
 }
 
 // Redemption is what redeeming an install line made: the host, project and binding, and, from a redemption, the
-// protocol and the canonical origin the relay talks to from then on.
+// canonical origin the relay talks to from then on.
 type Redemption struct {
 	HostID          string `json:"hostId"`
 	ProjectID       string `json:"projectId"`
 	BindingID       string `json:"bindingId"`
 	MainAgentID     string `json:"mainAgentId"`
 	ProjectLabel    string `json:"projectLabel"`
-	Protocol        int    `json:"protocol"`
 	CanonicalOrigin string `json:"canonicalOrigin"`
 }
 
@@ -65,13 +63,12 @@ func (client *Client) Recover(ctx context.Context, installationNonce string) (Re
 }
 
 // PresenceReport mirrors App\Http\Data\Connections\PresenceReportData: the boot of the relay, its rising sequence,
-// the release and protocol it runs, the combinations it can run, how setting up the folder ended and whether it takes
+// the release it runs, the combinations it can run, how setting up the folder ended and whether it takes
 // over a live boot.
 type PresenceReport struct {
 	BootID       string           `json:"bootId"`
 	Sequence     int              `json:"sequence"`
 	Release      string           `json:"release"`
-	Protocol     int              `json:"protocol"`
 	Descriptors  []HostDescriptor `json:"descriptors"`
 	Provisioning string           `json:"provisioning"`
 	Takeover     bool             `json:"takeover"`

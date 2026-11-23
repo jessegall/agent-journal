@@ -11,30 +11,19 @@ import (
 
 // The signed envelope the journal's AuthenticateHost middleware reads (App\AgentRequests\Support\SignedCall).
 const (
-	protocolVersion = "2"
 	callIDHeader    = "X-Journal-Call-Id"
 	issuedAtHeader  = "X-Journal-Call-Issued-At"
 	signatureHeader = "X-Journal-Call-Signature"
-	protocolHeader  = "X-Journal-Protocol"
-)
-
-// HostProtocolVersion is the version of the protocol an enrolled host speaks with the journal
-// (App\Agents\Enums\HostProtocolVersion::First), and RemoteProjectProtocolVersion the one of the relay of a project
-// connected to a server journal (HostProtocolVersion::RemoteProject); each changes together with its PHP case in a
-// release, and the journal refuses every call of a host that speaks another.
-const (
-	HostProtocolVersion          = 1
-	RemoteProjectProtocolVersion = 2
-	hostProtocolHeader           = "Journal-Host-Protocol"
 )
 
 var errLineBreak = errors.New("a signed field holds a line break")
 
-// signature is the HMAC-SHA256, keyed by the secret, of the protocol, method, request target, call id, issue time and
-// body digest, one per line.
-func signature(secret, method, target, callID string, issuedAt int64, body []byte) (string, error) {
+// signature is the HMAC-SHA256, keyed by the secret, of the method, request target, call id, issue time and body
+// digest, one per line, then any extra fields such as an agent call's profile key and revision
+// (App\Support\SignedCall::envelope).
+func signature(secret, method, target, callID string, issuedAt int64, body []byte, extra ...string) (string, error) {
 	digest := sha256.Sum256(body)
-	fields := []string{protocolVersion, strings.ToUpper(method), target, callID, strconv.FormatInt(issuedAt, 10), hex.EncodeToString(digest[:])}
+	fields := append([]string{strings.ToUpper(method), target, callID, strconv.FormatInt(issuedAt, 10), hex.EncodeToString(digest[:])}, extra...)
 	for _, field := range fields {
 		if strings.ContainsAny(field, "\r\n") {
 			return "", errLineBreak

@@ -350,8 +350,9 @@ var ErrConflict = errors.New("the journal's state refuses the call")
 // ErrUnauthenticated is returned when the journal does not accept the host's credential or signature (401).
 var ErrUnauthenticated = errors.New("the journal did not accept the host's credential")
 
-// ErrProtocolMismatch is returned when the journal does not speak the protocol the host signed with (426).
-var ErrProtocolMismatch = errors.New("the journal does not speak this host's protocol")
+// ErrHostRoleRefused is returned when the journal refuses this host the route for its role (403): an enrolled host on
+// a relay's route, a relay on an enrolled host's route, or a relay whose binding is no longer live.
+var ErrHostRoleRefused = errors.New("the journal refuses this host for its role")
 
 // ErrUncertain is returned when the call may or may not have reached the journal: the connection failed or the
 // journal failed (5xx). A claim or report that ends this way is retried, never taken as refused.
@@ -364,8 +365,6 @@ type Client struct {
 	now        func() time.Time
 	// arrangement is where this host runs agents, local or contained, reported on every claim; empty reports local.
 	arrangement string
-	// protocol is the host protocol version every call says it speaks: HostProtocolVersion unless set.
-	protocol int
 	// browserInput is whether every claim says this host carries out browser control of its terminals.
 	browserInput bool
 }
@@ -376,14 +375,12 @@ func New(enrollment Enrollment) *Client {
 		enrollment: enrollment,
 		http:       &http.Client{Timeout: 30 * time.Second},
 		now:        time.Now,
-		protocol:   HostProtocolVersion,
 	}
 }
 
-// ForRemoteProject is a client for the relay of a project connected to a server journal: it speaks
-// RemoteProjectProtocolVersion over the HTTP client given.
+// ForRemoteProject is a client for the relay of a project connected to a server journal, over the HTTP client given.
 func ForRemoteProject(enrollment Enrollment, transport *http.Client) *Client {
-	return &Client{enrollment: enrollment, http: transport, now: time.Now, protocol: RemoteProjectProtocolVersion}
+	return &Client{enrollment: enrollment, http: transport, now: time.Now}
 }
 
 // WithArrangement makes every claim report where this host runs agents, local or contained.
@@ -503,8 +500,8 @@ type Grant struct {
 	Container json.RawMessage `json:"container,omitempty"`
 }
 
-// NamesContainer is whether the grant holds a container manifest: the session runs in a container of the agent daemon.
-func (grant Grant) NamesContainer() bool {
+// HasContainer is whether the grant holds a container manifest: the session runs in a container of the agent daemon.
+func (grant Grant) HasContainer() bool {
 	return len(grant.Container) > 0 && string(grant.Container) != "null"
 }
 
@@ -603,15 +600,14 @@ type HostDescriptor struct {
 	Placement       string `json:"placement"`
 }
 
-// HostDescriptors mirrors App\Agents\Data\HostDescriptorsData: the host protocol and every driver this host runs.
+// HostDescriptors mirrors App\Data\HostDescriptorsData: every driver this host runs.
 type HostDescriptors struct {
-	ProtocolVersion int              `json:"protocolVersion"`
-	Descriptors     []HostDescriptor `json:"descriptors"`
+	Descriptors []HostDescriptor `json:"descriptors"`
 }
 
-// ReportDescriptors tells the journal which protocol this host speaks and which drivers it runs.
+// ReportDescriptors tells the journal which drivers this host runs.
 func (client *Client) ReportDescriptors(ctx context.Context, descriptors []HostDescriptor) error {
-	return client.call(ctx, "/host/reports/descriptors", HostDescriptors{HostProtocolVersion, descriptors}, nil)
+	return client.call(ctx, "/host/reports/descriptors", HostDescriptors{descriptors}, nil)
 }
 
 func (client *Client) ReportProtection(ctx context.Context, report ProtectionReport) error {
@@ -707,8 +703,6 @@ func (client *Client) signedRequest(ctx context.Context, method, target string, 
 	request.Header.Set(callIDHeader, callID)
 	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
 	request.Header.Set(signatureHeader, signed)
-	request.Header.Set(protocolHeader, protocolVersion)
-	request.Header.Set(hostProtocolHeader, strconv.Itoa(client.protocol))
 
 	return request, nil
 }
@@ -730,8 +724,8 @@ func refusalOf(response *http.Response, target string) error {
 		return errors.Join(ErrAwaitingApproval, ErrRefused, failure)
 	case response.StatusCode == http.StatusUnauthorized:
 		return errors.Join(ErrUnauthenticated, ErrRefused, failure)
-	case response.StatusCode == http.StatusUpgradeRequired:
-		return errors.Join(ErrProtocolMismatch, ErrRefused, failure)
+	case response.StatusCode == http.StatusForbidden:
+		return errors.Join(ErrHostRoleRefused, ErrRefused, failure)
 	case response.StatusCode >= 400 && response.StatusCode < 500:
 		return errors.Join(ErrRefused, failure)
 	default:

@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"journal-agent/client"
 	"journal-agent/host"
 )
 
@@ -27,11 +26,10 @@ func Build(profile Profile, sources Sources, folder string, version string, key 
 
 	sources.PinnedKey = key.Public().(ed25519.PublicKey)
 	manifest := Manifest{
-		Version:             version,
-		HostProtocolVersion: client.RemoteProjectProtocolVersion,
-		Profile:             profile.Name,
-		Providers:           profile.Providers,
-		Capabilities:        Capabilities,
+		Version:      version,
+		Profile:      profile.Name,
+		Providers:    profile.Providers,
+		Capabilities: Capabilities,
 	}
 	for _, target := range Targets {
 		targetArtifacts := TargetArtifacts{Target: target, Prerequisites: prerequisitesOf(target), Providers: LocalProviders}

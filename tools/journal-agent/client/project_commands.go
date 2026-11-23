@@ -3,16 +3,12 @@ package client
 import (
 	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -20,7 +16,6 @@ const (
 	projectCommandsTarget = "/api/project-commands"
 	profileHeader         = "X-Journal-Profile"
 	profileRevisionHeader = "X-Journal-Profile-Revision"
-	agentCallProtocol     = "2"
 	exitStream            = "exit"
 	standardErrorStream   = "stderr"
 )
@@ -176,19 +171,11 @@ func (grant StartGrant) signedPost(ctx context.Context, target string, body any)
 	if err != nil {
 		return nil, err
 	}
-	issuedAt := strconv.FormatInt(time.Now().Unix(), 10)
-	digest := sha256.Sum256(content)
-	fields := []string{
-		agentCallProtocol, http.MethodPost, target, callID, issuedAt, hex.EncodeToString(digest[:]),
-		grant.ProfileKey, strconv.Itoa(grant.ProfileRevision),
+	issuedAt := time.Now().Unix()
+	signed, err := signature(grant.Token, http.MethodPost, target, callID, issuedAt, content, grant.ProfileKey, strconv.Itoa(grant.ProfileRevision))
+	if err != nil {
+		return nil, err
 	}
-	for _, field := range fields {
-		if strings.ContainsAny(field, "\r\n") {
-			return nil, errLineBreak
-		}
-	}
-	mac := hmac.New(sha256.New, []byte(grant.Token))
-	mac.Write([]byte(strings.Join(fields, "\n")))
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, grant.JournalURL+target, bytes.NewReader(content))
 	if err != nil {
@@ -198,9 +185,8 @@ func (grant StartGrant) signedPost(ctx context.Context, target string, body any)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set(callIDHeader, callID)
-	request.Header.Set(issuedAtHeader, issuedAt)
-	request.Header.Set(signatureHeader, hex.EncodeToString(mac.Sum(nil)))
-	request.Header.Set(protocolHeader, agentCallProtocol)
+	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
+	request.Header.Set(signatureHeader, signed)
 	request.Header.Set(profileHeader, grant.ProfileKey)
 	request.Header.Set(profileRevisionHeader, strconv.Itoa(grant.ProfileRevision))
 

@@ -55,7 +55,7 @@ func (prepared PreparedStart) AccountStart(server *contracts.JournalServer, refe
 // ContainerManifest is the manifest of the container the start's session runs in, which the journal compiled; a start
 // on the protected host has none.
 func (prepared PreparedStart) ContainerManifest() (ContainerManifest, bool, error) {
-	if !prepared.Grant.NamesContainer() {
+	if !prepared.Grant.HasContainer() {
 		return ContainerManifest{}, false, nil
 	}
 

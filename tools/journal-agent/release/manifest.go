@@ -65,15 +65,14 @@ func prerequisitesOf(target Target) []string {
 	return []string{"git", "curl"}
 }
 
-// Manifest is what one release holds: its version, the host protocol it speaks, the installation profile it was
-// built from with the providers that arrive apart from it, and the files of each target.
+// Manifest is what one release holds: its version, the installation profile it was built from with the providers
+// that arrive apart from it, and the files of each target.
 type Manifest struct {
-	Version             string            `json:"version"`
-	HostProtocolVersion int               `json:"hostProtocolVersion"`
-	Profile             string            `json:"profile"`
-	Providers           []Provider        `json:"providers"`
-	Capabilities        []string          `json:"capabilities"`
-	Targets             []TargetArtifacts `json:"targets"`
+	Version      string            `json:"version"`
+	Profile      string            `json:"profile"`
+	Providers    []Provider        `json:"providers"`
+	Capabilities []string          `json:"capabilities"`
+	Targets      []TargetArtifacts `json:"targets"`
 }
 
 // Bytes are the canonical bytes of the manifest: the ones written to ManifestName and signed.

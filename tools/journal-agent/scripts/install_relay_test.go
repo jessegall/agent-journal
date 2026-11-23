@@ -92,7 +92,7 @@ func newInstallRelay(t *testing.T) installRelay {
 	program := filepath.Join(fixture, "releases/1.0.0", target.Folder(), "bin/journal-agent")
 	run.write(program, stubProgram)
 	digest := sha256.Sum256([]byte(stubProgram))
-	manifest, err := release.Manifest{Version: "1.0.0", HostProtocolVersion: 2, Targets: []release.TargetArtifacts{{
+	manifest, err := release.Manifest{Version: "1.0.0", Targets: []release.TargetArtifacts{{
 		Target: target,
 		Artifacts: []host.Artifact{{
 			Name: "bin/journal-agent", Source: target.Folder() + "/bin/journal-agent",

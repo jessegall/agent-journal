@@ -42,17 +42,16 @@ func SampleWorkspace(ctx context.Context, git string, folder string) WorkspaceSt
 	return WorkspaceStatus{Available: true, Dirty: dirty, Clean: !dirty, Generation: generation}
 }
 
-// Reasons a version 2 sample names when it has no HEAD to report.
+// Reasons a sample of a connected root names when it has no HEAD to report.
 const (
 	UnbornRoot      = "unborn"
 	UnavailableRoot = "unavailable"
 )
 
-// CommitObservation is the version 2 sample of a connected project's root: the version 1 facts and, for the binding
-// and checkout it was read for, the full verified HEAD object id, or the typed reason there is none.
+// CommitObservation is the sample of a connected project's root: its git facts and, for the binding and checkout it
+// was read for, the full verified HEAD object id, or the typed reason there is none.
 type CommitObservation struct {
 	WorkspaceStatus
-	Version    int    `json:"version"`
 	BindingID  string `json:"binding"`
 	CheckoutID string `json:"checkout"`
 	HeadOID    string `json:"head"`
@@ -62,7 +61,7 @@ type CommitObservation struct {
 // ObserveCommit reads a connected root once: its version 1 facts and its verified HEAD, or unborn for a
 // repository with no commit yet and unavailable when the root cannot be read.
 func ObserveCommit(ctx context.Context, git string, folder string, bindingID string, checkoutID string) CommitObservation {
-	observation := CommitObservation{Version: 2, BindingID: bindingID, CheckoutID: checkoutID}
+	observation := CommitObservation{BindingID: bindingID, CheckoutID: checkoutID}
 	if _, err := protectedGit(ctx, git, folder, "rev-parse", "--git-dir"); err != nil {
 		observation.Reason = UnavailableRoot
 		return observation

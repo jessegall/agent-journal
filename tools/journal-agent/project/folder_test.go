@@ -72,7 +72,7 @@ func gitFolder(t *testing.T, ignore string) Folder {
 	return Folder{Root: root}
 }
 
-var connection = Connection{Protocol: 2, BindingID: "binding", ProjectID: "project", HostID: "host", Origin: "https://journal.example.com", RootID: "root"}
+var connection = Connection{BindingID: "binding", ProjectID: "project", HostID: "host", Origin: "https://journal.example.com", RootID: "root"}
 
 func TestSetUpWritesTheConnectionTheHooksAndOneIgnoreRuleKeepingTheIgnoreBytes(t *testing.T) {
 	folder := gitFolder(t, "node_modules\r\nvendor")

@@ -36,7 +36,6 @@ var ErrNotConnected = errors.New("this folder is not connected to a journal")
 
 // Connection is what .journal/connection.json holds: identifiers only, never a credential.
 type Connection struct {
-	Protocol  int    `json:"protocol"`
 	BindingID string `json:"binding"`
 	ProjectID string `json:"project"`
 	HostID    string `json:"host"`
@@ -45,9 +44,8 @@ type Connection struct {
 }
 
 // ConnectionOf is the connection a redeemed binding writes into its folder.
-func ConnectionOf(binding host.Binding, protocol int) Connection {
+func ConnectionOf(binding host.Binding) Connection {
 	return Connection{
-		Protocol:  protocol,
 		BindingID: binding.BindingID,
 		ProjectID: binding.ProjectID,
 		HostID:    binding.HostID,

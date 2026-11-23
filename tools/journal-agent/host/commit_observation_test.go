@@ -21,7 +21,7 @@ func TestAConnectedRootReportsItsVerifiedHeadAndDirtyFlag(t *testing.T) {
 
 	observation := ObserveCommit(context.Background(), "git", root, "binding-1", "checkout-1")
 
-	if observation.Version != 2 || len(observation.HeadOID) < 40 || !observation.Dirty || observation.Reason != "" {
+	if observation.BindingID != "binding-1" || len(observation.HeadOID) < 40 || !observation.Dirty || observation.Reason != "" {
 		t.Fatalf("observed %+v", observation)
 	}
 }

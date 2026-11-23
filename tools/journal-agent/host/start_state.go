@@ -54,7 +54,7 @@ type StartRecord struct {
 // RunsInContainer is whether the start runs in a container of the agent daemon, labelled with its session, as its
 // grant names one: that container, not a process group of this host, proves whether it still runs.
 func (record StartRecord) RunsInContainer() bool {
-	return record.Grant.NamesContainer()
+	return record.Grant.HasContainer()
 }
 
 // Recovery is what a restarted host may do with a start it saved.
