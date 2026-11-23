@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -332,16 +333,19 @@ func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T
 	}
 }
 
-func TestAClaimedRuntimeThatOpensIsReportedRunningUnderItsExecutionAndOneThatDoesNotIsNot(t *testing.T) {
+func TestAClaimedRuntimeIsReportedRunningWhenItOpensAndStoppedWhenItEndsAndOneThatDoesNotOpenIsNot(t *testing.T) {
 	var reported []host.StartReport
-	report := func(report host.StartReport) { reported = append(reported, report) }
+	starts := &claimedStarts{keys: map[string]string{}, report: func(report host.StartReport) {
+		reported = append(reported, report)
+	}}
 	prepared := host.PreparedStart{Claim: client.ClaimedStart{StartKey: "start-1"}}
-	opening := reportedRunning(func(string, host.PreparedStart) (serving.Runtime, error) {
+	opening := starts.opening(func(string, host.PreparedStart) (serving.Runtime, error) {
 		return drivers.NewHeadlessDriver(drivers.HeadlessRuntime{}, 3), nil
-	}, report)
-	failing := reportedRunning(func(string, host.PreparedStart) (serving.Runtime, error) {
+	})
+	failing := starts.opening(func(string, host.PreparedStart) (serving.Runtime, error) {
 		return nil, host.ErrContainerNotCreated
-	}, report)
+	})
+	journal := endedStarts{Journal: recordingJournal{exits: make(chan client.LivenessReport, 2)}, starts: starts}
 
 	if _, err := opening("runtime-1", prepared); err != nil {
 		t.Fatal(err)
@@ -349,9 +353,17 @@ func TestAClaimedRuntimeThatOpensIsReportedRunningUnderItsExecutionAndOneThatDoe
 	if _, err := failing("runtime-2", prepared); err == nil {
 		t.Fatal("a runtime that did not open gave no error")
 	}
+	for _, runtimeID := range []string{"runtime-1", "runtime-2"} {
+		if err := journal.ReportExit(context.Background(), client.LivenessReport{RuntimeID: runtimeID}); err != nil {
+			t.Fatal(err)
+		}
+	}
 
-	want := host.StartReport{StartKey: "start-1", Kind: host.ReportRunning, Execution: "runtime-1:3"}
-	if len(reported) != 1 || reported[0] != want {
+	want := []host.StartReport{
+		{StartKey: "start-1", Kind: host.ReportRunning, Execution: "runtime-1:3"},
+		{StartKey: "start-1", Kind: host.ReportStopped},
+	}
+	if !slices.Equal(reported, want) {
 		t.Fatalf("the starts were reported %+v", reported)
 	}
 }

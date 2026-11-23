@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"sync"
 
 	"journal-agent/client"
 	"journal-agent/host"
@@ -39,8 +40,11 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	}
 	defer startListener.Close()
 	go startSocket.Serve(ctx, startListener)
-	open := reportedRunning(claims.open, func(report host.StartReport) { claims.executor.report(ctx, report) })
-	loop := serving.NewLoop(claims.journal, claims.preparation, open)
+	starts := &claimedStarts{keys: map[string]string{}, report: func(report host.StartReport) {
+		claims.executor.report(ctx, report)
+	}}
+	loop := serving.NewLoop(endedStarts{Journal: claims.journal, starts: starts}, claims.preparation,
+		starts.opening(claims.open))
 	if err := loop.KeepUnsentReports(ctx, claims.startSocketFolder); err != nil {
 		log.Printf("the request reports kept from before could not all be sent yet: %v", err)
 	}
@@ -72,21 +76,55 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	return nil
 }
 
-// reportedRunning opens a claimed runtime and tells the journal its program runs, under the host's name for the
-// execution, as a start made through the start socket is told: a start nobody reports running stays on Starting for
-// its whole life, whatever its session does.
-func reportedRunning(open serving.Opener, report func(host.StartReport)) serving.Opener {
+// claimedStarts keeps the start of each runtime the claim loop opened, to tell the journal that its program runs
+// and, when its runtime ends, that it stopped, as a start made through the start socket is told: a start nobody
+// reports running stays on Starting for its whole life, and one nobody reports stopped is never proven ended.
+type claimedStarts struct {
+	mutex  sync.Mutex
+	keys   map[string]string
+	report func(host.StartReport)
+}
+
+// opening opens a claimed runtime and reports its start running, under the host's name for the execution.
+func (starts *claimedStarts) opening(open serving.Opener) serving.Opener {
 	return func(runtimeID string, prepared host.PreparedStart) (serving.Runtime, error) {
 		runtime, err := open(runtimeID, prepared)
 		if err != nil {
 			return nil, err
 		}
-		report(host.StartReport{
+		starts.mutex.Lock()
+		starts.keys[runtimeID] = prepared.Claim.StartKey
+		starts.mutex.Unlock()
+		starts.report(host.StartReport{
 			StartKey: prepared.Claim.StartKey, Kind: host.ReportRunning, Execution: executionOf(runtimeID, runtime),
 		})
 
 		return runtime, nil
 	}
+}
+
+// ended reports the start of a runtime that ended as stopped; a runtime this loop never opened has none to report.
+func (starts *claimedStarts) ended(runtimeID string) {
+	starts.mutex.Lock()
+	key, opened := starts.keys[runtimeID]
+	delete(starts.keys, runtimeID)
+	starts.mutex.Unlock()
+	if opened {
+		starts.report(host.StartReport{StartKey: key, Kind: host.ReportStopped})
+	}
+}
+
+// endedStarts is the loop's journal with one addition: a runtime's reported exit also ends its start.
+type endedStarts struct {
+	serving.Journal
+	starts *claimedStarts
+}
+
+func (journal endedStarts) ReportExit(ctx context.Context, report client.LivenessReport) error {
+	err := journal.Journal.ReportExit(ctx, report)
+	journal.starts.ended(report.RuntimeID)
+
+	return err
 }
 
 // executionOf is the host's name for one run of a runtime's program: the runtime and its process generation.
