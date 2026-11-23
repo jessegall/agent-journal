@@ -117,6 +117,16 @@ final class HookRecoveryTest extends TestCase
         $this->assertSame(0, HookCall::query()->acrossEveryAgent()->count());
     }
 
+    public function test_a_session_keeps_an_end_reason_longer_than_a_short_text_column(): void
+    {
+        $started = $this->start();
+        $reason = str_repeat('the agent image leaves an item unenforced; ', 12);
+
+        $started->session->endWithEvidenceAt(CarbonImmutable::now(), $reason);
+
+        $this->assertSame($reason, $started->session->refresh()->end_evidence);
+    }
+
     public function test_the_host_reporting_an_exit_ends_the_session_at_once(): void
     {
         $started = $this->start();
