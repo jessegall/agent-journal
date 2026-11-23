@@ -170,7 +170,11 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
    (24 px, down to 16 px in a narrow pane), so text never runs to a pane's edge. */
 .chatcol{display:flex;flex-direction:column;height:100%;margin:0 auto;width:100%;padding:0 clamp(16px,4%,24px);box-sizing:border-box}
 .chatcol .scroll{flex:1;overflow:auto;margin:0 -8px;padding:0 8px}
-.chat{display:flex;flex-direction:column;gap:14px;padding:22px 0 18px}
+/* The stream keeps a clear gap between its items. One agent turn (its steps, tool use, commands, answer and the
+   document it names) is one .turn, with a smaller gap inside it. */
+.chat{display:flex;flex-direction:column;gap:24px;padding:22px 0 18px}
+.turn{display:flex;flex-direction:column;gap:8px}
+.turn .docrow{margin-top:0}
 .me{align-self:flex-end;max-width:78%;background:var(--bubble);border-radius:var(--radius-bubble) var(--radius-bubble) 4px var(--radius-bubble);padding:8px 12px}
 .ag{max-width:92%}
 .ag .m{font-size:var(--text-badge);color:var(--text-3);margin-bottom:2px;display:flex;align-items:center;gap:5px}
@@ -213,14 +217,19 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 .stack>*{box-shadow:0 0 0 2px var(--bg)}
 .stack>*+*{margin-left:-7px}
 .msg{position:relative}
-.mact{position:absolute;top:-12px;right:-4px;display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:var(--radius-control);border:1px solid var(--border-2);background:var(--raised);font:inherit;font-size:var(--text-badge);color:var(--text-2);cursor:pointer;opacity:0;transition:opacity var(--duration-hover) var(--ease-journal)}
+/* React and Reply on hover: quiet text buttons with no border and no fill. They turn darker under the pointer. */
+.mact{position:absolute;display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 4px;border-radius:var(--radius-control);border:0;background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-3);cursor:pointer;opacity:0;transition:opacity var(--duration-hover) var(--ease-journal),color var(--duration-hover) var(--ease-journal)}
+.mact:hover{color:var(--text)}
 .msg:hover .mact,.mact:focus-visible{opacity:1}
 .mact:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-.me .mact{right:auto;left:-72px;top:4px}
-/* An agent message's hover actions sit together at its top right. */
-.macts{position:absolute;top:-12px;right:-4px;display:inline-flex;gap:4px}
+/* Your message: Reply at the side of the bubble, level with its first line. */
+.me .mact{right:calc(100% + 6px);top:6px}
+/* An agent message: React and Reply in one row at its top right, on the line with its name and time. The row has the
+   chat's own background, so a long first line runs under it unseen rather than through it. */
+.macts{position:absolute;top:-2px;right:0;display:inline-flex;align-items:center;gap:2px;padding-left:6px;background:var(--bg);opacity:0;transition:opacity var(--duration-hover) var(--ease-journal)}
+.msg:hover .macts,.macts:focus-within{opacity:1}
 .macts .mact{position:static}
-.macts .tm{align-self:center;font-size:var(--text-badge);color:var(--text-3);font-variant-numeric:tabular-nums;opacity:0;padding:0 4px;background:var(--bg);border-radius:var(--radius-badge)}
+.macts .tm{align-self:center;font-size:var(--text-badge);color:var(--text-3);font-variant-numeric:tabular-nums;opacity:0;padding:0 4px}
 .msg:hover .macts .tm{opacity:1}
 /* A reply to something further up: only a small "↩ name" link. */
 .rq{display:inline-flex;border:0;background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-3);padding:0;margin:0 0 3px;cursor:pointer;text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px}
@@ -588,8 +597,9 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 .bchip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:var(--radius-seg);border:1px solid var(--line);background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-2);cursor:pointer}
 .bchip:hover{border-color:var(--border-3);color:var(--text)}
 .bchip:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-/* Process cards: a command in the chat, its state, its last lines, and its terminal when opened. */
-.proc{border:1px solid var(--line);border-radius:var(--radius-card);background:var(--raised);overflow:hidden;max-width:92%}
+/* Process cards: a command in the chat, its state, its last lines, and its terminal when opened. Like a document
+   bar or a question card, it takes the full width of the chat column. */
+.proc{border:1px solid var(--line);border-radius:var(--radius-card);background:var(--raised);overflow:hidden}
 .proc .ph{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 12px}
 .proc .cmd{font-family:var(--font-mono);font-size:var(--text-small);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .proc .dur{font-variant-numeric:tabular-nums;color:var(--text-3);font-size:var(--text-small)}
@@ -1003,7 +1013,7 @@ function chipHtml(convs){const open=convs.filter(c=>CHIP[c]==='opened'),offer=co
   return `<div class="jchip"><span class="jm" title="From the journal">J</span>${offer.length?`<span>Open</span>${offer.map(c=>`<button class="go" data-chipopen="${c}">${convName(c)}'s chat</button>`).join(' · ')}<button class="ib" style="width:20px;height:20px" data-chipno="${offer.join(',')}" title="Not now" aria-label="Not now">${I('close','s14')}</button>`
     :`<span>${open.map(convName).join(' and ')}'s chat is open</span>`}</div>`}
 function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
-  return (cv.origin?`<div class="origin">${I('users','s14')}<span>${cv.origin}</span></div>`:'')+cv.msgs.map((m,i)=>{const k=m[0];
+  return (cv.origin?`<div class="origin">${I('users','s14')}<span>${cv.origin}</span></div>`:'')+groupTurns(c,cv.msgs.map((m,i)=>{const k=m[0];
     if(k==='day'){last=null;return `<div class="day">${m[1]}</div>`}
     if(k==='sys'){last=null;return `<div class="sys">${m[1]}</div>`}
     if(k==='act'){const e=ACTV.find(x=>x.id===m[1]);if(!e||!shown(e))return '';last=null;return actLineHtml(e)}
@@ -1020,12 +1030,28 @@ function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
     const time=k==='ag'?m[1]:m[2],text=k==='ag'?m[2]:m[3],head=!grp||last!==who;last=who;
     /* An agent's message: React and Reply on hover; its reactions under it; a document it names below, full width. */
     const acts=`<span class="macts">${grp?`<span class="tm">${time}</span>`:''}<button class="mact" data-react="${c}:${i}" data-fk="react:${c}:${i}" aria-haspopup="dialog" aria-label="React to ${MEM[who].name}'s message">${I('smile','s14')}React</button>${act}</span>`;
-    return `<div class="ag msg" data-mi="${i}" title="${grp?esc(MEM[who].name+' · '+time):''}">${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?'':`<span>· ${time}</span>`}</div>`:''}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${sourcesHtml(c,i)}${reactsHtml(c,i)}${acts}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}).join('')}
+    return `<div class="ag msg" data-mi="${i}" title="${grp?esc(MEM[who].name+' · '+time):''}">${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?'':`<span>· ${time}</span>`}</div>`:''}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${sourcesHtml(c,i)}${reactsHtml(c,i)}${acts}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}))}
+/* Which agent's turn a chat item belongs to: 'ag:<id>' for an agent's message, activity or typing line, 'ag' for a
+   command, sequence line or question that belongs to whichever agent is acting, and null for everything else. */
+function turnKey(c,m){const k=m[0],agent=id=>id&&MEM[id]&&MEM[id].kind==='agent'?'ag:'+id:null;
+  if(k==='act'){const e=ACTV.find(x=>x.id===m[1]);return e?agent(e.who)||'ag':'ag'}
+  if(k==='typing')return agent(m[1]);
+  if(k==='proc'||k==='seq'||k==='card')return 'ag';
+  if(k==='ag'||k==='say')return agent(speaker(c,m));
+  return null}
+/* Items of one agent turn in a row are wrapped in one .turn, so they sit closer than the gap between turns. */
+function groupTurns(c,parts){const msgs=CONV[c].msgs;let out='',run=[],who=null;
+  const flush=()=>{if(run.length)out+=`<div class="turn">${run.join('')}</div>`;run=[];who=null};
+  parts.forEach((h,i)=>{if(!h)return;const key=turnKey(c,msgs[i]);
+    if(!key){flush();out+=h;return}
+    const id=key==='ag'?null:key;if(run.length&&id&&who&&id!==who)flush();
+    run.push(h);if(id)who=id});
+  flush();return out}
 /* Kinds of chat line added by later sections (sequences, docked cards, processes); each draws itself. */
 const EXTRA_KIND={};
 function composer(c){const ph=`Message ${convName(c)}`;
   const rp=REPLYTO&&REPLYTO.conv===c?`<div class="replying">${I('reply','s14')}<span>Replying to <b>${MEM[speaker(c,CONV[c].msgs[REPLYTO.i])].name}</b> · “${esc(snippet(c,REPLYTO.i))}”</span><button class="ib" style="width:20px;height:20px" data-unreply aria-label="Stop replying">${I('close','s14')}</button></div>`:'';
-  return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm send" data-send="${c}" data-fk="send:${c}">${I('arrow','s14')}Send</button></div></div>`}
+  return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span data-beside hidden></span><button class="btn sm send" data-send="${c}" data-fk="send:${c}">${I('arrow','s14')}Send</button></div></div>`}
 /* Hooks for later sections: content above the composer (docked cards) and a terminal beside the chat. */
 const ABOVE_COMPOSER=[];
 const chatView=c=>`<div class="chatcol" style="max-width:${readW+48}px" data-chatdrop="${c}"><div class="scroll"><div class="chat" data-chat="${c}">${chatHtml(c)}</div></div>${ABOVE_COMPOSER.map(f=>f(c)).join('')}${composer(c)}</div>`;
@@ -1830,7 +1856,7 @@ ABOVE_COMPOSER.push(c=>{const items=(DOCKED[c]||[]).filter(d=>d.place==='under')
   return `<div class="dockarea" aria-label="Docked to this chat"><div class="dhead">${I('pin','s14')}<span>${items.length} docked</span><span style="flex:1"></span>${items.length>1?`<button class="btn sm" data-fold="${c}" data-fk="fold:${c}" aria-expanded="${!folded}">${folded?'Show all '+items.length:'Fold'}</button>`:''}</div>
     ${folded?`<div class="dstack">${dcardHtml(items[0])}</div>`:items.map(dcardHtml).join('')}</div>`});
 composer=function(c){const beside=(DOCKED[c]||[]).filter(d=>d.place==='beside');if(!beside.length)return baseComposer(c);
-  return baseComposer(c).replace('<span class="chip faint">Opus</span>',beside.map(d=>{const x=dockTitle(d);return `<button class="bchip" data-dopen="${d.id}" title="${esc(x.t)} · docked beside the composer">${I(x.ic,'s13')}${esc(x.t.split(' · ')[0])}</button>`}).join('')+'<span class="chip faint">Opus</span>')};
+  return baseComposer(c).replace('<span data-beside hidden></span>',beside.map(d=>{const x=dockTitle(d);return `<button class="bchip" data-dopen="${d.id}" title="${esc(x.t)} · docked beside the composer">${I(x.ic,'s13')}${esc(x.t.split(' · ')[0])}</button>`}).join(''))};
 function dockToChat(kind,ref){const c=A.mainConv;DOCKED[c]=DOCKED[c]||[];if(DOCKED[c].some(d=>d.kind===kind&&d.ref===ref)){toast('Already docked to this chat');return}
   const d={id:nid('d'),kind,ref,place:'under'};DOCKED[c].unshift(d);JUSTDOCKED=d.id;page='home';changed()}
 function undock(id){const c=Object.keys(DOCKED).find(k=>DOCKED[k].some(d=>d.id===id)),before=clone(DOCKED);DOCKED[c]=DOCKED[c].filter(d=>d.id!==id);changed();toast('Undocked',()=>{DOCKED=before;render()})}
