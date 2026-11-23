@@ -85,7 +85,7 @@ function submitFromKeys(event: KeyboardEvent): void {
 
 <template>
     <div class="flex flex-col" :style="width ? { width: `${width}px` } : undefined">
-        <FieldLabel :for="inputId">{{ label }}</FieldLabel>
+        <FieldLabel :for="inputId" data-field-label>{{ label }}</FieldLabel>
         <slot :id="inputId" :described-by="describedBy" :invalid="invalid">
             <div class="relative flex">
                 <Textarea

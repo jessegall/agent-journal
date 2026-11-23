@@ -82,7 +82,7 @@ final readonly class SettingsLayout
                 'Projects on other machines',
                 'Connect a project, copy its install line, see which projects are connected and revoke one.',
             ),
-            SettingsRow::reading('open', 'Connection window', $opener),
+            SettingsRow::control('open', 'Connection window', $opener),
         );
     }
 

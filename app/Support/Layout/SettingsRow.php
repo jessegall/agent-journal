@@ -51,6 +51,14 @@ final readonly class SettingsRow
     }
 
     /**
+     * A row whose value is a part the caller built, such as an action, beside its label.
+     */
+    public static function control(string $key, string $label, LayoutPartData $control, string|null $help = null): self
+    {
+        return new self($key, $label, $help, $control);
+    }
+
+    /**
      * A block row whose value is a part the caller built, such as a measured reading, below its label.
      */
     public static function reading(string $key, string $label, LayoutPartData $control, string|null $help = null): self
@@ -94,7 +102,7 @@ final readonly class SettingsRow
         $parts[] = $this->control;
 
         if ($this->isChanged) {
-            $parts[] = LayoutPartData::badge('changed', 'Changed', 'warn');
+            $parts[] = LayoutPartData::badge('changed', 'Not the default');
         }
 
         return LayoutPartData::box("row-{$this->key}", $this->isBlock ? 'setting-block' : 'setting', ...$parts);

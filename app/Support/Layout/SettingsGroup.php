@@ -93,7 +93,7 @@ final readonly class SettingsGroup
                     ...$rows,
                     LayoutPartData::box(
                         'save-row',
-                        'row',
+                        'settings-footer',
                         LayoutPartData::action('save', 'Save', LayoutActionData::submitting(), 'primary'),
                     ),
                 ],

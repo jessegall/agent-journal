@@ -30,9 +30,10 @@ const cardTitle = computed(() => {
     return head?.children.find((child) => child.key === 'title')?.text ?? undefined;
 });
 const readerSlots = new Set(['title', 'metadata', 'abstract', 'actions']);
-const sectionSlots = new Set(['title', 'help']);
+const sectionSlots = new Set(['title', 'help', 'reset']);
 const rowSlots = new Set(['title', 'hint']);
 const sectionBody = computed(() => props.part.children.filter((child) => !sectionSlots.has(child.key)));
+const sectionActions = computed(() => props.part.children.filter((child) => child.key === 'reset'));
 const rowControl = computed(() => props.part.children.filter((child) => !rowSlots.has(child.key)));
 const readerBody = computed(() => props.part.children.filter((child) => !readerSlots.has(child.key)));
 
@@ -118,13 +119,18 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
                 :title="readerPart('title')?.text ?? ''"
                 :help="readerPart('help')?.text ?? undefined"
             >
+                <template #actions>
+                    <template v-for="child in sectionActions" :key="child.key">
+                        <LayoutPart :part="child" />
+                    </template>
+                </template>
                 <template v-for="child in sectionBody" :key="child.key">
                     <LayoutPart :part="child" />
                 </template>
             </SettingsSection>
         </template>
         <template #settings-group>
-            <SettingGroup :label="readerPart('title')?.text ?? undefined">
+            <SettingGroup :label="readerPart('title')?.text ?? undefined" class="[&>form]:gap-0">
                 <template v-for="child in part.children" :key="child.key">
                     <LayoutPart :part="child" />
                 </template>
@@ -137,7 +143,7 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
                 class="max-[760px]:flex-col max-[760px]:items-stretch"
             >
                 <span
-                    class="flex flex-wrap items-center justify-end gap-2 [overflow-wrap:anywhere] max-[760px]:justify-start"
+                    class="flex flex-wrap items-center justify-end gap-2 [overflow-wrap:anywhere] max-[760px]:justify-start [&_[data-field-label]]:sr-only"
                 >
                     <template v-for="child in rowControl" :key="child.key">
                         <LayoutPart :part="child" />
@@ -191,6 +197,13 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
                     </template>
                 </div>
             </header>
+        </template>
+        <template #settings-footer>
+            <div data-layout-box="settings-footer" class="flex items-center justify-end gap-2 px-4 py-2.5">
+                <template v-for="child in part.children" :key="child.key">
+                    <LayoutPart :part="child" />
+                </template>
+            </div>
         </template>
         <template #bar>
             <div

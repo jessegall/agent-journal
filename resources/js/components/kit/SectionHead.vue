@@ -4,8 +4,8 @@ import GroupLabel from './GroupLabel.vue';
 import Toggle from './Toggle.vue';
 
 /**
- * The head of a SettingsSection: the GroupLabel (its title in the slot), a sm Reset button that shows only once a
- * setting changed, and, when a switch label is given, a Toggle that turns the whole section on or off.
+ * The head of a SettingsSection: the GroupLabel (its title in the slot), the section's own actions, a sm Reset button
+ * that shows only once a setting changed, and, when a switch label is given, a Toggle that turns the whole section on or off.
  */
 defineProps<{ changed?: boolean; switchLabel?: string }>();
 
@@ -18,6 +18,7 @@ const enabled = defineModel<boolean>('enabled', { default: true });
     <div class="flex items-center justify-between gap-3">
         <GroupLabel><slot /></GroupLabel>
         <div class="flex items-center gap-2">
+            <slot name="actions" />
             <Button v-if="changed" size="sm" @click="$emit('reset')">Reset</Button>
             <Toggle v-if="switchLabel" v-model="enabled" :label="switchLabel" />
         </div>

@@ -16,6 +16,7 @@ const enabled = defineModel<boolean>('enabled', { default: true });
     <section :aria-label="title">
         <SectionHead v-model:enabled="enabled" :changed="changed" :switch-label="switchLabel" @reset="$emit('reset')">
             {{ title }}
+            <template #actions><slot name="actions" /></template>
         </SectionHead>
         <p v-if="help" class="mb-2.5 text-small text-text-3">{{ help }}</p>
         <slot />
