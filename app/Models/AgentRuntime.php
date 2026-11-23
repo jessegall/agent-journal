@@ -193,7 +193,10 @@ final class AgentRuntime extends Model implements ReadableModel
     {
         $sessionsWithRunningHelpers = AgentSession::query()
             ->whereIn('parent_session_id', $ids)
-            ->whereIn('id', self::query()->where('activity', '!=', RuntimeActivity::Stopped)->select('agent_session_id'))
+            ->whereIn(
+                'id',
+                self::query()->where('activity', '!=', RuntimeActivity::Stopped)->select('agent_session_id'),
+            )
             ->readAll('every helper still running holds back the stop of the session it helps')
             ->pluck('parent_session_id')
             ->all();

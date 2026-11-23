@@ -92,7 +92,9 @@ final readonly class HistoryPageResolver implements PageResolver
         if ($message->state === MessageState::WaitingForAnswer) {
             $parts[] = LayoutPartData::form(
                 'cancel',
-                new LayoutFormData(ActionMethod::Post, route('chat.cancel', [], false), ['messageId' => $message->id]),
+                LayoutFormData::from(
+                    ['method' => ActionMethod::Post, 'href' => route('chat.cancel', [], false), 'fixed' => ['messageId' => $message->id]],
+                ),
                 'inline',
                 LayoutPartData::field('reason', 'Reason for cancelling', new LayoutFieldData('reason'), 'text'),
                 LayoutPartData::action('send', 'Cancel', LayoutActionData::submitting()),

@@ -86,7 +86,11 @@ final class PlanOutlineTest extends TestCase
 
         $this->structure()->addTasks($phase, $this->taskIds(1));
 
-        $page = $this->outline()->of($plan->id, 1, new OutlinePageAsk(phase: 1, tasksAfter: 50, revision: $heldRevision));
+        $page = $this->outline()->of(
+            $plan->id,
+            1,
+            new OutlinePageAsk(phase: 1, tasksAfter: 50, revision: $heldRevision),
+        );
 
         $this->assertTrue($page->phaseTasks->isRevisionChanged);
         $this->assertSame('0', $page->phaseTasks->after);

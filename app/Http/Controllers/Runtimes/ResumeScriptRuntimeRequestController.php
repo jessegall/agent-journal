@@ -16,6 +16,8 @@ final readonly class ResumeScriptRuntimeRequestController
 {
     public function __invoke(RequestRecoveryRequest $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new ResumeKeyScriptCommand($request->requestId(), $request->rowVersion(), $request->reason()));
+        return $review->run(
+            new ResumeKeyScriptCommand($request->requestId(), $request->rowVersion(), $request->reason()),
+        );
     }
 }

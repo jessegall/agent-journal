@@ -30,7 +30,14 @@ final class BindingRuntimeRequestData extends Data
      */
     public function asBindingStart(string $hostId, string $bindingId): AssertBindingStartCommand
     {
-        return new AssertBindingStartCommand($hostId, $bindingId, $this->rootId, $this->folder, $this->agentId, $this->driver);
+        return new AssertBindingStartCommand(
+            $hostId,
+            $bindingId,
+            $this->rootId,
+            $this->folder,
+            $this->agentId,
+            $this->driver,
+        );
     }
 
     /**

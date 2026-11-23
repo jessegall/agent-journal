@@ -18,6 +18,10 @@ final readonly class TransferChatOwnershipHandler extends ChatCommandHandler
      */
     public function handle(TransferChatOwnershipCommand $command): void
     {
-        $this->membership->transfer(ActorIdentity::of($command->dispatchedBy()), $command->inboxId, $command->participantIdentity());
+        $this->membership->transfer(
+            ActorIdentity::of($command->dispatchedBy()),
+            $command->inboxId,
+            $command->participantIdentity(),
+        );
     }
 }

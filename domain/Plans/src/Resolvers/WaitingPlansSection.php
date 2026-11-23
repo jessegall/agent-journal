@@ -41,16 +41,12 @@ final readonly class WaitingPlansSection implements SectionResolver
         return DeclaredLayoutData::of(LayoutPartData::box(
             'waiting',
             'stack',
-            LayoutPartData::collection('plans', 'list', array_map(fn (PlanCardData $card) => new LayoutRowData(
-                $card->id,
-                "plan {$card->number} · {$card->title}",
-                $card->state->value,
-                detail: implode(' · ', array_filter([
-                    $card->holder instanceof AssignmentData ? "held by {$card->holder->name}" : null,
-                    "{$card->finishedTasks} of {$card->totalTasks} tasks",
-                ])),
-                href: route('plans.plan', ['plan' => $card->id], false),
-            ), $cards)),
+            LayoutPartData::collection('plans', 'list', array_map(fn (
+                PlanCardData $card,
+            ) => LayoutRowData::from(['key' => $card->id, 'label' => "plan {$card->number} · {$card->title}", 'value' => $card->state->value, 'detail' => implode(' · ', array_filter([
+                $card->holder instanceof AssignmentData ? "held by {$card->holder->name}" : null,
+                "{$card->finishedTasks} of {$card->totalTasks} tasks",
+            ])), 'href' => route('plans.plan', ['plan' => $card->id], false)]), $cards)),
         ));
     }
 }

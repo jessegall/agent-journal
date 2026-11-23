@@ -124,6 +124,8 @@ final class PlanGraphEditingTest extends TestCase
         $names = array_flip(array_map(fn (Task $task) => $task->id, $this->tasks));
 
         return TaskWait::query()->orderBy('created_at')->get()
-            ->map(fn (TaskWait $wait) => [$names[$wait->dependent_task_id], $names[$wait->prerequisite_task_id]])->all();
+            ->map(
+                fn (TaskWait $wait) => [$names[$wait->dependent_task_id], $names[$wait->prerequisite_task_id]],
+            )->all();
     }
 }

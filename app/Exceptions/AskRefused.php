@@ -97,7 +97,9 @@ final class AskRefused extends RuntimeException implements CodedRefusal, Command
 
     public static function mergeNotUncertain(string $attemptId): self
     {
-        return new self("Merge attempt {$attemptId} is not uncertain, or the stated outcome is no ending; nothing changed.");
+        return new self(
+            "Merge attempt {$attemptId} is not uncertain, or the stated outcome is no ending; nothing changed.",
+        );
     }
 
     public static function onlyOwnerClosesChains(): self

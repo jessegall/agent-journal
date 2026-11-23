@@ -82,13 +82,10 @@ final readonly class RulesWindowResolver implements PageResolver
 
         $isAwaitingReview = array_any($page->rules, fn (RuleView $rule) => $rule->state === RuleState::Proposed);
 
-        $rows = array_map(fn (RuleView $rule) => new LayoutRowData(
-            $rule->id,
-            $rule->text,
-            "{$rule->number} · {$rule->state->label()}",
-            ['rule' => $rule->id],
-            $rule->id === $selected,
-        ), $page->rules);
+        $rows = array_map(
+            fn (RuleView $rule) => LayoutRowData::from(['key' => $rule->id, 'label' => $rule->text, 'value' => "{$rule->number} · {$rule->state->label()}", 'query' => ['rule' => $rule->id], 'isCurrent' => $rule->id === $selected]),
+            $page->rules,
+        );
 
         $review = $isAwaitingReview
             ? []
@@ -162,7 +159,9 @@ final readonly class RulesWindowResolver implements PageResolver
     {
         $review = fn (string $key, string $route, string $label, string $style) => LayoutPartData::form(
             $key,
-            new LayoutFormData(ActionMethod::Patch, route($route, ['rule' => $rule->number], false)),
+            LayoutFormData::from(
+                ['method' => ActionMethod::Patch, 'href' => route($route, ['rule' => $rule->number], false)],
+            ),
             'inline',
             LayoutPartData::action('send', $label, LayoutActionData::submitting(), $style),
         );

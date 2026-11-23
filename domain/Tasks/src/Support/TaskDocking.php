@@ -40,7 +40,9 @@ final readonly class TaskDocking implements DockableProvider
             ->whereKey($ids)
             ->readExactly(count($ids))
             ->get()
-            ->filter(fn (Task $task) => $this->authorizer->filterActions(TaskPolicy::class, $task, [AccessType::Read]) !== []);
+            ->filter(
+                fn (Task $task) => $this->authorizer->filterActions(TaskPolicy::class, $task, [AccessType::Read]) !== [],
+            );
 
         foreach ($this->docked($readable) as $task) {
             $cards[] = new ComposedCard($task->identifyFor($definition), $task->composeDockCard($context));

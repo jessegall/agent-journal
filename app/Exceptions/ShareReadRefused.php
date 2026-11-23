@@ -21,7 +21,10 @@ final class ShareReadRefused extends RuntimeException implements CodedRefusal, C
 
     public static function malformedPath(Throwable|null $previous = null): self
     {
-        return new self('This address is not part of the share; start again from the shared link.', previous: $previous);
+        return new self(
+            'This address is not part of the share; start again from the shared link.',
+            previous: $previous,
+        );
     }
 
     public static function tooDeep(int $most): self
@@ -38,7 +41,10 @@ final class ShareReadRefused extends RuntimeException implements CodedRefusal, C
 
     public static function staleCursor(Throwable|null $previous = null): self
     {
-        return new self('This page position belongs to an older view of the share; start again from the shared link.', previous: $previous);
+        return new self(
+            'This page position belongs to an older view of the share; start again from the shared link.',
+            previous: $previous,
+        );
     }
 
     protected function status(): int

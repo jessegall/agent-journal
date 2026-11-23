@@ -18,7 +18,9 @@ final class BindingRevoked extends RuntimeException implements CodedRefusal
 
     public static function forAgent(string $agentId): self
     {
-        return new self("Agent {$agentId} works for a revoked binding. Copy a new install line to connect the folder again.");
+        return new self(
+            "Agent {$agentId} works for a revoked binding. Copy a new install line to connect the folder again.",
+        );
     }
 
     public function refusalCode(): RefusalCode

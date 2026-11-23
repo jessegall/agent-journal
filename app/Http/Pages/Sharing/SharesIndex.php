@@ -48,13 +48,13 @@ final readonly class SharesIndex
         $chosen = $filters->state instanceof ShareState ? $filters->state->value : '';
 
         $states = [
-            new LayoutRowData('any', 'Any', query: ['state' => '', 'after' => ''], isCurrent: $chosen === ''),
-            ...array_map(fn (ShareState $state) => new LayoutRowData(
-                $state->value,
-                $state->value,
-                query: ['state' => $state->value, 'after' => ''],
-                isCurrent: $chosen === $state->value,
-            ), ShareState::cases()),
+            LayoutRowData::from(
+                ['key' => 'any', 'label' => 'Any', 'query' => ['state' => '', 'after' => ''], 'isCurrent' => $chosen === ''],
+            ),
+            ...array_map(
+                fn (ShareState $state) => LayoutRowData::from(['key' => $state->value, 'label' => $state->value, 'query' => ['state' => $state->value, 'after' => ''], 'isCurrent' => $chosen === $state->value]),
+                ShareState::cases(),
+            ),
         ];
 
         return LayoutPartData::box(
@@ -88,17 +88,13 @@ final readonly class SharesIndex
      */
     private function rowsOf(array $rows): array
     {
-        return array_map(fn (ShareRowData $row) => new LayoutRowData(
-            $row->id,
-            ($row->isProposal ? 'Proposal' : 'Share')." {$row->number}",
-            $row->state->value,
-            detail: implode(' · ', array_filter([
-                $row->rootType,
-                $row->gatewayKey,
-                'expires '.CarbonImmutable::parse($row->expiresAt)->toDateString(),
-            ])),
-            href: "/sharing/shares/{$row->id}",
-        ), $rows);
+        return array_map(fn (
+            ShareRowData $row,
+        ) => LayoutRowData::from(['key' => $row->id, 'label' => ($row->isProposal ? 'Proposal' : 'Share')." {$row->number}", 'value' => $row->state->value, 'detail' => implode(' · ', array_filter([
+            $row->rootType,
+            $row->gatewayKey,
+            'expires '.CarbonImmutable::parse($row->expiresAt)->toDateString(),
+        ])), 'href' => "/sharing/shares/{$row->id}"]), $rows);
     }
 
     /**

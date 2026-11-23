@@ -63,10 +63,22 @@ final class PlanReviewPageTest extends TestCase
         $approved = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
 
         $approved->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.editionNumber', 1)
-            ->where('page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.isHistorical', false)
-            ->where('page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.decidedById', $this->owner->id)
-            ->where('page.data.root.children.1.children.1.children.3.children.0.native.props.card.start.planNumber', (string) $this->plan->number));
+            ->where(
+                'page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.editionNumber',
+                1,
+            )
+            ->where(
+                'page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.isHistorical',
+                false,
+            )
+            ->where(
+                'page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.decidedById',
+                $this->owner->id,
+            )
+            ->where(
+                'page.data.root.children.1.children.1.children.3.children.0.native.props.card.start.planNumber',
+                (string) $this->plan->number,
+            ));
     }
 
     public function test_a_task_of_a_plan_under_review_cannot_change_and_the_review_still_decides(): void
@@ -86,7 +98,10 @@ final class PlanReviewPageTest extends TestCase
         $approved = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
 
         $approved->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.editionNumber', 1)
+            ->where(
+                'page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.editionNumber',
+                1,
+            )
             ->missing('page.data.root.children.1.children.1.children.3.children.0.native.props.review.reviewNumber'));
     }
 

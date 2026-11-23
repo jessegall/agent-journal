@@ -36,7 +36,10 @@ final class SkillPublicationFailed extends RuntimeException implements CodedRefu
 
     public static function escape(string $path, Throwable|null $cause = null): self
     {
-        return new self("The path {$path} leaves the protected skills root; nothing was written there.", previous: $cause);
+        return new self(
+            "The path {$path} leaves the protected skills root; nothing was written there.",
+            previous: $cause,
+        );
     }
 
     public static function newerExists(string $publicationId): self

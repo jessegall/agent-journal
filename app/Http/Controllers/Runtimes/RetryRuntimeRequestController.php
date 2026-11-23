@@ -16,6 +16,8 @@ final readonly class RetryRuntimeRequestController
 {
     public function __invoke(RequestRecoveryRequest $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new RetryDriverRequestCommand($request->requestId(), $request->rowVersion(), $request->reason()));
+        return $review->run(
+            new RetryDriverRequestCommand($request->requestId(), $request->rowVersion(), $request->reason()),
+        );
     }
 }

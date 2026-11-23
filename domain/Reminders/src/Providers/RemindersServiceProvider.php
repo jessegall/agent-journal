@@ -6,7 +6,7 @@ namespace Domain\Reminders\Providers;
 
 use App\Support\LinkTypeRegistry;
 use Domain\Reminders\Models\Reminder;
-use Domain\Reminders\Resolvers\OwnReminders;
+use Domain\Reminders\Resolvers\Support\OwnReminders;
 use Illuminate\Support\ServiceProvider;
 
 /**

@@ -65,7 +65,9 @@ final class WorkerReservation extends Model implements ReadableModel
         $rows = self::query()
             ->where(function ($rows) use ($keys): void {
                 foreach ($keys as $holder) {
-                    $rows->orWhere(fn ($row) => $row->where('holder_type', $holder->type)->where('holder_id', $holder->id));
+                    $rows->orWhere(
+                        fn ($row) => $row->where('holder_type', $holder->type)->where('holder_id', $holder->id),
+                    );
                 }
             })
             ->orderBy('holder_type')

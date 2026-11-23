@@ -11,6 +11,7 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListPaging;
 use Domain\Reminders\Http\Requests\RemindersRequest;
+use Domain\Reminders\Resolvers\Support\OwnReminders;
 use Domain\Reminders\Values\ReminderCard;
 
 /**

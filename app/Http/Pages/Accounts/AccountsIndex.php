@@ -56,18 +56,12 @@ final readonly class AccountsIndex
 
     private function rowOf(AccountRowData $row, string $chosen): LayoutRowData
     {
-        return new LayoutRowData(
-            $row->id,
-            $row->label,
-            detail: "{$row->driver} · {$row->signIn->title}",
-            query: ['account' => $row->id, 'add' => ''],
-            isCurrent: $row->id === $chosen,
-            leading: [LayoutPartData::text('driver', $row->driver, 'driver')],
-            trailing: [
-                LayoutPartData::badge('state', $this->stateWord($row->state), $this->stateTone($row->state)),
-                ...$this->usageMeterOf($row),
-            ],
-        );
+        return LayoutRowData::from(['key' => $row->id, 'label' => $row->label, 'detail' => "{$row->driver} · {$row->signIn->title}", 'query' => ['account' => $row->id, 'add' => ''], 'isCurrent' => $row->id === $chosen, 'leading' => [
+            LayoutPartData::text('driver', $row->driver, 'driver'),
+        ], 'trailing' => [
+            LayoutPartData::badge('state', $this->stateWord($row->state), $this->stateTone($row->state)),
+            ...$this->usageMeterOf($row),
+        ]]);
     }
 
     /**
@@ -197,7 +191,9 @@ final readonly class AccountsIndex
     {
         return LayoutPartData::form(
             $key,
-            new LayoutFormData(ActionMethod::Post, route($route, ['account' => $account], false), isKeyed: true),
+            LayoutFormData::from(
+                ['method' => ActionMethod::Post, 'href' => route($route, ['account' => $account], false), 'isKeyed' => true],
+            ),
             'inline',
             LayoutPartData::action("{$key}-send", $label, LayoutActionData::submitting()),
         );

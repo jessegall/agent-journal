@@ -43,11 +43,11 @@ final readonly class HelperJobsLayoutResolver implements PageResolver
             'stack',
             $title,
             LayoutPartData::text('open', $openCount === 1 ? '1 job is open' : "{$openCount} jobs are open", 'muted'),
-            LayoutPartData::collection('jobs', 'list', array_values($jobs->map(fn (HelperJob $job) => new LayoutRowData(
-                $job->id,
-                Str::limit($job->brief, 80),
-                $job->state->label(),
-            ))->all())),
+            LayoutPartData::collection(
+                'jobs',
+                'list',
+                array_values($jobs->map(fn (HelperJob $job) => LayoutRowData::from(['key' => $job->id, 'label' => Str::limit($job->brief, 80), 'value' => $job->state->label()]))->all()),
+            ),
         ));
     }
 }

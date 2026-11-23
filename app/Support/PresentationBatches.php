@@ -102,6 +102,7 @@ final readonly class PresentationBatches
         }
 
         $posts = $pending->take(self::POST_LIMIT);
+
         $messages = Message::query()->acrossInboxes()
             ->whereKey(array_values($posts->map(fn (MessageReceipt $receipt) => $receipt->message_id)->all()))
             ->readExactly($posts->count())
@@ -113,6 +114,7 @@ final readonly class PresentationBatches
                 $receipt->message_id,
                 fn () => throw new ModelNotFoundException()->setModel(Message::class, [$receipt->message_id]),
             );
+
             $item = $this->itemOf($batch, $receipt, $message, $agent, $contextKey, $budget, false);
 
             if ($item === null) {

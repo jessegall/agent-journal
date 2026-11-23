@@ -32,7 +32,9 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
 
     public static function providerSessionOnly(string $name): self
     {
-        return new self("{$name} runs in a provider session for now; a signed-in shell runs journal verbs with the next release.");
+        return new self(
+            "{$name} runs in a provider session for now; a signed-in shell runs journal verbs with the next release.",
+        );
     }
 
     public static function environmentUnassigned(string $bindingId): self
@@ -60,7 +62,10 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
 
     public static function anotherOperation(string $requestKey): self
     {
-        $refusal = new self("Request {$requestKey} was given for another command; send this one under a new request id.");
+        $refusal = new self(
+            "Request {$requestKey} was given for another command; send this one under a new request id.",
+        );
+
         $refusal->status = 409;
 
         return $refusal;

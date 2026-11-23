@@ -70,9 +70,11 @@ final readonly class SharesShow
     {
         $parts = [
             LayoutPartData::collection('facts', 'facts', [
-                new LayoutRowData('state', 'State', $share->state->value),
-                new LayoutRowData('record', 'Record', $share->root_type),
-                new LayoutRowData('gateway', 'Gateway', $share->gatewayKey() ?? 'None yet'),
+                LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => $share->state->value]),
+                LayoutRowData::from(['key' => 'record', 'label' => 'Record', 'value' => $share->root_type]),
+                LayoutRowData::from(
+                    ['key' => 'gateway', 'label' => 'Gateway', 'value' => $share->gatewayKey() ?? 'None yet'],
+                ),
             ]),
             LayoutPartData::time('expires', 'Expires', $share->expires_at->toIso8601String()),
         ];
@@ -80,7 +82,9 @@ final readonly class SharesShow
         $parts[] = $members === []
             ? LayoutPartData::notice('members', 'empty', 'No linked record is shared with it.')
             : LayoutPartData::collection('members', 'list', array_map(
-                fn (ShareMemberData $member) => new LayoutRowData($member->targetId, $member->targetType),
+                fn (ShareMemberData $member) => LayoutRowData::from(
+                    ['key' => $member->targetId, 'label' => $member->targetType],
+                ),
                 $members,
             ));
 

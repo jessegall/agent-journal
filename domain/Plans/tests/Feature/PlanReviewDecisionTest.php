@@ -62,7 +62,10 @@ final class PlanReviewDecisionTest extends TestCase
 
     public function test_approving_the_open_review_records_one_receipt_that_a_replay_returns(): void
     {
-        $this->runCommand(new RequestPlanReviewCommand($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]));
+        $this->runCommand(
+            new RequestPlanReviewCommand($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]),
+        );
+
         $key = (string) Str::uuid();
 
         $first = $this->runOnBus(new ApprovePlanReviewCommand($this->plan->id, 1, $key), $key);
@@ -80,7 +83,10 @@ final class PlanReviewDecisionTest extends TestCase
 
     public function test_a_decision_on_a_withdrawn_review_reports_its_outcome(): void
     {
-        $this->runCommand(new RequestPlanReviewCommand($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]));
+        $this->runCommand(
+            new RequestPlanReviewCommand($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]),
+        );
+
         $this->runCommand(new WithdrawPlanReviewCommand($this->plan->id));
 
         $this->assertThrows(

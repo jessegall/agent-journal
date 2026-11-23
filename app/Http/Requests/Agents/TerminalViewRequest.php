@@ -32,7 +32,11 @@ final class TerminalViewRequest extends FormRequest
 
     public function openCommand(): OpenTerminalViewCommand
     {
-        return new OpenTerminalViewCommand($this->agentId(), $this->string('requestId')->toString(), $this->intervalMs());
+        return new OpenTerminalViewCommand(
+            $this->agentId(),
+            $this->string('requestId')->toString(),
+            $this->intervalMs(),
+        );
     }
 
     public function renewCommand(): RenewTerminalViewCommand

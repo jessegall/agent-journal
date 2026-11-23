@@ -92,7 +92,10 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
 
     public static function revoked(string $reference): self
     {
-        $refusal = new self("Terminal sign-in {$reference} was revoked. Run the journal command again to approve a new one.");
+        $refusal = new self(
+            "Terminal sign-in {$reference} was revoked. Run the journal command again to approve a new one.",
+        );
+
         $refusal->status = 410;
         $refusal->refusalCode = RefusalCode::Forbidden;
         $refusal->outcome = ['outcome' => 'revoked', 'reference' => $reference];

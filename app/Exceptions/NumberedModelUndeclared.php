@@ -13,6 +13,8 @@ final class NumberedModelUndeclared extends LogicException
 {
     public static function for(string $linkType): self
     {
-        return new self("No model with the link type {$linkType} implements Numbered, so its records cannot be numbered.");
+        return new self(
+            "No model with the link type {$linkType} implements Numbered, so its records cannot be numbered.",
+        );
     }
 }

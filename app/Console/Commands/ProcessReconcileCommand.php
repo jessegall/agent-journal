@@ -20,7 +20,12 @@ final class ProcessReconcileCommand extends Command
 
     public function handle(EntryDispatchers $dispatchers): int
     {
-        $lost = $dispatchers->runAsJournal(CommandEntry::HostControl, 'process reconcile', new ReconcileLostRunsCommand());
+        $lost = $dispatchers->runAsJournal(
+            CommandEntry::HostControl,
+            'process reconcile',
+            new ReconcileLostRunsCommand(),
+        );
+
         $this->line("{$lost} runs marked lost.");
 
         return self::SUCCESS;

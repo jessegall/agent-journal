@@ -62,13 +62,25 @@ final class RulesPageTest extends TestCase
             ->component('layout/DeclaredLayout')
             ->where('page.state', 'ready')
             ->where('page.data.root.children.0.children.0.text', 'Rules (1)')
-            ->where('page.data.root.children.0.children.1.field', ['name' => 'q', 'value' => 'phase', 'clears' => ['page', 'rule'], 'options' => []])
+            ->where(
+                'page.data.root.children.0.children.1.field',
+                ['name' => 'q', 'value' => 'phase', 'clears' => ['page', 'rule'], 'options' => []],
+            )
             ->where('page.data.root.children.1.children.0.children.0.rows.0.key', (string) $this->proposed->id)
             ->where('page.data.root.children.1.children.0.children.0.rows.0.isCurrent', true)
-            ->where('page.data.root.children.1.children.0.children.0.rows.0.query', ['rule' => (string) $this->proposed->id])
+            ->where(
+                'page.data.root.children.1.children.0.children.0.rows.0.query',
+                ['rule' => (string) $this->proposed->id],
+            )
             ->where('page.data.root.children.1.children.1.children.0.children.1.text', 'Proposed')
-            ->where('page.data.root.children.1.children.1.children.1.text', "Every phase ends with its tests.\n  - run them once")
-            ->where('page.data.root.children.1.children.1.children.2.children.1.form.href', "/rules/{$this->proposed->number}/approve")
+            ->where(
+                'page.data.root.children.1.children.1.children.1.text',
+                "Every phase ends with its tests.\n  - run them once",
+            )
+            ->where(
+                'page.data.root.children.1.children.1.children.2.children.1.form.href',
+                "/rules/{$this->proposed->number}/approve",
+            )
             ->where('page.data.root.children.1.children.1.children.2.children.1.form.method', 'PATCH'));
     }
 

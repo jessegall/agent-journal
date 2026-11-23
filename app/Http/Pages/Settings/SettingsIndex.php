@@ -107,16 +107,11 @@ final readonly class SettingsIndex
         );
 
         $group = $hasEditable
-            ? $group->savingTo(new LayoutFormData(ActionMethod::Post, route('settings.save', [], false), $fixed))
+            ? $group->savingTo(LayoutFormData::from(['method' => ActionMethod::Post, 'href' => route('settings.save', [], false), 'fixed' => $fixed]))
             : $group;
 
         return $hasChange
-            ? $group->resettableBy(new LayoutFormData(
-                ActionMethod::Post,
-                route('settings.reset', [], false),
-                $fixed,
-                confirmed: ucfirst($owner->owner).' settings were reset',
-            ))
+            ? $group->resettableBy(LayoutFormData::from(['method' => ActionMethod::Post, 'href' => route('settings.reset', [], false), 'fixed' => $fixed, 'confirmed' => ucfirst($owner->owner).' settings were reset']))
             : $group;
     }
 

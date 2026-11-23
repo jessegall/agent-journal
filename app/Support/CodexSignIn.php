@@ -180,7 +180,7 @@ final readonly class CodexSignIn implements SignInProtocol
         try {
             return CodexAccountReadData::from($answer === null ? [] : $answer->result);
         } catch (CannotCreateData|TypeError) {
-            return new CodexAccountReadData();
+            return CodexAccountReadData::from([]);
         }
     }
 

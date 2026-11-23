@@ -16,6 +16,8 @@ final readonly class CancelRuntimeRequestController
 {
     public function __invoke(RequestRecoveryRequest $request, ReviewResponses $review): RedirectResponse
     {
-        return $review->run(new CancelDriverRequestCommand($request->requestId(), $request->rowVersion(), $request->reason()));
+        return $review->run(
+            new CancelDriverRequestCommand($request->requestId(), $request->rowVersion(), $request->reason()),
+        );
     }
 }

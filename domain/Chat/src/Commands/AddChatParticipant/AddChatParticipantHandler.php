@@ -18,6 +18,10 @@ final readonly class AddChatParticipantHandler extends ChatCommandHandler
      */
     public function handle(AddChatParticipantCommand $command): void
     {
-        $this->membership->add(ActorIdentity::of($command->dispatchedBy()), $command->inboxId, $command->participantIdentity());
+        $this->membership->add(
+            ActorIdentity::of($command->dispatchedBy()),
+            $command->inboxId,
+            $command->participantIdentity(),
+        );
     }
 }

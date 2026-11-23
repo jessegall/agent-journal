@@ -18,6 +18,10 @@ final readonly class RemoveChatParticipantHandler extends ChatCommandHandler
      */
     public function handle(RemoveChatParticipantCommand $command): void
     {
-        $this->membership->remove(ActorIdentity::of($command->dispatchedBy()), $command->inboxId, $command->participantIdentity());
+        $this->membership->remove(
+            ActorIdentity::of($command->dispatchedBy()),
+            $command->inboxId,
+            $command->participantIdentity(),
+        );
     }
 }

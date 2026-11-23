@@ -27,6 +27,9 @@ final class UsageCostData extends UsageMeasurementData
 
     public function commandFor(ReportedStart $start, UsageSource $source): Command
     {
-        return new AddUsageCostCommand($start, new UsageCost($source->id, UsdAmount::from($this->usd), $source->observedAt));
+        return new AddUsageCostCommand(
+            $start,
+            new UsageCost($source->id, UsdAmount::from($this->usd), $source->observedAt),
+        );
     }
 }

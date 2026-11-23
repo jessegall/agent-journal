@@ -13,11 +13,15 @@ final class TypeOwnerRepeated extends LogicException
 {
     public static function forClass(string $className, string $owner, string $otherOwner): self
     {
-        return new self("The type {$className} is claimed by both {$owner} and {$otherOwner}; one page owner names it.");
+        return new self(
+            "The type {$className} is claimed by both {$owner} and {$otherOwner}; one page owner names it.",
+        );
     }
 
     public static function forSymbol(string $symbol, string $owner): self
     {
-        return new self("The page owner {$owner} names two types called {$symbol}, which would be one symbol in its module.");
+        return new self(
+            "The page owner {$owner} names two types called {$symbol}, which would be one symbol in its module.",
+        );
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Reminders\Resolvers;
+namespace Domain\Reminders\Resolvers\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;

@@ -38,7 +38,9 @@ final readonly class GatewayRuns
      */
     private function stopAllButRun(string $runId): void
     {
-        ShareGatewayEndpoint::query()->notOfRun($runId)->stillRunning()->update(['state' => GatewayEndpointState::Closed->value]);
+        ShareGatewayEndpoint::query()->notOfRun($runId)->stillRunning()->update(
+            ['state' => GatewayEndpointState::Closed->value],
+        );
     }
 
     /**

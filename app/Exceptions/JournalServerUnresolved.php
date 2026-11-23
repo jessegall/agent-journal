@@ -14,6 +14,8 @@ final class JournalServerUnresolved extends RuntimeException
 {
     public static function for(string $url): self
     {
-        return new self(sprintf('The journal MCP entry cannot name "%s": only fixed absolute paths are written.', $url));
+        return new self(
+            sprintf('The journal MCP entry cannot name "%s": only fixed absolute paths are written.', $url),
+        );
     }
 }

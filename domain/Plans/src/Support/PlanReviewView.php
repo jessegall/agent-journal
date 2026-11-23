@@ -69,18 +69,14 @@ final readonly class PlanReviewView
         $phaseCount = $plan->phases()->count();
         $progress = $plan->progress;
 
-        return new PlanWorkPreviewData(
-            $mayEdit && ! in_array($plan->state, [PlanState::Done, PlanState::Cancelled], true),
-            $phaseCount,
-            $progress->total,
-            $progress->unfinished(),
-            $progress->finished + $progress->cancelled,
-            1 + $phaseCount + $progress->total > AssignmentGroup::LARGEST,
-            array_map(
-                fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
-                $this->assignees->eligible('agent', new Page(null, self::RECIPIENTS_SHOWN))->assignees,
-            ),
-        );
+        return PlanWorkPreviewData::from(['mayAssign' => $mayEdit && ! in_array(
+            $plan->state,
+            [PlanState::Done, PlanState::Cancelled],
+            true,
+        ), 'phaseCount' => $phaseCount, 'taskCount' => $progress->total, 'movingTasks' => $progress->unfinished(), 'stayingTasks' => $progress->finished + $progress->cancelled, 'isOverLimit' => 1 + $phaseCount + $progress->total > AssignmentGroup::LARGEST, 'recipients' => array_map(
+            fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
+            $this->assignees->eligible('agent', new Page(null, self::RECIPIENTS_SHOWN))->assignees,
+        )]);
     }
 
     private static function receiptOf(PlanReviewEdition $edition): PlanReviewReceiptData

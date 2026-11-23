@@ -38,17 +38,11 @@ final readonly class RunListResolver implements PageResolver
 
         $list = $rows === []
             ? LayoutPartData::notice('empty', 'empty', 'No run yet.')
-            : LayoutPartData::collection('runs', 'list', array_map(fn (RunRowData $run) => new LayoutRowData(
-                $run->id,
-                "Run {$run->id}",
-                $run->lifecycle,
-                detail: implode(' · ', [
-                    implode(', ', $run->operations),
-                    $run->mode === 'evidence' ? 'evidence only' : 'normal',
-                    "started {$run->startedAt}",
-                ]),
-                href: "/processes/runs/{$run->id}",
-            ), $rows));
+            : LayoutPartData::collection('runs', 'list', array_map(fn (RunRowData $run) => LayoutRowData::from(['key' => $run->id, 'label' => "Run {$run->id}", 'value' => $run->lifecycle, 'detail' => implode(' · ', [
+                implode(', ', $run->operations),
+                $run->mode === 'evidence' ? 'evidence only' : 'normal',
+                "started {$run->startedAt}",
+            ]), 'href' => "/processes/runs/{$run->id}"]), $rows));
 
         return DeclaredLayoutData::of(LayoutPartData::box(
             'runs-page',

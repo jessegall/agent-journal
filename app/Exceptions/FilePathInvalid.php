@@ -13,12 +13,16 @@ final class FilePathInvalid extends InvalidArgumentException
 {
     public static function climbs(string $relative): self
     {
-        return new self("The path {$relative} leaves its place: name a path inside the place, without '..' or a leading '/'.");
+        return new self(
+            "The path {$relative} leaves its place: name a path inside the place, without '..' or a leading '/'.",
+        );
     }
 
     public static function recursivePattern(string $pattern): self
     {
-        return new self("The pattern {$pattern} holds '**': name each folder level with its own '*', so its depth shows.");
+        return new self(
+            "The pattern {$pattern} holds '**': name each folder level with its own '*', so its depth shows.",
+        );
     }
 
     public static function nulByte(): self

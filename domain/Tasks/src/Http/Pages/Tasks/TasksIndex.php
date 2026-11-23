@@ -66,13 +66,8 @@ final readonly class TasksIndex
     {
         [$word, $tone] = $card->state->badge();
 
-        return new LayoutRowData(
-            $card->id,
-            $card->title,
-            href: route('tasks.task', ['task' => $card->number, ...$this->queryOf($filters)], false),
-            isCurrent: $filters->task === (string) $card->number,
-            leading: [LayoutPartData::text('number', (string) $card->number, 'muted')],
-            trailing: [LayoutPartData::badge('state', $word, $tone)],
+        return LayoutRowData::from(
+            ['key' => $card->id, 'label' => $card->title, 'href' => route('tasks.task', ['task' => $card->number, ...$this->queryOf($filters)], false), 'isCurrent' => $filters->task === (string) $card->number, 'leading' => [LayoutPartData::text('number', (string) $card->number, 'muted')], 'trailing' => [LayoutPartData::badge('state', $word, $tone)]],
         );
     }
 
@@ -81,13 +76,13 @@ final readonly class TasksIndex
         $chosen = $filters->state instanceof TaskStateGroup ? $filters->state->value : '';
 
         $rows = [
-            ...array_map(fn (TaskStateGroup $group) => new LayoutRowData(
-                $group->value,
-                ucfirst($group->value),
-                query: ['state' => $group->value, 'page' => ''],
-                isCurrent: $chosen === $group->value,
-            ), TaskStateGroup::cases()),
-            new LayoutRowData('all', 'All', query: ['state' => '', 'page' => ''], isCurrent: $chosen === ''),
+            ...array_map(
+                fn (TaskStateGroup $group) => LayoutRowData::from(['key' => $group->value, 'label' => ucfirst($group->value), 'query' => ['state' => $group->value, 'page' => ''], 'isCurrent' => $chosen === $group->value]),
+                TaskStateGroup::cases(),
+            ),
+            LayoutRowData::from(
+                ['key' => 'all', 'label' => 'All', 'query' => ['state' => '', 'page' => ''], 'isCurrent' => $chosen === ''],
+            ),
         ];
 
         return LayoutPartData::collection('states', 'choices', $rows);
@@ -115,17 +110,17 @@ final readonly class TasksIndex
      */
     private function creation(string $key = 'creation'): LayoutPartData
     {
-        $dialog = new LayoutDialogData(
-            'New task',
-            'Task created',
-            guidedNoun: $this->producers->offersGuided('task') ? 'task' : Optional::create(),
+        $dialog = LayoutDialogData::from(
+            ['title' => 'New task', 'confirmation' => 'Task created', 'guidedNoun' => $this->producers->offersGuided('task') ? 'task' : Optional::create()],
         );
 
         return LayoutPartData::dialog(
             $key,
             $dialog,
             LayoutPartData::action('open', 'New task', LayoutActionData::changing([])),
-            new LayoutFormData(ActionMethod::Post, route('tasks.create-task', [], false), isKeyed: true),
+            LayoutFormData::from(
+                ['method' => ActionMethod::Post, 'href' => route('tasks.create-task', [], false), 'isKeyed' => true],
+            ),
             [
                 LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),
                 LayoutPartData::field('brief', 'Done when', new LayoutFieldData('brief'), 'text'),

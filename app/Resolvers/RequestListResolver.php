@@ -86,13 +86,10 @@ final readonly class RequestListResolver implements PageResolver
         return LayoutPartData::box('requests', 'section', $heading, LayoutPartData::collection(
             'rows',
             'list',
-            array_map(fn (RequestRowData $request) => new LayoutRowData(
-                $request->id,
-                $request->operation,
-                $request->state,
-                detail: "{$request->line} · {$request->holdReason} · next: {$request->next}",
-                href: "/processes/requests/{$request->id}",
-            ), $requests),
+            array_map(
+                fn (RequestRowData $request) => LayoutRowData::from(['key' => $request->id, 'label' => $request->operation, 'value' => $request->state, 'detail' => "{$request->line} · {$request->holdReason} · next: {$request->next}", 'href' => "/processes/requests/{$request->id}"]),
+                $requests,
+            ),
         ));
     }
 
@@ -115,12 +112,10 @@ final readonly class RequestListResolver implements PageResolver
         return LayoutPartData::box('rules', 'section', $heading, LayoutPartData::collection(
             'rows',
             'list',
-            array_map(fn (ClassificationRuleRowData $rule) => new LayoutRowData(
-                $rule->id,
-                "{$rule->ruleId} ({$rule->owner}) revision {$rule->revision}",
-                $rule->state,
-                detail: $rule->reason,
-            ), $rules),
+            array_map(
+                fn (ClassificationRuleRowData $rule) => LayoutRowData::from(['key' => $rule->id, 'label' => "{$rule->ruleId} ({$rule->owner}) revision {$rule->revision}", 'value' => $rule->state, 'detail' => $rule->reason]),
+                $rules,
+            ),
         ));
     }
 }

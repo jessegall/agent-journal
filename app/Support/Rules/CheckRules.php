@@ -83,8 +83,20 @@ final readonly class CheckRules
                 $read,
             ),
             $this->check('core.pint.fix', new ProgramSpellings('pint'), [], $this->pint(), $fix),
-            $this->check('core.php-cs-fixer.check', new ProgramSpellings('php-cs-fixer'), ['check'], $this->phpCsFixer(), $read),
-            $this->check('core.php-cs-fixer.fix', new ProgramSpellings('php-cs-fixer'), ['fix'], $this->phpCsFixer(), $fix),
+            $this->check(
+                'core.php-cs-fixer.check',
+                new ProgramSpellings('php-cs-fixer'),
+                ['check'],
+                $this->phpCsFixer(),
+                $read,
+            ),
+            $this->check(
+                'core.php-cs-fixer.fix',
+                new ProgramSpellings('php-cs-fixer'),
+                ['fix'],
+                $this->phpCsFixer(),
+                $fix,
+            ),
             $this->check('core.commandments.judge', new ProgramSpellings(
                 'commandments',
                 ['commandments-release', 'commandments-go'],

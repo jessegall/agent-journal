@@ -167,9 +167,8 @@ final readonly class DocumentsShow
 
         return LayoutPartData::form(
             'editing',
-            new LayoutFormData(
-                ActionMethod::Post,
-                route('documents.open-document', ['document' => $document->number], false),
+            LayoutFormData::from(
+                ['method' => ActionMethod::Post, 'href' => route('documents.open-document', ['document' => $document->number], false)],
             ),
             'inline',
             LayoutPartData::action('send', 'Edit', LayoutActionData::submitting()),
@@ -186,16 +185,19 @@ final readonly class DocumentsShow
         string $label,
         RecordInspection $inspection,
     ): LayoutPartData {
-        $settlements = array_map(fn (SettlementCard $settlement) => new LayoutRowData(
-            $settlement->settledAt,
-            "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}",
-            $settlement->reason,
-        ), $inspection->settlements);
+        $settlements = array_map(
+            fn (SettlementCard $settlement) => LayoutRowData::from(['key' => $settlement->settledAt, 'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}", 'value' => $settlement->reason]),
+            $inspection->settlements,
+        );
 
         $parts = [
             LayoutPartData::collection('facts', 'facts', [
-                new LayoutRowData('editing', 'Editing', $editing->state->word($this->holderOf($editing))),
-                new LayoutRowData('attention', 'Attention', $document->attention->value),
+                LayoutRowData::from(
+                    ['key' => 'editing', 'label' => 'Editing', 'value' => $editing->state->word($this->holderOf($editing))],
+                ),
+                LayoutRowData::from(
+                    ['key' => 'attention', 'label' => 'Attention', 'value' => $document->attention->value],
+                ),
             ]),
         ];
 
@@ -206,10 +208,8 @@ final readonly class DocumentsShow
         if ($document->attention === AttentionState::Active) {
             $parts[] = LayoutPartData::form(
                 'settle',
-                new LayoutFormData(
-                    ActionMethod::Post,
-                    route('documents.settle-document', ['document' => $document->number], false),
-                    ['revision' => (int) $document->revision],
+                LayoutFormData::from(
+                    ['method' => ActionMethod::Post, 'href' => route('documents.settle-document', ['document' => $document->number], false), 'fixed' => ['revision' => (int) $document->revision]],
                 ),
                 'inline',
                 LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason'), 'text'),

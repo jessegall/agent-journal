@@ -26,11 +26,8 @@ final readonly class RunOutcomeWindowResolver implements PageResolver
     {
         $runId = $this->page->runId();
 
-        return new RunOutcomePageData(
-            $runId,
-            $this->summaries->summaryOf($runId)
-                ->map(fn (RunOutcomeSummaryData $summary) => $summary)
-                ->getOrElse(Optional::create()),
-        );
+        return RunOutcomePageData::from(['runId' => $runId, 'summary' => $this->summaries->summaryOf($runId)
+            ->map(fn (RunOutcomeSummaryData $summary) => $summary)
+            ->getOrElse(Optional::create())]);
     }
 }

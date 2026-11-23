@@ -48,7 +48,9 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
 
     public static function duplicateNotConfirmed(string $requestId): self
     {
-        return new self("Sending request {$requestId} again may deliver it twice; confirm the possible duplicate first.");
+        return new self(
+            "Sending request {$requestId} again may deliver it twice; confirm the possible duplicate first.",
+        );
     }
 
     public static function notCancellable(string $requestId, string $progress): self

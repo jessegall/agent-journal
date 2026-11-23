@@ -108,16 +108,17 @@ final readonly class ReportsShow
         string $label,
         RecordInspection $inspection,
     ): LayoutPartData {
-        $settlements = array_map(fn (SettlementCard $settlement) => new LayoutRowData(
-            $settlement->settledAt,
-            "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}",
-            $settlement->reason,
-        ), $inspection->settlements);
+        $settlements = array_map(
+            fn (SettlementCard $settlement) => LayoutRowData::from(['key' => $settlement->settledAt, 'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}", 'value' => $settlement->reason]),
+            $inspection->settlements,
+        );
 
         $parts = [
             LayoutPartData::collection('facts', 'facts', [
-                new LayoutRowData('editing', 'Editing', 'free'),
-                new LayoutRowData('attention', 'Attention', $report->attention->value),
+                LayoutRowData::from(['key' => 'editing', 'label' => 'Editing', 'value' => 'free']),
+                LayoutRowData::from(
+                    ['key' => 'attention', 'label' => 'Attention', 'value' => $report->attention->value],
+                ),
             ]),
         ];
 
@@ -128,10 +129,8 @@ final readonly class ReportsShow
         if ($report->attention === AttentionState::Active) {
             $parts[] = LayoutPartData::form(
                 'settle',
-                new LayoutFormData(
-                    ActionMethod::Post,
-                    route('documents.settle-report', ['report' => $number], false),
-                    ['revision' => 1],
+                LayoutFormData::from(
+                    ['method' => ActionMethod::Post, 'href' => route('documents.settle-report', ['report' => $number], false), 'fixed' => ['revision' => 1]],
                 ),
                 'inline',
                 LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason'), 'text'),

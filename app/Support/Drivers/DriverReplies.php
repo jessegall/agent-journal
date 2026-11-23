@@ -86,8 +86,11 @@ final class DriverReplies
     /**
      * A rewrite the driver takes without approval runs the replacement line; one that needs approval is refused.
      */
-    private static function rewrite(RewriteSupport $rewrites, HookAnswer $answer, DriverToolInput $original): DriverReply
-    {
+    private static function rewrite(
+        RewriteSupport $rewrites,
+        HookAnswer $answer,
+        DriverToolInput $original,
+    ): DriverReply {
         return match ($rewrites) {
             RewriteSupport::WithoutApproval => self::rewriteTool(
                 $original->withCommand($answer->decision->replacementLine()),

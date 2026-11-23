@@ -25,8 +25,11 @@ final readonly class StartIdentity
             ->forAll(fn (StartRecord $record) => $this->settleRecord($record, $runtime, $report));
     }
 
-    private function settleRecord(StartRecord $record, AgentRuntime $runtime, ReportRequestProgressCommand $report): void
-    {
+    private function settleRecord(
+        StartRecord $record,
+        AgentRuntime $runtime,
+        ReportRequestProgressCommand $report,
+    ): void {
         if ($report->progress === RequestProgress::DeliveryUncertain) {
             $record->markIdentityUncertain();
 
@@ -37,7 +40,10 @@ final readonly class StartIdentity
             return;
         }
 
-        $session = AgentSession::query()->with(['agent', 'currentConversation'])->findOrFail($runtime->agent_session_id);
+        $session = AgentSession::query()->with(
+            ['agent', 'currentConversation'],
+        )->findOrFail($runtime->agent_session_id);
+
         $resumedConversation = $session->currentConversation?->native_id;
 
         $isAnotherConversation = $resumedConversation !== null && $resumedConversation !== $report->actualBinding;

@@ -66,22 +66,18 @@ final readonly class PlansShow
     private function factsOf(PlanCardData $card): array
     {
         $rows = [
-            new LayoutRowData('state', 'State', $card->state->value),
-            new LayoutRowData(
-                'tasks',
-                'Tasks',
-                $card->totalTasks === 0
+            LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => $card->state->value]),
+            LayoutRowData::from(['key' => 'tasks', 'label' => 'Tasks', 'value' => $card->totalTasks === 0
                     ? 'No tasks'
-                    : "{$card->finishedTasks} of {$card->totalTasks} finished, {$card->cancelledTasks} cancelled",
-            ),
+                    : "{$card->finishedTasks} of {$card->totalTasks} finished, {$card->cancelledTasks} cancelled"]),
         ];
 
         if (is_string($card->phase)) {
-            $rows[] = new LayoutRowData('phase', 'Current phase', $card->phase);
+            $rows[] = LayoutRowData::from(['key' => 'phase', 'label' => 'Current phase', 'value' => $card->phase]);
         }
 
         if ($card->holder instanceof AssignmentData) {
-            $rows[] = new LayoutRowData('holder', 'Held by', $card->holder->name);
+            $rows[] = LayoutRowData::from(['key' => 'holder', 'label' => 'Held by', 'value' => $card->holder->name]);
         }
 
         return $rows;

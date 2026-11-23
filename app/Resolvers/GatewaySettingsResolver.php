@@ -126,7 +126,7 @@ final readonly class GatewaySettingsResolver implements PageResolver
     {
         if ($revision->setupProblems !== []) {
             return LayoutPartData::collection('needed', 'list', array_map(
-                fn (string $problem) => new LayoutRowData(md5($problem), $problem),
+                fn (string $problem) => LayoutRowData::from(['key' => md5($problem), 'label' => $problem]),
                 $revision->setupProblems,
             ));
         }
@@ -145,10 +145,8 @@ final readonly class GatewaySettingsResolver implements PageResolver
             'section',
             LayoutPartData::text('heading', 'Disabling revokes these shares:', 'muted'),
             LayoutPartData::collection('shares', 'list', array_map(
-                fn (RootShareData $share) => new LayoutRowData(
-                    $share->id,
-                    "Share {$share->number}",
-                    $share->state->value,
+                fn (RootShareData $share) => LayoutRowData::from(
+                    ['key' => $share->id, 'label' => "Share {$share->number}", 'value' => $share->state->value],
                 ),
                 $revision->dependentShares,
             )),
