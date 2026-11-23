@@ -49,13 +49,13 @@ final class SaveSequenceRequest extends FormRequest
     public function steps(): array
     {
         return array_values(array_map(
-            fn (array $step) => new SequenceStep(
-                (string) $step['id'],
-                (string) $step['title'],
-                (string) $step['runs_when'],
-                (string) $step['done_when'],
+            fn (int|string $place) => new SequenceStep(
+                $this->string("steps.{$place}.id")->toString(),
+                $this->string("steps.{$place}.title")->toString(),
+                $this->string("steps.{$place}.runs_when")->toString(),
+                $this->string("steps.{$place}.done_when")->toString(),
             ),
-            $this->array('steps'),
+            array_keys($this->array('steps')),
         ));
     }
 }
