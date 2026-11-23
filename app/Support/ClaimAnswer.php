@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Values\ClaimedRequest;
+use App\Values\ProjectReadClaim;
 use JsonSerializable;
 
 /**
@@ -16,13 +17,14 @@ final readonly class ClaimAnswer implements JsonSerializable
      * @param  list<WatchedRuntime>  $watched
      */
     public function __construct(
-        public ClaimedRequests $claimed,
+        public HostClaim $claimed,
         public array $watched,
     ) {}
 
     /**
      * @return array{
      *     requests: list<ClaimedRequest>,
+     *     project_reads: list<ProjectReadClaim>,
      *     watched: list<array{runtime_id: string, interval_ms: int}>,
      *     watched_version: int,
      * }
@@ -30,7 +32,8 @@ final readonly class ClaimAnswer implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'requests' => $this->claimed->requests,
+            'requests' => $this->claimed->requests->requests,
+            'project_reads' => $this->claimed->projectReads->claims,
             'watched' => array_map(
                 fn (WatchedRuntime $runtime) => [
                     'runtime_id' => $runtime->runtimeId,

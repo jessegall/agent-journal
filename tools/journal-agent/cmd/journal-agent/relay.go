@@ -181,7 +181,7 @@ func (binder bindingRelay) serveClaims(
 	executor := &protectedExecutor{preparation: preparation, open: open, reports: reports, reporter: journal,
 		codexOwners: opener.codexOwners, arrangement: host.Local}
 	claims := claimServing{journal: journal, preparation: preparation, open: open, executor: executor,
-		startSocketFolder: folder, socket: socket}
+		startSocketFolder: folder, socket: socket, projectRoot: binder.binding.CanonicalRoot}
 
 	return claims.run(ctx, claimed)
 }

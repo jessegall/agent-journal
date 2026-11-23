@@ -19,6 +19,7 @@ use App\Commands\ClaimAccountCheck\ClaimAccountCheckCommand;
 use App\Commands\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
 use App\Commands\ClaimCleanup\ClaimCleanupCommand;
 use App\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Commands\ClaimProjectReads\ClaimProjectReadsCommand;
 use App\Commands\ClaimSignIn\ClaimSignInCommand;
 use App\Commands\ClaimStart\ClaimStartCommand;
 use App\Commands\ClaimStartGrant\ClaimStartGrantCommand;
@@ -81,10 +82,12 @@ use App\Commands\ReplayAssessment\ReplayAssessmentCommand;
 use App\Commands\ReplyToAsk\ReplyToAskCommand;
 use App\Commands\ReportCleanup\ReportCleanupCommand;
 use App\Commands\ReportFailure\ReportFailureCommand;
+use App\Commands\ReportProjectRead\ReportProjectReadCommand;
 use App\Commands\ReportRunning\ReportRunningCommand;
 use App\Commands\ReportSignIn\ReportSignInCommand;
 use App\Commands\ReportStopped\ReportStoppedCommand;
 use App\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
+use App\Commands\RequestProjectRead\RequestProjectReadCommand;
 use App\Commands\ResolveMergeAttempt\ResolveMergeAttemptCommand;
 use App\Commands\RestoreCommandRule\RestoreCommandRuleCommand;
 use App\Commands\RetireCommandRule\RetireCommandRuleCommand;
@@ -161,6 +164,9 @@ final class CoreCommandsTest extends CommandBusTestCase
             RecordHostDescriptorsCommand::class,
             ReportCleanupCommand::class,
             ReportWorkspaceReadCommand::class,
+            ClaimProjectReadsCommand::class,
+            ReportProjectReadCommand::class,
+            RequestProjectReadCommand::class,
             RecordScriptStepResultCommand::class,
             PublishSignInChallengeCommand::class,
             TakeSignInCodeCommand::class,

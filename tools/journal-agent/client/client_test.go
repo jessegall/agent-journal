@@ -116,3 +116,37 @@ func TestOnlyTheRoleCodeIsARoleRefusal(t *testing.T) {
 		t.Fatalf("a refused start was read as %v", start)
 	}
 }
+
+func TestAClaimReadsTheProjectReadsItHandsOver(t *testing.T) {
+	journal, _, _ := fakeJournal(t, `{"requests":[],"project_reads":[{"id":"read-1","binding_id":"binding-1",`+
+		`"type":"file","path":"src/main.go","entries_limit":500,"text_limit":262144}],"watched":[],"watched_version":1}`)
+
+	claim, err := journal.Claim(context.Background(), 10, 5, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(claim.ProjectReads) != 1 || claim.ProjectReads[0] != (ProjectRead{ID: "read-1", BindingID: "binding-1",
+		Type: ProjectReadFile, Path: "src/main.go", EntriesLimit: 500, TextLimit: 262144}) {
+		t.Fatalf("project reads %+v", claim.ProjectReads)
+	}
+}
+
+func TestAProjectReadReportPostsTheAnswerToItsRead(t *testing.T) {
+	journal, target, body := fakeJournal(t, `{}`)
+	text := "package main\n"
+	size := int64(13)
+
+	report := ProjectReadReport{Text: &text, Digest: strings.Repeat("a", 64), Size: &size}
+	if err := journal.ReportProjectRead(context.Background(), "read-1", report); err != nil {
+		t.Fatal(err)
+	}
+
+	if *target != "/host/reports/project-reads/read-1" {
+		t.Fatalf("reported at %s", *target)
+	}
+	var sent ProjectReadReport
+	if err := json.Unmarshal(*body, &sent); err != nil || *sent.Text != text || *sent.Size != size || sent.Truncated {
+		t.Fatalf("sent %s", *body)
+	}
+}

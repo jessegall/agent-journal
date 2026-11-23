@@ -13,6 +13,7 @@ use App\Http\Controllers\Agents\Host\HeartbeatReportController;
 use App\Http\Controllers\Agents\Host\InterruptNavigationController;
 use App\Http\Controllers\Agents\Host\OpenMainRuntimeController;
 use App\Http\Controllers\Agents\Host\OutputGrantController;
+use App\Http\Controllers\Agents\Host\ProjectReadReportController;
 use App\Http\Controllers\Agents\Host\ProtectionReportController;
 use App\Http\Controllers\Agents\Host\RaiseNavigationController;
 use App\Http\Controllers\Agents\Host\ReconcileStartsController;
@@ -58,6 +59,7 @@ Route::prefix('host')->middleware('journal.host:'.HostRouteRole::Shared->value)-
     Route::post('/reports/heartbeat', HeartbeatReportController::class)->name('reports.heartbeat');
     Route::post('/reports/exit', ExitReportController::class)->name('reports.exit');
     Route::post('/reports/screen', ScreenReportController::class)->name('reports.screen');
+    Route::post('/reports/project-reads/{read}', ProjectReadReportController::class)->name('reports.project-reads');
     Route::post('/reports/protection', ProtectionReportController::class)->name('reports.protection');
     Route::post('/reports/descriptors', DescriptorsReportController::class)->name('reports.descriptors');
     Route::get('/stop-attempts', PendingStopAttemptsController::class)->name('stop-attempts.pending');

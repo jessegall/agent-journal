@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
+use App\Commands\ClaimProjectReads\ClaimProjectReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ArrangementType;
 use App\Models\Host;
 use App\Support\ClaimAnswer;
-use App\Support\ClaimedRequests;
 use App\Support\DriverBudgets;
+use App\Support\HostClaim;
 use App\Support\ScopedReadMeter;
 use App\Support\WatchedRuntimes;
 use App\Values\BrowserInputCapabilities;
@@ -61,7 +62,8 @@ final readonly class ClaimRequestsController
         );
 
         $claiming = new ClaimDriverRequestsCommand($host->hostId, $limit, $browserInput);
-        $claim = fn (): ClaimedRequests => $commands->run($claiming);
+        $reading = new ClaimProjectReadsCommand($host->hostId);
+        $claim = fn () => new HostClaim($commands->run($claiming), $commands->run($reading));
         $version = fn (): int => $watched->version($host->hostId);
 
         $claimed = ScopedReadMeter::ofCurrentScope()->withinSchedule(
@@ -75,13 +77,14 @@ final readonly class ClaimRequestsController
     }
 
     /**
-     * Claims again every quarter second until something is claimed, the watched list's version is not the one the
-     * host knows, or the deadline passes: the same reads repeat on purpose, as the poll's schedule.
+     * Claims again every quarter second until a driver request or a read of the host's projects is claimed, the
+     * watched list's version is not the one the host knows, or the deadline passes: a read a user waits on is handed
+     * out within a tick. The same reads repeat on purpose, as the poll's schedule.
      *
-     * @param  callable(): ClaimedRequests  $claim
+     * @param  callable(): HostClaim  $claim
      * @param  callable(): int  $version
      */
-    private function pollUntil(float $deadline, callable $claim, callable $version, int $knownVersion): ClaimedRequests
+    private function pollUntil(float $deadline, callable $claim, callable $version, int $knownVersion): HostClaim
     {
         do {
             $claimed = $claim();

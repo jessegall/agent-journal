@@ -42,8 +42,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // A signed agent call is authenticated first; its body's request_key then keys the write it carries.
         // A connected project's agent serves its own project, named by its binding (ResolveConnectedProject).
         $middleware->group('journal.agent', [AuthenticateAgent::class, ResolveConnectedProject::class, ReadRequestKey::class]);
-        // A message body is kept exactly as typed, its leading and trailing spaces and newlines included.
-        $middleware->trimStrings(except: ['body']);
+        // A message body is kept exactly as typed, and a project file's text exactly as its host read it, its leading and
+        // trailing spaces and newlines included.
+        $middleware->trimStrings(except: ['body', fn (Request $request) => $request->is('host/reports/project-reads/*')]);
         // A signed agent or host call reaches its handler exactly as it was signed: an empty string stays an empty string.
         $middleware->convertEmptyStringsToNull(except: [fn (Request $request) => $request->is('agent/*', 'host/*')]);
         // A user's write is receipted under the Idempotency-Key header it carries.

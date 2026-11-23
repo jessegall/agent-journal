@@ -7,15 +7,20 @@ namespace App\Providers;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Hosts\HostOperatorAccess;
 use App\Contracts\Hosts\LocalProjectHosts;
+use App\Contracts\Hosts\ProjectFiles;
 use App\Enums\AccessType;
 use App\Policies\ConnectionsPolicy;
 use App\Support\BindingHosts;
 use App\Support\CommandRunEvidence;
 use App\Support\ConnectionsHostOperatorAccess;
 use App\Support\EntryDispatchers;
+use App\Support\HostProjectFiles;
 use App\Support\JournalRoutes;
 use App\Support\ProjectCommands;
+use App\Support\ProjectReadPruning;
 use App\Values\PolicyDefinition;
+use Carbon\CarbonImmutable;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -28,6 +33,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
     {
         $this->app->bind(LocalProjectHosts::class, BindingHosts::class);
         $this->app->bind(HostOperatorAccess::class, ConnectionsHostOperatorAccess::class);
+        $this->app->bind(ProjectFiles::class, HostProjectFiles::class);
 
         $this->app->bind(ProjectCommands::class, fn () => new ProjectCommands(
             $this->app->make(JournalRoutes::class),
@@ -42,9 +48,16 @@ final class ConnectionsServiceProvider extends ServiceProvider
     {
         $policies->register('Core', new PolicyDefinition(
             ConnectionsPolicy::class,
-            [AccessType::Create, AccessType::Edit],
+            [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
 
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/connections/connections.php');
+
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (ProjectReadPruning $pruning) => $pruning->prune(CarbonImmutable::now()))
+                ->everyMinute(),
+        );
     }
 }

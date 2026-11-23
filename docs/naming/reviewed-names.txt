@@ -881,6 +881,19 @@ case	ProfileRunState::Suspended
 case	ProgressType::ExactTotal
 case	ProgressType::Indeterminate
 case	ProgressType::ToolPercent
+case	ProjectReadFailure::Binary
+case	ProjectReadFailure::Missing
+case	ProjectReadFailure::NotADirectory
+case	ProjectReadFailure::NotAFile
+case	ProjectReadFailure::Outside
+case	ProjectReadFailure::TooLarge
+case	ProjectReadFailure::Unreadable
+case	ProjectReadState::Answered
+case	ProjectReadState::Expired
+case	ProjectReadState::Failed
+case	ProjectReadState::Pending
+case	ProjectReadType::Directory
+case	ProjectReadType::File
 case	ProposalState::Approved
 case	ProposalState::Draft
 case	ProposalState::Pending
@@ -2391,6 +2404,8 @@ class	ClaimDriverRequestsCommand
 class	ClaimDriverRequestsHandler
 class	ClaimGatewayOperationCommand
 class	ClaimGatewayOperationHandler
+class	ClaimProjectReadsCommand
+class	ClaimProjectReadsHandler
 class	ClaimRequestsController
 class	ClaimSignInCommand
 class	ClaimSignInController
@@ -3548,6 +3563,7 @@ class	HostCapabilityQuery
 class	HostCapabilityUnsupported
 class	HostCapacity
 class	HostCapacityLock
+class	HostClaim
 class	HostContext
 class	HostCredentialRejected
 class	HostDescriptor
@@ -3555,6 +3571,7 @@ class	HostDescriptorData
 class	HostDescriptorEnrollment
 class	HostDescriptorRepeated
 class	HostDescriptorsData
+class	HostProjectFiles
 class	HostRefusalData
 class	HostReportRefused
 class	HostRoleRefused
@@ -4708,12 +4725,22 @@ class	ProjectCommandRun
 class	ProjectCommandStatus
 class	ProjectCommands
 class	ProjectCreated
+class	ProjectEntry
 class	ProjectEnvironmentList
+class	ProjectFileAnswer
+class	ProjectFileText
 class	ProjectInvitation
 class	ProjectInvitationIssued
 class	ProjectInvitationRevoked
 class	ProjectInvitationSpent
 class	ProjectKey
+class	ProjectRead
+class	ProjectReadClaim
+class	ProjectReadClaims
+class	ProjectReadPruning
+class	ProjectReadRefused
+class	ProjectReadReportController
+class	ProjectReadReportRequest
 class	ProjectReceipts
 class	ProjectRoots
 class	ProjectRules
@@ -5363,6 +5390,8 @@ class	ReportNotificationTarget
 class	ReportPages
 class	ReportPartResults
 class	ReportPolicy
+class	ReportProjectReadCommand
+class	ReportProjectReadHandler
 class	ReportReadCard
 class	ReportReceiptPartData
 class	ReportRecords
@@ -5420,6 +5449,8 @@ class	RequestPlanReviewCommand
 class	RequestPlanReviewHandler
 class	RequestPlanReviewPageController
 class	RequestProgressReportData
+class	RequestProjectReadCommand
+class	RequestProjectReadHandler
 class	RequestRecoveryRequest
 class	RequestReportBinding
 class	RequestReportController
@@ -7298,6 +7329,7 @@ constant	CheckRules::TOOLS
 constant	CheckStartStatusController::CHECKED
 constant	ChildEnvironment::SECRET_VARIABLES
 constant	ChoiceOptions::MOST
+constant	ClaimProjectReadsCommand::CLAIM_LIMIT
 constant	ClaudeAccountProtection::SECRET_ITEMS
 constant	ClaudeAccountProtection::SIGN_IN_COMMANDS
 constant	ClaudeAccountSettings::OTHER_CREDENTIALS
@@ -7824,6 +7856,11 @@ constant	ProfilesUnavailable::CODE
 constant	ProjectBinding::PAGE_LIMIT
 constant	ProjectBinding::PRESENCE_SECONDS
 constant	ProjectInvitation::LIFETIME_MINUTES
+constant	ProjectRead::DIRECTORY_ENTRY_LIMIT
+constant	ProjectRead::FILE_TEXT_BYTE_LIMIT
+constant	ProjectRead::KEEP_MINUTES_LIMIT
+constant	ProjectRead::PATH_CHARACTER_LIMIT
+constant	ProjectRead::PENDING_SECONDS_LIMIT
 constant	PropertyRules::LOOKUP_RULES
 constant	PropertyRules::TYPE_RULES
 constant	ProtectedAccounts::SIGN_IN_COMMAND
@@ -8525,6 +8562,9 @@ enum	ProfileAudience
 enum	ProfileChangeType
 enum	ProfileRunState
 enum	ProgressType
+enum	ProjectReadFailure
+enum	ProjectReadState
+enum	ProjectReadType
 enum	ProposalState
 enum	PublicationState
 enum	PublicationView
@@ -8931,6 +8971,7 @@ interface	ProfileRules
 interface	ProfileScripts
 interface	ProfileSelections
 interface	ProgramClassifier
+interface	ProjectFiles
 interface	PublicCommentResolver
 interface	ReadAdmission
 interface	ReadEntitlements
@@ -11763,6 +11804,9 @@ method	ClaimDriverRequestsHandler::withPresentation()
 method	ClaimGatewayOperationCommand::__construct()
 method	ClaimGatewayOperationHandler::__construct()
 method	ClaimGatewayOperationHandler::handle()
+method	ClaimProjectReadsCommand::__construct()
+method	ClaimProjectReadsHandler::__construct()
+method	ClaimProjectReadsHandler::handle()
 method	ClaimRelease::releaseAuthorizedBy()
 method	ClaimRequestsController::__invoke()
 method	ClaimRequestsController::pollUntil()
@@ -15762,6 +15806,8 @@ method	HostCapabilityUnsupported::reason()
 method	HostCapacity::__construct()
 method	HostCapacityLock::__construct()
 method	HostCapacityLock::holdUntilCommit()
+method	HostClaim::__construct()
+method	HostClaim::isEmpty()
 method	HostContext::__construct()
 method	HostContext::servingBinding()
 method	HostCredentialRejected::missing()
@@ -15781,6 +15827,9 @@ method	HostDescriptorRepeated::status()
 method	HostDescriptorsData::__construct()
 method	HostDescriptorsData::descriptors()
 method	HostOperatorAccess::isGranted()
+method	HostProjectFiles::__construct()
+method	HostProjectFiles::file()
+method	HostProjectFiles::folder()
 method	HostRefusal::explanation()
 method	HostRefusal::remedy()
 method	HostRefusalData::__construct()
@@ -19663,8 +19712,16 @@ method	ProjectCommands::earlierFrames()
 method	ProjectCommands::execute()
 method	ProjectCommands::run()
 method	ProjectCreated::__construct()
+method	ProjectEntry::__construct()
+method	ProjectEntry::fields()
+method	ProjectEntry::fromFields()
 method	ProjectEnvironmentList::__construct()
 method	ProjectEnvironmentList::of()
+method	ProjectFileAnswer::__construct()
+method	ProjectFileAnswer::of()
+method	ProjectFileText::__construct()
+method	ProjectFiles::file()
+method	ProjectFiles::folder()
 method	ProjectInvitation::casts()
 method	ProjectInvitation::create()
 method	ProjectInvitation::isRedeemableAt()
@@ -19684,6 +19741,42 @@ method	ProjectKey::assertFolderAllowed()
 method	ProjectKey::connect()
 method	ProjectKey::current()
 method	ProjectKey::environmentIds()
+method	ProjectRead::answerWithEntries()
+method	ProjectRead::answerWithText()
+method	ProjectRead::casts()
+method	ProjectRead::claimableFor()
+method	ProjectRead::create()
+method	ProjectRead::fail()
+method	ProjectRead::isExpired()
+method	ProjectRead::isOfHost()
+method	ProjectRead::isSettled()
+method	ProjectRead::listedEntries()
+method	ProjectRead::lockById()
+method	ProjectRead::markClaimed()
+method	ProjectRead::recentOf()
+method	ProjectRead::settle()
+method	ProjectReadClaim::__construct()
+method	ProjectReadClaim::jsonSerialize()
+method	ProjectReadClaim::of()
+method	ProjectReadClaims::__construct()
+method	ProjectReadClaims::isEmpty()
+method	ProjectReadPruning::prune()
+method	ProjectReadRefused::digest()
+method	ProjectReadRefused::entryName()
+method	ProjectReadRefused::missing()
+method	ProjectReadRefused::notYours()
+method	ProjectReadRefused::pathTooLong()
+method	ProjectReadRefused::settled()
+method	ProjectReadRefused::textNotUtf8()
+method	ProjectReadRefused::textTooLong()
+method	ProjectReadRefused::tooManyEntries()
+method	ProjectReadRefused::withoutAnswer()
+method	ProjectReadReportController::__invoke()
+method	ProjectReadReportRequest::command()
+method	ProjectReadReportRequest::entries()
+method	ProjectReadReportRequest::fileText()
+method	ProjectReadReportRequest::rules()
+method	ProjectReadState::isSettled()
 method	ProjectReceipts::__construct()
 method	ProjectReceipts::find()
 method	ProjectReceipts::forPart()
@@ -21474,6 +21567,10 @@ method	ReportPages::report()
 method	ReportPartResults::__construct()
 method	ReportPartResults::handle()
 method	ReportPolicy::model()
+method	ReportProjectReadCommand::__construct()
+method	ReportProjectReadHandler::checkedEntries()
+method	ReportProjectReadHandler::checkedText()
+method	ReportProjectReadHandler::handle()
 method	ReportReadCard::__construct()
 method	ReportReadCard::toArray()
 method	ReportReader::report()
@@ -21619,6 +21716,9 @@ method	RequestProgressReportData::binding()
 method	RequestProgressReportData::navigationReport()
 method	RequestProgressReportData::refusal()
 method	RequestProgressReportData::scriptProgress()
+method	RequestProjectReadCommand::__construct()
+method	RequestProjectReadHandler::__construct()
+method	RequestProjectReadHandler::handle()
 method	RequestRecoveryRequest::applied()
 method	RequestRecoveryRequest::confirmsPossibleDuplicate()
 method	RequestRecoveryRequest::reason()
@@ -28309,10 +28409,14 @@ parameter	$entitlement
 parameter	$entrance
 parameter	$entries
 parameter	$entries	app/Commands/RefreshSkills/RefreshSkillsHandler.php
+parameter	$entries	app/Commands/ReportProjectRead/ReportProjectReadCommand.php
+parameter	$entries	app/Commands/ReportProjectRead/ReportProjectReadHandler.php
+parameter	$entries	app/Models/ProjectRead.php
 parameter	$entries	app/Resolvers/Support/SkillStatusResolver.php
 parameter	$entries	app/Support/Attributes.php
 parameter	$entries	app/Support/ShareAuditPage.php
 parameter	$entries	app/Values/FolderEntries.php
+parameter	$entries	app/Values/ProjectFileAnswer.php
 parameter	$entry
 parameter	$entryDispatchers
 parameter	$entryGroup
@@ -28754,6 +28858,7 @@ parameter	$isDone
 parameter	$isEffectiveTop
 parameter	$isError
 parameter	$isExpired
+parameter	$isFolder
 parameter	$isForOperators
 parameter	$isFound
 parameter	$isGuarded
@@ -28811,6 +28916,7 @@ parameter	$isStillBound
 parameter	$isStoreRemoved
 parameter	$isSupported
 parameter	$isSwitchOver
+parameter	$isTruncated
 parameter	$isTrusted
 parameter	$isUnread
 parameter	$isWaitingForAgents
@@ -29536,6 +29642,7 @@ parameter	$project
 parameter	$projectId
 parameter	$projectKey
 parameter	$projectLabel
+parameter	$projectReads
 parameter	$projectRoot
 parameter	$projectRules
 parameter	$projection
@@ -29645,6 +29752,7 @@ parameter	$readByMe
 parameter	$readContext
 parameter	$readEntries
 parameter	$readFiles
+parameter	$readId
 parameter	$readInterestId
 parameter	$readOnly
 parameter	$readOnlyRoot
@@ -32258,6 +32366,8 @@ property	ClaimDriverRequestsHandler::$privateValues
 property	ClaimGatewayOperationCommand::$operationId
 property	ClaimGatewayOperationCommand::$runId
 property	ClaimGatewayOperationHandler::$runs
+property	ClaimProjectReadsCommand::$hostId
+property	ClaimProjectReadsHandler::$clock
 property	ClaimSignInCommand::$hostId
 property	ClaimSpeechCall::$batchId
 property	ClaimSpeechCall::$grant
@@ -34504,6 +34614,8 @@ property	HostCapacity::$diskBytes
 property	HostCapacity::$isGuarded
 property	HostCapacity::$memoryBytes
 property	HostCapacityLock::$databases
+property	HostClaim::$projectReads
+property	HostClaim::$requests
 property	HostContext::$bindingIds
 property	HostContext::$call
 property	HostContext::$hostId
@@ -34517,6 +34629,7 @@ property	HostDescriptorData::$key
 property	HostDescriptorData::$placement
 property	HostDescriptorEnrollment::$drivers
 property	HostDescriptorsData::$descriptors
+property	HostProjectFiles::$commands
 property	HostRefusalData::$refusal
 property	HostSkillPublisher::$files
 property	HostSkillPublisher::$targets
@@ -36842,8 +36955,22 @@ property	ProjectCommands::$journalUrl
 property	ProjectCommands::$routes
 property	ProjectCreated::$occurredAt
 property	ProjectCreated::$projectId
+property	ProjectEntry::$isFolder
+property	ProjectEntry::$name
+property	ProjectEntry::$size
 property	ProjectEnvironmentList::$current
 property	ProjectEnvironmentList::$owners
+property	ProjectFileAnswer::$digest
+property	ProjectFileAnswer::$entries
+property	ProjectFileAnswer::$failure
+property	ProjectFileAnswer::$isTruncated
+property	ProjectFileAnswer::$readId
+property	ProjectFileAnswer::$size
+property	ProjectFileAnswer::$state
+property	ProjectFileAnswer::$text
+property	ProjectFileText::$digest
+property	ProjectFileText::$size
+property	ProjectFileText::$text
 property	ProjectInvitationIssued::$expiresAt
 property	ProjectInvitationIssued::$invitationId
 property	ProjectInvitationIssued::$occurredAt
@@ -36854,6 +36981,11 @@ property	ProjectInvitationSpent::$invitationId
 property	ProjectInvitationSpent::$occurredAt
 property	ProjectKey::$config
 property	ProjectKey::$connectedProject
+property	ProjectReadClaim::$bindingId
+property	ProjectReadClaim::$id
+property	ProjectReadClaim::$path
+property	ProjectReadClaim::$type
+property	ProjectReadClaims::$claims
 property	ProjectReceipts::$projects
 property	ProjectRoots::$namespaces
 property	ProjectRules::$projects
@@ -38113,6 +38245,12 @@ property	ReportPages::$chunks
 property	ReportPages::$continuations
 property	ReportPages::$pages
 property	ReportPartResults::$processes
+property	ReportProjectReadCommand::$entries
+property	ReportProjectReadCommand::$failure
+property	ReportProjectReadCommand::$hostId
+property	ReportProjectReadCommand::$isTruncated
+property	ReportProjectReadCommand::$readId
+property	ReportProjectReadCommand::$text
 property	ReportReadCard::$id
 property	ReportReadCard::$number
 property	ReportReadCard::$state
@@ -38256,6 +38394,10 @@ property	RequestProgressReportData::$requestId
 property	RequestProgressReportData::$script
 property	RequestProgressReportData::$sequence
 property	RequestProgressReportData::$sessionId
+property	RequestProjectReadCommand::$bindingId
+property	RequestProjectReadCommand::$path
+property	RequestProjectReadCommand::$type
+property	RequestProjectReadHandler::$clock
 property	RequestReportBinding::$processGeneration
 property	RequestReportBinding::$processStartId
 property	RequestReportBinding::$sessionId

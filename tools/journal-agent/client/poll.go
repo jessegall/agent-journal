@@ -14,8 +14,8 @@ const (
 	claimWait    = 10
 )
 
-// Poll claims requests in a loop until ctx ends, handing each answer to handle when it holds requests or a new
-// watched list, and the first answer after the journal was lost, so the watched list is named again. When the
+// Poll claims requests in a loop until ctx ends, handing each answer to handle when it holds requests, project reads
+// or a new watched list, and the first answer after the journal was lost, so the watched list is named again. When the
 // journal cannot be reached it waits, doubling the wait up to a minute, and starts over at a second after the next
 // answer.
 func (client *Client) Poll(ctx context.Context, handle func(Claim)) {
@@ -41,7 +41,7 @@ func (client *Client) Poll(ctx context.Context, handle func(Claim)) {
 			continue
 		}
 		backoff = firstBackoff
-		if len(claimed.Requests) > 0 || claimed.WatchedVersion != watchedVersion || lost {
+		if len(claimed.Requests) > 0 || len(claimed.ProjectReads) > 0 || claimed.WatchedVersion != watchedVersion || lost {
 			watchedVersion = claimed.WatchedVersion
 			lost = false
 			handle(claimed)

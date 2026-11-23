@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\ReportProjectRead;
+
+use App\Contracts\Bus\CommandHandler;
+use App\Enums\ProjectReadType;
+use App\Exceptions\ProjectReadRefused;
+use App\Models\ProjectRead;
+use App\Values\ProjectEntry;
+use App\Values\ProjectFileText;
+
+/**
+ * Settles a read with its host's answer once the journal has checked every bound again, never trusting the host.
+ */
+final readonly class ReportProjectReadHandler implements CommandHandler
+{
+    /**
+     * @throws ProjectReadRefused
+     */
+    public function handle(ReportProjectReadCommand $command): void
+    {
+        $read = ProjectRead::lockById($command->readId);
+
+        if (! $read->isOfHost($command->hostId)) {
+            throw ProjectReadRefused::notYours($read->id);
+        }
+
+        if ($read->isExpired()) {
+            return;
+        }
+
+        if ($read->isSettled()) {
+            throw ProjectReadRefused::settled($read->id);
+        }
+
+        if ($command->failure !== null) {
+            $read->fail($command->failure);
+
+            return;
+        }
+
+        if ($read->type === ProjectReadType::Directory) {
+            $read->answerWithEntries($this->checkedEntries($read->id, $command->entries), $command->isTruncated);
+
+            return;
+        }
+
+        $read->answerWithText($this->checkedText($read->id, $command->text), $command->isTruncated);
+    }
+
+    /**
+     * @param  list<ProjectEntry>  $entries
+     * @return list<ProjectEntry>
+     *
+     * @throws ProjectReadRefused
+     */
+    private function checkedEntries(string $readId, array $entries): array
+    {
+        if (count($entries) > ProjectRead::DIRECTORY_ENTRY_LIMIT) {
+            throw ProjectReadRefused::tooManyEntries($readId, ProjectRead::DIRECTORY_ENTRY_LIMIT);
+        }
+
+        foreach ($entries as $entry) {
+            if ($entry->name === '' || str_contains($entry->name, '/') || str_contains($entry->name, "\0")) {
+                throw ProjectReadRefused::entryName($readId);
+            }
+        }
+
+        return $entries;
+    }
+
+    /**
+     * @throws ProjectReadRefused
+     */
+    private function checkedText(string $readId, ProjectFileText|null $text): ProjectFileText
+    {
+        if ($text === null) {
+            throw ProjectReadRefused::withoutAnswer($readId);
+        }
+
+        if (strlen($text->text) > ProjectRead::FILE_TEXT_BYTE_LIMIT) {
+            throw ProjectReadRefused::textTooLong($readId, ProjectRead::FILE_TEXT_BYTE_LIMIT);
+        }
+
+        if (! mb_check_encoding($text->text, 'UTF-8')) {
+            throw ProjectReadRefused::textNotUtf8($readId);
+        }
+
+        if (preg_match('/\A[0-9a-f]{64}\z/', $text->digest) !== 1) {
+            throw ProjectReadRefused::digest($readId);
+        }
+
+        return $text;
+    }
+}

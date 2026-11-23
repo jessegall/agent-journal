@@ -20,7 +20,13 @@ type claimServing struct {
 	executor          *protectedExecutor
 	startSocketFolder string
 	socket            *host.AttachSocket
+	// projectRoot is the folder of the project a relay serves, read for the journal's project reads; an enrolled
+	// host has none and answers every read as unreadable.
+	projectRoot string
 }
+
+// projectReadsAtOnce is how many project reads a host answers at the same time.
+const projectReadsAtOnce = 4
 
 // run serves claims until ctx ends or the journal refuses the protocol; claimed is told of every claim that handed
 // work, so a relay can keep its binding online while there is any.
@@ -40,8 +46,17 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	if err != nil {
 		return err
 	}
+	reader := host.ProjectReader{Root: claims.projectRoot}
+	readsAtOnce := make(chan struct{}, projectReadsAtOnce)
 	claims.journal.Poll(ctx, func(answer client.Claim) {
 		watcher.Set(answer.Watched)
+		for _, read := range answer.ProjectReads {
+			readsAtOnce <- struct{}{}
+			go func() {
+				defer func() { <-readsAtOnce }()
+				claims.answerProjectRead(ctx, reader, read)
+			}()
+		}
 		if len(answer.Requests) == 0 {
 			return
 		}
@@ -53,4 +68,12 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	})
 
 	return nil
+}
+
+// answerProjectRead reads what the journal asked for and reports it once; a report that fails is logged and left for
+// the journal to expire.
+func (claims claimServing) answerProjectRead(ctx context.Context, reader host.ProjectReader, read client.ProjectRead) {
+	if err := claims.journal.ReportProjectRead(ctx, read.ID, reader.Answer(read)); err != nil {
+		log.Printf("the answer to project read %s could not be sent: %v", read.ID, err)
+	}
 }

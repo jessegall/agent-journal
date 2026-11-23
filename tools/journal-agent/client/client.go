@@ -404,12 +404,53 @@ type Watch struct {
 	IntervalMs int    `json:"interval_ms"`
 }
 
-// Claim is one answer to a claim: the requests handed to this host, the runtimes watched on it and the version of
-// that watched list.
+// Claim is one answer to a claim: the requests handed to this host, the reads of its projects it is asked to
+// answer, the runtimes watched on it and the version of that watched list.
 type Claim struct {
 	Requests       []ClaimedRequest `json:"requests"`
+	ProjectReads   []ProjectRead    `json:"project_reads"`
 	Watched        []Watch          `json:"watched"`
 	WatchedVersion int              `json:"watched_version"`
+}
+
+// ProjectRead is a read of a connected project's folder or file the journal asks this host for, with how much of it
+// the answer may hold.
+type ProjectRead struct {
+	ID           string `json:"id"`
+	BindingID    string `json:"binding_id"`
+	Type         string `json:"type"`
+	Path         string `json:"path"`
+	EntriesLimit int    `json:"entries_limit"`
+	TextLimit    int    `json:"text_limit"`
+}
+
+// The two types of project read.
+const (
+	ProjectReadDirectory = "directory"
+	ProjectReadFile      = "file"
+)
+
+// ProjectEntry is one entry of a project folder: its name, whether it is a folder, and its size in bytes.
+type ProjectEntry struct {
+	Name     string `json:"name"`
+	IsFolder bool   `json:"is_folder"`
+	Size     int64  `json:"size"`
+}
+
+// ProjectReadReport is a host's one answer to a project read: a folder's entries, a file's text with the digest and
+// size of the bytes read, or the reason it could not read it.
+type ProjectReadReport struct {
+	Entries   []ProjectEntry `json:"entries,omitempty"`
+	Text      *string        `json:"text,omitempty"`
+	Digest    string         `json:"digest,omitempty"`
+	Size      *int64         `json:"size,omitempty"`
+	Truncated bool           `json:"truncated"`
+	Failure   string         `json:"failure,omitempty"`
+}
+
+// ReportProjectRead answers one project read the journal handed this host.
+func (client *Client) ReportProjectRead(ctx context.Context, readID string, report ProjectReadReport) error {
+	return client.call(ctx, "/host/reports/project-reads/"+url.PathEscape(readID), report, nil)
 }
 
 // Claim long-polls for up to waitSeconds and returns at most limit requests of this host's runtimes; the poll answers
