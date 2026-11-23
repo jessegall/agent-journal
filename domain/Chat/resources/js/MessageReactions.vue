@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import ChipButton from "@kit/ChipButton";
 import type { ChatMessageData } from "@generated/types/chat";
-import ReactionChoice from "./ReactionChoice.vue";
 import { toggleReaction } from "./reactions";
 
 /**
  * The reactions a message has, as the design draws them: a chip per emoji with its count, your own marked, pressed to
- * take it back or to add yours, and a small add chip after them. A message without reactions draws nothing here: React
- * among its hover controls adds the first.
+ * take it back or to add yours. Nothing else follows them: a new emoji is added with React among the message's hover
+ * controls, and a message without reactions draws nothing here.
  */
 const props = defineProps<{
   message: ChatMessageData;
@@ -35,7 +34,6 @@ function toggle(emoji: string): void {
           {{ reaction.emoji }}
         </ChipButton>
       </template>
-      <ReactionChoice variant="chip" label="Add a reaction" @choose="toggle" />
     </div>
   </template>
 </template>

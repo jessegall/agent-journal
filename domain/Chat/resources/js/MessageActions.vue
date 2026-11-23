@@ -13,7 +13,7 @@ const emit = defineEmits<{ react: [emoji: string]; reply: []; decline: [] }>();
 </script>
 
 <template>
-  <ReactionChoice variant="word" :label="`React to ${speaker.label}'s message`" @choose="(emoji) => emit('react', emoji)" />
+  <ReactionChoice :label="`React to ${speaker.label}'s message`" @choose="(emoji) => emit('react', emoji)" />
   <MessageAction icon="reply" @click="emit('reply')">
     {{ actions.answer ? "Answer" : "Reply" }}
   </MessageAction>
