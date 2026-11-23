@@ -331,3 +331,61 @@ func TestAWakeThatIsNoBootstrapStillStartsATurn(t *testing.T) {
 		t.Fatalf("a plain wake bootstrapped %d times and ran %d turns", runtime.bootstraps, len(runtime.prompts))
 	}
 }
+
+func bootstrapped(t *testing.T, folder string, journal *fakeJournal) *Loop {
+	t.Helper()
+	runtime := &bootstrappingRuntime{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+	if err := loop.KeepUnsentReports(context.Background(), folder); err != nil {
+		t.Fatal(err)
+	}
+	return loop
+}
+
+func checkStatus(generation int) client.ClaimedRequest {
+	check := claimed("check", 2, "resend_readiness", "")
+	check.ProcessGeneration = generation
+	return check
+}
+
+func TestCheckStatusSendsTheKeptReadyReportAgainExactly(t *testing.T) {
+	folder := t.TempDir()
+	journal := &fakeJournal{}
+	loop := bootstrapped(t, folder, journal)
+	bootstrap := claimed("a", 1, "wake", "")
+	bootstrap.Bootstrap = true
+	loop.Take(context.Background(), []client.ClaimedRequest{bootstrap})
+
+	restarted := bootstrapped(t, folder, journal)
+	restarted.Take(context.Background(), []client.ClaimedRequest{checkStatus(0)})
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if len(journal.reports) != 3 {
+		t.Fatalf("the journal got %d reports; want the ready report, it again and the check", len(journal.reports))
+	}
+	original, resent, check := journal.reports[0], journal.reports[1], journal.reports[2]
+	if resent.RequestID != original.RequestID || resent.Sequence != original.Sequence || *resent.ActualBinding != *original.ActualBinding {
+		t.Fatalf("the resent report %+v differs from the first %+v", resent, original)
+	}
+	if check.RequestID != "check" || check.Progress != "applied" {
+		t.Fatalf("the check was reported %+v", check)
+	}
+}
+
+func TestCheckStatusWithoutAReadyReportOfThatGenerationAnswersNoObservation(t *testing.T) {
+	journal := &fakeJournal{}
+	loop := bootstrapped(t, t.TempDir(), journal)
+	bootstrap := claimed("a", 1, "wake", "")
+	bootstrap.Bootstrap = true
+	loop.Take(context.Background(), []client.ClaimedRequest{bootstrap})
+
+	loop.Take(context.Background(), []client.ClaimedRequest{checkStatus(7)})
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	check := journal.reports[len(journal.reports)-1]
+	if len(journal.reports) != 2 || check.Progress != "failed" || check.RefusalReason == nil || *check.RefusalReason != "no_observation" {
+		t.Fatalf("a check of another generation was reported %+v after %d reports", check, len(journal.reports))
+	}
+}

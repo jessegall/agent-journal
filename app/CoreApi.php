@@ -53,6 +53,7 @@ use App\Commands\CancelTerminalTake\CancelTerminalTakeCommand;
 use App\Commands\CertifyPassedStops\CertifyPassedStopsCommand;
 use App\Commands\ChangeAgentEffort\ChangeAgentEffortCommand;
 use App\Commands\ChangeAgentModel\ChangeAgentModelCommand;
+use App\Commands\CheckStartStatus\CheckStartStatusCommand;
 use App\Commands\CheckTerminalScreen\CheckTerminalScreenCommand;
 use App\Commands\ChooseTerminalDraft\ChooseTerminalDraftCommand;
 use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
@@ -2609,6 +2610,7 @@ final class CoreApi
                 StartAgentCommand::class,
                 StartOwnedAgentCommand::class,
                 CancelLaunchCommand::class,
+                CheckStartStatusCommand::class,
                 DismissLaunchOutcomeCommand::class,
                 ContinueStartCommand::class,
                 CreateAgentCommand::class,

@@ -50,12 +50,14 @@ type Preparer interface {
 type Loop struct {
 	journal Journal
 	// unsent keeps the reports the journal has not acknowledged, when the host gave the loop a folder for them.
-	unsent    *host.RequestReports
-	prepare   Preparer
-	open      Opener
-	scheduler *host.Scheduler
-	mutex     sync.Mutex
-	runtimes  map[string]*liveRuntime
+	unsent *host.RequestReports
+	// observations keeps the report that proved each runtime's start, for Check status, beside the unsent reports.
+	observations *host.ReadyObservations
+	prepare      Preparer
+	open         Opener
+	scheduler    *host.Scheduler
+	mutex        sync.Mutex
+	runtimes     map[string]*liveRuntime
 	// opening holds one lock a runtime, so two deliveries never open the same runtime twice while the loop-wide
 	// mutex is free during the network calls of its preparation.
 	opening map[string]*sync.Mutex
@@ -177,6 +179,9 @@ func (loop *Loop) control(ctx context.Context, runtime *liveRuntime, request cli
 		}
 		loop.reportResult(ctx, request, result, err)
 		return true
+	case "resend_readiness":
+		loop.resendReadiness(ctx, request)
+		return true
 	case "stop":
 		result, err := runtime.driver.Stop(ctx, contracts.StopRequest{Request: identity})
 		loop.reportResult(ctx, request, result, err)
@@ -259,7 +264,11 @@ func (loop *Loop) bootstrap(
 			continue
 		}
 		result, err := bootstrapper.Bootstrap(ctx, identityOf(wake))
-		loop.reportResult(ctx, wake, result, err)
+		if err != nil {
+			loop.reportResult(ctx, wake, result, err)
+			continue
+		}
+		loop.observe(wake, loop.report(ctx, wake, result))
 	}
 	return rest
 }
@@ -327,7 +336,7 @@ func (loop *Loop) awaitTurn(
 	loop.mutex.Unlock()
 
 	for _, request := range finished {
-		loop.report(ctx, request, result)
+		loop.observe(request, loop.report(ctx, request, result))
 	}
 	for _, request := range interrupts {
 		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplied})
@@ -605,6 +614,11 @@ func (loop *Loop) exited(ctx context.Context, runtime *liveRuntime, evidence str
 	loop.mutex.Lock()
 	delete(loop.runtimes, runtime.id)
 	loop.mutex.Unlock()
+	if loop.observations != nil {
+		if err := loop.observations.Forget(runtime.id); err != nil {
+			log.Printf("the ready report of runtime %s could not be forgotten: %v", runtime.id, err)
+		}
+	}
 	report := client.LivenessReport{RuntimeID: runtime.id, ProcessGeneration: runtime.driver.Generation(), Evidence: evidence}
 	if err := loop.journal.ReportExit(ctx, report); err != nil {
 		log.Printf("the exit of runtime %s could not be reported: %v", runtime.id, err)
@@ -664,7 +678,11 @@ func refusalOf(err error) contracts.OperationResult {
 
 // report sends one request's progress with the attempt, session, supervised start and process generation it answers;
 // a confirmed outcome is the journal's default and is not named.
-func (loop *Loop) report(ctx context.Context, request client.ClaimedRequest, result contracts.OperationResult) {
+func (loop *Loop) report(
+	ctx context.Context,
+	request client.ClaimedRequest,
+	result contracts.OperationResult,
+) client.RequestReport {
 	report := client.RequestReport{
 		RequestID:         request.RequestID,
 		Attempt:           request.Attempt,
@@ -690,6 +708,54 @@ func (loop *Loop) report(ctx context.Context, request client.ClaimedRequest, res
 	if err := loop.sendReport(ctx, report); err != nil {
 		log.Printf("%s request %s (attempt %d) could not be reported yet: %v", request.Operation, request.RequestID, request.Attempt, err)
 	}
+	return report
+}
+
+// observe keeps the report that proved a start's conversation: a bootstrap's applied report with its binding.
+func (loop *Loop) observe(request client.ClaimedRequest, report client.RequestReport) {
+	if loop.observations == nil || !request.Bootstrap || report.ActualBinding == nil {
+		return
+	}
+	if report.Progress != string(contracts.ProgressApplied) {
+		return
+	}
+	if err := loop.observations.Keep(request.RuntimeID, report); err != nil {
+		log.Printf("the ready report of runtime %s could not be kept: %v", request.RuntimeID, err)
+	}
+}
+
+// resendReadiness sends the kept ready report of the claimed request's start again, exactly as it was, and answers
+// the request applied; with none kept for that session and process generation it answers no_observation and sends
+// nothing, never a report made up from the driver's state now.
+func (loop *Loop) resendReadiness(ctx context.Context, request client.ClaimedRequest) {
+	observed, found := loop.observation(request)
+	if !found {
+		loop.report(ctx, request, contracts.OperationResult{
+			Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused,
+			RefusalReason: contracts.RefusalNoObservation,
+		})
+		return
+	}
+	if err := loop.sendReport(ctx, observed); err != nil {
+		log.Printf("the ready report of runtime %s could not be sent again yet: %v", request.RuntimeID, err)
+	}
+	loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplied})
+}
+
+// observation is the kept ready report of the request's own session and process generation.
+func (loop *Loop) observation(request client.ClaimedRequest) (client.RequestReport, bool) {
+	if loop.observations == nil {
+		return client.RequestReport{}, false
+	}
+	observed, found, err := loop.observations.Of(request.RuntimeID)
+	if err != nil {
+		log.Printf("the ready report of runtime %s could not be read: %v", request.RuntimeID, err)
+		return client.RequestReport{}, false
+	}
+	if !found || observed.SessionID != request.SessionID || observed.ProcessGeneration != request.ProcessGeneration {
+		return client.RequestReport{}, false
+	}
+	return observed, true
 }
 
 // nextSequence numbers the next report of the runtime, one after the last one sent.
@@ -749,6 +815,7 @@ func sameRequests(first, second []client.ClaimedRequest) bool {
 // restart left there, so no outcome is lost to an outage or a restart.
 func (loop *Loop) KeepUnsentReports(ctx context.Context, folder string) error {
 	loop.unsent = &host.RequestReports{Folder: folder}
+	loop.observations = &host.ReadyObservations{Folder: folder}
 	return loop.unsent.Replay(ctx, loop.journal)
 }
 

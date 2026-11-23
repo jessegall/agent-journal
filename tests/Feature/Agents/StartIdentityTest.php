@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\CancelLaunch\CancelLaunchCommand;
+use App\Commands\CheckStartStatus\CheckStartStatusCommand;
 use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
 use App\Enums\ConversationModeType;
+use App\Enums\DriverOperation;
 use App\Enums\DriverVariant;
 use App\Enums\HostRefusal;
+use App\Enums\HostWakeRefusal;
 use App\Enums\RequestProgress;
 use App\Enums\StartOriginType;
 use App\Enums\StartReadiness;
@@ -21,11 +24,13 @@ use App\Support\AgentWakes;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
+use App\Support\ReadinessCheckSweep;
 use App\Values\BrowserInputCapabilities;
 use App\Values\ClaimedRequest;
 use App\Values\StackTarget;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
+use Carbon\CarbonImmutable;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -142,6 +147,86 @@ final class StartIdentityTest extends TestCase
 
         $this->assertSame([StartReadiness::Refused, null], [$record->refresh()->readiness, $record->native_id]);
         $this->assertSame([], $this->claimedIds($host));
+    }
+
+    public function test_check_status_settles_a_lost_ready_report_with_the_hosts_kept_one(): void
+    {
+        [$host, $opened, $wake, $record] = $this->startWithMessage();
+        $this->claimedIds($host);
+
+        $this->assertTrue($this->checkStatus($record));
+        $this->assertTrue($this->checkStatus($record));
+        $check = $this->claimed($host);
+        $this->reportApplied($host, $wake, self::CONVERSATION);
+        $this->answerCheck($host, $check[0]->requestId, RequestProgress::Applied);
+
+        $this->assertSame([DriverOperation::ResendReadiness->value], array_map(fn (ClaimedRequest $request) => $request->operation, $check));
+        $this->assertSame(StartReadiness::Ready, $record->refresh()->readiness);
+        $this->assertSame([$opened->firstRequestId], $this->claimedIds($host));
+        $this->assertSame([], $this->claimedIds($host));
+    }
+
+    public function test_a_ready_start_has_nothing_to_check(): void
+    {
+        [$host, , $wake, $record] = $this->startWithMessage();
+        $this->claimedIds($host);
+        $this->reportApplied($host, $wake, self::CONVERSATION);
+
+        $this->assertFalse($this->checkStatus($record));
+        $this->assertNotContains(DriverOperation::ResendReadiness->value, array_map(fn (ClaimedRequest $request) => $request->operation, $this->claimed($host)));
+    }
+
+    public function test_a_host_with_no_ready_report_leaves_the_start_uncertain_and_its_message_held(): void
+    {
+        [$host, $opened, , $record] = $this->startWithMessage();
+        $this->claimedIds($host);
+        $this->checkStatus($record);
+        $check = $this->claimed($host)[0];
+
+        $this->answerCheck($host, $check->requestId, RequestProgress::Failed, HostWakeRefusal::NoObservation);
+
+        $this->assertSame(StartReadiness::Uncertain, $record->refresh()->readiness);
+        $this->assertSame([], $this->claimedIds($host));
+        $this->assertTrue($this->checkStatus($record));
+        $this->assertNotContains($opened->firstRequestId, $this->claimedIds($host));
+    }
+
+    public function test_a_check_no_host_answers_within_its_minute_leaves_the_start_uncertain(): void
+    {
+        [$host, , , $record] = $this->startWithMessage();
+        $this->claimedIds($host);
+        $this->checkStatus($record);
+        $check = $this->claimed($host)[0];
+
+        $this->travel(ReadinessCheckSweep::ANSWER_SECONDS_LIMIT + 1)->seconds();
+        $this->app->make(ReadinessCheckSweep::class)->sweep(CarbonImmutable::now());
+
+        $this->assertSame(RequestProgress::Unavailable, DriverRequest::query()->findOrFail($check->requestId)->progress);
+        $this->assertSame(StartReadiness::Uncertain, $record->refresh()->readiness);
+    }
+
+    private function checkStatus(StartRecord $record): bool
+    {
+        $session = AgentSession::query()->findOrFail($record->session_id);
+
+        return $this->asOwner(new CheckStartStatusCommand($session->agent_id, $session->id, (string) str()->ulid()));
+    }
+
+    private function answerCheck(
+        EnrolledHost $host,
+        string $requestId,
+        RequestProgress $progress,
+        HostWakeRefusal|null $refusal = null,
+    ): void {
+        $this->asSystem(new ReportRequestProgressCommand(
+            $host->hostId,
+            $requestId,
+            DriverRequest::query()->findOrFail($requestId)->attempt_version,
+            $progress,
+            null,
+            null,
+            refusal: $refusal,
+        ));
     }
 
     /**

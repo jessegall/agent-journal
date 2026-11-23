@@ -56,6 +56,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $possible_duplicate_of_id
  * @property ExpectedTiming $expected_timing
  * @property CarbonImmutable|null $expected_observed_at
+ * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property string|null $actual_binding
  * @property int $attempt_version
@@ -623,5 +624,18 @@ final class DriverRequest extends Model implements ReadableModel
     protected function applyingOn(Builder $query, AgentRuntime $runtime): void
     {
         $query->where('agent_runtime_id', $runtime->id)->where('progress', RequestProgress::Applying);
+    }
+
+    /**
+     * The Check status requests no host has answered since before this moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unansweredReadinessChecksSince(Builder $query, CarbonImmutable $before): void
+    {
+        $query->where('operation', DriverOperation::ResendReadiness)
+            ->whereIn('progress', RequestProgress::open())
+            ->where('created_at', '<', $before);
     }
 }

@@ -18,6 +18,8 @@ const (
 	operationStopRecord   = "stop_recording"
 	operationKeyScript    = "key_script"
 	operationNavigate     = "navigate"
+	// operationResendReady asks for the kept ready report of the runtime's start again (Check status).
+	operationResendReady = "resend_readiness"
 )
 
 // maxBatch is the fixed cut-off of consecutive deliveries one turn takes.
@@ -167,10 +169,10 @@ func (queue *RuntimeQueue) takeLeadingSettings() Admission {
 }
 
 // isControl answers whether the request acts on the runtime itself rather than its turns: a stop, an interrupt, a
-// recording or a browser writer's operation; it goes first and never waits behind content.
+// recording, a Check status or a browser writer's operation; it goes first and never waits behind content.
 func isControl(request client.ClaimedRequest) bool {
 	switch request.Operation {
-	case operationStop, operationInterrupt, operationStartRecord, operationStopRecord:
+	case operationStop, operationInterrupt, operationStartRecord, operationStopRecord, operationResendReady:
 		return true
 	}
 	return client.IsBrowserControl(request.Operation)

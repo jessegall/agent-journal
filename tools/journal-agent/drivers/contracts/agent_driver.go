@@ -173,6 +173,8 @@ const (
 	// RefusalPinnedBuildMissing: the host does not run the build the runtime was pinned to, so it never starts the
 	// runtime on another build.
 	RefusalPinnedBuildMissing RefusalReason = "pinned-build-missing"
+	// RefusalNoObservation answers Check status when the host keeps no ready report of the runtime's start.
+	RefusalNoObservation RefusalReason = "no_observation"
 )
 
 // StartRefused is the failure of an operation the host refused for an allowlisted reason before it created any process

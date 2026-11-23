@@ -15,6 +15,8 @@ enum HostWakeRefusal: string
     case CapacityUnavailable = 'capacity-unavailable';
     case ProtectedAccountFolderRejected = 'protected-account-folder-rejected';
     case PinnedBuildMissing = 'pinned-build-missing';
+    // The host keeps no ready report for the runtime's start, so Check status has nothing to send again.
+    case NoObservation = 'no_observation';
     case Unknown = 'unknown';
 
     /**
@@ -36,7 +38,8 @@ enum HostWakeRefusal: string
             self::CapacityUnavailable => StartRefusalType::CapacityUnavailable,
             self::ProtectedAccountFolderRejected => HostRefusal::AccountFolderRejected,
             self::PinnedBuildMissing => HostRefusal::PinnedBuildMissing,
-            self::Unknown => HostRefusal::Unknown,
+            // no_observation answers Check status, never a start, so on a start's wake it is no reason the start knows
+            self::NoObservation, self::Unknown => HostRefusal::Unknown,
         };
     }
 }

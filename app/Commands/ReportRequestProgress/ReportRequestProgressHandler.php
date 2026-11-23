@@ -12,6 +12,7 @@ use App\Enums\RuntimeEventType;
 use App\Exceptions\HostReportRefused;
 use App\Models\DriverRequest;
 use App\Models\RuntimeEvent;
+use App\Models\StartRecord;
 use App\Support\HostRuntimes;
 use App\Support\InitialWakeSettlement;
 use App\Support\NavigationRoundReports;
@@ -81,6 +82,13 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
         // keeps its own failure and leaves the session as it is.
         if ($request->operation === DriverOperation::Wake && $request->canRetry()) {
             $this->initialWakes->settle($request, $runtime, $command);
+        }
+
+        // A host that could not send its ready report again leaves the start without proof: it stays held, uncertain.
+        if ($request->operation === DriverOperation::ResendReadiness && $request->progress->isRefused()) {
+            StartRecord::lockedLatestOf($runtime->agent_session_id)->forAll(
+                fn (StartRecord $start) => $start->markReadinessUnseen(),
+            );
         }
 
         if ($request->isInitialWakeOf($runtime->agent_session_id)) {

@@ -115,6 +115,7 @@ use App\Support\PendingWorkSources;
 use App\Support\ProtectedMerge;
 use App\Support\PublishedReleases;
 use App\Support\ReadGrant;
+use App\Support\ReadinessCheckSweep;
 use App\Support\RequestSession;
 use App\Support\ReserveStarts;
 use App\Support\RetainedWorkspaceReads;
@@ -132,6 +133,8 @@ use App\Support\UnavailableMergeAdmission;
 use App\Values\FilePath;
 use App\Values\HostCapacity;
 use App\Values\PolicyDefinition;
+use Carbon\CarbonImmutable;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -312,6 +315,13 @@ final class AgentsServiceProvider extends ServiceProvider
         // read at boot so an unknown AGENTS_ARRANGEMENT stops the journal at once, naming the value
         ArrangementSetting $arrangement,
     ): void {
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (ReadinessCheckSweep $sweep) => $sweep->sweep(CarbonImmutable::now()))
+                ->everyMinute(),
+        );
+
         $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
         $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));
 

@@ -31,6 +31,8 @@ enum DriverOperation: string
     case OpenPrivateEntry = 'open_private_entry';
     case PrivateInput = 'private_input';
     case CancelPrivateEntry = 'cancel_private_entry';
+    // Asks the host to send again the ready report it keeps for the runtime's start (Check status).
+    case ResendReadiness = 'resend_readiness';
 
     /**
      * The operations that act on the runtime itself rather than its turns; a host takes them before any other work.
@@ -44,6 +46,7 @@ enum DriverOperation: string
             self::Interrupt,
             self::StartRecording,
             self::StopRecording,
+            self::ResendReadiness,
             ...self::terminalControl(),
         ];
     }

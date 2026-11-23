@@ -72,12 +72,7 @@ final readonly class DriverRequests
      */
     public function openWake(StackTarget $target): DriverRequest|null
     {
-        return DriverRequest::query()
-            ->where('agent_runtime_id', $this->lockedRuntime($target)->id)
-            ->where('operation', DriverOperation::Wake)
-            ->whereIn('progress', [RequestProgress::Accepted, RequestProgress::Staged, RequestProgress::Applying])
-            ->lockForUpdate()
-            ->first();
+        return $this->openOf($target, DriverOperation::Wake);
     }
 
     /**
@@ -86,10 +81,18 @@ final readonly class DriverRequests
      */
     public function openStop(StackTarget $target): DriverRequest|null
     {
+        return $this->openOf($target, DriverOperation::Stop);
+    }
+
+    /**
+     * The request of this operation the runtime has not finished yet, if one is open.
+     */
+    public function openOf(StackTarget $target, DriverOperation $operation): DriverRequest|null
+    {
         return DriverRequest::query()
             ->where('agent_runtime_id', $this->lockedRuntime($target)->id)
-            ->where('operation', DriverOperation::Stop)
-            ->whereIn('progress', [RequestProgress::Accepted, RequestProgress::Staged, RequestProgress::Applying])
+            ->where('operation', $operation)
+            ->whereIn('progress', RequestProgress::open())
             ->lockForUpdate()
             ->first();
     }

@@ -374,6 +374,7 @@ case	DriverOperation::Navigate
 case	DriverOperation::OpenPrivateEntry
 case	DriverOperation::PrivateInput
 case	DriverOperation::ReleaseControl
+case	DriverOperation::ResendReadiness
 case	DriverOperation::StartRecording
 case	DriverOperation::Stop
 case	DriverOperation::StopRecording
@@ -532,6 +533,7 @@ case	HostRouteRole::Shared
 case	HostWakeRefusal::CapacityUnavailable
 case	HostWakeRefusal::ContainerUnavailable
 case	HostWakeRefusal::ImageUnverified
+case	HostWakeRefusal::NoObservation
 case	HostWakeRefusal::PinnedBuildMissing
 case	HostWakeRefusal::ProtectedAccountFolderRejected
 case	HostWakeRefusal::Unknown
@@ -2339,6 +2341,10 @@ class	CheckRestoredOutputController
 class	CheckRules
 class	CheckRunCurrencyCall
 class	CheckRunCurrencyController
+class	CheckStartStatusCommand
+class	CheckStartStatusController
+class	CheckStartStatusHandler
+class	CheckStartStatusRequest
 class	CheckTerminalScreenCommand
 class	CheckTerminalScreenController
 class	CheckTerminalScreenHandler
@@ -4916,6 +4922,7 @@ class	ReaderRequests
 class	ReaderRevision
 class	ReaderSampleApproveCommand
 class	ReaderSampleRunCommand
+class	ReadinessCheckSweep
 class	ReadingRules
 class	ReadsServiceProvider
 class	ReadyState
@@ -7237,6 +7244,7 @@ constant	ChatWindowResolver::PAGE
 constant	CheckDraftPageController::CHECKED_DRAFT
 constant	CheckRules::PHP_SPELLINGS
 constant	CheckRules::TOOLS
+constant	CheckStartStatusController::CHECKED
 constant	ChildEnvironment::SECRET_VARIABLES
 constant	ChoiceOptions::MOST
 constant	ClaudeAccountProtection::SECRET_ITEMS
@@ -7802,6 +7810,8 @@ constant	ReadShareHandler::CHILDREN_PAGE
 constant	ReadTally::READS_BEFORE_A_LOOP
 constant	ReaderProof::UPDATED_AT
 constant	ReaderRevision::UPDATED_AT
+constant	ReadinessCheckSweep::ANSWER_SECONDS_LIMIT
+constant	ReadinessCheckSweep::PASS_LIMIT
 constant	ReadsIdempotencyKey::IDEMPOTENCY_HEADER
 constant	ReadyState::TYPE_KEY
 constant	ReceiptDeliveries::ALLOWED_TRIES
@@ -11564,6 +11574,13 @@ method	CheckRules::pytest()
 method	CheckRules::testRunner()
 method	CheckRunCurrencyCall::__construct()
 method	CheckRunCurrencyController::__invoke()
+method	CheckStartStatusCommand::__construct()
+method	CheckStartStatusCommand::target()
+method	CheckStartStatusController::__invoke()
+method	CheckStartStatusHandler::__construct()
+method	CheckStartStatusHandler::handle()
+method	CheckStartStatusRequest::requestId()
+method	CheckStartStatusRequest::rules()
 method	CheckTerminalScreenCommand::__construct()
 method	CheckTerminalScreenController::__invoke()
 method	CheckTerminalScreenHandler::__construct()
@@ -14189,6 +14206,7 @@ method	DriverRequest::settleWithoutWork()
 method	DriverRequest::stage()
 method	DriverRequest::status()
 method	DriverRequest::supersede()
+method	DriverRequest::unansweredReadinessChecksSince()
 method	DriverRequest::wasRetriedFrom()
 method	DriverRequestEndings::abandon()
 method	DriverRequestEndings::cancel()
@@ -14242,6 +14260,7 @@ method	DriverRequestStatus::__construct()
 method	DriverRequests::append()
 method	DriverRequests::holdRuntime()
 method	DriverRequests::lockedRuntime()
+method	DriverRequests::openOf()
 method	DriverRequests::openStop()
 method	DriverRequests::openWake()
 method	DriverRequests::runtimeOf()
@@ -20154,6 +20173,8 @@ method	ReaderRevision::proofs()
 method	ReaderRevision::readerDefinition()
 method	ReaderSampleApproveCommand::handle()
 method	ReaderSampleRunCommand::handle()
+method	ReadinessCheckSweep::__construct()
+method	ReadinessCheckSweep::sweep()
 method	ReadingRules::all()
 method	ReadingRules::flags()
 method	ReadingRules::paths()
@@ -21420,6 +21441,7 @@ method	RequestPlanReviewCommand::__construct()
 method	RequestPlanReviewHandler::handle()
 method	RequestPlanReviewPageController::__invoke()
 method	RequestProgress::isFinal()
+method	RequestProgress::isRefused()
 method	RequestProgress::open()
 method	RequestProgressReportData::__construct()
 method	RequestProgressReportData::binding()
@@ -24711,6 +24733,7 @@ method	StartProposal::__construct()
 method	StartProposal::isContained()
 method	StartProposal::isDriverPinnedAway()
 method	StartProposal::isModelRefused()
+method	StartReadiness::isUnverified()
 method	StartReadiness::shouldHoldDeliveries()
 method	StartReadiness::takesReadiness()
 method	StartReceipt::__construct()
@@ -24732,6 +24755,7 @@ method	StartRecord::latestOf()
 method	StartRecord::lockedAcceptedOf()
 method	StartRecord::lockedLatestOf()
 method	StartRecord::markIdentityUncertain()
+method	StartRecord::markReadinessUnseen()
 method	StartRecord::ownerStartOf()
 method	StartRecord::ownerWork()
 method	StartRecord::prepareIdentity()
@@ -31924,6 +31948,10 @@ property	CheckRestoredOutputCall::$processRun
 property	CheckRestoredOutputCall::$requestKey
 property	CheckRunCurrencyCall::$eventKey
 property	CheckRunCurrencyCall::$processRun
+property	CheckStartStatusCommand::$agentId
+property	CheckStartStatusCommand::$idempotencyKey
+property	CheckStartStatusCommand::$sessionId
+property	CheckStartStatusHandler::$requests
 property	CheckTerminalScreenCommand::$agentId
 property	CheckTerminalScreenCommand::$grantId
 property	CheckTerminalScreenHandler::$clock
@@ -37009,6 +37037,7 @@ property	ReaderSampleApproveCommand::$description
 property	ReaderSampleApproveCommand::$signature
 property	ReaderSampleRunCommand::$description
 property	ReaderSampleRunCommand::$signature
+property	ReadinessCheckSweep::$database
 property	ReadsServiceProvider::$countedConnections
 property	ReadyState::$policy
 property	ReadyState::$stops
@@ -43389,6 +43418,7 @@ variable	$unsettled
 variable	$unsharedToken
 variable	$unsupported
 variable	$until
+variable	$unverified
 variable	$up
 variable	$upload
 variable	$upper

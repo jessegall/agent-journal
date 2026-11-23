@@ -32,4 +32,13 @@ enum StartReadiness: string
     {
         return $this !== self::Refused && $this !== self::Cancelled;
     }
+
+    /**
+     * Whether the start's conversation is still unproven while a report could still prove it: Check status has
+     * something to check.
+     */
+    public function isUnverified(): bool
+    {
+        return $this->shouldHoldDeliveries() && $this->takesReadiness();
+    }
 }

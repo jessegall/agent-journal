@@ -47,4 +47,12 @@ enum RequestProgress: string
             self::DeliveryUncertain => true,
         };
     }
+
+    /**
+     * Whether the host ended the request without carrying it out.
+     */
+    public function isRefused(): bool
+    {
+        return $this === self::Failed || $this === self::Unavailable;
+    }
 }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Agents\CancelLaunchController;
+use App\Http\Controllers\Agents\CheckStartStatusController;
 use App\Http\Controllers\Agents\ContinueStartController;
 use App\Http\Controllers\Agents\DismissLaunchOutcomeController;
 use App\Http\Controllers\Agents\InterruptAgentController;
@@ -52,6 +53,11 @@ Route::post('/agents/{agent}/sessions/{session}/cancel-launch', CancelLaunchCont
     ->middleware(['web', 'auth', 'journal.user'])
     ->whereUlid(['agent', 'session'])
     ->name('agents.cancel-launch');
+
+Route::post('/agents/{agent}/sessions/{session}/check-start', CheckStartStatusController::class)
+    ->middleware(['web', 'auth', 'journal.user'])
+    ->whereUlid(['agent', 'session'])
+    ->name('agents.check-start');
 
 Route::post('/agents/sessions/{session}/continue', ContinueStartController::class)
     ->middleware(['web', 'auth', 'journal.user'])

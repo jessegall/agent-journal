@@ -364,6 +364,19 @@ final class StartRecord extends Model implements ReadableModel
     }
 
     /**
+     * Check status found no proof of the start's conversation, so a start still unverified is uncertain and its
+     * messages stay held; a start that was proved, refused or cancelled meanwhile keeps its state.
+     */
+    public function markReadinessUnseen(): void
+    {
+        if (! $this->readiness->isUnverified()) {
+            return;
+        }
+
+        $this->markIdentityUncertain();
+    }
+
+    /**
      * The owner cancelled the start while its session was not yet verified: no later report makes it ready.
      */
     public function cancelVerification(): void
