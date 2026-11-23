@@ -63,3 +63,4 @@ yours to resolve at its source.
 - Each step is small, with at most one line of why above it. No comment block longer than three lines.
 - Code two scripts need lives once in the shared shell library and is sourced, never copied.
 - No script body inside `compose.yaml`: it is a file of its own.
+- A shell script holds shell only (user message 19367): no Python, PHP or JSON pasted into it. Each such piece is a small file of its own with a plain name that the script calls; JSON a script writes comes from a template file.
