@@ -237,16 +237,29 @@ final class StartRecord extends Model implements ReadableModel
      */
     public static function sessionsHoldingDeliveries(array $ids): array
     {
-        return array_values(self::query()
+        return array_keys(array_filter(
+            self::latestReadinessOf($ids),
+            fn (StartReadiness $readiness) => $readiness->shouldHoldDeliveries(),
+        ));
+    }
+
+    /**
+     * The readiness of each session's latest start, by session id; a session that began from no start record has none.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, StartReadiness>
+     */
+    public static function latestReadinessOf(array $ids): array
+    {
+        return self::query()
             ->whereIn('session_id', $ids)
             ->orderBy('created_at')
             ->orderBy('id')
-            ->readAll('the start records of the sessions one host claims for')
+            ->readAll('the start records of the sessions whose readiness is read together')
             ->get()
             ->keyBy('session_id')
-            ->filter(fn (self $record) => $record->readiness->shouldHoldDeliveries())
-            ->map(fn (self $record) => (string) $record->session_id)
-            ->all());
+            ->map(fn (self $record) => $record->readiness)
+            ->all();
     }
 
     /**

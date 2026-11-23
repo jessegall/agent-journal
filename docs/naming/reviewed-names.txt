@@ -1122,6 +1122,8 @@ case	SessionState::Starting
 case	SessionState::Stopped
 case	SessionState::Stopping
 case	SessionState::Unknown
+case	SessionState::Unverified
+case	SessionState::Verifying
 case	SessionState::WaitingForSignIn
 case	SessionState::Working
 case	SessionStatus::Active
@@ -9967,6 +9969,7 @@ method	AgentStatusRules::stopping()
 method	AgentStatusRules::switching()
 method	AgentStatusRules::underWay()
 method	AgentStatusRules::unknown()
+method	AgentStatusRules::verification()
 method	AgentStatusRules::withoutSession()
 method	AgentTerminalControlPolicy::model()
 method	AgentVisibility::ownRead()
@@ -22976,6 +22979,7 @@ method	SessionStarted::methodName()
 method	SessionStarted::recordTurn()
 method	SessionStarted::recordVisit()
 method	SessionState::label()
+method	SessionState::reason()
 method	SessionStatus::isRunning()
 method	SessionStatus::running()
 method	SessionToolDiscovery::discoveredSince()
@@ -24752,6 +24756,7 @@ method	StartRecord::forAgent()
 method	StartRecord::forOwnerReference()
 method	StartRecord::forgetIntent()
 method	StartRecord::latestOf()
+method	StartRecord::latestReadinessOf()
 method	StartRecord::lockedAcceptedOf()
 method	StartRecord::lockedLatestOf()
 method	StartRecord::markIdentityUncertain()
@@ -30832,6 +30837,7 @@ property	AgentEvidence::$expectsRuntime
 property	AgentEvidence::$hasTerminal
 property	AgentEvidence::$launch
 property	AgentEvidence::$processStart
+property	AgentEvidence::$readiness
 property	AgentEvidence::$request
 property	AgentEvidence::$resumable
 property	AgentEvidence::$retired
@@ -30841,6 +30847,7 @@ property	AgentEvidence::$sessionStatus
 property	AgentEvidence::$switch
 property	AgentEvidence::$waitsOnHelpers
 property	AgentFacts::$launch
+property	AgentFacts::$readiness
 property	AgentFacts::$request
 property	AgentFacts::$runtime
 property	AgentFacts::$session

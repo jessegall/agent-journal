@@ -89,6 +89,11 @@ final readonly class AgentRecords implements AgentDirectory
             $sessions->pluck('id')->all(),
         )));
 
+        $readiness = StartRecord::latestReadinessOf(array_values(array_map(
+            strval(...),
+            $sessions->pluck('id')->all(),
+        )));
+
         $canStop = $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AccessType::Edit]) !== [];
 
         $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
@@ -111,6 +116,7 @@ final readonly class AgentRecords implements AgentDirectory
             $refusals,
             $launches,
             $waitingOnHelpers,
+            $readiness,
             $canStop,
         ): AgentOption {
             $session = $sessions->get($agent->id);
@@ -126,6 +132,7 @@ final readonly class AgentRecords implements AgentDirectory
                     $switches->get($agent->id),
                     $launches[$agent->id] ?? null,
                     in_array($session?->id, $waitingOnHelpers, true),
+                    $readiness[(string) $session?->id] ?? null,
                 ),
                 $conversations->get($agent->id, new Collection()),
                 $refusals[$agent->id] ?? null,

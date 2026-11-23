@@ -47,6 +47,8 @@ const looks: Record<SessionState, StatusState> = {
   "no-capacity": "failed",
   unknown: "open",
   retired: "ended",
+  verifying: "connecting",
+  unverified: "open",
 };
 const isMain = computed(
   () =>

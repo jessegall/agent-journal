@@ -41,4 +41,16 @@ enum StartReadiness: string
     {
         return $this->shouldHoldDeliveries() && $this->takesReadiness();
     }
+
+    /**
+     * The state a live session shows while this start has not proved its conversation; none once it no longer waits.
+     */
+    public function verificationState(): SessionState|null
+    {
+        return match ($this) {
+            self::Accepted, self::PreparingIdentity => SessionState::Verifying,
+            self::Uncertain => SessionState::Unverified,
+            self::Ready, self::Refused, self::Cancelled => null,
+        };
+    }
 }

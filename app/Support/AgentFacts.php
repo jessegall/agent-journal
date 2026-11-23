@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Enums\ProcessStartState;
 use App\Enums\StartDisposition;
+use App\Enums\StartReadiness;
 use App\Models\AgentRuntime;
 use App\Models\AgentSession;
 use App\Models\DriverRequest;
@@ -27,6 +28,7 @@ final readonly class AgentFacts
         public DriverSwitch|null $switch,
         public LaunchOutcome|null $launch,
         public bool $waitsOnHelpers,
+        public StartReadiness|null $readiness,
     ) {}
 
     /**
@@ -53,11 +55,12 @@ final readonly class AgentFacts
             $this->request?->status(),
             $this->launch,
             $resumable,
-            $session !== null && $isOwnerStart && $launchInProgress,
+            $session !== null && (($isOwnerStart && $launchInProgress) || $this->readiness?->isUnverified() === true),
             $this->runtime?->hasScreen() === true,
             $canStop && $session !== null,
             $this->waitsOnHelpers,
             $canStop,
+            $this->readiness,
         );
     }
 }

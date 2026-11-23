@@ -197,6 +197,12 @@ final class AgentStatusRules
             return self::isWakeRefused($evidence->request) ? self::unknown($evidence) : self::starting($evidence);
         }
 
+        $verification = self::verification($evidence);
+
+        if ($verification !== null) {
+            return $verification;
+        }
+
         if ($evidence->sessionStatus === SessionStatus::Silent) {
             return self::unknown($evidence);
         }
@@ -228,6 +234,27 @@ final class AgentStatusRules
             RuntimeActivity::Stopping => self::plain(SessionState::Stopping, $evidence, []),
             RuntimeActivity::Stopped, RuntimeActivity::HostUnavailable => self::unknown($evidence),
         };
+    }
+
+    /**
+     * A live session whose start has not proved its conversation yet holds its messages: Verifying while the proof may
+     * still come, not verified once it did not, each with Check status and Cancel.
+     */
+    private static function verification(AgentEvidence $evidence): AgentStatus|null
+    {
+        $state = $evidence->readiness?->verificationState();
+
+        if ($state === null) {
+            return null;
+        }
+
+        $actions = [StatusAction::of(StatusActionType::CheckStatus)];
+
+        if ($evidence->canCancelLaunch) {
+            $actions[] = StatusAction::of(StatusActionType::CancelStart);
+        }
+
+        return self::labelled($state, $state->label(), $evidence, $actions, null, $state->reason());
     }
 
     /**

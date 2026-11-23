@@ -8,6 +8,7 @@ use App\Data\DriverRequestStatus;
 use App\Enums\ProcessStartState;
 use App\Enums\SessionStatus;
 use App\Enums\StartDisposition;
+use App\Enums\StartReadiness;
 
 /**
  * Every fact the server holds of one agent that its status is decided from: retirement, the live session, its
@@ -32,6 +33,8 @@ final readonly class AgentEvidence
         public bool $canStop = false,
         public bool $waitsOnHelpers = false,
         public bool $canReconcile = false,
+        // The readiness of the live session's latest start; none for a session that began from no start record.
+        public StartReadiness|null $readiness = null,
     ) {}
 
     public function hasLiveSession(): bool

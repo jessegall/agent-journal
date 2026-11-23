@@ -26,6 +26,7 @@ import {
 import AgentPicker from "./AgentPicker.vue";
 import AgentSessionActions from "./AgentSessionActions.vue";
 import Composer from "./Composer.vue";
+import VerifyingSessionCard from "./VerifyingSessionCard.vue";
 import RecordPanel from "./RecordPanel.vue";
 import DockStack from "./dock/DockStack.vue";
 import FocusedQuestion from "./FocusedQuestion.vue";
@@ -466,6 +467,9 @@ function retryFocused(): void {
           :inbox-id="conversation.inboxId"
           :load-more="loadMore"
         />
+        <template v-if="selected">
+          <VerifyingSessionCard :agent="selected" />
+        </template>
         <Composer
           :draft-key="key"
           :agent="agentIdsInChat.length === 1 ? (selected?.id ?? null) : null"

@@ -24,6 +24,8 @@ enum SessionState: string
     case NoCapacity = 'no-capacity';
     case Unknown = 'unknown';
     case Retired = 'retired';
+    case Verifying = 'verifying';
+    case Unverified = 'unverified';
 
     /**
      * The words the bar shows for this state when nothing more specific names it.
@@ -43,6 +45,31 @@ enum SessionState: string
             self::NoCapacity => 'No capacity',
             self::Unknown => 'Status unknown',
             self::Retired => 'Retired',
+            self::Verifying => 'Verifying session',
+            self::Unverified => 'Session not verified',
+        };
+    }
+
+    /**
+     * The sentence under a state that needs one to be understood, or none.
+     */
+    public function reason(): string|null
+    {
+        return match ($this) {
+            self::Verifying => 'The journal is checking which conversation the agent runs before it sends your messages.',
+            self::Unverified => 'The journal could not confirm which conversation the agent runs, so your messages stay held.',
+            self::Stopped,
+            self::Starting,
+            self::Working,
+            self::Idle,
+            self::Stopping,
+            self::Interrupting,
+            self::Failed,
+            self::Refused,
+            self::WaitingForSignIn,
+            self::NoCapacity,
+            self::Unknown,
+            self::Retired => null,
         };
     }
 }

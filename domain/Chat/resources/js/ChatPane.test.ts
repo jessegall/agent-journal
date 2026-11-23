@@ -79,6 +79,9 @@ vi.mock("./chats/InboxSelector.vue", () => ({
 vi.mock("./AgentSessionActions.vue", () => ({
   default: { template: "<div />" },
 }));
+vi.mock("./VerifyingSessionCard.vue", () => ({
+  default: { template: "<div />" },
+}));
 
 const { default: ChatPane } = await import("./ChatPane.vue");
 

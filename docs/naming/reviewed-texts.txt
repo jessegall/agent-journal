@@ -409,6 +409,7 @@ Send code
 Send it
 Send presses Enter on the line; Save and clear keeps it in this tab only and empties the prompt.
 Send privately
+Session not verified
 Setting up
 Settled
 Share
@@ -531,6 +532,7 @@ Use the light color scheme
 Use these lines
 Used for {{ revision.purpose }}; its output is {{ revision.outputRequirement }}
 Verification pending
+Verifying session
 Version
 Version control
 Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}

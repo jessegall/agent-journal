@@ -17,6 +17,7 @@ use App\Enums\RuntimeActivity;
 use App\Enums\SessionState;
 use App\Enums\SessionStatus;
 use App\Enums\StartDisposition;
+use App\Enums\StartReadiness;
 use App\Enums\StatusActionType;
 use App\Support\AgentEvidence;
 use App\Support\AgentStatusRules;
@@ -189,6 +190,57 @@ final class AgentStatusTest extends TestCase
             [
                 $status->sessionState,
                 $status->label,
+                array_map(fn (StatusAction $action) => $action->type->value, $status->actions),
+            ],
+        );
+    }
+
+    /**
+     * @return array<string, array{StartReadiness, SessionState, list<string>}>
+     */
+    public static function readiness(): array
+    {
+        return [
+            'accepted' => [StartReadiness::Accepted, SessionState::Verifying, ['check-status', 'cancel-start']],
+            'preparing' => [StartReadiness::PreparingIdentity, SessionState::Verifying, ['check-status', 'cancel-start']],
+            'uncertain' => [StartReadiness::Uncertain, SessionState::Unverified, ['check-status', 'cancel-start']],
+            'ready' => [StartReadiness::Ready, SessionState::Idle, ['switch']],
+            'cancelled' => [StartReadiness::Cancelled, SessionState::Idle, ['switch']],
+        ];
+    }
+
+    /**
+     * @param  list<string>  $actions
+     */
+    #[DataProvider('readiness')]
+    public function test_a_start_that_has_not_proved_its_conversation_is_verifying_with_check_status_and_cancel(
+        StartReadiness $readiness,
+        SessionState $state,
+        array $actions,
+    ): void {
+        $evidence = new AgentEvidence(
+            false,
+            self::SESSION,
+            SessionStatus::Active,
+            ProcessStartState::Running,
+            self::runtime(RuntimeActivity::Idle),
+            true,
+            null,
+            null,
+            null,
+            false,
+            $readiness->isUnverified(),
+            readiness: $readiness,
+        );
+
+        $status = AgentStatusRules::of($evidence, self::words(false));
+
+        $this->assertSame(
+            [$state, $state->label(), $state->reason(), $actions],
+            [
+                $status->sessionState,
+                $status->label,
+                $status->reason,
                 array_map(fn (StatusAction $action) => $action->type->value, $status->actions),
             ],
         );

@@ -7,6 +7,7 @@ import type { AgentOptionData, StatusActionData } from "@generated/types/chat";
 import {
   accountsPage,
   cancelLaunch,
+  checkStart,
   dismissLaunchOutcome,
   recheck,
   retry,
@@ -149,6 +150,28 @@ function cancelStart(): void {
 }
 
 /**
+ * Checks a start whose session is not verified: the host is asked once, under a new request id, to send its ready report
+ * again, and the page is read again for the answer. Any other Check status only reads the page again.
+ */
+function checkStatus(): void {
+  pendingType.value = "check-status";
+
+  const state = props.agent.status.sessionState;
+
+  if (props.agent.sessionId === null || (state !== "verifying" && state !== "unverified")) {
+    readAgain();
+
+    return;
+  }
+
+  sendPageAction(
+    checkStart({ agent: props.agent.id, session: props.agent.sessionId }),
+    { requestId: newRequestId() },
+    { only: [], onFinish: readAgain },
+  );
+}
+
+/**
  * Stops the session the bar shows, at the generation it shows, once under a new request id, after the confirmation;
  * the bar then follows the stop from the page, and Stopped shows only when the page says so.
  */
@@ -251,10 +274,7 @@ const handlers: Record<StatusActionData["type"], () => void> = {
   },
   retry: () => settleSwitch(retry, "Retrying"),
   "recheck-switch": () => settleSwitch(recheck, "Checking"),
-  "check-status": () => {
-    pendingType.value = "check-status";
-    readAgain();
-  },
+  "check-status": checkStatus,
   "check-capacity": checkCapacity,
   "sign-in": () => router.visit(accountsPage.url()),
   "open-terminal": openTerminal,
