@@ -88,4 +88,9 @@ final readonly class ActorIdentity
     {
         return $this->type->isUser();
     }
+
+    public function isAgent(): bool
+    {
+        return $this->type->isAgent();
+    }
 }

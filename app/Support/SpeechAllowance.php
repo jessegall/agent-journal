@@ -95,15 +95,14 @@ final readonly class SpeechAllowance
      */
     public function targetTurnFor(ChatEnvelope $chat, Inbox $inbox): SpeechOpportunity|null
     {
-        if (! $chat->isQuestion() || $chat->respondent === null || ! $chat->respondent->type->isAgent()) {
+        if (! $chat->isQuestion() || $chat->respondent === null || ! $chat->respondent->isAgent()) {
             return null;
         }
 
         $turn = SpeechOpportunity::query()
             ->where('inbox_id', $inbox->inboxId())
             ->onRoot((string) $chat->userRootId)
-            ->where('actor_type', $chat->respondent->type->value)
-            ->where('actor_id', $chat->respondent->id)
+            ->where($chat->respondent->asColumns('actor'))
             ->lockForUpdate()
             ->first();
 

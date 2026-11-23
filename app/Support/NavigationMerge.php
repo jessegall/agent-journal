@@ -38,7 +38,7 @@ final readonly class NavigationMerge
         $roots = [];
 
         foreach ($gathered as $root) {
-            array_push($roots, ...$this->pruned($root, $dropped));
+            array_push($roots, ...$root->withoutDropped($dropped));
         }
 
         return new NavigationIndex($this->rootsInOrder($roots));
@@ -121,37 +121,6 @@ final readonly class NavigationMerge
     }
 
     /**
-     * The item without its dropped contributions, its children ordered by position then key; nothing when it is
-     * dropped, or when it opens no page and no child is left.
-     *
-     * @param  array<int, true>  $dropped
-     * @return list<NavigationCandidate>
-     */
-    private function pruned(NavigationCandidate $candidate, array $dropped): array
-    {
-        if ($candidate->contribution !== null && array_key_exists($candidate->contribution, $dropped)) {
-            return [];
-        }
-
-        $children = [];
-
-        foreach ($candidate->children as $child) {
-            array_push($children, ...$this->pruned($child, $dropped));
-        }
-
-        if ($candidate->navigation->page === null && $children === []) {
-            return [];
-        }
-
-        usort($children, fn (NavigationCandidate $one, NavigationCandidate $other) => [
-            $one->navigation->navigationItem->position,
-            $one->key(),
-        ] <=> [$other->navigation->navigationItem->position, $other->key()]);
-
-        return [$candidate->withChildren($children)];
-    }
-
-    /**
      * Home first, then the groups by the lowest position of their visible roots, then group key, then position, then
      * key, so equal positions keep one order.
      *
@@ -163,19 +132,14 @@ final readonly class NavigationMerge
         $groupPositions = [];
 
         foreach ($roots as $root) {
-            $group = (string) $root->navigation->navigationItem->group;
-
-            $groupPositions[$group] = min(
-                $groupPositions[$group] ?? PHP_INT_MAX,
-                $root->navigation->navigationItem->position,
-            );
+            $groupPositions[$root->group()] = min($groupPositions[$root->group()] ?? PHP_INT_MAX, $root->position());
         }
 
         $order = fn (NavigationCandidate $root) => [
-            $root->navigation->page?->key !== 'web.home',
-            $groupPositions[(string) $root->navigation->navigationItem->group],
-            (string) $root->navigation->navigationItem->group,
-            $root->navigation->navigationItem->position,
+            ! $root->isHome(),
+            $groupPositions[$root->group()],
+            $root->group(),
+            $root->position(),
             $root->key(),
         ];
 
