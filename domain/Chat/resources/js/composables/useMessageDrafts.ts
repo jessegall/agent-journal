@@ -131,7 +131,7 @@ export function useMessageDrafts() {
   }): void {
     const generation =
       generationOf(intent.draftKey) +
-      ((drafts.get(intent.draftKey) ?? "") === "" ? 0 : 1);
+      (drafts.get(intent.draftKey) ? 1 : 0);
     recoveries.set(intent.intentKey, {
       ...intent,
       generation,

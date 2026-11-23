@@ -108,12 +108,12 @@ final readonly class DocumentsIndex
      * A dialog that files a document or a report from its Title, One line about it and Text, sent to the registered
      * create action of its type.
      */
-    private function creation(string $type, string $label, string $key = ''): LayoutPartData
+    private function creation(string $type, string $label): LayoutPartData
     {
         $route = $type === 'doc' ? 'documents.create-document' : 'documents.create-report';
 
         return LayoutPartData::dialog(
-            $key === '' ? "create-{$type}" : $key,
+            "create-{$type}",
             new LayoutDialogData(
                 $label,
                 $type === 'doc' ? 'Document filed' : 'Report filed',

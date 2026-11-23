@@ -92,6 +92,8 @@ final readonly class LineAdmission implements ShellAdmission
         }
 
         try {
+            // Made here, inside the try: making the classifier reads the project rules, and an unreadable rule store
+            // refuses the line instead of failing the admission itself.
             $classification = $this->container->make(CommandClassifier::class)->classify($tree, $context);
             $refusal = $this->firstRefusal($tree, $classification, $context, $actor);
         } catch (ClassificationUnavailable $unavailable) {
