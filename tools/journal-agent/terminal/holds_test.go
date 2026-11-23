@@ -2,6 +2,7 @@ package terminal
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 	"time"
 
@@ -78,6 +79,23 @@ func TestTheRecordedWelcomeScreenIsPassedWithItsRecordedEnterAndHoldsNothing(t *
 	}
 	if program.String() != "\r" {
 		t.Fatalf("the welcome screen got keys %q, not its recorded Enter", program.String())
+	}
+}
+
+func TestAPasteOfSeveralLinesIsEchoedByItsFoldMarkerOfThatManyLines(t *testing.T) {
+	reader, reading := replayed(t, "claude-code/2.1.323/screens/folded-paste")
+	layout := profiles.ClaudeCode{}.Screens()
+	gate := NewInputGate(&bytes.Buffer{}, reader, layout.Composer, func() time.Time { return time.Unix(0, 0) })
+	twelveLines := strings.TrimSuffix(strings.Repeat("a line\n", 12), "\n")
+
+	if reading.Kind == screen.MenuShown {
+		t.Fatalf("the folded paste read as the menu %q", reading.Menu)
+	}
+	if !gate.Echoes(twelveLines) {
+		t.Fatal("the fold marker of twelve lines was not taken as the echo of twelve typed lines")
+	}
+	if gate.Echoes(twelveLines + "\none more") {
+		t.Fatal("the fold marker of twelve lines was taken as the echo of thirteen")
 	}
 }
 

@@ -228,10 +228,15 @@ func (gate *InputGate) Echoes(text string) bool {
 	return gate.echoes(text)
 }
 
-// echoes is whether the composer shows the text: every typed character at its place after the marker. A program may
+// echoes is whether the composer shows the text: folded into the program's marker for a paste of several lines, or
+// every typed character at its place after the marker. A program may
 // draw a typed space by moving the cursor, leaving an earlier placeholder's letter in that cell, so spaces are not
 // compared.
 func (gate *InputGate) echoes(text string) bool {
+	if gate.composer.ShowsFolded(gate.reader.Snapshot(), text) {
+		return true
+	}
+
 	drawn := []rune(gate.composerText())
 	typed := []rune(strings.TrimSpace(text))
 
