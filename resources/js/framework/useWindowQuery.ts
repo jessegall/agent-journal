@@ -1,14 +1,14 @@
-import { router, usePage } from '@inertiajs/vue3';
-import { inject, provide } from 'vue';
-import { useHostProp } from './hostProp';
+import { router, usePage } from "@inertiajs/vue3";
+import { inject, provide } from "vue";
+import { useHostProp } from "./hostProp";
 
-const WINDOW_KEY = Symbol('journal.window');
+const WINDOW_KEY = Symbol("journal.window");
 
 /**
  * Marks everything under a window host as that window, so its links write its own part of the page's query.
  */
 export function provideWindowKey(key: string): void {
-    provide(WINDOW_KEY, key);
+  provide(WINDOW_KEY, key);
 }
 
 /**
@@ -16,33 +16,33 @@ export function provideWindowKey(key: string): void {
  * window's, and on its own page the plain query. Empty values are left out.
  */
 export function useWindowQuery(): (
-    query: Record<string, string | number | undefined>,
+  query: Record<string, string | number | undefined>,
 ) => string {
-    const page = usePage();
-    const key = inject<string | null>(WINDOW_KEY, null);
+  const page = usePage();
+  const key = inject<string | null>(WINDOW_KEY, null);
 
-    return (query) => {
-        const url = new URL(page.url, 'http://journal.local');
-        const prefix = key === null ? null : `window[${key}]`;
-        const names = [...url.searchParams.keys()];
+  return (query) => {
+    const url = new URL(page.url, "http://journal.local");
+    const prefix = key === null ? null : `window[${key}]`;
+    const names = [...url.searchParams.keys()];
 
-        for (const name of names) {
-            if (prefix === null || name.startsWith(`${prefix}[`)) {
-                url.searchParams.delete(name);
-            }
-        }
+    for (const name of names) {
+      if (prefix === null || name.startsWith(`${prefix}[`)) {
+        url.searchParams.delete(name);
+      }
+    }
 
-        for (const [name, value] of Object.entries(query)) {
-            if (value !== undefined && value !== '') {
-                url.searchParams.set(
-                    prefix === null ? name : `${prefix}[${name}]`,
-                    String(value),
-                );
-            }
-        }
+    for (const [name, value] of Object.entries(query)) {
+      if (value !== undefined && value !== "") {
+        url.searchParams.set(
+          prefix === null ? name : `${prefix}[${name}]`,
+          String(value),
+        );
+      }
+    }
 
-        return `${url.pathname}${url.search}`;
-    };
+    return `${url.pathname}${url.search}`;
+  };
 }
 
 /**
@@ -50,9 +50,9 @@ export function useWindowQuery(): (
  * plain name.
  */
 export function useWindowParam(): (name: string) => string {
-    const key = inject<string | null>(WINDOW_KEY, null);
+  const key = inject<string | null>(WINDOW_KEY, null);
 
-    return (name) => (key === null ? name : `window[${key}][${name}]`);
+  return (name) => (key === null ? name : `window[${key}][${name}]`);
 }
 
 /**
@@ -60,26 +60,26 @@ export function useWindowParam(): (name: string) => string {
  * of the others; a key given undefined is removed.
  */
 export function useWindowQueryChange(): (
-    changes: Record<string, string | undefined>,
+  changes: Record<string, string | undefined>,
 ) => string {
-    const page = usePage();
-    const key = inject<string | null>(WINDOW_KEY, null);
+  const page = usePage();
+  const key = inject<string | null>(WINDOW_KEY, null);
 
-    return (changes) => {
-        const url = new URL(page.url, 'http://journal.local');
+  return (changes) => {
+    const url = new URL(page.url, "http://journal.local");
 
-        for (const [name, value] of Object.entries(changes)) {
-            const param = key === null ? name : `window[${key}][${name}]`;
+    for (const [name, value] of Object.entries(changes)) {
+      const param = key === null ? name : `window[${key}][${name}]`;
 
-            if (value === undefined || value === '') {
-                url.searchParams.delete(param);
-            } else {
-                url.searchParams.set(param, value);
-            }
-        }
+      if (value === undefined || value === "") {
+        url.searchParams.delete(param);
+      } else {
+        url.searchParams.set(param, value);
+      }
+    }
 
-        return `${url.pathname}${url.search}`;
-    };
+    return `${url.pathname}${url.search}`;
+  };
 }
 
 /**
@@ -88,19 +88,19 @@ export function useWindowQueryChange(): (
  * replaces the prop; the window keeps what it already shows.
  */
 export function useWindowReload(): (
-    values: Record<string, string>,
-    callbacks: {
-        onNetworkError: () => boolean;
-        onHttpException: (response: { status: number }) => boolean;
-    },
+  values: Record<string, string>,
+  callbacks: {
+    onNetworkError: () => boolean;
+    onHttpException: (response: { status: number }) => boolean;
+  },
 ) => void {
-    const key = inject<string | null>(WINDOW_KEY, null);
-    const prop = useHostProp();
+  const key = inject<string | null>(WINDOW_KEY, null);
+  const prop = useHostProp();
 
-    return (values, callbacks) =>
-        router.reload({
-            only: [prop],
-            data: key === null ? values : { window: { [key]: values } },
-            ...callbacks,
-        });
+  return (values, callbacks) =>
+    router.reload({
+      only: [prop],
+      data: key === null ? values : { window: { [key]: values } },
+      ...callbacks,
+    });
 }

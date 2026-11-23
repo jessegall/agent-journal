@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { DockOfferData } from '@/generated/types/core';
-import { keyedPost } from './keyedPost';
+import TextLink from "@/components/kit/TextLink.vue";
+import { ref } from "vue";
+import type { DockOfferData } from "@/generated/types/core";
+import { keyedPost } from "./keyedPost";
 
 /**
  * The offer to dock the source a window shows: the action opens a picker of the viewer's destinations, shows the one
@@ -11,17 +12,17 @@ import { keyedPost } from './keyedPost';
 const props = defineProps<{ offer: DockOfferData }>();
 
 const answers: Record<string, string> = {
-    added: 'Added to the chat',
-    present: 'Already in the chat',
-    unavailable: 'This cannot be docked',
+  added: "Added to the chat",
+  present: "Already in the chat",
+  unavailable: "This cannot be docked",
 };
 const choosing = ref(false);
 const chosen = ref<string | null>(props.offer.destinations[0]?.value ?? null);
 const answer = ref<string | null>(null);
 
 function cancel(): void {
-    choosing.value = false;
-    answer.value = null;
+  choosing.value = false;
+  answer.value = null;
 }
 
 /**
@@ -29,82 +30,66 @@ function cancel(): void {
  * its errors.
  */
 function confirm(): void {
-    if (chosen.value === null) {
-        return;
-    }
+  if (chosen.value === null) {
+    return;
+  }
 
-    keyedPost(
-        props.offer.url,
-        {
-            [props.offer.destinationField]: chosen.value,
-            type: props.offer.type,
-            id: props.offer.id,
-        },
-        crypto.randomUUID(),
-        {
-            onAccepted: (flash) => {
-                const outcome =
-                    typeof flash.dockOutcome === 'string'
-                        ? flash.dockOutcome
-                        : 'unavailable';
-                answer.value = answers[outcome] ?? outcome;
+  keyedPost(
+    props.offer.url,
+    {
+      [props.offer.destinationField]: chosen.value,
+      type: props.offer.type,
+      id: props.offer.id,
+    },
+    crypto.randomUUID(),
+    {
+      onAccepted: (flash) => {
+        const outcome =
+          typeof flash.dockOutcome === "string"
+            ? flash.dockOutcome
+            : "unavailable";
+        answer.value = answers[outcome] ?? outcome;
 
-                if (outcome !== 'unavailable') {
-                    choosing.value = false;
-                }
-            },
-            onRefused: (reason) =>
-                (answer.value = reason ?? answers.unavailable),
-            onUncertain: () =>
-                (answer.value =
-                    'The journal did not answer; add it again to be sure.'),
-        },
-    );
+        if (outcome !== "unavailable") {
+          choosing.value = false;
+        }
+      },
+      onRefused: (reason) => (answer.value = reason ?? answers.unavailable),
+      onUncertain: () =>
+        (answer.value = "The journal did not answer; add it again to be sure."),
+    },
+  );
 }
 </script>
 
 <template>
-    <div class="flex flex-wrap items-center gap-2 text-sm">
-        <button
-            type="button"
-            class="underline"
-            :aria-expanded="choosing"
-            @click="choosing = true"
+  <div class="flex flex-wrap items-center gap-2 text-sm">
+    <TextLink :aria-expanded="choosing" @click="choosing = true">
+      {{ offer.label }}
+    </TextLink>
+    <template v-if="choosing">
+      <fieldset class="flex flex-wrap items-center gap-2">
+        <legend class="sr-only">Choose a chat</legend>
+        <template
+          v-for="destination in offer.destinations"
+          :key="destination.value"
         >
-            {{ offer.label }}
-        </button>
-        <template v-if="choosing">
-            <fieldset class="flex flex-wrap items-center gap-2">
-                <legend class="sr-only">Choose a chat</legend>
-                <template
-                    v-for="destination in offer.destinations"
-                    :key="destination.value"
-                >
-                    <label class="flex items-center gap-1">
-                        <input
-                            v-model="chosen"
-                            type="radio"
-                            name="dock-destination"
-                            :value="destination.value"
-                        />
-                        {{ destination.label }}
-                    </label>
-                </template>
-            </fieldset>
-            <button
-                type="button"
-                class="underline"
-                :disabled="chosen === null"
-                @click="confirm"
-            >
-                Add
-            </button>
-            <button type="button" class="underline" @click="cancel">
-                Cancel
-            </button>
+          <label class="flex items-center gap-1">
+            <input
+              v-model="chosen"
+              type="radio"
+              name="dock-destination"
+              :value="destination.value"
+            />
+            {{ destination.label }}
+          </label>
         </template>
-        <template v-if="answer !== null">
-            <span role="status">{{ answer }}</span>
-        </template>
-    </div>
+      </fieldset>
+      <TextLink :disabled="chosen === null" @click="confirm"> Add </TextLink>
+      <TextLink @click="cancel"> Cancel </TextLink>
+    </template>
+    <template v-if="answer !== null">
+      <span role="status">{{ answer }}</span>
+    </template>
+  </div>
 </template>

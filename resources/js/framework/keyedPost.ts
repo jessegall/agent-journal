@@ -1,17 +1,17 @@
-import type { RequestPayload } from '@inertiajs/core';
-import { router } from '@inertiajs/vue3';
+import type { RequestPayload } from "@inertiajs/core";
+import { router } from "@inertiajs/vue3";
 
 /**
  * What became of a keyed post: the server took it, refused it with a reason, or never answered, so only a later read
  * of the page can tell.
  */
 export type KeyedPostOutcome = {
-    // The values the server flashed with its answer, such as the id of what it made.
-    onAccepted: (flash: Record<string, unknown>) => void;
-    // The refusal's words and the form field it belongs to, or 'command' when it is the whole change's.
-    onRefused: (reason: string | null, field: string | null) => void;
-    onUncertain: () => void;
-    onFinish?: () => void;
+  // The values the server flashed with its answer, such as the id of what it made.
+  onAccepted: (flash: Record<string, unknown>) => void;
+  // The refusal's words and the form field it belongs to, or 'command' when it is the whole change's.
+  onRefused: (reason: string | null, field: string | null) => void;
+  onUncertain: () => void;
+  onFinish?: () => void;
 };
 
 /**
@@ -21,33 +21,33 @@ export type KeyedPostOutcome = {
  * uncertain, never sent again.
  */
 export function keyedPost(
-    url: string,
-    data: RequestPayload,
-    key: string,
-    outcome: KeyedPostOutcome,
-    only: string[] = [],
+  url: string,
+  data: RequestPayload,
+  key: string,
+  outcome: KeyedPostOutcome,
+  only: string[] = [],
 ): void {
-    router.post(url, data, {
-        async: true,
-        only,
-        preserveState: true,
-        preserveScroll: true,
-        headers: { 'Idempotency-Key': key },
-        onSuccess: (page) => outcome.onAccepted(page.flash),
-        onError: (errors) => {
-            const [field, reason] = Object.entries(errors)[0] ?? [null, null];
-            outcome.onRefused(reason, field);
-        },
-        onHttpException: () => {
-            outcome.onUncertain();
+  router.post(url, data, {
+    async: true,
+    only,
+    preserveState: true,
+    preserveScroll: true,
+    headers: { "Idempotency-Key": key },
+    onSuccess: (page) => outcome.onAccepted(page.flash),
+    onError: (errors) => {
+      const [field, reason] = Object.entries(errors)[0] ?? [null, null];
+      outcome.onRefused(reason, field);
+    },
+    onHttpException: () => {
+      outcome.onUncertain();
 
-            return false;
-        },
-        onNetworkError: () => {
-            outcome.onUncertain();
+      return false;
+    },
+    onNetworkError: () => {
+      outcome.onUncertain();
 
-            return false;
-        },
-        onFinish: () => outcome.onFinish?.(),
-    });
+      return false;
+    },
+    onFinish: () => outcome.onFinish?.(),
+  });
 }

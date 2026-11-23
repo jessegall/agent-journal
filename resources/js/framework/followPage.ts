@@ -1,5 +1,5 @@
-import { watch } from 'vue';
-import { appliedReadGeneration, markDirty } from '@/composables/usePageChanges';
+import { watch } from "vue";
+import { appliedReadGeneration, markDirty } from "@/composables/usePageChanges";
 
 const FOLLOW_PAUSE_MS = 2000;
 
@@ -10,33 +10,33 @@ const FOLLOW_PAUSE_MS = 2000;
  * good, so a late read changes nothing.
  */
 export function followPage(isOver: () => boolean): { stop: () => void } {
-    let isFollowing = true;
-    let awaitedRead = markDirty('write');
-    let pause: ReturnType<typeof setTimeout> | undefined;
+  let isFollowing = true;
+  let awaitedRead = markDirty("write");
+  let pause: ReturnType<typeof setTimeout> | undefined;
 
-    const stopWatching = watch(appliedReadGeneration, (applied) => {
-        if (!isFollowing || applied < awaitedRead) {
-            return;
-        }
-
-        if (isOver()) {
-            stop();
-
-            return;
-        }
-
-        pause = setTimeout(() => {
-            if (isFollowing) {
-                awaitedRead = markDirty('write');
-            }
-        }, FOLLOW_PAUSE_MS);
-    });
-
-    function stop(): void {
-        isFollowing = false;
-        clearTimeout(pause);
-        stopWatching();
+  const stopWatching = watch(appliedReadGeneration, (applied) => {
+    if (!isFollowing || applied < awaitedRead) {
+      return;
     }
 
-    return { stop };
+    if (isOver()) {
+      stop();
+
+      return;
+    }
+
+    pause = setTimeout(() => {
+      if (isFollowing) {
+        awaitedRead = markDirty("write");
+      }
+    }, FOLLOW_PAUSE_MS);
+  });
+
+  function stop(): void {
+    isFollowing = false;
+    clearTimeout(pause);
+    stopWatching();
+  }
+
+  return { stop };
 }
