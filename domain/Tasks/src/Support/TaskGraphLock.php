@@ -19,19 +19,35 @@ final readonly class TaskGraphLock
      */
     public function lock(string $dependentId, string $prerequisiteId): array
     {
-        $environmentOf = Task::query()->whereKey([$dependentId, $prerequisiteId])
-            ->readExactly(2)->pluck('environment_id', 'id')->all();
+        $locked = $this->lockAll([$dependentId, $prerequisiteId]);
+
+        return [$locked[$dependentId] ?? Task::lockedById($dependentId), $locked[$prerequisiteId] ?? null];
+    }
+
+    /**
+     * Locks the wait graphs of every environment these tasks are in, then each task row by id ascending: the one order
+     * every wait change takes, so two changes never wait on each other.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, Task> the tasks by id, locked
+     */
+    public function lockAll(array $ids): array
+    {
+        $unique = array_values(array_unique($ids));
+
+        $environmentOf = Task::query()->whereKey($unique)
+            ->readExactly(count($unique))->pluck('environment_id', 'id')->all();
 
         Task::lockWaitGraphs(array_values(array_map(strval(...), $environmentOf)));
 
-        $ids = array_keys($environmentOf);
-        sort($ids);
+        $sorted = array_map(strval(...), array_keys($environmentOf));
+        sort($sorted);
         $locked = [];
 
-        foreach ($ids as $id) {
-            $locked[$id] = Task::lockedById((string) $id);
+        foreach ($sorted as $id) {
+            $locked[$id] = Task::lockedById($id);
         }
 
-        return [$locked[$dependentId] ?? Task::lockedById($dependentId), $locked[$prerequisiteId] ?? null];
+        return $locked;
     }
 }

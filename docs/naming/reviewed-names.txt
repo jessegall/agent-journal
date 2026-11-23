@@ -1866,6 +1866,9 @@ class	AppServiceProvider
 class	AppendUploadCommand
 class	AppendUploadHandler
 class	AppendUploadTool
+class	ApplyPlanGraphPageController
+class	ApplyTaskWaitsCommand
+class	ApplyTaskWaitsHandler
 class	ApprovalReceipt
 class	ApprovalRefused
 class	ApproveBundlePageController
@@ -4436,6 +4439,11 @@ class	PlanEndRequest
 class	PlanFilters
 class	PlanFiltersData
 class	PlanFinished
+class	PlanGraphChangeMissing
+class	PlanGraphChanges
+class	PlanGraphEditing
+class	PlanGraphRequest
+class	PlanGraphUndo
 class	PlanHasUnfinishedTasks
 class	PlanList
 class	PlanListData
@@ -4481,6 +4489,7 @@ class	PlanTaskPoolFactory
 class	PlanTaskRequest
 class	PlanTaskWindowResolver
 class	PlanUnderReview
+class	PlanWaitSuggester
 class	PlanWindowResolver
 class	PlanWord
 class	PlanWork
@@ -6617,6 +6626,7 @@ class	SubstitutionQueue
 class	SubstitutionsRead
 class	SubstitutionsToParse
 class	Subtitle
+class	SuggestPlanGraphPageController
 class	SuperviseRun
 class	SuperviseSharingCommand
 class	SupervisedRun
@@ -6725,12 +6735,14 @@ class	TaskFilters
 class	TaskFiltersData
 class	TaskFinished
 class	TaskGraph
+class	TaskGraphChanged
 class	TaskGraphDestinations
 class	TaskGraphEdge
 class	TaskGraphLock
 class	TaskGraphNode
 class	TaskGraphRecords
 class	TaskGraphSuggestion
+class	TaskGraphVersion
 class	TaskHistoryEntry
 class	TaskHistoryPage
 class	TaskHistoryRecords
@@ -6802,9 +6814,11 @@ class	TaskWaitGraph
 class	TaskWaitHistory
 class	TaskWaitItemData
 class	TaskWaitLink
+class	TaskWaitPair
 class	TaskWaitRecords
 class	TaskWaitRefused
 class	TaskWaitRequest
+class	TaskWaitRules
 class	TaskWaits
 class	TaskWaitsData
 class	TaskWaitsPartData
@@ -6976,6 +6990,7 @@ class	UnavailableSupervisorDispatch
 class	UnavailableWindow
 class	UnavailableWorkRepair
 class	UnconfiguredAccounts
+class	UndoPlanGraphPageController
 class	UndockController
 class	UndockInput
 class	UndockSourceCommand
@@ -7713,6 +7728,7 @@ constant	PlanBuilder::SHELLS
 constant	PlanCascadeTool::ROOT_TYPES
 constant	PlanDetailsResolver::TASKS_PER_READ
 constant	PlanFilters::PAGE_SIZE
+constant	PlanGraphChanges::KEPT_SECONDS
 constant	PlanOutline::PHASES_PER_PAGE
 constant	PlanOutline::TASKS_PER_PAGE
 constant	PlanReadResult::ID_ARGUMENT
@@ -10090,6 +10106,11 @@ method	AppendUploadHandler::handle()
 method	AppendUploadTool::command()
 method	AppendUploadTool::present()
 method	AppendUploadTool::writeSchema()
+method	ApplyPlanGraphPageController::__invoke()
+method	ApplyTaskWaitsCommand::__construct()
+method	ApplyTaskWaitsHandler::__construct()
+method	ApplyTaskWaitsHandler::handle()
+method	ApplyTaskWaitsHandler::tasksNamed()
 method	ApprovalReceipt::__construct()
 method	ApprovalReceipt::of()
 method	ApprovalReceipt::toArray()
@@ -18427,6 +18448,7 @@ method	PhaseTask::create()
 method	PhaseTask::defaultReadOrder()
 method	PhaseTask::inPlanOrder()
 method	PhaseTask::pageOf()
+method	PhaseTask::phaseNumbersInPlan()
 method	PhaseTask::taskIdsByPhase()
 method	PhaseTaskData::__construct()
 method	PhaseTaskData::ofSummary()
@@ -18595,6 +18617,27 @@ method	PlanFiltersData::rules()
 method	PlanFiltersData::toDomain()
 method	PlanFiltersData::toQuery()
 method	PlanFinished::__construct()
+method	PlanGraphChangeMissing::refusalCode()
+method	PlanGraphChangeMissing::status()
+method	PlanGraphChangeMissing::suggestion()
+method	PlanGraphChangeMissing::undo()
+method	PlanGraphChanges::__construct()
+method	PlanGraphChanges::forgetUndo()
+method	PlanGraphChanges::keepSuggestion()
+method	PlanGraphChanges::keepUndo()
+method	PlanGraphChanges::key()
+method	PlanGraphChanges::suggestion()
+method	PlanGraphChanges::undo()
+method	PlanGraphEditing::__construct()
+method	PlanGraphEditing::actorId()
+method	PlanGraphEditing::apply()
+method	PlanGraphEditing::offered()
+method	PlanGraphEditing::pairsOnlyIn()
+method	PlanGraphEditing::suggest()
+method	PlanGraphEditing::undo()
+method	PlanGraphRequest::plan()
+method	PlanGraphRequest::rules()
+method	PlanGraphUndo::__construct()
 method	PlanHasUnfinishedTasks::for()
 method	PlanHasUnfinishedTasks::notStarted()
 method	PlanHasUnfinishedTasks::refusalCode()
@@ -18744,6 +18787,9 @@ method	PlanTaskRequest::taskNumber()
 method	PlanTaskWindowResolver::__construct()
 method	PlanTaskWindowResolver::read()
 method	PlanUnderReview::forPlan()
+method	PlanWaitSuggester::isImplied()
+method	PlanWaitSuggester::isKeptBackByPhase()
+method	PlanWaitSuggester::suggestionFor()
 method	PlanWindowResolver::__construct()
 method	PlanWindowResolver::read()
 method	PlanWord::__construct()
@@ -24740,6 +24786,7 @@ method	StartProposal::isModelRefused()
 method	StartReadiness::isUnverified()
 method	StartReadiness::shouldHoldDeliveries()
 method	StartReadiness::takesReadiness()
+method	StartReadiness::verificationState()
 method	StartReceipt::__construct()
 method	StartReceiptController::__invoke()
 method	StartReceiptController::accepted()
@@ -25451,6 +25498,7 @@ method	Subtitle::__construct()
 method	Subtitle::children()
 method	Subtitle::key()
 method	Subtitle::type()
+method	SuggestPlanGraphPageController::__invoke()
 method	SuperviseRun::__construct()
 method	SuperviseRun::handle()
 method	SuperviseSharingCommand::handle()
@@ -25788,17 +25836,22 @@ method	TaskFinished::__construct()
 method	TaskFinished::dockId()
 method	TaskFinished::dockType()
 method	TaskGraph::__construct()
+method	TaskGraphChanged::refusalCode()
+method	TaskGraphChanged::since()
+method	TaskGraphChanged::status()
 method	TaskGraphDestinations::__construct()
 method	TaskGraphEdge::__construct()
 method	TaskGraphLock::lock()
+method	TaskGraphLock::lockAll()
 method	TaskGraphNode::__construct()
 method	TaskGraphRecords::__construct()
 method	TaskGraphRecords::graphOf()
 method	TaskGraphRecords::nodeOf()
 method	TaskGraphRecords::reasonFor()
-method	TaskGraphRecords::versionOf()
 method	TaskGraphResolver::graphOf()
 method	TaskGraphSuggestion::__construct()
+method	TaskGraphVersion::current()
+method	TaskGraphVersion::of()
 method	TaskHistoryEntry::casts()
 method	TaskHistoryEntry::create()
 method	TaskHistoryEntry::defaultReadOrder()
@@ -26027,6 +26080,7 @@ method	TaskWait::unmetDependentIds()
 method	TaskWait::waitsOf()
 method	TaskWait::waitsOfTasks()
 method	TaskWait::waive()
+method	TaskWait::within()
 method	TaskWaitActionsData::__construct()
 method	TaskWaitChanged::__construct()
 method	TaskWaitChoiceData::__construct()
@@ -26037,6 +26091,7 @@ method	TaskWaitHistory::create()
 method	TaskWaitItemData::__construct()
 method	TaskWaitItemData::ofLink()
 method	TaskWaitLink::__construct()
+method	TaskWaitPair::__construct()
 method	TaskWaitRecords::__construct()
 method	TaskWaitRecords::linkOf()
 method	TaskWaitRecords::readyAmong()
@@ -26047,6 +26102,7 @@ method	TaskWaitRefused::alreadyWaived()
 method	TaskWaitRefused::dependentEnded()
 method	TaskWaitRefused::dependentStarted()
 method	TaskWaitRefused::noWait()
+method	TaskWaitRefused::notEditable()
 method	TaskWaitRefused::onItself()
 method	TaskWaitRefused::tooDeep()
 method	TaskWaitRefused::wouldCycle()
@@ -26057,6 +26113,10 @@ method	TaskWaitRequest::taskId()
 method	TaskWaitResolver::readyAmong()
 method	TaskWaitResolver::waitsOf()
 method	TaskWaitResolver::withWaitsAmong()
+method	TaskWaitRules::__construct()
+method	TaskWaitRules::assertMayAdd()
+method	TaskWaitRules::existingToRemove()
+method	TaskWaitRules::mayChange()
 method	TaskWaits::__construct()
 method	TaskWaitsData::__construct()
 method	TaskWaitsData::ofWaits()
@@ -26767,6 +26827,7 @@ method	UnavailableWindow::make()
 method	UnavailableWorkRepair::reopen()
 method	UnconfiguredAccounts::chosenForStart()
 method	UnconfiguredAccounts::forStart()
+method	UndoPlanGraphPageController::__invoke()
 method	UndockController::__invoke()
 method	UndockInput::__construct()
 method	UndockSourceCommand::__construct()
@@ -29194,6 +29255,7 @@ parameter	$phaseCount
 parameter	$phaseId
 parameter	$phaseIds
 parameter	$phaseNumber
+parameter	$phaseOf
 parameter	$phaseTasks
 parameter	$phaseTitle
 parameter	$phases
@@ -29428,6 +29490,7 @@ parameter	$readFiles
 parameter	$readInterestId
 parameter	$readOnly
 parameter	$readOnlyRoot
+parameter	$readVersion
 parameter	$readable
 parameter	$reader
 parameter	$readerRevision
@@ -30080,6 +30143,7 @@ parameter	$successorState
 parameter	$successors
 parameter	$suggest
 parameter	$suggestedCommand
+parameter	$suggester
 parameter	$suggestion
 parameter	$suggestions
 parameter	$summaries
@@ -30689,6 +30753,7 @@ property	AddTaskWaitCommand::$dependentTaskId
 property	AddTaskWaitCommand::$prerequisiteTaskId
 property	AddTaskWaitHandler::$graph
 property	AddTaskWaitHandler::$lock
+property	AddTaskWaitHandler::$rules
 property	AddTaskWaitHandler::$tasks
 property	AddUsageCostCommand::$cost
 property	AddUsageCostCommand::$start
@@ -31045,6 +31110,14 @@ property	AppendUploadCommand::$index
 property	AppendUploadCommand::$text
 property	AppendUploadCommand::$uploadId
 property	AppendUploadHandler::$uploads
+property	ApplyTaskWaitsCommand::$added
+property	ApplyTaskWaitsCommand::$baseVersion
+property	ApplyTaskWaitsCommand::$removed
+property	ApplyTaskWaitsCommand::$taskIds
+property	ApplyTaskWaitsHandler::$graph
+property	ApplyTaskWaitsHandler::$lock
+property	ApplyTaskWaitsHandler::$rules
+property	ApplyTaskWaitsHandler::$version
 property	ApprovalReceipt::$digest
 property	ApprovalReceipt::$revision
 property	ApprovalReceipt::$ruleId
@@ -36029,6 +36102,15 @@ property	PlanFiltersData::$search
 property	PlanFiltersData::$state
 property	PlanFinished::$finishedBy
 property	PlanFinished::$planId
+property	PlanGraphChanges::$cache
+property	PlanGraphEditing::$actors
+property	PlanGraphEditing::$changes
+property	PlanGraphEditing::$commands
+property	PlanGraphEditing::$graphs
+property	PlanGraphEditing::$suggester
+property	PlanGraphUndo::$added
+property	PlanGraphUndo::$removed
+property	PlanGraphUndo::$version
 property	PlanList::$cards
 property	PlanList::$filters
 property	PlanList::$lastPage
@@ -36128,6 +36210,7 @@ property	PlanTaskWindowResolver::$page
 property	PlanTaskWindowResolver::$request
 property	PlanTaskWindowResolver::$tasks
 property	PlanTaskWindowResolver::$visible
+property	PlanWindowResolver::$editing
 property	PlanWindowResolver::$graphs
 property	PlanWindowResolver::$outline
 property	PlanWindowResolver::$page
@@ -37678,6 +37761,7 @@ property	RemoveRuleCommand::$ruleId
 property	RemoveTaskWaitCommand::$dependentTaskId
 property	RemoveTaskWaitCommand::$prerequisiteTaskId
 property	RemoveTaskWaitHandler::$lock
+property	RemoveTaskWaitHandler::$rules
 property	RenameAccountCommand::$accountId
 property	RenameAccountCommand::$label
 property	RenameAccountCommand::$seenRevision
@@ -40636,7 +40720,8 @@ property	TaskGraphNode::$number
 property	TaskGraphNode::$reason
 property	TaskGraphNode::$state
 property	TaskGraphNode::$title
-property	TaskGraphRecords::$authorizer
+property	TaskGraphRecords::$rules
+property	TaskGraphRecords::$version
 property	TaskGraphRecords::$visibility
 property	TaskGraphSuggestion::$baseVersion
 property	TaskGraphSuggestion::$edges
@@ -40820,8 +40905,11 @@ property	TaskWaitLink::$title
 property	TaskWaitLink::$waiveReason
 property	TaskWaitLink::$waivedAt
 property	TaskWaitLink::$waivedBy
+property	TaskWaitPair::$dependentTaskId
+property	TaskWaitPair::$prerequisiteTaskId
 property	TaskWaitRecords::$actors
 property	TaskWaitRecords::$visibility
+property	TaskWaitRules::$authorizer
 property	TaskWaits::$holdsUp
 property	TaskWaits::$waitsFor
 property	TaskWaitsData::$holdsUp
@@ -41553,6 +41641,7 @@ variable	$allowed
 variable	$allowlist
 variable	$alreadyPlacedTaskId
 variable	$alternatives
+variable	$among
 variable	$analysis
 variable	$anotherRow
 variable	$answer
@@ -41627,6 +41716,7 @@ variable	$bare
 variable	$base
 variable	$baseRevision
 variable	$batch
+variable	$batchId
 variable	$batchIds
 variable	$batchLimit
 variable	$batches
@@ -41973,6 +42063,7 @@ variable	$earlierTop
 variable	$earliestEntry
 variable	$echo
 variable	$edge
+variable	$edges
 variable	$edit
 variable	$editing
 variable	$edition
@@ -42245,7 +42336,6 @@ variable	$imported
 variable	$imports
 variable	$inDriver
 variable	$inPath
-variable	$inPlan
 variable	$inRank
 variable	$inTransaction
 variable	$inbox
@@ -42531,6 +42621,7 @@ variable	$maxDepthOption
 variable	$maximum
 variable	$may
 variable	$mayAdminister
+variable	$mayChange
 variable	$mayCreate
 variable	$mayEdit
 variable	$mayEditRun
@@ -42834,6 +42925,7 @@ variable	$prepared
 variable	$prerequisite
 variable	$prerequisites
 variable	$presence
+variable	$present
 variable	$preview
 variable	$previous
 variable	$previousDeadline
@@ -43296,6 +43388,7 @@ variable	$successor
 variable	$successorId
 variable	$suffix
 variable	$suggestedCommand
+variable	$suggestion
 variable	$summaries
 variable	$summary
 variable	$summaryTotal
@@ -43409,6 +43502,7 @@ variable	$undeclared
 variable	$underRoot
 variable	$underline
 variable	$underlined
+variable	$undo
 variable	$unenforced
 variable	$unexpected
 variable	$unfinished

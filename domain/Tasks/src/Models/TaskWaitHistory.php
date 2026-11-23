@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property ActorType $actor_type
  * @property string $actor_id
  * @property string|null $reason
+ * @property string|null $batch_id
  * @property Carbon $created_at
  */
 #[Table('task_wait_history')]
@@ -38,6 +39,7 @@ use Illuminate\Support\Carbon;
     'actor_type',
     'actor_id',
     'reason',
+    'batch_id',
 ])]
 final class TaskWaitHistory extends Model implements ReadableModel
 {
@@ -69,6 +71,7 @@ final class TaskWaitHistory extends Model implements ReadableModel
         TaskWaitChange $change,
         ActorIdentity $actor,
         string|null $reason,
+        string|null $batchId,
     ): self {
         return self::query()->create([
             'task_wait_id' => $wait->id,
@@ -78,6 +81,7 @@ final class TaskWaitHistory extends Model implements ReadableModel
             'actor_type' => $actor->type,
             'actor_id' => $actor->id,
             'reason' => $reason,
+            'batch_id' => $batchId,
         ]);
     }
 }

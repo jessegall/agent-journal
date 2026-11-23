@@ -110,6 +110,20 @@ final class PhaseTask extends Pivot implements ReadableModel
         return ReadOrder::by(['phase_tasks.phase_id', 'phase_tasks.position'], 'phase_tasks.id');
     }
 
+    /**
+     * The number of the phase each task of the plan is in, by task id, read once for the whole plan.
+     *
+     * @return array<string, int>
+     */
+    public static function phaseNumbersInPlan(string $planId): array
+    {
+        return array_map(intval(...), self::query()
+            ->inPlanOrder($planId)
+            ->readAll('the phase of every task of one plan')
+            ->pluck('phases.number', 'phase_tasks.task_id')
+            ->all());
+    }
+
     // ----------[ Scopes ]----------
 
     /**

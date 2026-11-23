@@ -42,6 +42,6 @@ final readonly class WaiveTaskWaitHandler extends TaskCommandHandler
 
         $actor = ActorIdentity::of($command->dispatchedBy());
         $wait->waive($actor, $command->reason);
-        TaskWaitHistory::create($wait, TaskWaitChange::Waived, $actor, $command->reason);
+        TaskWaitHistory::create($wait, TaskWaitChange::Waived, $actor, $command->reason, null);
     }
 }

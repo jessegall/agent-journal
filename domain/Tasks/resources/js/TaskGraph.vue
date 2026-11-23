@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
@@ -46,6 +46,7 @@ const lit = computed(() => (selectedId.value === null ? new Set<string>() : chai
 const bottlenecks = computed(() => (showsBottlenecks.value ? bottlenecksOf(props.nodes, props.edges) : new Set<string>()));
 const selected = computed(() => props.nodes.find((node) => node.id === selectedId.value));
 const hasWaits = computed(() => props.edges.length > 0);
+const page = usePage<{ refusalCode?: string }>();
 const canSuggest = computed(() => props.destinations?.suggest !== undefined);
 const canApply = computed(() => props.destinations?.apply !== undefined && props.suggestion?.baseVersion !== undefined);
 const isComparing = computed(
@@ -141,12 +142,16 @@ function apply(): void {
         address,
         { planId: props.planId, baseVersion: props.suggestion.baseVersion },
         {
-            only: [hostProp],
+            only: [hostProp, 'refusalCode'],
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
                 step.value = 'plain';
                 isApplied.value = true;
+            },
+            // A refused apply comes back as a form error with its refusal's code: a changed graph is the conflict.
+            onError: () => {
+                step.value = page.props.refusalCode === 'task-graph-changed' ? 'conflict' : 'failedApply';
             },
             onNetworkError: () => {
                 step.value = 'failedApply';
@@ -203,7 +208,7 @@ function undo(): void {
                             >Suggest</Button
                         >
                         <template v-if="!canSuggest">
-                            <span id="graph-suggest-reason" class="text-text-3">No suggestion service yet</span>
+                            <span id="graph-suggest-reason" class="text-text-3">You may not change the waits of this plan.</span>
                         </template>
                     </span>
                 </template>

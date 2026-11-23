@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('actor_type', 16);
             $table->string('actor_id', 64);
             $table->text('reason')->nullable();
+            // One apply of several wait changes writes its rows under one batch, so it reads back as one change.
+            $table->ulid('batch_id')->nullable()->index();
             $table->timestampTz('created_at');
 
             $table->index(['dependent_task_id', 'created_at']);

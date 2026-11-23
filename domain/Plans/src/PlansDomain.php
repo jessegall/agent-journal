@@ -55,6 +55,7 @@ use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
+use Domain\Plans\Http\Controllers\ApplyPlanGraphPageController;
 use Domain\Plans\Http\Controllers\ApprovePlanReviewPageController;
 use Domain\Plans\Http\Controllers\AssignPlanWorkPageController;
 use Domain\Plans\Http\Controllers\CancelPlanPageController;
@@ -64,6 +65,8 @@ use Domain\Plans\Http\Controllers\ReassignPlanWorkPageController;
 use Domain\Plans\Http\Controllers\RequestPlanChangesPageController;
 use Domain\Plans\Http\Controllers\RequestPlanReviewPageController;
 use Domain\Plans\Http\Controllers\StartPlanController;
+use Domain\Plans\Http\Controllers\SuggestPlanGraphPageController;
+use Domain\Plans\Http\Controllers\UndoPlanGraphPageController;
 use Domain\Plans\Http\Controllers\WithdrawPlanReviewPageController;
 use Domain\Plans\Mcp\Resources\PlanResource;
 use Domain\Plans\Models\Phase;
@@ -264,6 +267,9 @@ final class PlansDomain extends Domain implements
                 ->inInspector()
                 ->actions(
                     ActionRoute::post('{plan}/cancel', CancelPlanPageController::class, 'cancel-plan'),
+                    ActionRoute::post('{plan}/graph/suggest', SuggestPlanGraphPageController::class, 'suggest-waits'),
+                    ActionRoute::post('{plan}/graph/apply', ApplyPlanGraphPageController::class, 'apply-waits'),
+                    ActionRoute::post('{plan}/graph/undo', UndoPlanGraphPageController::class, 'undo-waits'),
                     ActionRoute::post('{plan}/work', AssignPlanWorkPageController::class, 'assign-work'),
                     ActionRoute::post('{plan}/work/reassign', ReassignPlanWorkPageController::class, 'reassign-work'),
                     ActionRoute::post('{plan}/finish', FinishPlanPageController::class, 'finish-plan'),

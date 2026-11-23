@@ -12,6 +12,7 @@ use Domain\Plans\Data\PlanReaderData;
 use Domain\Plans\Http\Pages\Plans\PlansShow;
 use Domain\Plans\Http\Requests\PlanRequest;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanGraphEditing;
 use Domain\Plans\Support\PlanOutline;
 use Domain\Plans\Support\PlanReviewView;
 use Domain\Tasks\Contracts\TaskGraphResolver;
@@ -31,6 +32,7 @@ final readonly class PlanWindowResolver implements PageResolver
         private PlanReviewView $review,
         private TaskGraphResolver $graphs,
         private PlansShow $page,
+        private PlanGraphEditing $editing,
     ) {}
 
     public function read(): DeclaredLayoutData
@@ -50,12 +52,12 @@ final readonly class PlanWindowResolver implements PageResolver
                 $this->outline->of($plan->id, $planCard->currentPhase, $this->request->outlinePageAsk()),
                 $this->review->of($plan->id),
             ),
-            fn () => $this->graphs->graphOf(
+            fn () => $this->editing->offered($this->graphs->graphOf(
                 $plan->id,
                 $plan->taskIds(),
                 $this->request->selectedNode(),
                 route('plans.plan', ['plan' => $number, 'tab' => 'graph'], false),
-            ),
+            ), $number),
         );
     }
 }

@@ -159,6 +159,26 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The waits among these tasks only: both the task that waits and the task it waits on are among them.
+     *
+     * @param  list<string>  $ids
+     * @return list<self>
+     */
+    public static function within(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $among = array_flip($ids);
+
+        return array_values(array_filter(
+            self::waitsOfTasks($ids)->all(),
+            fn (self $wait) => isset($among[$wait->prerequisite_task_id]),
+        ));
+    }
+
+    /**
      * @param  list<string>  $dependentIds
      * @return Collection<int, self>
      */

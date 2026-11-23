@@ -49,6 +49,11 @@ final class TaskWaitRefused extends RuntimeException implements CommandRefusal
         return new self("Task {$dependent} does not wait on task {$prerequisite}.");
     }
 
+    public static function notEditable(int $number): self
+    {
+        return new self("You may not change the waits of task {$number}, so none of these changes was made.");
+    }
+
     public static function alreadyWaived(int $dependent, int $prerequisite): self
     {
         return new self("The wait of task {$dependent} on task {$prerequisite} is already waived.");

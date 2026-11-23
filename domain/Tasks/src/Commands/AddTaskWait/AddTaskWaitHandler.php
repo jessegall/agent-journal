@@ -7,7 +7,6 @@ namespace Domain\Tasks\Commands\AddTaskWait;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskResolver;
-use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
@@ -16,6 +15,7 @@ use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Support\TaskGraphLock;
 use Domain\Tasks\Support\TaskWaitGraph;
+use Domain\Tasks\Support\TaskWaitRules;
 
 final readonly class AddTaskWaitHandler extends TaskCommandHandler
 {
@@ -23,6 +23,7 @@ final readonly class AddTaskWaitHandler extends TaskCommandHandler
         private TaskResolver $tasks,
         private TaskGraphLock $lock,
         private TaskWaitGraph $graph,
+        private TaskWaitRules $rules,
     ) {}
 
     /**
@@ -39,28 +40,13 @@ final readonly class AddTaskWaitHandler extends TaskCommandHandler
         }
 
         $this->tasks->requireVisible($command->prerequisiteTaskId);
-        [$dependent, $prerequisite] = $this->lock->lock($command->dependentTaskId, $command->prerequisiteTaskId);
-
-        if ($prerequisite === null) {
-            throw TaskMissing::forId($command->prerequisiteTaskId);
-        }
-
-        if ($dependent->state->hasEnded()) {
-            throw TaskWaitRefused::dependentEnded($dependent->number, $dependent->state->value);
-        }
-
-        if ($dependent->state === TaskState::Started) {
-            throw TaskWaitRefused::dependentStarted($dependent->number);
-        }
-
-        if (TaskWait::between($dependent->id, $prerequisite->id) !== null) {
-            throw TaskWaitRefused::alreadyWaits($dependent->number, $prerequisite->number);
-        }
+        [$dependent, $locked] = $this->lock->lock($command->dependentTaskId, $command->prerequisiteTaskId);
+        $prerequisite = $this->rules->assertMayAdd($dependent, $locked, $command->prerequisiteTaskId);
 
         $this->graph->assertNoCycle($dependent, $prerequisite);
         $actor = ActorIdentity::of($command->dispatchedBy());
         $wait = TaskWait::create($dependent, $prerequisite, $actor);
-        TaskWaitHistory::create($wait, TaskWaitChange::Added, $actor, null);
+        TaskWaitHistory::create($wait, TaskWaitChange::Added, $actor, null, null);
 
         return $wait->id;
     }

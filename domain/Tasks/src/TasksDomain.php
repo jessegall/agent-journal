@@ -33,6 +33,7 @@ use App\Support\FolderClasses;
 use App\Support\PoolDefinition;
 use App\Support\Searchable;
 use App\Values\PolicyDefinition;
+use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
@@ -63,7 +64,9 @@ use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Events\TaskWaitChanged;
+use Domain\Tasks\Exceptions\TaskGraphChanged;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Exceptions\TaskWaitRefused;
 use Domain\Tasks\Http\Controllers\AddTaskWaitPageController;
 use Domain\Tasks\Http\Controllers\BlockTaskPageController;
 use Domain\Tasks\Http\Controllers\CancelTaskPageController;
@@ -109,6 +112,7 @@ use Domain\Tasks\Values\TaskProofPage;
 use Domain\Tasks\Values\TaskSummary;
 use Domain\Tasks\Values\TaskTransition;
 use Domain\Tasks\Values\TaskWaitLink;
+use Domain\Tasks\Values\TaskWaitPair;
 use Domain\Tasks\Values\TaskWaits;
 
 final class TasksDomain extends Domain implements
@@ -242,7 +246,9 @@ final class TasksDomain extends Domain implements
                 TaskText::class,
                 TaskType::class,
             )
-            ->exceptions(TaskMissing::class)
+            ->commands(ApplyTaskWaitsCommand::class)
+            ->values(TaskWaitPair::class)
+            ->exceptions(TaskMissing::class, TaskGraphChanged::class, TaskWaitRefused::class)
             ->build();
     }
 
