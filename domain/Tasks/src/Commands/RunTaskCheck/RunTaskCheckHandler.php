@@ -34,6 +34,7 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
         }
 
         $caller = ActorIdentity::of($command->dispatchedBy());
+
         $isOpener = $this->callers->callerOf($command->processRunId)
             ->filter(fn (ActorIdentity $opener) => $opener->isSameAs($caller))
             ->isDefined();

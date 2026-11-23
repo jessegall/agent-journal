@@ -117,7 +117,6 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
         return self::query()->ofRecipient($key, $recipient)->lockForUpdate()->firstOrFail();
     }
 
-
     // ----------[ Mutations ]----------
 
     /**

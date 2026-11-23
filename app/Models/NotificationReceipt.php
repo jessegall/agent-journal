@@ -214,7 +214,6 @@ final class NotificationReceipt extends Model implements ReadableModel
             ->first());
     }
 
-
     // ----------[ Mutations ]----------
 
     /**
