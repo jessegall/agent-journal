@@ -27,7 +27,7 @@ final class DriverReplies
         .'Run the command through its alias with journal run instead.';
 
     /**
-     * The reply to a tool call the journal admitted: the driver runs it without asking a person.
+     * The reply to a tool call the journal admitted: the driver runs it without asking a user.
      *
      * @param  list<string>  $context
      */

@@ -8,7 +8,7 @@ use App\Contracts\Events\Event;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 
 /**
- * What a session's header shows may have changed: its host reported what the program does, how a request went, that
+ * What a session's header shows may have changed: its host reported what the driver does, how a request went, that
  * its start runs or ended, or that it lives again after a silence. The pages that show the session read it again,
  * so no state waits for a reload or a click.
  */

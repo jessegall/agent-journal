@@ -4,7 +4,7 @@ import DriverMark from './DriverMark.vue';
 import type { Participant } from './participant';
 
 /**
- * A participant: agents are rounded squares holding their driver mark, people and you are circles with initials,
+ * A participant: agents are rounded squares holding their driver mark, users and you are circles with initials,
  * the journal is a square holding "J". sm is 16 px (radius 4, mark 11), lg is 26 px (radius 8, mark 16). Beside a
  * visible name it is hidden from assistive technology; given a label it stands alone as an image with that name.
  */

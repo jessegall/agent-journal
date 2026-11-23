@@ -11,7 +11,9 @@ use App\Enums\PresentationBatchState;
 use App\Exceptions\ChatStateConflict;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -195,5 +197,23 @@ final class PresentationBatch extends Model implements ReadableModel
     public function ranges(): HasMany
     {
         return $this->hasMany(PresentationRange::class, 'batch_id');
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The batches of one session and interval that carried a piece of a message under the user message.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function shownUnderRoot(Builder $query, string $sessionId, string $intervalId, string $rootId): void
+    {
+        $underRoot = Message::query()->acrossInboxes()->where('user_root_id', $rootId)->select('id');
+        $receipts = MessageReceipt::query()->whereIn('message_id', $underRoot)->select('id');
+
+        $query->where('agent_session_id', $sessionId)
+            ->where('interval_id', $intervalId)
+            ->whereIn('id', PresentationRange::query()->whereIn('receipt_id', $receipts)->select('batch_id'));
     }
 }

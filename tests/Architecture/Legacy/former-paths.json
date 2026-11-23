@@ -3287,7 +3287,7 @@
  "app/Support/ChatInboxes.php": "app/Communication/Support/ChatInboxes.php",
  "app/Support/ChatInterval.php": "app/Communication/Support/ChatInterval.php",
  "app/Support/ChatIntervalEvidence.php": "app/Communication/Support/ChatIntervalEvidence.php",
- "app/Support/ChatPosting.php": "app/Communication/Support/ChatPosting.php",
+ "app/Support/ChatService.php": "app/Communication/Support/ChatPosting.php",
  "app/Support/CheckProtectedResources.php": "app/Hooks/Actions/CheckProtectedResources.php",
  "app/Support/CheckedCommandRegistries.php": "app/Bus/Support/CheckedCommandRegistries.php",
  "app/Support/ChildCheckoutSlot.php": "app/Agents/Support/ChildCheckoutSlot.php",

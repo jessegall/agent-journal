@@ -745,7 +745,7 @@ function applied(string $source, array $edits): string
 }
 
 /**
- * Lines whose string literals spell the old name, for a person to check.
+ * Lines whose string literals spell the old name, for a user to check.
  *
  * @param  array<string, array{code: string, statements: list<Node>}>  $files
  * @return list<string>

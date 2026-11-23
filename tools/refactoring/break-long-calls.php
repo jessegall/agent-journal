@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * Breaks each PHP line wider than 120 characters at the opening bracket of its widest call or signature, so Pint then
- * lays the arguments out one per line. Lines that are conditions, strings or comments are left for a person.
+ * lays the arguments out one per line. Lines that are conditions, strings or comments are left for a user.
  *
  * Usage: php tools/refactoring/break-long-calls.php <folder or file>...
  */
@@ -34,7 +34,7 @@ function isCharacter(PhpToken $token, string $character): bool
 /**
  * Whether the line is one the script leaves alone: a comment, or a line that continues a condition.
  */
-function isLeftForAPerson(string $line): bool
+function isLeftForAUser(string $line): bool
 {
     $trimmed = ltrim($line);
 
@@ -225,7 +225,7 @@ foreach (phpFiles(array_slice($argv, 1)) as $file) {
     $long = [];
 
     foreach ($lines as $number => $line) {
-        if (strlen($line) > LIMIT && ! isLeftForAPerson($line)) {
+        if (strlen($line) > LIMIT && ! isLeftForAUser($line)) {
             $long[] = $number + 1;
         }
     }

@@ -40,7 +40,7 @@ final class CreateRecordRequest extends FormRequest
     }
 
     /**
-     * The records the new one is about, named as people name them, such as task 12.
+     * The records the new one is about, named as users name them, such as task 12.
      *
      * @return list<RecordIdentity>
      */

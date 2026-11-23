@@ -30,7 +30,7 @@ env -i PATH=<protected PATH> HOME=<journal home> \
 
 | Flag or command | What it does, per `claude --help` |
 |---|---|
-| `--restricted` | removes the built-in code-running tools (Bash, PowerShell and the like) and WebFetch unless `--tools` names them; ignores user, project and local settings files (managed settings and `--settings` still apply); confines file tools to the working directories and `--add-dir`; refuses `bypassPermissions`; only a person or the configured permission handler approves writes to settings, git and tool-configuration files |
+| `--restricted` | removes the built-in code-running tools (Bash, PowerShell and the like) and WebFetch unless `--tools` names them; ignores user, project and local settings files (managed settings and `--settings` still apply); confines file tools to the working directories and `--add-dir`; refuses `bypassPermissions`; only a user or the configured permission handler approves writes to settings, git and tool-configuration files |
 | `--strict-mcp-config` | only MCP servers from `--mcp-config` load; all other MCP configuration is ignored |
 | `--tools` | the list of available built-in tools; `""` disables all |
 | `--settings` | a settings file or JSON string |

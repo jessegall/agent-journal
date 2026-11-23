@@ -10,7 +10,7 @@ use App\Support\RecordReference;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * A request about one record, named as people name it, such as doc 12.
+ * A request about one record, named as users name it, such as doc 12.
  */
 abstract class RecordTargetRequest extends FormRequest
 {

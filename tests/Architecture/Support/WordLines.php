@@ -15,9 +15,11 @@ use SplFileInfo;
 final readonly class WordLines
 {
     /**
-     * Rule 46: the user is never a human or a person. Personal, as in a personal desk, and impersonate pass.
+     * Rule 46: the user is never a human, a person or people, in a name or in a text. Personal, as in a personal desk,
+     * impersonate and the grammar term third-person pass.
      */
-    public const string USER_WORDS = '/human|(?<!im)person(?!al)/i';
+    public const string USER_WORDS = '/(?<![A-Za-z])(?<!third-)(person|people|human)(?!al)|(Person|People|Human)(?!al)'
+        .'|PERSON(?!AL)|PEOPLE|HUMAN/';
 
     /**
      * Task 2196: Claude Code, Codex and the like are drivers, never programs.
@@ -35,6 +37,30 @@ final readonly class WordLines
     private const array GENERATED = ['/resources/js/generated/', '/resources/js/actions/', '/resources/js/routes/'];
 
     /**
+     * Where the project's own files are: its code, tests, tools, documents, designs, scripts and Docker files.
+     */
+    private const array PROJECT_FOLDERS = [
+        'app', 'domain', 'tests', 'resources', 'tools', 'database', 'docs', 'config', 'routes', 'scripts', 'bootstrap',
+        '.docker', '.commandments/custom',
+    ];
+
+    private const array PROJECT_FILES = ['CLAUDE.md', 'README.md', 'compose.yaml', '.env.example'];
+
+    private const array PROJECT_EXTENSIONS = [
+        'php', 'go', 'ts', 'vue', 'js', 'md', 'html', 'sh', 'json', 'yaml', 'yml', 'css', 'toml', 'example', '',
+    ];
+
+    /**
+     * What is not the project's own writing: installed or built files, recordings of a driver, the reviewed name
+     * list, texts kept from version 5, and the files that state or show the forbidden words themselves.
+     */
+    private const array NOT_PROJECT = [
+        '/vendor/', '/node_modules/', '/bootstrap/cache/', '/docs/naming/', '/docs/agents/version-5/',
+        '/tools/journal-agent/testdata/', '/tests/Fixtures/UserWords/', '/tests/Architecture/UserWordTest.php',
+        '/tests/Architecture/Support/WordLines.php', '/tests/Architecture/Legacy/',
+    ];
+
+    /**
      * Every line under the folders that matches the word pattern, as `path:line`.
      *
      * @param  list<string>  $folders
@@ -50,6 +76,26 @@ final readonly class WordLines
             }
         }
 
+        sort($found);
+
+        return $found;
+    }
+
+    /**
+     * Every line of the project's own files that matches the word pattern, as `path:line`: every kind of text file
+     * the project writes, not only its code.
+     *
+     * @return list<string>
+     */
+    public static function inProject(string $pattern): array
+    {
+        $paths = array_map(base_path(...), self::PROJECT_FILES);
+
+        foreach (self::PROJECT_FOLDERS as $folder) {
+            array_push($paths, ...self::filesOf(base_path($folder), self::PROJECT_EXTENSIONS, self::NOT_PROJECT));
+        }
+
+        $found = array_merge(...array_map(fn (string $path): array => self::linesOf($pattern, $path), $paths));
         sort($found);
 
         return $found;
@@ -74,25 +120,33 @@ final readonly class WordLines
      */
     private static function codeFiles(string $folder): array
     {
+        return self::filesOf($folder, self::EXTENSIONS, self::GENERATED);
+    }
+
+    /**
+     * The files under the folder with one of the extensions, outside every skipped part of a path.
+     *
+     * @param  list<string>  $extensions
+     * @param  list<string>  $skipped
+     * @return list<string>
+     */
+    private static function filesOf(string $folder, array $extensions, array $skipped): array
+    {
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($folder, RecursiveDirectoryIterator::SKIP_DOTS),
         );
         $paths = [];
 
         foreach ($files as $file) {
-            if ($file instanceof SplFileInfo && self::isScannedSourceFile($file)) {
+            $isWanted = $file instanceof SplFileInfo
+                && in_array($file->getExtension(), $extensions, true)
+                && ! array_any($skipped, fn (string $part): bool => str_contains($file->getPathname(), $part));
+
+            if ($isWanted) {
                 $paths[] = $file->getPathname();
             }
         }
 
         return $paths;
-    }
-
-    private static function isScannedSourceFile(SplFileInfo $file): bool
-    {
-        $path = $file->getPathname();
-        $isGenerated = array_any(self::GENERATED, fn (string $folder): bool => str_contains($path, $folder));
-
-        return in_array($file->getExtension(), self::EXTENSIONS, true) && ! $isGenerated;
     }
 }

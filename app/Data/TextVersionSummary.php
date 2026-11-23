@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One version of a record's text, without its text: its id, the label people read, and how many source lines it has.
+ * One version of a record's text, without its text: its id, the label users read, and how many source lines it has.
  */
 #[TypeScript]
 final class TextVersionSummary extends Data

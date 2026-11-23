@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * The inputs of an auto-assignment command: the actor and record type it is for, the pool with the records it lists
- * or the record it is about as people name them, such as task 3 or plan 12, the size and the revision the caller
+ * or the record it is about as users name them, such as task 3 or plan 12, the size and the revision the caller
  * read. Who calls comes from the request's actor alone.
  */
 trait ReadsAutoAssignmentInput

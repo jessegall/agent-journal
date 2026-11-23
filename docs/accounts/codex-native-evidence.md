@@ -11,7 +11,7 @@ prerequisite, never proof that a capability is unsupported.
 
 - Only account directories inside the journal's accounts folder (`--accounts-root`, or `JOURNAL_ACCOUNTS_ROOT`); a
   personal `~/.codex` login is never read.
-- Accounts are signed in by a person through the journal's own sign-in on the host. The procedure never starts a
+- Accounts are signed in by a user through the journal's own sign-in on the host. The procedure never starts a
   sign-in and never opens `auth.json`: it only checks that the file exists beside the file-store setting.
 - Every run gets only `PATH`, an empty `HOME` and the account's `CODEX_HOME`. Of `login status` only the exit is
   kept; no login or exec output is printed. The configuration items run on empty, throw-away `CODEX_HOME` folders.

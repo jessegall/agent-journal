@@ -13,7 +13,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The props of the document-comments part: the revision on screen, the record comments are posted against, its
- * numbered lines, the comments anchored to those lines, the people the server lets feedback go to, and the address
+ * numbered lines, the comments anchored to those lines, the users the server lets feedback go to, and the address
  * feedback is sent to, which is left out where the server offers no feedback.
  */
 #[TypeScript]

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Data\PresentationItemData;
+use App\Enums\ReceiptDeliveryState;
 use App\Events\PageChanged;
 use App\Models\Message;
 use App\Models\MessageAttention;
 use App\Models\MessageReceipt;
+use App\Models\ReceiptDelivery;
 use App\Support\ActorIdentity;
 use App\Support\PresentationBatches;
 use Carbon\CarbonImmutable;
@@ -22,8 +23,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * One whole conversation as the journal sees it, through the doors a session really uses: the owner posts in the pair
- * chat, the agent is asked to wake, its driver is shown the text, the agent claims its turn, answers and confirms what
- * it was shown through the journal's own tools, and the owner's open pages are told of the post and of the answer
+ * chat, the agent is asked to wake, its driver is shown the text, the agent answers with one call of the journal's own
+ * reply tool, which takes its turn and confirms what it was shown, and the owner's open pages are told each time
  * (rule 83; user messages 19571, 19640 and 19642: the answer once reached the chat and no open page heard of it).
  */
 #[TimeLimit(6, 'The conversation makes several signed tool calls.')]
@@ -54,15 +55,9 @@ final class ChatConversationTest extends MessagingTestCase
         );
         $this->assertNotNull($shown);
 
-        $this->useTool($agent, 'messages_claim', [
-            'inbox_id' => $inboxId,
-            'root_id' => $questionId,
-            'batch_id' => $shown->batchId,
-            'claim_grant' => $shown->claimGrant,
-            'request_key' => 'agent-claims',
-        ]);
         $told = Event::dispatched(PageChanged::class)->count();
 
+        // One call answers: it takes the agent's turn and confirms what its session was shown (user message 19690).
         $answerId = $this->useTool($agent, 'messages_reply', [
             'message_id' => $questionId,
             'body' => '2 plus 2 is 4.',
@@ -70,16 +65,31 @@ final class ChatConversationTest extends MessagingTestCase
         ])['message_id'];
 
         $this->assertOwnerPagesTold($told + 1);
-        $this->useTool($agent, 'messages_acknowledge_presented', [
-            'batch_id' => $shown->batchId,
-            'handles' => array_map(fn (PresentationItemData $item) => $item->handle, $shown->items),
-            'context_key' => self::CONTEXT_KEY,
-            'request_key' => 'agent-confirms',
-        ]);
-
         $answer = Message::query()->acrossInboxes()->findOrFail($answerId);
         $this->assertSame([$questionId, $inboxId], [$answer->reply_to_id, $answer->destination_inbox_id]);
-        $this->assertSame(0, MessageReceipt::query()->where('message_id', $questionId)->notPresented()->count());
+        $receipts = MessageReceipt::query()->where('message_id', $questionId);
+        $this->assertSame(0, (clone $receipts)->notPresented()->count());
+        $this->assertSame(
+            [ReceiptDeliveryState::Accepted],
+            ReceiptDelivery::query()->whereIn('receipt_id', $receipts->select('id'))->pluck('state')->all(),
+        );
+    }
+
+    public function test_an_agent_that_was_never_shown_a_message_cannot_answer_it(): void
+    {
+        $agent = TestStart::start();
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new OpenPairChatCommand($agent->agent->id));
+        $questionId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'What is 2 plus 2?', 'owner-asks'));
+
+        $result = (array) $this->callMcpTool($agent, 'messages_reply', [
+            'message_id' => $questionId,
+            'body' => '4.',
+            'request_key' => 'agent-answers-unseen',
+        ])->json('result');
+
+        $this->assertTrue($result['isError']);
+        $this->assertSame(0, Message::query()->acrossInboxes()->where('reply_to_id', $questionId)->count());
     }
 
     /**

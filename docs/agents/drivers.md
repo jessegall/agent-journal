@@ -40,7 +40,7 @@ refused (`ErrSessionContainerUnattachable`).
 
 ## Watching a terminal
 
-A terminal view lets a person watch a terminal runtime's screen in the web UI, read only. It is a lease row
+A terminal view lets a user watch a terminal runtime's screen in the web UI, read only. It is a lease row
 (`app/Models/TerminalView.php`), never a driver request, so it stays out of the ledger and a held runtime can
 still be watched.
 
@@ -91,7 +91,7 @@ sends no key, stops at that step, resumable, and the host asks the journal what 
   replays the entry itself.
 - A screen that asks for a secret never leaves the host: the run stops and nothing is exported.
 
-Limit: the main agent's own terminal keeps its hold for the person and raises no request, and helpers and workers on
+Limit: the main agent's own terminal keeps its hold for the user and raises no request, and helpers and workers on
 a process driver have no terminal to navigate.
 
 | State | Meaning |
@@ -100,8 +100,8 @@ a process driver have no terminal to navigate.
 | answering | The main agent is sending rounds |
 | proving | The host is looking for the proof the main agent named |
 | proven | The proof showed; the path is saved as a library entry and the key script goes on |
-| abandoned | The main agent gave up, saying why; the runtime keeps its hold for the person |
-| interrupted | The person typed, or the screen changed with no round sent |
+| abandoned | The main agent gave up, saying why; the runtime keeps its hold for the user |
+| interrupted | The user typed, or the screen changed with no round sent |
 | cancelled | The driver request was cancelled, the runtime stopped or the session ended |
 | expired | Nobody answered in time |
 
@@ -110,8 +110,8 @@ a process driver have no terminal to navigate.
 Progress: accepted, staged, applying, applied, superseded, cancelled, failed, unavailable, delivery uncertain.
 Outcomes of a key script: entry_unavailable when it stopped on a menu without the entry it needs, unconfirmed when it
 ran to its end but did not prove its result on screen.
-Holds: interrupted, compacting, human input, permission, trust, onboarding, login, update, usage limit, unknown or
-unreadable screen, navigation_needed, needs attention. A person releases only an interrupt or a call for attention.
+Holds: interrupted, compacting, user input, permission, trust, onboarding, login, update, usage limit, unknown or
+unreadable screen, navigation_needed, needs attention. A user releases only an interrupt or a call for attention.
 
 ## Adding a program build
 

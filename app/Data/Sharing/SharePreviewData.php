@@ -10,7 +10,7 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The owner's preview page of sharing one root, named as people name it: its latest published title, the linked
+ * The owner's preview page of sharing one root, named as users name it: its latest published title, the linked
  * candidates to select from, its open proposals, and, only when they exist, the last saved preview still open and the
  * root's live share, which a confirmed preview refreshes or approves.
  */

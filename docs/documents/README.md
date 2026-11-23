@@ -80,12 +80,12 @@ the `App\Concerns\ProvidesModelRecords` trait and supply four things:
 - the query of the records the actor may read;
 - the card of one record;
 - whether the actor may change it;
-- the word people name it by, such as `task`.
+- the word users name it by, such as `task`.
 
 ## Dock suggestions
 
 Documents keeps no dock of its own. Its `chat.dock` section suggests the newest documents and reports that still ask
-for attention; docking one is the person's own action in Chat (`DockRecord`).
+for attention; docking one is the user's own action in Chat (`DockRecord`).
 
 ## Limits
 
@@ -107,5 +107,5 @@ for attention; docking one is the person's own action in Chat (`DockRecord`).
   changes nothing.
 - **Links are explicit only.** Nothing is linked because a number appears in the text.
 - **No version 5 data is imported.**
-- **Some version 5 features are not part of version 6:** attachments, templates, an approval flow and several people
+- **Some version 5 features are not part of version 6:** attachments, templates, an approval flow and several users
   typing in one document at once.

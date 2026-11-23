@@ -11,10 +11,8 @@ use App\Exceptions\MessageMissing;
 use App\Exceptions\MessageStateConflict;
 use App\Models\Message;
 use App\Support\ActorIdentity;
-use App\Support\ChatPosting;
-use App\Support\MessageAnswers;
-use App\Support\MessageReading;
-use App\Support\MessageSending;
+use App\Support\ChatService;
+use App\Support\MessageService;
 use App\Support\RequestKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -22,10 +20,8 @@ use Illuminate\Support\Str;
 final readonly class ReplyToMessageHandler implements CommandHandler
 {
     public function __construct(
-        private MessageReading $reading,
-        private MessageSending $sending,
-        private MessageAnswers $answers,
-        private ChatPosting $chats,
+        private MessageService $messages,
+        private ChatService $chats,
         private RequestKey $key,
     ) {}
 
@@ -47,7 +43,7 @@ final readonly class ReplyToMessageHandler implements CommandHandler
             return $this->chats->reply($reply->withDispatcher($command->dispatchedBy()));
         }
 
-        $membership = $this->reading->recipientOf($command->messageId, $command->dispatchedBy());
+        $membership = $this->messages->recipientOf($command->messageId, $command->dispatchedBy());
         $original = Message::lockedById($command->messageId);
 
         if ($command->expectedStateVersion !== null && ! $original->isAtStateVersion($command->expectedStateVersion)) {
@@ -60,10 +56,10 @@ final readonly class ReplyToMessageHandler implements CommandHandler
 
         $now = CarbonImmutable::now();
         $original->acknowledge($membership, $now);
-        $reply = $this->sending->reply($original, $command->body, $command->dispatchedBy());
+        $reply = $this->messages->reply($original, $command->body, $command->dispatchedBy());
 
         if ($original->awaitsReply()) {
-            $this->answers->answer($original, $reply, ActorIdentity::of($command->dispatchedBy()), $now);
+            $this->messages->answer($original, $reply, ActorIdentity::of($command->dispatchedBy()), $now);
         }
 
         return $reply->id;

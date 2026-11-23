@@ -10,7 +10,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * One parser reads every number people type, and a reference reads back as people say it.
+ * One parser reads every number users type, and a reference reads back as users say it.
  */
 final class RecordReferenceTest extends TestCase
 {
@@ -18,7 +18,7 @@ final class RecordReferenceTest extends TestCase
 
     private const string PHASE_LABEL = 'plan 12, phase 2';
 
-    public function test_a_reference_reads_and_labels_as_people_say_it(): void
+    public function test_a_reference_reads_and_labels_as_users_say_it(): void
     {
         $plan = RecordReference::parse(self::PLAN_LABEL);
 
@@ -46,7 +46,7 @@ final class RecordReferenceTest extends TestCase
     }
 
     #[DataProvider('invalidNumbers')]
-    public function test_a_number_people_could_mistype_is_refused_by_name(string $text): void
+    public function test_a_number_users_could_mistype_is_refused_by_name(string $text): void
     {
         $this->expectException(InvalidRecordReference::class);
 

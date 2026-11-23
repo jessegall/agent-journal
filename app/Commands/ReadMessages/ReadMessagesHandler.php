@@ -7,17 +7,17 @@ namespace App\Commands\ReadMessages;
 use App\Contracts\Bus\CommandHandler;
 use App\Data\MessageReadBatch;
 use App\Exceptions\MessageMissing;
-use App\Support\MessageReading;
+use App\Support\MessageService;
 
 final readonly class ReadMessagesHandler implements CommandHandler
 {
-    public function __construct(private MessageReading $reading) {}
+    public function __construct(private MessageService $messages) {}
 
     /**
      * @throws MessageMissing
      */
     public function handle(ReadMessagesCommand $command): MessageReadBatch
     {
-        return $this->reading->readInInbox($command->inboxId, $command->dispatchedBy(), $command->messageIds);
+        return $this->messages->readInInbox($command->inboxId, $command->dispatchedBy(), $command->messageIds);
     }
 }

@@ -89,7 +89,7 @@ final readonly class ClaudeSignIn implements FirstRunSettlement, SignInProtocol
 
     public function settleFirstRun(string $directory): void
     {
-        $this->firstRun->settle($directory);
+        $this->firstRun->settle($this->files->pathIn(Place::Accounts, $directory));
     }
 
     public function signOut(string $directory): void

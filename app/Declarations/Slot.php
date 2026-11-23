@@ -33,7 +33,7 @@ final readonly class Slot
 
     /**
      * A slot that hands its sections the record whose number the given route parameter of its page holds, named by
-     * the word people use for that type of record, such as doc for /docs/12.
+     * the word users use for that type of record, such as doc for /docs/12.
      */
     public static function record(string $key, string $parameter, string $type): self
     {

@@ -31,7 +31,7 @@ var claudeCodeDelegationTools = []string{"Agent", "Task", "Workflow", "SendMessa
 // nativeHookEvents are the hook events both programs send, the ones the journal answers.
 var nativeHookEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop", "SessionEnd"}
 
-// claudeCodeNeverAsks is the permission mode every session runs in: Claude Code asks no person before a tool call.
+// claudeCodeNeverAsks is the permission mode every session runs in: Claude Code asks no user before a tool call.
 // claudeCodeInContainer tells Claude Code it runs in a container, where it accepts that mode as the root user.
 const (
 	claudeCodeNeverAsks   = "bypassPermissions"
@@ -325,7 +325,7 @@ func leaveCommandsToExecutor(settings map[string]any) {
 	settings["sandbox"] = map[string]any{"enabled": false}
 }
 
-// requireBoundary refuses an account start whose effective settings would make Claude Code ask a person, or, outside
+// requireBoundary refuses an account start whose effective settings would make Claude Code ask a user, or, outside
 // a protected start, run a tool outside Claude Code's sandbox: every session runs without permission questions (user
 // messages 19438, 19631, 19636), and what a tool may do is decided by the journal's hook, the deny rules and the
 // sandbox or the container.
@@ -333,7 +333,7 @@ func requireBoundary(settings map[string]any, protected bool) error {
 	sandbox, _ := settings["sandbox"].(map[string]any)
 	permissions, _ := settings["permissions"].(map[string]any)
 	if permissions["defaultMode"] != claudeCodeNeverAsks || permissions["disableBypassPermissionsMode"] == "disable" {
-		return errors.New("the account start's settings would make Claude Code ask a person: it is not started")
+		return errors.New("the account start's settings would make Claude Code ask a user: it is not started")
 	}
 	if !protected && (sandbox["enabled"] != true || sandbox["allowUnsandboxedCommands"] != false) {
 		return errors.New("the account start's settings do not keep every tool in the sandbox: it is not started")

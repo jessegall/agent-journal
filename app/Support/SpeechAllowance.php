@@ -211,7 +211,7 @@ final readonly class SpeechAllowance
         ChatEnvelope $chat,
     ): SpeechOpportunity {
         $opportunity = $token === null
-            ? $this->liveClaimOn($inbox, $actor, $intervalId, $chat->userRootId)
+            ? $this->turnShownTo($inbox, $actor, $intervalId, $chat->userRootId)
             : $this->claimedTurn($inbox, $actor, $intervalId, $token);
 
         if ($opportunity->isReserved() && ! $chat->isAnswerTo((string) $opportunity->reserved_question_id)) {
@@ -234,7 +234,7 @@ final readonly class SpeechAllowance
         Message $question,
     ): void {
         $opportunity = $token === null
-            ? $this->liveClaimOn($inbox, $actor, $intervalId, $question->user_root_id)
+            ? $this->turnShownTo($inbox, $actor, $intervalId, $question->user_root_id)
             : $this->claimedTurn($inbox, $actor, $intervalId, $token);
 
         if ($opportunity->reserved_question_id !== $question->id) {
@@ -276,12 +276,13 @@ final readonly class SpeechAllowance
     }
 
     /**
-     * The actor's claimed turn on the user message a token-less write belongs under, while its lease still runs: a
-     * claim the journal took for the agent on take-up, used through the ordinary reply and answer commands.
+     * The actor's open turn on the user message a token-less write belongs under: a claim whose lease still runs,
+     * or the turn itself once the agent's own session was shown the message, taken now for this one write. So an
+     * agent answers with one call, however long its work took.
      *
      * @throws SpeechRefused
      */
-    private function liveClaimOn(
+    private function turnShownTo(
         Inbox $inbox,
         ActorIdentity $actor,
         string $intervalId,
@@ -295,8 +296,6 @@ final readonly class SpeechAllowance
             ->where('inbox_id', $inbox->inboxId())
             ->onRoot($rootId)
             ->openFor($actor)
-            ->where('state', SpeechOpportunityState::Claimed)
-            ->where('lease_expires_at', '>', CarbonImmutable::now())
             ->lockForUpdate()
             ->first();
 
@@ -304,7 +303,29 @@ final readonly class SpeechAllowance
             throw SpeechRefused::unclaimed();
         }
 
+        $at = CarbonImmutable::now();
+
+        if ($opportunity->isLeased($at)) {
+            return $opportunity;
+        }
+
+        if (! $this->wasShown($intervalId, $rootId)) {
+            throw SpeechRefused::unclaimed();
+        }
+
+        $unsharedToken = bin2hex(random_bytes(self::TOKEN_BYTES));
+        $opportunity->claim(self::digestOf($unsharedToken), $at->addSeconds(self::LEASE_SECONDS));
+
         return $opportunity;
+    }
+
+    /**
+     * Whether the agent's own session was shown a piece of a message under the user message.
+     */
+    private function wasShown(string $intervalId, string $rootId): bool
+    {
+        return $this->session->hasSession()
+            && PresentationBatch::query()->shownUnderRoot($this->session->sessionId(), $intervalId, $rootId)->exists();
     }
 
     /**

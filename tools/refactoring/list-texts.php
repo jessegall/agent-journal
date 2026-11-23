@@ -81,7 +81,7 @@ if ($unreviewed === []) {
     exit(0);
 }
 
-echo count($unreviewed).' screen texts were not reviewed yet; read each aloud, rewrite what a person would not say '
+echo count($unreviewed).' screen texts were not reviewed yet; read each aloud, rewrite what a user would not say '
     ."(a label is the short word a dashboard shows, an explanation a plain sentence), then record them with --accept:\n";
 
 foreach ($texts as $text) {

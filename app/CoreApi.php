@@ -572,6 +572,7 @@ use App\Enums\AssignmentOutcomeType;
 use App\Enums\AssignmentPurpose;
 use App\Enums\AssignmentReason;
 use App\Enums\AuthorizationType;
+use App\Enums\BindingReadiness;
 use App\Enums\BindingType;
 use App\Enums\CallEffect;
 use App\Enums\CapabilityStatusType;
@@ -2238,6 +2239,7 @@ final class CoreApi
                 OperandType::class,
                 ExecutableBinding::class,
                 BindingType::class,
+                BindingReadiness::class,
                 RuleReference::class,
                 ProgramIdentity::class,
                 CommandPattern::class,

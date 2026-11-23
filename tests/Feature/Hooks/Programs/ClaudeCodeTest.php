@@ -108,7 +108,7 @@ final class ClaudeCodeTest extends TestCase
         $this->assertSame('call-1', $input->compactionId());
     }
 
-    public function test_a_journal_allow_answers_allow_so_no_person_is_asked(): void
+    public function test_a_journal_allow_answers_allow_so_no_user_is_asked(): void
     {
         $reply = $this->render('shell command', Decision::allow());
 

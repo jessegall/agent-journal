@@ -10,7 +10,7 @@ use App\Support\RecordReference;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The two records a link joins, named as people name them, such as doc 12 and task 7.
+ * The two records a link joins, named as users name them, such as doc 12 and task 7.
  */
 final class LinkRecordsRequest extends FormRequest
 {

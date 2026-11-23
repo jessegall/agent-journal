@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\WordLines;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -26,16 +25,10 @@ final class UserWordTest extends TestCase
         );
     }
 
-    public function test_no_code_calls_the_user_a_human_or_a_person(): void
+    // User message 19692: the word kept coming back in tests, tools, documents and designs, which the scan of the
+    // code alone never read. Every file the project writes is read now.
+    public function test_nothing_in_the_project_calls_the_user_a_human_or_a_person(): void
     {
-        $folders = [
-            app_path(),
-            ...DomainFiles::domainCode(),
-            base_path('tools/journal-agent'),
-            resource_path('js'),
-            ...(glob(base_path('domain/*/resources/js'), GLOB_ONLYDIR) ?: []),
-        ];
-
-        $this->assertSame([], WordLines::in(WordLines::USER_WORDS, $folders));
+        $this->assertSame([], WordLines::inProject(WordLines::USER_WORDS));
     }
 }

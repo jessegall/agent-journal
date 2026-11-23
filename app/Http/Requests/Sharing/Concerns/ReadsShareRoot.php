@@ -9,7 +9,7 @@ use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 
 /**
- * For a sharing request whose route names the root record as people name it, such as doc 12.
+ * For a sharing request whose route names the root record as users name it, such as doc 12.
  */
 trait ReadsShareRoot
 {

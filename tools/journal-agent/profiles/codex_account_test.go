@@ -92,8 +92,8 @@ func TestCodexRefusesEveryArgumentThatWouldMoveAToolOffTheExecutorRoute(t *testi
 	}
 }
 
-// User message 19438: a session never waits on a person's approval; the journal's hook decides each call.
-func TestCodexInTheTerminalAsksNoPersonForApprovalAndAOneShotTurnTakesNoSuchOption(t *testing.T) {
+// User message 19438: a session never waits on a user's approval; the journal's hook decides each call.
+func TestCodexInTheTerminalAsksNoUserForApprovalAndAOneShotTurnTakesNoSuchOption(t *testing.T) {
 	for _, start := range []contracts.Start{
 		contracts.BaseStart{}.Terminal(false),
 		contracts.BaseStart{SessionID: "thread-1"}.Terminal(true),
@@ -105,7 +105,7 @@ func TestCodexInTheTerminalAsksNoPersonForApprovalAndAOneShotTurnTakesNoSuchOpti
 
 		asked := slices.Index(arguments, "--ask-for-approval")
 		if asked < 0 || arguments[asked+1] != "never" {
-			t.Fatalf("a terminal start may still ask a person: %v", arguments)
+			t.Fatalf("a terminal start may still ask a user: %v", arguments)
 		}
 	}
 

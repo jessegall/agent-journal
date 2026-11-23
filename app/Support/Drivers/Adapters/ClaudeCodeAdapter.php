@@ -47,7 +47,7 @@ use App\Values\Operation;
 /**
  * Reads Claude Code's hook payloads into the journal's inputs and renders its answers as Claude Code replies.
  * A callback or tool it does not map is refused by name. A call the journal admits is answered allow, so the driver
- * asks no person.
+ * asks no user.
  */
 final readonly class ClaudeCodeAdapter implements DriverAdapter
 {

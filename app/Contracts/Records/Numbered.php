@@ -7,7 +7,7 @@ namespace App\Contracts\Records;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A record people refer to by a number within its holder: task 12 within the journal, phase 2 within its plan.
+ * A record users refer to by a number within its holder: task 12 within the journal, phase 2 within its plan.
  */
 interface Numbered
 {

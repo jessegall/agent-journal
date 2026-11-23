@@ -81,6 +81,19 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
         return $delivery;
     }
 
+    /**
+     * The delivery of the receipt that is still open, being tried or waiting for its recipient to start, locked; none
+     * when it was settled or never scheduled.
+     */
+    public static function openFor(string $receiptId): self|null
+    {
+        return self::query()
+            ->where('receipt_id', $receiptId)
+            ->whereIn('state', [ReceiptDeliveryState::Pending, ReceiptDeliveryState::Waiting])
+            ->lockForUpdate()
+            ->first();
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -91,6 +104,18 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
         $this->assertPending();
         $this->state = ReceiptDeliveryState::Accepted;
         $this->attempts++;
+        $this->lease_expires_at = null;
+        $this->next_attempt_at = null;
+        $this->recordChange();
+    }
+
+    /**
+     * The recipient was shown the text, so an open delivery is done, whether its wake was still being tried or it
+     * waited for the recipient to start.
+     */
+    public function settleShown(): void
+    {
+        $this->state = ReceiptDeliveryState::Accepted;
         $this->lease_expires_at = null;
         $this->next_attempt_at = null;
         $this->recordChange();
@@ -217,7 +242,7 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
     private function recordChange(): void
     {
         $this->assertSaved($this->save());
-        $this->raise(new ReceiptDeliveryChanged($this->id, $this->receipt_id, $this->state));
+        $this->raise(new ReceiptDeliveryChanged($this->id, $this->receipt_id, $this->state->wakeState()));
     }
 
     /**

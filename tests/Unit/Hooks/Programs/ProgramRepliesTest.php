@@ -22,7 +22,7 @@ final class ProgramRepliesTest extends TestCase
 {
     private const string RUN_ALIAS_ADVICE = 'journal run';
 
-    public function test_a_journal_allow_answers_allow_so_the_driver_asks_no_person(): void
+    public function test_a_journal_allow_answers_allow_so_the_driver_asks_no_user(): void
     {
         $reply = $this->shell(Decision::allow());
 
@@ -125,9 +125,9 @@ final class ProgramRepliesTest extends TestCase
 
     /**
      * User message 19438: only a call the journal admitted is answered allow; a call nobody judged gets no decision,
-     * and no reply ever asks a person or ends the driver's turn.
+     * and no reply ever asks a user or ends the driver's turn.
      */
-    public function test_only_an_admitted_call_is_allowed_and_no_reply_asks_a_person_or_ends_the_turn(): void
+    public function test_only_an_admitted_call_is_allowed_and_no_reply_asks_a_user_or_ends_the_turn(): void
     {
         $admitted = [
             $this->shell(Decision::allow(), ['context']),

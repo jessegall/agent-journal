@@ -12,6 +12,7 @@ use App\Models\Message;
 use App\Models\MessageReceipt;
 use App\Models\PresentationBatch;
 use App\Models\PresentationRange;
+use App\Models\ReceiptDelivery;
 use App\Models\ReceiptProgress;
 use Carbon\CarbonImmutable;
 
@@ -23,6 +24,11 @@ use Carbon\CarbonImmutable;
  */
 final readonly class PresentationAcknowledgement
 {
+    /**
+     * The most batches one answer confirms: the ones that showed its user message, again after each lost lease.
+     */
+    private const int BATCH_LIMIT = 20;
+
     public function __construct(
         private InboxResolver $inboxes,
         private CurrentSession $session,
@@ -93,8 +99,49 @@ final readonly class PresentationAcknowledgement
 
         $range = $batch->rangeWithDigest($handleDigest);
 
-        if ($range === null || ! $range->confirm($at)) {
+        if ($range === null || ! $this->confirmRange($batch, $range, $at)) {
             return null;
+        }
+
+        return $range;
+    }
+
+    /**
+     * Confirms everything the agent's own session was shown in the batches that carried the user message, a batch
+     * whose lease ran out while the agent worked too: an agent that answers under the message has read what came
+     * with it, so its answer needs no confirmation of its own.
+     */
+    public function acknowledgeShownUnder(string $rootId, string $intervalId, CarbonImmutable $at): void
+    {
+        if (! $this->session->hasSession()) {
+            return;
+        }
+
+        $batches = PresentationBatch::query()
+            ->shownUnderRoot($this->session->sessionId(), $intervalId, $rootId)
+            ->lockForUpdate()
+            ->limit(self::BATCH_LIMIT)
+            ->get();
+
+        foreach ($batches as $batch) {
+            $ranges = $batch->ranges()->whereNull('confirmed_at')->with('outstanding')
+                ->limit(PresentationBatches::POST_LIMIT + 1)->get();
+
+            foreach ($ranges as $range) {
+                $this->confirmRange($batch, $range, $at);
+                $this->presentWhenWhole($range->receipt_id, $batch->context_key, $at);
+            }
+        }
+    }
+
+    /**
+     * Confirms one piece: the piece, its outstanding range and the context's progress move together. Answers whether
+     * this confirmation changed it.
+     */
+    private function confirmRange(PresentationBatch $batch, PresentationRange $range, CarbonImmutable $at): bool
+    {
+        if (! $range->confirm($at)) {
+            return false;
         }
 
         $range->outstanding->confirm();
@@ -105,7 +152,7 @@ final readonly class PresentationAcknowledgement
         $progress->advanceTo($range->end_offset);
         $batch->recordProgress($at);
 
-        return $range;
+        return true;
     }
 
     private function isOwnSession(PresentationBatch $batch): bool
@@ -121,8 +168,8 @@ final readonly class PresentationAcknowledgement
         $receipt = MessageReceipt::query()->findOrFail($receiptId);
         $length = mb_strlen(Message::query()->acrossInboxes()->findOrFail($receipt->message_id)->body);
 
-        if (ReceiptProgress::confirmedOffsetOf($receiptId, $contextKey) >= $length) {
-            $receipt->present($at);
+        if (ReceiptProgress::confirmedOffsetOf($receiptId, $contextKey) >= $length && $receipt->present($at)) {
+            ReceiptDelivery::openFor($receiptId)?->settleShown();
         }
     }
 }

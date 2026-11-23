@@ -36,13 +36,14 @@ use Closure;
  * position, the message, one receipt per active member with the author's shown, a delivery for each agent member and
  * the turns a user's message opens, all in the command's transaction.
  */
-final readonly class ChatPosting
+final readonly class ChatService
 {
     public function __construct(
         private InboxResolver $inboxes,
         private AcceptedReceipt $accepted,
         private ReceiptDeliveries $deliveries,
         private SpeechAllowance $speech,
+        private PresentationAcknowledgement $shown,
         private CurrentSession $session,
     ) {}
 
@@ -266,6 +267,7 @@ final readonly class ChatPosting
 
         if ($opportunity !== null) {
             $this->speech->handOff($message, $intervals);
+            $this->shown->acknowledgeShownUnder($opportunity->user_root_id, $intervalId, CarbonImmutable::now());
         }
 
         return $message;

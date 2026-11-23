@@ -24,7 +24,7 @@ interface RecordResolver
     public function types(): array;
 
     /**
-     * The record people named, such as doc 12, through the provider whose word it uses.
+     * The record users named, such as doc 12, through the provider whose word it uses.
      *
      * @throws UnknownLinkType|RecordUnavailable
      */

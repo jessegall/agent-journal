@@ -11,7 +11,7 @@ so who sits where is read like any other holding. A desk is never an actor.
 
 - Built-in desks come from `InstallDesks`: `main` (one seat, forwards its occupant) and the journal's source-only desks.
 - Every agent gets a personal desk when it is created (`CreateAgentHandler` through `ActorProvisioning`); the owner gets
-  one when seeded, and a person who registers gets one in the same transaction (`CreateNewUser`).
+  one when seeded, and a user who registers gets one in the same transaction (`CreateNewUser`).
 - A main start takes main's seat (`MainSeatTakeover`, implemented by `Desks\Support\MainTakeover`). A different agent
   holding it is replaced and fenced: `Agent::fenceRuntimes` ends its current runtime, so its credentials are refused.
 - Work held by a desk counts as held by everyone seated there (`SharedHolders`), and losing a seat ends the claims it
@@ -63,14 +63,14 @@ ends.
 
 ## Entries
 
-HTTP: `routes/communication/communication.php` (`/communication` for people, `/agent/communication` for signed
+HTTP: `routes/communication/communication.php` (`/communication` for users, `/agent/communication` for signed
 agents). CLI: `message:send`, `ask`, `reply`, `require-answer`, `read`, `take-next`, `dismiss`, `show`, `history`,
 `counts`. MCP: `messages_send`, `messages_ask`, `messages_reply`, `messages_read`, `messages_take_next`,
 `messages_dismiss`, `messages_show`, `inbox_history`, `inbox_counts`.
 
 ## Chat
 
-Chat shows the conversation between the person's inbox and the chosen agent's inbox, reads only what it showed, and
+Chat shows the conversation between the user's inbox and the chosen agent's inbox, reads only what it showed, and
 replies at the shown version. It adds an Inbox page (counts, take next) and a History page (labelled inspection,
 cancel with a reason). Pins (`MessagePin`) are Chat's own, one per owner, inbox pair and target, and are left out of
 lists while unreadable.

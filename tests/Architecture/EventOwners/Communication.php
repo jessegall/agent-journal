@@ -6,8 +6,8 @@ use App\Enums\ActorType;
 use App\Enums\DismissalType;
 use App\Enums\IntervalRole;
 use App\Enums\LeaveReason;
-use App\Enums\ReceiptDeliveryState;
 use App\Enums\SpeechOpportunityState;
+use App\Enums\WakeState;
 use App\Events\ChatLinePosted;
 use App\Events\ChatMemberJoined;
 use App\Events\ChatMemberLeft;
@@ -106,7 +106,7 @@ return [
         ],
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ReceiptDeliveryChanged('delivery', 'receipt', ReceiptDeliveryState::Accepted),
+        'sample' => fn () => new ReceiptDeliveryChanged('delivery', 'receipt', WakeState::Accepted),
     ],
     SpeechOpportunitySettled::class => [
         'role' => EventRole::RowFact,
@@ -171,7 +171,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/MessageReading.php',
+            'app/Support/MessageService.php',
         ],
     ],
     NotificationsChanged::class => [

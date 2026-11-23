@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Values;
 
 /**
- * What a create command made: its id, the number people call it by, and whether it is a document or a report.
+ * What a create command made: its id, the number users call it by, and whether it is a document or a report.
  */
 final readonly class CreatedRecord
 {
@@ -17,7 +17,7 @@ final readonly class CreatedRecord
     ) {}
 
     /**
-     * How people name it: doc 12 or report 3.
+     * How users name it: doc 12 or report 3.
      */
     public function label(): string
     {

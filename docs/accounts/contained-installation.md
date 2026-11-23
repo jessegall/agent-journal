@@ -3,7 +3,7 @@
 This is the contained arrangement: the journal, its sign-in service and every agent run in containers on one server,
 and agents run in a separate Docker daemon that holds only agent containers. Every user runs their own journal on a
 machine of their own, so a server you run for yourself counts as yours: it offers the same sign-in methods as the Mac,
-Claude's browser sign-in with a pasted code included. A journal hosted for other people is not supported.
+Claude's browser sign-in with a pasted code included. A journal hosted for other users is not supported.
 
 Follow the steps in order on a fresh server that has Docker and nothing else.
 

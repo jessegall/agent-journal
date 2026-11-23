@@ -129,7 +129,7 @@ Library
 │   ├── Status
 │   │   ├── [Dot] | [Spinner] | [Icon]
 │   │   └── word
-│   ├── Avatar (agent | person | you | journal; sm | lg)
+│   ├── Avatar (agent | user | you | journal; sm | lg)
 │   │   └── [DriverMark] | initials | "J"
 │   ├── AvatarStack
 │   │   ├── [Avatar] × n
@@ -505,11 +505,11 @@ In short:
 
 ### Avatar
 
-- **For:** a participant. Agents are rounded squares holding their DriverMark; people are circles with initials. The journal is a square holding "J".
-- **Props:** participant (kind agent, person, you or journal; program; initials; name; role), size, label (needed only when the avatar stands alone).
+- **For:** a participant. Agents are rounded squares holding their DriverMark; users are circles with initials. The journal is a square holding "J".
+- **Props:** participant (kind agent, user, you or journal; program; initials; name; role), size, label (needed only when the avatar stands alone).
 - **Sizes:**
-  - sm 16: radius 4, --border-2 border, mark 11. A person is a circle with a --border-3 border, --raised fill and initials in --text-meta 600 --text-2.
-  - lg 26: radius 8, --bg fill, mark 16. A person's initials are in --text-badge.
+  - sm 16: radius 4, --border-2 border, mark 11. A user is a circle with a --border-3 border, --raised fill and initials in --text-meta 600 --text-2.
+  - lg 26: radius 8, --bg fill, mark 16. A user's initials are in --text-badge.
   - It replaces .av, .avs, .ini, .ini.lg and the journal mark .jm.
 - **ARIA:** aria-hidden beside a visible name; otherwise aria-label is "Name · role". Today there is only a title.
 - **Used:** MenuTrigger who, MessageHead, menus, comment threads, GuidedChatDialog, the drafted banner, TypingLine.

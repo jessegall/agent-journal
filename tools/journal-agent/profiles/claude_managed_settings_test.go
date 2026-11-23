@@ -54,7 +54,7 @@ func TestTheManagedPolicyCarriesEveryRuleAndHookOfTheLaunch(t *testing.T) {
 	}
 	// User messages 19631 and 19636: every session in a container runs without permission questions, set here.
 	if settings.Permissions.DefaultMode != claudeCodeNeverAsks || !settings.SkipDangerousModePermissionPrompt {
-		t.Fatalf("a session in the container would ask a person: %+v", settings)
+		t.Fatalf("a session in the container would ask a user: %+v", settings)
 	}
 	if len(settings.AllowedMcpServers) != 1 || settings.AllowedMcpServers[0].ServerName != claudeCodeJournalServer {
 		t.Fatalf("MCP servers allowed: %+v", settings.AllowedMcpServers)

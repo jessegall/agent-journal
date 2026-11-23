@@ -186,9 +186,17 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
      */
     public function isLeasedTo(string $tokenDigest, CarbonImmutable $at): bool
     {
-        return $this->state === SpeechOpportunityState::Claimed
+        return $this->isLeased($at)
             && $this->claim_token_digest !== null
-            && hash_equals($this->claim_token_digest, $tokenDigest)
+            && hash_equals($this->claim_token_digest, $tokenDigest);
+    }
+
+    /**
+     * Whether the turn is claimed under a lease that still runs.
+     */
+    public function isLeased(CarbonImmutable $at): bool
+    {
+        return $this->state === SpeechOpportunityState::Claimed
             && $this->lease_expires_at !== null
             && $this->lease_expires_at->greaterThan($at);
     }

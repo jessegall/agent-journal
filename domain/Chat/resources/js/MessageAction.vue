@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from "@kit/Button";
 import Icon from "@kit/Icon";
 import type { IconName } from "@kit/Icon";
 
@@ -10,14 +11,10 @@ defineProps<{ icon?: IconName; label?: string }>();
 </script>
 
 <template>
-  <button
-    type="button"
-    :aria-label="label"
-    class="inline-flex h-5 items-center gap-1 rounded-control px-1 text-badge text-text-3 hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
-  >
-    <template v-if="icon !== undefined">
+  <Button variant="word" :aria-label="label">
+    <template v-if="icon !== undefined" #icon>
       <Icon :name="icon" :size="14" />
     </template>
     <slot />
-  </button>
+  </Button>
 </template>

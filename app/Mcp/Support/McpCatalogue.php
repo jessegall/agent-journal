@@ -6,6 +6,7 @@ namespace App\Mcp\Support;
 
 use App\Contracts\Domains\JournalToolNames;
 use App\Contracts\Reflection\ReflectorFactory;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Enums\DiscoveryProfile;
@@ -136,6 +137,25 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     public function toolNames(): array
     {
         return array_keys($this->tools);
+    }
+
+    /**
+     * The name of the tool an agent sends the command with, whichever part of the journal registered it.
+     *
+     * @param  class-string  $command
+     *
+     * @throws McpCommandMissing
+     */
+    public function toolNameDispatching(string $command): string
+    {
+        $name = array_find_key(
+            $this->tools,
+            fn (string $class) => $this->definitionOf($class)->writeDeclaration()
+                ->map(fn (Dispatches $write) => $write->command === $command)
+                ->getOrElse(false),
+        );
+
+        return $name ?? throw McpCommandMissing::withoutTool($command);
     }
 
     /**

@@ -5,7 +5,6 @@ domain/Chat/resources/js/AgentPicker.vue:role=option
 domain/Chat/resources/js/ChosenAgent.vue:button
 domain/Chat/resources/js/Composer.vue:textarea
 domain/Chat/resources/js/MessageList.vue:button
-domain/Chat/resources/js/MessageReactions.vue:button
 domain/Chat/resources/js/SessionForm.vue:input
 domain/Chat/resources/js/SessionForm.vue:select
 domain/Chat/resources/js/dock/parts/ButtonPart.vue:button

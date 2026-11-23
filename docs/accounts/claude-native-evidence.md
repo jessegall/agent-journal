@@ -9,7 +9,7 @@ missing and the journal refuses what depends on it.
 
 - Only account directories inside the journal's accounts folder (`--accounts-root`, or `JOURNAL_ACCOUNTS_ROOT`). A
   directory outside it is refused before anything runs, so a personal `~/.claude` login is never read.
-- Accounts are signed in by a person through the journal's own sign-in on the host; the approval stays in the
+- Accounts are signed in by a user through the journal's own sign-in on the host; the approval stays in the
   browser. The procedure never starts a sign-in, never sees a challenge and never reads a credential file.
 - Every run gets only `PATH`, an empty `HOME`, the account directory as `CLAUDE_CONFIG_DIR` and an empty
   `ANTHROPIC_CONFIG_DIR`. Standard error is dropped unread; of `auth status` only whether it is signed in and a

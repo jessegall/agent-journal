@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Chat\AgentMessageReader;
 use App\Enums\ReadView;
@@ -34,7 +33,8 @@ final class AgentChatFlowTest extends MessagingTestCase
         $this->chat = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
     }
 
-    public function test_the_agent_claims_answers_acknowledges_and_has_no_pending_work_left(): void
+    // User message 19690: an answer confirms what the agent was shown, so nothing is left to confirm after it.
+    public function test_the_agent_claims_and_answers_and_has_no_pending_work_left(): void
     {
         $this->asOwner();
         $questionId = $this->runOnBus(new AskChatQuestionCommand($this->chat->inbox_id, 'Ready?', 'ask-key'));
@@ -48,9 +48,6 @@ final class AgentChatFlowTest extends MessagingTestCase
 
         $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $questionId));
         $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'Yes.'));
-        $this->runOnBus(new ReadMessagesCommand($this->chat->inbox_id, [$questionId]));
-        $this->assertSame(1, $pending->pendingCount($this->actorOf($this->builder)));
-        $this->presentAll($this->actorOf($this->builder), $this->builder->id);
 
         $this->assertSame(0, $pending->pendingCount($this->actorOf($this->builder)));
     }

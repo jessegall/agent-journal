@@ -39,7 +39,7 @@ abstract readonly class ClaudeSecretSignIn implements FirstRunSettlement, SignIn
 
     public function settleFirstRun(string $directory): void
     {
-        $this->firstRun->settle($directory);
+        $this->firstRun->settle($this->files->pathIn(Place::Accounts, $directory));
     }
 
     public function begin(string $directory): PrivateAccountProcess

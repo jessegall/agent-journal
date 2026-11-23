@@ -131,12 +131,12 @@ final class MoveToolTest extends TestCase
 
     public function test_a_list_moves_each_line_and_skips_comments(): void
     {
-        file_put_contents($this->tree.'.moves.txt', "# the plainer name\nApp\\Values\\User App\\Values\\Person # plainer\n");
+        file_put_contents($this->tree.'.moves.txt', "# the plainer name\nApp\\Values\\User App\\Values\\Member # plainer\n");
 
         [$exit] = $this->move('--list='.$this->tree.'.moves.txt');
 
         $this->assertSame(0, $exit);
-        $this->assertFileExists($this->tree.'/app/Values/Person.php');
+        $this->assertFileExists($this->tree.'/app/Values/Member.php');
         $this->assertFileDoesNotExist($this->tree.'/app/Values/User.php');
     }
 

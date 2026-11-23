@@ -10,7 +10,7 @@ use App\Enums\RefusalCode;
 use InvalidArgumentException;
 
 /**
- * Text that does not name a record the way people name one, such as 'plan 0' or 'task 1e3'.
+ * Text that does not name a record the way users name one, such as 'plan 0' or 'task 1e3'.
  */
 final class InvalidRecordReference extends InvalidArgumentException implements CodedRefusal
 {

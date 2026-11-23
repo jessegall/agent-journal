@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
+use App\Attributes\DecodesAnyJson;
 use App\Contracts\Files\Files;
 use App\Enums\Permissions;
-use App\Enums\Place;
 use App\Support\ContainerManifest;
+use App\Values\FilePath;
 use stdClass;
 
 /**
@@ -28,12 +29,14 @@ final readonly class ClaudeFirstRun
     public function __construct(private Files $files) {}
 
     /**
-     * The state is read as objects, so an empty object of Claude Code's stays one, and written only when an answer is
-     * missing, so a running session's own writes are not raced for nothing.
+     * Settles the first run in the account folder its owner hands over. The state file is Claude Code's own, with
+     * fields the journal does not know: it is read as objects, so every field and every empty object of it stays as
+     * it was, and written only when an answer is missing, so a running session's own writes are not raced for nothing.
      */
-    public function settle(string $directory): void
+    #[DecodesAnyJson]
+    public function settle(FilePath $accountFolder): void
     {
-        $file = $this->files->pathIn(Place::Accounts, $directory.'/'.self::STATE_FILE);
+        $file = $accountFolder->child(self::STATE_FILE);
         $state = $this->files->exists($file) ? json_decode($this->files->read($file), flags: JSON_THROW_ON_ERROR) : new stdClass();
         $folders = $state->{self::FOLDERS} ?? new stdClass();
         $sessionFolder = $folders->{ContainerManifest::WORKDIR} ?? new stdClass();

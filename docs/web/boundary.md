@@ -66,7 +66,7 @@ Generated files are build output and ignored by git: `resources/js/types/generat
 
 ## Sending a message
 
-Messaging is Core; see `docs/communication/README.md`. Chat's composer sends `AskMessage` from the person's inbox
+Messaging is Core; see `docs/communication/README.md`. Chat's composer sends `AskMessage` from the user's inbox
 to the chosen agent's inbox and returns to Home on the same session.
 
 ## Rule approval (task 112)

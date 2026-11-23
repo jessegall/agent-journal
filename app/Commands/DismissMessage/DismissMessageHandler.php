@@ -16,7 +16,7 @@ use App\Exceptions\MessageStateConflict;
 use App\Models\Message;
 use App\Policies\MessageAdministrationPolicy;
 use App\Support\ActorIdentity;
-use App\Support\ChatPosting;
+use App\Support\ChatService;
 use App\Support\InboxMembership;
 use App\Support\MessageClaims;
 use Carbon\CarbonImmutable;
@@ -27,7 +27,7 @@ final readonly class DismissMessageHandler implements CommandHandler
         private CurrentAuthorizer $authorizer,
         private InboxResolver $inboxes,
         private MessageClaims $claims,
-        private ChatPosting $chats,
+        private ChatService $chats,
     ) {}
 
     /**

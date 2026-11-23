@@ -1,7 +1,7 @@
 # Authorizing a module's commands and reads
 
 Every command and every read of owned records asks one question: may this actor have this access on what this policy
-guards? The answer comes from the actor's own profile (an agent) or owner authority (a person). No code asks what kind
+guards? The answer comes from the actor's own profile (an agent) or owner authority (a user). No code asks what kind
 of actor calls, its role or its profile type (rule 39); `tests/Architecture/ActorCategoryRuleTest.php` fails on any
 such branch.
 

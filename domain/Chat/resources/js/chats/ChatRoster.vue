@@ -136,7 +136,7 @@ function findCandidates(): void {
           size="small"
           variant="bordered"
           @click="findCandidates"
-          >Add people</Button
+          >Add users</Button
         >
         <ul class="flex flex-col gap-0.5">
           <template v-for="candidate in found" :key="candidate.actor">

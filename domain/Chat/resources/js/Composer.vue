@@ -50,7 +50,7 @@ const placeholder = computed(
 const others = computed(() =>
   props.participants.filter((member) => member.actor !== props.viewer),
 );
-// A question among more than two people must name who settles it; in a pair the other member is implied.
+// A question among more than two members must name who settles it; in a pair the other member is implied.
 const needsRespondent = computed(
   () => asking.value && others.value.length > 1 && addressee.value === "",
 );

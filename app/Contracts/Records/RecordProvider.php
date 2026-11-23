@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 interface RecordProvider
 {
     /**
-     * The word people name these records by, such as doc in doc 12.
+     * The word users name these records by, such as doc in doc 12.
      */
     public function referenceWord(): string;
 

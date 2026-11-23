@@ -1,6 +1,6 @@
 # Numbered and unnumbered models
 
-Every record has a ULID key that machines use. A record that people talk about, such as plan 12 or task 47, also
+Every record has a ULID key that machines use. A record that users talk about, such as plan 12 or task 47, also
 has a number. This guide says what each model needs; the model alone says it is numbered and how.
 
 ## Every model
@@ -25,7 +25,7 @@ final class GlobalGroup extends Model
 
 ## A numbered model
 
-A record people refer to by number implements `Numbered` and uses `HasNumber`:
+A record users refer to by number implements `Numbered` and uses `HasNumber`:
 
 ```php
 final class Phase extends Model implements Assignable, Numbered
@@ -66,7 +66,7 @@ allocator locks the holder and its number group in the command's transaction, an
 
 ## Routes and references
 
-- Pages people open name a record by number: `/plans/12`. The request reads the number with the `ReadsRouteNumber`
+- Pages users open name a record by number: `/plans/12`. The request reads the number with the `ReadsRouteNumber`
   trait and finds the record with `idOfNumber`; a number no record has is not found:
 
   ```php
@@ -77,7 +77,7 @@ allocator locks the holder and its number group in the command's transaction, an
   ```
 
 - Agent and machine routes take ULIDs.
-- `RecordReference` is the one parser for numbers people type: `RecordReference::parse('plan 12')`, and
+- `RecordReference` is the one parser for numbers users type: `RecordReference::parse('plan 12')`, and
   `RecordReference::within($plan, 'phase', 2)->label()` reads `plan 12, phase 2`. A number with a sign, a leading
   zero, an exponent or spaces is refused with `InvalidRecordReference`.
 

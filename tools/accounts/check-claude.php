@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * The private native evidence procedure for Claude Code (docs/accounts/claude-native-evidence.md). It runs on the
- * protected host against accounts a person signed in through the journal's own sign-in, never a personal login, and
+ * protected host against accounts a user signed in through the journal's own sign-in, never a personal login, and
  * prints only each item's pass, missing or fail with its reason, the build and the arrangement.
  *
  *   php tools/accounts/check-claude.php [--program=claude] [--accounts-root=<journal accounts folder>]

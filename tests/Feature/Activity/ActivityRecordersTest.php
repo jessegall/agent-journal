@@ -75,7 +75,7 @@ final class ActivityRecordersTest extends MessagingTestCase
         );
     }
 
-    public function test_an_agents_post_in_a_chat_with_a_person_is_an_entry_and_one_between_agents_is_not(): void
+    public function test_an_agents_post_in_a_chat_with_a_user_is_an_entry_and_one_between_agents_is_not(): void
     {
         $withOwner = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
         $betweenAgents = $this->pairChat($this->actorOf($this->reviewer), $this->actorOf($this->builder));

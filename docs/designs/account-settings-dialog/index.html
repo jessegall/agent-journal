@@ -215,7 +215,7 @@ code{font-family:var(--font-mono);font-size:11.5px}
     <tr><td>Save on blur</td><td>No click needed.</td><td>Clicking Close or Remove account blurs the field and sends a rename on the way out; a refusal arrives after the dialog is gone or when the user is already doing something else.</td></tr>
     <tr><td>Save after a pause (debounce)</td><td>No click at all.</td><td>Every save reloads the Accounts page (AccountsWindow.vue reloads on each change), which would reset the field mid-typing; half names like “Wor” get saved and refused names flash up while still typing.</td></tr>
   </table>
-  <p class="note" style="margin-top:8px">Recommendation: the in-field Save with Enter. If a lost edit on Close turns out to bother people, add the blur save later, only for a non-empty changed name — the design leaves room for it.</p>
+  <p class="note" style="margin-top:8px">Recommendation: the in-field Save with Enter. If a lost edit on Close turns out to bother users, add the blur save later, only for a non-empty changed name — the design leaves room for it.</p>
 
   <h2>The rest of the dialog</h2>
   <div class="statesgrid">

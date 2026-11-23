@@ -21,7 +21,7 @@ use Tests\Support\PresentsChatText;
  * A chat message is one row both members of a pair see, at its own timeline position: a retry with the same key
  * answers the same message, and a different message under that key is refused and leaves the first as it was.
  */
-final class ChatPostingTest extends MessagingTestCase
+final class ChatServiceTest extends MessagingTestCase
 {
     use OpensPairChats;
     use PresentsChatText;

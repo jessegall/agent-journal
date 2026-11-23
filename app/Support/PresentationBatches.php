@@ -232,7 +232,7 @@ final readonly class PresentationBatches
             'bodyLength' => $length,
             'handle' => $handle,
             'claimableRootId' => $claimable ? $root : null,
-            'isFromPerson' => $author->type->isUser(),
+            'isFromUser' => $author->type->isUser(),
         ]);
     }
 }

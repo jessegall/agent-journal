@@ -53,7 +53,7 @@ const props = defineProps<{
 const page = usePage();
 const conversation = computed(() => props.chat.conversation);
 const isRosterOpen = ref(false);
-// The members as their avatars: agents by their driver's mark, people by their initial.
+// The members as their avatars: agents by their driver's mark, users by their initial.
 const members = computed(() =>
   (conversation.value?.participants ?? []).map((member) => ({
     kind: member.driver === null ? ("user" as const) : ("agent" as const),

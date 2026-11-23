@@ -79,7 +79,7 @@ A command carries whole numbers, text, yes or no, decimals, backed enums, their 
 owner may name, and lists of those, never a model, a service or a stack target (a session is an int id the handler
 resolves). A handler returns nothing, one of those, or a final readonly value such as `App\Support\AssignmentResult`.
 
-Every command a person or an agent sends declares who may run it with one `#[Authorize(Policy::class,
+Every command a user or an agent sends declares who may run it with one `#[Authorize(Policy::class,
 AccessType::Case)]`: the policy names the model it guards, so the declaration needs no subject. A command whose policy
 decides on one record implements `App\Contracts\Bus\RecordCommand` and returns that locked record from `subject()`,
 as `Domain\Tasks\Commands\BlockTask\BlockTaskCommand` does for `Domain\Tasks\Policies\TaskRunPolicy`; its handler takes the record as

@@ -48,7 +48,7 @@ From helper 62 to the main agent. This is a design and its specification. It is 
 - Routes registered by Web.
 - Install and removal as a deploy.
 
-## 1. What the person sees
+## 1. What the user sees
 
 Version 5's viewer is a set of **windows**. A module declared each window (`src/engine/viewer/window_declaration.py:28-65`). The shell put a window in one of four places (`src/viewer/src/windows/PaneStage.vue`):
 
@@ -87,7 +87,7 @@ All sizes come from the version 5 source files named here:
 
   Under D3 it draws only what version 6 can read today: the state of the chosen session, in version 5's words. That is Working for Active, Ended for Ended, and "Status: suspected lost" or "Status: lost" for the others. With no session the bar shows version 5's placeholder: "Agent 1" and "No session yet" in `--text-4`. The chosen session is the one picked in the Chat window; on other pages it is the last one picked, kept in session storage.
 - **Information bar** (`shell/InformationBar.vue`): minimum height 30, with 12 px `--text-3` facts 16 px apart. Every fact has its 12 px icon, and the presets button sits at the right. Under D3 the only fact is the lead, the agent's name with the agents icon.
-- **Pane grid** (`panes/PaneGrid.vue`). Panes are placed absolutely by fractions of the grid. A pane that is not at the left or top edge has a 1 px border on that side. Moves ease over 0.26 s, except while the person drags and during the first 1.5 s.
+- **Pane grid** (`panes/PaneGrid.vue`). Panes are placed absolutely by fractions of the grid. A pane that is not at the left or top edge has a 1 px border on that side. Moves ease over 0.26 s, except while the user drags and during the first 1.5 s.
 - **Tab strip** (`kit/EditorTabs.vue`). Each pane begins with a 34 px strip on `--side`.
   - A tab is 11.5 px with .03em spacing. The open tab is `--text` with a 1 px accent underline.
   - A count turns accent on the open tab or when it is new. The close cross is 16 px.
@@ -99,7 +99,7 @@ All sizes come from the version 5 source files named here:
   - Inside it each card is a full-width strip, divided from the one above by a 1 px `--border` top line (none on the first).
   - The head is at least 28 px high, with margin-top 5, padding 0 14 and gap 8. It holds the 14 px icon in `--text-3`, the title (13/500, line height 20), the age (64 px wide, 11.5 px `--text-3`) and the close control.
   - The foot is at least 24 px high, with padding 0 14 0 36 and margin-bottom 7. Its facts (12 px `--text-3`) sit at the left and its buttons at the right. Open is the one bordered ghost button.
-  - A card that waits for the person has a 2 px `--tone-warn` line along its top.
+  - A card that waits for the user has a 2 px `--tone-warn` line along its top.
   - With more than one card, a 28 px row at the top holds the fold-all button.
   - Cards come from sections in the slot `chat.dock`.
 - **Composer**: `--raised`, 1 px `--border-2`, radius 12. The corner button reads "Dump files" while the field is empty and "Send" once text is typed. The message list is drawn from `tests/look/home-v5.png`; its version 5 source lives in the chat module and was not compared, so treat it as reference.
@@ -117,10 +117,10 @@ Version 6's `resources/css/app.css` calls the accent family `--brand` (doc 4, ch
 Home is the pane grid, with no heading of its own:
 
 - **First visit.** Home opens the **Default** preset: Chat on the left, then every window that declares a Home position, as tabs on the right in position order. The guide card (PaneTour) shows once.
-- **Arranging** (artboard 04). The person can:
+- **Arranging** (artboard 04). The user can:
   - drag a tab within a strip, onto another strip, or onto a pane body. The drop compass offers top, left, centre (as a tab), right and bottom. Dropping outside every pane detaches the window.
   - drag a splitter. It is a 7 px hit area with a 1 px line, `--border-3` on hover. It snaps to 50 % within 14 px of the middle, and the line turns accent. A pane is never narrower than 140 px. A double-click resets the splitter to the middle; arrow keys move it 5 %.
-  - open the add bar (+). It lists every window the person may see that is not open yet. A window that cannot open here, for example one that needs a session, is drawn at 45 % with its reason.
+  - open the add bar (+). It lists every window the user may see that is not open yet. A window that cannot open here, for example one that needs a session, is drawn at 45 % with its reason.
   - use the pane menu (`windows/PaneMenu.vue`): Split right, Split below, Detach, Limit width, the window's declared options, then Move and "Move to …", then Close and Reset layout. Items are 12 px in `--text-2` with padding 6 8. A choice option opens an inner list, and a toggle shows a ✓.
   - pick a layout from the presets (`agents/LayoutPicker.vue`, `kit/PresetList.vue`).
 - **Presets.** The picker is a MenuPanel: padding 6, gap 2, radius 9, shadow `0 14px 36px rgba(0,0,0,.45)`, width 240 to 300.
@@ -151,7 +151,7 @@ Selecting a sidebar row is an ordinary Inertia visit to the page's route, for ex
   - Child rows are 12.5 px `--text-2`, indented 24 px per level with a 1 px `--border-2` branch line.
   - Indenting stops after level 3. Deeper levels keep that indent and the line turns dashed.
   - Labels end in an ellipsis; the tooltip shows the full label and its path.
-- **Opening on navigation.** Visiting a page opens its ancestors. The person may close them again: a closed ancestor of the current page shows a 5 px accent dot.
+- **Opening on navigation.** Visiting a page opens its ancestors. The user may close them again: a closed ancestor of the current page shows a 5 px accent dot.
 - **Open state.** It is kept per tab in session storage, by item key.
 - **Mini sidebar.** Root rows only. A parent opens its page, or its first child's page when it has no page. Its label is the tooltip.
 - **Phone.** Nested navigation does not appear on the phone in this first version. The phone keeps version 5's layout, and its bar lists the layout's windows.
@@ -165,7 +165,7 @@ Each window, section and count owns its state; one never affects another (sectio
 | --- | --- | --- |
 | Loading | The window's declared skeleton, in its real shape | Its prop is out; the rest of the shell works |
 | Refreshing | Nothing changes on screen | The rows stay until new ones arrive, as in version 5 |
-| Empty | EmptyState: a 14/500 `--text-2` title and a 12.5 `--text-4` line | Nothing to show, and the person may see it |
+| Empty | EmptyState: a 14/500 `--text-2` title and a 12.5 `--text-4` line | Nothing to show, and the user may see it |
 | Live update | Changed rows in place; a new row is tinted for 2 s; the tab count turns accent | Scroll, selection and drafts stay; nothing remounts or navigates |
 | First load failed | WindowPlaceholder: the window's name, "This window failed: …" and Retry | Retry reloads only this window's prop. The failure is logged with the window key |
 | Refresh failed (new) | Rows kept and dimmed to 60 %, with a red line "Could not refresh · read at 13:52" and Retry | Only for a failure. A refusal is the next row |
@@ -206,7 +206,7 @@ interface PageReader           { public function read(): Data; }                
 interface SectionReader        { public function read(SlotContext $context): Data; }
 interface CountReader          { public function count(): int; }
 interface NavigationChildren   { /** @return list<NavigationItem> */ public function children(): array; } // records as items, per request
-interface ChangesWhatPeopleSee {}                                                // a fact implements it; Web's one listener hears it
+interface ChangesWhatUsersSee {}                                                // a fact implements it; Web's one listener hears it
 ```
 
 A reader is resolved from the container for each request, so its constructor receives what it needs:
@@ -315,7 +315,7 @@ With no session chosen, or no record open, the section is not resolved and shows
 **Live updates.**
 
 - `PageChanged` on `journal.user.{id}` stays Web's event. AppSidebarLayout stays the one owner of the connection.
-- A fact that changes what people see implements `ChangesWhatPeopleSee`. Web's one listener hears that interface, as Laravel's dispatcher calls listeners of an event's interfaces. This replaces the eight facts listed in `BroadcastPageChange.php`.
+- A fact that changes what users see implements `ChangesWhatUsersSee`. Web's one listener hears that interface, as Laravel's dispatcher calls listeners of an event's interfaces. This replaces the eight facts listed in `BroadcastPageChange.php`.
 - Core never imports the marker.
 - The public contract check judges member types and parent classes only (`tests/Architecture/Support/PublicContracts.php:141-166`), so a marker on an exported fact passes. Review 67 read the check but did not run it.
 

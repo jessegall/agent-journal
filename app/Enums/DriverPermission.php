@@ -6,7 +6,7 @@ namespace App\Enums;
 
 /**
  * The native permission decisions the journal sends for a tool call: allow for a call its own admission passed, so
- * the driver asks no person, and deny with a reason. The driver's own deny rules still refuse a call the journal
+ * the driver asks no user, and deny with a reason. The driver's own deny rules still refuse a call the journal
  * allowed, which is how a saved account's sign-in stays closed.
  */
 enum DriverPermission: string

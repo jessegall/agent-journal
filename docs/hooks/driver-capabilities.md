@@ -69,7 +69,7 @@ The adapters share these reply shapes, checked against the vendor documentation 
 | Prevent stop | not a pre-tool answer | `{"decision":"block","reason":"..."}` with one reason, context after it |
 | Rewrite | `updatedInput` with every original argument kept and `permissionDecision: "allow"`, for Claude Code; for Codex still a denial pointing to `journal run`, until a rewrite is checked against a running Codex | not a stop answer |
 
-A call the journal's admission passed is answered `allow`, so a driver never asks a person (user message 19438, task 2865). The driver's own deny rules still refuse such a call: Claude Code evaluates deny and ask rules whatever a hook returns (its permissions documentation, "Precedence among rules, hooks, and mods", read 2026-11-23), which is how a saved account's sign-in stays closed. The journal never sends `ask` or `continue: false`. Codex is started in the terminal with `--ask-for-approval never`, so it asks nobody either; a one-shot `codex exec` never asks.
+A call the journal's admission passed is answered `allow`, so a driver never asks a user (user message 19438, task 2865). The driver's own deny rules still refuse such a call: Claude Code evaluates deny and ask rules whatever a hook returns (its permissions documentation, "Precedence among rules, hooks, and mods", read 2026-11-23), which is how a saved account's sign-in stays closed. The journal never sends `ask` or `continue: false`. Codex is started in the terminal with `--ask-for-approval never`, so it asks nobody either; a one-shot `codex exec` never asks.
 
 ## How a call proves who sent it (plan 2, task 57)
 

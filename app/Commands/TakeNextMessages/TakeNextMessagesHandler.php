@@ -7,15 +7,15 @@ namespace App\Commands\TakeNextMessages;
 use App\Contracts\Bus\CommandHandler;
 use App\Data\MessageReadBatch;
 use App\Models\Message;
-use App\Support\MessageReading;
+use App\Support\MessageService;
 
 final readonly class TakeNextMessagesHandler implements CommandHandler
 {
-    public function __construct(private MessageReading $reading) {}
+    public function __construct(private MessageService $messages) {}
 
     public function handle(TakeNextMessagesCommand $command): MessageReadBatch
     {
-        [$inbox, $membership] = $this->reading->admit($command->inboxId, $command->dispatchedBy());
+        [$inbox, $membership] = $this->messages->admit($command->inboxId, $command->dispatchedBy());
         $limit = max(1, min($command->limit, TakeNextMessagesCommand::LARGEST_LIMIT));
 
         $candidates = Message::query()
@@ -23,7 +23,7 @@ final readonly class TakeNextMessagesHandler implements CommandHandler
             ->get()
             ->all();
 
-        $held = $this->reading->heldIds(array_values(array_map(fn (Message $message) => $message->id, $candidates)));
+        $held = $this->messages->heldIds(array_values(array_map(fn (Message $message) => $message->id, $candidates)));
 
         $free = array_slice(
             array_values(array_filter($candidates, fn (Message $message) => ! in_array($message->id, $held, true))),
@@ -31,6 +31,6 @@ final readonly class TakeNextMessagesHandler implements CommandHandler
             $limit,
         );
 
-        return $this->reading->read($membership, $free);
+        return $this->messages->read($membership, $free);
     }
 }

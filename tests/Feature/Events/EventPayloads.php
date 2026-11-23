@@ -290,7 +290,7 @@ final class EventPayloads
                 'fields' => [
                     'deliveryId' => 'string',
                     'receiptId' => 'string',
-                    'state' => 'App\Enums\ReceiptDeliveryState',
+                    'state' => 'App\Enums\WakeState',
                 ],
             ],
             SpeechOpportunitySettled::class => [

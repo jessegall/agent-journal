@@ -131,7 +131,7 @@ const rows = computed((): LogRow[] => {
 
 /**
  * The agent whose turn a row belongs to: an agent's own message names it, a plain line or card belongs to whichever
- * agent is acting, and a person's message is no part of a turn.
+ * agent is acting, and a user's message is no part of a turn.
  */
 function turnOf(row: LogRow): string | null {
   if (row.message === null) {

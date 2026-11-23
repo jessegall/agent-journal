@@ -9,18 +9,16 @@ use App\Contracts\Sessions\CurrentSession;
 use App\Exceptions\MessageMissing;
 use App\Models\Message;
 use App\Support\ActorIdentity;
-use App\Support\ChatPosting;
-use App\Support\MessageAnswers;
-use App\Support\MessageReading;
+use App\Support\ChatService;
+use App\Support\MessageService;
 use Carbon\CarbonImmutable;
 
 final readonly class AnswerMessageHandler implements CommandHandler
 {
     public function __construct(
         private CurrentSession $session,
-        private MessageReading $reading,
-        private MessageAnswers $answers,
-        private ChatPosting $chats,
+        private MessageService $messages,
+        private ChatService $chats,
     ) {}
 
     public function handle(AnswerMessageCommand $command): string
@@ -33,7 +31,7 @@ final readonly class AnswerMessageHandler implements CommandHandler
             return $this->chats->linkAnswer($question, $reply, $dispatcher);
         }
 
-        $member = $this->reading->recipientOf($command->messageId, $dispatcher);
+        $member = $this->messages->recipientOf($command->messageId, $dispatcher);
         $message = Message::lockedById($command->messageId);
         $actor = ActorIdentity::of($dispatcher);
         $sessionId = $this->session->hasSession() ? $this->session->sessionId() : null;
@@ -44,7 +42,7 @@ final readonly class AnswerMessageHandler implements CommandHandler
 
         $now = CarbonImmutable::now();
         $message->acknowledge($member, $now);
-        $this->answers->answer($message, $reply, $actor, $now);
+        $this->messages->answer($message, $reply, $actor, $now);
 
         return $reply->id;
     }

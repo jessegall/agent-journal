@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * Splits a plain string literal that makes its line wider than 120 characters into concatenated parts at spaces, each
- * continuation on its own line one indent deeper, so every line fits. Strings with interpolation are left for a person.
+ * continuation on its own line one indent deeper, so every line fits. Strings with interpolation are left for a user.
  *
  * Usage: php tools/refactoring/split-long-strings.php <folder or file>...
  */

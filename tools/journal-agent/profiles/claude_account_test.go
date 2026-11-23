@@ -76,8 +76,8 @@ func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T)
 
 // A protected start runs every command as the executor's user through the shell bridge, so Claude Code's own sandbox,
 // which cannot start in the agent container, is off; and an account that switches off the mode every session runs
-// in, so that Claude Code would ask a person, is not started (user messages 19631, 19636).
-func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndNeverAsksAPerson(t *testing.T) {
+// in, so that Claude Code would ask a user, is not started (user messages 19631, 19636).
+func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndNeverAsksAUser(t *testing.T) {
 	start := contracts.BaseStart{SettingsFolder: "/state", SessionID: "session", Protected: true, Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer}}.Turn("", false)
 
 	files, err := (ClaudeCode{}).SettingsFiles(start)
@@ -96,7 +96,7 @@ func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndNeverAsksAPerson(t 
 
 	start.Account.Protection = `{"permissions":{"disableBypassPermissionsMode":"disable"}}`
 	if _, err := (ClaudeCode{}).SettingsFiles(start); err == nil {
-		t.Fatal("a start that would ask a person was prepared")
+		t.Fatal("a start that would ask a user was prepared")
 	}
 }
 
