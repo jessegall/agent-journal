@@ -247,6 +247,8 @@ func (journal recordingJournal) ReportExit(_ context.Context, report client.Live
 	return nil
 }
 
+func (recordingJournal) ReportHeartbeat(context.Context, client.LivenessReport) error { return nil }
+
 func (recordingJournal) ReportReplayed(context.Context, string, string, string) error { return nil }
 
 func (recordingJournal) ReportStale(context.Context, string, client.EntryStaleReport) error {

@@ -22,7 +22,9 @@ type fakeJournal struct {
 	// sequences are the numbers of every request and activity report, in the order they were sent.
 	sequences []uint64
 	exits     int
-	raises    []client.NavigationRaise
+	// beats are the runtimes a heartbeat was reported for, in order.
+	beats  []string
+	raises []client.NavigationRaise
 	// interrupts are the navigation requests the host reported the user took over.
 	interrupts []string
 	// replayed are the library entries the host reported it replayed.
@@ -129,6 +131,26 @@ func (journal *fakeJournal) ReportActivity(_ context.Context, report client.Acti
 	journal.holds = append(journal.holds, report.Hold)
 	journal.sequences = append(journal.sequences, report.Sequence)
 	return nil
+}
+
+func (journal *fakeJournal) ReportHeartbeat(_ context.Context, report client.LivenessReport) error {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	journal.beats = append(journal.beats, report.RuntimeID)
+	return nil
+}
+
+// beatsOf is how many beats were sent for a runtime so far.
+func (journal *fakeJournal) beatsOf(runtimeID string) int {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	count := 0
+	for _, beat := range journal.beats {
+		if beat == runtimeID {
+			count++
+		}
+	}
+	return count
 }
 
 func (journal *fakeJournal) ReportExit(context.Context, client.LivenessReport) error {
@@ -364,6 +386,16 @@ func TestAWakeWaitingBehindAScreenIsGivenUpWhenItsRuntimeEnds(t *testing.T) {
 	if reported := journal.progressOf("a"); reported[0] != string(contracts.ProgressStaged) {
 		t.Fatalf("the wake of the ended runtime was reported %v", reported)
 	}
+}
+
+// An idle runtime reported nothing between two turns, so the journal called its state unknown after a minute.
+func TestARuntimeTheLoopServesIsReportedAliveFromTheMomentItOpens(t *testing.T) {
+	journal := &fakeJournal{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return &fakeRuntime{}, nil })
+
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+
+	waitFor(t, func() bool { return journal.beatsOf("runtime") == 1 })
 }
 
 // endingRuntime is a runtime whose program can end on its own, as a session container that is removed does, while a

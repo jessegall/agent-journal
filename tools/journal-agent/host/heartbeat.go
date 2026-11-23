@@ -21,11 +21,16 @@ type HeartbeatEvidence interface {
 	Description() string
 }
 
+// HeartbeatReporter is where a beat goes: the host's signed client, or the journal as the serving loop holds it.
+type HeartbeatReporter interface {
+	ReportHeartbeat(ctx context.Context, report client.LivenessReport) error
+}
+
 // HeartbeatSender reports one runtime's liveness through the host's signed client: once at once, then every 30
 // seconds while the evidence holds. It stops when the evidence ends or the journal refuses a beat (a revoked or ended
 // session); a beat the journal could not be reached for is tried again at the next interval.
 type HeartbeatSender struct {
-	Client    *client.Client
+	Client    HeartbeatReporter
 	RuntimeID string
 	Evidence  HeartbeatEvidence
 	interval  time.Duration

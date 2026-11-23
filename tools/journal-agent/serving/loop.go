@@ -21,6 +21,7 @@ type Journal interface {
 	ReportRequest(ctx context.Context, report client.RequestReport) error
 	ReportActivity(ctx context.Context, report client.ActivityReport) error
 	ReportExit(ctx context.Context, report client.LivenessReport) error
+	ReportHeartbeat(ctx context.Context, report client.LivenessReport) error
 	ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error
 	ReportStale(ctx context.Context, entryID string, report client.EntryStaleReport) error
 	RaiseNavigation(ctx context.Context, runtimeID string, raise client.NavigationRaise) (client.NavigationAnswer, error)
@@ -611,9 +612,23 @@ func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime
 	if ending, ends := driver.(Ending); ends && ending.Ended() != nil {
 		go loop.awaitEnd(ctx, runtime, ending.Ended())
 	}
+	go host.HeartbeatSender{Client: loop.journal, RuntimeID: runtimeID, Evidence: servedRuntime{loop, runtime}}.Run(ctx)
 
 	return runtime, nil
 }
+
+// servedRuntime is the loop's evidence that a runtime lives: the loop still serves it. Its beats keep an idle
+// runtime's last report fresh in the journal, which otherwise hears nothing between two turns.
+type servedRuntime struct {
+	loop    *Loop
+	runtime *liveRuntime
+}
+
+func (served servedRuntime) IsCurrent() bool { return served.loop.isLive(served.runtime) }
+
+func (served servedRuntime) ProcessGeneration() int { return served.runtime.driver.Generation() }
+
+func (served servedRuntime) Description() string { return "the host serves the runtime's program" }
 
 // awaitEnd ends a runtime whose program ended on its own: it leaves the runtimes the loop serves, so no turn is
 // tried on it again, and its exit is reported with how it ended.
