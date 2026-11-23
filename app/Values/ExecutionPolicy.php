@@ -50,6 +50,14 @@ final readonly class ExecutionPolicy
     }
 
     /**
+     * Whether the session runs in a container of its own: where its driver and the lines it runs are.
+     */
+    public function isOwnContainer(): bool
+    {
+        return $this->mode === ExecutionModeType::RequiredContainer;
+    }
+
+    /**
      * The same policy for a start of a driver with or without a screen: a container is attachable only for a driver
      * that runs in a terminal of its own, whatever its profile allows; a driver without one runs a turn at a time.
      */

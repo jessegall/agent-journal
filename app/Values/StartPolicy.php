@@ -53,6 +53,14 @@ final readonly class StartPolicy
     }
 
     /**
+     * Whether a session under this policy runs in a container of its own.
+     */
+    public function runsInOwnContainer(): bool
+    {
+        return $this->execution->isOwnContainer();
+    }
+
+    /**
      * The fingerprint of the whole policy, so two starts under the same policy can be told from changed ones.
      */
     public function digest(): string

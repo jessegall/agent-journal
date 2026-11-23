@@ -6,16 +6,25 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Admission\ShellAdmission;
 use App\Enums\AnswerType;
+use App\Enums\ExecutionModeType;
 use App\Enums\NoSubject;
 use App\Enums\RewriteSupport;
 use App\Models\AgentRuntime;
+use App\Models\AgentSession;
 use App\Models\ProcessRun;
+use App\Models\SessionPolicy;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\OperationDeadline;
 use App\Support\References\StateReference;
 use App\Support\Stack\HookAnswer;
+use App\Values\ExecutionBudgets;
+use App\Values\ExecutionPolicy;
+use App\Values\ProfileBase;
+use App\Values\ProfileStartPolicy;
+use App\Values\StartPolicy;
+use App\Values\StopConditions;
 use Closure;
 use Tests\Fixtures\Hooks\CountedAdmission;
 use Tests\Support\CommittedHookStack;
@@ -37,6 +46,8 @@ final class MandatoryAdmissionTest extends TestCase
     private const string NO_REWRITE = 'cannot take a rewritten command line';
 
     private const string NO_RUNTIME = 'no runtime';
+
+    private const string IMAGE = 'journal-agent@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
     private CountedAdmission $admissions;
 
@@ -95,6 +106,50 @@ final class MandatoryAdmissionTest extends TestCase
 
         $this->assertSame($first->stdout, $second->stdout);
         $this->assertSame(['git status'], $this->admissions->lines);
+    }
+
+    /**
+     * A container is only where a session's lines run: the same rules judge each line, an allowed one runs there as
+     * the frames answered, since no supervised runner reaches into the container, and one whose output must be kept
+     * is refused until a runner does.
+     */
+    public function test_a_line_of_a_session_in_its_own_container_is_judged_by_the_rules_and_runs_there(): void
+    {
+        $this->runInItsOwnContainer();
+
+        $known = $this->answerShell('git status');
+        $this->callAs('call-2');
+        $unknown = $this->answerShell('acme publish --everything');
+        $this->callAs('call-3');
+        $check = $this->answerShell('vendor/bin/phpstan analyse');
+
+        $this->assertSame(AnswerType::Allow, $known->decision->answerType());
+        $this->assertStringStartsWith('command-unknown: ', $unknown->decision->refusalReason());
+        $this->assertStringStartsWith('runner-unavailable: ', $check->decision->refusalReason());
+        $this->assertSame([], $this->admissions->lines);
+        $this->assertCount(3, $this->admissions->judged);
+        $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
+    }
+
+    private function runInItsOwnContainer(): void
+    {
+        SessionPolicy::create(
+            AgentSession::query()->findOrFail($this->target->sessionId),
+            new StartPolicy(
+                ProfileBase::mainAgent()->defaultAccess(),
+                StopConditions::make([]),
+                ExecutionPolicy::make(
+                    ExecutionModeType::RequiredContainer,
+                    self::IMAGE,
+                    ProfileStartPolicy::WORKSPACE,
+                    ExecutionBudgets::mainAgent(),
+                    [],
+                ),
+                null,
+                null,
+                null,
+            ),
+        );
     }
 
     public function test_a_program_that_cannot_take_a_rewrite_and_a_session_without_a_runtime_are_refused(): void

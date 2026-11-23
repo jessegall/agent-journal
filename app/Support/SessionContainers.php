@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Sessions\SessionPolicyReader;
-use App\Enums\ExecutionModeType;
 use App\Exceptions\AccountFolderInvalid;
 use App\Exceptions\ManifestRefused;
 use App\Exceptions\WorkspaceSourceMissing;
@@ -40,7 +39,7 @@ final readonly class SessionContainers
 
         $policy = $this->policies->policyFor($runtime->agent_session_id);
 
-        if ($policy->execution->mode !== ExecutionModeType::RequiredContainer) {
+        if (! $policy->runsInOwnContainer()) {
             return null;
         }
 

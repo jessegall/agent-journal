@@ -55,6 +55,8 @@ final readonly class LineAdmission implements ShellAdmission
 {
     private const string EXPLAIN = 'Explain the line and propose its declaration.';
 
+    private const string NEEDS_RUNNER = 'Run it from a session on a host with its runner on.';
+
     public function __construct(
         private TreeParser $syntax,
         private Container $container,
@@ -115,6 +117,44 @@ final readonly class LineAdmission implements ShellAdmission
         }
     }
 
+    public function judge(string $line, ShellDialect $dialect, ExecutionContext $context): AdmissionRefusal|null
+    {
+        $this->projects->assertFolderAllowed($context->workingFolder);
+        $tree = $this->syntax->parse($line, $dialect);
+
+        if ($tree->outcome !== ParseOutcome::Complete) {
+            $reason = $tree->diagnostic === null ? 'The line could not be read completely.' : $tree->diagnostic->reason;
+
+            return $this->refusal(AdmissionRefusalCode::ofSyntax($tree->outcome), $tree, $reason, 'Rewrite the line.');
+        }
+
+        try {
+            $classification = $this->container->make(CommandClassifier::class)->classify($tree, $context);
+        } catch (ClassificationUnavailable $unavailable) {
+            return $this->unreadable(AdmissionRefusalCode::ClassificationUnavailable, $tree, $unavailable);
+        } catch (CommandRuleConflict $conflict) {
+            return $this->unreadable(AdmissionRefusalCode::RuleConflict, $tree, $conflict);
+        }
+
+        $refusal = $this->unknownRefusal($tree, $classification, $context)
+            ?? $this->deniedOrMistimed($tree, $classification, ActorIdentity::of($this->actors->actor()));
+
+        if ($refusal !== null) {
+            return $refusal;
+        }
+
+        foreach ($classification->parts as $part) {
+            if ($part->outputRequirement() === OutputRequirement::Full) {
+                $code = AdmissionRefusalCode::RunnerUnavailable;
+                $reason = 'Its output must be kept by the supervised runner, which does not run here.';
+
+                return $this->partRefusal($code, $tree, $part, $reason, self::NEEDS_RUNNER);
+            }
+        }
+
+        return null;
+    }
+
     /**
      * The first reason any part of the line may not run, in the order the design checks them, or none.
      */
@@ -124,12 +164,10 @@ final readonly class LineAdmission implements ShellAdmission
         ExecutionContext $context,
         ActorIdentity $actor,
     ): AdmissionRefusal|null {
-        foreach ($classification->parts as $part) {
-            if (! $part->isKnown()) {
-                $unknown = $this->unknown($tree, $part);
+        $unknown = $this->unknownRefusal($tree, $classification, $context);
 
-                return $this->held($unknown, $part, $tree, $context, RequestHoldReason::UnknownCommand);
-            }
+        if ($unknown !== null) {
+            return $unknown;
         }
 
         if (! $this->outputs->check($classification)->isAllowed()) {
@@ -143,22 +181,10 @@ final readonly class LineAdmission implements ShellAdmission
             );
         }
 
-        $permissions = $this->permissions->forActor($actor);
+        $denied = $this->deniedOrMistimed($tree, $classification, $actor);
 
-        foreach ($classification->parts as $part) {
-            $refusal = $this->permissionRefusal($permissions, $tree, $classification, $part);
-
-            if ($refusal !== null) {
-                return $refusal;
-            }
-        }
-
-        $timing = $classification->hasVerification() ? $this->timing->forCaller() : null;
-
-        if ($timing !== null && ! $timing->isAllowed()) {
-            $correction = 'Run it at the end of the phase.';
-
-            return $this->refusal(AdmissionRefusalCode::PhaseTiming, $tree, $timing->reason(), $correction);
+        if ($denied !== null) {
+            return $denied;
         }
 
         foreach ($classification->parts as $part) {
@@ -190,6 +216,55 @@ final readonly class LineAdmission implements ShellAdmission
                 'This host does not run lines.',
                 $correction,
             );
+        }
+
+        return null;
+    }
+
+    /**
+     * The refusal of the first part no rule knows, held in a command request, or none.
+     */
+    private function unknownRefusal(
+        ShellTree $tree,
+        Classification $classification,
+        ExecutionContext $context,
+    ): AdmissionRefusal|null {
+        foreach ($classification->parts as $part) {
+            if (! $part->isKnown()) {
+                $unknown = $this->unknown($tree, $part);
+
+                return $this->held($unknown, $part, $tree, $context, RequestHoldReason::UnknownCommand);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The refusal of the first part the actor's permissions do not admit, or of a verification outside its phase's
+     * time, or none.
+     */
+    private function deniedOrMistimed(
+        ShellTree $tree,
+        Classification $classification,
+        ActorIdentity $actor,
+    ): AdmissionRefusal|null {
+        $permissions = $this->permissions->forActor($actor);
+
+        foreach ($classification->parts as $part) {
+            $refusal = $this->permissionRefusal($permissions, $tree, $classification, $part);
+
+            if ($refusal !== null) {
+                return $refusal;
+            }
+        }
+
+        $timing = $classification->hasVerification() ? $this->timing->forCaller() : null;
+
+        if ($timing !== null && ! $timing->isAllowed()) {
+            $correction = 'Run it at the end of the phase.';
+
+            return $this->refusal(AdmissionRefusalCode::PhaseTiming, $tree, $timing->reason(), $correction);
         }
 
         return null;
@@ -369,6 +444,11 @@ final readonly class LineAdmission implements ShellAdmission
 
     private function failed(AdmissionRefusalCode $code, ShellTree $tree, Throwable $failure): Admission
     {
-        return $this->refused($code, $tree, $failure->getMessage(), 'Try again once the rules can be read.');
+        return Admission::refused($this->unreadable($code, $tree, $failure));
+    }
+
+    private function unreadable(AdmissionRefusalCode $code, ShellTree $tree, Throwable $failure): AdmissionRefusal
+    {
+        return $this->refusal($code, $tree, $failure->getMessage(), 'Try again once the rules can be read.');
     }
 }

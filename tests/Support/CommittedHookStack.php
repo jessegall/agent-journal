@@ -250,6 +250,7 @@ trait CommittedHookStack
             'users',
             'agents',
             'agent_sessions',
+            'session_policies',
             'start_tokens',
             'start_bypasses',
             'command_aliases',

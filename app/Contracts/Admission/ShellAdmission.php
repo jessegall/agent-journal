@@ -6,6 +6,7 @@ namespace App\Contracts\Admission;
 
 use App\Enums\ShellDialect;
 use App\Values\Admission;
+use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
 
 /**
@@ -21,4 +22,11 @@ interface ShellAdmission
         ExecutionContext $context,
         string $requestKey,
     ): Admission;
+
+    /**
+     * The reason the rules do not let the line run where no supervised runner reaches, as in a session's own
+     * container, or none: every part must be known, permitted and timed, and none may need its output kept. Nothing
+     * is started or stored for a runner.
+     */
+    public function judge(string $line, ShellDialect $dialect, ExecutionContext $context): AdmissionRefusal|null;
 }
