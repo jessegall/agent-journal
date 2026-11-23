@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sequences\Resolvers\Support;
+namespace Domain\Sequences\Http\Pages\Sequences;
 
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
@@ -18,7 +18,7 @@ use Spatie\LaravelData\Optional;
  * The Sequences page as the design draws it: the stored sequences, newest first, each a two-line row of its name and
  * summary, beside the reader of the one chosen.
  */
-final readonly class SequenceIndexLayout
+final readonly class SequencesIndex
 {
     private const int LIST_LIMIT = 200;
 

@@ -30,13 +30,13 @@ use Domain\Tasks\Data\TaskWaitsData;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskPassageUnavailable;
+use Domain\Tasks\Http\Pages\Tasks\TasksIndex;
+use Domain\Tasks\Http\Pages\Tasks\TasksShow;
 use Domain\Tasks\Http\Requests\TaskRequest;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Policies\TaskRunPolicy;
-use Domain\Tasks\Support\TaskIndexLayout;
-use Domain\Tasks\Support\TaskReaderLayout;
 use Domain\Tasks\Support\TaskStream;
 use Domain\Tasks\Values\TaskCard;
 use Domain\Tasks\Values\TaskFilters;
@@ -65,8 +65,8 @@ final readonly class TaskWindowResolver implements PageResolver
         private TaskWaitResolver $waits,
         private CurrentAuthorizer $authorizer,
         private TaskListResolver $list,
-        private TaskIndexLayout $index,
-        private TaskReaderLayout $layout,
+        private TasksIndex $index,
+        private TasksShow $layout,
     ) {}
 
     public function read(): DeclaredLayoutData

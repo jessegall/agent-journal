@@ -144,6 +144,15 @@ final class PlansPageTest extends TestCase
             ));
     }
 
+    public function test_the_graph_tab_shows_the_plan_and_its_task_graph_without_reading_the_outline(): void
+    {
+        $this->actingAs($this->owner)->get(
+            "/plans/{$this->release->number}?tab=graph",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->where(self::READER.'.0.text', 'Build the release page')
+            ->where(self::READER.'.3.children.0.native.component', 'tasks/TaskGraph'));
+    }
+
     public function test_a_phase_has_its_own_page_within_its_plan(): void
     {
         $task = Task::query()->where('title', 'List the plans')->firstOrFail();

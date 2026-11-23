@@ -6,8 +6,8 @@ namespace Domain\Plans\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
+use Domain\Plans\Http\Pages\Plans\PlansIndex;
 use Domain\Plans\Http\Requests\PlansRequest;
-use Domain\Plans\Support\PlanIndexLayout;
 
 /**
  * The plans window, on Home and on its own page: one page of plans by its search and state, on the shared list recipe,
@@ -17,7 +17,7 @@ final readonly class PlansWindowResolver implements PageResolver
 {
     public function __construct(
         private PlansRequest $request,
-        private PlanIndexLayout $index,
+        private PlansIndex $index,
     ) {}
 
     public function read(): DeclaredLayoutData

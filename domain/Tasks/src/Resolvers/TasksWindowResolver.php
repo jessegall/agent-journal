@@ -6,8 +6,8 @@ namespace Domain\Tasks\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
+use Domain\Tasks\Http\Pages\Tasks\TasksIndex;
 use Domain\Tasks\Http\Requests\TasksRequest;
-use Domain\Tasks\Support\TaskIndexLayout;
 
 /**
  * The tasks window, on Home and on its own page: one page of tasks by its search, state and holder filters, on the
@@ -17,7 +17,7 @@ final readonly class TasksWindowResolver implements PageResolver
 {
     public function __construct(
         private TasksRequest $request,
-        private TaskIndexLayout $index,
+        private TasksIndex $index,
     ) {}
 
     public function read(): DeclaredLayoutData

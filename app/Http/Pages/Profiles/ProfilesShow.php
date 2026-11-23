@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace App\Http\Pages\Profiles;
 
 use App\Contracts\Sessions\ProfileResolver;
 use App\Models\Profile;
@@ -17,7 +17,7 @@ use App\Values\ProfileKey;
  * Driver, How many run, and Rules it works under. A fact no read supplies is left out, and the rules, which nothing
  * reads for a profile yet, say they are not available instead of looking empty.
  */
-final readonly class ProfileReaderLayout
+final readonly class ProfilesShow
 {
     private const string MODELS_HELP = 'Others can be chosen when it starts.';
 

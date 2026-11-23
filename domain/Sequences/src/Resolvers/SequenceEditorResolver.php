@@ -10,9 +10,9 @@ use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use Domain\Sequences\Data\SequenceEditorPartData;
 use Domain\Sequences\Exceptions\SequenceMissing;
+use Domain\Sequences\Http\Pages\Sequences\SequencesIndex;
 use Domain\Sequences\Http\Requests\SequenceRequest;
 use Domain\Sequences\Models\Sequence;
-use Domain\Sequences\Resolvers\Support\SequenceIndexLayout;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -22,7 +22,7 @@ final readonly class SequenceEditorResolver implements PageResolver
 {
     public function __construct(
         private SequenceRequest $request,
-        private SequenceIndexLayout $index,
+        private SequencesIndex $index,
     ) {}
 
     public function read(): DeclaredLayoutData

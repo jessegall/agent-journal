@@ -7,24 +7,18 @@ namespace Domain\Plans\Resolvers;
 use App\Contracts\Navigation\PageResolver;
 use App\Enums\ReadView;
 use App\Support\Layout\DeclaredLayoutData;
-use App\Support\Layout\DetailPage;
-use App\Support\Layout\LayoutActionData;
-use App\Support\Layout\LayoutPartData;
-use App\Support\Layout\LayoutRowData;
 use Domain\Plans\Data\PlanFiltersData;
+use Domain\Plans\Http\Pages\Plans\PlansTasksShow;
 use Domain\Plans\Http\Requests\PlanTaskRequest;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanIndexLayout;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskResolver;
-use Domain\Tasks\Data\TaskText;
 use Domain\Tasks\Values\TaskSummary;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * A task of a plan opened inside the plan's own place: the plans column stays beside it, and the reader leads with Back
- * to the plan, which carries the plan's tab, page and node so the way back finds them again. A task that is not one of
- * the plan's is not found.
+ * A task of a plan opened inside the plan's own place: the task, the plan's filters and the way back to the plan with its
+ * tab, page and node. A task that is not one of the plan's is not found.
  */
 final readonly class PlanTaskWindowResolver implements PageResolver
 {
@@ -32,7 +26,7 @@ final readonly class PlanTaskWindowResolver implements PageResolver
         private PlanTaskRequest $request,
         private TaskDetailsResolver $tasks,
         private TaskResolver $visible,
-        private PlanIndexLayout $index,
+        private PlansTasksShow $page,
     ) {}
 
     public function read(): DeclaredLayoutData
@@ -50,18 +44,11 @@ final readonly class PlanTaskWindowResolver implements PageResolver
         $task = $this->tasks->details($taskId, ReadView::Context);
         $back = route('plans.plan', ['plan' => $plan->number, ...$this->request->returnQuery()], false);
 
-        $reader = DetailPage::make($task->title)
-            ->above(LayoutPartData::action('back', "Back to plan {$plan->number}", LayoutActionData::to($back)))
-            ->summarising($task->text instanceof TaskText ? $task->text->brief : '')
-            ->withActions(LayoutPartData::action('open', 'Open task', LayoutActionData::to("/tasks/{$task->number}")))
-            ->withFacts(
-                new LayoutRowData('task', 'Task', (string) $task->number),
-                new LayoutRowData('state', 'State', ucfirst($task->state->value)),
-            );
-
-        return $this->index->of(
+        return $this->page->of(
             PlanFiltersData::from([...$this->request->filters()->toArray(), 'plan' => (string) $plan->number]),
-            [$reader->part()],
+            $plan->number,
+            $back,
+            $task,
         );
     }
 }

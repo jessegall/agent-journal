@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace App\Http\Pages\Settings;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Settings\SettingsCatalogue;
@@ -14,6 +14,7 @@ use App\Data\StringChoiceValueData;
 use App\Enums\ActionMethod;
 use App\Enums\SettingSource;
 use App\Enums\SettingType;
+use App\Support\ConnectionsOwnerCheck;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutFieldData;
@@ -22,6 +23,7 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\SettingsGroup;
 use App\Support\Layout\SettingsPage;
 use App\Support\Layout\SettingsRow;
+use App\Support\SettingsValues;
 
 /**
  * The settings of every owner on the shared settings recipe: one group for each owner, in the order Settings is read in
@@ -30,7 +32,7 @@ use App\Support\Layout\SettingsRow;
  * changed setting says so, and Reset takes the changed ones of the group back to their defaults against the revision
  * the group was read at, so a group changed meanwhile is refused, never overwritten. Other kinds are shown read-only.
  */
-final readonly class SettingsLayout
+final readonly class SettingsIndex
 {
     private const array ORDER = [
         'general', 'connections', 'tasks', 'plans', 'documents', 'sequences', 'memory', 'reminders', 'helpers',

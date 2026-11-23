@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace App\Http\Pages\Accounts;
 
 use App\Data\Profiles\AccountListData;
 use App\Data\Profiles\AccountMonthCostData;
@@ -32,7 +32,7 @@ use Carbon\CarbonImmutable;
  * of the account new starts of its driver use, and, for one that needs it, signing in again. Add account opens the
  * native sign-in flow in the reader, since its challenge steps are not declared.
  */
-final readonly class AccountsLayout
+final readonly class AccountsIndex
 {
     /**
      * @param  string  $chosen  the id of the account to read, or '' for none

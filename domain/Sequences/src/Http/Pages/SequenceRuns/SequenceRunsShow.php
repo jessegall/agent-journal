@@ -1,0 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Sequences\Http\Pages\SequenceRuns;
+
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\DetailPage;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
+use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Models\SequenceRun;
+
+/**
+ * One sequence run's page: its name and state, and its steps in order as a timeline. While the run is running its
+ * current step is marked and the steps before it are done; a finished or cancelled run shows its steps with its
+ * terminal state and no current step.
+ */
+final readonly class SequenceRunsShow
+{
+    public function of(SequenceRun $run): DeclaredLayoutData
+    {
+        $isRunning = $run->state === SequenceRunState::Running;
+        $steps = [];
+
+        foreach ($run->steps as $index => $title) {
+            $position = $index + 1;
+            $isCurrent = $isRunning && $position === $run->current_step;
+
+            $steps[] = new LayoutRowData(
+                (string) $position,
+                $title,
+                isCurrent: $isCurrent,
+                leading: [LayoutPartData::text('position', (string) $position, 'muted')],
+                trailing: [$this->markOf($position, $run->current_step, $run->state)],
+            );
+        }
+
+        return DetailPage::make($run->name)
+            ->above(LayoutPartData::text('label', "sequence run {$run->number}", 'code'))
+            ->withFacts(new LayoutRowData('state', 'State', ucfirst($run->state->value)))
+            ->withStanding(LayoutPartData::collection('steps', 'list', $steps))
+            ->layout();
+    }
+
+    private function markOf(int $position, int $current, SequenceRunState $state): LayoutPartData
+    {
+        if ($state !== SequenceRunState::Running) {
+            return LayoutPartData::text('mark', $state === SequenceRunState::Finished ? 'Done' : 'Not done', 'muted');
+        }
+
+        return match (true) {
+            $position === $current => LayoutPartData::text('mark', 'Current', 'chip'),
+            $position < $current => LayoutPartData::text('mark', 'Done', 'muted'),
+            default => LayoutPartData::text('mark', 'Waiting', 'muted'),
+        };
+    }
+}

@@ -8,21 +8,18 @@ use App\Contracts\Navigation\PageResolver;
 use App\Data\PartOutputData;
 use App\Data\ProblemData;
 use App\Data\RunWindowData;
+use App\Http\Pages\Runs\RunsShow;
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Models\OutputAssessment;
 use App\Models\PartRun;
 use App\Models\ProcessRun;
 use App\Resolvers\Support\RunSnapshotResolver;
 use App\Support\Layout\DeclaredLayoutData;
-use App\Support\Layout\DetailPage;
-use App\Support\Layout\LayoutBackData;
-use App\Support\Layout\LayoutNativeData;
-use App\Support\Layout\LayoutPartData;
 use App\Support\StoredOutput;
 
 /**
- * One run of the current project for its page, on the shared reader recipe: the live snapshot, the escaped tail of every stream of every part and
- * the problems of each part's latest assessment; a run that is not there is the removed notice with Back to the runs.
+ * One run of the current project for its page: the live snapshot, the escaped tail of every stream of every part and
+ * the problems of each part's latest assessment, or the removed page when the viewer cannot see the run.
  */
 final readonly class RunWindowResolver implements PageResolver
 {
@@ -32,12 +29,13 @@ final readonly class RunWindowResolver implements PageResolver
         private RunPageRequest $page,
         private RunSnapshotResolver $snapshots,
         private StoredOutput $output,
+        private RunsShow $layout,
     ) {}
 
     public function read(): DeclaredLayoutData
     {
         if (! $this->snapshots->canSee($this->page->runId())) {
-            return DetailPage::removed('run', new LayoutBackData('/processes/runs', 'Runs'));
+            return $this->layout->removed();
         }
 
         $snapshot = $this->snapshots->snapshot($this->page->runId());
@@ -51,9 +49,7 @@ final readonly class RunWindowResolver implements PageResolver
             $run->stop_reason,
         );
 
-        return DetailPage::make("Run {$snapshot->runId}")
-            ->withStanding(LayoutPartData::native('detail', LayoutNativeData::of('processes/RunView', $detail)))
-            ->layout();
+        return $this->layout->of($detail);
     }
 
     /**

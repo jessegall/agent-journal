@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Support;
+namespace Domain\Tasks\Http\Pages\Tasks;
 
 use App\Contracts\Navigation\DraftProducers;
 use App\Enums\ActionMethod;
@@ -29,7 +29,7 @@ use Spatie\LaravelData\Optional;
  * choices and All, the rows with the number first and the state last, numbered paging and the empty states; a task
  * opened beside it fills the reader and Back leads to the list as it was, with its state, search and page.
  */
-final readonly class TaskIndexLayout
+final readonly class TasksIndex
 {
     public function __construct(
         private TaskListResolver $tasks,

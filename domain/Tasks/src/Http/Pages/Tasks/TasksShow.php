@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Support;
+namespace Domain\Tasks\Http\Pages\Tasks;
 
 use App\Enums\ActionMethod;
 use App\Support\Layout\DetailPage;
@@ -26,7 +26,7 @@ use Spatie\LaravelData\Optional;
  * cancel it allows as forms, its facts, and its Waits, Logs and Proofs as tabs of native parts, of which only
  * the one the reader opened was read.
  */
-final readonly class TaskReaderLayout
+final readonly class TasksShow
 {
     public const int PASSAGE_CHARACTERS = 2000;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Support;
+namespace Domain\Plans\Http\Pages\Plans;
 
 use App\Contracts\Navigation\DraftProducers;
 use App\Enums\ActionMethod;
@@ -30,7 +30,7 @@ use Spatie\LaravelData\Optional;
  * the rows with each plan's counted progress and its cancelled state apart from the counts, numbered paging and the
  * empty states; a plan or a task opened beside it fills the reader, and Back leads to the list as it was.
  */
-final readonly class PlanIndexLayout
+final readonly class PlansIndex
 {
     public function __construct(
         private PlanResolver $plans,

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace App\Http\Pages\Profiles;
 
 use App\Models\Profile;
 use App\Support\Layout\DeclaredLayoutData;
@@ -17,7 +17,7 @@ use App\Support\Layout\ListPage;
  * starts may no longer choose it, its reader beside it, and an informational empty state when there are none. Only the
  * key, label and state are read for the list.
  */
-final readonly class ProfileIndexLayout
+final readonly class ProfilesIndex
 {
     private const int ROWS = 100;
 

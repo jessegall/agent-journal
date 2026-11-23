@@ -10,6 +10,7 @@ use App\Data\Profiles\AccountListData;
 use App\Data\Profiles\AccountRowData;
 use App\Data\Profiles\AccountUsageData;
 use App\Data\Profiles\DriverMethodsData;
+use App\Http\Pages\Accounts\AccountsIndex;
 use App\Http\Requests\Profiles\AccountsPageRequest;
 use App\Models\Account;
 use App\Models\AccountUsageCost;
@@ -17,7 +18,6 @@ use App\Models\AccountUsageTokens;
 use App\Models\AccountUsageWindow;
 use App\Models\ActiveAccount;
 use App\Models\SignInAttempt;
-use App\Support\AccountsLayout;
 use App\Support\DefaultDrivers;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\SignInProtocols;
@@ -35,7 +35,7 @@ final readonly class AccountsWindowResolver implements PageResolver
         private AccountUses $uses,
         private SignInProtocols $protocols,
         private AccountsPageRequest $request,
-        private AccountsLayout $layout,
+        private AccountsIndex $layout,
     ) {}
 
     public function read(): DeclaredLayoutData

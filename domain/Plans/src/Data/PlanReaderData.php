@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
-use Domain\Plans\Values\PlanSelection;
+use Domain\Plans\Values\PlanCard;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -25,23 +25,14 @@ final class PlanReaderData extends Data
     ) {}
 
     /**
-     * The reader of a selection, or nothing when no plan was selected or the selection cannot be read.
+     * The reader of one plan opened by its number: its card, brief, the page of its outline asked for and its review.
      */
-    public static function ofSelection(
-        PlanSelection $selection,
-        PlanOutlineData|Optional $outline,
-        PlanReviewData|Optional $review,
-    ): self|Optional {
-        $card = $selection->card;
-
-        if ($card === null || $outline instanceof Optional) {
-            return Optional::create();
-        }
-
+    public static function forPlan(PlanCard $card, string $brief, PlanOutlineData $outline, PlanReviewData $review): self
+    {
         return self::from([
             'card' => PlanCardData::fromPlanCard($card),
-            'insideResults' => $selection->isInsideFilter,
-            'brief' => $selection->brief,
+            'insideResults' => true,
+            'brief' => $brief,
             'outline' => $outline,
             'review' => $review,
         ]);

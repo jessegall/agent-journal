@@ -9,14 +9,14 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use Domain\Sequences\Data\SequenceEditorPartData;
-use Domain\Sequences\Resolvers\Support\SequenceIndexLayout;
+use Domain\Sequences\Http\Pages\Sequences\SequencesIndex;
 
 /**
  * The sequence editor beside the list for a new sequence: no name and no steps yet, stored on its first save.
  */
 final readonly class NewSequenceResolver implements PageResolver
 {
-    public function __construct(private SequenceIndexLayout $index) {}
+    public function __construct(private SequencesIndex $index) {}
 
     public function read(): DeclaredLayoutData
     {
