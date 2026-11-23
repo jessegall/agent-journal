@@ -35,6 +35,11 @@ var nativeHookEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse"
 // answer a prompt: reading and editing files, the journal's own commands and read-only git. Anything else is refused.
 var claudeCodeAllowedWithoutAsking = []string{"Read", "Edit", "Write", "NotebookEdit", "Bash(journal:*)", "Bash(ls:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"}
 
+// claudeCodeNormalBuffer keeps Claude Code off its full-screen view: Screens reads the composer on the normal buffer,
+// as every recording under testdata/recordings/claude-code was made, and a prompt on the other buffer never reads as
+// ready.
+const claudeCodeNormalBuffer = "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
+
 // claudeCodeJournalServer is the name of the journal's MCP server in a launch's server list.
 const claudeCodeJournalServer = "journal"
 
@@ -126,7 +131,8 @@ func (profile ClaudeCode) Arguments(start contracts.Start) ([]string, error) {
 
 // Environment drops every inherited Claude Code and MCP variable: one from the starting session marks the program as
 // its child (no transcript, the parent's permission mode) and others could turn on agent teams or forked skills. A
-// start with the journal's server gets the client's MCP timeouts, and a launch its reference.
+// start with the journal's server gets the client's MCP timeouts, and a launch its reference. Every start draws on
+// the normal buffer, the one the screen layout was measured on.
 func (ClaudeCode) Environment(inherited []string, start contracts.Start) []string {
 	kept := make([]string, 0, len(inherited)+3)
 
@@ -138,6 +144,7 @@ func (ClaudeCode) Environment(inherited []string, start contracts.Start) []strin
 		}
 		kept = append(kept, entry)
 	}
+	kept = append(kept, claudeCodeNormalBuffer)
 	if startsJournalServer(start) {
 		kept = append(kept, "MCP_TIMEOUT="+claudeCodeMcpStartTimeout, "MCP_TOOL_TIMEOUT="+claudeCodeMcpToolTimeout)
 	}

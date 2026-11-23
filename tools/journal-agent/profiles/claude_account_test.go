@@ -184,8 +184,8 @@ func TestAnAccountLaunchGetsTheMcpTimeoutsAndItsReference(t *testing.T) {
 		accountStartWith(&journalServer, ""),
 	)
 
-	if !slices.Equal(environment, []string{"PATH=/usr/bin", "MCP_TIMEOUT=15000", "MCP_TOOL_TIMEOUT=30000",
-		"JOURNAL_LAUNCH_REF=r1"}) {
+	if !slices.Equal(environment, []string{"PATH=/usr/bin", claudeCodeNormalBuffer, "MCP_TIMEOUT=15000",
+		"MCP_TOOL_TIMEOUT=30000", "JOURNAL_LAUNCH_REF=r1"}) {
 		t.Fatalf("environment %v", environment)
 	}
 }
