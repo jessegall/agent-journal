@@ -92,8 +92,8 @@ Codex cannot run in a container yet: its sandbox does not keep its tools
 Color scheme
 Command output
 Command palette
-Commands and pages
 Commands and sessions of {{ binding.projectLabel }} on {{ binding.machineLabel }} stop being accepted at once. The files on that computer stay as they are. A device that is offline now stops when its lease ends.
+Commands, pages and records
 Comment
 Comment on a section
 Comment on the selected lines
@@ -247,7 +247,6 @@ No install line was issued in the last 30 days.
 No linked record can be shared with it.
 No matches
 No matches in {{ search.within.value.label }}
-No matching commands
 No memories yet
 No module bundle is waiting.
 No output yet. Status {{ part.lifecycle }}, ended by {{ part.end }}.
@@ -265,6 +264,7 @@ Not shared yet
 Nothing at this level
 Nothing is open in this pane.
 Nothing is open. Add a window from the bar above.
+Nothing matches
 Nothing needs you
 Notifications
 Off
@@ -396,7 +396,7 @@ Saved draft
 Search
 Search again
 Search all
-Search commands
+Search commands, pages and records
 Search results
 Search windows
 Search {{ key }}
@@ -512,7 +512,7 @@ To
 To renew it, choose Sign in again on the account.
 Try again
 Turning off traffic inspection does not hide the content from the provider.
-Type a command or a page
+Type a command, a page, a task, a document or a file
 Type a source's name
 Type at least two characters
 Type at least {{ MINIMUM_CHARACTERS }} characters to search.

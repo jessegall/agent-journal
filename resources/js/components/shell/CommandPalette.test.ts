@@ -2,7 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { reactive } from 'vue';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const page = reactive({
     url: '/',
@@ -22,7 +22,7 @@ const page = reactive({
 
 vi.mock('@inertiajs/vue3', () => ({
     usePage: () => page,
-    router: { visit: vi.fn() },
+    router: { visit: vi.fn(), reload: vi.fn() },
     Link: { props: ['href'], template: '<a :href="href"><slot /></a>' },
 }));
 
@@ -37,6 +37,53 @@ function open() {
 }
 
 describe('the command palette', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.mocked(router.reload).mockReset();
+    });
+
+    it('lists the records the search finds for the words under the commands and pages, each opening its page', async () => {
+        vi.useFakeTimers();
+        vi.mocked(router.reload).mockImplementation((options) => {
+            options?.onSuccess?.({
+                props: {
+                    search: {
+                        hits: [
+                            {
+                                sourceKey: 'tasks',
+                                sourceLabel: 'Task',
+                                title: 'Persist plans and phases',
+                                snippet: '',
+                                score: 1,
+                                recordType: 'task',
+                                recordId: 'task-1',
+                                locationLabel: null,
+                                href: '/tasks/1',
+                            },
+                        ],
+                        status: 'complete',
+                        continuation: null,
+                        directOpen: null,
+                    },
+                },
+            } as never);
+        });
+        const view = open();
+        await view.vm.$nextTick();
+        const input = document.body.querySelector('input') as HTMLInputElement;
+
+        input.value = 'plans';
+        input.dispatchEvent(new Event('input'));
+        await vi.advanceTimersByTimeAsync(300);
+        await view.vm.$nextTick();
+
+        const options = [...document.body.querySelectorAll('[role="option"]')].map((option) => option.textContent?.trim());
+        expect(options).toEqual(['Plans', 'Persist plans and phases']);
+        (document.body.querySelectorAll('[role="option"]')[1] as HTMLElement).click();
+        expect(router.visit).toHaveBeenCalledWith('/tasks/1');
+        view.unmount();
+    });
+
     it('lists the shell commands and the pages in groups and filters them as the user types', async () => {
         const view = open();
         await view.vm.$nextTick();
@@ -93,7 +140,7 @@ describe('the command palette', () => {
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
         expect(document.body.querySelectorAll('[role="option"]')).toHaveLength(0);
-        expect(document.body.textContent).toContain('No matching commands');
+        expect(document.body.querySelector('[role="status"]')).not.toBeNull();
         view.unmount();
     });
 });

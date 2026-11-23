@@ -15,7 +15,7 @@ export function useShellOverlays() {
 }
 
 /**
- * The shortcuts that open them, for the shell to keep while it is mounted: Control or Command with K opens the search
+ * The shortcuts that open them, for the shell to keep while it is mounted: Control or Command with K opens the command
  * palette and a question mark outside a field opens the help. A shortcut never opens a second dialog over an open one.
  */
 export function useShellShortcuts(): void {
@@ -23,8 +23,8 @@ export function useShellShortcuts(): void {
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
             event.preventDefault();
 
-            if (!isPaletteOpen.value && !isHelpOpen.value) {
-                isSearchOpen.value = true;
+            if (!isSearchOpen.value && !isHelpOpen.value) {
+                isPaletteOpen.value = true;
             }
 
             return;
