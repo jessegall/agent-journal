@@ -58,7 +58,12 @@ final readonly class SharesIndex
             ),
             ...array_map(
                 fn (ShareState $state) => LayoutRowData::from(
-                    ['key' => $state->value, 'label' => $state->value, 'query' => ['state' => $state->value, 'after' => ''], 'isCurrent' => $chosen === $state->value],
+                    [
+                        'key' => $state->value,
+                        'label' => $state->value,
+                        'query' => ['state' => $state->value, 'after' => ''],
+                        'isCurrent' => $chosen === $state->value,
+                    ],
                 ),
                 ShareState::cases(),
             ),

@@ -29,7 +29,7 @@ final readonly class NavigationCandidate
      */
     public function withChildren(array $children): self
     {
-        return new self($this->navigation, $this->path, $children, $this->contribution);
+        return clone ($this, ['children' => $children]);
     }
 
     public function key(): string
@@ -71,7 +71,10 @@ final readonly class NavigationCandidate
             return [];
         }
 
-        $children = array_merge([], ...array_map(fn (self $child) => $child->withoutDropped($dropped), $this->children));
+        $children = array_merge(
+            [],
+            ...array_map(fn (self $child) => $child->withoutDropped($dropped), $this->children),
+        );
 
         if ($this->navigation->page === null && $children === []) {
             return [];

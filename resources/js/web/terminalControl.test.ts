@@ -101,7 +101,7 @@ describe('TerminalControl', () => {
         const { control } = controlled({});
         await control.take('interest');
         control.retire();
-        expect(control.holdsGrant()).toBe(false);
+        expect(control.hasGrant()).toBe(false);
     });
 });
 

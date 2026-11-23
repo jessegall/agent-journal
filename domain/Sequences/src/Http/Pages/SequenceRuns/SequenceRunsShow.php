@@ -40,18 +40,18 @@ final readonly class SequenceRunsShow
             $position = $index + 1;
             $isCurrent = $isRunning && $position === $run->current_step;
 
-            $steps[] = new LayoutRowData(
-                (string) $position,
-                $title,
-                isCurrent: $isCurrent,
-                leading: [LayoutPartData::text('position', (string) $position, 'muted')],
-                trailing: [$this->markOf($position, $run->current_step, $run->state)],
-            );
+            $steps[] = LayoutRowData::from([
+                'key' => (string) $position,
+                'label' => $title,
+                'isCurrent' => $isCurrent,
+                'leading' => [LayoutPartData::text('position', (string) $position, 'muted')],
+                'trailing' => [$this->markOf($position, $run->current_step, $run->state)],
+            ]);
         }
 
         return DetailPage::make($run->name)
             ->above(LayoutPartData::text('label', "sequence run {$run->number}", 'code'))
-            ->withFacts(new LayoutRowData('state', 'State', ucfirst($run->state->value)))
+            ->withFacts(LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => ucfirst($run->state->value)]))
             ->withStanding(LayoutPartData::collection('steps', 'list', $steps));
     }
 

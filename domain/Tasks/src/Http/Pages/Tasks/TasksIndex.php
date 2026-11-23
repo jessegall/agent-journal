@@ -85,7 +85,12 @@ final readonly class TasksIndex
         $rows = [
             ...array_map(
                 fn (TaskStateGroup $group) => LayoutRowData::from(
-                    ['key' => $group->value, 'label' => ucfirst($group->value), 'query' => ['state' => $group->value, 'page' => ''], 'isCurrent' => $chosen === $group->value],
+                    [
+                        'key' => $group->value,
+                        'label' => ucfirst($group->value),
+                        'query' => ['state' => $group->value, 'page' => ''],
+                        'isCurrent' => $chosen === $group->value,
+                    ],
                 ),
                 TaskStateGroup::cases(),
             ),

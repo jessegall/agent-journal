@@ -164,11 +164,11 @@ final readonly class GatewaySettingsResolver implements PageResolver
         if (! $revision->isDefault) {
             $actions[] = LayoutPartData::form(
                 'make-default',
-                new LayoutFormData(
-                    ActionMethod::Post,
-                    route('sharing.make-share-gateway-default', ['configuration' => $revision->id], false),
-                    isKeyed: true,
-                ),
+                LayoutFormData::from([
+                    'method' => ActionMethod::Post,
+                    'href' => route('sharing.make-share-gateway-default', ['configuration' => $revision->id], false),
+                    'isKeyed' => true,
+                ]),
                 'inline',
                 LayoutPartData::action('send', 'Make default', LayoutActionData::submitting()),
             );
@@ -182,12 +182,12 @@ final readonly class GatewaySettingsResolver implements PageResolver
 
         $actions[] = LayoutPartData::form(
             'disable',
-            new LayoutFormData(
-                ActionMethod::Delete,
-                route('sharing.disable-share-gateway', ['configuration' => $revision->id], false),
-                isKeyed: true,
-                confirmation: $question,
-            ),
+            LayoutFormData::from([
+                'method' => ActionMethod::Delete,
+                'href' => route('sharing.disable-share-gateway', ['configuration' => $revision->id], false),
+                'isKeyed' => true,
+                'confirmation' => $question,
+            ]),
             'inline',
             LayoutPartData::action('send', 'Disable', LayoutActionData::submitting(), 'danger'),
         );

@@ -47,7 +47,9 @@ final readonly class SignInReceipts
     {
         $attemptId = $fields['attemptId'] ?? null;
 
-        return is_string($attemptId) ? $this->started($attemptId) : SignInReceiptData::without(SignInReceiptStatus::Unknown);
+        return is_string($attemptId) ? $this->started($attemptId) : SignInReceiptData::without(
+            SignInReceiptStatus::Unknown,
+        );
     }
 
     private function started(string $attemptId): SignInReceiptData

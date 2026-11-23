@@ -68,6 +68,16 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     // ----------[ Queries ]----------
 
     /**
+     * The agent with this id, if there is one.
+     *
+     * @return Option<self>
+     */
+    public static function withId(string $id): Option
+    {
+        return self::query()->whereKey($id)->firstOption();
+    }
+
+    /**
      * @return Option<ActorIdentity>
      */
     public static function soleActorForProfile(string $profile): Option

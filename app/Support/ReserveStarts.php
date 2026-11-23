@@ -21,12 +21,7 @@ final readonly class ReserveStarts implements StartReservations
 
     public function reserve(ActorIdentity $agent): void
     {
-        $found = Agent::query()->whereKey($agent->id)->first();
-
-        if ($found === null) {
-            throw AgentNotAvailable::forAgent($agent->id);
-        }
-
+        $found = Agent::withId($agent->id)->getOrThrow(AgentNotAvailable::forAgent($agent->id));
         $this->sessions->reserveStart($found);
 
         if (WorkReservation::holds($agent)) {
@@ -36,8 +31,6 @@ final readonly class ReserveStarts implements StartReservations
 
     public function hasRetired(ActorIdentity $agent): bool
     {
-        $found = Agent::query()->whereKey($agent->id)->first();
-
-        return $found === null || $found->isRetired();
+        return Agent::withId($agent->id)->map(fn (Agent $found) => $found->isRetired())->getOrElse(true);
     }
 }

@@ -32,8 +32,9 @@ final readonly class DeskOpening
      */
     public function installNamed(string $name, string $label, int $seatCount, bool $forwardsOccupants): DeskRecord
     {
-        return DeskRecord::query()->named($name)->first()
-            ?? $this->openNamed($name, $label, $seatCount, $forwardsOccupants);
+        return DeskRecord::withName($name)->getOrCall(
+            fn () => $this->openNamed($name, $label, $seatCount, $forwardsOccupants),
+        );
     }
 
     /**
@@ -41,7 +42,7 @@ final readonly class DeskOpening
      */
     public function installSourceDesk(string $name, string $label): DeskRecord
     {
-        return DeskRecord::query()->named($name)->first() ?? $this->openSourceDesk($name, $label);
+        return DeskRecord::withName($name)->getOrCall(fn () => $this->openSourceDesk($name, $label));
     }
 
     /**

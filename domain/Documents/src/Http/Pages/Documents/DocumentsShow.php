@@ -190,7 +190,11 @@ final readonly class DocumentsShow
     ): LayoutPartData {
         $settlements = array_map(
             fn (SettlementCard $settlement) => LayoutRowData::from(
-                ['key' => $settlement->settledAt, 'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}", 'value' => $settlement->reason],
+                [
+                    'key' => $settlement->settledAt,
+                    'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}",
+                    'value' => $settlement->reason,
+                ],
             ),
             $inspection->settlements,
         );
@@ -225,7 +229,7 @@ final readonly class DocumentsShow
                     ],
                 ),
                 'inline',
-                LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason'), 'text'),
+                LayoutPartData::field('reason', 'Reason', LayoutFieldData::from(['name' => 'reason']), 'text'),
                 LayoutPartData::action('send', 'Settle', LayoutActionData::submitting()),
             );
         }
@@ -242,13 +246,13 @@ final readonly class DocumentsShow
     private function historyOf(int $number, array $revisions): LayoutPartData
     {
         return LayoutPartData::collection('history', 'list', array_map(
-            fn (RevisionCard $revision) => new LayoutRowData(
-                $revision->number,
-                "revision {$revision->number}",
-                $revision->title,
-                detail: $revision->closedAt,
-                href: "/documents/docs/{$number}/revisions/{$revision->number}",
-            ),
+            fn (RevisionCard $revision) => LayoutRowData::from([
+                'key' => $revision->number,
+                'label' => "revision {$revision->number}",
+                'value' => $revision->title,
+                'detail' => $revision->closedAt,
+                'href' => "/documents/docs/{$number}/revisions/{$revision->number}",
+            ]),
             $revisions,
         ));
     }

@@ -84,7 +84,13 @@ final readonly class RulesWindowResolver implements PageResolver
 
         $rows = array_map(
             fn (RuleView $rule) => LayoutRowData::from(
-                ['key' => $rule->id, 'label' => $rule->text, 'value' => "{$rule->number} · {$rule->state->label()}", 'query' => ['rule' => $rule->id], 'isCurrent' => $rule->id === $selected],
+                [
+                    'key' => $rule->id,
+                    'label' => $rule->text,
+                    'value' => "{$rule->number} · {$rule->state->label()}",
+                    'query' => ['rule' => $rule->id],
+                    'isCurrent' => $rule->id === $selected,
+                ],
             ),
             $page->rules,
         );

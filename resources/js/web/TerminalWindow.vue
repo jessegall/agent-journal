@@ -42,7 +42,7 @@ const backToChat = {
             <template #actions="{ state }">
                 <TerminalControlBar
                     :control="control"
-                    :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.holdsGrant()"
+                    :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.hasGrant()"
                     :agent-id="data.agentId"
                     :identity="presentation.screen.identity"
                     :menu="presentation.screen.frame?.menu ?? null"

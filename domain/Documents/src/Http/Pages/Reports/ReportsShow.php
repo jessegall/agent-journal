@@ -110,7 +110,11 @@ final readonly class ReportsShow
     ): LayoutPartData {
         $settlements = array_map(
             fn (SettlementCard $settlement) => LayoutRowData::from(
-                ['key' => $settlement->settledAt, 'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}", 'value' => $settlement->reason],
+                [
+                    'key' => $settlement->settledAt,
+                    'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}",
+                    'value' => $settlement->reason,
+                ],
             ),
             $inspection->settlements,
         );

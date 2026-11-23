@@ -164,7 +164,7 @@ export function useTerminalControl(
         openPrivate: () => control.openPrivate(),
         submitPrivate: (value: string) => control.submitPrivate(value),
         cancelPrivate: () => control.cancelPrivate(),
-        holdsGrant: () => control.holdsGrant(),
+        hasGrant: () => control.hasGrant(),
         mayTake: () => {
             const frame = screen.value.frame;
 

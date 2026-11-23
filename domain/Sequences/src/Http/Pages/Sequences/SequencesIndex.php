@@ -39,19 +39,19 @@ final readonly class SequencesIndex
 
         return ListPage::make(
             'Sequences',
-            array_map(fn (Sequence $sequence) => new LayoutRowData(
-                $sequence->id,
-                $sequence->name,
-                detail: $sequence->summary === '' ? Optional::create() : $sequence->summary,
-                href: route('sequences.sequence', ['sequence' => $sequence->id], false),
-                isCurrent: $sequence->id === $chosenId,
-            ), $sequences),
+            array_map(fn (Sequence $sequence) => LayoutRowData::from([
+                'key' => $sequence->id,
+                'label' => $sequence->name,
+                'detail' => $sequence->summary === '' ? Optional::create() : $sequence->summary,
+                'href' => route('sequences.sequence', ['sequence' => $sequence->id], false),
+                'isCurrent' => $sequence->id === $chosenId,
+            ]), $sequences),
             ListEmpty::informing('No sequences yet.', 'Sequences the agents follow appear here once one is written.'),
         )
             ->counting(count($sequences))
             ->withViews(...$this->views->of(false))
             ->creatingWith(...$this->creations())
-            ->withReader(new LayoutBackData(route('sequences.index', [], false), 'Sequences'), ...$reader)
+            ->withReader(LayoutBackData::from(['href' => route('sequences.index', [], false), 'label' => 'Sequences']), ...$reader)
             ->layout();
     }
 
@@ -76,14 +76,14 @@ final readonly class SequencesIndex
 
         $guided = LayoutPartData::dialog(
             'guided-sequence',
-            new LayoutDialogData('Guided sequence', 'Draft opened in the editor', guidedNoun: 'sequence'),
+            LayoutDialogData::from(['title' => 'Guided sequence', 'confirmation' => 'Draft opened in the editor', 'guidedNoun' => 'sequence']),
             LayoutPartData::action('open', 'Guided', LayoutActionData::changing([])),
-            new LayoutFormData(ActionMethod::Get, route('sequences.new', [], false)),
+            LayoutFormData::from(['method' => ActionMethod::Get, 'href' => route('sequences.new', [], false)]),
             [
-                LayoutPartData::field('name', 'Name', new LayoutFieldData('name'), 'text'),
-                LayoutPartData::field('steps', 'Steps, one per line', new LayoutFieldData('steps'), 'area'),
-                LayoutPartData::field('doneWhen', 'Done when', new LayoutFieldData('doneWhen'), 'text'),
-                LayoutPartData::field('draftedBy', 'Drafted by', new LayoutFieldData('draftedBy'), 'text'),
+                LayoutPartData::field('name', 'Name', LayoutFieldData::from(['name' => 'name']), 'text'),
+                LayoutPartData::field('steps', 'Steps, one per line', LayoutFieldData::from(['name' => 'steps']), 'area'),
+                LayoutPartData::field('doneWhen', 'Done when', LayoutFieldData::from(['name' => 'doneWhen']), 'text'),
+                LayoutPartData::field('draftedBy', 'Drafted by', LayoutFieldData::from(['name' => 'draftedBy']), 'text'),
             ],
             [LayoutPartData::action('send', 'Open in the editor', LayoutActionData::submitting(), 'primary')],
         );

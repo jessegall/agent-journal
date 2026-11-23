@@ -48,7 +48,7 @@ final readonly class PlanReviewView
             'mayRequest' => $mayEdit && $plan->state === PlanState::Planned,
             'mayWithdraw' => $mayEdit && $plan->state === PlanState::Reviewing,
             'mayDecide' => in_array(AccessType::Admin, $allowed, true) && $plan->state === PlanState::Reviewing,
-            'mayCancel' => $mayEdit && ! in_array($plan->state, [PlanState::Done, PlanState::Cancelled], true),
+            'mayCancel' => $mayEdit && ! $plan->state->hasEnded(),
             'mayFinish' => $mayEdit && $plan->state === PlanState::Started && $plan->progress->unfinished() === 0,
             'revision' => $plan->revision,
             'work' => $this->workOf($plan, $mayEdit),
@@ -69,14 +69,18 @@ final readonly class PlanReviewView
         $phaseCount = $plan->phases()->count();
         $progress = $plan->progress;
 
-        return PlanWorkPreviewData::from(['mayAssign' => $mayEdit && ! in_array(
-            $plan->state,
-            [PlanState::Done, PlanState::Cancelled],
-            true,
-        ), 'phaseCount' => $phaseCount, 'taskCount' => $progress->total, 'movingTasks' => $progress->unfinished(), 'stayingTasks' => $progress->finished + $progress->cancelled, 'isOverLimit' => 1 + $phaseCount + $progress->total > AssignmentGroup::LARGEST, 'recipients' => array_map(
-            fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
-            $this->assignees->eligible('agent', new Page(null, self::RECIPIENTS_SHOWN))->assignees,
-        )]);
+        return PlanWorkPreviewData::from([
+            'mayAssign' => $mayEdit && ! $plan->state->hasEnded(),
+            'phaseCount' => $phaseCount,
+            'taskCount' => $progress->total,
+            'movingTasks' => $progress->unfinished(),
+            'stayingTasks' => $progress->finished + $progress->cancelled,
+            'isOverLimit' => 1 + $phaseCount + $progress->total > AssignmentGroup::LARGEST,
+            'recipients' => array_map(
+                fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
+                $this->assignees->eligible('agent', new Page(null, self::RECIPIENTS_SHOWN))->assignees,
+            ),
+        ]);
     }
 
     private static function receiptOrMissing(PlanReviewEdition|null $edition): PlanReviewReceiptData|Optional

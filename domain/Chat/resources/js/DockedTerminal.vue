@@ -37,7 +37,7 @@ const { presentation, retry, control } = useTerminalController(
  * Whether closing must wait for the writer: a held grant with an unfinished line shows its choices instead.
  */
 function holdsCloseForDraft(): boolean {
-  if (!control.holdsGrant() || control.view.value.unsentLine === "") {
+  if (!control.hasGrant() || control.view.value.unsentLine === "") {
     return false;
   }
 
@@ -85,7 +85,7 @@ useTerminalResize(area, control);
           :control="control"
           :other-view-controls="
             presentation.screen.frame?.inputOwner === 'browser' &&
-            !control.holdsGrant()
+            !control.hasGrant()
           "
           :agent-id="agentId"
           :identity="presentation.screen.identity"

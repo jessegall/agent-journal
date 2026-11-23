@@ -23,6 +23,6 @@ final readonly class DeskInboxProvider implements InboxProvider, NamedInboxes
 
     public function inboxNamed(string $name): Option
     {
-        return Option::fromValue(DeskRecord::query()->named($name)->first());
+        return DeskRecord::withName($name);
     }
 }

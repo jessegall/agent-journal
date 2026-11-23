@@ -51,8 +51,8 @@ enum LayoutTag: string
         return match ($this) {
             self::Box => [
                 'stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split', 'bar', 'reader',
-                'settings-page', 'settings', 'settings-group', 'setting', 'setting-block', 'settings-footer', 'page-head',
-                'page', 'page-list',
+                'settings-page', 'settings', 'settings-group', 'setting', 'setting-block', 'settings-footer',
+                'page-head', 'page', 'page-list',
             ],
             self::Text => [
                 'plain',

@@ -53,7 +53,11 @@ final readonly class SequencesShow
     {
         return array_map(
             fn (SequenceStepData $step) => LayoutRowData::from(
-                ['key' => $step->id, 'label' => $step->title, 'detail' => "Runs when {$step->runsWhen} · done when {$step->doneWhen}"],
+                [
+                    'key' => $step->id,
+                    'label' => $step->title,
+                    'detail' => "Runs when {$step->runsWhen} · done when {$step->doneWhen}",
+                ],
             ),
             $sequence->stepList(),
         );

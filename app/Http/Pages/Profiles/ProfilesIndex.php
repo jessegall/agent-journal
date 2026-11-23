@@ -30,18 +30,18 @@ final readonly class ProfilesIndex
 
         return ListPage::make(
             'Profiles',
-            array_map(fn (Profile $profile) => new LayoutRowData(
-                $profile->id,
-                $profile->label,
-                detail: $profile->description === '' ? $profile->key : $profile->description,
-                href: route('accounts.profile', ['profile' => $profile->key], false),
-                isCurrent: $profile->key === $selectedKey,
-                trailing: $profile->isRetired() ? [LayoutPartData::badge('state', 'Retired', 'quiet')] : [],
-            ), $profiles),
+            array_map(fn (Profile $profile) => LayoutRowData::from([
+                'key' => $profile->id,
+                'label' => $profile->label,
+                'detail' => $profile->description === '' ? $profile->key : $profile->description,
+                'href' => route('accounts.profile', ['profile' => $profile->key], false),
+                'isCurrent' => $profile->key === $selectedKey,
+                'trailing' => $profile->isRetired() ? [LayoutPartData::badge('state', 'Retired', 'quiet')] : [],
+            ]), $profiles),
             ListEmpty::informing('No profiles yet.', 'Profiles appear here once an owner activates them.'),
         )
             ->counting(count($profiles))
-            ->withReader(new LayoutBackData(route('accounts.profiles', [], false), 'Profiles'), ...$reader)
+            ->withReader(LayoutBackData::from(['href' => route('accounts.profiles', [], false), 'label' => 'Profiles']), ...$reader)
             ->layout();
     }
 }

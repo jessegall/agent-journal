@@ -88,6 +88,16 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The desk of this name, if one was opened.
+     *
+     * @return Option<self>
+     */
+    public static function withName(string $name): Option
+    {
+        return self::query()->named($name)->firstOption();
+    }
+
+    /**
      * The desk under an exclusive lock, so its seating cannot change under a seat change.
      *
      * @throws DeskUnavailable

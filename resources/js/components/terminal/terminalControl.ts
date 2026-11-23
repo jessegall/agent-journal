@@ -120,7 +120,7 @@ export class TerminalControl {
         return this.current;
     }
 
-    holdsGrant(): boolean {
+    hasGrant(): boolean {
         return this.grantId !== '';
     }
 

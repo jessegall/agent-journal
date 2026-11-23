@@ -42,6 +42,6 @@ final readonly class MainTakeover implements MainSeatTakeover
         }
 
         $this->seating->replace(new SeatChange($main->id, $seat->id, $current->get()->reference, $starter));
-        Agent::query()->whereKey($former->id)->first()?->fenceRuntimes();
+        Agent::withId($former->id)->forAll(fn (Agent $agent) => $agent->fenceRuntimes());
     }
 }
