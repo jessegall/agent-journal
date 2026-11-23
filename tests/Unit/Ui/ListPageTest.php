@@ -28,6 +28,7 @@ final class ListPageTest extends TestCase
     public function test_a_page_fills_its_frame_and_its_list_column_stacks_without_gaps(): void
     {
         $alone = ListPage::make('Tasks', $this->rows(2), ListEmpty::informing('Empty'))->layout()->root;
+
         $split = ListPage::make('Tasks', $this->rows(2), ListEmpty::informing('Empty'))
             ->withReader(new LayoutBackData('/tasks', 'Tasks'))
             ->layout()->root;
@@ -87,6 +88,7 @@ final class ListPageTest extends TestCase
         $content = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
             ->paged(ListPaging::cursor('abc'))
             ->layout()->root->children[1];
+
         $more = $content->children[1];
 
         $this->assertSame('more', $more->key);
@@ -140,10 +142,12 @@ final class ListPageTest extends TestCase
             ->layout()->root->children[0];
 
         $this->assertSame('page-head', $header->style);
+
         $this->assertSame(
             ['title', 'count', 'views', 'search', 'creation'],
             $this->keysOf($header->children),
         );
+
         $this->assertSame('choices', $header->children[2]->style);
     }
 
@@ -154,6 +158,7 @@ final class ListPageTest extends TestCase
         $split = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
             ->withReader($back)
             ->layout()->root->children[1];
+
         $empty = ListPage::make('Tasks', [], ListEmpty::informing('Empty'))
             ->withReader($back)
             ->layout()->root->children[1];
@@ -170,6 +175,7 @@ final class ListPageTest extends TestCase
         $index = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
             ->withReader($back)
             ->layout()->root->children[1];
+
         $record = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
             ->withReader($back, LayoutPartData::text('facts', 'x'))
             ->withReaderWidth(ReaderWidth::Settings)

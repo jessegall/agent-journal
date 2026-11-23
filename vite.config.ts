@@ -124,6 +124,7 @@ export default defineConfig({
         include: [
             'resources/js/**/*.test.ts',
             'domain/*/resources/js/**/*.test.ts',
+            'tools/design-compare/**/*.test.ts',
         ],
     },
 });

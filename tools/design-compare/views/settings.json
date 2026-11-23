@@ -1,0 +1,22 @@
+{
+    "name": "settings",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "labels": {
+        "What this journal is called.": "How this journal names itself.",
+        "Shown at the top of every page and in the browser tab.": "Shown in the topbar and in the browser's tab.",
+        "Let projects on other computers connect to this journal.": "Projects on other machines that report to this journal.",
+        "When off, its pages are hidden. Nothing is deleted.": "Turned off, the Tasks page and its windows are hidden. Nothing is deleted."
+    },
+    "design": {
+        "url": "docs/designs/home-v6/index.html",
+        "steps": [{"click": "role=button[name='Settings']"}],
+        "part": ".reader"
+    },
+    "app": {
+        "url": "http://localhost:54700/login",
+        "steps": [{"login": "owner@journal.local", "password": "${COMPARE_PASSWORD}"}, {"goto": "http://localhost:54700/settings"}],
+        "part": "[data-layout-box='settings-page']"
+    }
+}

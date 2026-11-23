@@ -38,10 +38,12 @@ final class DomainSettingsTest extends TestCase
         $reviews = $registry->definition('Reviews');
 
         $this->assertInstanceOf(ReviewSettings::class, $reviews);
+
         $this->assertSame(
             ['general', 'review'],
             array_map(fn (GroupDeclaration $group) => $group->key(), $reviews->groups()),
         );
+
         $this->assertTrue($registry->isInToggleGroup($reviews->reviewMode));
         $this->assertFalse($registry->isInToggleGroup($reviews->title));
         $this->assertSame('Reviews', $registry->ownerOf($reviews->review)->owner);

@@ -9,19 +9,19 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsCatalogue;
 use App\Data\SettingData;
 use App\Enums\SettingSource;
-use App\Http\Requests\Settings\SaveSettingsRequest;
+use App\Http\Requests\Settings\SettingsGroupRequest;
 use App\Http\Responses\PageActionAnswers;
 use App\Values\SettingReference;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * Takes every changed setting of an owner back to its default, one reset each against the revision the page read, the
- * next against the revision the last made; an owner changed meanwhile is refused with its current revision.
+ * Takes every changed setting of one group back to its default, one reset each against the revision the page read, the
+ * next against the revision the last made; a group changed meanwhile is refused with its current revision.
  */
 final readonly class ResetSettingsPageController
 {
     public function __invoke(
-        SaveSettingsRequest $request,
+        SettingsGroupRequest $request,
         SettingsCatalogue $catalogue,
         CommandBus $commands,
         PageActionAnswers $answers,
@@ -29,6 +29,10 @@ final readonly class ResetSettingsPageController
         $revision = $request->expectedRevision();
 
         foreach ($catalogue->owner($request->owner())->groups as $group) {
+            if ($group->identity->key !== $request->group()) {
+                continue;
+            }
+
             foreach ($group->settings as $setting) {
                 if (! $this->isChanged($setting)) {
                     continue;

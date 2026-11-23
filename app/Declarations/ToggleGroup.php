@@ -22,6 +22,7 @@ final readonly class ToggleGroup implements GroupDeclaration
         public string $label,
         public bool $defaultEnabled,
         public array $settings,
+        public string|null $description = null,
     ) {}
 
     /**
@@ -29,11 +30,16 @@ final readonly class ToggleGroup implements GroupDeclaration
      *
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string $key, string $label, bool $defaultEnabled, array $settings): self
-    {
+    public static function make(
+        string $key,
+        string $label,
+        bool $defaultEnabled,
+        array $settings,
+        string|null $description = null,
+    ): self {
         SettingKey::require($key, $label);
 
-        return new self($key, $label, $defaultEnabled, $settings);
+        return new self($key, $label, $defaultEnabled, $settings, $description);
     }
 
     public function key(): string
@@ -44,6 +50,14 @@ final readonly class ToggleGroup implements GroupDeclaration
     public function label(): string
     {
         return $this->label;
+    }
+
+    /**
+     * The sentence the settings page shows under the group's heading; null when the heading says it all.
+     */
+    public function description(): string|null
+    {
+        return $this->description;
     }
 
     public function settings(): array

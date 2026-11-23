@@ -46,6 +46,7 @@ final class SettingsAccessTest extends TestCase
     public function test_a_policy_bound_before_settings_registers_is_kept(): void
     {
         $application = new Application($this->app->basePath());
+
         $allowsEveryone = new class implements SettingsAccessPolicy
         {
             public function allows(Actor $actor): bool
@@ -53,6 +54,7 @@ final class SettingsAccessTest extends TestCase
                 return true;
             }
         };
+
         $application->instance(SettingsAccessPolicy::class, $allowsEveryone);
         new SettingsServiceProvider($application)->register();
 

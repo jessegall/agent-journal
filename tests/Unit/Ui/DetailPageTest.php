@@ -48,10 +48,12 @@ final class DetailPageTest extends TestCase
             ->layout('proofs')->root;
 
         $this->assertSame('reader', $root->style);
+
         $this->assertSame(
             ['title', 'metadata', 'abstract', 'actions', 'facts', 'note', 'tabs'],
             array_map(fn (LayoutPartData $part) => $part->key, $root->children),
         );
+
         $this->assertSame(['proofs'], $reads);
         $this->assertSame('/tasks/3', $root->children[4]->rows[0]->fact->pieces[0]->href);
     }

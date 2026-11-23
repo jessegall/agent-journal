@@ -29,6 +29,7 @@ final readonly class StringSetting implements Setting
         public string $default,
         public int $minimumLength,
         public int $maximumLength,
+        public string|null $description = null,
     ) {}
 
     /**
@@ -40,6 +41,7 @@ final readonly class StringSetting implements Setting
         string $default,
         int $minimumLength = 0,
         int $maximumLength = self::LONGEST,
+        string|null $description = null,
     ): self {
         SettingKey::require($key, $label);
 
@@ -47,7 +49,7 @@ final readonly class StringSetting implements Setting
             throw SettingDeclarationInvalid::badLengths($key, self::LONGEST);
         }
 
-        $setting = new self($key, $label, $default, $minimumLength, $maximumLength);
+        $setting = new self($key, $label, $default, $minimumLength, $maximumLength, $description);
 
         if (! $setting->accepts($default)) {
             throw SettingDeclarationInvalid::defaultOutOfBounds($key);
@@ -64,6 +66,14 @@ final readonly class StringSetting implements Setting
     public function label(): string
     {
         return $this->label;
+    }
+
+    /**
+     * The sentence the settings page shows under the label; null when the label says it all.
+     */
+    public function description(): string|null
+    {
+        return $this->description;
     }
 
     public function type(): SettingType

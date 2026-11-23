@@ -67,6 +67,7 @@ final class SettingsStoriesTest extends TestCase
         $registry = DomainRegistry::from(
             [ReviewsDomain::class, BooksDomain::class],
         )->settingDeclarations(new CoreSettings());
+
         $this->app->instance(SettingRegistry::class, $registry);
         $this->reviews = $registry->definition('Reviews');
         $this->commands = new RegisteredSettingCommands($registry, new CatalogueReflectorFactory());
@@ -94,6 +95,7 @@ final class SettingsStoriesTest extends TestCase
                 return [SettingGroup::make('general', 'General', [$this->retryLimit])];
             }
         };
+
         $second = new class implements SettingsDefinition
         {
             public readonly IntegerSetting $retryLimit;
@@ -115,6 +117,7 @@ final class SettingsStoriesTest extends TestCase
             ['First', 'retry_limit'],
             [$registry->ownerOf($first->retryLimit)->owner, $registry->ownerOf($first->retryLimit)->key],
         );
+
         $this->assertSame(
             ['Second', 'retry_limit'],
             [$registry->ownerOf($second->retryLimit)->owner, $registry->ownerOf($second->retryLimit)->key],
@@ -243,6 +246,7 @@ final class SettingsStoriesTest extends TestCase
         );
 
         $catalogue = $this->app->make(SettingsCatalogue::class)->owner('Reviews')->toArray();
+
         $keys = array_merge(
             ...array_map(
                 fn (array $group) => array_column(array_column($group['settings'], 'identity'), 'key'),
@@ -268,6 +272,7 @@ final class SettingsStoriesTest extends TestCase
         );
 
         $this->expectException(SettingDeclarationInvalid::class);
+
         $this->expectExceptionMessage(
             SettingDeclarationInvalid::tooManyGroups('Many', SettingRegistry::GROUPS_PER_OWNER)->getMessage(),
         );

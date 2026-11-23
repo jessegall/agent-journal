@@ -45,5 +45,6 @@ final class SettingData extends Data
             |IntegerChoiceValueData
             |InvalidValueData
             |Optional $configured = new Optional(),
+        public readonly string|null $description = null,
     ) {}
 }

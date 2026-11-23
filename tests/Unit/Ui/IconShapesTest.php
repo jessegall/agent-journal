@@ -21,6 +21,7 @@ final class IconShapesTest extends TestCase
             array_map(fn (Icon $icon) => $icon->value, Icon::cases()),
             $shapes[1],
         )));
+
         $this->assertContains('accounts', $shapes[1]);
     }
 }

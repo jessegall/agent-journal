@@ -31,6 +31,7 @@ final readonly class IntegerSetting implements Setting
         public int $default,
         public int $minimum,
         public int $maximum,
+        public string|null $description = null,
     ) {}
 
     /**
@@ -42,6 +43,7 @@ final readonly class IntegerSetting implements Setting
         int $default,
         int $minimum = self::SMALLEST,
         int $maximum = self::LARGEST,
+        string|null $description = null,
     ): self {
         SettingKey::require($key, $label);
 
@@ -49,7 +51,7 @@ final readonly class IntegerSetting implements Setting
             throw SettingDeclarationInvalid::badBounds($key);
         }
 
-        $setting = new self($key, $label, $default, $minimum, $maximum);
+        $setting = new self($key, $label, $default, $minimum, $maximum, $description);
 
         if (! $setting->accepts($default)) {
             throw SettingDeclarationInvalid::defaultOutOfBounds($key);
@@ -66,6 +68,14 @@ final readonly class IntegerSetting implements Setting
     public function label(): string
     {
         return $this->label;
+    }
+
+    /**
+     * The sentence the settings page shows under the label; null when the label says it all.
+     */
+    public function description(): string|null
+    {
+        return $this->description;
     }
 
     public function type(): SettingType

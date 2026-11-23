@@ -194,7 +194,13 @@ final readonly class DomainRegistry
 
         foreach ($this->all() as $entry) {
             if ($entry->canDisable()) {
-                $groups[$entry->name] = ToggleGroup::make('domain_'.strtolower($entry->name), $entry->name, true, []);
+                $groups[$entry->name] = ToggleGroup::make(
+                    'domain_'.strtolower($entry->name),
+                    $entry->name,
+                    true,
+                    [],
+                    'When off, its pages are hidden. Nothing is deleted.',
+                );
             }
         }
 

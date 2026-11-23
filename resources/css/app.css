@@ -424,6 +424,10 @@
     }
 
     .input {
-        @apply min-h-7.5 min-w-0 rounded-field border border-border-2 bg-bg px-2.5 py-1 text-field text-text transition-colors duration-(--duration-hover) placeholder:text-text-4 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus disabled:opacity-45 aria-invalid:border-danger;
+        @apply min-h-7.5 min-w-0 rounded-field border border-border-3 bg-bg px-2.5 py-0 text-field text-text transition-colors duration-(--duration-hover) placeholder:text-text-4 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus disabled:opacity-45 aria-invalid:border-danger;
+    }
+
+    textarea.input {
+        @apply py-1;
     }
 }

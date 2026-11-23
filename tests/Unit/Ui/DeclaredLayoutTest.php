@@ -48,6 +48,7 @@ final class DeclaredLayoutTest extends TestCase
         $this->assertSame(DeclaredLayoutData::class, $page->dataClass);
         $this->assertSame(DomainUi::DECLARED_LAYOUT, $page->component);
         $this->assertSame('shelf', $page->path);
+
         $this->assertSame(
             ['title', 'books', 'none-lent'],
             array_map(fn (LayoutPartData $part) => $part->key, new ShelfLayoutResolver()->read()->root->children),
@@ -57,6 +58,7 @@ final class DeclaredLayoutTest extends TestCase
     public function test_a_layout_page_whose_reader_returns_other_data_is_refused(): void
     {
         $this->expectException(InvalidPageDeclaration::class);
+
         $this->expectExceptionMessage(
             InvalidPageDeclaration::readerReturnsNoLayout('notes', RecentNotesResolver::class)->getMessage(),
         );
@@ -91,6 +93,7 @@ final class DeclaredLayoutTest extends TestCase
     public function test_a_variant_outside_the_catalogue_is_refused(): void
     {
         $this->expectException(LayoutRefused::class);
+
         $this->expectExceptionMessage(
             LayoutRefused::unknownStyle('root.title', LayoutTag::Text, 'shout')->getMessage(),
         );
@@ -181,6 +184,7 @@ final class DeclaredLayoutTest extends TestCase
         $levels = array_map(fn (int $level) => "level-{$level}", range(LayoutLimits::DEPTH_LIMIT - 1, 0));
 
         $this->expectException(LayoutRefused::class);
+
         $this->expectExceptionMessage(
             LayoutRefused::tooDeep('root.'.implode('.', $levels).'.leaf', LayoutLimits::DEPTH_LIMIT)->getMessage(),
         );
@@ -196,6 +200,7 @@ final class DeclaredLayoutTest extends TestCase
         );
 
         $this->expectException(LayoutRefused::class);
+
         $this->expectExceptionMessage(
             LayoutRefused::tooManyRows('root', count($rows), LayoutLimits::ROW_LIMIT)->getMessage(),
         );
@@ -263,10 +268,12 @@ final class DeclaredLayoutTest extends TestCase
         );
 
         $this->assertSame(['open', 'form'], array_map(fn (LayoutPartData $part) => $part->key, $dialog->children));
+
         $this->assertSame(['title', 'footer'], array_map(
             fn (LayoutPartData $part) => $part->key,
             $dialog->children[1]->children,
         ));
+
         $this->assertGreaterThan(1, $dialog->assertWithinCatalogue());
         $this->assertInstanceOf(Optional::class, $dialog->dialog->undo);
     }

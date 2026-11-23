@@ -33,6 +33,7 @@ final readonly class ChoiceSetting implements OptionSetting
         public string $label,
         public string|int $default,
         public ChoiceOptions $options,
+        public string|null $description = null,
     ) {}
 
     /**
@@ -44,11 +45,16 @@ final readonly class ChoiceSetting implements OptionSetting
      *
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string $key, string $label, string|int $default, array $options): self
-    {
+    public static function make(
+        string $key,
+        string $label,
+        string|int $default,
+        array $options,
+        string|null $description = null,
+    ): self {
         SettingKey::require($key, $label);
 
-        return new self($key, $label, $default, ChoiceOptions::check($key, $options, $default));
+        return new self($key, $label, $default, ChoiceOptions::check($key, $options, $default), $description);
     }
 
     public function key(): string
@@ -59,6 +65,14 @@ final readonly class ChoiceSetting implements OptionSetting
     public function label(): string
     {
         return $this->label;
+    }
+
+    /**
+     * The sentence the settings page shows under the label; null when the label says it all.
+     */
+    public function description(): string|null
+    {
+        return $this->description;
     }
 
     public function type(): SettingType

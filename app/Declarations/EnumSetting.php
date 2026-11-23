@@ -39,6 +39,7 @@ final readonly class EnumSetting implements OptionSetting
         public BackedEnum $default,
         public SettingType $backing,
         public ChoiceOptions $options,
+        public string|null $description = null,
     ) {}
 
     /**
@@ -50,8 +51,13 @@ final readonly class EnumSetting implements OptionSetting
      *
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string $key, string $label, string $enum, BackedEnum $default): self
-    {
+    public static function make(
+        string $key,
+        string $label,
+        string $enum,
+        BackedEnum $default,
+        string|null $description = null,
+    ): self {
         SettingKey::require($key, $label);
 
         $type = Reflector::of($enum);
@@ -70,7 +76,15 @@ final readonly class EnumSetting implements OptionSetting
 
         $options = array_map(fn (BackedEnum $case) => self::choiceOf($case), $enum::cases());
 
-        return new self($key, $label, $enum, $default, $backing, ChoiceOptions::check($key, $options, $default->value));
+        return new self(
+            $key,
+            $label,
+            $enum,
+            $default,
+            $backing,
+            ChoiceOptions::check($key, $options, $default->value),
+            $description,
+        );
     }
 
     public function key(): string
@@ -81,6 +95,14 @@ final readonly class EnumSetting implements OptionSetting
     public function label(): string
     {
         return $this->label;
+    }
+
+    /**
+     * The sentence the settings page shows under the label; null when the label says it all.
+     */
+    public function description(): string|null
+    {
+        return $this->description;
     }
 
     public function type(): SettingType

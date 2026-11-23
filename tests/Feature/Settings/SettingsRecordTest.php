@@ -68,6 +68,7 @@ final class SettingsRecordTest extends TestCase
             '{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null}],"toggles":[]}',
             $this->storedText(),
         );
+
         $this->assertSame(1, SettingsRecord::lockedForOwner('Library')->revision);
 
         $record = SettingsRecord::lockedForOwner('Library');
@@ -77,6 +78,7 @@ final class SettingsRecordTest extends TestCase
             '{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null},{"key":"retry_limit","value":4}],"toggles":[]}',
             $this->storedText(),
         );
+
         $this->assertSame(2, SettingsRecord::lockedForOwner('Library')->revision);
         $this->assertTrue($record->document->setting('retired_key')->isDefined());
         $this->assertTrue($record->document->setting('missing')->isEmpty());
@@ -128,6 +130,7 @@ final class SettingsRecordTest extends TestCase
                 '{"settings":[{"key":"secret_value"',
                 ['owner' => 'Library'],
             );
+
             $this->fail('Text that is not JSON was read.');
         } catch (SettingsDocumentInvalid $invalid) {
             $this->assertSame(SettingsDocumentInvalid::notJson('Library')->getMessage(), $invalid->getMessage());

@@ -40,12 +40,13 @@ use App\Enums\SettingTarget;
 use App\Enums\SettingType;
 use App\Http\Controllers\ResetSettingsPageController;
 use App\Http\Controllers\SaveSettingsPageController;
+use App\Http\Controllers\SwitchSettingsGroupPageController;
 use App\Resolvers\SettingsWindowResolver;
 use App\Support\SettingsOwnerCheck;
 
 /**
  * The page Core's Settings declares, for the owner alone, at /settings: every owner's settings as groups, with saving a
- * group's edited values and resetting its changed ones.
+ * group's edited values, resetting its changed ones and switching a group on or off.
  */
 final class SettingsPages implements NavigationProvider, PageProvider, TypeProvider
 {
@@ -58,6 +59,7 @@ final class SettingsPages implements NavigationProvider, PageProvider, TypeProvi
                 ->actions(
                     ActionRoute::post('save', SaveSettingsPageController::class, 'save'),
                     ActionRoute::post('reset', ResetSettingsPageController::class, 'reset'),
+                    ActionRoute::post('switch', SwitchSettingsGroupPageController::class, 'switch'),
                 ),
         ];
     }

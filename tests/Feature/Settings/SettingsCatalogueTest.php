@@ -51,6 +51,7 @@ final class SettingsCatalogueTest extends TestCase
             ['Reviews', 'Settings', 0],
             [$catalogue['owner'], $catalogue['title'], $catalogue['revision']],
         );
+
         $this->assertSame(['general', 'review'], array_column(array_column($catalogue['groups'], 'identity'), 'key'));
         $this->assertSame(['state' => 'enabled', 'defaultEnabled' => true], $catalogue['groups'][1]['availability']);
         $this->assertSame(['state' => 'always'], $catalogue['groups'][0]['availability']);
@@ -59,20 +60,25 @@ final class SettingsCatalogueTest extends TestCase
             ['retry_limit', 'notify_owner', 'weight', 'summary_style', 'review_mode', 'review_level'],
             array_column(array_column($catalogue['groups'][1]['settings'], 'identity'), 'key'),
         );
+
         $retry = $catalogue['groups'][1]['settings'][0];
+
         $this->assertSame(
             ['integer', 'default', 'available'],
             [$retry['type'], $retry['source'], $retry['availability']],
         );
+
         $this->assertSame(['value' => 3, 'type' => 'integer'], $retry['default']);
         $this->assertSame(['minimum' => 0, 'maximum' => 10, 'type' => 'integer'], $retry['constraints']);
         $this->assertArrayNotHasKey('configured', $retry);
         $this->assertArrayNotHasKey('constraints', $catalogue['groups'][1]['settings'][1]);
         $this->assertSame(['value' => '0.50', 'type' => 'decimal'], $catalogue['groups'][1]['settings'][2]['default']);
+
         $this->assertSame(
             ['precision' => 5, 'scale' => 2, 'type' => 'decimal'],
             $catalogue['groups'][1]['settings'][2]['constraints'],
         );
+
         $this->assertSame('stringChoice', $catalogue['groups'][1]['settings'][4]['constraints']['type']);
         $this->assertSame(['value' => 1, 'type' => 'integerChoice'], $catalogue['groups'][1]['settings'][5]['default']);
         $this->assertSame('integerChoice', $catalogue['groups'][0]['settings'][1]['constraints']['type']);
@@ -88,14 +94,17 @@ final class SettingsCatalogueTest extends TestCase
         $retry = $catalogue['groups'][1]['settings'][0];
         $this->assertSame(1, $catalogue['revision']);
         $this->assertSame(['override', ['type' => 'invalid']], [$retry['source'], $retry['configured']]);
+
         $this->assertSame(
             ['owner' => 'Reviews', 'key' => 'retry_limit', 'canonicalKey' => 'Reviews.retry_limit'],
             $retry['identity'],
         );
+
         $this->assertSame(
             ['value' => 'Weekly', 'type' => 'string'],
             $catalogue['groups'][0]['settings'][0]['configured'],
         );
+
         $this->assertStringNotContainsString(self::SECRET_TEXT, json_encode($catalogue, JSON_THROW_ON_ERROR));
 
         $this->app->make(CommandBus::class)->run(
@@ -130,6 +139,7 @@ final class SettingsCatalogueTest extends TestCase
 
         $review = $this->catalogue('Reviews')['groups'][1];
         $this->assertSame('disabled', $review['availability']['state']);
+
         $this->assertSame(
             ['group_disabled', ['value' => 6, 'type' => 'integer']],
             [$review['settings'][0]['availability'], $review['settings'][0]['configured']],
@@ -144,6 +154,7 @@ final class SettingsCatalogueTest extends TestCase
 
         $review = $this->catalogue('Reviews')['groups'][1];
         $this->assertSame(['state' => 'invalid', 'defaultEnabled' => true], $review['availability']);
+
         $this->assertSame(
             ['group_invalid', ['value' => 6, 'type' => 'integer']],
             [$review['settings'][0]['availability'], $review['settings'][0]['configured']],
@@ -185,6 +196,7 @@ final class SettingsCatalogueTest extends TestCase
     private function assertRefusedWithoutReading(): void
     {
         $refused = false;
+
         $counts = $this->readCounts(function () use (&$refused): void {
             try {
                 $this->catalogue('Reviews');

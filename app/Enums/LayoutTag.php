@@ -71,7 +71,7 @@ enum LayoutTag: string
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'first', 'refusal', 'skeleton', 'stale'],
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],
             self::Field => ['search', 'text', 'secret', 'toggle', 'area', 'choice'],
-            self::Form => ['stack', 'inline'],
+            self::Form => ['stack', 'inline', 'live'],
             self::Tabs => ['tabs'],
             self::Body => ['prose'],
             self::Native => ['native'],

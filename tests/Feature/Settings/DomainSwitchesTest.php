@@ -48,18 +48,22 @@ final class DomainSwitchesTest extends TestCase
         $this->assertContains('domain_tasks', $keys);
         $this->assertContains('domain_plans', $keys);
         $this->assertNotContains('domain_access', $keys);
+
         $this->assertSame(
             [true],
             array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->defaultEnabled, $switches))),
         );
+
         $this->assertSame(
             [[]],
             array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->settings, $switches), SORT_REGULAR)),
         );
+
         $this->assertSame(
             $this->app->make(DomainSwitches::class)->of('Plans')->get(),
             $switches[array_search('domain_plans', $keys, true)],
         );
+
         $this->assertTrue($this->app->make(DomainSwitches::class)->of('Access')->isEmpty());
     }
 
@@ -71,6 +75,7 @@ final class DomainSwitchesTest extends TestCase
 
         $this->assertSame([1, SettingsOutcome::Changed], [$change->revision, $change->outcome]);
         $this->app->forgetScopedInstances();
+
         $this->assertInstanceOf(
             DisabledSettingsGroup::class,
             $this->app->make(SettingsResolver::class)->group(

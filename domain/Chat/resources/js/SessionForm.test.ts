@@ -7,6 +7,7 @@ import type { AgentOptionData } from "@generated/types/chat";
 
 const posted: { url: string; body: Record<string, unknown> }[] = [];
 type PostOptions = {
+  headers?: Record<string, string>;
   onFinish?: () => void;
   onSuccess: (page: { flash: Record<string, unknown> }) => void;
   onError: (errors: Record<string, string>) => void;
@@ -399,6 +400,26 @@ describe("SessionForm", () => {
     expect(
       (form.find('select[id$="-account"]').element as HTMLSelectElement).value,
     ).toBe("ready");
+    form.unmount();
+  });
+
+  it("sends Start again after a refusal as a new start, never as the refused one", async () => {
+    const form = mount(SessionForm, {
+      props: { agent: idle, mode: "start" },
+    });
+    await flushPromises();
+
+    await form.find("form").trigger("submit");
+    const refusedKey = postOptions.at(-1)?.headers?.["Idempotency-Key"];
+    postOptions.at(-1)?.onError({ start: "The host has no folder to start agents in." });
+    await flushPromises();
+
+    await form.find("form").trigger("submit");
+    const retryKey = postOptions.at(-1)?.headers?.["Idempotency-Key"];
+
+    expect(refusedKey).toBeTypeOf("string");
+    expect(retryKey).toBeTypeOf("string");
+    expect(retryKey).not.toBe(refusedKey);
     form.unmount();
   });
 

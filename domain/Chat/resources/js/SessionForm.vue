@@ -211,6 +211,7 @@ function readReceipt(): void {
         refusal.value = [answer.explanation, answer.remedy]
           .filter(Boolean)
           .join(" ");
+        forgetRefusedStart();
 
         return;
       }
@@ -224,6 +225,16 @@ function readReceipt(): void {
         "This start could not be read; check the agent before starting again.";
     },
   );
+}
+
+/**
+ * A refused start is over: its key keeps answering with that refusal, so the next Start, once its cause is fixed, is a
+ * new start under a new key.
+ */
+function forgetRefusedStart(): void {
+  sentRequestId = null;
+  requestId = newRequestId();
+  keepRestoration(null);
 }
 
 const canCancelStart = computed(
@@ -473,6 +484,7 @@ function start(): void {
     },
     onRefused: (reason, field) => {
       progress.value = null;
+      forgetRefusedStart();
 
       if (field !== null && field in fieldIds && reason !== null) {
         if (field === "conversationId") {

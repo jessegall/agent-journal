@@ -11,8 +11,9 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * The settings page shows the owner a group for each settings owner in one column, with the way into the connection
- * window that leads back to its own group, and shows no one else anything.
+ * The settings page shows the owner a section for each settings group in one column under its header, with the
+ * Connected projects switch and the way into the connection window that leads back to its own group, and shows no one
+ * else anything.
  */
 final class SettingsPageTest extends TestCase
 {
@@ -25,13 +26,11 @@ final class SettingsPageTest extends TestCase
 
         $this->actingAs($owner)->get('/settings')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('layout/DeclaredLayout')
-            ->where('page.data.root.style', 'settings-page')
-            ->where('page.data.root.children', fn ($groups) => collect($groups)->contains(
-                fn ($group) => $group['key'] === 'connected-projects'
-                    && str_contains(
-                        $group['children'][1]['children'][1]['children'][1]['action']['href'] ?? '',
-                        'return=',
-                    ),
+            ->where('page.data.root.style', 'page')
+            ->where('page.data.root.children.1.children', fn ($groups) => collect($groups)->contains(
+                fn ($group) => $group['key'] === 'connected_projects'
+                    && str_contains((string) json_encode($group), 'return=')
+                    && str_contains((string) json_encode($group), '"key":"switch"'),
             )));
     }
 

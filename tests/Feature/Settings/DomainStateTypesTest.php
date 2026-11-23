@@ -44,10 +44,12 @@ final class DomainStateTypesTest extends TestCase
 
         $this->assertInstanceOf(DomainStateType::class, $working);
         $this->assertSame('Tasks', $working->owner);
+
         $this->assertSame(
             $this->app->make(WorkingOnTaskStateFactory::class)->schemaVersion(),
             $working->schemaVersion(),
         );
+
         $this->assertNotInstanceOf(ConditionalStateType::class, $types->get('hooks.ready'));
     }
 
@@ -60,6 +62,7 @@ final class DomainStateTypesTest extends TestCase
             DomainTickableStateType::class,
             $types->registry()->get(AwaitingAnswerLoader::TYPE_KEY),
         );
+
         $this->assertTrue($types->ticking()->contains(AwaitingAnswerLoader::TYPE_KEY));
         $this->assertFalse($types->ticking()->contains('tasks.working'));
     }
@@ -76,6 +79,7 @@ final class DomainStateTypesTest extends TestCase
         $this->app->make(CommandBus::class)->run(
             new DisableSettingGroupCommand(new GroupReference('Core', 'domain_tasks'), 0),
         );
+
         $this->app->forgetScopedInstances();
 
         $this->assertFalse($working->isEnabled());

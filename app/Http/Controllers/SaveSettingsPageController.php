@@ -53,7 +53,7 @@ final readonly class SaveSettingsPageController
             }
         }
 
-        return $answers->backWithNotice('Settings saved');
+        return $answers->back();
     }
 
     /**

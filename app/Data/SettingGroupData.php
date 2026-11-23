@@ -23,5 +23,6 @@ final class SettingGroupData extends Data
         public readonly PlainGroupAvailabilityData|ToggleGroupAvailabilityData $availability,
         #[DataCollectionOf(SettingData::class)]
         public readonly array $settings,
+        public readonly string|null $description = null,
     ) {}
 }

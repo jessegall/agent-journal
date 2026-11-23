@@ -15,7 +15,7 @@ const enabled = defineModel<boolean>('enabled', { default: true });
 </script>
 
 <template>
-    <div class="flex items-center justify-between gap-3">
+    <div class="mt-4.5 mb-2 flex min-h-4.5 items-center justify-between gap-3">
         <GroupLabel><slot /></GroupLabel>
         <div class="flex items-center gap-2">
             <slot name="actions" />

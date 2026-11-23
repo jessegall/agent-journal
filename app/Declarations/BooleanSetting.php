@@ -20,16 +20,21 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class BooleanSetting implements Setting
 {
-    private function __construct(public string $key, public string $label, public bool $default) {}
+    private function __construct(
+        public string $key,
+        public string $label,
+        public bool $default,
+        public string|null $description = null,
+    ) {}
 
     /**
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string $key, string $label, bool $default): self
+    public static function make(string $key, string $label, bool $default, string|null $description = null): self
     {
         SettingKey::require($key, $label);
 
-        return new self($key, $label, $default);
+        return new self($key, $label, $default, $description);
     }
 
     public function key(): string
@@ -40,6 +45,14 @@ final readonly class BooleanSetting implements Setting
     public function label(): string
     {
         return $this->label;
+    }
+
+    /**
+     * The sentence the settings page shows under the label; null when the label says it all.
+     */
+    public function description(): string|null
+    {
+        return $this->description;
     }
 
     public function type(): SettingType

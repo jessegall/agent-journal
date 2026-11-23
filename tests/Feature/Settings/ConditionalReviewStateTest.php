@@ -77,6 +77,7 @@ final class ConditionalReviewStateTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
         $this->target = TestActors::stack(1, 10);
+
         $this->app->instance(
             AgentContext::class,
             new AgentContext(
@@ -86,6 +87,7 @@ final class ConditionalReviewStateTest extends TestCase
                 null,
             ),
         );
+
         $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->open($this->target));
     }
 
@@ -166,6 +168,7 @@ final class ConditionalReviewStateTest extends TestCase
     private function switchReview(bool $off, int $expectedRevision): void
     {
         $commands = new RegisteredSettingCommands($this->app->make(SettingRegistry::class), new CatalogueReflectorFactory());
+
         $command = $off ? $commands->disable(
             $this->reviews->review,
             $expectedRevision,

@@ -100,6 +100,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         return SettingGroupData::from([
             'identity' => $this->identity($owner, $group->key()),
             'label' => $group->label(),
+            'description' => $group->description(),
             'availability' => $availability,
             'settings' => array_map(
                 fn (Setting $setting) => $this->setting($owner, $setting, $state, $document),
@@ -135,6 +136,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         return SettingData::from([
             'identity' => $this->identity($owner, $setting->key()),
             'label' => $setting->label(),
+            'description' => $setting->description(),
             'type' => $setting->type(),
             'source' => $stored->isDefined() ? SettingSource::Override : SettingSource::Default,
             'availability' => match ($groupState) {

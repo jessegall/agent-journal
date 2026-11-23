@@ -15,8 +15,9 @@ use Spatie\LaravelData\Optional;
 use Tests\TestCase;
 
 /**
- * The shared settings recipe: groups in the order given, editable and read-only rows, block rows, and a Reset form
- * that carries the revision it was read at, with an Undo only where an inverse is declared.
+ * The shared settings recipe: a header, then groups in the order given, editable rows that send themselves and
+ * read-only rows, block rows, a switch beside a heading, and a Reset form that carries the revision it was read at,
+ * with an Undo only where an inverse is declared.
  */
 final class SettingsPageTest extends TestCase
 {
@@ -36,17 +37,21 @@ final class SettingsPageTest extends TestCase
             ),
         )->layout()->root;
 
-        $this->assertSame(['general', 'profile'], $this->keysOf($root->children));
+        $this->assertSame(['header', 'settings-page'], $this->keysOf($root->children));
 
-        $form = $root->children[0]->children[2]->children[0];
+        $groups = $root->children[1]->children;
+
+        $this->assertSame(['general', 'profile'], $this->keysOf($groups));
+
+        $form = $groups[0]->children[2]->children[0];
 
         $this->assertSame('form', $form->key);
-        $this->assertSame(['row-name', 'row-on', 'row-version', 'save-row'], $this->keysOf($form->children));
+        $this->assertSame('live', $form->style);
+        $this->assertSame(['row-name', 'row-on', 'row-version'], $this->keysOf($form->children));
         $this->assertSame('toggle', $form->children[1]->children[1]->style);
         $this->assertSame('changed', $form->children[0]->children[2]->key);
-        $this->assertSame('settings-footer', $form->children[3]->style);
 
-        $blocks = $root->children[1]->children[1]->children;
+        $blocks = $groups[1]->children[1]->children;
 
         $this->assertSame('setting-block', $blocks[0]->style);
         $this->assertSame('setting-block', $blocks[1]->style);
@@ -58,6 +63,7 @@ final class SettingsPageTest extends TestCase
     {
         $plain = SettingsGroup::make('tasks', 'Tasks')->part();
         $undo = new LayoutFormData(ActionMethod::Post, '/settings/tasks/restore', ['revision' => 6]);
+
         $reset = new LayoutFormData(
             ActionMethod::Post,
             '/settings/tasks/reset',
@@ -68,11 +74,25 @@ final class SettingsPageTest extends TestCase
 
         $resettable = SettingsGroup::make('tasks', 'Tasks')->resettableBy($reset)->part();
 
-        $this->assertSame(['title', 'rows'], $this->keysOf($plain->children));
-        $this->assertSame(['title', 'reset', 'rows'], $this->keysOf($resettable->children));
+        $this->assertSame(['title'], $this->keysOf($plain->children));
+        $this->assertSame(['title', 'reset'], $this->keysOf($resettable->children));
         $this->assertSame(5, $resettable->children[1]->form->fixed['revision']);
         $this->assertSame(6, $resettable->children[1]->form->undo->fixed['revision']);
         $this->assertInstanceOf(Optional::class, $undo->undo);
+    }
+
+    public function test_a_switched_group_draws_its_switch_beside_its_heading_as_a_form_that_sends_itself(): void
+    {
+        $switch = new LayoutFormData(ActionMethod::Post, '/settings/switch', ['group' => 'domain_tasks']);
+
+        $group = SettingsGroup::make('domain_tasks', 'Tasks', 'When off, its pages are hidden.')
+            ->switchedBy($switch, new LayoutFieldData('enabled', '1'))
+            ->part();
+
+        $this->assertSame(['title', 'help', 'switch'], $this->keysOf($group->children));
+        $this->assertSame('live', $group->children[2]->style);
+        $this->assertSame('toggle', $group->children[2]->children[0]->style);
+        $this->assertSame('domain_tasks', $group->children[2]->form->fixed['group']);
     }
 
     /**

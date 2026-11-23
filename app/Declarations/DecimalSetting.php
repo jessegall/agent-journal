@@ -39,6 +39,7 @@ final readonly class DecimalSetting implements Setting
         public int $scale,
         public Decimal|null $minimum,
         public Decimal|null $maximum,
+        public string|null $description = null,
     ) {}
 
     /**
@@ -52,6 +53,7 @@ final readonly class DecimalSetting implements Setting
         int $scale,
         Decimal|null $minimum = null,
         Decimal|null $maximum = null,
+        string|null $description = null,
     ): self {
         SettingKey::require($key, $label);
 
@@ -67,7 +69,7 @@ final readonly class DecimalSetting implements Setting
             throw SettingDeclarationInvalid::badBounds($key);
         }
 
-        $setting = new self($key, $label, $default, $precision, $scale, $minimum, $maximum);
+        $setting = new self($key, $label, $default, $precision, $scale, $minimum, $maximum, $description);
 
         try {
             $normalizedDefault = $setting->normalized($default);
@@ -75,7 +77,7 @@ final readonly class DecimalSetting implements Setting
             throw SettingDeclarationInvalid::defaultOutOfBounds($key, previous: $cause);
         }
 
-        return new self($key, $label, $normalizedDefault, $precision, $scale, $minimum, $maximum);
+        return new self($key, $label, $normalizedDefault, $precision, $scale, $minimum, $maximum, $description);
     }
 
     public function key(): string
@@ -86,6 +88,14 @@ final readonly class DecimalSetting implements Setting
     public function label(): string
     {
         return $this->label;
+    }
+
+    /**
+     * The sentence the settings page shows under the label; null when the label says it all.
+     */
+    public function description(): string|null
+    {
+        return $this->description;
     }
 
     public function type(): SettingType

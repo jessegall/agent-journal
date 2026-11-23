@@ -31,10 +31,12 @@ const cardTitle = computed(() => {
     return head?.children.find((child) => child.key === 'title')?.text ?? undefined;
 });
 const readerSlots = new Set(['title', 'metadata', 'abstract', 'actions']);
-const sectionSlots = new Set(['title', 'help', 'reset']);
+const sectionSlots = new Set(['title', 'help', 'reset', 'switch']);
 const rowSlots = new Set(['title', 'hint']);
 const sectionBody = computed(() => props.part.children.filter((child) => !sectionSlots.has(child.key)));
-const sectionActions = computed(() => props.part.children.filter((child) => child.key === 'reset'));
+const sectionActions = computed(() =>
+    props.part.children.filter((child) => child.key === 'reset' || child.key === 'switch'),
+);
 const rowControl = computed(() => props.part.children.filter((child) => !rowSlots.has(child.key)));
 const readerBody = computed(() => props.part.children.filter((child) => !readerSlots.has(child.key)));
 // A page that holds nothing yet: its subject's icon on a tile, the title, one sentence and the action that makes the
@@ -113,7 +115,7 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
             </Card>
         </template>
         <template #settings-page>
-            <div data-layout-box="settings-page" class="flex w-full max-w-180 flex-col">
+            <div data-layout-box="settings-page" class="w-full max-w-180 px-6 py-5">
                 <template v-for="child in part.children" :key="child.key">
                     <LayoutPart :part="child" />
                 </template>

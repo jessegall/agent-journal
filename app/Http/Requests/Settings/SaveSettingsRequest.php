@@ -7,12 +7,12 @@ namespace App\Http\Requests\Settings;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * One owner's settings sent from the settings page: the owner, the revision they were read at, and each setting's
- * new value by its key.
+ * One group's settings sent from the settings page: the owner, the group, the revision they were read at, and each
+ * setting's new value by its key.
  */
 final class SaveSettingsRequest extends FormRequest
 {
-    private const array RESERVED = ['owner', 'revision'];
+    private const array RESERVED = ['owner', 'group', 'revision'];
 
     /**
      * @return array<string, list<string>>

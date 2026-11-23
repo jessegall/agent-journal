@@ -34,9 +34,15 @@ final class CoreSettings implements SettingsDefinition
             default: 'Journal',
             minimumLength: 1,
             maximumLength: 200,
+            description: 'Shown at the top of every page and in the browser tab.',
         );
 
-        $this->general = SettingGroup::make('general', 'General', [$this->displayName]);
+        $this->general = SettingGroup::make(
+            'general',
+            'General',
+            [$this->displayName],
+            'What this journal is called.',
+        );
 
         $this->remoteProjects = BooleanSetting::make(
             key: 'remote_projects',
@@ -48,6 +54,7 @@ final class CoreSettings implements SettingsDefinition
             'connected_projects',
             'Connected projects',
             [$this->remoteProjects],
+            'Let projects on other computers connect to this journal.',
         );
     }
 

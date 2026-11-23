@@ -6074,6 +6074,7 @@ class	SettingsDocumentCast
 class	SettingsDocumentInvalid
 class	SettingsDomainAvailability
 class	SettingsGroup
+class	SettingsGroupRequest
 class	SettingsIndex
 class	SettingsOwnerCheck
 class	SettingsOwnerUnknown
@@ -6793,6 +6794,8 @@ class	SwitchAgentDriverController
 class	SwitchAgentDriverHandler
 class	SwitchAgentDriverRequest
 class	SwitchEvidence
+class	SwitchSettingsGroupPageController
+class	SwitchSettingsGroupRequest
 class	SyntaxOrigin
 class	SystemActor
 class	SystemActorRequired
@@ -8159,6 +8162,7 @@ constant	SettingRegistry::CORE
 constant	SettingRegistry::GROUPS_PER_OWNER
 constant	SettingRegistry::SETTINGS_PER_OWNER
 constant	SettingsDocument::MOST_BYTES
+constant	SettingsIndex::DOMAIN_SWITCH
 constant	SettingsIndex::ORDER
 constant	SettleFrameTimesCommand::MAINTENANCE_SCOPE
 constant	SettleMergeOutcomesCommand::MAINTENANCE_SCOPE
@@ -11186,6 +11190,7 @@ method	BooleanSetting::__construct()
 method	BooleanSetting::catalogueConstraints()
 method	BooleanSetting::catalogueValue()
 method	BooleanSetting::defaultValue()
+method	BooleanSetting::description()
 method	BooleanSetting::key()
 method	BooleanSetting::label()
 method	BooleanSetting::make()
@@ -11856,6 +11861,7 @@ method	ChoiceSetting::accepts()
 method	ChoiceSetting::catalogueConstraints()
 method	ChoiceSetting::catalogueValue()
 method	ChoiceSetting::defaultValue()
+method	ChoiceSetting::description()
 method	ChoiceSetting::key()
 method	ChoiceSetting::label()
 method	ChoiceSetting::make()
@@ -13253,6 +13259,7 @@ method	DecimalSetting::__construct()
 method	DecimalSetting::catalogueConstraints()
 method	DecimalSetting::catalogueValue()
 method	DecimalSetting::defaultValue()
+method	DecimalSetting::description()
 method	DecimalSetting::key()
 method	DecimalSetting::label()
 method	DecimalSetting::make()
@@ -14783,6 +14790,7 @@ method	EnumSetting::catalogueConstraints()
 method	EnumSetting::catalogueValue()
 method	EnumSetting::choiceOf()
 method	EnumSetting::defaultValue()
+method	EnumSetting::description()
 method	EnumSetting::key()
 method	EnumSetting::label()
 method	EnumSetting::make()
@@ -15503,6 +15511,7 @@ method	Group::__construct()
 method	Group::children()
 method	Group::key()
 method	Group::type()
+method	GroupDeclaration::description()
 method	GroupDeclaration::key()
 method	GroupDeclaration::label()
 method	GroupDeclaration::settings()
@@ -16243,6 +16252,7 @@ method	IntegerSetting::accepts()
 method	IntegerSetting::catalogueConstraints()
 method	IntegerSetting::catalogueValue()
 method	IntegerSetting::defaultValue()
+method	IntegerSetting::description()
 method	IntegerSetting::key()
 method	IntegerSetting::label()
 method	IntegerSetting::make()
@@ -23480,6 +23490,7 @@ method	SetStringSettingHandler::handle()
 method	Setting::catalogueConstraints()
 method	Setting::catalogueValue()
 method	Setting::defaultValue()
+method	Setting::description()
 method	Setting::key()
 method	Setting::label()
 method	Setting::type()
@@ -23534,6 +23545,7 @@ method	SettingDeclarationInvalid::tooManyGroups()
 method	SettingDeclarationInvalid::tooManySettings()
 method	SettingDisabled::for()
 method	SettingGroup::__construct()
+method	SettingGroup::description()
 method	SettingGroup::key()
 method	SettingGroup::label()
 method	SettingGroup::make()
@@ -23582,6 +23594,7 @@ method	SettingsCatalogueData::declaresSettings()
 method	SettingsChange::__construct()
 method	SettingsChanged::__construct()
 method	SettingsConflict::for()
+method	SettingsConflict::refusalCode()
 method	SettingsDefinition::groups()
 method	SettingsDocument::__construct()
 method	SettingsDocument::empty()
@@ -23614,14 +23627,23 @@ method	SettingsGroup::make()
 method	SettingsGroup::part()
 method	SettingsGroup::resettableBy()
 method	SettingsGroup::savingTo()
+method	SettingsGroup::switchedBy()
 method	SettingsGroup::withRows()
+method	SettingsGroupRequest::expectedRevision()
+method	SettingsGroupRequest::group()
+method	SettingsGroupRequest::owner()
+method	SettingsGroupRequest::rules()
 method	SettingsIndex::__construct()
-method	SettingsIndex::connectedProjects()
-method	SettingsIndex::groupOf()
+method	SettingsIndex::connectionRows()
+method	SettingsIndex::isOn()
+method	SettingsIndex::isSwitched()
 method	SettingsIndex::layout()
 method	SettingsIndex::optionsOf()
 method	SettingsIndex::rank()
 method	SettingsIndex::rowOf()
+method	SettingsIndex::saving()
+method	SettingsIndex::sectionOf()
+method	SettingsIndex::switchTextOf()
 method	SettingsOwnerCheck::__construct()
 method	SettingsOwnerCheck::allows()
 method	SettingsOwnerUnknown::for()
@@ -25883,6 +25905,7 @@ method	StringSetting::accepts()
 method	StringSetting::catalogueConstraints()
 method	StringSetting::catalogueValue()
 method	StringSetting::defaultValue()
+method	StringSetting::description()
 method	StringSetting::key()
 method	StringSetting::label()
 method	StringSetting::make()
@@ -26064,6 +26087,9 @@ method	SwitchEvidence::__construct()
 method	SwitchEvidence::isUnderWay()
 method	SwitchEvidence::of()
 method	SwitchEvidence::operation()
+method	SwitchSettingsGroupPageController::__invoke()
+method	SwitchSettingsGroupRequest::isOn()
+method	SwitchSettingsGroupRequest::rules()
 method	SyntaxForm::isStatement()
 method	SyntaxForm::isStatementBoundary()
 method	SyntaxOrigin::__construct()
@@ -26962,6 +26988,7 @@ method	Title::children()
 method	Title::key()
 method	Title::type()
 method	ToggleGroup::__construct()
+method	ToggleGroup::description()
 method	ToggleGroup::key()
 method	ToggleGroup::label()
 method	ToggleGroup::make()
@@ -32116,6 +32143,7 @@ property	BooleanOperand::$isNegated
 property	BooleanOperand::$member
 property	BooleanOperand::$object
 property	BooleanSetting::$default
+property	BooleanSetting::$description
 property	BooleanSetting::$key
 property	BooleanSetting::$label
 property	BooleanValueData::$enabled
@@ -32553,6 +32581,7 @@ property	ChoiceOption::$label
 property	ChoiceOption::$startsOn
 property	ChoiceOptions::$options
 property	ChoiceSetting::$default
+property	ChoiceSetting::$description
 property	ChoiceSetting::$key
 property	ChoiceSetting::$label
 property	ChoiceSetting::$options
@@ -33302,6 +33331,7 @@ property	DecimalConstraintsData::$precision
 property	DecimalConstraintsData::$scale
 property	DecimalConstraintsData::$type
 property	DecimalSetting::$default
+property	DecimalSetting::$description
 property	DecimalSetting::$key
 property	DecimalSetting::$label
 property	DecimalSetting::$maximum
@@ -34209,6 +34239,7 @@ property	EnumField::$enum
 property	EnumField::$name
 property	EnumSetting::$backing
 property	EnumSetting::$default
+property	EnumSetting::$description
 property	EnumSetting::$enum
 property	EnumSetting::$key
 property	EnumSetting::$label
@@ -35038,6 +35069,7 @@ property	IntegerConstraintsData::$maximum
 property	IntegerConstraintsData::$minimum
 property	IntegerConstraintsData::$type
 property	IntegerSetting::$default
+property	IntegerSetting::$description
 property	IntegerSetting::$key
 property	IntegerSetting::$label
 property	IntegerSetting::$maximum
@@ -39779,14 +39811,17 @@ property	SettingData::$availability
 property	SettingData::$configured
 property	SettingData::$constraints
 property	SettingData::$default
+property	SettingData::$description
 property	SettingData::$identity
 property	SettingData::$label
 property	SettingData::$source
 property	SettingData::$type
+property	SettingGroup::$description
 property	SettingGroup::$key
 property	SettingGroup::$label
 property	SettingGroup::$settings
 property	SettingGroupData::$availability
+property	SettingGroupData::$description
 property	SettingGroupData::$identity
 property	SettingGroupData::$label
 property	SettingGroupData::$settings
@@ -39825,10 +39860,12 @@ property	SettingsGroup::$key
 property	SettingsGroup::$reset
 property	SettingsGroup::$rows
 property	SettingsGroup::$save
+property	SettingsGroup::$switch
 property	SettingsGroup::$title
 property	SettingsIndex::$actors
 property	SettingsIndex::$catalogue
 property	SettingsIndex::$connections
+property	SettingsIndex::$core
 property	SettingsOwnerCheck::$policy
 property	SettingsPage::$groups
 property	SettingsRow::$control
@@ -41110,6 +41147,7 @@ property	StringConstraintsData::$maximumLength
 property	StringConstraintsData::$minimumLength
 property	StringConstraintsData::$type
 property	StringSetting::$default
+property	StringSetting::$description
 property	StringSetting::$key
 property	StringSetting::$label
 property	StringSetting::$maximumLength
@@ -41761,6 +41799,7 @@ property	TimingVerdict::$unfinishedTasks
 property	Title::$key
 property	Title::$text
 property	ToggleGroup::$defaultEnabled
+property	ToggleGroup::$description
 property	ToggleGroup::$key
 property	ToggleGroup::$label
 property	ToggleGroup::$settings
@@ -42918,9 +42957,7 @@ variable	$handlerEntries
 variable	$handlers
 variable	$handles
 variable	$handsOff
-variable	$hasChange
 variable	$hasDisallowedEntry
-variable	$hasEditable
 variable	$hasEnded
 variable	$hasGuardName
 variable	$hasMore
@@ -43047,6 +43084,7 @@ variable	$isClosure
 variable	$isComparison
 variable	$isConcreteCommand
 variable	$isConcreteEvent
+variable	$isConnections
 variable	$isCoreBase
 variable	$isCoreListener
 variable	$isCurrent
@@ -44108,6 +44146,7 @@ variable	$title
 variable	$titles
 variable	$to
 variable	$toPath
+variable	$toggle
 variable	$token
 variable	$tokens
 variable	$tone

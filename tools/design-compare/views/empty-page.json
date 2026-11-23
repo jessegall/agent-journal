@@ -1,0 +1,16 @@
+{
+    "name": "empty-page",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "design": {
+        "url": "docs/designs/home-v6/index.html",
+        "steps": [{"evaluate": "document.getElementById('emptyBtn').click()"}, {"click": "role=button[name='Documents']"}],
+        "part": ".emptyfull"
+    },
+    "app": {
+        "url": "http://localhost:54700/login",
+        "steps": [{"login": "owner@journal.local"}, {"goto": "http://localhost:54700/documents"}],
+        "part": "[data-layout-box='page-empty']"
+    }
+}

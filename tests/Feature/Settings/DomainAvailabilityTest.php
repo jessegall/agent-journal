@@ -47,6 +47,7 @@ final class DomainAvailabilityTest extends TestCase
 
         $this->switchOff('domain_tasks');
         $plans = $this->domainStatus('Plans');
+
         $this->assertSame(
             [true, false, ['Tasks']],
             [$plans->switchedOn, $plans->available, $plans->unavailableRequirements],

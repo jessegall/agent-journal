@@ -17,6 +17,11 @@ interface GroupDeclaration
     public function label(): string;
 
     /**
+     * The sentence the settings page shows under the group's heading; null when the heading says it all.
+     */
+    public function description(): string|null;
+
+    /**
      * @return list<Setting>
      */
     public function settings(): array;

@@ -19,6 +19,11 @@ interface Setting
 
     public function label(): string;
 
+    /**
+     * The sentence the settings page shows under the label; null when the label says it all.
+     */
+    public function description(): string|null;
+
     public function type(): SettingType;
 
     /**
