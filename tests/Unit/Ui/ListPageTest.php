@@ -182,7 +182,7 @@ final class ListPageTest extends TestCase
             ->layout()->root->children[1];
 
         $this->assertSame(430, $index->split->listWidth);
-        $this->assertSame(ReaderWidth::Unrestricted, $index->split->readerWidth);
+        $this->assertSame(ReaderWidth::Standard, $index->split->readerWidth);
         $this->assertSame(NarrowView::List, $index->split->narrowShows);
         $this->assertInstanceOf(Optional::class, $index->split->back);
         $this->assertSame(NarrowView::Reader, $record->split->narrowShows);

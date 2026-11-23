@@ -44,7 +44,7 @@ const rowClass = computed(() => [
                 ></span>
             </template>
             <template v-if="item.icon !== undefined">
-                <Icon :name="item.icon" :size="14" />
+                <Icon :name="item.icon" :size="16" />
             </template>
             <template v-if="!isMini">
                 <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
@@ -63,7 +63,7 @@ const rowClass = computed(() => [
             aria-disabled="true"
         >
             <template v-if="item.icon !== undefined">
-                <Icon :name="item.icon" :size="14" />
+                <Icon :name="item.icon" :size="16" />
             </template>
             <template v-if="!isMini">
                 <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>

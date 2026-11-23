@@ -1,0 +1,16 @@
+{
+    "name": "sidebar",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "design": {
+        "url": "docs/designs/home-v6/index.html",
+        "steps": [],
+        "part": ".side"
+    },
+    "app": {
+        "url": "http://localhost:54700/login",
+        "steps": [{"login": "owner@journal.local"}, {"goto": "http://localhost:54700/tasks"}],
+        "part": "aside"
+    }
+}
