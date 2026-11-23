@@ -32,7 +32,7 @@ final readonly class JournalVisibility implements ActorVisibilityProvider
         throw CrossOwnerReadRefused::forActor('journal');
     }
 
-    public function readsAcrossOwners(): bool
+    public function canReadAcrossOwners(): bool
     {
         return false;
     }

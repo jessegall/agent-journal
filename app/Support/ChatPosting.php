@@ -91,7 +91,7 @@ final readonly class ChatPosting
         $author = $command->dispatchedBy();
         $identity = ActorIdentity::of($author);
 
-        $answers = $parent->needsReply()
+        $answers = $parent->awaitsReply()
             && ! $parent->isWrittenBy($identity)
             && $parent->mayBeSettledBy($identity);
 

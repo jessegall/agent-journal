@@ -45,7 +45,7 @@ final readonly class RequireMessageAnswerHandler implements CommandHandler
             throw ChatMessageRefused::conversion($message->id);
         }
 
-        if ($message->needsReply()) {
+        if ($message->awaitsReply()) {
             return;
         }
 

@@ -77,7 +77,7 @@ final readonly class AnsweringMessageStateFactory implements StateLoader
         $message = $claim === null ? null : $messages->get($claim->record->id);
         $proof = $proofs[$subject->id] ?? null;
 
-        $stands = $claim !== null && $message !== null && $message->needsReply()
+        $stands = $claim !== null && $message !== null && $message->awaitsReply()
             && $proof?->isValidAgainst($claim->holder(), $liveHolders) === true;
 
         return new AnsweringMessageState($claim?->record->id ?? $subject->id, $stands);

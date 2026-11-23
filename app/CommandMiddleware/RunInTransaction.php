@@ -104,7 +104,7 @@ final readonly class RunInTransaction implements CommandMiddleware
      */
     private function attempt(CommandCall $call, Closure $next, OperationDeadline $deadline): mixed
     {
-        $isolation = $call->needsRepeatableRead() ? self::REPEATABLE_READ : self::READ_COMMITTED;
+        $isolation = $call->isRepeatableReadNeeded() ? self::REPEATABLE_READ : self::READ_COMMITTED;
         $this->database->beginTransaction();
 
         return $this->lifecycle->own(
@@ -142,7 +142,7 @@ final readonly class RunInTransaction implements CommandMiddleware
      */
     private function requireJoinable(CommandCall $call): string
     {
-        $needed = $call->needsRepeatableRead() ? self::REPEATABLE_READ : self::READ_COMMITTED;
+        $needed = $call->isRepeatableReadNeeded() ? self::REPEATABLE_READ : self::READ_COMMITTED;
         $open = $this->running->isolation() ?? (string) $this->database->scalar('SHOW transaction_isolation');
 
         if (! $this->running->isRunning() && $this->openTransactionHasNoLimits()) {

@@ -33,7 +33,7 @@ final readonly class UserVisibility implements ActorVisibilityProvider
         $query->withoutGlobalScope($scope);
     }
 
-    public function readsAcrossOwners(): bool
+    public function canReadAcrossOwners(): bool
     {
         return true;
     }

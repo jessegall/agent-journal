@@ -34,7 +34,7 @@ final readonly class IssueQuestionNotifications implements Listener
     {
         $message = Message::query()->acrossInboxes()->findOrFail($fact->messageId);
 
-        if (! $message->needsReply()) {
+        if (! $message->awaitsReply()) {
             return;
         }
 

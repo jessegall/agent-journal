@@ -7,9 +7,9 @@ namespace Domain\Documents\Tests\Feature;
 use App\Contracts\Files\Files;
 use App\Exceptions\FileMissing;
 use Domain\Documents\Console\Concerns\ReadsRecordBody;
+use Domain\Documents\Tests\TestCase;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Kernel;
-use Tests\TestCase;
 
 /**
  * A document's text named by --file is read on the agent's side; a file that is not there fails with that reason, not

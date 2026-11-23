@@ -158,11 +158,11 @@ final class ActorProviderRegistry implements
         Container::getInstance()->make($providerClass)->readAcrossOwners($query, $scope);
     }
 
-    public function readsAcrossOwners(): bool
+    public function canReadAcrossOwners(): bool
     {
         $type = Container::getInstance()->make(CurrentActor::class)->actor()->actorType();
 
-        return Container::getInstance()->make($this->visibilityProviders->get($type->value))->readsAcrossOwners();
+        return Container::getInstance()->make($this->visibilityProviders->get($type->value))->canReadAcrossOwners();
     }
 
     /**

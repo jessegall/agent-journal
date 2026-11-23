@@ -21,6 +21,8 @@ final class ClaudeSecretSignInTest extends TestCase
 {
     private const string INVALID_KEY_REPLY = 'Invalid API key · Fix external API key';
 
+    private const string BROKEN_SETTINGS = '{"theme": "dark",';
+
     private string $directory;
 
     protected function setUp(): void
@@ -93,13 +95,13 @@ final class ClaudeSecretSignInTest extends TestCase
 
     public function test_a_settings_file_that_is_not_json_is_kept_and_refuses_the_change(): void
     {
-        file_put_contents($this->directory.'/settings.json', '{"theme": "dark",');
+        file_put_contents($this->directory.'/settings.json', self::BROKEN_SETTINGS);
 
         try {
             $this->app->make(ClaudeKeySignIn::class)->signOut($this->directory);
             $this->fail('An unreadable settings file was overwritten.');
         } catch (FileJsonInvalid) {
-            $this->assertSame('{"theme": "dark",', file_get_contents($this->directory.'/settings.json'));
+            $this->assertSame(self::BROKEN_SETTINGS, file_get_contents($this->directory.'/settings.json'));
         }
     }
 

@@ -230,7 +230,7 @@ final class Host extends Model implements ReadableModel
     /**
      * Whether a browser may take control of this host's terminals; a host that never said so is watch-only.
      */
-    public function carriesOutBrowserInput(): bool
+    public function canCarryOutBrowserInput(): bool
     {
         return $this->browser_input;
     }

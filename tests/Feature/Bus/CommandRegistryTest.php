@@ -82,7 +82,7 @@ final class CommandRegistryTest extends TestCase
         $this->assertSame('Shop', $registry->ownerOf(AddItemCommand::class));
         $this->assertTrue($registry->isExported(AddItemCommand::class));
         $this->assertFalse($registry->isExported(RemoveItemCommand::class));
-        $this->assertTrue($registry->needsRepeatableRead(AddItemCommand::class));
+        $this->assertTrue($registry->isRepeatableReadNeeded(AddItemCommand::class));
         $this->assertEquals(
             new Authorize(FixturePolicy::class, AccessType::Create),
             $registry->authorizeOf(AddItemCommand::class),

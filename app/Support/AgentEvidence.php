@@ -45,7 +45,7 @@ final readonly class AgentEvidence
     /**
      * Whether the viewer has not dismissed the refusal of the agent's latest launch.
      */
-    public function showsLaunchRefusal(): bool
+    public function isLaunchRefusalShown(): bool
     {
         return $this->launch?->disposition === StartDisposition::Refused;
     }

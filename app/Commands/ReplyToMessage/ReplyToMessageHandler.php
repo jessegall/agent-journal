@@ -62,7 +62,7 @@ final readonly class ReplyToMessageHandler implements CommandHandler
         $original->acknowledge($membership, $now);
         $reply = $this->sending->reply($original, $command->body, $command->dispatchedBy());
 
-        if ($original->needsReply()) {
+        if ($original->awaitsReply()) {
             $this->answers->answer($original, $reply, ActorIdentity::of($command->dispatchedBy()), $now);
         }
 

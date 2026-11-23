@@ -37,7 +37,7 @@ final readonly class SequenceRunWindowResolver implements PageResolver
             throw new NotFoundHttpException(previous: $missing);
         }
 
-        if (! $this->visibility->readsAcrossOwners() || $run->actor_id === null) {
+        if (! $this->visibility->canReadAcrossOwners() || $run->actor_id === null) {
             return $this->page->of($run);
         }
 

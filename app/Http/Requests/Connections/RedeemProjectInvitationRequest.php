@@ -20,7 +20,7 @@ final class RedeemProjectInvitationRequest extends FormRequest
      */
     public function authorize(ServerOrigin $origin): bool
     {
-        return $this->isSecure() || $origin->admitsPlainHttp();
+        return $this->isSecure() || $origin->canTakePlainHttp();
     }
 
     /**

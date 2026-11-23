@@ -32,7 +32,7 @@ final readonly class AgentVisibility implements ActorVisibilityProvider
         throw CrossOwnerReadRefused::forActor(ActorType::Agent->value);
     }
 
-    public function readsAcrossOwners(): bool
+    public function canReadAcrossOwners(): bool
     {
         return false;
     }

@@ -350,7 +350,7 @@ final readonly class SpeechAllowance
 
     private function isAskedOf(Message $userMessage, ActorIdentity $agent, int $agentCount): bool
     {
-        if (! $userMessage->needsReply()) {
+        if (! $userMessage->awaitsReply()) {
             return false;
         }
 

@@ -36,7 +36,7 @@ final readonly class MessageClaimProvider implements AssignableProvider
     {
         $over = array_filter(
             $records,
-            fn (Assignable $message) => $message instanceof Message && ! $message->needsReply(),
+            fn (Assignable $message) => $message instanceof Message && ! $message->awaitsReply(),
         );
 
         return array_values(array_map(fn (Assignable $message) => $message->assignmentIdentity(), $over));

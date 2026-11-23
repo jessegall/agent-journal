@@ -107,7 +107,7 @@ final readonly class CommandRegistry
         return $this->entry($command)->exported;
     }
 
-    public function needsRepeatableRead(string $command): bool
+    public function isRepeatableReadNeeded(string $command): bool
     {
         return $this->entry($command)->repeatableRead;
     }

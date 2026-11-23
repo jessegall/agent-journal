@@ -10,7 +10,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * The parts of a hook's tool call the relay judges without the journal: the tool, its arguments as the driver sent
- * them, and the folder its relative paths are read from, the file system root when the driver named none.
+ * them, and the folder its relative paths are read from, the file system root when the driver named none. A hook
+ * that is no tool call, such as a Stop, names no tool.
  */
 #[MapInputName(SnakeCaseMapper::class)]
 final class RelayedToolCall extends Data
@@ -19,7 +20,7 @@ final class RelayedToolCall extends Data
      * @param  array<array-key, mixed>  $toolInput
      */
     public function __construct(
-        public readonly array $toolInput,
+        public readonly array $toolInput = [],
         public readonly string $cwd = '/',
         public readonly string|null $toolName = null,
     ) {}

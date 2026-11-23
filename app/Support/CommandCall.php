@@ -76,7 +76,7 @@ final readonly class CommandCall
         return $this->exported;
     }
 
-    public function needsRepeatableRead(): bool
+    public function isRepeatableReadNeeded(): bool
     {
         return $this->repeatableRead;
     }

@@ -130,7 +130,7 @@ final readonly class MessageReading
             $shown = ! $membership->actor->type->isAgent()
                 && $this->present($message, $membership->interval(), $now);
 
-            $takenUp = $message->needsReply()
+            $takenUp = $message->awaitsReply()
                 && $this->speech->claimOnTakeUp($message, $membership->actor, $membership->interval(), $now);
 
             return new MessageReadResult($message->id, $shown, $takenUp);
@@ -138,7 +138,7 @@ final readonly class MessageReading
 
         $firstRead = $message->acknowledge($membership, $now);
 
-        $takenUp = $message->needsReply() && ! $held;
+        $takenUp = $message->awaitsReply() && ! $held;
 
         if ($takenUp) {
             $this->takeUp($message, $membership);

@@ -409,7 +409,7 @@ final class AgentStatusRules
     ): AgentStatus {
         $commandOutcome = self::commandOutcomeOf($evidence);
 
-        $dismiss = $commandOutcome !== null && $evidence->showsLaunchRefusal()
+        $dismiss = $commandOutcome !== null && $evidence->isLaunchRefusalShown()
             ? [StatusAction::of(StatusActionType::Dismiss)]
             : [];
 
@@ -440,6 +440,6 @@ final class AgentStatusRules
             return 'Switch refused';
         }
 
-        return $evidence->showsLaunchRefusal() ? 'Start refused' : null;
+        return $evidence->isLaunchRefusalShown() ? 'Start refused' : null;
     }
 }

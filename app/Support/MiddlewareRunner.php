@@ -50,7 +50,7 @@ final readonly class MiddlewareRunner
                 $command,
                 $owner,
                 $this->registry->isExported($name),
-                $this->registry->needsRepeatableRead($name),
+                $this->registry->isRepeatableReadNeeded($name),
                 $this->actors->hasActor() ? $this->actors->actor() : null,
             );
 

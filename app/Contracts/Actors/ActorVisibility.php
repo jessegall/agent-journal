@@ -32,7 +32,7 @@ interface ActorVisibility
     /**
      * Whether the acting actor may read every owner's rows, so a page offers only the reads that would be allowed.
      */
-    public function readsAcrossOwners(): bool;
+    public function canReadAcrossOwners(): bool;
 
     /**
      * Narrows a read of ordinary content to the acting actor's own rows, by the narrowing the caller gives; an actor

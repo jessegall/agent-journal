@@ -216,7 +216,7 @@ final readonly class ProfileBase
     /**
      * Whether agents of this base may be invited into chats: the main agent may, a helper or worker may not.
      */
-    public function permitsChats(): bool
+    public function canJoinChats(): bool
     {
         return $this->coordinator;
     }
@@ -230,7 +230,7 @@ final readonly class ProfileBase
     {
         return array_values(array_map(
             fn (self $base) => $base->key,
-            array_filter(self::all(), fn (self $base) => $base->permitsChats()),
+            array_filter(self::all(), fn (self $base) => $base->canJoinChats()),
         ));
     }
 

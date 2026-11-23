@@ -69,7 +69,7 @@ final readonly class TerminalControls
             throw TerminalViewRefused::unknownInterest();
         }
 
-        if (! Host::query()->whereKey($runtime->host_id)->sole()->carriesOutBrowserInput()) {
+        if (! Host::query()->whereKey($runtime->host_id)->sole()->canCarryOutBrowserInput()) {
             throw TerminalControlRefused::watchOnly();
         }
 

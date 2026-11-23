@@ -19,7 +19,7 @@ final readonly class SequencePageViews
      */
     public function of(bool $isRuns): array
     {
-        if (! $this->visibility->readsAcrossOwners()) {
+        if (! $this->visibility->canReadAcrossOwners()) {
             return [];
         }
 

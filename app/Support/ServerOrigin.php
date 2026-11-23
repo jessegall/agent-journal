@@ -66,7 +66,7 @@ final readonly class ServerOrigin
     /**
      * Whether a call over plain http may be taken: only for a usable local http origin, never on a server.
      */
-    public function admitsPlainHttp(): bool
+    public function canTakePlainHttp(): bool
     {
         return $this->hasPlainHost() && $this->isLocalHttp();
     }

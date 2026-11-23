@@ -334,7 +334,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
      */
     public function requireAnswer(): void
     {
-        if ($this->needsReply()) {
+        if ($this->awaitsReply()) {
             return;
         }
 
@@ -351,7 +351,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
      */
     public function answerWith(self $reply, ActorIdentity $actor, CarbonImmutable $at): void
     {
-        if (! $this->needsReply()) {
+        if (! $this->awaitsReply()) {
             throw MessageStateConflict::notWaiting($this->id);
         }
 
@@ -466,7 +466,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
             : new ActorIdentity(ActorType::from($this->read_by_type), $this->read_by_id);
     }
 
-    public function needsReply(): bool
+    public function awaitsReply(): bool
     {
         return $this->state === MessageState::WaitingForAnswer;
     }

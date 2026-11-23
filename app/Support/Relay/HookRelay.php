@@ -155,18 +155,16 @@ final readonly class HookRelay
      */
     private function touchesAccounts(string $json, RelaySettings $settings): bool
     {
-        $payload = json_decode($json, true);
-
-        // A payload that names no tool, such as a Stop, reaches no file.
-        if (! is_array($payload) || ! array_key_exists('tool_name', $payload)) {
-            return false;
+        // A payload the relay cannot read is refused: it cannot be shown to stay out of the accounts.
+        try {
+            $call = RelayedToolCall::from(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        } catch (JsonException|CannotCreateData|TypeError) {
+            return true;
         }
 
-        // A tool call the relay cannot read is refused: it cannot be shown to stay out of the accounts.
-        try {
-            $call = RelayedToolCall::from($payload);
-        } catch (CannotCreateData|TypeError) {
-            return true;
+        // A hook that names no tool, such as a Stop, reaches no file.
+        if ($call->toolName === null) {
+            return false;
         }
 
         $readPath = $call->readPath();

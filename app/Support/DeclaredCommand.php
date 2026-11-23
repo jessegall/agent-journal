@@ -70,7 +70,7 @@ final readonly class DeclaredCommand
         return new self($command, $owner, $handler, $authorize, $entry);
     }
 
-    public function needsRepeatableRead(): bool
+    public function isRepeatableReadNeeded(): bool
     {
         return $this->reflect($this->command)->hasAttribute(RepeatableRead::class);
     }
