@@ -8,6 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Chat\ChatTimeline;
 use App\Contracts\Chat\ConversationResolver;
 use App\Contracts\Chat\InboxResolver;
+use App\Data\ChatCursorPosition;
 use App\Data\ChatEventPage;
 use App\Data\ChatEventView;
 use App\Data\MessagePage;
@@ -22,6 +23,8 @@ use App\Support\ChatInboxes;
 use App\Support\ChatInterval;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Encryption\Encrypter;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * A chat member's own view of its chat's timeline: a snapshot to start from, then the events after an opaque cursor
@@ -144,11 +147,11 @@ final readonly class IntervalChatTimeline implements ChatTimeline
 
     private function cursorAt(ChatInterval $interval, int $sequence): string
     {
-        return $this->encrypter->encrypt([
+        return $this->encrypter->encrypt(ChatCursorPosition::from([
             'inbox' => $interval->inboxId,
             'interval' => $interval->intervalId,
             'sequence' => $sequence,
-        ]);
+        ])->toArray());
     }
 
     /**
@@ -159,18 +162,16 @@ final readonly class IntervalChatTimeline implements ChatTimeline
     private function positionIn(string $cursor, ChatInterval $interval): int
     {
         try {
-            $decoded = $this->encrypter->decrypt($cursor);
-        } catch (DecryptException $unreadable) {
+            $position = ChatCursorPosition::from($this->encrypter->decrypt($cursor));
+        } catch (DecryptException|CannotCreateData|TypeError $unreadable) {
             throw ChatCursorRefused::forInbox($interval->inboxId, $unreadable);
         }
 
-        if (! is_array($decoded)
-            || ($decoded['inbox'] ?? null) !== $interval->inboxId
-            || ($decoded['interval'] ?? null) !== $interval->intervalId) {
+        if (! $position->isFor($interval)) {
             throw ChatCursorRefused::forInbox($interval->inboxId);
         }
 
-        return max((int) ($decoded['sequence'] ?? 0), $interval->joinedSequence - 1);
+        return max($position->sequence, $interval->joinedSequence - 1);
     }
 
     /**

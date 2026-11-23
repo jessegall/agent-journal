@@ -31,11 +31,23 @@ final readonly class SignInReceipts
         $state = $receipt->isExpired ? ReceiptState::Expired : $receipt->state;
 
         return match ($state) {
-            ReceiptState::Completed => $this->started((string) ($receipt->fields['attemptId'] ?? '')),
+            ReceiptState::Completed => $this->startedFrom($receipt->fields),
             ReceiptState::Refused => SignInReceiptData::without(SignInReceiptStatus::Refused, $receipt->refusalMessage),
             ReceiptState::Taken => SignInReceiptData::without(SignInReceiptStatus::Pending),
             ReceiptState::Expired => SignInReceiptData::without(SignInReceiptStatus::Expired),
         };
+    }
+
+    /**
+     * The attempt a completed receipt names; a receipt that names none is unknown.
+     *
+     * @param  array<string, mixed>  $fields
+     */
+    private function startedFrom(array $fields): SignInReceiptData
+    {
+        $attemptId = $fields['attemptId'] ?? null;
+
+        return is_string($attemptId) ? $this->started($attemptId) : SignInReceiptData::without(SignInReceiptStatus::Unknown);
     }
 
     private function started(string $attemptId): SignInReceiptData

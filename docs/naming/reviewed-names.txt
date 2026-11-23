@@ -2329,6 +2329,7 @@ class	ChatCandidatesController
 class	ChatCapabilitiesData
 class	ChatCommandHandler
 class	ChatConversations
+class	ChatCursorPosition
 class	ChatCursorRefused
 class	ChatData
 class	ChatDeliveries
@@ -11556,6 +11557,8 @@ method	ChatConversations::rowOf()
 method	ChatConversations::rowsOf()
 method	ChatConversations::rowsPage()
 method	ChatConversations::summariesFor()
+method	ChatCursorPosition::__construct()
+method	ChatCursorPosition::isFor()
 method	ChatCursorRefused::forInbox()
 method	ChatCursorRefused::refusalCode()
 method	ChatCursorRefused::status()
@@ -24485,6 +24488,7 @@ method	SignInReceiptRequest::target()
 method	SignInReceipts::__construct()
 method	SignInReceipts::of()
 method	SignInReceipts::started()
+method	SignInReceipts::startedFrom()
 method	SignInReconcileRequest::rules()
 method	SignInReconcileRequest::runningAttemptIds()
 method	SignInRefusal::fromProvider()
@@ -32319,6 +32323,9 @@ property	ChatConversations::$inboxes
 property	ChatConversations::$labels
 property	ChatConversations::$lines
 property	ChatConversations::$messages
+property	ChatCursorPosition::$inbox
+property	ChatCursorPosition::$interval
+property	ChatCursorPosition::$sequence
 property	ChatData::$agents
 property	ChatData::$canCreateChats
 property	ChatData::$chats
