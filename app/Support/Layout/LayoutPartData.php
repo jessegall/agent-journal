@@ -250,6 +250,24 @@ final class LayoutPartData extends Data
     }
 
     /**
+     * The share of the pieces finished as a short meter with its percent beside it, as a list row draws a plan.
+     */
+    public static function share(string $key, float $finished, float $total, string $label, string $unit): self
+    {
+        return new self(
+            LayoutTag::Progress,
+            $key,
+            null,
+            'share',
+            null,
+            null,
+            [],
+            [],
+            progress: new LayoutProgressData($finished, $total, $label, $unit),
+        );
+    }
+
+    /**
      * How much of an allowance is used: a meter with its percent and the words used beside it, or, in a list row, the
      * meter alone with the readings of every window as its tip.
      */

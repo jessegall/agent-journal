@@ -37,10 +37,7 @@ final readonly class PlansShow
         Closure $graph,
     ): DeclaredLayoutData {
         $detail = DetailPage::make($card->title)
-            ->above(
-                LayoutPartData::text('label', "plan {$card->number}", 'code'),
-                LayoutPartData::text('state', $card->state->value, 'muted'),
-            )
+            ->above(LayoutPartData::text('label', "Plan {$card->number} · {$this->percentOf($card)}%", 'code'))
             ->withFacts(...$this->factsOf($card))
             ->withTabs(
                 PublicationTab::deferred(
@@ -56,6 +53,11 @@ final readonly class PlansShow
             );
 
         return $this->index->of($filters, [$detail->part($tab)]);
+    }
+
+    private function percentOf(PlanCardData $card): int
+    {
+        return $card->totalTasks === 0 ? 0 : (int) round($card->finishedTasks / $card->totalTasks * 100);
     }
 
     /**

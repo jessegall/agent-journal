@@ -68,7 +68,7 @@ final readonly class PlansIndex
 
         $trailing[] = $card->totalTasks === 0
             ? LayoutPartData::text('progress', 'No tasks', 'muted')
-            : LayoutPartData::progress('progress', $card->finishedTasks, $card->totalTasks, "Plan {$card->number}", 'tasks', true);
+            : LayoutPartData::share('progress', $card->finishedTasks, $card->totalTasks, "Plan {$card->number}", 'tasks');
 
         return LayoutRowData::from([
             'key' => $card->id,
