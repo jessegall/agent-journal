@@ -66,19 +66,13 @@ final readonly class HostStartPreflight implements StartPreflight
      */
     private function hostRefusals(StartProposal $proposal): array
     {
-        $hosts = array_filter(Host::serving(), fn (Host $host) => $host->runsPlacement($proposal->placement));
+        $hosts = array_filter(Host::servingEnrolled(), fn (Host $host) => $host->runsPlacement($proposal->placement));
 
         if ($hosts === []) {
             return [StartPreflightRefusal::NoHost];
         }
 
-        $speaking = array_filter($hosts, fn (Host $host) => $host->speaksCurrentProtocol());
-
-        if ($speaking === []) {
-            return [StartPreflightRefusal::HostProtocolOutdated];
-        }
-
-        foreach ($speaking as $host) {
+        foreach ($hosts as $host) {
             if ($host->declares($proposal)) {
                 return [];
             }

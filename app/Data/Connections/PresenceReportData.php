@@ -14,8 +14,8 @@ use Spatie\LaravelData\Attributes\Validation\Present;
 use Spatie\LaravelData\Data;
 
 /**
- * A relay's presence report as journal-agent sends it (client.PresenceReport): its boot, sequence, release, protocol,
- * the combinations it can run, how setting up the folder ended, whether it takes over a live boot, the setup
+ * A relay's presence report as journal-agent sends it (client.PresenceReport): its boot, sequence, release, the
+ * combinations it can run, how setting up the folder ended, whether it takes over a live boot, the setup
  * generation of the folder it reports for, and whether this boot reported what became of its earlier sessions.
  */
 final class PresenceReportData extends Data
@@ -30,7 +30,6 @@ final class PresenceReportData extends Data
         public readonly int $sequence,
         #[Max(64)]
         public readonly string $release,
-        public readonly int $protocol,
         #[Present]
         #[DataCollectionOf(HostDescriptorData::class)]
         public readonly array $descriptors,
@@ -48,7 +47,6 @@ final class PresenceReportData extends Data
             $this->bootId,
             $this->sequence,
             $this->release,
-            $this->protocol,
             $this->provisioning === 'succeeded',
             $this->takeover,
             $this->setupGeneration,

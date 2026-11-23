@@ -9,7 +9,6 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\BindingReadiness;
 use App\Enums\ConnectionAuditType;
-use App\Enums\HostProtocolVersion;
 use App\Models\ConnectionAudit;
 use App\Models\DeviceGrant;
 use App\Models\ProjectBinding;
@@ -334,7 +333,6 @@ final class DeviceGrantsTest extends TestCase
             $this->relayCredential(self::NONCE),
             $target,
             $body,
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }

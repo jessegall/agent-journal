@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Enums\DriverVariant;
-use App\Enums\HostProtocolVersion;
 use App\Models\Agent;
 use App\Models\AgentRuntime;
 use App\Models\ProjectBinding;
@@ -75,10 +74,9 @@ final class RuntimeLeaseTest extends TestCase
             "/host/bindings/{$binding->id}/presence",
             [
                 'bootId' => 'boot-1', 'sequence' => 1, 'release' => '1.0.0',
-                'protocol' => HostProtocolVersion::RemoteProject->value, 'descriptors' => [],
+                'descriptors' => [],
                 'provisioning' => 'succeeded', 'takeover' => false,
             ],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         )->assertOk();
 
@@ -123,7 +121,6 @@ final class RuntimeLeaseTest extends TestCase
             $this->relayCredential(self::NONCE),
             "/host/bindings/{$binding->id}/runtimes/{$runtime->id}/lease",
             ['authorityGeneration' => $binding->authority_generation, 'runtimeGeneration' => 1],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }

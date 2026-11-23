@@ -7,7 +7,6 @@ namespace App\Http\Middleware\Agents;
 use App\Commands\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CallProtocolUnsupported;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\CredentialRejected;
 use App\Support\AgentContext;
@@ -52,8 +51,6 @@ final readonly class AuthenticateAgent
                 ['code' => 'unauthenticated', 'message' => self::UNAUTHENTICATED],
                 Response::HTTP_UNAUTHORIZED,
             );
-        } catch (CallProtocolUnsupported $unsupported) {
-            return new JsonResponse(['message' => $unsupported->getMessage()], Response::HTTP_UPGRADE_REQUIRED);
         }
 
         $context = $admitted->context;

@@ -151,12 +151,16 @@ final class HookIdentityTest extends TestCase
         )->assertUnauthorized();
     }
 
-    public function test_a_call_in_another_protocol_version_must_upgrade(): void
+    public function test_a_call_signed_over_the_envelope_with_a_format_version_first_is_refused(): void
     {
         $start = TestStart::start();
-        $headers = $start->serverHeaders(self::BODY, 'call-7', $this->now(), target: '/testing/hook-identity');
+        $issuedAt = $this->now();
+        $headers = $start->serverHeaders(self::BODY, 'call-7', $issuedAt, target: '/testing/hook-identity');
+        $pin = $start->pin();
+        $oldEnvelope = ['2', 'POST', '/testing/hook-identity', 'call-7', (string) $issuedAt, hash('sha256', self::BODY)];
+        $oldSignature = hash_hmac('sha256', implode("\n", [...$oldEnvelope, $pin->key, (string) $pin->revision]), $start->token);
 
-        $this->send($start, [...$headers, 'HTTP_X_JOURNAL_PROTOCOL' => '1'])->assertStatus(426);
+        $this->send($start, [...$headers, 'HTTP_X_JOURNAL_CALL_SIGNATURE' => $oldSignature])->assertUnauthorized();
     }
 
     public function test_a_call_signed_with_another_session_token_is_refused(): void

@@ -8,7 +8,6 @@ use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsResolver;
 use App\Data\Connections\ReleaseOfferData;
-use App\Enums\HostProtocolVersion;
 use App\Support\CoreSettings;
 use App\Support\InstallLineAvailability;
 use App\Support\PublishedReleases;
@@ -39,7 +38,7 @@ final class InstallLineAvailabilityTest extends TestCase
 
         $folder = sys_get_temp_dir().'/releases-'.bin2hex(random_bytes(4));
         mkdir("{$folder}/".self::VERSION, 0755, true);
-        file_put_contents("{$folder}/".self::VERSION.'/manifest.json', (string) json_encode(PublicRelease::manifest(self::VERSION, HostProtocolVersion::RemoteProject->value)));
+        file_put_contents("{$folder}/".self::VERSION.'/manifest.json', (string) json_encode(PublicRelease::manifest(self::VERSION)));
         config([
             'files.places.releases' => $folder,
             'agents.release' => self::VERSION,
@@ -78,23 +77,10 @@ final class InstallLineAvailabilityTest extends TestCase
         $this->assertFalse($this->availability()->canIssue());
     }
 
-    public function test_a_release_of_a_protocol_the_server_does_not_speak_issues_no_install_line(): void
-    {
-        $this->switchOn();
-        $folder = config()->string('files.places.releases');
-        file_put_contents("{$folder}/".self::VERSION.'/manifest.json', (string) json_encode([
-            'version' => self::VERSION,
-            'hostProtocolVersion' => 99,
-            'targets' => [],
-        ]));
-
-        $this->assertFalse($this->availability()->canIssue());
-    }
-
     public function test_a_release_without_measured_sizes_issues_no_install_line(): void
     {
         $this->switchOn();
-        $manifest = PublicRelease::manifest(self::VERSION, HostProtocolVersion::RemoteProject->value);
+        $manifest = PublicRelease::manifest(self::VERSION);
         unset($manifest['targets'][0]['artifacts'][0]['size']);
         $this->publish($manifest);
 
@@ -120,7 +106,7 @@ final class InstallLineAvailabilityTest extends TestCase
     public function test_a_platform_missing_a_provider_shows_it_withheld_and_issues_no_line_alone(): void
     {
         $this->switchOn();
-        $manifest = PublicRelease::manifest(self::VERSION, HostProtocolVersion::RemoteProject->value);
+        $manifest = PublicRelease::manifest(self::VERSION);
         $manifest['targets'][0]['providers'] = ['claude-code'];
         $this->publish($manifest);
 

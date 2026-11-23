@@ -302,7 +302,7 @@ final class AgentStatusRules
 
         $primary = match ($remedy->type) {
             StartRemedyType::CheckCapacity => [StatusAction::of(StatusActionType::CheckCapacity)],
-            StartRemedyType::OperatorInstruction, StartRemedyType::ConnectHost, StartRemedyType::UpdateHost => [],
+            StartRemedyType::OperatorInstruction, StartRemedyType::ConnectHost => [],
             default => [new StatusAction(StatusActionType::Start, $remedy->operatorText())],
         };
 

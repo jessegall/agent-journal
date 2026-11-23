@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Enums\HostProtocolVersion;
-use App\Exceptions\HostProtocolMismatch;
 use App\Models\Host;
-use App\Models\StartRecord;
 use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\HostDescriptorEnrollment;
@@ -17,7 +14,10 @@ use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
-final class HostProtocolTest extends TestCase
+/**
+ * A host reports the drivers it can run, and each is enrolled or marked unavailable with its reason.
+ */
+final class HostDescriptorsReportTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
@@ -26,29 +26,6 @@ final class HostProtocolTest extends TestCase
     private const array TABLES = ['hosts', 'agent_runtimes', 'start_records', 'hook_calls'];
 
     private const string CLAIM = '/host/claim?limit=1&wait=0&watched_version=0';
-
-    public function test_a_host_that_names_no_protocol_is_refused_before_it_claims_anything(): void
-    {
-        $host = $this->enrolledHost();
-        $records = StartRecord::query()->withoutGlobalScopes()->count();
-
-        $this->signedHostCall($host, 'POST', self::CLAIM, '', protocol: null)
-            ->assertStatus(426)
-            ->assertJsonPath('message', HostProtocolMismatch::missing(HostProtocolVersion::current()->value)->getMessage());
-
-        $this->assertSame($records, StartRecord::query()->withoutGlobalScopes()->count());
-    }
-
-    public function test_a_host_of_another_protocol_is_told_to_upgrade(): void
-    {
-        $host = $this->enrolledHost();
-        $other = HostProtocolVersion::current()->value + 1;
-
-        $this->signedHostCall($host, 'POST', self::CLAIM, '', protocol: $other)
-            ->assertStatus(426)
-            ->assertJsonPath('message', HostProtocolMismatch::speaks((string) $other, HostProtocolVersion::current()->value)->getMessage())
-            ->assertJsonPath('protocolVersions', HostProtocolVersion::spoken());
-    }
 
     public function test_a_host_enrolls_the_four_default_drivers_it_advertises(): void
     {
@@ -59,7 +36,6 @@ final class HostProtocolTest extends TestCase
         $this->report($host, array_map(fn (string $key) => $this->descriptor($key), $keys))->assertNoContent();
 
         $stored = Host::query()->findOrFail($host->hostId);
-        $this->assertSame(HostProtocolVersion::current()->value, $stored->protocol_version);
         $this->assertSame($keys, array_column($stored->descriptors, 'key'));
         $this->assertSame([null, null, null, null], array_column($stored->descriptors, 'unavailable_reason'));
     }
@@ -97,10 +73,7 @@ final class HostProtocolTest extends TestCase
      */
     private function report(EnrolledHost $host, array $descriptors): TestResponse
     {
-        return $this->hostCall($host, '/host/reports/descriptors', [
-            'protocolVersion' => HostProtocolVersion::current()->value,
-            'descriptors' => $descriptors,
-        ]);
+        return $this->hostCall($host, '/host/reports/descriptors', ['descriptors' => $descriptors]);
     }
 
     /**

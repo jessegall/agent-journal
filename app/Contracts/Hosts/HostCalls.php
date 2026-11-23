@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Contracts\Hosts;
 
-use App\Enums\HostProtocolVersion;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
-use App\Exceptions\HostProtocolMismatch;
+use App\Exceptions\HostRoleRefused;
 use App\Values\HostContext;
 use Illuminate\Http\Request;
 
@@ -17,11 +16,19 @@ use Illuminate\Http\Request;
 interface HostCalls
 {
     /**
-     * The host and envelope of a call speaking one of these protocols, with the protocol it spoke.
+     * The host and envelope of a signed call.
      *
      * @throws HostCredentialRejected
      * @throws CallSignatureInvalid
-     * @throws HostProtocolMismatch
      */
-    public function verify(Request $request, HostProtocolVersion ...$spoken): HostContext;
+    public function verify(Request $request): HostContext;
+
+    /**
+     * The host and envelope of a signed call from the relay of a connected folder.
+     *
+     * @throws HostCredentialRejected
+     * @throws CallSignatureInvalid
+     * @throws HostRoleRefused
+     */
+    public function verifyRelay(Request $request): HostContext;
 }

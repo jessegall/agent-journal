@@ -16,11 +16,10 @@ final class PublicRelease
     /**
      * @return array<string, mixed>
      */
-    public static function manifest(string $version, int $protocolVersion): array
+    public static function manifest(string $version): array
     {
         return [
             'version' => $version,
-            'hostProtocolVersion' => $protocolVersion,
             'capabilities' => ReleaseManifest::REQUIRED_CAPABILITIES,
             'targets' => [[
                 'os' => 'darwin',

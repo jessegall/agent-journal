@@ -7,10 +7,11 @@ namespace App\Http\Middleware\Agents;
 use App\Contracts\Hosts\HostCalls;
 use App\Contracts\Hosts\LocalProjectHosts;
 use App\Enums\CommandEntry;
-use App\Enums\HostProtocolVersion;
+use App\Enums\HostRouteRole;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
-use App\Exceptions\HostProtocolMismatch;
+use App\Exceptions\HostRoleRefused;
+use App\Models\Host;
 use App\Support\ActorStore;
 use App\Support\CommandEntrance;
 use App\Values\HostContext;
@@ -21,10 +22,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Admits a call from an enrolled host that SignedHostCalls verifies, speaking the enrolled hosts' protocol or those
- * the route names: journal.host:2 for a connected project's own routes, journal.host:1,2 for the work routes both
- * speak, where a protocol-2 call must come from a live local-project binding's host and is scoped to it. The host is
- * bound for this request only (Octane), never kept on a singleton.
+ * Admits a signed host call (SignedHostCalls) from the hosts the route's role names: enrolled hosts by default,
+ * journal.host:relay for a connected folder's own routes, journal.host:shared for the work routes both use, where a
+ * relay must have a live binding and is scoped to it. The host is bound for this request only (Octane), never kept on
+ * a singleton.
  */
 final readonly class AuthenticateHost
 {
@@ -38,23 +39,16 @@ final readonly class AuthenticateHost
 
     /**
      * @param  Closure(Request): Response  $next
-     * @param  string  ...$protocols  the versions the route speaks, journal.host:1,2; none is the enrolled hosts' one
+     * @param  string  $role  the hosts the route admits, journal.host:relay or journal.host:shared; none is enrolled hosts
      */
-    public function handle(Request $request, Closure $next, string ...$protocols): Response
+    public function handle(Request $request, Closure $next, string $role = HostRouteRole::Enrolled->value): Response
     {
-        $speaks = $protocols === []
-            ? [HostProtocolVersion::current()]
-            : array_map(fn (string $protocol) => HostProtocolVersion::from((int) $protocol), $protocols);
-
         try {
-            $context = $this->servingContext($this->calls->verify($request, ...$speaks), count($speaks) > 1);
+            $context = $this->servingContext($this->calls->verify($request), HostRouteRole::from($role));
         } catch (HostCredentialRejected|CallSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
-        } catch (HostProtocolMismatch $mismatch) {
-            return new JsonResponse([
-                'message' => $mismatch->getMessage(),
-                'protocolVersions' => HostProtocolVersion::spoken(),
-            ], Response::HTTP_UPGRADE_REQUIRED);
+        } catch (HostRoleRefused $refusal) {
+            return new JsonResponse(['message' => $refusal->getMessage()], Response::HTTP_FORBIDDEN);
         }
 
         $this->container->instance(HostContext::class, $context);
@@ -72,15 +66,22 @@ final readonly class AuthenticateHost
     }
 
     /**
-     * On a work route enrolled hosts and connected projects share, a call speaking the connected projects' protocol
-     * comes from a host a live local-project binding names, and serves only that binding; any other is refused as
-     * speaking a protocol this route does not speak to it.
+     * The call as the route admits it: an enrolled host as it is, a relay only where the route admits relays, and on a
+     * route both share only as the relay of its live binding.
      *
-     * @throws HostProtocolMismatch
+     * @throws HostRoleRefused
      */
-    private function servingContext(HostContext $context, bool $isSharedWorkRoute): HostContext
+    private function servingContext(HostContext $context, HostRouteRole $role): HostContext
     {
-        if (! $isSharedWorkRoute || $context->protocol !== HostProtocolVersion::RemoteProject) {
+        if (! Host::query()->findOrFail($context->hostId)->isConnectedFolderRelay()) {
+            return $role->isForEnrolledHosts() ? $context : throw HostRoleRefused::forRelayOnly($context->hostId);
+        }
+
+        if (! $role->isForRelays()) {
+            throw HostRoleRefused::forEnrolledOnly($context->hostId);
+        }
+
+        if (! $role->isForEnrolledHosts()) {
             return $context;
         }
 
@@ -88,6 +89,6 @@ final readonly class AuthenticateHost
             return $context->servingBinding($bindingId);
         }
 
-        throw HostProtocolMismatch::speaks((string) $context->protocol->value, HostProtocolVersion::current()->value);
+        throw HostRoleRefused::forNoLiveBinding($context->hostId);
     }
 }

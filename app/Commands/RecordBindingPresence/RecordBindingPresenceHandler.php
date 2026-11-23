@@ -30,7 +30,6 @@ final readonly class RecordBindingPresenceHandler implements CommandHandler
         $receipt = $binding->recordPresence($command->report);
 
         $binding->host->recordDescriptors(
-            $command->report->protocol,
             array_map(
                 fn (EnrolledDescriptor $descriptor) => $descriptor->stored(),
                 $this->enrollment->enroll($command->report->descriptors),

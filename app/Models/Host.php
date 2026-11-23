@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ArrangementType;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
-use App\Enums\HostProtocolVersion;
 use App\Enums\TerminalInputType;
 use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\HostCredentialRejected;
@@ -20,8 +19,11 @@ use App\Values\ProtectionReport;
 use App\Values\StartProposal;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
  * A machine enrolled to run agent drivers: an infrastructure principal with its own credential, never an actor.
@@ -34,7 +36,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<string> $start_roots
  * @property ArrangementType $arrangement
  * @property array<string, StoredReport> $protection
- * @property int|null $protocol_version
  * @property list<array{key: string, build: string, protocol_version: int, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}> $descriptors
  * @property CarbonImmutable|null $revoked_at
  * @property bool $browser_input
@@ -140,15 +141,21 @@ final class Host extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function serving(): array
+    public static function servingEnrolled(): array
     {
         return array_values(
-            self::query()->whereNull('revoked_at')->readAll('an installation enrolls a handful of hosts')->get()->all(),
+            self::query()
+                ->whereNull('revoked_at')
+                ->enrolled()
+                ->readAll('an installation enrolls a handful of hosts')
+                ->get()
+                ->all(),
         );
     }
 
     /**
-     * The first serving host that runs this placement, speaks this protocol and declared the driver build and variant.
+     * The first serving enrolled host that runs this placement and declared the driver build and variant; a relay
+     * host starts only through its binding.
      *
      * @throws HostUnavailable
      */
@@ -158,9 +165,8 @@ final class Host extends Model implements ReadableModel
         ExecutionModeType $placement,
         DriverVariant $variant,
     ): self {
-        foreach (self::serving() as $host) {
-            if ($host->runsPlacement($placement) && $host->speaksCurrentProtocol()
-                && $host->declaresRun($driver, $build, $placement, $variant)) {
+        foreach (self::servingEnrolled() as $host) {
+            if ($host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $variant)) {
                 return $host;
             }
         }
@@ -177,13 +183,12 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * Keeps the protocol version the host speaks and the drivers it enrolled, in place of the ones it enrolled before.
+     * Keeps the drivers the host enrolled, in place of the ones it enrolled before.
      *
      * @param  list<array{key: string, build: string, protocol_version: int, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>  $descriptors
      */
-    public function recordDescriptors(int $protocolVersion, array $descriptors): void
+    public function recordDescriptors(array $descriptors): void
     {
-        $this->protocol_version = $protocolVersion;
         $this->descriptors = $descriptors;
         $this->save();
     }
@@ -246,18 +251,13 @@ final class Host extends Model implements ReadableModel
         return $capabilities->carriesOut($kind);
     }
 
-    public function speaksCurrentProtocol(): bool
-    {
-        return $this->protocol_version === HostProtocolVersion::current()->value;
-    }
-
     /**
      * Whether the host is the relay of a project folder connected from a user's own machine, which runs its agents
-     * there whatever this journal's own arrangement is.
+     * there whatever this journal's own arrangement is: a binding names it, revoked or not.
      */
     public function isConnectedFolderRelay(): bool
     {
-        return $this->protocol_version === HostProtocolVersion::RemoteProject->value;
+        return ProjectBinding::query()->where('host_id', $this->id)->exists();
     }
 
     /**
@@ -363,5 +363,22 @@ final class Host extends Model implements ReadableModel
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * Hosts enrolled to run this journal's own agents: no project binding names them, so none is a folder's relay.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function enrolled(Builder $query): void
+    {
+        $query->whereNotExists(
+            fn (QueryBuilder $bindings) => $bindings
+                ->from('project_bindings')
+                ->whereColumn('project_bindings.host_id', 'hosts.id'),
+        );
     }
 }

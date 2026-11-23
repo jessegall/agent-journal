@@ -9,7 +9,6 @@ use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\CommandEntry;
-use App\Enums\HostProtocolVersion;
 use App\Models\Agent;
 use App\Models\AgentRuntime;
 use App\Models\DeskRecord;
@@ -145,13 +144,11 @@ final class BindingStartTest extends TestCase
                 'bootId' => 'boot-after-sleep',
                 'sequence' => 1,
                 'release' => '1.0.0',
-                'protocol' => HostProtocolVersion::RemoteProject->value,
                 'descriptors' => [],
                 'provisioning' => 'succeeded',
                 'takeover' => true,
                 'setupGeneration' => 1,
             ],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         )->assertOk();
 
@@ -208,7 +205,6 @@ final class BindingStartTest extends TestCase
                 'model' => 'opus',
                 ...$changes,
             ],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }

@@ -20,18 +20,9 @@ final readonly class SignedCall
 
     public const string SIGNATURE_HEADER = 'X-Journal-Call-Signature';
 
-    public const string PROTOCOL_HEADER = 'X-Journal-Protocol';
-
-    public const string HOST_PROTOCOL_HEADER = 'Journal-Host-Protocol';
-
     public const string PROFILE_HEADER = 'X-Journal-Profile';
 
     public const string PROFILE_REVISION_HEADER = 'X-Journal-Profile-Revision';
-
-    /**
-     * The version of the signed envelope this journal reads and writes.
-     */
-    public const string PROTOCOL = '2';
 
     public function __construct(
         public string $callId,
@@ -40,9 +31,8 @@ final readonly class SignedCall
     ) {}
 
     /**
-     * The signature over the version-2 envelope, one field per line: protocol, method, request target of the url, call
-     * id, issue time and digest of the body. A field holding a line break could forge another envelope, so it is
-     * refused.
+     * The signature over the envelope, one field per line: method, request target of the url, call id, issue time and
+     * digest of the body. A field holding a line break could forge another envelope, so it is refused.
      *
      * @throws CallFieldInvalid
      */
@@ -54,16 +44,7 @@ final readonly class SignedCall
         int $issuedAt,
         string $body,
     ): string {
-        $fields = [
-            self::PROTOCOL,
-            strtoupper($method),
-            self::targetOf($url),
-            $callId,
-            (string) $issuedAt,
-            self::digestOf($body),
-        ];
-
-        return self::sign($token, $fields);
+        return self::sign($token, self::envelope($method, $url, $callId, $issuedAt, $body));
     }
 
     /**
@@ -71,19 +52,20 @@ final readonly class SignedCall
      */
     public static function signatureOfRequest(string $token, Request $request, string $callId, int $issuedAt): string
     {
-        return self::sign($token, [
-            self::PROTOCOL,
-            strtoupper($request->getMethod()),
-            self::targetOf($request->getRequestUri()),
+        $envelope = self::envelope(
+            $request->getMethod(),
+            $request->getRequestUri(),
             $callId,
-            (string) $issuedAt,
-            self::digestOf($request->getContent()),
-        ]);
+            $issuedAt,
+            $request->getContent(),
+        );
+
+        return self::sign($token, $envelope);
     }
 
     /**
-     * An agent call's signature: the version-2 envelope with the start's pinned profile key and revision after it, so
-     * a call cannot claim another profile than the one it was started with.
+     * An agent call's signature: the envelope with the start's pinned profile key and revision after it, so a call
+     * cannot claim another profile than the one it was started with.
      *
      * @throws CallFieldInvalid
      */
@@ -96,16 +78,10 @@ final readonly class SignedCall
         string $body,
         StartProfilePin $profile,
     ): string {
-        $fields = [
-            self::PROTOCOL,
-            strtoupper($method),
-            self::targetOf($url),
-            $callId,
-            (string) $issuedAt,
-            self::digestOf($body),
-        ];
-
-        return self::sign($token, [...$fields, $profile->key, (string) $profile->revision]);
+        return self::sign(
+            $token,
+            [...self::envelope($method, $url, $callId, $issuedAt, $body), $profile->key, (string) $profile->revision],
+        );
     }
 
     /**
@@ -122,6 +98,16 @@ final readonly class SignedCall
     public static function digestOf(string $body): string
     {
         return hash('sha256', $body);
+    }
+
+    /**
+     * The fields every signed call carries, in order.
+     *
+     * @return list<string>
+     */
+    private static function envelope(string $method, string $url, string $callId, int $issuedAt, string $body): array
+    {
+        return [strtoupper($method), self::targetOf($url), $callId, (string) $issuedAt, self::digestOf($body)];
     }
 
     /**

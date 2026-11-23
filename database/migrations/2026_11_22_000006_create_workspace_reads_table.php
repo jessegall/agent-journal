@@ -23,7 +23,6 @@ return new class extends Migration
             $table->timestampTz('sampled_at')->nullable();
             $table->timestampsTz();
             $table->index(['actor_type', 'actor_id', 'sampled_at']);
-            $table->unsignedSmallInteger('observation_version')->default(1);
             $table->string('binding_id')->default('');
             $table->string('checkout_id')->default('');
             $table->string('head_oid')->default('');

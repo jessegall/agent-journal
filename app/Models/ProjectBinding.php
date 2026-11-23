@@ -11,7 +11,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ArrangementType;
 use App\Enums\BindingReadiness;
-use App\Enums\HostProtocolVersion;
 use App\Events\ProjectBindingCreated;
 use App\Events\ProjectBindingEnvironmentAssigned;
 use App\Events\ProjectBindingReadinessChanged;
@@ -496,14 +495,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The readiness a report leaves: incompatible on another protocol, pending until the folder is set up, else ready.
+     * The readiness a report leaves: pending until the folder is set up, else ready.
      */
     private function readinessOf(PresenceReport $report): BindingReadiness
     {
-        if ($report->protocol !== HostProtocolVersion::RemoteProject->value) {
-            return BindingReadiness::Incompatible;
-        }
-
         if (! $report->isProvisioned) {
             return BindingReadiness::Pending;
         }

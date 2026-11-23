@@ -10,7 +10,7 @@ use App\Support\Command;
 use App\Values\HostDescriptor;
 
 /**
- * Keeps the protocol version a host speaks and the driver descriptors it can run, as it reports them when it starts serving.
+ * Keeps the driver descriptors a host can run, as it reports them when it starts serving.
  * Run for an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<void>
@@ -23,7 +23,6 @@ final readonly class RecordHostDescriptorsCommand extends Command
      */
     public function __construct(
         public string $hostId,
-        public int $protocolVersion,
         public array $descriptors,
     ) {}
 }

@@ -7,7 +7,6 @@ namespace Tests\Support\Connections;
 use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\HostProtocolVersion;
 use App\Models\InstallAttempt;
 use App\Models\ProjectInvitation;
 use App\Support\ActorContext;
@@ -38,7 +37,7 @@ trait ConnectsProjects
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $folder = sys_get_temp_dir().'/connections-'.bin2hex(random_bytes(4));
         mkdir("{$folder}/1.0.0", 0755, true);
-        file_put_contents("{$folder}/1.0.0/manifest.json", (string) json_encode(PublicRelease::manifest('1.0.0', HostProtocolVersion::RemoteProject->value)));
+        file_put_contents("{$folder}/1.0.0/manifest.json", (string) json_encode(PublicRelease::manifest('1.0.0')));
         config([
             'files.places.releases' => $folder,
             'agents.release' => '1.0.0',
@@ -88,7 +87,6 @@ trait ConnectsProjects
             'canonicalRoot' => '/Users/owner/shop',
             'projectLabel' => 'Shop',
             'machineLabel' => 'Owner laptop',
-            'protocol' => HostProtocolVersion::RemoteProject->value,
         ];
     }
 
@@ -101,7 +99,6 @@ trait ConnectsProjects
         string $credential,
         string $target,
         array $body,
-        HostProtocolVersion $protocol,
         string $callId,
     ): TestResponse {
         $content = (string) json_encode((object) $body);
@@ -114,7 +111,6 @@ trait ConnectsProjects
             'CONTENT_TYPE' => 'application/json',
             'HTTP_ACCEPT' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer {$credential}",
-            $this->serverHeader(SignedCall::HOST_PROTOCOL_HEADER) => (string) $protocol->value,
             $this->serverHeader(SignedCall::ID_HEADER) => $callId,
             $this->serverHeader(SignedCall::ISSUED_AT_HEADER) => (string) $issuedAt,
             $this->serverHeader(SignedCall::SIGNATURE_HEADER) => SignedCall::signatureFor(
@@ -154,14 +150,12 @@ trait ConnectsProjects
                 'bootId' => 'boot-'.$nonce,
                 'sequence' => 1,
                 'release' => '1.0.0',
-                'protocol' => HostProtocolVersion::RemoteProject->value,
                 'descriptors' => $descriptors,
                 'provisioning' => 'succeeded',
                 'takeover' => false,
                 'setupGeneration' => 1,
                 'reconciled' => true,
             ],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         )->assertOk();
     }

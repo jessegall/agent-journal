@@ -6,7 +6,6 @@ namespace Tests\Support;
 
 use App\Commands\EnrollHost\EnrollHostCommand;
 use App\Contracts\Bus\Command;
-use App\Enums\HostProtocolVersion;
 use App\Support\EnrolledHost;
 use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
@@ -48,25 +47,15 @@ trait SendsHostCalls
     }
 
     /**
-     * A signed call speaking the given host protocol version; null sends the call without one.
+     * A signed call from the host.
      */
-    private function signedHostCall(
-        EnrolledHost $host,
-        string $method,
-        string $target,
-        string $content,
-        int|null $protocol = HostProtocolVersion::First->value,
-    ): TestResponse {
+    private function signedHostCall(EnrolledHost $host, string $method, string $target, string $content): TestResponse
+    {
         $callId = (string) Str::uuid();
         $issuedAt = CarbonImmutable::now()->getTimestamp();
         $this->app->forgetScopedInstances();
 
-        $speaks = $protocol === null
-            ? []
-            : ['HTTP_'.strtoupper(str_replace('-', '_', SignedCall::HOST_PROTOCOL_HEADER)) => (string) $protocol];
-
         return $this->call($method, $target, server: [
-            ...$speaks,
             'CONTENT_TYPE' => 'application/json',
             'HTTP_ACCEPT' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer {$host->secret}",

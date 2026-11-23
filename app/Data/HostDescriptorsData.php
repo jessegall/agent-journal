@@ -9,7 +9,7 @@ use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
 /**
- * What a host reports at its start: the host protocol it speaks and every driver registration it advertises.
+ * What a host reports at its start: every driver registration it advertises.
  */
 final class HostDescriptorsData extends Data
 {
@@ -17,7 +17,6 @@ final class HostDescriptorsData extends Data
      * @param  list<HostDescriptorData>  $descriptors
      */
     public function __construct(
-        public readonly int $protocolVersion,
         #[DataCollectionOf(HostDescriptorData::class)]
         public readonly array $descriptors,
     ) {}

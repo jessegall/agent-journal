@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Enums\ArrangementType;
-use App\Enums\HostProtocolVersion;
 use App\Models\Agent;
 use App\Models\Environment;
 use App\Models\Host;
@@ -160,7 +159,6 @@ final class ConnectProjectWindowTest extends TestCase
             $this->relayCredential('nonce-aaaaaaaaaaaaaaaa'),
             "/host/bindings/{$binding}/runtimes/{$runtime}/stopped",
             [],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }

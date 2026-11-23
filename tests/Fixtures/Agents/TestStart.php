@@ -106,7 +106,6 @@ final readonly class TestStart
             'HTTP_X_JOURNAL_CALL_ID' => $callId,
             'HTTP_X_JOURNAL_CALL_ISSUED_AT' => (string) $issuedAt,
             'HTTP_X_JOURNAL_CALL_SIGNATURE' => $signature,
-            'HTTP_X_JOURNAL_PROTOCOL' => SignedCall::PROTOCOL,
             'HTTP_X_JOURNAL_PROFILE' => $pin->key,
             'HTTP_X_JOURNAL_PROFILE_REVISION' => (string) $pin->revision,
             'CONTENT_TYPE' => 'application/json',

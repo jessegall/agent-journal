@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\HostProtocolVersion;
 use App\Exceptions\ReleaseManifestInvalid;
 use App\Exceptions\ReleaseMissing;
 
@@ -27,7 +26,6 @@ final readonly class ReleaseManifest
      */
     private function __construct(
         public string $version,
-        public int $protocolVersion,
         private array $files,
         public array $capabilities,
         public array $targets,
@@ -72,13 +70,7 @@ final readonly class ReleaseManifest
             );
         }
 
-        $protocolVersion = $manifest['hostProtocolVersion'] ?? null;
-
-        if (! is_int($protocolVersion)) {
-            throw ReleaseManifestInvalid::for($version, 'it names no protocol version');
-        }
-
-        return new self($version, $protocolVersion, $files, self::namesAt($version, $manifest, 'capabilities'), $targets);
+        return new self($version, $files, self::namesAt($version, $manifest, 'capabilities'), $targets);
     }
 
     /**
@@ -112,14 +104,6 @@ final readonly class ReleaseManifest
     }
 
     /**
-     * Whether the release speaks a protocol this journal speaks.
-     */
-    public function speaksSpokenProtocol(): bool
-    {
-        return HostProtocolVersion::tryFrom($this->protocolVersion) !== null;
-    }
-
-    /**
      * The capabilities a public install line needs that this release does not have.
      *
      * @return list<string>
@@ -130,14 +114,14 @@ final readonly class ReleaseManifest
     }
 
     /**
-     * Whether the window may offer this release's install line: it speaks this journal's protocol, has every
-     * capability and ships for at least one platform with measured sizes, prerequisites and both providers.
+     * Whether the window may offer this release's install line: it has every capability and ships for at least one
+     * platform with measured sizes, prerequisites and both providers.
      */
     public function canBeOffered(): bool
     {
         $supportedTargets = array_filter($this->targets, fn (ReleaseTarget $target) => $target->isSupported());
 
-        return $this->speaksSpokenProtocol() && $this->missingCapabilities() === [] && $supportedTargets !== [];
+        return $this->missingCapabilities() === [] && $supportedTargets !== [];
     }
 
     /**

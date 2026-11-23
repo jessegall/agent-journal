@@ -16,7 +16,6 @@ final readonly class RecordHostDescriptorsHandler implements CommandHandler
     public function handle(RecordHostDescriptorsCommand $command): void
     {
         Host::query()->lockForUpdate()->findOrFail($command->hostId)->recordDescriptors(
-            $command->protocolVersion,
             array_map(
                 fn (EnrolledDescriptor $descriptor) => $descriptor->stored(),
                 $this->enrollment->enroll($command->descriptors),

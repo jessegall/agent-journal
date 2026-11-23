@@ -57,7 +57,6 @@ final class ProjectBindingRowData extends Data
         CarbonImmutable $serverTime,
         array $families,
         array $signIns = [],
-        string $currentRelease = '',
         array $supportRecord = [],
     ): self {
         $state = $binding->readinessAt($serverTime);
@@ -74,7 +73,7 @@ final class ProjectBindingRowData extends Data
             'capabilities' => self::providersOf($binding, $state, $families),
             'presenceExpiresAt' => $binding->presence_expires_at?->toIso8601String(),
             'revokedAt' => $binding->revoked_at?->toIso8601String(),
-            'stateText' => self::stateTextOf($binding, $state, $currentRelease)
+            'stateText' => self::stateTextOf($binding, $state)
                 .($binding->isStopUnconfirmedAt($serverTime)
                     ? ' Session stop unconfirmed: its lease ended and the device has not confirmed it stopped.'
                     : ''),
@@ -120,7 +119,7 @@ final class ProjectBindingRowData extends Data
     /**
      * What the row says of where the folder stands, and what the owner can do about it.
      */
-    private static function stateTextOf(ProjectBinding $binding, BindingReadiness $state, string $currentRelease): string
+    private static function stateTextOf(ProjectBinding $binding, BindingReadiness $state): string
     {
         if ($state !== BindingReadiness::Revoked && $binding->isEnvironmentUnassigned()) {
             return 'Environment unassigned: assign one of its project\'s environments before it starts anything.';
@@ -132,7 +131,6 @@ final class ProjectBindingRowData extends Data
                 : 'Waiting for setup to finish.',
             BindingReadiness::Ready => 'Ready.',
             BindingReadiness::Offline => 'Offline. Run journal status in the folder to start its relay again.',
-            BindingReadiness::Incompatible => "Needs an update to release {$currentRelease}: run journal upgrade in the folder.",
             BindingReadiness::Revoked => 'Revoked. Copy a new install line to connect the folder again.',
         };
     }

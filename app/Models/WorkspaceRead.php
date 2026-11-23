@@ -39,7 +39,6 @@ use PhpOption\Some;
  * @property bool|null $clean
  * @property int|null $generation
  * @property CarbonImmutable|null $sampled_at
- * @property int $observation_version
  * @property string $binding_id
  * @property string $checkout_id
  * @property string $head_oid
@@ -128,7 +127,7 @@ final class WorkspaceRead extends Model implements ReadableModel
     public static function latestCommitReadOf(string $agentId): array
     {
         $read = self::query()->where('actor_type', 'agent')->where('actor_id', $agentId)
-            ->where('observation_version', 2)->where('head_oid', '!=', '')->whereNotNull('sampled_at')
+            ->where('binding_id', '!=', '')->where('head_oid', '!=', '')->whereNotNull('sampled_at')
             ->latest('sampled_at')->limit(1)->get();
 
         $facts = [];
@@ -163,7 +162,6 @@ final class WorkspaceRead extends Model implements ReadableModel
         $this->clean = $facts->isClean;
         $this->generation = $facts->generation;
         $this->sampled_at = $facts->sampledAt;
-        $this->observation_version = $facts->commit->version;
         $this->binding_id = $facts->commit->bindingId;
         $this->checkout_id = $facts->commit->checkoutId;
         $this->head_oid = $facts->commit->headOid;
@@ -196,7 +194,7 @@ final class WorkspaceRead extends Model implements ReadableModel
 
     private function commitObservation(): CommitObservation
     {
-        if ($this->observation_version !== 2) {
+        if ($this->binding_id === '') {
             return CommitObservation::notRecorded();
         }
 

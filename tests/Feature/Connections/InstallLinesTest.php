@@ -7,7 +7,6 @@ namespace Tests\Feature\Connections;
 use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\HostProtocolVersion;
 use App\Models\ProjectInvitation;
 use App\Support\ActorContext;
 use App\Values\OwnerAuthority;
@@ -180,7 +179,6 @@ final class InstallLinesTest extends TestCase
         ];
         file_put_contents("{$folder}/".self::VERSION.'/manifest.json', (string) json_encode([
             'version' => self::VERSION,
-            'hostProtocolVersion' => HostProtocolVersion::RemoteProject->value,
             'capabilities' => ReleaseManifest::REQUIRED_CAPABILITIES,
             'targets' => [[
                 'os' => 'linux',

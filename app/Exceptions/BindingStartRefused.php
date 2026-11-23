@@ -28,14 +28,6 @@ final class BindingStartRefused extends RuntimeException implements CodedRefusal
         return new self("Binding {$bindingId} starts only in its own registered folder.");
     }
 
-    public static function incompatible(string $bindingId): self
-    {
-        return new self(
-            "Binding {$bindingId} runs a release this journal cannot speak with: run journal upgrade, or copy a new "
-            .'install line, to install a compatible release.',
-        );
-    }
-
     public static function notTheMainAgent(string $bindingId): self
     {
         return new self("Binding {$bindingId} starts only its own main agent.");

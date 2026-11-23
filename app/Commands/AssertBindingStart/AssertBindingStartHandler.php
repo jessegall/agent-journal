@@ -7,7 +7,6 @@ namespace App\Commands\AssertBindingStart;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ArrangementType;
-use App\Enums\BindingReadiness;
 use App\Exceptions\BindingStartRefused;
 use App\Models\ProjectBinding;
 
@@ -34,10 +33,6 @@ final readonly class AssertBindingStartHandler implements CommandHandler
 
         if (! $binding->isReconciled()) {
             throw BindingStartRefused::notReconciled($binding->id);
-        }
-
-        if ($binding->readiness === BindingReadiness::Incompatible) {
-            throw BindingStartRefused::incompatible($binding->id);
         }
 
         $binding->host->assertEnrolledAs(ArrangementType::Local);

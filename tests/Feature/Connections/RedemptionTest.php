@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\HostProtocolVersion;
 use App\Models\Agent;
 use App\Models\Host;
 use App\Models\Project;
@@ -48,7 +47,7 @@ final class RedemptionTest extends TestCase
         $this->assertSame($binding->id, $reply->json('bindingId'));
         $this->assertSame($binding->host_id, $reply->json('hostId'));
         $this->assertSame($binding->project_id, $reply->json('projectId'));
-        $this->assertSame(HostProtocolVersion::RemoteProject->value, $reply->json('protocol'));
+        $this->assertNull($reply->json('protocol'));
         $this->assertSame('https://journal.example.com', $reply->json('canonicalOrigin'));
         $this->assertSame(
             Host::hashOf($this->relayCredential('nonce-aaaaaaaaaaaaaaaa')),

@@ -8,7 +8,6 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ArrangementType;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
-use App\Enums\HostProtocolVersion;
 use App\Models\Host;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\DefaultDrivers;
@@ -40,7 +39,7 @@ trait ServesEveryCombination
             }
         }
 
-        $host->recordDescriptors(HostProtocolVersion::current()->value, array_map(
+        $host->recordDescriptors(array_map(
             fn (EnrolledDescriptor $descriptor) => $descriptor->stored(),
             $this->app->make(HostDescriptorEnrollment::class)->enroll($descriptors),
         ));

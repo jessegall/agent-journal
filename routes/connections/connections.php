@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\HostProtocolVersion;
+use App\Enums\HostRouteRole;
 use App\Http\Controllers\ApproveDeviceGrantController;
 use App\Http\Controllers\AssignBindingEnvironmentController;
 use App\Http\Controllers\BindingPresenceController;
@@ -31,33 +31,33 @@ use Illuminate\Support\Facades\Route;
 
 // A connected project's relay speaks the remote-project protocol and needs no runtime to report it is present.
 Route::post('/host/bindings/{binding}/presence', BindingPresenceController::class)
-    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->middleware('journal.host:'.HostRouteRole::Relay->value)
     ->whereUlid('binding')
     ->name('agents.host.bindings.presence');
 
 // journal status reads what the journal holds of the binding, signed like a report, and records nothing.
 Route::post('/host/bindings/{binding}/status', BindingStatusController::class)
-    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->middleware('journal.host:'.HostRouteRole::Relay->value)
     ->whereUlid('binding')
     ->name('agents.host.bindings.status');
 
 Route::post('/host/bindings/{binding}/runtimes', BindingRuntimeController::class)
-    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->middleware('journal.host:'.HostRouteRole::Relay->value)
     ->whereUlid('binding')
     ->name('agents.host.bindings.runtimes');
 
 Route::post('/host/bindings/{binding}/runtimes/{runtime}/lease', RuntimeLeaseController::class)
-    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->middleware('journal.host:'.HostRouteRole::Relay->value)
     ->whereUlid(['binding', 'runtime'])
     ->name('connections.runtimes.lease');
 
 Route::post('/host/bindings/{binding}/runtimes/{runtime}/stopped', BindingRuntimeStopController::class)
-    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->middleware('journal.host:'.HostRouteRole::Relay->value)
     ->whereUlid(['binding', 'runtime'])
     ->name('connections.runtimes.stopped');
 
 Route::post('/host/deliveries', WorktreeDeliveryController::class)
-    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->middleware('journal.host:'.HostRouteRole::Relay->value)
     ->name('connections.deliveries.submit');
 
 Route::get('/install/{ticket}', InstallScriptController::class)->name('connections.install');

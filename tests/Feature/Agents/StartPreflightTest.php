@@ -9,7 +9,6 @@ use App\Contracts\Sessions\StartPreflight;
 use App\Enums\ArrangementType;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
-use App\Enums\HostProtocolVersion;
 use App\Enums\StartPreflightRefusal;
 use App\Exceptions\StartPreflightRefused;
 use App\Models\AgentRuntime;
@@ -94,7 +93,7 @@ final class StartPreflightTest extends TestCase
             ),
             $variants,
         );
-        $host->recordDescriptors(HostProtocolVersion::current()->value, array_map(
+        $host->recordDescriptors(array_map(
             fn (EnrolledDescriptor $descriptor) => $descriptor->stored(),
             $this->app->make(HostDescriptorEnrollment::class)->enroll($descriptors),
         ));

@@ -10,6 +10,5 @@ export const bindingLooks: Record<
     pending: { label: 'Setting up', tone: 'busy' },
     ready: { label: 'Ready', tone: 'good' },
     offline: { label: 'Offline', tone: 'quiet' },
-    incompatible: { label: 'Needs an update', tone: 'warn' },
     revoked: { label: 'Revoked', tone: 'danger' },
 };

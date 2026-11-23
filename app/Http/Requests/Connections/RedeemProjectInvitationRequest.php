@@ -10,7 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * A relay's redemption of an install line, accepted over TLS only: the ticket, the credential its host will sign
- * with, the folder it connects and the protocol it speaks.
+ * with and the folder it connects.
  */
 final class RedeemProjectInvitationRequest extends FormRequest
 {
@@ -32,7 +32,6 @@ final class RedeemProjectInvitationRequest extends FormRequest
             'canonicalRoot' => ['required', 'string', 'max:4096', 'starts_with:/'],
             'projectLabel' => ['required', 'string', 'max:200'],
             'machineLabel' => ['required', 'string', 'max:200'],
-            'protocol' => ['required', 'integer'],
         ];
     }
 
@@ -49,10 +48,5 @@ final class RedeemProjectInvitationRequest extends FormRequest
                 $this->string('installationNonce')->toString(),
             ),
         );
-    }
-
-    public function protocol(): int
-    {
-        return $this->integer('protocol');
     }
 }

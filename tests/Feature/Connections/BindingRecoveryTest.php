@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\HostProtocolVersion;
 use App\Models\Host;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -78,7 +77,6 @@ final class BindingRecoveryTest extends TestCase
             $credential,
             self::TARGET,
             ['installationNonce' => $nonce],
-            HostProtocolVersion::RemoteProject,
             $callId ?? (string) Str::uuid(),
         );
     }

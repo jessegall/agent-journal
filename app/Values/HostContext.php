@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\HostProtocolVersion;
 use App\Support\SignedCall;
 
 /**
@@ -19,7 +18,6 @@ final readonly class HostContext
     public function __construct(
         public string $hostId,
         public SignedCall $call,
-        public HostProtocolVersion $protocol = HostProtocolVersion::First,
         public array $bindingIds = [],
     ) {}
 
@@ -28,6 +26,6 @@ final readonly class HostContext
      */
     public function servingBinding(string $bindingId): self
     {
-        return new self($this->hostId, $this->call, $this->protocol, [$bindingId]);
+        return new self($this->hostId, $this->call, [$bindingId]);
     }
 }

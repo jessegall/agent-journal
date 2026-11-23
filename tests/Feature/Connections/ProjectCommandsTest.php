@@ -7,7 +7,6 @@ namespace Tests\Feature\Connections;
 use App\Enums\ArrangementType;
 use App\Enums\BindingReadiness;
 use App\Enums\CommandRunState;
-use App\Enums\HostProtocolVersion;
 use App\Exceptions\DeviceGrantRefused;
 use App\Models\DeviceGrant;
 use App\Models\Environment;
@@ -184,7 +183,6 @@ final class ProjectCommandsTest extends TestCase
             'boot-1',
             1,
             '1.0.0',
-            HostProtocolVersion::RemoteProject->value,
             true,
             false,
             0,

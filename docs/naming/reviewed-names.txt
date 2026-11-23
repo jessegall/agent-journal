@@ -135,7 +135,6 @@ case	AutoAssignmentState::OverCapacity
 case	AutoAssignmentState::PoolUnavailable
 case	AutoAssignmentState::Ready
 case	AutoAssignmentState::TooLarge
-case	BindingReadiness::Incompatible
 case	BindingReadiness::Offline
 case	BindingReadiness::Pending
 case	BindingReadiness::Ready
@@ -523,12 +522,13 @@ case	HostCapabilityType::ContainerRuntime
 case	HostCapabilityType::ProcessTracking
 case	HostCapabilityType::RelayProtection
 case	HostCapabilityType::StopDeadline
-case	HostProtocolVersion::First
-case	HostProtocolVersion::RemoteProject
 case	HostRefusal::AccountFolderRejected
 case	HostRefusal::IdentityMismatch
 case	HostRefusal::PinnedBuildMissing
 case	HostRefusal::Unknown
+case	HostRouteRole::Enrolled
+case	HostRouteRole::Relay
+case	HostRouteRole::Shared
 case	HostWakeRefusal::CapacityUnavailable
 case	HostWakeRefusal::ContainerUnavailable
 case	HostWakeRefusal::ImageUnverified
@@ -1220,7 +1220,6 @@ case	StartOriginType::OwnerRequest
 case	StartPreflightRefusal::CombinationNotDeclared
 case	StartPreflightRefusal::DriverNotContainable
 case	StartPreflightRefusal::DriverPinned
-case	StartPreflightRefusal::HostProtocolOutdated
 case	StartPreflightRefusal::ModelNotAllowed
 case	StartPreflightRefusal::NoHost
 case	StartReadiness::Accepted
@@ -1251,7 +1250,6 @@ case	StartRemedyType::OperatorInstruction
 case	StartRemedyType::RetryStart
 case	StartRemedyType::ReviewConfiguration
 case	StartRemedyType::StartNewConversation
-case	StartRemedyType::UpdateHost
 case	StartUnavailableReason::ChosenAccountChanged
 case	StartUnavailableReason::ChosenAccountMissing
 case	StartUnavailableReason::Maintenance
@@ -2168,7 +2166,6 @@ class	CallKeyConflict
 class	CallKeyExpired
 class	CallKeyInvalid
 class	CallKeyTransformer
-class	CallProtocolUnsupported
 class	CallRefused
 class	CallRetries
 class	CallRoutes
@@ -3531,9 +3528,9 @@ class	HostDescriptorData
 class	HostDescriptorEnrollment
 class	HostDescriptorRepeated
 class	HostDescriptorsData
-class	HostProtocolMismatch
 class	HostRefusalData
 class	HostReportRefused
+class	HostRoleRefused
 class	HostRuntimes
 class	HostSecret
 class	HostSecretUnreadable
@@ -8020,13 +8017,10 @@ constant	SignInCard::CHECK_SENDS_A_REQUEST
 constant	SignInCode::LIMIT
 constant	SignInSecret::LIMIT
 constant	SignInVerification::MOST_REFUSAL_CHARACTERS
-constant	SignedCall::HOST_PROTOCOL_HEADER
 constant	SignedCall::ID_HEADER
 constant	SignedCall::ISSUED_AT_HEADER
 constant	SignedCall::PROFILE_HEADER
 constant	SignedCall::PROFILE_REVISION_HEADER
-constant	SignedCall::PROTOCOL
-constant	SignedCall::PROTOCOL_HEADER
 constant	SignedCall::SIGNATURE_HEADER
 constant	SignedCallRules::ACTOR_ID_NAMES
 constant	SignedCallSender::PROXY_STATUSES
@@ -8365,8 +8359,8 @@ enum	GroupAvailability
 enum	HoldReason
 enum	HookEvent
 enum	HostCapabilityType
-enum	HostProtocolVersion
 enum	HostRefusal
+enum	HostRouteRole
 enum	HostWakeRefusal
 enum	Icon
 enum	InstallAttemptState
@@ -10917,7 +10911,6 @@ method	BindingStart::create()
 method	BindingStart::ofBinding()
 method	BindingStartRecorded::__construct()
 method	BindingStartRefused::environmentUnassigned()
-method	BindingStartRefused::incompatible()
 method	BindingStartRefused::notReconciled()
 method	BindingStartRefused::notTheHost()
 method	BindingStartRefused::notTheMainAgent()
@@ -11090,7 +11083,6 @@ method	CallKeyCast::cast()
 method	CallKeyExpired::consoleLines()
 method	CallKeyInvalid::for()
 method	CallKeyTransformer::transform()
-method	CallProtocolUnsupported::version()
 method	CallRefusal::code()
 method	CallRefused::__construct()
 method	CallRefused::answered()
@@ -12442,6 +12434,7 @@ method	CommitHeldStartRefusals::__construct()
 method	CommitHeldStartRefusals::handle()
 method	CommitObservation::__construct()
 method	CommitObservation::authorizesCommitDispatch()
+method	CommitObservation::isRecorded()
 method	CommitObservation::notRecorded()
 method	CommitObservation::ofHead()
 method	CommitObservation::withoutCommit()
@@ -15584,6 +15577,7 @@ method	Host::create()
 method	Host::declares()
 method	Host::declaresDriver()
 method	Host::declaresRun()
+method	Host::enrolled()
 method	Host::forSecret()
 method	Host::hashOf()
 method	Host::isConnectedFolderRelay()
@@ -15595,8 +15589,7 @@ method	Host::recordProtection()
 method	Host::revokeAt()
 method	Host::runningStart()
 method	Host::runsPlacement()
-method	Host::serving()
-method	Host::speaksCurrentProtocol()
+method	Host::servingEnrolled()
 method	Host::startFolder()
 method	HostAccess::__construct()
 method	HostAccess::changesFiles()
@@ -15618,6 +15611,7 @@ method	HostArrangementRefused::refusalCode()
 method	HostArrangementRefused::status()
 method	HostArrangementRefused::unlikeEnrollment()
 method	HostCalls::verify()
+method	HostCalls::verifyRelay()
 method	HostCapabilities::capability()
 method	HostCapability::__construct()
 method	HostCapability::assertSupported()
@@ -15649,18 +15643,19 @@ method	HostDescriptorRepeated::status()
 method	HostDescriptorsData::__construct()
 method	HostDescriptorsData::descriptors()
 method	HostOperatorAccess::isGranted()
-method	HostProtocolMismatch::missing()
-method	HostProtocolMismatch::refusalCode()
-method	HostProtocolMismatch::speaks()
-method	HostProtocolMismatch::status()
-method	HostProtocolVersion::current()
-method	HostProtocolVersion::spoken()
 method	HostRefusal::explanation()
 method	HostRefusal::remedy()
 method	HostRefusalData::__construct()
 method	HostReportRefused::notOwned()
 method	HostReportRefused::staleAttempt()
 method	HostReportRefused::staleGeneration()
+method	HostRoleRefused::forEnrolledOnly()
+method	HostRoleRefused::forNoLiveBinding()
+method	HostRoleRefused::forRelayOnly()
+method	HostRoleRefused::refusalCode()
+method	HostRoleRefused::status()
+method	HostRouteRole::isForEnrolledHosts()
+method	HostRouteRole::isForRelays()
 method	HostRuntimes::lockedFor()
 method	HostSecret::fromEnvironment()
 method	HostSecret::fromFile()
@@ -20615,7 +20610,6 @@ method	RedeemProjectInvitationHandler::environmentOf()
 method	RedeemProjectInvitationHandler::handle()
 method	RedeemProjectInvitationRequest::authorize()
 method	RedeemProjectInvitationRequest::command()
-method	RedeemProjectInvitationRequest::protocol()
 method	RedeemProjectInvitationRequest::rules()
 method	Redemption::__construct()
 method	Redirect::__construct()
@@ -21010,7 +21004,6 @@ method	ReleaseManifest::namesAt()
 method	ReleaseManifest::parse()
 method	ReleaseManifest::sharedDigestOf()
 method	ReleaseManifest::sourceOf()
-method	ReleaseManifest::speaksSpokenProtocol()
 method	ReleaseManifest::stringAt()
 method	ReleaseManifestInvalid::for()
 method	ReleaseMessageClaimCall::__construct()
@@ -24000,6 +23993,7 @@ method	SignInVerification::refused()
 method	SignedCall::__construct()
 method	SignedCall::agentSignatureFor()
 method	SignedCall::digestOf()
+method	SignedCall::envelope()
 method	SignedCall::sign()
 method	SignedCall::signatureFor()
 method	SignedCall::signatureOfRequest()
@@ -24017,8 +24011,8 @@ method	SignedCallSender::refusalOf()
 method	SignedCallSender::send()
 method	SignedHostCalls::__construct()
 method	SignedHostCalls::header()
-method	SignedHostCalls::spokenProtocol()
 method	SignedHostCalls::verify()
+method	SignedHostCalls::verifyRelay()
 method	SignedInScope::__construct()
 method	SignedInScope::apply()
 method	SignedSignInHost::__construct()
@@ -27796,7 +27790,6 @@ parameter	$currentContext
 parameter	$currentNumber
 parameter	$currentPhase
 parameter	$currentPhaseTitle
-parameter	$currentRelease
 parameter	$currentRevision
 parameter	$currentSessionId
 parameter	$currentSettings
@@ -28516,7 +28509,6 @@ parameter	$isSatisfied
 parameter	$isScoped
 parameter	$isSecret
 parameter	$isSelected
-parameter	$isSharedWorkRoute
 parameter	$isSignedIn
 parameter	$isSingleton
 parameter	$isStale
@@ -29889,7 +29881,6 @@ parameter	$speech
 parameter	$spellings
 parameter	$spent
 parameter	$split
-parameter	$spoken
 parameter	$spoolFolder
 parameter	$stack
 parameter	$stackBefore
@@ -32328,7 +32319,6 @@ property	CommitObservation::$bindingId
 property	CommitObservation::$checkoutId
 property	CommitObservation::$headOid
 property	CommitObservation::$reason
-property	CommitObservation::$version
 property	CommitUploadCommand::$uploadId
 property	CommitUploadHandler::$uploads
 property	CommunicationCalls::$sender
@@ -34185,7 +34175,6 @@ property	HostCapacityLock::$databases
 property	HostContext::$bindingIds
 property	HostContext::$call
 property	HostContext::$hostId
-property	HostContext::$protocol
 property	HostDescriptor::$arrangement
 property	HostDescriptor::$build
 property	HostDescriptor::$key
@@ -34198,7 +34187,6 @@ property	HostDescriptorData::$placement
 property	HostDescriptorData::$protocolVersion
 property	HostDescriptorEnrollment::$drivers
 property	HostDescriptorsData::$descriptors
-property	HostDescriptorsData::$protocolVersion
 property	HostRefusalData::$refusal
 property	HostSkillPublisher::$files
 property	HostSkillPublisher::$targets
@@ -36200,14 +36188,12 @@ property	PresenceReport::$bootId
 property	PresenceReport::$descriptors
 property	PresenceReport::$isProvisioned
 property	PresenceReport::$isReconciled
-property	PresenceReport::$protocol
 property	PresenceReport::$release
 property	PresenceReport::$sequence
 property	PresenceReport::$setupGeneration
 property	PresenceReport::$takesOver
 property	PresenceReportData::$bootId
 property	PresenceReportData::$descriptors
-property	PresenceReportData::$protocol
 property	PresenceReportData::$provisioning
 property	PresenceReportData::$reconciled
 property	PresenceReportData::$release
@@ -37129,7 +37115,6 @@ property	RecordHolderData::$recordId
 property	RecordHolderData::$recordType
 property	RecordHostDescriptorsCommand::$descriptors
 property	RecordHostDescriptorsCommand::$hostId
-property	RecordHostDescriptorsCommand::$protocolVersion
 property	RecordHostDescriptorsHandler::$enrollment
 property	RecordHostProtectionCommand::$hostId
 property	RecordHostProtectionCommand::$report
@@ -37529,13 +37514,11 @@ property	ReleaseAgentHoldHandler::$requests
 property	ReleaseArtifact::$name
 property	ReleaseArtifact::$target
 property	ReleaseArtifact::$version
-property	ReleaseCompatibilityData::$protocolVersions
 property	ReleaseCompatibilityData::$release
 property	ReleaseFile::$sha256
 property	ReleaseFile::$source
 property	ReleaseManifest::$capabilities
 property	ReleaseManifest::$files
-property	ReleaseManifest::$protocolVersion
 property	ReleaseManifest::$targets
 property	ReleaseManifest::$version
 property	ReleaseMessageClaimCall::$claimId
@@ -41925,6 +41908,7 @@ variable	$entries	app/Support/WorkspaceSources.php
 variable	$entry
 variable	$entryIds
 variable	$enum
+variable	$envelope
 variable	$envelopes
 variable	$environment
 variable	$environmentId
@@ -42477,7 +42461,6 @@ variable	$milliseconds
 variable	$mimeType
 variable	$mine
 variable	$minutes
-variable	$mismatch
 variable	$misplacedExceptions
 variable	$misplacedInterfaces
 variable	$missed
@@ -43130,8 +43113,6 @@ variable	$sourceRoot
 variable	$sources
 variable	$span
 variable	$speaker
-variable	$speaking
-variable	$speaks
 variable	$special
 variable	$spelling
 variable	$split

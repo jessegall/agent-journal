@@ -6,7 +6,6 @@ namespace Tests\Feature\Connections;
 
 use App\Enums\BindingReadiness;
 use App\Enums\ConnectionAuditType;
-use App\Enums\HostProtocolVersion;
 use App\Models\ConnectionAudit;
 use App\Models\Environment;
 use App\Models\InstallAttempt;
@@ -150,7 +149,6 @@ final class BindingRevocationTest extends TestCase
             $this->relayCredential($nonce),
             '/host/claim?limit=1&wait=0&watched_version=0',
             [],
-            HostProtocolVersion::First,
             (string) Str::uuid(),
         );
     }
@@ -161,7 +159,6 @@ final class BindingRevocationTest extends TestCase
             $this->relayCredential($nonce),
             '/api/project-connections/recover',
             ['installationNonce' => $nonce],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }

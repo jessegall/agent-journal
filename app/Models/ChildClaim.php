@@ -58,7 +58,7 @@ final class ChildClaim extends Model implements ReadableModel
     }
 
     /**
-     * A child of a main runtime, starting from the commit the parent's fresh version 2 read verified; a dirty parent
+     * A child of a main runtime, starting from the commit the parent's fresh commit read verified; a dirty parent
      * dispatches its committed HEAD.
      *
      * @throws ChildClaimRefused

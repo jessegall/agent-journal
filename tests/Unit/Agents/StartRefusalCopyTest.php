@@ -138,13 +138,6 @@ final class StartRefusalCopyTest extends TestCase
                 'Connect a host',
                 'Ask your host operator to connect a host.',
             ],
-            'host-protocol-outdated' => [
-                StartPreflightRefusal::HostProtocolOutdated,
-                'The host needs an update before it can start agents.',
-                StartRemedyType::UpdateHost,
-                'Update the host',
-                'Ask your host operator to update the host.',
-            ],
             'combination-not-declared' => [
                 StartPreflightRefusal::CombinationNotDeclared,
                 'The host does not support these settings together.',

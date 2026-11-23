@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Hosts\HostCalls;
-use App\Enums\HostProtocolVersion;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
-use App\Exceptions\HostProtocolMismatch;
+use App\Exceptions\HostRoleRefused;
 use App\Models\Host;
 use App\Values\HostContext;
 use Carbon\CarbonImmutable;
@@ -27,13 +26,12 @@ final readonly class SignedHostCalls implements HostCalls
     public function __construct(private Repository $cache) {}
 
     /**
-     * The host and envelope of a signed call speaking one of these protocols.
+     * The host and envelope of a signed call.
      *
      * @throws HostCredentialRejected
      * @throws CallSignatureInvalid
-     * @throws HostProtocolMismatch
      */
-    public function verify(Request $request, HostProtocolVersion ...$spoken): HostContext
+    public function verify(Request $request): HostContext
     {
         $secret = $request->bearerToken() ?? throw HostCredentialRejected::missing();
         $callId = $this->header($request, SignedCall::ID_HEADER);
@@ -51,7 +49,6 @@ final readonly class SignedHostCalls implements HostCalls
         }
 
         $host = Host::forSecret($secret);
-        $protocol = $this->spokenProtocol($request, $spoken);
 
         if (! $this->cache->add("host-call:{$host->id}:{$callId}", true, self::WINDOW_SECONDS * 2)) {
             throw HostCredentialRejected::replayed($callId);
@@ -64,32 +61,25 @@ final readonly class SignedHostCalls implements HostCalls
                 CarbonImmutable::createFromTimestamp($issuedAt),
                 SignedCall::digestOf($request->getContent()),
             ),
-            $protocol,
         );
     }
 
     /**
-     * The protocol the call speaks, one of those the route speaks; a host of another version is refused before it can
-     * claim, report, open or recover anything.
+     * The host and envelope of a signed call from the relay of a connected folder.
      *
-     * @param  array<HostProtocolVersion>  $spoken
-     *
-     * @throws HostProtocolMismatch
+     * @throws HostCredentialRejected
+     * @throws CallSignatureInvalid
+     * @throws HostRoleRefused
      */
-    private function spokenProtocol(Request $request, array $spoken): HostProtocolVersion
+    public function verifyRelay(Request $request): HostContext
     {
-        $first = array_values($spoken)[0]->value;
+        $context = $this->verify($request);
 
-        $version = $request->headers->get(SignedCall::HOST_PROTOCOL_HEADER)
-            ?? throw HostProtocolMismatch::missing($first);
-
-        foreach ($spoken as $protocol) {
-            if ($version === (string) $protocol->value) {
-                return $protocol;
-            }
+        if (! Host::query()->findOrFail($context->hostId)->isConnectedFolderRelay()) {
+            throw HostRoleRefused::forRelayOnly($context->hostId);
         }
 
-        throw HostProtocolMismatch::speaks($version, $first);
+        return $context;
     }
 
     private function header(Request $request, string $name): string

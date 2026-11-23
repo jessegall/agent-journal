@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Admission\StartProfileAdmission;
-use App\Exceptions\CallProtocolUnsupported;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\CredentialRejected;
 use Carbon\CarbonImmutable;
@@ -25,7 +24,6 @@ final readonly class AgentContextFactory
      *
      * @throws CredentialRejected
      * @throws CallSignatureInvalid
-     * @throws CallProtocolUnsupported
      */
     public function admit(Request $request): AdmittedAgent
     {
@@ -44,12 +42,6 @@ final readonly class AgentContextFactory
     private function verifiedCall(Request $request, StartProfilePin $pin): SignedCall
     {
         $token = self::tokenOf($request);
-        $protocol = $this->header($request, SignedCall::PROTOCOL_HEADER);
-
-        if ($protocol !== SignedCall::PROTOCOL) {
-            throw CallProtocolUnsupported::version($protocol);
-        }
-
         $callId = $this->header($request, SignedCall::ID_HEADER);
         $issuedAt = (int) $this->header($request, SignedCall::ISSUED_AT_HEADER);
         $signature = $this->header($request, SignedCall::SIGNATURE_HEADER);

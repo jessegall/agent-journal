@@ -6,7 +6,6 @@ namespace Tests\Feature\Connections;
 
 use App\Enums\ChildRole;
 use App\Enums\DeliveryOutcome;
-use App\Enums\HostProtocolVersion;
 use App\Models\ChildClaim;
 use App\Models\ProjectBinding;
 use App\Models\WorktreeDelivery;
@@ -100,7 +99,6 @@ final class WorktreeDeliveryTest extends TestCase
                 'targetRef' => 'refs/heads/main',
                 'expectedTarget' => self::BASE,
             ],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * What a version 2 workspace sample adds to the version 1 facts: the binding and checkout it was read for and the
- * full verified HEAD object id, or the typed reason there is none (an unborn or unavailable root). A version 1 sample
- * carries none of it and never authorizes commit-based dispatch.
+ * What a workspace sample of a connected folder adds to its git facts: the binding and checkout it was read for and
+ * the full verified HEAD object id, or the typed reason there is none (an unborn or unavailable root). A plain
+ * sample names no binding, carries none of it and never authorizes commit-based dispatch.
  */
 final readonly class CommitObservation
 {
@@ -16,7 +16,6 @@ final readonly class CommitObservation
     public const string UNAVAILABLE = 'unavailable';
 
     private function __construct(
-        public int $version,
         public string $bindingId,
         public string $checkoutId,
         public string $headOid,
@@ -25,17 +24,25 @@ final readonly class CommitObservation
 
     public static function notRecorded(): self
     {
-        return new self(1, '', '', '', '');
+        return new self('', '', '', '');
     }
 
     public static function ofHead(string $bindingId, string $checkoutId, string $oid): self
     {
-        return new self(2, $bindingId, $checkoutId, $oid, '');
+        return new self($bindingId, $checkoutId, $oid, '');
     }
 
     public static function withoutCommit(string $bindingId, string $checkoutId, string $reason): self
     {
-        return new self(2, $bindingId, $checkoutId, '', $reason);
+        return new self($bindingId, $checkoutId, '', $reason);
+    }
+
+    /**
+     * Whether the sample was read for a binding's checkout, so it carries a commit or the reason it has none.
+     */
+    public function isRecorded(): bool
+    {
+        return $this->bindingId !== '';
     }
 
     /**
@@ -43,6 +50,6 @@ final readonly class CommitObservation
      */
     public function authorizesCommitDispatch(): bool
     {
-        return $this->version === 2 && $this->headOid !== '';
+        return $this->isRecorded() && $this->headOid !== '';
     }
 }

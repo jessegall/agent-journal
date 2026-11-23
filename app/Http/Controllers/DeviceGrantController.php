@@ -8,7 +8,6 @@ use App\Commands\PollDeviceGrant\PollDeviceGrantCommand;
 use App\Commands\StartDeviceGrant\StartDeviceGrantCommand;
 use App\Contracts\Hosts\HostCalls;
 use App\Enums\CommandEntry;
-use App\Enums\HostProtocolVersion;
 use App\Enums\RefusalCode;
 use App\Models\DeviceGrant;
 use App\Support\EntryDispatchers;
@@ -29,7 +28,7 @@ final readonly class DeviceGrantController
 
     public function start(Request $request, EntryDispatchers $dispatchers): JsonResponse
     {
-        $host = $this->calls->verify($request, HostProtocolVersion::RemoteProject);
+        $host = $this->calls->verifyRelay($request);
         $deviceCode = InstallTicket::generate();
         $userCode = implode('-', str_split(Str::upper(Str::random(8)), 4));
         $binding = $request->string('binding')->toString();
@@ -50,7 +49,7 @@ final readonly class DeviceGrantController
 
     public function poll(Request $request, EntryDispatchers $dispatchers): JsonResponse
     {
-        $host = $this->calls->verify($request, HostProtocolVersion::RemoteProject);
+        $host = $this->calls->verifyRelay($request);
         $grant = InstallTicket::generate();
         $deviceCode = InstallTicket::digestOf($request->string('deviceCode')->toString());
         $poll = new PollDeviceGrantCommand($host->hostId, $deviceCode, $grant->digest());

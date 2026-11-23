@@ -122,7 +122,6 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
             array_values(array_unique($approvers)),
         ));
 
-        $release = $this->releases->currentRelease()[0]->version ?? 'the current one';
         $audits = ConnectionAudit::newestOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
 
         return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding(
@@ -137,7 +136,6 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
                 ),
                 array_values(array_filter($grants, fn (DeviceGrant $grant) => $grant->binding_id === $binding->id)),
             ),
-            $release,
             array_map(
                 SupportRecordRowData::fromAudit(...),
                 array_slice(array_values(array_filter(

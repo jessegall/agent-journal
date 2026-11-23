@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\HostProtocolVersion;
 use App\Models\Environment;
 use App\Models\Project;
 use App\Models\ProjectBinding;
@@ -119,7 +118,6 @@ final class EnvironmentsTest extends TestCase
                 'profile' => 'main-agent',
                 'model' => 'default',
             ],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }

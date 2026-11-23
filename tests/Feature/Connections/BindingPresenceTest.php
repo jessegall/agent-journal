@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Enums\BindingReadiness;
-use App\Enums\HostProtocolVersion;
 use App\Models\AgentRuntime;
 use App\Models\ProjectBinding;
 use Carbon\CarbonImmutable;
@@ -134,7 +133,6 @@ final class BindingPresenceTest extends TestCase
             $this->relayCredential($nonce),
             "/host/bindings/{$binding}/status",
             [],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }
@@ -162,13 +160,11 @@ final class BindingPresenceTest extends TestCase
                 'bootId' => $bootId,
                 'sequence' => $sequence,
                 'release' => '1.0.0',
-                'protocol' => HostProtocolVersion::RemoteProject->value,
                 'descriptors' => [],
                 'provisioning' => 'succeeded',
                 'takeover' => $takeover,
                 'setupGeneration' => $setupGeneration,
             ],
-            HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
     }

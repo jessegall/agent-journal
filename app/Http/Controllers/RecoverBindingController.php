@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Commands\RecoverProjectBinding\RecoverProjectBindingCommand;
 use App\Contracts\Hosts\HostCalls;
 use App\Enums\CommandEntry;
-use App\Enums\HostProtocolVersion;
 use App\Exceptions\BindingUnrecoverable;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
@@ -27,7 +26,7 @@ final readonly class RecoverBindingController
         EntryDispatchers $dispatchers,
     ): JsonResponse {
         try {
-            $host = $calls->verify($request, HostProtocolVersion::RemoteProject);
+            $host = $calls->verifyRelay($request);
         } catch (HostCredentialRejected|CallSignatureInvalid $refusal) {
             throw BindingUnrecoverable::generic($refusal);
         }
@@ -41,7 +40,6 @@ final readonly class RecoverBindingController
             'bindingId' => $redemption->bindingId,
             'mainAgentId' => $redemption->mainAgentId,
             'projectLabel' => $redemption->projectLabel,
-            'protocol' => HostProtocolVersion::RemoteProject->value,
         ], JsonResponse::HTTP_OK, ['Cache-Control' => 'no-store, private']);
     }
 }

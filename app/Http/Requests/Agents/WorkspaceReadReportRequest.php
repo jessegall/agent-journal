@@ -23,20 +23,19 @@ final class WorkspaceReadReportRequest extends FormRequest
             'dirty' => ['required', 'boolean'],
             'clean' => ['required', 'boolean'],
             'generation' => ['required', 'integer', 'min:0'],
-            'version' => ['sometimes', 'integer', 'in:1,2'],
-            'binding' => ['required_if:version,2', 'string', 'max:64'],
-            'checkout' => ['required_if:version,2', 'string', 'max:128'],
+            'binding' => ['sometimes', 'string', 'max:64'],
+            'checkout' => ['required_with:binding', 'string', 'max:128'],
             'head' => ['nullable', 'string', 'regex:/^[0-9a-f]{40}([0-9a-f]{24})?$/'],
             'reason' => ['nullable', 'string', 'in:unborn,unavailable'],
         ];
     }
 
     /**
-     * The commit the sample names: none for a version 1 report, else its HEAD or the reason there is none.
+     * The commit the sample names: none for a sample read for no binding, else its HEAD or the reason there is none.
      */
     public function observedCommit(): CommitObservation
     {
-        if ($this->integer('version', 1) !== 2) {
+        if (! $this->filled('binding')) {
             return CommitObservation::notRecorded();
         }
 

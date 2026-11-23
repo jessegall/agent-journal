@@ -17,7 +17,7 @@ use Tests\Support\Connections\ConnectsProjects;
 use Tests\TestCase;
 
 /**
- * A child claim starts from the commit a fresh version 2 read verified, records its ancestry, and refuses an unborn
+ * A child claim starts from the commit a fresh commit read verified, records its ancestry, and refuses an unborn
  * root, a read with no commit and a base the parent's HEAD has moved from.
  */
 final class ChildClaimTest extends TestCase

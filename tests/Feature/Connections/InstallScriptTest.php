@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\HostProtocolVersion;
 use App\Exceptions\TicketMalformed;
 use App\Support\InstallScript;
 use App\Values\ReleaseManifest;
@@ -173,7 +172,6 @@ final class InstallScriptTest extends TestCase
 
         return (string) json_encode([
             'version' => self::VERSION,
-            'hostProtocolVersion' => HostProtocolVersion::RemoteProject->value,
             'capabilities' => ReleaseManifest::REQUIRED_CAPABILITIES,
             'targets' => [
                 ['os' => 'darwin', 'arch' => 'arm64', ...self::OFFERED, 'artifacts' => [$relay('darwin-arm64')]],

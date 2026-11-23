@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Enums\HostProtocolVersion;
 use Tests\TestCase;
 
 final class PublishedReleasesTest extends TestCase
@@ -66,21 +65,17 @@ final class PublishedReleasesTest extends TestCase
         $this->getJson('/releases/compatibility')->assertOk()->assertJsonPath('release', null);
     }
 
-    public function test_the_compatibility_answer_names_the_release_and_every_protocol_version(): void
+    public function test_the_compatibility_answer_names_the_release(): void
     {
         $this->getJson('/releases/compatibility')
             ->assertOk()
-            ->assertExactJson([
-                'release' => self::VERSION,
-                'protocolVersions' => [HostProtocolVersion::First->value, HostProtocolVersion::RemoteProject->value],
-            ]);
+            ->assertExactJson(['release' => self::VERSION]);
     }
 
     private function manifest(): string
     {
         return (string) json_encode([
             'version' => self::VERSION,
-            'hostProtocolVersion' => HostProtocolVersion::RemoteProject->value,
             'profile' => 'remote-project',
             'providers' => [],
             'targets' => [[

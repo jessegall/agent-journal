@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Contracts\Files\Files;
 use App\Data\ReleaseCompatibilityData;
-use App\Enums\HostProtocolVersion;
 use App\Enums\Place;
 use App\Exceptions\ReleaseMissing;
 use App\Values\FilePath;
@@ -87,14 +86,12 @@ final readonly class PublishedReleases
     }
 
     /**
-     * What a relay of any protocol may ask before it calls anything else: the current release and every protocol
-     * version this journal speaks.
+     * What a relay may ask before it calls anything else: the release this journal publishes.
      */
     public function compatibility(): ReleaseCompatibilityData
     {
         return ReleaseCompatibilityData::from([
             'release' => $this->current === '' ? null : $this->current,
-            'protocolVersions' => HostProtocolVersion::spoken(),
         ]);
     }
 

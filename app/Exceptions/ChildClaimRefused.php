@@ -11,8 +11,8 @@ use App\Enums\RefusalCode;
 use RuntimeException;
 
 /**
- * A child claim the journal does not issue: its parent's root has no commit, the read is a version 1 sample, or the
- * parent's HEAD moved since the read, so a fresh read and claim are needed.
+ * A child claim the journal does not issue: its parent's root has no commit, the read names no binding's commit, or
+ * the parent's HEAD moved since the read, so a fresh read and claim are needed.
  */
 final class ChildClaimRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {

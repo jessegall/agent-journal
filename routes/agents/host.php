@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\HostRouteRole;
 use App\Http\Controllers\Agents\Host\ActivityReportController;
 use App\Http\Controllers\Agents\Host\ClaimRequestsController;
 use App\Http\Controllers\Agents\Host\ClaimStartController;
@@ -34,7 +35,7 @@ use Illuminate\Support\Facades\Route;
 
 // The work routes enrolled hosts speak with protocol 1 and a connected project's relay with protocol 2, scoped to its
 // live binding.
-Route::prefix('host')->middleware('journal.host:1,2')->name('agents.host.')->group(function (): void {
+Route::prefix('host')->middleware('journal.host:'.HostRouteRole::Shared->value)->name('agents.host.')->group(function (): void {
     Route::post('/claim', ClaimRequestsController::class)->name('claim');
     Route::post('/runtimes', OpenMainRuntimeController::class)->name('runtimes.open');
     Route::post('/runtimes/{runtime}/start', StartGrantController::class)->name('start');

@@ -14,7 +14,7 @@ use App\Models\WorkspaceRead;
 
 /**
  * When a connected project's relay claims a child's start, issues the child's claim once, from the commit the
- * parent's latest version 2 read verified, and hands the relay the checkout its worktree is prepared for. A child of
+ * parent's latest commit read verified, and hands the relay the checkout its worktree is prepared for. A child of
  * a host that serves no binding, or whose parent has no verified commit yet, gets no checkout and works where its
  * start folder is, as before.
  */

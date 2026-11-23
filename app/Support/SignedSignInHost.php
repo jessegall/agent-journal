@@ -8,7 +8,6 @@ use App\Contracts\Accounts\SignInHost;
 use App\Enums\AccountCheckResult;
 use App\Enums\ArrangementType;
 use App\Enums\CleanupTarget;
-use App\Enums\HostProtocolVersion;
 use App\Enums\SignInMethod;
 use App\Enums\SignInOutcome;
 use App\Exceptions\SignInRunnerRefused;
@@ -186,7 +185,6 @@ final readonly class SignedSignInHost implements SignInHost
                 SignedCall::ID_HEADER => $callId,
                 SignedCall::ISSUED_AT_HEADER => (string) $issuedAt,
                 SignedCall::SIGNATURE_HEADER => $signature,
-                SignedCall::HOST_PROTOCOL_HEADER => (string) HostProtocolVersion::current()->value,
             ])
             ->withBody($body, 'application/json')
             ->post(rtrim($this->journalUrl, '/').$path);
