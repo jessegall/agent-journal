@@ -96,7 +96,7 @@ final readonly class LibraryReuse
     {
         $template = self::templateOf($source);
         $found = [];
-        $elements = '/<('.implode('|', array_keys(self::ELEMENTS)).')(?=[\s>\/])/';
+        $elements = '/<('.implode('|', array_keys(self::ELEMENTS)).')(?=[\s>\/]|$)/';
         $roles = '/\brole="('.implode('|', array_keys(self::ROLES)).')"/';
 
         foreach (explode("\n", $template['text']) as $index => $line) {

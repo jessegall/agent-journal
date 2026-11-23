@@ -5,5 +5,8 @@
 <template>
     <div role="menu">
         <button type="button">Open</button>
+        <textarea
+            rows="2"
+        />
     </div>
 </template>
