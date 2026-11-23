@@ -67,6 +67,37 @@ func TestClaudeCodeRecordingsReadAsTheirMenuAndPrompt(t *testing.T) {
 	}
 }
 
+func TestTheRecordedWelcomeScreenReadsAsTheThemeMenuAndItsEnterLeadsToTheLoginMenu(t *testing.T) {
+	layout := ClaudeCode{}.Screens()
+
+	welcome := readings(t, "claude-code/2.1.323/screens/welcome-theme", layout)
+	if !has(welcome, screen.MenuShown, "theme") {
+		for number, row := range screenAt(t, "claude-code/2.1.323/screens/welcome-theme", layout, time.Hour).Rows {
+			t.Logf("%02d %q", number, row)
+		}
+		t.Fatalf("the welcome recording read as %+v", welcome)
+	}
+
+	accepted := readings(t, "claude-code/2.1.323/screens/welcome-theme-accepted", layout)
+	if !has(accepted, screen.MenuShown, "theme") || accepted[len(accepted)-1].Menu != "login-method" {
+		t.Fatalf("the accepted welcome screen read as %+v, not the theme menu and then the login menu", accepted)
+	}
+	if keys := familyNamed(t, layout, "theme").LaterKeys; keys != string(recordedKeys(t, "claude-code/2.1.323/screens/welcome-theme-accepted")) {
+		t.Fatalf("the theme menu is accepted with %q, not the recorded keys", keys)
+	}
+}
+
+// recordedKeys are the keys a recording typed, without the signal that ended it.
+func recordedKeys(t *testing.T, folder string) []byte {
+	t.Helper()
+	fixture, err := recording.Load(filepath.Join("../testdata/recordings", folder))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return fixture.Inputs[0].Bytes
+}
+
 func TestCodexRecordingsReachAReadyPrompt(t *testing.T) {
 	layout := Codex{}.Screens()
 

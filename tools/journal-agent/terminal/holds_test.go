@@ -68,6 +68,19 @@ func TestTheRecordedTrustScreenHoldsForTrustAndSendsNoKey(t *testing.T) {
 	}
 }
 
+func TestTheRecordedWelcomeScreenIsPassedWithItsRecordedEnterAndHoldsNothing(t *testing.T) {
+	reader, reading := replayed(t, "claude-code/2.1.323/screens/welcome-theme")
+	holds, program := newHolds(t, reader)
+
+	report, err := holds.Observe(reading, "request-1", time.Second)
+	if err != nil || report.Reason != HoldNone || report.Menu != "theme" {
+		t.Fatalf("the welcome screen reported %+v, %v", report, err)
+	}
+	if program.String() != "\r" {
+		t.Fatalf("the welcome screen got keys %q, not its recorded Enter", program.String())
+	}
+}
+
 func TestTwoYesNoQuestionsAreToldApartByTheirQuestionText(t *testing.T) {
 	permission := drawn(t, "\x1b[2;1HBash command\x1b[3;1HDo you want to proceed?"+
 		"\x1b[4;1H❯ Yes\x1b[5;1H  No, and tell Claude what to do differently (esc)")

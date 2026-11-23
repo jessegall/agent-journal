@@ -11,16 +11,28 @@ import (
 // recorded turns.
 var claudeCodeSpinnerGlyphs = []string{"✻ ", "✶ ", "✳ ", "✢ ", "· ", "* ", "✽ "}
 
+// claudeCodeHighlights are how Claude Code 2.1.323 marks the highlighted option: ❯ alone, or ❯ with the ✔ of the
+// entry in use where a list keeps a column for it, as the welcome screen's text styles do (screens/welcome-theme).
+var claudeCodeHighlights = []string{"❯ ✔ ", "❯ "}
+
 // claudeCodeMenu is one menu family of Claude Code: its ❯ option list, its keywords and the hold it raises.
 func claudeCodeMenu(name, hold string, keywords ...string) screen.MenuFamily {
 	return screen.MenuFamily{
 		Name:        name,
-		Options:     screen.OptionList{Label: "menu", Markers: []string{"❯ "}},
+		Options:     screen.OptionList{Label: "menu", Markers: claudeCodeHighlights},
 		Keywords:    keywords,
 		MinKeywords: 2,
 		StableFor:   300 * time.Millisecond,
 		Hold:        hold,
 	}
+}
+
+// acceptedWith marks a family whose highlighted entry is harmless and is accepted with the recorded keys, so the
+// screen is passed instead of holding the runtime: the welcome screen's text style, in screens/welcome-theme-accepted.
+func acceptedWith(family screen.MenuFamily, keys string) screen.MenuFamily {
+	family.LaterKeys = keys
+
+	return family
 }
 
 // asksForSecret marks a family whose screen asks the user for a key or password, so no text of it leaves the host.
@@ -34,7 +46,7 @@ func asksForSecret(family screen.MenuFamily) screen.MenuFamily {
 // composer is the ❯ row fenced by two rules on the normal buffer, empty while the cursor sits after the ❯. A spinner
 // redraw lands about every 100 ms, so 300 ms of stillness is three missed frames. The menu families come from report
 // 175 (the program's own dialog code): each is known by its ❯ option list and two of its keywords, and holds the
-// runtime for a user; none is answered automatically. The effort picker is a slider instead, recorded in
+// runtime for a user; only the welcome screen's text style is answered, with its recorded Enter. The effort picker is a slider instead, recorded in
 // keyscripts/effort-change.
 func (ClaudeCode) Screens() screen.Layout {
 	return screen.Layout{
@@ -50,7 +62,8 @@ func (ClaudeCode) Screens() screen.Layout {
 				"3rd-party platform"),
 			asksForSecret(claudeCodeMenu("api-key", "login_required", "custom api key", "anthropic_api_key",
 				"use this api key")),
-			claudeCodeMenu("theme", "onboarding_required", "text style", "dark mode", "light mode", "colorblind"),
+			acceptedWith(claudeCodeMenu("theme", "onboarding_required", "text style", "dark mode", "light mode",
+				"colorblind"), "\r"),
 			claudeCodeMenu("terms", "onboarding_required", "consumer terms", "policies", "help improve",
 				"accept terms"),
 			claudeCodeMenu("usage-limit", "usage_limited", "wait for limit to reset", "spend limit", "hit your",

@@ -26,6 +26,10 @@ const stopKeys = "\x1b\x04"
 // readyDeadline is how long a delivery waits for an empty, still composer before it stays staged for later.
 const readyDeadline = 10 * time.Second
 
+// passableScreens is how many screens that hold nothing, such as a menu passed with its recorded keys, one prompt
+// waits past before it stays staged.
+const passableScreens = 3
+
 // echoDeadline is how long a typed line waits to be drawn in the composer before its delivery is uncertain.
 const echoDeadline = 5 * time.Second
 
@@ -315,8 +319,11 @@ func (driver *TerminalDriver) prompt(
 			Hold:     contracts.HoldInterrupted,
 		}, nil
 	}
-	if !driver.waitUntil(readyDeadline, driver.promptReady) {
-		return driver.stagedBehindScreen(request)
+	for passed := 0; !driver.waitUntil(readyDeadline, driver.promptReady); passed++ {
+		result, err := driver.stagedBehindScreen(request)
+		if err != nil || result.IsHeld() || passed == passableScreens {
+			return result, err
+		}
 	}
 
 	generation := driver.runtime.Generation(driver.runtime.Composer)
