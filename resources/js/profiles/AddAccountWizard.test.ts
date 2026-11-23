@@ -89,6 +89,7 @@ import type {
 } from '@generated/types/accounts';
 
 const { default: AddAccountWizard } = await import('./AddAccountWizard.vue');
+const { router } = await import('@inertiajs/vue3');
 
 const claudeMethods: SignInMethodData[] = [
     {
@@ -189,7 +190,10 @@ beforeEach(() => {
     );
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.mocked(router.reload).mockReset();
+});
 
 describe('AddAccountWizard', () => {
     it('starts one sign-in however often Continue is pressed', async () => {
@@ -278,16 +282,14 @@ describe('AddAccountWizard', () => {
             { status: 'started', attemptId: 'attempt-1' },
         ];
         vi.useFakeTimers();
-        vi.stubGlobal(
-            'fetch',
-            vi.fn(async (url: string) => ({
-                ok: true,
-                json: async () =>
-                    url.includes('/receipt')
-                        ? replies.shift()
-                        : { address: null, code: null },
-            })),
-        );
+        // The receipt is a page read: a partial reload of its prop alone, answered here as the server would.
+        vi.mocked(router.reload).mockImplementation((options) => {
+            const [prop] = options?.only ?? [];
+
+            options?.onSuccess?.({
+                props: { [prop]: prop.includes('receipt') ? replies.shift() : { address: null, code: null } },
+            } as never);
+        });
         const view = openWizard();
         await flushPromises();
         const [start] = forms;
