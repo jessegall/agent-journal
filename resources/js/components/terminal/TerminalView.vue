@@ -135,12 +135,9 @@ const cursorStyle = computed(() => {
                     :class="{ 'opacity-60': screen.state === 'ended' }"
                     :style="{ width: `${drawn.columns}ch` }"
                     aria-label="Agent terminal, read only"
-                ><template v-for="(row, index) in drawn.rows" :key="index">
-    <TerminalRow
-                    :runs="row.runs"
-                    :plain="drawn.plain"
-                />
-  </template><span class="cursor absolute h-[1lh] w-[1ch]" :style="cursorStyle" /></pre>
+                ><template v-for="(row, index) in drawn.rows" :key="index"
+                    ><TerminalRow :runs="row.runs" :plain="drawn.plain" /></template
+                ><span class="cursor absolute h-[1lh] w-[1ch]" :style="cursorStyle" /></pre>
             </div>
         </template>
     </div>
