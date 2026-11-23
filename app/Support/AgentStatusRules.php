@@ -313,7 +313,12 @@ final class AgentStatusRules
     private static function starting(AgentEvidence $evidence): AgentStatus
     {
         $launch = $evidence->launch;
-        $actions = $evidence->canCancelLaunch ? [StatusAction::of(StatusActionType::CancelStart)] : [];
+        // A start past the point it can be cancelled has a session, which is stopped instead: no state is a dead end.
+        $actions = match (true) {
+            $evidence->canCancelLaunch => [StatusAction::of(StatusActionType::CancelStart)],
+            $evidence->canStop && $evidence->hasLiveSession() => [StatusAction::of(StatusActionType::Stop)],
+            default => [],
+        };
 
         $operation = $launch === null ? null : new StatusOperation(
             $launch->requestId,

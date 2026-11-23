@@ -292,6 +292,36 @@ final class AgentStatusTest extends TestCase
         $this->assertSame([SessionState::Idle, SessionState::Unknown], [$afterWake->sessionState, $afterDelivery->sessionState]);
     }
 
+    /**
+     * User message 19457: a start that can no longer be cancelled still has a way out: its session is stopped.
+     */
+    public function test_a_start_past_cancelling_offers_stop_to_an_actor_allowed_to_stop(): void
+    {
+        $starting = new AgentEvidence(
+            false,
+            self::SESSION,
+            SessionStatus::Active,
+            ProcessStartState::Starting,
+            self::runtime(RuntimeActivity::Idle),
+            true,
+            null,
+            null,
+            null,
+            false,
+            false,
+            false,
+            true,
+        );
+
+        $status = AgentStatusRules::of($starting, self::words(false));
+
+        $this->assertSame(SessionState::Starting, $status->sessionState);
+        $this->assertSame(
+            [StatusActionType::Stop],
+            array_map(fn (StatusAction $action) => $action->type, $status->actions),
+        );
+    }
+
     public function test_a_live_session_offers_stop_only_to_an_actor_allowed_to_stop(): void
     {
         $allowed = new AgentEvidence(
