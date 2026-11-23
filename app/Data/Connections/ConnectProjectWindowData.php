@@ -17,12 +17,14 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class ConnectProjectWindowData extends Data
 {
     /**
+     * @param  list<string>  $holdReasons  why the server issues no install line now, one sentence each
      * @param  list<JoinTargetData>  $projects
      */
     public function __construct(
         public readonly string $serverName,
         public readonly string $origin,
         public readonly bool $canIssue,
+        public readonly array $holdReasons,
         public readonly ReleaseOfferData $release,
         #[DataCollectionOf(JoinTargetData::class)]
         public readonly array $projects,

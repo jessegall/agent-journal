@@ -8,6 +8,7 @@ use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsResolver;
 use App\Data\Connections\ReleaseOfferData;
+use App\Enums\InstallLineHold;
 use App\Support\CoreSettings;
 use App\Support\InstallLineAvailability;
 use App\Support\PublishedReleases;
@@ -52,6 +53,7 @@ final class InstallLineAvailabilityTest extends TestCase
 
         $this->assertFalse($this->app->make(SettingsResolver::class)->boolean($core->remoteProjects));
         $this->assertFalse($this->availability()->canIssue());
+        $this->assertSame([InstallLineHold::SwitchedOff], $this->availability()->holds());
     }
 
     public function test_install_lines_are_issued_with_the_switch_on_an_https_origin_and_a_compatible_release(): void
@@ -66,7 +68,7 @@ final class InstallLineAvailabilityTest extends TestCase
         $this->switchOn();
         config(['agents.server_origin' => 'http://journal.example.com']);
 
-        $this->assertFalse($this->availability()->canIssue());
+        $this->assertSame([InstallLineHold::OriginNotHttps], $this->availability()->holds());
     }
 
     public function test_no_published_release_issues_no_install_line(): void
@@ -74,7 +76,7 @@ final class InstallLineAvailabilityTest extends TestCase
         $this->switchOn();
         config(['agents.release' => '']);
 
-        $this->assertFalse($this->availability()->canIssue());
+        $this->assertSame([InstallLineHold::NoRelease], $this->availability()->holds());
     }
 
     public function test_a_release_without_measured_sizes_issues_no_install_line(): void

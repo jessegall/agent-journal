@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Settings\SettingsResolver;
+use App\Enums\InstallLineHold;
 
 /**
  * Whether this server may issue install lines that connect a project on another machine: the owner switched remote
@@ -22,8 +23,20 @@ final readonly class InstallLineAvailability
 
     public function canIssue(): bool
     {
-        return $this->settings->boolean($this->core->remoteProjects)
-            && $this->origin->isHttps()
-            && $this->releases->hasCompatibleRelease();
+        return $this->holds() === [];
+    }
+
+    /**
+     * Everything that keeps this server from issuing install lines now; none when it may.
+     *
+     * @return list<InstallLineHold>
+     */
+    public function holds(): array
+    {
+        return array_values(array_filter([
+            $this->settings->boolean($this->core->remoteProjects) ? null : InstallLineHold::SwitchedOff,
+            $this->origin->isHttps() ? null : InstallLineHold::OriginNotHttps,
+            $this->releases->hasCompatibleRelease() ? null : InstallLineHold::NoRelease,
+        ]));
     }
 }

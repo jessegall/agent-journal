@@ -277,10 +277,8 @@ function revokeBinding(bindingId: string, deviceName: string): void {
                 Run a project on your own computer and keep its tasks, plans and
                 decisions on {{ data.serverName }} ({{ data.origin }}).
             </p>
-            <template v-if="!data.canIssue">
-                <p class="text-small text-muted-foreground">
-                    This journal cannot connect a project yet, for the reasons below.
-                </p>
+            <template v-for="reason in data.holdReasons" :key="reason">
+                <p class="text-small text-muted-foreground">{{ reason }}</p>
             </template>
             <ReleasePlatforms :release="data.release" />
             <template v-if="refusal !== null">

@@ -63,6 +63,8 @@ const { default: ConnectProjectWindow } =
 const LINE =
     'curl -fsSL https://journal.example.com/install/Tk3_x-9QvZ0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0u | sh';
 
+const HOLD = 'Switch on Connect projects on other machines in Settings first.';
+
 function windowData(
     canIssue: boolean,
     attempts: InstallAttemptRowData[] = [],
@@ -71,6 +73,7 @@ function windowData(
         serverName: 'journal.example.com',
         origin: 'https://journal.example.com',
         canIssue,
+        holdReasons: canIssue ? [] : [HOLD],
         projects: [
             {
                 id: 'project-1',
@@ -202,9 +205,7 @@ describe('ConnectProjectWindow', () => {
     it('offers no install action while connecting projects is switched off', () => {
         const wrapper = windowWith(false);
 
-        expect(wrapper.text()).toContain(
-            'This journal cannot connect a project yet',
-        );
+        expect(wrapper.text()).toContain(HOLD);
         expect(button(wrapper, 'Connect a project').attributes('disabled')).toBeDefined();
         expect(
             wrapper.findAll('button').map((each) => each.text()),

@@ -16,6 +16,7 @@ use App\Data\Connections\ReleaseOfferData;
 use App\Data\Connections\SupportRecordRowData;
 use App\Data\Connections\TerminalSignInRowData;
 use App\Enums\BindingReadiness;
+use App\Enums\InstallLineHold;
 use App\Models\ConnectionAudit;
 use App\Models\DeviceGrant;
 use App\Models\Environment;
@@ -57,6 +58,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
             'serverName' => $this->origin->name(),
             'origin' => $this->origin->canonical(),
             'canIssue' => $this->availability->canIssue(),
+            'holdReasons' => array_map(fn (InstallLineHold $hold) => $hold->sentence(), $this->availability->holds()),
             'release' => ReleaseOfferData::ofPublished($this->releases->currentRelease()),
             'attempts' => InstallAttemptListData::fromPage($this->attempts->page($this->attemptsCursor())),
             'projects' => array_map(
