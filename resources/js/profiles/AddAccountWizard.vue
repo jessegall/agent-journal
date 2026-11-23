@@ -147,9 +147,11 @@ watch(
     { immediate: true },
 );
 
+// A start that joins an attempt already running leaves the list as it was, so the wizard also looks as soon as it
+// starts waiting, not only when the list changes.
 watch(
-    () => props.attempts,
-    (attempts) => {
+    [() => props.attempts, awaited],
+    ([attempts]) => {
         if (awaited.value === null) {
             return;
         }
@@ -366,7 +368,7 @@ function cancelAndClose(): void {
                 </template>
             </DialogHeader>
         </template>
-        <div class="flex min-h-[420px] flex-col" data-wizard-steps>
+        <div class="flex min-h-[420px] flex-col gap-4" data-wizard-steps>
             <template v-if="isAskingToClose && shownMethod !== undefined">
                 <ChosenSignIn :driver="shownDriver" :method="shownMethod" />
                 <div

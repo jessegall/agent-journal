@@ -130,6 +130,7 @@ function attempt(
         resultAccountId: null,
         isResultUnmatchable: false,
         isWaitingForAgents: false,
+        isUnclaimed: false,
         state,
         expiresAt: '2026-11-21T12:00:00+00:00',
         refusal: null,
@@ -210,6 +211,25 @@ describe('AddAccountWizard', () => {
         await continueButton.trigger('click');
 
         expect(start.submit).toHaveBeenCalledTimes(1);
+    });
+
+    it('follows a sign-in that was already running when its start joins it', async () => {
+        const running = attempt('waiting', { method: 'oauth' });
+        const view = mount(AddAccountWizard, {
+            attachTo: document.body,
+            global: { stubs: { teleport: true } },
+            props: { request: { kind: 'new' }, methods, attempts: [running], rows: [] },
+        });
+        await flushPromises();
+
+        await view
+            .findAll('[role="radio"]')
+            .find((card) => card.text().includes('Sign in with Claude'))!
+            .trigger('click');
+        await button(view, 'Continue').trigger('click');
+        await flushPromises();
+
+        expect(fetch).toHaveBeenCalledWith(expect.stringContaining('attempt-1'), expect.anything());
     });
 
     it('refuses a key past its byte bound with a field error and sends nothing', async () => {

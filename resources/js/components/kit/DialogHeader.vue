@@ -16,6 +16,6 @@ const emit = defineEmits<{ close: [] }>();
         <slot name="leading" />
         <DialogTitle>{{ title }}</DialogTitle>
         <slot name="trailing" />
-        <IconButton icon="close" :label="closeLabel" @click="emit('close')" />
+        <IconButton icon="close" :label="closeLabel" :tooltip="false" @click="emit('close')" />
     </div>
 </template>

@@ -70,6 +70,11 @@ use Illuminate\Support\Str;
 #[Fillable(['account_protocol', 'method', 'actor_type', 'actor_id'])]
 final class SignInAttempt extends Model implements EventSource, ReadableModel
 {
+    /**
+     * How long an attempt may wait for a sign-in service to take it up before the dialog says none has.
+     */
+    public const int UNCLAIMED_SECONDS = 20;
+
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
@@ -489,6 +494,19 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function isWaitingForAgents(): bool
     {
         return $this->waits_for_uses && $this->state === SignInState::Starting;
+    }
+
+    /**
+     * Whether no sign-in service has taken up the attempt this long after it was asked for: the journal's sign-in
+     * service is not running or cannot reach the journal.
+     */
+    public function isUnclaimedSince(CarbonImmutable $now): bool
+    {
+        return $this->state === SignInState::Starting
+            && ! $this->waits_for_uses
+            && $this->process_reference === null
+            && $this->created_at !== null
+            && $this->created_at->addSeconds(self::UNCLAIMED_SECONDS)->lessThanOrEqualTo($now);
     }
 
     public function isPublishedIn(int $generation): bool

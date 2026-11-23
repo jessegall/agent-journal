@@ -8212,6 +8212,7 @@ constant	ShellWordScanner::WORD_ENDS
 constant	ShortReference::LENGTH
 constant	ShortReference::LETTERS
 constant	SignInAttempt::LINK_TYPE
+constant	SignInAttempt::UNCLAIMED_SECONDS
 constant	SignInCard::CHECK_SENDS_A_REQUEST
 constant	SignInCode::LIMIT
 constant	SignInSecret::LIMIT
@@ -24374,6 +24375,7 @@ method	SignInAttempt::found()
 method	SignInAttempt::isExpiredAt()
 method	SignInAttempt::isLive()
 method	SignInAttempt::isPublishedIn()
+method	SignInAttempt::isUnclaimedSince()
 method	SignInAttempt::isWaitingForAgents()
 method	SignInAttempt::keepFingerprint()
 method	SignInAttempt::liveFor()
@@ -29114,6 +29116,7 @@ parameter	$isSupported
 parameter	$isSwitchOver
 parameter	$isTruncated
 parameter	$isTrusted
+parameter	$isUnclaimed
 parameter	$isUnread
 parameter	$isWaitingForAgents
 parameter	$isWholeText
@@ -40174,6 +40177,7 @@ property	SignInAttemptData::$driver
 property	SignInAttemptData::$expiresAt
 property	SignInAttemptData::$id
 property	SignInAttemptData::$isResultUnmatchable
+property	SignInAttemptData::$isUnclaimed
 property	SignInAttemptData::$isWaitingForAgents
 property	SignInAttemptData::$method
 property	SignInAttemptData::$refusal

@@ -160,6 +160,18 @@ final class SignInAttemptTest extends TestCase
         $this->assertTrue($attempt->isResultUnmatchable);
     }
 
+    public function test_an_attempt_no_sign_in_service_took_up_says_so_after_a_while(): void
+    {
+        $started = $this->begin('request-1');
+        $read = fn () => SignInAttemptData::fromAttempt(SignInAttempt::query()->whereKey($started->attemptId)->with('resultAccount')->sole());
+
+        $this->assertFalse($read()->isUnclaimed);
+
+        $this->travel(SignInAttempt::UNCLAIMED_SECONDS)->seconds();
+
+        $this->assertTrue($read()->isUnclaimed);
+    }
+
     public function test_a_starter_that_lost_its_grant_before_the_report_adds_no_account(): void
     {
         $started = $this->begin('request-1');

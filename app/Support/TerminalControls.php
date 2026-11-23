@@ -261,6 +261,7 @@ final readonly class TerminalControls
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
         $this->assertCarriesOut($runtime, TerminalInputType::Private);
         $this->takeSequence($grant, $submission->sequence);
+
         $message = PrivateInputMessageData::from(
             ['grantId' => $grantId, 'sequence' => $submission->sequence, 'submissionId' => $submission->submissionId],
         );

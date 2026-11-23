@@ -146,6 +146,12 @@ const openLink =
                         : 'Starting the sign-in…'
                 }}
             </p>
+            <template v-if="attempt?.isUnclaimed">
+                <p class="max-w-[340px] text-small leading-relaxed text-text-3" role="alert">
+                    No sign-in service has picked this up yet. The journal's sign-in service is not running or cannot
+                    reach the journal; start it again and this sign-in continues.
+                </p>
+            </template>
         </div>
     </template>
     <template v-else-if="method.isSecret">

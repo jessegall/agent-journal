@@ -8,6 +8,7 @@ use App\Enums\SignInMethod;
 use App\Enums\SignInState;
 use App\Enums\SignInType;
 use App\Models\SignInAttempt;
+use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -30,6 +31,7 @@ final class SignInAttemptData extends Data
         public readonly string|null $resultAccountId,
         public readonly bool $isResultUnmatchable,
         public readonly bool $isWaitingForAgents,
+        public readonly bool $isUnclaimed,
         public readonly SignInState $state,
         public readonly string $expiresAt,
         public readonly string|null $refusal,
@@ -46,6 +48,7 @@ final class SignInAttemptData extends Data
             $attempt->resultAccount?->id,
             ! $attempt->method->isSecret() && $attempt->resultAccount?->lacksProviderIdentity() === true,
             $attempt->isWaitingForAgents(),
+            $attempt->isUnclaimedSince(CarbonImmutable::now()),
             $attempt->state,
             $attempt->expires_at->toIso8601String(),
             $attempt->refusal,

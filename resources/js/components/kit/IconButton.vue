@@ -5,9 +5,16 @@ import type { IconName } from './Icon.vue';
 import Tooltip from './Tooltip.vue';
 
 /**
+ * Renders its default slot as it is, with no tooltip around it and nothing to describe it.
+ */
+const PlainSlot = (_props: unknown, { slots }: { slots: { default?: (scope: { describedBy: undefined }) => unknown } }) =>
+    slots.default?.({ describedBy: undefined });
+
+/**
  * An icon-only action. The label is required: it is the aria-label and the text of the tooltip (never a title
- * attribute). md is 26 px, sm 20 px and xs 18 px (a tab's close); `dense` draws the md icon at 13 px as in the topbar
- * and strips. A badge goes in the badge slot; haspopup marks a menu or dialog trigger.
+ * attribute) unless `tooltip` is off for an icon that says it all, such as a dialog's close. md is 26 px, sm 20 px and
+ * xs 18 px (a tab's close); `dense` draws the md icon at 13 px as in the topbar and strips. A badge goes in the badge
+ * slot; haspopup marks a menu or dialog trigger.
  */
 const props = withDefaults(
     defineProps<{
@@ -19,8 +26,17 @@ const props = withDefaults(
         disabled?: boolean;
         haspopup?: 'menu' | 'dialog';
         expanded?: boolean;
+        tooltip?: boolean;
     }>(),
-    { size: 'md', dense: false, pressed: undefined, disabled: false, haspopup: undefined, expanded: undefined },
+    {
+        size: 'md',
+        dense: false,
+        pressed: undefined,
+        disabled: false,
+        haspopup: undefined,
+        expanded: undefined,
+        tooltip: true,
+    },
 );
 
 defineOptions({ inheritAttrs: false });
@@ -29,7 +45,7 @@ const iconSize = computed(() => (props.size === 'xs' || props.dense ? 'sm' : 'md
 </script>
 
 <template>
-    <Tooltip :text="label">
+    <component :is="tooltip ? Tooltip : PlainSlot" :text="label">
         <template #default="{ describedBy }">
             <button
                 v-bind="$attrs"
@@ -50,5 +66,5 @@ const iconSize = computed(() => (props.size === 'xs' || props.dense ? 'sm' : 'md
                 <slot name="badge" />
             </button>
         </template>
-    </Tooltip>
+    </component>
 </template>

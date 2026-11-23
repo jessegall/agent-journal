@@ -76,6 +76,19 @@ docker compose exec -T app php artisan migrate --force
 $fresh && docker compose exec -T app php artisan db:seed --force
 sh scripts/prepare-hook-test-database.sh
 
+# A database made again since the last run no longer knows the enrolled host, and its secret would be refused on every
+# call (the sign-in service would never pick up a sign-in), so the host is enrolled again with fresh host state.
+known_host=$(grep '^AGENTS_HOST_ID=' .env | cut -d= -f2)
+if [ -n "$known_host" ] && ! docker compose exec -T app php artisan tinker --execute \
+    "echo App\\Models\\Host::query()->withoutGlobalScopes()->whereKey('$known_host')->exists() ? 'known' : 'gone';" \
+    | grep -q known; then
+    echo "The database no longer knows host $known_host: enrolling the host again."
+    docker compose rm --stop --force agent-host accounts agent-host-enroll
+    docker volume rm --force "$(docker compose config | sed -n 's/^name: //p')_host-state"
+    sed -i.before-local-host '/^AGENTS_HOST_ID=/d' .env
+    rm -f .env.before-local-host secrets/journal_host_secret
+fi
+
 # The host is enrolled once: its id lives in .env and its secret in secrets/, both kept on a later run.
 if ! grep -q '^AGENTS_HOST_ID=.' .env || [ ! -s secrets/journal_host_secret ]; then
     enrolment=$(docker compose exec -T app php artisan agents:host-enroll local --contained --root /workspace)

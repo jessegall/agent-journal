@@ -21,8 +21,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('reminders_finish')]
 #[Dispatches(FinishReminderCommand::class)]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 #[Description('Mark one of your open reminders done.')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 final class FinishReminderTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
