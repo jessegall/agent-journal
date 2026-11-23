@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use PhpOption\Option;
 
 /**
  * That one member of an inbox was asked to look because of one message or seat change, and the wake its runtime
@@ -61,27 +62,39 @@ final class MessageAttention extends Model implements ReadableModel
         return ['wake_sequence' => 'integer'];
     }
 
-    /**
-     * Records how the newest ask of this actor because of the origin went. An origin keeps one row an actor, so an
-     * ask made again, as a delivery tried a second time is, replaces the outcome of the one before.
-     */
-    public static function record(
+    public static function create(
         AttentionOrigin $origin,
         string $inboxId,
         ActorIdentity $actor,
         AttentionOutcome $outcome,
     ): self {
-        $attention = self::query()
+        $attention = self::unsaved($origin, $inboxId, $actor, $outcome);
+        $attention->save();
+
+        return $attention;
+    }
+
+    /**
+     * The one row an origin keeps of an actor it asked, when it asked before.
+     *
+     * @return Option<self>
+     */
+    public static function ofOriginFor(AttentionOrigin $origin, ActorIdentity $actor): Option
+    {
+        return self::query()
             ->where('origin_type', $origin->type)
             ->where('origin_id', $origin->id)
             ->where('actor_type', $actor->type->value)
             ->where('actor_id', $actor->id)
-            ->firstOption()
-            ->getOrElse(self::unsaved($origin, $inboxId, $actor, $outcome));
+            ->firstOption();
+    }
 
-        $attention->fill(self::outcomeFields($outcome))->save();
-
-        return $attention;
+    /**
+     * An ask made again, as a delivery tried a second time is, replaces the outcome of the one before.
+     */
+    public function recordAgain(AttentionOutcome $outcome): void
+    {
+        $this->fill(self::outcomeFields($outcome))->save();
     }
 
     /**
