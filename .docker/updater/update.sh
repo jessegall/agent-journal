@@ -83,6 +83,7 @@ install() {
         { [ "$schema_rebuilt" = no ] || docker compose run --rm -T app php artisan migrate:fresh --force; } &&
         docker compose run --rm -T app php artisan access:owner-ensure &&
         enroll_rebuilt_host &&
+        publish_release &&
         roll_app &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&
         restart_changed_mounts &&
@@ -104,6 +105,34 @@ enroll_rebuilt_host() {
     [ -n "$host_id" ] && [ -n "$secret" ] || { echo "the rebuilt host's enrolment printed no id or secret"; return 1; }
     sed -i "s/^AGENTS_HOST_ID=.*/AGENTS_HOST_ID=$host_id/" .env
     (umask 077 && printf '%s\n' "$secret" > secrets/journal_host_secret) && chown 10001:10001 secrets/journal_host_secret
+}
+
+# Every install publishes a signed release of the journal-agent host built from the commit, so install lines hand out
+# the host that speaks this commit's protocol. It is built in a Go container from a clone of the mirror and signed with
+# the ed25519 key the operator put at release.key on the updater volume, outside any checkout; it lands in the releases
+# volume the app reads, named by the commit's first twelve characters, which .env then names as JOURNAL_RELEASE. The
+# three newest releases are kept, so a line issued just before an install still downloads.
+publish_release() {
+    version=$(printf '%.12s' "$newest")
+    key=/var/lib/journal-updater/release.key
+    source=/var/lib/journal-updater/release-source
+    [ -f "$key" ] || { echo "no release signing key at $key on the updater volume: put the ed25519 key there"; return 1; }
+    project=$(docker compose config --format json | python3 -c 'import json, sys; print(json.load(sys.stdin)["name"])')
+    rm -rf "$source" &&
+        git clone --quiet --shared "$mirror" "$source" &&
+        git -C "$source" checkout --quiet "$newest" &&
+        docker run --rm \
+            -v "${project}_updater-mirror:/var/lib/journal-updater" \
+            -v "${project}_releases:/releases" \
+            -v journal-release-go-cache:/root/.cache \
+            -v journal-release-go-modules:/go/pkg/mod \
+            -w "$source/tools/journal-agent" golang:1.26.4-bookworm sh -c "
+                git config --global --add safe.directory '*' &&
+                { [ -d /releases/$version ] || go run ./cmd/journal-release --version $version --signing-key $key --out /releases/$version --module .; } &&
+                ls -1t /releases | tail -n +4 | sed 's|^|/releases/|' | xargs -r rm -rf" &&
+        rm -rf "$source" &&
+        sed -i '/^JOURNAL_RELEASE=/d' .env &&
+        printf 'JOURNAL_RELEASE=%s\n' "$version" >> .env
 }
 
 # A service reads a file mounted from the installation folder only when it starts, and compose sees no change in it,
