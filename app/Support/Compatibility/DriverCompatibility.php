@@ -44,11 +44,6 @@ final readonly class DriverCompatibility
     ) {}
 
     /**
-     * What the account-free capture of the pinned build checked. Claude Code runs each start as its own process on
-     * the account's directory; Codex runs one app-server that owns the sign-in and each start as a thread on it, its
-     * working root an empty trusted folder. How either shares a sign-in needs a signed-in run.
-     */
-    /**
      * @throws DriverFamilyUnknown for a family no build is pinned for
      */
     public static function pinned(string $driver): self

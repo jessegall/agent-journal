@@ -22,7 +22,7 @@ final readonly class RecipientNotifications implements Notifications
     /**
      * The most receipts of one target a recipient holds: one per occurrence, and a target has few.
      */
-    private const int MOST_PER_TARGET = 50;
+    private const int RECEIPTS_PER_TARGET_LIMIT = 50;
 
     public function __construct(
         private NotificationDelivery $delivery,
@@ -73,7 +73,7 @@ final readonly class RecipientNotifications implements Notifications
                 $scope->id,
                 $target->key,
                 $target->id,
-                self::MOST_PER_TARGET,
+                self::RECEIPTS_PER_TARGET_LIMIT,
             ))
             ->getOrElse([]);
     }

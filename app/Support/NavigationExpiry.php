@@ -17,12 +17,12 @@ use Carbon\CarbonImmutable;
  */
 final readonly class NavigationExpiry implements NavigationExpiryContract
 {
-    public function __construct(private DriverRequestEndings $endings) {}
-
     /**
      * The most requests one sweep expires; the rest wait for the next pass.
      */
     private const int SWEEP_LIMIT = 100;
+
+    public function __construct(private DriverRequestEndings $endings) {}
 
     public function expireDue(): void
     {

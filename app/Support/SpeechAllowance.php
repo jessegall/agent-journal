@@ -63,21 +63,28 @@ final readonly class SpeechAllowance
             return;
         }
 
-        foreach ($intervals as $interval) {
-            $isPeer = $interval->actor->type->isAgent()
+        $addressee = array_find(
+            $intervals,
+            fn (InboxInterval $interval) => $interval->actor->type->isAgent()
                 && $interval->actor_type === $agentPost->addressee_type
-                && $interval->actor_id === $agentPost->addressee_id;
+                && $interval->actor_id === $agentPost->addressee_id,
+        );
 
-            $hasTurn = SpeechOpportunity::query()->onRoot($agentPost->user_root_id)
-                ->where('actor_type', $interval->actor_type)
-                ->where('actor_id', $interval->actor_id)
-                ->exists();
-
-            if ($isPeer && ! $hasTurn) {
-                $root = Message::query()->acrossInboxes()->findOrFail($agentPost->user_root_id);
-                SpeechOpportunity::create($root, $interval->actor, $interval);
-            }
+        if ($addressee === null) {
+            return;
         }
+
+        $hasTurn = SpeechOpportunity::query()->onRoot($agentPost->user_root_id)
+            ->where('actor_type', $addressee->actor_type)
+            ->where('actor_id', $addressee->actor_id)
+            ->exists();
+
+        if ($hasTurn) {
+            return;
+        }
+
+        $root = Message::query()->acrossInboxes()->findOrFail($agentPost->user_root_id);
+        SpeechOpportunity::create($root, $addressee->actor, $addressee);
     }
 
     /**

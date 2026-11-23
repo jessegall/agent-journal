@@ -56,14 +56,29 @@ final class WorkerReservation extends Model implements ReadableModel
         ksort($keys);
         $locked = [];
 
-        foreach ($keys as $key => $holder) {
+        foreach ($keys as $holder) {
             $reservation = new self(['holder_type' => $holder->type, 'holder_id' => $holder->id]);
             $reservation->id = $reservation->newUniqueId();
             $reservation->insertIfAbsent();
-
-            $locked[$key] = self::query()->where('holder_type', $holder->type)->where('holder_id', $holder->id)
-                ->lockForUpdate()->sole();
         }
+
+        $rows = self::query()
+            ->where(function ($rows) use ($keys): void {
+                foreach ($keys as $holder) {
+                    $rows->orWhere(fn ($row) => $row->where('holder_type', $holder->type)->where('holder_id', $holder->id));
+                }
+            })
+            ->orderBy('holder_type')
+            ->orderBy('holder_id')
+            ->lockForUpdate()
+            ->readExactly(count($keys))
+            ->get();
+
+        foreach ($rows as $row) {
+            $locked["{$row->holder_type}:{$row->holder_id}"] = $row;
+        }
+
+        ksort($locked);
 
         return $locked;
     }

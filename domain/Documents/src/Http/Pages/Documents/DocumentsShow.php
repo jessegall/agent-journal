@@ -224,9 +224,6 @@ final readonly class DocumentsShow
     }
 
     /**
-     * The first page of the document's revisions, each a row linking to that revision's own page.
-     */
-    /**
      * @param  list<RevisionCard>  $revisions
      */
     private function historyOf(int $number, array $revisions): LayoutPartData

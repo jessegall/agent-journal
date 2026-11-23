@@ -27,16 +27,16 @@ use TypeError;
  */
 final readonly class CodexSignIn implements SignInProtocol
 {
-    public function signInHosts(): SignInHosts
-    {
-        return SignInHosts::openAi();
-    }
-
     private const int LOGIN_REQUEST = 1;
 
     private const int ACCOUNT_REQUEST = 2;
 
     public function __construct(private CodexDriver $codex) {}
+
+    public function signInHosts(): SignInHosts
+    {
+        return SignInHosts::openAi();
+    }
 
     public function begin(string $directory): PrivateAccountProcess
     {

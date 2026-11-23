@@ -18,6 +18,7 @@ use App\Models\ReceiptProgress;
 use App\Models\SpeechOpportunity;
 use App\Models\TimelineEvent;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
  * The next bounded batch of unread chat text for an agent's driver: one chat at a time, taking turns between the
@@ -100,8 +101,18 @@ final readonly class PresentationBatches
             }
         }
 
-        foreach ($pending->take(self::POST_LIMIT) as $receipt) {
-            $message = Message::query()->acrossInboxes()->findOrFail($receipt->message_id);
+        $posts = $pending->take(self::POST_LIMIT);
+        $messages = Message::query()->acrossInboxes()
+            ->whereKey(array_values($posts->map(fn (MessageReceipt $receipt) => $receipt->message_id)->all()))
+            ->readExactly($posts->count())
+            ->get()
+            ->keyBy('id');
+
+        foreach ($posts as $receipt) {
+            $message = $messages->get(
+                $receipt->message_id,
+                fn () => throw new ModelNotFoundException()->setModel(Message::class, [$receipt->message_id]),
+            );
             $item = $this->itemOf($batch, $receipt, $message, $agent, $contextKey, $budget, false);
 
             if ($item === null) {

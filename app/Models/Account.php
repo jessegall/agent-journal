@@ -647,10 +647,6 @@ final class Account extends Model implements EventSource, ReadableModel
     // ----------[ Answers ]----------
 
     /**
-     * Whether a verified sign-in proved the same principal this account holds: both subjects named and equal, in the
-     * same workspace. The email or label never decide, and a sign-in that proved no subject is never the same.
-     */
-    /**
      * Whether the sign-in and this account both name the provider's own verified subject, so they can be compared at
      * all; a display email is never such evidence.
      */
@@ -752,10 +748,6 @@ final class Account extends Model implements EventSource, ReadableModel
         return $this->sign_in_generation === $generation;
     }
 
-    /**
-     * Whether starts wait for the host's check after a sign-in again that did not finish: only a certain answer
-     * lets them go.
-     */
     /**
      * Whether the account is held for its check and the last check could not tell, so the owner may ask again.
      */

@@ -484,10 +484,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     // ----------[ Answers ]----------
 
     /**
-     * Whether the completion itself already ended the attempt in this generation, so a repeated report of the same
-     * result changes nothing.
-     */
-    /**
      * Whether a renewal has not started on the host yet because agents still run on the account it renews.
      */
     public function isWaitingForAgents(): bool
@@ -540,9 +536,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         return $this->expires_at <= $now;
     }
 
-    /**
-     * The proof failed: the attempt ends failed, keeping the provider's reason when it refused the proof.
-     */
     /**
      * Ends a live attempt in the given state at this moment: an attempt that already ended keeps its result, and one
      * at or past its deadline ends Expired whatever was asked. Answers the state the attempt is in afterwards.

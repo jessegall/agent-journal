@@ -236,9 +236,9 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * Whether the host carries out this kind of browser input: text, named keys or pastes.
+     * Whether the host carries out this type of browser input: text, named keys or pastes.
      */
-    public function carriesOutBrowserInputOf(TerminalInputType $kind): bool
+    public function carriesOutBrowserInputOf(TerminalInputType $inputType): bool
     {
         $capabilities = new BrowserInputCapabilities(
             $this->browser_input,
@@ -248,7 +248,7 @@ final class Host extends Model implements ReadableModel
             $this->browser_private,
         );
 
-        return $capabilities->carriesOut($kind);
+        return $capabilities->carriesOut($inputType);
     }
 
     /**

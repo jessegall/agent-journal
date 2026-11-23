@@ -37,7 +37,7 @@ final readonly class PlanWindowResolver implements PageResolver
 
     public function read(): DeclaredLayoutData
     {
-        $plan = Plan::query()->find($this->request->planId()) ?? throw new NotFoundHttpException();
+        $plan = Plan::query()->findOr($this->request->planId(), fn () => throw new NotFoundHttpException());
         $planCard = $this->records->cardOf($plan);
         $card = PlanCardData::fromPlanCard($planCard);
         $number = $card->number;

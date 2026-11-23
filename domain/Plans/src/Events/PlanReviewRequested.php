@@ -13,10 +13,12 @@ use App\Support\ActorIdentity;
  */
 final readonly class PlanReviewRequested implements Event, UserInterfaceUpdater
 {
+    /**
+     * @param  list<ActorIdentity>  $reviewers
+     */
     public function __construct(
         public string $planId,
         public string $editionId,
-        /** @var list<ActorIdentity> */
         public array $reviewers,
     ) {}
 }

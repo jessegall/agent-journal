@@ -197,9 +197,6 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * Sends the request again under its own key, as a new attempt: a report of an older attempt is refused after it.
-     */
-    /**
      * A new attempt after proof that nothing ran, remembered by the row version it was made from.
      */
     public function retrySafely(): void

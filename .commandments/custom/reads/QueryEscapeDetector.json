@@ -14,13 +14,16 @@
         "reject": [
             {
                 "file": "app/Reads/**"
+            },
+            {
+                "file": "app/Support/ReadBuilder.php"
             }
         ]
     },
     "sin": {
         "description": "toBase() or getQuery() leaves the model's bounded read builder.",
         "name": "query-escape",
-        "rule": "Stay on the model's builder so the read bound and the read order apply; only app/Reads may step out of it.",
+        "rule": "Stay on the model's builder so the read bound and the read order apply; only app/Reads and the bounded builder itself (app/Support/ReadBuilder.php) may step out of it.",
         "skill": "bounded-reads"
     }
 }

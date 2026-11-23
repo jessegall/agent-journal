@@ -95,12 +95,8 @@ final readonly class TerminalControls
      * @throws TerminalControlRefused
      * @throws TerminalViewRefused
      */
-    public function cancel(
-        string $agentId,
-        ActorIdentity $writer,
-        string $takeId,
-        CarbonImmutable $now,
-    ): string {
+    public function cancel(string $agentId, ActorIdentity $writer, string $takeId): string
+    {
         $runtime = $this->lockedRuntime($agentId);
         $grant = $this->takeOf($writer, $takeId);
 
@@ -145,7 +141,6 @@ final readonly class TerminalControls
         string $agentId,
         ActorIdentity $writer,
         string $grantId,
-        CarbonImmutable $now,
     ): string {
         $runtime = $this->lockedRuntime($agentId);
         $grant = $this->grantOf($writer, $grantId);
