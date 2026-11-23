@@ -12,6 +12,7 @@ use App\Data\Profiles\AccountUsageData;
 use App\Data\Profiles\AccountUsageWindowData;
 use App\Enums\AccountState;
 use App\Enums\ActionMethod;
+use App\Enums\UsageWindowSlot;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;
@@ -25,6 +26,7 @@ use App\Support\Layout\ListPage;
 use App\Support\Layout\SettingsGroup;
 use App\Support\Layout\SettingsRow;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 
 /**
  * The accounts on the shared list and reader recipes: each account by its driver mark, name and type with its sign-in
@@ -34,6 +36,10 @@ use Carbon\CarbonImmutable;
  */
 final readonly class AccountsIndex
 {
+    private const int WEEK_MINUTES = 10080;
+
+    private const int SESSION_MINUTES = 300;
+
     /**
      * @param  string  $chosen  the id of the account to read, or '' for none
      */
@@ -83,8 +89,8 @@ final readonly class AccountsIndex
     }
 
     /**
-     * The row's usage as the design draws it beside the state: the first window a driver measured, as a meter; none
-     * when nothing was measured.
+     * The row's usage as the design draws it beside the state: the meter alone, at the most used of the windows a
+     * driver measured, with every window's reading as its tip; none when nothing was measured.
      *
      * @return list<LayoutPartData>
      */
@@ -94,13 +100,28 @@ final readonly class AccountsIndex
             return [];
         }
 
-        foreach ($row->usage->windows as $window) {
-            if ($window->usedPercent !== null) {
-                return [LayoutPartData::progress('usage', $window->usedPercent, 100, 'Usage', 'percent')];
-            }
+        $measured = array_values(array_filter(
+            $row->usage->windows,
+            fn (AccountUsageWindowData $window) => $window->usedPercent !== null,
+        ));
+
+        if ($measured === []) {
+            return [];
         }
 
-        return [];
+        $tip = implode(' · ', array_map(
+            fn (AccountUsageWindowData $window) => "{$this->windowLabel($window)} {$this->percentWord($window)}",
+            $measured,
+        ));
+
+        return [
+            LayoutPartData::usage(
+                'usage',
+                max(array_map(fn (AccountUsageWindowData $window) => (float) $window->usedPercent, $measured)),
+                'Usage',
+                $tip,
+            ),
+        ];
     }
 
     /**
@@ -178,8 +199,8 @@ final readonly class AccountsIndex
     private function windowRow(AccountUsageWindowData $window): SettingsRow
     {
         $key = $window->limitId.$window->slot->value;
-        $label = $window->slot->value === 'seven_day' ? 'Weekly' : ucfirst(str_replace('_', ' ', $window->slot->value));
-        $reset = $window->resetsAt === null ? null : "Resets {$window->resetsAt}";
+        $label = $this->windowLabel($window);
+        $reset = $window->resetsAt === null ? null : "Resets {$this->resetWord($window->resetsAt)}.";
 
         if ($window->usedPercent === null) {
             return SettingsRow::value($key, $label, 'Usage unavailable', $reset)->inBlock();
@@ -188,9 +209,35 @@ final readonly class AccountsIndex
         return SettingsRow::reading(
             $key,
             $label,
-            LayoutPartData::progress('meter', $window->usedPercent, 100, "{$label} used", 'percent'),
+            LayoutPartData::usage('meter', $window->usedPercent, "{$label} used"),
             $reset,
         );
+    }
+
+    /**
+     * The window as the design names it: this week for the seven-day window and this session, the last 5 hours, for
+     * the five-hour one, by the length a driver reported when its slot does not say.
+     */
+    private function windowLabel(AccountUsageWindowData $window): string
+    {
+        $isWeek = $window->slot === UsageWindowSlot::SevenDay || $window->windowMinutes === self::WEEK_MINUTES;
+        $isSession = $window->slot === UsageWindowSlot::FiveHour || $window->windowMinutes === self::SESSION_MINUTES;
+
+        return match (true) {
+            $isWeek => 'This week',
+            $isSession => 'This session, the last 5 hours',
+            default => ucfirst(str_replace('_', ' ', $window->slot->value)),
+        };
+    }
+
+    private function resetWord(string $resetsAt): string
+    {
+        return CarbonImmutable::parse($resetsAt)->diffForHumans(['syntax' => CarbonInterface::DIFF_RELATIVE_AUTO]);
+    }
+
+    private function percentWord(AccountUsageWindowData $window): string
+    {
+        return ((int) round((float) $window->usedPercent)).'% used';
     }
 
     /**

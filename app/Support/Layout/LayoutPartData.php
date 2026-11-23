@@ -250,6 +250,25 @@ final class LayoutPartData extends Data
     }
 
     /**
+     * How much of an allowance is used: a meter with its percent and the words used beside it, or, in a list row, the
+     * meter alone with the readings of every window as its tip.
+     */
+    public static function usage(string $key, float $percent, string $label, string|null $tip = null): self
+    {
+        return new self(
+            LayoutTag::Progress,
+            $key,
+            null,
+            $tip === null ? 'usage' : 'usage-row',
+            null,
+            $tip,
+            [],
+            [],
+            progress: new LayoutProgressData($percent, 100, $label, 'percent'),
+        );
+    }
+
+    /**
      * A native part, mounted by its registered component name with its typed props.
      */
     public static function native(string $key, LayoutNativeData $native): self
