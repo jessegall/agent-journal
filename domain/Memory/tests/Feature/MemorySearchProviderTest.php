@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Feature;
 
-use App\Contracts\Bus\BatchOutcome;
 use App\Enums\ActorType;
 use App\Enums\SearchSurface;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
-use App\Values\MoreOutcome;
-use App\Values\ScanningOutcome;
 use App\Values\SearchQuery;
 use App\Values\SearchReader;
 use App\Values\SearchResult;
 use App\Values\SearchScope;
 use App\Values\SearchWords;
-use App\Values\SourcePosition;
 use App\Values\WorkBudget;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Support\MemorySearchProvider;
@@ -80,7 +76,7 @@ final class MemorySearchProviderTest extends TestCase
         for ($call = 0; $call < self::CALL_LIMIT; $call++) {
             $batch = $provider->search($query);
             $hits = [...$hits, ...$batch->hits];
-            $next = self::nextOf($batch->outcome);
+            $next = $batch->outcome->nextPosition();
 
             if ($next === null) {
                 return $hits;
@@ -90,15 +86,6 @@ final class MemorySearchProviderTest extends TestCase
         }
 
         $this->fail('the memory search did not end within '.self::CALL_LIMIT.' calls');
-    }
-
-    private static function nextOf(BatchOutcome $outcome): SourcePosition|null
-    {
-        return match (true) {
-            $outcome instanceof ScanningOutcome => $outcome->nextWork,
-            $outcome instanceof MoreOutcome => $outcome->nextSeek,
-            default => null,
-        };
     }
 
     /**

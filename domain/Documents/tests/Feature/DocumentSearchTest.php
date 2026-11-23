@@ -9,8 +9,6 @@ use App\Enums\ScoreTier;
 use App\Enums\SearchSurface;
 use App\Mcp\Support\ToolArguments;
 use App\Support\ActorContext;
-use App\Values\MoreOutcome;
-use App\Values\ScanningOutcome;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchReader;
@@ -130,19 +128,14 @@ final class DocumentSearchTest extends TestCase
         $batch = $provider->search($query);
 
         for ($call = 0; $call < 10 && $batch->hits === [] && ! $batch->isExhausted(); $call++) {
-            $batch = $provider->search($query->from(self::next($batch)));
+            $batch = $provider->search($query->from($this->next($batch)));
         }
 
         return $batch->hits[0] ?? null;
     }
 
-    private static function next(SearchBatch $batch): SourcePosition
+    private function next(SearchBatch $batch): SourcePosition
     {
-        $outcome = $batch->outcome;
-
-        return match (true) {
-            $outcome instanceof ScanningOutcome => $outcome->nextWork,
-            $outcome instanceof MoreOutcome => $outcome->nextSeek,
-        };
+        return $batch->outcome->nextPosition() ?? $this->fail('the search ended before it found a hit');
     }
 }
