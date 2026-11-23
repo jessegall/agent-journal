@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Reminders\Providers;
 
 use App\Support\LinkTypeRegistry;
-use Domain\Reminders\Contracts\ReminderResolver;
 use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Resolvers\OwnReminders;
 use Illuminate\Support\ServiceProvider;
@@ -17,7 +16,7 @@ final class RemindersServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->scoped(ReminderResolver::class, OwnReminders::class);
+        $this->app->scoped(OwnReminders::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

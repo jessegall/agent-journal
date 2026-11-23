@@ -15,7 +15,6 @@ use App\Support\LinkTypeRegistry;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Values\ReadEntitlement;
 use Domain\Documents\Contracts\Attachments\AttachmentReader;
-use Domain\Documents\Contracts\Attachments\SealedUploads;
 use Domain\Documents\Contracts\Documents\DocumentReader;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Contracts\Drafts\DraftReader;
@@ -60,7 +59,6 @@ final class DocumentsServiceProvider extends ServiceProvider
         $this->app->bind(DraftResolver::class, DraftRecords::class);
         $this->app->bind(DraftReader::class, RetainedDrafts::class);
         $this->app->bind(ReportResolver::class, ReportRecords::class);
-        $this->app->bind(SealedUploads::class, UploadStore::class);
         $this->app->scoped(AttachmentReader::class, AttachmentPages::class);
         $this->app->scoped(AttachmentReferences::class, SealedAttachments::class);
         $this->app->scoped(DocumentReader::class, DocumentPages::class);

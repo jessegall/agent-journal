@@ -13,7 +13,7 @@ use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Commands\DiscardUpload\DiscardUploadCommand;
-use Domain\Documents\Contracts\Attachments\SealedUploads;
+use Domain\Documents\Support\UploadStore;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadChunkConflict;
 use Domain\Documents\Exceptions\UploadExpired;
@@ -134,7 +134,7 @@ final class TextUploadTest extends TestCase
 
         try {
             return $this->app->make(DatabaseManager::class)->connection()->transaction(
-                fn () => $this->app->make(SealedUploads::class)->consume($id, $type),
+                fn () => $this->app->make(UploadStore::class)->consume($id, $type),
             );
         } finally {
             $this->app->forgetInstance(CommandTransaction::class);

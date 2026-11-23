@@ -7,14 +7,13 @@ namespace Domain\Documents\Support;
 use App\Contracts\Bus\CommandTransaction;
 use App\Contracts\Sessions\SessionProvenance;
 use Carbon\CarbonImmutable;
-use Domain\Documents\Contracts\Attachments\SealedUploads;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadLimitReached;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Models\TextUploadChunk;
 use Illuminate\Database\DatabaseManager;
 
-final readonly class UploadStore implements SealedUploads
+final readonly class UploadStore
 {
     private const int ACTIVE_UPLOADS = 4;
 

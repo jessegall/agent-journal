@@ -7,20 +7,26 @@ namespace Domain\Reminders\Resolvers;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
+use App\Exceptions\ActorNotAllowed;
 use App\Support\ActorIdentity;
-use Domain\Reminders\Contracts\ReminderResolver;
 use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Policies\ReminderPolicy;
 use Domain\Reminders\Values\ReminderCard;
 use Domain\Reminders\Values\ReminderPage;
 
 /**
- * Reads one page of the reminders of this request's actor, once the actor may read reminders at all.
+ * Reads one page of the calling actor's own reminders, 25 to a page, open ones first by due time, once the actor may
+ * read reminders at all; nobody reads another actor's.
  */
-final readonly class OwnReminders implements ReminderResolver
+final readonly class OwnReminders
 {
+    public const int PER_PAGE = 25;
+
     public function __construct(private CurrentActor $actors, private CurrentAuthorizer $authorizer) {}
 
+    /**
+     * @throws ActorNotAllowed
+     */
     public function own(int $page): ReminderPage
     {
         $this->authorizer->authorize(ReminderPolicy::class, Reminder::class, AccessType::Read);

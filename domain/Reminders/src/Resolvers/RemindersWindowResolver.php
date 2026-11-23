@@ -10,7 +10,6 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListPaging;
-use Domain\Reminders\Contracts\ReminderResolver;
 use Domain\Reminders\Http\Requests\RemindersRequest;
 use Domain\Reminders\Values\ReminderCard;
 
@@ -20,7 +19,7 @@ use Domain\Reminders\Values\ReminderCard;
  */
 final readonly class RemindersWindowResolver implements PageResolver
 {
-    public function __construct(private ReminderResolver $reminders, private RemindersRequest $request) {}
+    public function __construct(private OwnReminders $reminders, private RemindersRequest $request) {}
 
     public function read(): DeclaredLayoutData
     {

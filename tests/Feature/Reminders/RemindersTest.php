@@ -10,7 +10,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
 use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
-use Domain\Reminders\Contracts\ReminderResolver;
+use Domain\Reminders\Resolvers\OwnReminders;
 use Domain\Reminders\Enums\ReminderStatus;
 use Domain\Reminders\Exceptions\ReminderEnded;
 use Domain\Reminders\Models\Reminder;
@@ -47,7 +47,7 @@ final class RemindersTest extends TestCase
         $done = $this->create('Book the room', CarbonImmutable::parse('2026-11-30 09:00'));
         $this->app->make(CommandBus::class)->run(new FinishReminderCommand($done));
 
-        $page = $this->app->make(ReminderResolver::class)->own(1);
+        $page = $this->app->make(OwnReminders::class)->own(1);
 
         $this->assertSame([$sooner, $later, $done], array_map(fn (ReminderCard $card) => $card->id, $page->cards));
         $this->assertSame(3, $page->total);
