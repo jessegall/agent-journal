@@ -7,7 +7,8 @@ import NameBlock from './NameBlock.vue';
  * 40 wide, a DriverMark or an Icon), a NameBlock fed by the title and subline slots, and a trail slot whose cells have
  * fixed widths so they line up from row to row. Single has padding 7 12, two has 8 12 and shows the subline, and grid
  * (accounts) is four columns of 16, a flexible one, 84 and 96 with a gap of 12, where the trail holds the last two cells.
- * A static row is not interactive: it is a plain div with the default cursor. Hover takes --hover, selected takes --sel,
+ * A static row is a plain div with the default cursor, unless it opens: then the whole row is the pointer target and
+ * takes the hover, while its own link stays the control a keyboard reaches. Hover takes --hover, selected takes --sel,
  * and focus draws the ring at offset -2. In a listbox the row is an option and selected is aria-selected, and Up and Down
  * move between the options; in a list of links the selected row is aria-current. Enter opens it.
  */
@@ -18,8 +19,9 @@ const props = withDefaults(
         static?: boolean;
         dim?: boolean;
         option?: boolean;
+        opens?: boolean;
     }>(),
-    { variant: 'single', selected: false, static: false, dim: false, option: false },
+    { variant: 'single', selected: false, static: false, dim: false, option: false, opens: false },
 );
 
 const shape = computed(
@@ -56,8 +58,10 @@ function moveBetweenOptions(event: KeyboardEvent): void {
         class="w-full border-b border-line text-left text-field outline-none"
         :class="[
             shape,
-            static ? 'cursor-default' : 'focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset',
-            !static && !selected && 'hover:bg-hover',
+            static && !opens && 'cursor-default',
+            static && opens && 'cursor-pointer',
+            !static && 'focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset',
+            (!static || opens) && !selected && 'hover:bg-hover',
             selected && 'bg-sel',
         ]"
         @keydown="moveBetweenOptions"

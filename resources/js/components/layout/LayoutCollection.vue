@@ -16,8 +16,8 @@ import { rememberRow, restoreRow } from './listReturn';
 // menu shows its actions button beside it, and a right click on the row, or the Menu key or Shift+F10 on it when it is
 // focused, opens the same menu, bound to that row's record. A list keeps the rows it shows when a Show more is waiting
 // for its answer, and adds the rows that answer brings; any other read replaces them. Every list row is drawn in a
-// ListRow as the design draws its rows, its declared leading and trailing parts in its slots and only its title
-// linking, so its own parts and its menu stay controls of their own; a fact's value draws each piece as its own link
+// ListRow as the design draws its rows, its declared leading and trailing parts in its slots and its title linking;
+// a click anywhere else on the row follows that link, while its own parts and its menu stay controls of their own; a fact's value draws each piece as its own link
 // when it has an address.
 const props = defineProps<{ part: LayoutPartData }>();
 const windowQuery = useWindowQueryChange();
@@ -80,6 +80,32 @@ function openRowMenuFromKey(event: KeyboardEvent, row: LayoutRowData): void {
 
     event.preventDefault();
     menu.openFromContext();
+}
+
+// A click anywhere on a row that opens follows the row's own link, with the same keys held, unless it lands on a
+// control of the row's own or ends a text selection.
+function openRow(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+
+    if (target.closest('a, button, input, select, textarea, [role="button"], [role="menuitem"]') !== null) {
+        return;
+    }
+
+    if ((window.getSelection()?.toString() ?? '') !== '') {
+        return;
+    }
+
+    (event.currentTarget as HTMLElement).querySelector('a[data-row-key]')?.dispatchEvent(
+        new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: event.button,
+            ctrlKey: event.ctrlKey,
+            metaKey: event.metaKey,
+            shiftKey: event.shiftKey,
+            altKey: event.altKey,
+        }),
+    );
 }
 
 function destinationOf(row: LayoutRowData): string | null {
@@ -149,9 +175,11 @@ function destinationOf(row: LayoutRowData): string | null {
                     >
                         <ListRow
                             static
+                            :opens="destinationOf(row) !== null"
                             :variant="row.detail !== undefined ? 'two' : 'single'"
                             :selected="row.isCurrent"
                             class="flex-1"
+                            @click="openRow"
                         >
                             <template #lead>
                                 <template

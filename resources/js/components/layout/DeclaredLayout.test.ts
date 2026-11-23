@@ -489,6 +489,54 @@ describe('a declared layout', () => {
         expect(view.get('dd').text()).toContain('Task 4');
     });
 
+    it('follows the row link when the row is clicked anywhere, and draws the hover only on a row that opens', async () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'collection',
+                        key: 'rows',
+                        style: 'list',
+                        rows: [
+                            {
+                                key: 'run-1',
+                                label: 'Run 1',
+                                value: 'Running',
+                                query: {},
+                                isCurrent: false,
+                                href: '/runs/1',
+                            },
+                            {
+                                key: 'run-2',
+                                label: 'Run 2',
+                                value: 'Stopped',
+                                query: {},
+                                isCurrent: false,
+                            },
+                        ],
+                    }),
+                },
+            },
+            global: {
+                stubs: {
+                    Link: {
+                        props: ['href'],
+                        template: '<a :href="href" @click.prevent><slot /></a>',
+                    },
+                },
+            },
+        });
+        const [opening, plain] = view.findAll('li');
+        const followed = vi.fn();
+        opening.get('a').element.addEventListener('click', followed);
+
+        await opening.get('span.shrink-0').trigger('click');
+
+        expect(followed).toHaveBeenCalledTimes(1);
+        expect(opening.get('div').classes()).toContain('hover:bg-hover');
+        expect(plain.get('div').classes()).not.toContain('hover:bg-hover');
+    });
+
     it('draws a settings group in the kit rows with the value below its label in a block row, chips and a switch only where declared', () => {
         const view = mount(DeclaredLayout, {
             props: {
