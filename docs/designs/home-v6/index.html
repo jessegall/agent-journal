@@ -98,6 +98,12 @@ svg.s13{width:13px;height:13px}svg.s14{width:14px;height:14px}
 .wchip:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .st{display:inline-flex;align-items:center;gap:6px;font-size:var(--text-small);color:var(--text-3);white-space:nowrap}
 .st.strong{color:var(--text);font-weight:500}
+/* A state that is not fresh stays on the agent bar's one line: the state in words, then when the host was last heard
+   from, which is the first thing cut off (with an ellipsis) when the bar is narrow; the exact time is its tooltip. */
+.st.stale{min-width:0;flex:0 1 auto;overflow:hidden}
+.st.stale b{font-weight:500;color:var(--text)}
+.st.stale .ago{color:var(--text-3);min-width:0;overflow:hidden;text-overflow:ellipsis}
+.abar .stact{flex:none}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--text-4);flex:none}
 .dot.brand{background:var(--brand)}.dot.solid{background:var(--text-3)}
 .dot.hollow{background:transparent;border:1.5px solid var(--text-4);width:7px;height:7px}
@@ -653,7 +659,7 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 @keyframes blink{50%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.term .cur{animation:none}}
 /* The terminal opens as a modal over the page: it is for looking in on an agent, not a part of Home. */
-.tdlg{top:40px;width:min(880px,calc(100% - 64px));height:min(560px,calc(100% - 72px));max-height:none}
+.tdlg{top:50%;transform:translate(-50%,-50%);width:min(880px,calc(100% - 64px));height:min(560px,calc(100% - 64px));max-height:none}
 .tdlg header small{color:var(--text-3);font-size:var(--text-badge);font-weight:400}
 .tdlg .tbody{flex:1;min-height:0;display:flex;flex-direction:column}
 .tdlg .twrap{flex:1;min-height:0;height:auto}
@@ -1365,13 +1371,24 @@ function topbarHtml(){const n=unread(),c=A.mainConv;
     <span class="who-me">You</span><button class="ib" aria-label="Sign out" title="Sign out">${I('power','s13')}</button></div></header>`}
 /* The agent bar names whom the main chat talks to; for a group, who is in it. Stop names what it stops. */
 const ABAR_EXTRA=[];
+/* A state that is not fresh: what is known, in words; when the host last reported, as a plain time ("last heard 7 min
+   ago", never raw seconds) with the exact time as its tooltip; and the one action that helps, beside it. */
+let STALE={};
+const STALE_KIND={unknown:{t:'Status unknown',why:'The host has not reported for a while, so this may be out of date.',act:['check','Check status']},
+  unreachable:{t:'Host not reachable',why:'The journal cannot reach the computer this agent runs on.',act:['check','Check status']},
+  stopped:{t:'Stopped by itself',why:'The agent\'s program ended without being asked to.',act:['restart','Start again']}};
+const agoWords=min=>min<1?'less than a minute ago':min<60?min+' min ago':min<1440?Math.floor(min/60)+' h ago':min<2880?'yesterday':Math.floor(min/1440)+' days ago';
+function staleHtml(c){const s=STALE[c],k=STALE_KIND[s.kind];
+  if(s.checking)return `<span class="st stale" style="margin-left:4px" role="status"><span class="spin"></span>Checking…</span>`;
+  return `<span class="st stale" style="margin-left:4px" title="${k.why}"><span class="dot hollow"></span><b>${k.t}</b><span class="ago" title="The host last reported at ${s.at}">· last heard ${agoWords(s.min)}</span></span><button class="btn sm stact" data-stale="${c}:${k.act[0]}" data-fk="stale:${c}">${k.act[1]}</button>`}
 function abarHtml(){const c=A.mainConv,grp=isGroup(c),ms=members(c);
   const who=grp?`${stack(c)}<div class="who"><span>${convName(c)}</span><small>${ms.map(m=>MEM[m].name).join(', ')}</small></div>`
     :`${avatar(agentOf(c),true)}<div class="who"><span>${c==='main'?'Agent 1 · main':convName(c)}</span><small>${c==='main'?'Claude Code · Opus · Work (Max)':CONV[c].sub||''}</small></div>`;
   return `<div class="abar"><button class="whoBtn" data-convmenu data-fk="convmenu" aria-haspopup="menu" title="Conversations, memories, who is in this chat">${who}${I('caret','s14')}</button>
     ${grp?`<button class="btn sm" data-members data-fk="members" aria-haspopup="menu">${I('users','s14')}${ms.length} in this chat</button>`:''}
     <button class="ib" data-addto data-fk="addto" aria-haspopup="menu" title="Add someone to this chat" aria-label="Add someone to this chat">${I('userplus','s14')}</button>
-    <span class="st" style="margin-left:4px;color:var(--text-2)">${/waits for you|Ended|Stopped|Interrupted/.test(STATE[c]||'')?'<span class="dot hollow"></span>':'<span class="spin"></span>'}${STATE[c]||''}</span>
+    ${STALE[c]?staleHtml(c):CONV[c]&&CONV[c].termAsk?`<span class="st" style="margin-left:4px;color:var(--text-2)"><span class="dot hollow"></span><button class="lk" data-openterm="${c}" data-fk="openterm:${c}" aria-haspopup="dialog" title="Opens its terminal">${STATE[c]}</button></span>`
+      :`<span class="st" style="margin-left:4px;color:var(--text-2)">${/waits for you|Ended|Stopped|Interrupted/.test(STATE[c]||'')?'<span class="dot hollow"></span>':'<span class="spin"></span>'}${STATE[c]||''}</span>`}
     <div class="r">${ABAR_EXTRA.map(f=>f(c)).join('')}${grp?'':`<button class="btn sm bordered" data-stop data-fk="stop" ${/^Stopped/.test(STATE[c]||'')?'disabled':''}>${I('stop','s14')}Stop ${MEM[agentOf(c)].name}</button>`}
     <button class="ib" data-layouts data-fk="layouts" aria-label="Layouts" title="Layouts" aria-haspopup="menu">${I('layout','s14')}</button>
     <button class="ib" data-add data-fk="add" title="Add a window" aria-label="Add a window" aria-haspopup="dialog">${I('plus')}</button>
@@ -1454,7 +1471,7 @@ function placeMenu(){const m=$('#menu'),app=$('#app');if(!m)return;let x=menu.x,
 function closeMenus(){const t=menu&&menu.trigger||addpop&&addpop.trigger||pal&&pal.trigger||keysOpen&&keysOpen.trigger;menu=null;addpop=null;pal=null;keysOpen=false;render();if(t)focusFk(t)}
 function convMenuItems(){const cur=A.mainConv,ag=agentOf(cur);
   return [{head:'Conversations'},...activeConvs().map(c=>({label:convName(c),sub:isGroup(c)?'Group · '+members(c).map(m=>MEM[m].name).join(', '):c==='main'?'main agent':CONV[c].sub,av:isGroup(c)?I('users','s14'):avatar(agentOf(c)),tick:c===cur,dropconv:c,run:()=>{A.mainConv=c}})),
-    {sep:1},{label:`${MEM[ag].name}'s memories`,ic:'brain',run:()=>{openWin('mem:'+ag);return false}},{label:'Add someone to this chat…',ic:'userplus',run:()=>{addMenu($('[data-addto]'));return false}},{label:'New group chat…',ic:'users',run:()=>{newGroup();return false}},
+    {sep:1},{label:`${MEM[ag].name}'s memories`,ic:'brain',run:()=>{openWin('mem:'+ag);return false}},...termItems(cur),{label:'Add someone to this chat…',ic:'userplus',run:()=>{addMenu($('[data-addto]'));return false}},{label:'New group chat…',ic:'users',run:()=>{newGroup();return false}},
     ...CONVMENU_EXTRA.flatMap(f=>f(cur)),
     ...activeConvs().filter(c=>c!==cur&&c!=='main').map(c=>({label:`Open ${convName(c)} beside this chat`,ic:'float',run:()=>{openConv(c);return false}}))]}
 const CONVMENU_EXTRA=[];
@@ -1949,7 +1966,7 @@ CONTEXT_EXTRA.push(t=>{const dc=t.closest('[data-dcard]');if(dc){const id=dc.dat
    ===================================================================================================================== */
 MEM.w5={name:'Worker 5',kind:'agent',prog:'claude',role:'Claude Code · runs in a terminal'};OWN.w5='w5';STATE.w5='Writing the pane grid docking';
 let TERM={};
-const TBOOT=['<d>Claude Code · driven by the journal\'s terminal driver</d>','<d>cwd ~/journal · branch worker/5 · task 1711</d>','','<p>›</p> Reading resources/js/components/panes/paneLayout.ts','<p>›</p> Editing dockEdge: a window pushed past the edge splits the root','<d>  + 14 lines, − 3 lines</d>','<p>›</p> Running npm run test -- paneLayout'];
+const TBOOT=['<d>Claude Code · driven by the journal\'s terminal driver</d>','<d>cwd ~/journal · branch worker/5 · task 1711</d>','','<p>›</p> Reading resources/js/components/panes/paneLayout.ts','<p>›</p> Editing dockEdge: a window pushed past the edge splits the root','<d>  + 14 lines, − 3 lines</d>','<p>›</p> Running npm run test -- paneLayout','<d>Allow npm run test -- paneLayout? Type y and Enter to allow, n to refuse.</d>'];
 function freshTerm(){TERM.w5={state:'connecting',lines:[],input:'',cols:96,rows:24,exit:null};setTimeout(()=>{if(TERM.w5.state==='connecting'){TERM.w5.state='live';TERM.w5.lines=TBOOT.slice();termPaint()}},900)}
 const tline=l=>l.replace(/^<d>(.*)<\/d>$/,'<span class="dim">$1</span>').replace(/^<p>(.*?)<\/p>/,'<span class="pr">$1</span>');
 function termView(who){const T=TERM[who];if(!T)return '';const label={connecting:'Connecting…',live:'Live',restarting:'Restarting…',ended:'Ended'}[T.state];
@@ -1961,22 +1978,27 @@ function termPaint(){const who='w5',el=$(`[data-term="${who}"]`);if(!el){render(
 function termKey(who,ev){const T=TERM[who];if(T.state!=='live')return;
   if(ev.ctrlKey&&ev.key.toLowerCase()==='c'){ev.preventDefault();T.lines.push(`<p>›</p> ${esc(T.input)}^C`,'<d>Interrupted. Worker 5 stopped and waits for you.</d>');T.input='';STATE.w5='Interrupted · waits for you';render();focusFk('term:'+who);return}
   if(ev.metaKey||ev.ctrlKey||ev.altKey)return;
-  if(ev.key==='Enter'){ev.preventDefault();const line=T.input;T.lines.push(`<p>›</p> ${esc(line)}`);T.input='';render();focusFk('term:'+who);
+  if(ev.key==='Enter'){ev.preventDefault();const line=T.input;if(CONV[who])CONV[who].termAsk=false;T.lines.push(`<p>›</p> ${esc(line)}`);T.input='';render();focusFk('term:'+who);
     setTimeout(()=>{T.lines.push('<d>Worker 5:</d> '+(line.trim()?'Understood. '+esc(line.trim()):'Still here.'));STATE.w5='Writing the pane grid docking';render();focusFk('term:'+who)},700);return}
   if(ev.key==='Backspace'){ev.preventDefault();T.input=T.input.slice(0,-1)}else if(ev.key.length===1){ev.preventDefault();T.input+=ev.key}else return;
   const s=$(`[data-tinput="${who}"]`);if(s)s.textContent=T.input}
 /* The terminal's columns and rows follow its pane: drag the shared edge and they change. */
 let termObs=null;
 AFTER_RENDER.push(()=>{if(termObs)termObs.disconnect();termObs=new ResizeObserver(es=>es.forEach(e=>{const who=e.target.dataset.term,T=TERM[who];if(!T)return;T.cols=Math.max(20,Math.floor((e.contentRect.width)/7.2));T.rows=Math.max(5,Math.floor(e.contentRect.height/18));const s=$(`[data-tsize="${who}"]`);if(s)s.textContent=T.cols+'×'+T.rows}));$$('[data-term]').forEach(t=>termObs.observe(t))});
-/* The terminal is a modal over the page, for looking in on an agent: never a tab, a window or a dock on Home. The agent
-   bar has exactly one way in, a quiet Terminal button (no border, no fill; never the primary button). */
-let TMODAL=null;
-function openTerm(c){menu=null;addpop=null;pal=null;keysOpen=false;TMODAL=c;render();focusFk('term:'+c)}
-function closeTerm(){const c=TMODAL;TMODAL=null;render();focusFk('openterm:'+c)}
+/* The program's own terminal is a centred modal over the page, for looking in on an agent: never a tab, a window or a
+   dock on Home. It exists only for an agent that runs in a terminal. Its way in is an item in the conversation dropdown,
+   beside the agent's memories, named by the program; there is no button for it in the agent bar. When the program
+   waits for a person, the agent bar's state says so in words, and those words open the same modal. */
+let TMODAL=null,TRET=null;
+const PROGNAME={claude:'Claude Code',codex:'Codex'};
+/* Only in a one-agent chat whose agent runs in a terminal; a group chat has none, its agents' own chats have them. */
+function termItems(c){if(isGroup(c)||!CONV[c]||!CONV[c].term)return [];const ag=agentOf(c);
+  return [{label:`Open ${PROGNAME[MEM[ag].prog]} terminal`,ic:'term',run:()=>{TMODAL=c;TRET='convmenu';setTimeout(()=>focusFk('term:'+c));return false}}]}
+function openTerm(c,ret){menu=null;addpop=null;pal=null;keysOpen=false;TMODAL=c;TRET=ret||null;render();focusFk('term:'+c)}
+function closeTerm(){const r=TRET;TMODAL=null;TRET=null;render();if(r)focusFk(r)}
 function tmodalHtml(){const c=TMODAL;if(!CONV[c])return '';
   return `<div class="scrim" data-tclose></div><div class="cdlg tdlg" id="tdlg" role="dialog" aria-modal="true" aria-label="${MEM[c].name}'s terminal"><header>${avatar(c)}<b>Terminal · ${MEM[c].name} <small>${CONV[c].sub||''}</small></b><button class="ib" data-tclose data-fk="tclose" aria-label="Close the terminal" title="Close · Esc outside the screen">${I('close','s14')}</button></header>
     <div class="tbody">${termView(c)}</div><div class="tfoot">What you type here goes to ${MEM[c].name}. Ctrl+C stops it. To close, press × or click outside.</div></div>`}
-ABAR_EXTRA.push(c=>CONV[c]&&CONV[c].term?`<button class="btn sm" data-openterm="${c}" data-fk="openterm:${c}" aria-haspopup="dialog" title="Look in on ${MEM[c].name}'s terminal">${I('term','s14')}Terminal</button>`:'');
 
 /* =====================================================================================================================
    The steps these sections add, their layouts and their wiring
@@ -1984,9 +2006,10 @@ ABAR_EXTRA.push(c=>CONV[c]&&CONV[c].term?`<button class="btn sm" data-openterm="
 Object.assign(STEPS,{
   seq:['9 · A sequence runs','“Ship a task” runs for task 1702. The chat says plainly when it starts, which step runs, when a step ends or waits, and the tests run as a process card with live output. The viewer on the right shows its steps and where each run is; Edit steps opens the editor.'],
   dock:['10 · Docked cards and commands','A task, a question and a plan are docked under the conversation: they fold into a stack with their edges showing; Show all unfolds them. A report sits beside the composer. Right-click a card to move it or undock it, or a task anywhere to dock it. Below: a failed build and a migration that passed, as process cards.'],
-  term:['11 · A terminal agent','Worker 5 runs in a terminal. The agent bar has one quiet Terminal button; it opens the terminal as a modal over the page, here already open. Click the screen and type to send keys; Ctrl+C interrupts; Restart and End show the other states. Close it with ×, a click outside, or Esc outside the screen.'],
+  term:['11 · A terminal agent','Worker 5 runs Claude Code in a terminal, and Claude Code is asking whether it may run the tests. Its terminal is open here as a centred modal over the page. Click the screen and type y and Enter to answer; Ctrl+C interrupts; Restart and End show the other states. Close it with ×, a click outside, or Esc outside the screen: the agent bar still says “Claude Code waits for you in its terminal”, and those words open it again. The other way in is “Open Claude Code terminal” in the dropdown under the chat’s name, beside the memories. There is no Terminal button in the agent bar.'],
   runs:['12 · Runs and delivery','Agent 1 sends three messages in a row: one name line, three joined faint bubbles. A message 6 minutes later starts a new run. Under your messages: Sending, Waiting for Agent 1 to start, Not delivered with Retry, and Delivered under your latest. Hover an older message of yours to see Delivered.'],
-  grpdl:['13 · Delivery in a group','The Bell design chat with runs from Codex 1, and your messages to three agents: one delivered to all, one still waiting for one agent, one not delivered to one agent with Retry.']});
+  grpdl:['13 · Delivery in a group','The Bell design chat with runs from Codex 1, and your messages to three agents: one delivered to all, one still waiting for one agent, one not delivered to one agent with Retry.'],
+  stale:['14 · A state that is not fresh','Agent 1\'s host has not reported for 7 minutes: the agent bar reads “Status unknown · last heard 7 min ago” on its one line, with Check status beside it; hover the time for the exact time. Check status once and the host is not reachable; again and Agent 1 is working. Open Worker 3 from the dropdown under the chat\'s name: “Stopped by itself”, with Start again.']});
 layoutFor=function(s){if(s==='seq')return {grid:split('row',pane(['chat']),pane(['seqv:9']),.6),floats:[]};return baseLayout(s)};
 LOADERS.push(()=>{freshRuns();freshProcs();DOCKED={};FOLD={};SEQEDIT=null;SEQRUN=null;freshTerm();
   CONV.w5={name:'Worker 5',sub:'Task 1711 · in a terminal',term:true,origin:'Started by Agent 1 for task 1711 · supervised by Agent 1 · runs in a terminal',msgs:[['ag','14:30','I\'m on the docking for task 1711. Press Terminal above to look in on my screen.'],['ag','14:34','Tests for paneLayout are running now.']]};
@@ -1994,7 +2017,11 @@ LOADERS.push(()=>{freshRuns();freshProcs();DOCKED={};FOLD={};SEQEDIT=null;SEQRUN
   if(step==='dock'){DOCKED.main=[{id:'d1',kind:'task',ref:1711,place:'under'},{id:'d3',kind:'plan',ref:56,place:'under'},{id:'d4',kind:'report',ref:307,place:'beside'}];
     CONV.main.msgs.push(['me','Build it and run the migration check.'],['ag','14:40','The build failed on AgentBar.vue; the migration check passed.'],['proc','p2'],['proc','p3'])}
   TMODAL=null;
-  if(step==='term'){EXTRA.push('w5');A.mainConv='w5';TMODAL='w5'}
+  STATE.w5='Writing the pane grid docking';STATE.main='Working on task 1702';STATE.w3='Writing the test for Enter';STALE={};
+  /* Step 14: Agent 1's host has not reported for 7 minutes; Worker 3's program stopped by itself. */
+  if(step==='stale'){STALE.main={kind:'unknown',min:7,at:'14:31:05'};STALE.w3={kind:'stopped',min:12,at:'14:26:40'};STATE.w3='Stopped by itself';EXTRA.push('w3')}
+  /* Step 11: Claude Code asks a question in its terminal, so the agent bar says so in words that open the modal. */
+  if(step==='term'){EXTRA.push('w5');A.mainConv='w5';TMODAL='w5';CONV.w5.termAsk=true;STATE.w5='Claude Code waits for you in its terminal'}
   /* Samples: runs in a one-agent chat, and each delivery state under your own messages. */
   if(step==='runs'){const late={s:'sending'};CONV.main.msgs.push(['me','Is the settings dialog ready to test?',undefined,{dl:{s:'delivered'}}],
       ['ag','14:02','Almost. Worker 3 finished the Enter key.'],['ag','14:02','The test for it passes: <code>8 passed</code>.'],['ag','14:03','I\'m asking Worker 3 for one last look at the Save button.'],
@@ -2035,15 +2062,18 @@ WIRE_EXTRA.push(on=>{
   on('[data-fold]',b=>b.onclick=()=>{const c=b.dataset.fold;FOLD[c]=FOLD[c]===false;render();focusFk('fold:'+c)});
   on('[data-dopen]',b=>b.onclick=ev=>{ev.stopPropagation();const id=b.dataset.dopen,c=Object.keys(DOCKED).find(k=>DOCKED[k].some(d=>d.id===id)),d=DOCKED[c].find(x=>x.id===id);const r=dockTitle(d).open();render()});
   on('[data-undock]',b=>b.onclick=ev=>{ev.stopPropagation();undock(b.dataset.undock)});
-  on('[data-openterm]',b=>b.onclick=()=>openTerm(b.dataset.openterm));
+  on('[data-openterm]',b=>b.onclick=()=>openTerm(b.dataset.openterm,b.dataset.fk));
   on('[data-tclose]',b=>b.onclick=closeTerm);
+  /* Check status asks the host again: the first check in step 14 finds the host gone, the next finds it back. */
+  on('[data-stale]',b=>b.onclick=()=>{const [c,act]=b.dataset.stale.split(':'),s=STALE[c];s.checking=true;render();
+    setTimeout(()=>{s.checking=false;if(act==='check'&&s.kind==='unknown'){s.kind='unreachable';s.min+=1}else{delete STALE[c];STATE[c]=act==='restart'?'Starting again…':'Working on task 1702'}render();focusFk('stale:'+c)},1100)});
   on('[data-dlretry]',b=>b.onclick=()=>{const [c,i,who]=b.dataset.dlretry.split(':'),d=CONV[c].msgs[+i][3].dl,x=(d.to||[]).find(r=>r[0]===who);
     if(d.to)x[1]='delivering';else d.s='delivering';render();setTimeout(()=>{if(d.to)x[1]='delivered';else d.s='delivered';render()},900)});
   on('[data-term]',t=>t.onkeydown=ev=>termKey(t.dataset.term,ev));
   on('[data-tint]',b=>b.onclick=()=>{termKey(b.dataset.tint,{ctrlKey:true,key:'c',preventDefault(){}})});
   on('[data-trestart]',b=>b.onclick=()=>{const who=b.dataset.trestart,T=TERM[who];T.state='restarting';T.input='';render();setTimeout(()=>{T.state='connecting';render();setTimeout(()=>{T.state='live';T.lines=TBOOT.slice(0,3).concat(['<d>Restarted. Worker 5 picks up where it was.</d>']);STATE.w5='Writing the pane grid docking';render()},800)},1000)});
-  on('[data-tend]',b=>b.onclick=()=>{const T=TERM[b.dataset.tend];T.state='ended';T.exit=0;STATE.w5='Ended';render()})});
-PAL_EXTRA.push(C=>{if(page==='home'&&CONV[A.mainConv]&&CONV[A.mainConv].term)C(`Look in on ${MEM[A.mainConv].name}'s terminal`,'term',()=>{const c=A.mainConv;TMODAL=c;setTimeout(()=>focusFk('term:'+c));return false})});
+  on('[data-tend]',b=>b.onclick=()=>{const T=TERM[b.dataset.tend];T.state='ended';T.exit=0;STATE.w5='Ended';CONV.w5.termAsk=false;render()})});
+PAL_EXTRA.push(C=>{const c=A.mainConv;if(page==='home')termItems(c).forEach(it=>C(it.label,it.ic,()=>{TMODAL=c;TRET=null;setTimeout(()=>focusFk('term:'+c));return false}))});
 /* =====================================================================================================================
    Panels inside the chat: an agent's memories and a sequence open over the conversation, not as windows.
    Windows are for what a user keeps on Home; these belong to the chat they were opened from.
@@ -2361,8 +2391,9 @@ PAL_EXTRA.push(C=>Object.entries(CREATE).forEach(([kind,k])=>{C(k.title,'plus',(
 LOADERS.push(()=>{FORM=null;GUIDE=null});
 const SECTION_NOTES=[['Creating anything','Every create action is a split button. The main part is the plain way (a form, or the sequence editor); the chevron offers the agent way: a short guided chat where Agent 1 asks three questions with ready answers and drafts the same form for you to accept or change.'],['Panels inside the chat','An agent\'s memories and a sequence open in a panel that slides over the chat from its right edge: click through them, then close it. They belong to the chat; windows are for what you keep on Home.'],['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
   ['Docked cards and commands','A task, plan, report or question docks under the conversation (folded into a stack) or beside the composer. A command runs as a process card: its state, its time, its last lines, and its full output when opened.'],
-  ['The terminal is a modal','A terminal-driven agent\'s terminal opens as a modal over the page (880 × 560 px at most, 40 px from the top, on the usual scrim), never as a tab, a window or a dock: it is for looking in on an agent, not part of Home. Type to send keys, Ctrl+C to interrupt; its columns and rows follow the modal\'s size; connecting, restarting and ended each say so plainly. It closes with ×, a click on the scrim, or Esc pressed outside the screen; Esc inside the screen goes to the agent, since its program uses Esc. Closing puts the focus back on the Terminal button. ⌘K offers it too.'],
-  ['One quiet Terminal button','The agent bar has exactly one way into the terminal: a Terminal button with the terminal mark, drawn as a quiet button (btn sm: no border, no fill, text in --text-2, --hover under the pointer). It is never the filled primary button and never bordered like Stop. There is no second "Open terminal" link, and the chat\'s menu has no terminal entry. When the agent\'s program needs a person, the agent bar\'s state says so and this same button is the way in.']];
+  ['The terminal is a modal','The program\'s own terminal (Claude Code or Codex, for an agent that runs in a terminal) opens as a centred modal over the page (880 × 560 px at most, centred both ways, on the usual scrim), never as a tab, a window or a dock: it is for looking in on an agent, not part of Home. A headless agent has none. This is not a terminal window: a window on Home that shows a terminal or a running process, as in version 5, stays a window you dock, float and keep. The modal is a quick look at what the agent\'s program shows, and it goes away when you close it. Type to send keys, Ctrl+C to interrupt; its columns and rows follow the modal\'s size; connecting, restarting and ended each say so plainly. It closes with ×, a click on the scrim, or Esc pressed outside the screen; Esc inside the screen goes to the agent, since its program uses Esc. Closing puts the focus back where it was opened from. ⌘K offers it too, with the same words as the dropdown.'],
+  ['The terminal opens from the chat\'s dropdown','There is no Terminal button in the agent bar. The dropdown under the chat\'s name has “Open Claude Code terminal” or “Open Codex terminal”, by the program the agent runs, in its lower group right under the agent\'s memories. It is absent for a headless agent. A group chat has no such item, because it has no single agent; each agent\'s terminal opens from that agent\'s own chat. When the program waits for a person, the agent bar\'s state says so in words, such as “Claude Code waits for you in its terminal”, after a hollow dot, and those words are a link that opens the same modal.'],
+  ['A state that is not fresh','The agent bar stays one line. A normal state (Working, Idle) shows as before, with no time. When the state is not fresh it reads, after a hollow dot: the state in words (Status unknown, Host not reachable, Stopped by itself, weight 500 in --text), then “· last heard 7 min ago” in --text-3, then one quiet action (btn sm): Check status for the first two, Start again for the third. Stop stays at the right of the bar as always and is disabled once the agent has stopped. The time is plain words, never seconds: less than a minute ago, 7 min ago, 2 h ago, yesterday, 3 days ago; its tooltip gives the exact time (“The host last reported at 14:31:05”) and the state\'s tooltip says what it means. When the bar is narrow, the time is cut first with an ellipsis; the state and its action stay. There is no second line under the name for it. Checking shows a spinner and “Checking…” in the same place.']];
 
 /* =====================================================================================================================
    Design chrome
