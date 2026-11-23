@@ -8,9 +8,11 @@ use App\Commands\InstallDesks\InstallDesksCommand;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\CommandEntry;
 use App\Models\Agent;
 use App\Models\AgentRuntime;
+use App\Models\AgentSession;
 use App\Models\DeskRecord;
 use App\Models\DeskSeat;
 use App\Models\ProjectBinding;
@@ -18,6 +20,7 @@ use App\Support\ActorIdentity;
 use App\Support\BuiltInDesks;
 use App\Support\EntryDispatchers;
 use App\Support\SeatOccupant;
+use App\Values\ProfileKey;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
@@ -82,6 +85,16 @@ final class BindingStartTest extends TestCase
         $this->assertSame($first->json('runtime_id'), $again->json('runtime_id'));
         $this->assertSame($first->json('session_id'), $again->json('session_id'));
         $this->assertSame(1, AgentRuntime::query()->count());
+    }
+
+    public function test_a_start_that_names_no_model_takes_its_profiles_default(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+
+        $started = $this->start($binding, ['model' => 'default'])->assertCreated();
+
+        $profile = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('main-agent'));
+        $this->assertSame($profile->model, AgentSession::query()->findOrFail($started->json('session_id'))->model);
     }
 
     public function test_a_binding_start_leaves_the_servers_main_agent_seated(): void

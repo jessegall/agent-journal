@@ -8,6 +8,7 @@ use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\BuiltInStartProfiles;
+use App\Contracts\Sessions\ProfileSelections;
 use App\Contracts\Work\WorkStacks;
 use App\Enums\DriverCapability;
 use App\Enums\ExecutionModeType;
@@ -26,8 +27,8 @@ use App\Support\OpenedRuntime;
 use App\Support\RegisterPendingStart;
 use App\Support\StartSessions;
 use App\Values\ModelSelection;
+use App\Values\ProfileKey;
 use App\Values\RuntimeIntent;
-use App\Values\SelectedDriver;
 use Illuminate\Support\Str;
 
 final readonly class OpenAgentRuntimeHandler implements CommandHandler
@@ -42,6 +43,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         private BuiltInStartProfiles $builtInProfiles,
         private ContainerAdmission $containers,
         private DriverCatalogue $drivers,
+        private ProfileSelections $profiles,
         private AccountSharing $accountSharing,
     ) {}
 
@@ -74,22 +76,23 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             $command->saveVariant,
         );
 
-        $selection = SelectedDriver::resolve(
-            $command->driver,
+        $agent = Agent::query()->findOrFail($command->agentId);
+        // The built-in profiles are installed by the first read of one, so the agent's profile exists from here on.
+        $policy = $this->builtInProfiles->policyFor($agent->profile_key);
+
+        // The agent's profile supplies the model when the start names none.
+        $selection = $this->profiles->select(
+            ProfileKey::from($agent->profile_key),
             ModelSelection::fromInput($command->model),
+            $command->driver,
             null,
-            null,
-            $this->drivers,
-        );
+        )->selection;
 
         $pinned = $this->drivers->pinned($command->driver, $command->variant);
         $this->arrangement->assertContainable($pinned->support->supportOf(DriverCapability::RunContained));
 
-        $agent = Agent::query()->findOrFail($command->agentId);
         $this->sessions->lockForStart($agent);
         $requestId = (string) Str::ulid();
-        $policy = $this->builtInProfiles->policyFor($agent->profile_key);
-
         // A connected folder's relay runs its agents on the user's own machine, never in this journal's containers.
         $mode = $policy->execution->mode;
 

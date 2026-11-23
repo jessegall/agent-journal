@@ -723,13 +723,27 @@ func refusalOf(response *http.Response, target string) error {
 		return errors.Join(ErrAwaitingApproval, ErrRefused, failure)
 	case response.StatusCode == http.StatusUnauthorized:
 		return errors.Join(ErrUnauthenticated, ErrRefused, failure)
-	case response.StatusCode == http.StatusForbidden:
+	case response.StatusCode == http.StatusForbidden && refusalCodeOf(message) == hostRoleRefusalCode:
 		return errors.Join(ErrHostRoleRefused, ErrRefused, failure)
 	case response.StatusCode >= 400 && response.StatusCode < 500:
 		return errors.Join(ErrRefused, failure)
 	default:
 		return errors.Join(ErrUncertain, failure)
 	}
+}
+
+// hostRoleRefusalCode is the code App\Exceptions\HostRoleRefused answers with (App\Enums\RefusalCode::Forbidden):
+// the route is for the other role of host. Any other 403, such as a start the journal refuses, is a plain refusal.
+const hostRoleRefusalCode = "forbidden"
+
+// refusalCodeOf is the code a refusal's JSON body names; empty when the body names none.
+func refusalCodeOf(body []byte) string {
+	var refusal struct {
+		Code string `json:"code"`
+	}
+	_ = json.Unmarshal(body, &refusal)
+
+	return refusal.Code
 }
 
 func newCallID() (string, error) {

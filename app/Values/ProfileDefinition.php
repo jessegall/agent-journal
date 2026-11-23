@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\InstancePolicy;
+use App\Support\Reflector;
 
 /**
  * What an owner activates for one profile: its stable key, label and the content of its next revision, its start
@@ -12,6 +13,11 @@ use App\Enums\InstancePolicy;
  */
 final readonly class ProfileDefinition
 {
+    /**
+     * The properties differsFrom leaves out: they name the profile or record where it came from, not how it is set up.
+     */
+    private const array NOT_CONFIGURATION = ['key', 'label', 'start.provenance', 'start.requiresReview'];
+
     /**
      * @param  list<string>|null  $skillAllowlist
      * @param  list<string>  $requiredSkills
@@ -31,28 +37,12 @@ final readonly class ProfileDefinition
     ) {}
 
     /**
-     * Whether this definition configures the profile differently from the revision it would follow; the hash and
-     * origins of its provenance do not count.
+     * Whether this definition configures the profile differently from the revision it would follow: its key, label and
+     * revision name it, and the provenance of its start policy and whether a start awaits review do not configure it.
      */
     public function differsFrom(ProfileSnapshot $active): bool
     {
-        $mine = $this->start;
-        $theirs = $active->start;
-
-        return ! $this->base->is($active->base)
-            || $this->instructions !== $active->instructions
-            || $this->model !== $active->model
-            || $this->skillAllowlist !== $active->skillAllowlist
-            || $this->requiredSkills !== $active->requiredSkills
-            || $mine->driver !== $theirs->driver
-            || $mine->driverPinned !== $theirs->driverPinned
-            || $mine->allowedModels !== $theirs->allowedModels
-            || $mine->access != $theirs->access
-            || $mine->stopConditions != $theirs->stopConditions
-            || $mine->execution != $theirs->execution
-            || $this->authorization != $active->authorization
-            || $this->supervisor != $active->supervisor
-            || $this->instances !== $active->instances;
+        return ! Reflector::propertiesMatch($this, $active, self::NOT_CONFIGURATION);
     }
 
     public function supervisorProfile(): SupervisorProfile

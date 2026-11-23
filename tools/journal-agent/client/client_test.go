@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"journal-agent/screen"
@@ -81,5 +82,23 @@ func TestARefusedScreenReportIsToldApartFromAFailure(t *testing.T) {
 	var refused ScreenRefused
 	if !errors.As(err, &refused) || refused.Reason != "nobody watches this runtime" {
 		t.Fatalf("got %v", err)
+	}
+}
+
+// Only the journal's role refusal stops a host for its role; a start the journal refuses with another 403 keeps its own
+// reason, such as a start with no model default.
+func TestOnlyTheRoleCodeIsARoleRefusal(t *testing.T) {
+	answer := func(body string) *http.Response {
+		return &http.Response{StatusCode: http.StatusForbidden, Body: io.NopCloser(strings.NewReader(body))}
+	}
+
+	role := refusalOf(answer(`{"code":"forbidden","message":"Host h is the relay of a connected folder"}`), "/host/claim")
+	start := refusalOf(answer(`{"code":"default-unavailable","message":"This start has no configured model default."}`), "/host/bindings/b/runtimes")
+
+	if !errors.Is(role, ErrHostRoleRefused) {
+		t.Fatalf("a role refusal was read as %v", role)
+	}
+	if errors.Is(start, ErrHostRoleRefused) || !errors.Is(start, ErrRefused) || !strings.Contains(start.Error(), "no configured model default") {
+		t.Fatalf("a refused start was read as %v", start)
 	}
 }

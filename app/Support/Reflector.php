@@ -18,6 +18,7 @@ use ReflectionEnum;
 use ReflectionEnumUnitCase;
 use ReflectionMethod;
 use ReflectionProperty;
+use UnitEnum;
 
 /**
  * What PHP declares about one class, interface, trait or enum, read once and kept for the life of the process.
@@ -135,6 +136,41 @@ final class Reflector implements ReflectedType
     public static function find(string $name): Option
     {
         return self::exists($name) ? new Some(self::of($name)) : None::create();
+    }
+
+    /**
+     * Whether two objects, of one class or of two, hold the same values in the public properties both declare. A
+     * nested object is compared whole with ==, or property by property when a left-out path reaches inside it; every
+     * other value is compared with ===. A left-out path names a property to skip, dotted for a nested one, such as
+     * start.provenance.
+     *
+     * @param  list<string>  $leftOut
+     */
+    public static function propertiesMatch(object $first, object $second, array $leftOut = []): bool
+    {
+        $theirs = self::of($second);
+
+        foreach (self::of($first)->properties() as $property) {
+            $name = $property->name();
+
+            if (! $property->isPublic() || $property->isStatic() || in_array($name, $leftOut, true)) {
+                continue;
+            }
+
+            if (! $theirs->hasProperty($name) || ! $theirs->property($name)->isPublic()) {
+                continue;
+            }
+
+            if (! self::valuesMatch(
+                $property->readFrom($first),
+                $theirs->property($name)->readFrom($second),
+                self::leftOutBelow($leftOut, $name),
+            )) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -550,5 +586,33 @@ final class Reflector implements ReflectedType
     private function declaredAttributes(): DeclarationAttributes
     {
         return $this->declaredAttributes;
+    }
+
+    /**
+     * @param  list<string>  $leftOut  the left-out paths inside these values
+     */
+    private static function valuesMatch(mixed $mine, mixed $theirs, array $leftOut): bool
+    {
+        if (is_object($mine) && is_object($theirs) && ! $mine instanceof UnitEnum) {
+            return $leftOut === [] ? $mine == $theirs : self::propertiesMatch($mine, $theirs, $leftOut);
+        }
+
+        return $mine === $theirs;
+    }
+
+    /**
+     * The left-out paths below a property, without its name: start.provenance below start is provenance.
+     *
+     * @param  list<string>  $leftOut
+     * @return list<string>
+     */
+    private static function leftOutBelow(array $leftOut, string $name): array
+    {
+        $prefix = "{$name}.";
+
+        return array_values(array_map(
+            fn (string $path) => substr($path, strlen($prefix)),
+            array_filter($leftOut, fn (string $path) => str_starts_with($path, $prefix)),
+        ));
     }
 }

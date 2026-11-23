@@ -7729,6 +7729,7 @@ constant	Profile::LINK_TYPE
 constant	ProfileActivateCommand::NO_OWNER_YET
 constant	ProfileBases::TYPE
 constant	ProfileBases::VERSION
+constant	ProfileDefinition::NOT_CONFIGURATION
 constant	ProfileDraft::LINK_TYPE
 constant	ProfileDraftRevision::LINK_TYPE
 constant	ProfileDraftRevision::UPDATED_AT
@@ -20732,6 +20733,7 @@ method	Reflector::isInterface()
 method	Reflector::isReadOnly()
 method	Reflector::isSubclassOf()
 method	Reflector::isTrait()
+method	Reflector::leftOutBelow()
 method	Reflector::lineage()
 method	Reflector::method()
 method	Reflector::methods()
@@ -20744,11 +20746,13 @@ method	Reflector::not()
 method	Reflector::of()
 method	Reflector::parent()
 method	Reflector::properties()
+method	Reflector::propertiesMatch()
 method	Reflector::property()
 method	Reflector::shortName()
 method	Reflector::startLine()
 method	Reflector::traits()
 method	Reflector::uses()
+method	Reflector::valuesMatch()
 method	ReflectorFactory::is()
 method	ReflectorFactory::isSubclassOf()
 method	ReflectorFactory::make()
@@ -28630,6 +28634,7 @@ parameter	$leaseUntil
 parameter	$least
 parameter	$leave
 parameter	$left
+parameter	$leftOut
 parameter	$legacyPages
 parameter	$length
 parameter	$letter
@@ -28781,6 +28786,7 @@ parameter	$migrator
 parameter	$millisecondBudget
 parameter	$milliseconds
 parameter	$mimeType
+parameter	$mine
 parameter	$minimum
 parameter	$minimumLength
 parameter	$minimumOperands
@@ -30084,6 +30090,7 @@ parameter	$textBytes
 parameter	$textPart
 parameter	$textSections
 parameter	$texts
+parameter	$theirs
 parameter	$then
 parameter	$thread
 parameter	$threadId
@@ -35379,6 +35386,7 @@ property	OpenAgentRuntimeHandler::$builtInProfiles
 property	OpenAgentRuntimeHandler::$containers
 property	OpenAgentRuntimeHandler::$drivers
 property	OpenAgentRuntimeHandler::$pendingStarts
+property	OpenAgentRuntimeHandler::$profiles
 property	OpenAgentRuntimeHandler::$sessions
 property	OpenAgentRuntimeHandler::$starts
 property	OpenAgentRuntimeHandler::$workStacks
@@ -42466,7 +42474,6 @@ variable	$middlewareReply
 variable	$migration
 variable	$milliseconds
 variable	$mimeType
-variable	$mine
 variable	$minutes
 variable	$misplacedExceptions
 variable	$misplacedInterfaces
@@ -43245,7 +43252,6 @@ variable	$textField
 variable	$textOperands
 variable	$textStart
 variable	$texts
-variable	$theirs
 variable	$threads
 variable	$throttleKey
 variable	$ticket
