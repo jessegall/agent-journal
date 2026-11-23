@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Pages\Accounts;
 
 use App\Data\Profiles\AccountListData;
-use App\Data\Profiles\AccountMonthCostData;
 use App\Data\Profiles\AccountRowData;
-use App\Data\Profiles\AccountThreadTokensData;
 use App\Data\Profiles\AccountUsageData;
 use App\Data\Profiles\AccountUsageWindowData;
 use App\Enums\AccountState;
@@ -17,6 +15,7 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
+use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
@@ -29,10 +28,10 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 
 /**
- * The accounts on the shared list and reader recipes: each account by its driver mark, name and type with its sign-in
- * state, and the reader of the one chosen with its usage as measured readings, their units and reset times, the choice
- * of the account new starts of its driver use, and, for one that needs it, signing in again. Add account opens the
- * native sign-in flow in the reader, since its challenge steps are not declared.
+ * The accounts on the shared list and reader recipes, as the design draws them: each account by its driver mark, name
+ * and type with its sign-in state, and the reader of the one chosen with its Name, Make default, Sign-in and its usage
+ * as measured readings with their reset times. Add account opens the native sign-in flow in the reader, since its
+ * challenge steps are not declared.
  */
 final readonly class AccountsIndex
 {
@@ -76,7 +75,7 @@ final readonly class AccountsIndex
         return LayoutRowData::from([
             'key' => $row->id,
             'label' => $row->label,
-            'detail' => "{$row->driver} · {$row->signIn->title}",
+            'detail' => $this->detailOf($row),
             'query' => [
                 'account' => $row->id,
                 'add' => '',
@@ -86,10 +85,20 @@ final readonly class AccountsIndex
                 LayoutPartData::text('driver', $row->driver, 'driver'),
             ],
             'trailing' => [
-                LayoutPartData::badge('state', $this->stateWord($row->state), $this->stateTone($row->state)),
+                LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateTone($row->state)),
                 ...$this->usageMeterOf($row),
             ],
         ]);
+    }
+
+    /**
+     * The row's second line as the design words it: the program and how it signs in, then default when new starts use it.
+     */
+    private function detailOf(AccountRowData $row): string
+    {
+        $how = lcfirst($row->signIn->title);
+
+        return $row->isActive ? "{$row->driver} {$how} · default" : "{$row->driver} {$how}";
     }
 
     /**
@@ -148,54 +157,106 @@ final readonly class AccountsIndex
         return [
             DetailPage::make($row->label)
                 ->above(LayoutPartData::text('driver', $row->driver, 'driver'))
-                ->withActions(...$this->actionsOf($row))
                 ->withStanding(...array_map(fn (SettingsGroup $group) => $group->part(), $groups))
                 ->part(),
         ];
     }
 
+    /**
+     * The account as the design draws it: its Name, Make default for a signed-in account that is not the default yet,
+     * and the Sign-in row with its state or the button that signs in again.
+     */
     private function identityGroup(AccountRowData $row): SettingsGroup
     {
-        $rows = [SettingsRow::value('state', 'Status', $this->stateWord($row->state))];
+        $rows = [$this->nameRow($row)];
 
-        if ($row->identity !== null) {
-            $rows[] = SettingsRow::value('identity', 'Signed in as', $row->identity);
+        if ($row->state === AccountState::SignedIn) {
+            $rows[] = $this->defaultRow($row);
         }
 
-        if ($row->workspace !== null) {
-            $rows[] = SettingsRow::value('workspace', 'Workspace', $row->workspace);
-        }
+        $rows[] = SettingsRow::control(
+            'sign-in',
+            'Sign-in',
+            $row->state === AccountState::NeedsSignIn
+                ? $this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')
+                : LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateTone($row->state)),
+            $this->signInHelp($row),
+        );
 
         return SettingsGroup::make('account', 'Account')->withRows(...$rows);
     }
 
+    private function nameRow(AccountRowData $row): SettingsRow
+    {
+        $rename = LayoutFormData::from([
+            'method' => ActionMethod::Patch,
+            'href' => route('accounts.rename', ['account' => $row->id], false),
+            'fixed' => ['seenRevision' => $row->nameRevision],
+            'isKeyed' => true,
+        ]);
+
+        return SettingsRow::control(
+            'name',
+            'Name',
+            LayoutPartData::form(
+                'rename',
+                $rename,
+                'inline',
+                LayoutPartData::field('label', 'Name', new LayoutFieldData('label', $row->label), 'text'),
+                LayoutPartData::action('rename-send', 'Save', LayoutActionData::submitting()),
+            ),
+            'Shown in the account list and the agent bar.',
+        );
+    }
+
+    private function defaultRow(AccountRowData $row): SettingsRow
+    {
+        $help = 'Agents use this account when no other is named.';
+
+        if ($row->isActive) {
+            return SettingsRow::value('default', 'Make default', 'Default', $help);
+        }
+
+        $activate = LayoutFormData::from([
+            'method' => ActionMethod::Post,
+            'href' => route('accounts.activate', ['account' => $row->id], false),
+            'isKeyed' => true,
+        ]);
+
+        return SettingsRow::control(
+            'default',
+            'Make default',
+            LayoutPartData::form(
+                'activate',
+                $activate,
+                'live',
+                LayoutPartData::field('isDefault', 'Make default', new LayoutFieldData('isDefault', '0'), 'toggle'),
+            ),
+            $help,
+        );
+    }
+
+    private function signInHelp(AccountRowData $row): string
+    {
+        return match (true) {
+            $row->state === AccountState::SignedIn => 'Signed in.',
+            $this->hasExpired($row) => 'Expired. Sign in again so agents can use it.',
+            default => 'Not signed in yet. Sign in so agents can use it.',
+        };
+    }
+
+    private function hasExpired(AccountRowData $row): bool
+    {
+        return $row->expiresAt !== null && CarbonImmutable::parse($row->expiresAt)->isPast();
+    }
+
     /**
-     * The usage readings: each window with its reset time and a meter below its label, the cost of the current UTC
-     * month, and the newest thread count with its own unit; a window no driver measured says Usage unavailable.
+     * The usage readings as the design draws them: each window with its reset time and a meter below its label; a
+     * window no driver measured says Usage unavailable.
      */
     private function usageGroup(AccountUsageData $usage): SettingsGroup
     {
         $rows = array_map(fn (AccountUsageWindowData $window) => $this->windowRow($window), $usage->windows);
-
-        if ($usage->monthCost instanceof AccountMonthCostData) {
-            $month = CarbonImmutable::parse($usage->monthCost->monthStart)->format('F Y');
-
-            $rows[] = SettingsRow::value(
-                'cost',
-                'Estimated cost this month (USD)',
-                $usage->monthCost->usd,
-                "{$month} UTC, last observed {$usage->monthCost->lastObservedAt}",
-            )->inBlock();
-        }
-
-        if ($usage->latestThread instanceof AccountThreadTokensData) {
-            $rows[] = SettingsRow::value(
-                'thread',
-                'Latest thread',
-                "{$usage->latestThread->total} tokens",
-                "Observed {$usage->latestThread->observedAt}",
-            )->inBlock();
-        }
 
         return SettingsGroup::make('usage', 'Usage')->withRows(...$rows);
     }
@@ -244,25 +305,6 @@ final readonly class AccountsIndex
         return ((int) round((float) $window->usedPercent)).'% used';
     }
 
-    /**
-     * Active for the driver, for a signed-in account that is not the one new starts use; sign in again for one that
-     * needs it. Each is the account's own registered action.
-     *
-     * @return list<LayoutPartData>
-     */
-    private function actionsOf(AccountRowData $row): array
-    {
-        if ($row->state === AccountState::NeedsSignIn) {
-            return [$this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')];
-        }
-
-        if ($row->state === AccountState::SignedIn && ! $row->isActive) {
-            return [$this->form('activate', 'accounts.activate', $row->id, "Active for {$row->driver}")];
-        }
-
-        return $row->isActive ? [LayoutPartData::text('active', "Active for {$row->driver}", 'muted')] : [];
-    }
-
     private function form(string $key, string $route, string $account, string $label): LayoutPartData
     {
         return LayoutPartData::form(
@@ -279,13 +321,14 @@ final readonly class AccountsIndex
         );
     }
 
-    private function stateWord(AccountState $state): string
+    private function stateWordOf(AccountRowData $row): string
     {
-        return match ($state) {
-            AccountState::SignedIn => 'Signed in',
-            AccountState::NeedsSignIn => 'Signed out',
-            AccountState::Removing => 'Removing',
-            AccountState::Removed => 'Removed',
+        return match (true) {
+            $row->state === AccountState::SignedIn => 'Signed in',
+            $row->state === AccountState::NeedsSignIn && $this->hasExpired($row) => 'Expired',
+            $row->state === AccountState::NeedsSignIn => 'Not signed in',
+            $row->state === AccountState::Removing => 'Removing',
+            default => 'Removed',
         };
     }
 
