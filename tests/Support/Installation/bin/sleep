@@ -1,0 +1,9 @@
+#!/bin/sh
+# A stand-in for sleep in tests: a script that starts to wait is ended, so a loop runs one round and no test waits.
+set -eu
+
+main() {
+    kill -TERM "$PPID"
+}
+
+main "$@"

@@ -4,7 +4,7 @@
 
 # Prints a template file with each {{name}} replaced by the value given as name=value.
 fill_template() {
-    template=$1
+    local template=$1 text pair
     shift
     text=$(cat "$template")
     for pair in "$@"; do

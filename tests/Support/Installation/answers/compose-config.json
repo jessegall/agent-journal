@@ -1,1 +1,1 @@
-{"name": "journal-test", "services": {}}
+{"name": "journal-test", "services": {"web": {"volumes": [{"type": "bind", "source": "{{root}}/.docker/web/Caddyfile"}]}}}

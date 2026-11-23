@@ -31,13 +31,14 @@ final readonly class StandInInstallation
         $token = getenv('TEST_TOKEN') ?: 'alone';
         $installation = new self(sys_get_temp_dir()."/installation-{$token}-".bin2hex(random_bytes(6)));
 
-        foreach (['repository', 'installation/images', 'state', 'stand-in'] as $part) {
+        foreach (['repository', 'installation/images', 'installation/secrets', 'state', 'stand-in'] as $part) {
             File::makeDirectory("{$installation->folder}/{$part}", 0o755, true);
         }
 
         File::copyDirectory(__DIR__.'/repository', $installation->repository());
         File::copyDirectory(base_path('.docker/helper'), $installation->repository().'/.docker/helper');
         File::copyDirectory(base_path('.docker/updater'), $installation->repository().'/.docker/updater');
+        File::copyDirectory(base_path('scripts/lib'), $installation->repository().'/scripts/lib');
         File::copy(__DIR__.'/installation.env', $installation->root().'/.env');
         File::copy(base_path('.docker/updater/loop.sh'), "{$installation->folder}/state/journal-updater");
         File::put("{$installation->folder}/state/release.key", 'stand-in');
@@ -67,7 +68,30 @@ final readonly class StandInInstallation
      */
     public function update(): Process
     {
-        $update = new Process(['sh', base_path('.docker/updater/update.sh')], $this->root(), [
+        return $this->run('update.sh');
+    }
+
+    /**
+     * Runs one round of the updater's loop: the stand-in sleep ends it where it would wait a minute.
+     */
+    public function runLoopOnce(): Process
+    {
+        return $this->run('loop.sh');
+    }
+
+    /**
+     * Whether a download was asked for whose address holds the part.
+     */
+    public function wasFetched(string $part): bool
+    {
+        $log = "{$this->folder}/stand-in/requests.log";
+
+        return File::exists($log) && str_contains(File::get($log), $part);
+    }
+
+    private function run(string $script): Process
+    {
+        $update = new Process(['sh', base_path(".docker/updater/{$script}")], $this->root(), [
             'JOURNAL_ROOT' => $this->root(),
             'JOURNAL_BRANCH' => self::BRANCH,
             'JOURNAL_REPOSITORY' => $this->repository(),
@@ -139,6 +163,24 @@ final readonly class StandInInstallation
         );
 
         return substr((string) $line, strlen($name) + 1);
+    }
+
+    /**
+     * How many built images the installation's record holds.
+     */
+    public function recordedImages(): int
+    {
+        $record = json_decode(File::get($this->root().'/docs/accounts/docker-images.json'), true, 16, JSON_THROW_ON_ERROR);
+
+        return count($record['images']);
+    }
+
+    /**
+     * The secret the installation keeps for its contained host.
+     */
+    public function hostSecret(): string
+    {
+        return $this->recorded('secrets/journal_host_secret');
     }
 
     public function installedCommit(): string

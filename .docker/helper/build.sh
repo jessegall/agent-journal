@@ -1,114 +1,150 @@
 #!/bin/sh
-# Builds one of the journal's images for one architecture, the agent image (the default) or the runner image, and
-# records it by digest and name in docs/accounts/docker-images.json. The record is written verified only after the
-# build checks pass: no secret in any layer, the pinned clients answer their versions, and for the agent image
-# journal-check, journal-init, journal-exec and the shell bridge are installed read-only, the executor's user shares the workspace group,
-# bwrap and socat answer, no Docker, journal-agent or console is in it and it runs as 10001:10001.
+# Builds the agent image (the default) or the runner image for one architecture, checks it, saves it as an archive in
+# images/ and records its id in docs/accounts/docker-images.json. A check that fails stops the build unrecorded.
+#   sh .docker/helper/build.sh linux/arm64 [agent|runner]
 set -eu
 
-architecture="${1:?name the architecture, such as linux/arm64}"
-name="${2:-agent}"
+main() {
+    claude_code=2.1.323
+    codex=0.165.0
+    architecture="${1:?name the architecture, such as linux/arm64}"
+    name="${2:-agent}"
+    tag="journal-$name:build"
+    archive="images/$name-$(echo "$architecture" | tr / -).tar"
+    dockerfile_options=$(select_dockerfile)
 
-case "$name" in
-    agent) dockerfile=.docker/helper/Dockerfile; target=agent ;;
-    runner) dockerfile=.docker/app/Dockerfile; target=runner ;;
-    *) echo "Name the image agent or runner, not $name." >&2; exit 2 ;;
-esac
+    build_image
+    check_clients
+    "check_${name}_image"
+    check_no_credentials
+    save_archive
+    record_image
+    remove_build_tag
+    sh .docker/helper/prune.sh
+}
 
-tag="journal-$name:build"
+# The options that name the image's Dockerfile and, for the runner, its stage.
+select_dockerfile() {
+    case "$name" in
+        agent) echo "--file .docker/helper/Dockerfile" ;;
+        runner) echo "--file .docker/app/Dockerfile --target runner" ;;
+        *) echo "Name the image agent or runner, not $name." >&2; return 2 ;;
+    esac
+}
 
-# The pinned client versions are passed to both images from here, so they are named in one place.
-claude_code=2.1.323
-codex=0.165.0
-target_option=""
-if [ "$target" = runner ]; then target_option="--target runner"; fi
+build_image() {
+    docker buildx build --platform "$architecture" $dockerfile_options \
+        --build-arg "CLAUDE_CODE_VERSION=$claude_code" --build-arg "CODEX_VERSION=$codex" --tag "$tag" --load .
+}
 
-# shellcheck disable=SC2086
-docker buildx build --platform "$architecture" --file "$dockerfile" $target_option \
-    --build-arg "CLAUDE_CODE_VERSION=$claude_code" --build-arg "CODEX_VERSION=$codex" --tag "$tag" --load .
-
-docker run --rm --entrypoint claude "$tag" --version | grep -q "$claude_code"
-docker run --rm --entrypoint codex "$tag" --version | grep -q "$codex"
-
-if [ "$name" = agent ]; then
-    docker run --rm --entrypoint id "$tag" -u | grep -qx 10001
-    docker run --rm --entrypoint test "$tag" -x /opt/journal/bin/journal-check
-    for protected in bin/journal-init bin/journal-exec bin/journal-shell bin/journal-hook bin/journal-mcp shell/bash; do
-        docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
+# Runs a program in the image, with docker run options before the program's name.
+in_image() {
+    local options="" program
+    while [ "${1#-}" != "$1" ]; do
+        options="$options $1"
+        shift
     done
-    docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' /etc/claude-code/managed-settings.json \
-        | grep -qx 'root:root 444'
-    docker run --rm --entrypoint id "$tag" journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
-    docker run --rm --entrypoint stat "$tag" -c '%u:%g %a' /workspace | grep -qx '10001:10010 2770'
-    # A new history volume belongs to the program's user, so a turn's conversation is kept for the next turn.
-    docker run --rm --mount type=volume,target=/home/journal/.account/projects --entrypoint stat "$tag" \
+    program=$1
+    shift
+    docker run --rm $options --entrypoint "$program" "$tag" "$@"
+}
+
+check_clients() {
+    in_image claude --version | grep -q "$claude_code"
+    in_image codex --version | grep -q "$codex"
+}
+
+check_agent_image() {
+    check_users
+    check_protected_files
+    check_folders
+    check_hook_refusal
+    check_sandbox_tools
+    check_absent_programs
+}
+
+check_users() {
+    in_image id -u | grep -qx 10001
+    in_image id journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
+}
+
+# Root owns what a session must not change: the start programs, the relays, the shell bridge and the settings.
+check_protected_files() {
+    local protected
+    in_image test -x /opt/journal/bin/journal-check
+    for protected in bin/journal-init bin/journal-exec bin/journal-shell bin/journal-hook bin/journal-mcp shell/bash; do
+        in_image stat -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
+    done
+    in_image stat -c '%U:%G %a' /etc/claude-code/managed-settings.json | grep -qx 'root:root 444'
+}
+
+# The tools user shares the workspace through its group, and a new history volume belongs to the account's user.
+check_folders() {
+    in_image stat -c '%u:%g %a' /workspace | grep -qx '10001:10010 2770'
+    in_image --mount=type=volume,target=/home/journal/.account/projects stat \
         -c '%u:%g %a' /home/journal/.account/projects | grep -qx '10001:10001 700'
-    # The hook relay runs with nothing but its own program: with no grant it answers the provider's blocking reply.
-    echo '{"hook_event_name":"UserPromptSubmit"}' \
-        | docker run --rm -i --read-only --network none --entrypoint /opt/journal/bin/journal-hook "$tag" claude-code \
-        | grep -q '"decision":"block"'
-    docker run --rm --entrypoint bwrap "$tag" --version >/dev/null
-    docker run --rm --entrypoint socat "$tag" -V >/dev/null
+}
+
+check_hook_refusal() {
+    in_image -i --read-only --network=none /opt/journal/bin/journal-hook claude-code \
+        < .docker/helper/checks/prompt-hook.json | grep -q '"decision":"block"'
+}
+
+check_sandbox_tools() {
+    in_image bwrap --version >/dev/null
+    in_image socat -V >/dev/null
+}
+
+check_absent_programs() {
+    local absent
     for absent in docker journal-agent; do
-        if docker run --rm --entrypoint sh "$tag" -c "command -v $absent" >/dev/null 2>&1; then
+        if in_image sh -c "command -v $absent" >/dev/null 2>&1; then
             echo "The agent image holds $absent: it is refused." >&2
             exit 1
         fi
     done
-    console_search="find / -name artisan -not -path '/proc/*' 2>/dev/null | grep -q ."
-    if docker run --rm --entrypoint sh "$tag" -c "$console_search"; then
+    if in_image sh -c "find / -name artisan -not -path '/proc/*' 2>/dev/null | grep -q ."; then
         echo "The agent image holds the journal's console: it is refused." >&2
         exit 1
     fi
-fi
+}
 
-if [ "$name" = runner ]; then
-    docker run --rm --entrypoint id "$tag" -u | grep -qx 10001
-    docker run --rm --workdir /app --entrypoint php "$tag" artisan list >/dev/null
-    docker run --rm --workdir /app --entrypoint php "$tag" artisan accounts:run-sign-ins --help >/dev/null
-    docker run --rm --entrypoint sh "$tag" -c "journal-agent 2>&1 | grep -q 'usage: journal-agent'"
-    if docker run --rm --entrypoint test "$tag" -e /app/.env; then
+check_runner_image() {
+    in_image id -u | grep -qx 10001
+    in_image --workdir=/app php artisan list >/dev/null
+    in_image --workdir=/app php artisan accounts:run-sign-ins --help >/dev/null
+    in_image sh -c "journal-agent 2>&1 | grep -q 'usage: journal-agent'"
+    if in_image test -e /app/.env; then
         echo "The runner image holds a .env: it is refused." >&2
         exit 1
     fi
-fi
-
-# A layer that sets a token, secret or password, or holds a sign-in file; a build flag that merely names a word, such
-# as the base image's --with-password-argon2, is no credential.
-if docker history --no-trunc "$tag" | grep -Eiq "(token|secret|password)[a-z_]*=|auth\.json|\.credentials\.json"; then
-    echo "A layer mentions a credential: the image is refused." >&2
-    exit 1
-fi
-
-# The agent daemon has no registry: the image reaches it as a saved file, and it is pinned by its config digest,
-# the image id a loaded image keeps (a repository digest does not survive a load).
-mkdir -p images
-archive="images/$name-$(echo "$architecture" | tr / -).tar"
-docker save -o "$archive" "$tag"
-# The rootless agent daemon loads it as its own user; an image holds no secret (checked above).
-chmod 0644 "$archive"
-# PHP runs in a container, so the build needs no PHP on the machine it runs on, such as the server itself, where an
-# image builds natively instead of under emulation.
-php() {
-    docker run --rm -i --volume "$PWD/docs/accounts:/accounts" --workdir / composer:2 php "$@"
 }
-config="$(tar -xOf "$archive" manifest.json | php -r 'echo json_decode(stream_get_contents(STDIN), true)[0]["Config"];')"
-digest="sha256:$(basename "$config" .json)"
-php -r '
-    $path = "/accounts/docker-images.json";
-    $record = json_decode(file_get_contents($path), true);
-    $record["images"][] = [
-        "name" => $argv[3], "architecture" => $argv[1], "reference" => $argv[2],
-        "claude_code" => $argv[4], "codex" => $argv[5], "built_at" => gmdate("c"),
-    ];
-    file_put_contents($path, json_encode($record, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL);
-' "$architecture" "$digest" "$name" "$claude_code" "$codex"
 
-# Only the agent daemon runs the agent image, from the archive, so its build tag is a second copy on this machine's
-# disk; the runner stays, since compose runs it here as the agent host by its digest. The build cache stays.
-if [ "$name" = agent ]; then
-    docker image rm "$tag" >/dev/null
-fi
+check_no_credentials() {
+    if docker history --no-trunc "$tag" | grep -Eiq "(token|secret|password)[a-z_]*=|auth\.json|\.credentials\.json"; then
+        echo "A layer mentions a credential: the image is refused." >&2
+        exit 1
+    fi
+}
 
-# Every build cleans up after itself, keeping the cache the next build reuses.
-sh .docker/helper/prune.sh
+# The rootless agent daemon loads the archive as its own user, so everyone may read it.
+save_archive() {
+    mkdir -p images
+    docker save -o "$archive" "$tag"
+    chmod 0644 "$archive"
+}
+
+# An image is pinned by its config digest, the id a loaded image keeps.
+record_image() {
+    local digest
+    digest=$(tar -xOf "$archive" manifest.json | python3 .docker/helper/image-id.py)
+    python3 .docker/helper/record-image.py docs/accounts/docker-images.json \
+        "$name" "$architecture" "$digest" "$claude_code" "$codex"
+}
+
+# Only the agent daemon runs the agent image, from the archive; the runner's tag stays for compose.
+remove_build_tag() {
+    [ "$name" != agent ] || docker image rm "$tag" >/dev/null
+}
+
+main "$@"

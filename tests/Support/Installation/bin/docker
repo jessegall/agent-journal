@@ -5,6 +5,7 @@ set -eu
 here=$(dirname "$0")
 answers=$here/../answers
 . "$here/../../../../scripts/lib/templates.sh"
+. "$here/../../../../scripts/lib/arguments.sh"
 
 main() {
     record_call "$@"
@@ -24,24 +25,16 @@ record_call() {
 }
 
 fail_when_asked() {
+    local part
     [ -f "$STAND_IN/failing" ] || return 0
     while IFS= read -r part; do
         case "$*" in *"$part"*) echo "stand-in docker: told to fail a call that holds: $part" >&2; exit 1 ;; esac
     done < "$STAND_IN/failing"
 }
 
-# The value that follows an option, such as the tag after --tag.
-option_after() {
-    wanted=$1
-    shift
-    while [ "$#" -gt 1 ]; do
-        if [ "$1" = "$wanted" ]; then echo "$2"; return 0; fi
-        shift
-    done
-}
-
 # A build counts, so each one saves an image of its own digest, and keeps the client versions it was given.
 remember_build() {
+    local argument
     echo $(($(built_images) + 1)) > "$STAND_IN/builds"
     for argument in "$@"; do
         case "$argument" in
@@ -58,7 +51,6 @@ built_images() {
 # What a command run in a well-built image prints, or how it ends.
 answer_run() {
     case "$*" in
-        *" composer:2 php "*) run_php_here "$@" ;;
         *"--entrypoint claude "*) cat "$STAND_IN/claude-version" ;;
         *"--entrypoint codex "*) cat "$STAND_IN/codex-version" ;;
         *"--entrypoint id "*journal-tools) cat "$answers/tools-user.txt" ;;
@@ -73,17 +65,8 @@ answer_run() {
     esac
 }
 
-# PHP asked for in a composer container runs here, with the folder mounted at /accounts in its place.
-run_php_here() {
-    accounts=$(option_after --volume "$@")
-    accounts=${accounts%:/accounts}
-    while [ "$1" != php ]; do shift; done
-    code=$(printf '%s' "$3" | sed "s|\"/accounts/|\"$accounts/|")
-    shift 3
-    php -r "$code" "$@"
-}
-
 save_archive() {
+    local archive folder digest last
     archive=$(option_after -o "$@")
     folder=$(mktemp -d)
     digest=$(printf 'image %s' "$(built_images)" | sha256sum | cut -d' ' -f1)
@@ -95,7 +78,7 @@ save_archive() {
 
 answer_compose() {
     case "$*" in
-        *"config --format json"*) cat "$answers/compose-config.json" ;;
+        *"config --format json"*) fill_template "$answers/compose-config.json" "root=$JOURNAL_ROOT" ;;
         *"config --images"*) echo journal-updater ;;
         *"ps -q app"*) cat "$STAND_IN/app-containers" 2>/dev/null || true ;;
         *"--scale app=2"*) printf 'app-old\napp-new\n' > "$STAND_IN/app-containers" ;;
