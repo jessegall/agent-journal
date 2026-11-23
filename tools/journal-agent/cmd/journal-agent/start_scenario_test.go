@@ -331,3 +331,52 @@ func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T
 		}
 	}
 }
+
+// A start the host cannot carry out is refused by name, with the reason and that no process was made, so the journal
+// ends the session instead of leaving it waiting: here a driver without a terminal handed a container with one.
+func TestScenarioAStartTheHostCannotCarryOutIsReportedRefusedWithItsReason(t *testing.T) {
+	var grant client.Grant
+	var claim client.ClaimedStart
+	var claimed client.Claim
+	readContract(t, "grant.json", &grant)
+	readContract(t, "claim.json", &claim)
+	readContract(t, "requests.json", &claimed)
+	grant.Container = json.RawMessage(strings.Replace(string(grant.Container), `"attachable": false`, `"attachable": true`, 1))
+	prepared := host.PreparedStart{Grant: grant, Claim: claim}
+	manifest, _, err := prepared.ContainerManifest()
+	if err != nil || !manifest.Attachable {
+		t.Fatalf("the scenario's container was not made attachable: %v", err)
+	}
+	containers, _ := scenarioDocker(t, manifest.Image)
+	state := t.TempDir()
+	opener := runtimeOpener{
+		containers: containers, installation: "acme", journalURL: "http://journal.test", stateFolder: state,
+		declared: []client.HostDescriptor{{Key: grant.Runtime.DriverKey, Build: grant.Runtime.DriverBuild}},
+	}
+	journal := recordingJournal{requests: make(chan client.RequestReport, 8), exits: make(chan client.LivenessReport, 8)}
+	preparation := preparedFromContracts{
+		prepared:      prepared,
+		prerequisites: containedPrerequisites(state, "", trialDrivers("claude-code"), containers),
+	}
+
+	serving.NewLoop(journal, preparation, opener.open).Take(context.Background(), claimed.Requests)
+
+	for {
+		select {
+		case report := <-journal.requests:
+			if report.Progress == string(contracts.ProgressApplied) {
+				t.Fatalf("the delivery was reported applied: %+v", report)
+			}
+			if report.RefusalReason == nil {
+				continue
+			}
+			if *report.RefusalReason != string(contracts.RefusalContainerUnavailable) || !report.NoProcessCreated {
+				t.Fatalf("the refusal was reported as %q, no process made: %t", *report.RefusalReason, report.NoProcessCreated)
+			}
+
+			return
+		case <-time.After(15 * time.Second):
+			t.Fatal("the start was never reported refused")
+		}
+	}
+}
