@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import type { Component } from 'vue';
 import { computed } from 'vue';
 import PaneGrid from '@/components/panes/PaneGrid.vue';
-import { copyIdOf, originalKeyOf } from '@/components/panes/paneLayout';
+import { activate, copyIdOf, openCopy, originalKeyOf, panesIn, windowsIn } from '@/components/panes/paneLayout';
+import { provideFileOpener } from '@/framework/fileOpener';
 import type { PaneWindow } from '@/components/panes/paneLayout';
 import { providePaneLayout } from '@/components/panes/usePaneLayout';
 import WindowHost from '@/framework/WindowHost.vue';
@@ -20,7 +21,12 @@ import InformationBar from './InformationBar.vue';
  * Home's query, window[<key>].
  */
 const props = defineProps<{ home: HomeData }>();
-const pageProps = usePage().props;
+const page = usePage();
+const pageProps = page.props;
+
+// The Home windows of a connected project: the tree a file is opened from, and the window a file opens in.
+const PROJECT_WINDOW_KEY = 'connections.project';
+const FILE_WINDOW_KEY = 'connections.file';
 
 /**
  * A window's result once the browser has it, read for the pane's count when its data names a total.
@@ -33,7 +39,7 @@ function resultOf(
         | undefined;
 }
 
-providePaneLayout('home-layout', () =>
+const layout = providePaneLayout('home-layout', () =>
     props.home.windows.map((window): PaneWindow => {
         const result = resultOf(window);
 
@@ -77,6 +83,57 @@ function hostedWindow(
         queryKey: `${window.key}~${copyId}`,
     };
 }
+/**
+ * Opens a project file as a File window: the tab already showing that path, else a new copy beside the other files,
+ * else in the largest pane that holds neither the chat nor the Project tree, else in a new pane at the right. The
+ * copy reads its file by a visit that changes only its own part of the query and its own prop.
+ */
+provideFileOpener((path) => {
+    const fileWindow = props.home.windows.find((window) => window.key === FILE_WINDOW_KEY);
+
+    if (fileWindow === undefined) {
+        return;
+    }
+
+    const url = new URL(page.url, 'http://journal.local');
+    const grid = layout.layout.value;
+    const showing = windowsIn(grid).find(
+        (key) =>
+            originalKeyOf(key) === fileWindow.paneKey &&
+            url.searchParams.get(`window[${hostedWindow(key)?.queryKey}][path]`) === path,
+    );
+
+    if (showing !== undefined) {
+        const holder = panesIn(grid).find((each) => each.windows.includes(showing));
+
+        if (holder !== undefined) {
+            layout.change(activate(grid, holder.id, showing));
+        }
+
+        return;
+    }
+
+    const clearOf = props.home.windows
+        .filter((window) => window.key === PROJECT_WINDOW_KEY || window.paneKey === 'chat')
+        .map((window) => window.paneKey);
+    const opened = openCopy(grid, fileWindow.paneKey, clearOf);
+    const hosted = hostedWindow(opened.key);
+
+    layout.change(opened.grid);
+
+    if (hosted === undefined) {
+        return;
+    }
+
+    url.searchParams.set(`window[${hosted.queryKey}][path]`, path);
+    router.visit(`${url.pathname}${url.search}`, {
+        only: [hosted.propName],
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+});
+
 function componentOf(window: HomeWindowData): Component {
     return componentNamed(window.component);
 }

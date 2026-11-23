@@ -99,8 +99,48 @@ export function copyWindow(
     windowKey: string,
     paneId: string,
 ): LayoutNode {
-    const copyKey = `${originalKeyOf(windowKey)}${COPY_MARK}${crypto.randomUUID().replaceAll('-', '').slice(0, 12)}`;
+    return copyWindowAs(node, newCopyKey(windowKey), paneId);
+}
 
+/**
+ * A new key for a further copy of a window.
+ */
+function newCopyKey(windowKey: string): string {
+    return `${originalKeyOf(windowKey)}${COPY_MARK}${crypto.randomUUID().replaceAll('-', '').slice(0, 12)}`;
+}
+
+/**
+ * Opens a further copy of a window where its kind is read: beside the copies already open, else in the largest pane
+ * that holds none of the windows to keep clear of (such as the chat and the Project tree), else in a new pane at the
+ * right. Answers the new layout and the copy's key.
+ */
+export function openCopy(
+    node: LayoutNode,
+    windowKey: string,
+    clearOf: string[],
+): { grid: LayoutNode; key: string } {
+    const key = newCopyKey(windowKey);
+    const original = originalKeyOf(windowKey);
+    const holdsOriginal = (each: Pane) => each.windows.some((shown) => originalKeyOf(shown) === original);
+    const holdsClear = (each: Pane) => each.windows.some((shown) => clearOf.includes(originalKeyOf(shown)));
+    const beside = panesIn(node).find(holdsOriginal);
+
+    if (beside !== undefined) {
+        return { grid: copyWindowAs(node, key, beside.id), key };
+    }
+
+    const largest = paneBoxes(node)
+        .filter((box) => !holdsClear(box.pane))
+        .sort((first, second) => second.width * second.height - first.width * first.height)[0];
+
+    if (largest !== undefined) {
+        return { grid: copyWindowAs(node, key, largest.pane.id), key };
+    }
+
+    return { grid: addPaneAtRight(node, key), key };
+}
+
+function copyWindowAs(node: LayoutNode, copyKey: string, paneId: string): LayoutNode {
     return mapNodes(node, (each) => {
         if (each.type !== 'pane' || each.id !== paneId) {
             return each;

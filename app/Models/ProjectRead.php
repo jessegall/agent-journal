@@ -148,8 +148,9 @@ final class ProjectRead extends Model implements ReadableModel
     }
 
     /**
-     * The same question this requester asked of the binding a moment ago, still waiting or settled within its keep
-     * time, so asking again reuses it.
+     * The same question this requester asked of the binding a moment ago, still waiting or answered within its keep
+     * time, so asking again reuses it; a read that failed is reused only briefly, so a window shows the failure and a
+     * later Retry asks the host again.
      *
      * @return Option<self>
      */
@@ -165,8 +166,13 @@ final class ProjectRead extends Model implements ReadableModel
             ->where('type', $type->value)
             ->where('path', $path)
             ->byActor($requester)
-            ->whereIn('state', [ProjectReadState::Pending->value, ProjectReadState::Answered->value])
-            ->where('created_at', '>=', $now->subMinutes(self::KEEP_MINUTES_LIMIT))
+            ->where(fn ($kept) => $kept
+                ->where(fn ($usable) => $usable
+                    ->whereIn('state', [ProjectReadState::Pending->value, ProjectReadState::Answered->value])
+                    ->where('created_at', '>=', $now->subMinutes(self::KEEP_MINUTES_LIMIT)))
+                ->orWhere(fn ($failed) => $failed
+                    ->where('state', ProjectReadState::Failed->value)
+                    ->where('created_at', '>=', $now->subSeconds(self::PENDING_SECONDS_LIMIT))))
             ->latest()
             ->firstOption();
     }

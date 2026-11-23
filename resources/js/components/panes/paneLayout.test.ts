@@ -7,6 +7,7 @@ import {
     copyWindow,
     defaultLayout,
     moveWindow,
+    openCopy,
     originalKeyOf,
     paneBoxes,
     panesIn,
@@ -16,6 +17,7 @@ import {
 } from './paneLayout';
 import { designPresets } from './arrangement';
 import type { LayoutNode, Split } from './paneLayout';
+import { pane } from './paneLayout';
 
 describe('the default layout', () => {
     it('puts the chat on the left and every other window as a tab on the right', () => {
@@ -186,5 +188,37 @@ describe('the design layouts', () => {
             ['chat'],
             ['plans'],
         ]);
+    });
+});
+
+describe('opening a copy of a window where its kind is read', () => {
+    const clearOf = ['chat', 'project'];
+
+    it('opens beside the copies already open', () => {
+        const grid: LayoutNode = { type: 'split', id: 's', axis: 'row', ratio: 0.3, first: pane(['project'], 'tree'), second: pane(['chat', 'file~one'], 'files') };
+
+        const opened = openCopy(grid, 'file', clearOf);
+
+        expect(originalKeyOf(opened.key)).toBe('file');
+        expect(panesIn(opened.grid).find((each) => each.id === 'files')?.windows).toEqual(['chat', 'file~one', opened.key]);
+        expect(panesIn(opened.grid).find((each) => each.id === 'files')?.active).toBe(opened.key);
+    });
+
+    it('opens in the largest pane that holds neither the chat nor the tree', () => {
+        const right: LayoutNode = { type: 'split', id: 'r', axis: 'column', ratio: 0.7, first: pane(['plans'], 'big'), second: pane(['rules'], 'small') };
+        const grid: LayoutNode = { type: 'split', id: 's', axis: 'row', ratio: 0.5, first: pane(['chat', 'project'], 'left'), second: right };
+
+        const opened = openCopy(grid, 'file', clearOf);
+
+        expect(panesIn(opened.grid).find((each) => each.id === 'big')?.windows).toEqual(['plans', opened.key]);
+    });
+
+    it('opens in a new pane at the right when every pane holds the chat or the tree', () => {
+        const grid: LayoutNode = { type: 'split', id: 's', axis: 'row', ratio: 0.5, first: pane(['project'], 'tree'), second: pane(['chat'], 'talk') };
+
+        const opened = openCopy(grid, 'file', clearOf);
+
+        expect(panesIn(opened.grid)).toHaveLength(3);
+        expect(panesIn(opened.grid).at(-1)?.windows).toEqual([opened.key]);
     });
 });

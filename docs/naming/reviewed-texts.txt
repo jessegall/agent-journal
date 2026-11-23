@@ -243,6 +243,7 @@ No
 No capacity
 No connected host runs agents in this place.
 No endpoint is serving this share.
+No file is open
 No install line was issued in the last 30 days.
 No linked record can be shared with it.
 No matches
@@ -396,6 +397,7 @@ Save revision {{ revision + 1 }}
 Save the current layout to it
 Saved
 Saved draft
+Saved, but {{ recipientName }} was not told.
 Search
 Search again
 Search all
@@ -488,6 +490,7 @@ That conversation was for other work; start a new conversation instead.
 That item is no longer available.
 The address is not available.
 The chosen option cannot be read from the screen; refresh or go back.
+The comment was not sent. Your text is kept.
 The desk
 The draft is ready. Drafted by {{ draft.agent }}.
 The gateway provider can see the public address and everything this share shows.
@@ -496,6 +499,7 @@ The journal cannot be reached to check this line is still valid, so it cannot be
 The new session failed to start
 The place this comment points at is not available: {{ unavailable.message }}
 The project's files could not be read.
+The project's machine is not connected, so {{ data.name }} cannot be read.
 The search could not be completed.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The terminal still has an unfinished line: {{ view.unsentLine }}
@@ -612,6 +616,7 @@ until {{ dateTime(signIn.expiresAt) }}
 {{ completed }} of {{ total }}
 {{ counted(memories.length, 'memory', 'memories') }} · the number is its weight, heaviest first
 {{ data.machineLabel }} is not connected, so {{ data.projectLabel }} cannot be read.
+{{ data.name }} is too large to show whole; this is its start.
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.

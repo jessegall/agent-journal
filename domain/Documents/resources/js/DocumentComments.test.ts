@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import type { DocumentCommentsPartData } from '@generated/types/documents';
 import DocumentComments from './DocumentComments.vue';
-import { draftFor } from './documentCommentDrafts';
+import { draftFor } from '@kit/lineComments';
 
 vi.mock('@/routes/comments', () => ({ post: { url: () => '/comments' } }));
 

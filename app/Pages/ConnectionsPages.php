@@ -12,6 +12,9 @@ use App\Data\Connections\BindingProviderData;
 use App\Data\Connections\ConnectProjectWindowData;
 use App\Data\Connections\DeviceApprovalData;
 use App\Data\Connections\EnvironmentOptionData;
+use App\Data\Connections\FileCommentData;
+use App\Data\Connections\FileThreadData;
+use App\Data\Connections\FileWindowData;
 use App\Data\Connections\InstallAttemptListData;
 use App\Data\Connections\InstallAttemptRowData;
 use App\Data\Connections\JoinTargetData;
@@ -32,12 +35,14 @@ use App\Enums\ConnectionAuditActor;
 use App\Enums\ConnectionAuditType;
 use App\Enums\DeliveryOutcome;
 use App\Enums\DeviceGrantState;
+use App\Enums\FileWindowState;
 use App\Enums\Icon;
 use App\Enums\InstallAttemptState;
 use App\Enums\InvitationMode;
 use App\Enums\ProjectWindowState;
 use App\Resolvers\ConnectProjectWindowResolver;
 use App\Resolvers\DeviceApprovalWindowResolver;
+use App\Resolvers\FileWindowResolver;
 use App\Resolvers\ProjectWindowResolver;
 use App\Support\ConnectionsOwnerCheck;
 
@@ -71,6 +76,10 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
                 ->at('project')
                 ->onHome(60)
                 ->visibleWhen(ConnectionsOwnerCheck::class),
+            Page::make('file', 'File', Icon::File, FileWindowResolver::class, 'FileWindow.vue')
+                ->at('file')
+                ->onHome(61)
+                ->visibleWhen(ConnectionsOwnerCheck::class),
         ];
     }
 
@@ -93,6 +102,9 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
             ConnectProjectWindowData::class,
             DeviceApprovalData::class,
             EnvironmentOptionData::class,
+            FileCommentData::class,
+            FileThreadData::class,
+            FileWindowData::class,
             InstallAttemptListData::class,
             InstallAttemptRowData::class,
             JoinTargetData::class,
@@ -110,6 +122,7 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
             ConnectionAuditType::class,
             DeliveryOutcome::class,
             DeviceGrantState::class,
+            FileWindowState::class,
             InstallAttemptState::class,
             InvitationMode::class,
             ProjectWindowState::class,

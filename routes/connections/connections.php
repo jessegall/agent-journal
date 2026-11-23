@@ -12,6 +12,7 @@ use App\Http\Controllers\BindingStatusController;
 use App\Http\Controllers\Calls\CancelProjectCommandController;
 use App\Http\Controllers\Calls\ReadProjectCommandStatusController;
 use App\Http\Controllers\Calls\RunProjectCommandController;
+use App\Http\Controllers\Connections\TellFileCommentController;
 use App\Http\Controllers\DeviceCommandController;
 use App\Http\Controllers\DeviceGrantController;
 use App\Http\Controllers\InstallScriptController;
@@ -115,4 +116,5 @@ Route::middleware(['web', 'auth', 'journal.user', 'throttle:20,1'])
         Route::delete('/bindings/{binding}', RevokeProjectBindingController::class)
             ->whereUlid('binding')
             ->name('bindings.revoke');
+        Route::post('/file-comments/tell', TellFileCommentController::class)->name('file-comments.tell');
     });

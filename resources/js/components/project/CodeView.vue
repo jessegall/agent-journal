@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import CodeLine from '@/components/kit/CodeLine.vue';
 import Menu from '@/components/kit/Menu.vue';
@@ -9,8 +9,9 @@ import MenuItem from '@/components/kit/MenuItem.vue';
  * One file as numbered code lines with a focusable gutter, in a theme chosen from the menu in the window itself (the
  * theme belongs to this window, not to the page). A Markdown file is not drawn here: it offers to open in the
  * document reader. A file that could not be read says so and offers Retry in its own window, leaving the rest alone.
+ * A window that lets the reader comment on lines draws them itself in the lines slot, keeping the header and theme.
  */
-defineProps<{
+const props = defineProps<{
     name: string;
     lines: string[];
     isMarkdown: boolean;
@@ -18,6 +19,9 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{ retry: []; openReader: [] }>();
+
+// A line is known by its number in the file.
+const lineNumbers = computed(() => props.lines.map((_, index) => index + 1));
 
 const themes = { dark: 'Dark', light: 'Light' } as const;
 const theme = ref<keyof typeof themes>('dark');
@@ -54,9 +58,11 @@ const palette: Record<keyof typeof themes, Record<string, string>> = {
                 </Menu>
             </div>
             <div class="min-h-0 flex-1 overflow-auto bg-code-bg py-2" :style="palette[theme]">
-                <template v-for="(text, index) in lines" :key="index">
-                    <CodeLine :line="index + 1">{{ text }}</CodeLine>
-                </template>
+                <slot name="lines">
+                    <template v-for="line in lineNumbers" :key="line">
+                        <CodeLine :line="line">{{ lines[line - 1] }}</CodeLine>
+                    </template>
+                </slot>
             </div>
         </template>
     </section>

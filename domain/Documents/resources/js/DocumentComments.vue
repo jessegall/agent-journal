@@ -9,8 +9,7 @@ import MenuItem from '@kit/MenuItem';
 import MenuTrigger from '@kit/MenuTrigger';
 import Button from '@kit/Button';
 import type { DocumentCommentsPartData } from '@generated/types/documents';
-import { postComment } from '@kit/commentRoutes';
-import { draftFor, forgetDraft } from './documentCommentDrafts';
+import { draftFor, sendLineComment } from '@kit/lineComments';
 
 /**
  * A document's text with the numbered lines a reader comments on: select lines with the mouse or the gutter, or press
@@ -43,43 +42,14 @@ function rangeWords(from: number, to: number): string {
 }
 
 function send(from: number, to: number, close: () => void): void {
-    const draft = draftFor(props.target, props.revision, from, to);
-
-    if (draft.text.trim() === '') {
-        return;
-    }
-
     state.value = 'sending';
-    router.post(
-        postComment.url(),
-        {
-            target: props.target,
-            body: draft.text,
-            submission_key: draft.key,
-            version: props.revision,
-            first_line: from,
-            last_line: to,
+    sendLineComment(props.target, props.revision, from, to, {
+        onSent: () => {
+            state.value = 'idle';
+            close();
         },
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                forgetDraft(props.target, props.revision, from, to);
-                state.value = 'idle';
-                close();
-            },
-            onError: () => (state.value = 'failed'),
-            onNetworkError: () => {
-                state.value = 'failed';
-
-                return false;
-            },
-            onHttpException: () => {
-                state.value = 'failed';
-
-                return false;
-            },
-        },
-    );
+        onFailed: () => (state.value = 'failed'),
+    });
 }
 
 function sendFeedback(recipientId: string, from: number, to: number): void {

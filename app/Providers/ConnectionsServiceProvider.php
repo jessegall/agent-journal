@@ -8,14 +8,20 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Hosts\HostOperatorAccess;
 use App\Contracts\Hosts\LocalProjectHosts;
 use App\Contracts\Hosts\ProjectFiles;
+use App\Contracts\Records\RecordProviderRegistration;
 use App\Enums\AccessType;
+use App\Models\ProjectFile;
+use App\Models\ProjectFileVersion;
 use App\Policies\ConnectionsPolicy;
+use App\Policies\ProjectFilesPolicy;
 use App\Support\BindingHosts;
 use App\Support\CommandRunEvidence;
 use App\Support\ConnectionsHostOperatorAccess;
 use App\Support\EntryDispatchers;
 use App\Support\HostProjectFiles;
 use App\Support\JournalRoutes;
+use App\Support\Links\ProjectFileLinkRecords;
+use App\Support\LinkTypeRegistry;
 use App\Support\ProjectCommands;
 use App\Support\ProjectReadPruning;
 use App\Values\PolicyDefinition;
@@ -44,12 +50,22 @@ final class ConnectionsServiceProvider extends ServiceProvider
         ));
     }
 
-    public function boot(PolicyCatalogue $policies): void
-    {
+    public function boot(
+        PolicyCatalogue $policies,
+        LinkTypeRegistry $links,
+        RecordProviderRegistration $records,
+    ): void {
         $policies->register('Core', new PolicyDefinition(
             ConnectionsPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
+
+        $policies->register('Core', new PolicyDefinition(ProjectFilesPolicy::class, [AccessType::Read]));
+        $links->register([
+            ProjectFile::LINK_TYPE => ProjectFile::class,
+            ProjectFileVersion::LINK_TYPE => ProjectFileVersion::class,
+        ]);
+        $records->register(ProjectFile::LINK_TYPE, ProjectFileLinkRecords::class);
 
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/connections/connections.php');
 

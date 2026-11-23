@@ -7,6 +7,8 @@ namespace App\Commands\ReportProjectRead;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ProjectReadType;
 use App\Exceptions\ProjectReadRefused;
+use App\Models\ProjectFile;
+use App\Models\ProjectFileVersion;
 use App\Models\ProjectRead;
 use App\Values\ProjectEntry;
 use App\Values\ProjectFileText;
@@ -47,7 +49,16 @@ final readonly class ReportProjectReadHandler implements CommandHandler
             return;
         }
 
-        $read->answerWithText($this->checkedText($read->id, $command->text), $command->isTruncated);
+        $text = $this->checkedText($read->id, $command->text);
+        $read->answerWithText($text, $command->isTruncated);
+
+        if (! $command->isTruncated) {
+            $file = ProjectFile::atPath($read->binding_id, $read->path)
+                ->getOrCall(fn () => ProjectFile::create($read->binding_id, $read->path));
+
+            $file->versionWith($text->digest)
+                ->getOrCall(fn () => ProjectFileVersion::create($file, $text->digest, $text->text));
+        }
     }
 
     /**
