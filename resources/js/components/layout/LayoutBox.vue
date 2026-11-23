@@ -221,12 +221,7 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
             </div>
         </template>
         <template #split>
-            <ListReaderLayout
-                :list-width="part.split?.listWidth"
-                :narrow-shows="part.split?.narrowShows"
-                :back="part.split?.back"
-                :reader-width="part.split?.readerWidth"
-            >
+            <ListReaderLayout v-bind="part.split">
                 <template #list>
                     <template
                         v-for="child in part.children.slice(0, 1)"
