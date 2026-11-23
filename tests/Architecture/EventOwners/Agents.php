@@ -55,6 +55,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
+            'app/Commands/ReconcileStarts/ReconcileStartsHandler.php',
             'app/Commands/ReportRequestProgress/ReportRequestProgressHandler.php',
             'app/Commands/ReportRunning/ReportRunningHandler.php',
             'app/Commands/ReportRuntimeActivity/ReportRuntimeActivityHandler.php',

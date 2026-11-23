@@ -14,7 +14,7 @@ use App\Exceptions\InvalidListener;
 use App\Support\AvailableListener;
 use App\Support\Delivery\StateEventBridge;
 use App\Support\DomainRegistry;
-use App\Support\FailureLoggingListener;
+use App\Support\IsolatedListener;
 use App\Support\ListenerOwnership;
 use App\Support\ListenerRegistry;
 use App\Support\Registration\ListenerPolicy;
@@ -83,7 +83,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
      * The checked map as the dispatcher registers it, from discovery or the cache alike, with each domain listener
      * gated by its domain's availability.
      *
-     * @return array<string, list<string|AvailableListener|FailureLoggingListener>>
+     * @return array<string, list<string|AvailableListener|IsolatedListener>>
      *
      * @throws InvalidListener
      */

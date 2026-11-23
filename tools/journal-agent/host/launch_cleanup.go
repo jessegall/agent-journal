@@ -144,15 +144,13 @@ type LabelledContainer struct {
 	ID      string
 	Session string
 	Running bool
-	// UnderInit is a container the protected-account init runs.
-	UnderInit bool
 }
 
 // Labelled lists every container, running or not, that carries this installation's label.
 func (containers Containers) Labelled(ctx context.Context, installation string) ([]LabelledContainer, error) {
 	output, err := containers.command(ctx, "ps", "--all", "--no-trunc",
 		"--filter", "label="+installationLabel+"="+installation,
-		"--format", `{{.ID}}\t{{.Label "`+sessionLabel+`"}}\t{{.State}}\t{{.Command}}`).Output()
+		"--format", `{{.ID}}\t{{.Label "`+sessionLabel+`"}}\t{{.State}}`).Output()
 	if err != nil {
 		return nil, err
 	}
@@ -161,9 +159,7 @@ func (containers Containers) Labelled(ctx context.Context, installation string) 
 		fields := strings.Split(line, "\t")
 		if len(fields) >= 2 && fields[0] != "" {
 			running := len(fields) >= 3 && fields[2] == "running"
-			underInit := len(fields) >= 4 && strings.Contains(fields[3], protectedInit)
-			found = append(found, LabelledContainer{ID: fields[0], Session: fields[1], Running: running,
-				UnderInit: underInit})
+			found = append(found, LabelledContainer{ID: fields[0], Session: fields[1], Running: running})
 		}
 	}
 	return found, nil

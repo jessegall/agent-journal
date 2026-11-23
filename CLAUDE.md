@@ -56,6 +56,13 @@ yours to resolve at its source.
 - Everything an installation does with Docker is tested against a stand-in Docker in the normal suite: install, update, boot, start, stop, image builds and pins, the scripts in `.docker` and `scripts`, and the scripts compose runs.
 - A change to such a script or step ships with its stand-in scenario in the same commit. Never push a pipeline change that no scenario runs.
 - The same scenarios run against a real Docker only from the separate installation suite, never from `composer test`.
+- **Everything that talks to Docker has such a test, a session's whole life too** (rule 83; user messages 19640, 19642): starting a session, a conversation through it (a chat message goes in through the journal and the host to a stand-in program, the reply comes back and the open page is told), stopping it, and a host restart with what happens to its containers. No code that runs a docker command or depends on a container is written or changed without its stand-in test in the same commit, and no session fix is handed to the user before that test passes.
+
+## Events belong to a group (rule 84; user message 19653)
+
+- Events of one subject form a group, and every event of a group implements that group's one base type: every chat event implements `ChatEvent`, every message event `MessageEvent`, and so on for sessions and starts, accounts, shares, tasks and every domain.
+- A listener that means a whole group is typed on the group type, never on a hand-kept list of events, so a new event of the group is heard without being added anywhere.
+- An architecture test fails on an event class with no group type or more than one, and on a group listener wired to single events. A new event gets its group type when it is written.
 
 ## A local rebuild does only what the change needs (rule 82; user messages 19439, 19442)
 

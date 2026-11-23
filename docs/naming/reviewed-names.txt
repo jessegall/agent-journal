@@ -2666,6 +2666,7 @@ class	CommitObservation
 class	CommitUploadCommand
 class	CommitUploadHandler
 class	CommitUploadTool
+class	CommittedFactListenerFailed
 class	CommunicationCalls
 class	CommunicationServiceProvider
 class	CompactionDetails
@@ -3349,7 +3350,6 @@ class	FailSkillPublicationHandler
 class	FailedOutcome
 class	FailedWindow
 class	FailureDetails
-class	FailureLoggingListener
 class	FailureReceipt
 class	FenceProfileRevisionCommand
 class	FenceProfileRevisionHandler
@@ -3759,6 +3759,7 @@ class	InvalidValueData
 class	InvalidateRemovedLinkMembers
 class	InvitationUnusable
 class	IsolatedHookSettings
+class	IsolatedListener
 class	IsolatedSettingsFile
 class	IssueChildClaim
 class	IssueEvidencePermitCommand
@@ -12742,6 +12743,8 @@ method	CommitUploadHandler::handle()
 method	CommitUploadTool::command()
 method	CommitUploadTool::present()
 method	CommitUploadTool::writeSchema()
+method	CommittedFactListenerFailed::for()
+method	CommittedFactListenerFailed::of()
 method	CommunicationCalls::__construct()
 method	CommunicationCalls::acknowledgePresentation()
 method	CommunicationCalls::answerChatQuestion()
@@ -15126,8 +15129,6 @@ method	FailedWindow::__construct()
 method	FailedWindow::because()
 method	FailedWindow::make()
 method	FailureDetails::__construct()
-method	FailureLoggingListener::__construct()
-method	FailureLoggingListener::__invoke()
 method	FailureReceipt::casts()
 method	FailureReceipt::receive()
 method	FallbackDocks::covers()
@@ -16419,6 +16420,8 @@ method	IsolatedHookSettings::allowTool()
 method	IsolatedHookSettings::content()
 method	IsolatedHookSettings::denyTool()
 method	IsolatedHookSettings::hasHooks()
+method	IsolatedListener::__construct()
+method	IsolatedListener::__invoke()
 method	IsolatedSettingsFile::__construct()
 method	IsolatedSettingsFile::jsonSerialize()
 method	IsolatedSettingsFile::of()
@@ -20225,6 +20228,7 @@ method	PublicOwner::ownsName()
 method	PublicTypePath::__construct()
 method	Publication::__construct()
 method	Publication::deliver()
+method	Publication::fail()
 method	Publication::release()
 method	Publication::takeCommitted()
 method	PublicationArguments::referenceSchema()
@@ -34517,8 +34521,6 @@ property	FailedWindow::$reason
 property	FailedWindow::$state
 property	FailureDetails::$driver
 property	FailureDetails::$failure
-property	FailureLoggingListener::$event
-property	FailureLoggingListener::$listener
 property	FenceProfileRevisionCommand::$key
 property	FenceProfileRevisionCommand::$revision
 property	FetchAdmission::$processes
@@ -35183,6 +35185,8 @@ property	InvalidValueData::$type
 property	IsolatedHookSettings::$allowedTools
 property	IsolatedHookSettings::$deniedTools
 property	IsolatedHookSettings::$hookCommands
+property	IsolatedListener::$event
+property	IsolatedListener::$listener
 property	IsolatedSettingsFile::$allowedTools
 property	IsolatedSettingsFile::$deniedTools
 property	IsolatedSettingsFile::$hooks
@@ -37575,7 +37579,8 @@ property	PublicTypePath::$line
 property	PublicTypePath::$member
 property	PublicTypePath::$name
 property	Publication::$committed
-property	Publication::$log
+property	Publication::$failures
+property	Publication::$isReleasing
 property	Publication::$nesting
 property	Publication::$staging
 property	PublicationCard::$abstract

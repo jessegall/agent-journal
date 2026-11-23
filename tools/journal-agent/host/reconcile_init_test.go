@@ -8,16 +8,16 @@ import (
 	"testing"
 )
 
-// initDocker lists one running container of session-7 under the init, whose log holds the given text.
-func initDocker(t *testing.T, logText string) (Containers, string) {
+// runningDocker lists one running container of session-7 and ends a removal with the given exit code.
+func runningDocker(t *testing.T, removalExit string) (Containers, string) {
 	t.Helper()
 	folder := t.TempDir()
 	log := filepath.Join(folder, "calls.log")
 	script := `#!/bin/sh
 echo "$*" >> ` + log + `
 case "$1" in
-ps) printf 'c7\tsession-7\trunning\t"/opt/journal/bin/journal-init -- claude"\n' ;;
-logs) printf '` + logText + `' ;;
+ps) printf 'c7\tsession-7\trunning\n' ;;
+rm) exit ` + removalExit + ` ;;
 *) exit 0 ;;
 esac
 `
@@ -29,21 +29,9 @@ esac
 	return Containers{Docker: path}, log
 }
 
-func TestARunningInitThatSaidReadyIsAdopted(t *testing.T) {
-	containers, log := initDocker(t, `journal-init: ready\nhello\n`)
-
-	sessions, err := ContainerSessionsOf(context.Background(), containers, "journal")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !sessions["session-7"].Running || strings.Contains(strings.Join(calls(t, log), "\n"), "rm --force") {
-		t.Fatalf("a ready init was not adopted: %+v", sessions)
-	}
-}
-
-func TestAnInitTheHostRestartedDuringIsRemovedAndCountsAsExited(t *testing.T) {
-	containers, log := initDocker(t, `starting\n`)
+// User message 19586: a session whose host restarted is no longer served, so it is stopped by itself and marked so.
+func TestASessionContainerFoundRunningWhenTheHostStartsIsRemovedAndCountsAsExited(t *testing.T) {
+	containers, log := runningDocker(t, "0")
 
 	sessions, err := ContainerSessionsOf(context.Background(), containers, "journal")
 	if err != nil {
@@ -51,9 +39,22 @@ func TestAnInitTheHostRestartedDuringIsRemovedAndCountsAsExited(t *testing.T) {
 	}
 
 	if sessions["session-7"].Running || !strings.Contains(strings.Join(calls(t, log), "\n"), "rm --force c7") {
-		t.Fatalf("a half-started container stayed: %+v", sessions)
+		t.Fatalf("a container nothing serves stayed: %+v", sessions)
 	}
 	if sessions.reconcileContainer(StartRecord{SessionID: "session-7"}) != Exited {
-		t.Fatal("a half-started container was not reported exited")
+		t.Fatal("a removed container was not reported exited")
+	}
+}
+
+func TestASessionContainerThatCouldNotBeRemovedNeedsAttention(t *testing.T) {
+	containers, _ := runningDocker(t, "1")
+
+	sessions, err := ContainerSessionsOf(context.Background(), containers, "journal")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if sessions.reconcileContainer(StartRecord{SessionID: "session-7"}) != NeedsAttention {
+		t.Fatalf("a container that still runs was reported as %+v", sessions)
 	}
 }

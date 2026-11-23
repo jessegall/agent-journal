@@ -7,13 +7,15 @@ namespace App\Commands\ReconcileStarts;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\AccountUseChanged;
+use App\Events\SessionStateChanged;
 use App\Models\AgentSession;
 use App\Models\ProcessStart;
 use App\Support\RecordIdentity;
 use App\Support\StartHeartbeats;
 
 /**
- * Ends the reported starts, with the sessions they ran, and tells each account's page once its count changed.
+ * Ends the reported starts, with the sessions they ran, and tells each account's page once its count changed and
+ * the open pages of each session that it ended.
  */
 final readonly class ReconcileStartsHandler implements CommandHandler
 {
@@ -65,6 +67,8 @@ final readonly class ReconcileStartsHandler implements CommandHandler
                 $sessions[$start->session_id],
                 'the host found its start ended after a restart',
             );
+
+            $this->facts->publishAfterCommit(new SessionStateChanged($start->session_id));
 
             $account = $start->accountIdentity();
             $accounts["{$account->type} {$account->id}"] = $account;

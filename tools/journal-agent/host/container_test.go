@@ -282,8 +282,8 @@ func TestAContainedStartIsProvenByItsContainer(t *testing.T) {
 	running := ContainerSessions{"s1": {ID: "c1", Session: "s1", Running: true}}
 	stopped := ContainerSessions{"s1": {ID: "c1", Session: "s1"}}
 
-	if got := reconcileStart("k1", []StartRecord{record}, running); got != Adopted {
-		t.Fatalf("a running container gave %s", got)
+	if got := reconcileStart("k1", []StartRecord{record}, running); got != NeedsAttention {
+		t.Fatalf("a container that still runs with nothing serving it gave %s", got)
 	}
 
 	if got := reconcileStart("k1", []StartRecord{record}, stopped); got != Exited {

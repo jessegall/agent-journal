@@ -15,7 +15,7 @@ final readonly class ListenerRegistry
 {
     /**
      * @param  array<string, list<string|AvailableListener>>  $inCommandTransaction
-     * @param  array<string, list<string|AvailableListener|FailureLoggingListener>>  $afterCommit
+     * @param  array<string, list<string|AvailableListener|IsolatedListener>>  $afterCommit
      */
     public function __construct(private array $inCommandTransaction = [], private array $afterCommit = []) {}
 
@@ -32,7 +32,7 @@ final readonly class ListenerRegistry
     /**
      * Every listener of the lane, by event.
      *
-     * @return array<string, list<string|AvailableListener|FailureLoggingListener>>
+     * @return array<string, list<string|AvailableListener|IsolatedListener>>
      */
     public function byEvent(ListenerLane $lane): array
     {

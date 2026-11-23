@@ -6,10 +6,11 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\SendMessage\SendMessageCommand;
 use App\Events\MessageSent;
+use App\Exceptions\CommittedFactListenerFailed;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Message;
 use App\Support\DeclaredType;
-use App\Support\FailureLoggingListener;
+use App\Support\IsolatedListener;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
@@ -54,17 +55,22 @@ final class MessageEventsTest extends MessagingTestCase
         $this->assertSame([$first], $this->received);
     }
 
-    public function test_a_failing_listener_leaves_the_message_and_the_success_alone(): void
+    // User message 19647: a failing listener is never swallowed. The message stays saved, the listeners after it
+    // still hear the fact, and then the failure is thrown.
+    public function test_a_failing_listener_leaves_the_message_saved_and_heard_and_is_then_thrown(): void
     {
-        Event::listen(MessageSent::class, new FailureLoggingListener(
+        Event::listen(MessageSent::class, new IsolatedListener(
             MessageSent::class,
             FailingMessageListener::class.'@handle',
         ));
 
-        $messageId = $this->ownerSends($this->inboxIdOf($this->builder), self::SAVED_TEXT);
+        $this->assertThrows(
+            fn () => $this->ownerSends($this->inboxIdOf($this->builder), self::SAVED_TEXT),
+            CommittedFactListenerFailed::class,
+        );
 
-        $this->assertSame(self::SAVED_TEXT, Message::query()->findOrFail($messageId)->body);
-        $this->assertSame([$messageId], $this->received);
+        $message = Message::query()->where('body', self::SAVED_TEXT)->sole();
+        $this->assertSame([$message->id], $this->received);
     }
 
     public function test_no_message_fact_carries_a_body_or_a_model(): void

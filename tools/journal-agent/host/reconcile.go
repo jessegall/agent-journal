@@ -2,10 +2,8 @@ package host
 
 import (
 	"context"
-	"io"
 	"log"
 	"slices"
-	"strings"
 )
 
 // ReconcileJournal is what a restarted host asks the journal: its starts that may still run, and which of those
@@ -65,7 +63,9 @@ func ReconcileOnBoot(
 // local host has none.
 type ContainerSessions map[string]LabelledContainer
 
-// ContainerSessionsOf lists the installation's containers on the agent daemon, by session.
+// ContainerSessionsOf lists the installation's containers on the agent daemon, by session, as a host finds them when
+// it starts. One still running lost the host that drove its program, and its terminal and conversation went with
+// that host, so it is removed here: no session is left looking alive while nothing serves it.
 func ContainerSessionsOf(ctx context.Context, containers Containers, installation string) (ContainerSessions, error) {
 	found, err := containers.Labelled(ctx, installation)
 	if err != nil {
@@ -74,9 +74,8 @@ func ContainerSessionsOf(ctx context.Context, containers Containers, installatio
 
 	sessions := ContainerSessions{}
 	for _, container := range found {
-		if container.Running && container.UnderInit && !containers.initReady(ctx, container.ID) {
-			_ = containers.command(ctx, "rm", "--force", container.ID).Run()
-			container.Running = false
+		if container.Running {
+			container.Running = containers.command(ctx, "rm", "--force", container.ID).Run() != nil
 		}
 
 		sessions[container.Session] = container
@@ -85,36 +84,13 @@ func ContainerSessionsOf(ctx context.Context, containers Containers, installatio
 	return sessions, nil
 }
 
-// initLogBytes bounds how much of a container's log is read to find the init's ready line, which comes first.
-const initLogBytes = 64 * 1024
-
-// initReady is whether the protected-account init in the container said it was ready: a container the host found
-// half started, as after a restart during the init, never is, and is not adopted.
-func (containers Containers) initReady(ctx context.Context, id string) bool {
-	logs := containers.command(ctx, "logs", id)
-	output, err := logs.StdoutPipe()
-	if err != nil {
-		return false
-	}
-
-	if err := logs.Start(); err != nil {
-		return false
-	}
-
-	head := make([]byte, initLogBytes)
-	read, _ := io.ReadFull(output, head)
-	_ = logs.Process.Kill()
-	_ = logs.Wait()
-
-	return strings.Contains(string(head[:read]), initReadyLine)
-}
-
-// reconcileContainer proves a contained start by its container: one still running is adopted, to be attached again;
-// one stopped or gone from the daemon, which lists stopped containers too, has exited.
+// reconcileContainer proves a contained start by its container: one stopped, removed when the host started or gone
+// from the daemon, which lists stopped containers too, has exited; one that could not be removed still runs with
+// nothing serving it and needs attention.
 func (sessions ContainerSessions) reconcileContainer(record StartRecord) Reconciliation {
 	container, found := sessions[record.SessionID]
 	if found && container.Running {
-		return Adopted
+		return NeedsAttention
 	}
 
 	return Exited

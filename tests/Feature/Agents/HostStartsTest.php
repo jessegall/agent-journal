@@ -13,6 +13,7 @@ use App\Enums\DriverCapability;
 use App\Enums\DriverEvidence;
 use App\Enums\DriverVariant;
 use App\Enums\ProcessStartState;
+use App\Events\SessionStateChanged;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agent;
 use App\Models\AgentRuntime;
@@ -28,6 +29,7 @@ use App\Support\OpenedRuntime;
 use App\Support\Relay\OutputGrantSeal;
 use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
@@ -268,6 +270,24 @@ final class HostStartsTest extends TestCase
         $this->signed($host, 'POST', '/host/starts/reconcile', ['stopped' => [$key]])
             ->assertJson(['accounts_changed' => 1]);
         $this->assertSame(ProcessStartState::Stopped, ProcessStart::query()->withoutGlobalScopes()->sole()->state);
+    }
+
+    // User message 19586: a session its restarted host no longer serves is stopped by itself, and the pages hear it.
+    public function test_a_start_the_restarted_host_ended_ends_its_session_and_tells_the_open_pages(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->json('start_key');
+        Event::fake([SessionStateChanged::class]);
+
+        $this->signed($host, 'POST', '/host/starts/reconcile', ['stopped' => [$key]])->assertOk();
+
+        $session = AgentSession::query()->withoutGlobalScopes()->findOrFail($opened->sessionId);
+        $this->assertFalse($session->isActive());
+        Event::assertDispatched(
+            SessionStateChanged::class,
+            fn (SessionStateChanged $change) => $change->sessionId === $opened->sessionId,
+        );
     }
 
     public function test_a_call_without_the_host_signature_is_refused(): void

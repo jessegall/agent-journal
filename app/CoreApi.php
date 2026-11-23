@@ -720,9 +720,16 @@ use App\Enums\WorkRepairOutcome;
 use App\Enums\WorkspaceUse;
 use App\Events\AccountsChanged;
 use App\Events\AccountUseChanged;
+use App\Events\ActivityRecorded;
 use App\Events\AgentHoldReleased;
 use App\Events\AgentRuntimeReassigned;
 use App\Events\AssignmentsChanged;
+use App\Events\ChatLinePosted;
+use App\Events\ChatMemberJoined;
+use App\Events\ChatMemberLeft;
+use App\Events\ChatMessageAccepted;
+use App\Events\ChatReceiptPresented;
+use App\Events\ChatRoleChanged;
 use App\Events\CommentPosted;
 use App\Events\ContextStarted;
 use App\Events\DriverFailed;
@@ -743,6 +750,8 @@ use App\Events\MessageRead;
 use App\Events\MessageSent;
 use App\Events\MessageTakenUp;
 use App\Events\ProfileRevisionRevoked;
+use App\Events\ProjectBindingReadinessChanged;
+use App\Events\ReceiptDeliveryChanged;
 use App\Events\RunChanged;
 use App\Events\SessionClosed;
 use App\Events\SessionStateChanged;
@@ -756,6 +765,7 @@ use App\Events\ShareRequested;
 use App\Events\ShareRevoked;
 use App\Events\ShareScopeChanged;
 use App\Events\StartAccepted;
+use App\Events\StartRefused as StartRefusedFact;
 use App\Events\StartUnavailable;
 use App\Events\StateTypesRequested;
 use App\Exceptions\AccessPolicyInvalid;
@@ -1570,6 +1580,16 @@ final class CoreApi
                 DriverFailed::class,
                 AccountUseChanged::class,
                 SessionStateChanged::class,
+                ActivityRecorded::class,
+                ProjectBindingReadinessChanged::class,
+                ChatRoleChanged::class,
+                ChatMemberJoined::class,
+                ChatLinePosted::class,
+                ChatMemberLeft::class,
+                ChatReceiptPresented::class,
+                ReceiptDeliveryChanged::class,
+                ChatMessageAccepted::class,
+                StartRefusedFact::class,
                 AccountsChanged::class,
                 RunChanged::class,
                 EngineTicked::class,

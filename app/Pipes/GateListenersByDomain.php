@@ -8,7 +8,7 @@ use App\Contracts\Bus\Pipe;
 use App\Contracts\Events\ListenerFailureLog;
 use App\Exceptions\InvalidListener;
 use App\Support\AvailableListener;
-use App\Support\FailureLoggingListener;
+use App\Support\IsolatedListener;
 use App\Support\ListenerDeclarations;
 use App\Support\ListenerRegistry;
 use App\Support\Reflector;
@@ -32,7 +32,7 @@ final readonly class GateListenersByDomain implements Pipe
                     && Reflector::of($event)->isSubclassOf(ListenerFailureLog::class);
 
                 $gated[$event][] = $logsFailures
-                    ? new FailureLoggingListener($event, $available)
+                    ? new IsolatedListener($event, $available)
                     : $available;
             }
         }
