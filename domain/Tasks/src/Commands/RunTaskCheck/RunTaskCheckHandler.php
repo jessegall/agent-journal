@@ -34,9 +34,11 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
         }
 
         $caller = ActorIdentity::of($command->dispatchedBy());
-        $opener = $this->callers->callerOf($command->processRunId)->getOrElse(null);
+        $isOpener = $this->callers->callerOf($command->processRunId)
+            ->filter(fn (ActorIdentity $opener) => $opener->isSameAs($caller))
+            ->isDefined();
 
-        if ($opener === null || $opener->type !== $caller->type || $opener->id !== $caller->id) {
+        if (! $isOpener) {
             throw TaskCheckRefused::notYourRun($command->processRunId);
         }
 

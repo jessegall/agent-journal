@@ -30,10 +30,12 @@ final readonly class ResetSettingsPageController
 
         foreach ($catalogue->owner($request->owner())->groups as $group) {
             foreach ($group->settings as $setting) {
-                if ($this->isChanged($setting)) {
-                    $reference = new SettingReference($setting->identity->owner, $setting->identity->key);
-                    $revision = $commands->run(new ResetSettingCommand($reference, $revision))->revision;
+                if (! $this->isChanged($setting)) {
+                    continue;
                 }
+
+                $reference = new SettingReference($setting->identity->owner, $setting->identity->key);
+                $revision = $commands->run(new ResetSettingCommand($reference, $revision))->revision;
             }
         }
 

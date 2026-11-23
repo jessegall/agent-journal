@@ -15,7 +15,7 @@ function controlled(client: Partial<TerminalControlClient>) {
         renew: async () => answer({ state: 'granted', grantId: 'grant' }),
         release: async () => answer({ state: 'releasing', grantId: 'grant' }),
         input: async (grantId, input, sequence, revision) => {
-            const text = 'text' in input ? input.text : 'key' in input ? input.key : '';
+            const text = textOf(input);
             sent.push([grantId, text, input.type === 'text' && input.enter, sequence, revision]);
 
             return answer({ state: 'granted', grantId: 'grant', nextSequence: sequence + 1 });
@@ -104,3 +104,18 @@ describe('TerminalControl', () => {
         expect(control.holdsGrant()).toBe(false);
     });
 });
+
+/**
+ * What one terminal input carries: its text, or the name of its key.
+ */
+function textOf(input: object): string {
+    if ('text' in input && typeof input.text === 'string') {
+        return input.text;
+    }
+
+    if ('key' in input && typeof input.key === 'string') {
+        return input.key;
+    }
+
+    return '';
+}

@@ -48,19 +48,23 @@ function flatten(items: NavigationItemData[]): NavigationItemData[] {
 }
 
 const pages = computed<Entry[]>(() =>
-    flatten(page.props.navigation?.items ?? []).flatMap((item) =>
-        item.url === undefined
-            ? []
-            : [
-                  {
-                      id: `page-${item.key}`,
-                      group: item.inSidebar ? ('Pages' as const) : ('Commands' as const),
-                      label: item.inSidebar ? item.label : `Open ${item.label}`,
-                      icon: item.inSidebar || item.icon === undefined ? ('arrow' as const) : item.icon,
-                      run: () => router.visit(item.url as string),
-                  },
-              ],
-    ),
+    flatten(page.props.navigation?.items ?? []).flatMap((item) => {
+        const url = item.url;
+
+        if (url === undefined) {
+            return [];
+        }
+
+        return [
+            {
+                id: `page-${item.key}`,
+                group: item.inSidebar ? ('Pages' as const) : ('Commands' as const),
+                label: item.inSidebar ? item.label : `Open ${item.label}`,
+                icon: item.inSidebar || item.icon === undefined ? ('arrow' as const) : item.icon,
+                run: () => router.visit(url),
+            },
+        ];
+    }),
 );
 
 // The records the search found for the words, each opening its own page; a hit with no page of its own is left out.
