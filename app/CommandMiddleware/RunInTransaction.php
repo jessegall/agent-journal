@@ -64,7 +64,7 @@ final readonly class RunInTransaction implements CommandMiddleware
             }
 
             // The first command inside a stack transaction is the running command; later ones join it.
-            return $this->lifecycle->join($this->database, fn () => $this->running->isRunning()
+            return $this->lifecycle->within($this->database, fn () => $this->running->isRunning()
                 ? $this->running->joined($call, fn () => $next($call))
                 : $this->running->running($call, $isolation, fn () => $next($call)));
         }

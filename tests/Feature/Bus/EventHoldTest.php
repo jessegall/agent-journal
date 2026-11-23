@@ -59,7 +59,7 @@ final class EventHoldTest extends TestCase
 
         $unit = $this->owned(fn () => $this->lifecycle()->holdUntilReturn(function () use ($held, $inner): void {
             $held->rename('held');
-            $this->lifecycle()->join($this->database(), fn () => $inner->rename('first'));
+            $this->lifecycle()->within($this->database(), fn () => $inner->rename('first'));
         }));
 
         $this->assertEquals(
@@ -128,7 +128,7 @@ final class EventHoldTest extends TestCase
         [$sibling, $held] = [$this->row(), $this->row()];
 
         $unit = $this->owned(function () use ($sibling, $held): void {
-            $this->lifecycle()->join($this->database(), fn () => $sibling->rename('sibling'));
+            $this->lifecycle()->within($this->database(), fn () => $sibling->rename('sibling'));
             $this->lifecycle()->holdUntilReturn(fn () => $held->rename('held'));
         });
 

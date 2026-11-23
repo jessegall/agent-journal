@@ -84,7 +84,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOfWork
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function join(ConnectionInterface $connection, Closure $work): mixed
+    public function within(ConnectionInterface $connection, Closure $work): mixed
     {
         $active = $this->units->activeFor($connection);
 

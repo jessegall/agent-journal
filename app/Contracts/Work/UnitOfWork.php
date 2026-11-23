@@ -9,7 +9,7 @@ use Illuminate\Database\ConnectionInterface;
 
 /**
  * One transaction together with the events its rows raise: run() gives work a unit of its own, opened with the
- * transaction and published after its commit, and join() runs work inside the unit already open.
+ * transaction and published after its commit, and within() runs work inside the unit already open.
  */
 interface UnitOfWork
 {
@@ -35,5 +35,5 @@ interface UnitOfWork
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function join(ConnectionInterface $connection, Closure $work): mixed;
+    public function within(ConnectionInterface $connection, Closure $work): mixed;
 }
