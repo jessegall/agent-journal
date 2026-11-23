@@ -32,6 +32,8 @@ final readonly class HostContract
      */
     public function assertHolds(array $actual, array $fixedValues): void
     {
+        // A value this run does not have, such as the start of a request the journal supervises none for, names nothing.
+        unset($fixedValues['']);
         $json = strtr(json_encode($actual, self::JSON_FLAGS), $fixedValues)."\n";
 
         if (getenv(self::UPDATE_SWITCH) === '1' || ! is_file($this->path)) {
@@ -49,5 +51,19 @@ final readonly class HostContract
     public function read(): array
     {
         return json_decode((string) file_get_contents($this->path), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * The message with this run's own values back in place of the fixed ones, so the journal takes it as sent to it.
+     *
+     * @param  array<string, string>  $fixedValues  the same map assertHolds takes
+     * @return array<array-key, mixed>
+     */
+    public function readFor(array $fixedValues): array
+    {
+        unset($fixedValues['']);
+        $json = strtr((string) file_get_contents($this->path), array_flip($fixedValues));
+
+        return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
     }
 }

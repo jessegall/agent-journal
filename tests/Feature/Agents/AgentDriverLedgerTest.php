@@ -465,12 +465,12 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame('daemon-bind', $wire['container']['mounts'][0]['type']);
     }
 
-    public function test_the_grant_of_a_protected_headless_start_is_the_contract_the_host_reads(): void
+    public function test_a_protected_headless_start_runs_on_the_messages_both_sides_keep(): void
     {
         config(['agents.protected_account_trial' => DefaultDrivers::CLAUDE_CODE]);
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
         ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
-        [$host, $opened] = $this->openRuntime();
+        [$host, $opened] = $this->openRuntime('Say hello');
         // The host is a contained one, as the installation's arrangement below says.
         Host::query()->findOrFail($host->hostId)->forceFill(['arrangement' => ArrangementType::Contained])->save();
         $this->app->instance(
@@ -492,6 +492,20 @@ final class AgentDriverLedgerTest extends TestCase
             new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),
         );
 
+        $fixedValues = [
+            $opened->sessionId => '01contractsession000000000',
+            $opened->runtimeId => '01contractruntime000000000',
+        ];
+        $claimed = $this->hostCall(
+            $host,
+            '/host/claim?limit=10&wait=0&watched_version=0&arrangement=contained',
+            [],
+        )->assertSuccessful();
+        $fixedValues[(string) $claimed->json('requests.0.requestId')] = '01contractrequest000000000';
+        $fixedValues[(string) $claimed->json('requests.0.processStartId')] = '01contractstart00000000000';
+
+        HostContract::of('host-start/protected-headless-claude/requests.json')->assertHolds((array) $claimed->json(), $fixedValues);
+
         $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
 
         HostContract::of('host-start/protected-headless-claude/grant.json')->assertHolds($grant->toArray(), [
@@ -510,6 +524,14 @@ final class AgentDriverLedgerTest extends TestCase
             $opened->sessionId => '01contractsession000000000',
             $account->id => '01contractaccount000000000',
         ]);
+
+        // What the host's scenario reports once the turn ran in its container: the journal keeps the conversation whole.
+        $applied = HostContract::of('host-start/protected-headless-claude/request-report.json')->readFor($fixedValues);
+        $this->hostCall($host, '/host/reports/request', $applied)->assertSuccessful();
+
+        $request = DriverRequest::query()->findOrFail($applied['request_id']);
+        $this->assertSame(RequestProgress::Applied, $request->progress);
+        $this->assertSame($applied['actual_binding'], $request->actual_binding);
     }
 
     public function test_a_contained_session_whose_account_folder_is_no_plain_id_gets_no_grant(): void

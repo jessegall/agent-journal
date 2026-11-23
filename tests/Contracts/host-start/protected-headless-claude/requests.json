@@ -1,0 +1,36 @@
+{
+    "requests": [
+        {
+            "runtimeId": "01contractruntime000000000",
+            "requestId": "01contractrequest000000000",
+            "sequence": 1,
+            "attempt": 0,
+            "operation": "deliver",
+            "message": null,
+            "parts": [
+                {
+                    "type": "text",
+                    "text": "Say hello",
+                    "attachmentId": "",
+                    "digest": "",
+                    "label": ""
+                }
+            ],
+            "model": null,
+            "effort": null,
+            "script": null,
+            "scriptVersion": null,
+            "scriptParameters": [],
+            "scriptStep": null,
+            "navigationRequestId": null,
+            "navigationRound": null,
+            "sessionId": "01contractsession000000000",
+            "processStartId": "01contractstart00000000000",
+            "processGeneration": 1,
+            "bootstrap": false
+        }
+    ],
+    "project_reads": [],
+    "watched": [],
+    "watched_version": 0
+}

@@ -14,6 +14,7 @@ import (
 	"journal-agent/drivers/contracts"
 	"journal-agent/host"
 	"journal-agent/profiles"
+	"journal-agent/serving"
 )
 
 // The start scenarios run the host's real start code on the messages the journal really sends, which both test
@@ -219,6 +220,114 @@ func TestScenarioAProtectedHeadlessClaudeStartRunsItsTurnInItsContainer(t *testi
 	for _, refused := range []string{" --tty", " -t ", " --interactive", "--privileged"} {
 		if strings.Contains(created, refused) {
 			t.Errorf("the turn's container was created with %q:\n%s", refused, created)
+		}
+	}
+}
+
+// recordingJournal is the journal as the serving loop reports to it: it keeps every request report and exit.
+type recordingJournal struct {
+	requests chan client.RequestReport
+	exits    chan client.LivenessReport
+}
+
+func (journal recordingJournal) ReportRequest(_ context.Context, report client.RequestReport) error {
+	journal.requests <- report
+
+	return nil
+}
+
+func (journal recordingJournal) ReportActivity(context.Context, client.ActivityReport) error {
+	return nil
+}
+
+func (journal recordingJournal) ReportExit(_ context.Context, report client.LivenessReport) error {
+	journal.exits <- report
+
+	return nil
+}
+
+func (recordingJournal) ReportReplayed(context.Context, string, string, string) error { return nil }
+
+func (recordingJournal) ReportStale(context.Context, string, client.EntryStaleReport) error {
+	return nil
+}
+
+func (recordingJournal) RaiseNavigation(context.Context, string, client.NavigationRaise) (client.NavigationAnswer, error) {
+	return client.NavigationAnswer{}, nil
+}
+
+func (recordingJournal) InterruptNavigation(context.Context, string) error { return nil }
+
+// preparedFromContracts prepares a runtime as the host does, from the journal's grant and claim and behind the same
+// prerequisites, with no call to a journal.
+type preparedFromContracts struct {
+	prepared      host.PreparedStart
+	prerequisites host.StartPrerequisites
+}
+
+func (preparation preparedFromContracts) Prepare(context.Context, string) (host.PreparedStart, error) {
+	if err := preparation.prerequisites(preparation.prepared.Grant, preparation.prepared.Claim); err != nil {
+		return host.PreparedStart{}, err
+	}
+
+	return preparation.prepared, nil
+}
+
+// fixedConversation stands for the conversation id the driver makes anew on every run.
+const fixedConversation = "00000000-0000-4000-8000-000000000000"
+
+// The whole way of one claimed request through the host: the serving loop takes the journal's claimed delivery,
+// prepares and opens the protected headless runtime, runs its turn in the container and reports it applied, with the
+// conversation the journal then keeps. What it reports is the message the journal's own test takes back.
+func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T) {
+	var grant client.Grant
+	var claim client.ClaimedStart
+	var claimed client.Claim
+	readContract(t, "grant.json", &grant)
+	readContract(t, "claim.json", &claim)
+	readContract(t, "requests.json", &claimed)
+	prepared := host.PreparedStart{Grant: grant, Claim: claim}
+	manifest, _, err := prepared.ContainerManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	containers, _ := scenarioDocker(t, manifest.Image)
+	state := t.TempDir()
+	opener := runtimeOpener{
+		containers: containers, installation: "acme", journalURL: "http://journal.test", stateFolder: state,
+		declared: []client.HostDescriptor{{Key: grant.Runtime.DriverKey, Build: grant.Runtime.DriverBuild}},
+	}
+	journal := recordingJournal{requests: make(chan client.RequestReport, 8), exits: make(chan client.LivenessReport, 8)}
+	preparation := preparedFromContracts{
+		prepared:      prepared,
+		prerequisites: containedPrerequisites(state, "", trialDrivers("claude-code"), containers),
+	}
+	loop := serving.NewLoop(journal, preparation, opener.open)
+
+	loop.Take(context.Background(), claimed.Requests)
+
+	for {
+		select {
+		case report := <-journal.requests:
+			if report.Progress != string(contracts.ProgressApplied) {
+				if report.Progress == string(contracts.ProgressFailed) || report.RefusalReason != nil {
+					t.Fatalf("the delivery was reported %+v", report)
+				}
+
+				continue
+			}
+			if report.ActualBinding == nil || len(*report.ActualBinding) != 36 {
+				t.Fatalf("the applied delivery names the conversation %v", report.ActualBinding)
+			}
+			conversation := fixedConversation
+			report.ActualBinding = &conversation
+			holdContract(t, "request-report.json", report)
+
+			return
+		case exit := <-journal.exits:
+			t.Fatalf("the runtime was reported ended: %+v", exit)
+		case <-time.After(15 * time.Second):
+			t.Fatal("the delivery was never reported applied")
 		}
 	}
 }

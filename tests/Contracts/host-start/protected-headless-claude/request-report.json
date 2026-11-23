@@ -1,0 +1,11 @@
+{
+    "request_id": "01contractrequest000000000",
+    "attempt": 0,
+    "progress": "applied",
+    "actual_binding": "00000000-0000-4000-8000-000000000000",
+    "outcome": null,
+    "sequence": 3,
+    "session_id": "01contractsession000000000",
+    "process_start_id": "01contractstart00000000000",
+    "process_generation": 1
+}
