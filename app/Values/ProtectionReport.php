@@ -51,7 +51,7 @@ final readonly class ProtectionReport
      * The key a host keeps a report under, one per driver, build and platform; the standard container's keeps the
      * key reports had before protected starts had their own.
      */
-    public static function keyOf(string $driver, string $build, string $platform): string
+    private static function keyOf(string $driver, string $build, string $platform): string
     {
         return $platform === LaunchProfileType::Standard->protectionPlatform()
             ? "{$driver}@{$build}"

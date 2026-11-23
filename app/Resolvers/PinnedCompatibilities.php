@@ -11,6 +11,7 @@ use App\Models\Host;
 use App\Support\ArrangementSetting;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\LaunchProfiles;
+use App\Values\ProtectionReport;
 
 /**
  * The compatibility of each driver's pinned build, as its account-free capture and native procedure recorded it.
@@ -30,7 +31,7 @@ final readonly class PinnedCompatibilities implements DriverCompatibilities
         }
 
         $platform = $this->launchProfiles->forSignedIn($driver)->protectionPlatform();
-        $report = Host::containedProtectionOf($driver, $pinned->version, $platform);
+        $report = Host::containedProtectionOf(ProtectionReport::unreported($driver, $pinned->version, $platform));
 
         if ($report->isEnforcedInContainer()) {
             return $pinned->withEvidence(DriverEvidence::NativeShown, 'the agent image\'s protection report');

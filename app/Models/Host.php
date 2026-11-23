@@ -119,9 +119,9 @@ final class Host extends Model implements ReadableModel
 
     /**
      * The protection a contained host of this installation last reported for the driver's build on the platform a
-     * launch profile names, or an unreported one when no contained host has.
+     * launch profile names, or the unreported one asked for when no contained host has.
      */
-    public static function containedProtectionOf(string $driver, string $build, string $platform): ProtectionReport
+    public static function containedProtectionOf(ProtectionReport $unreported): ProtectionReport
     {
         $host = self::query()
             ->where('arrangement', ArrangementType::Contained)
@@ -130,10 +130,10 @@ final class Host extends Model implements ReadableModel
             ->first();
 
         if ($host === null) {
-            return ProtectionReport::unreported($driver, $build, $platform);
+            return $unreported;
         }
 
-        return $host->protectionOf($driver, $build, $platform);
+        return $host->protectionOf($unreported);
     }
 
     /**
@@ -321,12 +321,15 @@ final class Host extends Model implements ReadableModel
         return $this->start_roots[0] ?? throw HostUnavailable::withoutStartFolder($this->id);
     }
 
-    public function protectionOf(string $driver, string $build, string $platform): ProtectionReport
+    /**
+     * The protection this host reported for the build the unreported report names, or that report when it has none.
+     */
+    public function protectionOf(ProtectionReport $unreported): ProtectionReport
     {
-        $key = ProtectionReport::keyOf($driver, $build, $platform);
+        $key = $unreported->key();
 
         if (! array_key_exists($key, $this->protection)) {
-            return ProtectionReport::unreported($driver, $build, $platform);
+            return $unreported;
         }
 
         return ProtectionReport::fromStored($this->protection[$key]);
