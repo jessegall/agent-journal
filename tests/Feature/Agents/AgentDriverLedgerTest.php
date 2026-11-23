@@ -111,6 +111,8 @@ use Tests\TestCase;
  */
 final class AgentDriverLedgerTest extends TestCase
 {
+    private const int RUNTIMES_PAST_A_BATCH = 10;
+
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use RunsTrustedCommands;
@@ -385,6 +387,33 @@ final class AgentDriverLedgerTest extends TestCase
             RequestProgress::Accepted,
             DriverRequest::query()->findOrFail($foreign->firstRequestId)->progress,
         );
+    }
+
+    /**
+     * A host keeps the runtime of every session it ever ran, so a claim reads only those with a request waiting, and
+     * more than a page of their requests when they hold that many.
+     */
+    public function test_a_host_with_more_runtimes_than_a_batch_still_claims_a_batch(): void
+    {
+        [$host] = $this->openRuntime(firstMessage: 'First');
+
+        for ($more = 0; $more < self::RUNTIMES_PAST_A_BATCH; $more++) {
+            $this->asOwner(new OpenAgentRuntimeCommand(
+                $this->agent()->id,
+                $host->hostId,
+                self::FOLDER,
+                'claude-code',
+                '2.1.323',
+                'claude',
+                DriverVariant::Headless,
+                'claude-opus-5-5',
+                firstMessage: 'Another',
+            ));
+        }
+
+        $claimed = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+
+        $this->assertCount(10, $claimed->requests);
     }
 
     public function test_the_start_grant_is_handed_out_once(): void
