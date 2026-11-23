@@ -298,7 +298,7 @@ final class AgentStatusRules
         }
 
         if ($launch?->disposition === StartDisposition::Refused) {
-            return self::refused($evidence, $launch, $words);
+            return self::refused($launch, $words);
         }
 
         $actions = [StatusAction::of(StatusActionType::Start)];
@@ -325,11 +325,8 @@ final class AgentStatusRules
         return self::plain(SessionState::Starting, $evidence, $actions, $operation);
     }
 
-    private static function refused(
-        AgentEvidence $evidence,
-        LaunchOutcome $launch,
-        StartRemedyWords $words,
-    ): AgentStatus {
+    private static function refused(LaunchOutcome $launch, StartRemedyWords $words): AgentStatus
+    {
         $reason = StartRefusalCodes::reasonOf((string) $launch->refusalReason);
         $remedy = $reason->remedy();
 

@@ -8,7 +8,6 @@ use App\Concerns\HasNumber;
 use App\Contracts\Records\Numbered;
 use App\Exceptions\NumberedModelInvalid;
 use App\Exceptions\NumberedModelUndeclared;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
@@ -20,14 +19,19 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 final class NumberedTypeRegistry
 {
     /**
-     * @var array<string, class-string<Model>>
+     * @var Registry<class-string>
      */
-    private array $modelOfLinkType = [];
+    private Registry $modelOfLinkType;
+
+    public function __construct()
+    {
+        $this->modelOfLinkType = Registry::replacing(NumberedModelUndeclared::for(...));
+    }
 
     public function checkDeclarations(): void
     {
         $tables = Registry::once(NumberedModelInvalid::tableTwice(...), NumberedModelInvalid::tableTwice(...));
-        $this->modelOfLinkType = [];
+        $this->modelOfLinkType = Registry::replacing(NumberedModelUndeclared::for(...));
 
         foreach (Relation::morphMap() as $linkType => $model) {
             if (! Reflector::factory()->isSubclassOf($model, Numbered::class)) {
@@ -38,15 +42,13 @@ final class NumberedTypeRegistry
                 throw NumberedModelInvalid::notNumbered($model);
             }
 
-            $this->modelOfLinkType[$linkType] = $model;
+            $this->modelOfLinkType->put($linkType, $model);
             $tables->put(new $model()->getTable(), $model);
         }
     }
 
     public function assertNumbered(string $linkType): void
     {
-        if (! isset($this->modelOfLinkType[$linkType])) {
-            throw NumberedModelUndeclared::for($linkType);
-        }
+        $this->modelOfLinkType->get($linkType);
     }
 }
