@@ -130,3 +130,43 @@ func (grant StartGrant) signedRequest(
 
 	return request, nil
 }
+
+// SignedAnswer is the journal's answer to a started driver's own call: its status and body, whatever they are.
+type SignedAnswer struct {
+	Status int
+	Body   []byte
+}
+
+// PostAsAgent posts the body, signed as the start's agent under a new call id and the issue time given, with the
+// unsigned headers beside it, and answers whatever the journal says (App\Support\AgentRequestClient::sendPrepared).
+// Only a failure to reach the journal is an error.
+func (grant StartGrant) PostAsAgent(
+	ctx context.Context,
+	target string,
+	body []byte,
+	issuedAt int64,
+	headers map[string]string,
+) (SignedAnswer, error) {
+	callID, err := newCallID()
+	if err != nil {
+		return SignedAnswer{}, err
+	}
+	request, err := grant.signedRequest(ctx, target, body, callID, issuedAt)
+	if err != nil {
+		return SignedAnswer{}, err
+	}
+	for name, value := range headers {
+		request.Header.Set(name, value)
+	}
+	response, err := directClient.Do(request)
+	if err != nil {
+		return SignedAnswer{}, sendFailure(err)
+	}
+	defer response.Body.Close()
+	content, err := io.ReadAll(io.LimitReader(response.Body, hookReplyLimit))
+	if err != nil {
+		return SignedAnswer{}, errors.Join(ErrUncertain, err)
+	}
+
+	return SignedAnswer{Status: response.StatusCode, Body: content}, nil
+}

@@ -221,6 +221,27 @@ func TestCliLaunchKeepsClaudeProtectionWithoutJournalMcp(t *testing.T) {
 	}
 }
 
+// Where no console is installed the relay is the command itself: the server starts it with no script after it.
+func TestAStandaloneRelayIsTheServersCommandWithNoScript(t *testing.T) {
+	start := accountStartWith(&contracts.JournalServer{Command: "/opt/journal/bin/journal-mcp", Standalone: true}, "")
+
+	files, err := (ClaudeCode{}).SettingsFiles(start)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		if file.Name == "mcp.json" {
+			compact := strings.Join(strings.Fields(string(file.Content)), "")
+			if !strings.Contains(compact, `"command":"/opt/journal/bin/journal-mcp"`) || !strings.Contains(compact, `"args":[]`) {
+				t.Fatalf("the server is started as %s", file.Content)
+			}
+
+			return
+		}
+	}
+	t.Fatal("the start has no MCP configuration")
+}
+
 func TestAnAccountLaunchWithAnUnresolvedPathIsRefused(t *testing.T) {
 	for name, start := range map[string]contracts.Start{
 		"no server":        accountStartWith(nil, ""),

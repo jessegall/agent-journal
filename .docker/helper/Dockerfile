@@ -17,7 +17,8 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-init ./cmd/journal-init \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-exec ./cmd/journal-exec \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-shell ./cmd/journal-shell \
-    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-hook ./cmd/journal-hook
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-hook ./cmd/journal-hook \
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-mcp ./cmd/journal-mcp
 
 FROM ${BASE}
 
@@ -32,11 +33,9 @@ RUN --mount=type=cache,target=/root/.npm --mount=type=cache,target=/var/cache/ap
     && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
     && apt-get purge -y npm && apt-get autoremove -y
 
-# The relays and the protected stop checks. The hook relay is a standalone program that asks the journal itself with
-# the start's grant; the image holds no application console. The MCP relay still is the console's script, which
-# cannot run here until it is a standalone program too (task 2846).
-COPY --chown=root:root bin/journal-mcp /opt/journal/bin/
-COPY --from=protected-start --chown=root:root /out/journal-hook /opt/journal/bin/journal-hook
+# The relays and the protected stop checks. Both relays are standalone programs that ask the journal themselves with
+# the start's grant; the image holds no application console.
+COPY --from=protected-start --chown=root:root /out/journal-hook /out/journal-mcp /opt/journal/bin/
 COPY --chown=root:root tools/journal-check/journal-check /opt/journal/bin/journal-check
 COPY --from=protected-start --chown=root:root /out/journal-init /out/journal-exec /out/journal-shell /opt/journal/bin/
 # Claude Code takes a shell only by the name bash: the shell bridge under that name hands every command to the executor.
@@ -59,5 +58,9 @@ RUN groupadd --gid 10001 journal && useradd --uid 10001 --gid 10001 --home-dir /
 # A new workspace volume takes this folder's owner and mode: the program's user, the shared group, and new files
 # keeping the group.
 RUN mkdir -p /workspace && chown 10001:10010 /workspace && chmod 2770 /workspace
+# A session's new history volume, mounted in the account folder, takes this folder's owner and mode too: the program's
+# user alone, or the program could not keep the conversation a later turn resumes.
+RUN mkdir -p /home/journal/.account/projects && chown -R 10001:10001 /home/journal \
+    && chmod 0700 /home/journal/.account /home/journal/.account/projects
 USER 10001:10001
 WORKDIR /workspace

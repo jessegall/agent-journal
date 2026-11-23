@@ -29,11 +29,24 @@ type Start struct {
 	Protected bool
 }
 
-// JournalServer is how a start runs the journal's MCP server: the protected PHP binary running the protected
-// installation's bin/journal-mcp, both by absolute path, with no token or placeholder.
+// JournalServer is how a start runs the journal's MCP server, by absolute path, with no token or placeholder: the
+// protected PHP binary running the protected installation's bin/journal-mcp, or, where no console is installed, as
+// in a session container, the standalone relay as the command itself.
 type JournalServer struct {
 	Command string
 	Relay   string
+	// Standalone says the command is the relay itself and runs with no script; without it a missing relay script is
+	// refused, since the PHP binary alone would run whatever it is handed.
+	Standalone bool
+}
+
+// Arguments are what follows the command: the relay script the PHP binary runs, or nothing for a standalone relay.
+func (server JournalServer) Arguments() []string {
+	if server.Standalone {
+		return []string{}
+	}
+
+	return []string{server.Relay}
 }
 
 type TransportProfile string

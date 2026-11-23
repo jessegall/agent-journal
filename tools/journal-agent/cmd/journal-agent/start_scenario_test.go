@@ -171,7 +171,7 @@ func TestScenarioAProtectedHeadlessClaudeStartRunsItsTurnInItsContainer(t *testi
 		t.Fatalf("the trial driver's start was refused: %v", err)
 	}
 
-	opener := runtimeOpener{containers: containers, installation: "acme", journalURL: "http://journal.test"}
+	opener := runtimeOpener{containers: containers, installation: "acme", sessionJournalURL: "http://journal.test"}
 	runtime, err := opener.containedHeadlessRuntime("runtime-1", prepared, profiles.ClaudeCode{}, manifest)
 	if err != nil {
 		t.Fatal(err)
@@ -294,7 +294,7 @@ func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T
 	containers, _ := scenarioDocker(t, manifest.Image)
 	state := t.TempDir()
 	opener := runtimeOpener{
-		containers: containers, installation: "acme", journalURL: "http://journal.test", stateFolder: state,
+		containers: containers, installation: "acme", sessionJournalURL: "http://journal.test", stateFolder: state,
 		declared: []client.HostDescriptor{{Key: grant.Runtime.DriverKey, Build: grant.Runtime.DriverBuild}},
 	}
 	journal := recordingJournal{requests: make(chan client.RequestReport, 8), exits: make(chan client.LivenessReport, 8)}
@@ -350,7 +350,7 @@ func TestScenarioAStartTheHostCannotCarryOutIsReportedRefusedWithItsReason(t *te
 	containers, _ := scenarioDocker(t, manifest.Image)
 	state := t.TempDir()
 	opener := runtimeOpener{
-		containers: containers, installation: "acme", journalURL: "http://journal.test", stateFolder: state,
+		containers: containers, installation: "acme", sessionJournalURL: "http://journal.test", stateFolder: state,
 		declared: []client.HostDescriptor{{Key: grant.Runtime.DriverKey, Build: grant.Runtime.DriverBuild}},
 	}
 	journal := recordingJournal{requests: make(chan client.RequestReport, 8), exits: make(chan client.LivenessReport, 8)}

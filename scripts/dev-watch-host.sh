@@ -18,6 +18,9 @@ build() {
     (cd tools/journal-agent &&
         CGO_ENABLED=0 GOOS=linux GOARCH="$architecture" go build -o "../../$binaries/journal-agent.next" ./cmd/journal-agent)
     mv "$binaries/journal-agent.next" "$binaries/journal-agent"
+    # The relays a session container runs, for a look at one outside its image.
+    (cd tools/journal-agent &&
+        CGO_ENABLED=0 GOOS=linux GOARCH="$architecture" go build -o "../../$binaries/" ./cmd/journal-hook ./cmd/journal-mcp)
     touch "$built"
 }
 

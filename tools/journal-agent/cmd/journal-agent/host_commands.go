@@ -113,6 +113,8 @@ func serve(arguments []string) error {
 	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
 	seccomp := flags.String("seccomp-profile", "", "the seccomp profile a contained host's agent containers run under")
 	protectedTrial := flags.String("protected-trial", "", "drivers on the protected-account trial, by key, split by commas")
+	sessionJournal := flags.String("session-journal", "",
+		"the journal's URL as a session container reaches it, when that differs from the host's own")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -150,7 +152,10 @@ func serve(arguments []string) error {
 	journal := client.New(enrollment).WithArrangement(string(arrangement)).WithBrowserInput()
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket,
-		declared: descriptorsOf(arrangement)}
+		declared: descriptorsOf(arrangement), sessionJournalURL: journal.JournalURL()}
+	if trimmed := strings.TrimRight(*sessionJournal, "/"); trimmed != "" {
+		opener.sessionJournalURL = trimmed
+	}
 	prerequisites := localPrerequisites(*stateFolder, *installationFolder)
 	if arrangement.IsContained() {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
@@ -227,8 +232,11 @@ type runtimeOpener struct {
 	// codexOwners keeps the one app-server of each Codex account generation, shared by its runtimes' threads.
 	codexOwners *host.CodexOwners
 	journalURL  string
-	hookCommand string
-	socket      *host.AttachSocket
+	// sessionJournalURL is the journal's address from inside a session container, whose network shares nothing with
+	// the host's: the relays there ask the journal at this address.
+	sessionJournalURL string
+	hookCommand       string
+	socket            *host.AttachSocket
 	// containers, installation and reportExit run a contained session's program in its own container and report its
 	// end; a local host has none of them.
 	containers   host.Containers

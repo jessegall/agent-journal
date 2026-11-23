@@ -248,7 +248,7 @@ func journalDescriptor(start contracts.Start) ([]byte, error) {
 	if server == nil {
 		return nil, fmt.Errorf("%w: no journal MCP server", errUnresolvedLaunchSetting)
 	}
-	for _, path := range []string{server.Command, server.Relay} {
+	for _, path := range append([]string{server.Command}, server.Arguments()...) {
 		if !isResolvedPath(path) {
 			return nil, fmt.Errorf("%w: the journal MCP path %q", errUnresolvedLaunchSetting, path)
 		}
@@ -256,7 +256,7 @@ func journalDescriptor(start contracts.Start) ([]byte, error) {
 	return json.MarshalIndent(map[string]any{"mcpServers": map[string]any{claudeCodeJournalServer: map[string]any{
 		"type":    "stdio",
 		"command": server.Command,
-		"args":    []string{server.Relay},
+		"args":    server.Arguments(),
 		"timeout": claudeCodeJournalTimeout,
 	}}}, "", "  ")
 }

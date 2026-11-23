@@ -28,7 +28,6 @@ const (
 	containerAccount        = "/home/journal/.account"
 	containerSettingsFolder = "/home/journal/.journal-settings"
 	containerHookCommand    = "/opt/journal/bin/journal-hook"
-	containerPHP            = "/usr/local/bin/php"
 	containerMcpRelay       = "/opt/journal/bin/journal-mcp"
 	containerPath           = "/opt/journal/bin:/usr/local/bin:/usr/bin:/bin"
 	containerWorkspace      = "/workspace"
@@ -54,14 +53,14 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	}
 
 	start := contracts.Start{Mode: recording.TerminalMode, SessionID: conversationID, Protected: manifest.IsProtected()}
-	process, err := containedProcessOf(profile, opener.journalURL, prepared, runtimeID, start,
+	process, err := containedProcessOf(profile, opener.sessionJournalURL, prepared, runtimeID, start,
 		prepared.Grant.Runtime.ProcessGeneration, os.Environ())
 	if err != nil {
 		return nil, err
 	}
 
 	start.Resume = true
-	resumed, err := containedProcessOf(profile, opener.journalURL, prepared, runtimeID, start,
+	resumed, err := containedProcessOf(profile, opener.sessionJournalURL, prepared, runtimeID, start,
 		prepared.Grant.Runtime.ProcessGeneration, os.Environ())
 	if err != nil {
 		return nil, err
@@ -127,7 +126,7 @@ func (opener runtimeOpener) containedHeadlessRuntime(
 		ConversationID: conversationID,
 		Profile:        profile,
 		Container: containedTurns{
-			container: container, manifest: manifest, profile: profile, journalURL: opener.journalURL,
+			container: container, manifest: manifest, profile: profile, journalURL: opener.sessionJournalURL,
 			prepared: prepared, runtimeID: runtimeID,
 		},
 		Usage: opener.usageOf(prepared),
@@ -212,7 +211,7 @@ func containedProcessOf(
 	generation int,
 	inherited []string,
 ) (host.ContainerProcess, error) {
-	account := prepared.AccountStart(&contracts.JournalServer{Command: containerPHP, Relay: containerMcpRelay}, runtimeID)
+	account := prepared.AccountStart(&contracts.JournalServer{Command: containerMcpRelay, Standalone: true}, runtimeID)
 	account.Folder = containerAccount
 	account.Protection = strings.ReplaceAll(account.Protection, prepared.Claim.Directory, containerAccount)
 	start.SettingsFolder = containerSettingsFolder

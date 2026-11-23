@@ -33,13 +33,16 @@ docker run --rm --entrypoint codex "$tag" --version | grep -q "$codex"
 if [ "$name" = agent ]; then
     docker run --rm --entrypoint id "$tag" -u | grep -qx 10001
     docker run --rm --entrypoint test "$tag" -x /opt/journal/bin/journal-check
-    for protected in bin/journal-init bin/journal-exec bin/journal-shell bin/journal-hook shell/bash; do
+    for protected in bin/journal-init bin/journal-exec bin/journal-shell bin/journal-hook bin/journal-mcp shell/bash; do
         docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
     done
     docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' /etc/claude-code/managed-settings.json \
         | grep -qx 'root:root 444'
     docker run --rm --entrypoint id "$tag" journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
     docker run --rm --entrypoint stat "$tag" -c '%u:%g %a' /workspace | grep -qx '10001:10010 2770'
+    # A new history volume belongs to the program's user, so a turn's conversation is kept for the next turn.
+    docker run --rm --mount type=volume,target=/home/journal/.account/projects --entrypoint stat "$tag" \
+        -c '%u:%g %a' /home/journal/.account/projects | grep -qx '10001:10001 700'
     # The hook relay runs with nothing but its own program: with no grant it answers the provider's blocking reply.
     echo '{"hook_event_name":"UserPromptSubmit"}' \
         | docker run --rm -i --read-only --network none --entrypoint /opt/journal/bin/journal-hook "$tag" claude-code \
