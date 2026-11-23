@@ -60,7 +60,9 @@ final class SearchStatesTest extends TestCase
 
         $this->expectException(SearchHandleRefused::class);
 
-        $states->resume(self::owner(self::OWNER_ID), substr($handle, 0, -1).'0');
+        $changed = substr($handle, 0, -1).(str_ends_with($handle, '0') ? '1' : '0');
+
+        $states->resume(self::owner(self::OWNER_ID), $changed);
     }
 
     public function test_a_handle_from_another_surface_or_session_is_refused(): void

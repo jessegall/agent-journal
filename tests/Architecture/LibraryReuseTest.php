@@ -16,6 +16,10 @@ final class LibraryReuseTest extends TestCase
 {
     private const string BASELINE = __DIR__.'/Support/library-reuse-baseline.txt';
 
+    private const string USE_THE_LIBRARY = 'Use the library component named on each line instead.';
+
+    private const string SHRINK_THE_BASELINE = 'These no longer offend: remove their lines from the baseline.';
+
     public function test_a_raw_button_and_an_own_menu_role_are_caught(): void
     {
         $root = dirname(__DIR__, 2);
@@ -40,7 +44,7 @@ final class LibraryReuseTest extends TestCase
             }
         }
 
-        $this->assertSame([], $new, 'Use the library component named on each line instead.');
+        $this->assertSame([], $new, self::USE_THE_LIBRARY);
     }
 
     public function test_the_baseline_only_shrinks(): void
@@ -50,7 +54,7 @@ final class LibraryReuseTest extends TestCase
         $this->assertSame(
             [],
             array_values(array_diff(self::baseline(), $offenders)),
-            'These no longer offend: remove their lines from the baseline.',
+            self::SHRINK_THE_BASELINE,
         );
     }
 
