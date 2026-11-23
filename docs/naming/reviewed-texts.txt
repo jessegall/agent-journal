@@ -99,7 +99,6 @@ Comment on a section
 Comment on the selected lines
 Comment on the selected paragraphs
 Comment on this
-Comment on this document
 Comment on {{ range }} · “{{ quote }}”
 Comments
 Compare code
@@ -148,6 +147,8 @@ Dropped compared with the rule in use: {{ revision.removedClasses.join(', ') || 
 Edit
 Email
 Ended
+Enter adds it to this pane · drag a row to place it
+Enter opens it floating · drag a row onto Home to dock it
 Enter this code there when it asks.
 Environment
 Estimated USD value observed by the journal. It covers only the sessions the journal ran.
@@ -259,6 +260,7 @@ No samples
 No saved accounts yet
 No sources are available to search.
 No terminal signed in to this folder yet.
+No window matches
 Not filled in yet: {{ revision.missingFields.join(', ') }}
 Not in contact yet
 Not run yet.
@@ -595,6 +597,7 @@ no exit code checked yet: every exit counts as a failure
 no grant
 none
 now {{ setting.observed ?? 'unknown' }}, next {{ setting.staged ?? 'nothing' }}, asked for {{ setting.requested ?? 'nothing' }}
+open
 operation
 parts
 program
@@ -639,7 +642,6 @@ until {{ dateTime(signIn.expiresAt) }}
 · sign-in page
 ← Back
 ← Stay
-↑ ↓ choose · Enter adds it · Esc closes
 ↑ ↓ choose · Enter runs it · Esc closes
 ✓ Saved
 ✓ {{ method.title }} works.

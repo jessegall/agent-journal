@@ -11,13 +11,18 @@ const windows: PaneWindow[] = [
     { key: 'documents', title: 'Documents', icon: 'docs' },
 ] as PaneWindow[];
 
-function mountOpen(list: PaneWindow[] = windows) {
+const HINT = 'Enter opens it floating';
+
+function mountOpen(list: PaneWindow[] = windows, shownKeys: string[] = []) {
     const anchor = document.createElement('button');
     document.body.append(anchor);
 
     return {
         anchor,
-        view: mount(AddWindowPopover, { props: { windows: list, anchor, open: true }, attachTo: document.body }),
+        view: mount(AddWindowPopover, {
+            props: { windows: list, shownKeys, anchor, open: true, hint: HINT },
+            attachTo: document.body,
+        }),
     };
 }
 
@@ -67,6 +72,31 @@ describe('the add window popover', () => {
 
         expect(view.emitted('update:open')?.at(-1)).toEqual([false]);
         expect(document.activeElement).toBe(anchor);
+        view.unmount();
+    });
+
+    it('lists an open window marked open and brings it forward when chosen', async () => {
+        const { view } = mountOpen(windows, ['tasks']);
+        await nextTick();
+
+        const options = view.findAll('[role="option"]');
+        expect(options).toHaveLength(3);
+        expect(options[0].text()).toContain('open');
+        expect(options[1].text()).not.toContain('open');
+
+        await options[0].trigger('pointerdown', { button: 0 });
+        await options[0].trigger('click', { detail: 1 });
+
+        expect(view.emitted('show')).toEqual([['tasks']]);
+        expect(view.emitted('grab')).toBeUndefined();
+        expect(view.emitted('add')).toBeUndefined();
+        view.unmount();
+    });
+
+    it('shows the hint its place gives under the list', () => {
+        const { view } = mountOpen();
+
+        expect(view.text()).toContain(HINT);
         view.unmount();
     });
 });

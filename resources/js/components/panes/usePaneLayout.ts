@@ -50,6 +50,10 @@ export type PaneLayoutStore = {
      */
     windowOf(key: string): PaneWindow | undefined;
     closedWindows: ComputedRef<PaneWindow[]>;
+    /**
+     * The keys of the windows open now, docked or floating.
+     */
+    shownKeys: ComputedRef<string[]>;
     presets: ComputedRef<Preset[]>;
     isDefault: ComputedRef<boolean>;
     drag: Ref<WindowDrag | null>;
@@ -102,6 +106,7 @@ export function providePaneLayout(
                 (each) => !shownWindows(arrangement.value).includes(each.key),
             ),
         ),
+        shownKeys: computed(() => shownWindows(arrangement.value)),
         presets,
         isDefault: computed(() =>
             sameArrangement(arrangement.value, firstArrangement()),

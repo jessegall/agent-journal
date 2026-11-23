@@ -137,7 +137,7 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                     ActionRoute::get('agents/{agent}/capacity', CheckCapacityController::class, 'capacity'),
                     ActionRoute::get('agents/{agent}/start-preview', StartPreviewController::class, 'start-preview'),
                 ),
-            Page::make('asks', 'Asks', Icon::Chat, AskInboxResolver::class, 'Asks.vue')->at('asks'),
+            Page::make('asks', 'Asks', Icon::Chat, AskInboxResolver::class, 'Asks.vue')->at('asks')->onHome(26),
             Page::make('ask', 'Ask', Icon::Chat, AskDetailResolver::class, 'AskDetail.vue')
                 ->at('asks/{ask}')
                 ->actions(

@@ -11,6 +11,7 @@ import {
     firstWindowOnly,
     floatNewWindow,
     shownWindows,
+    showWindow,
 } from './arrangement';
 import type { DropTarget } from './arrangement';
 import { pane, panesIn, windowsIn, zoneAt } from './paneLayout';
@@ -169,6 +170,23 @@ describe('detached windows', () => {
         expect(
             bringToFront(two, 'plans').detached.map((each) => each.key),
         ).toEqual(['rules', 'plans']);
+    });
+
+    it('come forward from the menu: a minimised floating one opens on top, a docked one becomes its tab', () => {
+        const two = detachWindow(
+            detachWindow(home(), 'plans', { left: 80, top: 80 }, screen),
+            'rules',
+            { left: 120, top: 120 },
+            screen,
+        );
+        const minimised = {
+            ...two,
+            detached: two.detached.map((each) => (each.key === 'plans' ? { ...each, isMinimised: true } : each)),
+        };
+        const docked = { grid: pane(['chat', 'tasks'], 'side'), detached: [] };
+
+        expect(showWindow(minimised, 'plans').detached.at(-1)).toMatchObject({ key: 'plans', isMinimised: false });
+        expect(panesIn(showWindow(docked, 'tasks').grid)[0].active).toBe('tasks');
     });
 
     it('dock into the only pane when it is empty, else into a new pane at the right', () => {

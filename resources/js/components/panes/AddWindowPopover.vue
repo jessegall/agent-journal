@@ -8,14 +8,15 @@ import SearchField from '@/components/kit/SearchField.vue';
 import type { PaneWindow } from './paneLayout';
 
 /**
- * The offer of the windows not open yet, in a Popover under the add button: a search field that keeps the focus above a
- * list of them, named by aria-controls and aria-activedescendant, the active one kept in view. Typing filters by title;
- * Up, Down and Enter do nothing while no window matches, which says so. Enter or a click adds the active window, a press
- * on one can instead start dragging it to a place, and Escape closes it with the focus back on the button.
+ * The offer of every window, in a Popover under the add button: a search field that keeps the focus above a list of
+ * them, named by aria-controls and aria-activedescendant, the active one kept in view. Typing filters by title; Up,
+ * Down and Enter do nothing while no window matches, which says so. A window already open is marked open, and choosing
+ * it brings it forward. Enter or a click adds a closed window, a press on one can instead start dragging it to a place,
+ * and Escape closes it with the focus back on the button. The hint under the list says what adding does here.
  */
-const props = defineProps<{ windows: PaneWindow[]; anchor: HTMLElement | null }>();
+const props = defineProps<{ windows: PaneWindow[]; shownKeys: string[]; anchor: HTMLElement | null; hint: string }>();
 const open = defineModel<boolean>('open', { default: false });
-const emit = defineEmits<{ add: [key: string]; grab: [event: PointerEvent, key: string] }>();
+const emit = defineEmits<{ add: [key: string]; show: [key: string]; grab: [event: PointerEvent, key: string] }>();
 
 const query = ref('');
 const activeId = ref<string | null>(null);
@@ -42,10 +43,31 @@ function close(): void {
     props.anchor?.focus();
 }
 
-function chooseFromKeyboard(event: MouseEvent, key: string): void {
+function isShown(key: string): boolean {
+    return props.shownKeys.includes(key);
+}
+
+/**
+ * An open window comes forward on any click; a closed one is added here only from the keyboard, since a pointer press
+ * on it starts a grab that adds it on release.
+ */
+function choose(event: MouseEvent, key: string): void {
+    if (isShown(key)) {
+        emit('show', key);
+        open.value = false;
+
+        return;
+    }
+
     if (event.detail === 0) {
         emit('add', key);
         open.value = false;
+    }
+}
+
+function grab(event: PointerEvent, key: string): void {
+    if (!isShown(key)) {
+        emit('grab', event, key);
     }
 }
 
@@ -80,22 +102,25 @@ watch(open, async (isOpen) => {
                         <MenuItem
                             option
                             :id="idOf(window.key)"
-                            @pointerdown="emit('grab', $event, window.key)"
-                            @click="chooseFromKeyboard($event, window.key)"
+                            @pointerdown="grab($event, window.key)"
+                            @click="choose($event, window.key)"
                         >
                             <template #leading><Icon :name="window.icon" :size="14" /></template>
                             {{ window.title }}
+                            <template v-if="isShown(window.key)" #trailing>
+                                <span class="text-badge text-text-3">open</span>
+                            </template>
                         </MenuItem>
                     </template>
                 </ListBox>
                 <template v-if="matches.length === 0">
                     <p role="status" class="px-3 py-2 text-small text-text-3">
-                        {{ windows.length === 0 ? 'Every window is open' : 'No window matches' }}
+                        No window matches
                     </p>
                 </template>
             </div>
             <p class="border-t border-line px-3 py-2 text-badge text-text-3">
-                ↑ ↓ choose · Enter adds it · Esc closes
+                {{ hint }}
             </p>
         </div>
     </Popover>

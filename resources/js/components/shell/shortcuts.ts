@@ -32,6 +32,9 @@ export const shortcutGroups: { title: string; shortcuts: Shortcut[] }[] = [
     {
         title: 'The desk',
         shortcuts: [
+            { keys: ['Alt', '1'], does: 'Bring the project tree forward' },
+            { keys: ['Alt', '2'], does: 'Bring the activity feed forward' },
+            { keys: ['Alt', '`'], does: 'Go to the next open window' },
             { keys: ['Menu'], does: 'On a window tab: dock, join or move the window' },
             { keys: ['Tab'], does: 'In a terminal window: Leave terminal moves the focus to the window picker' },
         ],

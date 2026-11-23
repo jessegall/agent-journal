@@ -4,7 +4,7 @@ import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import { useWindowDrag } from '@/components/panes/useWindowDrag';
-import { detachWindow, dropWindow } from './arrangement';
+import { detachWindow, dropWindow, showWindow } from './arrangement';
 import DropCompass from '@/components/kit/DropCompass.vue';
 import DropPreview from '@/components/kit/DropPreview.vue';
 import type { CompassTarget } from '@/components/kit/compassTargets';
@@ -287,9 +287,12 @@ const menuEntries = computed<MenuEntry[]>(() => {
         </template>
         <AddWindowPopover
             v-model:open="isAdding"
-            :windows="store.closedWindows.value"
+            :windows="store.windows.value"
+            :shown-keys="store.shownKeys.value"
             :anchor="addAnchor"
+            hint="Enter adds it to this pane · drag a row to place it"
             @add="add"
+            @show="(key) => store.apply(showWindow(store.arrangement.value, key))"
             @grab="
                 (event, key) => {
                     isAdding = false;

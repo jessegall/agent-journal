@@ -12,6 +12,14 @@ export function provideWindowKey(key: string): void {
 }
 
 /**
+ * Whether this component is shown inside a window host, such as a window on Home, rather than as its own page; a
+ * window leaves the page's title and heading to the page around it.
+ */
+export function useIsInWindow(): boolean {
+  return inject<string | null>(WINDOW_KEY, null) !== null;
+}
+
+/**
  * Builds a link that changes only this window's query: on Home its own window[<key>][...] part, keeping every other
  * window's, and on its own page the plain query. Empty values are left out.
  */

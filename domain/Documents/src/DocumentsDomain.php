@@ -341,6 +341,7 @@ final class DocumentsDomain extends Domain implements
         return [
             Page::layout('library', 'Documents', Icon::Docs, LibraryWindowResolver::class)
                 ->at('')
+                ->onHome(27)
                 ->actions(
                     ActionRoute::post('docs', CreateDocumentPageController::class, 'create-document'),
                     ActionRoute::post('reports', CreateReportPageController::class, 'create-report'),

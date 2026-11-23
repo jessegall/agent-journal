@@ -1,4 +1,5 @@
 import {
+    activate,
     addPaneAtRight,
     closeWindow,
     defaultLayout,
@@ -351,6 +352,29 @@ export function bringToFront(
             window,
         ],
     };
+}
+
+/**
+ * Brings a window that is open forward: a floating one is drawn over the others and shown again when it was minimised,
+ * a docked one becomes its pane's active tab.
+ */
+export function showWindow(arrangement: Arrangement, windowKey: string): Arrangement {
+    const front = bringToFront(arrangement, windowKey);
+
+    if (front.detached.some((each) => each.key === windowKey)) {
+        return {
+            ...front,
+            detached: front.detached.map((each) => (each.key === windowKey ? { ...each, isMinimised: false } : each)),
+        };
+    }
+
+    const holder = panesIn(arrangement.grid).find((each) => each.windows.includes(windowKey));
+
+    if (holder === undefined) {
+        return arrangement;
+    }
+
+    return { ...arrangement, grid: activate(arrangement.grid, holder.id, windowKey) };
 }
 
 /**

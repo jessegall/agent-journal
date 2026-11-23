@@ -4,9 +4,10 @@ import AddWindowPopover from '@/components/panes/AddWindowPopover.vue';
 import LayoutPicker from '@/components/panes/LayoutPicker.vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
-import { floatNewWindow } from '@/components/panes/arrangement';
+import { floatNewWindow, showWindow } from '@/components/panes/arrangement';
 import type { DeskEdges } from '@/components/panes/arrangement';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
+import { useWindowDrag } from '@/components/panes/useWindowDrag';
 import type { LayoutData } from '@/types/generated';
 
 /**
@@ -18,6 +19,7 @@ import type { LayoutData } from '@/types/generated';
 defineProps<{ layouts: LayoutData[] }>();
 
 const store = usePaneLayout();
+const { grab } = useWindowDrag();
 const isHidden = ref(false);
 const isLayoutMenuOpen = ref(false);
 const isAdding = ref(false);
@@ -103,10 +105,18 @@ function deskEdges(): DeskEdges {
         </template>
         <AddWindowPopover
             v-model:open="isAdding"
-            :windows="store.closedWindows.value"
+            :windows="store.windows.value"
+            :shown-keys="store.shownKeys.value"
             :anchor="addAnchor"
+            hint="Enter opens it floating · drag a row onto Home to dock it"
             @add="add"
-            @grab="(_event, key) => add(key)"
+            @show="(key) => store.apply(showWindow(store.arrangement.value, key))"
+            @grab="
+                (event, key) => {
+                    isAdding = false;
+                    grab(event, key, null, () => add(key));
+                }
+            "
         />
     </div>
 </template>

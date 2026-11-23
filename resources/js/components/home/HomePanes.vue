@@ -3,10 +3,12 @@ import { router, usePage } from '@inertiajs/vue3';
 import type { Component } from 'vue';
 import { computed } from 'vue';
 import PaneGrid from '@/components/panes/PaneGrid.vue';
-import { activate, copyIdOf, openCopy, originalKeyOf, panesIn, windowsIn } from '@/components/panes/paneLayout';
+import { showWindow } from '@/components/panes/arrangement';
+import { copyIdOf, openCopy, originalKeyOf, windowsIn } from '@/components/panes/paneLayout';
 import { provideFileOpener } from '@/framework/fileOpener';
 import type { PaneWindow } from '@/components/panes/paneLayout';
 import { providePaneLayout } from '@/components/panes/usePaneLayout';
+import { useWindowKeys } from '@/components/panes/useWindowKeys';
 import WindowHost from '@/framework/WindowHost.vue';
 import type { WindowResult } from '@/generated/types/page-props';
 import { componentNamed } from '@/framework/manifestComponents';
@@ -59,6 +61,8 @@ const layout = providePaneLayout('home-layout', () =>
     },
 );
 
+useWindowKeys(layout);
+
 const windowsByPane = computed(
     () => new Map(props.home.windows.map((window) => [window.paneKey, window])),
 );
@@ -109,11 +113,7 @@ provideFileOpener((path) => {
     );
 
     if (showing !== undefined) {
-        const holder = panesIn(grid).find((each) => each.windows.includes(showing));
-
-        if (holder !== undefined) {
-            layout.change(activate(grid, holder.id, showing));
-        }
+        layout.apply(showWindow(layout.arrangement.value, showing));
 
         return;
     }
@@ -124,11 +124,7 @@ provideFileOpener((path) => {
         .find(({ hosted }) => hosted !== undefined && !url.searchParams.get(`window[${hosted.queryKey}][path]`));
 
     if (unused?.hosted !== undefined) {
-        const holder = panesIn(grid).find((each) => each.windows.includes(unused.key));
-
-        if (holder !== undefined) {
-            layout.change(activate(grid, holder.id, unused.key));
-        }
+        layout.apply(showWindow(layout.arrangement.value, unused.key));
 
         showIn(url, unused.hosted, path);
 
