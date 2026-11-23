@@ -12,13 +12,25 @@ from tests.stories.server.support.server_client import server_story
 
 
 class CompactedMainAgent(StoryFixture):
-    """The main agent of environment main, with a user beside it, compacted its context."""
+    """The main agent of environment main, with a user beside it, compacted its context: Claude Code reports the
+    start and the end."""
 
     parent = UserBuilder
 
     def steps(self, story):
         story.hook("s-1", HookSamples.sample("compact"))
+        story.hook("s-1", HookSamples.sample("compact_end"))
         story.run_listeners()
+
+
+def test_the_compaction_line_waits_for_the_end_of_a_compaction_that_claude_code_reports_the_end_of(played):
+    story = played(UserBuilder)
+    story.hook("s-1", HookSamples.sample("compact"))
+    story.run_listeners()
+    story.expect_no_text("chat-mark list", "Conversation compacted")
+    story.hook("s-1", HookSamples.sample("compact_end"))
+    story.run_listeners()
+    story.expect_text("chat-mark list", "Conversation compacted")
 
 
 def test_a_compacting_main_agent_gets_a_compaction_mark_across_the_chat(played):

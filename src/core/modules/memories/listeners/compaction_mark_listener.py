@@ -4,15 +4,17 @@ from engine.listener.rows.event_rows import EventRows
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.drivers.events.agent_compacted import AgentCompacted
+from core.modules.drivers.events.agent_compaction_ended import AgentCompactionEnded
 from core.modules.drivers.support.context_compactions import ContextCompactions
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 
 
-class CompactionMarkListener(MemoryMarkListener[AgentCompacted]):
+class CompactionMarkListener(MemoryMarkListener[AgentCompacted | AgentCompactionEnded]):
     """When an agent's conversation is compacted, the chat shows a line across it: one line for each compaction,
-    also when its program reports the start of the same compaction twice."""
+    also when its program reports the start of the same compaction twice. A program that reports the end draws the
+    line there, as the compaction is history only then."""
 
     name = "memories.compaction-mark"
 
@@ -20,7 +22,9 @@ class CompactionMarkListener(MemoryMarkListener[AgentCompacted]):
         super().__init__(bus, actors, queries, event_rows)
         self.compactions = compactions
 
-    def handle(self, event: AgentCompacted, logged: LoggedEvent) -> None:
+    def handle(self, event: AgentCompacted | AgentCompactionEnded, logged: LoggedEvent) -> None:
+        if event.row.is_compaction_ending_later:
+            return
         agent_id = event.row.session_agent_id
         compaction = self.compactions.newest(agent_id)
         key = f"context-compaction:{compaction.id}" if compaction is not None else None

@@ -29,7 +29,11 @@ DISPLAYED_MESSAGE_ID = "displayed_message_id"
 MONITOR_DESCRIPTION = "monitor_description"
 STOP_ALLOWED = "stop_allowed"
 STOP_REFUSED = "stop_refused"
-HOOK_CHANGE_NAMES: dict[str, str] = {HookEventName.COMPACT: COMPACTION, HookEventName.SESSION_START: SESSION_START, HookEventName.PROMPT: PROMPT}
+COMPACTION_END = "compact_end"
+# a program that sends a hook when its compaction ends, as Claude Code does, may send the start long before it, while
+# it writes the summary beside the turn
+COMPACTION_ENDS_LATER = "compaction_ends_later"
+HOOK_CHANGE_NAMES: dict[str, str] = {HookEventName.COMPACT: COMPACTION, HookEventName.COMPACT_END: COMPACTION_END, HookEventName.SESSION_START: SESSION_START, HookEventName.PROMPT: PROMPT}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -40,7 +44,7 @@ class HookCall(Prunable, EnvironmentScoped, Model):
 
     kept_rows = 10000
 
-    change_names = (COMPACTION, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
+    change_names = (COMPACTION, COMPACTION_END, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
     model_name = "hook_call"
     event_forms = (EventForm.COMMIT,)
     cli_name = "hook-call"
@@ -138,6 +142,10 @@ class HookCall(Prunable, EnvironmentScoped, Model):
     @property
     def is_compaction(self) -> bool:
         return self.hook == HookEventName.COMPACT
+
+    @property
+    def is_compaction_ending_later(self) -> bool:
+        return bool(self.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_ENDS_LATER))
 
     @property
     def context_percent(self) -> int | None:

@@ -45,7 +45,7 @@ from core.modules.drivers.support.line_history_writer import LineHistoryWriter
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from engine.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, PROGRAM_SESSION, SUMMARY_CHARACTERS, HookCall
+from core.modules.drivers.models.hook_call import COMPACTION_ENDS_LATER, DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, PROGRAM_SESSION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.driver.message_sender import MessageSender
 from engine.driver.search_category import SearchCategory
@@ -113,6 +113,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
         metadata = {**answers.metadata(), "foreign": [run.stored() for run in command.event.foreign], "folder": command.event.folder, "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "stop_continuation": command.event.is_stop_continuation, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(command.event, self.home.project_folder), "interrupted": command.event.is_interrupt, "background_work": command.event.has_background_work, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "agent_messages": [agent_message.key for agent_message in (*answers.delivered_agent_messages, *answers.refusal_agent_messages)]}
+        if command.event.event == HookEventName.COMPACT:
+            metadata[COMPACTION_ENDS_LATER] = HookEventName.COMPACT_END in self.providers.provider(command.event.program).hook_events.values()
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
             percent = self.share.agent_percent(agent)
             if percent is not None:
