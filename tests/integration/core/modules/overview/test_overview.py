@@ -188,3 +188,22 @@ def test_the_overview_lists_the_skills_the_agent_must_load_with_how_to_load_each
 def test_a_person_has_no_skills_to_load(played):
     story = overview_story(played)
     story.expect_text("skill required", "no skills to load", actor=story.user)
+
+
+def test_the_overview_shows_every_active_rule_and_memory_and_no_removed_one(played):
+    story = played(UserJoined)
+    for number in range(30):
+        story.run(f'rule make "Active rule {number}"', actor=story.user)
+        story.run(f'memory make "Active memory {number}" --weight 5', actor=story.user)
+    removed_rule = story.new_row_id('rule make "Removed rule"', story.user)
+    removed_memory = story.new_row_id('memory make "Removed memory" --weight 5', story.user)
+    story.run(f'rule remove {removed_rule}', actor=story.user)
+    story.run(f'memory remove {removed_memory} --reason "no longer true"', actor=story.user)
+    text = story.run("overview", actor=story.user).output_text
+    for number in range(30):
+        expect_value_with(text, f"Active rule {number}")
+        expect_value_with(text, f"Active memory {number}")
+    expect_value_without(text, "Removed rule")
+    expect_value_without(text, "Removed memory")
+    expect_value_without(text, "more lines: journal")
+    expect_value_without(text, "--page 2")
