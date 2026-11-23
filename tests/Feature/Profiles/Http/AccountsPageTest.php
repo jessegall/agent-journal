@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles\Http;
 
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Enums\SignInMethod;
 use App\Enums\UsageWindowSlot;
 use App\Http\Pages\Accounts\AccountsIndex;
 use App\Models\Account;
@@ -85,6 +87,25 @@ final class AccountsPageTest extends TestCase
         $this->assertStringNotContainsString('private-work-folder', (string) $page->getContent());
     }
 
+    /**
+     * User message 19462: a row is drawn as the design draws it, the kind of account under its name and its state in
+     * a column of its own, and the reader says the same kind under its title.
+     */
+    public function test_a_row_and_its_reader_name_the_kind_of_account_and_the_row_stands_in_columns(): void
+    {
+        $work = $this->account('Work', '/journal/accounts/work');
+        $driverName = $this->app->make(DriverCatalogue::class)->family(DefaultDrivers::CLAUDE_CODE)->label;
+        $kind = $work->refresh()->method->accountTypeFor($driverName);
+
+        $this->assertNotSame($work->method->accountNameFor($driverName), SignInMethod::OAuth->accountTypeFor($driverName));
+        $this->actingAs($this->owner)->get("/accounts?account={$work->id}")->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->where(self::ROWS.'.0.detail', $kind)
+                ->where(self::ROWS.'.0.hasColumns', true)
+                ->where('page.data.root.children.1.children.1.children.1.text', $kind),
+        );
+    }
+
     public function test_the_owner_chooses_and_renames_an_account(): void
     {
         $work = $this->account('Work', '/journal/accounts/work');
@@ -116,10 +137,10 @@ final class AccountsPageTest extends TestCase
 
         $this->actingAs($this->owner)->get("/accounts?account={$work->id}")->assertInertia(
             fn (AssertableInertia $page) => $page
-                ->where(self::ROWS.'.0.trailing.1.style', 'usage-row')
-                ->where(self::ROWS.'.0.trailing.1.progress.value', 72)
+                ->where(self::ROWS.'.0.trailing.0.style', 'usage-row')
+                ->where(self::ROWS.'.0.trailing.0.progress.value', 72)
                 ->where(
-                    self::ROWS.'.0.trailing.1.detail',
+                    self::ROWS.'.0.trailing.0.detail',
                     fn ($tip) => str_contains($tip, AccountsIndex::WEEK_LABEL.' 72% used')
                         && str_contains($tip, AccountsIndex::SESSION_LABEL.' 30% used'),
                 )

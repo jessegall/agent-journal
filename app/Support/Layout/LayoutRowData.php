@@ -13,7 +13,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * One row of a declared collection, keyed by the record it shows: its label and its escaped value, the keys of its
  * window's query it sets when chosen, none for a row that leads nowhere, whether it is the row chosen now, a line
  * under its label, the page of its own it opens, such as a record's, the actions menu of its record, the parts that
- * lead and trail it, such as a driver mark and a status, and a fact's value in linked pieces.
+ * lead and trail it, such as a driver mark and a status, a fact's value in linked pieces, and whether its trailing
+ * parts stand in fixed columns, so they line up from row to row.
  */
 #[TypeScript]
 final class LayoutRowData extends Data
@@ -37,6 +38,7 @@ final class LayoutRowData extends Data
         #[DataCollectionOf(LayoutPartData::class)]
         public readonly array|Optional $trailing = new Optional(),
         public readonly LayoutFactValueData|Optional $fact = new Optional(),
+        public readonly bool $hasColumns = false,
     ) {}
 
     /**

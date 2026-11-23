@@ -22,11 +22,21 @@ final readonly class SettingsGroup
         private LayoutFormData|null $save,
         private LayoutFormData|null $reset,
         private LayoutPartData|null $switch,
+        private bool $isLeading = false,
     ) {}
 
     public static function make(string $key, string $title, string|null $help = null): self
     {
         return new self($key, $title, $help, [], null, null, null);
+    }
+
+    /**
+     * The first group of a reader, which stands right under the reader's title: its own title names the region for a
+     * screen reader and is not drawn.
+     */
+    public function leading(): self
+    {
+        return clone ($this, ['isLeading' => true]);
     }
 
     public function withRows(SettingsRow ...$rows): self
@@ -63,7 +73,7 @@ final readonly class SettingsGroup
 
     public function part(): LayoutPartData
     {
-        $parts = [LayoutPartData::text('title', $this->title, 'heading')];
+        $parts = [LayoutPartData::text('title', $this->title, $this->isLeading ? 'spoken' : 'heading')];
 
         if ($this->help !== null) {
             $parts[] = LayoutPartData::text('help', $this->help, 'muted');

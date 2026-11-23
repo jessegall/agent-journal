@@ -41,4 +41,12 @@ final class SignInMethodData extends Data
             'secretSource' => $card->secretSource,
         ]);
     }
+
+    /**
+     * What kind of account this method makes for a driver, such as Claude Code subscription.
+     */
+    public function accountTypeFor(string $driverName): string
+    {
+        return $this->method->accountTypeFor($driverName);
+    }
 }

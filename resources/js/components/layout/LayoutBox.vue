@@ -79,7 +79,7 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
                 :title="readerPart('title')?.text ?? ''"
                 :abstract="readerPart('abstract')?.text ?? undefined"
             >
-                <template #meta>
+                <template v-if="readerPart('metadata') !== undefined" #meta>
                     <template
                         v-for="child in readerPart('metadata')?.children ?? []"
                         :key="child.key"
@@ -125,6 +125,7 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
             <SettingsSection
                 :title="readerPart('title')?.text ?? ''"
                 :help="readerPart('help')?.text ?? undefined"
+                :spoken="readerPart('title')?.style === 'spoken'"
             >
                 <template #actions>
                     <template v-for="child in sectionActions" :key="child.key">

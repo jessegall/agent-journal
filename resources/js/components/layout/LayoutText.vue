@@ -53,6 +53,9 @@ const badgeTone = computed(() => (props.part.tone ?? 'quiet') as BadgeTone);
                 }}</time></span
             >
         </template>
+        <template #spoken>
+            <span data-layout-text="spoken" class="sr-only">{{ part.text }}</span>
+        </template>
         <template #muted>
             <span data-layout-text="muted" class="text-text-3">{{
                 part.text

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Accounts;
 
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Data\Profiles\AccountListData;
 use App\Data\Profiles\AccountRowData;
 use App\Data\Profiles\AccountUsageData;
@@ -41,6 +42,8 @@ final readonly class AccountsIndex
     private const int WEEK_MINUTES = 10080;
 
     private const int SESSION_MINUTES = 300;
+
+    public function __construct(private DriverCatalogue $drivers) {}
 
     /**
      * @param  string  $chosen  the id of the account to read, or '' for none
@@ -80,24 +83,49 @@ final readonly class AccountsIndex
                 'add' => '',
             ],
             'isCurrent' => $row->id === $chosen,
+            'hasColumns' => true,
             'leading' => [
                 LayoutPartData::text('driver', $row->driver, 'driver'),
             ],
             'trailing' => [
-                LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateTone($row->state)),
                 ...$this->usageMeterOf($row),
+                LayoutPartData::badge('state', $this->stateWordOf($row)),
             ],
         ]);
     }
 
     /**
-     * The row's second line as the design words it: the driver and how it signs in, then default when new starts use it.
+     * The row's second line as the design words it: what kind of account it is, such as Claude Code subscription,
+     * then default when new starts use it.
      */
     private function detailOf(AccountRowData $row): string
     {
-        $signInWay = lcfirst($row->signIn->title);
+        $type = $this->typeOf($row);
 
-        return $row->isActive ? "{$row->driver} {$signInWay} · default" : "{$row->driver} {$signInWay}";
+        return $row->isActive ? "{$type} · default" : $type;
+    }
+
+    private function typeOf(AccountRowData $row): string
+    {
+        $driver = $this->drivers->family($row->driver);
+
+        return $row->signIn->accountTypeFor($driver->label);
+    }
+
+    /**
+     * The line under the reader's title as the design draws it: the kind of account and, when its sign-in ends on a
+     * known day, that day.
+     */
+    private function summaryOf(AccountRowData $row): string
+    {
+        $type = $this->typeOf($row);
+
+        return $row->expiresAt === null ? $type : "{$type} · Expires {$this->dayOf($row->expiresAt)}";
+    }
+
+    private function dayOf(string $moment): string
+    {
+        return CarbonImmutable::parse($moment)->format('j M Y');
     }
 
     /**
@@ -155,7 +183,7 @@ final readonly class AccountsIndex
 
         return [
             DetailPage::make($row->label)
-                ->above(LayoutPartData::text('driver', $row->driver, 'driver'))
+                ->summarising($this->summaryOf($row))
                 ->withStanding(...array_map(fn (SettingsGroup $group) => $group->part(), $groups))
                 ->part(),
         ];
@@ -178,11 +206,11 @@ final readonly class AccountsIndex
             'Sign-in',
             $row->state === AccountState::NeedsSignIn
                 ? $this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')
-                : LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateTone($row->state)),
+                : LayoutPartData::badge('state', $this->stateWordOf($row)),
             $this->signInHelp($row),
         );
 
-        return SettingsGroup::make('account', 'Account')->withRows(...$rows);
+        return SettingsGroup::make('account', 'Account')->leading()->withRows(...$rows);
     }
 
     private function nameRow(AccountRowData $row): SettingsRow
@@ -200,9 +228,8 @@ final readonly class AccountsIndex
             LayoutPartData::form(
                 'rename',
                 $rename,
-                'inline',
+                'live',
                 LayoutPartData::field('label', 'Name', new LayoutFieldData('label', $row->label), 'text'),
-                LayoutPartData::action('rename-send', 'Save', LayoutActionData::submitting()),
             ),
             'Shown in the account list and the agent bar.',
         );
@@ -211,10 +238,6 @@ final readonly class AccountsIndex
     private function defaultRow(AccountRowData $row): SettingsRow
     {
         $help = 'Agents use this account when no other is named.';
-
-        if ($row->isActive) {
-            return SettingsRow::value('default', 'Make default', 'Default', $help);
-        }
 
         $activate = LayoutFormData::from([
             'method' => ActionMethod::Post,
@@ -229,7 +252,12 @@ final readonly class AccountsIndex
                 'activate',
                 $activate,
                 'live',
-                LayoutPartData::field('isDefault', 'Make default', new LayoutFieldData('isDefault', '0'), 'toggle'),
+                LayoutPartData::field(
+                    'isDefault',
+                    'Make default',
+                    new LayoutFieldData('isDefault', $row->isActive ? '1' : '0'),
+                    'toggle',
+                ),
             ),
             $help,
         );
@@ -238,6 +266,7 @@ final readonly class AccountsIndex
     private function signInHelp(AccountRowData $row): string
     {
         return match (true) {
+            $row->state === AccountState::SignedIn && $row->expiresAt !== null => "Signed in. It expires on {$this->dayOf($row->expiresAt)}.",
             $row->state === AccountState::SignedIn => 'Signed in.',
             $this->hasExpired($row) => 'Expired. Sign in again so agents can use it.',
             default => 'Not signed in yet. Sign in so agents can use it.',
@@ -338,15 +367,6 @@ final readonly class AccountsIndex
             $row->state === AccountState::NeedsSignIn => 'Not signed in',
             $row->state === AccountState::Removing => 'Removing',
             default => 'Removed',
-        };
-    }
-
-    private function stateTone(AccountState $state): string
-    {
-        return match ($state) {
-            AccountState::SignedIn => 'good',
-            AccountState::NeedsSignIn => 'warn',
-            AccountState::Removing, AccountState::Removed => 'quiet',
         };
     }
 }

@@ -66,6 +66,7 @@ enum LayoutTag: string
                 'chip',
                 'icon',
                 'driver',
+                'spoken',
             ],
             self::Collection => ['list', 'facts', 'choices'],
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'first', 'refusal', 'skeleton', 'stale'],

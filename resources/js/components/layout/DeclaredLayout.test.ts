@@ -49,6 +49,7 @@ describe('a declared layout', () => {
                                         value: '2',
                                         query: {},
                                         isCurrent: false,
+                                    hasColumns: false,
                                     },
                                 ],
                             }),
@@ -283,6 +284,7 @@ describe('a declared layout', () => {
             value: '',
             query: {},
             isCurrent: false,
+        hasColumns: false,
         });
         const layout = (rows: string[], more: boolean) => ({
             root: part({
@@ -491,6 +493,7 @@ describe('a declared layout', () => {
                                         value: '',
                                         query: {},
                                         isCurrent: true,
+                                        hasColumns: false,
                                         href: '/runs/1',
                                         leading: [part({ tag: 'text', key: 'driver', style: 'plain', text: 'Claude' })],
                                         trailing: [part({ tag: 'text', key: 'state', style: 'plain', text: 'Running' })],
@@ -508,6 +511,7 @@ describe('a declared layout', () => {
                                         value: '',
                                         query: {},
                                         isCurrent: false,
+                                        hasColumns: false,
                                         fact: {
                                             pieces: [
                                                 { label: 'Task 3', href: '/tasks/3' },
@@ -555,6 +559,7 @@ describe('a declared layout', () => {
                                 value: 'Running',
                                 query: {},
                                 isCurrent: false,
+                                hasColumns: false,
                                 href: '/runs/1',
                             },
                             {
@@ -563,6 +568,7 @@ describe('a declared layout', () => {
                                 value: 'Stopped',
                                 query: {},
                                 isCurrent: false,
+                                hasColumns: false,
                             },
                         ],
                     }),
@@ -586,6 +592,51 @@ describe('a declared layout', () => {
         expect(followed).toHaveBeenCalledTimes(1);
         expect(opening.get('div').classes()).toContain('hover:bg-hover');
         expect(plain.get('div').classes()).not.toContain('hover:bg-hover');
+    });
+
+    it('draws a row in columns as a grid whose state stands in the last column, with or without a meter before it', () => {
+        const state = part({ tag: 'text', key: 'state', style: 'badge', text: 'Signed in' });
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'collection',
+                        key: 'rows',
+                        style: 'list',
+                        rows: [
+                            {
+                                key: 'measured',
+                                label: 'Work',
+                                value: '',
+                                query: {},
+                                isCurrent: false,
+                                hasColumns: true,
+                                trailing: [part({ tag: 'text', key: 'usage', style: 'plain', text: '72' }), state],
+                            },
+                            {
+                                key: 'unmeasured',
+                                label: 'Personal',
+                                value: '',
+                                query: {},
+                                isCurrent: false,
+                                hasColumns: true,
+                                trailing: [state],
+                            },
+                        ],
+                    }),
+                },
+            },
+        });
+        const [measured, unmeasured] = view.findAll('li > div');
+        const cells = (row: typeof measured) =>
+            row
+                .findAll(':scope > span')
+                .slice(-2)
+                .map((cell) => cell.text());
+
+        expect(measured.classes()).toContain('grid');
+        expect(cells(measured)).toEqual(['72', state.text]);
+        expect(cells(unmeasured)).toEqual(['', state.text]);
     });
 
     it('draws a settings group in the kit rows with the value below its label in a block row, chips and a switch only where declared', () => {
@@ -649,13 +700,14 @@ describe('a declared layout', () => {
                                 value: '',
                                 query: {},
                                 isCurrent: false,
+                                hasColumns: false,
                                 menu: {
                                     key: 'task',
                                     label: 'Actions for task 1',
                                     groups: [{ key: 'main', items: [{ key: 'open', label: 'Open', href: '/tasks/1', method: 'GET' }] }],
                                 },
                             },
-                            { key: 'plain', label: 'Plain', value: '', query: {}, isCurrent: false },
+                            { key: 'plain', label: 'Plain', value: '', query: {}, isCurrent: false, hasColumns: false },
                         ],
                     }),
                 },

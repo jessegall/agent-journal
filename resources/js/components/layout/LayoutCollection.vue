@@ -108,6 +108,22 @@ function openRow(event: MouseEvent): void {
     );
 }
 
+// A row in columns is the kit's grid row, whose trail holds two cells; a row with fewer parts leaves the first empty,
+// so a state stands in the same column whether or not a meter stands before it.
+const TRAILING_COLUMNS = 2;
+
+function variantOf(row: LayoutRowData): 'single' | 'two' | 'grid' {
+    if (row.hasColumns) {
+        return 'grid';
+    }
+
+    return row.detail !== undefined ? 'two' : 'single';
+}
+
+function emptyColumnsOf(row: LayoutRowData): number {
+    return Math.max(0, TRAILING_COLUMNS - (row.trailing ?? []).length);
+}
+
 function destinationOf(row: LayoutRowData): string | null {
     if (row.href !== undefined) {
         return row.href;
@@ -176,7 +192,7 @@ function destinationOf(row: LayoutRowData): string | null {
                         <ListRow
                             static
                             :opens="destinationOf(row) !== null"
-                            :variant="row.detail !== undefined ? 'two' : 'single'"
+                            :variant="variantOf(row)"
                             :selected="row.isCurrent"
                             class="flex-1"
                             @click="openRow"
@@ -207,11 +223,29 @@ function destinationOf(row: LayoutRowData): string | null {
                                 {{ row.detail }}
                             </template>
                             <template #trail>
-                                <template
-                                    v-for="trail in row.trailing ?? []"
-                                    :key="trail.key"
-                                >
-                                    <LayoutPart :part="trail" />
+                                <template v-if="row.hasColumns">
+                                    <template
+                                        v-for="empty in emptyColumnsOf(row)"
+                                        :key="empty"
+                                    >
+                                        <span />
+                                    </template>
+                                    <template
+                                        v-for="trail in row.trailing ?? []"
+                                        :key="trail.key"
+                                    >
+                                        <span class="flex min-w-0 items-center">
+                                            <LayoutPart :part="trail" />
+                                        </span>
+                                    </template>
+                                </template>
+                                <template v-else>
+                                    <template
+                                        v-for="trail in row.trailing ?? []"
+                                        :key="trail.key"
+                                    >
+                                        <LayoutPart :part="trail" />
+                                    </template>
                                 </template>
                                 <template v-if="row.value !== ''">
                                     <span class="shrink-0 text-text-2">{{

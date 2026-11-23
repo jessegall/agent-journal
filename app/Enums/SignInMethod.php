@@ -39,6 +39,18 @@ enum SignInMethod: string
     }
 
     /**
+     * What kind of account the method makes, as the accounts list names it under an account: 'Claude Code
+     * subscription' for an OAuth sign-in, 'Codex API key' for a key.
+     */
+    public function accountTypeFor(string $driverName): string
+    {
+        return match ($this) {
+            self::OAuth => "{$driverName} subscription",
+            self::ApiKey, self::ProviderToken => $this->accountNameFor($driverName),
+        };
+    }
+
+    /**
      * The short word the method's card shows on its right about what it bills.
      */
     public function billingLabel(): string

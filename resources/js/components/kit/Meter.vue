@@ -5,7 +5,7 @@ import { computed } from 'vue';
  * A thin share bar from 0 to its maximum (100 unless given): role meter with its value, maximum and a label such as
  * "72% used", and a spoken value that keeps its unit when one is given. Its width is fixed in pixels, or fluid: it
  * fills its container up to 220 px and shrinks with a narrow one, such as a phone's. Its track turns --border-3 inside
- * a selected row.
+ * a selected row, whether the row is an option or the current row of a list.
  */
 const props = withDefaults(
     defineProps<{
@@ -33,7 +33,7 @@ const spoken = computed(() => (props.unit === undefined ? undefined : `${reading
         :aria-valuemax="max"
         :aria-valuetext="spoken"
         :aria-label="label"
-        class="inline-block overflow-hidden bg-sel in-aria-selected:bg-border-3"
+        class="inline-block overflow-hidden bg-sel in-aria-selected:bg-border-3 in-data-selected:bg-border-3"
         :class="[
             fluid ? 'w-full max-w-55 min-w-0' : 'shrink-0',
             { 'h-1 rounded-xs': size === 'sm', 'h-1.25 rounded-[3px]': size === 'md', 'h-1.5 rounded-[3px]': size === 'lg' },

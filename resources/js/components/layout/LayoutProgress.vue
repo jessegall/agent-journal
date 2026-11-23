@@ -48,10 +48,10 @@ const words = computed(() =>
                 <UsageMeter variant="row" :value="progress.value" :tip="part.detail ?? ''" />
             </template>
             <template #usage>
-                <span class="flex items-center gap-2.5">
+                <span class="flex w-full items-center gap-2.5">
                     <Meter fluid size="lg" :value="progress.value" :label="`${progress.value}% used`" />
                     <span
-                        class="text-small tabular-nums"
+                        class="shrink-0 text-small whitespace-nowrap tabular-nums"
                         :class="progress.value >= 90 ? 'font-medium text-text' : 'text-text-3'"
                         >{{ progress.value }}% used</span
                     >

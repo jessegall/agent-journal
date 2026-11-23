@@ -9516,6 +9516,8 @@ method	AccountWriterTaken::__construct()
 method	AccountWriterTaken::heldBy()
 method	AccountWriterTaken::inUseBy()
 method	AccountsChanged::__construct()
+method	AccountsIndex::__construct()
+method	AccountsIndex::dayOf()
 method	AccountsIndex::defaultRow()
 method	AccountsIndex::detailOf()
 method	AccountsIndex::form()
@@ -9527,8 +9529,9 @@ method	AccountsIndex::readerOf()
 method	AccountsIndex::resetTime()
 method	AccountsIndex::rowOf()
 method	AccountsIndex::signInHelp()
-method	AccountsIndex::stateTone()
 method	AccountsIndex::stateWordOf()
+method	AccountsIndex::summaryOf()
+method	AccountsIndex::typeOf()
 method	AccountsIndex::usageGroup()
 method	AccountsIndex::usageMeterOf()
 method	AccountsIndex::usedText()
@@ -23673,6 +23676,7 @@ method	SettingsDomainAvailability::status()
 method	SettingsDomainAvailability::statusIn()
 method	SettingsGroup::__construct()
 method	SettingsGroup::editable()
+method	SettingsGroup::leading()
 method	SettingsGroup::make()
 method	SettingsGroup::part()
 method	SettingsGroup::resettableBy()
@@ -24545,9 +24549,11 @@ method	SignInIdentity::expiry()
 method	SignInIdentity::shown()
 method	SignInIdentity::unproved()
 method	SignInMethod::accountNameFor()
+method	SignInMethod::accountTypeFor()
 method	SignInMethod::billingLabel()
 method	SignInMethod::isSecret()
 method	SignInMethodData::__construct()
+method	SignInMethodData::accountTypeFor()
 method	SignInMethodData::fromProtocol()
 method	SignInMethodMissing::for()
 method	SignInMethodMissing::forKey()
@@ -28944,6 +28950,7 @@ parameter	$handlers
 parameter	$handlersByFile
 parameter	$handles
 parameter	$hasAuthFile
+parameter	$hasColumns
 parameter	$hasMenu
 parameter	$hasMore
 parameter	$hasNext
@@ -29156,6 +29163,7 @@ parameter	$isInterface
 parameter	$isJobSource
 parameter	$isKeyed
 parameter	$isKnown
+parameter	$isLeading
 parameter	$isLimit
 parameter	$isLive
 parameter	$isLoading
@@ -31221,6 +31229,7 @@ property	AccountUseCounts::$runningByAccount
 property	AccountWriterTaken::$ownerSessionId
 property	AccountsChanged::$accountId
 property	AccountsChanged::$driver
+property	AccountsIndex::$drivers
 property	AccountsWindowResolver::$layout
 property	AccountsWindowResolver::$protocols
 property	AccountsWindowResolver::$request
@@ -35355,6 +35364,7 @@ property	LayoutProgressData::$unit
 property	LayoutProgressData::$value
 property	LayoutRowData::$detail
 property	LayoutRowData::$fact
+property	LayoutRowData::$hasColumns
 property	LayoutRowData::$href
 property	LayoutRowData::$isCurrent
 property	LayoutRowData::$key
@@ -39931,6 +39941,7 @@ property	SettingsDomainAvailability::$domains
 property	SettingsDomainAvailability::$settings
 property	SettingsDomainAvailability::$switches
 property	SettingsGroup::$help
+property	SettingsGroup::$isLeading
 property	SettingsGroup::$key
 property	SettingsGroup::$reset
 property	SettingsGroup::$rows
@@ -44060,7 +44071,6 @@ variable	$short
 variable	$shortOwners
 variable	$shortage
 variable	$shown
-variable	$signInWay
 variable	$signature
 variable	$signed
 variable	$signedLeft

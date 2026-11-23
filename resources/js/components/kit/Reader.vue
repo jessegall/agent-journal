@@ -1,22 +1,24 @@
 <script setup lang="ts">
 /**
- * The reader of a chosen row (doc 4, 7.1): a meta line, the title with its buttons, an abstract, then the body, padded
- * 18 by 22 and at most 760 wide as the design draws it.
+ * The reader of a chosen row: a meta line when it has one, the title with its buttons, an abstract, then the body,
+ * padded 18 by 22 and at most 760 wide as the design draws it, with no rule between the head and the body.
  */
 defineProps<{ title: string; abstract?: string }>();
 </script>
 
 <template>
     <article class="flex max-w-190 flex-col">
-        <header class="border-b border-border px-5.5 pt-4.5 pb-3">
-            <div
-                class="flex min-h-[18px] items-center gap-2 text-small text-text-3"
-            >
-                <slot name="meta" />
-            </div>
-            <div class="mt-1 flex items-start gap-3">
+        <header class="px-5.5 pt-4.5">
+            <template v-if="$slots.meta">
+                <div
+                    class="mb-1 flex min-h-[18px] items-center gap-2 text-small text-text-3"
+                >
+                    <slot name="meta" />
+                </div>
+            </template>
+            <div class="flex items-start gap-3">
                 <h2
-                    class="mt-1.5 flex-1 text-reader leading-[1.3] font-semibold tracking-[-0.01em] text-text"
+                    class="flex-1 text-reader leading-[1.3] font-semibold tracking-[-0.01em] text-text"
                 >
                     {{ title }}
                 </h2>
