@@ -8296,7 +8296,6 @@ constant	StopAgentController::STOP_REQUEST
 constant	StopAttempt::FIRST_GENERATION
 constant	StopAttemptGate::CHECKS_RUNNING
 constant	StopAttemptGate::CHECKS_UNRESOLVED
-constant	StopAttemptGate::NO_CHECKS_REQUIRED
 constant	StopAttemptGate::NO_CONDITIONS_SUBMISSION
 constant	StopAttemptGate::OWN_WORK
 constant	StopAttemptGate::PREPARATION_HELD_SUBMISSION
@@ -17384,7 +17383,8 @@ method	MessageAskTool::payload()
 method	MessageAskTool::writeSchema()
 method	MessageAttention::actorsAskedFor()
 method	MessageAttention::casts()
-method	MessageAttention::create()
+method	MessageAttention::outcomeFields()
+method	MessageAttention::record()
 method	MessageAttention::unsaved()
 method	MessageAttention::wakeStatus()
 method	MessageBody::__construct()
@@ -27545,7 +27545,6 @@ method	WakeStatusController::__invoke()
 method	WakeStatusRequest::messageId()
 method	WakeStatusRequest::rules()
 method	WakeStatuses::__construct()
-method	WalkStack::__construct()
 method	WalkStack::answerOf()
 method	WalkStack::handle()
 method	WalkStep::__construct()
@@ -42096,7 +42095,6 @@ property	WakeStatus::$actorType
 property	WakeStatus::$requestId
 property	WakeStatus::$state
 property	WakeStatuses::$members
-property	WalkStack::$container
 property	WalkStep::$answer
 property	WalkStep::$contextCount
 property	WalkStep::$denialReason
