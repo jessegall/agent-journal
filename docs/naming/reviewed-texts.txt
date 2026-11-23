@@ -36,7 +36,7 @@ All
 All caught up
 All sources
 Allow one sample run of this exact line
-Answer questions instead
+An agent asks a few questions, then drafts it.
 Anywhere
 Approve
 Approve a terminal
@@ -622,12 +622,12 @@ until {{ dateTime(signIn.expiresAt) }}
 {{ data.machineLabel }} is not connected, so {{ data.projectLabel }} cannot be read.
 {{ data.name }} is too large to show whole; this is its start.
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
-{{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
 {{ name }} could not be read.
 {{ name }} is a Markdown file.
 {{ name }}'s chat
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
+{{ progress.value }}% used
 {{ provider.label }}: start it with
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
 {{ row.entry.name }} could not be read

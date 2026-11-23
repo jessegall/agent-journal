@@ -61,7 +61,7 @@ final class PlansPageTest extends TestCase
             ->where('page.state', 'ready')
             ->where('page.data.root.children.0.children.1.text', '2')
             ->where(self::ROWS.'.1.key', (string) $this->release->id)
-            ->where(self::ROWS.'.1.trailing.0.style', 'counted')
+            ->where(self::ROWS.'.1.trailing.0.style', 'share')
             ->where(self::ROWS.'.1.trailing.0.progress.max', 1)
             ->where('page.data.root.children.1.children.1.key', 'nothing-selected'));
     }

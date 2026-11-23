@@ -24,9 +24,9 @@ final readonly class SequencesShow
     public function of(Sequence $sequence): DeclaredLayoutData
     {
         $page = DetailPage::make($sequence->name);
-        $about = $sequence->summary === '' ? $page : $page->summarising($sequence->summary);
+        $summarisedPage = $sequence->summary === '' ? $page : $page->summarising($sequence->summary);
 
-        $reader = $about
+        $reader = $summarisedPage
             ->withActions(LayoutPartData::action(
                 'edit-steps',
                 'Edit steps',

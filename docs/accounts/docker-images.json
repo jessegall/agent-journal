@@ -104,6 +104,22 @@
             "claude_code": "2.1.323",
             "codex": "0.165.0",
             "built_at": "2026-11-23T04:31:23+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:ca93ad68031d7cdf6008e5d99e412f524003cb894c72fb69afbc5668ec090b98",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-23T13:53:21+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:be32b780d9c3855e7f7b5cf8ca5a60b2b3f80f5436abb3a0fa47a97fcd264622",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-23T14:03:39+00:00"
         }
     ]
 }

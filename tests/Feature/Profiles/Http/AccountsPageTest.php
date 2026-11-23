@@ -100,8 +100,8 @@ final class AccountsPageTest extends TestCase
                 ->where(self::ROWS.'.0.isCurrent', true)
                 ->where('page.data.root.children.1.children.1.key', 'detail')
                 ->where('page.data.root.children.1.children.1.children.2.key', 'account')
-                ->where('page.data.root.children.1.children.1.children.2.children.1.children.0.key', 'name')
-                ->where('page.data.root.children.1.children.1.children.2.children.1.children.1.key', 'default'),
+                ->where('page.data.root.children.1.children.1.children.2.children.1.children.0.key', 'row-name')
+                ->where('page.data.root.children.1.children.1.children.2.children.1.children.1.key', 'row-default'),
         );
     }
 

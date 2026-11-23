@@ -25,7 +25,6 @@ use App\Support\Layout\ListPage;
 use App\Support\Layout\SettingsGroup;
 use App\Support\Layout\SettingsRow;
 use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
 
 /**
  * The accounts on the shared list and reader recipes, as the design draws them: each account by its driver mark, name
@@ -92,13 +91,13 @@ final readonly class AccountsIndex
     }
 
     /**
-     * The row's second line as the design words it: the program and how it signs in, then default when new starts use it.
+     * The row's second line as the design words it: the driver and how it signs in, then default when new starts use it.
      */
     private function detailOf(AccountRowData $row): string
     {
-        $how = lcfirst($row->signIn->title);
+        $signInWay = lcfirst($row->signIn->title);
 
-        return $row->isActive ? "{$row->driver} {$how} · default" : "{$row->driver} {$how}";
+        return $row->isActive ? "{$row->driver} {$signInWay} · default" : "{$row->driver} {$signInWay}";
     }
 
     /**
@@ -113,26 +112,26 @@ final readonly class AccountsIndex
             return [];
         }
 
-        $measured = array_values(array_filter(
+        $measuredWindows = array_values(array_filter(
             $row->usage->windows,
             fn (AccountUsageWindowData $window) => $window->usedPercent !== null,
         ));
 
-        if ($measured === []) {
+        if ($measuredWindows === []) {
             return [];
         }
 
-        $tip = implode(' · ', array_map(
-            fn (AccountUsageWindowData $window) => "{$this->windowLabel($window)} {$this->percentWord($window)}",
-            $measured,
+        $readings = implode(' · ', array_map(
+            fn (AccountUsageWindowData $window) => "{$this->windowLabel($window)} {$this->usedText($window)}",
+            $measuredWindows,
         ));
 
         return [
             LayoutPartData::usage(
                 'usage',
-                max(array_map(fn (AccountUsageWindowData $window) => (float) $window->usedPercent, $measured)),
+                max(array_map(fn (AccountUsageWindowData $window) => (float) $window->usedPercent, $measuredWindows)),
                 'Usage',
-                $tip,
+                $readings,
             ),
         ];
     }
@@ -265,7 +264,7 @@ final readonly class AccountsIndex
     {
         $key = $window->limitId.$window->slot->value;
         $label = $this->windowLabel($window);
-        $reset = $window->resetsAt === null ? null : "Resets {$this->resetWord($window->resetsAt)}.";
+        $reset = $window->resetsAt === null ? null : "Resets {$this->resetTime($window->resetsAt)}.";
 
         if ($window->usedPercent === null) {
             return SettingsRow::value($key, $label, 'Usage unavailable', $reset)->inBlock();
@@ -295,12 +294,22 @@ final readonly class AccountsIndex
         };
     }
 
-    private function resetWord(string $resetsAt): string
+    /**
+     * When a window resets, counted from now in the largest whole unit: minutes under an hour, hours under two days,
+     * days after that.
+     */
+    private function resetTime(string $resetsAt): string
     {
-        return CarbonImmutable::parse($resetsAt)->diffForHumans(['syntax' => CarbonInterface::DIFF_RELATIVE_AUTO]);
+        $minutes = max(1, (int) ceil(CarbonImmutable::now()->diffInMinutes(CarbonImmutable::parse($resetsAt))));
+
+        return match (true) {
+            $minutes < 60 => "in {$minutes} min",
+            $minutes < 2880 => 'in '.intdiv($minutes, 60).' h',
+            default => 'in '.intdiv($minutes, 1440).' days',
+        };
     }
 
-    private function percentWord(AccountUsageWindowData $window): string
+    private function usedText(AccountUsageWindowData $window): string
     {
         return ((int) round((float) $window->usedPercent)).'% used';
     }

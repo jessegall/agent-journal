@@ -19,7 +19,7 @@ use App\Values\ProfileRuleGroup;
 use App\Values\SupervisorRoutes;
 
 /**
- * One profile as a read-only reader: its label and description, then its supplied facts in order: Program, Model,
+ * One profile as a read-only reader: its label and description, then its supplied facts in order: Type, Model,
  * Models it may use, Driver, Answers to and How many run, then a group of Rules it works under with its Scripts. A fact
  * no read supplies is left out, and the rules, which nothing reads for a profile yet, say they are not available
  * instead of looking empty.
@@ -51,7 +51,7 @@ final readonly class ProfilesShow
         $script = ProfileRevision::currentOf($profile)->scriptSource();
 
         $rows = [
-            SettingsRow::value('type', 'Program', $snapshot->base->label, 'What it runs on.'),
+            SettingsRow::value('type', 'Type', $snapshot->base->label, 'The kind of agent it is.'),
             SettingsRow::value('model', 'Model', $snapshot->model, 'The model it starts with.'),
             $models === []
                 ? SettingsRow::value('models', 'Models it may use', 'Any model', self::MODELS_HELP)->inBlock()

@@ -17,6 +17,7 @@ use App\Enums\ActionMethod;
 use App\Enums\GroupAvailability;
 use App\Enums\SettingSource;
 use App\Enums\SettingType;
+use App\Exceptions\ServerOriginInvalid;
 use App\Resolvers\ConnectProjectWindowResolver;
 use App\Support\ConnectionsOwnerCheck;
 use App\Support\CoreSettings;
@@ -179,7 +180,7 @@ final readonly class SettingsIndex
 
     /**
      * The connect line and the connected projects, for the owner, drawn in the section as the connection window shows
-     * them.
+     * them; a journal whose own address is not set right says so in the row, and the rest of Settings still shows.
      *
      * @return list<SettingsRow>
      */
@@ -189,9 +190,15 @@ final readonly class SettingsIndex
             return [];
         }
 
+        try {
+            $connections = $this->connectWindow->read();
+        } catch (ServerOriginInvalid $invalid) {
+            return [SettingsRow::value('projects', 'Connect a project', $invalid->getMessage())->inBlock()];
+        }
+
         $panel = LayoutPartData::native(
             'projects',
-            LayoutNativeData::of('connections/ConnectedProjectsPart', $this->connectWindow->read()),
+            LayoutNativeData::of('connections/ConnectedProjectsPart', $connections),
         );
 
         return [SettingsRow::reading('projects', 'Connect a project', $panel)];

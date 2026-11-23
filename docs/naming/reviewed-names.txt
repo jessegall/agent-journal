@@ -3838,6 +3838,7 @@ class	LayoutRoots
 class	LayoutRowData
 class	LayoutSplitData
 class	LayoutTabData
+class	LayoutWaysData
 class	LayoutsController
 class	LayoutsView
 class	LazyLoadRefused
@@ -7277,6 +7278,10 @@ constant	AccessPolicy::PROTECTED_PATHS
 constant	Account::LINK_TYPE
 constant	AccountLabel::LENGTH_LIMIT
 constant	AccountUsagePurge::CHUNK_SIZE
+constant	AccountsIndex::SESSION_LABEL
+constant	AccountsIndex::SESSION_MINUTES
+constant	AccountsIndex::WEEK_LABEL
+constant	AccountsIndex::WEEK_MINUTES
 constant	AccountsWindowResolver::RECENT_STARTS
 constant	ActiveAccount::LINK_TYPE
 constant	ActivityEntry::FOUND_CHARACTER_LIMIT
@@ -7922,6 +7927,7 @@ constant	ProfileStartPolicy::WORKSPACE
 constant	Profiles::TYPE
 constant	Profiles::VERSION
 constant	ProfilesIndex::ROWS
+constant	ProfilesShow::ANSWERS_HELP
 constant	ProfilesShow::MODELS_HELP
 constant	ProfilesUnavailable::CODE
 constant	ProjectBinding::PAGE_LIMIT
@@ -8146,7 +8152,6 @@ constant	SequenceRecords::RUN_PAGE_SIZE
 constant	SequenceRun::FOLLOWER_LIMIT
 constant	SequenceRun::LINK_TYPE
 constant	SequenceRunsIndex::EMPTY_TEXT
-constant	SequenceWindowResolver::RUN_LIMIT
 constant	SequencesIndex::LIST_LIMIT
 constant	SessionAdvisoryLocks::LOCK_NOT_AVAILABLE
 constant	SessionOutputGrant::MOST_GRANTS
@@ -9501,16 +9506,23 @@ method	AccountWriterTaken::__construct()
 method	AccountWriterTaken::heldBy()
 method	AccountWriterTaken::inUseBy()
 method	AccountsChanged::__construct()
-method	AccountsIndex::actionsOf()
+method	AccountsIndex::defaultRow()
+method	AccountsIndex::detailOf()
 method	AccountsIndex::form()
+method	AccountsIndex::hasExpired()
 method	AccountsIndex::identityGroup()
+method	AccountsIndex::nameRow()
 method	AccountsIndex::of()
 method	AccountsIndex::readerOf()
+method	AccountsIndex::resetTime()
 method	AccountsIndex::rowOf()
+method	AccountsIndex::signInHelp()
 method	AccountsIndex::stateTone()
-method	AccountsIndex::stateWord()
+method	AccountsIndex::stateWordOf()
 method	AccountsIndex::usageGroup()
 method	AccountsIndex::usageMeterOf()
+method	AccountsIndex::usedText()
+method	AccountsIndex::windowLabel()
 method	AccountsIndex::windowRow()
 method	AccountsPageRequest::chosenAccount()
 method	AccountsPageRequest::isAdding()
@@ -12877,6 +12889,7 @@ method	ConnectionsHostOperatorAccess::isGranted()
 method	ConnectionsOwnerCheck::__construct()
 method	ConnectionsOwnerCheck::allows()
 method	ConnectionsPages::declarations()
+method	ConnectionsPages::nativeParts()
 method	ConnectionsPages::navigation()
 method	ConnectionsPages::pages()
 method	ConnectionsPages::types()
@@ -16600,12 +16613,14 @@ method	LayoutPartData::menu()
 method	LayoutPartData::native()
 method	LayoutPartData::notice()
 method	LayoutPartData::progress()
+method	LayoutPartData::share()
 method	LayoutPartData::skeleton()
 method	LayoutPartData::split()
 method	LayoutPartData::stale()
 method	LayoutPartData::tabs()
 method	LayoutPartData::text()
 method	LayoutPartData::time()
+method	LayoutPartData::usage()
 method	LayoutProgressData::__construct()
 method	LayoutRefused::bindingMismatch()
 method	LayoutRefused::childrenNotAllowed()
@@ -16634,6 +16649,7 @@ method	LayoutTabData::__construct()
 method	LayoutTag::holdsChildren()
 method	LayoutTag::sizes()
 method	LayoutTag::styles()
+method	LayoutWaysData::__construct()
 method	LayoutsController::__construct()
 method	LayoutsController::destroy()
 method	LayoutsController::store()
@@ -19123,6 +19139,7 @@ method	PlansServiceProvider::register()
 method	PlansShow::__construct()
 method	PlansShow::factsOf()
 method	PlansShow::of()
+method	PlansShow::percentOf()
 method	PlansTasksShow::__construct()
 method	PlansTasksShow::of()
 method	PlansWindowResolver::__construct()
@@ -23353,12 +23370,12 @@ method	SequencesDomain::requires()
 method	SequencesDomain::skills()
 method	SequencesDomain::states()
 method	SequencesIndex::__construct()
-method	SequencesIndex::creations()
+method	SequencesIndex::creation()
+method	SequencesIndex::detailOf()
 method	SequencesIndex::of()
 method	SequencesServiceProvider::boot()
 method	SequencesShow::__construct()
 method	SequencesShow::of()
-method	SequencesShow::runParts()
 method	SequencesShow::stepRows()
 method	SequencesSkill::condition()
 method	SequencesSkill::description()
@@ -23641,9 +23658,11 @@ method	SettingsIndex::layout()
 method	SettingsIndex::optionsOf()
 method	SettingsIndex::rank()
 method	SettingsIndex::rowOf()
+method	SettingsIndex::rowsOf()
 method	SettingsIndex::saving()
 method	SettingsIndex::sectionOf()
 method	SettingsIndex::switchTextOf()
+method	SettingsIndex::withoutSwitch()
 method	SettingsOwnerCheck::__construct()
 method	SettingsOwnerCheck::allows()
 method	SettingsOwnerUnknown::for()
@@ -26629,6 +26648,7 @@ method	TasksShow::page()
 method	TasksShow::pageAtPassage()
 method	TasksShow::pageWithBrief()
 method	TasksShow::proofsOf()
+method	TasksShow::taskLinksRow()
 method	TasksShow::waitsOf()
 method	TasksSkill::condition()
 method	TasksSkill::description()
@@ -28312,6 +28332,7 @@ parameter	$confirmsPossibleDuplicate
 parameter	$conflict
 parameter	$conflicts
 parameter	$connectAddress
+parameter	$connectWindow
 parameter	$connection
 parameter	$connectionLost
 parameter	$connections
@@ -28878,6 +28899,7 @@ parameter	$groups
 parameter	$guard
 parameter	$guarded
 parameter	$guidance
+parameter	$guided
 parameter	$guidedNoun
 parameter	$halt
 parameter	$handle
@@ -29067,6 +29089,7 @@ parameter	$isCheckInconclusive
 parameter	$isChosen
 parameter	$isClaimed
 parameter	$isClean
+parameter	$isConnections
 parameter	$isContinuation
 parameter	$isCorrection
 parameter	$isCounted
@@ -29092,6 +29115,7 @@ parameter	$isHeld
 parameter	$isHeldForCheck
 parameter	$isHistorical
 parameter	$isInForm
+parameter	$isInHeader
 parameter	$isInsideFilter
 parameter	$isInterface
 parameter	$isJobSource
@@ -29156,6 +29180,7 @@ parameter	$issue
 parameter	$issued
 parameter	$issuedAt
 parameter	$italic
+parameter	$item
 parameter	$item	app/Data/NotificationChangeItem.php
 parameter	$item	app/Data/ProtectedItemData.php
 parameter	$item	app/Data/ProtectionReportData.php
@@ -29170,6 +29195,7 @@ parameter	$item	app/Support/UiDeclarations.php
 parameter	$item	app/Values/ProtectedItem.php
 parameter	$item	app/Values/ProtectionReport.php
 parameter	$itemValue
+parameter	$items
 parameter	$items	app/Data/NotificationPage.php
 parameter	$items	app/Data/PresentationBatchData.php
 parameter	$items	app/Data/ProtectionReportData.php
@@ -29733,6 +29759,7 @@ parameter	$pendingSecrets
 parameter	$pendingStarts
 parameter	$pendingWork
 parameter	$perPage
+parameter	$percent
 parameter	$periods
 parameter	$permission
 parameter	$permissionDecision
@@ -30740,6 +30767,7 @@ parameter	$timelineEventId
 parameter	$timeoutSeconds
 parameter	$times
 parameter	$timing
+parameter	$tip
 parameter	$tipIsReachable
 parameter	$title
 parameter	$titleColumn
@@ -35231,6 +35259,7 @@ property	LayoutDialogData::$confirmation
 property	LayoutDialogData::$guidedNoun
 property	LayoutDialogData::$title
 property	LayoutDialogData::$undo
+property	LayoutDialogData::$ways
 property	LayoutFactPieceData::$href
 property	LayoutFactPieceData::$label
 property	LayoutFactValueData::$pieces
@@ -35299,6 +35328,9 @@ property	LayoutSplitData::$readerWidth
 property	LayoutTabData::$isChosen
 property	LayoutTabData::$key
 property	LayoutTabData::$label
+property	LayoutWaysData::$guided
+property	LayoutWaysData::$isInHeader
+property	LayoutWaysData::$plain
 property	LayoutsController::$redirect
 property	LayoutsController::$users
 property	LeaveChatCommand::$inboxId
@@ -39713,7 +39745,6 @@ property	SequenceWork::$state
 property	SequenceWork::$stepInstruction
 property	SequenceWork::$stepNumber
 property	SequencesIndex::$producers
-property	SequencesIndex::$views
 property	SequencesShow::$index
 property	ServedActivityLog::$events
 property	ServedActivityLog::$served
@@ -39864,6 +39895,7 @@ property	SettingsGroup::$switch
 property	SettingsGroup::$title
 property	SettingsIndex::$actors
 property	SettingsIndex::$catalogue
+property	SettingsIndex::$connectWindow
 property	SettingsIndex::$connections
 property	SettingsIndex::$core
 property	SettingsOwnerCheck::$policy
@@ -42281,6 +42313,7 @@ variable	$accountId
 variable	$accounts
 variable	$action
 variable	$actions
+variable	$activate
 variable	$activated
 variable	$activation
 variable	$active
@@ -42950,7 +42983,7 @@ variable	$grouped
 variable	$groups
 variable	$grown
 variable	$guard
-variable	$guided
+variable	$guidedNoun
 variable	$handle
 variable	$handler
 variable	$handlerEntries
@@ -42982,6 +43015,7 @@ variable	$headings
 variable	$healthy
 variable	$held
 variable	$heldIds
+variable	$help
 variable	$helper
 variable	$helpers
 variable	$hereDocument
@@ -43084,7 +43118,6 @@ variable	$isClosure
 variable	$isComparison
 variable	$isConcreteCommand
 variable	$isConcreteEvent
-variable	$isConnections
 variable	$isCoreBase
 variable	$isCoreListener
 variable	$isCurrent
@@ -43102,6 +43135,7 @@ variable	$isFull
 variable	$isFunction
 variable	$isGenerated
 variable	$isGiven
+variable	$isGuided
 variable	$isHeldForCheck
 variable	$isInside
 variable	$isInsideFilter
@@ -43150,6 +43184,7 @@ variable	$isSameBoot
 variable	$isSameFailure
 variable	$isScoped
 variable	$isServed
+variable	$isSession
 variable	$isSettled
 variable	$isSignedIn
 variable	$isSignedOut
@@ -43171,6 +43206,7 @@ variable	$isTransactionListener
 variable	$isTruncated
 variable	$isUnderWay
 variable	$isWaiting
+variable	$isWeek
 variable	$isWritten
 variable	$isolation
 variable	$issued
@@ -43318,6 +43354,7 @@ variable	$mayEditRun
 variable	$mayName
 variable	$mayStillSee
 variable	$measuredOutput
+variable	$measuredWindows
 variable	$measurement
 variable	$meetsFolderRequirement
 variable	$member
@@ -43361,7 +43398,6 @@ variable	$models
 variable	$modulePath
 variable	$moment
 variable	$monolog
-variable	$month
 variable	$monthStart
 variable	$more
 variable	$most
@@ -43521,6 +43557,7 @@ variable	$pageMax
 variable	$pageSize
 variable	$pages
 variable	$pairs
+variable	$panel
 variable	$parameter
 variable	$parameterAssignments
 variable	$parameterBytes
@@ -43708,6 +43745,7 @@ variable	$readerStillSeated
 variable	$readers
 variable	$readiness
 variable	$reading
+variable	$readings
 variable	$reads
 variable	$readsAgain
 variable	$readsOnePerParent
@@ -43777,7 +43815,9 @@ variable	$reminder
 variable	$reminders
 variable	$remote
 variable	$remoteChange
+variable	$remoteProjects
 variable	$removed
+variable	$rename
 variable	$repair
 variable	$repeated
 variable	$replaced
@@ -43971,6 +44011,7 @@ variable	$short
 variable	$shortOwners
 variable	$shortage
 variable	$shown
+variable	$signInWay
 variable	$signature
 variable	$signed
 variable	$signedLeft
@@ -44084,6 +44125,7 @@ variable	$suffix
 variable	$suggestedCommand
 variable	$suggestion
 variable	$summaries
+variable	$summarisedPage
 variable	$summary
 variable	$summaryTotal
 variable	$support

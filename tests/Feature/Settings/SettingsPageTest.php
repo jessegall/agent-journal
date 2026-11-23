@@ -24,6 +24,8 @@ final class SettingsPageTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
 
+        config(['agents.server_origin' => 'https://journal.example.com']);
+
         $this->actingAs($owner)->get('/settings')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('layout/DeclaredLayout')
             ->where('page.data.root.style', 'page')
@@ -31,6 +33,20 @@ final class SettingsPageTest extends TestCase
                 fn ($group) => $group['key'] === 'connected_projects'
                     && str_contains((string) json_encode($group), 'connections\\/ConnectedProjectsPart')
                     && str_contains((string) json_encode($group), '"key":"switch"'),
+            )));
+    }
+
+    public function test_a_journal_with_a_wrong_address_still_shows_settings_and_says_why_in_the_row(): void
+    {
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        config(['agents.server_origin' => 'http://journal.example.com']);
+
+        $this->actingAs($owner)->get('/settings')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.state', 'ready')
+            ->where('page.data.root.children.1.children', fn ($groups) => collect($groups)->contains(
+                fn ($group) => $group['key'] === 'connected_projects'
+                    && str_contains((string) json_encode($group), 'JOURNAL_SERVER_ORIGIN'),
             )));
     }
 
