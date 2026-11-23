@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"strconv"
 	"sync"
 	"time"
 
@@ -73,7 +72,7 @@ func (executor *protectedExecutor) Start(ctx context.Context, request host.Start
 	if err != nil {
 		return host.StartReply{StartID: request.StartID, Refusal: err.Error()}, nil
 	}
-	executionID := request.RuntimeID + ":" + strconv.Itoa(runtime.Generation())
+	executionID := executionOf(request.RuntimeID, runtime)
 	executor.mutex.Lock()
 	if executor.executions == nil {
 		executor.executions = map[string]execution{}

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"strconv"
 
 	"journal-agent/client"
 	"journal-agent/host"
@@ -38,7 +39,8 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	}
 	defer startListener.Close()
 	go startSocket.Serve(ctx, startListener)
-	loop := serving.NewLoop(claims.journal, claims.preparation, claims.open)
+	open := reportedRunning(claims.open, func(report host.StartReport) { claims.executor.report(ctx, report) })
+	loop := serving.NewLoop(claims.journal, claims.preparation, open)
 	if err := loop.KeepUnsentReports(ctx, claims.startSocketFolder); err != nil {
 		log.Printf("the request reports kept from before could not all be sent yet: %v", err)
 	}
@@ -68,6 +70,28 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	})
 
 	return nil
+}
+
+// reportedRunning opens a claimed runtime and tells the journal its program runs, under the host's name for the
+// execution, as a start made through the start socket is told: a start nobody reports running stays on Starting for
+// its whole life, whatever its session does.
+func reportedRunning(open serving.Opener, report func(host.StartReport)) serving.Opener {
+	return func(runtimeID string, prepared host.PreparedStart) (serving.Runtime, error) {
+		runtime, err := open(runtimeID, prepared)
+		if err != nil {
+			return nil, err
+		}
+		report(host.StartReport{
+			StartKey: prepared.Claim.StartKey, Kind: host.ReportRunning, Execution: executionOf(runtimeID, runtime),
+		})
+
+		return runtime, nil
+	}
+}
+
+// executionOf is the host's name for one run of a runtime's program: the runtime and its process generation.
+func executionOf(runtimeID string, runtime serving.Runtime) string {
+	return runtimeID + ":" + strconv.Itoa(runtime.Generation())
 }
 
 // answerProjectRead reads what the journal asked for and reports it once; a report that fails is logged and left for

@@ -332,6 +332,30 @@ func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T
 	}
 }
 
+func TestAClaimedRuntimeThatOpensIsReportedRunningUnderItsExecutionAndOneThatDoesNotIsNot(t *testing.T) {
+	var reported []host.StartReport
+	report := func(report host.StartReport) { reported = append(reported, report) }
+	prepared := host.PreparedStart{Claim: client.ClaimedStart{StartKey: "start-1"}}
+	opening := reportedRunning(func(string, host.PreparedStart) (serving.Runtime, error) {
+		return drivers.NewHeadlessDriver(drivers.HeadlessRuntime{}, 3), nil
+	}, report)
+	failing := reportedRunning(func(string, host.PreparedStart) (serving.Runtime, error) {
+		return nil, host.ErrContainerNotCreated
+	}, report)
+
+	if _, err := opening("runtime-1", prepared); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := failing("runtime-2", prepared); err == nil {
+		t.Fatal("a runtime that did not open gave no error")
+	}
+
+	want := host.StartReport{StartKey: "start-1", Kind: host.ReportRunning, Execution: "runtime-1:3"}
+	if len(reported) != 1 || reported[0] != want {
+		t.Fatalf("the starts were reported %+v", reported)
+	}
+}
+
 // A start the host cannot carry out is refused by name, with the reason and that no process was made, so the journal
 // ends the session instead of leaving it waiting: here a driver without a terminal handed a container with one.
 func TestScenarioAStartTheHostCannotCarryOutIsReportedRefusedWithItsReason(t *testing.T) {
