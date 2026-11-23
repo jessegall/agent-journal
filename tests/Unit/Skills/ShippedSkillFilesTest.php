@@ -77,7 +77,7 @@ final class ShippedSkillFilesTest extends TestCase
 
         yield 'Reminders' => [
             RemindersSkill::class,
-            'Reminders are things to do at a time or on an interval.',
+            'Reminders are things to do at a time.',
             'Reminders',
             'domain/Reminders/resources/skills/reminders.md',
         ];

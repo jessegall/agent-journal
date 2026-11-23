@@ -40,6 +40,7 @@ use Domain\Documents\Providers\DocumentsServiceProvider;
 use Domain\Helpers\Providers\HelpersServiceProvider;
 use Domain\Memory\Providers\MemoryServiceProvider;
 use Domain\Plans\Providers\PlansServiceProvider;
+use Domain\Reminders\Providers\RemindersServiceProvider;
 use Domain\Rules\Providers\RulesServiceProvider;
 use Domain\Sequences\Providers\SequencesServiceProvider;
 use Domain\Tasks\Providers\TasksServiceProvider;
@@ -81,6 +82,7 @@ return [
     ChatServiceProvider::class,
     HelpersServiceProvider::class,
     MemoryServiceProvider::class,
+    RemindersServiceProvider::class,
     RulesServiceProvider::class,
     SequencesServiceProvider::class,
     AccessServiceProvider::class,

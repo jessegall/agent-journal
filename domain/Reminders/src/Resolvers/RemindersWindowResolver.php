@@ -5,27 +5,63 @@ declare(strict_types=1);
 namespace Domain\Reminders\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
+use App\Exceptions\ActorNotAllowed;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\ListPaging;
+use Domain\Reminders\Contracts\ReminderResolver;
+use Domain\Reminders\Http\Requests\RemindersRequest;
+use Domain\Reminders\Values\ReminderCard;
 
 /**
- * The reminders window: no read provider that a user may see exists yet, so it says reminders are unavailable rather
- * than showing an empty list that would look like no reminders.
+ * The reminders window: the caller's own reminders with their due time and status, No reminders when there are none,
+ * and Reminders unavailable for a caller who may not read them.
  */
 final readonly class RemindersWindowResolver implements PageResolver
 {
+    public function __construct(private ReminderResolver $reminders, private RemindersRequest $request) {}
+
     public function read(): DeclaredLayoutData
+    {
+        try {
+            $page = $this->reminders->own($this->request->pageNumber());
+        } catch (ActorNotAllowed) {
+            return $this->window(LayoutPartData::notice(
+                'unavailable',
+                'empty',
+                'Reminders unavailable',
+                'You may not read reminders here.',
+            ));
+        }
+
+        if ($page->cards === []) {
+            return $this->window(LayoutPartData::notice('empty', 'empty', 'No reminders'));
+        }
+
+        return $this->window(
+            LayoutPartData::collection('reminders', 'list', array_map(
+                fn (ReminderCard $card) => LayoutRowData::from([
+                    'key' => $card->id,
+                    'label' => $card->title,
+                    'trailing' => [
+                        LayoutPartData::time('due', 'Due', $card->dueAt->toIso8601String()),
+                        LayoutPartData::badge('status', $card->status->label()),
+                    ],
+                ]),
+                $page->cards,
+            )),
+            ...ListPaging::numbered($page->page, $page->lastPage())->parts(),
+        );
+    }
+
+    private function window(LayoutPartData ...$parts): DeclaredLayoutData
     {
         return DeclaredLayoutData::of(LayoutPartData::box(
             'reminders',
             'stack',
             LayoutPartData::text('title', 'Reminders', 'heading'),
-            LayoutPartData::notice(
-                'unavailable',
-                'empty',
-                'Reminders unavailable',
-                'No read of reminders is available to you here yet.',
-            ),
+            ...$parts,
         ));
     }
 }
