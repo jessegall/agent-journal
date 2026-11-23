@@ -1,41 +1,66 @@
 {
-    "$schema": "../../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "call",
-        "where": [
-            {
-                "nameIn": [
-                    "hrtime",
-                    "microtime"
-                ]
-            },
-            {
-                "testCode": true
-            },
-            {
-                "inside": {
-                    "all": [
-                        {
-                            "is": "call"
-                        },
-                        {
-                            "nameLike": "assert*"
-                        }
-                    ]
-                }
-            }
-        ],
-        "reject": [
-            {
-                "file": "tests/Support/TimeLimits/**"
-            }
-        ]
-    },
     "sin": {
         "description": "A test asserts on elapsed time, which passes or fails with the machine's load.",
         "name": "elapsed-time-assertion",
         "rule": "Assert counts, states and refusals; a ceiling on a test's run belongs in #[TimeLimit].",
         "skill": "bounded-reads"
+    },
+    "find": {
+        "select": "call",
+        "as": "c",
+        "where": [
+            "and",
+            [
+                "in",
+                "$c.callee.name",
+                "hrtime",
+                "microtime"
+            ],
+            [
+                "or",
+                "$c.file.test",
+                [
+                    "matchesText",
+                    "$c.file.path",
+                    "Test\\.php$"
+                ]
+            ],
+            [
+                "not",
+                [
+                    "matchesText",
+                    "$c.file.path",
+                    "(^|/)tests/Support/TimeLimits/"
+                ]
+            ],
+            [
+                "some",
+                [
+                    "ancestors",
+                    "$c"
+                ],
+                "a",
+                [
+                    "and",
+                    [
+                        "is",
+                        "$a",
+                        "call"
+                    ],
+                    [
+                        "startsWith",
+                        [
+                            "coalesce",
+                            "$a.callee.member.name",
+                            "$a.callee.name"
+                        ],
+                        "assert"
+                    ]
+                ]
+            ]
+        ],
+        "emit": "$c"
     }
 }

@@ -15,7 +15,11 @@ final class InlineCompositionOwner
     // @sin InlineCompositionDetector
     public function card(): SampleCard
     {
-        return SampleCard::of(new SampleTitle($this->title), new SampleSubtitle('revision 1'), new SampleButton('Open'));
+        return SampleCard::of(
+            new SampleTitle($this->title),
+            new SampleSubtitle('revision 1'),
+            new SampleButton('Open'),
+        );
     }
 
     // @sin InlineCompositionDetector
@@ -40,13 +44,21 @@ final readonly class OwnerCard
 
     public function __construct(string $title)
     {
-        $this->card = SampleCard::of(new SampleTitle($title), new SampleSubtitle('revision 1'), new SampleButton('Open'));
+        $this->card = SampleCard::of(
+            new SampleTitle($title),
+            new SampleSubtitle('revision 1'),
+            new SampleButton('Open'),
+        );
     }
 }
 
 final readonly class SampleCard
 {
-    private function __construct(public SampleTitle $title, public SampleSubtitle $subtitle, public SampleButton $button) {}
+    private function __construct(
+        public SampleTitle $title,
+        public SampleSubtitle $subtitle,
+        public SampleButton $button,
+    ) {}
 
     public static function of(SampleTitle $title, SampleSubtitle $subtitle, SampleButton $button): self
     {

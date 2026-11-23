@@ -4,34 +4,34 @@ declare(strict_types=1);
 
 namespace Samples\NameSaysKind;
 
-// @righteous DeclarationSaysKindDetector
+// @righteous NameSaysKindDetector
 final class TaskIndexLayout
 {
 }
 
-// @sin DeclarationSaysKindDetector
+// @sin NameSaysKindDetector
 enum OrderKind: string
 {
-    // @sin DeclarationSaysKindDetector
+    // @sin NameSaysKindDetector
     case PickupKind = 'pickup';
-    // @righteous DeclarationSaysKindDetector
+    // @righteous NameSaysKindDetector
     case Delivery = 'delivery';
 }
 
 final class Shipment
 {
-    // @sin DeclarationSaysKindDetector
+    // @sin NameSaysKindDetector
     public const string KIND_LABEL = 'label';
 
-    // @sin PropertySaysKindDetector
+    // @sin NameSaysKindDetector
     public string $kind = '';
 
-    // @righteous PropertySaysKindDetector
+    // @righteous NameSaysKindDetector
     public string $label = '';
 
     public function __construct(public string $type) {}
 
-    // @sin DeclarationSaysKindDetector
+    // @sin NameSaysKindDetector
     public function kindOf(string $name): string
     {
         // @sin NameSaysKindDetector
@@ -41,7 +41,7 @@ final class Shipment
         return $kindText.$this->type;
     }
 
-    // @righteous DeclarationSaysKindDetector
+    // @righteous NameSaysKindDetector
     public function typeOf(string $name): string
     {
         // @righteous NameSaysKindDetector

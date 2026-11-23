@@ -1,80 +1,187 @@
 {
-    "$schema": "../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "kind:Expr_StaticCall",
-        "where": [
-            {
-                "name": "from"
-            },
-            {
-                "of": "child:class",
-                "extendsAny": "Spatie\\LaravelData\\Data"
-            },
-            {
-                "argument": {
-                    "at": 0,
-                    "kind": "Expr_Array"
-                }
-            },
-            {
-                "count": {
-                    "descendant": {
-                        "all": [
-                            {
-                                "kind": "Expr_PropertyFetch"
-                            },
-                            {
-                                "of": "receiver",
-                                "isA": "Illuminate\\Database\\Eloquent\\Model"
-                            }
-                        ]
-                    },
-                    "atLeast": 2
-                }
-            }
-        ],
-        "reject": [
-            {
-                "inside": {
-                    "all": [
-                        {
-                            "is": "function"
-                        },
-                        {
-                            "hasModifier": "static"
-                        },
-                        {
-                            "child": {
-                                "all": [
-                                    {
-                                        "is": "parameter"
-                                    },
-                                    {
-                                        "position": "first"
-                                    },
-                                    {
-                                        "of": "parameterType",
-                                        "isA": "Illuminate\\Database\\Eloquent\\Model"
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-            {
-                "php": "inDataClass"
-            },
-            {
-                "testCode": true
-            }
-        ]
-    },
     "sin": {
         "description": "A Data object built field by field from a model's own values, at the place that holds the model.",
         "name": "data-from-model-fields",
         "rule": "Hand the model to one dedicated mapping, a static method whose first parameter is the model (DockSuggestion::from($this) with a from<Model> factory, or a mapping on a non-exported support class when the Data is exported), and let it say once how that model becomes the Data (user message 13565).",
         "skill": "php/spatie-data-hydration"
+    },
+    "find": {
+        "select": "call",
+        "as": "c",
+        "where": [
+            "and",
+            [
+                "=",
+                [
+                    "coalesce",
+                    "$c.callee.member.name",
+                    "$c.callee.name"
+                ],
+                "from"
+            ],
+            [
+                "=",
+                "$c.callee.form",
+                "static"
+            ],
+            [
+                "proven",
+                [
+                    "assignable",
+                    [
+                        "symbolOf",
+                        "$c.callee.subject"
+                    ],
+                    "Spatie\\LaravelData\\Data"
+                ]
+            ],
+            [
+                "is",
+                [
+                    "get",
+                    [
+                        "first",
+                        "$c.arguments"
+                    ],
+                    "value"
+                ],
+                "collection"
+            ],
+            [
+                "not",
+                "$c.file.test"
+            ],
+            [
+                ">=",
+                [
+                    "count",
+                    [
+                        "filter",
+                        [
+                            "descendants",
+                            "$c",
+                            "access"
+                        ],
+                        "p",
+                        [
+                            "and",
+                            [
+                                "=",
+                                "$p.form",
+                                "instance"
+                            ],
+                            [
+                                "or",
+                                [
+                                    "proven",
+                                    [
+                                        "assignable",
+                                        [
+                                            "typeOf",
+                                            "$p.subject"
+                                        ],
+                                        "Illuminate\\Database\\Eloquent\\Model"
+                                    ]
+                                ],
+                                [
+                                    "and",
+                                    [
+                                        "isSelf",
+                                        "$p.subject"
+                                    ],
+                                    [
+                                        "proven",
+                                        [
+                                            "assignable",
+                                            [
+                                                "symbolOf",
+                                                [
+                                                    "enclosing",
+                                                    "$p",
+                                                    "type"
+                                                ]
+                                            ],
+                                            "Illuminate\\Database\\Eloquent\\Model"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                2
+            ],
+            [
+                "not",
+                [
+                    "or",
+                    [
+                        "some",
+                        [
+                            "ancestors",
+                            "$c"
+                        ],
+                        "a",
+                        [
+                            "and",
+                            [
+                                "is",
+                                "$a",
+                                "function"
+                            ],
+                            [
+                                "has",
+                                "$a.modifiers",
+                                "static"
+                            ],
+                            [
+                                "proven",
+                                [
+                                    "assignable",
+                                    [
+                                        "typeOf",
+                                        [
+                                            "first",
+                                            "$a.parameters"
+                                        ]
+                                    ],
+                                    "Illuminate\\Database\\Eloquent\\Model"
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        "some",
+                        [
+                            "ancestors",
+                            "$c"
+                        ],
+                        "a",
+                        [
+                            "and",
+                            [
+                                "is",
+                                "$a",
+                                "type"
+                            ],
+                            [
+                                "proven",
+                                [
+                                    "assignable",
+                                    [
+                                        "symbolOf",
+                                        "$a"
+                                    ],
+                                    "Spatie\\LaravelData\\Data"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        "emit": "$c"
     }
 }

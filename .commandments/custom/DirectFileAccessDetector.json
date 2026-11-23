@@ -1,46 +1,121 @@
 {
-    "$schema": "../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "kind:Expr_FuncCall",
-        "where": [
-            {
-                "nameIn": [
-                    "file_get_contents", "file_put_contents", "file", "fopen", "readfile", "parse_ini_file",
-                    "is_file", "file_exists", "is_readable", "is_dir", "is_link", "readlink", "is_writable",
-                    "is_executable", "filemtime", "filesize", "fileperms", "stat", "lstat", "realpath", "glob",
-                    "scandir", "opendir", "mkdir", "rmdir", "unlink", "rename", "copy", "touch", "chmod",
-                    "symlink", "link", "tempnam", "hash_file", "md5_file", "sha1_file", "disk_free_space"
-                ]
-            }
-        ],
-        "reject": [
-            {
-                "file": "app/Files/**"
-            },
-            {
-                "fileMatches": "^app/Support/(CodeFiles|FileWriter|FolderWalker|LocalFiles|PathConfinement|PlaceRoots)\\.php$"
-            },
-            {
-                "file": "tests/**"
-            },
-            {
-                "argument": {
-                    "at": 0,
-                    "textLike": "php://*"
-                }
-            },
-            {
-                "inside": {
-                    "hasAnnotation": "App\\Attributes\\OutsideThePlaces"
-                }
-            }
-        ]
-    },
     "sin": {
         "description": "A PHP file function reads, lists, stats or writes the disk outside the Files funnel. The rule selects the language's own function-call kind (Expr_FuncCall), so a method or static call that shares the name ($linker->unlink(), Task::file()) never matches, and the names unlink, rename, file, copy, link and stat are judged too.",
         "name": "direct-file-access",
         "rule": "Read, list, stat and write files through App\\Contracts\\Files\\Files with a FilePath in its place; only the Files primitives (app/Support/LocalFiles and its kin, and app/Files until it moves) touch the disk, and a method the user settled as outside the places carries #[OutsideThePlaces]. The skill direct-file-access names the Files method for each function.",
         "skill": "direct-file-access"
+    },
+    "find": {
+        "select": "call",
+        "as": "c",
+        "where": [
+            "and",
+            [
+                "is",
+                "$c.callee",
+                "reference"
+            ],
+            [
+                "in",
+                "$c.callee.name",
+                "file_get_contents",
+                "file_put_contents",
+                "file",
+                "fopen",
+                "readfile",
+                "parse_ini_file",
+                "is_file",
+                "file_exists",
+                "is_readable",
+                "is_dir",
+                "is_link",
+                "readlink",
+                "is_writable",
+                "is_executable",
+                "filemtime",
+                "filesize",
+                "fileperms",
+                "stat",
+                "lstat",
+                "realpath",
+                "glob",
+                "scandir",
+                "opendir",
+                "mkdir",
+                "rmdir",
+                "unlink",
+                "rename",
+                "copy",
+                "touch",
+                "chmod",
+                "symlink",
+                "link",
+                "tempnam",
+                "hash_file",
+                "md5_file",
+                "sha1_file",
+                "disk_free_space"
+            ],
+            [
+                "not",
+                [
+                    "matchesText",
+                    "$c.file.path",
+                    "(^|/)(app/Files/|app/Support/(CodeFiles|FileWriter|FolderWalker|LocalFiles|PathConfinement|PlaceRoots)\\.php$|tests/)"
+                ]
+            ],
+            [
+                "not",
+                [
+                    "some",
+                    [
+                        "ancestors",
+                        "$c"
+                    ],
+                    "a",
+                    [
+                        "nonempty",
+                        [
+                            "annotated",
+                            "$a",
+                            "App\\Attributes\\OutsideThePlaces"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        "let": [
+            [
+                "target",
+                [
+                    "get",
+                    [
+                        "first",
+                        "$c.arguments"
+                    ],
+                    "value"
+                ]
+            ]
+        ],
+        "having": [
+            "not",
+            [
+                "proven",
+                [
+                    "startsWith",
+                    [
+                        "text",
+                        [
+                            "constant",
+                            "$target"
+                        ]
+                    ],
+                    "php://"
+                ]
+            ]
+        ],
+        "emit": "$c"
     }
 }

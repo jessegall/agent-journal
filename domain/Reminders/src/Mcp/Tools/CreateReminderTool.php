@@ -29,7 +29,9 @@ final class CreateReminderTool extends JournalWriteTool
     {
         return [
             'title' => $schema->string()->required(),
-            'due_at' => $schema->string()->description('The date and time it is due, such as 2026-11-24 09:00')->required(),
+            'due_at' => $schema->string()
+                ->description('The date and time it is due, such as 2026-11-24 09:00')
+                ->required(),
         ];
     }
 

@@ -51,7 +51,11 @@ final readonly class SequenceRunsShow
 
         return DetailPage::make($run->name)
             ->above(LayoutPartData::text('label', "sequence run {$run->number}", 'code'))
-            ->withFacts(LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => ucfirst($run->state->value)]))
+            ->withFacts(LayoutRowData::from([
+                'key' => 'state',
+                'label' => 'State',
+                'value' => ucfirst($run->state->value),
+            ]))
             ->withStanding(LayoutPartData::collection('steps', 'list', $steps));
     }
 

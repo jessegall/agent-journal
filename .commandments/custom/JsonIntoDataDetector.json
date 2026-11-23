@@ -1,50 +1,116 @@
 {
-    "$schema": "../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "kind:Expr_FuncCall",
-        "where": [
-            {
-                "name": "json_decode"
-            }
-        ],
-        "reject": [
-            {
-                "file": "app/Files/**"
-            },
-            {
-                "fileMatches": "^app/Support/(CodeFiles|FileWriter|FolderWalker|LocalFiles|PathConfinement|PlaceRoots)\\.php$"
-            },
-            {
-                "file": "tests/**"
-            },
-            {
-                "of": "closest:call",
-                "all": [
-                    {
-                        "nameIn": [
-                            "from",
-                            "collect",
-                            "validateAndCreate"
-                        ]
-                    },
-                    {
-                        "of": "child:class",
-                        "extendsAny": "Spatie\\LaravelData\\Data"
-                    }
-                ]
-            },
-            {
-                "inside": {
-                    "hasAnnotation": "App\\Attributes\\DecodesAnyJson"
-                }
-            }
-        ]
-    },
     "sin": {
         "description": "Decoded JSON is read as a loose array instead of a Data class that writes its shape down.",
         "name": "json-into-data",
         "rule": "Hand json_decode's result straight to a Spatie Data class's from(), collect() or validateAndCreate() and read its typed properties, never $decoded['key'] ?? fallback. A method decoding JSON whose keys are not ours to name carries #[DecodesAnyJson], allowed only where JsonIntoDataTest lists it.",
         "skill": "php/spatie-data"
+    },
+    "find": {
+        "select": "call",
+        "as": "c",
+        "where": [
+            "and",
+            [
+                "=",
+                "$c.callee.name",
+                "json_decode"
+            ],
+            [
+                "not",
+                [
+                    "matchesText",
+                    "$c.file.path",
+                    "(^|/)(app/Files/|app/Support/(CodeFiles|FileWriter|FolderWalker|LocalFiles|PathConfinement|PlaceRoots)\\.php$|tests/)"
+                ]
+            ],
+            [
+                "not",
+                [
+                    "and",
+                    [
+                        "exists",
+                        [
+                            "enclosing",
+                            "$c",
+                            "call"
+                        ]
+                    ],
+                    [
+                        "in",
+                        [
+                            "coalesce",
+                            "$c.callee.member.name",
+                            "$c.callee.name"
+                        ],
+                        "json_decode"
+                    ]
+                ]
+            ],
+            [
+                "not",
+                [
+                    "some",
+                    [
+                        "ancestors",
+                        "$c"
+                    ],
+                    "a",
+                    [
+                        "nonempty",
+                        [
+                            "annotated",
+                            "$a",
+                            "App\\Attributes\\DecodesAnyJson"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        "let": [
+            [
+                "outer",
+                [
+                    "enclosing",
+                    "$c",
+                    "call",
+                    "statement"
+                ]
+            ]
+        ],
+        "having": [
+            "not",
+            [
+                "and",
+                [
+                    "exists",
+                    "$outer"
+                ],
+                [
+                    "in",
+                    [
+                        "coalesce",
+                        "$outer.callee.member.name",
+                        "$outer.callee.name"
+                    ],
+                    "from",
+                    "collect",
+                    "validateAndCreate"
+                ],
+                [
+                    "proven",
+                    [
+                        "assignable",
+                        [
+                            "symbolOf",
+                            "$outer.callee.subject"
+                        ],
+                        "Spatie\\LaravelData\\Data"
+                    ]
+                ]
+            ]
+        ],
+        "emit": "$c"
     }
 }

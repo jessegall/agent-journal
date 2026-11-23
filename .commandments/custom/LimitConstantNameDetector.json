@@ -1,46 +1,72 @@
 {
-    "$schema": "../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "kind:Stmt_ClassConst",
-        "where": [
-            {
-                "any": [
-                    {
-                        "commentMatches": "(?i)\\bthe (most|longest|largest|highest|fewest|least)\\b"
-                    },
-                    {
-                        "descendant": {
-                            "resolvesLike": "*Limit"
-                        }
-                    }
-                ]
-            },
-            {
-                "child": {
-                    "all": [
-                        {
-                            "kind": "Const"
-                        },
-                        {
-                            "not": {
-                                "nameMatches": "(LIMIT|MAX|MAXIMUM|MINIMUM|MIN)$"
-                            }
-                        }
-                    ]
-                }
-            }
-        ],
-        "reject": [
-            {
-                "testCode": true
-            }
-        ]
-    },
     "sin": {
         "description": "A constant that holds a limit is named without the word limit.",
         "name": "limit-constant-name",
         "rule": "A constant that holds a maximum or minimum is named for what it is, a limit: TITLE_CHARACTER_LIMIT, PASS_LIMIT, never TITLE_CHARACTERS (users 10226, 10227).",
         "skill": "limit-constant-name"
+    },
+    "find": {
+        "select": "constant",
+        "as": "k",
+        "where": [
+            "and",
+            [
+                "not",
+                "$k.file.test"
+            ],
+            [
+                "some",
+                "$k.declarators",
+                "d",
+                [
+                    "not",
+                    [
+                        "matchesText",
+                        "$d.binding.name",
+                        "(LIMIT|MAX|MAXIMUM|MINIMUM|MIN)$"
+                    ]
+                ]
+            ],
+            [
+                "or",
+                [
+                    "some",
+                    [
+                        "commentsOf",
+                        "$k"
+                    ],
+                    "m",
+                    [
+                        "matchesText",
+                        "$m.text",
+                        "(?i)\\bthe (most|longest|largest|highest|fewest|least)\\b"
+                    ]
+                ],
+                [
+                    "some",
+                    [
+                        "descendants",
+                        "$k",
+                        "reference"
+                    ],
+                    "r",
+                    [
+                        "endsWith",
+                        [
+                            "coalesce",
+                            [
+                                "symbolOf",
+                                "$r"
+                            ],
+                            ""
+                        ],
+                        "Limit"
+                    ]
+                ]
+            ]
+        ],
+        "emit": "$k"
     }
 }

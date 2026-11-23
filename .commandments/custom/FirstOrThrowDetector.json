@@ -1,35 +1,46 @@
 {
-    "$schema": "../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "kind:Expr_BinaryOp_Coalesce",
-        "where": [
-            {
-                "child": {
-                    "field": "left",
-                    "all": [
-                        {
-                            "kind": "Expr_MethodCall"
-                        },
-                        {
-                            "nameIn": ["first", "find"]
-                        }
-                    ]
-                }
-            },
-            {
-                "child": {
-                    "field": "right",
-                    "kind": "Expr_Throw"
-                }
-            }
-        ],
-        "reject": []
-    },
     "sin": {
         "description": "A query's first() falls back to a throw through ?? instead of saying so in the query.",
         "name": "first-or-throw",
         "rule": "A query that throws when it finds no row says so in the query: ->firstOr(fn () => throw TaskMissing::forId($id)), or ->firstOrFail() when Laravel's own exception is wanted; never ->first() ?? throw (rule 49).",
         "skill": "first-or-throw"
+    },
+    "find": {
+        "select": "fallback",
+        "as": "f",
+        "where": [
+            "and",
+            [
+                "is",
+                "$f.subject",
+                "call"
+            ],
+            [
+                "=",
+                "$f.subject.callee.form",
+                "instance"
+            ],
+            [
+                "in",
+                [
+                    "coalesce",
+                    "$f.subject.callee.member.name",
+                    "$f.subject.callee.name"
+                ],
+                "first",
+                "find"
+            ],
+            [
+                "is",
+                [
+                    "defaultOf",
+                    "$f"
+                ],
+                "throw"
+            ]
+        ],
+        "emit": "$f"
     }
 }

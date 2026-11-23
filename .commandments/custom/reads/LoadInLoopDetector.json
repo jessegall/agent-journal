@@ -1,69 +1,82 @@
 {
-    "$schema": "../../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "call",
-        "where": [
-            {
-                "nameIn": [
-                    "find",
-                    "findOrFail",
-                    "first",
-                    "firstOrFail",
-                    "sole",
-                    "firstWhere"
-                ]
-            },
-            {
-                "withinLoop": true
-            },
-            {
-                "any": [
-                    {
-                        "resolvesLike": "Illuminate\\Database\\*",
-                        "of": "child:var"
-                    },
-                    {
-                        "resolvesLike": "App\\*\\Models\\*",
-                        "of": "child:var"
-                    },
-                    {
-                        "resolvesLike": "Domain\\*\\Models\\*",
-                        "of": "child:var"
-                    },
-                    {
-                        "resolvesLike": "App\\*\\Models\\*",
-                        "of": "child:class"
-                    },
-                    {
-                        "resolvesLike": "Domain\\*\\Models\\*",
-                        "of": "child:class"
-                    },
-                    {
-                        "descendant": {
-                            "all": [
-                                {
-                                    "is": "call"
-                                },
-                                {
-                                    "name": "query"
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        ],
-        "reject": [
-            {
-                "testCode": true
-            }
-        ]
-    },
     "sin": {
         "description": "A row is read once per item of a loop.",
         "name": "load-in-loop",
         "rule": "Read every row the loop needs in one query before the loop (whereKey, whereIn, with), or use readInChunks.",
         "skill": "bounded-reads"
+    },
+    "find": {
+        "select": "call",
+        "as": "c",
+        "where": [
+            "and",
+            [
+                "in",
+                [
+                    "coalesce",
+                    "$c.callee.member.name",
+                    "$c.callee.name"
+                ],
+                "find",
+                "findOrFail",
+                "first",
+                "firstOrFail",
+                "sole",
+                "firstWhere"
+            ],
+            [
+                "exists",
+                [
+                    "enclosing",
+                    "$c",
+                    "loop",
+                    "function"
+                ]
+            ],
+            [
+                "not",
+                "$c.file.test"
+            ],
+            [
+                "or",
+                [
+                    "matchesText",
+                    [
+                        "symbolOf",
+                        "$c"
+                    ],
+                    "^(Illuminate\\\\Database\\\\|(App|Domain)\\\\.*\\\\Models\\\\)"
+                ],
+                [
+                    "matchesText",
+                    [
+                        "symbolOf",
+                        "$c.callee.subject"
+                    ],
+                    "^(App|Domain)\\\\.*\\\\Models\\\\"
+                ],
+                [
+                    "some",
+                    [
+                        "descendants",
+                        "$c",
+                        "call"
+                    ],
+                    "d",
+                    [
+                        "=",
+                        [
+                            "coalesce",
+                            "$d.callee.member.name",
+                            "$d.callee.name"
+                        ],
+                        "query"
+                    ]
+                ]
+            ]
+        ],
+        "emit": "$c"
     }
 }

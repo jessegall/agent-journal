@@ -1,73 +1,129 @@
 {
-    "$schema": "../../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "call",
-        "where": [
-            {
-                "nameIn": [
-                    "table",
-                    "select",
-                    "selectOne",
-                    "cursor"
-                ]
-            },
-            {
-                "resolves": "Illuminate\\Support\\Facades\\DB",
-                "of": "child:class"
-            }
-        ],
-        "reject": [
-            {
-                "file": "**/migrations/**"
-            },
-            {
-                "file": "**/Migrations/**"
-            },
-            {
-                "inside": {
-                    "all": [
-                        {
-                            "is": "call"
-                        },
-                        {
-                            "nameIn": [
-                                "insert",
-                                "insertGetId",
-                                "insertOrIgnore",
-                                "update",
-                                "updateOrInsert",
-                                "upsert",
-                                "delete",
-                                "truncate"
-                            ]
-                        }
-                    ]
-                }
-            },
-            {
-                "argument": {
-                    "at": 0,
-                    "textMatches": "(?i)^(information_schema\\.|pg_|select (1|2|3|pg_)|explain )"
-                }
-            },
-            {
-                "file": "tests/Fixtures/Boundary/**"
-            },
-            {
-                "argument": {
-                    "at": 0,
-                    "descendant": {
-                        "textMatches": "(?i)^explain "
-                    }
-                }
-            }
-        ]
-    },
     "sin": {
         "description": "A table is read through the DB facade instead of its model.",
         "name": "raw-table-read",
         "rule": "Read a table only through its Eloquent model, its scopes and its bounded reads (rule 25). Not a read: a raw write a test uses to forge a row the model forbids, and a query of the database's own catalogue (information_schema, pg_*, EXPLAIN, a bare select) that reads no model's table.",
         "skill": "bounded-reads"
+    },
+    "find": {
+        "select": "call",
+        "as": "c",
+        "where": [
+            "and",
+            [
+                "in",
+                [
+                    "coalesce",
+                    "$c.callee.member.name",
+                    "$c.callee.name"
+                ],
+                "table",
+                "select",
+                "selectOne",
+                "cursor"
+            ],
+            [
+                "=",
+                [
+                    "symbolOf",
+                    "$c.callee.subject"
+                ],
+                "Illuminate\\Support\\Facades\\DB"
+            ],
+            [
+                "not",
+                [
+                    "matchesText",
+                    "$c.file.path",
+                    "(^|/)([Mm]igrations/|tests/Fixtures/Boundary/)"
+                ]
+            ],
+            [
+                "not",
+                [
+                    "some",
+                    [
+                        "ancestors",
+                        "$c"
+                    ],
+                    "a",
+                    [
+                        "and",
+                        [
+                            "is",
+                            "$a",
+                            "call"
+                        ],
+                        [
+                            "in",
+                            [
+                                "coalesce",
+                                "$a.callee.member.name",
+                                "$a.callee.name"
+                            ],
+                            "insert",
+                            "insertGetId",
+                            "insertOrIgnore",
+                            "update",
+                            "updateOrInsert",
+                            "upsert",
+                            "delete",
+                            "truncate"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        "let": [
+            [
+                "sql",
+                [
+                    "get",
+                    [
+                        "first",
+                        "$c.arguments"
+                    ],
+                    "value"
+                ]
+            ]
+        ],
+        "having": [
+            "not",
+            [
+                "some",
+                [
+                    "append",
+                    [
+                        "list",
+                        "$sql"
+                    ],
+                    [
+                        "descendants",
+                        "$sql",
+                        "literal"
+                    ]
+                ],
+                "l",
+                [
+                    "matchesText",
+                    [
+                        "text",
+                        [
+                            "coalesce",
+                            [
+                                "constant",
+                                "$l"
+                            ],
+                            "$l.text",
+                            ""
+                        ]
+                    ],
+                    "(?i)^(information_schema\\.|pg_|select (1|2|3|pg_)|explain )"
+                ]
+            ]
+        ],
+        "emit": "$c"
     }
 }

@@ -1,19 +1,31 @@
 {
-    "$schema": "../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "type-declaration",
-        "where": [
-            {
-                "nameMatches": "[a-z](What|When|Where|Which|Who|Whose|That|If|Than|Because|Until|While|Whether)[A-Z]|^(What|When|Where|Which|Who|Whose|That|If|Than|Because|Until|While|Whether)[A-Z]"
-            }
-        ],
-        "reject": []
-    },
     "sin": {
         "description": "A class, interface, enum or trait name is a sentence or clause instead of a short name.",
         "name": "type-name-is-sentence",
         "rule": "Name a type with a noun or noun phrase, never a clause such as ChangesWhatUsersSee (rule 23).",
         "skill": "type-name-is-sentence"
+    },
+    "find": {
+        "select": "type",
+        "as": "t",
+        "where": [
+            "isSentence",
+            "$t"
+        ],
+        "emit": "$t"
+    },
+    "definitions": {
+        "isSentence": {
+            "args": [
+                "t"
+            ],
+            "expr": [
+                "matchesText",
+                "$t.name",
+                "[a-z](What|When|Where|Which|Who|Whose|That|If|Than|Because|Until|While|Whether)[A-Z]|^(What|When|Where|Which|Who|Whose|That|If|Than|Because|Until|While|Whether)[A-Z]"
+            ]
+        }
     }
 }

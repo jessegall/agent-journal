@@ -26,9 +26,9 @@ final readonly class BrowserInputCapabilities
         return new self(false, false, false, false, false);
     }
 
-    public function carriesOut(TerminalInputType $kind): bool
+    public function carriesOut(TerminalInputType $type): bool
     {
-        return match ($kind) {
+        return match ($type) {
             TerminalInputType::Text => $this->text,
             TerminalInputType::Key => $this->text && $this->keys,
             TerminalInputType::Paste => $this->text && $this->paste,

@@ -41,7 +41,10 @@ final readonly class ProfilesIndex
             ListEmpty::informing('No profiles yet.', 'Profiles appear here once an owner activates them.'),
         )
             ->counting(count($profiles))
-            ->withReader(LayoutBackData::from(['href' => route('accounts.profiles', [], false), 'label' => 'Profiles']), ...$reader)
+            ->withReader(
+                LayoutBackData::from(['href' => route('accounts.profiles', [], false), 'label' => 'Profiles']),
+                ...$reader,
+            )
             ->layout();
     }
 }

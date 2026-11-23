@@ -1,48 +1,82 @@
 {
-    "$schema": "../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "tags": ["advisory"],
-    "find": {
-        "select": "call",
-        "where": [
-            {
-                "any": [
-                    {"file": "**/Handlers/**"},
-                    {"file": "**/Listeners/**"},
-                    {"file": "**/samples/WorkStackDecision.php"}
-                ]
-            },
-            {
-                "any": [
-                    {
-                        "all": [
-                            {"kind": "Expr_StaticCall"},
-                            {"resolvesLike": "*\\States\\Support\\Working*StateReference", "of": "child:class"}
-                        ]
-                    },
-                    {
-                        "all": [
-                            {"nameIn": ["current", "currentRecord", "pruneCurrent", "push", "pushFor", "offerFor"]},
-                            {"resolves": "App\\Contracts\\Actors\\ActorWorkStacks", "of": "child:var"}
-                        ]
-                    }
-                ]
-            }
-        ],
-        "reject": [
-            {"file": "domain/Tasks/src/Listeners/PushTaskState.php"},
-            {"file": "domain/Plans/src/Listeners/PushPlanState.php"},
-            {"file": "domain/Plans/src/Listeners/PushPlanReviewState.php"},
-            {"file": "domain/Sequences/src/Listeners/PushSequenceState.php"},
-            {"file": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php"},
-            {"file": "app/Commands/AskSupervisor/AskSupervisorHandler.php"},
-            {"file": "tests/**"}
-        ]
-    },
     "sin": {
         "name": "work-stack-decision",
         "description": "A handler or listener reads the current work or puts work on a stack itself. Advisory: a push is not proof of misplaced behaviour, and a dynamic wrapper is missed. The documented owners are exempt: the start listeners of tasks, plans, plan reviews and sequences activate their first frame, the explicit resume activates its exact run, an ask names the work it is about, message recovery and the incoming work list recover held work, and ask attention coordinates asks.",
         "rule": "A handler changes domain truth and a state answers with the commands the engine runs; only the documented owners activate, recover or coordinate frames. Review the finding with the owner of the work stack.",
         "skill": "work-stack-decision"
+    },
+    "find": {
+        "select": "call",
+        "as": "c",
+        "where": [
+            "and",
+            [
+                "matchesText",
+                "$c.file.path",
+                "(/Handlers/|/Listeners/|samples/WorkStackDecision\\.php$)"
+            ],
+            [
+                "not",
+                [
+                    "matchesText",
+                    "$c.file.path",
+                    "(^|/)(tests/|domain/Tasks/src/Listeners/PushTaskState\\.php$|domain/Plans/src/Listeners/PushPlan(Review)?State\\.php$|domain/Sequences/src/Listeners/PushSequenceState\\.php$|domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler\\.php$|app/Commands/AskSupervisor/AskSupervisorHandler\\.php$)"
+                ]
+            ],
+            [
+                "or",
+                [
+                    "and",
+                    [
+                        "=",
+                        "$c.callee.form",
+                        "static"
+                    ],
+                    [
+                        "matchesText",
+                        [
+                            "coalesce",
+                            [
+                                "symbolOf",
+                                "$c.callee.subject"
+                            ],
+                            ""
+                        ],
+                        "\\\\States\\\\Support\\\\Working.*StateReference$"
+                    ]
+                ],
+                [
+                    "and",
+                    [
+                        "in",
+                        [
+                            "coalesce",
+                            "$c.callee.member.name",
+                            "$c.callee.name"
+                        ],
+                        "current",
+                        "currentRecord",
+                        "pruneCurrent",
+                        "push",
+                        "pushFor",
+                        "offerFor"
+                    ],
+                    [
+                        "proven",
+                        [
+                            "assignable",
+                            [
+                                "typeOf",
+                                "$c.callee.subject"
+                            ],
+                            "App\\Contracts\\Actors\\ActorWorkStacks"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        "emit": "$c"
     }
 }

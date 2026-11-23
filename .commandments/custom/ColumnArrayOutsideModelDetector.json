@@ -1,91 +1,173 @@
 {
-    "$schema": "../rule.schema.json",
+    "$schema": "commandments:neutral-rule/v2",
     "engine": "php",
-    "find": {
-        "select": "call",
-        "where": [
-            {
-                "nameIn": [
-                    "create",
-                    "make",
-                    "forceCreate",
-                    "firstOrCreate",
-                    "updateOrCreate"
-                ]
-            },
-            {
-                "argument": {
-                    "at": 0,
-                    "kind": "Expr_Array"
-                }
-            },
-            {
-                "any": [
-                    {
-                        "of": "receiver",
-                        "all": [
-                            {
-                                "name": "query"
-                            },
-                            {
-                                "of": "child:class",
-                                "isA": "Illuminate\\Database\\Eloquent\\Model"
-                            }
-                        ]
-                    },
-                    {
-                        "of": "child:class",
-                        "isA": "Illuminate\\Database\\Eloquent\\Model"
-                    }
-                ]
-            }
-        ],
-        "reject": [
-            {
-                "inside": {
-                    "all": [
-                        {
-                            "is": "type-declaration"
-                        },
-                        {
-                            "extendsAny": "Illuminate\\Database\\Eloquent\\Model"
-                        }
-                    ]
-                }
-            },
-            {
-                "inside": {
-                    "all": [
-                        {
-                            "is": "type-declaration"
-                        },
-                        {
-                            "extendsAny": "Illuminate\\Database\\Eloquent\\Factories\\Factory"
-                        }
-                    ]
-                }
-            },
-            {
-                "file": "tests/Fixtures/Models/Shop/Calls/**"
-            },
-            {
-                "inside": {
-                    "all": [
-                        {
-                            "is": "call"
-                        },
-                        {
-                            "name": "assertThrows"
-                        }
-                    ]
-                }
-            }
-        ]
-    },
     "sin": {
         "description": "A row built from a column array outside its own model: Model::create([...]) or ->query()->create([...]) at a call site.",
         "name": "column-array-outside-model",
         "rule": "A model makes its own rows: call its named static constructor, which takes values and objects and maps them to its columns (rule 40).",
         "skill": "php/laravel-idioms"
+    },
+    "find": {
+        "select": "call",
+        "as": "c",
+        "where": [
+            "and",
+            [
+                "in",
+                [
+                    "coalesce",
+                    "$c.callee.member.name",
+                    "$c.callee.name"
+                ],
+                "create",
+                "make",
+                "forceCreate",
+                "firstOrCreate",
+                "updateOrCreate"
+            ],
+            [
+                "is",
+                [
+                    "get",
+                    [
+                        "first",
+                        "$c.arguments"
+                    ],
+                    "value"
+                ],
+                "collection"
+            ],
+            [
+                "or",
+                [
+                    "and",
+                    [
+                        "=",
+                        "$c.callee.form",
+                        "static"
+                    ],
+                    [
+                        "proven",
+                        [
+                            "assignable",
+                            [
+                                "symbolOf",
+                                "$c.callee.subject"
+                            ],
+                            "Illuminate\\Database\\Eloquent\\Model"
+                        ]
+                    ]
+                ],
+                [
+                    "and",
+                    [
+                        "is",
+                        "$c.callee.subject",
+                        "call"
+                    ],
+                    [
+                        "=",
+                        [
+                            "coalesce",
+                            "$c.callee.subject.callee.member.name",
+                            "$c.callee.subject.callee.name"
+                        ],
+                        "query"
+                    ],
+                    [
+                        "proven",
+                        [
+                            "assignable",
+                            [
+                                "symbolOf",
+                                "$c.callee.subject.callee.subject"
+                            ],
+                            "Illuminate\\Database\\Eloquent\\Model"
+                        ]
+                    ]
+                ]
+            ],
+            [
+                "not",
+                [
+                    "some",
+                    [
+                        "ancestors",
+                        "$c"
+                    ],
+                    "a",
+                    [
+                        "and",
+                        [
+                            "is",
+                            "$a",
+                            "type"
+                        ],
+                        [
+                            "or",
+                            [
+                                "proven",
+                                [
+                                    "assignable",
+                                    [
+                                        "symbolOf",
+                                        "$a"
+                                    ],
+                                    "Illuminate\\Database\\Eloquent\\Model"
+                                ]
+                            ],
+                            [
+                                "proven",
+                                [
+                                    "assignable",
+                                    [
+                                        "symbolOf",
+                                        "$a"
+                                    ],
+                                    "Illuminate\\Database\\Eloquent\\Factories\\Factory"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                "not",
+                [
+                    "matchesText",
+                    "$c.file.path",
+                    "(^|/)tests/Fixtures/Models/Shop/Calls/"
+                ]
+            ],
+            [
+                "not",
+                [
+                    "some",
+                    [
+                        "ancestors",
+                        "$c"
+                    ],
+                    "a",
+                    [
+                        "and",
+                        [
+                            "is",
+                            "$a",
+                            "call"
+                        ],
+                        [
+                            "in",
+                            [
+                                "coalesce",
+                                "$a.callee.member.name",
+                                "$a.callee.name"
+                            ],
+                            "assertThrows"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        "emit": "$c"
     }
 }
