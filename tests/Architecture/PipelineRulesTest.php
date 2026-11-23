@@ -11,6 +11,7 @@ use App\Support\PipelineAdapter;
 use App\Support\PipelineRunner;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
+use Illuminate\Contracts\Container\Container;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -69,13 +70,56 @@ final class PipelineRulesTest extends TestCase
         foreach (self::classes() as $class) {
             $type = Reflector::of($class);
             $isAdapter = $type->is(PipelineAdapter::class);
+            $isPipe = $type->is(Pipe::class);
 
-            if ($type->isSubclassOf(Pipe::class) && ! $isAdapter && self::reachesPipelines($class, [])) {
+            if ($isPipe && ! $isAdapter && self::reachesPipelines($class, [])) {
                 $running[] = $class;
             }
         }
 
         $this->assertSame([], $running);
+    }
+
+    /**
+     * The runner builds a pipe once and keeps it, so under a long-lived server a pipe outlives the request it was built
+     * in. A container it was given then is that first request's, or the worker's, and what it makes from it belongs to
+     * no request in hand: a pipe asks the container of the moment instead (Container::getInstance()).
+     */
+    public function test_no_pipe_keeps_a_container(): void
+    {
+        $keeping = [];
+
+        foreach (self::classes() as $class) {
+            if (Reflector::of($class)->is(Pipe::class) && self::takesAContainer($class)) {
+                $keeping[] = $class;
+            }
+        }
+
+        $this->assertSame([], $keeping);
+    }
+
+    /**
+     * @param  class-string  $class
+     */
+    private static function takesAContainer(string $class): bool
+    {
+        $parameters = Reflector::of($class)->constructor()
+            ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+            ->getOrElse([]);
+
+        foreach ($parameters as $parameter) {
+            $isContainer = $parameter->type()
+                ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin())
+                ->flatMap(fn (DeclaredType $declared) => Reflector::find($declared->name()))
+                ->filter(fn (Reflector $given) => $given->is(Container::class))
+                ->isDefined();
+
+            if ($isContainer) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
