@@ -23,7 +23,11 @@ final readonly class EditDocumentController
 
         $command = match ($call->mode) {
             'section' => new EditDocumentCommand($target, (string) $call->section, $call->body, $call->uploadId),
-            'text' => new ReplaceDocumentTextCommand($target, (string) $call->originalText, (string) $call->replacementText),
+            'text' => new ReplaceDocumentTextCommand(
+                $target,
+                (string) $call->originalText,
+                (string) $call->replacementText,
+            ),
             'details' => new ChangeDocumentDetailsCommand($target, (string) $call->title, (string) $call->abstract),
             default => new ReplaceDocumentBodyCommand($target, (string) $call->body),
         };

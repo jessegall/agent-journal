@@ -36,36 +36,60 @@ interface SettingCommands
     /**
      * @throws SettingHandleUnknown
      */
-    public function string(StringSetting $setting, string $settingInput, int $expectedRevision): SetStringSettingCommand;
+    public function string(
+        StringSetting $setting,
+        string $settingInput,
+        int $expectedRevision,
+    ): SetStringSettingCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function boolean(BooleanSetting $setting, bool $settingInput, int $expectedRevision): SetBooleanSettingCommand;
+    public function boolean(
+        BooleanSetting $setting,
+        bool $settingInput,
+        int $expectedRevision,
+    ): SetBooleanSettingCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function integer(IntegerSetting $setting, int $settingInput, int $expectedRevision): SetIntegerSettingCommand;
+    public function integer(
+        IntegerSetting $setting,
+        int $settingInput,
+        int $expectedRevision,
+    ): SetIntegerSettingCommand;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function decimal(DecimalSetting $setting, Decimal $settingInput, int $expectedRevision): SetDecimalSettingCommand;
+    public function decimal(
+        DecimalSetting $setting,
+        Decimal $settingInput,
+        int $expectedRevision,
+    ): SetDecimalSettingCommand;
 
     /**
      * @param  ChoiceSetting<string>  $setting
      *
      * @throws SettingHandleUnknown
      */
-    public function stringChoice(ChoiceSetting $setting, string $settingInput, int $expectedRevision): SetStringChoiceCommand;
+    public function stringChoice(
+        ChoiceSetting $setting,
+        string $settingInput,
+        int $expectedRevision,
+    ): SetStringChoiceCommand;
 
     /**
      * @param  ChoiceSetting<int>  $setting
      *
      * @throws SettingHandleUnknown
      */
-    public function integerChoice(ChoiceSetting $setting, int $settingInput, int $expectedRevision): SetIntegerChoiceCommand;
+    public function integerChoice(
+        ChoiceSetting $setting,
+        int $settingInput,
+        int $expectedRevision,
+    ): SetIntegerChoiceCommand;
 
     /**
      * @template TEnum of BackedEnum
@@ -76,7 +100,11 @@ interface SettingCommands
      * @throws SettingHandleUnknown
      * @throws SettingValueInvalid
      */
-    public function enumString(EnumSetting $setting, BackedEnum $settingInput, int $expectedRevision): SetStringChoiceCommand;
+    public function enumString(
+        EnumSetting $setting,
+        BackedEnum $settingInput,
+        int $expectedRevision,
+    ): SetStringChoiceCommand;
 
     /**
      * @template TEnum of BackedEnum

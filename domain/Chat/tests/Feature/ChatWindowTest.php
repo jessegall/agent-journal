@@ -183,7 +183,9 @@ final class ChatWindowTest extends TestCase
         $this->startRequestAs($this->session->agent_id, $this->session->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
-        return $this->app->make(CommandBus::class)->run(new AskMessageCommand($this->agentInboxId, $this->ownInboxId, $body));
+        return $this->app->make(CommandBus::class)->run(
+            new AskMessageCommand($this->agentInboxId, $this->ownInboxId, $body),
+        );
     }
 
     private function stored(string $messageId): Message

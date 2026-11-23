@@ -145,7 +145,11 @@ final readonly class GatewaySettingsResolver implements PageResolver
             'section',
             LayoutPartData::text('heading', 'Disabling revokes these shares:', 'muted'),
             LayoutPartData::collection('shares', 'list', array_map(
-                fn (RootShareData $share) => new LayoutRowData($share->id, "Share {$share->number}", $share->state->value),
+                fn (RootShareData $share) => new LayoutRowData(
+                    $share->id,
+                    "Share {$share->number}",
+                    $share->state->value,
+                ),
                 $revision->dependentShares,
             )),
         );

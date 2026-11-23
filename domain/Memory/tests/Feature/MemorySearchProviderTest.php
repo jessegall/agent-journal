@@ -41,7 +41,12 @@ final class MemorySearchProviderTest extends TestCase
 
     public function test_an_actor_finds_its_own_memory_by_its_words_and_never_another_actors(): void
     {
-        $own = Memory::create(new ActorIdentity(ActorType::User, self::OWNER_ID), self::WORDS.' after the tests pass', 5);
+        $own = Memory::create(
+            new ActorIdentity(ActorType::User, self::OWNER_ID),
+            self::WORDS.' after the tests pass',
+            5,
+        );
+
         Memory::create(new ActorIdentity(ActorType::User, self::OTHER_ID), self::WORDS.' tonight', 5);
 
         $ownerFinds = $this->search(self::OWNER_ID);

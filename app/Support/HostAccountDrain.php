@@ -35,7 +35,10 @@ final readonly class HostAccountDrain implements AccountOwnerDrain
             return ! $this->arrangement->isContained();
         }
 
-        $reply = $this->socket->ask(['drain' => ['account' => $directory, 'accountId' => $accountId]], DrainReplyData::class);
+        $reply = $this->socket->ask(
+            ['drain' => ['account' => $directory, 'accountId' => $accountId]],
+            DrainReplyData::class,
+        );
 
         return $reply instanceof DrainReplyData && $reply->drained;
     }

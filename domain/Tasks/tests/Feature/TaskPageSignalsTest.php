@@ -50,7 +50,11 @@ final class TaskPageSignalsTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 
         Event::assertDispatchedTimes(TaskStartCommitted::class, 1);
-        Event::assertDispatched(TaskStartCommitted::class, fn (TaskStartCommitted $sent) => $sent->taskId === $task->id);
+
+        Event::assertDispatched(
+            TaskStartCommitted::class,
+            fn (TaskStartCommitted $sent) => $sent->taskId === $task->id,
+        );
     }
 
     public function test_the_ending_facts_of_a_task_are_page_signals(): void

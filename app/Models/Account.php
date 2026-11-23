@@ -303,7 +303,9 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public static function driverForJournal(string $accountId): string
     {
-        $driver = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->value('account_protocol');
+        $driver = self::query()->withoutGlobalScope(
+            AccountOwnerScope::class,
+        )->whereKey($accountId)->value('account_protocol');
 
         return (string) $driver;
     }

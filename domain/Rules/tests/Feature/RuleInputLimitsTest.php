@@ -28,18 +28,26 @@ final class RuleInputLimitsTest extends TestCase
      */
     public static function refusedProposals(): iterable
     {
-        yield 'a long text' => [new ProposeRuleCommand(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'), 'text'];
+        yield 'a long text' => [
+            new ProposeRuleCommand(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'),
+            'text',
+        ];
 
         yield 'an empty text' => [new ProposeRuleCommand('', 'Reason'), 'text'];
 
-        yield 'a long reason' => [new ProposeRuleCommand('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)), 'reason'];
+        yield 'a long reason' => [
+            new ProposeRuleCommand('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)),
+            'reason',
+        ];
 
         yield 'an empty reason' => [new ProposeRuleCommand('Text', ''), 'reason'];
     }
 
     #[DataProvider('refusedProposals')]
-    public function test_a_proposal_past_its_limit_is_refused_naming_the_field(ProposeRuleCommand $proposal, string $field): void
-    {
+    public function test_a_proposal_past_its_limit_is_refused_naming_the_field(
+        ProposeRuleCommand $proposal,
+        string $field,
+    ): void {
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run($proposal),
             CommandInputInvalid::class,

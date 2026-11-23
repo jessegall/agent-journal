@@ -46,7 +46,11 @@ final readonly class RecordConversationVisit implements ConversationVisits
         $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity();
         $context = StartRecord::query()->where('request_id', $session->start_request_id)->value('context_reference');
 
-        $conversation = DriverConversation::query()->native((string) $session->driver_key, $settings, $nativeId)->first()
+        $conversation = DriverConversation::query()->native(
+            (string) $session->driver_key,
+            $settings,
+            $nativeId,
+        )->first()
             ?? DriverConversation::create($session, $settings, $nativeId, $context);
 
         if (! $conversation->admits($session->agent_id, $context)) {

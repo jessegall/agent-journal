@@ -54,7 +54,10 @@ trait OpensTeamDeskMessage
         $this->ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
         $this->desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 1, false)));
         $this->seat($this->builder[0]);
-        $this->messageId = $this->runOnBus(new SendMessageCommand($this->ownInboxId, $this->desk->inboxId(), 'Pin me.'));
+
+        $this->messageId = $this->runOnBus(
+            new SendMessageCommand($this->ownInboxId, $this->desk->inboxId(), 'Pin me.'),
+        );
     }
 
     private function seat(string $agentId): void

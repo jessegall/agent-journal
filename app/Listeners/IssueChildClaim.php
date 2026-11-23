@@ -51,7 +51,13 @@ final class IssueChildClaim implements Listener
         $binding = ProjectBinding::query()->findOrFail($bindingId);
 
         return array_map(
-            fn ($read) => ChildClaim::forMainRuntime($binding, $parent->id, $request->childAgentId, ChildRole::Writer, $read),
+            fn ($read) => ChildClaim::forMainRuntime(
+                $binding,
+                $parent->id,
+                $request->childAgentId,
+                ChildRole::Writer,
+                $read,
+            ),
             WorkspaceRead::latestCommitReadOf($parent->session->agent_id),
         );
     }

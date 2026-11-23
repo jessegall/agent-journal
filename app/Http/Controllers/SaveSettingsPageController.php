@@ -72,8 +72,16 @@ final readonly class SaveSettingsPageController
         $reference = new SettingReference($setting->identity->owner, $setting->identity->key);
 
         return match (true) {
-            $setting->default instanceof StringChoiceValueData => new SetStringChoiceCommand($reference, $text, $revision),
-            $setting->type === SettingType::Boolean => new SetBooleanSettingCommand($reference, $text === '1', $revision),
+            $setting->default instanceof StringChoiceValueData => new SetStringChoiceCommand(
+                $reference,
+                $text,
+                $revision,
+            ),
+            $setting->type === SettingType::Boolean => new SetBooleanSettingCommand(
+                $reference,
+                $text === '1',
+                $revision,
+            ),
             $setting->type === SettingType::Integer => new SetIntegerSettingCommand($reference, (int) $text, $revision),
             $setting->type === SettingType::String => new SetStringSettingCommand($reference, $text, $revision),
             default => null,

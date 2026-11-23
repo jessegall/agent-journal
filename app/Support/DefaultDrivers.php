@@ -42,7 +42,8 @@ final readonly class DefaultDrivers
     {
         return [
             new DriverFamily(self::CLAUDE_CODE, 'Claude Code', ProviderKey::from('anthropic'), 'claude', true),
-            // Codex scopes its hooks per installation, not per thread, so a connected folder cannot run it isolated yet.
+            // Codex scopes its hooks per installation, not per thread, so a connected folder cannot run it isolated
+            // yet.
             new DriverFamily(self::CODEX, 'Codex', ProviderKey::from('openai'), 'codex', false),
         ];
     }
@@ -53,10 +54,34 @@ final readonly class DefaultDrivers
     public static function registrations(): array
     {
         return [
-            self::registration('claude-code', self::CLAUDE_CODE, DriverVariant::Terminal, 'Claude Code', TerminalCapabilities::class),
-            self::registration('claude-code-headless', self::CLAUDE_CODE, DriverVariant::Headless, 'Claude Code headless', HeadlessCapabilities::class),
-            self::registration('codex', self::CODEX, DriverVariant::Terminal, 'Codex', CodexTerminalCapabilities::class),
-            self::registration('codex-headless', self::CODEX, DriverVariant::Headless, 'Codex headless', CodexHeadlessCapabilities::class),
+            self::registration(
+                'claude-code',
+                self::CLAUDE_CODE,
+                DriverVariant::Terminal,
+                'Claude Code',
+                TerminalCapabilities::class,
+            ),
+            self::registration(
+                'claude-code-headless',
+                self::CLAUDE_CODE,
+                DriverVariant::Headless,
+                'Claude Code headless',
+                HeadlessCapabilities::class,
+            ),
+            self::registration(
+                'codex',
+                self::CODEX,
+                DriverVariant::Terminal,
+                'Codex',
+                CodexTerminalCapabilities::class,
+            ),
+            self::registration(
+                'codex-headless',
+                self::CODEX,
+                DriverVariant::Headless,
+                'Codex headless',
+                CodexHeadlessCapabilities::class,
+            ),
         ];
     }
 

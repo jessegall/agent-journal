@@ -125,7 +125,10 @@ final class DomainEventServiceProvider extends EventServiceProvider
 
     private function stateEvents(): StateEvents
     {
-        return new StateListenerDeclarations($this->listenerOwnership(), $this->app->make(ReflectorFactory::class))->declarations(
+        return new StateListenerDeclarations(
+            $this->listenerOwnership(),
+            $this->app->make(ReflectorFactory::class),
+        )->declarations(
             $this->app->make(StateTypes::class)->registrationSnapshot(),
             $this->app->make(StateMethods::class),
         );

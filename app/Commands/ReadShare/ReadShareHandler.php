@@ -117,8 +117,12 @@ final readonly class ReadShareHandler implements CommandHandler
      * @throws ShareBudgetExceeded
      * @throws ShareReadRefused when the cursor belongs to another place
      */
-    private function read(Share $share, RecordIdentity $target, ShareReadPath $path, ReadShareCommand $command): SharedPage
-    {
+    private function read(
+        Share $share,
+        RecordIdentity $target,
+        ShareReadPath $path,
+        ReadShareCommand $command,
+    ): SharedPage {
         $budget = MeteredShareBudget::forRead($this->meter);
         $provider = $this->records->provider($target->type);
         $content = $budget->run(fn () => $provider->content(new ShareContentRead($target), $budget));

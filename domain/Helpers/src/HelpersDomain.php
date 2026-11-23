@@ -59,7 +59,12 @@ final class HelpersDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::layout('jobs', 'Helper jobs', Icon::Activity, HelperJobsLayoutResolver::class)->at('jobs')->onHome(28),
+            Page::layout(
+                'jobs',
+                'Helper jobs',
+                Icon::Activity,
+                HelperJobsLayoutResolver::class,
+            )->at('jobs')->onHome(28),
         ];
     }
 

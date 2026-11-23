@@ -22,7 +22,9 @@ final readonly class ReplayedEntryController
         HostContext $host,
         CommandBus $commands,
     ): Response {
-        $commands->run(new ReportEntryReplayedCommand($host->hostId, $entry, $replayed->runtimeId, $replayed->operationKey));
+        $commands->run(
+            new ReportEntryReplayedCommand($host->hostId, $entry, $replayed->runtimeId, $replayed->operationKey),
+        );
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

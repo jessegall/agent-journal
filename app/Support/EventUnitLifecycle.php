@@ -110,14 +110,16 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
 
     public function runTransactionListeners(): void
     {
-        $this->units->activeFor($this->database)->forAll(fn (EventUnit $unit) => $this->drain->runTransactionListeners($unit));
+        $this->units->activeFor($this->database)->forAll(
+            fn (EventUnit $unit) => $this->drain->runTransactionListeners($unit),
+        );
     }
 
     /**
      * Sends a fact through the unit's owner-ordered stream, in its place among the facts the models raise, released
      * after the commit; outside a unit its transaction listeners run and it goes out at once. It takes a command-level
-     * fact whose transaction listeners must run in the transaction, and an occurrence a transaction listener stages; a plain
-     * dispatch is heard after the commit too, through the app's dispatcher, but runs no transaction listener.
+     * fact whose transaction listeners must run in the transaction, and an occurrence a transaction listener stages; a
+     * plain dispatch is heard after the commit too, through the app's dispatcher, but runs no transaction listener.
      */
     public function publishAfterCommit(Event $event): void
     {

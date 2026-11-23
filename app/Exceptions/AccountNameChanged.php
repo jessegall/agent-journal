@@ -20,7 +20,9 @@ final class AccountNameChanged extends RuntimeException implements CodedRefusal,
 
     public static function meanwhile(string $savedLabel): self
     {
-        return new self("This account was renamed to {$savedLabel} meanwhile. Your name is kept: save again to use it.");
+        return new self(
+            "This account was renamed to {$savedLabel} meanwhile. Your name is kept: save again to use it.",
+        );
     }
 
     public function refusalCode(): RefusalCode

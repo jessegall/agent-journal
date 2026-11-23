@@ -59,7 +59,10 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         $owners = array_keys($this->registry->definitions());
         $records = SettingsRecord::sharedRuntimeForOwners($owners);
 
-        return array_map(fn (string $owner) => $this->catalogueOf($owner, Option::fromArraysValue($records, $owner)), $owners);
+        return array_map(
+            fn (string $owner) => $this->catalogueOf($owner, Option::fromArraysValue($records, $owner)),
+            $owners,
+        );
     }
 
     /**

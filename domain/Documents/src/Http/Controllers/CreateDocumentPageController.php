@@ -20,7 +20,12 @@ final readonly class CreateDocumentPageController
         Redirector $redirect,
     ): RedirectResponse {
         $commands->run(
-            new CreateDocumentCommand($request->title(), $request->abstract(), $request->body(), $request->about($records)),
+            new CreateDocumentCommand(
+                $request->title(),
+                $request->abstract(),
+                $request->body(),
+                $request->about($records),
+            ),
         );
 
         return $redirect->back(303);

@@ -19,7 +19,12 @@ final readonly class ExitReportController
     public function __invoke(RuntimeLivenessReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(
-            new ReportRuntimeExitCommand($host->hostId, $report->runtimeId, $report->processGeneration, $report->evidence),
+            new ReportRuntimeExitCommand(
+                $host->hostId,
+                $report->runtimeId,
+                $report->processGeneration,
+                $report->evidence,
+            ),
         );
 
         return new Response(status: Response::HTTP_NO_CONTENT);

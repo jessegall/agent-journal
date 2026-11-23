@@ -64,7 +64,10 @@ final readonly class RegisteredDriver implements Driver
         $requested = $request->selection->driver;
 
         if ($requested !== $this->registration->family || $request->variant !== $this->registration->mode) {
-            throw DriverRequestMismatch::for((string) $this->registration->key, "{$requested} {$request->variant->value}");
+            throw DriverRequestMismatch::for(
+                (string) $this->registration->key,
+                "{$requested} {$request->variant->value}",
+            );
         }
     }
 }

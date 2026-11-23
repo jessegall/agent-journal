@@ -142,8 +142,19 @@ final class MemoryCommandsTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
 
         $this->assertThrows(fn () => $bus->run(new SaveMemoryCommand('   ', 5)), CommandInputInvalid::class, 'text:');
-        $this->assertThrows(fn () => $bus->run(new SaveMemoryCommand('Light.', 0)), CommandInputInvalid::class, 'weight:');
-        $this->assertThrows(fn () => $bus->run(new SaveMemoryCommand('Heavy.', 11)), CommandInputInvalid::class, 'weight:');
+
+        $this->assertThrows(
+            fn () => $bus->run(new SaveMemoryCommand('Light.', 0)),
+            CommandInputInvalid::class,
+            'weight:',
+        );
+
+        $this->assertThrows(
+            fn () => $bus->run(new SaveMemoryCommand('Heavy.', 11)),
+            CommandInputInvalid::class,
+            'weight:',
+        );
+
         $this->assertSame(0, Memory::query()->count());
 
         $bus->run(new SaveMemoryCommand('Lightest.', Memory::LIGHTEST));

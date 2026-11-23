@@ -48,6 +48,10 @@ final readonly class BindTaskCheckResults implements Listener
             return;
         }
 
-        $this->journal->runAsJournal(CommandEntry::Application, self::ENTRY, new BindTaskCheckCommand($result->receiptId));
+        $this->journal->runAsJournal(
+            CommandEntry::Application,
+            self::ENTRY,
+            new BindTaskCheckCommand($result->receiptId),
+        );
     }
 }

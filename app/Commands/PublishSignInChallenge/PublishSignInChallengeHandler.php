@@ -40,6 +40,9 @@ final readonly class PublishSignInChallengeHandler implements CommandHandler
 
         $challenge = new SignInChallenge($command->address, $command->code);
         $this->challenges->publish($attempt->id, $challenge, $attempt->expires_at);
-        $this->facts->publishAfterCommit(new AccountsChanged($attempt->account_protocol, $attempt->account_id ?? $attempt->id));
+
+        $this->facts->publishAfterCommit(
+            new AccountsChanged($attempt->account_protocol, $attempt->account_id ?? $attempt->id),
+        );
     }
 }

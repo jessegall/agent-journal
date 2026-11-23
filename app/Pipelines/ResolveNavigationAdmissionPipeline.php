@@ -22,7 +22,9 @@ final readonly class ResolveNavigationAdmissionPipeline implements PipelineDefin
     {
         return array_map(
             fn (string $pipe) => Step::resolvedBy(
-                static fn (NavigationAdmission|NavigationRaiseAnswer $raise): string => $raise instanceof NavigationAdmission ? $pipe : KeepNavigationAnswer::class,
+                static fn (
+                    NavigationAdmission|NavigationRaiseAnswer $raise,
+                ): string => $raise instanceof NavigationAdmission ? $pipe : KeepNavigationAnswer::class,
             ),
             [
                 ReplayMenuEntry::class,

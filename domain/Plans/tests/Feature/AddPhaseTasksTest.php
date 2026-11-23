@@ -66,7 +66,10 @@ final class AddPhaseTasksTest extends TestCase
         $real = Task::factory()->create(['title' => 'Real'])->id;
 
         try {
-            $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [$real, TestIds::of(999999)]));
+            $this->app->make(CommandBus::class)->run(
+                new AddPhaseTasksCommand($phase->id, 1, [$real, TestIds::of(999999)]),
+            );
+
             $this->fail('A missing task was added.');
         } catch (TaskMissing) {
             $this->assertSame([], $phase->taskIds());

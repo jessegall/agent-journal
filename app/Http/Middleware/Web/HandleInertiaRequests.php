@@ -75,7 +75,9 @@ class HandleInertiaRequests extends Middleware
         if ($user->isEmpty()) {
             return [
                 ...parent::share($request),
-                ...SharedData::from(['name' => $this->settings->string($this->core->displayName), 'version' => $this->version->label()])->toArray(),
+                ...SharedData::from(
+                    ['name' => $this->settings->string($this->core->displayName), 'version' => $this->version->label()],
+                )->toArray(),
             ];
         }
 

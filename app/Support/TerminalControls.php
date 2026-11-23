@@ -267,7 +267,13 @@ final readonly class TerminalControls
         $this->assertCarriesOut($runtime, TerminalInputType::Private);
         $this->takeSequence($grant, $submission->sequence);
         $message = new PrivateInputMessageData($grantId, $submission->sequence, $submission->submissionId);
-        $this->send($runtime, DriverOperation::PrivateInput, "input:{$grantId}:{$submission->sequence}", $message->toArray());
+
+        $this->send(
+            $runtime,
+            DriverOperation::PrivateInput,
+            "input:{$grantId}:{$submission->sequence}",
+            $message->toArray(),
+        );
 
         return $grant->id;
     }

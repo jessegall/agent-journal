@@ -63,7 +63,10 @@ final class AccountRowData extends Data
             $account->account_protocol,
             $account->label,
             $account->name_revision,
-            SignInMethodData::fromProtocol($account->method, $protocols->for($account->account_protocol, $account->method)),
+            SignInMethodData::fromProtocol(
+                $account->method,
+                $protocols->for($account->account_protocol, $account->method),
+            ),
             $account->state,
             $account->identity,
             $account->workspace,

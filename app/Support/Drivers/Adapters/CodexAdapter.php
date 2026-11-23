@@ -45,7 +45,14 @@ final readonly class CodexAdapter implements DriverAdapter
 {
     private const string DRIVER = 'Codex';
 
-    public const array NATIVE_EVENTS = ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'];
+    public const array NATIVE_EVENTS = [
+        'SessionStart',
+        'UserPromptSubmit',
+        'PreToolUse',
+        'PostToolUse',
+        'Stop',
+        'SessionEnd',
+    ];
 
     public const array NATIVE_CHILD_TOOLS = [
         'collaboration.spawn_agent',

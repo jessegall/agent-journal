@@ -60,7 +60,11 @@ final class HelperSelectionTest extends TestCase
 
     public function test_a_codex_follow_up_picks_the_codex_reviewer_even_when_the_other_finished_later(): void
     {
-        $codex = $this->helperWhoReviewed(DefaultDrivers::CODEX, self::LUNA, CarbonImmutable::parse('2026-11-19 10:00'));
+        $codex = $this->helperWhoReviewed(
+            DefaultDrivers::CODEX,
+            self::LUNA,
+            CarbonImmutable::parse('2026-11-19 10:00'),
+        );
 
         $claude = $this->helperWhoReviewed(
             DefaultDrivers::CLAUDE_CODE,
@@ -166,7 +170,13 @@ final class HelperSelectionTest extends TestCase
 
         $session = $this->app->make(StartSessions::class)->start(
             $agent,
-            SelectedDriver::resolve($driver, ModelSelection::named($model), null, null, $this->app->make(DriverCatalogue::class)),
+            SelectedDriver::resolve(
+                $driver,
+                ModelSelection::named($model),
+                null,
+                null,
+                $this->app->make(DriverCatalogue::class),
+            ),
             TestSelections::requestId(),
         )->session;
 

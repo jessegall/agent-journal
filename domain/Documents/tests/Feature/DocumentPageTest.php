@@ -50,7 +50,10 @@ final class DocumentPageTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->app->make(CommandBus::class)->run(
+            new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"),
+        );
+
         $this->app->make(CurrentActorSetter::class)->clear();
     }
 

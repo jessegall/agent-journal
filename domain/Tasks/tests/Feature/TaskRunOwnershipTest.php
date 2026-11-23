@@ -157,7 +157,10 @@ final class TaskRunOwnershipTest extends TestCase
         $run = $this->bus()->run(new StartTaskCommand($this->task->id));
         $this->bus()->run(new FinishTaskCommand($this->task->id, $run, 'Done.'));
 
-        $this->assertThrows(fn () => $this->bus()->run(new StartTaskCommand($this->task->id)), TaskRestartRefused::class);
+        $this->assertThrows(
+            fn () => $this->bus()->run(new StartTaskCommand($this->task->id)),
+            TaskRestartRefused::class,
+        );
     }
 
     private function start(string $name, string $profileKey): AgentSession

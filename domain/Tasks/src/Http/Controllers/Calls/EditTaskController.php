@@ -16,7 +16,9 @@ final readonly class EditTaskController
 {
     public function __invoke(EditTaskCall $call, CommandBus $commands): TaskEdited
     {
-        $revision = $commands->run(new EditTaskCommand($call->taskId, $call->expectedRevision, $call->title, $call->brief));
+        $revision = $commands->run(
+            new EditTaskCommand($call->taskId, $call->expectedRevision, $call->title, $call->brief),
+        );
 
         return TaskEdited::from(['taskId' => $call->taskId, 'revision' => $revision]);
     }

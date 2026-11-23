@@ -99,7 +99,12 @@ final class TaskCheckTest extends TestCase
         $this->bind($looseReceipt);
 
         $check = TaskCheck::query()->where('task_id', $task->id)->sole();
-        $this->assertSame([$mineReceipt, 'passed', 1], [$check->result_receipt_id, $check->outcome, $check->run_number]);
+
+        $this->assertSame(
+            [$mineReceipt, 'passed', 1],
+            [$check->result_receipt_id, $check->outcome, $check->run_number],
+        );
+
         Event::assertDispatchedTimes(TaskCheckRecorded::class, 1);
 
         $proofs = $this->app->make(TaskProofResolver::class)->proofsOf($task->id, null, 10)->proofs;
@@ -112,7 +117,13 @@ final class TaskCheckTest extends TestCase
 
     private static function passed(string $receiptId, string $runId): PublishedResult
     {
-        return new PublishedResult($receiptId, $runId, 'acme verify', AssessmentOutcome::Passed, CarbonImmutable::now());
+        return new PublishedResult(
+            $receiptId,
+            $runId,
+            'acme verify',
+            AssessmentOutcome::Passed,
+            CarbonImmutable::now(),
+        );
     }
 
     private function bind(string $receiptId): void

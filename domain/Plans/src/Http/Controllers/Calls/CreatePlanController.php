@@ -16,6 +16,8 @@ final readonly class CreatePlanController
 {
     public function __invoke(CreatePlanCall $call, CommandBus $commands): PlanNamed
     {
-        return PlanNamed::from(['planId' => $commands->run(new CreatePlanCommand($call->title, $call->brief, $call->type))]);
+        return PlanNamed::from(
+            ['planId' => $commands->run(new CreatePlanCommand($call->title, $call->brief, $call->type))],
+        );
     }
 }

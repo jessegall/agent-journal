@@ -108,7 +108,10 @@ final class RuleCommandsTest extends TestCase
             ActorContext::forAgent(TestIds::of(70)),
         );
 
-        Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRuleCommand($rule->id)));
+        Route::post(
+            '/rules-test/approve',
+            fn (CommandBus $commands) => $commands->run(new ApproveRuleCommand($rule->id)),
+        );
 
         $this->postJson('/rules-test/approve')->assertForbidden();
     }

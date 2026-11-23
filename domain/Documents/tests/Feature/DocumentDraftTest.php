@@ -70,7 +70,10 @@ final class DocumentDraftTest extends TestCase
         $created = $bus->run(new CreateDocumentCommand('Design', 'Current plan.', "# Design\nPublished text."));
         $opened = $bus->run(new OpenDocumentCommand($created->id, 1));
         $badText = "| Missing | Dashes |\n| A | B |";
-        $bus->run(new EditDocumentCommand(new DraftTarget($created->id, $opened->token, $opened->version), '1', $badText));
+
+        $bus->run(
+            new EditDocumentCommand(new DraftTarget($created->id, $opened->token, $opened->version), '1', $badText),
+        );
 
         $closed = new SessionClosed($child->id, $session->id);
         $listener = $this->app->make(CloseEndedSessionDraft::class);

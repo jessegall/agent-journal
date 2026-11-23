@@ -64,7 +64,11 @@ final class TaskStartWaitsTest extends TestCase
     {
         $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
 
-        $this->assertThrows(fn () => $this->runCommand(new StartTaskCommand($this->dependent->id)), TaskWaitsUnmet::class);
+        $this->assertThrows(
+            fn () => $this->runCommand(new StartTaskCommand($this->dependent->id)),
+            TaskWaitsUnmet::class,
+        );
+
         $this->assertNotContains($this->dependent->id, $this->pooled());
 
         $this->runCommand(new StartTaskCommand($this->prerequisite->id));
@@ -94,7 +98,10 @@ final class TaskStartWaitsTest extends TestCase
         $this->runCommand(new BlockTaskCommand($this->dependent->id, 1, 'Waits for records.'));
         $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
 
-        $this->assertThrows(fn () => $this->runCommand(new StartTaskCommand($this->dependent->id)), TaskWaitsUnmet::class);
+        $this->assertThrows(
+            fn () => $this->runCommand(new StartTaskCommand($this->dependent->id)),
+            TaskWaitsUnmet::class,
+        );
     }
 
     /**

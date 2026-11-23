@@ -21,7 +21,8 @@ final class HostUnavailable extends RuntimeException implements CommandRefusal
     public static function forStart(string $driver, DriverVariant $variant): self
     {
         return new self(
-            "No connected host runs {$driver} as a {$variant->value} start. Connect a host that runs it, then start again.",
+            "No connected host runs {$driver} as a {$variant->value} start. "
+            .'Connect a host that runs it, then start again.',
         );
     }
 

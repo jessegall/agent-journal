@@ -44,7 +44,10 @@ final class ReportTest extends TestCase
         $reviewer = TestStart::start('read-only-helper');
         $reviewer->startRequest($this->app);
         $findings = str_pad('', 300 * 1024, 'Finding and evidence. ');
-        $upload = $bus->run(new BeginUploadCommand(UploadType::ReportBody, strlen($findings), hash('sha256', $findings)));
+
+        $upload = $bus->run(
+            new BeginUploadCommand(UploadType::ReportBody, strlen($findings), hash('sha256', $findings)),
+        );
 
         foreach (str_split($findings, TextUpload::CHUNK_BYTES) as $index => $part) {
             $bus->run(new AppendUploadCommand($upload, $index, $part, hash('sha256', $part)));

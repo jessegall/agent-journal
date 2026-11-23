@@ -23,8 +23,11 @@ final readonly class EnrolledDescriptor
         return new self($descriptor, $registration->family, $registration->mode, null);
     }
 
-    public static function unavailable(HostDescriptor $descriptor, string $reason, DriverRegistration|null $registration): self
-    {
+    public static function unavailable(
+        HostDescriptor $descriptor,
+        string $reason,
+        DriverRegistration|null $registration,
+    ): self {
         return new self($descriptor, $registration?->family, $registration?->mode, $reason);
     }
 

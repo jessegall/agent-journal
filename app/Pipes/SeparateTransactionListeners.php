@@ -47,12 +47,23 @@ final readonly class SeparateTransactionListeners implements Pipe
                     continue;
                 }
 
-                $this->assertTransactionListener($declarations, $event, $listener, $transactionClass, $inTransaction[$event] ?? []);
+                $this->assertTransactionListener(
+                    $declarations,
+                    $event,
+                    $listener,
+                    $transactionClass,
+                    $inTransaction[$event] ?? [],
+                );
+
                 $inTransaction[$event][] = $listener;
             }
         }
 
-        return new ListenerDeclarations($ordinary, $declarations->ownership, array_map(self::sorted(...), $inTransaction));
+        return new ListenerDeclarations(
+            $ordinary,
+            $declarations->ownership,
+            array_map(self::sorted(...), $inTransaction),
+        );
     }
 
     /**

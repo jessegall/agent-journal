@@ -83,7 +83,12 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
     {
         return match ($authorization->type) {
             AuthorizationType::AllowsEverything => new UnrestrictedAuthorizer(),
-            AuthorizationType::Policies => new PolicyAuthorizer($authorization, $this->catalogue, $this->gate, $this->reflectors),
+            AuthorizationType::Policies => new PolicyAuthorizer(
+                $authorization,
+                $this->catalogue,
+                $this->gate,
+                $this->reflectors,
+            ),
         };
     }
 }

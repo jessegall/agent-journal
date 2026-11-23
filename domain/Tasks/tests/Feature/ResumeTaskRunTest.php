@@ -93,7 +93,11 @@ final class ResumeTaskRunTest extends TestCase
         $this->assertSame(1, $this->runAs($arriving, new ResumeTaskRunCommand($run->id)));
         $this->assertTrue($this->holderOf($run)?->isSameAs(ActorIdentity::of($arriving->agent()->firstOrFail())));
         $this->assertSame(1, TaskRun::query()->where('task_id', $task->id)->count());
-        $this->assertThrows(fn () => $this->runAs($leaving, new ResumeTaskRunCommand($run->id)), RunClaimRefused::class);
+
+        $this->assertThrows(
+            fn () => $this->runAs($leaving, new ResumeTaskRunCommand($run->id)),
+            RunClaimRefused::class,
+        );
     }
 
     public function test_a_direct_holder_that_regained_the_task_resumes_afresh(): void

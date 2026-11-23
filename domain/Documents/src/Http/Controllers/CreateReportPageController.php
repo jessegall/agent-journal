@@ -20,7 +20,12 @@ final readonly class CreateReportPageController
         Redirector $redirect,
     ): RedirectResponse {
         $commands->run(
-            new CreateReportCommand($request->title(), $request->abstract(), $request->body(), $request->about($records)),
+            new CreateReportCommand(
+                $request->title(),
+                $request->abstract(),
+                $request->body(),
+                $request->about($records),
+            ),
         );
 
         return $redirect->back(303);

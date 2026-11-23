@@ -152,7 +152,11 @@ final readonly class ShippedReaderInstaller
     {
         $request = CommandRequest::query()->findOrFail($requestId);
         $permit = $this->commands->run(new ApproveSampleCommand($requestId, 1, $request->source_digest));
-        $runId = $this->commands->run(new StartSampleCommand($requestId, $permit, "shipped-{$reader->tool}-{$sample->file}"));
+
+        $runId = $this->commands->run(
+            new StartSampleCommand($requestId, $permit, "shipped-{$reader->tool}-{$sample->file}"),
+        );
+
         $run = ProcessRun::ofAnyActor($runId);
         $part = PartRun::create($run, new PartKey(1, 1, $reader->invocation));
         $part->start('shipped');

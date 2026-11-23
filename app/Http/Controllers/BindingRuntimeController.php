@@ -35,7 +35,9 @@ final readonly class BindingRuntimeController
         $opened = $commands->run($request->asMainRuntime($host->hostId));
 
         if ($request->startId !== '') {
-            $commands->run(new RecordBindingStartCommand($binding, $request->startId, $opened->sessionId, $opened->runtimeId));
+            $commands->run(
+                new RecordBindingStartCommand($binding, $request->startId, $opened->sessionId, $opened->runtimeId),
+            );
         }
 
         return $this->answer($binding, $opened->sessionId, $opened->runtimeId, JsonResponse::HTTP_CREATED);

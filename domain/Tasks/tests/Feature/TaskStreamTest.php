@@ -59,7 +59,12 @@ final class TaskStreamTest extends TestCase
         $this->assertCount(4, $page->entries);
 
         $this->assertEqualsCanonicalizing(
-            [TaskStreamEntryType::Change, TaskStreamEntryType::Change, TaskStreamEntryType::Log, TaskStreamEntryType::Log],
+            [
+                TaskStreamEntryType::Change,
+                TaskStreamEntryType::Change,
+                TaskStreamEntryType::Log,
+                TaskStreamEntryType::Log,
+            ],
             array_map(fn (TaskStreamEntryData $entry) => $entry->type, $page->entries),
         );
 

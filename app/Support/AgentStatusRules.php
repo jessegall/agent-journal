@@ -28,7 +28,16 @@ final class AgentStatusRules
     public static function of(AgentEvidence $evidence, StartRemedyWords $words): AgentStatus
     {
         if ($evidence->retired) {
-            return new AgentStatus(SessionState::Retired, SessionState::Retired->label(), null, null, null, null, null, []);
+            return new AgentStatus(
+                SessionState::Retired,
+                SessionState::Retired->label(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                [],
+            );
         }
 
         return self::underWay($evidence)
@@ -316,8 +325,11 @@ final class AgentStatusRules
         return self::plain(SessionState::Starting, $evidence, $actions, $operation);
     }
 
-    private static function refused(AgentEvidence $evidence, LaunchOutcome $launch, StartRemedyWords $words): AgentStatus
-    {
+    private static function refused(
+        AgentEvidence $evidence,
+        LaunchOutcome $launch,
+        StartRemedyWords $words,
+    ): AgentStatus {
         $reason = StartRefusalCodes::reasonOf((string) $launch->refusalReason);
         $remedy = $reason->remedy();
 

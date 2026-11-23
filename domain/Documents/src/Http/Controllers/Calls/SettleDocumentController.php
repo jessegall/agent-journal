@@ -17,7 +17,9 @@ final readonly class SettleDocumentController
 {
     public function __invoke(SettleDocumentCall $call, CommandBus $commands): CallAccepted
     {
-        $commands->run(new SettleDocumentCommand(RecordReference::number($call->number), $call->revision, $call->reason));
+        $commands->run(
+            new SettleDocumentCommand(RecordReference::number($call->number), $call->revision, $call->reason),
+        );
 
         return new CallAccepted();
     }

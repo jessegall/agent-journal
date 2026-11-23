@@ -114,7 +114,11 @@ final class DocumentReaderTest extends TestCase
     {
         $bus = $this->app->make(CommandBus::class);
         $draft = $bus->run(new OpenDocumentCommand((string) $number));
-        $bus->run(new EditDocumentCommand(new DraftTarget((string) $number, $draft->token, $draft->version), '1', $body));
+
+        $bus->run(
+            new EditDocumentCommand(new DraftTarget((string) $number, $draft->token, $draft->version), '1', $body),
+        );
+
         $bus->run(new CloseDocumentCommand(new DraftTarget((string) $number, $draft->token)));
     }
 

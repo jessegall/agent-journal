@@ -124,8 +124,15 @@ final class SettleAndRecoverTest extends TestCase
         $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
         $tooLong = str_repeat('a', Document::SETTLEMENT_REASON_CHARACTER_LIMIT + 1);
 
-        $this->assertThrows(fn () => $this->bus()->run(new SettleDocumentCommand(1, 1, $tooLong)), CommandInputInvalid::class);
-        $this->assertThrows(fn () => $this->bus()->run(new CloseReportCommand('1', $tooLong)), CommandInputInvalid::class);
+        $this->assertThrows(
+            fn () => $this->bus()->run(new SettleDocumentCommand(1, 1, $tooLong)),
+            CommandInputInvalid::class,
+        );
+
+        $this->assertThrows(
+            fn () => $this->bus()->run(new CloseReportCommand('1', $tooLong)),
+            CommandInputInvalid::class,
+        );
 
         $this->assertSame(
             [AttentionState::Active, AttentionState::Active],
@@ -257,7 +264,10 @@ final class SettleAndRecoverTest extends TestCase
     {
         $listeners = array_map(
             fn ($listener) => $listener instanceof AvailableListener ? $listener->listener : '',
-            $this->app->make(ListenerRegistry::class)->listenersOf(SessionClosed::class, ListenerLane::InCommandTransaction),
+            $this->app->make(ListenerRegistry::class)->listenersOf(
+                SessionClosed::class,
+                ListenerLane::InCommandTransaction,
+            ),
         );
 
         $this->assertContains(CloseEndedSessionDraft::class.'@handle', $listeners);

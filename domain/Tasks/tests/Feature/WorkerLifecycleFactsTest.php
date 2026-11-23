@@ -51,7 +51,9 @@ final class WorkerLifecycleFactsTest extends TestCase
         $task = Task::factory()->create(['title' => 'Kept']);
         $this->startUserRequestAs(TestIds::of(7));
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 9, 'Done.')));
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 9, 'Done.')),
+        );
 
         $this->app->forgetScopedInstances();
         $units = $this->app->make(ActiveEventUnits::class);

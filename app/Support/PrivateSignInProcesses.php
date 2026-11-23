@@ -254,7 +254,12 @@ final readonly class PrivateSignInProcesses
         try {
             $protocol->acceptCode($process, $answer);
         } catch (SignInAnswerUndelivered|SignInSecretUnwritable $broken) {
-            $this->host->report($claimed, SignInOutcome::Interrupted, SignInIdentity::unproved(), $broken->getMessage());
+            $this->host->report(
+                $claimed,
+                SignInOutcome::Interrupted,
+                SignInIdentity::unproved(),
+                $broken->getMessage(),
+            );
 
             return false;
         }

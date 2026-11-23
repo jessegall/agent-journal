@@ -96,7 +96,10 @@ final class HelperInstancesTest extends TestCase
 
     private function finish(HelperReceipt $receipt): void
     {
-        $this->app->make(CommandBus::class)->run(new CancelHelperJobCommand($receipt->jobId, 'cancel-'.$receipt->jobId));
+        $this->app->make(CommandBus::class)->run(
+            new CancelHelperJobCommand($receipt->jobId, 'cancel-'.$receipt->jobId),
+        );
+
         $this->endSessionOf($receipt);
     }
 

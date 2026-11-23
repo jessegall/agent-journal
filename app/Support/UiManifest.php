@@ -238,7 +238,10 @@ final readonly class UiManifest
      */
     private function render(string $template, array $templateFields): string
     {
-        return $this->views->file(dirname(__DIR__, 2)."/resources/views/generators/{$template}.blade.php", $templateFields)->render();
+        return $this->views->file(
+            dirname(__DIR__, 2)."/resources/views/generators/{$template}.blade.php",
+            $templateFields,
+        )->render();
     }
 
     /**

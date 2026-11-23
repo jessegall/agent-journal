@@ -21,6 +21,8 @@ final readonly class ApproveProposalController
         $readers = $call->proof === null ? [] : [new ReaderApproval((string) $call->readerRevision, $call->proof)];
         $approval = new OwnerApproval($call->expectedRevision, $call->expectedActiveRevision, $readers, $call->reason);
 
-        return RuleApproved::from($commands->run(new ApproveRuleProposalCommand($call->proposal, $approval))->toArray());
+        return RuleApproved::from(
+            $commands->run(new ApproveRuleProposalCommand($call->proposal, $approval))->toArray(),
+        );
     }
 }

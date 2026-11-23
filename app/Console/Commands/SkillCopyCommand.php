@@ -18,7 +18,8 @@ final class SkillCopyCommand extends Command
 {
     use PrintsSkillRefusals;
 
-    protected $signature = 'skill:copy {key : The skill to copy} {new-key : A new user- key} {--request-id= : Send again under the id a failed attempt printed}';
+    protected $signature = 'skill:copy {key : The skill to copy} {new-key : A new user- key}
+        {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Copy a skill into a new stored skill';
 
@@ -32,7 +33,11 @@ final class SkillCopyCommand extends Command
 
             return $console->savedLines(
                 $commands->run(
-                    new CopySkillCommand((string) $this->argument('key'), (string) $this->argument('new-key'), $requestId),
+                    new CopySkillCommand(
+                        (string) $this->argument('key'),
+                        (string) $this->argument('new-key'),
+                        $requestId,
+                    ),
                 ),
             );
         });

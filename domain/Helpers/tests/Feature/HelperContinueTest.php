@@ -144,8 +144,11 @@ final class HelperContinueTest extends TestCase
         $this->app->make(Dispatcher::class)->dispatch(new LaunchEnded($job->assignmentIdentity()));
     }
 
-    private function continueJob(HelperReceipt $receipt, string $requestId, string|null $driverKey = null): HelperReceipt
-    {
+    private function continueJob(
+        HelperReceipt $receipt,
+        string $requestId,
+        string|null $driverKey = null,
+    ): HelperReceipt {
         return $this->commands()->run(
             new ContinueHelperCommand($requestId, $receipt->identityId, $receipt->jobId, 'default', $driverKey),
         );

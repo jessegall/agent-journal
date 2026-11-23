@@ -18,7 +18,9 @@ final readonly class SaveDraftPageController
 {
     public function __invoke(DraftPageRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $saved = $commands->run(new ChangeDocumentDetailsCommand($request->target(), $request->title(), $request->abstract()));
+        $saved = $commands->run(
+            new ChangeDocumentDetailsCommand($request->target(), $request->title(), $request->abstract()),
+        );
 
         $commands->run(
             new ReplaceDocumentBodyCommand(

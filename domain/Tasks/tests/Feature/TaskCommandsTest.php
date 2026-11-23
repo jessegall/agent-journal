@@ -100,7 +100,9 @@ final class TaskCommandsTest extends TestCase
     {
         $task = $this->task('Taken');
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 3, 'Done.')));
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 3, 'Done.')),
+        );
 
         $this->assertSame(TaskState::Open, $task->fresh()?->state);
         Event::assertNotDispatched(TaskFinished::class);

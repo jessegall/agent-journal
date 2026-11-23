@@ -61,7 +61,11 @@ final class TaskEnvironmentTest extends TestCase
 
     private function create(string $title): Task
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
+
         $id = $this->app->make(CommandBus::class)->run(new CreateTaskCommand($title, 'What it asks.'));
 
         return Task::query()->findOrFail($id);

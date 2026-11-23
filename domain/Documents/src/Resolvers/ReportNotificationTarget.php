@@ -31,9 +31,9 @@ final readonly class ReportNotificationTarget implements NotificationTargetResol
         $numbers = array_map(intval(...), array_values(array_filter($ids, ctype_digit(...))));
         $reports = Report::query()->sharedPublished()->whereIn('number', $numbers)->readExactly(count($numbers))->get();
 
-        $filers = $this->labels->labelsFor(
-            array_values($reports->map(fn (Report $report) => new ActorIdentity($report->creator_type, $report->creator_id))->all()),
-        );
+        $filers = $this->labels->labelsFor(array_values($reports->map(
+            fn (Report $report) => new ActorIdentity($report->creator_type, $report->creator_id),
+        )->all()));
 
         $links = [];
 

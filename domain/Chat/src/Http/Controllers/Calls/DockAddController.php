@@ -16,6 +16,8 @@ final readonly class DockAddController
 {
     public function __invoke(DockAddCall $call, CommandBus $commands): DockAnswerData
     {
-        return DockAnswerData::fromDockResult($commands->run(new DockSourceCommand($call->chat, $call->type, $call->id)));
+        return DockAnswerData::fromDockResult(
+            $commands->run(new DockSourceCommand($call->chat, $call->type, $call->id)),
+        );
     }
 }

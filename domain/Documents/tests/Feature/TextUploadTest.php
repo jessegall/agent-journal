@@ -97,7 +97,10 @@ final class TextUploadTest extends TestCase
         $bus->run(new CommitUploadCommand($id));
         $attachments = $this->app->make(AttachmentReferences::class);
 
-        $attachments->assertReadable(MessagePartData::forAttachment($id, hash('sha256', 'notes'), 'notes.md'), $recipient->session->id);
+        $attachments->assertReadable(
+            MessagePartData::forAttachment($id, hash('sha256', 'notes'), 'notes.md'),
+            $recipient->session->id,
+        );
 
         $this->assertThrows(
             fn () => $attachments->assertReadable(
@@ -109,7 +112,10 @@ final class TextUploadTest extends TestCase
         );
 
         $this->assertThrows(
-            fn () => $attachments->assertReadable(MessagePartData::forAttachment($id, 'older', 'notes.md'), $recipient->session->id),
+            fn () => $attachments->assertReadable(
+                MessagePartData::forAttachment($id, 'older', 'notes.md'),
+                $recipient->session->id,
+            ),
             DriverRequestRefused::class,
             DriverRequestRefused::attachmentChanged($id)->getMessage(),
         );

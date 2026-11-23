@@ -128,7 +128,12 @@ final class DockAdmissionTest extends TestCase
         $this->runKeyed($this->dockTask(), (string) Str::ulid());
 
         $guessed = $this->runKeyed(
-            new UndockSourceCommand($this->conversationId, strtolower((string) Str::ulid()), 'tasks.task', $this->task->id),
+            new UndockSourceCommand(
+                $this->conversationId,
+                strtolower((string) Str::ulid()),
+                'tasks.task',
+                $this->task->id,
+            ),
             (string) Str::ulid(),
         );
 
@@ -156,7 +161,10 @@ final class DockAdmissionTest extends TestCase
 
         $this->expectException(ConversationUnavailable::class);
 
-        $this->runKeyed(new DockSourceCommand($strangers->inbox_id, 'tasks.task', $this->task->id), (string) Str::ulid());
+        $this->runKeyed(
+            new DockSourceCommand($strangers->inbox_id, 'tasks.task', $this->task->id),
+            (string) Str::ulid(),
+        );
     }
 
     private function dockTask(): DockSourceCommand

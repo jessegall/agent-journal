@@ -23,7 +23,9 @@ final readonly class ReplyController
         CommandBus $commands,
         SentMessageAnswer $answer,
     ): RedirectResponse {
-        $replyId = $commands->run(new ReplyInChatCommand($input->messageId, $input->body, $input->requestKey, $input->inboxId));
+        $replyId = $commands->run(
+            new ReplyInChatCommand($input->messageId, $input->body, $input->requestKey, $input->inboxId),
+        );
 
         return $answer->to($replyId, $input->agent, $input->inboxId);
     }

@@ -29,8 +29,12 @@ final class RunSignInsCommand extends Command
 
     protected $description = 'Run the journal sign-ins on this host';
 
-    public function handle(Factory $http, SignInProtocols $protocols, ArrangementSetting $arrangement, Files $files): int
-    {
+    public function handle(
+        Factory $http,
+        SignInProtocols $protocols,
+        ArrangementSetting $arrangement,
+        Files $files,
+    ): int {
         $runner = new PrivateSignInProcesses(
             new SignedSignInHost($http, (string) getenv('JOURNAL_URL'), HostSecret::fromEnvironment(
                 (string) getenv('JOURNAL_HOST_SECRET_FILE'),

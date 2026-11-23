@@ -14,7 +14,9 @@ final readonly class ApprovePlanReviewPageController
 {
     public function __invoke(PlanReviewRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new ApprovePlanReviewCommand($request->planId(), $request->editionNumber(), $request->requestKey()));
+        $commands->run(
+            new ApprovePlanReviewCommand($request->planId(), $request->editionNumber(), $request->requestKey()),
+        );
 
         return $redirect->back(303);
     }

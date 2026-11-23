@@ -27,8 +27,12 @@ final class PlanReaderData extends Data
     /**
      * The reader of one plan opened by its number: its card, brief, the page of its outline asked for and its review.
      */
-    public static function forPlan(PlanCard $card, string $brief, PlanOutlineData $outline, PlanReviewData $review): self
-    {
+    public static function forPlan(
+        PlanCard $card,
+        string $brief,
+        PlanOutlineData $outline,
+        PlanReviewData $review,
+    ): self {
         return self::from([
             'card' => PlanCardData::fromPlanCard($card),
             'insideResults' => true,

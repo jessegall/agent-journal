@@ -80,7 +80,9 @@ final readonly class TerminalAnswers
         } catch (CommandRefusal $refusal) {
             $code = RefusalCode::of($refusal);
 
-            return $this->uncached(new JsonResponse(['code' => $code->value, 'message' => $refusal->getMessage()], $code->status()));
+            return $this->uncached(
+                new JsonResponse(['code' => $code->value, 'message' => $refusal->getMessage()], $code->status()),
+            );
         }
 
         if (! $data instanceof Data) {
