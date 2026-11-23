@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\CheckRunCurrencyCall;
 use App\Calls\Processes\RunCurrency;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 
 /**
  * Answers whether a run's rules still hold, to the holder of its event key only.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Jobs\SignInDeadline;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Bus;

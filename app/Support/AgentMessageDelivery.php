@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\ActorAttention;
-use App\Models\PendingAgentMessage;
+use App\Models\Agents\PendingAgentMessage;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Stack\HookAnswer;
 use App\Values\StackTarget;

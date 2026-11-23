@@ -8,7 +8,7 @@ use App\Contracts\Authorization\Policy;
 use App\Contracts\Authorization\RestrictedPolicy;
 use App\Enums\AccessType;
 use App\Enums\ProfileAudience;
-use App\Models\SupervisorLink;
+use App\Models\Asks\SupervisorLink;
 
 /**
  * Who may act on SupervisorLink records; the grant decides, and the handlers keep their own checks.

@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverOperation;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\DriverRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverRequest;
 use App\Values\DriverRequestPayload;
 use App\Values\RuntimeIntent;
 use Illuminate\Support\Str;

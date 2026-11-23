@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Time\ServerClock;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\StartTokens;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;

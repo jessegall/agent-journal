@@ -12,7 +12,7 @@ use App\Enums\CommandClass;
 use App\Enums\ShellDialect;
 use App\Exceptions\ApprovalRefused;
 use App\Exceptions\ClassificationUnavailable;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\RuleProposal;
 use App\Support\ActiveRules;
 use App\Support\CommandRuleRegistry;
 use App\Support\DomainEntry;

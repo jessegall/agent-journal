@@ -6,7 +6,7 @@ namespace Tests\Feature\Connections;
 
 use App\Enums\ProjectReadType;
 use App\Enums\ProjectWindowState;
-use App\Models\ProjectRead;
+use App\Models\Projects\ProjectRead;
 use App\Values\ProjectEntry;
 use Carbon\CarbonImmutable;
 use Closure;

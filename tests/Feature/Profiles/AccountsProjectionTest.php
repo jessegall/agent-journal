@@ -15,15 +15,15 @@ use App\Enums\CommandEntry;
 use App\Enums\DriverFailure;
 use App\Events\AccountsChanged;
 use App\Events\DriverFailed;
-use App\Models\Account;
-use App\Models\AccountNotice;
+use App\Exceptions\CommittedFactListenerFailed;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\AccountNotice;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
 use App\Support\EntryDispatchers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Events\Dispatcher;
-use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -90,17 +90,17 @@ final class AccountsProjectionTest extends TestCase
         $this->assertSame([['claude-code', $notice->id]], $this->changes);
     }
 
-    public function test_a_failing_notice_command_is_logged_and_reaches_no_caller(): void
+    // User message 19647: a failure is never swallowed, so the failing notice command is thrown, named by its fact.
+    public function test_a_failing_notice_command_is_thrown_as_a_failed_listener_of_its_fact(): void
     {
         $this->app->bind(JournalCommands::class, fn () => throw new RuntimeException('The notice command failed.'));
-        $log = $this->spy(LoggerInterface::class);
+        $failed = new DriverFailed('agent', 'session', 'claude-code', DriverFailure::AuthenticationFailed);
 
-        $this->app->make(Dispatcher::class)->dispatch(
-            new DriverFailed('agent', 'session', 'claude-code', DriverFailure::AuthenticationFailed),
+        $this->assertThrows(
+            fn () => $this->app->make(Dispatcher::class)->dispatch($failed),
+            CommittedFactListenerFailed::class,
         );
-
         $this->assertSame(0, AccountNotice::query()->count());
-        $log->shouldHaveReceived('error');
     }
 
     public function test_recording_the_notice_again_counts_it_and_refreshes_for_the_same_notice(): void

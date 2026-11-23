@@ -9,7 +9,7 @@ use App\Enums\DriverSourceType;
 use App\Enums\DriverVariant;
 use App\Enums\ModeSourceType;
 use App\Exceptions\DriverConflict;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;
 use App\Support\DriverRegistry;

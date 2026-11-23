@@ -20,7 +20,7 @@ use App\Exceptions\SettingsConflict;
 use App\Exceptions\SettingStorageInvalid;
 use App\Exceptions\SettingUnavailable;
 use App\Exceptions\SettingValueInvalid;
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Support\ActorContext;
 use App\Support\Storage\EncodedSetting;
 use App\Support\Storage\EncodedToggle;

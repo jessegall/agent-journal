@@ -6,7 +6,7 @@ namespace Tests\Feature\Reads;
 
 use App\Exceptions\LazyLoadRefused;
 use App\Exceptions\QueryInValueRead;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\ScopedReadMeter;
 use Domain\Access\Models\User;
 use Tests\Fixtures\Agents\TestStart;

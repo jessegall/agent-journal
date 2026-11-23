@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\States;
 
-use App\Models\AskHop;
+use App\Models\Asks\AskHop;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use PhpOption\Option;

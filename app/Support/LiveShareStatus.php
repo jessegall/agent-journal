@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Sharing\ShareStatusResolver;
-use App\Models\Share;
-use App\Models\ShareMember;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareMember;
 
 /**
  * Reads whether a record is public from the live shares: as their root, or as an approved member of their current

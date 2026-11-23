@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\NavigationCompletion;
 use App\Enums\NavigationState;
 use App\Exceptions\NavigationTransitionRefused;
-use App\Models\NavigationRequest;
+use App\Models\Drivers\NavigationRequest;
 use App\Support\ActorContext;
 use App\Values\OwnerAuthority;
 use Illuminate\Database\UniqueConstraintViolationException;

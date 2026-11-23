@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
-use App\Models\CommandRequest;
+use App\Models\CommandRules\CommandRequest;
 use App\Policies\ProcessAdministrationPolicy;
 
 /**

@@ -7,10 +7,10 @@ namespace App\Support;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Chat\MainDesk;
-use App\Models\AssignmentRecord;
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
-use App\Models\NavigationRequest;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
+use App\Models\Drivers\NavigationRequest;
+use App\Models\Records\AssignmentRecord;
 use PhpOption\Option;
 
 /**

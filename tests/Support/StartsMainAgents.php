@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Models\Agent;
-use App\Models\AgentSession;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
 use App\Support\StartSessions;
 use Tests\Fixtures\Agents\TestSelections;
 

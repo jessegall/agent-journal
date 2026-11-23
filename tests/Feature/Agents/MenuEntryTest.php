@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\ActorType;
 use App\Enums\MenuEntryState;
 use App\Enums\NavigationCompletion;
-use App\Models\MenuEntry;
+use App\Models\Drivers\MenuEntry;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\MenuStep;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Models\ShareInstallation;
+use App\Models\Sharing\ShareInstallation;
 use Illuminate\Contracts\Console\Kernel;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

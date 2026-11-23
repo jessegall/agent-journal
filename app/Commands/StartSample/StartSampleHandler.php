@@ -9,8 +9,8 @@ use App\Enums\RequestState;
 use App\Exceptions\EvidencePermitRefused;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\SampleRefused;
-use App\Models\CommandRequest;
-use App\Models\EvidencePermit;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\EvidencePermit;
 use App\Support\ActorIdentity;
 use App\Support\EvidenceRuns;
 

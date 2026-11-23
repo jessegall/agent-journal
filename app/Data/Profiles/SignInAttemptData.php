@@ -7,7 +7,7 @@ namespace App\Data\Profiles;
 use App\Enums\SignInMethod;
 use App\Enums\SignInState;
 use App\Enums\SignInType;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

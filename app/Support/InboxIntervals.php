@@ -10,9 +10,9 @@ use App\Enums\LeaveReason;
 use App\Enums\TimelineEventType;
 use App\Exceptions\ChatStateConflict;
 use App\Exceptions\InboxUnavailable;
-use App\Models\InboxInterval;
-use App\Models\InboxRecord;
-use App\Models\TimelineEvent;
+use App\Models\Chats\InboxInterval;
+use App\Models\Chats\InboxRecord;
+use App\Models\Chats\TimelineEvent;
 use Carbon\CarbonImmutable;
 
 /**

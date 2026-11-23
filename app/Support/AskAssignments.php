@@ -21,7 +21,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Assignments\JournalAssignableProvider;
 use App\Exceptions\AskRefused;
-use App\Models\Ask;
+use App\Models\Asks\Ask;
 use App\Values\AskReference;
 
 final readonly class AskAssignments implements JournalAssignableProvider

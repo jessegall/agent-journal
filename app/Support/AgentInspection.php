@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Policies\AgentMaintenancePolicy;
 
 /**

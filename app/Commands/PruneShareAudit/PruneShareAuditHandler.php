@@ -6,8 +6,8 @@ namespace App\Commands\PruneShareAudit;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ShareAuditType;
-use App\Models\Share;
-use App\Models\ShareAudit;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareAudit;
 use App\Support\ActorIdentity;
 use App\Support\AuditPruning;
 use Carbon\CarbonImmutable;

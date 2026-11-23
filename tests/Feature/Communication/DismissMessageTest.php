@@ -10,7 +10,7 @@ use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Enums\DismissalType;
 use App\Enums\MessageState;
 use App\Exceptions\MessageMissing;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use Tests\Support\MessagingTestCase;
 
 /**

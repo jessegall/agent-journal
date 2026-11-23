@@ -9,7 +9,7 @@ use App\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
 use App\Enums\ProfileRunState;
 use App\Enums\StepStatus;
 use App\Exceptions\ProfileRunRefused;
-use App\Models\ProfileRun;
+use App\Models\Profiles\ProfileRun;
 use App\Support\ActorIdentity;
 use App\Support\ObjectReader;
 use App\Values\CommitObservation;

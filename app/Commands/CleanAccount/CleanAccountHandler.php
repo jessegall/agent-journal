@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\CleanAccount;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Account;
-use App\Models\ActiveAccount;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\ActiveAccount;
 use App\Support\AccountUsagePurge;
 
 /**

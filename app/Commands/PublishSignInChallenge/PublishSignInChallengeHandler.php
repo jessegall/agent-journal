@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\AccountsChanged;
 use App\Exceptions\SignInChallengeRefused;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use App\Support\SignInProtocols;
 use App\Values\SignInChallenge;

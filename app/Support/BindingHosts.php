@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Hosts\LocalProjectHosts;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 
 /**
  * Answers Agents which live binding a local host serves, from the project bindings.

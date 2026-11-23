@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Exceptions\AccountMissing;
 use App\Exceptions\ProcessStartUnknown;
 use App\Exceptions\UsageReportRefused;
-use App\Models\Account;
-use App\Models\ProcessStart;
+use App\Models\Accounts\Account;
+use App\Models\Starts\ProcessStart;
 use App\Values\ReportedStart;
 
 /**

@@ -12,7 +12,7 @@ use App\Enums\CoreAskType;
 use App\Enums\NotificationSourceType;
 use App\Events\AskClosed;
 use App\Events\AskHopAssigned;
-use App\Models\AskHop;
+use App\Models\Asks\AskHop;
 use App\Resolvers\MergeAskNotificationTarget;
 use App\Support\ActorIdentity;
 

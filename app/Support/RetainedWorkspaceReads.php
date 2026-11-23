@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Files\WorkspaceReader;
 use App\Exceptions\WorkspaceReadPending;
-use App\Models\WorkspaceRead;
+use App\Models\Projects\WorkspaceRead;
 use App\Values\WorkReference;
 use App\Values\WorkspaceFacts;
 use App\Values\WorkspaceReadReference;

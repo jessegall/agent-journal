@@ -8,7 +8,7 @@ use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Data\MessageReadBatch;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\MessageMissing;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ProvedClaims;
 use Tests\Support\MessagingTestCase;
 

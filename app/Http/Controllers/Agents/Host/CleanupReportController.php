@@ -8,7 +8,7 @@ use App\Commands\ReportCleanup\ReportCleanupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CleanupStep;
 use App\Http\Requests\Agents\CleanupReportRequest;
-use App\Models\CleanupOperation;
+use App\Models\Starts\CleanupOperation;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 

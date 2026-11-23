@@ -7,8 +7,8 @@ namespace App\Commands\AdvanceAsk;
 use App\Contracts\Admission\MaintenanceAdmission;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Models\Ask;
-use App\Models\AskHop;
+use App\Models\Asks\Ask;
+use App\Models\Asks\AskHop;
 use App\Support\AskEscalation;
 
 /**

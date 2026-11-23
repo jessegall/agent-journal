@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\CallStages;
 
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 
 /**
  * A hook call holding its agent's locked stack row.

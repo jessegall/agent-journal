@@ -6,9 +6,9 @@ namespace Tests\Feature\Processes;
 
 use App\Declarations\RuleDeclaration;
 use App\Enums\RequestState;
-use App\Models\ClassificationRule;
-use App\Models\CommandRequest;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\ClassificationRule;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\RuleProposal;
 use App\Values\AdmissionRefusal;
 use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;

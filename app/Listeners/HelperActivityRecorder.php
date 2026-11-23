@@ -10,7 +10,7 @@ use App\Enums\ActivityType;
 use App\Enums\ActorType;
 use App\Events\HelperReportedOnRecord;
 use App\Events\StartAccepted;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 
 /**

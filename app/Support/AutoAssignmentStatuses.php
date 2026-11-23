@@ -14,7 +14,7 @@ use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\AutoAssignmentPoolUnreadable;
-use App\Models\AutoAssignment;
+use App\Models\Records\AutoAssignment;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

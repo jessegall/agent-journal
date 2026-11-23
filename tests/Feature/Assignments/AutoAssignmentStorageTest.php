@@ -14,7 +14,7 @@ use App\Exceptions\AutoAssignmentMissing;
 use App\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Exceptions\AutoAssignmentRevisionChanged;
 use App\Exceptions\AutoAssignmentSizeInvalid;
-use App\Models\AutoAssignment;
+use App\Models\Records\AutoAssignment;
 use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;

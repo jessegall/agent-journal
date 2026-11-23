@@ -6,8 +6,8 @@ namespace App\Commands\RecordGatewayHealth;
 
 use App\Concerns\RefusesStaleGatewayRuns;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\ShareGatewayEndpoint;
-use App\Models\ShareInstallation;
+use App\Models\Sharing\ShareGatewayEndpoint;
+use App\Models\Sharing\ShareInstallation;
 
 /**
  * Renews the run's hold on the gateways and notes a healthy endpoint version it holds; an unhealthy report leaves the

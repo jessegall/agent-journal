@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Agents;
 use App\Contracts\Sessions\ProfileSelections;
 use App\Data\Agents\StartPreviewData;
 use App\Http\Requests\Agents\StartPreviewRequest;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\StartPreviews;
 use App\Values\ProfileKey;
 

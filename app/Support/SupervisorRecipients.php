@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Values\SupervisorTarget;
 use PhpOption\Option;
 use PhpOption\Some;

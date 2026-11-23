@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Models\Comment;
+use App\Models\Records\Comment;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**

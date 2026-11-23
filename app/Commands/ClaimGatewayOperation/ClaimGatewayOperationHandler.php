@@ -8,9 +8,9 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\GatewayEndpointState;
 use App\Enums\GatewayOperationType;
 use App\Enums\GatewayOutcome;
-use App\Models\ShareGatewayConfiguration;
-use App\Models\ShareGatewayEndpoint;
-use App\Models\ShareGatewayOperation;
+use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareGatewayEndpoint;
+use App\Models\Sharing\ShareGatewayOperation;
 use App\Support\ClaimedGatewayOperation;
 use App\Support\GatewayRuns;
 

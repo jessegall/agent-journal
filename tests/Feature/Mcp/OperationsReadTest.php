@@ -6,7 +6,7 @@ namespace Tests\Feature\Mcp;
 
 use App\Commands\AssignRecord\AssignRecordCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use App\Support\ActorContext;
 use App\Support\AssigneeIdentity;
 use App\Support\ReceiptCaller;

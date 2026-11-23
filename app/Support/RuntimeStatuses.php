@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Data\DriverRequestStatus;
 use App\Data\RuntimeSetting;
 use App\Data\RuntimeStatus;
-use App\Models\AgentRuntime;
-use App\Models\DriverRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
 use Carbon\CarbonImmutable;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Concerns;
 
 use App\Exceptions\CredentialRejected;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 
 /**
  * Refuses a session that may no longer act: no credential, a revoked one, an ended session, a session another

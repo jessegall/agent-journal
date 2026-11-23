@@ -8,9 +8,9 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\RequestState;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\SampleRefused;
-use App\Models\CommandRequest;
-use App\Models\EvidencePermit;
-use App\Models\ProcessRun;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\EvidencePermit;
+use App\Models\Runs\ProcessRun;
 use App\Values\ExitBranch;
 use App\Values\SampleOutcome;
 

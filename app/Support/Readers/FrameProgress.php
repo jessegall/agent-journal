@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Readers;
 
 use App\Contracts\Work\WorkProgress;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\ActorIdentity;
 use App\Values\WorkReference;
 use Carbon\CarbonImmutable;

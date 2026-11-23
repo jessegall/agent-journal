@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Contracts\Chat\Inbox;
-use App\Models\CommandReceipt;
-use App\Models\GlobalGroup;
-use App\Models\InboxRecord;
-use App\Models\Message;
+use App\Models\Chats\InboxRecord;
+use App\Models\CommandRules\CommandReceipt;
+use App\Models\Messages\Message;
+use App\Models\Records\GlobalGroup;
 use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
 use App\Support\DeskOpening;

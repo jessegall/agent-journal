@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Work\PendingWorkSource;
-use App\Models\PendingAgentMessage;
+use App\Models\Agents\PendingAgentMessage;
 
 /**
  * Counts the states' messages kept for an idle agent, so the wake they asked for is not settled as no work.

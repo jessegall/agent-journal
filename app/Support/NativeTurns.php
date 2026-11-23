@@ -8,9 +8,9 @@ use App\Contracts\Drivers\NativeTurnRecords;
 use App\Enums\DriverOperation;
 use App\Enums\RequestProgress;
 use App\Exceptions\StaleProcessGeneration;
-use App\Models\AgentRuntime;
-use App\Models\DriverRequest;
-use App\Models\DriverTurn;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\DriverTurn;
 use Carbon\CarbonImmutable;
 
 /**

@@ -6,7 +6,7 @@ namespace App\Support\Readers;
 
 use App\Contracts\Scripts\ScriptChecks;
 use App\Data\ProfileDraftData;
-use App\Models\ProfileDraft;
+use App\Models\Profiles\ProfileDraft;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 

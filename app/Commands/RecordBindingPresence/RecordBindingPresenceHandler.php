@@ -6,7 +6,7 @@ namespace App\Commands\RecordBindingPresence;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\PresenceRefused;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 use App\Support\HostDescriptorEnrollment;
 use App\Values\EnrolledDescriptor;
 use App\Values\PresenceReceipt;

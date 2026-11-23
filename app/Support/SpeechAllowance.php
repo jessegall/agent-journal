@@ -10,10 +10,10 @@ use App\Contracts\Sessions\CurrentSession;
 use App\Enums\SpeechOpportunityState;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\SpeechRefused;
-use App\Models\InboxInterval;
-use App\Models\Message;
-use App\Models\MessageBatch;
-use App\Models\SpeechOpportunity;
+use App\Models\Chats\InboxInterval;
+use App\Models\Chats\SpeechOpportunity;
+use App\Models\Messages\Message;
+use App\Models\Messages\MessageBatch;
 use Carbon\CarbonImmutable;
 
 /**

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Resolvers\Support;
 
 use App\Enums\LifecycleState;
-use App\Models\OutputChunk;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
+use App\Models\Runs\OutputChunk;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\SpoolRecorder;
 use App\Support\StoredOutput;
 use App\Values\PartActivity;

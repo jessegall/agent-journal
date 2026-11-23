@@ -8,8 +8,8 @@ use App\Commands\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Commands\RecordHeartbeat\RecordHeartbeatHandler;
 use App\Exceptions\CredentialRejected;
 use App\Exceptions\HostReportRefused;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
 
 /**
  * The driver side of the heartbeat: evidence from the host that runs the session's current process refreshes its

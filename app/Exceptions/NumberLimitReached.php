@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Models\NumberGroup;
+use App\Models\Records\NumberGroup;
 use RuntimeException;
 
 /**

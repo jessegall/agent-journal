@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\StartRefused;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\DriverRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverRequest;
 
 /**
  * What the host needs to run one started driver: its journal session, its token, handed out once, and its isolated

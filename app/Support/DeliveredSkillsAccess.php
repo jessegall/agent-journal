@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Authorization\FileAccessPolicy;
 use App\Enums\FileAccess;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

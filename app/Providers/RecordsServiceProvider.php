@@ -13,7 +13,7 @@ use App\Contracts\Records\RecordLinker;
 use App\Contracts\Records\RecordProviderRegistration;
 use App\Contracts\Records\RecordResolver;
 use App\Enums\AccessType;
-use App\Models\Link;
+use App\Models\Records\Link;
 use App\Policies\RecordLinkPolicy;
 use App\Support\Docking\RecordFallbackDocks;
 use App\Support\RecordProviders;

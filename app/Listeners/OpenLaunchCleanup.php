@@ -7,10 +7,10 @@ namespace App\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\SessionClosed;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\CapacityReservation;
-use App\Models\CleanupOperation;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Starts\CapacityReservation;
+use App\Models\Starts\CleanupOperation;
 use App\Support\CapacityRelease;
 
 /**

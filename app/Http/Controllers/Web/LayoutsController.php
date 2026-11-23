@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Contracts\Actors\CurrentUserResolver;
 use App\Http\Requests\Web\LayoutRequest;
-use App\Models\Layout;
+use App\Models\Records\Layout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

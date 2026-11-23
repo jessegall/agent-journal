@@ -9,7 +9,7 @@ use App\Contracts\Records\LinkRecordProvider;
 use App\Contracts\Records\StateProvider;
 use App\CoreCommands;
 use App\Events\StateTypesRequested;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\CommandRegistry;
 use App\Support\LinkTypeRegistry;
 use App\Support\StateCatalog\StateTypeRegistry;

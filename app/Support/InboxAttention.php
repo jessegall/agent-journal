@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxResolver;
-use App\Models\MessageAttention;
+use App\Models\Messages\MessageAttention;
 
 /**
  * Asks every current member of an inbox to look, once per origin: the members are read once, the actors already

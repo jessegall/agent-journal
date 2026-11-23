@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Models\DriverSwitch;
+use App\Models\Drivers\DriverSwitch;
 use App\Values\DriverSwitchReceipt;
 use Illuminate\Http\JsonResponse;
 

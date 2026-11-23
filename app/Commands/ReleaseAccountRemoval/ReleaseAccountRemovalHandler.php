@@ -9,7 +9,7 @@ use App\Commands\HoldAccountUses\HoldAccountUsesCommand;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 
 final readonly class ReleaseAccountRemovalHandler implements CommandHandler
 {

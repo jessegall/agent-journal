@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Sharing;
 
 use App\Data\Support\OptionalOrMissing;
-use App\Models\SharePreview;
+use App\Models\Sharing\SharePreview;
 use App\Support\ShareSelectedTarget;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

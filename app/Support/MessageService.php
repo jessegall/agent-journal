@@ -21,10 +21,10 @@ use App\Exceptions\ChatInboxRefused;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\MessageMissing;
 use App\Exceptions\SessionOutdated;
-use App\Models\ClaimAuthorization;
-use App\Models\InboxRecord;
-use App\Models\Message;
-use App\Models\MessageReceipt;
+use App\Models\Chats\InboxRecord;
+use App\Models\Messages\Message;
+use App\Models\Messages\MessageReceipt;
+use App\Models\Records\ClaimAuthorization;
 use Carbon\CarbonImmutable;
 use Closure;
 

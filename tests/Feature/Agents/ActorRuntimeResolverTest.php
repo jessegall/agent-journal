@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Exceptions\CredentialRejected;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Resolvers\Support\CurrentAgentRuntimes;
 use App\Support\ActorIdentity;
 use App\Support\CredentialLookup;

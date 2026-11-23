@@ -6,8 +6,8 @@ namespace Tests\Feature\Communication;
 
 use App\Data\NotificationTarget;
 use App\Enums\NotificationSourceType;
-use App\Models\NotificationReceipt;
-use App\Models\NotificationScope;
+use App\Models\Notifications\NotificationReceipt;
+use App\Models\Notifications\NotificationScope;
 use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;
 use App\Support\NotificationReceipts;

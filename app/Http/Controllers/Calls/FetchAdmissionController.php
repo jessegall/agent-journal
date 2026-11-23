@@ -10,7 +10,7 @@ use App\Calls\Processes\AdmissionToStart;
 use App\Calls\Processes\FetchAdmissionCall;
 use App\Exceptions\RunAdmissionStale;
 use App\Exceptions\RunnerUnavailable;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\RunnerCapability;
 use Illuminate\Container\Attributes\Config;
 

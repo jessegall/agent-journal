@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Hosts;
 
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 use App\Values\ProjectFileAnswer;
 use App\Values\ProjectFileAnswers;
 

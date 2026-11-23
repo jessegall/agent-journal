@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\OwnerPolicy;
-use App\Models\Message;
+use App\Models\Messages\Message;
 
 /**
  * Who may act on Message records; the grant decides, and the handlers keep their own checks.

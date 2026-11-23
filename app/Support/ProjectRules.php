@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\ClassificationUnavailable;
-use App\Models\ClassificationRule;
-use App\Models\ModuleRuleBundle;
-use App\Models\RuleRevision;
+use App\Models\CommandRules\ClassificationRule;
+use App\Models\CommandRules\ModuleRuleBundle;
+use App\Models\CommandRules\RuleRevision;
 use Illuminate\Database\QueryException;
 
 /**

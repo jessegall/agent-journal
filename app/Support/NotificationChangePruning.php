@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\NotificationChange;
+use App\Models\Notifications\NotificationChange;
 use Carbon\CarbonImmutable;
 
 /**

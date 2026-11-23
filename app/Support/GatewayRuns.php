@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Enums\GatewayEndpointState;
 use App\Exceptions\GatewayRunStale;
-use App\Models\ShareGatewayEndpoint;
-use App\Models\ShareGatewayOperation;
-use App\Models\ShareInstallation;
+use App\Models\Sharing\ShareGatewayEndpoint;
+use App\Models\Sharing\ShareGatewayOperation;
+use App\Models\Sharing\ShareInstallation;
 use Carbon\CarbonImmutable;
 
 /**

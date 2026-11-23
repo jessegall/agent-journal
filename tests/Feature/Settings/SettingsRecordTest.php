@@ -6,7 +6,7 @@ namespace Tests\Feature\Settings;
 
 use App\Casts\SettingsDocumentCast;
 use App\Exceptions\SettingsDocumentInvalid;
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Support\Storage\SettingsDocument;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

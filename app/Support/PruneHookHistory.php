@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\AgentStackRow;
-use App\Models\HookCall;
-use App\Models\StopResult;
+use App\Models\Agents\AgentStackRow;
+use App\Models\Drivers\HookCall;
+use App\Models\Starts\StopResult;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 

@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Work\HelperCommitImport;
 use App\Enums\MergeAttemptState;
 use App\Enums\MergeRefusalReason;
-use App\Models\MergeAttempt;
+use App\Models\Reviews\MergeAttempt;
 use App\Support\ActorIdentity;
 use App\Support\ProtectedMerge;
 use App\Support\RecordIdentity;

@@ -8,7 +8,7 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Authorization\VisibilityCheck;
 use App\Enums\AccessType;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Policies\AccountPolicy;
 
 /**

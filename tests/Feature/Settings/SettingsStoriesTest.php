@@ -17,7 +17,7 @@ use App\Exceptions\SettingDeclarationInvalid;
 use App\Exceptions\SettingsConflict;
 use App\Exceptions\SettingStorageInvalid;
 use App\Exceptions\SettingValueInvalid;
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Support\ActorContext;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;

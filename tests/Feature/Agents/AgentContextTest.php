@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Exceptions\AgentContextMissing;
 use App\Http\Middleware\Agents\AuthenticateAgent;
-use App\Models\StartToken;
+use App\Models\Starts\StartToken;
 use App\Support\AgentContext;
 use App\Support\AgentSessions;
 use App\Support\Stack\StateTypes;

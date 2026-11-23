@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Hooks;
 
-use App\Models\StopAttempt;
+use App\Models\Starts\StopAttempt;
 use App\Values\StartPolicy;
 use App\Values\StopCondition;
 use Spatie\LaravelData\Attributes\DataCollectionOf;

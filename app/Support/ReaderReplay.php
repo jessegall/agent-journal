@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Declarations\VerificationContract;
-use App\Models\PartRun;
-use App\Models\ReaderRevision;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ReaderRevision;
 use App\Values\ReaderCheckpoint;
 use App\Values\ReplayedOutput;
 

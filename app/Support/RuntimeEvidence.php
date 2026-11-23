@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Enums\HoldReason;
 use App\Enums\RuntimeActivity;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use Carbon\CarbonImmutable;
 
 /**

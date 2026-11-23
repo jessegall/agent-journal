@@ -8,8 +8,8 @@ use App\Commands\StartProfileMain\StartProfileMainCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverSwitchStage;
-use App\Models\Agent;
-use App\Models\DriverSwitch;
+use App\Models\Agents\Agent;
+use App\Models\Drivers\DriverSwitch;
 use App\Values\ProfileKey;
 
 final readonly class StartSwitchReplacementHandler implements CommandHandler

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Connections;
 
 use App\Enums\BindingReadiness;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 use App\Values\DriverFamily;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;

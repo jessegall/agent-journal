@@ -10,7 +10,7 @@ use App\Enums\CommandAdmissionStage;
 use App\Enums\RefusalCode;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\RefusalReplayed;
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use App\Support\CommandScope;
 use App\Support\MiddlewareDeclaration;
 use App\Support\RequestKey;

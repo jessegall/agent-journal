@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\AssignBindingEnvironment;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Environment;
-use App\Models\ProjectBinding;
+use App\Models\Projects\Environment;
+use App\Models\Projects\ProjectBinding;
 
 /**
  * Assigns the binding, held locked, the environment of its own project the owner chose.

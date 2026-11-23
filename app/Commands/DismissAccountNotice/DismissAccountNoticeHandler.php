@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\DismissAccountNotice;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\AccountNotice;
+use App\Models\Accounts\AccountNotice;
 use Carbon\CarbonImmutable;
 
 final readonly class DismissAccountNoticeHandler implements CommandHandler

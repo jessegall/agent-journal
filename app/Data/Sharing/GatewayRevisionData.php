@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Sharing;
 
-use App\Models\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Support\ShareGatewayRegistry;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

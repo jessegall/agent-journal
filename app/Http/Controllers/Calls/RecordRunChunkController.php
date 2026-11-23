@@ -8,7 +8,7 @@ use App\Calls\Processes\ChunkStored;
 use App\Calls\Processes\RecordRunChunkCall;
 use App\Commands\RecordRunChunk\RecordRunChunkCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 
 /**
  * Stores one piece of a part's output for the holder of the run's event key, once.

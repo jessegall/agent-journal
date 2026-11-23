@@ -7,10 +7,10 @@ namespace App\Support;
 use App\Enums\GatewayOperationType;
 use App\Enums\ShareAuditType;
 use App\Enums\ShareState;
-use App\Models\Share;
-use App\Models\ShareAudit;
-use App\Models\ShareGatewayConfiguration;
-use App\Models\ShareGatewayOperation;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareAudit;
+use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareGatewayOperation;
 
 /**
  * Ends a locked share once, revoked by the owner or expired by the system: its token can no longer be read back, a

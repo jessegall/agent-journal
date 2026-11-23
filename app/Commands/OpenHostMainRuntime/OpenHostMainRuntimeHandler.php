@@ -8,7 +8,7 @@ use App\Commands\OpenAgentRuntime\OpenAgentRuntimeHandler;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Chat\MainSeatTakeover;
 use App\Contracts\Sessions\BuiltInStartProfiles;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\OpenedRuntime;
 
 final readonly class OpenHostMainRuntimeHandler implements CommandHandler

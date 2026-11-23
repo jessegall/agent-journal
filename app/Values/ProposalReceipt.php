@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\ProposalState;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\RuleProposal;
 
 /**
  * What a proposal command answers: the proposal and its current revision, its state, and the fields a draft still

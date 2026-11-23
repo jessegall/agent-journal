@@ -8,7 +8,7 @@ use App\Contracts\Time\ServerClock;
 use App\Data\ScreenFrameData;
 use App\Enums\RefusalCode;
 use App\Enums\TerminalFrameState;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use App\Support\RuntimeScreen;
 use App\Support\ScreenRegistration;
 use Carbon\CarbonImmutable;

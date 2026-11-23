@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\AssessPartOutput;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\PartRun;
+use App\Models\Runs\PartRun;
 use App\Support\PartAssessments;
 
 /**

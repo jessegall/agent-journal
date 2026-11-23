@@ -7,10 +7,10 @@ namespace App\Listeners;
 use App\Contracts\Events\Listener;
 use App\Enums\ChildRole;
 use App\Events\ChildCheckoutRequested;
-use App\Models\AgentRuntime;
-use App\Models\ChildClaim;
-use App\Models\ProjectBinding;
-use App\Models\WorkspaceRead;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\ChildClaim;
+use App\Models\Projects\ProjectBinding;
+use App\Models\Projects\WorkspaceRead;
 
 /**
  * When a connected project's relay claims a child's start, issues the child's claim once, from the commit the

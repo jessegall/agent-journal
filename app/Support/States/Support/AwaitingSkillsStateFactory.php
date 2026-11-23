@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\States\Support;
 
 use App\Enums\SessionTransferType;
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillPublication;
 use App\Support\Decisions\StateReferences;
 use App\Support\StateLoading\Contracts\StateLoader;
 use App\Support\StateLoading\StateSet;

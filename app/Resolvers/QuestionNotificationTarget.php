@@ -7,7 +7,7 @@ namespace App\Resolvers;
 use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Data\NotificationLink;
-use App\Models\Message;
+use App\Models\Messages\Message;
 
 /**
  * A question notification leads to the exact question in the chat, while the actor may still see the message: the

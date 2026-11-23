@@ -6,8 +6,8 @@ namespace App\Http\Pages\Profiles;
 
 use App\Contracts\Sessions\ProfileResolver;
 use App\Contracts\Sessions\ProfileRules;
-use App\Models\Profile;
-use App\Models\ProfileRevision;
+use App\Models\Profiles\Profile;
+use App\Models\Profiles\ProfileRevision;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;

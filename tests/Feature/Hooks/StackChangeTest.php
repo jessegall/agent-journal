@@ -9,7 +9,7 @@ use App\Contracts\Work\CurrentState;
 use App\Events\StateTypesRequested;
 use App\Exceptions\StackMissing;
 use App\Exceptions\StackTooDeep;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\AgentStacks;

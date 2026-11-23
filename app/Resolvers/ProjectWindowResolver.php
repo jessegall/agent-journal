@@ -13,7 +13,7 @@ use App\Enums\BindingReadiness;
 use App\Enums\ProjectReadState;
 use App\Enums\ProjectWindowState;
 use App\Http\Requests\Connections\ProjectWindowRequest;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 use App\Values\ProjectEntry;
 use App\Values\ProjectFileAnswers;
 use Carbon\CarbonImmutable;

@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Calls\Scripts\ShowProfileRunCall;
 use App\Data\ProfileRunData;
-use App\Models\ProfileRun;
+use App\Models\Profiles\ProfileRun;
 
 /**
  * Answers one of the caller's own profile runs with its recorded steps; another actor's run is not found.

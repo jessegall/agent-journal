@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Profile;
+use App\Models\Profiles\Profile;
 use Illuminate\Console\Command;
 
 /**

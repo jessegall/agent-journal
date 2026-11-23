@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Chat\Inbox;
 use App\Exceptions\InboxUnavailable;
-use App\Models\InboxInterval;
-use App\Models\InboxRecord;
+use App\Models\Chats\InboxInterval;
+use App\Models\Chats\InboxRecord;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorProvider;
 use App\Exceptions\ActorUnavailable;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 
 /**
  * Agents as actors: an agent that exists and is not retired.

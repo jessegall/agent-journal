@@ -10,7 +10,7 @@ use App\Commands\MaintainAccount\MaintainAccountCommand;
 use App\Commands\SettleAccountUses\SettleAccountUsesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\AccountInUse;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Values\MaintenanceProgress;
 
 /**

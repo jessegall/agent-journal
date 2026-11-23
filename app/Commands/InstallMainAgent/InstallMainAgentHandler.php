@@ -7,8 +7,8 @@ namespace App\Commands\InstallMainAgent;
 use App\Commands\CreateAgent\CreateAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Agent;
-use App\Models\MainAgentDesignation;
+use App\Models\Agents\Agent;
+use App\Models\Agents\MainAgentDesignation;
 use App\Values\ProfileBase;
 
 final readonly class InstallMainAgentHandler implements CommandHandler

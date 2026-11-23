@@ -8,7 +8,7 @@ use App\Contracts\Assignments\AssignmentProviders;
 use App\Enums\ActorType;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidActorText;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\EngineActor;
 use Domain\Access\Models\User;

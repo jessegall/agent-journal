@@ -9,7 +9,7 @@ use App\Commands\WithdrawCommandRequest\WithdrawCommandRequestCommand;
 use App\Enums\RequestHoldReason;
 use App\Enums\RequestState;
 use App\Exceptions\RequestTransitionRefused;
-use App\Models\CommandRequest;
+use App\Models\CommandRules\CommandRequest;
 use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

@@ -7,7 +7,7 @@ namespace App\Commands\CreateSkill;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillKeyTaken;
-use App\Models\Skill;
+use App\Models\Skills\Skill;
 use App\Resolvers\Support\SkillContextResolver;
 use App\Support\StoredSkillWrites;
 use App\Values\SkillKey;

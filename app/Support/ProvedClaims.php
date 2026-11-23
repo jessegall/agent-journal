@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\AssignmentRecord;
-use App\Models\ClaimAuthorization;
+use App\Models\Records\AssignmentRecord;
+use App\Models\Records\ClaimAuthorization;
 
 /**
  * The current claims on records of one type whose proofs still hold: the claims, their proofs and the assignments the

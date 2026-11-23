@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\Policy;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 
 /**
  * Who may change who holds a record: the grants of the acting actor decide, acquiring for oneself, dispatching to

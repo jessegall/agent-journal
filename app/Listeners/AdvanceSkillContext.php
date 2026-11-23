@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Events\Listener;
 use App\Enums\ContextStartType;
 use App\Events\ContextStarted;
-use App\Models\SkillContextEpoch;
+use App\Models\Skills\SkillContextEpoch;
 
 /**
  * A clear or compaction starts a new context, in which no skill counts as read until it is read again.

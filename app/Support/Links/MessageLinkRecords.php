@@ -7,7 +7,7 @@ namespace App\Support\Links;
 use App\Concerns\ProvidesModelRecords;
 use App\Contracts\Records\RecordProvider;
 use App\Data\RecordCard;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;

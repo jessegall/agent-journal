@@ -9,7 +9,7 @@ use App\Enums\CommandClass;
 use App\Enums\CommandType;
 use App\Enums\ShellDialect;
 use App\Enums\UnresolvedType;
-use App\Models\CommandAlias;
+use App\Models\CommandRules\CommandAlias;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;

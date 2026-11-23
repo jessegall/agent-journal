@@ -6,7 +6,7 @@ namespace App\Events;
 
 use App\Contracts\Events\Event;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\Sources\Contracts\DockSourceChanged;
 use App\Values\PartProjection;
 

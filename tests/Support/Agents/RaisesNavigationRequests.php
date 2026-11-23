@@ -6,8 +6,8 @@ namespace Tests\Support\Agents;
 
 use App\Enums\ActorType;
 use App\Enums\NavigationReason;
-use App\Models\DriverRequest;
-use App\Models\NavigationRequest;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\NavigationRequest;
 use App\Support\ActorIdentity;
 use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;

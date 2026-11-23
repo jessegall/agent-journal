@@ -7,7 +7,7 @@ namespace App\Commands\RetireMenuEntry;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\MenuEntryRefused;
-use App\Models\MenuEntry;
+use App\Models\Drivers\MenuEntry;
 use App\Support\ActorIdentity;
 
 final readonly class RetireMenuEntryHandler implements CommandHandler

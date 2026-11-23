@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Contracts\Files\Files;
 use App\Enums\CaptureState;
 use App\Enums\Place;
-use App\Models\OutputChunk;
-use App\Models\PartRun;
+use App\Models\Runs\OutputChunk;
+use App\Models\Runs\PartRun;
 use App\Values\FilePath;
 use Illuminate\Support\Collection;
 

@@ -6,7 +6,7 @@ namespace App\Commands\RecordUserHeartbeat;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Models\UserPresence;
+use App\Models\Chats\UserPresence;
 
 final readonly class RecordUserHeartbeatHandler implements CommandHandler
 {

@@ -6,7 +6,7 @@ namespace App\Data\Profiles;
 
 use App\Enums\AccountProcessRole;
 use App\Enums\AccountState;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Values\AccountUse;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

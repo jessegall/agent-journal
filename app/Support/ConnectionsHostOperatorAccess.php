@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Hosts\HostOperatorAccess;
 use App\Enums\AccessType;
-use App\Models\ProjectInvitation;
+use App\Models\Projects\ProjectInvitation;
 use App\Policies\ConnectionsPolicy;
 
 /**

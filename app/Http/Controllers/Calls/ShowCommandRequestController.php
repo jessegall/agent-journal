@@ -6,9 +6,9 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\CommandRequestShown;
 use App\Calls\Processes\ShowCommandRequestCall;
-use App\Models\CommandRequest;
-use App\Models\ReaderRevision;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\RuleProposal;
+use App\Models\Runs\ReaderRevision;
 use App\Support\ProjectKey;
 
 /**

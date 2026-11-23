@@ -9,7 +9,7 @@ use App\Enums\NotificationSourceType;
 use App\Events\NotificationsChanged;
 use App\Events\NotificationsInvalidated;
 use App\Listeners\BroadcastNotificationChanges;
-use App\Models\NotificationScope;
+use App\Models\Notifications\NotificationScope;
 use App\Support\NotificationDelivery;
 use App\Support\UserChannel;
 use Illuminate\Support\Facades\Event;

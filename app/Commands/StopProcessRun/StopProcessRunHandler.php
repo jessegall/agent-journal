@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\RunLogicalResult;
 use App\Enums\RunResultSource;
 use App\Exceptions\StopRefused;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Support\ProcessAdministration;
 use App\Support\RunOutcomes;

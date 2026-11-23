@@ -10,7 +10,7 @@ use App\Contracts\Navigation\PageResolver;
 use App\Data\Activity\ActivityEventData;
 use App\Data\Activity\ActivityWindowData;
 use App\Http\Requests\ActivityWindowRequest;
-use App\Models\ActivityEntry;
+use App\Models\Agents\ActivityEntry;
 use App\Support\ActorLabelSet;
 
 /**

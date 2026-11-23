@@ -8,7 +8,7 @@ use App\Commands\AskMessage\AskMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ActorType;
 use App\Enums\DismissalType;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\RequestKey;
 use Domain\Access\Models\User;

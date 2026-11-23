@@ -6,8 +6,8 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Events\StateTypesRequested;
-use App\Models\Agent;
-use App\Models\AgentStackRow;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\AgentStacks;

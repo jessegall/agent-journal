@@ -7,9 +7,9 @@ namespace App\Commands\ReportProjectRead;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ProjectReadType;
 use App\Exceptions\ProjectReadRefused;
-use App\Models\ProjectFile;
-use App\Models\ProjectFileVersion;
-use App\Models\ProjectRead;
+use App\Models\Projects\ProjectFile;
+use App\Models\Projects\ProjectFileVersion;
+use App\Models\Projects\ProjectRead;
 use App\Values\ProjectEntry;
 use App\Values\ProjectFileText;
 

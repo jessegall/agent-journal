@@ -6,7 +6,7 @@ namespace App\Commands\PollDeviceGrant;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\DeviceGrantRefused;
-use App\Models\DeviceGrant;
+use App\Models\Projects\DeviceGrant;
 use App\Values\DevicePollOutcome;
 
 /**

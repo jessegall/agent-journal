@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\States\Support;
 
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillPublication;
 use App\Support\Decisions\StateReferenceFactory;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\SettleFrameTimes;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\EngineFrameTime;
+use App\Models\Agents\EngineFrameTime;
 use App\Support\EngineAccess;
 use App\Values\FrameSettlement;
 use Illuminate\Support\Str;

@@ -8,8 +8,8 @@ use App\Contracts\Reflection\ReflectorFactory;
 use App\Contracts\Sharing\ShareGateway;
 use App\Exceptions\ShareGatewayInvalid;
 use App\Exceptions\UnknownShareGateway;
-use App\Models\ShareGatewayConfiguration;
-use App\Models\ShareGatewayEndpoint;
+use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareGatewayEndpoint;
 use Illuminate\Contracts\Container\Container;
 
 /**

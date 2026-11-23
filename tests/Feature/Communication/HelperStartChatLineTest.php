@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Contracts\Chat\ChatLines;
 use App\Events\StartAccepted;
 use App\Listeners\ShowHelperStartInChat;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Values\ChatLine;
 use Tests\Support\MessagingTestCase;

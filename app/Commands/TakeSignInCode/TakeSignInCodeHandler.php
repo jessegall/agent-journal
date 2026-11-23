@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\TakeSignInCode;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use App\Values\SignInPoll;
 use Carbon\CarbonImmutable;

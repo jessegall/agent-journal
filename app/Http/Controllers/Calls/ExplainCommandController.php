@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Data\ExplanationData;
 use App\Data\HeldPartData;
 use App\Enums\RequestHoldReason;
-use App\Models\CommandRequest;
+use App\Models\CommandRules\CommandRequest;
 use App\Support\Explanations;
 
 /**

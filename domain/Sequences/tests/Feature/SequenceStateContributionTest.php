@@ -7,7 +7,7 @@ namespace Domain\Sequences\Tests\Feature;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\RewriteSupport;
 use App\Exceptions\StackAlreadyClosed;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\ContextCompacted;

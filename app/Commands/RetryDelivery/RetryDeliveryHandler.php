@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\RetryDelivery;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\OutstandingMessageRange;
-use App\Models\ReceiptDelivery;
+use App\Models\Messages\OutstandingMessageRange;
+use App\Models\Messages\ReceiptDelivery;
 use Carbon\CarbonImmutable;
 
 final readonly class RetryDeliveryHandler implements CommandHandler

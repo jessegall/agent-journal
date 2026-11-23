@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Exceptions\ReadPermitMissing;
 use App\Exceptions\ShareLinkRefused;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

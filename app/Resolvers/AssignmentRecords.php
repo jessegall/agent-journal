@@ -10,7 +10,7 @@ use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Sharing\SharedHolders;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidAssignmentPage;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentSet;
 use App\Support\Page;

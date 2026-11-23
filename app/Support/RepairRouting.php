@@ -11,8 +11,8 @@ use App\Enums\CoreAskType;
 use App\Enums\RepairRequestState;
 use App\Enums\WorkRepairOutcome;
 use App\Exceptions\HelperImportFailed;
-use App\Models\CodeReview;
-use App\Models\RepairRequest;
+use App\Models\Reviews\CodeReview;
+use App\Models\Reviews\RepairRequest;
 use App\Values\WorkRepairRequest;
 
 /**

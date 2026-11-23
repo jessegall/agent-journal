@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\FinishProjectCommandRun;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\ProjectCommandRun;
+use App\Models\Projects\ProjectCommandRun;
 
 final readonly class FinishProjectCommandRunHandler implements CommandHandler
 {

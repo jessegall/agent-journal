@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Enums\ActorType;
 use App\Enums\CommandClass;
-use App\Models\PermissionRevocation;
+use App\Models\Profiles\PermissionRevocation;
 use App\Support\ActorIdentity;
 use App\Values\CommandClassSet;
 use App\Values\CommandPattern;

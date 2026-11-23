@@ -7,8 +7,8 @@ namespace App\Http\Controllers;
 use App\Commands\RecordBindingStart\RecordBindingStartCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Connections\BindingRuntimeRequestData;
-use App\Models\BindingStart;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
+use App\Models\Starts\BindingStart;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 

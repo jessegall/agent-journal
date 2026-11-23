@@ -8,7 +8,7 @@ use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxProvider;
 use App\Contracts\Chat\NamedInboxes;
 use App\Exceptions\InboxUnavailable;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 use PhpOption\Option;
 
 /**

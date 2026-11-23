@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\DockSourceUnavailable;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\Cards\ComposedCard;
 use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;

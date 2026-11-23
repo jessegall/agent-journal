@@ -10,7 +10,7 @@ use App\Contracts\Records\RecordResolver;
 use App\Data\RecordCard;
 use App\Exceptions\RecordProviderInvalid;
 use App\Exceptions\UnknownLinkType;
-use App\Models\Link;
+use App\Models\Records\Link;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;

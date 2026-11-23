@@ -7,7 +7,7 @@ namespace Tests\Feature\Settings;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Settings\SettingsAccessPolicy;
 use App\Exceptions\SettingsAccessDenied;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Providers\SettingsServiceProvider;
 use App\Support\ClosedSettingsAccess;
 use App\Support\OwnerSettingsAccess;

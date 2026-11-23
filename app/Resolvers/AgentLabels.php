@@ -7,7 +7,7 @@ namespace App\Resolvers;
 use App\Contracts\Actors\ActorLabelProvider;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Sessions\AgentResolver;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\AgentInspection;
 use App\Support\AgentLabel;
 

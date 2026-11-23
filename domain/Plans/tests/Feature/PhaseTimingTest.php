@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature;
 
 use App\Contracts\Time\VerificationTiming;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
 use App\Support\OpenTiming;
 use App\Values\TimingVerdict;

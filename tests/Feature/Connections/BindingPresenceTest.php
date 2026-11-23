@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Enums\BindingReadiness;
-use App\Models\AgentRuntime;
-use App\Models\ProjectBinding;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Projects\ProjectBinding;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

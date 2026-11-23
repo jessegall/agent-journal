@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\FenceProfileRevision;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\RevisionFence;
+use App\Models\Starts\RevisionFence;
 
 /**
  * Keeps the fence for host reconciliation and answers the id of the fence.

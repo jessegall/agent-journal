@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Processes;
 
 use App\Contracts\Events\RunEvents;
 use App\Enums\OutputStream;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Values\PartEnd;
 use App\Values\PartKey;
 

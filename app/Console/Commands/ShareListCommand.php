@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Enums\ShareState;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use App\Support\ConsoleOwner;
 use App\Support\ShareListFilters;
 use Illuminate\Console\Command;

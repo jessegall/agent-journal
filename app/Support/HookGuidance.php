@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\ActorGuidance;
-use App\Models\PendingAgentMessage;
+use App\Models\Agents\PendingAgentMessage;
 
 /**
  * Keeps guidance as a message for the actor's next hook and asks for its attention, so a sleeping actor wakes to it.

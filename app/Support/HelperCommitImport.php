@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Work\HelperCommitImport as HelperCommitImportContract;
 use App\Exceptions\HelperImportFailed;
 use App\Exceptions\HelperWorkUncertified;
-use App\Models\CertifiedWork;
+use App\Models\Reviews\CertifiedWork;
 use App\Values\HelperImportReceipt;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Process\Factory;

@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ActorType;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\RequestKey;
 use Domain\Access\Models\User;

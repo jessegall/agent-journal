@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\OwnerPolicy;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 
 /**
  * The owner's maintenance of agents: inspecting their sessions and runtimes, steering and recovering them, running key

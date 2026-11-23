@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\RequestProgress;
-use App\Models\AgentRuntime;
-use App\Models\DriverRequest;
-use App\Models\NavigationRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\NavigationRequest;
 
 /**
  * Ends driver requests and the navigation tied to them in one transaction: a cancelled or settled request cancels its

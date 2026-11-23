@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Work\UserStack;
 use App\Enums\AccessType;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;

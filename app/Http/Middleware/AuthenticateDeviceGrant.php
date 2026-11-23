@@ -9,7 +9,7 @@ use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Exceptions\ActorUnavailable;
 use App\Exceptions\DeviceGrantRefused;
-use App\Models\DeviceGrant;
+use App\Models\Projects\DeviceGrant;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\DeviceCaller;

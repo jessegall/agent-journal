@@ -10,7 +10,7 @@ use App\Contracts\Events\Listener;
 use App\Data\NotificationTarget;
 use App\Enums\NotificationSourceType;
 use App\Events\RunOutcomeRecorded;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Resolvers\RunNotificationTarget;
 
 /**

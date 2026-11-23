@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\InstallMainAgent\InstallMainAgentCommand as InstallMainAgent;
 use App\Enums\CommandEntry;
-use App\Models\MainAgentDesignation;
+use App\Models\Agents\MainAgentDesignation;
 use App\Support\EntryDispatchers;
 use Illuminate\Console\Command;
 

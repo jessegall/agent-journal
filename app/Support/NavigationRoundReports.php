@@ -7,9 +7,9 @@ namespace App\Support;
 use App\Enums\HoldReason;
 use App\Enums\NavigationCompletion;
 use App\Exceptions\NavigationRaiseRefused;
-use App\Models\AgentRuntime;
-use App\Models\DriverRequest;
-use App\Models\NavigationRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\NavigationRequest;
 use App\Values\NavigationRoundReport;
 use App\Values\ScriptProgress;
 

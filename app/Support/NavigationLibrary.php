@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\NavigationCompletion;
-use App\Models\MenuEntry;
-use App\Models\NavigationRequest;
+use App\Models\Drivers\MenuEntry;
+use App\Models\Drivers\NavigationRequest;
 use App\Values\MenuStep;
 
 /**

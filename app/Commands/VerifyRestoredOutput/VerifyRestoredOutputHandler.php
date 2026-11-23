@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\VerifyRestoredOutput;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\ManifestCheck;
 use App\Values\PartCapture;
 use App\Values\RestoredCaptures;

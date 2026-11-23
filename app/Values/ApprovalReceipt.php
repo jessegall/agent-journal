@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Models\RuleRevision;
+use App\Models\CommandRules\RuleRevision;
 
 /**
  * What an approval answers: the rule now active, its approved revision and that revision's digest.

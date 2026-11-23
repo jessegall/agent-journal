@@ -6,7 +6,7 @@ namespace Tests\Feature\Mcp;
 
 use App\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\AssignmentRootFinished;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\AssignmentGroup;
 use App\Support\RecordIdentity;
 use Domain\Access\Models\User;

@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Events\Listener;
 use App\Events\NotificationsChanged;
 use App\Events\NotificationsInvalidated;
-use App\Models\NotificationScope;
+use App\Models\Notifications\NotificationScope;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

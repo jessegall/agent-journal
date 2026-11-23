@@ -8,11 +8,11 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverVariant;
 use App\Events\SessionStateChanged;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\DriverSwitch;
-use App\Models\ProcessStart;
-use App\Models\StartRecord;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverSwitch;
+use App\Models\Starts\ProcessStart;
+use App\Models\Starts\StartRecord;
 
 final readonly class ReportRunningHandler implements CommandHandler
 {

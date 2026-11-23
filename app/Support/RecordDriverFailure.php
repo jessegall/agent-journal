@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Events\DriverFailed;
-use App\Models\FailureReceipt;
-use App\Models\ProcessStart;
+use App\Models\Drivers\FailureReceipt;
+use App\Models\Starts\ProcessStart;
 use App\Support\Inputs\FailureDetails;
 use App\Support\Inputs\Values\HookIdentity;
 

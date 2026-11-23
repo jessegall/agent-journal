@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use App\Support\ExpiredReceipts;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;

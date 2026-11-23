@@ -6,7 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Exceptions\InvalidAssignmentPage;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
 use App\Support\NumberedPage;
 use Domain\Plans\Contracts\PlanResolver;

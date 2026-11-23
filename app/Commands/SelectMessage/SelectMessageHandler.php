@@ -7,8 +7,8 @@ namespace App\Commands\SelectMessage;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sessions\CurrentSession;
 use App\Exceptions\ChatMessageRefused;
-use App\Models\AgentSession;
-use App\Models\Message;
+use App\Models\Agents\AgentSession;
+use App\Models\Messages\Message;
 
 final readonly class SelectMessageHandler implements CommandHandler
 {

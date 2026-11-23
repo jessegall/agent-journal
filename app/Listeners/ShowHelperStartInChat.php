@@ -8,7 +8,7 @@ use App\Contracts\Chat\ChatLines;
 use App\Contracts\Events\Listener;
 use App\Enums\ActorType;
 use App\Events\StartAccepted;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 
 /**

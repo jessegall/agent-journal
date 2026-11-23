@@ -6,7 +6,7 @@ namespace App\Commands\RecordRunChunk;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Reads\OutputRecorder;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\Execution\RecordedRunEvents;
 use App\Values\PartKey;
 

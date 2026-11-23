@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Readers;
 
-use App\Models\SessionPolicy;
-use App\Models\StopAttempt;
-use App\Models\StopResult;
+use App\Models\Starts\SessionPolicy;
+use App\Models\Starts\StopAttempt;
+use App\Models\Starts\StopResult;
 use App\Values\SessionInspection;
 use App\Values\StopResultLine;
 

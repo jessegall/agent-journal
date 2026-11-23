@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\InstallAttemptRefused;
-use App\Models\InstallAttempt;
+use App\Models\Projects\InstallAttempt;
 use App\Values\InstallAttemptPage;
 use App\Values\InstallAttemptRow;
 use Carbon\CarbonImmutable;

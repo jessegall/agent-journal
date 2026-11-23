@@ -9,7 +9,7 @@ use App\Enums\HoldReason;
 use App\Enums\NavigationState;
 use App\Exceptions\HostReportRefused;
 use App\Exceptions\NavigationRaiseRefused;
-use App\Models\NavigationRequest;
+use App\Models\Drivers\NavigationRequest;
 use App\Support\DriverRequestEndings;
 use App\Support\HostRuntimes;
 

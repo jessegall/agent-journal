@@ -8,7 +8,7 @@ use App\Contracts\Admission\MaintenanceAdmission;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\MergeOutcomeRecorded;
-use App\Models\MergeAttempt;
+use App\Models\Reviews\MergeAttempt;
 use App\Support\ProtectedMerge;
 use Illuminate\Support\Carbon;
 

@@ -9,7 +9,7 @@ use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Records\RecordProvider;
 use App\Data\RecordCard;
 use App\Enums\AccessType;
-use App\Models\ProjectFile;
+use App\Models\Projects\ProjectFile;
 use App\Policies\ProjectFilesPolicy;
 use App\Support\ReadBuilder;
 use Illuminate\Database\Eloquent\Model;

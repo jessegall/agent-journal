@@ -7,7 +7,7 @@ namespace App\Commands\RetryDriverRequest;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\RecoveryAction;
 use App\Exceptions\DriverRequestRefused;
-use App\Models\DriverRequest;
+use App\Models\Drivers\DriverRequest;
 use App\Support\DriverRequestRecovery;
 
 final readonly class RetryDriverRequestHandler implements CommandHandler

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Drivers\ToolDiscovery;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 

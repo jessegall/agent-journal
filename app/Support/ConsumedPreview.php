@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareGatewayConfiguration;
 
 /**
  * A preview the owner confirmed and used, under its locked gateway configuration: the root, the selected targets and

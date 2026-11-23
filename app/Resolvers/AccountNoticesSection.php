@@ -7,7 +7,7 @@ namespace App\Resolvers;
 use App\Contracts\Navigation\SectionResolver;
 use App\Data\Profiles\AccountNoticesData;
 use App\Declarations\SlotContext;
-use App\Models\AccountNotice;
+use App\Models\Accounts\AccountNotice;
 
 /**
  * The bar's account notices: open notices the owner can read, none for anyone else.

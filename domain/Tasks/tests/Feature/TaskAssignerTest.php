@@ -6,7 +6,7 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Assignments\AssignmentPool;
 use App\Enums\ActorType;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\PoolMembers;

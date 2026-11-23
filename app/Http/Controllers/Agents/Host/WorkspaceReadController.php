@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Agents\Host;
 use App\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\WorkspaceReadReportRequest;
-use App\Models\WorkspaceRead;
+use App\Models\Projects\WorkspaceRead;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;

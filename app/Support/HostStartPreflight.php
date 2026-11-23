@@ -9,7 +9,7 @@ use App\Contracts\Sessions\StartPreflight;
 use App\Enums\DriverCapability;
 use App\Enums\StartPreflightRefusal;
 use App\Exceptions\StartPreflightRefused;
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Values\BoundTarget;
 use App\Values\StartProposal;
 

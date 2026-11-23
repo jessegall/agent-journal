@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Chat\AskType;
 use App\Enums\AskOriginType;
-use App\Models\Ask;
+use App\Models\Asks\Ask;
 use App\Values\ProfileKey;
 
 /**

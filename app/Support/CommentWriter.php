@@ -12,7 +12,7 @@ use App\Enums\WholeRecord;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Exceptions\TargetHasNoText;
 use App\Exceptions\TargetNotCommentable;
-use App\Models\Comment;
+use App\Models\Records\Comment;
 use App\Values\TextRange;
 use Illuminate\Database\Eloquent\Model;
 

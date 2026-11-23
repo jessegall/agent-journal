@@ -6,8 +6,8 @@ namespace Tests\Feature\Desks;
 
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Models\Agent;
-use App\Models\AssignmentRecord;
+use App\Models\Agents\Agent;
+use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\DeskOpening;
 use App\Support\DeskSeating;

@@ -7,7 +7,7 @@ namespace App\Commands\EndTerminalViews;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
 use App\Enums\RuntimeActivity;
-use App\Models\TerminalView;
+use App\Models\Drivers\TerminalView;
 use App\Support\EngineAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;

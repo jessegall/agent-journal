@@ -13,7 +13,7 @@ use App\Enums\AccessType;
 use App\Enums\DismissalType;
 use App\Exceptions\MessageMissing;
 use App\Exceptions\MessageStateConflict;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Policies\MessageAdministrationPolicy;
 use App\Support\ActorIdentity;
 use App\Support\ChatService;

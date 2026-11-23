@@ -8,8 +8,8 @@ use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Work\IncomingWork;
 use App\Contracts\Work\StackTransaction;
-use App\Models\AssignmentRecord;
-use App\Models\Message;
+use App\Models\Messages\Message;
+use App\Models\Records\AssignmentRecord;
 use App\Support\States\Support\AnsweringMessageStateReference;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\Policy;
-use App\Models\Skill;
+use App\Models\Skills\Skill;
 
 /**
  * Who may act on Skill records; the grant decides, and the handlers keep their own checks.

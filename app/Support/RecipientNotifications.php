@@ -9,8 +9,8 @@ use App\Contracts\Chat\Notifications;
 use App\Data\NotificationTarget;
 use App\Enums\NotificationSourceType;
 use App\Events\NotificationsWithdrawn;
-use App\Models\NotificationReceipt;
-use App\Models\NotificationScope;
+use App\Models\Notifications\NotificationReceipt;
+use App\Models\Notifications\NotificationScope;
 use Carbon\CarbonImmutable;
 
 /**

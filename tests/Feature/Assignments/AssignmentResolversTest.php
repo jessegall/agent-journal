@@ -10,7 +10,7 @@ use App\Enums\ActorType;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidAssignmentPage;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
 use App\Support\Page;
 use Domain\Access\Models\User;

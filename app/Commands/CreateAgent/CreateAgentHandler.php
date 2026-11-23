@@ -6,7 +6,7 @@ namespace App\Commands\CreateAgent;
 
 use App\Contracts\Actors\ActorProvisioning;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 
 /**

@@ -9,7 +9,7 @@ use App\Enums\ChatPermission;
 use App\Enums\IntervalRole;
 use App\Enums\TimelineEventType;
 use App\Exceptions\InboxUnavailable;
-use App\Models\TimelineEvent;
+use App\Models\Chats\TimelineEvent;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAccess;
 use App\Support\ChatInboxes;

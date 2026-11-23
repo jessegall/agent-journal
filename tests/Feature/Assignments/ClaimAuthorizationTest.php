@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Enums\ClaimBasis;
-use App\Models\AssignmentRecord;
-use App\Models\ClaimAuthorization;
+use App\Models\Records\AssignmentRecord;
+use App\Models\Records\ClaimAuthorization;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\RecordIdentity;

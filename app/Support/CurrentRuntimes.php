@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\TerminalViewRefused;
-use App\Models\Agent;
-use App\Models\AgentRuntime;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentRuntime;
 
 /**
  * The runtime an agent's terminal belongs to now, for watching and for control alike.

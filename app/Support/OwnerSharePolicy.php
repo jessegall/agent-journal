@@ -10,7 +10,7 @@ use App\Contracts\Chat\AdmittedRecipients;
 use App\Contracts\Sharing\SharePolicy;
 use App\Exceptions\SharingNotAllowed;
 use App\Exceptions\UnknownShareRecordType;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 
 /**
  * Sharing's authority: the current configured owner, as Core's journal admission names them, manages every

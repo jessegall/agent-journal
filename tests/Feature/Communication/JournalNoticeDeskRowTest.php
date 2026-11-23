@@ -8,7 +8,7 @@ use App\Commands\InstallDesks\InstallDesksCommand;
 use App\Contracts\Chat\InboxNotices;
 use App\Enums\CommandEntry;
 use App\Enums\MessageType;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\EntryDispatchers;
 use Tests\Support\MessagingTestCase;
 

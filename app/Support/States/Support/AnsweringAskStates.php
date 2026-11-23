@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\States\Support;
 
 use App\Enums\SessionTransferType;
-use App\Models\AskHop;
+use App\Models\Asks\AskHop;
 use App\Support\Decisions\StateReferences;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;

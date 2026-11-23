@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Enums\AccountNoticeReason;
-use App\Models\AccountNotice;
+use App\Models\Accounts\AccountNotice;
 use App\Support\AccountNotices;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;

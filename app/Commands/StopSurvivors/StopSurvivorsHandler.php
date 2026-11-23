@@ -6,7 +6,7 @@ namespace App\Commands\StopSurvivors;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RetryRefused;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 
 final readonly class StopSurvivorsHandler implements CommandHandler
 {

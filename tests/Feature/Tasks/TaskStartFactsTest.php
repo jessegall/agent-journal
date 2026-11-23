@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Tasks;
 
 use App\Contracts\Bus\CommandBus;
-use App\Models\Agent;
-use App\Models\AgentSession;
-use App\Models\AgentStackRow;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
+use App\Models\Agents\AgentStackRow;
 use App\Support\ActorIdentity;
 use App\Support\ListenerRegistry;
 use App\Support\StartSessions;

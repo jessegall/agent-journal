@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Chat\ActorDesks;
-use App\Models\DeskPreference;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskPreference;
+use App\Models\Desks\DeskRecord;
 
 /**
  * Keeps an active actor reachable after it lost a seat: with no seat left it gets a new personal desk, and when it

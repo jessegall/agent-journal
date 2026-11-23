@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Support\EnrolledHost;
 use App\Support\HostDescriptorEnrollment;
 use Illuminate\Testing\TestResponse;

@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
 use App\Enums\RequestProgress;
-use App\Models\DriverRequest;
-use App\Models\TerminalGrant;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\TerminalGrant;
 
 /**
  * What a host's report on a browser writer's operation settles: a carried out take issues the grant under the id the

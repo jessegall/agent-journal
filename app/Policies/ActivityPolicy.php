@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\OwnerPolicy;
-use App\Models\ActivityEntry;
+use App\Models\Agents\ActivityEntry;
 
 /**
  * Only the owner reads what the journal's agents did.

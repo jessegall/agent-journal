@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Contracts\Bus\CommandPermissionResolver;
 use App\Enums\CommandClass;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\StartSessions;
 use App\Values\CommandClassSet;

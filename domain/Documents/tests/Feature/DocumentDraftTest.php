@@ -6,9 +6,9 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Events\SessionClosed;
-use App\Models\Agent;
-use App\Models\Message;
-use App\Models\SessionPolicy;
+use App\Models\Agents\Agent;
+use App\Models\Messages\Message;
+use App\Models\Starts\SessionPolicy;
 use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
 use App\Support\DeskOpening;

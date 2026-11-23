@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\AccountUsageCost;
-use App\Models\AccountUsageTokens;
-use App\Models\AccountUsageWindow;
+use App\Models\Accounts\AccountUsageCost;
+use App\Models\Accounts\AccountUsageTokens;
+use App\Models\Accounts\AccountUsageWindow;
 use Illuminate\Database\Eloquent\Collection;
 
 /**

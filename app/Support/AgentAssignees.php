@@ -9,7 +9,7 @@ use App\Contracts\Assignments\Assignee;
 use App\Contracts\Assignments\AssigneeProvider;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AssigneeUnavailable;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\Lifecycle\AgentLifecycle;
 
 /**

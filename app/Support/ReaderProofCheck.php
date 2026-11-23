@@ -6,11 +6,11 @@ namespace App\Support;
 
 use App\Declarations\VerificationContract;
 use App\Exceptions\ReaderProofFailed;
-use App\Models\CommandRequest;
-use App\Models\EvidencePermit;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
-use App\Models\ReaderRevision;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\EvidencePermit;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
+use App\Models\Runs\ReaderRevision;
 use App\Values\ExitBranch;
 use App\Values\OutputProblem;
 use App\Values\ProvenBranch;

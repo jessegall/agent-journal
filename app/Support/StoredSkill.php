@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Skills\Skill;
 use App\Contracts\Skills\SkillCondition;
-use App\Models\SkillRevision;
+use App\Models\Skills\SkillRevision;
 use App\Values\SkillSections;
 
 /**

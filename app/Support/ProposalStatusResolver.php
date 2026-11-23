@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 
 /**
  * The calling agent's own share proposals, newest first, as number and state only: never another agent's, never a

@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\RewriteSupport;
 use App\Events\ContextStarted;
-use App\Models\HookCall;
+use App\Models\Drivers\HookCall;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\ContextCompacted;

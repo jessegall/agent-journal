@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
 use PhpOption\Option;
 
 /**

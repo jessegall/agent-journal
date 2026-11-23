@@ -22,11 +22,11 @@ use App\Exceptions\MessageStateConflict;
 use App\Exceptions\RespondentRequired;
 use App\Exceptions\SpeechRefused;
 use App\Exceptions\StaleAddressee;
-use App\Models\InboxInterval;
-use App\Models\InboxRecord;
-use App\Models\Message;
-use App\Models\MessageReceipt;
-use App\Models\TimelineEvent;
+use App\Models\Chats\InboxInterval;
+use App\Models\Chats\InboxRecord;
+use App\Models\Chats\TimelineEvent;
+use App\Models\Messages\Message;
+use App\Models\Messages\MessageReceipt;
 use Carbon\CarbonImmutable;
 use Closure;
 

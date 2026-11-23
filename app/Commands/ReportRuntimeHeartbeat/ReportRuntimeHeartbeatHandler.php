@@ -7,7 +7,7 @@ namespace App\Commands\ReportRuntimeHeartbeat;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\SessionStateChanged;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\DriverHeartbeatSource;
 use App\Support\HeartbeatEvidence;
 use App\Support\HostRuntimes;

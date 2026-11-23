@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Events\LinksRemoved;
-use App\Models\Link;
+use App\Models\Records\Link;
 use Illuminate\Database\Eloquent\Model;
 
 /**

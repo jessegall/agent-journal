@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\OutputSummary;
 use App\Calls\Processes\ReadOutputSummaryCall;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\OutputSummaries;
 
 /**

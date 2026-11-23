@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Assignments\ClaimRelease;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 
 /**
  * Removes the claims proved by a lost assignment with one set delete.

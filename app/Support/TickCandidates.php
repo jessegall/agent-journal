@@ -8,7 +8,7 @@ use App\Contracts\Work\ConditionalStateType;
 use App\Contracts\Work\TickableState;
 use App\Exceptions\StateSchemaUnknown;
 use App\Exceptions\TickableStateMissing;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\Decisions\StateReferences;
 use App\Support\References\WorkOccurrence;
 use App\Support\StateCatalog\Contracts\StateTypes;

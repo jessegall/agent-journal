@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Contracts\Work\UnitOfWork;
-use App\Models\Agent;
-use App\Models\Link;
-use App\Models\Share;
-use App\Models\ShareGatewayConfiguration;
-use App\Models\ShareMember;
+use App\Models\Agents\Agent;
+use App\Models\Records\Link;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareMember;
 use App\Support\GatewaySettings;
 use App\Support\LinkRemoval;
 use App\Support\RecordIdentity;

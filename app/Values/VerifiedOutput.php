@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Models\OutputAssessment;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
-use App\Models\RuleRevision;
+use App\Models\CommandRules\RuleRevision;
+use App\Models\Runs\OutputAssessment;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
 
 /**
  * A part's output the EvidenceValidator found valid against its approved pair: only the validator issues it, and the

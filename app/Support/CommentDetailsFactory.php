@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Data\CommentDetails;
-use App\Models\Comment;
+use App\Models\Records\Comment;
 
 /**
  * How a comment becomes the details it is shown with; kept out of the exported Data class.

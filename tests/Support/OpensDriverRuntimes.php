@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Enums\DriverVariant;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\AgentRuntimes;
 use App\Values\RuntimeIntent;
 

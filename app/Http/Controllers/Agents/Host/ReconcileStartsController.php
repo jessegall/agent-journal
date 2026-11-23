@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Agents\Host;
 use App\Commands\ReconcileStarts\ReconcileStartsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
-use App\Models\ProcessStart;
+use App\Models\Starts\ProcessStart;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 

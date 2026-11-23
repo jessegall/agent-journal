@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Domain\Helpers\Enums\JobState;

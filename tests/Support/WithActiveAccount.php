@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Models\Account;
-use App\Models\ActiveAccount;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\ActiveAccount;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;

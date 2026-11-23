@@ -6,8 +6,8 @@ namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
 use App\Data\RunRowData;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;

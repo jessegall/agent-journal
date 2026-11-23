@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\Policy;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 
 /**
  * Ordinary work on agents, navigation included, and retiring another agent; that nobody retires itself is the

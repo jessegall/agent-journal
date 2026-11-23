@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\ApproveRuleProposal;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\RuleProposal;
 use App\Support\ActorIdentity;
 use App\Support\ProjectKey;
 use App\Support\RuleApprovals;

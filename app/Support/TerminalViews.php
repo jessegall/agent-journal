@@ -10,8 +10,8 @@ use App\Data\TerminalInterestData;
 use App\Data\TerminalScreenIdentityData;
 use App\Enums\TerminalFrameState;
 use App\Exceptions\TerminalViewRefused;
-use App\Models\AgentRuntime;
-use App\Models\TerminalView;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\TerminalView;
 use Carbon\CarbonImmutable;
 
 /**

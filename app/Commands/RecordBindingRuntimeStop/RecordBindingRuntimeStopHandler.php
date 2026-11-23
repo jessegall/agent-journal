@@ -6,7 +6,7 @@ namespace App\Commands\RecordBindingRuntimeStop;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\PresenceRefused;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 
 /**
  * Locks the binding, refuses a receipt from any host but its own, and takes the receipt.

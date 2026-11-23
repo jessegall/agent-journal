@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Profiles;
 
 use App\Enums\CleanupProblem;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

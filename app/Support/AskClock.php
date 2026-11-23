@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\CoreAskType;
-use App\Models\Ask;
-use App\Models\AskHop;
+use App\Models\Asks\Ask;
+use App\Models\Asks\AskHop;
 use Carbon\CarbonImmutable;
 
 /**

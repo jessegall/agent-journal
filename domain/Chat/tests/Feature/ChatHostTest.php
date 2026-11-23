@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Enums\ActorType;
-use App\Models\Agent;
-use App\Models\AgentRuntime;
-use App\Models\Message;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

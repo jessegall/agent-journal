@@ -9,7 +9,7 @@ use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\ActorType;
 use App\Enums\CommandEntry;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\EntryDispatchers;
 use App\Support\StartSessions;

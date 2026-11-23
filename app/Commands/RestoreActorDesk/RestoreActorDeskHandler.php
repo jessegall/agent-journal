@@ -6,8 +6,8 @@ namespace App\Commands\RestoreActorDesk;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Chat\ActorDesks;
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
 use App\Support\DeskSeating;
 use App\Support\SeatChangeResult;
 use App\Support\SeatLossRepair;

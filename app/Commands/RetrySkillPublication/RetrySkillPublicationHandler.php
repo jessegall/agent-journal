@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\RetrySkillPublication;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillPublication;
 
 final readonly class RetrySkillPublicationHandler implements CommandHandler
 {

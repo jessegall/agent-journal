@@ -10,7 +10,7 @@ use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\StartPreviews;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;

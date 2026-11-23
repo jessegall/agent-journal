@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Stack;
 
 use App\Enums\CommandEffectType;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\Stack\Contracts\StackPermission;
 use App\Values\StackTarget;
 use App\Values\StackVerdict;

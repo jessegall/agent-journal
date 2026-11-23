@@ -8,7 +8,7 @@ use App\Contracts\Assignments\AssignmentStorage;
 use App\Enums\AssignmentOutcomeType;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentTransactionRequired;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
 use App\Support\AssignmentChange;

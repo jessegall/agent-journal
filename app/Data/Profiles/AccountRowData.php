@@ -6,7 +6,7 @@ namespace App\Data\Profiles;
 
 use App\Enums\AccountState;
 use App\Enums\CleanupProblem;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Support\SignInProtocols;
 use App\Values\AccountUse;
 use Spatie\LaravelData\Attributes\DataCollectionOf;

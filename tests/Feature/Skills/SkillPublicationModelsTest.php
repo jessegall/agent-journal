@@ -9,7 +9,7 @@ use App\Enums\PublicationState;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationStale;
-use App\Models\SkillGeneration;
+use App\Models\Skills\SkillGeneration;
 use App\Support\SkillPublications;
 use App\Values\PublicationManifest;
 use Carbon\CarbonImmutable;

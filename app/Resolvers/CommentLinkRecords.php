@@ -8,7 +8,7 @@ use App\Contracts\Records\RecordProvider;
 use App\Contracts\Records\RecordResolver;
 use App\Data\RecordCard;
 use App\Exceptions\RecordUnavailable;
-use App\Models\Comment;
+use App\Models\Records\Comment;
 use App\Support\RecordIdentity;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Str;

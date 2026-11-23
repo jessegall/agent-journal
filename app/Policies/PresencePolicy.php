@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\OwnerPolicy;
-use App\Models\UserPresence;
+use App\Models\Chats\UserPresence;
 
 /**
  * Who may work with presence: every granted actor, so the grants decide.

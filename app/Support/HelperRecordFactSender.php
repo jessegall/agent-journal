@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Events\HelperRecordFacts;
 use App\Events\HelperReportedOnRecord;
 use App\Events\HelperSentOnRecord;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\StateEvents\StateEventScope;
 use Illuminate\Contracts\Events\Dispatcher;
 

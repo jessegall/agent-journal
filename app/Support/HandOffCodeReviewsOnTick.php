@@ -8,7 +8,7 @@ use App\Commands\HandOffCodeReview\HandOffCodeReviewCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
 use App\Events\EngineTicked;
-use App\Models\WorkReservation;
+use App\Models\Reviews\WorkReservation;
 use Throwable;
 
 /**

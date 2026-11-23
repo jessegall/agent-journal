@@ -8,7 +8,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverVariant;
 use App\Enums\ModeSourceType;
 use App\Exceptions\DriverCapabilityUnsupported;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Values\DriverRegistration;
 use App\Values\ModelSelection;
 use App\Values\ProfileDefaults;

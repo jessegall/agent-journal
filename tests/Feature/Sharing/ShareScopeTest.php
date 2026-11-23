@@ -8,7 +8,7 @@ use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\RecordUnavailable;
 use App\Exceptions\ShareScopeTooLarge;
 use App\Exceptions\UnknownShareRecordType;
-use App\Models\Link;
+use App\Models\Records\Link;
 use App\Support\MeteredShareBudget;
 use App\Support\RecordIdentity;
 use App\Support\ShareLinkedCandidate;

@@ -7,11 +7,11 @@ namespace App\Support;
 use App\Contracts\Sessions\ConversationVisits;
 use App\Enums\ConversationModeType;
 use App\Exceptions\ConversationIncompatible;
-use App\Models\AgentSession;
-use App\Models\ConversationVisit;
-use App\Models\DriverConversation;
-use App\Models\ProcessStart;
-use App\Models\StartRecord;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\ConversationVisit;
+use App\Models\Drivers\DriverConversation;
+use App\Models\Starts\ProcessStart;
+use App\Models\Starts\StartRecord;
 use Carbon\CarbonImmutable;
 
 /**

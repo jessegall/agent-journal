@@ -9,7 +9,7 @@ use App\Support\ActorIdentity;
 use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxAccess;
 use App\Exceptions\InboxUnavailable;
-use App\Models\InboxRecord;
+use App\Models\Chats\InboxRecord;
 use App\Support\InboxMembers;
 use App\Support\InboxMembership;
 use Illuminate\Database\Eloquent\Builder;

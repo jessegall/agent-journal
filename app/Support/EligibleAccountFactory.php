@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Data\Profiles\EligibleAccountData;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 
 /**
  * How an account becomes a choice of a start form; kept out of the exported Data class.

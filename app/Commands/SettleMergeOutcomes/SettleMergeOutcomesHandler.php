@@ -6,7 +6,7 @@ namespace App\Commands\SettleMergeOutcomes;
 
 use App\Contracts\Admission\MaintenanceAdmission;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\MergeAttempt;
+use App\Models\Reviews\MergeAttempt;
 use App\Support\MergeSettlement;
 
 /**

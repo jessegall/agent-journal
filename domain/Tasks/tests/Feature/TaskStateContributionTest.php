@@ -11,7 +11,7 @@ use App\Contracts\Processes\RunClaims;
 use App\Contracts\Work\StackTransaction;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\StackAlreadyClosed;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\References\Exceptions\ActivationDeclined;
 use App\Support\References\SubjectReference;
 use App\Support\Storage\FrameRecord;

@@ -6,7 +6,7 @@ namespace App\Events;
 
 use App\Contracts\Events\ActiveRuleChange;
 use App\Contracts\Events\Event;
-use App\Models\RuleRevision;
+use App\Models\CommandRules\RuleRevision;
 
 /**
  * A project owner made an approved revision of a command rule the active one; raised after the change is committed.

@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\ConditionOutcome;
 use App\Exceptions\ConditionWriteRefused;
 use App\Exceptions\SkillConditionInvalid;
-use App\Models\NumberGroup;
+use App\Models\Records\NumberGroup;
 use App\Support\ActorContext;
 use App\Support\ConditionRegistry;
 use App\Support\ConditionTree;

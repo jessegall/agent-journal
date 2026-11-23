@@ -9,7 +9,7 @@ use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Chat\MainDesk;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationRaiseRefused;
-use App\Models\NavigationRequest;
+use App\Models\Drivers\NavigationRequest;
 
 /**
  * What every command of the main agent on a navigation request checks first: the request, locked; that the caller

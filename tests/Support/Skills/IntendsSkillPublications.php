@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support\Skills;
 
 use App\Enums\GenerationState;
-use App\Models\SkillGeneration;
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillGeneration;
+use App\Models\Skills\SkillPublication;
 use App\Support\SkillPublications;
 use Tests\Support\TestIds;
 

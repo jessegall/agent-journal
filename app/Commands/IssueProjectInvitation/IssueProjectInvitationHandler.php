@@ -7,11 +7,11 @@ namespace App\Commands\IssueProjectInvitation;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ConnectionAuditType;
 use App\Exceptions\InstallLinesUnavailable;
-use App\Models\ConnectionAudit;
-use App\Models\Environment;
-use App\Models\InstallAttempt;
-use App\Models\Project;
-use App\Models\ProjectInvitation;
+use App\Models\Projects\ConnectionAudit;
+use App\Models\Projects\Environment;
+use App\Models\Projects\InstallAttempt;
+use App\Models\Projects\Project;
+use App\Models\Projects\ProjectInvitation;
 use App\Support\InstallLineAvailability;
 use App\Values\IssuedInvitation;
 

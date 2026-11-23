@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\RecordUnavailable;
-use App\Models\Ask;
+use App\Models\Asks\Ask;
 use App\Values\AskReference;
 
 final readonly class AskRecords

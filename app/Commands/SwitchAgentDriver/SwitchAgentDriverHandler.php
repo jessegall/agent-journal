@@ -11,10 +11,10 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\ProfileSelections;
 use App\Contracts\Sessions\StartPreflight;
 use App\Exceptions\DriverSwitchStale;
-use App\Models\Agent;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\DriverSwitch;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverSwitch;
 use App\Values\DriverSwitchReceipt;
 
 final readonly class SwitchAgentDriverHandler implements CommandHandler

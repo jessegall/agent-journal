@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Skill;
-use App\Models\SkillRevision;
+use App\Models\Skills\Skill;
+use App\Models\Skills\SkillRevision;
 use App\Resolvers\Support\SkillContextResolver;
 
 /**

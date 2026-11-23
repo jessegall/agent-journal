@@ -8,7 +8,7 @@ use App\Contracts\Events\Listener;
 use App\Enums\TransportProfileType;
 use App\Events\ContextStarted;
 use App\Mcp\Support\McpInstructions;
-use App\Models\ProcessStart;
+use App\Models\Starts\ProcessStart;
 
 /**
  * Tells an agent how to use the journal's MCP tools, and which of its journeys stay on the CLI or the web, every time

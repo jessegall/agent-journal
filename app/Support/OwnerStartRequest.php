@@ -8,7 +8,7 @@ use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartOriginType;
-use App\Models\DriverConversation;
+use App\Models\Drivers\DriverConversation;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;

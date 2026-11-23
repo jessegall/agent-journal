@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Models\Message;
+use App\Models\Messages\Message;
 use Tests\Support\MessagingTestCase;
 
 /**

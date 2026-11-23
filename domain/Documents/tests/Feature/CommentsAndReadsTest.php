@@ -16,7 +16,7 @@ use App\Data\TextCommentView;
 use App\Enums\ActorType;
 use App\Enums\WholeRecord;
 use App\Exceptions\AnchorMismatch;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use App\Support\Page;
 use App\Support\RecordIdentity;

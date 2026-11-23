@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Sharing;
 
 use App\CoreApi;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use App\Support\OwnerSharePolicy;
 use App\Support\ShareGatewayRegistry;
 use App\Support\ShareRecordRegistry;

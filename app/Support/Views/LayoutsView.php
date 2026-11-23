@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Views;
 
 use App\Data\LayoutData;
-use App\Models\Layout;
+use App\Models\Records\Layout;
 
 /**
  * The signed-in user's saved layouts for the layouts menu, by name.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Processes;
 
 use App\Contracts\Reads\OutputRecorder;
-use App\Models\PartRun;
+use App\Models\Runs\PartRun;
 use App\Values\CapturedChunk;
 use App\Values\OutputPosition;
 use App\Values\PartEnd;

@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Assignments\AssignableProvider;
 use App\Exceptions\RecordUnavailable;
-use App\Models\DeskSeat;
+use App\Models\Desks\DeskSeat;
 
 /**
  * Desk seats as assignable records: every signed-in actor may see every seat, and a seat's work never finishes.

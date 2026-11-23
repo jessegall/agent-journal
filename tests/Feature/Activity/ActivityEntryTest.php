@@ -7,7 +7,7 @@ namespace Tests\Feature\Activity;
 use App\Enums\ActivityLevel;
 use App\Enums\ActivityType;
 use App\Enums\ActorType;
-use App\Models\ActivityEntry;
+use App\Models\Agents\ActivityEntry;
 use App\Support\ActivityEntryPruning;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;

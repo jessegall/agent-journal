@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use App\Models\Ask;
-use App\Models\MergeAttempt;
+use App\Models\Asks\Ask;
+use App\Models\Reviews\MergeAttempt;
 
 /**
  * Where an ask stands for its reader: still open, merged on a merged attempt's evidence, or settled.

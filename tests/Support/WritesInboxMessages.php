@@ -6,9 +6,9 @@ namespace Tests\Support;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\ActorDesks;
-use App\Models\CommandReceipt;
-use App\Models\DeskRecord;
-use App\Models\Message;
+use App\Models\CommandRules\CommandReceipt;
+use App\Models\Desks\DeskRecord;
+use App\Models\Messages\Message;
 use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;

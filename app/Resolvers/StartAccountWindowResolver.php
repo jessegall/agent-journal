@@ -9,7 +9,7 @@ use App\Contracts\Navigation\PageResolver;
 use App\Data\Profiles\StartAccountData;
 use App\Exceptions\AccountUseMissing;
 use App\Http\Requests\Profiles\StartAccountPageRequest;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 
 /**
  * Reads the account a start ran with through the owner-only account uses, and its label from the saved accounts; a

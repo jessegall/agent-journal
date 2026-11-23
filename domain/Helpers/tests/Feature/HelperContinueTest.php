@@ -7,7 +7,7 @@ namespace Domain\Helpers\Tests\Feature;
 use App\Contracts\Bus\CommandBus;
 use App\Events\LaunchEnded;
 use App\Exceptions\DriverCapabilityUnsupported;
-use App\Models\StartRecord;
+use App\Models\Starts\StartRecord;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;

@@ -5,7 +5,7 @@ with Chat switched off every command and read below still works.
 
 ## Desks and seats
 
-A desk (`App\Models\DeskRecord`) is a place work and messages are sent to: it owns one inbox and a number of
+A desk (`App\Models\Desks\DeskRecord`) is a place work and messages are sent to: it owns one inbox and a number of
 seats (`DeskSeat`). Sitting at a desk is a Core assignment on the seat (`SeatingWriter::seat`, `replace`, `release`),
 so who sits where is read like any other holding. A desk is never an actor.
 
@@ -27,7 +27,7 @@ the inbox to write to: its forwarding desk (main for the agent at main), else it
 
 ## Messages
 
-A message (`App\Models\Message`) goes from a source inbox the sender sits at to a destination inbox.
+A message (`App\Models\Messages\Message`) goes from a source inbox the sender sits at to a destination inbox.
 Anyone sees it only through an inbox they sit at, or because they wrote it (`MessageVisibility`).
 
 | Command | What it does |

@@ -6,8 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Calls\Processes\AdmitLineCall;
 use App\Enums\ShellDialect;
-use App\Models\CommandRequest;
-use App\Models\ProcessRun;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\Runs\ProcessRun;
 use App\Values\AdmissionRefusal;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Processes\RunsDirectLines;

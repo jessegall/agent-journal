@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Enums\ShareState;
-use App\Models\Share;
-use App\Models\ShareGatewayConfiguration;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Support\ShareGatewayRegistry;
 use App\Support\ShareGrant;
 use App\Support\ShareToken;

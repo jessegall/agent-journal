@@ -6,9 +6,9 @@ namespace App\Support\States\Support;
 
 use App\Enums\SessionTransferType;
 use App\Exceptions\StateSubjectMissing;
-use App\Models\AssignmentRecord;
-use App\Models\ClaimAuthorization;
-use App\Models\Message;
+use App\Models\Messages\Message;
+use App\Models\Records\AssignmentRecord;
+use App\Models\Records\ClaimAuthorization;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
 use App\Support\Decisions\StateReferences;

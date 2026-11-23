@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Concerns\RefusesUnusableSessions;
 use App\Exceptions\CredentialRejected;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

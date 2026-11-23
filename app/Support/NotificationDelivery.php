@@ -7,10 +7,10 @@ namespace App\Support;
 use App\Data\NotificationTarget;
 use App\Enums\NotificationMutationType;
 use App\Enums\NotificationSourceType;
-use App\Models\NotificationChange;
-use App\Models\NotificationOccurrence;
-use App\Models\NotificationReceipt;
-use App\Models\NotificationScope;
+use App\Models\Notifications\NotificationChange;
+use App\Models\Notifications\NotificationOccurrence;
+use App\Models\Notifications\NotificationReceipt;
+use App\Models\Notifications\NotificationScope;
 
 /**
  * Records one occurrence and one receipt for each distinct recipient, inside the caller's transaction. A replay of

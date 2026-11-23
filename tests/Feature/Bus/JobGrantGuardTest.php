@@ -10,7 +10,7 @@ use App\Contracts\Admission\ReadAdmission;
 use App\Enums\AccessRuleType;
 use App\Enums\CommandEffectType;
 use App\Enums\NoSubject;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\CommandRegistry;
 use App\Support\ReadGrant;
 use App\Support\References\StateReference;

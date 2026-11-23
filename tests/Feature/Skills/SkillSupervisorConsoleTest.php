@@ -6,8 +6,8 @@ namespace Tests\Feature\Skills;
 
 use App\Contracts\Skills\SkillPublisher;
 use App\Enums\PublicationState;
-use App\Models\SkillGeneration;
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillGeneration;
+use App\Models\Skills\SkillPublication;
 use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\HostSkillPublisher;
 use App\Support\PublicationFiles;

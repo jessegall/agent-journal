@@ -8,7 +8,7 @@ use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\LifecycleState;
 use App\Exceptions\RetryRefused;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Support\ProcessAdministration;
 use App\Values\AdmissionRefusal;

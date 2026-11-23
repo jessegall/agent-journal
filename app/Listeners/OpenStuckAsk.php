@@ -10,7 +10,7 @@ use App\Contracts\Events\Listener;
 use App\Enums\AskOriginType;
 use App\Enums\CoreAskType;
 use App\Events\HelperStopHeld;
-use App\Models\StopAttempt;
+use App\Models\Starts\StopAttempt;
 use App\Support\AskOpening;
 use App\Support\AskTypeRegistry;
 

@@ -9,7 +9,7 @@ use App\Calls\Processes\ReadOutputTailCall;
 use App\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\EvidenceSource;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\StoredOutput;
 use App\Values\EvidenceRange;
 

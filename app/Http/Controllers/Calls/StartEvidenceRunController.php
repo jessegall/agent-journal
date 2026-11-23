@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\EvidenceRunStarted;
 use App\Calls\Processes\StartEvidenceRunCall;
 use App\Contracts\Actors\CurrentActor;
-use App\Models\EvidencePermit;
+use App\Models\CommandRules\EvidencePermit;
 use App\Support\ActorIdentity;
 use App\Support\EvidenceRuns;
 

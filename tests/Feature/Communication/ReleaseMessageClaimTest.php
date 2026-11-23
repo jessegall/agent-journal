@@ -9,7 +9,7 @@ use App\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
 use App\Enums\MessageState;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\CommandAdmissionRefused;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\AssignmentReference;
 use Tests\Support\MessagingTestCase;
 

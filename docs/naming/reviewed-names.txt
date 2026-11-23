@@ -28716,7 +28716,7 @@ parameter	$entries	app/Commands/RefreshSkills/RefreshSkillsHandler.php
 parameter	$entries	app/Commands/ReportProjectRead/ReportProjectReadCommand.php
 parameter	$entries	app/Commands/ReportProjectRead/ReportProjectReadHandler.php
 parameter	$entries	app/Data/Connections/ProjectWindowData.php
-parameter	$entries	app/Models/ProjectRead.php
+parameter	$entries	app/Models/Projects/ProjectRead.php
 parameter	$entries	app/Resolvers/ProjectWindowResolver.php
 parameter	$entries	app/Resolvers/Support/SkillStatusResolver.php
 parameter	$entries	app/Support/Attributes.php
@@ -30280,9 +30280,9 @@ parameter	$result	app/Data/ProfileStepData.php
 parameter	$result	app/Data/RunOutcomeSummaryData.php
 parameter	$result	app/Events/RunOutcomeRecorded.php
 parameter	$result	app/Mcp/Data/JsonRpcReplyData.php
-parameter	$result	app/Models/MergeAttempt.php
-parameter	$result	app/Models/ProcessRun.php
-parameter	$result	app/Models/RunOutcome.php
+parameter	$result	app/Models/Reviews/MergeAttempt.php
+parameter	$result	app/Models/Runs/ProcessRun.php
+parameter	$result	app/Models/Runs/RunOutcome.php
 parameter	$result	app/Support/ProtectedMerge.php
 parameter	$result	app/Support/Readers/SessionInspections.php
 parameter	$result	app/Support/RunOutcomes.php
@@ -43943,8 +43943,8 @@ variable	$rest
 variable	$restored
 variable	$result
 variable	$result	app/Declarations/Page.php
-variable	$result	app/Models/ProfileRun.php
-variable	$result	app/Models/ProfileStepResult.php
+variable	$result	app/Models/Profiles/ProfileRun.php
+variable	$result	app/Models/Profiles/ProfileStepResult.php
 variable	$result	app/Resolvers/MergeAskNotificationTarget.php
 variable	$result	app/Support/EventUnit.php
 variable	$result	app/Support/EventUnitLifecycle.php

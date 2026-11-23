@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Pages;
 
 use App\Calls\Scripts\CheckProfileScriptCall;
 use App\Http\Responses\PageActionAnswers;
-use App\Models\ProfileDraft;
+use App\Models\Profiles\ProfileDraft;
 use App\Support\Readers\ProfileDraftReader;
 use App\Values\ProfileKey;
 use Illuminate\Http\RedirectResponse;

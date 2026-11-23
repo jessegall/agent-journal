@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
-use App\Models\MenuEntry;
+use App\Models\Drivers\MenuEntry;
 use App\Pipelines\NavigationAdmission;
 use App\Support\NavigationRaiseAnswer;
 

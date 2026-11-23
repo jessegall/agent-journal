@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Drivers\CallingDriver;
 use App\Contracts\Sessions\CurrentSession;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 
 /**
  * Reads the calling session's driver from its own row.

@@ -8,7 +8,7 @@ use App\Contracts\Drivers\ToolDiscovery;
 use App\Enums\DriverVariant;
 use App\Enums\HoldReason;
 use App\Enums\RuntimeActivity;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use App\Support\AgentRuntimes;
 use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;

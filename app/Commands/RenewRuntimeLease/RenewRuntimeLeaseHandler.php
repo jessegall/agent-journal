@@ -6,9 +6,9 @@ namespace App\Commands\RenewRuntimeLease;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\LeaseRefused;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\ProjectBinding;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Projects\ProjectBinding;
 use App\Values\RuntimeLease;
 use Carbon\CarbonImmutable;
 

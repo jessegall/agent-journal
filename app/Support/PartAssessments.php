@@ -6,11 +6,11 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Events\EvidenceInvalid;
-use App\Models\OutputAssessment;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
-use App\Models\ReaderPosition;
-use App\Models\ReaderRevision;
+use App\Models\Runs\OutputAssessment;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
+use App\Models\Runs\ReaderPosition;
+use App\Models\Runs\ReaderRevision;
 use App\Values\ApprovedPair;
 use App\Values\OutputProblem;
 

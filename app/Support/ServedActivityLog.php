@@ -8,7 +8,7 @@ use App\Contracts\Activity\ActivityLog;
 use App\Contracts\Hosts\ServedEnvironment;
 use App\Enums\ActivityType;
 use App\Events\ActivityRecorded;
-use App\Models\ActivityEntry;
+use App\Models\Agents\ActivityEntry;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

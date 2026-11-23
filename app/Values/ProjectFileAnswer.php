@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Enums\ProjectReadFailure;
 use App\Enums\ProjectReadState;
-use App\Models\ProjectRead;
+use App\Models\Projects\ProjectRead;
 
 /**
  * Where a read of a project's folder or file stands: waiting for its host, answered with entries or text, or failed

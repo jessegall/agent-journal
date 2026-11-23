@@ -6,7 +6,7 @@ namespace Domain\Access\Tests\Feature;
 
 use App\Contracts\Admission\JournalAdmission;
 use App\Enums\ActorType;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use Domain\Access\Database\Factories\UserFactory;
 use Domain\Access\Models\User;

@@ -8,7 +8,7 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Chat\Inbox;
 use App\Exceptions\InboxUnavailable;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 
 /**
  * An actor's preferred inbox is the inbox of the desk it prefers.

@@ -6,7 +6,7 @@ namespace Tests\Feature\Engine;
 
 use App\Contracts\Domains\DomainAvailability;
 use App\Events\StateTypesRequested;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\DomainStateType;
 use App\Support\DomainTickableStateType;
 use App\Support\EnginePass;

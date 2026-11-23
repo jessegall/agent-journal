@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Models\AgentSession;
-use App\Models\Message;
+use App\Models\Agents\AgentSession;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\MessagingTestCase;

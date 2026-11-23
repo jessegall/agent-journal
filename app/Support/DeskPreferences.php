@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Chat\Desk;
-use App\Models\DeskPreference;
+use App\Models\Desks\DeskPreference;
 
 /**
  * Makes a desk the one an actor prefers: their one preference switches to it, or is made the first time.

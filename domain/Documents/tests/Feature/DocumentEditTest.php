@@ -6,7 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\SectionMissing;
-use App\Models\Comment;
+use App\Models\Records\Comment;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;

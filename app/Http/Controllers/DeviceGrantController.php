@@ -9,7 +9,7 @@ use App\Commands\StartDeviceGrant\StartDeviceGrantCommand;
 use App\Contracts\Hosts\HostCalls;
 use App\Enums\CommandEntry;
 use App\Enums\RefusalCode;
-use App\Models\DeviceGrant;
+use App\Models\Projects\DeviceGrant;
 use App\Support\EntryDispatchers;
 use App\Support\ServerOrigin;
 use App\Values\InstallTicket;

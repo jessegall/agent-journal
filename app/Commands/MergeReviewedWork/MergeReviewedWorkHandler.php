@@ -8,7 +8,7 @@ use App\Contracts\Admission\MergeAdmission;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\MergeOutcomeRecorded;
-use App\Models\MergeAttempt;
+use App\Models\Reviews\MergeAttempt;
 use App\Support\ActorIdentity;
 use App\Support\ProtectedMerge;
 use App\Values\MergeOutcome;

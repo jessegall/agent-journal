@@ -7,7 +7,7 @@ namespace App\Commands\ApproveDriver;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Exceptions\DriverUnknown;
-use App\Models\DriverApproval;
+use App\Models\Drivers\DriverApproval;
 
 final readonly class ApproveDriverHandler implements CommandHandler
 {

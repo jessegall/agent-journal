@@ -6,9 +6,9 @@ namespace App\Commands\ReopenSharedGateways;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\GatewayOperationType;
-use App\Models\Share;
-use App\Models\ShareGatewayConfiguration;
-use App\Models\ShareGatewayOperation;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareGatewayOperation;
 use App\Support\GatewayRuns;
 
 /**

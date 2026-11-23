@@ -15,7 +15,7 @@ use App\Exceptions\SkillKeyInvalid;
 use App\Exceptions\SkillMissing;
 use App\Exceptions\SkillSelectionConflict;
 use App\Exceptions\SkillSourceInvalid;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\SkillAuthoring;
 use App\Support\SkillPreview;
 use App\Values\SkillKey;

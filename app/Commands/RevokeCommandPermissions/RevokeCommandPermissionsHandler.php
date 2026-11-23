@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\RevokeCommandPermissions;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\PermissionRevocation;
+use App\Models\Profiles\PermissionRevocation;
 use App\Support\ActorIdentity;
 use App\Values\CommandClassSet;
 use App\Values\CommandPatternSet;

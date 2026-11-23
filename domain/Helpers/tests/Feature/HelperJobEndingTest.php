@@ -7,7 +7,7 @@ namespace Domain\Helpers\Tests\Feature;
 use App\Events\HelperCompletionCertified;
 use App\Events\HelperStopHeld;
 use App\Events\LaunchCancelled;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Values\StopAttemptReference;

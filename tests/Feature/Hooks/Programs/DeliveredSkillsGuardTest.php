@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Drivers;
 
 use App\Contracts\Processes\ShellCommandParser;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use App\Support\Decisions\Decision;
 use App\Support\DeliveredSkillsAccess;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;

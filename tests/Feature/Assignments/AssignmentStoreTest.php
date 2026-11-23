@@ -8,7 +8,7 @@ use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\ActorType;
 use App\Exceptions\AssignmentRetryExhausted;
 use App\Exceptions\AssignmentTransactionRequired;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
 use App\Support\Reflector;

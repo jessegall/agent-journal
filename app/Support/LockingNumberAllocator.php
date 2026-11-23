@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\CommandTransaction;
 use App\Contracts\Records\Numbered;
 use App\Exceptions\NumberHolderUnsaved;
-use App\Models\NumberGroup;
+use App\Models\Records\NumberGroup;
 use Illuminate\Database\Eloquent\Model;
 
 /**

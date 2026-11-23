@@ -8,7 +8,7 @@ use App\Commands\RetireMenuEntry\RetireMenuEntryCommand;
 use App\Enums\ActorType;
 use App\Enums\MenuEntryState;
 use App\Enums\NavigationCompletion;
-use App\Models\MenuEntry;
+use App\Models\Drivers\MenuEntry;
 use App\Support\ActorIdentity;
 use App\Values\MenuStep;
 use Domain\Access\Support\AccessSettings;

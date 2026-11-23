@@ -13,7 +13,7 @@ use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use App\Enums\MessageState;
 use App\Exceptions\ChatInboxRefused;
 use App\Exceptions\ChatMessageRefused;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\CancelProjectCommandRun;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\ProjectCommandRun;
+use App\Models\Projects\ProjectCommandRun;
 
 /**
  * Asks the running process of the agent's own run of this request id to stop and marks the cancellation asked for;

@@ -18,7 +18,7 @@ use App\Enums\WholeRecord;
 use App\Exceptions\CommentUnavailable;
 use App\Exceptions\TargetHasNoText;
 use App\Exceptions\TargetNotCommentable;
-use App\Models\Comment;
+use App\Models\Records\Comment;
 use App\Support\MarkdownText;
 use App\Support\Page;
 use App\Support\ReadBuilder;

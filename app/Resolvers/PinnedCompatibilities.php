@@ -7,7 +7,7 @@ namespace App\Resolvers;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\ArrangementType;
 use App\Enums\DriverEvidence;
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Support\ArrangementSetting;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\LaunchProfiles;

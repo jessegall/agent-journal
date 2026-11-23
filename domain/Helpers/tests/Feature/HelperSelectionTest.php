@@ -6,9 +6,9 @@ namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\LaunchCandidateRank;
-use App\Models\Agent;
-use App\Models\ConversationVisit;
-use App\Models\DriverConversation;
+use App\Models\Agents\Agent;
+use App\Models\Drivers\ConversationVisit;
+use App\Models\Drivers\DriverConversation;
 use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\RecordIdentity;

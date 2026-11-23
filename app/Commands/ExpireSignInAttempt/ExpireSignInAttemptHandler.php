@@ -7,7 +7,7 @@ namespace App\Commands\ExpireSignInAttempt;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\SignInState;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use Carbon\CarbonImmutable;
 

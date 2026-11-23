@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\SignInState;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use App\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository;

@@ -6,7 +6,7 @@ namespace App\Commands\OpenTerminalView;
 
 use App\Attributes\Authorize;
 use App\Enums\AccessType;
-use App\Models\TerminalView;
+use App\Models\Drivers\TerminalView;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;
 

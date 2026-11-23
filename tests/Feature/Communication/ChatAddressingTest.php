@@ -10,7 +10,7 @@ use App\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Enums\ChatPermission;
 use App\Exceptions\RespondentRequired;
 use App\Exceptions\StaleAddressee;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;

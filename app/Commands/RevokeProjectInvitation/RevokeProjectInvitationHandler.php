@@ -6,8 +6,8 @@ namespace App\Commands\RevokeProjectInvitation;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ConnectionAuditType;
-use App\Models\ConnectionAudit;
-use App\Models\ProjectInvitation;
+use App\Models\Projects\ConnectionAudit;
+use App\Models\Projects\ProjectInvitation;
 
 /**
  * Revokes a pending install line and cancels its install attempt, holding the attempt's row; a line already redeemed,

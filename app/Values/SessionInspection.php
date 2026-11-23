@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\ExecutionModeType;
-use App\Models\SessionPolicy;
+use App\Models\Starts\SessionPolicy;
 
 /**
  * What a session runs under, as an inspector shows it: the profile revision and configuration it was frozen from,

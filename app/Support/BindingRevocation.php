@@ -6,10 +6,10 @@ namespace App\Support;
 
 use App\Enums\ConnectionAuditActor;
 use App\Enums\ConnectionAuditType;
-use App\Models\ConnectionAudit;
-use App\Models\DeviceGrant;
-use App\Models\ProjectBinding;
-use App\Models\ProjectCommandRun;
+use App\Models\Projects\ConnectionAudit;
+use App\Models\Projects\DeviceGrant;
+use App\Models\Projects\ProjectBinding;
+use App\Models\Projects\ProjectCommandRun;
 use App\Values\BindingOutcome;
 use Carbon\CarbonImmutable;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Models\Skill;
+use App\Models\Skills\Skill;
 use App\Support\Conditions\Conditions;
 use App\Support\StoredSkillWrites;
 use App\Values\SectionDraft;

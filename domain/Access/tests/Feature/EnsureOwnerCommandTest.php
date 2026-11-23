@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Tests\Feature;
 
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 use Domain\Access\Models\User;
 use Domain\Access\Tests\TestCase;
 use Illuminate\Support\Facades\Hash;

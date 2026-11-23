@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Sessions\CurrentSession;
 use App\Contracts\Work\WorkStackProvider;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 
 /**
  * An agent works on the stack of the session its signed call came from; an agent acting outside a signed call has

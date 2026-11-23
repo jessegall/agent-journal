@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Hooks\Host;
 
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Data\Hooks\PendingStopAttemptData;
-use App\Models\ProcessStart;
-use App\Models\StopAttempt;
+use App\Models\Starts\ProcessStart;
+use App\Models\Starts\StopAttempt;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 

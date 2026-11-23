@@ -6,8 +6,8 @@ namespace App\Resolvers\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Data\RunOutcomeSummaryData;
-use App\Models\ProcessRun;
-use App\Models\RunOutcome;
+use App\Models\Runs\ProcessRun;
+use App\Models\Runs\RunOutcome;
 use App\Support\ActorIdentity;
 use App\Support\ProjectKey;
 use PhpOption\Option;

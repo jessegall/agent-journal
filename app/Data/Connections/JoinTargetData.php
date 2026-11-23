@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Models\Environment;
-use App\Models\Project;
+use App\Models\Projects\Environment;
+use App\Models\Projects\Project;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

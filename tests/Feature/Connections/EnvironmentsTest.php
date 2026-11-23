@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Models\Environment;
-use App\Models\Project;
-use App\Models\ProjectBinding;
-use App\Models\ProjectInvitation;
+use App\Models\Projects\Environment;
+use App\Models\Projects\Project;
+use App\Models\Projects\ProjectBinding;
+use App\Models\Projects\ProjectInvitation;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;

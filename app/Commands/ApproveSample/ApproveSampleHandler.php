@@ -8,9 +8,9 @@ use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\EvidencePermitRefused;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\SampleRefused;
-use App\Models\CommandRequest;
-use App\Models\RuleProposal;
-use App\Models\RuleProposalRevision;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\RuleProposal;
+use App\Models\CommandRules\RuleProposalRevision;
 use App\Support\EvidenceRuns;
 
 /**

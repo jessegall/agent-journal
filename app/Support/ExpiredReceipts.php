@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\ReceiptState;
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use Carbon\CarbonImmutable;
 
 /**

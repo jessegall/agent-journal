@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Sharing;
 
-use App\Models\Share;
-use App\Models\ShareGatewayEndpoint;
-use App\Models\ShareInstallation;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareGatewayEndpoint;
+use App\Models\Sharing\ShareInstallation;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

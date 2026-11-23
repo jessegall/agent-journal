@@ -25,7 +25,7 @@ use App\Contracts\Settings\SettingsAccessPolicy;
 use App\CorePages;
 use App\Enums\AccessType;
 use App\Http\Middleware\Web\CheckPageVisibility;
-use App\Models\Layout;
+use App\Models\Records\Layout;
 use App\Models\Support\CurrentUserScope;
 use App\Policies\PresencePolicy;
 use App\Support\DeclaredRoutes;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\AliasResolver;
-use App\Models\CommandAlias;
+use App\Models\CommandRules\CommandAlias;
 use App\Values\AliasLookup;
 
 /**

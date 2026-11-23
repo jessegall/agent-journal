@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsCatalogue;
 use App\Exceptions\SettingsAccessDenied;
 use App\Exceptions\SettingsOwnerUnknown;
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Support\ActorContext;
 use App\Support\Storage\EncodedSetting;
 use App\Support\Storage\EncodedToggle;

@@ -8,8 +8,8 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\AccountUseChanged;
 use App\Events\SessionStateChanged;
-use App\Models\DriverSwitch;
-use App\Models\ProcessStart;
+use App\Models\Drivers\DriverSwitch;
+use App\Models\Starts\ProcessStart;
 
 final readonly class ReportStoppedHandler implements CommandHandler
 {

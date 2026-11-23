@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\ActorGuidance;
-use App\Models\WorkspaceRead;
+use App\Models\Projects\WorkspaceRead;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
 use App\Values\CommitObservation;

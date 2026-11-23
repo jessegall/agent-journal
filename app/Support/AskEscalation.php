@@ -7,9 +7,9 @@ namespace App\Support;
 use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Enums\UnansweredReason;
 use App\Exceptions\SupervisorRouteRefused;
-use App\Models\Ask;
-use App\Models\AskHop;
-use App\Models\AssignmentRecord;
+use App\Models\Asks\Ask;
+use App\Models\Asks\AskHop;
+use App\Models\Records\AssignmentRecord;
 use App\Values\SupervisorTarget;
 use Carbon\CarbonImmutable;
 

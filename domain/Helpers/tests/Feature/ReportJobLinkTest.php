@@ -10,7 +10,7 @@ use App\Enums\DriverSourceType;
 use App\Enums\ModelSelectionType;
 use App\Enums\StartDisposition;
 use App\Enums\StartOriginType;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\StartRecordDetails;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;

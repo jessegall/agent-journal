@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Events\MessageClaimReleased;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\MessageMissing;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\SpeechAllowance;
 
 final readonly class ReleaseMessageClaimHandler implements CommandHandler

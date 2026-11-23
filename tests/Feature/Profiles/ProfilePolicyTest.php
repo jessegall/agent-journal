@@ -16,7 +16,7 @@ use App\Events\ProfileRevisionRevoked;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ProfilePolicyRefused;
 use App\Exceptions\ProfileProposalRefused;
-use App\Models\RevisionFence;
+use App\Models\Starts\RevisionFence;
 use App\Support\ActorContext;
 use App\Support\ProfileProposal;
 use App\Values\Operation;

@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\RunKeyScript\RunKeyScriptCommand as RunKeyScript;
 use App\Contracts\Bus\CommandBus;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\ConsoleOwner;
 use App\Values\ScriptParameter;
 use Illuminate\Console\Command;

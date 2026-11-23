@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\AddUsageCost;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\AccountUsageCost;
+use App\Models\Accounts\AccountUsageCost;
 use App\Support\UsageReportAccounts;
 
 /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\ReadPartLive;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\PartRun;
-use App\Models\ReaderPosition;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ReaderPosition;
 use App\Support\DeclarativeReader;
 use App\Support\PartAssessments;
 use App\Support\RunUpdates;

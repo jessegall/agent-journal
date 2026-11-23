@@ -7,8 +7,8 @@ namespace App\Commands\DismissLaunchOutcome;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Exceptions\StartRecordMissing;
-use App\Models\LaunchOutcomeDismissal;
-use App\Models\StartRecord;
+use App\Models\Starts\LaunchOutcomeDismissal;
+use App\Models\Starts\StartRecord;
 use App\Support\ActorIdentity;
 
 /**

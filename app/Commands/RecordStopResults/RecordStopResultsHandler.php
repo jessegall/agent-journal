@@ -7,8 +7,8 @@ namespace App\Commands\RecordStopResults;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\StopAttemptState;
 use App\Exceptions\StopResultsRefused;
-use App\Models\StopAttempt;
-use App\Models\StopResult;
+use App\Models\Starts\StopAttempt;
+use App\Models\Starts\StopResult;
 use App\Models\Support\AgentSessionScope;
 use App\Values\StopResultReport;
 

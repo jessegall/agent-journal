@@ -12,7 +12,7 @@ use App\Enums\NotificationSourceType;
 use App\Events\ChatMessageAccepted;
 use App\Events\MessageAnswerRequired;
 use App\Events\MessageSent;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Resolvers\QuestionNotificationTarget;
 use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\RecordEvidenceReads;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\EvidenceRead;
-use App\Models\ProcessRun;
+use App\Models\CommandRules\EvidenceRead;
+use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Values\EvidenceRange;
 

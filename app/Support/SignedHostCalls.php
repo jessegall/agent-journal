@@ -8,7 +8,7 @@ use App\Contracts\Hosts\HostCalls;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostRoleRefused;
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Values\HostContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository;

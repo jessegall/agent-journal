@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\SeatCapacityReached;
 use App\Exceptions\SeatConflict;
 use App\Exceptions\SecondForwardingSeat;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\DeskOpening;
 use App\Support\DeskSeating;

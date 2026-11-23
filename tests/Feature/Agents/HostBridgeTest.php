@@ -16,7 +16,7 @@ use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;
 use App\Enums\StartOriginType;
 use App\Exceptions\AccountContainerUnsupported;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;

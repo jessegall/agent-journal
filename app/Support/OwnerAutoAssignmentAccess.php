@@ -13,7 +13,7 @@ use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ActorUnavailable;
 use App\Exceptions\AssignmentDenied;
 use App\Exceptions\AutoAssignmentDenied;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Policies\AssignmentPolicy;
 
 /**

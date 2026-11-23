@@ -11,7 +11,7 @@ use App\Enums\HostRouteRole;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostRoleRefused;
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Support\ActorStore;
 use App\Support\CommandEntrance;
 use App\Values\HostContext;

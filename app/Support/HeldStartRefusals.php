@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Refusals\StartRefusal;
-use App\Models\StartRecord;
+use App\Models\Starts\StartRecord;
 use App\Values\PinnedDriver;
 use App\Values\StartRequest;
 use Closure;

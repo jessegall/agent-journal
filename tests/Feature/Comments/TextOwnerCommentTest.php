@@ -12,7 +12,7 @@ use App\Contracts\Records\CommentResolver;
 use App\Data\RecordCommentView;
 use App\Data\TextCommentView;
 use App\Exceptions\TargetNotCommentable;
-use App\Models\Comment;
+use App\Models\Records\Comment;
 use App\Support\Page;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;

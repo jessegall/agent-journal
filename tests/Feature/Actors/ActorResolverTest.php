@@ -9,7 +9,7 @@ use App\Contracts\Actors\ActorResolver;
 use App\Enums\ActorType;
 use App\Exceptions\ActorProviderRepeated;
 use App\Exceptions\ActorUnavailable;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\SystemActor;
 use App\Support\SystemActors;

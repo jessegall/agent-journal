@@ -11,7 +11,7 @@ use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\GrantNotWithheld;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;

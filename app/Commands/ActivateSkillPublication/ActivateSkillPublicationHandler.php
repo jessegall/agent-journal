@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Skills\SkillPublisher;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationStale;
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillPublication;
 use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\PublicationFiles;
 use App\Support\SkillPublications;

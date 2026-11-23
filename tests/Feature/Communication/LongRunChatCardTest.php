@@ -8,7 +8,7 @@ use App\Commands\RecordRunEvents\RecordRunEventsCommand;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Chat\ChatLines;
 use App\Enums\ShellDialect;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Values\ChatLine;
 use App\Values\ExecutionContext;

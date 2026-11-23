@@ -6,7 +6,7 @@ namespace App\Policies;
 
 use App\Contracts\Authorization\OwnerPolicy;
 use App\Contracts\Authorization\Policy;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 
 /**
  * Desks are arranged by the actors the registration lets arrange them; the policy adds no rule of its own.

@@ -8,7 +8,7 @@ use App\Contracts\Navigation\NavigationExpiry as NavigationExpiryContract;
 use App\Enums\HoldReason;
 use App\Enums\NavigationState;
 use App\Enums\RequestOutcome;
-use App\Models\NavigationRequest;
+use App\Models\Drivers\NavigationRequest;
 use Carbon\CarbonImmutable;
 
 /**

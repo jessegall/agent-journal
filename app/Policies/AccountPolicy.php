@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\OwnerPolicy;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 
 /**
  * Who may read and manage the saved accounts: only the owner holds the accesses, so the grants decide.

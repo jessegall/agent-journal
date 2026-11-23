@@ -9,7 +9,7 @@ use App\Contracts\Admission\MergeAdmission;
 use App\Enums\CoreAskType;
 use App\Enums\ReviewDecisionType;
 use App\Exceptions\MergeRefused;
-use App\Models\ReviewDecision;
+use App\Models\Reviews\ReviewDecision;
 use App\Values\ApprovedHead;
 use App\Values\AskReference;
 use App\Values\ReviewDecisionReference;

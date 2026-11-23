@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 
 /**
  * What a host needs to start a runtime's driver: its driver type, the session it runs, the driver and the build it

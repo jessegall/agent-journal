@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\EnrollHost;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Support\EnrolledHost;
 use Illuminate\Support\Str;
 

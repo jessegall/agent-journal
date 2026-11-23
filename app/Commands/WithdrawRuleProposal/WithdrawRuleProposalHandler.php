@@ -6,7 +6,7 @@ namespace App\Commands\WithdrawRuleProposal;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RuleProposalRefused;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\RuleProposal;
 use App\Support\ActorIdentity;
 
 final readonly class WithdrawRuleProposalHandler implements CommandHandler

@@ -6,7 +6,7 @@ namespace App\Commands\CertifyPassedStops;
 
 use App\Contracts\Admission\MaintenanceAdmission;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\StopAttempt;
+use App\Models\Starts\StopAttempt;
 use App\Support\StopCertification;
 
 /**

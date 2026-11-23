@@ -19,7 +19,7 @@ use App\Events\MessageRead;
 use App\Events\MessageSent;
 use App\Events\MessageTakenUp;
 use App\Events\PageChanged;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\UserChannel;
 use Closure;
 use Illuminate\Database\ConnectionInterface;

@@ -7,7 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Sessions\CurrentSession;
 use App\Contracts\Work\CurrentState;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use App\Support\AssigneeIdentity;
 use App\Values\OwnerAuthority;

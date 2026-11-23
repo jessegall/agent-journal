@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Inspection\Queries;
 
-use App\Models\AgentStackRow;
-use App\Models\HookCall;
+use App\Models\Agents\AgentStackRow;
+use App\Models\Drivers\HookCall;
 use App\Support\Inspection\Contracts\StackInspectionQuery as StackInspectionQueryContract;
 use App\Support\Inspection\InspectedCall;
 use App\Support\Inspection\StackInspection;

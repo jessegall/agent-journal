@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\MarkRunsStale;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 
 final readonly class MarkRunsStaleHandler implements CommandHandler
 {

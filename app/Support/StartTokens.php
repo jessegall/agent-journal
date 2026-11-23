@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\CredentialRejected;
-use App\Models\AgentSession;
-use App\Models\StartToken;
+use App\Models\Agents\AgentSession;
+use App\Models\Starts\StartToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 

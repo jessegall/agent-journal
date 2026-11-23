@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Account;
-use App\Models\AccountUsageTokens;
-use App\Models\AccountUsageWindow;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\AccountUsageTokens;
+use App\Models\Accounts\AccountUsageWindow;
 use App\Values\ThreadTokens;
 use App\Values\UsageWindowReading;
 

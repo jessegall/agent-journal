@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Chat\ReplyInboxes;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

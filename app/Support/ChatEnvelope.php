@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Chat\Inbox;
 use App\Enums\MessageState;
-use App\Models\Message;
-use App\Models\TimelineEvent;
+use App\Models\Chats\TimelineEvent;
+use App\Models\Messages\Message;
 
 /**
  * Everything a new chat message is made of: the one chat inbox it is posted in, the member that wrote it, its body,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Chat;
 
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 
 /**
  * Gives the agent a main start opened main's seat, fencing a different agent that held it.

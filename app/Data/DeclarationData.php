@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Declarations\VerificationContract;
-use App\Models\RuleProposalRevision;
+use App\Models\CommandRules\RuleProposalRevision;
 use App\Values\CommandClassSet;
 use App\Values\RuleExample;
 use App\Values\RuleReference;

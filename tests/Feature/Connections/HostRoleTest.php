@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Enums\ArrangementType;
-use App\Models\Host;
-use App\Models\ProjectBinding;
+use App\Models\Projects\Host;
+use App\Models\Projects\ProjectBinding;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\TestCase;

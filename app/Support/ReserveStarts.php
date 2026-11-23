@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Contracts\Sessions\StartReservations;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AgentReservedForReview;
-use App\Models\Agent;
-use App\Models\WorkReservation;
+use App\Models\Agents\Agent;
+use App\Models\Reviews\WorkReservation;
 
 /**
  * Takes the same lifecycle lock and start reservation every start takes, so an owner can recheck its work facts

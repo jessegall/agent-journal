@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Concerns\HasComments;
-use App\Models\Comment;
+use App\Models\Records\Comment;
 use App\Support\Exports;
 use App\Support\LinkAccess;
 use App\Support\ReadBuilder;

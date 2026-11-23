@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Sharing;
 
-use App\Models\ShareMember;
+use App\Models\Sharing\ShareMember;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

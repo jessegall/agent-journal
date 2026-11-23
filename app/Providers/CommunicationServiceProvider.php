@@ -24,7 +24,7 @@ use App\Contracts\Records\RecordProviderRegistration;
 use App\Contracts\Work\IncomingWorkRegistration;
 use App\Enums\AccessType;
 use App\Enums\AssignmentPurpose;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Policies\MessageAdministrationPolicy;
 use App\Policies\MessagePolicy;
 use App\Resolvers\AgentMessages;

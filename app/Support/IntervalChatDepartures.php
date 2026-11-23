@@ -10,9 +10,9 @@ use App\Enums\DismissalType;
 use App\Enums\LeaveReason;
 use App\Exceptions\ChatStateConflict;
 use App\Exceptions\InboxUnavailable;
-use App\Models\Message;
-use App\Models\ReceiptDelivery;
-use App\Models\SpeechOpportunity;
+use App\Models\Chats\SpeechOpportunity;
+use App\Models\Messages\Message;
+use App\Models\Messages\ReceiptDelivery;
 use Carbon\CarbonImmutable;
 
 /**

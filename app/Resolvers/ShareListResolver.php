@@ -8,8 +8,8 @@ use App\Contracts\Navigation\PageResolver;
 use App\Data\Sharing\ShareRowData;
 use App\Http\Pages\Sharing\SharesIndex;
 use App\Http\Requests\Sharing\ShareListRequest;
-use App\Models\Share;
-use App\Models\ShareGatewayConfiguration;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Support\Layout\DeclaredLayoutData;
 
 /**

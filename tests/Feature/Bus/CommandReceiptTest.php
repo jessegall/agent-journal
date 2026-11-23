@@ -13,7 +13,7 @@ use App\Exceptions\NestedCommandFailureIgnored;
 use App\Exceptions\OperationUnavailable;
 use App\Exceptions\RefusalReplayed;
 use App\Exceptions\RequestKeyConflict;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;

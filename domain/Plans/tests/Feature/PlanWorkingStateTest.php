@@ -7,7 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Work\CurrentState;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\StackRestorer;

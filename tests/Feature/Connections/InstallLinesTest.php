@@ -7,7 +7,7 @@ namespace Tests\Feature\Connections;
 use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Models\ProjectInvitation;
+use App\Models\Projects\ProjectInvitation;
 use App\Support\ActorContext;
 use App\Values\OwnerAuthority;
 use App\Values\ReleaseManifest;

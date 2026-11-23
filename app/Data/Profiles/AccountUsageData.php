@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Profiles;
 
-use App\Models\AccountUsageTokens;
-use App\Models\AccountUsageWindow;
+use App\Models\Accounts\AccountUsageTokens;
+use App\Models\Accounts\AccountUsageWindow;
 use App\Values\MonthCost;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

@@ -12,7 +12,7 @@ use App\Exceptions\SettingHandleUnknown;
 use App\Exceptions\SettingStorageInvalid;
 use App\Exceptions\SettingsUnavailable;
 use App\Exceptions\SettingUnavailable;
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Support\CoreSettings;
 use App\Support\DatabaseSettingsResolver;
 use App\Support\DisabledSettingsGroup;

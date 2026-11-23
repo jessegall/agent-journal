@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Events\Listener;
 use App\Events\LaunchEnded;
 use App\Events\SessionClosed;
-use App\Models\StartRecord;
+use App\Models\Starts\StartRecord;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

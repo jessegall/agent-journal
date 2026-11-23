@@ -8,10 +8,10 @@ use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\ReaderProofFailed;
 use App\Exceptions\ReaderProposalRefused;
 use App\Exceptions\RequestTransitionRefused;
-use App\Models\CommandRequest;
-use App\Models\ReaderProof;
-use App\Models\ReaderRevision;
-use App\Models\RuleProposalRevision;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\RuleProposalRevision;
+use App\Models\Runs\ReaderProof;
+use App\Models\Runs\ReaderRevision;
 use App\Support\ActorIdentity;
 use App\Support\ReaderProofCheck;
 

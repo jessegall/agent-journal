@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\ReservationState;
-use App\Models\CapacityReservation;
+use App\Models\Starts\CapacityReservation;
 
 /**
  * Gives back the host capacity a start reserved, once the start is over.

@@ -8,7 +8,7 @@ use App\Commands\CreateDesk\CreateDeskCommand;
 use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Data\MessageReadBatch;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 use App\Support\DeskSeating;
 use Tests\Support\MessagingTestCase;
 

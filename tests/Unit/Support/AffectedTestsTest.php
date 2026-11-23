@@ -69,7 +69,7 @@ final class AffectedTestsTest extends TestCase
 
     public function test_a_test_file_inside_a_selected_folder_is_not_listed_again(): void
     {
-        $affected = $this->affectedBy('app/Models/NotificationReceipt.php');
+        $affected = $this->affectedBy('app/Models/Notifications/NotificationReceipt.php');
 
         $this->assertContains('tests/Feature/Communication', $affected);
         $this->assertNotContains('tests/Feature/Communication/NotificationFeedTest.php', $affected);

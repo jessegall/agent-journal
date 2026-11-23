@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Processes\ProcessRunCallers;
 use App\Enums\ActorType;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

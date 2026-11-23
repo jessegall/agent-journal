@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Profiles;
 
-use App\Models\Profile;
+use App\Models\Profiles\Profile;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutPartData;

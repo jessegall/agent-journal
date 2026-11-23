@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\InstallAttemptRefused;
-use App\Models\Environment;
-use App\Models\Project;
+use App\Models\Projects\Environment;
+use App\Models\Projects\Project;
 
 /**
  * The environments of a connected project, for an owner who may connect projects; checked again on every read.

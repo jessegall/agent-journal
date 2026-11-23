@@ -12,7 +12,7 @@ use App\Contracts\Assignments\AutoAssignmentWriter;
 use App\Contracts\Time\ServerClock;
 use App\Exceptions\AutoAssignmentMissing;
 use App\Exceptions\AutoAssignmentRevisionChanged;
-use App\Models\AutoAssignment;
+use App\Models\Records\AutoAssignment;
 use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentInput;

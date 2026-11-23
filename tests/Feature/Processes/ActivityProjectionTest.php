@@ -6,8 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Enums\OutputStream;
 use App\Events\RunChanged;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
 use App\Resolvers\Support\ActivityProjection;
 use App\Support\ActorIdentity;
 use App\Support\SpoolRecorder;

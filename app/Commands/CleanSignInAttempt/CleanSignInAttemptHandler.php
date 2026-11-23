@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\CleanSignInAttempt;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 
 final readonly class CleanSignInAttemptHandler implements CommandHandler
 {

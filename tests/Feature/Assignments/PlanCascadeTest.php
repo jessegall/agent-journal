@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Bus\CommandBus;
-use App\Models\Agent;
-use App\Models\AssignmentRecord;
+use App\Models\Agents\Agent;
+use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;

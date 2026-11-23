@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\DriverSwitchStage;
-use App\Models\DriverSwitch;
+use App\Models\Drivers\DriverSwitch;
 
 /**
  * An agent's latest switch as its status reads it: its id, its stage and the process generation it expects, which a

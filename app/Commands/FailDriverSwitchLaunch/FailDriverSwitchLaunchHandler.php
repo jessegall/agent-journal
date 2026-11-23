@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\FailDriverSwitchLaunch;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\DriverSwitch;
+use App\Models\Drivers\DriverSwitch;
 
 final readonly class FailDriverSwitchLaunchHandler implements CommandHandler
 {

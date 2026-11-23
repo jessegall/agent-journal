@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\TimelineEvent;
+use App\Models\Chats\TimelineEvent;
 
 /**
  * A chat envelope with the timeline event it is posted at, which is all a new chat message row is made of.

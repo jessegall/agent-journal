@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Resolvers\Support;
 
 use App\Contracts\Actors\ActorResolver;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Values\RunningRuntime;
 use PhpOption\None;

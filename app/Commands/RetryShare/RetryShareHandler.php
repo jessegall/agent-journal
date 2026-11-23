@@ -8,9 +8,9 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sharing\SharePolicy;
 use App\Enums\GatewayOperationType;
 use App\Enums\ShareAuditType;
-use App\Models\Share;
-use App\Models\ShareAudit;
-use App\Models\ShareGatewayOperation;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareAudit;
+use App\Models\Sharing\ShareGatewayOperation;
 use App\Support\ActorIdentity;
 use App\Support\ShareSummary;
 

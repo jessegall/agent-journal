@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\HoldReason;
 use App\Enums\RuntimeActivity;
 use App\Exceptions\HostReportRefused;
-use App\Models\DriverTurn;
+use App\Models\Drivers\DriverTurn;
 use App\Support\HostRuntimes;
 use Carbon\CarbonImmutable;
 

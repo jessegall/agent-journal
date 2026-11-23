@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
 use App\Enums\TerminalViewRefusal;
-use App\Models\TerminalView;
+use App\Models\Drivers\TerminalView;
 use Carbon\CarbonInterface;
 use RuntimeException;
 use Throwable;

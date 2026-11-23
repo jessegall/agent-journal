@@ -7,8 +7,8 @@ namespace App\Commands\RecoverProjectBinding;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ConnectionAuditActor;
 use App\Enums\ConnectionAuditType;
-use App\Models\ConnectionAudit;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ConnectionAudit;
+use App\Models\Projects\ProjectBinding;
 use App\Values\Redemption;
 
 /**

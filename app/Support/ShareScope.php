@@ -8,7 +8,7 @@ use App\Exceptions\RecordUnavailable;
 use App\Exceptions\ShareBudgetExceeded;
 use App\Exceptions\ShareScopeTooLarge;
 use App\Exceptions\UnknownShareRecordType;
-use App\Models\Link;
+use App\Models\Records\Link;
 
 /**
  * Finds what a share of a root could include, for the owner's preview: the root's card from its own provider, then

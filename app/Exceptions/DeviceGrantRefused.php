@@ -8,7 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
-use App\Models\DeviceGrant;
+use App\Models\Projects\DeviceGrant;
 use RuntimeException;
 use Throwable;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\Policy;
-use App\Models\Link;
+use App\Models\Records\Link;
 
 /**
  * Who may work with links between records: every granted actor, so the grants decide.

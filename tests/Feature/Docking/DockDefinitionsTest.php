@@ -7,7 +7,7 @@ namespace Tests\Feature\Docking;
 use App\Contracts\Records\RecordResolver;
 use App\Data\RecordCard;
 use App\Exceptions\DockDefinitionInvalid;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ActorContext;
 use App\Support\DockDefinitions;
 use App\Support\Docking\LegacyDockable;

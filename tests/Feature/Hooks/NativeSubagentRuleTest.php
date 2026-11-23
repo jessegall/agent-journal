@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverVariant;
 use App\Events\StartSettingsRequested;
-use App\Models\HookCall;
+use App\Models\Drivers\HookCall;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\Contracts\DriverAdapters;

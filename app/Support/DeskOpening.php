@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\DeskSeatCountInvalid;
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
-use App\Models\InboxRecord;
+use App\Models\Chats\InboxRecord;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
 use Illuminate\Support\Str;
 
 /**

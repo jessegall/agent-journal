@@ -10,8 +10,8 @@ use App\Enums\RuntimeActivity;
 use App\Enums\RuntimeEventType;
 use App\Events\SessionStateChanged;
 use App\Exceptions\HostReportRefused;
-use App\Models\DriverRequest;
-use App\Models\RuntimeEvent;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\RuntimeEvent;
 use App\Support\HostRuntimes;
 use Carbon\CarbonImmutable;
 

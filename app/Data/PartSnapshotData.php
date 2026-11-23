@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-use App\Models\OutputAssessment;
-use App\Models\PartRun;
-use App\Models\ReaderPosition;
+use App\Models\Runs\OutputAssessment;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ReaderPosition;
 use App\Values\OutputProblem;
 use App\Values\PartActivity;
 use Spatie\LaravelData\Data;

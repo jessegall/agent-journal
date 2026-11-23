@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Chat\ConversationResolver;
 use App\Exceptions\MessageMissing;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use Tests\Support\MessagingTestCase;
 
 /**

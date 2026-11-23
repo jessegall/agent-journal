@@ -18,7 +18,7 @@ use App\Enums\StartDisposition;
 use App\Enums\StartOriginType;
 use App\Enums\StartRefusalType;
 use App\Exceptions\CapacityUnavailable;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\LaunchOutcome;

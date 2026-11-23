@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Enums\LifecycleState;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\Processes\OpensAcmeRequestAsOwner;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\ClaimAccountCheck;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Values\ClaimedAccountCheck;
 
 final readonly class ClaimAccountCheckHandler implements CommandHandler

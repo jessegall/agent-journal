@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\OutputAssessment;
-use App\Models\ResultReceipt;
+use App\Models\Runs\OutputAssessment;
+use App\Models\Runs\ResultReceipt;
 use App\Support\Stored\StoredVerificationContract;
 use App\Values\VerifiedOutput;
 

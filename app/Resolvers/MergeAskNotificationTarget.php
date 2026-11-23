@@ -10,8 +10,8 @@ use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Data\NotificationLink;
 use App\Enums\AskResult;
-use App\Models\Ask;
-use App\Models\AskHop;
+use App\Models\Asks\Ask;
+use App\Models\Asks\AskHop;
 use App\Support\ActorIdentity;
 use PhpOption\Option;
 

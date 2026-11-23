@@ -12,7 +12,7 @@ use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Chat\NamedInboxes;
 use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
-use App\Models\InboxRecord;
+use App\Models\Chats\InboxRecord;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Builder;
 

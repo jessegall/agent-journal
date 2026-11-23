@@ -7,7 +7,7 @@ How a running agent program is driven, for a reader of the code. The design is d
 
 | Part | Where | What it does |
 | --- | --- | --- |
-| Driver ledger | `app/Models/DriverRequest.php`, `app/Support/DriverRequests.php` | Every operation asked of a runtime is a request with a sequence, an attempt and a progress; nothing reaches a program any other way |
+| Driver ledger | `app/Models/Drivers/DriverRequest.php`, `app/Support/DriverRequests.php` | Every operation asked of a runtime is a request with a sequence, an attempt and a progress; nothing reaches a program any other way |
 | Owner commands | `app/Agents/Commands` (`DeliverAgent`, `WakeAgent`, `ChangeAgentModel`, `ChangeAgentEffort`, `InterruptAgent`, `StopAgent`) | Append a request; the recovery commands (`RetryDriverRequest`, `CancelDriverRequest`, `ResolveDriverDelivery`, `RepairDriverSettings`, `ReleaseAgentHold`, `ResumeKeyScript`, `CancelKeyScript`, `ReassignAgentRuntime`) need the owner-only `AgentMaintenancePolicy` |
 | Host routes | `routes/agents/host.php` | Claim, start grant, and reports of request progress, turns, activity, heartbeats, exit and screens |
 | Host | `tools/journal-agent` | `serve` claims requests (`client/poll.go`) and hands them to the loop in `serving/loop.go` |
@@ -15,7 +15,7 @@ How a running agent program is driven, for a reader of the code. The design is d
 | Drivers | `tools/journal-agent/drivers` | `AgentDriver` (`drivers/contracts/agent_driver.go`): Deliver, Wake, ChangeModel, ChangeEffort, Interrupt, Stop. `ProcessDriver` runs one child per turn; `TerminalDriver` types into one persistent program |
 | Profiles | `tools/journal-agent/profiles` | Per program: the pinned build, its arguments, settings files, hooks and the screens it shows |
 | Key scripts | `tools/journal-agent/keyscripts` | Maintenance scripts for the terminal; the host registers them per program build (`keyscripts/registry.go`, `keyscripts/scripts`) and runs no other |
-| Navigation and the menu library | `app/Models/NavigationRequest.php`, `app/Models/MenuEntry.php`, `DriverOperation::Navigate`, the navigation and menu-entry routes in `routes/agents/host.php`, `tools/journal-agent/keyscripts/entry.go`, `path.go`, `navigation.go` | A key script that is not certain of a menu asks the journal; the main agent finds the way, and the proven way is kept as a library entry the host replays |
+| Navigation and the menu library | `app/Models/Drivers/NavigationRequest.php`, `app/Models/Drivers/MenuEntry.php`, `DriverOperation::Navigate`, the navigation and menu-entry routes in `routes/agents/host.php`, `tools/journal-agent/keyscripts/entry.go`, `path.go`, `navigation.go` | A key script that is not certain of a menu asks the journal; the main agent finds the way, and the proven way is kept as a library entry the host replays |
 
 ## How a request travels
 
@@ -41,7 +41,7 @@ refused (`ErrSessionContainerUnattachable`).
 ## Watching a terminal
 
 A terminal view lets a user watch a terminal runtime's screen in the web UI, read only. It is a lease row
-(`app/Models/TerminalView.php`), never a driver request, so it stays out of the ledger and a held runtime can
+(`app/Models/Drivers/TerminalView.php`), never a driver request, so it stays out of the ledger and a held runtime can
 still be watched.
 
 - `OpenTerminalView`, `RenewTerminalView` and `CloseTerminalView` need `AgentMaintenancePolicy` with `AccessType::Read`, which

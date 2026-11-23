@@ -8,8 +8,8 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\AccountUseChanged;
 use App\Events\DriverFailed;
-use App\Models\AgentSession;
-use App\Models\ProcessStart;
+use App\Models\Agents\AgentSession;
+use App\Models\Starts\ProcessStart;
 
 final readonly class ReportFailureHandler implements CommandHandler
 {

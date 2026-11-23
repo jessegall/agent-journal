@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Models\Agent;
-use App\Models\AssignmentRecord;
-use App\Models\ClaimAuthorization;
-use App\Models\DeskRecord;
+use App\Models\Agents\Agent;
+use App\Models\Desks\DeskRecord;
+use App\Models\Records\AssignmentRecord;
+use App\Models\Records\ClaimAuthorization;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;

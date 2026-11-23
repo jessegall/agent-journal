@@ -7,7 +7,7 @@ namespace App\CommandMiddleware;
 use App\Contracts\Bus\CommandMiddleware;
 use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyMissing;
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use App\Support\AcceptedReceipt;
 use App\Support\CommandCall;
 use App\Support\CommandRegistry;

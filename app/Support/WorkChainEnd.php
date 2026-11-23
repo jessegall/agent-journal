@@ -7,10 +7,10 @@ namespace App\Support;
 use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Contracts\Processes\RuntimeStops;
 use App\Enums\WorkChainEnding;
-use App\Models\Ask;
-use App\Models\AskHop;
-use App\Models\CodeReview;
-use App\Models\WorkReservation;
+use App\Models\Asks\Ask;
+use App\Models\Asks\AskHop;
+use App\Models\Reviews\CodeReview;
+use App\Models\Reviews\WorkReservation;
 
 /**
  * Ends the chain of one certified work: its open review and merge asks close, its reservation is released to normal

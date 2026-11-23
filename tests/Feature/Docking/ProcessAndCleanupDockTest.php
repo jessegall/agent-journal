@@ -6,9 +6,9 @@ namespace Tests\Feature\Docking;
 
 use App\Enums\ActorType;
 use App\Enums\OutputStream;
-use App\Models\EvidenceRead;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
+use App\Models\CommandRules\EvidenceRead;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Support\OutputDocking;
 use App\Support\SpoolRecorder;

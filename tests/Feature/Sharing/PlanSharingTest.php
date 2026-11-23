@@ -7,7 +7,7 @@ namespace Tests\Feature\Sharing;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\ReadMeter;
-use App\Models\Link;
+use App\Models\Records\Link;
 use App\Support\MeteredShareBudget;
 use App\Support\ShareContentRead;
 use App\Support\ShareLinkedCandidate;

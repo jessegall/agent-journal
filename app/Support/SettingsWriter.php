@@ -15,7 +15,7 @@ use App\Exceptions\CommandTransactionMissing;
 use App\Exceptions\SettingDisabled;
 use App\Exceptions\SettingsConflict;
 use App\Exceptions\SettingStorageInvalid;
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Support\Storage\EncodedSetting;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;

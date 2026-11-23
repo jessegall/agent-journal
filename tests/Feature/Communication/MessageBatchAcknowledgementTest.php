@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Models\MessageReceipt;
+use App\Models\Messages\MessageReceipt;
 use App\Support\ActorIdentity;
 use App\Support\MessageBatchService;
 use Carbon\CarbonImmutable;

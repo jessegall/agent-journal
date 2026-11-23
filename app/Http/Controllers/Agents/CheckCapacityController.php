@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Agents;
 
 use App\Enums\StartRefusalType;
 use App\Http\Requests\Agents\CheckCapacityRequest;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\CapacityCheck;
 use App\Support\StartRemedyWords;
 

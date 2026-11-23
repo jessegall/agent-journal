@@ -9,7 +9,7 @@ use App\Contracts\Chat\Notifications;
 use App\Data\NotificationTarget;
 use App\Enums\ActorType;
 use App\Exceptions\RunOutcomeAccessRefused;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Resolvers\RunNotificationTarget;
 use App\Support\ActorIdentity;
 

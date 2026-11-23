@@ -9,7 +9,7 @@ use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
 use App\Events\DriverFailed;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 
 /**
  * A rejected sign-in on a saved account asks the host to check that account in the generation the failure was seen

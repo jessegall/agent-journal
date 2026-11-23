@@ -6,7 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverVariant;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use Tests\Support\CommitsHookRows;

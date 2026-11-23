@@ -6,8 +6,8 @@ namespace App\Commands\ClaimCleanup;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\CleanupTarget;
-use App\Models\Account;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\SignInAttempt;
 use App\Values\ClaimedCleanup;
 
 final readonly class ClaimCleanupHandler implements CommandHandler

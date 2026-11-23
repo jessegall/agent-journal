@@ -7,9 +7,9 @@ namespace App\Resolvers\Support;
 use App\Data\DeliveryView;
 use App\Enums\OutstandingMessageRangeState;
 use App\Enums\WakeState;
-use App\Models\MessageReceipt;
-use App\Models\OutstandingMessageRange;
-use App\Models\ReceiptDelivery;
+use App\Models\Messages\MessageReceipt;
+use App\Models\Messages\OutstandingMessageRange;
+use App\Models\Messages\ReceiptDelivery;
 
 /**
  * Per recipient, how far waking it about each of some chat messages got: pending, waiting for it to start, accepted,

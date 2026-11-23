@@ -9,7 +9,7 @@ use App\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Enums\MessageState;
 use App\Events\MessageAnswered;
 use App\Exceptions\MessageStateConflict;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\MessagingTestCase;
 

@@ -8,7 +8,7 @@ use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\ClaimProjectReads\ClaimProjectReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ArrangementType;
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Support\ClaimAnswer;
 use App\Support\DriverBudgets;
 use App\Support\HostClaim;

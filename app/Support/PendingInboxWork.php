@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Work\PendingWorkSource;
-use App\Models\Message;
+use App\Models\Messages\Message;
 
 /**
  * Counts the messages waiting for an actor across the inboxes it belongs to now: desk mail unread or waiting for an

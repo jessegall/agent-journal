@@ -8,7 +8,7 @@ use App\Contracts\Chat\InboxRegistration;
 use App\Contracts\Chat\InboxResolver;
 use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
-use App\Models\InboxRecord;
+use App\Models\Chats\InboxRecord;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Tests\Fixtures\Communication\TeamInboxAccess;
 use Tests\Fixtures\Communication\TeamInboxProvider;

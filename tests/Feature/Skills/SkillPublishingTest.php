@@ -9,7 +9,7 @@ use App\Commands\PublishSkills\PublishSkillsCommand;
 use App\Contracts\Skills\SkillPublisher;
 use App\Enums\PublicationState;
 use App\Exceptions\SkillPublicationStale;
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillPublication;
 use App\Support\HostSkillPublisher;
 use App\Support\SkillPublishing;
 use Carbon\CarbonImmutable;

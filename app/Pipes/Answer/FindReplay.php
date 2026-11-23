@@ -6,7 +6,7 @@ namespace App\Pipes\Answer;
 
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\HookDigestChanged;
-use App\Models\HookCall;
+use App\Models\Drivers\HookCall;
 use App\Support\CallStages\LockedCall;
 use App\Support\Drivers\DriverReply;
 use App\Support\Drivers\Exceptions\ReplayFound;

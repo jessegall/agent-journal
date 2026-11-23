@@ -6,7 +6,7 @@ namespace App\Commands\ReportCleanup;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\CleanupState;
-use App\Models\CleanupOperation;
+use App\Models\Starts\CleanupOperation;
 use App\Support\CapacityRelease;
 
 /**

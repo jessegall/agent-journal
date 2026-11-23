@@ -6,12 +6,12 @@ namespace Tests\Feature\Connections;
 
 use App\Enums\BindingReadiness;
 use App\Enums\ConnectionAuditType;
-use App\Models\ConnectionAudit;
-use App\Models\Environment;
-use App\Models\InstallAttempt;
-use App\Models\Project;
-use App\Models\ProjectBinding;
-use App\Models\ProjectInvitation;
+use App\Models\Projects\ConnectionAudit;
+use App\Models\Projects\Environment;
+use App\Models\Projects\InstallAttempt;
+use App\Models\Projects\Project;
+use App\Models\Projects\ProjectBinding;
+use App\Models\Projects\ProjectInvitation;
 use App\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;

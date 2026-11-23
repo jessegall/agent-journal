@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Http\Requests\Agents\StartReportRequest;
-use App\Models\ProcessStart;
-use App\Models\SessionOutputGrant;
+use App\Models\Starts\ProcessStart;
+use App\Models\Starts\SessionOutputGrant;
 use App\Support\Relay\OutputGrantSeal;
 use App\Values\HostContext;
 use App\Values\SessionOutputPaths;

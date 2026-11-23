@@ -13,7 +13,7 @@ use App\Enums\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\TerminalControlRefused;
 use App\Exceptions\TerminalViewRefused;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Policies\AgentMaintenancePolicy;
 
 /**

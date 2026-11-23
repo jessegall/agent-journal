@@ -10,7 +10,7 @@ use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyExpired;
 use App\Exceptions\RequestKeyMissing;
 use App\Http\Middleware\Web\ReadIdempotencyKey;
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use App\Support\RequestKey;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;

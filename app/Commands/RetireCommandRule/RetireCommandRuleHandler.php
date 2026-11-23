@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\RuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
-use App\Models\ClassificationRule;
+use App\Models\CommandRules\ClassificationRule;
 use App\Support\ProjectKey;
 
 final readonly class RetireCommandRuleHandler implements CommandHandler

@@ -6,7 +6,7 @@ namespace App\Policies;
 
 use App\Contracts\Authorization\Policy;
 use App\Enums\AccessType;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 
 /**

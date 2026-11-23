@@ -7,7 +7,7 @@ namespace App\Commands\CloseWorkChain;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\WorkChainEnding;
 use App\Exceptions\AskRefused;
-use App\Models\CodeReview;
+use App\Models\Reviews\CodeReview;
 use App\Support\ActorIdentity;
 use App\Support\SupervisorOwner;
 use App\Support\WorkChainEnd;

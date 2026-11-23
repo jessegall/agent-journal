@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\OwnerPolicy;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 
 /**
  * Who may type into an agent's terminal from the browser: only its owner, beside the inspect that watching needs. An

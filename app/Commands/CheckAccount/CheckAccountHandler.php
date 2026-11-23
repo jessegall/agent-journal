@@ -6,8 +6,8 @@ namespace App\Commands\CheckAccount;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\AccountNoticeReason;
-use App\Models\Account;
-use App\Models\ActiveAccount;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\ActiveAccount;
 use App\Support\AccountNotices;
 use Carbon\CarbonImmutable;
 

@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyExpired;
 use App\Exceptions\RequestKeyMissing;
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use App\Support\RequestKey;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\Commands\RetainNote\RetainNoteCommand;

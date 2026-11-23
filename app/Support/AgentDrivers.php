@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\ActorType;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 
 /**
  * The driver each agent among some actors runs now, so a roster or a candidate list names it beside the agent.

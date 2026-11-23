@@ -9,8 +9,8 @@ use App\Commands\HoldAccountUses\HoldAccountUsesCommand;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Account;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\SignInAttempt;
 use App\Support\RecordIdentity;
 
 final readonly class ReleaseSignInAgainHandler implements CommandHandler

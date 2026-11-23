@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Models\Layout;
+use App\Models\Records\Layout;
 use Domain\Access\Models\User;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\ActsAsOwner;

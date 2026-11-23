@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Enums\IntervalRole;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;
 use App\Support\InboxIntervals;

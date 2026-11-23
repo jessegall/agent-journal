@@ -6,7 +6,7 @@ namespace App\Commands\MarkQuestionNotificationRead;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\NotificationUnavailable;
-use App\Models\NotificationReceipt;
+use App\Models\Notifications\NotificationReceipt;
 use App\Resolvers\QuestionNotificationTarget;
 use App\Support\ActorIdentity;
 use App\Support\NotificationReceipts;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Enums\ExecutionModeType;
-use App\Models\Agent;
-use App\Models\CapacityReservation;
+use App\Models\Agents\Agent;
+use App\Models\Starts\CapacityReservation;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
 use Domain\Access\Models\User;

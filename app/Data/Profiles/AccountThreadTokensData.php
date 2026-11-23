@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Profiles;
 
 use App\Data\Support\OptionalOrMissing;
-use App\Models\AccountUsageTokens;
+use App\Models\Accounts\AccountUsageTokens;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

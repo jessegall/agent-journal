@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Enums\RunLogicalResult;
 use App\Enums\RunResultSource;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
 use Carbon\CarbonImmutable;
 
 /**

@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Enums\RecoveryAction;
 use App\Events\DriverRequestRecovered;
 use App\Exceptions\DriverRequestRefused;
-use App\Models\DriverRequest;
+use App\Models\Drivers\DriverRequest;
 
 /**
  * What the three recovery commands share: the request locked at the row version its caller read, and the audit

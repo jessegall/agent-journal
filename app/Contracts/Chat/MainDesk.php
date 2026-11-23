@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Chat;
 
-use App\Models\NavigationRequest;
+use App\Models\Drivers\NavigationRequest;
 use App\Support\ActorIdentity;
 use PhpOption\Option;
 

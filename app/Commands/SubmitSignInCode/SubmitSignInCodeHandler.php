@@ -6,7 +6,7 @@ namespace App\Commands\SubmitSignInCode;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\SignInAnswerRefused;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use App\Support\SignInProtocols;
 use App\Values\SignInCode;

@@ -10,7 +10,7 @@ use App\Enums\AccessType;
 use App\Enums\ActorType;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AssignmentDenied;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\ActorIdentity;
 use App\Support\Lifecycle\AgentLifecycle;

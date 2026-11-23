@@ -9,7 +9,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Work\AgentStack;
 use App\Contracts\Work\CurrentState;
 use App\Contracts\Work\WorkStacks;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;
 use PhpOption\None;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\PrintsSkillRefusals;
-use App\Models\SkillRevision;
+use App\Models\Skills\SkillRevision;
 use App\Support\SkillAuthoring;
 use Illuminate\Console\Command;
 

@@ -7,8 +7,8 @@ namespace Tests\Support\Skills;
 use App\Enums\SessionStatus;
 use App\Events\SessionOpened;
 use App\Listeners\AdmitStartSkills;
-use App\Models\Agent;
-use App\Models\AgentSession;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
 use Tests\Fixtures\Agents\TestSelections;
 
 /**

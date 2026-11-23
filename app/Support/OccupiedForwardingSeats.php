@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\Actor;
-use App\Models\AssignmentRecord;
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
+use App\Models\Records\AssignmentRecord;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

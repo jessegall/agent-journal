@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Chat\MainSeatTakeover;
-use App\Models\Agent;
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
+use App\Models\Agents\Agent;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
 
 /**
  * The main start's seat change: the starting agent takes main's one seat. A different agent that held it is fenced,

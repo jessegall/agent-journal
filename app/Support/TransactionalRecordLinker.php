@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\CommandTransaction;
 use App\Contracts\Records\RecordLinker;
 use App\Contracts\Records\RecordResolver;
-use App\Models\Link;
+use App\Models\Records\Link;
 use Illuminate\Database\Eloquent\Model;
 
 final readonly class TransactionalRecordLinker implements RecordLinker

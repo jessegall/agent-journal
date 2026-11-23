@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\AgentSession;
-use App\Models\DriverConversation;
-use App\Models\ProcessStart;
-use App\Models\SessionOutputGrant;
-use App\Models\StartRecord;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverConversation;
+use App\Models\Starts\ProcessStart;
+use App\Models\Starts\SessionOutputGrant;
+use App\Models\Starts\StartRecord;
 use App\Support\Drivers\Contracts\DriverAdapters;
 use App\Values\SessionOutputPaths;
 

@@ -10,7 +10,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Skills\SkillResolver;
 use App\Exceptions\ActorNotAllowed;
-use App\Models\SkillRevision;
+use App\Models\Skills\SkillRevision;
 use App\Support\ActorContext;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;

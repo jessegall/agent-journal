@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\TerminalView;
+use App\Models\Drivers\TerminalView;
 
 /**
  * The runtimes of a host that somebody watches, and the version of that list: a hash of the list itself, so every

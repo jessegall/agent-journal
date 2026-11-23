@@ -7,7 +7,7 @@ namespace App\Commands\AnswerMessage;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sessions\CurrentSession;
 use App\Exceptions\MessageMissing;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\ChatService;
 use App\Support\MessageService;

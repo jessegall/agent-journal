@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Enums\PublicationState;
 use App\Enums\ReadEvidence;
-use App\Models\SkillContextEpoch;
-use App\Models\SkillPublication;
-use App\Models\SkillReceipt;
+use App\Models\Skills\SkillContextEpoch;
+use App\Models\Skills\SkillPublication;
+use App\Models\Skills\SkillReceipt;
 
 /**
  * Turns proven evidence of a whole read into a receipt for the text the session was delivered; a skill outside its

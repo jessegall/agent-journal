@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Share;
-use App\Models\ShareAudit;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareAudit;
 
 /**
  * A share's audit for its owner, a page at a time newest first: what happened, when, why and who it shows as having

@@ -17,7 +17,7 @@ use App\Declarations\IntegerSetting;
 use App\Declarations\StringSetting;
 use App\Declarations\ToggleGroup;
 use App\Exceptions\SettingsUnavailable;
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Support\Storage\SettingsDocument;
 use App\Values\Decimal;
 use BackedEnum;

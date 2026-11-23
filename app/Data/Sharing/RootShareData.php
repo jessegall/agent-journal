@@ -6,7 +6,7 @@ namespace App\Data\Sharing;
 
 use App\Data\Support\OptionalOrMissing;
 use App\Enums\ShareState;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

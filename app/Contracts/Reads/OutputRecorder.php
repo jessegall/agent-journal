@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Reads;
 
-use App\Models\PartRun;
+use App\Models\Runs\PartRun;
 use App\Values\CapturedChunk;
 use App\Values\OutputPosition;
 use App\Values\PartEnd;

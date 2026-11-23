@@ -9,7 +9,7 @@ use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
 use App\Enums\CommandEntry;
 use App\Events\StateTypesRequested;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\ActiveActorsResolver;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;

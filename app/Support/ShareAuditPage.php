@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use Carbon\CarbonImmutable;
 
 /**

@@ -6,9 +6,9 @@ namespace Tests\Feature\Communication;
 
 use App\Enums\MessageState;
 use App\Enums\MessageType;
-use App\Models\CommandReceipt;
-use App\Models\GlobalGroup;
-use App\Models\Message;
+use App\Models\CommandRules\CommandReceipt;
+use App\Models\Messages\Message;
+use App\Models\Records\GlobalGroup;
 use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;

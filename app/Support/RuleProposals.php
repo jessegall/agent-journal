@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\RuleProposalRefused;
-use App\Models\CommandRequest;
-use App\Models\RuleProposal;
-use App\Models\RuleProposalRevision;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\RuleProposal;
+use App\Models\CommandRules\RuleProposalRevision;
 use App\Values\ProposedRule;
 
 /**

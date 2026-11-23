@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandTransaction;
-use App\Models\Link;
+use App\Models\Records\Link;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 

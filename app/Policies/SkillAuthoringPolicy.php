@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\OwnerPolicy;
-use App\Models\Skill;
+use App\Models\Skills\Skill;
 
 /**
  * Who may administer the stored skills: only the owner holds the access, so the grants decide.

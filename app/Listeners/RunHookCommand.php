@@ -12,7 +12,7 @@ use App\Enums\CommandEntry;
 use App\Enums\CommandOriginStatus;
 use App\Events\HookCommandAnswered;
 use App\Exceptions\StateAnswerRefused;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\CommandRegistry;
 use App\Support\OperationDeadline;
 use Psr\Log\LoggerInterface;

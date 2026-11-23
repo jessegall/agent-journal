@@ -8,7 +8,7 @@ use App\Calls\Processes\RecordRunEventsCall;
 use App\Calls\Processes\RunEventsAccepted;
 use App\Commands\RecordRunEvents\RecordRunEventsCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Values\RunEventBatch;
 
 /**

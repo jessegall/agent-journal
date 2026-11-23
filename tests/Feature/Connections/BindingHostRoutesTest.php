@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Exceptions\HostRoleRefused;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\HostReportRefused;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 
 /**
  * Finds a runtime for its own host, locked, and refuses one of another host.

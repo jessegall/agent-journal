@@ -12,7 +12,7 @@ use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\AccountCheckResult;
 use App\Enums\StartUnavailableReason;
 use App\Exceptions\ActorNotAllowed;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
 use App\Support\EligibleAccounts;

@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\Actor;
 use App\Enums\ActorType;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
 
 /**

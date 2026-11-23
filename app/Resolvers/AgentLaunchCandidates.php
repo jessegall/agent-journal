@@ -6,12 +6,12 @@ namespace App\Resolvers;
 
 use App\Contracts\Sessions\LaunchCandidates;
 use App\Enums\LaunchCandidateRank;
-use App\Models\Agent;
-use App\Models\AgentSession;
-use App\Models\ConversationVisit;
-use App\Models\DriverConversation;
-use App\Models\ProcessStart;
-use App\Models\WorkReservation;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\ConversationVisit;
+use App\Models\Drivers\DriverConversation;
+use App\Models\Reviews\WorkReservation;
+use App\Models\Starts\ProcessStart;
 use App\Support\LaunchCandidateFacts;
 use App\Support\LaunchCandidateQuery;
 use App\Support\RankedLaunchCandidate;

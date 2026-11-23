@@ -7,10 +7,10 @@ namespace App\Support;
 use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Enums\MergeAttemptState;
 use App\Enums\WorkChainEnding;
-use App\Models\Ask;
-use App\Models\AskHop;
-use App\Models\CodeReview;
-use App\Models\MergeAttempt;
+use App\Models\Asks\Ask;
+use App\Models\Asks\AskHop;
+use App\Models\Reviews\CodeReview;
+use App\Models\Reviews\MergeAttempt;
 
 /**
  * Settles a merge ask by the attempt it admitted, not by whoever holds it now: a merge ends the work's chain, a conflict sends the work back for repair onto the captured target, and any other refusal

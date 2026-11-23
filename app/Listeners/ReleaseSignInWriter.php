@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\SignInAttemptFinished;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 
 /**
  * Lets go of the account folder a finished sign-in attempt wrote, in the attempt's own transaction, so a later attempt

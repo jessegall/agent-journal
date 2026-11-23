@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Calls\Scripts\CheckProfileScriptCall;
 use App\Data\ProfileDraftData;
-use App\Models\ProfileDraft;
+use App\Models\Profiles\ProfileDraft;
 use App\Support\Readers\ProfileDraftReader;
 use App\Values\ProfileKey;
 

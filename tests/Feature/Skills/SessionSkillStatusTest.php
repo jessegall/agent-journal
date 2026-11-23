@@ -10,7 +10,7 @@ use App\Events\ContextStarted;
 use App\Events\ToolCallFinished;
 use App\Listeners\RecordProvenSkillReads;
 use App\Listeners\RefreshSessionSkills;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\ContextReminders;
 use App\Support\Inputs\Values\DriverToolInput;

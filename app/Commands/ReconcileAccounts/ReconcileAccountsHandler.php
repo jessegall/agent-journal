@@ -9,8 +9,8 @@ use App\Commands\ReleaseAccountRemoval\ReleaseAccountRemovalCommand;
 use App\Commands\ReleaseSignInAgain\ReleaseSignInAgainCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Account;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
 
 /**

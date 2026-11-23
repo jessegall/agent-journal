@@ -8,7 +8,7 @@ use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Sessions\CurrentSession;
 use App\Enums\MessageType;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\RegisteredInboxes;
 use Closure;

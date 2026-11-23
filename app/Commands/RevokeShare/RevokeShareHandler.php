@@ -6,7 +6,7 @@ namespace App\Commands\RevokeShare;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sharing\SharePolicy;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use App\Support\ActorIdentity;
 use App\Support\ShareEndings;
 use App\Support\ShareSummary;

@@ -6,9 +6,9 @@ namespace App\Commands\SubmitWorktreeDelivery;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\DeliveryRefused;
-use App\Models\ChildClaim;
-use App\Models\ProjectBinding;
-use App\Models\WorktreeDelivery;
+use App\Models\Agents\ChildClaim;
+use App\Models\Projects\ProjectBinding;
+use App\Models\Reviews\WorktreeDelivery;
 use App\Values\DeliveryReceipt;
 
 /**

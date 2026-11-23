@@ -7,7 +7,7 @@ namespace App\Commands\ReportWorkspaceRead;
 use App\Contracts\Actors\ActorGuidance;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Models\WorkspaceRead;
+use App\Models\Projects\WorkspaceRead;
 use App\Values\WorkspaceFacts;
 
 /**

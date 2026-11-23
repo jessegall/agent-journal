@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use App\Support\Reflector;
 use App\Support\Registry;
 use PhpParser\Node;

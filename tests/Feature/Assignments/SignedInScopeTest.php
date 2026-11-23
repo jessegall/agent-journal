@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Enums\ActorType;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Support\ActorStore;
 use App\Support\AssigneeIdentity;
 use Tests\Support\RefreshHookDatabase;

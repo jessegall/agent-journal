@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Exceptions\ClassificationUnavailable;
 use App\Exceptions\CommandRuleConflict;
-use App\Models\ModuleRuleBundle;
-use App\Models\RuleRevision;
+use App\Models\CommandRules\ModuleRuleBundle;
+use App\Models\CommandRules\RuleRevision;
 use App\Values\CommandRule;
 use App\Values\RuleBundle;
 use App\Values\RuleReference;

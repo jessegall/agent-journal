@@ -7,8 +7,8 @@ namespace App\Commands\CancelLaunch;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\LaunchCancelled;
-use App\Models\AgentRuntime;
-use App\Models\StartRecord;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Starts\StartRecord;
 use App\Support\DriverRequests;
 
 final readonly class CancelLaunchHandler implements CommandHandler

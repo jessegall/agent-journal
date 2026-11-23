@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipelines;
 
 use App\Commands\RaiseNavigation\RaiseNavigationCommand;
-use App\Models\AgentRuntime;
-use App\Models\DriverRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
 use App\Support\ActorIdentity;
 use App\Support\NavigationDispatch;
 

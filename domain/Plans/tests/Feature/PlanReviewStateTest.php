@@ -7,7 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ActorType;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\Storage\FrameRecord;

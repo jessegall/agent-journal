@@ -6,11 +6,11 @@ namespace Tests\Feature\Communication;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\IntervalRole;
-use App\Models\CommandReceipt;
-use App\Models\GlobalGroup;
-use App\Models\InboxInterval;
-use App\Models\Message;
-use App\Models\MessageReceipt;
+use App\Models\Chats\InboxInterval;
+use App\Models\CommandRules\CommandReceipt;
+use App\Models\Messages\Message;
+use App\Models\Messages\MessageReceipt;
+use App\Models\Records\GlobalGroup;
 use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;

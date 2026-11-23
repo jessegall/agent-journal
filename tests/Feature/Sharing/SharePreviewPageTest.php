@@ -6,9 +6,9 @@ namespace Tests\Feature\Sharing;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Models\Link;
-use App\Models\ShareGatewayConfiguration;
-use App\Models\SharePreview;
+use App\Models\Records\Link;
+use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Models\Sharing\SharePreview;
 use App\Support\ActorContext;
 use App\Support\GatewaySettings;
 use App\Support\ShareSelectedTarget;

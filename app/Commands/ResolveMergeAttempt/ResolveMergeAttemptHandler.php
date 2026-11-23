@@ -7,7 +7,7 @@ namespace App\Commands\ResolveMergeAttempt;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\MergeAttemptState;
 use App\Exceptions\AskRefused;
-use App\Models\MergeAttempt;
+use App\Models\Reviews\MergeAttempt;
 use App\Support\ActorIdentity;
 use App\Support\MergeSettlement;
 use App\Support\SupervisorOwner;

@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Actors\ActorWorkStacks;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\Decisions\StateReferences;
 use App\Support\MessageAnswerActivation;
 use App\Support\References\StateReference;

@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
 use App\Enums\RecoveryAction;
 use App\Exceptions\DriverRequestRefused;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use App\Support\DriverRequestRecovery;
 use App\Values\DriverRequestPayload;
 

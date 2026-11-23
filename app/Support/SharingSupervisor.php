@@ -19,7 +19,7 @@ use App\Exceptions\GatewayLeaseRefused;
 use App\Exceptions\GatewayOpenFailed;
 use App\Exceptions\GatewayRunStale;
 use App\Exceptions\SupervisorInsideTransaction;
-use App\Models\ShareGatewayEndpoint;
+use App\Models\Sharing\ShareGatewayEndpoint;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;

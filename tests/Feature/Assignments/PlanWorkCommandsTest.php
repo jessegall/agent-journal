@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;

@@ -6,7 +6,7 @@ namespace App\Commands\ClaimProjectReads;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Models\ProjectRead;
+use App\Models\Projects\ProjectRead;
 use App\Values\ProjectReadClaim;
 use App\Values\ProjectReadClaims;
 

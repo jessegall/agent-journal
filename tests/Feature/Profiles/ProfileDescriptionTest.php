@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileRules;
-use App\Models\Profile;
+use App\Models\Profiles\Profile;
 use App\Support\ProfileProposal;
 use App\Support\UnreadProfileRules;
 use App\Values\ProfileBase;

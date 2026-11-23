@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\OutputChunkCommitted;
-use App\Models\PartRun;
+use App\Models\Runs\PartRun;
 use App\Support\RunUpdates;
 
 /**

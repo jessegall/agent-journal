@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\OpenCommandRequest;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\CommandRequest;
+use App\Models\CommandRules\CommandRequest;
 use App\Support\ActorIdentity;
 use App\Support\ProjectKey;
 

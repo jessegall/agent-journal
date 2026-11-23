@@ -13,7 +13,7 @@ use App\Exceptions\InstallationNameMissing;
 use App\Exceptions\RunnerArrangementRefused;
 use App\Exceptions\WorkspaceSourceMissing;
 use App\Exceptions\WorkspaceSourcesInvalid;
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Values\OperationSupport;
 use App\Values\SelectedAccount;
 

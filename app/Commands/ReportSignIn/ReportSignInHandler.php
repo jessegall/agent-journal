@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\SignInOutcome;
 use App\Enums\SignInRefusal;
 use App\Enums\SignInState;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use App\Support\SignInCompletion;
 use Carbon\CarbonImmutable;

@@ -8,7 +8,7 @@ use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Enums\MessageState;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\MessageMissing;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\DeskOpening;
 use Tests\Support\MessagingTestCase;
 

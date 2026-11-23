@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Bus\ReceiptRefusal;
 use App\Contracts\Refusals\RefusalDetails;
 use App\Enums\RefusalCode;
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use App\Support\CommandCall;
 use App\Support\CommandRegistry;
 use App\Support\ReceiptCallers;

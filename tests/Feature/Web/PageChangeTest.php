@@ -7,7 +7,7 @@ namespace Tests\Feature\Web;
 use App\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Events\PageChanged;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use Domain\Plans\Enums\PlanType;

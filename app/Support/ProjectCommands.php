@@ -11,7 +11,7 @@ use App\Commands\StartProjectCommandRun\StartProjectCommandRunCommand;
 use App\Enums\CommandEntry;
 use App\Enums\CommandRunState;
 use App\Exceptions\VerbNotServed;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 use App\Values\CommandFrame;
 use App\Values\CommandRunStart;
 use Symfony\Component\Process\Process;

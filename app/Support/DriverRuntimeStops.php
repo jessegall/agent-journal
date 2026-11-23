@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Processes\RuntimeStops;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Values\StackTarget;
 
 /**

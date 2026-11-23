@@ -7,7 +7,7 @@ namespace App\Commands\SaveCommandRule;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ProposalState;
 use App\Exceptions\ApprovalRefused;
-use App\Models\RuleRevision;
+use App\Models\CommandRules\RuleRevision;
 use App\Support\ActorIdentity;
 use App\Support\ProjectKey;
 use App\Support\ProposalChecks;

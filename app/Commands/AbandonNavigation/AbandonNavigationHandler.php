@@ -9,7 +9,7 @@ use App\Enums\RequestOutcome;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Exceptions\NavigationTransitionRefused;
-use App\Models\DriverRequest;
+use App\Models\Drivers\DriverRequest;
 use App\Support\DriverRequestEndings;
 use App\Support\NavigationAnswerCheck;
 

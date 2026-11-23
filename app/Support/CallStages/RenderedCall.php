@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\CallStages;
 
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\Drivers\DriverReply;
 use App\Support\Stack\HookAnswer;
 

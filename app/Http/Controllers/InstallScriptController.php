@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Exceptions\InvitationUnusable;
-use App\Models\ProjectInvitation;
+use App\Models\Projects\ProjectInvitation;
 use App\Support\InstallLineAvailability;
 use App\Support\InstallScript;
 use Illuminate\Http\Response;

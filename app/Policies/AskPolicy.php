@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\Policy;
-use App\Models\Ask;
+use App\Models\Asks\Ask;
 
 /**
  * Who may act on Ask records; the grant decides, and the handlers keep their own checks.

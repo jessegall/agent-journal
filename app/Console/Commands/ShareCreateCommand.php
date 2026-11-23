@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\CreateShare\CreateShareCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Models\SharePreview;
+use App\Models\Sharing\SharePreview;
 use App\Support\ConsoleOwner;
 use App\Support\ShareDuration;
 use Illuminate\Console\Command;

@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\MessageMissing;
 use App\Exceptions\MessageStateConflict;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\ChatService;
 use App\Support\MessageService;

@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Assignments\AssigneeProvider;
 use App\Exceptions\AssigneeUnavailable;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 
 /**
  * Desks as holders of work: any desk may receive work, and every signed-in actor sees desks by their label.

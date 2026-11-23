@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
-use App\Models\Message;
+use App\Models\Messages\Message;
 
 /**
  * Ends whatever claim a message has once it no longer waits: answered or dismissed, nobody is taking it up.

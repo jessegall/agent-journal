@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Events\RunChanged;
-use App\Models\OutputAssessment;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
-use App\Models\ReaderPosition;
+use App\Models\Runs\OutputAssessment;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
+use App\Models\Runs\ReaderPosition;
 use App\Values\PartProjection;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Events\Dispatcher;

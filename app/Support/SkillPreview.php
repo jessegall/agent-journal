@@ -8,7 +8,7 @@ use App\Data\SkillAgentSelection;
 use App\Exceptions\SkillAgentHidden;
 use App\Exceptions\SkillContextUnavailable;
 use App\Exceptions\SkillSelectionConflict;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Resolvers\Support\SkillContextResolver;
 use App\Support\Conditions\Everyone;
 use App\Values\ExcludedSkill;

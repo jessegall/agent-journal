@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Exceptions\CommittedFactListenerFailed;
 use App\Support\EventUnitLifecycle;
 use App\Support\ListenerRegistry;
 use Illuminate\Database\ConnectionInterface;
@@ -12,7 +13,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
@@ -90,9 +90,9 @@ final class PublicationTest extends TestCase
         Queue::assertPushed(CallQueuedListener::class, 1);
     }
 
-    public function test_a_failing_listener_is_logged_and_the_next_fact_still_goes_out(): void
+    // User message 19647: a failure is never swallowed. Every fact still goes out, then the failure is thrown.
+    public function test_a_failing_listener_is_thrown_once_the_next_fact_went_out_too(): void
     {
-        Log::spy();
         $first = RaisingRow::query()->create(['name' => 'a']);
         $second = RaisingRow::query()->create(['name' => 'b']);
         $heard = [];
@@ -105,14 +105,14 @@ final class PublicationTest extends TestCase
         };
         $this->app->make(Dispatcher::class)->listen(RowRenamed::class, $listener);
 
-        $this->commit(function () use ($first, $second): void {
+        $commit = fn () => $this->commit(function () use ($first, $second): void {
             $first->rename('failing');
             $second->rename('next');
         });
 
+        $this->assertThrows($commit, CommittedFactListenerFailed::class);
         $this->assertSame(['failing', 'next'], $heard);
         $this->assertSame('failing', $first->refresh()->name);
-        Log::shouldHaveReceived('error')->once();
     }
 
     public function test_a_fake_of_the_event_sees_it_after_the_commit(): void

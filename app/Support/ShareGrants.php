@@ -12,13 +12,13 @@ use App\Enums\ShareAuditType;
 use App\Exceptions\ShareProposalUnavailable;
 use App\Exceptions\ShareQuotaReached;
 use App\Exceptions\ShareRefreshRefused;
-use App\Models\Share;
-use App\Models\ShareAudit;
-use App\Models\ShareGatewayConfiguration;
-use App\Models\ShareGatewayOperation;
-use App\Models\ShareInstallation;
-use App\Models\ShareMember;
-use App\Models\SharePreview;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareAudit;
+use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareGatewayOperation;
+use App\Models\Sharing\ShareInstallation;
+use App\Models\Sharing\ShareMember;
+use App\Models\Sharing\SharePreview;
 use Carbon\CarbonImmutable;
 
 /**

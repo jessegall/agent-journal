@@ -12,7 +12,7 @@ use App\Enums\CommandEntry;
 use App\Enums\SignInMethod;
 use App\Enums\SignInState;
 use App\Jobs\SignInDeadline;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorContext;
 use App\Support\EntryDispatchers;
 use App\Support\LocalAccountFolders;

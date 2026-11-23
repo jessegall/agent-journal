@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Events\AccountSettingsRequested;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 
 /**
  * A start on a saved account names the method that account signed in by, as it is saved, so the host knows which

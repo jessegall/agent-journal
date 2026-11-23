@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Work\EnvironmentTasks;
 use App\Exceptions\VerbNotServed;
-use App\Models\Environment;
-use App\Models\ProjectBinding;
+use App\Models\Projects\Environment;
+use App\Models\Projects\ProjectBinding;
 use App\Values\DeviceCaller;
 use App\Values\DeviceOverview;
 

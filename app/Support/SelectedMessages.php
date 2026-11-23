@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Bus\RequestSource;
 use App\Contracts\Sessions\CurrentSession;
-use App\Models\AgentSession;
-use App\Models\Message;
+use App\Models\Agents\AgentSession;
+use App\Models\Messages\Message;
 
 /**
  * Resolves the calling session's selected message while it remains visible.

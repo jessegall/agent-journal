@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Answer;
 
 use App\Contracts\Bus\Pipe;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\CallStages\HookCallStage;
 use App\Support\CallStages\LockedCall;
 

@@ -7,7 +7,7 @@ namespace App\Http\Requests\Agents;
 use App\Commands\CloseTerminalView\CloseTerminalViewCommand;
 use App\Commands\OpenTerminalView\OpenTerminalViewCommand;
 use App\Commands\RenewTerminalView\RenewTerminalViewCommand;
-use App\Models\TerminalView;
+use App\Models\Drivers\TerminalView;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

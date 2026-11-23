@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Authorization\OperationResolver;
 use App\Exceptions\OperationUnavailable;
-use App\Models\CommandReceipt;
+use App\Models\CommandRules\CommandReceipt;
 use App\Support\Operation;
 
 /**

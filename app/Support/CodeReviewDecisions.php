@@ -10,9 +10,9 @@ use App\Enums\AskOriginType;
 use App\Enums\CodeReviewState;
 use App\Enums\CoreAskType;
 use App\Enums\ReviewDecisionType;
-use App\Models\AskHop;
-use App\Models\CodeReview;
-use App\Models\ReviewDecision;
+use App\Models\Asks\AskHop;
+use App\Models\Reviews\CodeReview;
+use App\Models\Reviews\ReviewDecision;
 use App\Values\AskReference;
 use App\Values\SupervisorTarget;
 

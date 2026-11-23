@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
 

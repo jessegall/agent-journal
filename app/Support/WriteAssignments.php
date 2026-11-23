@@ -17,7 +17,7 @@ use App\Enums\AssignmentOutcomeType;
 use App\Enums\AssignmentReason;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentRootFinished;
-use App\Models\WorkerReservation;
+use App\Models\Reviews\WorkerReservation;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\Storage\AssignmentStore;
 use App\Support\Support\AssignmentBatch;

@@ -7,9 +7,9 @@ namespace App\Commands\RemoveAccount;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\SignInState;
-use App\Models\Account;
-use App\Models\ActiveAccount;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\ActiveAccount;
+use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
 
 /**

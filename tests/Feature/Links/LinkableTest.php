@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Links;
 
 use App\Exceptions\LinkTypeRepeated;
-use App\Models\Link;
+use App\Models\Records\Link;
 use App\Support\LinkRemoval;
 use App\Support\LinkTypeRegistry;
 use Illuminate\Database\Eloquent\Model;

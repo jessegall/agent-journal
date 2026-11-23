@@ -6,7 +6,7 @@ namespace App\Commands\PublishSkills;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\SkillPublicationFailed;
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillPublication;
 use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\PublicationFiles;
 use App\Support\SkillTargets;

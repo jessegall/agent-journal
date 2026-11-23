@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\AgentRuntimeReassigned;
 use App\Exceptions\DriverRequestRefused;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\ActorIdentity;
 use App\Support\DriverRequests;
 use App\Support\StartTokens;

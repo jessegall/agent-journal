@@ -7,7 +7,7 @@ namespace App\Commands\RecordHeartbeat;
 use App\Concerns\RefusesUnusableSessions;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 
 /**
  * Takes only the session's row lock, never a stack lock, checks the session may still act and records the beat.

@@ -7,7 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Enums\ActorType;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AssigneeUnavailable;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
 use App\Support\Lifecycle\AgentLifecycle;
 use App\Support\Page;

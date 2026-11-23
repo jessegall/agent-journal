@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Data\PrivateInputMessageData;
 use App\Enums\DriverOperation;
-use App\Models\DriverRequest;
+use App\Models\Drivers\DriverRequest;
 use App\Values\ClaimedRequest;
 use Illuminate\Contracts\Cache\Repository;
 

@@ -8,7 +8,7 @@ use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Records\RecordResolver;
-use App\Models\Link;
+use App\Models\Records\Link;
 use App\Support\MessageService;
 
 final readonly class AskQuestionHandler implements CommandHandler

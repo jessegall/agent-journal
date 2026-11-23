@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\DriverSwitchStage;
-use App\Models\DriverSwitch;
+use App\Models\Drivers\DriverSwitch;
 
 /**
  * Where a switch stands, as its requester is told: the switch, its stage and why it was refused, if it was.

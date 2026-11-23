@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Models\Agent;
-use App\Models\AgentSession;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
 use App\Support\ActiveActorCounterRegistry;
 use App\Support\ActiveActorsResolver;
 use App\Support\AgentSessionCounter;

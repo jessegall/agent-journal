@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\OutputMatches;
 use App\Calls\Processes\SearchOutputCall;
-use App\Models\ProcessRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\StoredOutput;
 
 /**

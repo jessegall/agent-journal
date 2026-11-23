@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Reads\SessionOutputAccess;
-use App\Models\ProcessStart;
-use App\Models\SessionOutputGrant;
+use App\Models\Starts\ProcessStart;
+use App\Models\Starts\SessionOutputGrant;
 
 /**
  * Reads a session's output grants of its current start and newest mapping generation only.

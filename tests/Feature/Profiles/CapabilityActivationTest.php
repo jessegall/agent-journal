@@ -17,7 +17,7 @@ use App\Enums\HostCapabilityType;
 use App\Enums\StartOriginType;
 use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\ContainerUnavailable;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\ProfileProposal;

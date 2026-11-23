@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\ProfileRevision;
+use App\Models\Profiles\ProfileRevision;
 use App\Values\ProfileKey;
 use App\Values\ProfileSnapshot;
 

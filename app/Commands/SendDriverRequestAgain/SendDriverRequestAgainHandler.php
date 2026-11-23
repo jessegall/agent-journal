@@ -7,8 +7,8 @@ namespace App\Commands\SendDriverRequestAgain;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
-use App\Models\AgentRuntime;
-use App\Models\DriverRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
 use App\Values\DriverRequestPayload;
 
 final readonly class SendDriverRequestAgainHandler implements CommandHandler

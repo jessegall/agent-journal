@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Assignments\AssignableProvider;
 use App\Exceptions\RecordUnavailable;
-use App\Models\Message;
+use App\Models\Messages\Message;
 
 /**
  * Messages as claimable records: Core's message claims assign them, and a message that no longer waits is over.

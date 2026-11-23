@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Chat\MainDesk;
 use App\Enums\NavigationAnswerer;
-use App\Models\AgentRuntime;
-use App\Models\NavigationRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\NavigationRequest;
 
 /**
  * Puts a navigation request in front of whoever answers it: the main desk, whose occupant is woken once per request

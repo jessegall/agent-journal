@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Pages\WebPages;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;

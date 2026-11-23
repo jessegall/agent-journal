@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Concerns;
 
 use App\Exceptions\GatewayRunStale;
-use App\Models\ShareInstallation;
+use App\Models\Sharing\ShareInstallation;
 
 /**
  * Refuses a gateway report from a run the installation no longer has.

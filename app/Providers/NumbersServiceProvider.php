@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Console\Commands\InstallNumbersCommand;
-use App\Models\GlobalGroup;
-use App\Models\NumberGroup;
+use App\Models\Records\GlobalGroup;
+use App\Models\Records\NumberGroup;
 use App\Support\LinkTypeRegistry;
 use App\Support\LockingNumberAllocator;
 use App\Support\NumberedTypeRegistry;

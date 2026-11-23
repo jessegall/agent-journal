@@ -26,7 +26,7 @@ final class StackPersistenceTest extends TestCase
         'app/Pipes/Answer/SaveCall.php',
         'app/Support/StartStacks.php',
         'app/Support/PruneHookHistory.php',
-        'app/Models/AgentStackRow.php',
+        'app/Models/Agents/AgentStackRow.php',
     ];
 
     private const string FIXTURES = 'tests/Fixtures/Hooks/StackPersistence';

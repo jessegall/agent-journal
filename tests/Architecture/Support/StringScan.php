@@ -11,7 +11,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 
 /**
- * Every string, string part or heredoc of a file that names project code, such as 'App\Models\Message'.
+ * Every string, string part or heredoc of a file that names project code, such as 'App\Models\Messages\Message'.
  * The listener a write owner's RequiresTransactionListener names is a declaration that admits it, never a use of it.
  */
 final class StringScan

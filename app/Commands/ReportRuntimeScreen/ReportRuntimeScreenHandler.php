@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
 use App\Data\ScreenReportData;
 use App\Enums\ScreenReportRefusal;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use App\Support\RuntimeScreen;
 use App\Support\ScreenRegistration;
 use App\Support\ScreenReportAnswer;

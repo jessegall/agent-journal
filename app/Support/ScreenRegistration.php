@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 
 /**
  * The part of a runtime's screen identity its registration decides, whatever pixels arrive: the runtime, the host

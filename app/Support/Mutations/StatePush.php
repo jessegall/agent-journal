@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Mutations;
 
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\References\StateReference;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\StackRestorer;

@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Sharing\SharePolicy;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use PhpOption\None;
 use PhpOption\Option;
 

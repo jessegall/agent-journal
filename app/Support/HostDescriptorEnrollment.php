@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Exceptions\HostDescriptorRepeated;
-use App\Models\DriverApproval;
+use App\Models\Drivers\DriverApproval;
 use App\Values\DriverRegistration;
 use App\Values\EnrolledDescriptor;
 use App\Values\HostDescriptor;

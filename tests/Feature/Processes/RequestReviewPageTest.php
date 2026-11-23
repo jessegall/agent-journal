@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Enums\RequestState;
-use App\Models\ModuleRuleBundle;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\ModuleRuleBundle;
+use App\Models\CommandRules\RuleProposal;
 use App\Support\CommandRuleRegistry;
 use App\Support\DomainEntry;
 use Illuminate\Testing\TestResponse;

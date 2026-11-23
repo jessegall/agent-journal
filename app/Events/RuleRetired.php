@@ -6,7 +6,7 @@ namespace App\Events;
 
 use App\Contracts\Events\ActiveRuleChange;
 use App\Contracts\Events\Event;
-use App\Models\ClassificationRule;
+use App\Models\CommandRules\ClassificationRule;
 
 /**
  * A project owner retired a command rule: new admissions stop relying on it, processes already started run on.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\IdentityLinks;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 
 /**
  * The journal sessions that ran with an account, found through the link each session keeps to it.

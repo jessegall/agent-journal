@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\Policy;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 
 /**
  * Who may act on Share records; the grant decides, and the handlers keep their own checks.

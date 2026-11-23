@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\InstallNumbers;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\GlobalGroup;
+use App\Models\Records\GlobalGroup;
 
 /**
  * Creates the journal's global number group unless it exists.

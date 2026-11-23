@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\RestoreSkill;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Skill;
-use App\Models\SkillRevision;
+use App\Models\Skills\Skill;
+use App\Models\Skills\SkillRevision;
 use App\Resolvers\Support\SkillContextResolver;
 use App\Support\StoredSkillWrites;
 use App\Values\SkillRevisionResult;

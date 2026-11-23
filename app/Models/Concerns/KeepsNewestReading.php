@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Concerns;
 
 use App\Events\AccountUsageChanged;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Values\UsageSource;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

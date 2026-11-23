@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\ExpireShares;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use App\Support\ShareEndings;
 use App\Support\ShareExpiry;
 

@@ -16,7 +16,7 @@ use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AgentProfileMissing;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\ProfileRetired;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Values\ProfileAuthorization;
 use App\Values\ProfileKey;
 use App\Values\StartProfileAuthority;

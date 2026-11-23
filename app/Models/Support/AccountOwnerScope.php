@@ -7,7 +7,7 @@ namespace App\Models\Support;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Policies\AccountPolicy;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;

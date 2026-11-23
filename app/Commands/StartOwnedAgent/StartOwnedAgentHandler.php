@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Bus\RequestSource;
 use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Contracts\Sessions\CurrentSession;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Support\OwnerStartReceipt;
 use App\Support\StartPreviews;
 

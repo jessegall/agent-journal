@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Events\RuleRejected;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\RuleProposalRefused;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\RuleProposal;
 use App\Support\ProjectKey;
 
 final readonly class RejectRuleProposalHandler implements CommandHandler

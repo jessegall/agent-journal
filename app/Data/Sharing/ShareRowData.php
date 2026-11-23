@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Sharing;
 
 use App\Enums\ShareState;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

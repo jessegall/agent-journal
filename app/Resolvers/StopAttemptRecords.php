@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Processes\StopEvidence;
 use App\Exceptions\StopAttemptMissing;
-use App\Models\StopAttempt;
+use App\Models\Starts\StopAttempt;
 use App\Values\RelationRead;
 use App\Values\StopAttemptReference;
 use App\Values\StopAttemptResult;

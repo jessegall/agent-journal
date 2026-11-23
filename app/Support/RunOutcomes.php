@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Enums\RunLogicalResult;
 use App\Enums\RunResultSource;
-use App\Models\ProcessRun;
-use App\Models\RunOutcome;
-use App\Models\RunResultConflict;
+use App\Models\Runs\ProcessRun;
+use App\Models\Runs\RunOutcome;
+use App\Models\Runs\RunResultConflict;
 
 /**
  * Records a run attempt's logical result once, under the attempt's own lock: the first authoritative result wins over

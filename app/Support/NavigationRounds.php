@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\DriverOperation;
-use App\Models\AgentRuntime;
-use App\Models\DriverRequest;
-use App\Models\NavigationRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\NavigationRequest;
 use App\Values\DriverRequestPayload;
 use App\Values\NavigationRound;
 use App\Values\StackTarget;

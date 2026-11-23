@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Profiles;
 use App\Contracts\Sessions\StartRecordResolver;
 use App\Enums\StartDisposition;
 use App\Exceptions\StartRecordMissing;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use App\Support\StartRecordDetails;
 use App\Support\StartRefusalCodes;
 use App\Support\StartRemedyWords;

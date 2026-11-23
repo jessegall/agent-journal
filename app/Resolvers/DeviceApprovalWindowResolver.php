@@ -9,7 +9,7 @@ use App\Data\Connections\DeviceApprovalData;
 use App\Enums\BindingReadiness;
 use App\Exceptions\PrivateRecordMissing;
 use App\Http\Requests\Connections\DeviceApprovalPageRequest;
-use App\Models\DeviceGrant;
+use App\Models\Projects\DeviceGrant;
 use App\Support\ServerOrigin;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

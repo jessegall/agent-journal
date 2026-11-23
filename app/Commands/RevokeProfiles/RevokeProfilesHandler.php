@@ -9,8 +9,8 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\ProfileRevisionRevoked;
-use App\Models\Profile;
-use App\Models\ProfileRevision;
+use App\Models\Profiles\Profile;
+use App\Models\Profiles\ProfileRevision;
 use App\Values\ProfileKey;
 
 /**

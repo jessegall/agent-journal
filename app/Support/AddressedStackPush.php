@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\StackTargetRefused;
-use App\Models\AgentSession;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentSession;
+use App\Models\Agents\AgentStackRow;
 use App\Support\Mutations\StatePush;
 use App\Support\References\StateReference;
 use App\Support\Stack\StackRestorer;

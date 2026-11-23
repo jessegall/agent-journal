@@ -7,8 +7,8 @@ namespace App\Commands\RevokeDeviceGrant;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ConnectionAuditActor;
 use App\Enums\ConnectionAuditType;
-use App\Models\ConnectionAudit;
-use App\Models\DeviceGrant;
+use App\Models\Projects\ConnectionAudit;
+use App\Models\Projects\DeviceGrant;
 
 final readonly class RevokeDeviceGrantHandler implements CommandHandler
 {

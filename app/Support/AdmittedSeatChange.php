@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
 
 /**
  * An admitted replacement at a locked desk: the seat, its current assignment, and the actor leaving and arriving.

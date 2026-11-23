@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Assignments\AssignableProvider;
 use App\Exceptions\RecordUnavailable;
-use App\Models\NavigationRequest;
+use App\Models\Drivers\NavigationRequest;
 
 /**
  * Navigation requests as assignable records: the journal gives each to the desk that answers it, and a request's work

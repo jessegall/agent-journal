@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Exceptions\SkillRevisionImmutable;
-use App\Models\Skill;
-use App\Models\SkillRequest;
-use App\Models\SkillRevision;
+use App\Models\Skills\Skill;
+use App\Models\Skills\SkillRequest;
+use App\Models\Skills\SkillRevision;
 use App\Resolvers\Support\SkillContextResolver;
 use App\Support\ActorIdentity;
 use App\Support\Conditions\Conditions;

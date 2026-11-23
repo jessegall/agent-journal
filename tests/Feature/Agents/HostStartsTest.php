@@ -15,11 +15,11 @@ use App\Enums\DriverVariant;
 use App\Enums\ProcessStartState;
 use App\Events\SessionStateChanged;
 use App\Exceptions\DriverCapabilityUnsupported;
-use App\Models\Agent;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\ProcessStart;
-use App\Models\SessionPolicy;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Starts\ProcessStart;
+use App\Models\Starts\SessionPolicy;
 use App\Resolvers\PinnedCompatibilities;
 use App\Support\ActorContext;
 use App\Support\Capabilities\CodexTerminalCapabilities;
@@ -111,7 +111,8 @@ final class HostStartsTest extends TestCase
         $this->assertSame('/journal/accounts/claude-code', $recipe['environment'][0]['value']);
         $this->assertSame(['ANTHROPIC_CONFIG_DIR'], $recipe['emptyFolderVariables']);
         $this->assertContains('ANTHROPIC_API_KEY', $recipe['removedVariables']);
-        $this->assertContains('--restricted', $recipe['startFlags']);
+        // Restricted mode refuses the never-ask mode every session runs in (user messages 19631, 19636).
+        $this->assertNotContains('--restricted', $recipe['startFlags']);
         $this->assertSame(['2.1.323', 'direct-processes'], [$recipe['driverVersion'], $recipe['arrangement']]);
         $this->assertStringContainsString(
             'Read(//journal/accounts/claude-code/.credentials.json)',

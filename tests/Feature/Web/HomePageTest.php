@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Enums\LeaveReason;
-use App\Models\Agent;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\InboxInterval;
-use App\Models\Message;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Chats\InboxInterval;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\StartSessions;
 use Carbon\CarbonImmutable;

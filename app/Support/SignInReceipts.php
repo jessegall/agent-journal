@@ -9,7 +9,7 @@ use App\Data\Profiles\SignInReceiptData;
 use App\Enums\ReceiptState;
 use App\Enums\SignInReceiptStatus;
 use App\Http\Requests\Profiles\SignInReceiptRequest;
-use App\Models\SignInAttempt;
+use App\Models\Accounts\SignInAttempt;
 
 /**
  * Tells the owner what became of a sign-in start under its request key. It reads only the owner's receipt of that

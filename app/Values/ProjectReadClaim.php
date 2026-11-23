@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\ProjectReadType;
-use App\Models\ProjectRead;
+use App\Models\Projects\ProjectRead;
 use JsonSerializable;
 
 /**

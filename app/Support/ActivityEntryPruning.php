@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\ActivityEntry;
+use App\Models\Agents\ActivityEntry;
 
 /**
  * Keeps of each environment's activity only its newest entries, up to the kept limit.

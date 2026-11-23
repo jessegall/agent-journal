@@ -7,8 +7,8 @@ namespace App\Commands\StartDeviceGrant;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\DeviceGrantRefused;
 use App\Exceptions\PresenceRefused;
-use App\Models\DeviceGrant;
-use App\Models\ProjectBinding;
+use App\Models\Projects\DeviceGrant;
+use App\Models\Projects\ProjectBinding;
 use App\Values\DeviceGrantStart;
 
 /**

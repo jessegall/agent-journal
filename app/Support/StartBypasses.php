@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\StartBypass;
+use App\Models\Starts\StartBypass;
 use App\Values\BypassReport;
 use App\Values\LoggedBypass;
 use Carbon\CarbonImmutable;

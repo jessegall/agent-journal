@@ -9,7 +9,7 @@ use App\Commands\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Sessions\CurrentSession;
 use App\Data\MessageBatchItemData;
 use App\Enums\ActorType;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\ActorIdentity;
 use App\Support\MessageBatchService;
 use Carbon\CarbonImmutable;

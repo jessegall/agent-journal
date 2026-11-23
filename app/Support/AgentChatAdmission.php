@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Agent;
-use App\Models\AgentChatInviter;
-use App\Models\AgentChatPermission;
+use App\Models\Agents\Agent;
+use App\Models\Chats\AgentChatInviter;
+use App\Models\Chats\AgentChatPermission;
 use App\Values\ProfileBase;
 use Illuminate\Database\Eloquent\Builder;
 

@@ -9,7 +9,7 @@ use App\Data\Sharing\ShareControlsPartData;
 use App\Data\Sharing\ShareMemberData;
 use App\Data\Sharing\ShareRuntimeData;
 use App\Enums\ShareState;
-use App\Models\Share;
+use App\Models\Sharing\Share;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutNativeData;

@@ -7,7 +7,7 @@ namespace Tests\Feature\Web;
 use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Exceptions\AssignmentDenied;
 use App\Exceptions\AutoAssignmentDenied;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use App\Providers\AssignmentsServiceProvider;
 use App\Support\ActorIdentity;
 use App\Support\ClosedAutoAssignmentAccess;

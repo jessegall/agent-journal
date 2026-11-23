@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Assignments\AutoAssignmentActivity;
-use App\Models\Agent;
-use App\Models\AgentSession;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
 
 /**
  * An agent may take work while it is not retired and one of its sessions still runs; a silent session still runs,

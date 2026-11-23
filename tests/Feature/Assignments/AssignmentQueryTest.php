@@ -10,7 +10,7 @@ use App\Contracts\Assignments\AssignedWorkResolver;
 use App\Contracts\Assignments\AssignmentQuery;
 use App\Enums\ActorType;
 use App\Exceptions\AssignmentTypeUnavailable;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Resolvers\RegisteredAssignedWork;
 use App\Support\AssigneeIdentity;
 use App\Support\Bootstrappers\RegisterAssignables;

@@ -8,7 +8,7 @@ use App\Commands\CreateAgent\CreateAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentResolver;
 use App\Exceptions\CommandInputInvalid;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;

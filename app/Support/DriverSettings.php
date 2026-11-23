@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Enums\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
-use App\Models\DriverRequest;
+use App\Models\Drivers\DriverRequest;
 use App\Values\DriverRequestPayload;
 use App\Values\StackTarget;
 

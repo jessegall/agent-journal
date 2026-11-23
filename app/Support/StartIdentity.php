@@ -7,9 +7,9 @@ namespace App\Support;
 use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
 use App\Enums\HostRefusal;
 use App\Enums\RequestProgress;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\StartRecord;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Starts\StartRecord;
 
 /**
  * Settles what a start's bootstrap proved: the conversation its driver runs makes the start ready, so its held

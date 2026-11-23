@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Work\CurrentState;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use App\Support\Stack\Frames\Frame;

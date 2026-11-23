@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Samples;
 
 use App\Agents\Enums\AgentRole;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 
 /**
  * Samples for the column-array-outside-model commandment.

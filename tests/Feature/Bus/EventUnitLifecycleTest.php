@@ -155,7 +155,7 @@ final class EventUnitLifecycleTest extends TestCase
 
     private function within(callable $work): void
     {
-        $this->app->make(EventUnitLifecycle::class)->join($this->app->make(ConnectionInterface::class), $work(...));
+        $this->app->make(EventUnitLifecycle::class)->within($this->app->make(ConnectionInterface::class), $work(...));
     }
 
     private function activeUnit(): EventUnit

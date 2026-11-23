@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\RecordHostProtection;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Host;
+use App\Models\Projects\Host;
 
 final readonly class RecordHostProtectionHandler implements CommandHandler
 {

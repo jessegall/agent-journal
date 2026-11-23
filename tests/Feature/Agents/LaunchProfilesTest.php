@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Enums\CapabilityStatusType;
 use App\Enums\LaunchProfileType;
-use App\Models\Account;
+use App\Models\Accounts\Account;
 use App\Support\ArrangementSetting;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;

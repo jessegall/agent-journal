@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Sharing;
 
-use App\Models\Share;
-use App\Models\ShareGatewayConfiguration;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Support\RecordIdentity;
 use App\Support\ShareGrant;
 use App\Support\ShareToken;

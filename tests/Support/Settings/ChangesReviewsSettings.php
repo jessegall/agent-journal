@@ -6,7 +6,7 @@ namespace Tests\Support\Settings;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Models\SettingsRecord;
+use App\Models\Records\SettingsRecord;
 use App\Values\SettingsChange;
 use Closure;
 use Throwable;

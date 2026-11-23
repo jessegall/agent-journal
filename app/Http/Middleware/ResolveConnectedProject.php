@@ -6,7 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\BindingRevoked;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 use App\Support\ConnectedProject;
 use App\Support\ProjectKey;
 use Closure;

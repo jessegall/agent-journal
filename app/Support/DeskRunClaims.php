@@ -8,10 +8,10 @@ use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Processes\RunClaims;
 use App\Exceptions\RunClaimRefused;
-use App\Models\AssignmentRecord;
-use App\Models\ClaimAuthorization;
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
+use App\Models\Records\AssignmentRecord;
+use App\Models\Records\ClaimAuthorization;
 use PhpOption\Option;
 
 /**

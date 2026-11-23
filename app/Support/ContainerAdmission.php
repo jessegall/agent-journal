@@ -10,7 +10,7 @@ use App\Enums\AccountModeType;
 use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;
 use App\Exceptions\ImageUnverified;
-use App\Models\CapacityReservation;
+use App\Models\Starts\CapacityReservation;
 use App\Values\ExecutionPolicy;
 use App\Values\HostCapacity;
 

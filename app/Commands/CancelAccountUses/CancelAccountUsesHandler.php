@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ProcessStartState;
 use App\Events\AccountUseChanged;
-use App\Models\ProcessStart;
+use App\Models\Starts\ProcessStart;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 

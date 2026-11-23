@@ -9,7 +9,7 @@ use App\Commands\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
 use App\Events\StateTypesRequested;
-use App\Models\EngineFrameTime;
+use App\Models\Agents\EngineFrameTime;
 use App\Support\EnginePass;
 use App\Support\FrameBaselines;
 use App\Support\TickDelivery;

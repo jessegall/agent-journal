@@ -6,9 +6,9 @@ namespace App\Commands\RecheckDriverSwitch;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverSwitchStage;
-use App\Models\AgentRuntime;
-use App\Models\DriverSwitch;
-use App\Models\ProcessStart;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverSwitch;
+use App\Models\Starts\ProcessStart;
 
 final readonly class RecheckDriverSwitchHandler implements CommandHandler
 {

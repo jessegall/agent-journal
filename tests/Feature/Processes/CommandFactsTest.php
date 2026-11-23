@@ -12,7 +12,7 @@ use App\Enums\CommandType;
 use App\Enums\ParseOutcome;
 use App\Enums\PartJoin;
 use App\Enums\ShellDialect;
-use App\Models\CommandAlias;
+use App\Models\CommandRules\CommandAlias;
 use App\Support\ShellParser;
 use App\Values\CommandPart;
 use App\Values\ExecutionContext;

@@ -6,7 +6,7 @@ namespace App\Events;
 
 use App\Contracts\Events\ActiveRuleChange;
 use App\Contracts\Events\Event;
-use App\Models\ModuleRuleBundle;
+use App\Models\CommandRules\ModuleRuleBundle;
 
 /**
  * A project owner activated a module's rule bundle at one digest; raised after the change is committed.

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Exceptions\MainAgentMissing;
-use App\Models\Agent;
-use App\Models\MainAgentDesignation;
+use App\Models\Agents\Agent;
+use App\Models\Agents\MainAgentDesignation;
 use App\Values\ProfileBase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsDeskInstall;

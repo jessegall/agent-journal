@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature;
 
 use App\Enums\ActorType;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;

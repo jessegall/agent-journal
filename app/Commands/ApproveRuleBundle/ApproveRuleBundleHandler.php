@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\BundleActivated;
 use App\Exceptions\ApprovalRefused;
-use App\Models\ModuleRuleBundle;
+use App\Models\CommandRules\ModuleRuleBundle;
 use App\Support\ActorIdentity;
 use App\Support\CommandRuleRegistry;
 use App\Support\ProjectKey;

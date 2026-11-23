@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Concerns;
 
 use App\Exceptions\NumberChanged;
-use App\Models\GlobalGroup;
-use App\Models\NumberGroup;
+use App\Models\Records\GlobalGroup;
+use App\Models\Records\NumberGroup;
 use App\Observers\NumberObserver;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

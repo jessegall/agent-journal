@@ -8,7 +8,7 @@ use App\Commands\ReviseSkill\ReviseSkillCommand;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Console\Concerns\ReadsAudienceOptions;
 use App\Contracts\Bus\CommandBus;
-use App\Models\SkillRevision;
+use App\Models\Skills\SkillRevision;
 use App\Support\SkillAuthoring;
 use App\Values\SkillDraft;
 use Illuminate\Console\Command;

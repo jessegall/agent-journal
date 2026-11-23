@@ -7,10 +7,10 @@ namespace App\Support;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Events\HelperCompletionCertified;
-use App\Models\CertifiedWork;
-use App\Models\StartRecord;
-use App\Models\StopAttempt;
-use App\Models\WorkReservation;
+use App\Models\Reviews\CertifiedWork;
+use App\Models\Reviews\WorkReservation;
+use App\Models\Starts\StartRecord;
+use App\Models\Starts\StopAttempt;
 use App\Values\StartPolicy;
 
 /**

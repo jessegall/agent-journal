@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ArrangementType;
 use App\Exceptions\BindingStartRefused;
-use App\Models\ProjectBinding;
+use App\Models\Projects\ProjectBinding;
 
 /**
  * Checks a binding's start against what the binding registered: its host, root id, root folder and main agent, a

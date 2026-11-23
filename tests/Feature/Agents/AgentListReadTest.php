@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Reads\ReadMeter;
 use App\Contracts\Sessions\AgentDirectory;
-use App\Models\Agent;
+use App\Models\Agents\Agent;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;

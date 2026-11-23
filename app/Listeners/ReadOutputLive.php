@@ -9,7 +9,7 @@ use App\Commands\ReadPartLive\ReadPartLiveCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\Listener;
 use App\Events\OutputChunkCommitted;
-use App\Models\PartRun;
+use App\Models\Runs\PartRun;
 use App\Support\PartAssessments;
 
 /**

@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Enums\NotificationMutationType;
 use App\Exceptions\NotificationUnavailable;
-use App\Models\NotificationChange;
-use App\Models\NotificationReceipt;
-use App\Models\NotificationScope;
+use App\Models\Notifications\NotificationChange;
+use App\Models\Notifications\NotificationReceipt;
+use App\Models\Notifications\NotificationScope;
 use Carbon\CarbonImmutable;
 use Closure;
 use PhpOption\Option;

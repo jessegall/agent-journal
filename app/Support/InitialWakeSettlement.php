@@ -7,11 +7,11 @@ namespace App\Support;
 use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
 use App\Contracts\Sessions\StartTransaction;
 use App\Enums\HostWakeRefusal;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\DriverRequest;
-use App\Models\ProcessStart;
-use App\Models\StartRecord;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Starts\ProcessStart;
+use App\Models\Starts\StartRecord;
 
 /**
  * Settles a launch the host proved it never started: only the start's own initial wake, refused in the attempt it

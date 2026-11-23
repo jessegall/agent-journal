@@ -8,7 +8,7 @@ use App\Commands\SendMessage\SendMessageCommand;
 use App\Events\MessageSent;
 use App\Exceptions\CommittedFactListenerFailed;
 use App\Exceptions\InboxUnavailable;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\DeclaredType;
 use App\Support\IsolatedListener;
 use App\Support\ReflectedMethod;

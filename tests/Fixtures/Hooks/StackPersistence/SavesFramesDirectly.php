@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks\StackPersistence;
 
 use App\Values\StackTarget;
-use App\Models\AgentStackRow;
+use App\Models\Agents\AgentStackRow;
 use App\Support\Storage\FrameRecords;
 use App\Support\Ticks\TickingTypes;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Measurements;
 
-use App\Models\NumberGroup;
+use App\Models\Records\NumberGroup;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;

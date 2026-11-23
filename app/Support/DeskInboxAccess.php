@@ -8,9 +8,9 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxAccess;
 use App\Exceptions\InboxUnavailable;
-use App\Models\AssignmentRecord;
-use App\Models\DeskRecord;
-use App\Models\DeskSeat;
+use App\Models\Desks\DeskRecord;
+use App\Models\Desks\DeskSeat;
+use App\Models\Records\AssignmentRecord;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

@@ -6,7 +6,7 @@ namespace App\Support\Storage;
 
 use App\Contracts\Assignments\AssignmentQuery;
 use App\Contracts\Sharing\SharedHolders;
-use App\Models\AssignmentRecord;
+use App\Models\Records\AssignmentRecord;
 use App\Models\Support\SignedInScope;
 use App\Support\AssigneeIdentity;
 use Illuminate\Contracts\Database\Query\Builder;

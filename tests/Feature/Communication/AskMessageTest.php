@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Enums\MessageState;
 use App\Exceptions\AnswerImpossible;
-use App\Models\Message;
+use App\Models\Messages\Message;
 use App\Support\DeskOpening;
 use Tests\Support\MessagingTestCase;
 

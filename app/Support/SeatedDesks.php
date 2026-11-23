@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Sharing\SharedHolders;
-use App\Models\DeskRecord;
+use App\Models\Desks\DeskRecord;
 
 /**
  * An assignee shares the work of every desk it sits at.

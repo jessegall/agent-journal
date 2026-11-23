@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Contracts\Drivers\ToolDiscovery;
-use App\Models\AgentRuntime;
+use App\Models\Agents\AgentRuntime;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 

@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Enums\OutputStream;
 use App\Exceptions\DockSourceUnavailable;
-use App\Models\PartRun;
-use App\Models\ProcessRun;
+use App\Models\Runs\PartRun;
+use App\Models\Runs\ProcessRun;
 use App\Support\Cards\ComposedCard;
 use App\Support\Cards\ConsoleOutput;
 use App\Support\Sources\Contracts\CardContext;

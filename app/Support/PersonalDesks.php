@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Chat\ActorDesks;
-use App\Models\DeskSeat;
+use App\Models\Desks\DeskSeat;
 
 /**
  * Opens an actor's personal desk, seats the actor in its one seat and makes it the actor's preferred desk. The desk

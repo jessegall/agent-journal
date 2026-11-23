@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Authorization\Policy;
-use App\Models\CommandRequest;
+use App\Models\CommandRules\CommandRequest;
 
 /**
  * Who may act on CommandRequest records; the grant decides, and the handlers keep their own checks.

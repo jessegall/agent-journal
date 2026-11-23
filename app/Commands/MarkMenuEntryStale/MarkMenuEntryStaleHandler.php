@@ -8,7 +8,7 @@ use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\HostReportRefused;
 use App\Exceptions\NavigationRaiseRefused;
-use App\Models\MenuEntry;
+use App\Models\Drivers\MenuEntry;
 use App\Support\ActorIdentity;
 use App\Support\HostRuntimes;
 

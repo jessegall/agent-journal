@@ -14,7 +14,7 @@ use App\Events\ChatMessageAccepted;
 use App\Events\HelperReportedOnRecord;
 use App\Events\StartAccepted;
 use App\Events\ToolCallFinished;
-use App\Models\ActivityEntry;
+use App\Models\Agents\ActivityEntry;
 use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;

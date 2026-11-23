@@ -8,8 +8,8 @@ use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Contracts\Processes\SupervisorDispatch;
 use App\Enums\AskRouteStatus;
 use App\Enums\SupervisorDispatchOutcome;
-use App\Models\Ask;
-use App\Models\AskHop;
+use App\Models\Asks\Ask;
+use App\Models\Asks\AskHop;
 use App\Values\SupervisorRequest;
 use App\Values\SupervisorTarget;
 

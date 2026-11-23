@@ -9,10 +9,10 @@ use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Contracts\Chat\ConversationResolver;
 use App\Enums\DriverOperation;
 use App\Enums\RequestProgress;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\DriverRequest;
-use App\Models\Message;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Messages\Message;
 use App\Values\GroupReference;
 use Tests\Support\MessagingTestCase;
 

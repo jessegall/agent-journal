@@ -6,8 +6,8 @@ namespace Tests\Feature\Connections;
 
 use App\Enums\ChildRole;
 use App\Exceptions\ChildClaimRefused;
-use App\Models\ChildClaim;
-use App\Models\ProjectBinding;
+use App\Models\Agents\ChildClaim;
+use App\Models\Projects\ProjectBinding;
 use App\Values\CommitObservation;
 use App\Values\WorkspaceFacts;
 use Carbon\CarbonImmutable;

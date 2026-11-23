@@ -7,7 +7,7 @@ namespace Tests\Support\Skills;
 use App\Enums\ToolOutcome;
 use App\Events\ToolCallFinished;
 use App\Listeners\RecordProvenSkillReads;
-use App\Models\AgentSession;
+use App\Models\Agents\AgentSession;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;
 use App\Values\StackTarget;

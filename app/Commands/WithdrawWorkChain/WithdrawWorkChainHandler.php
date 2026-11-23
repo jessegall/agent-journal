@@ -7,7 +7,7 @@ namespace App\Commands\WithdrawWorkChain;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Records\RecordResolver;
 use App\Enums\WorkChainEnding;
-use App\Models\CodeReview;
+use App\Models\Reviews\CodeReview;
 use App\Support\WorkChainEnd;
 
 /**

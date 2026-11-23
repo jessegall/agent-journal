@@ -16,7 +16,7 @@ use App\Enums\CommandEntry;
 use App\Enums\PublicationState;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationStale;
-use App\Models\SkillPublication;
+use App\Models\Skills\SkillPublication;
 use App\Values\PrunedPublications;
 use App\Values\RefreshResult;
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\RequestOutcome;
-use App\Models\DriverRequest;
-use App\Models\StartRecord;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Starts\StartRecord;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\ConnectionInterface;
 

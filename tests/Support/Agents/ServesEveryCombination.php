@@ -8,7 +8,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ArrangementType;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
-use App\Models\Host;
+use App\Models\Projects\Host;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\DefaultDrivers;
 use App\Support\HostDescriptorEnrollment;

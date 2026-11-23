@@ -7,7 +7,7 @@ namespace App\Commands\ReviseRuleProposal;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\RuleProposalRefused;
-use App\Models\RuleProposal;
+use App\Models\CommandRules\RuleProposal;
 use App\Support\ActorIdentity;
 use App\Support\ProposalChecks;
 use App\Support\RuleProposals;

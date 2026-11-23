@@ -6,7 +6,7 @@ namespace App\Commands\MarkTargetNotificationRead;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\NotificationUnavailable;
-use App\Models\NotificationReceipt;
+use App\Models\Notifications\NotificationReceipt;
 use App\Support\ActorIdentity;
 use App\Support\NotificationReceipts;
 use Carbon\CarbonImmutable;

@@ -8,9 +8,9 @@ use App\Enums\DriverOperation;
 use App\Enums\HoldReason;
 use App\Enums\RequestProgress;
 use App\Exceptions\DriverRequestRefused;
-use App\Models\AgentRuntime;
-use App\Models\AgentSession;
-use App\Models\DriverRequest;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverRequest;
 use App\Values\DriverRequestPayload;
 use App\Values\StackTarget;
 
