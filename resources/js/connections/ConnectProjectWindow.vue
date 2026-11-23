@@ -5,6 +5,7 @@ import {
     revokeChosen as revokeChosenBindings,
 } from '@generated/routes/connections/bindings';
 import Button from '@kit/Button';
+import Dialog from '@kit/Dialog';
 import EmptyState from '@kit/EmptyState';
 import { dateTimeWithZone } from '@kit/format';
 import PageHeader from '@kit/PageHeader';
@@ -28,6 +29,9 @@ import ReleasePlatforms from './ReleasePlatforms.vue';
 const props = defineProps<{ data: ConnectProjectWindowData }>();
 
 const refusal = ref<string | null>(null);
+
+/** Whether the Connect a project dialog, which makes the install line, is open. */
+const connecting = ref(false);
 // Whether the page was read again recently enough to trust a shown line is still the attempt's current one.
 const fresh = ref(true);
 let refreshing: ReturnType<typeof setInterval> | undefined;
@@ -263,27 +267,20 @@ function revokeBinding(bindingId: string, deviceName: string): void {
                 <Button :href="backAddress" size="small" variant="ghost">Back</Button>
             </div>
         </template>
-        <PageHeader title="Connect a project" :count="data.bindings.rows.length" />
+        <PageHeader title="Connect a project" :count="data.bindings.rows.length">
+            <template #actions>
+                <Button :disabled="!data.canIssue" @click="connecting = true">Connect a project</Button>
+            </template>
+        </PageHeader>
         <section class="flex flex-col gap-3 px-4 sm:px-0">
             <p>
                 Run a project on your own computer and keep its tasks, plans and
                 decisions on {{ data.serverName }} ({{ data.origin }}).
             </p>
-            <p class="text-small text-muted-foreground">
-                This server can direct an agent to read and change files in your
-                project. A line works once, for ten minutes.
-            </p>
             <template v-if="!data.canIssue">
                 <p class="text-small text-muted-foreground">
-                    This journal is not issuing install lines.
+                    This journal cannot connect a project yet, for the reasons below.
                 </p>
-            </template>
-            <template v-else>
-                <InstallLinePanel
-                    :projects="data.projects"
-                    :attempts="data.attempts.rows"
-                    :fresh="fresh"
-                />
             </template>
             <ReleasePlatforms :release="data.release" />
             <template v-if="refusal !== null">
@@ -303,8 +300,10 @@ function revokeBinding(bindingId: string, deviceName: string): void {
             <EmptyState
                 icon="connections"
                 title="No projects connected yet"
-                text="Generate an install line above to connect a project from another machine."
-            />
+                text="Connect a project to keep its work on this journal while it runs on your computer."
+            >
+                <Button :disabled="!data.canIssue" @click="connecting = true">Connect a project</Button>
+            </EmptyState>
         </template>
         <template v-else>
             <div class="flex flex-wrap items-center gap-2 px-4 sm:px-0">
@@ -351,5 +350,19 @@ function revokeBinding(bindingId: string, deviceName: string): void {
                 </div>
             </template>
         </template>
+        <Dialog :open="connecting" title="Connect a project" @close="connecting = false">
+            <div class="flex flex-col gap-3">
+                <p class="text-small text-muted-foreground">
+                    Run this command in a terminal inside your project folder. It
+                    works once, for ten minutes, and lets this server direct an agent
+                    to read and change files in that folder.
+                </p>
+                <InstallLinePanel
+                    :projects="data.projects"
+                    :attempts="data.attempts.rows"
+                    :fresh="fresh"
+                />
+            </div>
+        </Dialog>
     </div>
 </template>

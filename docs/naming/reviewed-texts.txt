@@ -381,6 +381,7 @@ Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.active
 Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }} ({{ data.origin }}).
 Run outcome
 Run permitted commands as you in {{ data.projectLabel }} for up to 12 hours
+Run this command in a terminal inside your project folder. It works once, for ten minutes, and lets this server direct an agent to read and change files in that folder.
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
 Samples
 Save
@@ -498,7 +499,7 @@ The unfinished line
 This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
 This item is unavailable
-This journal is not issuing install lines.
+This journal cannot connect a project yet, for the reasons below.
 This machine and the share service must keep running for the link to work.
 This paste has {{ preview.lines }} lines; each line break may run a command in the terminal.
 This profile does not allow that model.
@@ -506,7 +507,6 @@ This profile runs only its own driver.
 This project is empty
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
 This search expired.
-This server can direct an agent to read and change files in your project. A line works once, for ten minutes.
 This sign-in is already running
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 To

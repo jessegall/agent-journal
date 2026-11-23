@@ -137,6 +137,14 @@ function windowWith(canIssue: boolean) {
     });
 }
 
+/** Mounts the page and opens its Connect a project dialog, where the install line is made. */
+async function openedWindow() {
+    const wrapper = windowWith(true);
+    await button(wrapper, 'Connect a project').trigger('click');
+
+    return wrapper;
+}
+
 function button(wrapper: ReturnType<typeof windowWith>, label: string) {
     const found = wrapper
         .findAll('button')
@@ -170,7 +178,7 @@ describe('ConnectProjectWindow', () => {
             value: { writeText },
             configurable: true,
         });
-        const wrapper = windowWith(true);
+        const wrapper = await openedWindow();
 
         await button(wrapper, 'Generate install line').trigger('click');
         await flushPromises();
@@ -195,20 +203,21 @@ describe('ConnectProjectWindow', () => {
         const wrapper = windowWith(false);
 
         expect(wrapper.text()).toContain(
-            'This journal is not issuing install lines.',
+            'This journal cannot connect a project yet',
         );
+        expect(button(wrapper, 'Connect a project').attributes('disabled')).toBeDefined();
         expect(
             wrapper.findAll('button').map((each) => each.text()),
         ).not.toContain('Generate install line');
     });
 
     it('opens again with no line and a new action', async () => {
-        const first = windowWith(true);
+        const first = await openedWindow();
         await button(first, 'Generate install line').trigger('click');
         await flushPromises();
         first.unmount();
 
-        const again = windowWith(true);
+        const again = await openedWindow();
         expect(again.find('input[readonly]').exists()).toBe(false);
         await button(again, 'Generate install line').trigger('click');
         await flushPromises();
@@ -220,7 +229,7 @@ describe('ConnectProjectWindow', () => {
     });
 
     it('revokes a connected folder through its named dialog, answering only the page', async () => {
-        const wrapper = windowWith(true);
+        const wrapper = await openedWindow();
 
         await button(wrapper, 'Revoke').trigger('click');
         await flushPromises();
@@ -238,7 +247,7 @@ describe('ConnectProjectWindow', () => {
         keyedPost.mockImplementationOnce((_url, _body, _key, outcome) => {
             outcome.onAccepted({ revokedBindings: { 'binding-1': 'Revoked' } });
         });
-        const wrapper = windowWith(true);
+        const wrapper = await openedWindow();
 
         await button(wrapper, 'Choose all on Owner laptop').trigger('click');
         await button(wrapper, 'Revoke chosen (1)').trigger('click');
@@ -255,7 +264,7 @@ describe('ConnectProjectWindow', () => {
     });
 
     it('joins an explicit environment of a connected project', async () => {
-        const wrapper = windowWith(true);
+        const wrapper = await openedWindow();
 
         await button(wrapper, 'Join a project').trigger('click');
         await wrapper
@@ -275,7 +284,7 @@ describe('ConnectProjectWindow', () => {
             (_url: string, options: { onSuccess?: () => void }) =>
                 options.onSuccess?.(),
         );
-        const wrapper = windowWith(true);
+        const wrapper = await openedWindow();
         await button(wrapper, 'Generate install line').trigger('click');
         await flushPromises();
 
@@ -291,7 +300,7 @@ describe('ConnectProjectWindow', () => {
     });
 
     it('drops its line at once when the journal reports its attempt spent', async () => {
-        const wrapper = windowWith(true);
+        const wrapper = await openedWindow();
         await button(wrapper, 'Generate install line').trigger('click');
         await flushPromises();
 
@@ -429,7 +438,7 @@ describe('ConnectProjectWindow', () => {
     it('says a revoke whose answer was lost is not confirmed, reads the page again and offers Retry', async () => {
         type DeleteOptions = { onFinish?: () => void };
         destroy.mockImplementationOnce((_url: string, options: DeleteOptions) => options.onFinish?.());
-        const wrapper = windowWith(true);
+        const wrapper = await openedWindow();
 
         await button(wrapper, 'Revoke').trigger('click');
         await button(wrapper, 'Revoke connection').trigger('click');
