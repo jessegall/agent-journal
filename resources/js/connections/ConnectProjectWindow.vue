@@ -269,12 +269,12 @@ function revokeBinding(bindingId: string, deviceName: string): void {
                 Run a project on your own computer and keep its tasks, plans and
                 decisions on {{ data.serverName }} ({{ data.origin }}).
             </p>
-            <p class="text-small text-muted">
+            <p class="text-small text-muted-foreground">
                 This server can direct an agent to read and change files in your
                 project. A line works once, for ten minutes.
             </p>
             <template v-if="!data.canIssue">
-                <p class="text-small text-muted">
+                <p class="text-small text-muted-foreground">
                     This journal is not issuing install lines.
                 </p>
             </template>

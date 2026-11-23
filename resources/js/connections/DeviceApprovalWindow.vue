@@ -64,21 +64,21 @@ function approveCode(): void {
         <PageHeader title="Approve a terminal" />
         <section class="flex flex-col gap-3 px-4 sm:px-0">
             <dl v-if="!isRevoked" class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-small">
-                <dt class="text-muted">Project</dt>
+                <dt class="text-muted-foreground">Project</dt>
                 <dd>{{ data.projectLabel }} / {{ data.environmentLabel }}</dd>
-                <dt class="text-muted">Device</dt>
+                <dt class="text-muted-foreground">Device</dt>
                 <dd>{{ data.machineLabel }}</dd>
-                <dt class="text-muted">Journal</dt>
+                <dt class="text-muted-foreground">Journal</dt>
                 <dd>{{ data.journalOrigin }}</dd>
-                <dt class="text-muted">Compare code</dt>
+                <dt class="text-muted-foreground">Compare code</dt>
                 <dd class="font-mono">{{ data.userCode }}</dd>
-                <dt class="text-muted">Access</dt>
+                <dt class="text-muted-foreground">Access</dt>
                 <dd>Run permitted commands as you in {{ data.projectLabel }} for up to 12 hours</dd>
-                <dt class="text-muted">Expires</dt>
+                <dt class="text-muted-foreground">Expires</dt>
                 <dd>{{ dateTimeWithZone(data.expiresAt) }}</dd>
             </dl>
             <template v-if="canApprove">
-                <p class="text-small text-muted">
+                <p class="text-small text-muted-foreground">
                     Approve only when the terminal shows this same code.
                 </p>
             </template>

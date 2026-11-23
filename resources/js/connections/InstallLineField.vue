@@ -77,7 +77,7 @@ async function copy(): Promise<void> {
             {{ state === 'copied' ? 'Copied' : '' }}
         </p>
         <template v-if="!isFresh">
-            <p class="text-small text-muted">
+            <p class="text-small text-muted-foreground">
                 The journal cannot be reached to check this line is still valid,
                 so it cannot be copied now.
             </p>
@@ -88,7 +88,7 @@ async function copy(): Promise<void> {
                 line above and copy it with your keyboard.
             </p>
         </template>
-        <p class="text-small text-muted">
+        <p class="text-small text-muted-foreground">
             Paste it in a terminal in the project folder. It works once, until
             {{ timeOfDay(expiresAt) }}.
         </p>

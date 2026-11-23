@@ -12,9 +12,10 @@ namespace App\Values;
 final readonly class ReleaseTarget
 {
     /**
-     * The local providers every advertised platform must run.
+     * The local providers every advertised platform must run: Claude Code, while local Codex stays withheld until its
+     * hook calls carry a per-thread capability (task 1913).
      */
-    public const array REQUIRED_PROVIDERS = ['claude-code', 'codex'];
+    public const array REQUIRED_PROVIDERS = ['claude-code'];
 
     /**
      * @param  list<string>  $prerequisites

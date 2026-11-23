@@ -10,7 +10,7 @@ defineProps<{ release: ReleaseOfferData }>();
 </script>
 
 <template>
-    <ul class="flex flex-col gap-1 text-small text-muted">
+    <ul class="flex flex-col gap-1 text-small text-muted-foreground">
         <template v-for="target in release.targets" :key="target.name">
             <template v-if="target.isSupported">
                 <li>

@@ -43,18 +43,18 @@ function revoke(signIn: TerminalSignInRowData): void {
     <details class="mt-1 text-small">
         <summary class="cursor-pointer text-text-2">Terminal access ({{ signIns.length }})</summary>
         <template v-if="signIns.length === 0">
-            <p class="text-muted">No terminal signed in to this folder yet.</p>
+            <p class="text-muted-foreground">No terminal signed in to this folder yet.</p>
         </template>
         <ul class="mt-1 flex flex-col gap-1">
             <template v-for="signIn in signIns" :key="signIn.id">
                 <li class="flex flex-wrap items-center gap-2">
                     <span class="font-mono">{{ signIn.reference }}</span>
-                    <span class="text-muted">approved by {{ signIn.approvedBy }}</span>
+                    <span class="text-muted-foreground">approved by {{ signIn.approvedBy }}</span>
                     <template v-if="signIn.issuedAt !== null">
-                        <span class="text-muted">since {{ dateTime(signIn.issuedAt) }}</span>
+                        <span class="text-muted-foreground">since {{ dateTime(signIn.issuedAt) }}</span>
                     </template>
                     <template v-if="signIn.expiresAt !== null">
-                        <span class="text-muted">until {{ dateTime(signIn.expiresAt) }}</span>
+                        <span class="text-muted-foreground">until {{ dateTime(signIn.expiresAt) }}</span>
                     </template>
                     <span>{{ STATES[signIn.state] ?? signIn.state }}</span>
                     <template v-if="signIn.state !== 'revoked' && signIn.state !== 'expired'">

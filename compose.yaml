@@ -37,6 +37,9 @@ services:
         networks:
             - default
             - journal-api
+        # The signed host releases install lines hand out (files.places.releases); the updater publishes one per install.
+        volumes:
+            - releases:/app/storage/app/releases
         depends_on:
             postgres:
                 condition: service_healthy
@@ -437,6 +440,7 @@ services:
             - updater-mirror:/var/lib/journal-updater
 
 volumes:
+    releases:
     updater-mirror:
     postgres-data:
     redis-data:

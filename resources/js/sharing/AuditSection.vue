@@ -53,7 +53,7 @@ function older(): void {
             </thead>
             <tbody>
                 <template v-for="entry in audit.entries" :key="entry.id">
-                    <tr :class="entry.isRead ? 'text-muted' : ''">
+                    <tr :class="entry.isRead ? 'text-muted-foreground' : ''">
                         <td>{{ dateTime(entry.occurredAt) }}</td>
                         <td>
                             {{ whatHappened(entry) }}

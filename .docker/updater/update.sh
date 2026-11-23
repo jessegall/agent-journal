@@ -81,6 +81,7 @@ install() {
         { [ "$migrations_changed" = no ] || [ "$schema_rebuilt" = yes ] ||
             docker compose run --rm -T app php artisan migrate --force; } &&
         { [ "$schema_rebuilt" = no ] || docker compose run --rm -T app php artisan migrate:fresh --force; } &&
+        docker compose run --rm -T app php artisan access:owner-ensure &&
         enroll_rebuilt_host &&
         roll_app &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&

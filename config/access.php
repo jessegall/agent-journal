@@ -11,4 +11,11 @@ return [
 
     'owner_email' => env('JOURNAL_OWNER_EMAIL'),
 
+    /*
+    | The owner account's password on a server: access:owner-ensure makes the owner with it on every install, so the
+    | login stays the same across resets. Unset makes no account.
+    */
+
+    'owner_password' => env('JOURNAL_OWNER_PASSWORD'),
+
 ];

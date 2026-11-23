@@ -73,9 +73,9 @@ function confirmTo(url: string): void {
                         :value="candidate.id"
                     />
                     <span>{{ candidate.title }}</span>
-                    <span class="text-muted">Linked</span>
+                    <span class="text-muted-foreground">Linked</span>
                     <template v-if="!candidate.shared">
-                        <span class="text-muted">Not shared yet</span>
+                        <span class="text-muted-foreground">Not shared yet</span>
                     </template>
                 </label>
             </template>

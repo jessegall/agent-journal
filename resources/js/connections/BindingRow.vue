@@ -92,12 +92,12 @@ const deviceName = computed(
             <dt class="sr-only">Status</dt>
             <dd class="flex flex-wrap items-center gap-2">
                 <StateBadge :label="looks.label" :tone="looks.tone" outlined />
-                <span class="text-small text-muted">{{
+                <span class="text-small text-muted-foreground">{{
                     binding.stateText
                 }}</span>
             </dd>
             <dt class="sr-only">Last contact</dt>
-            <dd class="text-small text-muted">
+            <dd class="text-small text-muted-foreground">
                 <template v-if="binding.lastContactAt === null"
                     >Not in contact yet</template
                 >
@@ -127,7 +127,7 @@ const deviceName = computed(
                             folder
                         </template>
                         <template v-else>
-                            <span class="text-muted"
+                            <span class="text-muted-foreground"
                                 >{{ provider.label }} unavailable:
                                 {{ provider.unavailableReason }}</span
                             >
@@ -137,7 +137,7 @@ const deviceName = computed(
             </dd>
             <template v-if="binding.revokedAt !== null">
                 <dt class="sr-only">Revoked</dt>
-                <dd class="text-small text-muted">
+                <dd class="text-small text-muted-foreground">
                     Revoked on the server
                     <time :datetime="binding.revokedAt">{{
                         dateTimeWithZone(binding.revokedAt)
@@ -164,7 +164,7 @@ const deviceName = computed(
             <dd><TerminalAccess :sign-ins="binding.signIns" /></dd>
             <dt class="sr-only">Support record</dt>
             <dd>
-                <details class="text-small text-muted">
+                <details class="text-small text-muted-foreground">
                     <summary>
                         Support record of {{ binding.projectLabel }} on
                         {{ binding.machineLabel }}

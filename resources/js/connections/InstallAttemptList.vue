@@ -71,7 +71,7 @@ function olderPage(): void {
     >
         <h2 class="text-text-2">Install attempts</h2>
         <template v-if="attempts.rows.length === 0">
-            <p class="text-small text-muted">
+            <p class="text-small text-muted-foreground">
                 No install line was issued in the last 30 days.
             </p>
         </template>
@@ -80,7 +80,7 @@ function olderPage(): void {
                 <li class="flex flex-wrap items-center gap-2 text-small">
                     <span class="font-mono">{{ row.reference }}</span>
                     <span>{{ row.target }}</span>
-                    <span class="text-muted">{{
+                    <span class="text-muted-foreground">{{
                         dateTime(row.createdAt)
                     }}</span>
                     <span>{{ STATES[row.state] ?? row.state }}</span>

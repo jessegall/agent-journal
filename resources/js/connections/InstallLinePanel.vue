@@ -175,7 +175,7 @@ function cancel(): void {
             />
             <template v-if="target === 'join'">
                 <template v-if="projects.length === 0">
-                    <p class="text-small text-muted">
+                    <p class="text-small text-muted-foreground">
                         No project is connected yet, so there is nothing to
                         join.
                     </p>
@@ -230,7 +230,7 @@ function cancel(): void {
                 :expires-at="issued.expiresAt"
                 :is-fresh="fresh"
             />
-            <p class="text-small text-muted">
+            <p class="text-small text-muted-foreground">
                 If nothing installs, check the journal's address and this
                 install line. The folder is connected only once the installer
                 says so.
@@ -253,7 +253,7 @@ function cancel(): void {
             </div>
         </template>
         <template v-if="notice !== null">
-            <p class="text-small text-muted" role="status">{{ notice }}</p>
+            <p class="text-small text-muted-foreground" role="status">{{ notice }}</p>
         </template>
         <template v-if="refusal !== null">
             <p class="text-small text-danger" role="alert">{{ refusal }}</p>

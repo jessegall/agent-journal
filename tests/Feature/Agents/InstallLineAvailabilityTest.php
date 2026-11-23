@@ -107,10 +107,10 @@ final class InstallLineAvailabilityTest extends TestCase
     {
         $this->switchOn();
         $manifest = PublicRelease::manifest(self::VERSION);
-        $manifest['targets'][0]['providers'] = ['claude-code'];
+        $manifest['targets'][0]['providers'] = [];
         $this->publish($manifest);
 
-        $this->assertSame(['codex'], $this->offer()->targets[0]->missingProviders);
+        $this->assertSame(['claude-code'], $this->offer()->targets[0]->missingProviders);
         $this->assertFalse($this->offer()->targets[0]->isSupported);
         $this->assertFalse($this->availability()->canIssue());
     }
