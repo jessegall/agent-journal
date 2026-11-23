@@ -6,7 +6,6 @@ namespace Domain\Plans\Support;
 
 use App\Contracts\Navigation\DraftProducers;
 use App\Enums\ActionMethod;
-use App\Enums\ReaderWidth;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
@@ -55,7 +54,6 @@ final readonly class PlanIndexLayout
             ->creatingWith($this->creation())
             ->paged(ListPaging::numbered($page->page, max(1, $page->lastPage)))
             ->withReader(new LayoutBackData(route('plans.list', $settled->toQuery(), false), 'Plans'), ...$reader)
-            ->withReaderWidth(ReaderWidth::Unrestricted)
             ->layout();
     }
 
