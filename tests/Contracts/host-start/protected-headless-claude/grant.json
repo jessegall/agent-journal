@@ -1,0 +1,81 @@
+{
+    "token": "contract-token",
+    "folders": [],
+    "profile_key": "main-agent",
+    "profile_revision": 1,
+    "offline_reply": "neutral",
+    "offline_reply_seal": "contract-seal",
+    "runtime": {
+        "variant": "headless",
+        "session_id": "01contractsession000000000",
+        "driver": "claude-code",
+        "driver_key": "claude-code-headless",
+        "driver_build": "2.1.323",
+        "folder": "/work/project",
+        "process_generation": 1,
+        "model": "claude-opus-5-5",
+        "effort": null
+    },
+    "container": {
+        "image": "journal-agent@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "user": "0:0",
+        "workdir": "/workspace",
+        "readOnlyRoot": true,
+        "capabilities": [
+            "SETUID",
+            "SETGID",
+            "SETPCAP"
+        ],
+        "noNewPrivileges": true,
+        "securityOptions": {
+            "seccomp": null,
+            "apparmor": null
+        },
+        "privileged": false,
+        "network": "acme-01contractsession000000000",
+        "mounts": [
+            {
+                "type": "daemon-bind",
+                "source": "/srv/journal/workspaces/main",
+                "target": "/workspace",
+                "writable": true,
+                "mustExist": false,
+                "checkout": false
+            },
+            {
+                "type": "daemon-bind",
+                "source": "/srv/journal/accounts/01plain",
+                "target": "/home/journal/.account",
+                "writable": true,
+                "mustExist": false,
+                "checkout": false
+            },
+            {
+                "type": "volume",
+                "source": "acme-history-01contractsession000000000",
+                "target": "/home/journal/.account/projects",
+                "writable": true,
+                "mustExist": false,
+                "checkout": false
+            }
+        ],
+        "publishedPorts": [],
+        "budgets": {
+            "cpuCores": 4,
+            "memoryBytes": 8589934592,
+            "memorySwapBytes": 8589934592,
+            "processes": 512,
+            "openFiles": 4096,
+            "tmpBytes": 1073741824,
+            "homeBytes": 268435456,
+            "workspaceBytes": 21474836480,
+            "wallSeconds": 43200
+        },
+        "attachable": false,
+        "workspacePreparation": {
+            "clone": null,
+            "folder": "main"
+        },
+        "launchProfile": "protected-account"
+    }
+}

@@ -1,0 +1,43 @@
+{
+    "driver": "claude-code",
+    "build": "2.1.323",
+    "platform": "linux-container-protected",
+    "items": [
+        {
+            "item": "account-secrets",
+            "enforced": false,
+            "evidence": "",
+            "reason": "native evidence missing: no recorded run showed it hold on this host"
+        },
+        {
+            "item": "foreign-history",
+            "enforced": false,
+            "evidence": "",
+            "reason": "native evidence missing: no recorded run showed it hold on this host"
+        },
+        {
+            "item": "keychain",
+            "enforced": false,
+            "evidence": "",
+            "reason": "native evidence missing: no recorded run showed it hold on this host"
+        },
+        {
+            "item": "control-sockets",
+            "enforced": false,
+            "evidence": "",
+            "reason": "native evidence missing: no recorded run showed it hold on this host"
+        },
+        {
+            "item": "process-inspection",
+            "enforced": false,
+            "evidence": "",
+            "reason": "native evidence missing: no recorded run showed it hold on this host"
+        },
+        {
+            "item": "install-writes",
+            "enforced": false,
+            "evidence": "",
+            "reason": "native evidence missing: no recorded run showed it hold on this host"
+        }
+    ]
+}

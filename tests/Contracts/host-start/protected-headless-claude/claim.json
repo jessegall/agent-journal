@@ -1,0 +1,44 @@
+{
+    "start_key": "contract-start-key",
+    "session_id": "01contractsession000000000",
+    "directory": "/journal/accounts/01plain",
+    "generation": 1,
+    "sign_in_method": "oauth",
+    "recipe": {
+        "environment": [
+            {
+                "name": "CLAUDE_CONFIG_DIR",
+                "value": "/journal/accounts/01plain"
+            },
+            {
+                "name": "JOURNAL_ACCOUNTS_ROOT",
+                "value": "/srv/journal/accounts"
+            }
+        ],
+        "emptyFolderVariables": [
+            "ANTHROPIC_CONFIG_DIR"
+        ],
+        "removedVariables": [
+            "ANTHROPIC_API_KEY",
+            "ANTHROPIC_AUTH_TOKEN",
+            "CLAUDE_CODE_OAUTH_TOKEN"
+        ],
+        "startFlags": [
+            "--restricted",
+            "--strict-mcp-config",
+            "--mcp-config",
+            "--settings",
+            "--tools"
+        ],
+        "accountSettings": [],
+        "driverVersion": "2.1.323",
+        "binaryDigest": "5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7",
+        "arrangement": "direct-processes",
+        "protectionSettings": "{\"permissions\":{\"deny\":[\"Read(//journal/accounts/01plain/.credentials.json)\",\"Read(//journal/accounts/01plain/.credentials.json/**)\",\"Edit(//journal/accounts/01plain/.credentials.json)\",\"Edit(//journal/accounts/01plain/.credentials.json/**)\",\"Read(//journal/accounts/01plain/.claude.json)\",\"Read(//journal/accounts/01plain/.claude.json/**)\",\"Edit(//journal/accounts/01plain/.claude.json)\",\"Edit(//journal/accounts/01plain/.claude.json/**)\",\"Read(//journal/accounts/01plain/settings.json)\",\"Read(//journal/accounts/01plain/settings.json/**)\",\"Edit(//journal/accounts/01plain/settings.json)\",\"Edit(//journal/accounts/01plain/settings.json/**)\",\"Read(//journal/accounts/01plain/settings.local.json)\",\"Read(//journal/accounts/01plain/settings.local.json/**)\",\"Edit(//journal/accounts/01plain/settings.local.json)\",\"Edit(//journal/accounts/01plain/settings.local.json/**)\",\"Read(//journal/accounts/01plain/statsig)\",\"Read(//journal/accounts/01plain/statsig/**)\",\"Edit(//journal/accounts/01plain/statsig)\",\"Edit(//journal/accounts/01plain/statsig/**)\",\"Read(//journal/accounts/01plain/logs)\",\"Read(//journal/accounts/01plain/logs/**)\",\"Edit(//journal/accounts/01plain/logs)\",\"Edit(//journal/accounts/01plain/logs/**)\",\"Read(//journal/accounts/01plain/debug)\",\"Read(//journal/accounts/01plain/debug/**)\",\"Edit(//journal/accounts/01plain/debug)\",\"Edit(//journal/accounts/01plain/debug/**)\",\"Read(//journal/accounts/01plain/shell-snapshots)\",\"Read(//journal/accounts/01plain/shell-snapshots/**)\",\"Edit(//journal/accounts/01plain/shell-snapshots)\",\"Edit(//journal/accounts/01plain/shell-snapshots/**)\",\"Edit(//srv/journal/accounts/**)\",\"Bash(security:*)\",\"Bash(secret-tool:*)\",\"Bash(claude auth:*)\",\"Bash(claude login:*)\",\"Bash(claude logout:*)\",\"Bash(claude setup-token:*)\"],\"disableBypassPermissionsMode\":\"disable\"},\"sandbox\":{\"enabled\":true,\"autoAllowBashIfSandboxed\":false,\"allowUnsandboxedCommands\":false}}",
+        "transportProfile": "mcp",
+        "readFiles": []
+    },
+    "conversation_target": null,
+    "conversation_required": false,
+    "child_checkout": null
+}

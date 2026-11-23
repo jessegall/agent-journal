@@ -36,6 +36,7 @@ use App\Contracts\Drivers\MessagePart;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Contracts\Sessions\RuntimeResolver;
 use App\Data\MessagePartData;
+use App\Enums\ArrangementType;
 use App\Enums\DriverOperation;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
@@ -61,6 +62,7 @@ use App\Models\AgentRuntime;
 use App\Models\AgentSession;
 use App\Models\DriverRequest;
 use App\Models\DriverTurn;
+use App\Models\Host;
 use App\Models\ProcessStart;
 use App\Models\RuntimeEvent;
 use App\Models\SessionPolicy;
@@ -72,6 +74,7 @@ use App\Support\DefaultDrivers;
 use App\Support\DriverBudgets;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
+use App\Support\LaunchProfiles;
 use App\Support\NativeTurns;
 use App\Support\OpenedRuntime;
 use App\Support\PendingWorkSources;
@@ -93,6 +96,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\CountedPendingWork;
+use Tests\Support\Agents\HostContract;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
@@ -459,6 +463,53 @@ final class AgentDriverLedgerTest extends TestCase
         $wire = json_decode(json_encode($grant->toArray(), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
         $this->assertTrue($wire['container']['attachable']);
         $this->assertSame('daemon-bind', $wire['container']['mounts'][0]['type']);
+    }
+
+    public function test_the_grant_of_a_protected_headless_start_is_the_contract_the_host_reads(): void
+    {
+        config(['agents.protected_account_trial' => DefaultDrivers::CLAUDE_CODE]);
+        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
+        ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
+        [$host, $opened] = $this->openRuntime();
+        // The host is a contained one, as the installation's arrangement below says.
+        Host::query()->findOrFail($host->hostId)->forceFill(['arrangement' => ArrangementType::Contained])->save();
+        $this->app->instance(
+            ArrangementSetting::class,
+            ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
+        );
+        $this->app->forgetInstance(LaunchProfiles::class);
+        $execution = ExecutionPolicy::make(
+            ExecutionModeType::RequiredContainer,
+            'journal-agent@sha256:'.str_repeat('a', 64),
+            ProfileStartPolicy::WORKSPACE,
+            ExecutionBudgets::mainAgent(),
+            [],
+            ProfileBase::mainAgent()->isAttachable(),
+        );
+        SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
+        SessionPolicy::create(
+            AgentSession::query()->findOrFail($opened->sessionId),
+            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),
+        );
+
+        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
+
+        HostContract::of('host-start/protected-headless-claude/grant.json')->assertHolds($grant->toArray(), [
+            $grant->toArray()['token'] => 'contract-token',
+            $grant->toArray()['offline_reply_seal'] => 'contract-seal',
+            $opened->sessionId => '01contractsession000000000',
+        ]);
+
+        // What the host's own scenario sends about the agent image: every item has its mechanism and awaits its run.
+        $report = HostContract::of('host-start/protected-headless-claude/protection-report.json')->read();
+        $this->hostCall($host, '/host/reports/protection', $report)->assertSuccessful();
+        $claim = $this->hostCall($host, '/host/starts/claim', ['session_id' => $opened->sessionId])->assertSuccessful();
+
+        HostContract::of('host-start/protected-headless-claude/claim.json')->assertHolds((array) $claim->json(), [
+            (string) $claim->json('start_key') => 'contract-start-key',
+            $opened->sessionId => '01contractsession000000000',
+            $account->id => '01contractaccount000000000',
+        ]);
     }
 
     public function test_a_contained_session_whose_account_folder_is_no_plain_id_gets_no_grant(): void
