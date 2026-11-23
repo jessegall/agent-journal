@@ -88,7 +88,7 @@ final readonly class ListPage
      */
     public function creating(string $label, LayoutActionData $action): self
     {
-        return clone ($this, ['creation' => LayoutPartData::action('creation', $label, $action, 'primary')]);
+        return clone ($this, ['creation' => LayoutPartData::creation('creation', $label, $action)]);
     }
 
     /**

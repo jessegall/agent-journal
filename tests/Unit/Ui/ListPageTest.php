@@ -53,7 +53,10 @@ final class ListPageTest extends TestCase
             ->withTabs(new LayoutTabData('open', 'Open', true), new LayoutTabData('all', 'All', false))
             ->layout()->root;
 
-        $this->assertSame('creation', $root->children[0]->children[1]->key);
+        $creation = $root->children[0]->children[1];
+
+        $this->assertSame('creation', $creation->key);
+        $this->assertSame(['small', 'bordered', 'plus'], [$creation->size, $creation->style, $creation->detail]);
         $this->assertSame(LayoutTag::Tabs, $root->children[1]->tag);
         $this->assertSame('rows', $root->children[1]->children[0]->children[0]->key);
     }

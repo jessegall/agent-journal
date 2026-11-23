@@ -2,13 +2,16 @@
 import { router } from '@inertiajs/vue3';
 import { ref, useId } from 'vue';
 import Button from '@/components/kit/Button.vue';
+import Icon from '@/components/kit/Icon.vue';
+import type { IconName } from '@/components/kit/Icon.vue';
 import { useHostProp } from '@/framework/hostProp';
 import { useWindowQueryChange } from '@/framework/useWindowQuery';
 import type { LayoutPartData } from '@/generated/types/core';
 import { useLayoutAppend } from './layoutAppend';
 import { useLayoutForm } from './layoutForm';
 
-// An action of a declared layout: a link to a page, a link that changes only its own window's query, or a disabled
+// An action of a declared layout: a link to a page, led by an icon when it names one, a link that changes only its
+// own window's query, or a disabled
 // button whose reason stays readable beside it and is its accessible description. An action that appends reads the
 // next rows into its window and adds them to the rows shown; when that read fails it keeps them, says so and can be
 // pressed again.
@@ -98,8 +101,11 @@ function showMore(): void {
         </span>
     </template>
     <template v-else>
-        <Button :variant="style" :size="size" :href="hrefOf(part)">{{
-            part.text
-        }}</Button>
+        <Button :variant="style" :size="size" :href="hrefOf(part)">
+            <template v-if="part.detail" #icon>
+                <Icon :name="part.detail as IconName" :size="14" />
+            </template>
+            {{ part.text }}
+        </Button>
     </template>
 </template>

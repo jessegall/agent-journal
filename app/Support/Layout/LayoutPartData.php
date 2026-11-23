@@ -225,6 +225,15 @@ final class LayoutPartData extends Data
     }
 
     /**
+     * The action that makes a new record, as the design draws it at the end of a page head: small and bordered, led
+     * by a plus.
+     */
+    public static function creation(string $key, string $label, LayoutActionData $action): self
+    {
+        return new self(LayoutTag::Action, $key, 'small', 'bordered', $label, 'plus', [], [], action: $action);
+    }
+
+    /**
      * A measured reading of a value against its maximum: a labelled meter, or, when it counts pieces such as the
      * finished tasks of a plan, a counted progress.
      */
