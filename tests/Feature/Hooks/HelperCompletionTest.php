@@ -161,7 +161,7 @@ final class HelperCompletionTest extends TestCase
         $decision = $this->stop($start, 'stop-1');
 
         $this->assertSame(AnswerType::Allow, $this->typeOf($decision));
-        $this->assertSame([StopAttemptGate::NO_CHECKS_REQUIRED], $this->messagesOf($decision));
+        $this->assertSame([], $this->messagesOf($decision));
         Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
     }
 

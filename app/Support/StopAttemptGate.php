@@ -36,8 +36,6 @@ final readonly class StopAttemptGate implements StopConditionGate
 
     public const string CHECKS_UNRESOLVED = 'The final checks proved neither a pass nor a failure; request the stop again.';
 
-    public const string NO_CHECKS_REQUIRED = 'No final checks were required: the stop passed on its stack checks.';
-
     public const string STOP_HELD = 'The final checks failed three times in a row with the same failures, so the job '
         .'is held for repair and your parent is told.';
 
@@ -132,7 +130,7 @@ final readonly class StopAttemptGate implements StopConditionGate
 
         return match ($stopOutcome->state) {
             StopAttemptState::Pending => new MessageLine(self::CHECKS_RUNNING),
-            StopAttemptState::Passed => $this->certifyCompletion($attempt, null),
+            StopAttemptState::Passed => $this->certifyCompletion($attempt),
             StopAttemptState::Failed => $this->refuseOrHold($attempt, $stop, $stopOutcome->failureSummary()),
             StopAttemptState::Unresolved => Decision::deny(self::CHECKS_UNRESOLVED),
         };
@@ -148,20 +146,24 @@ final readonly class StopAttemptGate implements StopConditionGate
         );
     }
 
-    private function passWithoutConditions(StopAttempt $attempt): MessageLine|null
+    /**
+     * A stop with no conditions passes with nothing said: a line here would be kept for the agent and wake it only to
+     * read that it may stop, and its next stop would do so again without end.
+     */
+    private function passWithoutConditions(StopAttempt $attempt): null
     {
         if (! $attempt->isSettled()) {
             $attempt->settle(StopAttemptState::Passed, self::NO_CONDITIONS_SUBMISSION);
         }
 
-        return $this->certifyCompletion($attempt, new MessageLine(self::NO_CHECKS_REQUIRED));
+        return $this->certifyCompletion($attempt);
     }
 
-    private function certifyCompletion(StopAttempt $attempt, MessageLine|null $message): MessageLine|null
+    private function certifyCompletion(StopAttempt $attempt): null
     {
         $this->certification->certify($attempt);
 
-        return $message;
+        return null;
     }
 
     private function refuseOrHold(
