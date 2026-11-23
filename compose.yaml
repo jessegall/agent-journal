@@ -274,11 +274,16 @@ services:
                   echo "Name AGENT_IMAGE and RUNNER_IMAGE by image id in .env." >&2
                   exit 1
               fi
-              # The daemon keeps the two pinned images and nothing else, so an earlier build never fills its disk.
+              # The daemon keeps the two pinned images and those a container still runs on, so an earlier build never fills
+              # its disk and an agent at work keeps its image; that image goes on a later run, once its container is gone.
               for held in $$(docker image ls --quiet --no-trunc); do
-                  if [ "$$held" != "$$AGENT_IMAGE" ] && [ "$$held" != "$$RUNNER_IMAGE" ]; then
-                      docker image rm --force "$$held" >/dev/null
+                  if [ "$$held" = "$$AGENT_IMAGE" ] || [ "$$held" = "$$RUNNER_IMAGE" ]; then
+                      continue
                   fi
+                  if [ -n "$$(docker container ls --all --quiet --filter "ancestor=$$held")" ]; then
+                      continue
+                  fi
+                  docker image rm --force "$$held" >/dev/null
               done
               docker image prune --force >/dev/null
               # The archives are loaded only when a pinned image is missing.

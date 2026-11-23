@@ -21,9 +21,15 @@ fresh=false
 architecture="linux/$(docker info --format '{{.Architecture}}' | sed 's/x86_64/amd64/; s/aarch64/arm64/')"
 suffix=$(echo "$architecture" | tr / -)
 
+# An image is built again whenever the checkout differs from the one its saved archive was built from (its commit and
+# uncommitted changes), so the sign-in service never runs code older than the checkout; the build's layer cache keeps
+# an unchanged rebuild quick.
+source_state="$(git rev-parse HEAD) $(git status --porcelain | shasum | cut -d' ' -f1)"
 for name in agent runner; do
-    if [ ! -f "images/$name-$suffix.tar" ]; then
+    built_from="images/$name-$suffix.source"
+    if [ ! -f "images/$name-$suffix.tar" ] || [ "$(cat "$built_from" 2>/dev/null)" != "$source_state" ]; then
         sh .docker/helper/build.sh "$architecture" "$name"
+        printf '%s\n' "$source_state" >"$built_from"
     fi
 done
 
