@@ -11,11 +11,12 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
+use Spatie\LaravelData\Optional;
 
 /**
- * The profiles as the shared list recipe: each profile by its label with its key beneath and a Retired badge when new
- * starts may no longer choose it, its reader beside it, and an informational empty state when there are none. Only the
- * key, label and state are read for the list.
+ * The profiles as the shared list recipe, as the design draws it: each profile by its label with its one-line description
+ * beneath, its reader beside it, and an informational empty state when there are none. Only the key, label and
+ * description are read for the list.
  */
 final readonly class ProfilesIndex
 {
@@ -33,10 +34,9 @@ final readonly class ProfilesIndex
             array_map(fn (Profile $profile) => LayoutRowData::from([
                 'key' => $profile->id,
                 'label' => $profile->label,
-                'detail' => $profile->description === '' ? $profile->key : $profile->description,
+                'detail' => $profile->description === '' ? Optional::create() : $profile->description,
                 'href' => route('accounts.profile', ['profile' => $profile->key], false),
                 'isCurrent' => $profile->key === $selectedKey,
-                'trailing' => $profile->isRetired() ? [LayoutPartData::badge('state', 'Retired', 'quiet')] : [],
             ]), $profiles),
             ListEmpty::nothingYet(
                 'No profiles yet',
