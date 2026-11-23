@@ -42,12 +42,19 @@ use Throwable;
  */
 final readonly class WindowResults implements WindowResultsContract
 {
+    /**
+     * The most characters of the request's key a window's own key keeps, leaving room for the window's part.
+     */
+    private const int REQUEST_KEY_CHARACTER_LIMIT = 100;
+
     public function __construct(
         private DockOffers $offers,
         private VisibilityChecks $visibility,
         private LoggerInterface $log,
         private ReflectorFactory $reflectors,
         private Application $app,
+        private RequestKey $requestKey,
+        private ScopedReadMeter $meter,
     ) {}
 
     /**
@@ -61,7 +68,8 @@ final readonly class WindowResults implements WindowResultsContract
         }
 
         try {
-            $windowContent = $read();
+            $windowContent = $this->meter->measureApart("window {$key}", fn () => $this->readUnderOwnKey($key, $read))
+                ->measuredAnswer;
 
             if ($this->reflectors->make($resolver->dataClass)->asInstance($windowContent)->isEmpty()) {
                 throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
@@ -114,5 +122,25 @@ final readonly class WindowResults implements WindowResultsContract
         }
 
         return FailedWindow::because($failure::class.": {$failure->getMessage()}");
+    }
+
+    /**
+     * Reads one window under a key of its own, made from the request's and the window's, so the windows read in one
+     * request each run their command once and never take another window's receipt; a request without a key reads as
+     * it is.
+     *
+     * @param  Closure(): Data  $read
+     */
+    private function readUnderOwnKey(string $windowKey, Closure $read): Data
+    {
+        $requestKey = $this->requestKey->key();
+
+        if ($requestKey === null) {
+            return $read();
+        }
+
+        $own = substr($requestKey, 0, self::REQUEST_KEY_CHARACTER_LIMIT).'-'.substr(hash('sha256', $windowKey), 0, 16);
+
+        return $this->requestKey->independently($own, $read);
     }
 }

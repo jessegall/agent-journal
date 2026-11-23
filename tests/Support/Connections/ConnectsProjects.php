@@ -30,8 +30,14 @@ trait ConnectsProjects
 
     private User $owner;
 
+    /**
+     * The tables a redemption also writes, giving the project's main agent its desk; they are emptied around each test.
+     */
+    private const array DESK_TABLES = ['inboxes', 'desks', 'desk_seats', 'desk_preferences', 'assignments'];
+
     protected function setUpConnectsProjects(): void
     {
+        $this->emptyTables(...self::DESK_TABLES);
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $folder = sys_get_temp_dir().'/connections-'.bin2hex(random_bytes(4));
@@ -162,5 +168,10 @@ trait ConnectsProjects
     private function serverHeader(string $name): string
     {
         return 'HTTP_'.strtoupper(str_replace('-', '_', $name));
+    }
+
+    protected function tearDownConnectsProjects(): void
+    {
+        $this->emptyTables(...self::DESK_TABLES);
     }
 }

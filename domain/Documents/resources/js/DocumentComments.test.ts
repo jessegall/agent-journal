@@ -67,6 +67,7 @@ describe('the document comments', () => {
         await sendButton?.trigger('click');
 
         expect(view.get('textarea').element.value).toBe('Why this?');
+        expect(send.mock.calls[0][2]).toMatchObject({ only: ['page'], preserveState: true });
         const retry = view.findAll('button').find((button) => button.text() === 'Retry');
         expect(retry?.exists()).toBe(true);
 

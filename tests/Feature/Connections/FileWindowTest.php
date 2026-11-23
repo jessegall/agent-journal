@@ -39,7 +39,7 @@ final class FileWindowTest extends TestCase
     private const array TABLES = [
         'project_reads', 'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts',
         'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts',
-        'settings_records', 'users', 'comments', 'project_file_versions', 'project_files', 'number_groups', 'messages', 'desks',
+        'settings_records', 'users', 'comments', 'project_file_versions', 'project_files', 'number_groups', 'messages',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -136,9 +136,6 @@ final class FileWindowTest extends TestCase
         $this->readyFolder();
         $agent = ProjectBinding::query()->firstOrFail()->main_agent_id;
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(ActorDesks::class)->provision(new ActorIdentity(ActorType::Agent, $agent), 'Own'),
-        );
-        $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(ActorDesks::class)->provision(new ActorIdentity(ActorType::User, $this->owner->id), 'Own'),
         );
         $key = ['Idempotency-Key' => (string) Str::ulid()];
@@ -156,6 +153,21 @@ final class FileWindowTest extends TestCase
         $this->assertSame(
             ['About README.md, lines 2 to 3: Why two?'],
             Message::query()->withoutGlobalScope(MessageVisibility::class)->pluck('body')->all(),
+        );
+    }
+
+    public function test_the_project_and_a_file_read_in_one_request_each_run_their_own_read(): void
+    {
+        $this->readyFolder();
+        $address = '/?window[connections.project][open][0]=src&window[connections.file][path]='.self::README;
+
+        $this->actingAs($this->owner)->get($address)->assertOk()->assertInertia(
+            fn (AssertableInertia $page) => $page->reloadOnly(
+                [self::PROP, 'window_connections_project'],
+                fn (AssertableInertia $windows) => $windows
+                    ->where(self::PROP.'.data.state', FileWindowState::Pending->value)
+                    ->where('window_connections_project.state', 'ready'),
+            ),
         );
     }
 

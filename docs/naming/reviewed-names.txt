@@ -8425,6 +8425,7 @@ constant	UploadStore::ACTIVE_UPLOADS
 constant	UsdAmount::MOST_DECIMALS
 constant	UserChannel::PATTERN
 constant	VerbNamedTypes::VERBS
+constant	WindowResults::REQUEST_KEY_CHARACTER_LIMIT
 constant	WordLines::DRIVER_WORDS
 constant	WordLines::EXTENSIONS
 constant	WordLines::GENERATED
@@ -22738,6 +22739,7 @@ method	ScopedReadMeter::begin()
 method	ScopedReadMeter::current()
 method	ScopedReadMeter::end()
 method	ScopedReadMeter::measure()
+method	ScopedReadMeter::measureApart()
 method	ScopedReadMeter::ofCurrentScope()
 method	ScopedReadMeter::recordCompletedQuery()
 method	ScopedReadMeter::recordModel()
@@ -27499,6 +27501,7 @@ method	WebServiceProvider::register()
 method	WebServiceProvider::renderRefusals()
 method	WindowResults::__construct()
 method	WindowResults::failed()
+method	WindowResults::readUnderOwnKey()
 method	WindowResults::result()
 method	WithdrawAskCall::__construct()
 method	WithdrawAskCommand::__construct()
@@ -30909,6 +30912,7 @@ parameter	$wider
 parameter	$width
 parameter	$window
 parameter	$windowFields
+parameter	$windowKey
 parameter	$windowMinutes
 parameter	$windowResults
 parameter	$windowSeconds
@@ -38010,6 +38014,7 @@ property	RedeemProjectInvitationCommand::$projectLabel
 property	RedeemProjectInvitationCommand::$ticket
 property	RedeemProjectInvitationHandler::$admission
 property	RedeemProjectInvitationHandler::$availability
+property	RedeemProjectInvitationHandler::$desks
 property	Redemption::$bindingId
 property	Redemption::$hostId
 property	Redemption::$mainAgentId
@@ -39266,6 +39271,7 @@ property	ScopeResolution::$sources
 property	ScopedRead::$name
 property	ScopedRead::$target
 property	ScopedReadMeter::$open
+property	ScopedReadMeter::$partStarts
 property	ScopedReadMeter::$queryFreeBoundaries
 property	ScopedReadMeter::$schedules
 property	ScreenCursorData::$column
@@ -41996,8 +42002,10 @@ property	WebNavigationRecords::$merge
 property	WebNavigationRecords::$urls
 property	WindowResults::$app
 property	WindowResults::$log
+property	WindowResults::$meter
 property	WindowResults::$offers
 property	WindowResults::$reflectors
+property	WindowResults::$requestKey
 property	WindowResults::$visibility
 property	WithdrawAskCall::$id
 property	WithdrawAskCall::$requestKey
@@ -43455,6 +43463,7 @@ variable	$parsed
 variable	$parser
 variable	$part
 variable	$partFacts
+variable	$partStart
 variable	$partial
 variable	$participationHolds
 variable	$parts

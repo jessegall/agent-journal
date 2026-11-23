@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RedeemProjectInvitation;
 
+use App\Contracts\Actors\ActorProvisioning;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ArrangementType;
@@ -17,6 +18,7 @@ use App\Models\Host;
 use App\Models\Project;
 use App\Models\ProjectBinding;
 use App\Models\ProjectInvitation;
+use App\Support\ActorIdentity;
 use App\Support\InstallLineAvailability;
 use App\Values\Redemption;
 use Illuminate\Support\Str;
@@ -31,7 +33,11 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
 {
     private const string MAIN_AGENT_PROFILE = 'main-agent';
 
-    public function __construct(private InstallLineAvailability $availability, private JournalAdmission $admission) {}
+    public function __construct(
+        private InstallLineAvailability $availability,
+        private JournalAdmission $admission,
+        private ActorProvisioning $desks,
+    ) {}
 
     public function handle(RedeemProjectInvitationCommand $command): Redemption
     {
@@ -56,6 +62,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
         );
 
         $mainAgent = Agent::create("{$project->label} main agent", self::MAIN_AGENT_PROFILE);
+        $this->desks->provision(ActorIdentity::of($mainAgent), $mainAgent->name);
         $binding = ProjectBinding::create($host, $project, $environment, $mainAgent, $folder);
         $invitation->spendOn($binding);
         $attempt->spendOn($binding);

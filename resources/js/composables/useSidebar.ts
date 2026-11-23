@@ -28,6 +28,19 @@ export function useSidebar() {
         keepStored('local', STORAGE_KEY, isMini.value ? '1' : '0');
     }
 
+    /**
+     * Folds the sidebar to its mini form, as a layout that needs the room asks; a phone keeps its hidden sidebar.
+     */
+    function fold(): void {
+        if (window.matchMedia(PHONE_WIDTH).matches || isMini.value) {
+            return;
+        }
+
+        isMini.value = true;
+
+        keepStored('local', STORAGE_KEY, '1');
+    }
+
     function closeOnPhone(): void {
         isOpenOnPhone.value = false;
     }
@@ -36,5 +49,5 @@ export function useSidebar() {
         isMini.value = readStored('local', STORAGE_KEY) === '1';
     });
 
-    return { isMini, isOpenOnPhone, toggle, closeOnPhone };
+    return { isMini, isOpenOnPhone, toggle, fold, closeOnPhone };
 }

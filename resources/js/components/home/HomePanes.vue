@@ -22,26 +22,23 @@ import InformationBar from './InformationBar.vue';
  */
 const props = defineProps<{ home: HomeData }>();
 const page = usePage();
-const pageProps = page.props;
-
-// The Home windows of a connected project: the tree a file is opened from, and the window a file opens in.
-const PROJECT_WINDOW_KEY = 'connections.project';
-const FILE_WINDOW_KEY = 'connections.file';
 
 /**
- * A window's result once the browser has it, read for the pane's count when its data names a total.
+ * A window's result once the browser has it, read for the pane's count when its data names a total, and for its tab's
+ * title when its data names what it holds.
  */
 function resultOf(
-    window: HomeWindowData,
-): WindowResult<{ pagination?: { total: number } }> | undefined {
-    return pageProps[window.propName] as
-        | WindowResult<{ pagination?: { total: number } }>
+    propName: string,
+): WindowResult<{ pagination?: { total: number }; name?: string }> | undefined {
+    // page.props is replaced on each visit, so it is read here, never kept.
+    return page.props[propName] as
+        | WindowResult<{ pagination?: { total: number }; name?: string }>
         | undefined;
 }
 
 const layout = providePaneLayout('home-layout', () =>
     props.home.windows.map((window): PaneWindow => {
-        const result = resultOf(window);
+        const result = resultOf(window.propName);
 
         return {
             key: window.paneKey,
@@ -54,6 +51,12 @@ const layout = providePaneLayout('home-layout', () =>
                     : undefined,
         };
     }),
+    (key) => {
+        const hosted = hostedWindow(key);
+        const result = hosted === undefined ? undefined : resultOf(hosted.propName);
+
+        return result?.state === 'ready' && result.data.name ? result.data.name : undefined;
+    },
 );
 
 const windowsByPane = computed(
@@ -85,18 +88,19 @@ function hostedWindow(
     };
 }
 /**
- * Opens a project file as a File window: the tab already showing that path, else a new copy beside the other files,
+ * Opens a project file in the editor window: the tab already showing that path, else an editor tab that shows no file
+ * yet, else a new copy beside the other files,
  * else in the largest pane that holds neither the chat nor the Project tree, else in a new pane at the right. The
  * copy reads its file by a visit that changes only its own part of the query and its own prop.
  */
 provideFileOpener((path) => {
-    const fileWindow = props.home.windows.find((window) => window.key === FILE_WINDOW_KEY);
+    const fileWindow = props.home.windows.find((window) => window.place === 'editor');
 
     if (fileWindow === undefined) {
         return;
     }
 
-    const url = new URL(page.url, 'http://journal.local');
+    const url = new URL(window.location.href);
     const grid = layout.layout.value;
     const showing = windowsIn(grid).find(
         (key) =>
@@ -114,8 +118,25 @@ provideFileOpener((path) => {
         return;
     }
 
+    const unused = windowsIn(grid)
+        .filter((key) => originalKeyOf(key) === fileWindow.paneKey)
+        .map((key) => ({ key, hosted: hostedWindow(key) }))
+        .find(({ hosted }) => hosted !== undefined && !url.searchParams.get(`window[${hosted.queryKey}][path]`));
+
+    if (unused?.hosted !== undefined) {
+        const holder = panesIn(grid).find((each) => each.windows.includes(unused.key));
+
+        if (holder !== undefined) {
+            layout.change(activate(grid, holder.id, unused.key));
+        }
+
+        showIn(url, unused.hosted, path);
+
+        return;
+    }
+
     const clearOf = props.home.windows
-        .filter((window) => window.key === PROJECT_WINDOW_KEY || window.paneKey === 'chat')
+        .filter((window) => window.place === 'tree' || window.paneKey === 'chat')
         .map((window) => window.paneKey);
     const opened = openCopy(grid, fileWindow.paneKey, clearOf);
     const hosted = hostedWindow(opened.key);
@@ -126,6 +147,13 @@ provideFileOpener((path) => {
         return;
     }
 
+    showIn(url, hosted, path);
+});
+
+/**
+ * Has a File window read the file at the path, by a visit that changes only its own part of the query and its prop.
+ */
+function showIn(url: URL, hosted: { propName: string; queryKey: string }, path: string): void {
     url.searchParams.set(`window[${hosted.queryKey}][path]`, path);
     router.visit(`${url.pathname}${url.search}`, {
         only: [hosted.propName],
@@ -133,7 +161,7 @@ provideFileOpener((path) => {
         preserveScroll: true,
         replace: true,
     });
-});
+}
 
 function componentOf(window: HomeWindowData): Component {
     return componentNamed(window.component);

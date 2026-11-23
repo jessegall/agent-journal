@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useHostProp } from '@kit/hostProp';
 import type { FileThreadData } from '@generated/types/connections';
 import CodeLine from '@kit/CodeLine';
 import CommentBar from '@kit/CommentBar';
@@ -26,6 +27,7 @@ const props = defineProps<{
     recipientName: string | null;
     tellAddress: string;
 }>();
+const hostProp = useHostProp();
 
 const state = ref<'idle' | 'sending' | 'failed'>('idle');
 const isForRecipient = ref(props.recipientId !== null);
@@ -58,6 +60,7 @@ function send(from: number, to: number, close: () => void): void {
 
     state.value = 'sending';
     sendLineComment(props.target, props.version, from, to, {
+        only: [hostProp],
         onSent: () => {
             state.value = 'idle';
             close();
@@ -118,7 +121,10 @@ function send(from: number, to: number, close: () => void): void {
                     @cancel="close"
                 >
                     <template v-if="recipientName !== null">
-                        <Toggle v-model="isForRecipient" :label="`To ${recipientName}`" />
+                        <span class="flex items-center gap-2 text-small text-text-2">
+                            <Toggle v-model="isForRecipient" :label="`To ${recipientName}`" />
+                            <span class="truncate">{{ recipientName }}</span>
+                        </span>
                     </template>
                 </CommentBar>
                 <template v-if="state === 'failed'">

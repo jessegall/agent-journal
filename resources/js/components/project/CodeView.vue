@@ -48,9 +48,14 @@ const palette: Record<keyof typeof themes, Record<string, string>> = {
         <template v-else>
             <div class="flex items-center gap-2 border-b border-border px-3 py-1.5 text-small text-text-3">
                 <span class="min-w-0 flex-1 truncate">{{ name }}</span>
-                <Menu label="Code theme" align="right">
+                <Menu
+                    label="Code theme"
+                    align="right"
+                    class="shrink-0"
+                    trigger-class="h-7 gap-1 rounded-button px-2 text-text-3 hover:bg-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
+                >
                     <template #trigger>
-                        <span>Theme: {{ themes[theme] }}</span>
+                        <span class="whitespace-nowrap">Theme: {{ themes[theme] }}</span>
                     </template>
                     <template v-for="(label, key) in themes" :key="key">
                         <MenuItem radio :checked="theme === key" @click="theme = key">{{ label }}</MenuItem>

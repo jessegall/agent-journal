@@ -2,6 +2,7 @@
 import Input from '@kit/Input';
 import { useCloseOutside } from '@/composables/useCloseOutside';
 import { useMenuKeys } from '@/composables/useMenuKeys';
+import { useSidebar } from '@/composables/useSidebar';
 import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import Button from '@kit/Button';
@@ -10,7 +11,7 @@ import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import layoutRoutes from '@/routes/layouts';
 import type { LayoutData } from '@/types/generated';
 import { arrangementFrom, keptOnScreen, sameArrangement } from './arrangement';
-import type { Arrangement } from './arrangement';
+import type { Arrangement, Preset } from './arrangement';
 import LayoutThumb from './LayoutThumb.vue';
 
 /**
@@ -48,9 +49,19 @@ function isCurrent(arrangement: Arrangement): boolean {
     return sameArrangement(arrangement, store.arrangement.value);
 }
 
+const sidebar = useSidebar();
+
 function apply(arrangement: Arrangement): void {
     store.apply(keptOnScreen(arrangement, store.screen()));
     emit('done');
+}
+
+function applyPreset(preset: Preset): void {
+    if (preset.foldsSidebar === true) {
+        sidebar.fold();
+    }
+
+    apply(preset.arrangement);
 }
 
 function refusalOf(errors: Record<string, string>): string {
@@ -203,7 +214,7 @@ useCloseOutside(panel, () => emit('done'));
                 :aria-checked="isCurrent(preset.arrangement)"
                 class="flex items-center gap-[11px] rounded-control px-2 py-1.5 text-left text-small text-text-2 hover:bg-hover hover:text-text"
                 :class="{ 'bg-sel text-text': isCurrent(preset.arrangement) }"
-                @click="apply(preset.arrangement)"
+                @click="applyPreset(preset)"
             >
                 <LayoutThumb
                     :arrangement="preset.arrangement"

@@ -169,9 +169,36 @@ describe('the design layouts', () => {
     const screen = { width: 1440, height: 900 };
     const shapeOf = (node: LayoutNode): unknown =>
         node.type === 'pane' ? node.windows : [node.axis, node.ratio, shapeOf(node.first), shapeOf(node.second)];
+    const keyed = (...keys: string[]) => keys.map((key) => ({ key }));
+    const work = [
+        { key: 'chat' },
+        { key: 'plans' },
+        { key: 'project', place: 'tree' as const },
+        { key: 'file', place: 'editor' as const },
+        { key: 'activity', place: 'feed' as const },
+    ];
+
+    it('offers IDE last with the tree, the editor above the feed and the chat, folding the sidebar', () => {
+        const ide = designPresets(work, screen).at(-1);
+
+        expect(ide?.name).toBe('IDE');
+        expect(ide?.foldsSidebar).toBe(true);
+        expect(shapeOf(ide!.arrangement.grid)).toEqual([
+            'row',
+            0.19,
+            ['project'],
+            ['row', 0.66, ['column', 0.7, ['file'], ['activity']], ['chat']],
+        ]);
+    });
+
+    it('offers no IDE when a place is missing', () => {
+        const names = designPresets(work.filter((each) => each.key !== 'activity'), screen).map((preset) => preset.name);
+
+        expect(names).not.toContain('IDE');
+    });
 
     it('builds Just the chat, A first window, Docked and Windows only from the windows in their declared order', () => {
-        const presets = designPresets(['chat', 'plans', 'tasks', 'rules'], screen);
+        const presets = designPresets(keyed('chat', 'plans', 'tasks', 'rules'), screen);
         const named = Object.fromEntries(presets.map((preset) => [preset.name, preset.arrangement]));
 
         expect(presets.map((preset) => preset.name)).toEqual(['Just the chat', 'A first window', 'Docked', 'Windows only']);
@@ -181,8 +208,8 @@ describe('the design layouts', () => {
     });
 
     it('leaves out a window Home lacks, and a layout that would repeat an earlier one', () => {
-        expect(designPresets(['chat'], screen).map((preset) => preset.name)).toEqual(['Just the chat']);
-        expect(shapeOf(designPresets(['chat', 'plans'], screen)[2].arrangement.grid)).toEqual([
+        expect(designPresets(keyed('chat'), screen).map((preset) => preset.name)).toEqual(['Just the chat']);
+        expect(shapeOf(designPresets(keyed('chat', 'plans'), screen)[2].arrangement.grid)).toEqual([
             'row',
             0.64,
             ['chat'],

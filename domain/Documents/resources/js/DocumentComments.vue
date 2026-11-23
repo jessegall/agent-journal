@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useHostProp } from '@kit/hostProp';
 import { router } from '@inertiajs/vue3';
 import { computed, nextTick, ref, useTemplateRef } from 'vue';
 import CodeLine from '@kit/CodeLine';
@@ -20,6 +21,7 @@ import { draftFor, sendLineComment } from '@kit/lineComments';
  * Choosing a recipient sends the feedback request and puts the focus back on the feedback control once it was taken.
  */
 const props = defineProps<DocumentCommentsPartData>();
+const hostProp = useHostProp();
 
 const state = ref<'idle' | 'sending' | 'failed'>('idle');
 const feedback = useTemplateRef<HTMLElement>('feedback');
@@ -44,6 +46,7 @@ function rangeWords(from: number, to: number): string {
 function send(from: number, to: number, close: () => void): void {
     state.value = 'sending';
     sendLineComment(props.target, props.revision, from, to, {
+        only: [hostProp],
         onSent: () => {
             state.value = 'idle';
             close();
@@ -70,7 +73,7 @@ function sendFeedback(recipientId: string, from: number, to: number): void {
 
 <template>
     <section aria-label="Document text" class="flex flex-col gap-2">
-        <LineCommentable :line-count="blocks.length" :commented-lines="commentedLines">
+        <LineCommentable :line-count="blocks.length" :commented-lines="commentedLines" whole-label="Comment on this document">
             <template #line="{ line, selected, cursor, commented, pick, step, comment }">
                 <CodeLine
                     :line="line"

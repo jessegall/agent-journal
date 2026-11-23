@@ -7,10 +7,11 @@ import CommentButton from './CommentButton.vue';
  * Lets a reader comment on lines of a document (Blocks) or of a file (CodeLines). It owns the numbered lines, the
  * selection and the line cursor, and draws, through slots, each line, the thread under a commented line and the
  * CommentBar under the last selected line. A click or drag of text, a click on a gutter (Shift extends), or Up and Down
- * from a gutter (Shift extends) select; C, the floating CommentButton or "Comment on this document" open the bar.
+ * from a gutter (Shift extends) select; C, the floating CommentButton or the whole-text button, when named, open the bar.
  * Escape clears the selection. The bar's slot gets close() to end the comment.
  */
-const props = defineProps<{ lineCount: number; commentedLines: number[] }>();
+// wholeLabel names the button that comments on the whole text, such as Comment on this document; none shows no button.
+const props = defineProps<{ lineCount: number; commentedLines: number[]; wholeLabel?: string }>();
 
 const emit = defineEmits<{ comment: [from: number, to: number] }>();
 
@@ -127,7 +128,9 @@ defineSlots<{
 
 <template>
     <div ref="root" class="relative" @mouseup="onTextSelected" @keydown.esc="clear">
-        <Button size="sm" class="mb-2" @click="commentOnAll">Comment on this document</Button>
+        <template v-if="wholeLabel !== undefined">
+            <Button size="sm" class="mb-2" @click="commentOnAll">{{ wholeLabel }}</Button>
+        </template>
         <template v-for="line in lines" :key="line">
             <slot
                 name="line"

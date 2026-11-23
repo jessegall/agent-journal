@@ -65,6 +65,8 @@ const storeKey: InjectionKey<PaneLayoutStore> = Symbol('pane layout');
 export function providePaneLayout(
     storageKey: string,
     windows: () => PaneWindow[],
+    // The title a shown window gives itself, such as the name of the file it holds; none keeps its declared title.
+    titleOf: (key: string) => string | undefined = () => undefined,
 ): PaneLayoutStore {
     const windowList = computed(windows);
     const knownWindows = computed(() =>
@@ -79,7 +81,10 @@ export function providePaneLayout(
     });
 
     const presets = computed<Preset[]>(() =>
-        designPresets(knownWindows.value, screen()),
+        designPresets(
+            windowList.value.map(({ key, place }) => ({ key, place })),
+            screen(),
+        ),
     );
 
     const store: PaneLayoutStore = {
@@ -87,8 +92,11 @@ export function providePaneLayout(
         layout: computed(() => arrangement.value.grid),
         detached: computed(() => arrangement.value.detached),
         windows: windowList,
-        windowOf: (key) =>
-            windowList.value.find((each) => each.key === originalKeyOf(key)),
+        windowOf: (key) => {
+            const declared = windowList.value.find((each) => each.key === originalKeyOf(key));
+
+            return declared === undefined ? undefined : { ...declared, title: titleOf(key) ?? declared.title };
+        },
         closedWindows: computed(() =>
             windowList.value.filter(
                 (each) => !shownWindows(arrangement.value).includes(each.key),

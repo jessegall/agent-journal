@@ -123,7 +123,7 @@ final class Environment extends Model implements EventSource, ReadableModel
     public static function listedOfProjects(array $ids): array
     {
         return array_values(self::query()->whereIn('project_id', $ids)->orderBy('label')
-            ->limit(self::LISTED_LIMIT * max(count($ids), 1))->get()->all());
+            ->readUpTo(self::LISTED_LIMIT * max(count($ids), 1))->get()->all());
     }
 
     // ----------[ Scopes ]----------

@@ -32,6 +32,7 @@ use App\Support\AgentStatusRules;
 use App\Support\LaunchOutcome;
 use App\Support\ResumableConversation;
 use App\Support\StartRemedyWords;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use PhpOption\Option;
 
@@ -106,7 +107,10 @@ final readonly class AgentRecords implements AgentDirectory
         $conversations = DriverConversation::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
 
+        $now = $this->clock->now();
+
         return array_values($agents->map(function (Agent $agent) use (
+            $now,
             $sessions,
             $runtimes,
             $starts,
@@ -137,6 +141,7 @@ final readonly class AgentRecords implements AgentDirectory
                 $conversations->get($agent->id, new Collection()),
                 $refusals[$agent->id] ?? null,
                 $canStop,
+                $now,
             );
         })->all());
     }
@@ -191,6 +196,7 @@ final readonly class AgentRecords implements AgentDirectory
         Collection $conversations,
         string|null $startRefusal,
         bool $canStop,
+        CarbonImmutable $now,
     ): AgentOption {
         $session = $facts->session;
         $runtime = $facts->runtime;
@@ -227,7 +233,7 @@ final readonly class AgentRecords implements AgentDirectory
             $startRefusal,
             $facts->launch,
             AgentStatusRules::of(
-                $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $this->clock->now()),
+                $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $now),
                 $this->remedyWords,
             ),
             $session?->driver_key,

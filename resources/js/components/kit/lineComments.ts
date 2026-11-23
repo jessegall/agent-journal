@@ -43,7 +43,8 @@ export function sendLineComment(
     version: string,
     from: number,
     to: number,
-    outcome: { onSent: () => void; onFailed: () => void },
+    // only names the props the answer reloads: the comment's own window, so the others keep what they show.
+    outcome: { only: string[]; onSent: () => void; onFailed: () => void },
 ): void {
     const draft = draftFor(target, version, from, to);
 
@@ -68,6 +69,8 @@ export function sendLineComment(
             last_line: to,
         },
         {
+            only: outcome.only,
+            preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
                 forgetDraft(target, version, from, to);

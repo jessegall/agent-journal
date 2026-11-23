@@ -41,9 +41,25 @@ function currentScope(props: string[]): VisitScope {
     return {
         props,
         userId: page.props.currentUser?.id,
-        url: page.url,
+        url: pageAddressOf(page.url),
         generation: protectedViewGeneration.value,
     };
+}
+
+/**
+ * The page an address shows, without the parts Home's windows keep for themselves (window[<key>][...]): one window
+ * changing its own part is still the same page for the others, and its own visit reads it again.
+ */
+export function pageAddressOf(url: string): string {
+    const address = new URL(url, 'http://journal.local');
+
+    for (const name of [...address.searchParams.keys()]) {
+        if (name.startsWith('window[')) {
+            address.searchParams.delete(name);
+        }
+    }
+
+    return `${address.pathname}${address.search}`;
 }
 
 function hasSameScope(scope: VisitScope): boolean {

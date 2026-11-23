@@ -146,6 +146,26 @@ final class ConnectProjectWindowTest extends TestCase
                 ->where('page.data.bindings.nextCursor', null));
     }
 
+    public function test_folders_of_several_projects_list_with_their_environments(): void
+    {
+        $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
+
+        foreach (['shop', 'blog', 'wiki'] as $key) {
+            $project = Project::create($key, ucfirst($key));
+            ProjectBinding::create(
+                $host,
+                $project,
+                Environment::openDefaultOf($project),
+                Agent::create("{$key} main agent", 'main-agent'),
+                new BindingFolder("root-{$key}", "/Users/owner/{$key}", 'Owner laptop', "nonce-{$key}"),
+            );
+        }
+
+        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(
+            fn (AssertableInertia $page) => $page->where('page.state', 'ready')->has('page.data.bindings.rows', 3),
+        );
+    }
+
     public function test_someone_other_than_the_owner_sees_no_window(): void
     {
         $other = User::factory()->create();

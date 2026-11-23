@@ -15,7 +15,7 @@ vi.mock('@inertiajs/vue3', () => ({
     },
 }));
 
-const { clearProtectedViews, isRevealed, onPurge, purge, trackProtectedRead } = await import('./protectedView');
+const { clearProtectedViews, isRevealed, onPurge, pageAddressOf, purge, trackProtectedRead } = await import('./protectedView');
 
 let visitCount = 0;
 
@@ -89,5 +89,12 @@ describe('protected views', () => {
         expect(isRevealed('page')).toBe(false);
         expect(purger).toHaveBeenCalledOnce();
         stop();
+    });
+});
+
+describe('the page a protected view belongs to', () => {
+    it('leaves out the parts Home windows keep for themselves and keeps the rest', () => {
+        expect(pageAddressOf('/?window[connections.file][path]=a.go&q=x&window[chat.conversation][chat]=1')).toBe('/?q=x');
+        expect(pageAddressOf('/tasks/12')).toBe('/tasks/12');
     });
 });

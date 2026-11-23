@@ -9,6 +9,7 @@ import {
     splitPane,
     windowsIn,
 } from './paneLayout';
+import type { WindowPlace } from '@/types/generated';
 import type { DropZone, LayoutNode } from './paneLayout';
 
 /**
@@ -122,8 +123,11 @@ export function dropWindow(
     };
 }
 
-/** A layout the layouts menu offers, by the name the design gives it. */
-export type Preset = { name: string; arrangement: Arrangement };
+/** A layout the layouts menu offers, by the name the design gives it, and whether choosing it folds the sidebar. */
+export type Preset = { name: string; arrangement: Arrangement; foldsSidebar?: boolean };
+
+/** A window Home has, in declared order, with where it sits in a work layout when it declares a place. */
+export type PresetWindow = { key: string; place?: WindowPlace };
 
 /**
  * Two parts side by side (a row) or one above the other (a column); a part Home lacks drops out and leaves the other.
@@ -149,10 +153,11 @@ function paneOf(windowKey: string | undefined): LayoutNode | null {
 /**
  * The design's layouts, built from Home's windows in the order the domains declare them, the chat first: Just the
  * chat; A first window, the next one floating; Docked, two windows docked right while the chat keeps its reading width;
- * Windows only, the other windows in a grid. A layout that would repeat an earlier one is left out.
+ * Windows only, the other windows in a grid; and IDE, when Home has a tree, an editor and a feed. A layout that would
+ * repeat an earlier one is left out.
  */
-export function designPresets(windowKeys: string[], screen: Screen): Preset[] {
-    const [chat, second, third, fourth] = windowKeys;
+export function designPresets(windows: PresetWindow[], screen: Screen): Preset[] {
+    const [chat, second, third, fourth] = windows.map((each) => each.key);
     const dayOne = firstWindowOnly(chat);
     const chatPane = dayOne.grid;
     const docked = splitOf('row', 0.64, chatPane, splitOf('column', 0.36, paneOf(second), paneOf(third)));
@@ -166,15 +171,52 @@ export function designPresets(windowKeys: string[], screen: Screen): Preset[] {
         ['Docked', docked === null ? null : { grid: docked, detached: [] }],
         ['Windows only', windowsOnly === null ? null : { grid: windowsOnly, detached: [] }],
     ];
-    const candidates = named.flatMap(([name, arrangement]): Preset[] =>
-        arrangement === null ? [] : [{ name, arrangement }],
-    );
+    const ide = workLayout(windows);
+    const candidates = named.flatMap(([name, arrangement]): Preset[] => (arrangement === null ? [] : [{ name, arrangement }]));
+
+    if (ide !== null) {
+        candidates.push({ name: 'IDE', arrangement: { grid: ide, detached: [] }, foldsSidebar: true });
+    }
 
     return candidates.filter((preset, index) =>
         candidates
             .slice(0, index)
             .every((earlier) => !sameArrangement(earlier.arrangement, preset.arrangement)),
     );
+}
+
+/**
+ * The design's IDE: the tree on the left, the editor above the feed in the middle, and the chat on the right at full
+ * width; none when Home lacks the chat or a window of one of the three places.
+ */
+function workLayout(windows: PresetWindow[]): LayoutNode | null {
+    const chat = windows[0]?.key;
+    const tree = windows.find((each) => each.place === 'tree')?.key;
+    const editor = windows.find((each) => each.place === 'editor')?.key;
+    const feed = windows.find((each) => each.place === 'feed')?.key;
+
+    if (chat === undefined || tree === undefined || editor === undefined || feed === undefined) {
+        return null;
+    }
+
+    const work: LayoutNode = {
+        type: 'split',
+        id: 'split-work',
+        axis: 'column',
+        ratio: 0.7,
+        first: pane([editor], `pane-${editor}`),
+        second: pane([feed], `pane-${feed}`),
+    };
+    const middle: LayoutNode = {
+        type: 'split',
+        id: 'split-middle',
+        axis: 'row',
+        ratio: 0.66,
+        first: work,
+        second: pane([chat], `pane-${chat}`),
+    };
+
+    return { type: 'split', id: 'split-ide', axis: 'row', ratio: 0.19, first: pane([tree], `pane-${tree}`), second: middle };
 }
 
 /**

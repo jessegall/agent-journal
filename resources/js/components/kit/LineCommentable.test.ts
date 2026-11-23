@@ -11,7 +11,7 @@ const Harness = defineComponent({
     components: { CodeLine, CommentBar, CommentThread, LineCommentable },
     props: { commented: { type: Array, default: () => [] } },
     template: `
-        <LineCommentable :line-count="4" :commented-lines="commented">
+        <LineCommentable :line-count="4" :commented-lines="commented" whole-label="Comment on this document">
             <template #line="{ line, selected, cursor, commented: isCommented, pick, step, comment }">
                 <CodeLine
                     :line="line"

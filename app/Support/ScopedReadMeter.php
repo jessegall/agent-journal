@@ -37,6 +37,13 @@ final class ScopedReadMeter implements ReadMeter
     private array $schedules = [];
 
     /**
+     * Where each part measured apart starts in the open measurements, innermost last: repeated reads count from there.
+     *
+     * @var list<int>
+     */
+    private array $partStarts = [];
+
+    /**
      * The meter of the request, job or command running now, for the database and model hooks that cannot take it
      * injected.
      */
@@ -57,6 +64,27 @@ final class ScopedReadMeter implements ReadMeter
         }
 
         return new Measurement($label, $tally->counts(), $measuredOutput);
+    }
+
+    /**
+     * Measures one independent part of the scope, such as one window of a page read with the others: its repeated
+     * reads are counted on their own, so reads the parts share are not taken for a loop, while each query still counts
+     * towards the measurements around it.
+     *
+     * @template TValue
+     *
+     * @param  callable(): TValue  $work
+     * @return Measurement<TValue>
+     */
+    public function measureApart(string $label, callable $work): Measurement
+    {
+        $this->partStarts[] = count($this->open);
+
+        try {
+            return $this->measure($label, $work);
+        } finally {
+            array_pop($this->partStarts);
+        }
     }
 
     /**
@@ -164,7 +192,9 @@ final class ScopedReadMeter implements ReadMeter
 
         $readsAgain = false;
 
-        foreach ($this->open as $tally) {
+        $partStart = $this->partStarts === [] ? 0 : $this->partStarts[array_key_last($this->partStarts)];
+
+        foreach (array_slice($this->open, $partStart) as $tally) {
             $readsAgain = $tally->readsInALoop($site) || $readsAgain;
         }
 

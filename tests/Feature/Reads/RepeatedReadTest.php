@@ -52,6 +52,29 @@ final class RepeatedReadTest extends TestCase
         });
     }
 
+    public function test_parts_measured_apart_count_their_repeated_reads_on_their_own(): void
+    {
+        Task::factory()
+            ->count(10)
+            ->sequence(fn (Sequence $sequence) => ['title' => 'Task '.($sequence->index + 3)])
+            ->create();
+
+        $records = $this->app->make(TaskRecords::class);
+        $numbers = Task::query()->limit(12)->pluck('number')->all();
+        $meter = ScopedReadMeter::ofCurrentScope();
+        $readHalf = fn (array $half) => fn () => array_map(fn (int $number) => $records->identityOf($number), $half);
+
+        $parts = $meter->measure('a page of two windows', fn () => [
+            $meter->measureApart('first window', $readHalf(array_slice($numbers, 0, 6)))->measuredAnswer,
+            $meter->measureApart('second window', $readHalf(array_slice($numbers, 6)))->measuredAnswer,
+        ])->measuredAnswer;
+
+        $this->assertCount(6, $parts[1]);
+        $this->expectException(RepeatedReadRefused::class);
+
+        $meter->measure('a page', fn () => $meter->measureApart('one window', $readHalf($numbers)));
+    }
+
     public function test_the_same_read_outside_a_measurement_or_inside_a_schedule_is_allowed(): void
     {
         Task::factory()

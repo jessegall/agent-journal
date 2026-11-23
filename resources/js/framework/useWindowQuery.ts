@@ -84,8 +84,9 @@ export function useWindowQueryChange(): (
 
 /**
  * Asks the server again for this window's prop alone, with extra query values for this window only, such as the
- * cursor of a list's next page: on Home inside its own window[<key>] part, on its own page plainly. The answer
- * replaces the prop; the window keeps what it already shows.
+ * cursor of a list's next page: on Home inside its own window[<key>] part, keeping every other window's part of the
+ * address as it stands in the browser, and on its own page plainly. The answer replaces the prop; the window keeps
+ * what it already shows.
  */
 export function useWindowReload(): (
   values: Record<string, string | string[]>,
@@ -97,10 +98,39 @@ export function useWindowReload(): (
   const key = inject<string | null>(WINDOW_KEY, null);
   const prop = useHostProp();
 
-  return (values, callbacks) =>
-    router.reload({
+  return (values, callbacks) => {
+    if (key === null) {
+      router.reload({ only: [prop], data: values, ...callbacks });
+
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    const prefix = `window[${key}]`;
+
+    for (const [name, value] of Object.entries(values)) {
+      const param = `${prefix}[${name}]`;
+
+      for (const kept of [...url.searchParams.keys()]) {
+        if (kept === param || kept.startsWith(`${param}[`)) {
+          url.searchParams.delete(kept);
+        }
+      }
+
+      for (const [index, each] of (Array.isArray(value) ? value : [value]).entries()) {
+        if (each !== "") {
+          url.searchParams.set(Array.isArray(value) ? `${param}[${index}]` : param, each);
+        }
+      }
+    }
+
+    router.visit(`${url.pathname}${url.search}`, {
       only: [prop],
-      data: key === null ? values : { window: { [key]: values } },
+      preserveState: true,
+      preserveScroll: true,
+      replace: true,
+      async: true,
       ...callbacks,
     });
+  };
 }
