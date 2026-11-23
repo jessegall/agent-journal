@@ -157,8 +157,8 @@ final readonly class ReceiptDeliveries
             return;
         }
 
-        // The wake was taken; only the driver's confirmed presentation settles the delivery.
-        $delivery->awaitPresentation($at->addSeconds(PresentationBatches::LEASE_SECONDS));
+        // The wake was taken; only the driver's confirmed showing settles the delivery.
+        $delivery->awaitShown($at->addSeconds(MessageBatchService::LEASE_SECONDS));
     }
 
     private function recordFailure(ReceiptDelivery $delivery, string $failure, CarbonImmutable $at): void

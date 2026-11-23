@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\OutstandingRangeState;
+use App\Enums\OutstandingMessageRangeState;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -21,12 +21,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $receipt_id
  * @property int $start_offset
  * @property int $consecutive_failures
- * @property OutstandingRangeState $state
+ * @property OutstandingMessageRangeState $state
  * @property string|null $exhausted_reason
  */
-#[Table('outstanding_ranges')]
+#[Table('outstanding_message_ranges')]
 #[Fillable(['receipt_id', 'start_offset', 'consecutive_failures', 'state'])]
-final class OutstandingRange extends Model implements ReadableModel
+final class OutstandingMessageRange extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
@@ -42,7 +42,7 @@ final class OutstandingRange extends Model implements ReadableModel
         return [
             'start_offset' => 'integer',
             'consecutive_failures' => 'integer',
-            'state' => OutstandingRangeState::class,
+            'state' => OutstandingMessageRangeState::class,
         ];
     }
 
@@ -54,7 +54,7 @@ final class OutstandingRange extends Model implements ReadableModel
         $range = new self([
             'receipt_id' => $receipt->id,
             'start_offset' => $startOffset,
-            'state' => OutstandingRangeState::Outstanding,
+            'state' => OutstandingMessageRangeState::Outstanding,
             'consecutive_failures' => 0,
         ]);
 
@@ -71,7 +71,7 @@ final class OutstandingRange extends Model implements ReadableModel
         return self::query()
             ->where('receipt_id', $receipt->id)
             ->where('start_offset', $startOffset)
-            ->where('state', OutstandingRangeState::Outstanding)
+            ->where('state', OutstandingMessageRangeState::Outstanding)
             ->first();
     }
 
@@ -79,7 +79,7 @@ final class OutstandingRange extends Model implements ReadableModel
 
     public function confirm(): void
     {
-        $this->state = OutstandingRangeState::Confirmed;
+        $this->state = OutstandingMessageRangeState::Confirmed;
         $this->consecutive_failures = 0;
         $this->save();
     }
@@ -95,7 +95,7 @@ final class OutstandingRange extends Model implements ReadableModel
      */
     public function reopen(): void
     {
-        $this->state = OutstandingRangeState::Outstanding;
+        $this->state = OutstandingMessageRangeState::Outstanding;
         $this->consecutive_failures = 0;
         $this->exhausted_reason = null;
         $this->save();
@@ -103,7 +103,7 @@ final class OutstandingRange extends Model implements ReadableModel
 
     public function exhaust(string $reason): void
     {
-        $this->state = OutstandingRangeState::Exhausted;
+        $this->state = OutstandingMessageRangeState::Exhausted;
         $this->exhausted_reason = $reason;
         $this->save();
     }

@@ -21,7 +21,7 @@ use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\MessagingTestCase;
-use Tests\Support\PresentsChatText;
+use Tests\Support\ShowsMessageBatches;
 use Tests\Support\TestIds;
 
 /**
@@ -31,7 +31,7 @@ use Tests\Support\TestIds;
  */
 final class PairChatDemonstrationTest extends MessagingTestCase
 {
-    use PresentsChatText;
+    use ShowsMessageBatches;
 
     private int $wakes = 0;
 
@@ -85,7 +85,7 @@ final class PairChatDemonstrationTest extends MessagingTestCase
             SpeechRefused::class,
         );
 
-        $this->presentAll($agent, $this->builder->id);
+        $this->showAll($agent, $this->builder->id);
         $this->app->make(ReceiptDeliveries::class)->deliverDue(CarbonImmutable::now()->addDay());
 
         $question = Message::query()->acrossInboxes()->findOrFail($questionId);

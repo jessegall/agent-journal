@@ -13,7 +13,7 @@ use App\Support\PendingInboxWork;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;
-use Tests\Support\PresentsChatText;
+use Tests\Support\ShowsMessageBatches;
 
 /**
  * Chat reads go through the reader's own receipts: the author's own post is no unread item, a wake is no read, an
@@ -22,7 +22,7 @@ use Tests\Support\PresentsChatText;
 final class ChatReadsTest extends MessagingTestCase
 {
     use OpensPairChats;
-    use PresentsChatText;
+    use ShowsMessageBatches;
 
     private Conversation $chat;
 
@@ -48,7 +48,7 @@ final class ChatReadsTest extends MessagingTestCase
         $this->runOnBus(new AcknowledgeChatMessagesCommand($this->chat->inbox_id, [$messageId]));
         $this->assertSame(1, $this->resolver()->counts($this->chat->inbox_id)->unread);
 
-        $this->presentAll($this->actorOf($this->builder), $this->builder->id);
+        $this->showAll($this->actorOf($this->builder), $this->builder->id);
 
         $this->assertSame(0, $this->resolver()->counts($this->chat->inbox_id)->unread);
         $this->assertSame(0, $pending->pendingCount($this->actorOf($this->builder)));

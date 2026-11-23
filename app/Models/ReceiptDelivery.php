@@ -138,11 +138,11 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
 
     /**
      * The runtime took the wake: the delivery stays open until the driver confirms the text, and is due again only
-     * once the presentation lease runs out.
+     * once the message batch lease runs out.
      *
      * @throws ChatStateConflict
      */
-    public function awaitPresentation(CarbonImmutable $leaseUntil): void
+    public function awaitShown(CarbonImmutable $leaseUntil): void
     {
         $this->assertPending();
         $this->lease_expires_at = $leaseUntil;

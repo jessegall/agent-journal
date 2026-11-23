@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\AcknowledgePresentation;
+namespace App\Commands\AcknowledgeMessageBatch;
 
 use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
@@ -12,7 +12,7 @@ use App\Policies\MessagePolicy;
 use App\Support\Command;
 
 /**
- * Confirms the pieces of one presentation batch the agent's driver actually showed, by their handles; a body becomes
+ * Confirms the pieces of one message batch the agent's driver actually showed, by their handles; a body becomes
  * read only once its whole text was confirmed in that driver context. The answer is how many pieces changed.
  *
  * @extends Command<int>
@@ -20,7 +20,7 @@ use App\Support\Command;
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[Authorize(MessagePolicy::class, AccessType::Edit)]
-final readonly class AcknowledgePresentationCommand extends Command
+final readonly class AcknowledgeMessageBatchCommand extends Command
 {
     /**
      * @param  list<string>  $handles

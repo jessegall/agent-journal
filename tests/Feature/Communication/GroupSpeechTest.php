@@ -17,7 +17,7 @@ use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;
 use Illuminate\Support\Str;
 use Tests\Support\MessagingTestCase;
-use Tests\Support\PresentsChatText;
+use Tests\Support\ShowsMessageBatches;
 
 /**
  * Turns to speak in a room with two agents: a broadcast gives each agent one turn, a post addressed to one agent gives
@@ -25,7 +25,7 @@ use Tests\Support\PresentsChatText;
  */
 final class GroupSpeechTest extends MessagingTestCase
 {
-    use PresentsChatText;
+    use ShowsMessageBatches;
 
     private string $inboxId;
 

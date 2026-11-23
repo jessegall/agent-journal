@@ -86,7 +86,7 @@ final class MessageReceipt extends Model implements EventSource, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Marks the receipt shown, once: a later presentation keeps the first time, so two readers racing change it
+     * Marks the receipt shown, once: a later showing keeps the first time, so two readers racing change it
      * only once. Answers whether this call was the one that changed it.
      */
     public function present(CarbonImmutable $at): bool

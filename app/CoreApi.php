@@ -25,7 +25,7 @@ use App\Calls\Comments\ListCommentsCall;
 use App\Casts\CallKeyCast;
 use App\Commands\AbandonNavigation\AbandonNavigationCommand;
 use App\Commands\AcknowledgeChatMessages\AcknowledgeChatMessagesCommand;
-use App\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
+use App\Commands\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\AdvanceAsk\AdvanceAskCommand;
 use App\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
@@ -492,6 +492,8 @@ use App\Data\IntegerChoiceValueData;
 use App\Data\IntegerConstraintsData;
 use App\Data\IntegerValueData;
 use App\Data\InvalidValueData;
+use App\Data\MessageBatchData;
+use App\Data\MessageBatchItemData;
 use App\Data\MessageClaimHolder;
 use App\Data\MessagePage;
 use App\Data\MessagePartData;
@@ -504,8 +506,6 @@ use App\Data\NotificationTarget;
 use App\Data\PaginationData;
 use App\Data\PartSummaryData;
 use App\Data\PlainGroupAvailabilityData;
-use App\Data\PresentationBatchData;
-use App\Data\PresentationItemData;
 use App\Data\Profiles\EligibleAccountData;
 use App\Data\Profiles\EligibleAccountsData;
 use App\Data\RecordCard;
@@ -2332,8 +2332,8 @@ final class CoreApi
                 ChatInboxes::class,
                 ChatInterval::class,
                 InboxIntervals::class,
-                PresentationBatchData::class,
-                PresentationItemData::class,
+                MessageBatchData::class,
+                MessageBatchItemData::class,
                 AgentChatAdmission::class,
                 AgentDrivers::class,
                 ChatDeliveries::class,
@@ -2638,7 +2638,7 @@ final class CoreApi
                 AskChatQuestionCommand::class,
                 ReplyInChatCommand::class,
                 AcknowledgeChatMessagesCommand::class,
-                AcknowledgePresentationCommand::class,
+                AcknowledgeMessageBatchCommand::class,
                 RetryDeliveryCommand::class,
                 ClaimSpeechCommand::class,
                 ReleaseSpeechCommand::class,

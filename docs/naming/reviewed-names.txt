@@ -652,6 +652,10 @@ case	MergeRefusalReason::ChangedReviewedHead
 case	MergeRefusalReason::ChangedTarget
 case	MergeRefusalReason::Conflict
 case	MergeRefusalReason::OverlappingLocalChanges
+case	MessageBatchState::Confirmed
+case	MessageBatchState::Dispatched
+case	MessageBatchState::Expired
+case	MessageBatchState::Failed
 case	MessagePartType::Attachment
 case	MessagePartType::Text
 case	MessageState::Answered
@@ -772,9 +776,9 @@ case	OutputRequirement::Ordinary
 case	OutputStream::Merged
 case	OutputStream::Stderr
 case	OutputStream::Stdout
-case	OutstandingRangeState::Confirmed
-case	OutstandingRangeState::Exhausted
-case	OutstandingRangeState::Outstanding
+case	OutstandingMessageRangeState::Confirmed
+case	OutstandingMessageRangeState::Exhausted
+case	OutstandingMessageRangeState::Outstanding
 case	OwnerRouteType::ChainEnd
 case	OwnerRouteType::NoOwner
 case	PageDestination::Inspector
@@ -861,10 +865,6 @@ case	PoolMembersType::All
 case	PoolMembersType::Ordered
 case	PositionPurpose::Live
 case	PositionPurpose::Replay
-case	PresentationBatchState::Confirmed
-case	PresentationBatchState::Dispatched
-case	PresentationBatchState::Expired
-case	PresentationBatchState::Failed
 case	ProblemCode::CountsInvalid
 case	ProblemCode::ExecutionError
 case	ProblemCode::ExitUnavailable
@@ -1701,10 +1701,10 @@ class	AccountsPageRequest
 class	AccountsWindowResolver
 class	AcknowledgeChatMessagesCommand
 class	AcknowledgeChatMessagesHandler
-class	AcknowledgePresentationCall
-class	AcknowledgePresentationCommand
-class	AcknowledgePresentationController
-class	AcknowledgePresentationHandler
+class	AcknowledgeMessageBatchCall
+class	AcknowledgeMessageBatchCommand
+class	AcknowledgeMessageBatchController
+class	AcknowledgeMessageBatchHandler
 class	ActionRoute
 class	ActivateAccountController
 class	ActivateAccountRequest
@@ -4068,6 +4068,12 @@ class	MessageAnswerRequired
 class	MessageAnswered
 class	MessageAskTool
 class	MessageAttention
+class	MessageBatch
+class	MessageBatchAcknowledgeTool
+class	MessageBatchAcknowledged
+class	MessageBatchData
+class	MessageBatchItemData
+class	MessageBatchService
 class	MessageBody
 class	MessageBodyTooLong
 class	MessageClaimHolder
@@ -4090,7 +4096,7 @@ class	MessagePin
 class	MessagePinPolicy
 class	MessagePinRecords
 class	MessagePolicy
-class	MessagePresentationAcknowledgeTool
+class	MessageRange
 class	MessageReaction
 class	MessageReactionPolicy
 class	MessageRead
@@ -4362,7 +4368,7 @@ class	OutputValidation
 class	OutputVerdict
 class	OutsideCommandAllowance
 class	OutsideThePlaces
-class	OutstandingRange
+class	OutstandingMessageRange
 class	OverlappingTransactionOwner
 class	OverviewReadTool
 class	OverviewResolver
@@ -4633,15 +4639,6 @@ class	PresenceReportData
 class	PresenceWindow
 class	PresentList
 class	PresentUserCounter
-class	PresentationAcknowledged
-class	PresentationAcknowledgement
-class	PresentationBatch
-class	PresentationBatchData
-class	PresentationBatches
-class	PresentationItemData
-class	PresentationPrompts
-class	PresentationRange
-class	PresentationSweep
 class	PrivateAccountProcess
 class	PrivateInputMessageData
 class	PrivatePlaceScan
@@ -7759,13 +7756,22 @@ constant	MergeAskNotificationTarget::ASK_PAGE
 constant	MergeAskNotificationTarget::KEY
 constant	Message::LINK_TYPE
 constant	MessageAnswerActivation::LARGEST_PASS
+constant	MessageBatchAcknowledgeTool::NAME
+constant	MessageBatchItemData::AGENT_FENCE
+constant	MessageBatchItemData::USER_FENCE
+constant	MessageBatchService::ALLOWED_FAILURES
+constant	MessageBatchService::BATCH_LIMIT
+constant	MessageBatchService::CHARACTER_LIMIT
+constant	MessageBatchService::HANDLE_BYTES
+constant	MessageBatchService::LEASE_SECONDS
+constant	MessageBatchService::PASS_LIMIT
+constant	MessageBatchService::POST_LIMIT
 constant	MessageBody::MOST_BYTES
 constant	MessageClaimTool::NAME
 constant	MessagePage::DEFAULT_LIMIT
 constant	MessagePage::LARGEST_LIMIT
 constant	MessagePin::DEFAULT_LIMIT
 constant	MessagePin::LARGEST_LIMIT
-constant	MessagePresentationAcknowledgeTool::NAME
 constant	MessageReaction::READ_LIMIT
 constant	MessageReadResult::TOOL
 constant	MessageSearchAccess::ID_ARGUMENT
@@ -7899,15 +7905,6 @@ constant	PostCommentController::POSTED_COMMENT
 constant	PostCommentRequest::ANCHOR_FIELDS
 constant	PostCommentRequest::FIELDS_OF_TYPE
 constant	PrepareSkillPublicationHandler::MOST_FILES
-constant	PresentationAcknowledgement::BATCH_LIMIT
-constant	PresentationBatches::CHARACTER_LIMIT
-constant	PresentationBatches::HANDLE_BYTES
-constant	PresentationBatches::LEASE_SECONDS
-constant	PresentationBatches::POST_LIMIT
-constant	PresentationItemData::AGENT_FENCE
-constant	PresentationItemData::USER_FENCE
-constant	PresentationSweep::ALLOWED_FAILURES
-constant	PresentationSweep::PASS_LIMIT
 constant	PrintsHelperReceipts::MODEL_REQUIRED
 constant	PrivateAccountProcess::BUFFER_BYTES
 constant	PrivateAccountProcess::CHECK_SECONDS_LIMIT
@@ -8614,6 +8611,7 @@ enum	ListenerLane
 enum	MenuEntryState
 enum	MergeAttemptState
 enum	MergeRefusalReason
+enum	MessageBatchState
 enum	MessagePartType
 enum	MessageState
 enum	MessageType
@@ -8639,7 +8637,7 @@ enum	Outcome
 enum	OutputEncoding
 enum	OutputRequirement
 enum	OutputStream
-enum	OutstandingRangeState
+enum	OutstandingMessageRangeState
 enum	OwnerRouteType
 enum	PageDestination
 enum	PageSkeleton
@@ -8661,7 +8659,6 @@ enum	PolicyOriginType
 enum	PoolInputType
 enum	PoolMembersType
 enum	PositionPurpose
-enum	PresentationBatchState
 enum	ProblemCode
 enum	ProcessStartState
 enum	ProfileAudience
@@ -9555,12 +9552,12 @@ method	AccountsWindowResolver::read()
 method	AcknowledgeChatMessagesCommand::__construct()
 method	AcknowledgeChatMessagesHandler::__construct()
 method	AcknowledgeChatMessagesHandler::handle()
-method	AcknowledgePresentationCall::__construct()
-method	AcknowledgePresentationCommand::__construct()
-method	AcknowledgePresentationCommand::handle()
-method	AcknowledgePresentationController::__invoke()
-method	AcknowledgePresentationHandler::__construct()
-method	AcknowledgePresentationHandler::handle()
+method	AcknowledgeMessageBatchCall::__construct()
+method	AcknowledgeMessageBatchCommand::__construct()
+method	AcknowledgeMessageBatchCommand::handle()
+method	AcknowledgeMessageBatchController::__invoke()
+method	AcknowledgeMessageBatchHandler::__construct()
+method	AcknowledgeMessageBatchHandler::handle()
 method	ActionRoute::__construct()
 method	ActionRoute::delete()
 method	ActionRoute::get()
@@ -11946,7 +11943,7 @@ method	ClaimDriverRequestsHandler::__construct()
 method	ClaimDriverRequestsHandler::handle()
 method	ClaimDriverRequestsHandler::isStopWaitingOnHelpers()
 method	ClaimDriverRequestsHandler::settledWithoutWork()
-method	ClaimDriverRequestsHandler::withPresentation()
+method	ClaimDriverRequestsHandler::withMessageBatch()
 method	ClaimGatewayOperationCommand::__construct()
 method	ClaimGatewayOperationHandler::__construct()
 method	ClaimGatewayOperationHandler::handle()
@@ -12751,7 +12748,7 @@ method	CommitUploadTool::writeSchema()
 method	CommittedFactListenerFailed::for()
 method	CommittedFactListenerFailed::of()
 method	CommunicationCalls::__construct()
-method	CommunicationCalls::acknowledgePresentation()
+method	CommunicationCalls::acknowledgeMessageBatch()
 method	CommunicationCalls::answerChatQuestion()
 method	CommunicationCalls::answerMessage()
 method	CommunicationCalls::askChatQuestion()
@@ -17425,6 +17422,48 @@ method	MessageAttention::outcomeFields()
 method	MessageAttention::recordAgain()
 method	MessageAttention::unsaved()
 method	MessageAttention::wakeStatus()
+method	MessageBatch::admitsClaim()
+method	MessageBatch::bindTurn()
+method	MessageBatch::carriesRoot()
+method	MessageBatch::casts()
+method	MessageBatch::create()
+method	MessageBatch::expire()
+method	MessageBatch::grantClaims()
+method	MessageBatch::rangeWithDigest()
+method	MessageBatch::ranges()
+method	MessageBatch::recordProgress()
+method	MessageBatch::settle()
+method	MessageBatch::shownUnderRoot()
+method	MessageBatchAcknowledgeTool::command()
+method	MessageBatchAcknowledgeTool::payload()
+method	MessageBatchAcknowledgeTool::writeSchema()
+method	MessageBatchAcknowledged::__construct()
+method	MessageBatchData::__construct()
+method	MessageBatchItemData::__construct()
+method	MessageBatchItemData::fence()
+method	MessageBatchService::__construct()
+method	MessageBatchService::acknowledge()
+method	MessageBatchService::acknowledgeShownUnder()
+method	MessageBatchService::confirm()
+method	MessageBatchService::confirmRange()
+method	MessageBatchService::confirmation()
+method	MessageBatchService::contextOf()
+method	MessageBatchService::countFailure()
+method	MessageBatchService::introduction()
+method	MessageBatchService::isOwnSession()
+method	MessageBatchService::itemOf()
+method	MessageBatchService::itemText()
+method	MessageBatchService::next()
+method	MessageBatchService::nextInterval()
+method	MessageBatchService::parentReference()
+method	MessageBatchService::presentWhenWhole()
+method	MessageBatchService::render()
+method	MessageBatchService::replyTool()
+method	MessageBatchService::sequenceOf()
+method	MessageBatchService::settleOne()
+method	MessageBatchService::sweep()
+method	MessageBatchService::textFor()
+method	MessageBatchState::isSettled()
 method	MessageBody::__construct()
 method	MessageBody::from()
 method	MessageBodyTooLong::forBytes()
@@ -17485,9 +17524,10 @@ method	MessagePinPolicy::model()
 method	MessagePinRecords::__construct()
 method	MessagePinRecords::pinned()
 method	MessagePolicy::model()
-method	MessagePresentationAcknowledgeTool::command()
-method	MessagePresentationAcknowledgeTool::payload()
-method	MessagePresentationAcknowledgeTool::writeSchema()
+method	MessageRange::casts()
+method	MessageRange::confirm()
+method	MessageRange::create()
+method	MessageRange::outstanding()
 method	MessageReaction::create()
 method	MessageReaction::findFor()
 method	MessageReaction::toMessages()
@@ -18394,13 +18434,13 @@ method	OutsideCommandAllowance::allow()
 method	OutsideCommandAllowance::forbid()
 method	OutsideCommandAllowance::isAllowed()
 method	OutsideThePlaces::__construct()
-method	OutstandingRange::casts()
-method	OutstandingRange::confirm()
-method	OutstandingRange::create()
-method	OutstandingRange::exhaust()
-method	OutstandingRange::recordFailure()
-method	OutstandingRange::reopen()
-method	OutstandingRange::waitingAt()
+method	OutstandingMessageRange::casts()
+method	OutstandingMessageRange::confirm()
+method	OutstandingMessageRange::create()
+method	OutstandingMessageRange::exhaust()
+method	OutstandingMessageRange::recordFailure()
+method	OutstandingMessageRange::reopen()
+method	OutstandingMessageRange::waitingAt()
 method	OverlappingTransactionOwner::on()
 method	OverviewContribution::read()
 method	OverviewContribution::section()
@@ -19317,52 +19357,6 @@ method	PresentList::parameters()
 method	PresentUserCounter::__construct()
 method	PresentUserCounter::count()
 method	PresentUserCounter::type()
-method	PresentationAcknowledged::__construct()
-method	PresentationAcknowledgement::__construct()
-method	PresentationAcknowledgement::acknowledge()
-method	PresentationAcknowledgement::acknowledgeShownUnder()
-method	PresentationAcknowledgement::confirm()
-method	PresentationAcknowledgement::confirmRange()
-method	PresentationAcknowledgement::isOwnSession()
-method	PresentationAcknowledgement::presentWhenWhole()
-method	PresentationBatch::admitsClaim()
-method	PresentationBatch::bindTurn()
-method	PresentationBatch::carriesRoot()
-method	PresentationBatch::casts()
-method	PresentationBatch::create()
-method	PresentationBatch::expire()
-method	PresentationBatch::grantClaims()
-method	PresentationBatch::rangeWithDigest()
-method	PresentationBatch::ranges()
-method	PresentationBatch::recordProgress()
-method	PresentationBatch::settle()
-method	PresentationBatch::shownUnderRoot()
-method	PresentationBatchData::__construct()
-method	PresentationBatchState::isSettled()
-method	PresentationBatches::__construct()
-method	PresentationBatches::itemOf()
-method	PresentationBatches::next()
-method	PresentationBatches::nextInterval()
-method	PresentationBatches::parentReference()
-method	PresentationBatches::sequenceOf()
-method	PresentationItemData::__construct()
-method	PresentationItemData::fence()
-method	PresentationPrompts::__construct()
-method	PresentationPrompts::confirmation()
-method	PresentationPrompts::contextOf()
-method	PresentationPrompts::introduction()
-method	PresentationPrompts::itemText()
-method	PresentationPrompts::promptFor()
-method	PresentationPrompts::render()
-method	PresentationPrompts::replyTool()
-method	PresentationRange::casts()
-method	PresentationRange::confirm()
-method	PresentationRange::create()
-method	PresentationRange::outstanding()
-method	PresentationSweep::__construct()
-method	PresentationSweep::countFailure()
-method	PresentationSweep::settleOne()
-method	PresentationSweep::sweep()
 method	PresentsLayout::layout()
 method	PreventsRevisionUpdates::bootPreventsRevisionUpdates()
 method	PrintsComments::commentReport()
@@ -20796,7 +20790,7 @@ method	ReceiptDeliveriesScheduled::__construct()
 method	ReceiptDelivery::accept()
 method	ReceiptDelivery::assertPending()
 method	ReceiptDelivery::await()
-method	ReceiptDelivery::awaitPresentation()
+method	ReceiptDelivery::awaitShown()
 method	ReceiptDelivery::cancel()
 method	ReceiptDelivery::casts()
 method	ReceiptDelivery::create()
@@ -29261,16 +29255,15 @@ parameter	$item	app/Declarations/RegisteredMenuItem.php
 parameter	$item	app/Declarations/RegisteredNavigation.php
 parameter	$item	app/Exceptions/InvalidMenuDeclaration.php
 parameter	$item	app/Resolvers/Support/NotificationFeed.php
-parameter	$item	app/Support/PresentationBatches.php
-parameter	$item	app/Support/PresentationPrompts.php
+parameter	$item	app/Support/MessageBatchService.php
 parameter	$item	app/Support/RecordMenus.php
 parameter	$item	app/Support/UiDeclarations.php
 parameter	$item	app/Values/ProtectedItem.php
 parameter	$item	app/Values/ProtectionReport.php
 parameter	$itemValue
 parameter	$items
+parameter	$items	app/Data/MessageBatchData.php
 parameter	$items	app/Data/NotificationPage.php
-parameter	$items	app/Data/PresentationBatchData.php
 parameter	$items	app/Data/ProtectionReportData.php
 parameter	$items	app/Support/Layout/LayoutMenuGroupData.php
 parameter	$items	app/Support/RecordMenus.php
@@ -29485,6 +29478,7 @@ parameter	$mergeDecisionId
 parameter	$mermaid
 parameter	$message
 parameter	$messageAnswer
+parameter	$messageBatches
 parameter	$messageId
 parameter	$messageIds
 parameter	$messageRead
@@ -31266,16 +31260,16 @@ property	AccountsWindowResolver::$uses
 property	AcknowledgeChatMessagesCommand::$inboxId
 property	AcknowledgeChatMessagesCommand::$messageIds
 property	AcknowledgeChatMessagesHandler::$messages
-property	AcknowledgePresentationCall::$batchId
-property	AcknowledgePresentationCall::$contextKey
-property	AcknowledgePresentationCall::$handles
-property	AcknowledgePresentationCall::$requestKey
-property	AcknowledgePresentationCommand::$batchId
-property	AcknowledgePresentationCommand::$contextKey
-property	AcknowledgePresentationCommand::$description
-property	AcknowledgePresentationCommand::$handles
-property	AcknowledgePresentationCommand::$signature
-property	AcknowledgePresentationHandler::$acknowledgement
+property	AcknowledgeMessageBatchCall::$batchId
+property	AcknowledgeMessageBatchCall::$contextKey
+property	AcknowledgeMessageBatchCall::$handles
+property	AcknowledgeMessageBatchCall::$requestKey
+property	AcknowledgeMessageBatchCommand::$batchId
+property	AcknowledgeMessageBatchCommand::$contextKey
+property	AcknowledgeMessageBatchCommand::$description
+property	AcknowledgeMessageBatchCommand::$handles
+property	AcknowledgeMessageBatchCommand::$signature
+property	AcknowledgeMessageBatchHandler::$acknowledgement
 property	ActionRoute::$controller
 property	ActionRoute::$method
 property	ActionRoute::$name
@@ -32719,8 +32713,8 @@ property	ClaimCleanupCommand::$hostId
 property	ClaimDriverRequestsCommand::$browserInput
 property	ClaimDriverRequestsCommand::$hostId
 property	ClaimDriverRequestsCommand::$limit
+property	ClaimDriverRequestsHandler::$messageBatches
 property	ClaimDriverRequestsHandler::$pendingWork
-property	ClaimDriverRequestsHandler::$presentation
 property	ClaimDriverRequestsHandler::$privateValues
 property	ClaimGatewayOperationCommand::$operationId
 property	ClaimGatewayOperationCommand::$runId
@@ -35798,6 +35792,31 @@ property	MessageAnswerRequired::$messageId
 property	MessageAnswered::$answeredBy
 property	MessageAnswered::$messageId
 property	MessageAnswered::$replyId
+property	MessageBatchAcknowledged::$batchId
+property	MessageBatchAcknowledged::$confirmed
+property	MessageBatchData::$batchId
+property	MessageBatchData::$claimGrant
+property	MessageBatchData::$inboxId
+property	MessageBatchData::$inboxLabel
+property	MessageBatchData::$items
+property	MessageBatchData::$more
+property	MessageBatchItemData::$body
+property	MessageBatchItemData::$bodyLength
+property	MessageBatchItemData::$claimableRootId
+property	MessageBatchItemData::$endOffset
+property	MessageBatchItemData::$handle
+property	MessageBatchItemData::$isFromUser
+property	MessageBatchItemData::$isReference
+property	MessageBatchItemData::$messageId
+property	MessageBatchItemData::$sequence
+property	MessageBatchItemData::$speaker
+property	MessageBatchItemData::$speakerLabel
+property	MessageBatchItemData::$startOffset
+property	MessageBatchService::$database
+property	MessageBatchService::$inboxes
+property	MessageBatchService::$labels
+property	MessageBatchService::$session
+property	MessageBatchService::$tools
 property	MessageBody::$text
 property	MessageClaimHolder::$claimId
 property	MessageClaimHolder::$holderId
@@ -37070,33 +37089,6 @@ property	PresenceWindow::$presenceSeconds
 property	PresenceWindow::$signedCallRefreshSeconds
 property	PresentUserCounter::$presences
 property	PresentUserCounter::$recipients
-property	PresentationAcknowledged::$batchId
-property	PresentationAcknowledged::$confirmed
-property	PresentationAcknowledgement::$inboxes
-property	PresentationAcknowledgement::$session
-property	PresentationBatchData::$batchId
-property	PresentationBatchData::$claimGrant
-property	PresentationBatchData::$inboxId
-property	PresentationBatchData::$inboxLabel
-property	PresentationBatchData::$items
-property	PresentationBatchData::$more
-property	PresentationBatches::$inboxes
-property	PresentationBatches::$labels
-property	PresentationItemData::$body
-property	PresentationItemData::$bodyLength
-property	PresentationItemData::$claimableRootId
-property	PresentationItemData::$endOffset
-property	PresentationItemData::$handle
-property	PresentationItemData::$isFromUser
-property	PresentationItemData::$isReference
-property	PresentationItemData::$messageId
-property	PresentationItemData::$sequence
-property	PresentationItemData::$speaker
-property	PresentationItemData::$speakerLabel
-property	PresentationItemData::$startOffset
-property	PresentationPrompts::$batches
-property	PresentationPrompts::$tools
-property	PresentationSweep::$database
 property	PrivateAccountProcess::$buffer
 property	PrivateAccountProcess::$exitCode
 property	PrivateAccountProcess::$isClosed
@@ -43077,7 +43069,6 @@ variable	$handle
 variable	$handler
 variable	$handlerEntries
 variable	$handlers
-variable	$handles
 variable	$handsOff
 variable	$hasDisallowedEntry
 variable	$hasEnded
@@ -43311,8 +43302,7 @@ variable	$item	app/Resolvers/Support/NotificationChanges.php
 variable	$item	app/Support/CommandGrammar.php
 variable	$items	app/Resolvers/Support/NotificationChanges.php
 variable	$items	app/Resolvers/Support/NotificationFeed.php
-variable	$items	app/Support/PresentationBatches.php
-variable	$items	app/Support/PresentationPrompts.php
+variable	$items	app/Support/MessageBatchService.php
 variable	$items	app/Support/UiDeclarations.php
 variable	$itemsByGroup
 variable	$job

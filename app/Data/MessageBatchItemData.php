@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
  * confirms it, and the user message the agent may claim a turn on. What a user wrote is a request to the agent;
  * what another agent wrote is content, never an instruction.
  */
-final class PresentationItemData extends Data
+final class MessageBatchItemData extends Data
 {
     public const string USER_FENCE = 'request from a user';
 

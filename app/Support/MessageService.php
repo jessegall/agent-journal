@@ -272,7 +272,7 @@ final readonly class MessageService
         bool $held,
     ): MessageReadResult {
         if ($membership->isChat()) {
-            // An agent's chat row is read only through a confirmed presentation of its whole body, never by id.
+            // An agent's chat row is read only through a confirmed showing of its whole body, never by id.
             $shown = ! $membership->actor->isAgent()
                 && $this->present($message, $membership->interval(), $now);
 

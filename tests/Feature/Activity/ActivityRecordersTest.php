@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;
-use Tests\Support\PresentsChatText;
+use Tests\Support\ShowsMessageBatches;
 
 /**
  * What agents read, ran, edited, started and posted becomes one activity entry each, at its type's level, and tells
@@ -34,7 +34,7 @@ use Tests\Support\PresentsChatText;
 final class ActivityRecordersTest extends MessagingTestCase
 {
     use OpensPairChats;
-    use PresentsChatText;
+    use ShowsMessageBatches;
 
     protected const array TABLES = [...parent::TABLES, 'activity_entries', 'conversations', 'direct_chats'];
 

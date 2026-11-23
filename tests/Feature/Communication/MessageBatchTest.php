@@ -16,9 +16,9 @@ use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;
 use App\Support\DeskOpening;
+use App\Support\MessageBatchService;
 use App\Support\MessageBody;
 use App\Support\MessageEnvelope;
-use App\Support\PresentationBatches;
 use App\Support\ReceiptCaller;
 use App\Support\ReceiptRetention;
 use App\Support\SystemActor;
@@ -34,7 +34,7 @@ use Tests\TestCase;
 /**
  * An agent in two chats gets bounded batches that take turns between them, and a long post arrives in pieces.
  */
-final class PresentationBatchesTest extends TestCase
+final class MessageBatchTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -53,7 +53,7 @@ final class PresentationBatchesTest extends TestCase
     {
         $design = $this->chatWith(15, 'Short post.');
         $release = $this->chatWith(15, 'Short post.');
-        $batches = $this->app->make(PresentationBatches::class);
+        $batches = $this->app->make(MessageBatchService::class);
         $now = CarbonImmutable::now();
 
         $first = $batches->next($this->agent, TestIds::of(5), 1, 'thread-1', $now);
@@ -61,7 +61,7 @@ final class PresentationBatchesTest extends TestCase
 
         $this->assertNotNull($first);
         $this->assertNotNull($second);
-        $this->assertLessThanOrEqual(PresentationBatches::POST_LIMIT, count($first->items));
+        $this->assertLessThanOrEqual(MessageBatchService::POST_LIMIT, count($first->items));
         $this->assertNotSame($first->inboxId, $second->inboxId);
         $this->assertContains($first->inboxId, [$design, $release]);
     }
@@ -70,12 +70,12 @@ final class PresentationBatchesTest extends TestCase
     {
         $this->chatWith(1, str_repeat('a', 20000));
 
-        $batch = $this->app->make(PresentationBatches::class)
+        $batch = $this->app->make(MessageBatchService::class)
             ->next($this->agent, TestIds::of(5), 1, 'thread-1', CarbonImmutable::now());
 
         $this->assertNotNull($batch);
         $this->assertSame(0, $batch->items[0]->startOffset);
-        $this->assertSame(PresentationBatches::CHARACTER_LIMIT, $batch->items[0]->endOffset);
+        $this->assertSame(MessageBatchService::CHARACTER_LIMIT, $batch->items[0]->endOffset);
         $this->assertSame(20000, $batch->items[0]->bodyLength);
     }
 

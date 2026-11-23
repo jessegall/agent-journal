@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Commands\AcknowledgePresentation;
+namespace App\Commands\AcknowledgeMessageBatch;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Support\ActorIdentity;
-use App\Support\PresentationAcknowledgement;
+use App\Support\MessageBatchService;
 use Carbon\CarbonImmutable;
 
-final readonly class AcknowledgePresentationHandler implements CommandHandler
+final readonly class AcknowledgeMessageBatchHandler implements CommandHandler
 {
-    public function __construct(private PresentationAcknowledgement $acknowledgement) {}
+    public function __construct(private MessageBatchService $acknowledgement) {}
 
-    public function handle(AcknowledgePresentationCommand $command): int
+    public function handle(AcknowledgeMessageBatchCommand $command): int
     {
         return $this->acknowledgement->acknowledge(
             $command->batchId,

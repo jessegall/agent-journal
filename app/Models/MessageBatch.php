@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\PresentationBatchState;
+use App\Enums\MessageBatchState;
 use App\Exceptions\ChatStateConflict;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $runtime_generation
  * @property string $context_key
  * @property string|null $driver_turn_id
- * @property PresentationBatchState $state
+ * @property MessageBatchState $state
  * @property CarbonImmutable|null $settled_at
  * @property CarbonImmutable $dispatched_at
  * @property CarbonImmutable $last_progress_at
@@ -36,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $attempt
  * @property string|null $claim_grant_digest
  */
-#[Table('presentation_batches')]
+#[Table('message_batches')]
 #[Fillable([
     'interval_id',
     'agent_session_id',
@@ -48,7 +48,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'lease_expires_at',
     'attempt',
 ])]
-final class PresentationBatch extends Model implements ReadableModel
+final class MessageBatch extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
@@ -62,7 +62,7 @@ final class PresentationBatch extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'state' => PresentationBatchState::class,
+            'state' => MessageBatchState::class,
             'runtime_generation' => 'integer',
             'attempt' => 'integer',
             'settled_at' => 'immutable_datetime',
@@ -89,7 +89,7 @@ final class PresentationBatch extends Model implements ReadableModel
             'agent_session_id' => $sessionId,
             'runtime_generation' => $runtimeGeneration,
             'context_key' => $contextKey,
-            'state' => PresentationBatchState::Dispatched,
+            'state' => MessageBatchState::Dispatched,
             'dispatched_at' => $at,
             'last_progress_at' => $at,
             'lease_expires_at' => $leaseUntil,
@@ -124,7 +124,7 @@ final class PresentationBatch extends Model implements ReadableModel
     /**
      * The batch's piece with the handle digest, with its outstanding range, once there is one.
      */
-    public function rangeWithDigest(string $handleDigest): PresentationRange|null
+    public function rangeWithDigest(string $handleDigest): MessageRange|null
     {
         return $this->ranges()->where('handle_digest', $handleDigest)->with('outstanding')->first();
     }
@@ -134,7 +134,7 @@ final class PresentationBatch extends Model implements ReadableModel
      *
      * @throws ChatStateConflict
      */
-    public function settle(PresentationBatchState $outcome, CarbonImmutable $at): void
+    public function settle(MessageBatchState $outcome, CarbonImmutable $at): void
     {
         if ($this->state->isSettled()) {
             throw ChatStateConflict::batchSettled($this->id);
@@ -152,7 +152,7 @@ final class PresentationBatch extends Model implements ReadableModel
      */
     public function expire(CarbonImmutable $at): void
     {
-        $this->settle(PresentationBatchState::Expired, $at);
+        $this->settle(MessageBatchState::Expired, $at);
     }
 
     /**
@@ -192,11 +192,11 @@ final class PresentationBatch extends Model implements ReadableModel
     // ----------[ Relations ]----------
 
     /**
-     * @return HasMany<PresentationRange, $this>
+     * @return HasMany<MessageRange, $this>
      */
     public function ranges(): HasMany
     {
-        return $this->hasMany(PresentationRange::class, 'batch_id');
+        return $this->hasMany(MessageRange::class, 'batch_id');
     }
 
     // ----------[ Scopes ]----------
@@ -214,6 +214,6 @@ final class PresentationBatch extends Model implements ReadableModel
 
         $query->where('agent_session_id', $sessionId)
             ->where('interval_id', $intervalId)
-            ->whereIn('id', PresentationRange::query()->whereIn('receipt_id', $receipts)->select('batch_id'));
+            ->whereIn('id', MessageRange::query()->whereIn('receipt_id', $receipts)->select('batch_id'));
     }
 }

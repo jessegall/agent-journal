@@ -21,19 +21,19 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
- * Confirms the pieces of a presentation batch your driver showed, by the handles the batch gave them.
+ * Confirms the pieces of a message batch your driver showed, by the handles the batch gave them.
  *
- * @implements JournalCall<PresentationAcknowledged>
+ * @implements JournalCall<MessageBatchAcknowledged>
  */
 #[MapName(SnakeCaseMapper::class)]
 #[Endpoint(
     'communication/chat/acknowledge',
     'POST',
-    PresentationAcknowledged::class,
+    MessageBatchAcknowledged::class,
     CallEffect::KeyedWrite,
     ReceiptOwner::CommandBus,
 )]
-final class AcknowledgePresentationCall extends Data implements JournalCall
+final class AcknowledgeMessageBatchCall extends Data implements JournalCall
 {
     /**
      * @param  list<string>  $handles

@@ -12,7 +12,7 @@ use App\Exceptions\InboxUnavailable;
 use App\Exceptions\SpeechRefused;
 use App\Models\InboxInterval;
 use App\Models\Message;
-use App\Models\PresentationBatch;
+use App\Models\MessageBatch;
 use App\Models\SpeechOpportunity;
 use Carbon\CarbonImmutable;
 
@@ -174,7 +174,7 @@ final readonly class SpeechAllowance
         string $grant,
         CarbonImmutable $at,
     ): void {
-        $batch = PresentationBatch::query()->whereKey($batchId)->lockForUpdate()->first();
+        $batch = MessageBatch::query()->whereKey($batchId)->lockForUpdate()->first();
 
         $isOwnTurn = $batch !== null
             && $batch->interval_id === $opportunity->interval_id
@@ -325,7 +325,7 @@ final readonly class SpeechAllowance
     private function wasShown(string $intervalId, string $rootId): bool
     {
         return $this->session->hasSession()
-            && PresentationBatch::query()->shownUnderRoot($this->session->sessionId(), $intervalId, $rootId)->exists();
+            && MessageBatch::query()->shownUnderRoot($this->session->sessionId(), $intervalId, $rootId)->exists();
     }
 
     /**

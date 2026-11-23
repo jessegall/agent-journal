@@ -20,13 +20,13 @@ final readonly class CommunicationCalls
     /**
      * @param  list<string>  $handles
      */
-    public function acknowledgePresentation(
+    public function acknowledgeMessageBatch(
         string $batchId,
         array $handles,
         string $contextKey,
         CallKey $requestKey = new CallKey(),
-    ): PresentationAcknowledged {
-        return $this->sender->send(AcknowledgePresentationCall::from([
+    ): MessageBatchAcknowledged {
+        return $this->sender->send(AcknowledgeMessageBatchCall::from([
             'batchId' => $batchId,
             'handles' => $handles,
             'contextKey' => $contextKey,

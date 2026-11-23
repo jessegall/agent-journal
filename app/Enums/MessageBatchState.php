@@ -8,7 +8,7 @@ namespace App\Enums;
  * Where one attempt to present chat text to an agent's driver stands: sent and waiting, confirmed by the driver,
  * expired without word, or failed.
  */
-enum PresentationBatchState: string
+enum MessageBatchState: string
 {
     case Dispatched = 'dispatched';
     case Confirmed = 'confirmed';

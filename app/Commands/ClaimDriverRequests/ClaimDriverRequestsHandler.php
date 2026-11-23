@@ -15,8 +15,8 @@ use App\Models\ProcessStart;
 use App\Models\StartRecord;
 use App\Support\ActorIdentity;
 use App\Support\ClaimedRequests;
+use App\Support\MessageBatchService;
 use App\Support\PendingWorkSources;
-use App\Support\PresentationPrompts;
 use App\Support\PrivateValues;
 use App\Values\ClaimedRequest;
 use Carbon\CarbonImmutable;
@@ -32,7 +32,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 {
     public function __construct(
         private PendingWorkSources $pendingWork,
-        private PresentationPrompts $presentation,
+        private MessageBatchService $messageBatches,
         private PrivateValues $privateValues,
     ) {}
 
@@ -138,7 +138,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
                 $request->stage($now);
                 $claim = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, $isBootstrap);
-                $claimed[] = $this->withPresentation($request, $runtime, $claim, $now);
+                $claimed[] = $this->withMessageBatch($request, $runtime, $claim, $now);
 
                 if (count($claimed) === $command->limit) {
                     break;
@@ -169,7 +169,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
      * generic pending-work prompt, so desk work is never starved by a chat backlog. A bootstrap carries no chat text:
      * the backlog waits for the first wake after the start is ready.
      */
-    private function withPresentation(
+    private function withMessageBatch(
         DriverRequest $request,
         AgentRuntime $runtime,
         ClaimedRequest $claim,
@@ -179,7 +179,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             return $claim;
         }
 
-        $prompt = $this->presentation->promptFor($runtime, $now);
+        $prompt = $this->messageBatches->textFor($runtime, $now);
 
         return $prompt === null ? $claim : $claim->withMessage($prompt);
     }

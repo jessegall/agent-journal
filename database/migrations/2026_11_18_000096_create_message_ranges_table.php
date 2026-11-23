@@ -11,7 +11,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('outstanding_ranges', function (Blueprint $table) {
+        Schema::create('outstanding_message_ranges', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('receipt_id')->constrained('message_receipts')->cascadeOnDelete();
             $table->unsignedInteger('start_offset');
@@ -22,15 +22,15 @@ return new class extends Migration
         });
 
         DB::statement(<<<'SQL'
-            CREATE UNIQUE INDEX outstanding_ranges_one_open
-                ON outstanding_ranges (receipt_id, start_offset)
+            CREATE UNIQUE INDEX outstanding_message_ranges_one_open
+                ON outstanding_message_ranges (receipt_id, start_offset)
                 WHERE state = 'outstanding'
             SQL);
 
-        Schema::create('presentation_ranges', function (Blueprint $table) {
+        Schema::create('message_ranges', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('batch_id')->constrained('presentation_batches')->cascadeOnDelete();
-            $table->foreignUlid('outstanding_range_id')->constrained('outstanding_ranges')->cascadeOnDelete();
+            $table->foreignUlid('batch_id')->constrained('message_batches')->cascadeOnDelete();
+            $table->foreignUlid('outstanding_message_range_id')->constrained('outstanding_message_ranges')->cascadeOnDelete();
             $table->foreignUlid('receipt_id')->constrained('message_receipts')->cascadeOnDelete();
             $table->unsignedInteger('start_offset');
             $table->unsignedInteger('end_offset');
@@ -42,7 +42,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('presentation_ranges');
-        Schema::dropIfExists('outstanding_ranges');
+        Schema::dropIfExists('message_ranges');
+        Schema::dropIfExists('outstanding_message_ranges');
     }
 };

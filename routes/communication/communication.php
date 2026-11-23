@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Calls\AcknowledgePresentationController;
+use App\Http\Controllers\Calls\AcknowledgeMessageBatchController;
 use App\Http\Controllers\Calls\AnswerChatQuestionController;
 use App\Http\Controllers\Calls\AnswerMessageController;
 use App\Http\Controllers\Calls\AskChatQuestionController;
@@ -67,7 +67,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
         $calls->register(ReleaseSpeechController::class)->name('chat.release');
         $calls->register(AnswerChatQuestionController::class)->name('chat.answer');
         $calls->register(DeclineChatQuestionController::class)->name('chat.decline');
-        $calls->register(AcknowledgePresentationController::class)->name('chat.acknowledge');
+        $calls->register(AcknowledgeMessageBatchController::class)->name('chat.acknowledge');
     });
 
 Route::middleware(['web', 'auth', 'journal.user'])

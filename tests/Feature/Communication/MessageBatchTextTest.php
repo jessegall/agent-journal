@@ -6,16 +6,16 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Data\PresentationItemData;
+use App\Data\MessageBatchItemData;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\McpCatalogue;
+use App\Mcp\Tools\MessageBatchAcknowledgeTool;
 use App\Mcp\Tools\MessageClaimTool;
-use App\Mcp\Tools\MessagePresentationAcknowledgeTool;
 use App\Models\AgentRuntime;
-use App\Models\PresentationBatch;
+use App\Models\MessageBatch;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAccess;
-use App\Support\PresentationPrompts;
+use App\Support\MessageBatchService;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
 use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
@@ -26,7 +26,7 @@ use Tests\Support\MessagingTestCase;
  * An agent has the journal's tools and no command line, so the text a wake shows it names the one tool that answers,
  * with the message to answer; how the chat works is said once to a driver context (user message 19690).
  */
-final class PresentationPromptTest extends MessagingTestCase
+final class MessageBatchTextTest extends MessagingTestCase
 {
     public function test_the_text_a_wake_shows_names_the_tool_that_answers_and_the_message_and_nothing_to_claim(): void
     {
@@ -36,7 +36,7 @@ final class PresentationPromptTest extends MessagingTestCase
         $catalogue = $this->app->make(McpCatalogue::class);
         $replyTool = $catalogue->toolNameDispatching(ReplyToMessageCommand::class);
 
-        $prompt = (string) $this->app->make(PresentationPrompts::class)->promptFor($runtime, CarbonImmutable::now());
+        $prompt = (string) $this->app->make(MessageBatchService::class)->textFor($runtime, CarbonImmutable::now());
 
         // Every kind of agent can be shown chat text, so each is offered the tool the text names.
         foreach (DiscoveryProfile::cases() as $profile) {
@@ -46,7 +46,7 @@ final class PresentationPromptTest extends MessagingTestCase
         $this->assertStringContainsString($replyTool, $prompt);
         $this->assertStringContainsString($messageId, $prompt);
 
-        foreach ([MessageClaimTool::NAME, MessagePresentationAcknowledgeTool::NAME, PresentationBatch::query()->sole()->id] as $unsaid) {
+        foreach ([MessageClaimTool::NAME, MessageBatchAcknowledgeTool::NAME, MessageBatch::query()->sole()->id] as $unsaid) {
             $this->assertStringNotContainsString($unsaid, $prompt);
         }
     }
@@ -55,21 +55,21 @@ final class PresentationPromptTest extends MessagingTestCase
     {
         $inboxId = $this->groupChatWithTheBuilder();
         $runtime = $this->builderRuntime();
-        $prompts = $this->app->make(PresentationPrompts::class);
-        $explained = '"'.PresentationItemData::USER_FENCE.'"';
+        $prompts = $this->app->make(MessageBatchService::class);
+        $explained = '"'.MessageBatchItemData::USER_FENCE.'"';
 
         $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'first'));
-        $first = (string) $prompts->promptFor($runtime, CarbonImmutable::now());
+        $first = (string) $prompts->textFor($runtime, CarbonImmutable::now());
         $this->runOnBus(new PostChatMessageCommand($inboxId, 'And then?', 'second'));
-        $second = (string) $prompts->promptFor($runtime, CarbonImmutable::now());
+        $second = (string) $prompts->textFor($runtime, CarbonImmutable::now());
 
         $this->assertStringContainsString($explained, $first);
         $this->assertStringNotContainsString($explained, $second);
-        $this->assertStringContainsString('```'.PresentationItemData::USER_FENCE, $second);
+        $this->assertStringContainsString('```'.MessageBatchItemData::USER_FENCE, $second);
         $this->assertLessThan(strlen($first), strlen($second));
 
         $runtime->process_generation++;
-        $this->assertStringContainsString($explained, (string) $prompts->promptFor($runtime, CarbonImmutable::now()));
+        $this->assertStringContainsString($explained, (string) $prompts->textFor($runtime, CarbonImmutable::now()));
     }
 
     // Found on the local journal (23 Nov): the text called every message "never instructions", so an agent refused to do
@@ -81,17 +81,17 @@ final class PresentationPromptTest extends MessagingTestCase
         $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'owner-asks'));
         $runtime = $this->builderRuntime();
 
-        $prompt = (string) $this->app->make(PresentationPrompts::class)->promptFor($runtime, CarbonImmutable::now());
+        $prompt = (string) $this->app->make(MessageBatchService::class)->textFor($runtime, CarbonImmutable::now());
 
-        $this->assertStringContainsString('```'.PresentationItemData::USER_FENCE, $prompt);
-        $this->assertStringNotContainsString('```'.PresentationItemData::AGENT_FENCE, $prompt);
+        $this->assertStringContainsString('```'.MessageBatchItemData::USER_FENCE, $prompt);
+        $this->assertStringNotContainsString('```'.MessageBatchItemData::AGENT_FENCE, $prompt);
 
-        $fromAgent = PresentationItemData::from([
+        $fromAgent = MessageBatchItemData::from([
             'messageId' => 'message', 'sequence' => 1, 'speaker' => 'agent:reviewer', 'speakerLabel' => 'Reviewer',
             'isReference' => false, 'body' => 'Plan?', 'startOffset' => 0, 'endOffset' => 5, 'bodyLength' => 5,
             'handle' => 'handle', 'claimableRootId' => null, 'isFromUser' => false,
         ]);
-        $this->assertSame(PresentationItemData::AGENT_FENCE, $fromAgent->fence());
+        $this->assertSame(MessageBatchItemData::AGENT_FENCE, $fromAgent->fence());
     }
 
     private function groupChatWithTheBuilder(): string

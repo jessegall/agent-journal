@@ -1169,7 +1169,7 @@
                 },
                 "name": "messages_acknowledge_presented",
                 "outputSchema": null,
-                "title": "Message Presentation Acknowledge Tool"
+                "title": "Message Batch Acknowledge Tool"
             },
             "messages_answer": {
                 "inputSchema": {
@@ -3297,7 +3297,7 @@
                 },
                 "name": "messages_acknowledge_presented",
                 "outputSchema": null,
-                "title": "Message Presentation Acknowledge Tool"
+                "title": "Message Batch Acknowledge Tool"
             },
             "messages_claim": {
                 "inputSchema": {
@@ -4673,7 +4673,7 @@
                 },
                 "name": "messages_acknowledge_presented",
                 "outputSchema": null,
-                "title": "Message Presentation Acknowledge Tool"
+                "title": "Message Batch Acknowledge Tool"
             },
             "messages_answer": {
                 "inputSchema": {

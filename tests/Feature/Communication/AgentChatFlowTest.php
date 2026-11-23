@@ -13,7 +13,7 @@ use App\Support\PendingInboxWork;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;
-use Tests\Support\PresentsChatText;
+use Tests\Support\ShowsMessageBatches;
 
 /**
  * An agent in a pair sees the user's question as pending chat work with a claimable root, claims its turn, answers
@@ -22,7 +22,7 @@ use Tests\Support\PresentsChatText;
 final class AgentChatFlowTest extends MessagingTestCase
 {
     use OpensPairChats;
-    use PresentsChatText;
+    use ShowsMessageBatches;
 
     private Conversation $chat;
 

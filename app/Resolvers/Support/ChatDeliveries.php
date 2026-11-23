@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Resolvers\Support;
 
 use App\Data\DeliveryView;
-use App\Enums\OutstandingRangeState;
+use App\Enums\OutstandingMessageRangeState;
 use App\Enums\WakeState;
 use App\Models\MessageReceipt;
-use App\Models\OutstandingRange;
+use App\Models\OutstandingMessageRange;
 use App\Models\ReceiptDelivery;
 
 /**
@@ -31,9 +31,9 @@ final readonly class ChatDeliveries
         $receiptIds = $receipts->keys()->all();
         $deliveries = ReceiptDelivery::query()->whereIn('receipt_id', $receiptIds)->get();
 
-        $exhausted = OutstandingRange::query()
+        $exhausted = OutstandingMessageRange::query()
             ->whereIn('receipt_id', $receiptIds)
-            ->where('state', OutstandingRangeState::Exhausted)
+            ->where('state', OutstandingMessageRangeState::Exhausted)
             ->orderBy('start_offset')
             ->get()
             ->keyBy('receipt_id');

@@ -17,7 +17,7 @@ use App\Support\ActorIdentity;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;
-use Tests\Support\PresentsChatText;
+use Tests\Support\ShowsMessageBatches;
 
 /**
  * In a pair the user's question keeps the agent's one turn for it: an ordinary write under it is refused, the agent
@@ -26,7 +26,7 @@ use Tests\Support\PresentsChatText;
 final class PairSpeechTest extends MessagingTestCase
 {
     use OpensPairChats;
-    use PresentsChatText;
+    use ShowsMessageBatches;
 
     private Conversation $chat;
 

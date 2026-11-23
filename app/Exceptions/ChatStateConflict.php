@@ -48,7 +48,7 @@ final class ChatStateConflict extends RuntimeException implements CodedRefusal, 
 
     public static function batchSettled(string $batchId): self
     {
-        return new self("Presentation batch {$batchId} is already settled.", 'batch-settled');
+        return new self("Message batch {$batchId} is already settled.", 'batch-settled');
     }
 
     protected function status(): int

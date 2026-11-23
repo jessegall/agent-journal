@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('presentation_batches', function (Blueprint $table) {
+        Schema::create('message_batches', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('interval_id')->constrained('inbox_intervals')->restrictOnDelete();
             $table->ulid('agent_session_id');
@@ -34,6 +34,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('presentation_batches');
+        Schema::dropIfExists('message_batches');
     }
 };

@@ -20,16 +20,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property string $id
  * @property string $batch_id
- * @property string $outstanding_range_id
+ * @property string $outstanding_message_range_id
  * @property string $receipt_id
  * @property int $start_offset
  * @property int $end_offset
  * @property string $handle_digest
  * @property CarbonImmutable|null $confirmed_at
  */
-#[Table('presentation_ranges')]
-#[Fillable(['batch_id', 'outstanding_range_id', 'receipt_id', 'start_offset', 'end_offset', 'handle_digest'])]
-final class PresentationRange extends Model implements ReadableModel
+#[Table('message_ranges')]
+#[Fillable(['batch_id', 'outstanding_message_range_id', 'receipt_id', 'start_offset', 'end_offset', 'handle_digest'])]
+final class MessageRange extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
@@ -53,14 +53,14 @@ final class PresentationRange extends Model implements ReadableModel
      * The piece added to the batch under the digest of its handle.
      */
     public static function create(
-        PresentationBatch $batch,
-        OutstandingRange $outstanding,
+        MessageBatch $batch,
+        OutstandingMessageRange $outstanding,
         int $endOffset,
         string $handleDigest,
     ): self {
         $range = new self([
             'batch_id' => $batch->id,
-            'outstanding_range_id' => $outstanding->id,
+            'outstanding_message_range_id' => $outstanding->id,
             'receipt_id' => $outstanding->receipt_id,
             'start_offset' => $outstanding->start_offset,
             'end_offset' => $endOffset,
@@ -92,10 +92,10 @@ final class PresentationRange extends Model implements ReadableModel
     // ----------[ Relations ]----------
 
     /**
-     * @return BelongsTo<OutstandingRange, $this>
+     * @return BelongsTo<OutstandingMessageRange, $this>
      */
     public function outstanding(): BelongsTo
     {
-        return $this->belongsTo(OutstandingRange::class, 'outstanding_range_id');
+        return $this->belongsTo(OutstandingMessageRange::class, 'outstanding_message_range_id');
     }
 }

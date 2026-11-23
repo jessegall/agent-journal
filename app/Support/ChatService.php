@@ -43,7 +43,7 @@ final readonly class ChatService
         private AcceptedReceipt $accepted,
         private ReceiptDeliveries $deliveries,
         private SpeechAllowance $speech,
-        private PresentationAcknowledgement $shown,
+        private MessageBatchService $shown,
         private CurrentSession $session,
     ) {}
 

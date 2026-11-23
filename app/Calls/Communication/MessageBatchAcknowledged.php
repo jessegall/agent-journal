@@ -9,10 +9,10 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * How many pieces of a presentation batch an acknowledgement confirmed.
+ * How many pieces of a message batch an acknowledgement confirmed.
  */
 #[MapName(SnakeCaseMapper::class)]
-final class PresentationAcknowledged extends Data
+final class MessageBatchAcknowledged extends Data
 {
     public function __construct(
         public readonly string $batchId,

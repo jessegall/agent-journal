@@ -7,12 +7,12 @@ namespace Tests\Feature\Communication;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Commands\RetryDelivery\RetryDeliveryCommand;
 use App\Enums\ChatPermission;
-use App\Enums\OutstandingRangeState;
+use App\Enums\OutstandingMessageRangeState;
 use App\Enums\ReceiptDeliveryState;
 use App\Enums\WakeState;
 use App\Models\MessageAttention;
 use App\Models\MessageReceipt;
-use App\Models\OutstandingRange;
+use App\Models\OutstandingMessageRange;
 use App\Models\ReceiptDelivery;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAccess;
@@ -59,7 +59,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'ada-plan'));
 
         $builderReceipt = $this->receiptOf($messageId, $this->builder->agent_id);
-        $range = OutstandingRange::create($builderReceipt, 8000);
+        $range = OutstandingMessageRange::create($builderReceipt, 8000);
         $range->exhaust('The driver did not answer.');
         $delivery = ReceiptDelivery::query()->where('receipt_id', $builderReceipt->id)->sole();
         $delivery->exhaust('The driver did not answer.');
@@ -77,7 +77,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
 
         $this->runOnBus(new RetryDeliveryCommand($range->id));
 
-        $this->assertSame(OutstandingRangeState::Outstanding, $range->refresh()->state);
+        $this->assertSame(OutstandingMessageRangeState::Outstanding, $range->refresh()->state);
         $this->assertSame(ReceiptDeliveryState::Pending, $delivery->refresh()->state);
         $this->assertSame($builderReceipt->id, $delivery->notification_key);
         $this->assertSame($reviewerState, ReceiptDelivery::query()

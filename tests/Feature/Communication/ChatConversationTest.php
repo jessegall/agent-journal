@@ -12,7 +12,7 @@ use App\Models\MessageAttention;
 use App\Models\MessageReceipt;
 use App\Models\ReceiptDelivery;
 use App\Support\ActorIdentity;
-use App\Support\PresentationBatches;
+use App\Support\MessageBatchService;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Illuminate\Support\Facades\Event;
@@ -46,7 +46,7 @@ final class ChatConversationTest extends MessagingTestCase
         $this->assertOwnerPagesTold(1);
         $this->assertTrue(MessageAttention::query()->where('origin_id', $questionId)->exists());
 
-        $shown = $this->app->make(PresentationBatches::class)->next(
+        $shown = $this->app->make(MessageBatchService::class)->next(
             ActorIdentity::of($agent->agent),
             $agent->session->id,
             1,

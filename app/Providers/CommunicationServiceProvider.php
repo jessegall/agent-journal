@@ -36,12 +36,12 @@ use App\Support\IntervalChatDepartures;
 use App\Support\Links\MessageLinkRecords;
 use App\Support\LinkTypeRegistry;
 use App\Support\MessageAnswerActivation;
+use App\Support\MessageBatchService;
 use App\Support\MessageClaimProvider;
 use App\Support\NotificationChangePruning;
 use App\Support\NotificationTargetRegistry;
 use App\Support\PendingInboxWork;
 use App\Support\PendingWorkSources;
-use App\Support\PresentationSweep;
 use App\Support\ReceiptDeliveries;
 use App\Support\RecipientNotifications;
 use App\Support\RegisteredInboxes;
@@ -134,7 +134,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule
-                ->call(fn (PresentationSweep $sweep) => $sweep->sweep(CarbonImmutable::now()))
+                ->call(fn (MessageBatchService $sweep) => $sweep->sweep(CarbonImmutable::now()))
                 ->everyMinute(),
         );
 

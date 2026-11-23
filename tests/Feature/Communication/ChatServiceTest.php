@@ -15,7 +15,7 @@ use App\Support\ActorIdentity;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;
-use Tests\Support\PresentsChatText;
+use Tests\Support\ShowsMessageBatches;
 
 /**
  * A chat message is one row both members of a pair see, at its own timeline position: a retry with the same key
@@ -24,7 +24,7 @@ use Tests\Support\PresentsChatText;
 final class ChatServiceTest extends MessagingTestCase
 {
     use OpensPairChats;
-    use PresentsChatText;
+    use ShowsMessageBatches;
 
     private Conversation $chat;
 

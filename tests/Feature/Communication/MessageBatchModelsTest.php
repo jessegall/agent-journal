@@ -5,25 +5,25 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Enums\IntervalRole;
-use App\Enums\OutstandingRangeState;
-use App\Enums\PresentationBatchState;
+use App\Enums\MessageBatchState;
+use App\Enums\OutstandingMessageRangeState;
 use App\Exceptions\ChatStateConflict;
 use App\Models\CommandReceipt;
 use App\Models\GlobalGroup;
 use App\Models\InboxInterval;
 use App\Models\InboxRecord;
 use App\Models\Message;
+use App\Models\MessageBatch;
+use App\Models\MessageRange;
 use App\Models\MessageReceipt;
-use App\Models\OutstandingRange;
-use App\Models\PresentationBatch;
-use App\Models\PresentationRange;
+use App\Models\OutstandingMessageRange;
 use App\Models\ReceiptProgress;
 use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
 use App\Support\DeskOpening;
+use App\Support\MessageBatchService;
 use App\Support\MessageBody;
 use App\Support\MessageEnvelope;
-use App\Support\PresentationAcknowledgement;
 use App\Support\ReceiptCaller;
 use App\Support\ReceiptRetention;
 use Carbon\CarbonImmutable;
@@ -37,7 +37,7 @@ use Tests\TestCase;
  * A batch presents two pieces of a body, one is confirmed and moves the context's progress, a settled batch takes no
  * more confirmations, and the piece presented again in a retry keeps its outstanding identity.
  */
-final class PresentationModelsTest extends TestCase
+final class MessageBatchModelsTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -49,7 +49,7 @@ final class PresentationModelsTest extends TestCase
         $receipt = MessageReceipt::forAudience($this->message(), [$interval], TestIds::of(9))[0];
         $now = CarbonImmutable::now();
 
-        $batch = PresentationBatch::create(
+        $batch = MessageBatch::create(
             $interval->id,
             TestIds::of(5),
             1,
@@ -58,24 +58,24 @@ final class PresentationModelsTest extends TestCase
             $now,
             $now->addMinute(),
         );
-        $first = OutstandingRange::create($receipt, 0);
-        $second = OutstandingRange::create($receipt, 100);
-        PresentationRange::create($batch, $first, 100, hash('sha256', 'one'));
-        PresentationRange::create($batch, $second, 180, hash('sha256', 'two'));
+        $first = OutstandingMessageRange::create($receipt, 0);
+        $second = OutstandingMessageRange::create($receipt, 100);
+        MessageRange::create($batch, $first, 100, hash('sha256', 'one'));
+        MessageRange::create($batch, $second, 180, hash('sha256', 'two'));
 
-        $acknowledgement = $this->app->make(PresentationAcknowledgement::class);
+        $acknowledgement = $this->app->make(MessageBatchService::class);
         $this->assertNotNull($acknowledgement->confirm($batch, hash('sha256', 'one'), $now));
         $this->assertNull($acknowledgement->confirm($batch, hash('sha256', 'one'), $now));
         $this->assertSame(100, ReceiptProgress::confirmedOffsetOf($receipt->id, 'thread-1'));
-        $this->assertSame(OutstandingRangeState::Confirmed, $first->refresh()->state);
+        $this->assertSame(OutstandingMessageRangeState::Confirmed, $first->refresh()->state);
 
-        $batch->settle(PresentationBatchState::Failed, $now);
+        $batch->settle(MessageBatchState::Failed, $now);
         $this->assertThrows(
             fn () => $acknowledgement->confirm($batch, hash('sha256', 'two'), $now),
             ChatStateConflict::class,
         );
 
-        $this->assertSame($second->id, OutstandingRange::waitingAt($receipt, 100)?->id);
+        $this->assertSame($second->id, OutstandingMessageRange::waitingAt($receipt, 100)?->id);
     }
 
     private function message(): Message

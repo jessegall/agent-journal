@@ -65,7 +65,7 @@ final class ExplicitTransactionTest extends TestCase
         'app/Support/ActiveActorsResolver.php' => 'no unit: a read-only snapshot',
         'app/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
         'app/Support/AgentChatAccess.php' => 'owns a unit: the console change of an agent\'s chat access',
-        'app/Support/PresentationSweep.php' => 'owns a unit: each settled batch of the sweep',
+        'app/Support/MessageBatchService.php' => 'owns a unit: each settled batch of the sweep',
         'app/Support/ReceiptDeliveries.php' => 'owns a unit: each delivery a pass tries',
     ];
 
