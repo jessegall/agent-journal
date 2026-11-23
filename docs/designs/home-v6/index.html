@@ -38,11 +38,11 @@ code{font-family:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;font-size:.
   --text-reader:17px;--text-title:16px;--text-empty:14px;--text-card:13.5px;--text-body:13px;--text-field:12.5px;--text-small:12px;--text-badge:11.5px;--text-meta:11px;--text-group:10.5px;
   --radius-badge:4px;--radius-seg:5px;--radius-control:6px;--radius-button:7px;--radius-field:8px;--radius-menu:9px;--radius-bubble:10px;--radius-card:12px;--radius-composer:14px;
   --ease-journal:cubic-bezier(0.2,0,0,1);--duration-hover:120ms;--duration-pop:180ms;--duration-view:240ms;--duration-panel:340ms;
-  --focus:#262422;--side:#f6f5f3;--bg:#ffffff;--bg-2:#fbfaf9;--raised:#f7f6f4;--hover:#efedea;--sel:#e8e5e1;--chip:#edeae6;--bubble:#f4f2ef;--code-bg:#f6f5f2;--term:#181715;
+  --focus:#262422;--side:#f6f5f3;--bg:#ffffff;--bg-2:#fbfaf9;--raised:#f7f6f4;--hover:#efedea;--sel:#e8e5e1;--chip:#edeae6;--bubble:#f4f2ef;--bubble-agent:#f8f7f5;--code-bg:#f6f5f2;--term:#181715;
   --border:#e9e6e2;--border-2:#dcd8d3;--border-3:#ccc7c1;--line:#e9e6e2;
   --text:#1c1a18;--text-2:#4a4540;--text-3:#625c56;--text-4:#6f6962;--brand:#262422;--on-brand:#ffffff;--danger:#bf4f3d;
   --shadow-window:0 10px 30px rgba(20,22,30,.14),0 1px 3px rgba(20,22,30,.08);--shadow-pop:0 6px 20px rgba(20,22,30,.13)}
-.app.dark{--focus:#e8e6e3;--side:#0e0d0c;--bg:#141312;--bg-2:#11100f;--raised:#1a1817;--hover:#201e1c;--sel:#252220;--chip:#282523;--bubble:#1c1a18;--code-bg:#131211;--term:#0b0a0a;
+.app.dark{--focus:#e8e6e3;--side:#0e0d0c;--bg:#141312;--bg-2:#11100f;--raised:#1a1817;--hover:#201e1c;--sel:#252220;--chip:#282523;--bubble:#1c1a18;--bubble-agent:#181716;--code-bg:#131211;--term:#0b0a0a;
   --border:#282523;--border-2:#33302d;--border-3:#3f3b37;--line:#252220;
   --text:#e9e6e2;--text-2:#b0aaa3;--text-3:#a09a93;--text-4:#9a948d;--brand:#e8e6e3;--on-brand:#100f0e;--danger:#df8b7e;
   --shadow-window:0 14px 36px rgba(0,0,0,.55),0 1px 3px rgba(0,0,0,.4);--shadow-pop:0 8px 22px rgba(0,0,0,.5)}
@@ -176,8 +176,28 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 .turn{display:flex;flex-direction:column;gap:8px}
 .turn .docrow{margin-top:0}
 .me{align-self:flex-end;max-width:78%;background:var(--bubble);border-radius:var(--radius-bubble) var(--radius-bubble) 4px var(--radius-bubble);padding:8px 12px}
-/* An agent message is only as wide as its text, up to 92% of the column, so its hover controls end where it ends. */
-.ag{max-width:92%;width:fit-content}
+/* An agent message is only as wide as its text, up to 92% of the column, so its hover controls end where it ends.
+   It sits on a faint bubble of its own (--bubble-agent, fainter than your --bubble), its tail at the bottom left. */
+.ag{max-width:92%;width:fit-content;background:var(--bubble-agent);border-radius:var(--radius-bubble) var(--radius-bubble) var(--radius-bubble) 4px;padding:8px 12px}
+/* A run: the same agent again, with nothing between and within 5 minutes. No name line; it joins the bubble above
+   (2 px apart instead of 8, its top-left corner tucked in), so the run reads as one faint block. */
+.ag.cont{margin-top:-6px;border-top-left-radius:4px}
+.chat>.ag.cont{margin-top:-22px}
+/* Your message and its delivery line: the line sits under the bubble, right-aligned with it, never inside it. */
+.mine{position:relative;align-self:flex-end;display:flex;flex-direction:column;align-items:flex-end;gap:3px;max-width:78%}
+.mine>.me{max-width:100%}
+.mine.sending>.me{opacity:.7}
+.dl{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:0 6px;font-size:var(--text-meta);line-height:15px;color:var(--text-4);text-align:right;font-variant-numeric:tabular-nums}
+.dl .spin{width:9px;height:9px;border-width:1.25px}
+.dl .no{color:var(--danger);font-weight:500}
+.dl .why{color:var(--text-3)}
+.dl .sep{color:var(--border-3)}
+.dl button{border:0;background:transparent;padding:0;font:inherit;color:var(--text-2);text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px;cursor:pointer}
+.dl button:hover{color:var(--text)}
+.dl button:focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-radius:2px}
+/* An older delivered message says so only on hover or focus, in the gap below it, so nothing moves. */
+.dl.quiet{position:absolute;top:calc(100% + 3px);right:0;white-space:nowrap;opacity:0;transition:opacity var(--duration-hover) var(--ease-journal)}
+.mine:hover>.dl.quiet,.mine:focus-within>.dl.quiet{opacity:1}
 .ag .m{font-size:var(--text-badge);color:var(--text-3);margin-bottom:2px;display:flex;align-items:center;gap:5px}
 .ag .m .nm{color:var(--text-2);font-weight:500}
 .day,.sys{align-self:center;font-size:var(--text-badge);color:var(--text-3);text-align:center;max-width:86%}
@@ -633,6 +653,12 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 .term:not(:focus) .cur{background:transparent;border:1px solid #a09a93;animation:none}
 @keyframes blink{50%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.term .cur{animation:none}}
+/* The terminal opens as a modal over the page: it is for looking in on an agent, not a part of Home. */
+.tdlg{top:40px;width:min(880px,calc(100% - 64px));height:min(560px,calc(100% - 72px));max-height:none}
+.tdlg header small{color:var(--text-3);font-size:var(--text-badge);font-weight:400}
+.tdlg .tbody{flex:1;min-height:0;display:flex;flex-direction:column}
+.tdlg .twrap{flex:1;min-height:0;height:auto}
+.tdlg .tfoot{flex:none;padding:6px 12px;border-top:1px solid var(--line);font-size:var(--text-meta);color:var(--text-3)}
 .tover{position:absolute;inset:32px 0 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:color-mix(in srgb,var(--term) 82%,transparent);color:#e9e6e2;font-size:var(--text-small)}
 </style>
 </head>
@@ -1042,7 +1068,23 @@ const docbar=n=>{const d=DOCS.find(x=>x[0]===n);return d?`<div class="docbar" da
 function chipHtml(convs){const open=convs.filter(c=>CHIP[c]==='opened'),offer=convs.filter(c=>!CHIP[c]);if(!offer.length&&!open.length)return '';
   return `<div class="jchip"><span class="jm" title="From the journal">J</span>${offer.length?`<span>Open</span>${offer.map(c=>`<button class="go" data-chipopen="${c}">${convName(c)}'s chat</button>`).join(' · ')}<button class="ib" style="width:20px;height:20px" data-chipno="${offer.join(',')}" title="Not now" aria-label="Not now">${I('close','s14')}</button>`
     :`<span>${open.map(convName).join(' and ')}'s chat is open</span>`}</div>`}
-function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
+/* Two times belong to one run when at most 5 minutes apart; 'now' and unparsed times always do. */
+const clockMin=t=>{const x=/^(\d{1,2}):(\d{2})$/.exec(t||'');return x?+x[1]*60+ +x[2]:null};
+const sameRun=(a,b)=>{const x=clockMin(a),y=clockMin(b);return x==null||y==null||y-x<=5};
+/* Your message's delivery, one quiet line under the bubble. Sending, waiting and failure always show; Delivered shows
+   under your latest message until someone answers it, and on hover for older ones. A group names who has not had it. */
+const DL_WAIT={sending:'Sending…',delivering:'Delivering…',waiting:'Waiting for {n} to start'};
+function dlHtml(c,i,d,latest){const to=d.to||[[agentOf(c),d.s,d.why]],nm=id=>MEM[id].name,list=a=>a.length<3?a.join(' and '):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+  if(d.s==='sending')return `<div class="dl" role="status"><span class="spin"></span>Sending…</div>`;
+  const by=s=>to.filter(x=>x[1]===s),ok=by('delivered'),bad=by('failed'),wait=to.filter(x=>x[1]==='waiting'||x[1]==='delivering'),gone=by('cancelled'),many=to.length>1,parts=[];
+  bad.forEach(x=>parts.push(`<span><span class="no">Not delivered${many?' to '+nm(x[0]):''}</span>${x[2]?`<span class="why">: ${x[2]}</span>`:''}</span><button data-dlretry="${c}:${i}:${x[0]}">Retry</button>`));
+  wait.forEach(x=>parts.push(`<span><span class="spin"></span> ${x[1]==='waiting'?DL_WAIT.waiting.replace('{n}',nm(x[0])):'Delivering'+(many?' to '+nm(x[0]):'')+'…'}</span>`));
+  gone.forEach(x=>parts.push(`<span>No longer delivered${many?' to '+nm(x[0]):''}</span>`));
+  if(ok.length)parts.push(`<span>Delivered${many?(ok.length===to.length&&to.length>2?' to all '+to.length:' to '+list(ok.map(x=>nm(x[0])))):''}</span>`);
+  const calm=!bad.length&&!wait.length&&!gone.length;if(calm&&!latest)return `<div class="dl quiet">${parts.join('')}</div>`;
+  return `<div class="dl"${bad.length?' role="status"':''}>${parts.join('<span class="sep" aria-hidden="true">·</span>')}</div>`}
+function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,lastT=null,prevI=-1;
+  const meIdx=cv.msgs.map((m,i)=>m[0]==='me'?i:-1).filter(i=>i>=0),latestMe=meIdx.length?meIdx[meIdx.length-1]:-1,answered=cv.msgs.slice(latestMe+1).some(m=>m[0]==='ag'||m[0]==='say');
   return (cv.origin?`<div class="origin">${I('users','s14')}<span>${cv.origin}</span></div>`:'')+groupTurns(c,cv.msgs.map((m,i)=>{const k=m[0];
     if(k==='day'){last=null;return `<div class="day">${m[1]}</div>`}
     if(k==='sys'){last=null;return `<div class="sys">${m[1]}</div>`}
@@ -1056,12 +1098,13 @@ function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
     const extra=(ex&&ex.doc?docbar(ex.doc):'')+(ex&&ex.chip?chipHtml(ex.chip):'');
     /* A reply names what it answers only when that is not the message right above it, and then as a small link. */
     const q=rt!=null&&rt!==prevI?quote(c,rt):'';prevI=i;
-    if(who==='you'){last='you';return `<div class="me msg" data-mi="${i}">${q}${m[1]}${extra}${act}</div>`}
-    /* In a group the name heads a run of messages once; the time shows on hover, beside React and Reply. */
-    const time=k==='ag'?m[1]:m[2],text=k==='ag'?m[2]:m[3],head=!grp||last!==who;last=who;
+    if(who==='you'){last='you';const d=ex&&ex.dl;return `<div class="mine${d&&d.s==='sending'?' sending':''}"><div class="me msg" data-mi="${i}">${q}${m[1]}${extra}${act}</div>${d?dlHtml(c,i,d,i===latestMe&&!answered):''}</div>`}
+    /* In every chat the avatar, name and time head a run once: the same speaker again, nothing between, within 5
+       minutes. A later message in the run has no name line; its time shows on hover, beside React and Reply. */
+    const time=k==='ag'?m[1]:m[2],text=k==='ag'?m[2]:m[3],head=!(last===who&&sameRun(lastT,time));last=ex&&ex.doc?null:who;lastT=time;
     /* An agent's message: React and Reply on hover; its reactions under it; a document it names below, full width. */
-    const acts=`<span class="macts">${grp?`<span class="tm">${time}</span>`:''}<button class="mact" data-react="${c}:${i}" data-fk="react:${c}:${i}" aria-haspopup="dialog" aria-label="React to ${MEM[who].name}'s message">${I('smile','s14')}React</button>${act}</span>`;
-    return `<div class="ag msg" data-mi="${i}" title="${grp?esc(MEM[who].name+' · '+time):''}">${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?'':`<span>· ${time}</span>`}${acts}</div>`:acts}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${sourcesHtml(c,i)}${reactsHtml(c,i)}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}))}
+    const acts=`<span class="macts">${head?'':`<span class="tm">${time}</span>`}<button class="mact" data-react="${c}:${i}" data-fk="react:${c}:${i}" aria-haspopup="dialog" aria-label="React to ${MEM[who].name}'s message">${I('smile','s14')}React</button>${act}</span>`;
+    return `<div class="ag msg${head?'':' cont'}" data-mi="${i}"${head?'':` title="${esc(MEM[who].name+' · '+time)}"`}>${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span><span>· ${time}</span>${acts}</div>`:acts}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${sourcesHtml(c,i)}${reactsHtml(c,i)}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}))}
 /* Which agent's turn a chat item belongs to: 'ag:<id>' for an agent's message, activity or typing line, 'ag' for a
    command, sequence line or question that belongs to whichever agent is acting, and null for everything else. */
 function turnKey(c,m){const k=m[0],agent=id=>id&&MEM[id]&&MEM[id].kind==='agent'?'ag:'+id:null;
@@ -1083,10 +1126,11 @@ const EXTRA_KIND={};
 function composer(c){const ph=`Message ${convName(c)}`;
   const rp=REPLYTO&&REPLYTO.conv===c?`<div class="replying">${I('reply','s14')}<span>Replying to <b>${MEM[speaker(c,CONV[c].msgs[REPLYTO.i])].name}</b> <span class="ex">${esc(excerpt(c,REPLYTO.i))}</span></span><button class="ib" style="width:20px;height:20px" data-unreply aria-label="Stop replying">${I('close','s14')}</button></div>`:'';
   return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span data-beside hidden></span><button class="btn sm send" data-send="${c}" data-fk="send:${c}">${I('arrow','s14')}Send</button></div></div>`}
-/* Hooks for later sections: content above the composer (docked cards) and a terminal beside the chat. */
+/* Hooks for later sections: content above the composer (docked cards). */
 const ABOVE_COMPOSER=[];
 const chatView=c=>`<div class="chatcol" style="max-width:${readW+48}px" data-chatdrop="${c}"><div class="scroll"><div class="chat" data-chat="${c}">${chatHtml(c)}</div></div>${ABOVE_COMPOSER.map(f=>f(c)).join('')}${composer(c)}</div>`;
-function sendMessage(c,t,extra){if(!t.trim())return;const cv=CONV[c],rt=REPLYTO&&REPLYTO.conv===c?REPLYTO.i:undefined;REPLYTO=null;cv.msgs.push(['me',esc(t),rt,extra]);const mine=cv.msgs.length-1;render();
+function sendMessage(c,t,extra){if(!t.trim())return;const cv=CONV[c],rt=REPLYTO&&REPLYTO.conv===c?REPLYTO.i:undefined;REPLYTO=null;const dl={s:'sending'};cv.msgs.push(['me',esc(t),rt,Object.assign({},extra,{dl})]);const mine=cv.msgs.length-1;render();
+  setTimeout(()=>{dl.s='sent';if(isGroup(c))dl.to=members(c).filter(m=>MEM[m].kind==='agent').map(a=>[a,'delivered']);else dl.to=[[agentOf(c),'delivered']];render()},450);
   if(!isGroup(c)){const who=agentOf(c);setTimeout(()=>{if(extra&&extra.doc){addAct(who,'doc',2,`read doc ${extra.doc}`);cv.msgs.push(['ag','now',`Reading doc ${extra.doc} now. I'll come back with comments in this chat.`])}else cv.msgs.push(['ag','now','On it.']);render()},800);return}
   const agents=members(c).filter(m=>MEM[m].kind==='agent'),named=agents.find(a=>new RegExp('@'+MEM[a].name.replace(' ','\\s?'),'i').test(t));
   const target=named||(rt!=null&&agents.includes(speaker(c,cv.msgs[rt]))?speaker(c,cv.msgs[rt]):agents[0]);if(!target)return;
@@ -1470,6 +1514,7 @@ function render(){
   if(addpop)h+=addHtml();
   if(pal)h+=palHtml();
   if(keysOpen)h+=keysHtml();
+  if(page==='home'&&TMODAL)h+=tmodalHtml();
   mainEl.innerHTML=h;
   $$('#main [data-body],#main .pgread,#main .pglist,#main .gwrap,#main [data-keepscroll]').forEach((b,i)=>{const s=scrolls[(b.dataset.body||b.dataset.keepscroll||b.className)+i];if(s){b.scrollTop=s[0];b.scrollLeft=s[1]}});
   $$('#main [data-compose]').forEach(t=>{if(draft[t.dataset.compose]){t.value=draft[t.dataset.compose];t.closest('.composer').classList.add('has')}});
@@ -1752,6 +1797,8 @@ function onContext(ev){const t=ev.target,sel=getSelection();if(sel&&!sel.isColla
 addEventListener('keydown',ev=>{const t=ev.target,inField=t.closest&&t.closest('input,textarea,select,[contenteditable]');
   if((ev.metaKey||ev.ctrlKey)&&!ev.shiftKey&&!ev.altKey&&ev.code==='KeyK'){ev.preventDefault();if(pal)closeMenus();else{const ae=document.activeElement,fk=ae&&ae.dataset&&ae.dataset.fk;menu=null;addpop=null;keysOpen=false;pal={q:'',i:0,trigger:fk};render()}return}
   if(ev.key==='Escape'&&(menu||addpop||pal||keysOpen)){ev.preventDefault();closeMenus();return}
+  /* Esc closes the terminal modal, except inside the terminal's screen, where it is a key for the agent. */
+  if(ev.key==='Escape'&&TMODAL&&!(t.closest&&t.closest('[data-term]'))){ev.preventDefault();closeTerm();return}
   if(ev.key==='Escape'&&GRAPH.sel&&!inField){const n=GRAPH.sel;GRAPH.sel=null;render();focusFk('gnode:'+n);return}
   if(ev.key==='Escape'&&SEL&&!COMPOSE&&!inField){SEL=null;$$('.cfloat').forEach(x=>x.remove());render();return}
   /* ⌥1, ⌥2 and ⌥` work from the composer too: Option with a digit or the backtick types nothing a chat needs. */
@@ -1922,8 +1969,15 @@ function termKey(who,ev){const T=TERM[who];if(T.state!=='live')return;
 /* The terminal's columns and rows follow its pane: drag the shared edge and they change. */
 let termObs=null;
 AFTER_RENDER.push(()=>{if(termObs)termObs.disconnect();termObs=new ResizeObserver(es=>es.forEach(e=>{const who=e.target.dataset.term,T=TERM[who];if(!T)return;T.cols=Math.max(20,Math.floor((e.contentRect.width)/7.2));T.rows=Math.max(5,Math.floor(e.contentRect.height/18));const s=$(`[data-tsize="${who}"]`);if(s)s.textContent=T.cols+'×'+T.rows}));$$('[data-term]').forEach(t=>termObs.observe(t))});
-ABAR_EXTRA.push(c=>CONV[c]&&CONV[c].term?`<button class="btn sm bordered" data-openterm="${c}" aria-pressed="${isOpen('term:'+c)}">${I('term','s14')}Terminal</button>`:'');
-CONVMENU_EXTRA.push(c=>CONV[c]&&CONV[c].term?[{label:isOpen('term:'+c)?'Show the terminal':'Open the terminal beside the chat',ic:'term',run:()=>{openWin('term:'+c,{dock:'right'});return false}}]:[]);
+/* The terminal is a modal over the page, for looking in on an agent: never a tab, a window or a dock on Home. The agent
+   bar has exactly one way in, a quiet Terminal button (no border, no fill; never the primary button). */
+let TMODAL=null;
+function openTerm(c){menu=null;addpop=null;pal=null;keysOpen=false;TMODAL=c;render();focusFk('term:'+c)}
+function closeTerm(){const c=TMODAL;TMODAL=null;render();focusFk('openterm:'+c)}
+function tmodalHtml(){const c=TMODAL;if(!CONV[c])return '';
+  return `<div class="scrim" data-tclose></div><div class="cdlg tdlg" id="tdlg" role="dialog" aria-modal="true" aria-label="${MEM[c].name}'s terminal"><header>${avatar(c)}<b>Terminal · ${MEM[c].name} <small>${CONV[c].sub||''}</small></b><button class="ib" data-tclose data-fk="tclose" aria-label="Close the terminal" title="Close · Esc outside the screen">${I('close','s14')}</button></header>
+    <div class="tbody">${termView(c)}</div><div class="tfoot">What you type here goes to ${MEM[c].name}. Ctrl+C stops it. To close, press × or click outside.</div></div>`}
+ABAR_EXTRA.push(c=>CONV[c]&&CONV[c].term?`<button class="btn sm" data-openterm="${c}" data-fk="openterm:${c}" aria-haspopup="dialog" title="Look in on ${MEM[c].name}'s terminal">${I('term','s14')}Terminal</button>`:'');
 
 /* =====================================================================================================================
    The steps these sections add, their layouts and their wiring
@@ -1931,14 +1985,28 @@ CONVMENU_EXTRA.push(c=>CONV[c]&&CONV[c].term?[{label:isOpen('term:'+c)?'Show the
 Object.assign(STEPS,{
   seq:['9 · A sequence runs','“Ship a task” runs for task 1702. The chat says plainly when it starts, which step runs, when a step ends or waits, and the tests run as a process card with live output. The viewer on the right shows its steps and where each run is; Edit steps opens the editor.'],
   dock:['10 · Docked cards and commands','A task, a question and a plan are docked under the conversation: they fold into a stack with their edges showing; Show all unfolds them. A report sits beside the composer. Right-click a card to move it or undock it, or a task anywhere to dock it. Below: a failed build and a migration that passed, as process cards.'],
-  term:['11 · A terminal agent','Worker 5 runs in a terminal. Its chat has a Terminal button and the terminal docked beside it. Click the terminal and type to send keys; Ctrl+C interrupts; drag the shared edge and its columns and rows follow. Restart and End show the other states.']});
-layoutFor=function(s){if(s==='seq')return {grid:split('row',pane(['chat']),pane(['seqv:9']),.6),floats:[]};if(s==='term')return {grid:split('row',pane(['chat']),pane(['term:w5']),.5),floats:[]};return baseLayout(s)};
+  term:['11 · A terminal agent','Worker 5 runs in a terminal. The agent bar has one quiet Terminal button; it opens the terminal as a modal over the page, here already open. Click the screen and type to send keys; Ctrl+C interrupts; Restart and End show the other states. Close it with ×, a click outside, or Esc outside the screen.'],
+  runs:['12 · Runs and delivery','Agent 1 sends three messages in a row: one name line, three joined faint bubbles. A message 6 minutes later starts a new run. Under your messages: Sending, Waiting for Agent 1 to start, Not delivered with Retry, and Delivered under your latest. Hover an older message of yours to see Delivered.'],
+  grpdl:['13 · Delivery in a group','The Bell design chat with runs from Codex 1, and your messages to three agents: one delivered to all, one still waiting for one agent, one not delivered to one agent with Retry.']});
+layoutFor=function(s){if(s==='seq')return {grid:split('row',pane(['chat']),pane(['seqv:9']),.6),floats:[]};return baseLayout(s)};
 LOADERS.push(()=>{freshRuns();freshProcs();DOCKED={};FOLD={};SEQEDIT=null;SEQRUN=null;freshTerm();
-  CONV.w5={name:'Worker 5',sub:'Task 1711 · in a terminal',term:true,origin:'Started by Agent 1 for task 1711 · supervised by Agent 1 · runs in a terminal',msgs:[['ag','14:30','I\'m on the docking for task 1711. My terminal is beside this chat; type there to steer me.'],['ag','14:34','Tests for paneLayout are running now.']]};
+  CONV.w5={name:'Worker 5',sub:'Task 1711 · in a terminal',term:true,origin:'Started by Agent 1 for task 1711 · supervised by Agent 1 · runs in a terminal',msgs:[['ag','14:30','I\'m on the docking for task 1711. Press Terminal above to look in on my screen.'],['ag','14:34','Tests for paneLayout are running now.']]};
   if(step==='seq'){CONV.main.msgs.push(['seq',40,'finished for task 1699 · 4 steps in 1 h 10 min'],['me','Ship task 1702 once Worker 3 is done.'],['ag','14:20','Starting “Ship a task” for task 1702.']);setTimeout(()=>{if(step==='seq')runSequenceDemo()},700)}
   if(step==='dock'){DOCKED.main=[{id:'d1',kind:'task',ref:1711,place:'under'},{id:'d3',kind:'plan',ref:56,place:'under'},{id:'d4',kind:'report',ref:307,place:'beside'}];
     CONV.main.msgs.push(['me','Build it and run the migration check.'],['ag','14:40','The build failed on AgentBar.vue; the migration check passed.'],['proc','p2'],['proc','p3'])}
-  if(step==='term'){EXTRA.push('w5');A.mainConv='w5'}});
+  TMODAL=null;
+  if(step==='term'){EXTRA.push('w5');A.mainConv='w5';TMODAL='w5'}
+  /* Samples: runs in a one-agent chat, and each delivery state under your own messages. */
+  if(step==='runs'){const late={s:'sending'};CONV.main.msgs.push(['me','Is the settings dialog ready to test?',undefined,{dl:{s:'delivered'}}],
+      ['ag','14:02','Almost. Worker 3 finished the Enter key.'],['ag','14:02','The test for it passes: <code>8 passed</code>.'],['ag','14:03','I\'m asking Worker 3 for one last look at the Save button.'],
+      ['ag','14:09','Worker 3 is done. It\'s ready for you to test.'],
+      ['me','Then tell Designer 262 the bell can wait.',undefined,{dl:{s:'failed',why:'Agent 1 was stopped'}}],['sys','You started Agent 1 again · 14:12'],
+      ['me','Send me the steps to test it.',undefined,{dl:late}]);
+    setTimeout(()=>{if(step==='runs'&&late.s==='sending'){late.s='delivered';render()}},1400)}
+  if(step==='grpdl'){A.mainConv='g1';groupOn=true;CONV.g1.msgs.push(['me','Please both check the toast on small screens.',undefined,{dl:{to:[['a1','delivered'],['cx1','delivered']]}}],
+      ['say','cx1','14:20','Checked at 360 px wide: the toast fits.'],['say','cx1','14:21','One thing: its Undo button wraps below the text there.'],['say','cx1','14:21','I\'d keep Undo on one line and cut the text with an ellipsis.'],
+      ['me','Agreed. Agent 1, add it to the task.',undefined,{dl:{to:[['a1','failed','Agent 1 was stopped'],['cx1','delivered']]}}],
+      ['me','Codex 1, start on it once Agent 1 is back.',undefined,{dl:{to:[['a1','waiting'],['cx1','delivered']]}}])}});
 WIRE_EXTRA.push(on=>{
   on('[data-seqopen]',b=>b.onclick=()=>{const [s,r]=b.dataset.seqopen.split(':').map(Number);SEQSEL=s;SEQRUN=r;openWin('seqv:'+s,{dock:'right'})});
   on('[data-seqrun]',b=>b.onclick=()=>{SEQRUN=+b.dataset.seqrun;render();focusFk('seqrun:'+SEQRUN)});
@@ -1968,12 +2036,15 @@ WIRE_EXTRA.push(on=>{
   on('[data-fold]',b=>b.onclick=()=>{const c=b.dataset.fold;FOLD[c]=FOLD[c]===false;render();focusFk('fold:'+c)});
   on('[data-dopen]',b=>b.onclick=ev=>{ev.stopPropagation();const id=b.dataset.dopen,c=Object.keys(DOCKED).find(k=>DOCKED[k].some(d=>d.id===id)),d=DOCKED[c].find(x=>x.id===id);const r=dockTitle(d).open();render()});
   on('[data-undock]',b=>b.onclick=ev=>{ev.stopPropagation();undock(b.dataset.undock)});
-  on('[data-openterm]',b=>b.onclick=()=>{const c=b.dataset.openterm;if(isOpen('term:'+c)){openWin('term:'+c);focusFk('term:'+c)}else openWin('term:'+c,{dock:'right'})});
+  on('[data-openterm]',b=>b.onclick=()=>openTerm(b.dataset.openterm));
+  on('[data-tclose]',b=>b.onclick=closeTerm);
+  on('[data-dlretry]',b=>b.onclick=()=>{const [c,i,who]=b.dataset.dlretry.split(':'),d=CONV[c].msgs[+i][3].dl,x=(d.to||[]).find(r=>r[0]===who);
+    if(d.to)x[1]='delivering';else d.s='delivering';render();setTimeout(()=>{if(d.to)x[1]='delivered';else d.s='delivered';render()},900)});
   on('[data-term]',t=>t.onkeydown=ev=>termKey(t.dataset.term,ev));
   on('[data-tint]',b=>b.onclick=()=>{termKey(b.dataset.tint,{ctrlKey:true,key:'c',preventDefault(){}})});
   on('[data-trestart]',b=>b.onclick=()=>{const who=b.dataset.trestart,T=TERM[who];T.state='restarting';T.input='';render();setTimeout(()=>{T.state='connecting';render();setTimeout(()=>{T.state='live';T.lines=TBOOT.slice(0,3).concat(['<d>Restarted. Worker 5 picks up where it was.</d>']);STATE.w5='Writing the pane grid docking';render()},800)},1000)});
   on('[data-tend]',b=>b.onclick=()=>{const T=TERM[b.dataset.tend];T.state='ended';T.exit=0;STATE.w5='Ended';render()})});
-PAL_EXTRA.push(C=>{if(page==='home'&&CONV[A.mainConv]&&CONV[A.mainConv].term)C('Open the terminal','term',()=>{openWin('term:'+A.mainConv,{dock:'right'});return false})});
+PAL_EXTRA.push(C=>{if(page==='home'&&CONV[A.mainConv]&&CONV[A.mainConv].term)C(`Look in on ${MEM[A.mainConv].name}'s terminal`,'term',()=>{const c=A.mainConv;TMODAL=c;setTimeout(()=>focusFk('term:'+c));return false})});
 /* =====================================================================================================================
    Panels inside the chat: an agent's memories and a sequence open over the conversation, not as windows.
    Windows are for what a user keeps on Home; these belong to the chat they were opened from.
@@ -2291,7 +2362,8 @@ PAL_EXTRA.push(C=>Object.entries(CREATE).forEach(([kind,k])=>{C(k.title,'plus',(
 LOADERS.push(()=>{FORM=null;GUIDE=null});
 const SECTION_NOTES=[['Creating anything','Every create action is a split button. The main part is the plain way (a form, or the sequence editor); the chevron offers the agent way: a short guided chat where Agent 1 asks three questions with ready answers and drafts the same form for you to accept or change.'],['Panels inside the chat','An agent\'s memories and a sequence open in a panel that slides over the chat from its right edge: click through them, then close it. They belong to the chat; windows are for what you keep on Home.'],['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
   ['Docked cards and commands','A task, plan, report or question docks under the conversation (folded into a stack) or beside the composer. A command runs as a process card: its state, its time, its last lines, and its full output when opened.'],
-  ['The terminal','A terminal-driven agent\'s chat opens its live terminal beside it. Type to send keys, Ctrl+C to interrupt; its size follows the pane; connecting, restarting and ended each say so plainly.']];
+  ['The terminal is a modal','A terminal-driven agent\'s terminal opens as a modal over the page (880 × 560 px at most, 40 px from the top, on the usual scrim), never as a tab, a window or a dock: it is for looking in on an agent, not part of Home. Type to send keys, Ctrl+C to interrupt; its columns and rows follow the modal\'s size; connecting, restarting and ended each say so plainly. It closes with ×, a click on the scrim, or Esc pressed outside the screen; Esc inside the screen goes to the agent, since its program uses Esc. Closing puts the focus back on the Terminal button. ⌘K offers it too.'],
+  ['One quiet Terminal button','The agent bar has exactly one way into the terminal: a Terminal button with the terminal mark, drawn as a quiet button (btn sm: no border, no fill, text in --text-2, --hover under the pointer). It is never the filled primary button and never bordered like Stop. There is no second "Open terminal" link, and the chat\'s menu has no terminal entry. When the agent\'s program needs a person, the agent bar\'s state says so and this same button is the way in.']];
 
 /* =====================================================================================================================
    Design chrome
@@ -2313,8 +2385,11 @@ const NOTE_CARDS=[
   ['A clean chat, and Activity','What agents do (tasks in hand, memories, searches, documents read, agents started) goes to Activity, each entry with an importance. Only what you choose reaches the chat, as a quiet line: from the panel\'s “In the chat” menu, or per kind in Settings.'],
   ['Documents','Documents, reports and Markdown files open in a reader. Select text to comment on it to any agent, ask an agent for feedback, or drag a document\'s bar from the chat onto an agent to hand it over.'],
   ['The task graph','Tasks and Plans show what waits on what. Click a task to light its whole chain, everything it waits on and everything waiting on it, with its holder and its waits beside it; click again, on empty space, or press Escape to clear. Show bottlenecks finds the tasks that hold up many others; Suggest improvement shows waits that can go, as a before and after.'],
-  ['React and Reply belong to the message','An agent message is only as wide as its text, up to the column. React and Reply sit at the right end of its name and time line, above the text, so they never cover it. Their right edge is the message\'s right edge: the column\'s edge for a long message. When the text is shorter than the name, the time and the two controls together, that line sets the message\'s width, so the controls end just past the time. They keep their room while hidden, so nothing moves when they appear. In a group chat, a later message in a run has no name line; there they sit at the top right of its first line, which wraps before them. They show on hover and when a key moves focus onto them.'],
+  ['React and Reply belong to the message','An agent message is only as wide as its text, up to the column. React and Reply sit at the right end of its name and time line, above the text, so they never cover it. Their right edge is the message\'s right edge: the column\'s edge for a long message. When the text is shorter than the name, the time and the two controls together, that line sets the message\'s width, so the controls end just past the time. They keep their room while hidden, so nothing moves when they appear. In every chat, a later message in a run has no name line; there they sit at the top right of its first line, which wraps before them. They show on hover and when a key moves focus onto them.'],
   ['Replies','A reply shows, on its own line above its text, who it answers and one line of the original, cut off with an ellipsis. It looks the same in your bubble and in every other message. Pressing it scrolls to the original and marks it. The line shows only when the original is not the message right above: there the original is already in view, and repeating it would only double the text. When the original was removed or is hidden from you, the line says so and cannot be pressed. On your own message, Reply sits just above the bubble at its right edge, where another message has its name line; the composer\'s "Replying to" line shows the same name and excerpt. The group chat Bell design shows each case.'],
+  ['Runs: one name line','In every chat, one-agent or group, a run of messages from the same speaker shows the avatar, name and time once, on its first message. A run ends when someone else speaks, when anything else comes between (an activity line, a card, a day line, a document the message names), or when more than 5 minutes pass. A later message in a run has no name line: its time shows on hover beside React and Reply, and as its tooltip. Step 12 shows a run of three and a new run 6 minutes later; step 13 a run in a group.'],
+  ['A faint bubble for other speakers','Every message not yours sits on a faint bubble of its own: --bubble-agent, #f8f7f5 in light and #181716 in dark, fainter than your --bubble (#f4f2ef, #1c1a18), with no border; padding 8px 12px; corners 10 10 10 4 px, its tail at the bottom left, mirroring yours at the bottom right. In a run the bubbles join: 2 px apart instead of 8, and each later bubble\'s top-left corner tucks in to 4 px, so the run reads as one faint block.'],
+  ['Delivery, under your bubble','The state of your message is one quiet line under the bubble, right-aligned with it, never inside it: 11 px, --text-4, 3 px below the bubble. Sending… (with a 9 px spinner, the bubble at 70% opacity), Delivering…, Waiting for Agent 1 to start, and Not delivered always show; Not delivered is the one word in --danger, then its short reason in --text-3, then Retry as a quiet underlined link. Delivered shows only under your latest message until someone answers it; on older ones it appears on hover or focus, in the gap below, so nothing moves. In a group the line names only who still lacks it: "Not delivered to Agent 1: Agent 1 was stopped · Retry · Delivered to Codex 1"; when every agent has it, "Delivered to Agent 1 and Codex 1", or "Delivered to all 3" for three or more. People in a chat read it in the app and are not listed.'],
   ['One signal per fact; safe keys','The agent bar owns the agent\'s state, and the topbar\'s bell is the only bell. Toasts only offer Undo. ⌘K opens everything; ⌥1, ⌥2 and ⌥` are read by key position. There is no ⌘B, ⌘1, ⌘⇧B, ⌃⌥ arrow or Space shortcut.']].concat(SECTION_NOTES);
 STEPS.docs[2]='<button class="tbtn" id="playBtn" style="margin-left:6px">▶ Play</button>';
 startChrome();
