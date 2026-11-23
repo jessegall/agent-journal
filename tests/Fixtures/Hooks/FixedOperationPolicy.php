@@ -20,15 +20,15 @@ final readonly class FixedOperationPolicy implements OperationPolicy
 {
     public const string NO_CHANGES_REASON = 'Your profile grants no changes to workspace files';
 
-    public function __construct(private bool $mayChangeFiles = true) {}
+    public function __construct(private bool $changesFiles = true) {}
 
     /**
      * A ready state loader whose container gives this policy to every ready state it builds.
      */
-    public static function loader(bool $mayChangeFiles = true): ReadyStateLoader
+    public static function loader(bool $changesFiles = true): ReadyStateLoader
     {
         $container = new Container();
-        $container->instance(OperationPolicy::class, new self($mayChangeFiles));
+        $container->instance(OperationPolicy::class, new self($changesFiles));
         $container->instance(StopConditionGate::class, new AllowedStops());
 
         return new ReadyStateLoader(static fn () => $container);
@@ -38,7 +38,7 @@ final readonly class FixedOperationPolicy implements OperationPolicy
     {
         $changesFiles = array_any($operation->accessTypes, fn (AccessType $access): bool => $access->changesFiles());
 
-        if ($changesFiles && ! $this->mayChangeFiles) {
+        if ($changesFiles && ! $this->changesFiles) {
             return AccessDecision::refused(
                 AccessRuleType::NotGranted,
                 sprintf(

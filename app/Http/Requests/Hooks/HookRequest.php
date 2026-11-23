@@ -29,6 +29,7 @@ final class HookRequest extends FormRequest
             'cwd' => ['sometimes', 'string', 'max:1024'],
             'reason' => ['sometimes', 'string'],
             'stop_hook_active' => ['sometimes', 'boolean'],
+            'last_assistant_message' => ['sometimes', 'nullable', 'string'],
             'agent_id' => ['sometimes', 'string'],
             'prompt_id' => ['sometimes', 'string'],
             'turn_id' => ['sometimes', 'string'],

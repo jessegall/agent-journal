@@ -13,7 +13,8 @@ use App\Support\Decisions\Enums\SimpleAnswer;
 use App\Support\Stack\StateAnswer;
 
 /**
- * A state's decision on one hook, a deny or a rewrite, or the allow its caller answers when no state decided.
+ * A state's decision on one hook: a deny, a rewrite, or a delegate that hands the hook to the state below. The allow
+ * is what its caller answers when no state decided.
  */
 final readonly class Decision implements AnswerPart
 {
@@ -25,6 +26,15 @@ final readonly class Decision implements AnswerPart
     public static function allow(): self
     {
         return new self(SimpleAnswer::Allow);
+    }
+
+    /**
+     * Not this state's to decide: the state below is asked. A state that decides in one path answers this in the
+     * others, never null.
+     */
+    public static function delegate(): self
+    {
+        return new self(SimpleAnswer::Delegate);
     }
 
     public static function deny(string $reason): self

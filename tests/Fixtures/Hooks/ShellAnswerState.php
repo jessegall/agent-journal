@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Contracts\Bus\Command;
+use App\Contracts\Events\Event;
+use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\States\AgentState;
 use Closure;
@@ -14,11 +17,14 @@ use Closure;
 final class ShellAnswerState extends AgentState
 {
     /**
-     * @param  Closure(ShellCommandRequested): mixed  $answer
+     * @param  Closure(ShellCommandRequested): (AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>)  $answer
      */
     public function __construct(private readonly Closure $answer) {}
 
-    public function onShellCommand(ShellCommandRequested $input): mixed
+    /**
+     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     */
+    public function onShellCommand(ShellCommandRequested $input): AnswerPart|Command|Event|iterable
     {
         return ($this->answer)($input);
     }

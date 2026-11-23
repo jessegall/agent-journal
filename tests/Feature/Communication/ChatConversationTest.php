@@ -7,14 +7,20 @@ namespace Tests\Feature\Communication;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Enums\ReceiptDeliveryState;
 use App\Events\PageChanged;
+use App\Models\Agents\AgentStackRow;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageAttention;
 use App\Models\Messages\MessageReceipt;
 use App\Models\Messages\ReceiptDelivery;
 use App\Support\ActorIdentity;
 use App\Support\MessageBatchService;
+use App\Support\Storage\FrameRecord;
+use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
+use Domain\Chat\Data\AnsweringValuesData;
+use Domain\Chat\Mcp\Tools\ReactToMessageTool;
+use Domain\Chat\Support\States\Support\AnsweringChatStateReference;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\MessagingTestCase;
@@ -75,6 +81,62 @@ final class ChatConversationTest extends MessagingTestCase
         );
     }
 
+    public function test_a_message_sent_to_a_running_agent_is_kept_by_the_answering_state_on_its_stack_until_it_replies(): void
+    {
+        $agent = TestStart::start();
+        $agent->openStack($this->app);
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new OpenPairChatCommand($agent->agent->id));
+
+        $firstId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'What is 2 plus 2?', 'owner-asks'));
+        $secondId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'And 3 plus 3?', 'owner-asks-again'));
+
+        $this->assertSame(
+            [['waitingIds' => [$firstId, $secondId], 'toolUses' => 0, 'isAnswered' => false]],
+            $this->answeringValuesOf($agent, $inboxId),
+        );
+
+        $this->app->make(MessageBatchService::class)->next(
+            ActorIdentity::of($agent->agent),
+            $agent->session->id,
+            1,
+            self::CONTEXT_KEY,
+            CarbonImmutable::now(),
+        );
+
+        $this->useTool($agent, 'messages_reply', [
+            'message_id' => $firstId,
+            'body' => '4, and 6.',
+            'request_key' => 'agent-answers-both',
+        ]);
+
+        $this->assertSame(
+            [['waitingIds' => [], 'toolUses' => 0, 'isAnswered' => true]],
+            $this->answeringValuesOf($agent, $inboxId),
+        );
+    }
+
+    public function test_a_reaction_of_the_agent_answers_what_waited_in_the_chat(): void
+    {
+        $agent = TestStart::start();
+        $agent->openStack($this->app);
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new OpenPairChatCommand($agent->agent->id));
+        $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Thanks!', 'owner-thanks'));
+
+        $this->useTool($agent, ReactToMessageTool::NAME, [
+            'chat_id' => $inboxId,
+            'message_id' => $messageId,
+            'emoji' => "\u{1F44D}",
+            'request_key' => 'agent-reacts',
+        ]);
+
+        $this->assertSame(
+            [['waitingIds' => [], 'toolUses' => 0, 'isAnswered' => true]],
+            $this->answeringValuesOf($agent, $inboxId),
+        );
+    }
+
     public function test_an_agent_that_was_never_shown_a_message_cannot_answer_it(): void
     {
         $agent = TestStart::start();
@@ -105,6 +167,23 @@ final class ChatConversationTest extends MessagingTestCase
         $this->assertFalse($result['isError'], (string) json_encode($result));
 
         return (array) $result['structuredContent'];
+    }
+
+    /**
+     * What the answering frames of that chat on the agent's stack keep, finished ones too.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function answeringValuesOf(TestStart $agent, string $inboxId): array
+    {
+        $target = new StackTarget($agent->agent->id, $agent->session->id);
+        $stack = AgentStackRow::query()->withoutGlobalScopes()->forTarget($target)->sole();
+        $reference = AnsweringChatStateReference::forChat($inboxId);
+
+        return array_values(array_map(
+            fn (FrameRecord $frame) => AnsweringValuesData::from($frame->values)->toArray(),
+            array_filter($stack->frames->all(), fn (FrameRecord $frame) => $frame->reference->isSameAs($reference)),
+        ));
     }
 
     /**

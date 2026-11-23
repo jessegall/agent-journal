@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs;
 
+use App\Contracts\Bus\Command;
 use App\Contracts\Drivers\NativeTurnRecords;
+use App\Contracts\Events\Event;
 use App\Contracts\Sessions\ConversationVisits;
 use App\Enums\AnswerType;
+use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\HookIdentity;
@@ -37,7 +40,10 @@ final readonly class SessionEnded implements HookInput
         return $type->fitsEveryHook();
     }
 
-    public function answerBy(HookAnswerer $state): mixed
+    /**
+     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     */
+    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|iterable
     {
         return $state->onSessionEnd($this);
     }

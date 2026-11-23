@@ -13,6 +13,7 @@ use App\Support\Drivers\Adapters\JournalToolCall;
 use App\Support\Drivers\Adapters\JudgedCall;
 use App\Support\Drivers\Contracts\DriverAdapter;
 use App\Support\Drivers\HookPayload;
+use App\Support\Inputs\StopRequested;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ChecksProgramFixtures;
 use Tests\Support\RefreshHookDatabase;
@@ -122,6 +123,27 @@ final class JournalToolRecognitionTest extends TestCase
             JudgedCall::class,
             $driver->callFor(self::toolPayload('PostToolUse', 'mcp__other__x', []), $this->hook()),
         );
+    }
+
+    #[DataProvider('drivers')]
+    public function test_a_stop_carries_the_words_the_agent_closed_its_turn_with(
+        string $adapter,
+        string $toolSearch,
+        string $readResource,
+        string $listResources,
+    ): void {
+        $closingWords = 'It-is-4.';
+
+        $call = $this->app->make($adapter)->callFor(HookPayload::from([
+            'session_id' => 'session-redacted',
+            'hook_event_name' => 'Stop',
+            'stop_hook_active' => false,
+            'last_assistant_message' => "  {$closingWords}\n",
+        ]), $this->hook());
+
+        $this->assertInstanceOf(JudgedCall::class, $call);
+        $this->assertInstanceOf(StopRequested::class, $call->input);
+        $this->assertSame($closingWords, $call->input->stop->closingWords);
     }
 
     /**

@@ -19,6 +19,7 @@ final class DecisionTest extends TestCase
     public function test_each_named_constructor_gives_its_answer(): void
     {
         $this->assertSame(AnswerType::Allow, Decision::allow()->answerType());
+        $this->assertSame(AnswerType::Delegate, Decision::delegate()->answerType());
         $this->assertSame(AnswerType::Deny, Decision::deny(self::REASON)->answerType());
         $this->assertSame(AnswerType::Rewrite, Decision::rewrite('journal run tests')->answerType());
     }

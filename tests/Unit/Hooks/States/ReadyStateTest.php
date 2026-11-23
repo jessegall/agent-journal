@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
+use App\Enums\AnswerType;
 use App\Enums\CommandEffect;
 use App\Enums\CommandType;
 use App\Enums\FileOperation;
@@ -79,14 +80,16 @@ final class ReadyStateTest extends TestCase
         ReadyState $ready,
         ShellCommand $command,
     ): void {
-        $this->assertNull($ready->onShellCommand($this->request($command)));
+        $this->assertSame(AnswerType::Delegate, $ready->onShellCommand($this->request($command))->answerType());
     }
 
     public function test_a_profile_that_edits_files_may_edit(): void
     {
         $edit = $this->edit(['app/Domains/Contracts/Domain.php']);
 
-        $this->assertNull(new ReadyState(new FixedOperationPolicy(true), new AllowedStops())->onFileEdit($edit));
+        $decision = new ReadyState(new FixedOperationPolicy(true), new AllowedStops())->onFileEdit($edit);
+
+        $this->assertSame(AnswerType::Delegate, $decision->answerType());
     }
 
     public function test_a_profile_without_file_changes_refuses_the_whole_edit_by_its_first_path(): void

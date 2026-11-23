@@ -6,9 +6,12 @@ namespace Domain\Chat\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
+use Domain\Chat\Events\MessageReactionAdded;
 use Domain\Chat\Models\Concerns\PlacedInConversation;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,13 +28,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $emoji
  */
 #[Fillable(['inbox_id', 'message_id', 'emoji'])]
-final class MessageReaction extends Model implements ReadableModel
+final class MessageReaction extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
     use PlacedInConversation;
+    use RaisesEvents;
 
     /**
      * The most reactions a page of messages reads, every emoji of every reader counted once.
@@ -83,6 +87,7 @@ final class MessageReaction extends Model implements ReadableModel
         $reaction = new self(['inbox_id' => $inboxId, 'message_id' => $messageId, 'emoji' => $emoji]);
         $reaction->belongTo($owner);
         $reaction->save();
+        $reaction->raise(new MessageReactionAdded($inboxId, $messageId, $owner));
 
         return $reaction;
     }

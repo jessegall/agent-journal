@@ -126,7 +126,7 @@ final class AgentStackTest extends TestCase
     public function test_file_policy_and_pending_skill_guards_are_enforced_under_a_state_that_passes(): void
     {
         $passing = $this->frame('guide', ScriptedState::passing());
-        $stack = $this->stack($this->ready(mayChangeFiles: false), $passing);
+        $stack = $this->stack($this->ready(changesFiles: false), $passing);
 
         $file = $stack->answer(HookInputs::all()['file edit']);
 
@@ -269,14 +269,28 @@ final class AgentStackTest extends TestCase
         return [
             'an allow' => [Decision::allow()],
             'a yield after the decision' => [[Decision::deny('Held.'), new ContextLine('Too late.')]],
-            'something that is no answer' => [3],
+            'a yielded thing that is no answer' => [[3]],
         ];
     }
 
     #[DataProvider('refusedAnswers')]
-    public function test_an_answer_a_state_may_not_give_is_refused(mixed $answer): void
+    public function test_an_answer_a_state_may_not_give_is_refused(Decision|array $answer): void
     {
         $stack = $this->stack($this->ready(), $this->frame('top', new StopAnswerState($answer)));
+
+        $this->expectException(HookAnswerRefused::class);
+
+        $stack->answer($this->stop());
+    }
+
+    public function test_a_generator_that_yields_something_that_is_no_answer_is_refused_at_that_step(): void
+    {
+        $steps = (function () {
+            yield new ContextLine('First.');
+
+            yield 'not an answer';
+        })();
+        $stack = $this->stack($this->ready(), $this->frame('top', new StopAnswerState($steps)));
 
         $this->expectException(HookAnswerRefused::class);
 
@@ -295,7 +309,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_finished_bottom_state_stays_when_the_exposed_frames_are_popped(): void
     {
-        $bottom = new ScriptedState(null, finished: true);
+        $bottom = new ScriptedState(Decision::delegate(), finished: true);
         $stack = $this->stack(
             new Frame('ready', $this->reference('ready'), $bottom, CarbonImmutable::now(), bottom: true),
         );
@@ -319,12 +333,70 @@ final class AgentStackTest extends TestCase
         $stack->answer(HookInputs::all()['prompt']);
     }
 
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function hooksThatOnlyReport(): iterable
+    {
+        yield 'a session start' => ['session start'];
+
+        yield 'a compaction' => ['compaction'];
+
+        yield 'a finished tool call' => ['tool finished'];
+
+        yield 'a session end' => ['session end'];
+    }
+
+    #[DataProvider('hooksThatOnlyReport')]
+    public function test_a_hook_that_only_reports_what_happened_refuses_a_deny(string $hook): void
+    {
+        $stack = $this->stack($this->ready(), $this->frame('top', new ScriptedState(Decision::deny('Not now.'))));
+
+        $this->expectException(InvalidHookAnswer::class);
+
+        $stack->answer(HookInputs::all()[$hook]);
+    }
+
     public function test_pushing_a_state_already_on_the_stack_changes_nothing(): void
     {
         $stack = $this->exampleStack(TaskState::Started, messageWaits: true);
 
         $this->assertSame($stack, $stack->withStateOnTop($this->reference('tasks.working', '42')));
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
+    }
+
+    public function test_a_push_replaces_a_finished_frame_for_the_same_reference_with_a_new_one_on_top(): void
+    {
+        $factory = new InMemoryStateFactory(['guide' => fn () => ScriptedState::passing()]);
+        $finished = new Frame(
+            'guide-1',
+            $this->reference('guide'),
+            new ScriptedState(Decision::delegate(), finished: true),
+            CarbonImmutable::now(),
+        );
+        $stack = new AgentStack(
+            [$this->ready(), $finished, $this->frame('top', ScriptedState::passing())],
+            $factory,
+            new StackTarget('agent-1', 'session-1'),
+        );
+
+        $pushed = $stack->withStateOnTop($this->reference('guide'));
+
+        $this->assertSame(['ready', 'top', 'pushed-1'], $pushed->frameIds());
+    }
+
+    public function test_a_delegate_passes_the_hook_to_the_state_below_which_decides(): void
+    {
+        $stack = $this->stack(
+            $this->ready(),
+            $this->frame('below', new ScriptedState(Decision::deny('Not now.'))),
+            $this->frame('top', new ScriptedState(Decision::delegate())),
+        );
+
+        $answer = $stack->answer($this->stop());
+
+        $this->assertSame(['top delegate', 'below deny'], $this->stepsOf($answer));
+        $this->assertFalse($answer->isAllowed());
     }
 
     public function test_a_push_onto_a_full_stack_is_refused(): void
@@ -453,12 +525,12 @@ final class AgentStackTest extends TestCase
         return new AgentStack(array_values($frames), new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
     }
 
-    private function ready(bool $mayChangeFiles = true): Frame
+    private function ready(bool $changesFiles = true): Frame
     {
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedOperationPolicy($mayChangeFiles), new AllowedStops()),
+            new ReadyState(new FixedOperationPolicy($changesFiles), new AllowedStops()),
             CarbonImmutable::now(),
             bottom: true,
         );

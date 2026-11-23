@@ -8,7 +8,11 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
+
+	"github.com/moby/moby/api/types/mount"
+	"github.com/moby/moby/client"
 )
 
 // DeployKeyFolder is where agent-host finds the compose secrets that hold each environment's deploy key.
@@ -92,7 +96,7 @@ func (containers Containers) PrepareWorkspace(ctx context.Context, preparation *
 		return ErrManifestUnsafe
 	}
 
-	if containers.command(ctx, "volume", "inspect", clone.Volume).Run() == nil {
+	if containers.hasVolume(ctx, clone.Volume) {
 		return nil
 	}
 
@@ -109,40 +113,48 @@ func (containers Containers) PrepareWorkspace(ctx context.Context, preparation *
 // reaches that container on standard input only and lives in its private tmpfs for the one clone; it is never an
 // argument, an environment value, a mount or part of the volume. A failed clone removes the volume it began.
 func (containers Containers) FillWorkspace(ctx context.Context, volume, repository, revision string, deployKey []byte) error {
-	if err := containers.command(ctx, "volume", "create", "--label",
-		installationLabel+"="+string(containers.Rules.InstallationName), volume).Run(); err != nil {
+	labels := map[string]string{installationLabel: string(containers.Rules.InstallationName)}
+	if _, err := containers.Daemon.VolumeCreate(ctx, client.VolumeCreateOptions{Name: volume, Labels: labels}); err != nil {
 		return fmt.Errorf("creating the workspace volume %s failed: %w", volume, err)
 	}
 
-	clone := containers.command(ctx, containers.cloneRun(volume, repository, revision)...)
-	clone.Stdin = strings.NewReader(string(deployKey))
-	output, err := clone.CombinedOutput()
+	output, err := containers.runCheck(ctx, containers.cloneRun(volume, repository, revision, deployKey))
 	if err == nil {
 		return nil
 	}
 
-	_ = containers.command(ctx, "volume", "rm", "--force", volume).Run()
+	_ = containers.removeVolume(ctx, volume, true)
 
-	return cloneFailure(string(output))
+	return cloneFailure(output)
 }
 
-// cloneRun runs the clone as the agent's user with every capability dropped, a read-only root, the workspace volume
-// at /workspace and a private tmpfs for the key, then removes the container.
-func (containers Containers) cloneRun(volume, repository, revision string) []string {
-	arguments := []string{
-		"run", "--rm", "--interactive", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
-		"--user", agentUser, "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,mode=0700,uid=10001",
-		"--label", installationLabel + "=" + string(containers.Rules.InstallationName),
-		"--mount", "type=volume,source=" + volume + ",target=" + workspaceTarget,
-		"--env", "HOME=/tmp", "--env", "GIT_CONFIG_NOSYSTEM=1", "--env", "GIT_TERMINAL_PROMPT=0",
-	}
+// cloneEnvironment keeps git in a clone container to its private tmpfs and off the image's own settings.
+var cloneEnvironment = []string{"HOME=/tmp", "GIT_CONFIG_NOSYSTEM=1"}
+
+// cloneTmpfs is a clone container's private folder in memory, the agent user's alone, where nothing can be run.
+var cloneTmpfs = map[string]string{"/tmp": "rw,noexec,nosuid,mode=0700,uid=10001"}
+
+// cloneRun is the clone as the agent's user with every capability dropped, a read-only root, the workspace volume at
+// /workspace, a private tmpfs for the key, the daemon's network to reach the repository, and the key on its standard
+// input alone.
+func (containers Containers) cloneRun(volume, repository, revision string, deployKey []byte) throwaway {
+	environment := append(slices.Clone(cloneEnvironment), "GIT_TERMINAL_PROMPT=0")
 	for _, proxy := range []string{"HTTPS_PROXY", "HTTP_PROXY", "NO_PROXY"} {
 		if value := os.Getenv(proxy); value != "" {
-			arguments = append(arguments, "--env", proxy+"="+value)
+			environment = append(environment, proxy+"="+value)
 		}
 	}
 
-	return append(arguments, "--entrypoint", "sh", containers.Rules.AgentImage, "-c", cloneScript(repository, revision))
+	return throwaway{
+		Program:      "sh",
+		Arguments:    []string{"-c", cloneScript(repository, revision)},
+		Environment:  environment,
+		ReadOnlyRoot: true,
+		Tmpfs:        cloneTmpfs,
+		Mounts:       []mount.Mount{volumeMount(volume, workspaceTarget, true)},
+		HasNetwork:   true,
+		Input:        deployKey,
+	}
 }
 
 // cloneScript keeps the key from standard input in the tmpfs, clones with Prepare's own steps and removes the hooks.

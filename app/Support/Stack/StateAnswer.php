@@ -32,18 +32,16 @@ final readonly class StateAnswer
     ) {}
 
     /**
-     * The answer from what the state's method returned: nothing to pass, one part, or several yielded with the decision
-     * last.
+     * The answer from what the state's method returned: one part, or several yielded with the decision last. A
+     * delegate is the part that passes the hook on.
+     *
+     * @param  AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>  $returned
      *
      * @throws HookAnswerRefused
      */
-    public static function of(mixed $returned, string $state, string $hook): self
+    public static function of(AnswerPart|Command|Event|iterable $returned, string $state, string $hook): self
     {
-        $parts = match (true) {
-            $returned === null => [],
-            is_iterable($returned) => $returned,
-            default => [$returned],
-        };
+        $parts = is_iterable($returned) ? $returned : [$returned];
 
         $answer = new self($state, $hook);
 
@@ -60,12 +58,18 @@ final readonly class StateAnswer
     }
 
     /**
+     * A delegate leaves the answer without a decision, so the walk goes on to the state below.
+     *
      * @throws HookAnswerRefused when the decision is an allow, which a state never answers
      */
     public function withDecision(Decision $decision): self
     {
         if ($decision->answerType() === AnswerType::Allow) {
             throw HookAnswerRefused::allowIsPassing($this->state, $this->hook);
+        }
+
+        if ($decision->answerType() === AnswerType::Delegate) {
+            return $this;
         }
 
         return clone ($this, ['decision' => $decision]);

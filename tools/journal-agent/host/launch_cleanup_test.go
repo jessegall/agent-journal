@@ -3,6 +3,8 @@ package host
 import (
 	"context"
 	"encoding/json"
+	"maps"
+	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
@@ -14,63 +16,49 @@ func labels() LaunchLabels {
 	return LaunchLabels{Installation: "install-1", Launch: "launch-7", Session: "session-7"}
 }
 
-// fakeDocker writes a docker stand-in that logs every call and knows only the containers and networks named in
-// present; everything else is reported missing, as Docker does.
-func fakeDocker(t *testing.T, present string, listed string) (Containers, string) {
-	t.Helper()
-	folder := t.TempDir()
-	log := filepath.Join(folder, "calls.log")
-	script := `#!/bin/sh
-echo "$*" >> ` + log + `
-case "$1" in
-ps) printf '` + listed + `' ;;
-network) case " ` + present + ` " in *" $3 "*) ;; *) echo "Error: No such network: $3" >&2; exit 1 ;; esac ;;
-*) eval "name=\${$#}"; case " ` + present + ` " in *" $name "*) ;; *) echo "Error: No such container: $name" >&2; exit 1 ;; esac ;;
-esac
-`
-	path := filepath.Join(folder, "docker")
-	if err := os.WriteFile(path, []byte(script), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	return Containers{Docker: path}, log
+// installationLabels are the labels of a container of the installation the tests sweep, running the session.
+func installationLabels(session string) map[string]string {
+	return map[string]string{installationLabel: labels().Installation, sessionLabel: session}
 }
 
-func calls(t *testing.T, log string) []string {
-	t.Helper()
-	content, _ := os.ReadFile(log)
-	return strings.Split(strings.TrimSpace(string(content)), "\n")
-}
+// removalInProgress is how a daemon refuses to remove a container another caller is removing at that moment.
+const removalInProgress = "removal of container c1 " + removalUnderWay
 
 func TestAContainerAnotherCallerIsRemovingIsAskedForAgainUntilItIsGone(t *testing.T) {
-	asked := filepath.Join(t.TempDir(), "asked")
-	racing := fakeImageDocker(t, "[ \"$3\" = rm ] || exit 0; echo again >> "+asked+"; "+
-		"[ \"$(wc -l < "+asked+")\" -gt 1 ] && { echo 'Error response from daemon: No such container: c1' >&2; exit 1; }; "+
-		"echo 'Error response from daemon: removal of container c1 is already in progress' >&2; exit 1")
+	containers, daemon := standIn(t, localRules)
+	daemon.AddContainer("c1", nil, false)
+	daemon.Refuse(http.MethodDelete, "/containers/c1", http.StatusConflict, removalInProgress, 1)
 
-	if err := racing.Remove(context.Background(), "c1", 1); err != nil {
+	if err := containers.Remove(context.Background(), "c1", 1); err != nil {
 		t.Fatalf("a removal already under way gave %v", err)
 	}
 
-	if times, _ := os.ReadFile(asked); strings.Count(string(times), "\n") != 2 {
-		t.Fatalf("the removal was asked for %q, not once more after the one under way", times)
+	asked := slices.DeleteFunc(daemon.Requests(), func(request string) bool {
+		return !strings.HasPrefix(request, http.MethodDelete)
+	})
+	if _, held := daemon.Container("c1"); held || len(asked) != 2 {
+		t.Fatalf("the removal was asked for %v, not once more after the one under way", asked)
 	}
 }
 
 func TestACreatedContainerCarriesTheLaunchLabels(t *testing.T) {
-	arguments, err := manifest().DockerCreateArguments("helper-7", labels(), localRules)
+	options, err := manifest().CreateOptions("helper-7", labels(), localRules)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	for _, want := range []string{"journal.installation=install-1", "journal.launch=launch-7", "journal.session=session-7"} {
-		if !slices.Contains(arguments, want) {
-			t.Fatalf("the arguments lack %s: %v", want, arguments)
-		}
+	want := map[string]string{installationLabel: "install-1", launchLabel: "launch-7", sessionLabel: "session-7"}
+	if !maps.Equal(options.Config.Labels, want) {
+		t.Fatalf("the labels are %v", options.Config.Labels)
 	}
 }
 
 func TestACleanupRemovesTheTransientResourcesAndKeepsTheWorkspace(t *testing.T) {
-	containers, log := fakeDocker(t, "journal-session-7", "")
+	containers, daemon := standIn(t, localRules)
+	daemon.AddContainer("journal-session-7", installationLabels("session-7"), true)
+	if err := containers.EnsureNetwork(context.Background(), "journal-session-7", labels()); err != nil {
+		t.Fatal(err)
+	}
 	runtimes := t.TempDir()
 	workspace := filepath.Join(t.TempDir(), "helper-7")
 	for _, folder := range []string{filepath.Join(runtimes, "session-7"), workspace} {
@@ -78,7 +66,7 @@ func TestACleanupRemovesTheTransientResourcesAndKeepsTheWorkspace(t *testing.T) 
 			t.Fatal(err)
 		}
 	}
-	cleanup := LaunchCleanup{Containers: containers, RuntimeFolders: runtimes, StopSeconds: 10}
+	cleanup := LaunchCleanup{Containers: containers, Installation: "journal", RuntimeFolders: runtimes, StopSeconds: 10}
 	pending := PendingCleanup{SessionID: "session-7", Remaining: []CleanupStep{CleanupContainer, CleanupNetwork, CleanupRuntime}}
 
 	report := cleanup.CleanUp(context.Background(), pending)
@@ -86,8 +74,10 @@ func TestACleanupRemovesTheTransientResourcesAndKeepsTheWorkspace(t *testing.T) 
 	if report.Failure != "" || len(report.Removed) != 3 {
 		t.Fatalf("the cleanup reported %+v", report)
 	}
-	if want := []string{"stop --time 10 journal-session-7", "rm --volumes journal-session-7", "network rm journal-session-7"}; !slices.Equal(calls(t, log), want) {
-		t.Fatalf("docker was called with %v", calls(t, log))
+	_, hasContainer := daemon.Container("journal-session-7")
+	_, hasNetwork := daemon.Network("journal-session-7")
+	if hasContainer || hasNetwork || !daemon.Asked(http.MethodPost, "/containers/journal-session-7/stop?t=10") {
+		t.Fatalf("the container or its network is still there, or it was not stopped within its bound: %v", daemon.Requests())
 	}
 	if _, err := os.Stat(filepath.Join(runtimes, "session-7")); !os.IsNotExist(err) {
 		t.Fatal("the runtime folder is still there")
@@ -98,8 +88,8 @@ func TestACleanupRemovesTheTransientResourcesAndKeepsTheWorkspace(t *testing.T) 
 }
 
 func TestACleanupRunTwiceAfterACrashFindsEverythingGoneAndChangesNothing(t *testing.T) {
-	containers, _ := fakeDocker(t, "", "")
-	cleanup := LaunchCleanup{Containers: containers, RuntimeFolders: t.TempDir(), StopSeconds: 10}
+	containers, _ := standIn(t, localRules)
+	cleanup := LaunchCleanup{Containers: containers, Installation: "journal", RuntimeFolders: t.TempDir(), StopSeconds: 10}
 	pending := PendingCleanup{SessionID: "session-7", Remaining: []CleanupStep{CleanupContainer, CleanupNetwork, CleanupRuntime}}
 
 	report := cleanup.CleanUp(context.Background(), pending)
@@ -110,7 +100,10 @@ func TestACleanupRunTwiceAfterACrashFindsEverythingGoneAndChangesNothing(t *test
 }
 
 func TestAnOrphanAfterARestartIsFencedAndAStrangerIsUntouched(t *testing.T) {
-	containers, log := fakeDocker(t, "orphan-id", `orphan-id\tsession-9\nlive-id\tsession-8\n`)
+	containers, daemon := standIn(t, localRules)
+	daemon.AddContainer("orphan", installationLabels("session-9"), true)
+	live := daemon.AddContainer("live", installationLabels("session-8"), true)
+	stranger := daemon.AddContainer("stranger", map[string]string{sessionLabel: "session-9"}, true)
 
 	outcomes, err := SweepOrphans(context.Background(), containers, "install-1",
 		func(session string) bool { return session == "session-8" }, 10)
@@ -121,17 +114,15 @@ func TestAnOrphanAfterARestartIsFencedAndAStrangerIsUntouched(t *testing.T) {
 	if len(outcomes) != 1 || outcomes[0] != (OrphanOutcome{Session: "session-9", Outcome: Exited}) {
 		t.Fatalf("the sweep concluded %+v", outcomes)
 	}
-	all := calls(t, log)
-	if !strings.Contains(all[0], "label=journal.installation=install-1") || slices.ContainsFunc(all, func(call string) bool {
-		return strings.Contains(call, "live-id")
-	}) {
-		t.Fatalf("the sweep touched more than the orphan: %v", all)
+	if _, held := daemon.Container("orphan"); held || !live.IsRunning() || !stranger.IsRunning() {
+		t.Fatalf("the sweep left the orphan or touched more than it: %v", daemon.Requests())
 	}
 }
 
 func TestAnOrphanWhoseExitCannotBeConfirmedIsNeverReportedIdle(t *testing.T) {
-	containers, _ := fakeDocker(t, "", `stuck-id\tsession-9\n`)
-	containers.Docker = writeFailingDocker(t, `stuck-id\tsession-9\n`)
+	containers, daemon := standIn(t, localRules)
+	daemon.AddContainer("stuck", installationLabels("session-9"), true)
+	daemon.Refuse(http.MethodPost, "/stop", http.StatusInternalServerError, daemonRefusal, 5)
 
 	outcomes, err := SweepOrphans(context.Background(), containers, "install-1", func(string) bool { return false }, 10)
 
@@ -140,15 +131,15 @@ func TestAnOrphanWhoseExitCannotBeConfirmedIsNeverReportedIdle(t *testing.T) {
 	}
 }
 
-// writeFailingDocker is a docker stand-in whose stop fails for a reason other than a missing container.
-func writeFailingDocker(t *testing.T, listed string) string {
-	t.Helper()
-	path := filepath.Join(t.TempDir(), "docker")
-	script := "#!/bin/sh\ncase \"$1\" in\nps) printf '" + listed + "' ;;\n*) echo 'Error: daemon busy' >&2; exit 1 ;;\nesac\n"
-	if err := os.WriteFile(path, []byte(script), 0o755); err != nil {
-		t.Fatal(err)
+func TestAContainerThatBindsAnAccountIsFoundByItsLabel(t *testing.T) {
+	containers, daemon := standIn(t, localRules)
+	daemon.AddContainer("journal-session-7", map[string]string{accountLabel: "7"}, false)
+
+	bound, err := containers.BindsAccount(context.Background(), "7")
+	free, freeErr := containers.BindsAccount(context.Background(), "8")
+	if err != nil || freeErr != nil || !bound || free {
+		t.Fatalf("account 7 is bound %v (%v) and account 8 %v (%v)", bound, err, free, freeErr)
 	}
-	return path
 }
 
 // cleanupJournal plays the journal's cleanup routes: it lists its pending cleanups and keeps each report.
@@ -171,8 +162,8 @@ func (journal *cleanupJournal) ReportCleanup(_ context.Context, sessionID string
 }
 
 func TestARoundRunsEveryPendingCleanupAndReportsIt(t *testing.T) {
-	containers, _ := fakeDocker(t, "", "")
-	cleanup := LaunchCleanup{Containers: containers, RuntimeFolders: t.TempDir(), StopSeconds: 10}
+	containers, _ := standIn(t, localRules)
+	cleanup := LaunchCleanup{Containers: containers, Installation: "journal", RuntimeFolders: t.TempDir(), StopSeconds: 10}
 	journal := &cleanupJournal{
 		pending: []PendingCleanup{{SessionID: "session-7", Remaining: []CleanupStep{CleanupContainer, CleanupNetwork, CleanupRuntime}}},
 		reports: map[string]CleanupReport{},

@@ -153,16 +153,23 @@ final readonly class AgentStack
     }
 
     /**
-     * The stack with a state put on top, or this stack when it already holds a state for the same reference or the
-     * state is a conditional state that is switched off. Every push passes through here, so a declined push stores
-     * nothing.
+     * The stack with a state put on top, or this stack when it already holds unfinished work for the same reference
+     * or the state is a conditional state that is switched off. A finished frame for the same reference gives way to
+     * the new one, so work that comes again starts with values of its own. Every push passes through here, so a
+     * declined push stores nothing.
      */
     public function withStateOnTop(StateReference $reference): self
     {
         foreach ($this->frames as $frame) {
-            if ($frame->isFor($reference)) {
+            if (! $frame->isFor($reference)) {
+                continue;
+            }
+
+            if ($frame->isBottom() || ! $frame->isFinished()) {
                 return $this;
             }
+
+            return $this->withoutFrame($frame)->withStateOnTop($reference);
         }
 
         if (! $this->factory->isEnabled($reference)) {

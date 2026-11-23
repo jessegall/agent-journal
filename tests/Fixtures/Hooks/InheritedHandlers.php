@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use Domain\Tasks\Events\TaskStarted as Started;
 
@@ -12,9 +13,9 @@ use Domain\Tasks\Events\TaskStarted as Started;
  */
 trait InheritedHandlers
 {
-    public function onStop(StopRequested $input): null
+    public function onStop(StopRequested $input): Decision
     {
-        return null;
+        return Decision::delegate();
     }
 
     public function onTaskStarted(Started $event): null

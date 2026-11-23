@@ -22,7 +22,7 @@
                 [
                     "matchesText",
                     "$c.file.path",
-                    "(^|/)(tests/|domain/Tasks/src/Listeners/PushTaskState\\.php$|domain/Plans/src/Listeners/PushPlan(Review)?State\\.php$|domain/Sequences/src/Listeners/PushSequenceState\\.php$|domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler\\.php$|app/Commands/AskSupervisor/AskSupervisorHandler\\.php$)"
+                    "(^|/)(tests/|domain/Tasks/src/Listeners/PushTaskState\\.php$|domain/Plans/src/Listeners/PushPlan(Review)?State\\.php$|domain/Sequences/src/Listeners/PushSequenceState\\.php$|domain/Chat/src/Listeners/PushAnsweringChatState\\.php$|domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler\\.php$|app/Commands/AskSupervisor/AskSupervisorHandler\\.php$)"
                 ]
             ],
             [

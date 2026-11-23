@@ -20,13 +20,13 @@ final class RewritingState extends AgentState
      */
     public function __construct(private readonly array $replacements) {}
 
-    public function onShellCommand(ShellCommandRequested $input): Decision|null
+    public function onShellCommand(ShellCommandRequested $input): Decision
     {
         $this->askedCount++;
         $replacement = $this->replacements[$input->command->source] ?? null;
 
         if ($replacement === null) {
-            return null;
+            return Decision::delegate();
         }
 
         return Decision::rewrite($replacement);

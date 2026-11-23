@@ -42,6 +42,7 @@
     "messages_dismiss",
     "messages_list",
     "messages_question",
+    "messages_react",
     "messages_read",
     "messages_reply",
     "messages_select",

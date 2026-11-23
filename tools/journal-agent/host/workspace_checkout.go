@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"strconv"
 	"strings"
+
+	"github.com/moby/moby/api/types/mount"
+	"github.com/moby/moby/client"
 )
 
 // checkoutSource is where the main's workspace volume is mounted, read-only, while a writer's checkout is cloned or
@@ -39,28 +41,27 @@ func (containers Containers) PrepareCheckout(
 	quotaBytes int,
 ) (string, error) {
 	volume := containers.CheckoutVolume(session)
-	create := containers.command(ctx, "volume", "create", "--label",
-		installationLabel+"="+string(containers.Rules.InstallationName), "--label", checkoutSourceLabel+"="+source.Source,
-		"--opt", "size="+strconv.Itoa(quotaBytes), volume)
-	if output, err := create.CombinedOutput(); err != nil {
-		if strings.Contains(strings.ToLower(string(output)), "quota") {
-			return "", fmt.Errorf("%w (asked for %d bytes)", ErrWorkspaceQuotaUnavailable, quotaBytes)
-		}
-
-		return "", fmt.Errorf("creating the checkout volume %s failed: %w", volume, err)
+	labels := map[string]string{
+		installationLabel:   string(containers.Rules.InstallationName),
+		checkoutSourceLabel: source.Source,
+	}
+	if err := containers.createBoundedVolume(ctx, volume, labels, quotaBytes); err != nil {
+		return "", err
 	}
 
-	output, err := containers.runCheckWith(ctx, []string{
-		"--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,mode=0700,uid=10001", "--env", "HOME=/tmp",
-		"--env", "GIT_CONFIG_NOSYSTEM=1",
-		"--mount", source.readOnlyAt(checkoutSource),
-		"--mount", "type=volume,source=" + volume + ",target=" + workspaceTarget,
-	}, "sh", "-c", checkoutScript(revision))
+	output, err := containers.runCheck(ctx, throwaway{
+		Program:      "sh",
+		Arguments:    []string{"-c", checkoutScript(revision)},
+		Environment:  cloneEnvironment,
+		ReadOnlyRoot: true,
+		Tmpfs:        cloneTmpfs,
+		Mounts:       []mount.Mount{source.readOnlyAt(checkoutSource), volumeMount(volume, workspaceTarget, true)},
+	})
 	if err == nil {
 		return volume, nil
 	}
 
-	_ = containers.command(ctx, "volume", "rm", "--force", volume).Run()
+	_ = containers.removeVolume(ctx, volume, true)
 	if refusal, named := folderRefusals[lastLine(output)]; named {
 		return "", fmt.Errorf("%w: checkout %s", refusal, volume)
 	}
@@ -73,19 +74,17 @@ func (containers Containers) PrepareCheckout(
 // session that had no checkout counts as removed.
 func (containers Containers) RemoveCheckout(ctx context.Context, session string, source ContainerMount) (string, error) {
 	volume := containers.CheckoutVolume(session)
-	if inspected, err := containers.command(ctx, "volume", "inspect", volume).CombinedOutput(); err != nil {
-		return "", absentIsDone(inspected, err)
+	if _, err := containers.Daemon.VolumeInspect(ctx, volume, client.VolumeInspectOptions{}); err != nil {
+		return "", absentIsDone(err)
 	}
 
-	output, _ := containers.runCheckWith(ctx, []string{
-		"--mount", source.readOnlyAt(checkoutSource),
-		"--mount", "type=volume,source=" + volume + ",target=" + workspaceTarget + ",readonly",
-	}, "sh", "-c", takenScript())
+	output, _ := containers.runScript(ctx, takenScript(),
+		source.readOnlyAt(checkoutSource), volumeMount(volume, workspaceTarget, false))
 	if lastLine(output) != checkoutTaken {
 		return volume, nil
 	}
 
-	return "", absentIsDone(containers.command(ctx, "volume", "rm", volume).CombinedOutput())
+	return "", absentIsDone(containers.removeVolume(ctx, volume, false))
 }
 
 // takenScript prints taken when the checkout is clean and the main's workspace holds its commit.
@@ -112,7 +111,7 @@ func (containers Containers) ensureCheckout(ctx context.Context, session string,
 	}
 
 	volume := containers.CheckoutVolume(session)
-	if containers.command(ctx, "volume", "inspect", volume).Run() == nil {
+	if containers.hasVolume(ctx, volume) {
 		return volume, nil
 	}
 

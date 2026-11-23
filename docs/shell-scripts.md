@@ -61,3 +61,7 @@ Everything a script does with Docker is tested against a stand-in Docker in the 
   repository; a test pushes commits to it and runs the real script.
 - `tests/Feature/Installation` holds the scenarios. A change to a script ships with its scenario in the same commit.
 - The normal suite never reaches a real Docker.
+- The Go host runs no `docker` command: it talks to the daemon through Docker's own Go client
+  (`tools/journal-agent/host/daemon.go`). Its tests talk to `tools/journal-agent/dockerstandin`, a stand-in daemon that
+  speaks the Docker Engine API, keeps containers, volumes and networks in memory and runs the program a test gives a
+  container. `tools/journal-agent/architecture/docker_client_test.go` fails on Go code that runs the command line.

@@ -12,6 +12,7 @@ use App\Events\ChatLinePosted;
 use App\Events\ChatMemberJoined;
 use App\Events\ChatMemberLeft;
 use App\Events\ChatMessageAccepted;
+use App\Events\ChatMessageOffered;
 use App\Events\ChatReceiptPresented;
 use App\Events\ChatRoleChanged;
 use App\Events\MessageAnswered;
@@ -48,6 +49,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ChatMessageAccepted('message', new ActorIdentity(ActorType::User, 'user'), 'inbox'),
+    ],
+    ChatMessageOffered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SpeechOpportunity::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ChatMessageOffered('inbox', 'message', new ActorIdentity(ActorType::Agent, 'agent')),
     ],
     ChatMemberJoined::class => [
         'role' => EventRole::RowFact,

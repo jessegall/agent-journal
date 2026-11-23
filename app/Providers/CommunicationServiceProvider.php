@@ -48,6 +48,7 @@ use App\Support\RegisteredInboxes;
 use App\Support\SelectedMessages;
 use App\Support\SystemEntryPolicies;
 use App\Support\TimelineChatLines;
+use App\Values\AnswerBudget;
 use App\Values\PolicyDefinition;
 use App\Values\ReadEntitlement;
 use Carbon\CarbonImmutable;
@@ -77,6 +78,10 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->singleton(NotificationTargetRegistry::class);
         $this->app->singleton(NotificationTargets::class, NotificationTargetRegistry::class);
         $this->app->bind(Notifications::class, RecipientNotifications::class);
+
+        $this->app->singleton(AnswerBudget::class, fn () => new AnswerBudget(
+            $this->app->make('config')->integer('hooks.answer_budget'),
+        ));
     }
 
     public function boot(

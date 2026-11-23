@@ -206,7 +206,7 @@ trait CommittedHookStack
 
     protected function stop(): StopRequested
     {
-        return new StopRequested($this->hookIdentity(), new StopDetails('turn-1', false));
+        return new StopRequested($this->hookIdentity(), new StopDetails('turn-1', false, ''));
     }
 
     protected function shell(string $line): ShellCommandRequested

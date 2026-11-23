@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Stack\Frames;
 
+use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\ConditionalState;
 use App\Contracts\Work\OwnValuesState;
+use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
 use App\Support\States\AgentState;
@@ -100,8 +102,10 @@ final readonly class Frame
 
     /**
      * What the state's method for the hook returns, which its one caller reads.
+     *
+     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
      */
-    public function answer(HookInput $input): mixed
+    public function answer(HookInput $input): AnswerPart|Command|Event|iterable
     {
         return $input->answerBy($this->state);
     }

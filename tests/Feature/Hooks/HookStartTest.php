@@ -210,7 +210,7 @@ final class HookStartTest extends TestCase
                     $callId,
                     hash('sha256', $callId),
                 ),
-                new StopDetails('turn-1', false),
+                new StopDetails('turn-1', false, ''),
             );
             $capabilities = new DriverCapabilities(
                 'Test driver',

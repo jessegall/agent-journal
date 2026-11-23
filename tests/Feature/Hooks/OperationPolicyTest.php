@@ -56,8 +56,11 @@ final class OperationPolicyTest extends TestCase
         $read = ClaudeCodeTool::Read->operation(new DriverToolInput(['file_path' => 'app/Models/Task.php']));
         $search = ClaudeCodeTool::Grep->operation(new DriverToolInput(['pattern' => 'Task']));
 
-        $this->assertNull($ready->onToolRequested(new ToolRequested($this->hook(), $read)));
-        $this->assertNull($ready->onToolRequested(new ToolRequested($this->hook(), $search)));
+        $onRead = $ready->onToolRequested(new ToolRequested($this->hook(), $read));
+        $onSearch = $ready->onToolRequested(new ToolRequested($this->hook(), $search));
+
+        $this->assertSame(AnswerType::Delegate, $onRead->answerType());
+        $this->assertSame(AnswerType::Delegate, $onSearch->answerType());
     }
 
     public function test_a_writer_patch_with_one_forbidden_change_is_denied_whole(): void
@@ -87,7 +90,7 @@ final class OperationPolicyTest extends TestCase
         $request = new ToolRequested($this->hook(), $fetch);
 
         $this->assertSame(AnswerType::Deny, $this->ready($main)->onToolRequested($request)?->answerType());
-        $this->assertNull($this->ready($researcher)->onToolRequested($request));
+        $this->assertSame(AnswerType::Delegate, $this->ready($researcher)->onToolRequested($request)->answerType());
     }
 
     private function ready(AccessPolicy $access): ReadyState

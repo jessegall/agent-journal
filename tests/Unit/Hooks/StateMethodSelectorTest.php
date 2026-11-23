@@ -6,6 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Declarations\StateMethods;
 use App\Enums\NoSubject;
+use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\StopDetails;
 use App\Support\References\StateReference;
@@ -31,9 +32,9 @@ final class StateMethodSelectorTest extends TestCase
     {
         $ordinary = new class extends InheritingState
         {
-            public function onStop(StopRequested $input): null
+            public function onStop(StopRequested $input): Decision
             {
-                return null;
+                return Decision::delegate();
             }
 
             public function onTaskStarted(TaskStarted $event): null
@@ -60,7 +61,7 @@ final class StateMethodSelectorTest extends TestCase
         ], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
 
         $selector = new StateMethodSelector(new StateMethods());
-        $stop = new StopRequested(TestActors::hookIdentity(1, 2, '3', 'digest'), new StopDetails('turn', false));
+        $stop = new StopRequested(TestActors::hookIdentity(1, 2, '3', 'digest'), new StopDetails('turn', false, ''));
         $event = new TaskStarted('4', TestActors::agentIdentity(1), TaskState::Open, 'entry');
 
         $this->assertSelection($selector->forHook($stack, $stop), 'onStop');

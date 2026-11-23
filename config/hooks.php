@@ -20,6 +20,11 @@ return [
     'closed_stack_days' => (int) env('HOOK_CLOSED_STACK_DAYS', 30),
 
     /*
+    | How many tool uses an agent may make after it was shown a chat message before it must answer in the chat.
+    */
+    'answer_budget' => (int) env('HOOK_ANSWER_BUDGET', 5),
+
+    /*
     | How long one stack operation outside a hook may take.
     */
     'operation_deadline_milliseconds' => (int) env('HOOK_OPERATION_DEADLINE_MILLISECONDS', 5000),

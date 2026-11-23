@@ -42,7 +42,10 @@ func protection(arguments []string) error {
 			return err
 		}
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
-		containers := host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
+		containers, err := host.ContainersOn(*dockerSocket, rules)
+		if err != nil {
+			return err
+		}
 		platform = host.ContainedPlatform(context.Background(), containers, *seccomp)
 	}
 	capability, err := host.InspectProtection(platform, *driver, *build, host.NativeEvidence{Folder: *stateFolder})

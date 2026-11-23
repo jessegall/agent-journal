@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -76,7 +75,7 @@ func openedTerminal(t *testing.T) (*host.AttachSocket, host.Terminal, *fakeProgr
 	t.Cleanup(func() { os.RemoveAll(folder) })
 	program := &fakeProgram{}
 	starts := 0
-	socket := &host.AttachSocket{Folder: folder, Layout: layoutOf, Start: func(host.AttachRequest) (*os.File, error) {
+	socket := &host.AttachSocket{Folder: folder, Layout: layoutOf, Start: func(host.AttachRequest) (host.TerminalStream, error) {
 		starts++
 		terminal, tty, err := pty.Open()
 		if err != nil {
@@ -87,7 +86,7 @@ func openedTerminal(t *testing.T) (*host.AttachSocket, host.Terminal, *fakeProgr
 		}
 		program.tty = tty
 		go program.run()
-		return terminal, nil
+		return host.PtyTerminal(terminal), nil
 	}}
 	listener, err := socket.Listen()
 	if err != nil {
@@ -279,7 +278,7 @@ func TestAContainedAccountStartIsCheckedAgainstItsContainersProtection(t *testin
 // modelRecordingContainer keeps the model each turn's start names and starts nothing.
 type modelRecordingContainer struct{ models *[]string }
 
-func (container modelRecordingContainer) TurnCommand(start profilecontracts.Start, _ int) (*exec.Cmd, error) {
+func (container modelRecordingContainer) TurnProgram(start profilecontracts.Start, _ int) (drivers.TurnProgram, error) {
 	*container.models = append(*container.models, start.Model)
 
 	return nil, errors.New("no turn is started in this test")

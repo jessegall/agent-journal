@@ -1895,6 +1895,7 @@ class	AndOrLink
 class	AnnounceEndedLaunch
 class	AnnounceTaskStart
 class	AnnounceUnavailableStart
+class	AnswerBudget
 class	AnswerChatQuestionCall
 class	AnswerChatQuestionCommand
 class	AnswerChatQuestionController
@@ -1911,9 +1912,13 @@ class	AnswerNavigationHandler
 class	AnswerUnreadable
 class	AnsweringAskState
 class	AnsweringAskStates
+class	AnsweringChatState
+class	AnsweringChatStateFactory
+class	AnsweringChatStateReference
 class	AnsweringMessageState
 class	AnsweringMessageStateFactory
 class	AnsweringMessageStateReference
+class	AnsweringValuesData
 class	AnyOf
 class	AppServiceProvider
 class	AppendUploadCommand
@@ -2362,6 +2367,7 @@ class	ChatMembership
 class	ChatMembershipRefused
 class	ChatMessageAccepted
 class	ChatMessageData
+class	ChatMessageOffered
 class	ChatMessageRefused
 class	ChatPostActivityRecorder
 class	ChatReceiptPresented
@@ -4068,6 +4074,7 @@ class	MessageAnswerRequired
 class	MessageAnswered
 class	MessageAskTool
 class	MessageAttention
+class	MessageAwaitsAnswer
 class	MessageBatch
 class	MessageBatchAcknowledgeTool
 class	MessageBatchAcknowledged
@@ -4098,6 +4105,7 @@ class	MessagePinRecords
 class	MessagePolicy
 class	MessageRange
 class	MessageReaction
+class	MessageReactionAdded
 class	MessageReactionPolicy
 class	MessageRead
 class	MessageReadBatch
@@ -4907,6 +4915,7 @@ class	PurposeChoice
 class	PurposeConflict
 class	PurposeRequired
 class	PurposeResolver
+class	PushAnsweringChatState
 class	PushPlanReviewState
 class	PushPlanState
 class	PushSequenceState
@@ -4928,6 +4937,7 @@ class	RankedLaunchCandidate
 class	RawRowAccess
 class	ReactController
 class	ReactInput
+class	ReactToMessageTool
 class	ReactionData
 class	ReadAndOrPipeline
 class	ReadAttachmentTool
@@ -7313,6 +7323,7 @@ constant	AgentsServiceProvider::OWNER
 constant	AllOf::TYPE
 constant	AllOf::VERSION
 constant	AnsweringAskState::TYPE
+constant	AnsweringChatStateReference::TYPE_KEY
 constant	AnsweringMessageStateReference::TYPE_KEY
 constant	AnyOf::TYPE
 constant	AnyOf::VERSION
@@ -7985,6 +7996,8 @@ constant	QuestionNotificationTarget::KEY
 constant	RaiseCallers::MIGRATED_LISTS
 constant	RawRowAccess::DB
 constant	RawRowAccess::ROW_METHODS
+constant	ReactToMessageTool::EMOJI_CHARACTER_LIMIT
+constant	ReactToMessageTool::NAME
 constant	ReadCommandHandlers::SINGLE_ATTRIBUTES
 constant	ReadIdempotencyKey::HEADER
 constant	ReadOptionStatementPipeline::OPTION_STATEMENTS
@@ -9764,6 +9777,7 @@ method	ActorWorkStacks::offerFor()
 method	ActorWorkStacks::pruneCurrent()
 method	ActorWorkStacks::push()
 method	ActorWorkStacks::pushFor()
+method	ActorWorkStacks::tellFor()
 method	ActorsServiceProvider::boot()
 method	ActorsServiceProvider::register()
 method	AddChatParticipantCommand::__construct()
@@ -9803,6 +9817,7 @@ method	AddressedStackPush::assertRunning()
 method	AddressedStackPush::offer()
 method	AddressedStackPush::prune()
 method	AddressedStackPush::push()
+method	AddressedStackPush::tell()
 method	Admission::__construct()
 method	Admission::allowed()
 method	Admission::isAllowed()
@@ -10268,6 +10283,8 @@ method	AnnounceTaskStart::handle()
 method	AnnounceUnavailableStart::__construct()
 method	AnnounceUnavailableStart::handle()
 method	Answer::type()
+method	AnswerBudget::__construct()
+method	AnswerBudget::leftAfter()
 method	AnswerChatQuestionCall::__construct()
 method	AnswerChatQuestionCommand::__construct()
 method	AnswerChatQuestionCommand::receiptTarget()
@@ -10308,6 +10325,36 @@ method	AnsweringAskStates::schemaVersion()
 method	AnsweringAskStates::sessionTransfer()
 method	AnsweringAskStates::stateClass()
 method	AnsweringAskStates::statesFor()
+method	AnsweringChatState::__construct()
+method	AnsweringChatState::answerNowText()
+method	AnsweringChatState::countText()
+method	AnsweringChatState::decide()
+method	AnsweringChatState::hasWaiting()
+method	AnsweringChatState::hearAnswer()
+method	AnsweringChatState::howToAnswerText()
+method	AnsweringChatState::instruction()
+method	AnsweringChatState::isFinished()
+method	AnsweringChatState::mustAnswerNow()
+method	AnsweringChatState::oldestId()
+method	AnsweringChatState::onChatMessageAccepted()
+method	AnsweringChatState::onFileEdit()
+method	AnsweringChatState::onMessageAwaitsAnswer()
+method	AnsweringChatState::onMessageReactionAdded()
+method	AnsweringChatState::onShellCommand()
+method	AnsweringChatState::onStop()
+method	AnsweringChatState::onToolFinished()
+method	AnsweringChatState::onToolRequested()
+method	AnsweringChatState::ownValues()
+method	AnsweringChatState::restoreOwnValues()
+method	AnsweringChatState::waitingText()
+method	AnsweringChatState::workPermission()
+method	AnsweringChatStateFactory::__construct()
+method	AnsweringChatStateFactory::chatOf()
+method	AnsweringChatStateFactory::schemaVersion()
+method	AnsweringChatStateFactory::sessionTransfer()
+method	AnsweringChatStateFactory::stateClass()
+method	AnsweringChatStateFactory::statesFor()
+method	AnsweringChatStateReference::forChat()
 method	AnsweringMessageState::__construct()
 method	AnsweringMessageState::answerText()
 method	AnsweringMessageState::instruction()
@@ -10322,6 +10369,10 @@ method	AnsweringMessageStateFactory::stateClass()
 method	AnsweringMessageStateFactory::stateOf()
 method	AnsweringMessageStateFactory::statesFor()
 method	AnsweringMessageStateReference::forClaim()
+method	AnsweringValuesData::__construct()
+method	AnsweringValuesData::answered()
+method	AnsweringValuesData::withMessage()
+method	AnsweringValuesData::withToolUse()
 method	AnswersMessageCommands::answerWithActedMessage()
 method	AnswersMessageCommands::answerWithNewMessage()
 method	AnswersMessageCommands::answerWithResult()
@@ -11615,6 +11666,7 @@ method	ChatDomain::requires()
 method	ChatDomain::searchables()
 method	ChatDomain::sections()
 method	ChatDomain::skills()
+method	ChatDomain::states()
 method	ChatEligibility::holds()
 method	ChatEligibility::invitableUserIds()
 method	ChatEligibility::isAdmitted()
@@ -11712,6 +11764,7 @@ method	ChatMembershipRefused::rosterFull()
 method	ChatMessageAccepted::__construct()
 method	ChatMessageAccepted::scopedInboxId()
 method	ChatMessageData::__construct()
+method	ChatMessageOffered::__construct()
 method	ChatMessageRefused::conversion()
 method	ChatMessageRefused::notRespondent()
 method	ChatMessageRefused::notSelectable()
@@ -11986,6 +12039,7 @@ method	ClassesDeclared::findingsIn()
 method	ClassesDeclared::key()
 method	Classification::__construct()
 method	Classification::argvOf()
+method	Classification::changesFiles()
 method	Classification::classesOf()
 method	Classification::facts()
 method	Classification::factsFor()
@@ -11993,7 +12047,6 @@ method	Classification::factsOf()
 method	Classification::hasVerification()
 method	Classification::isKnown()
 method	Classification::isWithin()
-method	Classification::mayChangeFiles()
 method	Classification::needsAlias()
 method	Classification::requiredClasses()
 method	Classification::summary()
@@ -12395,7 +12448,7 @@ method	CommandDeclarations::grammarFor()
 method	CommandDeclarations::withCommands()
 method	CommandDeclarations::withMiddleware()
 method	CommandDispatcherMissing::forCommand()
-method	CommandEffect::mayChangeFiles()
+method	CommandEffect::changesFiles()
 method	CommandEntrance::admits()
 method	CommandEntrance::current()
 method	CommandEntrance::isOpenedForApplication()
@@ -13308,6 +13361,7 @@ method	Decision::__construct()
 method	Decision::addTo()
 method	Decision::allow()
 method	Decision::answerType()
+method	Decision::delegate()
 method	Decision::deny()
 method	Decision::refusalReason()
 method	Decision::replacementLine()
@@ -15890,6 +15944,7 @@ method	HookInput::recordVisit()
 method	HookPayload::__construct()
 method	HookPayload::argument()
 method	HookPayload::callsAnyOf()
+method	HookPayload::closingWords()
 method	HookPayload::driverFailure()
 method	HookPayload::endReason()
 method	HookPayload::event()
@@ -17422,6 +17477,7 @@ method	MessageAttention::outcomeFields()
 method	MessageAttention::recordAgain()
 method	MessageAttention::unsaved()
 method	MessageAttention::wakeStatus()
+method	MessageAwaitsAnswer::__construct()
 method	MessageBatch::admitsClaim()
 method	MessageBatch::bindTurn()
 method	MessageBatch::carriesRoot()
@@ -17532,6 +17588,7 @@ method	MessageReaction::create()
 method	MessageReaction::findFor()
 method	MessageReaction::toMessages()
 method	MessageReaction::withdraw()
+method	MessageReactionAdded::__construct()
 method	MessageReactionPolicy::model()
 method	MessageRead::__construct()
 method	MessageReadBatch::__construct()
@@ -20329,6 +20386,8 @@ method	PurposeConflict::forJob()
 method	PurposeRequired::forJob()
 method	PurposeResolver::__construct()
 method	PurposeResolver::resolve()
+method	PushAnsweringChatState::__construct()
+method	PushAnsweringChatState::handle()
 method	PushPlanReviewState::__construct()
 method	PushPlanReviewState::handle()
 method	PushPlanState::__construct()
@@ -20373,6 +20432,9 @@ method	RawRowAccess::key()
 method	RawRowAccess::violation()
 method	ReactController::__invoke()
 method	ReactInput::__construct()
+method	ReactToMessageTool::command()
+method	ReactToMessageTool::present()
+method	ReactToMessageTool::writeSchema()
 method	ReactionData::__construct()
 method	ReadAdmission::allowedTargets()
 method	ReadAdmission::assess()
@@ -24298,7 +24360,8 @@ method	SharingSupervisor::work()
 method	ShellAdmission::admit()
 method	ShellAdmission::judge()
 method	ShellCommand::__construct()
-method	ShellCommand::mayChangeFiles()
+method	ShellCommand::changesFiles()
+method	ShellCommand::readsOnly()
 method	ShellCommandParser::parse()
 method	ShellCommandRequested::__construct()
 method	ShellCommandRequested::accepts()
@@ -25754,6 +25817,7 @@ method	StopConditionsInvalid::overAttempt()
 method	StopConditionsInvalid::repeatedKey()
 method	StopConditionsInvalid::tooMany()
 method	StopDetails::__construct()
+method	StopDetails::hasClosingWords()
 method	StopEvidence::result()
 method	StopOutdated::forSession()
 method	StopOutdated::staleCode()
@@ -27744,7 +27808,9 @@ method	WorkStackPushes::offerFor()
 method	WorkStackPushes::pruneCurrent()
 method	WorkStackPushes::push()
 method	WorkStackPushes::pushFor()
+method	WorkStackPushes::stackTargetsOf()
 method	WorkStackPushes::targets()
+method	WorkStackPushes::tellFor()
 method	WorkStacks::sessionsOf()
 method	WorkStacks::sessionsToAdmit()
 method	WorkerAlreadyAssigned::holding()
@@ -28325,6 +28391,7 @@ parameter	$closer
 parameter	$closerId
 parameter	$closes
 parameter	$closing
+parameter	$closingWords
 parameter	$code
 parameter	$codeDigest
 parameter	$codec
@@ -29137,8 +29204,10 @@ parameter	$inviter
 parameter	$inviterIds
 parameter	$invocation
 parameter	$isActive
+parameter	$isAdded
 parameter	$isAdding
 parameter	$isAfterLastChange
+parameter	$isAnswered
 parameter	$isArrayAssignment
 parameter	$isAuthenticated
 parameter	$isAvailable
@@ -29301,6 +29370,7 @@ parameter	$largest
 parameter	$last
 parameter	$lastActivityAt
 parameter	$lastAssignedAt
+parameter	$lastAssistantMessage
 parameter	$lastCall
 parameter	$lastContactAt
 parameter	$lastFailure
@@ -30861,6 +30931,7 @@ parameter	$toolName
 parameter	$toolNames
 parameter	$toolResponse
 parameter	$toolResult
+parameter	$toolUses
 parameter	$tools
 parameter	$total
 parameter	$totalField
@@ -31030,6 +31101,7 @@ parameter	$wait
 parameter	$waitActions
 parameter	$waitId
 parameter	$waiting
+parameter	$waitingIds
 parameter	$waits
 parameter	$waitsFor
 parameter	$waitsOnHelpers
@@ -31373,6 +31445,7 @@ property	AddUsageCostCommand::$cost
 property	AddUsageCostCommand::$start
 property	AddUsageCostHandler::$accounts
 property	AddressedStackPush::$eventScope
+property	AddressedStackPush::$events
 property	AddressedStackPush::$restorer
 property	AddressedStackPush::$statePush
 property	AddressedStackPush::$transaction
@@ -31692,6 +31765,7 @@ property	AndOrLink::$type
 property	AnnounceEndedLaunch::$events
 property	AnnounceTaskStart::$facts
 property	AnnounceUnavailableStart::$events
+property	AnswerBudget::$toolUses
 property	AnswerChatQuestionCall::$body
 property	AnswerChatQuestionCall::$claimToken
 property	AnswerChatQuestionCall::$questionId
@@ -31716,8 +31790,15 @@ property	AnswerNavigationCommand::$navigationId
 property	AnswerNavigationHandler::$answering
 property	AnswerNavigationHandler::$rounds
 property	AnsweringAskState::$isOpen
+property	AnsweringChatState::$budget
+property	AnsweringChatState::$inboxId
+property	AnsweringChatState::$values
+property	AnsweringChatStateFactory::$budget
 property	AnsweringMessageState::$claimStands
 property	AnsweringMessageState::$messageId
+property	AnsweringValuesData::$isAnswered
+property	AnsweringValuesData::$toolUses
+property	AnsweringValuesData::$waitingIds
 property	AnyOf::$children
 property	AppendUploadCommand::$digest
 property	AppendUploadCommand::$index
@@ -32583,6 +32664,9 @@ property	ChatMessageData::$sequence
 property	ChatMessageData::$speaker
 property	ChatMessageData::$state
 property	ChatMessageData::$stateVersion
+property	ChatMessageOffered::$agent
+property	ChatMessageOffered::$inboxId
+property	ChatMessageOffered::$messageId
 property	ChatPostActivityRecorder::$activity
 property	ChatReceiptPresented::$intervalId
 property	ChatReceiptPresented::$messageId
@@ -34961,6 +35045,7 @@ property	HookPayload::$agentId
 property	HookPayload::$cwd
 property	HookPayload::$error
 property	HookPayload::$hookEventName
+property	HookPayload::$lastAssistantMessage
 property	HookPayload::$prompt
 property	HookPayload::$promptId
 property	HookPayload::$reason
@@ -35792,6 +35877,8 @@ property	MessageAnswerRequired::$messageId
 property	MessageAnswered::$answeredBy
 property	MessageAnswered::$messageId
 property	MessageAnswered::$replyId
+property	MessageAwaitsAnswer::$inboxId
+property	MessageAwaitsAnswer::$messageId
 property	MessageBatchAcknowledged::$batchId
 property	MessageBatchAcknowledged::$confirmed
 property	MessageBatchData::$batchId
@@ -35855,6 +35942,9 @@ property	MessagePartData::$text
 property	MessagePartData::$type
 property	MessagePinRecords::$actors
 property	MessagePinRecords::$pinnable
+property	MessageReactionAdded::$inboxId
+property	MessageReactionAdded::$messageId
+property	MessageReactionAdded::$owner
 property	MessageRead::$firstRead
 property	MessageRead::$inboxId
 property	MessageRead::$messageId
@@ -37677,6 +37767,7 @@ property	PurposeChoice::$purposeId
 property	PurposeChoice::$purposeText
 property	PurposeChoice::$subject
 property	PurposeResolver::$visibility
+property	PushAnsweringChatState::$workStacks
 property	PushPlanReviewState::$workStack
 property	PushPlanState::$workStack
 property	PushSequenceState::$runs
@@ -41006,6 +41097,7 @@ property	StopConditionRunData::$outputBytes
 property	StopConditionRunData::$timeoutSeconds
 property	StopConditions::$attemptSeconds
 property	StopConditions::$conditions
+property	StopDetails::$closingWords
 property	StopDetails::$isContinuation
 property	StopDetails::$turnId
 property	StopPreparation::$message
@@ -43817,6 +43909,7 @@ variable	$ranges
 variable	$rank
 variable	$ranked
 variable	$ranks
+variable	$react
 variable	$reaction
 variable	$read
 variable	$readGrant

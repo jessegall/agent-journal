@@ -17,7 +17,7 @@ use App\Support\Inputs\ToolRequested;
 use App\Support\States\AgentState;
 
 /**
- * A test state that gives the same answer to every hook, a decision or nothing to pass, and counts how often a hook
+ * A test state that gives the same answer to every hook, a decision or a delegate to pass, and counts how often a hook
  * method was asked.
  */
 final class ScriptedState extends AgentState
@@ -25,13 +25,13 @@ final class ScriptedState extends AgentState
     public int $askedCount = 0;
 
     public function __construct(
-        private readonly Decision|null $decision,
+        private readonly Decision $decision,
         private readonly bool $finished = false,
     ) {}
 
     public static function passing(): self
     {
-        return new self(null);
+        return new self(Decision::delegate());
     }
 
     public function isFinished(): bool
@@ -39,52 +39,52 @@ final class ScriptedState extends AgentState
         return $this->finished;
     }
 
-    public function onSessionStart(SessionStarted $input): Decision|null
+    public function onSessionStart(SessionStarted $input): Decision
     {
         return $this->answer();
     }
 
-    public function onPrompt(PromptSubmitted $input): Decision|null
+    public function onPrompt(PromptSubmitted $input): Decision
     {
         return $this->answer();
     }
 
-    public function onShellCommand(ShellCommandRequested $input): Decision|null
+    public function onShellCommand(ShellCommandRequested $input): Decision
     {
         return $this->answer();
     }
 
-    public function onFileEdit(FileEditRequested $input): Decision|null
+    public function onFileEdit(FileEditRequested $input): Decision
     {
         return $this->answer();
     }
 
-    public function onToolRequested(ToolRequested $input): Decision|null
+    public function onToolRequested(ToolRequested $input): Decision
     {
         return $this->answer();
     }
 
-    public function onStop(StopRequested $input): Decision|null
+    public function onStop(StopRequested $input): Decision
     {
         return $this->answer();
     }
 
-    public function onCompaction(ContextCompacted $input): Decision|null
+    public function onCompaction(ContextCompacted $input): Decision
     {
         return $this->answer();
     }
 
-    public function onToolFinished(ToolFinished $input): Decision|null
+    public function onToolFinished(ToolFinished $input): Decision
     {
         return $this->answer();
     }
 
-    public function onSessionEnd(SessionEnded $input): Decision|null
+    public function onSessionEnd(SessionEnded $input): Decision
     {
         return $this->answer();
     }
 
-    private function answer(): Decision|null
+    private function answer(): Decision
     {
         $this->askedCount++;
 

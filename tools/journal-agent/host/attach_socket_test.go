@@ -27,14 +27,14 @@ func listeningSocket(t *testing.T) (*AttachSocket, chan *os.File) {
 
 	socket := &AttachSocket{
 		Folder: folder,
-		Start: func(AttachRequest) (*os.File, error) {
+		Start: func(AttachRequest) (TerminalStream, error) {
 			program, terminal, err := pty.Open()
 			if err != nil {
 				return nil, err
 			}
 			t.Cleanup(func() { program.Close(); terminal.Close() })
 			programs <- terminal
-			return program, nil
+			return PtyTerminal(program), nil
 		},
 		Layout: func(AttachRequest) (screen.Layout, error) {
 			return screen.Layout{Composer: screen.FencedRow{Label: "composer", Marker: ">"}}, nil

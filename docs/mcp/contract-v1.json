@@ -1353,6 +1353,39 @@
                 "outputSchema": null,
                 "title": "Ask Question Tool"
             },
+            "messages_react": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "chat_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "emoji": {
+                            "maxLength": 32,
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "chat_id",
+                        "message_id",
+                        "emoji",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_react",
+                "outputSchema": null,
+                "title": "React To Message Tool"
+            },
             "messages_read": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -4828,6 +4861,39 @@
                 "name": "messages_question",
                 "outputSchema": null,
                 "title": "Ask Question Tool"
+            },
+            "messages_react": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "chat_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "emoji": {
+                            "maxLength": 32,
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "chat_id",
+                        "message_id",
+                        "emoji",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_react",
+                "outputSchema": null,
+                "title": "React To Message Tool"
             },
             "messages_read": {
                 "inputSchema": {

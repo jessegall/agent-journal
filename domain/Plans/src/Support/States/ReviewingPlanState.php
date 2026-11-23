@@ -40,10 +40,10 @@ final class ReviewingPlanState extends AgentState implements OwnValuesState
     /**
      * While a reviewer it sent is out, the stop passes on to the states below; with none out the review holds it.
      */
-    public function onStop(StopRequested $input): Decision|null
+    public function onStop(StopRequested $input): Decision
     {
         if ($this->reviewersOut->agentIds !== []) {
-            return null;
+            return Decision::delegate();
         }
 
         return Decision::deny($this->reviewText());

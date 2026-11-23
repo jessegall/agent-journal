@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"journal-agent/shellwords"
+
+	"github.com/moby/moby/api/types/mount"
 )
 
 // ErrAccountFolderUnsafe refuses a protected-account start whose sign-in folder, or a folder above it, is not private
@@ -35,9 +37,8 @@ func (containers Containers) CheckAccountFolder(ctx context.Context, accountID s
 		return err
 	}
 
-	rootMount := []string{"--mount", "type=bind,source=" + journalRoot + ",target=" + journalRoot + ",readonly"}
-	output, err := containers.runCheckWith(ctx, rootMount, "sh", "-c",
-		accountFolderScript(journalRoot, accountID, agentUID, 0))
+	output, err := containers.runScript(ctx, accountFolderScript(journalRoot, accountID, agentUID, 0),
+		bindMount(journalRoot, journalRoot, false))
 	if err == nil {
 		return nil
 	}
@@ -91,9 +92,9 @@ const historyFolder = "projects"
 // so the agent daemon never makes it as root while it mounts a session's history volume there. It runs with only the
 // account's own folder mounted, so it reaches nothing above it.
 func (containers Containers) makeHistoryMountPoint(ctx context.Context, accountID string) error {
-	accountMount := []string{"--mount", "type=bind,source=" + journalRoot + "/accounts/" + accountID + ",target=/account"}
-	output, err := containers.runCheckWith(ctx, accountMount, "sh", "-c",
-		`[ -L /account/`+historyFolder+` ] || [ -e /account/`+historyFolder+` ] || mkdir -m 0700 /account/`+historyFolder)
+	output, err := containers.runScript(ctx,
+		`[ -L /account/`+historyFolder+` ] || [ -e /account/`+historyFolder+` ] || mkdir -m 0700 /account/`+historyFolder,
+		accountMount(accountID))
 	if err != nil {
 		return fmt.Errorf("%w: making its history folder failed: %v: %s", ErrAccountFolderUnsafe, err, output)
 	}
@@ -106,13 +107,17 @@ func (containers Containers) makeHistoryMountPoint(ctx context.Context, accountI
 // mode of its file mask (the workspace it shares with the executor needs that mask); under the 0700 folder they were
 // never reachable, and the check that follows refuses any that are left. Links are not followed.
 func (containers Containers) keepAccountFilesPrivate(ctx context.Context, accountID string) error {
-	accountMount := []string{"--mount", "type=bind,source=" + journalRoot + "/accounts/" + accountID + ",target=/account"}
-	output, err := containers.runCheckWith(ctx, accountMount, "sh", "-c", keepPrivateScript("/account"))
+	output, err := containers.runScript(ctx, keepPrivateScript("/account"), accountMount(accountID))
 	if err != nil {
 		return fmt.Errorf("%w: keeping its files private failed: %v: %s", ErrAccountFolderUnsafe, err, output)
 	}
 
 	return nil
+}
+
+// accountMount is the account's own folder, writable, at /account, with nothing above it.
+func accountMount(accountID string) mount.Mount {
+	return bindMount(journalRoot+"/accounts/"+accountID, "/account", true)
 }
 
 // keepPrivateScript takes the group and other bits off every file and folder under the folder.
@@ -125,7 +130,7 @@ const accountsFolder = journalRoot + "/accounts"
 
 // accountFolderCapabilities are all a root container needs to keep the accounts root root's, to hand a new account
 // folder to the program's user, and to remove a folder that user filled.
-var accountFolderCapabilities = []string{"--cap-add", "CHOWN", "--cap-add", "FOWNER", "--cap-add", "DAC_OVERRIDE"}
+var accountFolderCapabilities = []string{"CHOWN", "FOWNER", "DAC_OVERRIDE"}
 
 // plainOperationID is the id a sign-in names its folder make by: letters, digits and dashes, such as a UUID.
 var plainOperationID = regexp.MustCompile(`^[A-Za-z0-9-]{8,64}$`)
@@ -229,14 +234,11 @@ func (containers Containers) RemoveAccountFolder(ctx context.Context, accountID 
 // runAsRoot runs a shell script in the agent image as root, with no network, only the accounts folder mounted and
 // only the capabilities an account folder needs.
 func (containers Containers) runAsRoot(ctx context.Context, script string) (string, error) {
-	run := []string{
-		"run", "--rm", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
-		"--user", "0:0", "--label", installationLabel + "=" + string(containers.Rules.InstallationName),
-		"--mount", "type=bind,source=" + accountsFolder + ",target=/accounts",
-	}
-	run = append(run, accountFolderCapabilities...)
-	run = append(run, "--entrypoint", "sh", containers.Rules.AgentImage, "-c", script)
-	output, err := containers.command(ctx, run...).CombinedOutput()
-
-	return strings.TrimSpace(string(output)), err
+	return containers.runToEnd(ctx, throwaway{
+		User:         "0:0",
+		Program:      "sh",
+		Arguments:    []string{"-c", script},
+		Mounts:       []mount.Mount{bindMount(accountsFolder, "/accounts", true)},
+		Capabilities: accountFolderCapabilities,
+	})
 }

@@ -6,6 +6,7 @@ namespace Domain\Plans\Tests\Unit\States;
 
 use App\Events\HelperReportedOnRecord;
 use App\Events\HelperSentOnRecord;
+use App\Support\Decisions\Decision;
 use App\Support\Decisions\Denied;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
@@ -54,7 +55,7 @@ final class ReviewingPlanStateTest extends TestCase
 
         $state->onHelperSentOnRecord(new HelperSentOnRecord($this->plan(), TestIds::of(7)));
 
-        $this->assertNull($state->onStop($this->stop()));
+        $this->assertEquals(Decision::delegate(), $state->onStop($this->stop()));
         $this->assertSame([TestIds::of(7)], $state->ownValues()->agentIds);
     }
 
@@ -92,7 +93,7 @@ final class ReviewingPlanStateTest extends TestCase
     {
         return new StopRequested(
             new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'),
-            new StopDetails('turn-1', false),
+            new StopDetails('turn-1', false, ''),
         );
     }
 

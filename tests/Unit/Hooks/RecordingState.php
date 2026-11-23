@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Support\Decisions\Decision;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\PromptSubmitted;
@@ -25,55 +26,55 @@ final class RecordingState extends AgentState
      */
     public array $askedMethods = [];
 
-    public function onSessionStart(SessionStarted $input): null
+    public function onSessionStart(SessionStarted $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    public function onPrompt(PromptSubmitted $input): null
+    public function onPrompt(PromptSubmitted $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    public function onShellCommand(ShellCommandRequested $input): null
+    public function onShellCommand(ShellCommandRequested $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    public function onFileEdit(FileEditRequested $input): null
+    public function onFileEdit(FileEditRequested $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    public function onToolRequested(ToolRequested $input): null
+    public function onToolRequested(ToolRequested $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    public function onStop(StopRequested $input): null
+    public function onStop(StopRequested $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    public function onCompaction(ContextCompacted $input): null
+    public function onCompaction(ContextCompacted $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    public function onToolFinished(ToolFinished $input): null
+    public function onToolFinished(ToolFinished $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    public function onSessionEnd(SessionEnded $input): null
+    public function onSessionEnd(SessionEnded $input): Decision
     {
         return $this->answer(__FUNCTION__);
     }
 
-    private function answer(string $method): null
+    private function answer(string $method): Decision
     {
         $this->askedMethods[] = $method;
 
-        return null;
+        return Decision::delegate();
     }
 }

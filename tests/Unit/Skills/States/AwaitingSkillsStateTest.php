@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills\States;
 
+use App\Enums\AnswerType;
 use App\Enums\CommandEffect;
 use App\Enums\CommandType;
 use App\Enums\FileOperation;
@@ -75,7 +76,9 @@ final class AwaitingSkillsStateTest extends TestCase
     {
         $status = new ShellCommandRequested($this->hook(), self::command('php', CommandEffect::ReadsOnly));
 
-        $this->assertNull(new AwaitingSkillsState(PublicationState::Pending)->onShellCommand($status));
+        $decision = new AwaitingSkillsState(PublicationState::Pending)->onShellCommand($status);
+
+        $this->assertSame(AnswerType::Delegate, $decision->answerType());
     }
 
     #[DataProvider('settledStates')]

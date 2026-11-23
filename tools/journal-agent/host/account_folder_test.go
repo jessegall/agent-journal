@@ -7,8 +7,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
+
+	"journal-agent/dockerstandin"
 )
 
 // accountFolderFixture makes a journal root with one private account folder holding a sign-in file, owned by the
@@ -104,49 +107,59 @@ func TestAnAccountFolderOwnedByAnotherUserIsRefused(t *testing.T) {
 	}
 }
 
+// imageRules are the rules of a host whose agent image the stand-in daemon holds.
+var imageRules = ContainerRules{AgentImage: "sha256:image"}
+
 func TestTheHostMakesTheHistoryFolderAsTheProgramBeforeItChecksTheAccount(t *testing.T) {
-	folder := t.TempDir()
-	log := filepath.Join(folder, "calls.log")
-	docker := filepath.Join(folder, "docker")
-	if err := os.WriteFile(docker, []byte("#!/bin/sh\necho \"$*\" >> "+log+"\n"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	containers := Containers{Docker: docker, Rules: ContainerRules{AgentImage: "sha256:image"}}
+	containers, daemon := standIn(t, imageRules)
 
 	if err := containers.CheckAccountFolder(context.Background(), "a1"); err != nil {
 		t.Fatal(err)
 	}
 
-	content, err := os.ReadFile(log)
-	if err != nil {
-		t.Fatal(err)
-	}
-	runs := strings.Split(strings.TrimPrefix(string(content), "run "), "\nrun ")
-	if len(runs) != 3 {
-		t.Fatalf("docker ran %d times: %v", len(runs), runs)
+	runs := daemon.Created()
+	if len(runs) != 3 || len(daemon.Containers()) != 0 {
+		t.Fatalf("the daemon ran %d containers and still holds %d", len(runs), len(daemon.Containers()))
 	}
 	made, keptPrivate, checked := runs[0], runs[1], runs[2]
-	if !strings.Contains(keptPrivate, "--user "+agentUser) || !strings.Contains(keptPrivate, "chmod go-rwx") ||
-		!strings.Contains(keptPrivate, "source=/srv/journal/accounts/a1,target=/account") {
-		t.Fatalf("the account's files were kept private by %q", keptPrivate)
+	for _, run := range runs {
+		if run.Config.User != agentUser || run.HostConfig.NetworkMode != "none" || run.Config.Image != imageRules.AgentImage {
+			t.Fatalf("a check ran as %s on network %s from %s", run.Config.User, run.HostConfig.NetworkMode, run.Config.Image)
+		}
 	}
-	if !strings.Contains(made, "--user "+agentUser) || !strings.Contains(made, "source=/srv/journal/accounts/a1,target=/account") ||
-		!strings.Contains(made, "mkdir -m 0700 /account/projects") || strings.Contains(made, "target=/srv/journal") {
-		t.Fatalf("the history folder was made by %q", made)
+	account := mountIn(t, keptPrivate.HostConfig.Mounts, "/account")
+	if account.Source != "/srv/journal/accounts/a1" || account.ReadOnly || !strings.Contains(scriptOf(keptPrivate), "chmod go-rwx") {
+		t.Fatalf("the account's files were kept private by %q on %+v", scriptOf(keptPrivate), account)
 	}
-	if !strings.Contains(checked, "source=/srv/journal,target=/srv/journal,readonly") {
-		t.Fatalf("the check ran as %q", checked)
+	history := mountIn(t, made.HostConfig.Mounts, "/account")
+	if history.Source != "/srv/journal/accounts/a1" || len(made.HostConfig.Mounts) != 1 ||
+		!strings.Contains(scriptOf(made), "mkdir -m 0700 /account/projects") {
+		t.Fatalf("the history folder was made by %q on %+v", scriptOf(made), made.HostConfig.Mounts)
+	}
+	if root := mountIn(t, checked.HostConfig.Mounts, journalRoot); root.Source != journalRoot || !root.ReadOnly {
+		t.Fatalf("the check ran on %+v", root)
+	}
+}
+
+func TestAnAccountFolderTheCheckRefusesIsNamedWithItsPathAndReason(t *testing.T) {
+	containers, daemon := standIn(t, imageRules)
+	open := "/srv/journal/accounts/a1/.credentials.json"
+	daemon.Programs = func(created *dockerstandin.Container) dockerstandin.Program {
+		if !strings.Contains(scriptOf(created), "refuse()") {
+			return nil
+		}
+
+		return dockerstandin.Printing("is-open\t"+open+"\n", 1)
+	}
+
+	err := containers.CheckAccountFolder(context.Background(), "a1")
+	if !errors.Is(err, ErrAccountFolderUnsafe) || !strings.Contains(err.Error(), open+" is-open") {
+		t.Fatalf("a refused account folder gave %v", err)
 	}
 }
 
 func TestTheHostMakesAnAccountFolderAsRootForTheProgramAndKeepsTheRootRoots(t *testing.T) {
-	folder := t.TempDir()
-	log := filepath.Join(folder, "calls.log")
-	docker := filepath.Join(folder, "docker")
-	if err := os.WriteFile(docker, []byte("#!/bin/sh\necho \"$*\" >> "+log+"\n"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	containers := Containers{Docker: docker, Rules: ContainerRules{AgentImage: "sha256:image"}}
+	containers, daemon := standIn(t, imageRules)
 
 	if err := containers.MakeAccountFolder(context.Background(), "a1", "operation-1"); err != nil {
 		t.Fatal(err)
@@ -158,14 +171,19 @@ func TestTheHostMakesAnAccountFolderAsRootForTheProgramAndKeepsTheRootRoots(t *t
 		t.Fatalf("a path for an operation was answered %v", err)
 	}
 
-	content, err := os.ReadFile(log)
-	if err != nil {
-		t.Fatal(err)
+	runs := daemon.Created()
+	if len(runs) != 1 {
+		t.Fatalf("a refused make still ran a container: %d ran", len(runs))
 	}
-	made := string(content)
-	for _, want := range []string{"--user 0:0", "--cap-drop ALL", "--cap-add CHOWN", "source=/srv/journal/accounts,target=/accounts",
-		"chown 0:0 /accounts && chmod 0755 /accounts", `mkdir -m 0700 "$folder"`, `chown 10001:10001 "$folder" && chmod 0700 "$folder"`,
-		`mkdir -m 0700 "$folder/projects"`} {
+	run := runs[0]
+	if run.Config.User != "0:0" || !slices.Equal(run.HostConfig.CapDrop, []string{"ALL"}) ||
+		!slices.Equal(run.HostConfig.CapAdd, dockerstandin.Capabilities(accountFolderCapabilities...)) ||
+		mountIn(t, run.HostConfig.Mounts, "/accounts").Source != accountsFolder {
+		t.Fatalf("the folder was made as %s with %v on %+v", run.Config.User, run.HostConfig.CapAdd, run.HostConfig.Mounts)
+	}
+	made := scriptOf(run)
+	for _, want := range []string{"chown 0:0 /accounts && chmod 0755 /accounts", `mkdir -m 0700 "$folder"`,
+		`chown 10001:10001 "$folder" && chmod 0700 "$folder"`, `mkdir -m 0700 "$folder/projects"`} {
 		if !strings.Contains(made, want) {
 			t.Fatalf("the folder was made without %q: %s", want, made)
 		}
@@ -173,13 +191,7 @@ func TestTheHostMakesAnAccountFolderAsRootForTheProgramAndKeepsTheRootRoots(t *t
 }
 
 func TestTheHostWritesAnAccountFileForTheProgramAndRefusesAPathForAName(t *testing.T) {
-	folder := t.TempDir()
-	log := filepath.Join(folder, "calls.log")
-	docker := filepath.Join(folder, "docker")
-	if err := os.WriteFile(docker, []byte("#!/bin/sh\necho \"$*\" >> "+log+"\n"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	containers := Containers{Docker: docker, Rules: ContainerRules{AgentImage: "sha256:image"}}
+	containers, daemon := standIn(t, imageRules)
 	content := []byte("include_local = false\n")
 
 	if err := containers.WriteAccountFile(context.Background(), "a1", "environments.toml", content); err != nil {
@@ -194,21 +206,35 @@ func TestTheHostWritesAnAccountFileForTheProgramAndRefusesAPathForAName(t *testi
 		t.Fatalf("a path for an id was answered %v", err)
 	}
 
-	calls, err := os.ReadFile(log)
-	if err != nil {
-		t.Fatal(err)
+	runs := daemon.Created()
+	if len(runs) != 1 {
+		t.Fatalf("a refused file still ran a container: %d ran", len(runs))
 	}
-	written := string(calls)
-	if strings.Count(written, "run --rm") != 1 {
-		t.Fatalf("a refused file still ran a container: %s", written)
+	run := runs[0]
+	if run.Config.User != "0:0" || !slices.Equal(run.HostConfig.CapDrop, []string{"ALL"}) ||
+		mountIn(t, run.HostConfig.Mounts, "/accounts").Source != accountsFolder {
+		t.Fatalf("the file was written as %s on %+v", run.Config.User, run.HostConfig.Mounts)
 	}
-	for _, want := range []string{"--user 0:0", "--cap-drop ALL", "source=/srv/journal/accounts,target=/accounts",
-		base64.StdEncoding.EncodeToString(content), `[ -L "/accounts/a1/environments.toml" ]`,
+	written := scriptOf(run)
+	for _, want := range []string{base64.StdEncoding.EncodeToString(content), `[ -L "/accounts/a1/environments.toml" ]`,
 		`chown 10001:10001 "/accounts/a1/environments.toml.new"`, `chmod 0600 "/accounts/a1/environments.toml.new"`,
 		`mv -f "/accounts/a1/environments.toml.new" "/accounts/a1/environments.toml"`} {
 		if !strings.Contains(written, want) {
 			t.Fatalf("the file was written without %q: %s", want, written)
 		}
+	}
+}
+
+func TestAnAccountFileTheContainerCannotWriteNamesTheProgramsOwnWords(t *testing.T) {
+	containers, daemon := standIn(t, imageRules)
+	daemon.Programs = func(*dockerstandin.Container) dockerstandin.Program {
+		return dockerstandin.Printing(daemonRefusal+"\n", 1)
+	}
+
+	err := containers.WriteAccountFile(context.Background(), "a1", "environments.toml", []byte("x"))
+	var exited ExitedWith
+	if !errors.As(err, &exited) || exited != 1 || !strings.Contains(err.Error(), daemonRefusal) {
+		t.Fatalf("a failed write gave %v", err)
 	}
 }
 

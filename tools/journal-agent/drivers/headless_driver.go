@@ -5,6 +5,7 @@ package drivers
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -60,11 +61,66 @@ type HeadlessRuntime struct {
 	Usage UsageObserver
 }
 
-// TurnContainer gives the command that runs one turn of the program, at the process generation given, as its session
-// container's own process, with the start's settings, credential and environment inside the container.
+// TurnContainer gives one turn of the program, at the process generation given, as its session container's own
+// process, with the start's settings, credential and environment inside the container.
 type TurnContainer interface {
-	TurnCommand(start profilecontracts.Start, generation int) (*exec.Cmd, error)
+	TurnProgram(start profilecontracts.Start, generation int) (TurnProgram, error)
 }
+
+// TurnProgram is the program of one turn as the driver runs it, a child of the host or its session container's own
+// process: started once, read while it runs, and ended by its exit, an interrupt or a stop.
+type TurnProgram interface {
+	// Output is what the program prints, read from its start to its end; it is asked for before Start.
+	Output() (io.Reader, error)
+	Start() error
+	// Wait answers once the program ended: nil for exit code 0.
+	Wait() error
+	// Interrupt asks the program to end its turn, as Ctrl+C does.
+	Interrupt() error
+	// Stop ends the program in bounded stages and says whether its exit is proven.
+	Stop(stages host.StopStages) host.StopOutcome
+}
+
+// childTurn is a turn's program as a child of the host, the leader of its own process group.
+type childTurn struct {
+	command *exec.Cmd
+	group   host.OwnedGroup
+}
+
+func (turn *childTurn) Output() (io.Reader, error) {
+	return turn.command.StdoutPipe()
+}
+
+// Start starts the child and closes the host's own ends of the files it was handed, started or not.
+func (turn *childTurn) Start() error {
+	defer host.CloseFiles(turn.command.ExtraFiles)
+	if err := turn.command.Start(); err != nil {
+		return err
+	}
+
+	turn.group = host.OwnedGroupOf(turn.command.Process.Pid)
+
+	return nil
+}
+
+func (turn *childTurn) Wait() error {
+	return turn.command.Wait()
+}
+
+func (turn *childTurn) Interrupt() error {
+	return turn.group.Signal(syscall.SIGINT)
+}
+
+func (turn *childTurn) Stop(stages host.StopStages) host.StopOutcome {
+	return turn.group.Stop(stages)
+}
+
+// signInFailure is a turn that never started because its account's sign-in check failed.
+type signInFailure struct{ cause error }
+
+func (failure signInFailure) Error() string { return failure.cause.Error() }
+
+func (failure signInFailure) Unwrap() error { return failure.cause }
 
 // TurnConfinement makes one turn's command run its program confined.
 type TurnConfinement interface {
@@ -79,8 +135,8 @@ type HeadlessDriver struct {
 	generation int
 	turns      int
 	model      string
-	child      *exec.Cmd
-	childGroup host.OwnedGroup
+	// turn is the program of the turn that runs now; nil between turns.
+	turn TurnProgram
 	// signedIn is set once a Claude account start's sign-in was checked.
 	signedIn bool
 }
@@ -124,10 +180,10 @@ func (driver *HeadlessDriver) Interrupt(_ context.Context, interrupt contracts.I
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 
-	if driver.child == nil || interrupt.Turn != driver.turns {
+	if driver.turn == nil || interrupt.Turn != driver.turns {
 		return alreadyIdle(interrupt.Request), nil
 	}
-	if err := driver.childGroup.Signal(syscall.SIGINT); err != nil {
+	if err := driver.turn.Interrupt(); err != nil {
 		return contracts.OperationResult{}, err
 	}
 
@@ -138,14 +194,14 @@ func (driver *HeadlessDriver) Interrupt(_ context.Context, interrupt contracts.I
 // only when the exit is proven; with no child running there is nothing to end.
 func (driver *HeadlessDriver) Stop(_ context.Context, stop contracts.StopRequest) (contracts.OperationResult, error) {
 	driver.mutex.Lock()
-	group, running := driver.childGroup, driver.child != nil
+	turn := driver.turn
 	driver.mutex.Unlock()
 
-	if !running {
+	if turn == nil {
 		return contracts.OperationResult{Request: stop.Request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed, Hold: contracts.HoldNone}, nil
 	}
 
-	return stopResult(stop.Request, group.Stop(host.DefaultStopStages)), nil
+	return stopResult(stop.Request, turn.Stop(host.DefaultStopStages)), nil
 }
 
 // pendingWorkPrompt is the one prompt a wake sends: it asks the agent to look at its own scoped work.
@@ -155,7 +211,7 @@ func (driver *HeadlessDriver) startTurn(request contracts.RequestIdentity, promp
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 
-	if driver.child != nil {
+	if driver.turn != nil {
 		return contracts.OperationResult{}, ErrTurnRunning
 	}
 	if driver.runtime.Start.SessionID == "" {
@@ -164,43 +220,66 @@ func (driver *HeadlessDriver) startTurn(request contracts.RequestIdentity, promp
 
 	start := driver.stagedStart().Turn(prompt, driver.turns > 0 || driver.runtime.ResumesConversation)
 	driver.generation++
-	command, err := driver.turnCommand(start)
+	turn, err := driver.turnProgram(start)
 	if err != nil {
 		driver.generation--
-		return contracts.OperationResult{}, err
-	}
-	defer host.CloseFiles(command.ExtraFiles)
 
-	if err := driver.checkSignIn(command); err != nil {
-		driver.generation--
-		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}, err
+		return turnRefusal(request, err)
 	}
-	result, err := driver.resultOf(command)
+	result, err := driver.resultOf(turn)
 	if err != nil {
 		driver.generation--
 		return contracts.OperationResult{}, err
 	}
-	if err := command.Start(); err != nil {
+	if err := turn.Start(); err != nil {
 		driver.generation--
 		return contracts.OperationResult{}, err
 	}
 
 	driver.turns++
-	driver.child = command
-	driver.childGroup = host.OwnedGroupOf(command.Process.Pid)
+	driver.turn = turn
 	driver.finished = make(chan error, 1)
-	go driver.wait(command, result, driver.finished)
+	go driver.wait(turn, result, driver.finished)
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying, Hold: contracts.HoldNone}, nil
 }
 
-// turnCommand is the command of the turn at the driver's current generation: in the session's container when the
-// runtime has one, otherwise a child of the host with the journal's variables for its hook relay.
-func (driver *HeadlessDriver) turnCommand(start profilecontracts.Start) (*exec.Cmd, error) {
-	if driver.runtime.Container != nil {
-		return driver.runtime.Container.TurnCommand(start, driver.generation)
+// turnRefusal answers a turn that never started: a failed sign-in check leaves the runtime needing attention, any
+// other failure is the caller's to read.
+func turnRefusal(request contracts.RequestIdentity, err error) (contracts.OperationResult, error) {
+	var signIn signInFailure
+	if !errors.As(err, &signIn) {
+		return contracts.OperationResult{}, err
 	}
 
+	return contracts.OperationResult{
+		Request: request, Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention,
+	}, signIn.cause
+}
+
+// turnProgram is the program of the turn at the driver's current generation: the session container's own process
+// when the runtime has a container, otherwise a child of the host whose account sign-in was checked.
+func (driver *HeadlessDriver) turnProgram(start profilecontracts.Start) (TurnProgram, error) {
+	if driver.runtime.Container != nil {
+		return driver.runtime.Container.TurnProgram(start, driver.generation)
+	}
+
+	command, err := driver.childCommand(start)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := driver.checkSignIn(command); err != nil {
+		host.CloseFiles(command.ExtraFiles)
+
+		return nil, signInFailure{cause: err}
+	}
+
+	return &childTurn{command: command}, nil
+}
+
+// childCommand is the command of a turn run as a child of the host, with the journal's variables for its hook relay.
+func (driver *HeadlessDriver) childCommand(start profilecontracts.Start) (*exec.Cmd, error) {
 	command, err := driver.command(start)
 	if err != nil {
 		return nil, err
@@ -304,11 +383,11 @@ func (driver *HeadlessDriver) checkSignIn(command *exec.Cmd) error {
 // resultOf reads a Claude account turn's result and usage from its output. A contained Claude turn's output is its
 // container process's own stream-json, attached by the container start: it is read for usage only, so its turn ends
 // with its exit as before. Other starts have nothing to read.
-func (driver *HeadlessDriver) resultOf(command *exec.Cmd) (<-chan error, error) {
+func (driver *HeadlessDriver) resultOf(turn TurnProgram) (<-chan error, error) {
 	if !driver.claudeAccountStart() && !driver.containedClaudeStart() {
 		return nil, nil
 	}
-	output, err := command.StdoutPipe()
+	output, err := turn.Output()
 	if err != nil {
 		return nil, err
 	}
@@ -340,18 +419,18 @@ func (driver *HeadlessDriver) usage() UsageObserver {
 
 // wait ends the turn with the process exit, or with the turn's own failure when the process exited cleanly but its
 // result was an error.
-func (driver *HeadlessDriver) wait(command *exec.Cmd, result <-chan error, finished chan<- error) {
+func (driver *HeadlessDriver) wait(turn TurnProgram, result <-chan error, finished chan<- error) {
 	var turnFailure error
 	if result != nil {
 		turnFailure = <-result
 	}
-	err := command.Wait()
+	err := turn.Wait()
 	if err == nil {
 		err = turnFailure
 	}
 	driver.mutex.Lock()
-	if driver.child == command {
-		driver.child = nil
+	if driver.turn == turn {
+		driver.turn = nil
 	}
 	driver.mutex.Unlock()
 	finished <- err

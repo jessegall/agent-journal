@@ -32,8 +32,8 @@ final class StateEffectsTest extends TestCase
     public function test_a_state_running_the_bus_or_writing_a_row_is_named_and_one_returning_a_command_passes(): void
     {
         $this->assertSame([
-            self::FIXTURES.'/RunsTheBus.php:24 RunsTheBus::onStop calls run',
-            self::FIXTURES.'/WritesARow.php:20 WritesARow::onStop calls save',
+            self::FIXTURES.'/RunsTheBus.php:25 RunsTheBus::onStop calls run',
+            self::FIXTURES.'/WritesARow.php:21 WritesARow::onStop calls save',
         ], $this->effectsIn([base_path(self::FIXTURES)]));
     }
 

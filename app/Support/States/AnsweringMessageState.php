@@ -34,10 +34,10 @@ final class AnsweringMessageState extends AgentState
         );
     }
 
-    public function onShellCommand(ShellCommandRequested $input): Decision|null
+    public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        if (! $input->command->mayChangeFiles()) {
-            return null;
+        if ($input->command->readsOnly()) {
+            return Decision::delegate();
         }
 
         return Decision::deny($this->answerText());

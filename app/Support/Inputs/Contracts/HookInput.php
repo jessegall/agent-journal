@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs\Contracts;
 
+use App\Contracts\Bus\Command;
 use App\Contracts\Drivers\NativeTurnRecords;
+use App\Contracts\Events\Event;
 use App\Contracts\Sessions\ConversationVisits;
 use App\Enums\AnswerType;
 use App\Enums\ContextStartType;
+use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Values\HookIdentity;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
@@ -26,7 +29,12 @@ interface HookInput
      */
     public function accepts(AnswerType $type): bool;
 
-    public function answerBy(HookAnswerer $state): mixed;
+    /**
+     * Asks the state for its answer to this hook, by the one method of the state that belongs to it.
+     *
+     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     */
+    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|iterable;
 
     /**
      * Whether an answer of that type leaves the agent idle, so the reply's context reaches nobody: only an allowed stop

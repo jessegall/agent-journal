@@ -166,7 +166,11 @@ final readonly class CodexAdapter implements DriverAdapter
                 ? JournalToolCall::finished()
                 : JudgedCall::forFinishedTool($hook, $hookInput),
             HookEvent::Stop => new JudgedCall(
-                new StopRequested($hook, new StopDetails($hook->hookId, $hookInput->isStopContinuation())),
+                new StopRequested($hook, new StopDetails(
+                    $hook->hookId,
+                    $hookInput->isStopContinuation(),
+                    $hookInput->closingWords(),
+                )),
                 fn (HookAnswer $answer) => DriverReplies::stop($answer),
             ),
             HookEvent::SessionEnd => new JudgedCall(

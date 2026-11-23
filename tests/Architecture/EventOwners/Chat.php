@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
 use Domain\Chat\Events\DockChanged;
+use Domain\Chat\Events\MessageReactionAdded;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -17,5 +20,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DockChanged('conversation'),
+    ],
+    MessageReactionAdded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MessageReaction::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MessageReactionAdded('inbox', 'message', new ActorIdentity(ActorType::User, 'user')),
     ],
 ];

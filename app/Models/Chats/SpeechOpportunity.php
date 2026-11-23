@@ -11,6 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\SpeechOpportunityState;
+use App\Events\ChatMessageOffered;
 use App\Events\SpeechOpportunitySettled;
 use App\Exceptions\ChatStateConflict;
 use App\Models\Messages\Message;
@@ -84,6 +85,7 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
         ]);
 
         $opportunity->assertSaved($opportunity->save());
+        $opportunity->raise(new ChatMessageOffered($interval->inbox_id, $root->id, $actor));
 
         return $opportunity;
     }

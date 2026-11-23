@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Events\Event;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
@@ -12,6 +13,7 @@ use App\Support\References\StateReference;
 use App\Support\Stack\StackRestorer;
 use App\Support\StateEvents\StateEventScope;
 use App\Values\StackTarget;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Pushes a state onto the running stack of an actor work is addressed to, inside the caller's stack transaction; a
@@ -24,6 +26,7 @@ final readonly class AddressedStackPush
         private StatePush $statePush,
         private StateEventScope $eventScope,
         private StackRestorer $restorer,
+        private Dispatcher $events,
     ) {}
 
     public function push(StackTarget $target, StateReference $state): void
@@ -33,6 +36,19 @@ final readonly class AddressedStackPush
         $this->assertRunning($target);
         $stack = AgentStackRow::lockAuthorizedFor($target);
         $this->eventScope->admit([$target], fn () => $this->statePush->push($target, $stack, $state));
+    }
+
+    /**
+     * Raises a fact for the running stack of the actor it is addressed to, inside the caller's stack transaction: the
+     * live states there hear it as their own.
+     */
+    public function tell(StackTarget $target, Event $fact): void
+    {
+        $this->transaction->assertOpen($target);
+
+        $this->assertRunning($target);
+        AgentStackRow::lockAuthorizedFor($target);
+        $this->eventScope->admit([$target], fn () => $this->events->dispatch($fact));
     }
 
     /**

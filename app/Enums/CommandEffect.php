@@ -13,7 +13,7 @@ enum CommandEffect: string
     case ChangesFiles = 'changes_files';
     case Unknown = 'unknown';
 
-    public function mayChangeFiles(): bool
+    public function changesFiles(): bool
     {
         return $this !== self::ReadsOnly;
     }

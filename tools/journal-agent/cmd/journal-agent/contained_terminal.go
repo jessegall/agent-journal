@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -37,7 +36,7 @@ var egressVariables = []string{"HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_pr
 
 // containedTerminalRuntime runs a terminal runtime whose session is contained: its program is its session
 // container's own process, created from the manifest the journal compiled, and the host drives it through the
-// attach the attach socket runs on its PTY, so the screen and every key pass the same gate as for a host child. A
+// terminal the attach socket holds through the daemon, so the screen and every key pass the same gate as for a host child. A
 // stop is the container's proven stop; its exit, a crash or an out-of-memory kill included, is reported as the
 // runtime's exit.
 func (opener runtimeOpener) containedTerminalRuntime(
@@ -72,8 +71,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 		return nil, err
 	}
 
-	attach, err := container.Open(ctx, manifest, process)
-	if err != nil {
+	if err := container.Open(ctx, manifest, process); err != nil {
 		return nil, err
 	}
 	instance, err := opener.containers.InstanceID(ctx, container.Name)
@@ -82,9 +80,8 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	}
 
 	opened, err := opener.socket.Open(host.AttachRequest{
-		RuntimeID: runtimeID, Driver: profile.Driver(), Command: attach, Folder: opener.stateFolder,
-		Env: []string{"PATH=" + os.Getenv("PATH")}, Rows: defaultRows, Columns: defaultColumns,
-		ContainerInstance: instance,
+		RuntimeID: runtimeID, Driver: profile.Driver(), Folder: opener.stateFolder,
+		Rows: defaultRows, Columns: defaultColumns, ContainerInstance: instance,
 	})
 	if err != nil {
 		return nil, errors.Join(err, container.Stop(ctx, manifest.Network))
@@ -184,7 +181,7 @@ type containedTurns struct {
 	runtimeID  string
 }
 
-func (turns containedTurns) TurnCommand(start contracts.Start, generation int) (*exec.Cmd, error) {
+func (turns containedTurns) TurnProgram(start contracts.Start, generation int) (drivers.TurnProgram, error) {
 	process, err := containedProcessOf(turns.profile, turns.journalURL, turns.prepared, turns.runtimeID, start,
 		generation, os.Environ())
 	if err != nil {

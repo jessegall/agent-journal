@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
+use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
@@ -28,9 +29,9 @@ final class ReadyTest extends TestCase
     {
         $partial = new class extends AgentState
         {
-            public function onStop(StopRequested $input): null
+            public function onStop(StopRequested $input): Decision
             {
-                return null;
+                return Decision::delegate();
             }
         };
 
@@ -41,13 +42,15 @@ final class ReadyTest extends TestCase
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_ready_passes_each_hook_its_policy_grants(HookInput $input): void
     {
-        $this->assertNull($input->answerBy(new ReadyState(new FixedOperationPolicy(), new AllowedStops())));
+        $answer = $input->answerBy(new ReadyState(new FixedOperationPolicy(), new AllowedStops()));
+
+        $this->assertEquals(Decision::delegate(), $answer);
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_the_base_state_passes_each_hook(HookInput $input): void
     {
-        $this->assertNull($input->answerBy(new class extends AgentState {}));
+        $this->assertEquals(Decision::delegate(), $input->answerBy(new class extends AgentState {}));
     }
 
     public function test_a_state_is_not_finished_unless_it_says_so(): void

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
+use App\Concerns\HasStates;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Drivers\NativePartProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Navigation\SectionProvider;
+use App\Contracts\Records\StateProvider;
 use App\Contracts\Search\MessageSearch;
 use App\Contracts\Skills\SkillProvider;
 use App\Declarations\ActionRoute;
@@ -57,6 +59,8 @@ use Domain\Chat\Resolvers\HistoryPageResolver;
 use Domain\Chat\Resolvers\InboxPageResolver;
 use Domain\Chat\Support\Mcp\PendingMessagesOverview;
 use Domain\Chat\Support\Skills\ChatSkill;
+use Domain\Chat\Support\States\Support\AnsweringChatStateFactory;
+use Domain\Chat\Support\States\Support\AnsweringChatStateReference;
 
 final class ChatDomain extends Domain implements
     CommandProvider,
@@ -65,8 +69,11 @@ final class ChatDomain extends Domain implements
     PageProvider,
     PolicyProvider,
     SectionProvider,
-    SkillProvider
+    SkillProvider,
+    StateProvider
 {
+    use HasStates;
+
     public function description(): string
     {
         return 'The conversation product: the chat window, composer, chosen agent and the sources docked in a conversation, built on Core messaging.';
@@ -173,6 +180,11 @@ final class ChatDomain extends Domain implements
     public function skills(): array
     {
         return [ChatSkill::class];
+    }
+
+    public function states(): array
+    {
+        return [AnsweringChatStateReference::TYPE_KEY => AnsweringChatStateFactory::class];
     }
 
     public function mcpResources(): array

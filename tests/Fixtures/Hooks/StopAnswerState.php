@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Contracts\Bus\Command;
+use App\Contracts\Events\Event;
+use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
 
@@ -12,9 +15,15 @@ use App\Support\States\AgentState;
  */
 final class StopAnswerState extends AgentState
 {
-    public function __construct(private readonly mixed $answer) {}
+    /**
+     * @param  AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>  $answer
+     */
+    public function __construct(private readonly AnswerPart|Command|Event|iterable $answer) {}
 
-    public function onStop(StopRequested $input): mixed
+    /**
+     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     */
+    public function onStop(StopRequested $input): AnswerPart|Command|Event|iterable
     {
         return $this->answer;
     }

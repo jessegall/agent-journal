@@ -45,9 +45,8 @@ func (containers Containers) CheckFolder(ctx context.Context, name string) (Cont
 		return ContainerMount{}, fmt.Errorf("%w: %q", ErrWorkspaceFolderNameInvalid, name)
 	}
 
-	rootMount := []string{"--mount", "type=bind,source=" + OperatorWorkspacesRoot + ",target=" + OperatorWorkspacesRoot +
-		",readonly"}
-	output, err := containers.runCheckWith(ctx, rootMount, "sh", "-c", folderCheckScript(OperatorWorkspacesRoot+"/"+name))
+	output, err := containers.runScript(ctx, folderCheckScript(OperatorWorkspacesRoot+"/"+name),
+		bindMount(OperatorWorkspacesRoot, OperatorWorkspacesRoot, false))
 	if err != nil {
 		if refusal, named := folderRefusals[strings.TrimSpace(output)]; named {
 			return ContainerMount{}, fmt.Errorf("%w: %s", refusal, name)

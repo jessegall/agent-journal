@@ -86,6 +86,6 @@ final readonly class GuardedFiles
 
     private function accessOf(CommandPart $part): FileAccess
     {
-        return $part->effect->mayChangeFiles() ? FileAccess::Write : FileAccess::Read;
+        return $part->effect->changesFiles() ? FileAccess::Write : FileAccess::Read;
     }
 }

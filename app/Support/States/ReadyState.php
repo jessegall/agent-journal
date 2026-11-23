@@ -34,49 +34,49 @@ class ReadyState extends AgentState
         private readonly StopConditionGate $stops,
     ) {}
 
-    public function onSessionStart(SessionStarted $input): null
+    public function onSessionStart(SessionStarted $input): Decision
     {
-        return null;
+        return Decision::delegate();
     }
 
-    public function onPrompt(PromptSubmitted $input): null
+    public function onPrompt(PromptSubmitted $input): Decision
     {
-        return null;
+        return Decision::delegate();
     }
 
-    public function onShellCommand(ShellCommandRequested $input): null
+    public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        return null;
+        return Decision::delegate();
     }
 
-    public function onFileEdit(FileEditRequested $input): Decision|null
+    public function onFileEdit(FileEditRequested $input): Decision
     {
         return $this->decide($input->changes->operations());
     }
 
-    public function onToolRequested(ToolRequested $input): Decision|null
+    public function onToolRequested(ToolRequested $input): Decision
     {
         return $this->decide([$input->operation]);
     }
 
-    public function onStop(StopRequested $input): Decision|MessageLine|null
+    public function onStop(StopRequested $input): Decision|MessageLine
     {
         return $this->stops->answer($input->hook);
     }
 
-    public function onCompaction(ContextCompacted $input): null
+    public function onCompaction(ContextCompacted $input): Decision
     {
-        return null;
+        return Decision::delegate();
     }
 
-    public function onToolFinished(ToolFinished $input): null
+    public function onToolFinished(ToolFinished $input): Decision
     {
-        return null;
+        return Decision::delegate();
     }
 
-    public function onSessionEnd(SessionEnded $input): null
+    public function onSessionEnd(SessionEnded $input): Decision
     {
-        return null;
+        return Decision::delegate();
     }
 
     /**
@@ -84,7 +84,7 @@ class ReadyState extends AgentState
      *
      * @param  list<Operation>  $operations
      */
-    private function decide(array $operations): Decision|null
+    private function decide(array $operations): Decision
     {
         foreach ($operations as $operation) {
             $decision = $this->policy->assess($operation);
@@ -94,6 +94,6 @@ class ReadyState extends AgentState
             }
         }
 
-        return null;
+        return Decision::delegate();
     }
 }

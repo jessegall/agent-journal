@@ -40,7 +40,7 @@ func TestAContainedHostNeedsTheDaemonSocketAndItsInstallationName(t *testing.T) 
 func TestAContainedHostNamesBothImagesByDigest(t *testing.T) {
 	unpinned := PinnedImages{Agent: "journal/agent:latest", Runner: "journal/runner@sha256:abc"}
 
-	if err := unpinned.AssertLoaded(context.Background(), Containers{Docker: "docker"}); !errors.Is(err, ErrContainedNeedsImages) {
+	if err := unpinned.AssertLoaded(context.Background(), Containers{}); !errors.Is(err, ErrContainedNeedsImages) {
 		t.Fatalf("an image by tag gave %v", err)
 	}
 

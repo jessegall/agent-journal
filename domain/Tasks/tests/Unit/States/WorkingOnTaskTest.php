@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Unit\States;
 
+use App\Support\Decisions\Decision;
 use App\Support\Decisions\Denied;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
@@ -72,14 +73,14 @@ final class WorkingOnTaskTest extends TestCase
     {
         $working = new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started));
 
-        $this->assertNull($input->answerBy($working));
+        $this->assertEquals(Decision::delegate(), $input->answerBy($working));
     }
 
     private function stop(): StopRequested
     {
         return new StopRequested(
             new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'),
-            new StopDetails('turn-1', false),
+            new StopDetails('turn-1', false, ''),
         );
     }
 }

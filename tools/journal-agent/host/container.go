@@ -6,12 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"journal-agent/shellwords"
-	"os/exec"
+	"os"
 	"path"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/mount"
+	"github.com/moby/moby/client"
 )
 
 // MountType is what a container mount takes its files from: a folder of this machine (the local arrangement), a named
@@ -103,9 +107,11 @@ const (
 	protectedInit = "/opt/journal/bin/journal-init"
 	// initReadyLine is the one line the init prints once its program and executor run.
 	initReadyLine = "journal-init: ready"
-	// executorEndpoint is the private folder of the executor's socket in a protected-account container.
-	executorEndpoint = "/run/journal-exec:uid=10002,gid=10001,mode=0750,size=1m"
-	protectedUser    = "0:0"
+	// executorFolder is the private folder of the executor's socket in a protected-account container, kept in
+	// memory with executorFolderOptions.
+	executorFolder        = "/run/journal-exec"
+	executorFolderOptions = "uid=10002,gid=10001,mode=0750,size=1m"
+	protectedUser         = "0:0"
 )
 
 // protectedCapabilities are exactly the capabilities a protected-account init needs to drop to its users.
@@ -228,52 +234,66 @@ func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
 		rules.permit(manifest.Mounts)
 }
 
-// DockerCreateArguments are the arguments of `docker create` for the manifest: its exact image digest, the
-// unprivileged user, a read-only root, no capabilities, its mounts, its security profiles, the bounded resources and
-// the labels that let reconciliation find it again.
-func (manifest ContainerManifest) DockerCreateArguments(name string, labels LaunchLabels, rules ContainerRules) ([]string, error) {
+// CreateOptions are what the daemon creates the container from: its exact image digest, the unprivileged user, a
+// read-only root, no capabilities, its mounts, its security profiles, the bounded resources and the labels that let
+// reconciliation find it again.
+func (manifest ContainerManifest) CreateOptions(name string, labels LaunchLabels, rules ContainerRules) (client.ContainerCreateOptions, error) {
 	if !manifest.IsSafe(rules) || !manifest.bindsOnlyAccount(labels.Account) {
-		return nil, ErrManifestUnsafe
+		return client.ContainerCreateOptions{}, ErrManifestUnsafe
 	}
 
-	arguments := []string{
-		"create", "--name", name, "--user", manifest.User, "--workdir", manifest.Workdir,
-		"--cap-drop", "ALL", "--network", manifest.Network,
-		"--cpus", strconv.Itoa(manifest.Budgets.CPUCores),
-		"--memory", strconv.Itoa(manifest.Budgets.MemoryBytes) + "b",
-		"--memory-swap", strconv.Itoa(manifest.Budgets.MemorySwapBytes) + "b",
-		"--pids-limit", strconv.Itoa(manifest.Budgets.Processes),
-		"--ulimit", "nofile=" + strconv.Itoa(manifest.Budgets.OpenFiles),
+	security, err := manifest.SecurityOptions.options()
+	if err != nil {
+		return client.ContainerCreateOptions{}, err
 	}
-	arguments = append(arguments, labels.arguments()...)
+
+	processes := int64(manifest.Budgets.Processes)
+	openFiles := int64(manifest.Budgets.OpenFiles)
+	config := &container.Config{
+		User:       manifest.User,
+		WorkingDir: manifest.Workdir,
+		Image:      manifest.Image,
+		Labels:     labels.asMap(),
+	}
+	hostConfig := &container.HostConfig{
+		CapDrop:        []string{"ALL"},
+		NetworkMode:    container.NetworkMode(manifest.Network),
+		ReadonlyRootfs: manifest.ReadOnlyRoot,
+		SecurityOpt:    security,
+		Tmpfs:          manifest.Budgets.tmpfs(),
+		Resources: container.Resources{
+			NanoCPUs:   int64(manifest.Budgets.CPUCores) * nanoCPUsInACore,
+			Memory:     int64(manifest.Budgets.MemoryBytes),
+			MemorySwap: int64(manifest.Budgets.MemorySwapBytes),
+			PidsLimit:  &processes,
+			Ulimits:    []*container.Ulimit{{Name: "nofile", Soft: openFiles, Hard: openFiles}},
+		},
+	}
 	if manifest.IsProtected() {
-		for _, capability := range protectedCapabilities {
-			arguments = append(arguments, "--cap-add", capability)
-		}
-
-		arguments = append(arguments, "--entrypoint", protectedInit, "--tmpfs", executorEndpoint)
-	}
-
-	if manifest.ReadOnlyRoot {
-		arguments = append(arguments, "--read-only")
+		hostConfig.CapAdd = protectedCapabilities
+		config.Entrypoint = []string{protectedInit}
+		hostConfig.Tmpfs[executorFolder] = executorFolderOptions
 	}
 
 	if manifest.NoNewPrivileges {
-		arguments = append(arguments, "--security-opt", "no-new-privileges")
+		hostConfig.SecurityOpt = append([]string{"no-new-privileges"}, hostConfig.SecurityOpt...)
 	}
 
 	if manifest.Attachable {
-		arguments = append(arguments, "--interactive", "--tty", "--restart", "unless-stopped")
+		config.Tty, config.OpenStdin = true, true
+		config.AttachStdin, config.AttachStdout, config.AttachStderr = true, true, true
+		hostConfig.RestartPolicy = container.RestartPolicy{Name: container.RestartPolicyUnlessStopped}
 	}
 
-	arguments = append(arguments, manifest.SecurityOptions.arguments()...)
-	arguments = append(arguments, manifest.Budgets.tmpfsArguments()...)
-	for _, mount := range manifest.Mounts {
-		arguments = append(arguments, "--mount", mount.argument())
+	for _, mounted := range manifest.Mounts {
+		hostConfig.Mounts = append(hostConfig.Mounts, mounted.daemonMount())
 	}
 
-	return append(arguments, manifest.Image), nil
+	return client.ContainerCreateOptions{Name: name, Config: config, HostConfig: hostConfig}, nil
 }
+
+// nanoCPUsInACore is one CPU core in the unit the daemon counts CPU budgets in.
+const nanoCPUsInACore = 1_000_000_000
 
 // permitsImage is whether the image is one a container may run here: on a contained host only the pinned agent image.
 func (rules ContainerRules) permitsImage(image string) bool {
@@ -318,24 +338,19 @@ func (rules ContainerRules) permitsSource(mount ContainerMount) bool {
 	return false
 }
 
-// argument is the mount as `docker create --mount` reads it, read-only unless it is writable.
-func (mount ContainerMount) argument() string {
-	argument := "type=bind,source=" + mount.Source + ",target=" + mount.Target + ",bind-propagation=rprivate"
-	if mount.Type == MountVolume {
-		argument = "type=volume,source=" + mount.Source + ",target=" + mount.Target
+// daemonMount is the mount as the daemon takes it, read-only unless it is writable.
+func (mounted ContainerMount) daemonMount() mount.Mount {
+	if mounted.Type == MountVolume {
+		return volumeMount(mounted.Source, mounted.Target, mounted.Writable)
 	}
 
-	if !mount.Writable {
-		argument += ",readonly"
-	}
-
-	return argument
+	return bindMount(mounted.Source, mounted.Target, mounted.Writable)
 }
 
-// readOnlyAt is the mount as `docker run --mount` reads it, read-only at another target, as a check or a clone
-// reads the workspace.
-func (mount ContainerMount) readOnlyAt(target string) string {
-	return ContainerMount{Type: mount.Type, Source: mount.Source, Target: target}.argument()
+// readOnlyAt is the mount as the daemon takes it read-only at another target, as a check or a clone reads the
+// workspace.
+func (mounted ContainerMount) readOnlyAt(target string) mount.Mount {
+	return ContainerMount{Type: mounted.Type, Source: mounted.Source, Target: target}.daemonMount()
 }
 
 // isPlain is whether each profile is one value, since a comma or a newline would smuggle in another option.
@@ -343,63 +358,67 @@ func (options SecurityOptions) isPlain() bool {
 	return !strings.ContainsAny(options.Seccomp+options.AppArmor, ",\n")
 }
 
-// arguments are the --security-opt arguments of the profiles that are set.
-func (options SecurityOptions) arguments() []string {
-	var arguments []string
+// ErrSeccompProfileUnreadable refuses a container whose seccomp profile the host cannot read: it never starts one
+// under the daemon's default profile in its place.
+var ErrSeccompProfileUnreadable = errors.New("the seccomp profile cannot be read")
+
+// options are the security options of the profiles that are set, as the daemon takes them. The daemon takes a
+// seccomp profile as its JSON, never as a path of this machine, so a profile named by a path is read here.
+func (options SecurityOptions) options() ([]string, error) {
+	var named []string
 	if options.Seccomp != "" {
-		arguments = append(arguments, "--security-opt", "seccomp="+options.Seccomp)
+		profile, err := seccompProfile(options.Seccomp)
+		if err != nil {
+			return nil, err
+		}
+
+		named = append(named, "seccomp="+profile)
 	}
 
 	if options.AppArmor != "" {
-		arguments = append(arguments, "--security-opt", "apparmor="+options.AppArmor)
+		named = append(named, "apparmor="+options.AppArmor)
 	}
 
-	return arguments
+	return named, nil
 }
 
-// tmpfsArguments are the --tmpfs arguments in a fixed order, sized from the budgets, or from the old sizes when the
+// seccompProfile is the profile as the daemon takes it: a name the daemon knows as it is, a path as the file's JSON.
+func seccompProfile(profile string) (string, error) {
+	if !strings.HasPrefix(profile, "/") {
+		return profile, nil
+	}
+
+	content, err := os.ReadFile(profile)
+	if err != nil {
+		return "", fmt.Errorf("%w: %s: %v", ErrSeccompProfileUnreadable, profile, err)
+	}
+
+	return string(content), nil
+}
+
+// tmpfs are the folders a container writes to in memory, sized from the budgets, or from the old sizes when the
 // budgets name none.
-func (budgets ContainerBudgets) tmpfsArguments() []string {
-	sizes := []struct {
-		folder string
-		bytes  int
-	}{
-		{"/tmp", cmp.Or(budgets.TmpBytes, defaultTmpBytes)},
-		{"/run/journal", runJournalBytes},
-		{"/home/journal", cmp.Or(budgets.HomeBytes, defaultHomeBytes)},
+func (budgets ContainerBudgets) tmpfs() map[string]string {
+	return map[string]string{
+		"/tmp":          "size=" + strconv.Itoa(cmp.Or(budgets.TmpBytes, defaultTmpBytes)),
+		"/run/journal":  "size=" + strconv.Itoa(runJournalBytes),
+		"/home/journal": "size=" + strconv.Itoa(cmp.Or(budgets.HomeBytes, defaultHomeBytes)),
 	}
-
-	var arguments []string
-	for _, size := range sizes {
-		arguments = append(arguments, "--tmpfs", size.folder+":size="+strconv.Itoa(size.bytes))
-	}
-
-	return arguments
 }
 
-// Containers runs the Docker commands of a required-container start, under the container rules of the host; on a
-// contained host every command goes to the agent daemon at Host.
+// Containers are the containers of one Docker daemon, reached through Docker's own client, under the container rules
+// of the host; on a contained host the daemon is the agent daemon.
 type Containers struct {
-	Docker string
-	Host   string
+	Daemon *client.Client
 	Rules  ContainerRules
-}
-
-// command is a Docker command, sent to the agent daemon when the host names one.
-func (containers Containers) command(ctx context.Context, arguments ...string) *exec.Cmd {
-	if containers.Host != "" {
-		arguments = append([]string{"--host", containers.Host}, arguments...)
-	}
-
-	return exec.CommandContext(ctx, containers.Docker, arguments...)
 }
 
 // ErrContainerNotCreated is returned when the agent daemon refuses to create a container; the error carries the
 // daemon's own first line, which says why.
 var ErrContainerNotCreated = errors.New("the agent daemon did not create the container")
 
-// ErrAgentDaemonUnreachable is returned when a Docker command cannot reach the agent daemon at all, which says nothing
-// about the images it holds (doc 61, story 64).
+// ErrAgentDaemonUnreachable is returned when a call cannot reach the agent daemon at all, which says nothing about
+// the images it holds (doc 61, story 64).
 var ErrAgentDaemonUnreachable = errors.New("the agent container runtime cannot be reached")
 
 // ErrBudgetsUnenforced is returned when the agent daemon has no cgroup driver, so the CPU, memory and process budgets
@@ -408,15 +427,12 @@ var ErrBudgetsUnenforced = errors.New("the agent daemon cannot hold container bu
 
 // AssertBudgetsEnforced refuses an agent daemon whose cgroup driver is none; a daemon it cannot reach is named as that.
 func (containers Containers) AssertBudgetsEnforced(ctx context.Context) error {
-	info := containers.command(ctx, "info", "--format", "{{.CgroupDriver}}")
-	var refusal strings.Builder
-	info.Stderr = &refusal
-	output, err := info.Output()
+	answered, err := containers.Daemon.Info(ctx, client.InfoOptions{})
 	if err != nil {
-		return fmt.Errorf("%w: %s", ErrAgentDaemonUnreachable, failureLine(refusal.String(), err))
+		return unreachable(err)
 	}
 
-	if driver := strings.TrimSpace(string(output)); driver == "" || driver == "none" {
+	if driver := answered.Info.CgroupDriver; driver == "" || driver == "none" {
 		return ErrBudgetsUnenforced
 	}
 
@@ -426,27 +442,22 @@ func (containers Containers) AssertBudgetsEnforced(ctx context.Context) error {
 // AssertImagePinned refuses an image the agent daemon lacks or holds under another digest than the reference names;
 // a reference matches the image's id or one of its repository digests. A daemon it cannot reach is named as that.
 func (containers Containers) AssertImagePinned(ctx context.Context, reference string) error {
-	// A loaded image has no repository digests, on which Docker's join refuses to run: range writes nothing for none.
-	inspect := containers.command(ctx, "image", "inspect", "--format", `{{.Id}}{{range .RepoDigests}} {{.}}{{end}}`, reference)
-	var refusal strings.Builder
-	inspect.Stderr = &refusal
-	output, err := inspect.Output()
-	if err != nil && strings.Contains(refusal.String(), "No such image") {
+	image, err := containers.Daemon.ImageInspect(ctx, reference)
+	if isAbsent(err) {
 		return fmt.Errorf("%w: the image %s is not loaded into the agent daemon", ErrInstallationChanged, reference)
 	}
 
 	if err != nil {
-		return fmt.Errorf("%w: %s", ErrAgentDaemonUnreachable, failureLine(refusal.String(), err))
+		return unreachable(err)
 	}
 
-	digests := strings.Fields(string(output))
 	_, wanted, _ := strings.Cut(reference, "@")
-	if slices.Contains(digests, reference) || (wanted != "" && digests[0] == wanted) || digests[0] == reference {
+	if slices.Contains(image.RepoDigests, reference) || (wanted != "" && image.ID == wanted) || image.ID == reference {
 		return nil
 	}
 
 	return fmt.Errorf("%w: %s names %s, but the agent daemon holds %s", ErrInstallationChanged, reference,
-		cmp.Or(wanted, reference), digests[0])
+		cmp.Or(wanted, reference), image.ID)
 }
 
 // ContainerProcess is the program a container runs as its own process, after the image's entrypoint: its command and
@@ -468,21 +479,16 @@ type ConversationTranscript struct {
 	ConversationID string
 }
 
-// arguments puts the process into `docker create` arguments that end with the image: its environment before the
-// image, its command after it, behind `--` when the protected-account init runs it.
-func (process ContainerProcess) arguments(create []string, underInit bool) []string {
-	image := create[len(create)-1]
-	arguments := append([]string{}, create[:len(create)-1]...)
-	for _, entry := range process.Environment {
-		arguments = append(arguments, "--env", entry)
-	}
-
-	arguments = append(arguments, image)
+// into puts the process into what the daemon creates the container from: its environment, and its command after
+// the image's entrypoint, behind `--` when the protected-account init runs it.
+func (process ContainerProcess) into(options client.ContainerCreateOptions, underInit bool) client.ContainerCreateOptions {
+	options.Config.Env = append(options.Config.Env, process.Environment...)
+	options.Config.Cmd = process.command()
 	if underInit {
-		arguments = append(arguments, "--")
+		options.Config.Cmd = append([]string{"--"}, options.Config.Cmd...)
 	}
 
-	return append(arguments, process.command()...)
+	return options
 }
 
 // command is the process's own command, or, with a restart command, a shell that runs the restart command once the
@@ -510,7 +516,7 @@ func (containers Containers) Create(
 	labels LaunchLabels,
 	process ContainerProcess,
 ) (string, error) {
-	if _, err := manifest.DockerCreateArguments(name, labels, containers.Rules); err != nil {
+	if _, err := manifest.CreateOptions(name, labels, containers.Rules); err != nil {
 		return "", err
 	}
 
@@ -533,7 +539,7 @@ func (containers Containers) Create(
 		return "", err
 	}
 
-	arguments, err := manifest.DockerCreateArguments(name, labels, containers.Rules)
+	options, err := manifest.CreateOptions(name, labels, containers.Rules)
 	if err != nil {
 		return "", err
 	}
@@ -542,32 +548,26 @@ func (containers Containers) Create(
 		return "", err
 	}
 
-	create := containers.command(ctx, process.arguments(arguments, manifest.IsProtected())...)
-	var refusal strings.Builder
-	create.Stderr = &refusal
-	output, err := create.Output()
+	created, err := containers.Daemon.ContainerCreate(ctx, process.into(options, manifest.IsProtected()))
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", ErrContainerNotCreated, failureLine(refusal.String(), err))
+		return "", fmt.Errorf("%w: %s", ErrContainerNotCreated, failureLine(err.Error(), err))
 	}
 
-	return strings.TrimSpace(string(output)), nil
+	return created.ID, nil
 }
 
 // EnsureNetwork makes the session's own network when the agent daemon lacks it, labelled with the installation and
 // the session, so a container of the session shares no network with another.
 func (containers Containers) EnsureNetwork(ctx context.Context, name string, labels LaunchLabels) error {
-	if containers.command(ctx, "network", "inspect", name).Run() == nil {
+	if _, err := containers.Daemon.NetworkInspect(ctx, name, client.NetworkInspectOptions{}); err == nil {
 		return nil
 	}
 
-	create := []string{
-		"network", "create",
-		"--label", installationLabel + "=" + labels.Installation,
-		"--label", sessionLabel + "=" + labels.Session,
-		name,
-	}
-	if output, err := containers.command(ctx, create...).CombinedOutput(); err != nil {
-		return fmt.Errorf("creating the network %s failed: %w: %s", name, err, strings.TrimSpace(string(output)))
+	_, err := containers.Daemon.NetworkCreate(ctx, name, client.NetworkCreateOptions{
+		Labels: map[string]string{installationLabel: labels.Installation, sessionLabel: labels.Session},
+	})
+	if err != nil {
+		return fmt.Errorf("creating the network %s failed: %w", name, err)
 	}
 
 	return nil
@@ -583,98 +583,103 @@ const agentUID = 10001
 // network, every capability dropped and the seccomp profile agent containers run under, and answers what it printed.
 // The container is removed with its anonymous volumes when the program ends.
 func (containers Containers) RunCheck(ctx context.Context, seccomp, program string, arguments ...string) (string, error) {
-	var options []string
-	if seccomp != "" {
-		options = []string{"--security-opt", "seccomp=" + seccomp}
+	security, err := SecurityOptions{Seccomp: seccomp}.options()
+	if err != nil {
+		return "", err
 	}
 
-	return containers.runCheckWith(ctx, options, program, arguments...)
+	return containers.runCheck(ctx, throwaway{Program: program, Arguments: arguments, SecurityOptions: security})
 }
 
-// runCheckWith runs a check as RunCheck does, with the extra docker options given, such as a read-only mount.
-func (containers Containers) runCheckWith(ctx context.Context, options []string, program string, arguments ...string) (string, error) {
-	run := []string{
-		"run", "--rm", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
-		"--user", agentUser, "--label", installationLabel + "=" + string(containers.Rules.InstallationName),
-	}
-	run = append(run, options...)
+// runCheck runs a check as RunCheck does, as the agent's user, with what the throwaway adds, such as a read-only
+// mount.
+func (containers Containers) runCheck(ctx context.Context, check throwaway) (string, error) {
+	check.User = agentUser
 
-	run = append(run, "--entrypoint", program, containers.Rules.AgentImage)
-	output, err := containers.command(ctx, append(run, arguments...)...).CombinedOutput()
+	return containers.runToEnd(ctx, check)
+}
 
-	return strings.TrimSpace(string(output)), err
+// runScript runs a shell script as a check does, with the mounts it reads.
+func (containers Containers) runScript(ctx context.Context, script string, mounts ...mount.Mount) (string, error) {
+	return containers.runCheck(ctx, throwaway{Program: "sh", Arguments: []string{"-c", script}, Mounts: mounts})
 }
 
 // ErrHistoryMissing refuses a resume whose history volume is gone, so it never starts with an empty history.
 var ErrHistoryMissing = errors.New("the history of the resumed conversation is gone")
 
+// hasVolume is whether the agent daemon holds the named volume.
+func (containers Containers) hasVolume(ctx context.Context, name string) bool {
+	_, err := containers.Daemon.VolumeInspect(ctx, name, client.VolumeInspectOptions{})
+
+	return err == nil
+}
+
 // EnsureVolumes makes each named volume of the manifest that the agent daemon lacks, labelled with the installation
 // and the session but no launch, so a launch's cleanup keeps it; a volume that must exist and does not refuses.
 func (containers Containers) EnsureVolumes(ctx context.Context, manifest ContainerManifest, labels LaunchLabels) error {
-	for _, mount := range manifest.Mounts {
-		if mount.Type != MountVolume || containers.command(ctx, "volume", "inspect", mount.Source).Run() == nil {
+	for _, mounted := range manifest.Mounts {
+		if mounted.Type != MountVolume || containers.hasVolume(ctx, mounted.Source) {
 			continue
 		}
 
-		if mount.MustExist {
-			return fmt.Errorf("%w: %s", ErrHistoryMissing, mount.Source)
+		if mounted.MustExist {
+			return fmt.Errorf("%w: %s", ErrHistoryMissing, mounted.Source)
 		}
 
-		create := []string{
-			"volume", "create",
-			"--label", installationLabel + "=" + labels.Installation,
-			"--label", sessionLabel + "=" + labels.Session,
-			mount.Source,
-		}
-		if output, err := containers.command(ctx, create...).CombinedOutput(); err != nil {
-			return fmt.Errorf("creating the volume %s failed: %w: %s", mount.Source, err, strings.TrimSpace(string(output)))
+		_, err := containers.Daemon.VolumeCreate(ctx, client.VolumeCreateOptions{
+			Name:   mounted.Source,
+			Labels: map[string]string{installationLabel: labels.Installation, sessionLabel: labels.Session},
+		})
+		if err != nil {
+			return fmt.Errorf("creating the volume %s failed: %w", mounted.Source, err)
 		}
 	}
 
 	return nil
 }
 
-// Attach is the command that attaches to an attachable container's terminal, for the host's pty to run as it runs a
-// local program; ending the attach leaves the container running, since no signal is passed on to it.
-func (containers Containers) Attach(ctx context.Context, name string) *exec.Cmd {
-	return containers.command(ctx, "attach", "--sig-proxy=false", name)
-}
-
 // Start starts a created container.
 func (containers Containers) Start(ctx context.Context, id string) error {
-	return containers.command(ctx, "start", id).Run()
+	_, err := containers.Daemon.ContainerStart(ctx, id, client.ContainerStartOptions{})
+
+	return err
 }
 
-// InstanceID is the container's own id as docker inspect reports it, which names this instance and no replacement.
+// InstanceID is the container's own id as the daemon reports it, which names this instance and no replacement.
 func (containers Containers) InstanceID(ctx context.Context, name string) (string, error) {
-	output, err := containers.command(ctx, "inspect", "--format", "{{.Id}}", name).Output()
+	inspected, err := containers.Daemon.ContainerInspect(ctx, name, client.ContainerInspectOptions{})
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(string(output)), nil
+
+	return inspected.Container.ID, nil
 }
 
-// IsRunning answers whether the container runs, as docker inspect reports it; a failed inspect is an error, never
-// an answer.
+// IsRunning answers whether the container runs, as the daemon reports it; a failed inspect is an error, never an
+// answer.
 func (containers Containers) IsRunning(ctx context.Context, id string) (bool, error) {
-	output, err := containers.command(ctx, "inspect", "--format", "{{.State.Running}}", id).Output()
+	inspected, err := containers.Daemon.ContainerInspect(ctx, id, client.ContainerInspectOptions{})
 	if err != nil {
 		return false, err
 	}
-	return strings.TrimSpace(string(output)) == "true", nil
+
+	return inspected.Container.State != nil && inspected.Container.State.Running, nil
 }
 
-// Stop stops the container within the bound and answers only once inspect shows it stopped.
+// Stop stops the container within the bound and answers only once the daemon shows it stopped.
 func (containers Containers) Stop(ctx context.Context, id string, seconds int) error {
-	if err := containers.command(ctx, "stop", "--time", strconv.Itoa(seconds), id).Run(); err != nil {
+	if _, err := containers.Daemon.ContainerStop(ctx, id, client.ContainerStopOptions{Timeout: &seconds}); err != nil {
 		return err
 	}
+
 	running, err := containers.IsRunning(ctx, id)
 	if err != nil {
 		return err
 	}
+
 	if running {
 		return errors.New("the container still runs after its stop")
 	}
+
 	return nil
 }

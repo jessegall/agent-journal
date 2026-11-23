@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Actors;
 
+use App\Contracts\Events\Event;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
@@ -15,6 +16,9 @@ use PhpOption\Option;
  */
 interface ActorWorkStacks
 {
+    /**
+     * Pushes the state onto the stacks the acting actor works on now.
+     */
     public function push(StateReference $state): void;
 
     /**
@@ -23,8 +27,21 @@ interface ActorWorkStacks
      */
     public function pushFor(ActorIdentity $actor, StateReference $state): void;
 
+    /**
+     * Pushes onto one stack of another actor, and only while every stack it works on rests on its bottom state: work
+     * offered to an actor that is busy is left for later.
+     */
     public function offerFor(ActorIdentity $actor, StateReference $state): void;
 
+    /**
+     * Tells the stacks another actor works on now a fact, so the states there hear it as their own; nothing when it
+     * runs no session.
+     */
+    public function tellFor(ActorIdentity $actor, Event $fact): void;
+
+    /**
+     * Removes the finished states exposed at the top of the acting actor's stacks.
+     */
     public function pruneCurrent(): void;
 
     /**
@@ -35,6 +52,8 @@ interface ActorWorkStacks
     public function current(string $typeKey): Option;
 
     /**
+     * The record the acting actor works on now, as its top live state names it; none when no state names one.
+     *
      * @return Option<RecordIdentity>
      */
     public function currentRecord(): Option;

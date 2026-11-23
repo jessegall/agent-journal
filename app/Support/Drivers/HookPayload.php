@@ -46,7 +46,17 @@ final class HookPayload extends Data
         public readonly string|Optional $error = new Optional(),
         public readonly string|Optional $transcriptPath = new Optional(),
         public readonly string|Optional $cwd = new Optional(),
+        public readonly string|Optional|null $lastAssistantMessage = new Optional(),
     ) {}
+
+    /**
+     * What the agent said last in the turn that stops, as its driver sends it with the stop; empty when it said
+     * nothing.
+     */
+    public function closingWords(): string
+    {
+        return is_string($this->lastAssistantMessage) ? trim($this->lastAssistantMessage) : '';
+    }
 
     /**
      * The driver's own id of the prompt this call belongs to: Claude Code's prompt_id, Codex's turn_id (plan 26

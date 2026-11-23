@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Unit\States;
 
+use App\Support\Decisions\Decision;
 use App\Support\Decisions\Denied;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\Contracts\HookInput;
@@ -77,7 +78,7 @@ final class FollowingSequenceTest extends TestCase
     #[DataProvider('otherHooks')]
     public function test_every_other_hook_is_passed(HookInput $input): void
     {
-        $this->assertNull($input->answerBy($this->following()));
+        $this->assertEquals(Decision::delegate(), $input->answerBy($this->following()));
     }
 
     private function running(): SequenceWork
@@ -92,7 +93,7 @@ final class FollowingSequenceTest extends TestCase
 
     private function stop(): StopRequested
     {
-        return new StopRequested($this->hook(), new StopDetails('turn-1', false));
+        return new StopRequested($this->hook(), new StopDetails('turn-1', false, ''));
     }
 
     private function hook(): HookIdentity

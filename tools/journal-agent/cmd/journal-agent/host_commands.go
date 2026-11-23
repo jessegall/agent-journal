@@ -94,7 +94,12 @@ func verifyArrangement(arrangement host.Arrangement, pinned host.PinnedImages, d
 		return verifyInstallation(installationFolder)
 	}
 
-	return pinned.AssertLoaded(context.Background(), host.Containers{Docker: "docker", Host: dockerSocket})
+	containers, err := host.ContainersOn(dockerSocket, host.ContainerRules{})
+	if err != nil {
+		return err
+	}
+
+	return pinned.AssertLoaded(context.Background(), containers)
 }
 
 // serve claims this host's requests until it is stopped. Carrying them out is the scheduler's job; until then each
@@ -145,9 +150,9 @@ func serve(arguments []string) error {
 	}
 	defer listener.Close()
 	// Every host carries out browser writers' text, keys, pastes and resizes on its terminal drivers: a contained
-	// one through its docker attach, whose attachment the grant is scoped to; Ctrl+C goes as its byte, never a
-	// signal, the gate writes in order with the PTY's own backpressure, and docker attach gives the outer PTY's size
-	// to the container's terminal. No host offers private entry.
+	// one through the daemon's attach to its container, whose attachment the grant is scoped to; Ctrl+C goes as its
+	// byte, never a signal, the gate writes in order with the terminal's own backpressure, and a resize sizes the
+	// container's terminal. No host offers private entry.
 	journal := client.New(enrollment).WithArrangement(string(arrangement)).WithBrowserInput()
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket,
@@ -158,7 +163,11 @@ func serve(arguments []string) error {
 	prerequisites := localPrerequisites(*stateFolder, *installationFolder)
 	if arrangement.IsContained() {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
-		opener.containers = host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
+		opener.containers, err = host.ContainersOn(*dockerSocket, rules)
+		if err != nil {
+			return err
+		}
+		socket.Start = startTerminalOn(opener.containers)
 		socket.InstanceRuns = instanceRunsOn(opener.containers)
 		opener.installation = installation
 		prerequisites = containedPrerequisites(*stateFolder, *seccomp, trialDrivers(*protectedTrial), opener.containers)
@@ -173,12 +182,11 @@ func serve(arguments []string) error {
 	var bindsAccount func(ctx context.Context, folder string) (bool, error)
 	var folders accountFolders
 	if arrangement.IsContained() {
-		sessions, err = host.ContainerSessionsOf(ctx, host.Containers{Docker: "docker", Host: *dockerSocket}, string(installation))
+		containers := opener.containers
+		sessions, err = host.ContainerSessionsOf(ctx, containers, string(installation))
 		if err != nil {
 			return err
 		}
-		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
-		containers := host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
 		bindsAccount = containers.BindsAccount
 		folders = containers
 		cleanup := host.LaunchCleanup{Containers: containers, Installation: installation,
@@ -569,8 +577,20 @@ func terminalDriverOf(
 	})
 }
 
+// startTerminalOn starts a runtime's terminal for the attach socket of a contained host: the terminal of the session
+// container that runs its program, and a PTY for a program the host runs itself.
+func startTerminalOn(containers host.Containers) host.TerminalStarter {
+	return func(request host.AttachRequest) (host.TerminalStream, error) {
+		if request.ContainerInstance == "" {
+			return startTerminal(request)
+		}
+
+		return containers.AttachTerminal(context.Background(), request.ContainerInstance, request.Rows, request.Columns)
+	}
+}
+
 // startTerminal starts a runtime's program on a PTY the host owns, for the attach socket.
-func startTerminal(request host.AttachRequest) (*os.File, error) {
+func startTerminal(request host.AttachRequest) (host.TerminalStream, error) {
 	if len(request.Command) == 0 {
 		return nil, fmt.Errorf("the host does not run runtime %s; attach with --agent to open it", request.RuntimeID)
 	}
@@ -583,7 +603,12 @@ func startTerminal(request host.AttachRequest) (*os.File, error) {
 	}
 	defer host.CloseFiles(files)
 	command.ExtraFiles = files
-	return pty.StartWithSize(command, &pty.Winsize{Rows: request.Rows, Cols: request.Columns})
+	file, err := pty.StartWithSize(command, &pty.Winsize{Rows: request.Rows, Cols: request.Columns})
+	if err != nil {
+		return nil, err
+	}
+
+	return host.PtyTerminal(file), nil
 }
 
 // detachKey (Ctrl-]) leaves the program running and gives the terminal back.

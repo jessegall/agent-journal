@@ -11,79 +11,86 @@ import (
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/dockerstandin"
 	"journal-agent/drivers"
 	"journal-agent/drivers/contracts"
 	"journal-agent/host"
 	"journal-agent/profiles"
 	"journal-agent/serving"
+
+	"github.com/moby/moby/api/types/mount"
 )
 
 // The start scenarios run the host's real start code on the messages the journal really sends, which both test
 // suites keep as files under tests/Contracts (the journal's side is checked by Tests\Support\Agents\HostContract).
-// Docker is the one part that is swapped: a stand-in program that records what it is asked and runs a pretend driver.
-// The normal test run never talks to a real Docker.
+// Docker is the one part that is swapped: a stand-in daemon the host's own Docker client talks to, which keeps what it
+// is asked and runs a pretend driver. The normal test run never talks to a real Docker.
 
 // contractFolder holds the messages of one scenario, the same files the journal's tests read and write.
 const contractFolder = "../../../../tests/Contracts/host-start/protected-headless-claude"
 
-// realDockerSwitch names the real Docker program for the installation suite, which runs these scenarios on purpose
+// realDockerSwitch names the real Docker daemon for the installation suite, which runs these scenarios on purpose
 // and never as part of the normal tests.
 const realDockerSwitch = "JOURNAL_SCENARIOS_DOCKER"
 
-// standInDocker is a docker program for a scenario: it writes each call's arguments as one line to the calls file (a line
-// break inside an argument, as in settings given inline, becomes a space),
-// answers a version check as the agent image's clients would, an inspect as a container that is not running, the
-// daemon's facts as one that holds budgets and the image asked for, and for
-// the start of a created container prints the turn a pretend Claude Code runs on the model its command names.
-const standInDocker = `#!/bin/sh
-call=$(printf '%s' "$*" | tr '\n' ' ')
-printf '%s\n' "$call" >> "$CALLS"
-case "$1" in
-    run)
-        case "$*" in
-            *"--entrypoint codex"*"--version") echo "codex-cli 0.165.0" ;;
-            *"--version") echo "2.1.323 (Claude Code)" ;;
-        esac ;;
-    create) printf '%s\n' "$call" > "$CALLS.created"; echo "container-1" ;;
-    inspect) echo "false" ;;
-    info) echo "cgroupfs" ;;
-    image) echo "$4" ;;
-    start)
-        model=$(sed -n 's/.* --model \([^ ]*\).*/\1/p' "$CALLS.created")
-        echo "journal-init: ready"
-        echo "{\"type\":\"system\",\"subtype\":\"init\",\"model\":\"$model\"}"
-        echo '{"type":"result","subtype":"success","is_error":false,"uuid":"result-1"}' ;;
-esac
-exit 0
-`
+// The turn a pretend Claude Code prints, after the line the protected-account init prints once it runs.
+const (
+	pretendInitLine   = "journal-init: ready\n"
+	pretendResultLine = `{"type":"result","subtype":"success","is_error":false,"uuid":"result-1"}` + "\n"
+)
 
-// scenarioDocker is the Docker of a scenario and the file its calls are written to.
-func scenarioDocker(t *testing.T, image string) (host.Containers, string) {
+// pretendDriver is what a scenario's containers run: a version check answers as the agent image's clients would, and
+// a turn's own container prints the turn a pretend Claude Code runs on the model its command names.
+func pretendDriver(created *dockerstandin.Container) dockerstandin.Program {
+	command := created.Config.Cmd
+	switch {
+	case slices.Contains(command, "--version") && slices.Contains(created.Config.Entrypoint, "codex"):
+		return dockerstandin.Printing("codex-cli 0.165.0\n", 0)
+	case slices.Contains(command, "--version"):
+		return dockerstandin.Printing("2.1.323 (Claude Code)\n", 0)
+	case created.Name == "" || created.Config.Tty:
+		return nil
+	}
+
+	model := ""
+	if named := slices.Index(command, "--model"); named >= 0 && named+1 < len(command) {
+		model = command[named+1]
+	}
+	started := `{"type":"system","subtype":"init","model":"` + model + `"}` + "\n"
+
+	return dockerstandin.Printing(pretendInitLine+started+pretendResultLine, 0)
+}
+
+// scenarioDaemon is the Docker of a scenario: a stand-in daemon that holds the agent image and runs the pretend
+// driver, and the host's containers on it.
+func scenarioDaemon(t *testing.T, image string) (host.Containers, *dockerstandin.Daemon) {
 	t.Helper()
 	if os.Getenv(realDockerSwitch) != "" {
 		t.Fatalf("%s is set: the normal tests never talk to a real Docker", realDockerSwitch)
 	}
-	folder := t.TempDir()
-	calls := filepath.Join(folder, "calls.log")
-	docker := filepath.Join(folder, "docker")
-	if err := os.WriteFile(docker, []byte(standInDocker), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("CALLS", calls)
+	daemon := dockerstandin.Start(t, image)
+	daemon.Programs = pretendDriver
 	rules := host.ContainerRules{Arrangement: host.Contained, InstallationName: "acme", AgentImage: image}
-
-	return host.Containers{Docker: docker, Rules: rules}, calls
-}
-
-// callsOf are the calls a scenario's Docker got so far, one per line.
-func callsOf(t *testing.T, calls string) []string {
-	t.Helper()
-	content, err := os.ReadFile(calls)
+	containers, err := host.ContainersOn(daemon.Host(), rules)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	return strings.Split(strings.TrimSpace(string(content)), "\n")
+	return containers, daemon
+}
+
+// turnContainer is the container the daemon was last asked to create under a name: a turn's own.
+func turnContainer(t *testing.T, daemon *dockerstandin.Daemon) *dockerstandin.Container {
+	t.Helper()
+	created := daemon.Created()
+	for index := len(created) - 1; index >= 0; index-- {
+		if created[index].Name != "" {
+			return created[index]
+		}
+	}
+	t.Fatalf("no turn's container was created: %v", daemon.Requests())
+
+	return nil
 }
 
 // readContract reads one of the scenario's messages into the type the host's client decodes it into.
@@ -131,7 +138,7 @@ func (recorded *recordedReports) ReportProtection(_ context.Context, report clie
 // A contained host tells the journal how each program's protection stands in the agent image; for Claude Code under
 // the protected-account profile, with no run recorded yet, every item has its mechanism and awaits its evidence.
 func TestScenarioTheHostReportsTheProtectionOfTheAgentImage(t *testing.T) {
-	containers, _ := scenarioDocker(t, "sha256:image")
+	containers, _ := scenarioDaemon(t, "sha256:image")
 	sent := &recordedReports{}
 
 	err := host.ReportContainedProtection(context.Background(), containers, "", host.NativeEvidence{Folder: t.TempDir()}, sent)
@@ -162,7 +169,7 @@ func TestScenarioAProtectedHeadlessClaudeStartRunsItsTurnInItsContainer(t *testi
 	if err != nil || !named {
 		t.Fatalf("the grant's container is not one the host reads: %v", err)
 	}
-	containers, calls := scenarioDocker(t, manifest.Image)
+	containers, daemon := scenarioDaemon(t, manifest.Image)
 	state := t.TempDir()
 
 	if err := containedPrerequisites(state, "", trialDrivers("codex"), containers)(grant, claim); err == nil {
@@ -199,29 +206,119 @@ func TestScenarioAProtectedHeadlessClaudeStartRunsItsTurnInItsContainer(t *testi
 	if len(driver.NativeIdentity()) != 36 {
 		t.Fatalf("the turn's conversation is %q, want the driver's 36-character session id", driver.NativeIdentity())
 	}
-	created := ""
-	for _, call := range callsOf(t, calls) {
-		if strings.HasPrefix(call, "create ") {
-			created = call
-		}
+	created := turnContainer(t, daemon)
+	config, hostConfig := created.Config, created.HostConfig
+	if config.User != "0:0" || config.Image != manifest.Image || !hostConfig.ReadonlyRootfs ||
+		!slices.Equal(hostConfig.CapAdd, dockerstandin.Capabilities("SETUID", "SETGID", "SETPCAP")) ||
+		!slices.Contains(hostConfig.SecurityOpt, "no-new-privileges") {
+		t.Errorf("the turn's container was not created as the protected profile asks: %+v %+v", config, hostConfig)
 	}
-	for _, want := range []string{
-		"--user 0:0", "--read-only", "--cap-add SETUID", "--cap-add SETGID", "--cap-add SETPCAP",
-		"--security-opt no-new-privileges", "target=/home/journal/.account", "target=/workspace",
-		"--model " + *grant.Runtime.Model, "CLAUDE_CODE_SHELL=/opt/journal/shell/bash", "--print", manifest.Image,
-	} {
-		if !strings.Contains(created, want) {
-			t.Errorf("the turn's container was created without %q:\n%s", want, created)
-		}
+	mounted := func(target string) bool {
+		return slices.ContainsFunc(hostConfig.Mounts, func(mount mount.Mount) bool { return mount.Target == target })
 	}
-	// The settings travel inline as indented JSON, so they are read with their spaces taken out.
-	if !strings.Contains(strings.ReplaceAll(created, " ", ""), `"sandbox":{"enabled":false}`) {
-		t.Errorf("the turn's settings keep Claude Code's own sandbox on:\n%s", created)
+	if !mounted("/home/journal/.account") || !mounted("/workspace") {
+		t.Errorf("the turn's container lacks its account or its workspace: %+v", hostConfig.Mounts)
 	}
-	for _, refused := range []string{" --tty", " -t ", " --interactive", "--privileged"} {
-		if strings.Contains(created, refused) {
-			t.Errorf("the turn's container was created with %q:\n%s", refused, created)
+	model := slices.Index(config.Cmd, "--model")
+	if model < 0 || config.Cmd[model+1] != *grant.Runtime.Model || !slices.Contains(config.Cmd, "--print") ||
+		!slices.Contains(config.Env, "CLAUDE_CODE_SHELL=/opt/journal/shell/bash") {
+		t.Errorf("the turn does not run on the model asked for, without a terminal, with the journal's shell: %v %v",
+			config.Cmd, config.Env)
+	}
+	// The settings travel inline as indented JSON, so they are read with their spaces and line breaks taken out.
+	settings := strings.NewReplacer(" ", "", "\n", "").Replace(strings.Join(config.Cmd, " "))
+	if !strings.Contains(settings, `"sandbox":{"enabled":false}`) {
+		t.Errorf("the turn's settings keep Claude Code's own sandbox on:\n%v", config.Cmd)
+	}
+	if config.Tty || config.OpenStdin || hostConfig.Privileged {
+		t.Errorf("the turn's container was created with a terminal or privileges: %+v", config)
+	}
+}
+
+// Rule 83: a contained session with a terminal lives its whole life through the daemon. Its container is created
+// with a terminal and started, the host holds that terminal through the daemon's attach at the window's size, what is
+// typed reaches the program, a hangup of the terminal leaves the program running as a lost connection, and the stop
+// removes the container and its network.
+func TestScenarioAContainedSessionsTerminalIsHeldThroughTheDaemonFromStartToStop(t *testing.T) {
+	var grant client.Grant
+	var claim client.ClaimedStart
+	readContract(t, "grant.json", &grant)
+	readContract(t, "claim.json", &claim)
+	grant.Container = json.RawMessage(strings.Replace(string(grant.Container), `"attachable": false`, `"attachable": true`, 1))
+	prepared := host.PreparedStart{Grant: grant, Claim: claim}
+	manifest, _, err := prepared.ContainerManifest()
+	if err != nil || !manifest.Attachable {
+		t.Fatalf("the scenario's container was not made attachable: %v", err)
+	}
+	containers, daemon := scenarioDaemon(t, manifest.Image)
+	opener := runtimeOpener{containers: containers, installation: "acme"}
+	session := opener.sessionContainer("runtime-1", prepared, manifest)
+	ctx := context.Background()
+
+	if err := session.Open(ctx, manifest, host.ContainerProcess{Command: []string{"claude"}}); err != nil {
+		t.Fatalf("the session's container did not open: %v", err)
+	}
+	instance, err := containers.InstanceID(ctx, session.Name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	folder, err := os.MkdirTemp("/tmp", "ja")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(folder) })
+	socket := &host.AttachSocket{
+		Folder: folder, Layout: layoutOf, Start: startTerminalOn(containers), InstanceRuns: instanceRunsOn(containers),
+	}
+	listener, err := socket.Listen()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { listener.Close() })
+	opened, err := socket.Open(host.AttachRequest{
+		RuntimeID: "runtime-1", Driver: "claude", Rows: 12, Columns: 40, ContainerInstance: instance,
+	})
+	if err != nil {
+		t.Fatalf("the session's terminal was not attached: %v", err)
+	}
+
+	created, _ := daemon.Container(session.Name)
+	if rows, columns := created.Size(); !created.Config.Tty || !created.IsRunning() || rows != 12 || columns != 40 {
+		t.Fatalf("the container's terminal is %d by %d, running %t", rows, columns, created.IsRunning())
+	}
+	typed := "hi"
+	if err := opened.Gate.UserTyped([]byte(typed)); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "what was typed reached the program", func() bool { return created.Typed() == typed })
+
+	if err := opened.Hangup(); err != nil {
+		t.Fatal(err)
+	}
+	eventually(t, "a hangup while the container runs is a lost connection", func() bool {
+		return socket.LostConnection("runtime-1")
+	})
+	if !created.IsRunning() {
+		t.Fatal("a hangup of the terminal ended the session's program")
+	}
+
+	if err := session.Stop(ctx, manifest.Network); err != nil {
+		t.Fatalf("the session did not stop: %v", err)
+	}
+	if _, held := daemon.Container(session.Name); held || socket.LostConnection("runtime-1") {
+		t.Fatalf("the stopped session's container stayed, or still counts as a lost connection: %v", daemon.Requests())
+	}
+}
+
+// eventually waits until what is said holds, and fails when it does not within a few seconds.
+func eventually(t *testing.T, said string, holds func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for !holds() {
+		if time.Now().After(deadline) {
+			t.Fatalf("it never held that %s", said)
 		}
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
@@ -294,7 +391,7 @@ func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	containers, _ := scenarioDocker(t, manifest.Image)
+	containers, _ := scenarioDaemon(t, manifest.Image)
 	state := t.TempDir()
 	opener := runtimeOpener{
 		containers: containers, installation: "acme", sessionJournalURL: "http://journal.test", stateFolder: state,
@@ -385,7 +482,7 @@ func TestScenarioAStartTheHostCannotCarryOutIsReportedRefusedWithItsReason(t *te
 	if err != nil || !manifest.Attachable {
 		t.Fatalf("the scenario's container was not made attachable: %v", err)
 	}
-	containers, _ := scenarioDocker(t, manifest.Image)
+	containers, _ := scenarioDaemon(t, manifest.Image)
 	state := t.TempDir()
 	opener := runtimeOpener{
 		containers: containers, installation: "acme", sessionJournalURL: "http://journal.test", stateFolder: state,

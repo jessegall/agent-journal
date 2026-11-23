@@ -62,12 +62,12 @@ final readonly class StopAttemptGate implements StopConditionGate
     ) {}
 
     /**
-     * The stop's answer: nothing lets it stop, a message line lets it stop with that message, a decision refuses it.
+     * The stop's answer: a delegate lets it stop, a message line lets it stop with that message, a deny refuses it.
      */
-    public function answer(HookIdentity $stop): Decision|MessageLine|null
+    public function answer(HookIdentity $stop): Decision|MessageLine
     {
         if (! $this->policies->isFrozenFor($stop->sessionId)) {
-            return null;
+            return Decision::delegate();
         }
 
         $policy = $this->policies->policyFor($stop->sessionId);
@@ -118,7 +118,7 @@ final readonly class StopAttemptGate implements StopConditionGate
         return new MessageLine($preparation->message);
     }
 
-    private function runFinalChecks(HookIdentity $stop, StartPolicy $policy): Decision|MessageLine|null
+    private function runFinalChecks(HookIdentity $stop, StartPolicy $policy): Decision|MessageLine
     {
         $attempt = $this->openAttempt($stop, $policy);
 
@@ -150,7 +150,7 @@ final readonly class StopAttemptGate implements StopConditionGate
      * A stop with no conditions passes with nothing said: a line here would be kept for the agent and wake it only to
      * read that it may stop, and its next stop would do so again without end.
      */
-    private function passWithoutConditions(StopAttempt $attempt): null
+    private function passWithoutConditions(StopAttempt $attempt): Decision
     {
         if (! $attempt->isSettled()) {
             $attempt->settle(StopAttemptState::Passed, self::NO_CONDITIONS_SUBMISSION);
@@ -159,11 +159,11 @@ final readonly class StopAttemptGate implements StopConditionGate
         return $this->certifyCompletion($attempt);
     }
 
-    private function certifyCompletion(StopAttempt $attempt): null
+    private function certifyCompletion(StopAttempt $attempt): Decision
     {
         $this->certification->certify($attempt);
 
-        return null;
+        return Decision::delegate();
     }
 
     private function refuseOrHold(

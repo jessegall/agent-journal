@@ -2,30 +2,43 @@ package host
 
 import (
 	"context"
-	"os"
-	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
 	"journal-agent/client"
+	"journal-agent/dockerstandin"
 )
 
 const containerImage = "sha256:" + "c97cd8c276ef3e646ae0feee9690ff29f23b1c4692e456fe3c66966c57805cd1"
 
-// agentDaemon is a fake agent daemon whose agent image answers each check with the given shell.
-func agentDaemon(t *testing.T, answer string) (Containers, string) {
-	t.Helper()
-	calls := filepath.Join(t.TempDir(), "calls")
-	daemon := fakeImageDocker(t, `echo "$*" >> `+calls+"\n"+answer)
-	daemon.Rules = ContainerRules{Arrangement: Contained, InstallationName: "journal", AgentImage: containerImage}
+// bwrapRefusal is what Claude Code's sandbox prints where it cannot start.
+const bwrapRefusal = "bwrap: Can't mount proc on /newroot/proc: Operation not permitted"
 
-	return daemon, calls
+// sandboxRefused answers a check of the sandbox with its refusal.
+var sandboxRefused = map[string]dockerstandin.Program{"bwrap": dockerstandin.Printing(bwrapRefusal+"\n", 1)}
+
+// agentDaemon is a stand-in agent daemon whose agent image answers each check with the program given for the
+// check's own program; a check with none ends well and prints nothing.
+func agentDaemon(t *testing.T, answers map[string]dockerstandin.Program) (Containers, *dockerstandin.Daemon) {
+	t.Helper()
+	rules := ContainerRules{Arrangement: Contained, InstallationName: "journal", AgentImage: containerImage}
+	containers, daemon := standIn(t, rules)
+	daemon.Programs = func(check *dockerstandin.Container) dockerstandin.Program {
+		if len(check.Config.Entrypoint) == 0 {
+			return nil
+		}
+
+		return answers[check.Config.Entrypoint[0]]
+	}
+
+	return containers, daemon
 }
 
 func TestTheContainerPlatformRunsClaudesSandboxInTheAgentImage(t *testing.T) {
-	daemon, calls := agentDaemon(t, "exit 0")
+	daemon, agent := agentDaemon(t, nil)
 
-	platform := ContainedPlatform(context.Background(), daemon, "/etc/journal/security/seccomp-agent.json")
+	platform := ContainedPlatform(context.Background(), daemon, seccompFile())
 	capability, err := InspectProtection(platform, "claude", "2.1.323", NativeEvidence{Folder: t.TempDir()})
 	if err != nil {
 		t.Fatal(err)
@@ -41,21 +54,24 @@ func TestTheContainerPlatformRunsClaudesSandboxInTheAgentImage(t *testing.T) {
 		}
 	}
 
-	ran, _ := os.ReadFile(calls)
-	for _, want := range []string{
-		"run --rm --network none --cap-drop ALL --security-opt no-new-privileges --user 10001:10001",
-		"--security-opt seccomp=/etc/journal/security/seccomp-agent.json --entrypoint bwrap " + containerImage,
-		"--entrypoint socat " + containerImage + " -V",
-		"--proc /proc",
-	} {
-		if !strings.Contains(string(ran), want) {
-			t.Fatalf("the checks did not run %q in the agent image: %s", want, ran)
+	checks := map[string]*dockerstandin.Container{}
+	for _, check := range agent.Created() {
+		checks[check.Config.Entrypoint[0]] = check
+		if check.Config.Image != containerImage || check.Config.User != agentUser || check.HostConfig.NetworkMode != "none" ||
+			!slices.Equal(check.HostConfig.CapDrop, []string{"ALL"}) ||
+			!slices.Contains(check.HostConfig.SecurityOpt, "no-new-privileges") ||
+			!slices.Contains(check.HostConfig.SecurityOpt, seccompOption(t)) {
+			t.Fatalf("a check did not run confined in the agent image: %+v %+v", check.Config, check.HostConfig)
 		}
+	}
+	if checks["socat"] == nil || checks["bwrap"] == nil || !slices.Equal(checks["socat"].Config.Cmd, []string{"-V"}) ||
+		!strings.Contains(scriptOf(checks["bwrap"]), "--proc /proc") {
+		t.Fatalf("the checks did not run socat and the sandbox: %v", agent.Requests())
 	}
 }
 
 func TestASandboxThatDoesNotStartInTheContainerNamesItsCause(t *testing.T) {
-	daemon, _ := agentDaemon(t, `case "$*" in *bwrap*) echo "bwrap: Can't mount proc on /newroot/proc: Operation not permitted"; exit 1 ;; esac`)
+	daemon, _ := agentDaemon(t, sandboxRefused)
 
 	platform := ContainedPlatform(context.Background(), daemon, "")
 	capability, err := InspectProtection(platform, "claude", "2.1.323", NativeEvidence{Folder: t.TempDir()})
@@ -71,7 +87,7 @@ func TestASandboxThatDoesNotStartInTheContainerNamesItsCause(t *testing.T) {
 }
 
 func TestOnlyEvidenceOfTheSameAgentImageCountsInAContainer(t *testing.T) {
-	daemon, _ := agentDaemon(t, "exit 0")
+	daemon, _ := agentDaemon(t, nil)
 	folder := t.TempDir()
 	shown := map[BoundaryItem]string{}
 	for _, item := range BoundaryItems {
@@ -104,7 +120,7 @@ func TestOnlyEvidenceOfTheSameAgentImageCountsInAContainer(t *testing.T) {
 }
 
 func TestCodexStaysUnavailableInAContainer(t *testing.T) {
-	daemon, _ := agentDaemon(t, "exit 0")
+	daemon, _ := agentDaemon(t, nil)
 
 	capability, err := InspectProtection(ContainedPlatform(context.Background(), daemon, ""), "codex", "0.165.0",
 		NativeEvidence{Folder: t.TempDir()})
@@ -126,11 +142,11 @@ func (reports *protectionReports) ReportProtection(_ context.Context, report cli
 }
 
 func TestAContainedHostReportsEachProgramAtTheBuildTheAgentImageHolds(t *testing.T) {
-	daemon, _ := agentDaemon(t, `case "$*" in
-*"--entrypoint claude "*) echo "2.1.323 (Claude Code)" ;;
-*"--entrypoint codex "*) echo "codex-cli 0.165.0" ;;
-*bwrap*) echo "bwrap: Can't mount proc on /newroot/proc: Operation not permitted"; exit 1 ;;
-esac`)
+	daemon, _ := agentDaemon(t, map[string]dockerstandin.Program{
+		"claude": dockerstandin.Printing("2.1.323 (Claude Code)\n", 0),
+		"codex":  dockerstandin.Printing("codex-cli 0.165.0\n", 0),
+		"bwrap":  dockerstandin.Printing(bwrapRefusal+"\n", 1),
+	})
 	reports := protectionReports{}
 
 	evidence := NativeEvidence{Folder: t.TempDir()}
@@ -160,7 +176,7 @@ esac`)
 // names those mechanisms even where bwrap cannot start, and still counts an item only with native evidence of this
 // agent image.
 func TestTheProtectedReportNamesTheExecutorAndTheManagedPolicyAndNeedsEvidence(t *testing.T) {
-	daemon, _ := agentDaemon(t, `case "$*" in *bwrap*) echo "bwrap: Can't mount proc"; exit 1 ;; esac`)
+	daemon, _ := agentDaemon(t, sandboxRefused)
 	folder := t.TempDir()
 
 	capability, err := InspectProtection(ProtectedPlatform(daemon), "claude", "2.1.323", NativeEvidence{Folder: folder})

@@ -41,11 +41,11 @@ type printingContainer struct {
 	exit   int
 }
 
-func (container printingContainer) TurnCommand(profilecontracts.Start, int) (*exec.Cmd, error) {
+func (container printingContainer) TurnProgram(profilecontracts.Start, int) (TurnProgram, error) {
 	script := "printf '%s' \"$OUTPUT\"; echo noise >&2; exit " + strconv.Itoa(container.exit)
 	command := exec.Command("sh", "-c", script)
 	command.Env = []string{"OUTPUT=" + container.output}
-	return command, nil
+	return &childTurn{command: command}, nil
 }
 
 func containedTurn(t *testing.T, container printingContainer) (*recordedUsage, error) {
@@ -124,15 +124,15 @@ func TestADelayedEndOfChildAKeepsChildBAndSettlesOnlyAsTurn(t *testing.T) {
 	if err := childA.Start(); err != nil {
 		t.Fatal(err)
 	}
-	childB := exec.Command("true")
+	turnA, turnB := &childTurn{command: childA}, &childTurn{command: exec.Command("true")}
 	driver := &HeadlessDriver{}
-	driver.child = childB
+	driver.turn = turnB
 	endOfA, endOfB := make(chan error, 1), make(chan error, 1)
 	driver.finished = endOfB
 
-	driver.wait(childA, nil, endOfA)
+	driver.wait(turnA, nil, endOfA)
 
-	if driver.child != childB {
+	if driver.turn != TurnProgram(turnB) {
 		t.Fatal("the late end of child A cleared child B")
 	}
 	select {

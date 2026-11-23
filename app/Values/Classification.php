@@ -79,9 +79,10 @@ final readonly class Classification
     }
 
     /**
-     * Whether the command may change files: an unknown command may, and so may one that needs a file-changing class.
+     * Whether the command changes files, or could: an unknown command counts as one that does, and so does one that
+     * needs a file-changing class.
      */
-    public function mayChangeFiles(): bool
+    public function changesFiles(): bool
     {
         return ! $this->isKnown() || array_any(
             $this->requiredClasses()->classes,

@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os/exec"
 	"strconv"
-	"strings"
-	"syscall"
 
 	"journal-agent/drivers/contracts"
 )
@@ -29,50 +26,50 @@ const StopSeconds = 10
 var ErrSessionContainerUnattachable = errors.New("a session's terminal program needs an attachable container")
 
 // Open creates and starts the session's container running the process, or finds the one that already runs under
-// its name, as after a restart of the host, and answers the command that attaches to its terminal.
+// its name, as after a restart of the host. Its terminal is then attached to with Containers.AttachTerminal.
 func (container SessionContainer) Open(
 	ctx context.Context,
 	manifest ContainerManifest,
 	process ContainerProcess,
-) ([]string, error) {
+) error {
 	if !manifest.Attachable {
-		return nil, ErrSessionContainerUnattachable
+		return ErrSessionContainerUnattachable
 	}
 
 	running, err := container.Containers.IsRunning(ctx, container.Name)
 	if err == nil && running {
-		return container.attachCommand(ctx), nil
+		return nil
 	}
 
 	if err := container.Containers.EnsureNetwork(ctx, manifest.Network, container.Labels); err != nil {
-		return nil, err
+		return err
 	}
 
 	if _, err := container.Containers.Create(ctx, manifest, container.Name, container.Labels, process); err != nil {
-		return nil, contracts.RefuseStart(
+		return contracts.RefuseStart(
 			contracts.RefusalContainerUnavailable,
 			fmt.Errorf("creating the session container %s failed: %w", container.Name, err),
 		)
 	}
 
 	if err := container.Containers.Start(ctx, container.Name); err != nil {
-		return nil, fmt.Errorf("starting the session container %s failed: %w", container.Name, err)
+		return fmt.Errorf("starting the session container %s failed: %w", container.Name, err)
 	}
 
-	return container.attachCommand(ctx), nil
+	return nil
 }
 
 // ErrSessionContainerAttachable refuses a terminal manifest for a program run one turn at a time without a terminal.
 var ErrSessionContainerAttachable = errors.New("a program without a terminal needs a container without one")
 
 // Turn creates the session's container for one turn of a program without a terminal, the program its own process,
-// and answers the command that starts it and stays on its output until it ends. The container of the turn before is
-// removed first; the session's network and volumes, a writer's checkout too, stay.
+// and answers the turn, created and not yet started. The container of the turn before is removed first; the
+// session's network and volumes, a writer's checkout too, stay.
 func (container SessionContainer) Turn(
 	ctx context.Context,
 	manifest ContainerManifest,
 	process ContainerProcess,
-) (*exec.Cmd, error) {
+) (*ContainerTurn, error) {
 	if manifest.Attachable {
 		return nil, contracts.RefuseStart(contracts.RefusalContainerUnavailable, ErrSessionContainerAttachable)
 	}
@@ -92,10 +89,7 @@ func (container SessionContainer) Turn(
 		)
 	}
 
-	start := container.Containers.command(context.Background(), "start", "--attach", container.Name)
-	start.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
-	return start, nil
+	return &ContainerTurn{containers: container.Containers, name: container.Name}, nil
 }
 
 // RemoveCheckout removes a writer's checkout once the main's workspace holds its work, and answers the volume it
@@ -109,15 +103,8 @@ func (container SessionContainer) RemoveCheckout(ctx context.Context, manifest C
 	return container.Containers.RemoveCheckout(ctx, container.Labels.Session, source)
 }
 
-// attachCommand is the attach as the host's terminal runs it, the docker client first.
-func (container SessionContainer) attachCommand(ctx context.Context) []string {
-	attach := container.Containers.Attach(ctx, container.Name)
-
-	return append([]string{attach.Path}, attach.Args[1:]...)
-}
-
 // Stop stops the container with proof and removes it and its network; the session's volumes stay. A container
-// already gone, which docker inspect no longer finds, needs no stop.
+// already gone, which the daemon no longer finds, needs no stop.
 func (container SessionContainer) Stop(ctx context.Context, network string) error {
 	running, err := container.Containers.IsRunning(ctx, container.Name)
 	if err == nil && running {
@@ -138,36 +125,35 @@ func (container SessionContainer) remove(ctx context.Context, network string) er
 	return container.Containers.RemoveNetwork(ctx, network)
 }
 
-// ContainerExit is how a session container's program ended: its exit code and whether the kernel killed it for
-// using more memory than its budget.
+// ContainerExit is how a session container's program ended: its exit code, whether the kernel killed it for using
+// more memory than its budget, and the last lines it printed.
 type ContainerExit struct {
 	Code        int
 	OutOfMemory bool
+	LastLines   string
 }
 
-// Evidence is the exit as the host reports it to the journal.
+// Evidence is the exit as the host reports it to the journal, with the program's own last lines as the reason when
+// it printed any.
 func (exit ContainerExit) Evidence() string {
 	if exit.OutOfMemory {
 		return "the session container was killed for using more memory than its budget"
 	}
 
-	return "the session container's program exited with " + strconv.Itoa(exit.Code)
+	evidence := "the session container's program exited with " + strconv.Itoa(exit.Code)
+	if exit.LastLines == "" {
+		return evidence
+	}
+
+	return evidence + ": " + exit.LastLines
 }
 
 // Wait waits until the container's program ends, answers how, and removes the container and its network.
 func (container SessionContainer) Wait(ctx context.Context, network string) (ContainerExit, error) {
-	output, err := container.Containers.command(ctx, "wait", container.Name).Output()
+	exit, err := container.Containers.exitOf(ctx, container.Name)
 	if err != nil {
 		return ContainerExit{}, err
 	}
-
-	code, err := strconv.Atoi(strings.TrimSpace(string(output)))
-	if err != nil {
-		return ContainerExit{}, fmt.Errorf("docker wait answered %q: %w", strings.TrimSpace(string(output)), err)
-	}
-
-	killed, _ := container.Containers.command(ctx, "inspect", "--format", "{{.State.OOMKilled}}", container.Name).Output()
-	exit := ContainerExit{Code: code, OutOfMemory: strings.TrimSpace(string(killed)) == "true"}
 
 	return exit, container.remove(ctx, network)
 }

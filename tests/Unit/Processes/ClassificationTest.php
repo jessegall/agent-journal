@@ -41,7 +41,7 @@ final class ClassificationTest extends TestCase
         $this->assertSame([CommandClass::Read, CommandClass::Write], $classification->requiredClasses()->classes);
         $this->assertSame($cat->id, $classification->factsFor(CommandClass::Write)[0]->node);
         $this->assertSame('syntax:redirect', $classification->factsFor(CommandClass::Write)[0]->origin->reference());
-        $this->assertTrue($classification->mayChangeFiles());
+        $this->assertTrue($classification->changesFiles());
     }
 
     public function test_a_chain_requires_the_union_of_its_parts(): void
@@ -73,7 +73,7 @@ final class ClassificationTest extends TestCase
 
         $this->assertFalse($classification->isKnown());
         $this->assertSame(UnresolvedType::UnknownProgram, $classification->unresolved()[0]->type);
-        $this->assertTrue($classification->mayChangeFiles());
+        $this->assertTrue($classification->changesFiles());
         $this->assertTrue($classification->needsAlias());
     }
 

@@ -23,20 +23,29 @@ final readonly class ShellCommand
     ) {}
 
     /**
-     * Whether running the line may change files; a line the parser could not read fully counts as one that may.
+     * Whether running the line changes files, or could: a line the parser could not read fully counts as one that
+     * does. It says what the line does, not what anyone is allowed to do.
      */
-    public function mayChangeFiles(): bool
+    public function changesFiles(): bool
     {
         if (! $this->outcome->isComplete()) {
             return true;
         }
 
         foreach ($this->parts as $part) {
-            if ($part->effect->mayChangeFiles()) {
+            if ($part->effect->changesFiles()) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Whether running the line only reads: the parser read it whole and no part of it changes files or could.
+     */
+    public function readsOnly(): bool
+    {
+        return ! $this->changesFiles();
     }
 }

@@ -10,6 +10,7 @@ use App\Enums\ListenerLane;
 use App\Events\AskClosed;
 use App\Events\AskHopAssigned;
 use App\Events\ChatMessageAccepted;
+use App\Events\ChatMessageOffered;
 use App\Events\LinksRemoved;
 use App\Events\MergeOutcomeRecorded;
 use App\Events\MessageAnswerRequired;
@@ -108,6 +109,7 @@ final class TransactionListenerLaneTest extends TestCase
                 MessageAnswerRequired::class,
                 MessageSent::class,
                 ChatMessageAccepted::class,
+                ChatMessageOffered::class,
                 PlanReviewRequested::class,
                 TaskDescribed::class,
                 RunOutcomeRecorded::class,

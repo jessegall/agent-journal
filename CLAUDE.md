@@ -58,6 +58,16 @@ yours to resolve at its source.
 - The same scenarios run against a real Docker only from the separate installation suite, never from `composer test`.
 - **Everything that talks to Docker has such a test, a session's whole life too** (rule 83; user messages 19640, 19642): starting a session, a conversation through it (a chat message goes in through the journal and the host to a stand-in program, the reply comes back and the open page is told), stopping it, and a host restart with what happens to its containers. No code that runs a docker command or depends on a container is written or changed without its stand-in test in the same commit, and no session fix is handed to the user before that test passes.
 
+## Version 6 never holds old code (rule 87; user messages 19760, 19761)
+
+- Version 6 is the new version, so nothing in it is old. Never, ever: no old or legacy parser, class, method, enum
+  case, column, route, fallback or compatibility path kept beside its replacement.
+- No comment says a thing is old, legacy, deprecated, kept for now or stays until a cutover.
+- When something is replaced, what it replaces is removed in the same change, with every caller moved. A replacement
+  is never written beside what it replaces.
+- Old code found while working is removed at its source at once, or filed as a task when the removal is large.
+- An architecture test fails on a name or comment that marks old code (task 2940).
+
 ## Events belong to a group (rule 84; user message 19653)
 
 - Events of one subject form a group, and every event of a group implements that group's one base type: every chat event implements `ChatEvent`, every message event `MessageEvent`, and so on for sessions and starts, accounts, shares, tasks and every domain.

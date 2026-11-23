@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\StopDetails;
@@ -44,15 +45,15 @@ final class HookInputTest extends TestCase
         $plainState = new class extends AgentState {};
 
         $this->assertSame($method, $input->methodName());
-        $this->assertNull($input->answerBy($recording));
+        $this->assertEquals(Decision::delegate(), $input->answerBy($recording));
         $this->assertSame([$method], $recording->askedMethods);
-        $this->assertNull($input->answerBy($plainState));
+        $this->assertEquals(Decision::delegate(), $input->answerBy($plainState));
     }
 
     public function test_an_input_keeps_the_identity_it_was_given(): void
     {
         $hook = TestActors::hookIdentity(7, 9, 'hook-7', 'digest-7');
 
-        $this->assertSame($hook, new StopRequested($hook, new StopDetails('turn-7', true))->identity());
+        $this->assertSame($hook, new StopRequested($hook, new StopDetails('turn-7', true, ''))->identity());
     }
 }

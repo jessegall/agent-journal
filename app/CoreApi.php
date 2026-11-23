@@ -729,6 +729,7 @@ use App\Events\ChatLinePosted;
 use App\Events\ChatMemberJoined;
 use App\Events\ChatMemberLeft;
 use App\Events\ChatMessageAccepted;
+use App\Events\ChatMessageOffered;
 use App\Events\ChatReceiptPresented;
 use App\Events\ChatRoleChanged;
 use App\Events\CommentPosted;
@@ -1136,6 +1137,7 @@ use App\Support\ContainerManifest;
 use App\Support\CurrentSettingsResolver;
 use App\Support\CurrentUser;
 use App\Support\Decisions\ContextLine;
+use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Decisions\StateReferenceFactory;
@@ -1318,6 +1320,7 @@ use App\Values\AccountUse;
 use App\Values\ActivatedProfile;
 use App\Values\AdmittedConstraints;
 use App\Values\AllowedNames;
+use App\Values\AnswerBudget;
 use App\Values\ArgumentGrammar;
 use App\Values\AskTypeKey;
 use App\Values\BindingFolder;
@@ -1590,6 +1593,7 @@ final class CoreApi
                 ChatReceiptPresented::class,
                 ReceiptDeliveryChanged::class,
                 ChatMessageAccepted::class,
+                ChatMessageOffered::class,
                 StartRefusedFact::class,
                 AccountsChanged::class,
                 RunChanged::class,
@@ -1781,6 +1785,7 @@ final class CoreApi
                 EnvironmentTasks::class,
                 VerificationTiming::class,
                 HookAnswerer::class,
+                AnswerPart::class,
                 HookInput::class,
                 OperationPolicy::class,
                 StateRegistration::class,
@@ -2119,6 +2124,7 @@ final class CoreApi
                 VisibleToProfiles::class,
                 DiscoveryProfile::class,
                 RecoveryCall::class,
+                AnswerBudget::class,
                 RecordCard::class,
                 StateReferences::class,
                 StateSet::class,

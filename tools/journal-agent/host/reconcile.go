@@ -75,7 +75,7 @@ func ContainerSessionsOf(ctx context.Context, containers Containers, installatio
 	sessions := ContainerSessions{}
 	for _, container := range found {
 		if container.Running {
-			container.Running = containers.command(ctx, "rm", "--force", container.ID).Run() != nil
+			container.Running = containers.removeRunning(ctx, container.ID) != nil
 		}
 
 		sessions[container.Session] = container

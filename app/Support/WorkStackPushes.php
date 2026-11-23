@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Events\Event;
 use App\Contracts\Work\AgentStack;
 use App\Contracts\Work\CurrentState;
 use App\Contracts\Work\WorkStacks;
@@ -37,8 +38,15 @@ final readonly class WorkStackPushes implements ActorWorkStacks
 
     public function pushFor(ActorIdentity $actor, StateReference $state): void
     {
-        foreach ($this->workStacks->sessionsOf($actor) as $sessionId) {
-            $this->addressed->push(new StackTarget($actor->id, $sessionId), $state);
+        foreach ($this->stackTargetsOf($actor) as $target) {
+            $this->addressed->push($target, $state);
+        }
+    }
+
+    public function tellFor(ActorIdentity $actor, Event $fact): void
+    {
+        foreach ($this->stackTargetsOf($actor) as $target) {
+            $this->addressed->tell($target, $fact);
         }
     }
 
@@ -67,6 +75,19 @@ final readonly class WorkStackPushes implements ActorWorkStacks
         $target = $this->targets()[0] ?? null;
 
         return $target === null ? None::create() : $this->states->record($target);
+    }
+
+    /**
+     * The stacks another actor works on now: its running sessions that have an open stack. A session that is still
+     * starting has none yet and gets nothing.
+     *
+     * @return list<StackTarget>
+     */
+    private function stackTargetsOf(ActorIdentity $actor): array
+    {
+        $rows = AgentStackRow::lockActiveOf($actor, $this->workStacks->sessionsOf($actor));
+
+        return array_map(fn (AgentStackRow $row) => $row->target(), $rows);
     }
 
     /**

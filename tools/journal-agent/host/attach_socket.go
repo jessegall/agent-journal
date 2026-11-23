@@ -13,8 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/creack/pty"
-
 	"journal-agent/screen"
 	inputs "journal-agent/terminal"
 )
@@ -32,8 +30,8 @@ type AttachRequest struct {
 	RuntimeID string `json:"runtime_id"`
 	// ConversationID is the conversation the host started the program on, which its bootstrap proves to the journal.
 	ConversationID string `json:"conversation_id,omitempty"`
-	// Driver is the profile name of the driver the command runs, which its screen layout belongs to; the command
-	// itself may be another, such as a docker attach to a contained session.
+	// Driver is the profile name of the driver the runtime runs, which its screen layout belongs to. A contained
+	// session has no command here: its terminal is its container's own, named by ContainerInstance.
 	Driver    string   `json:"driver"`
 	Command   []string `json:"command"`
 	Folder    string   `json:"folder"`
@@ -46,8 +44,9 @@ type AttachRequest struct {
 	ContainerInstance string `json:"container_instance"`
 }
 
-// TerminalStarter starts the program of a runtime the host does not run yet; it returns the PTY.
-type TerminalStarter func(request AttachRequest) (*os.File, error)
+// TerminalStarter starts the program of a runtime the host does not run yet, or attaches to the session container
+// that runs it; it returns the program's terminal.
+type TerminalStarter func(request AttachRequest) (TerminalStream, error)
 
 // AttachSocket lets a user's terminal attach to the programs the host runs: an owner-only Unix socket in the
 // host's private folder. The host owns each program; a client that detaches leaves it running.
@@ -67,10 +66,10 @@ type AttachSocket struct {
 // LayoutFinder gives the screen layout of the program a request starts, from its profile.
 type LayoutFinder func(request AttachRequest) (screen.Layout, error)
 
-// hostTerminal is one program the host runs: its PTY, the screen read from its output, and the one gate every key
+// hostTerminal is one program the host runs: its terminal, the screen read from its output, and the one gate every key
 // passes through on its way in.
 type hostTerminal struct {
-	pty      *os.File
+	stream   TerminalStream
 	reader   *screen.EmulatorReader
 	layout   screen.Layout
 	gate     *inputs.InputGate
@@ -199,18 +198,18 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 	if err != nil {
 		return nil, err
 	}
-	file, err := socket.Start(request)
+	stream, err := socket.Start(request)
 	if err != nil {
 		return nil, err
 	}
-	gate := inputs.NewInputGate(file, reader, layout.Composer, time.Now)
+	gate := inputs.NewInputGate(stream, reader, layout.Composer, time.Now)
 	barrier := inputs.NewCaptureBarrier()
 	attachment, err := randomName()
 	if err != nil {
 		return nil, err
 	}
 	terminal := &hostTerminal{
-		pty:               file,
+		stream:            stream,
 		reader:            reader,
 		layout:            layout,
 		gate:              gate,
@@ -284,24 +283,24 @@ func (socket *AttachSocket) LostConnection(runtimeID string) bool {
 // resize gives the program's terminal and the screen read from it the size of the attached window, so the screen
 // keeps the grid the program draws on; a size the reader refuses leaves the reader as it was.
 func (terminal *hostTerminal) resize(rows, columns uint16) {
-	_ = pty.Setsize(terminal.pty, &pty.Winsize{Rows: rows, Cols: columns})
+	_ = terminal.stream.Resize(rows, columns)
 	_ = terminal.reader.Resize(int(columns), int(rows))
 }
 
-// resizeForBrowser gives the PTY and the screen a browser writer's size, bounded by the screen's limits, and says
+// resizeForBrowser gives the terminal and the screen a browser writer's size, bounded by the screen's limits, and says
 // the size achieved; when either refuses, both go back to the size they had.
 func (terminal *hostTerminal) resizeForBrowser(rows, columns int) (int, int, error) {
 	limits := screen.DefaultLimits
 	rows, columns = min(max(rows, 1), limits.MaxRows), min(max(columns, 1), limits.MaxColumns)
-	before, err := pty.GetsizeFull(terminal.pty)
+	rowsBefore, columnsBefore, err := terminal.stream.Size()
 	if err != nil {
 		return 0, 0, err
 	}
-	if err := pty.Setsize(terminal.pty, &pty.Winsize{Rows: uint16(rows), Cols: uint16(columns)}); err != nil {
+	if err := terminal.stream.Resize(uint16(rows), uint16(columns)); err != nil {
 		return 0, 0, err
 	}
 	if err := terminal.reader.Resize(columns, rows); err != nil {
-		_ = pty.Setsize(terminal.pty, before)
+		_ = terminal.stream.Resize(rowsBefore, columnsBefore)
 
 		return 0, 0, err
 	}
@@ -314,7 +313,7 @@ func (terminal *hostTerminal) resizeForBrowser(rows, columns int) (int, int, err
 type Terminal struct {
 	Reader *screen.EmulatorReader
 	Gate   *inputs.InputGate
-	// Hangup ends the program from outside its input: it closes the PTY the host owns, so no key, draft or Enter is
+	// Hangup ends the program from outside its input: it closes the terminal the host holds, so no key, draft or Enter is
 	// ever sent to stop it.
 	Hangup func() error
 	// EnterPrivate closes the capture barrier for a private entry and says whether every sink confirmed;
@@ -325,7 +324,7 @@ type Terminal struct {
 	Attachment string
 }
 
-// Open starts the runtime's program on a PTY the host owns, or finds the one it already runs under the runtime's id,
+// Open starts the runtime's program on a terminal the host holds, or finds the one it already runs under the runtime's id,
 // such as one a user attached first; a user may attach to it afterwards.
 func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
 	terminal, err := socket.terminalFor(request)
@@ -337,7 +336,7 @@ func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
 		Reader:            terminal.reader,
 		Gate:              terminal.gate,
 		Attachment:        terminal.attachment,
-		Hangup:            terminal.pty.Close,
+		Hangup:            terminal.stream.Close,
 		EnterPrivate:      terminal.enterPrivate,
 		ConfirmPrivateEnd: terminal.confirmPrivateEnd,
 	}, nil
@@ -377,7 +376,7 @@ func (terminal *hostTerminal) isActive(identity uint64) bool {
 func (terminal *hostTerminal) copyOut() {
 	buffer := make([]byte, 32*1024)
 	for {
-		count, err := terminal.pty.Read(buffer)
+		count, err := terminal.stream.Read(buffer)
 		if count > 0 && terminal.feedPrivate(buffer[:count]) {
 			continue
 		}

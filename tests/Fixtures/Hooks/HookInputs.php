@@ -83,7 +83,7 @@ final class HookInputs
                 $hook,
                 ClaudeCodeTool::Read->operation(new DriverToolInput(['file_path' => 'app/Models/Task.php'])),
             ),
-            'stop' => new StopRequested($hook, new StopDetails('turn-1', false)),
+            'stop' => new StopRequested($hook, new StopDetails('turn-1', false, '')),
             'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),
             'tool finished' => new ToolFinished(
                 $hook,
