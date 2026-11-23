@@ -2479,6 +2479,7 @@ class	ClaudeAnswerData
 class	ClaudeCodeAdapter
 class	ClaudeCodeSkills
 class	ClaudeDriver
+class	ClaudeFirstRun
 class	ClaudeKeySignIn
 class	ClaudeSecretSignIn
 class	ClaudeSignIn
@@ -7416,6 +7417,10 @@ constant	ClaudeCodeSkills::PLUGIN_NAME
 constant	ClaudeCodeTool::DECLARATION_REVISION
 constant	ClaudeCodeTool::SURFACE
 constant	ClaudeDriver::NO_KEYCHAIN
+constant	ClaudeFirstRun::FOLDERS
+constant	ClaudeFirstRun::FOLDER_TRUSTED
+constant	ClaudeFirstRun::STATE_FILE
+constant	ClaudeFirstRun::WELCOME_PASSED
 constant	ClaudeTokenSignIn::TOKEN_DESCRIPTOR
 constant	CleanupOperation::ATTEMPT_LIMIT
 constant	CleanupProgress::MOST_TRIES
@@ -8969,6 +8974,7 @@ interface	FactStaging
 interface	FallbackDocks
 interface	FileAccessPolicy
 interface	Files
+interface	FirstRunSettlement
 interface	GroupDeclaration
 interface	GuardedCommandBus
 interface	HelperCommitImport
@@ -12049,6 +12055,8 @@ method	ClaudeDriver::environment()
 method	ClaudeDriver::modelRefusal()
 method	ClaudeDriver::start()
 method	ClaudeDriver::status()
+method	ClaudeFirstRun::__construct()
+method	ClaudeFirstRun::settle()
 method	ClaudeKeySignIn::authMethod()
 method	ClaudeKeySignIn::card()
 method	ClaudeKeySignIn::install()
@@ -12072,6 +12080,7 @@ method	ClaudeSecretSignIn::readFiles()
 method	ClaudeSecretSignIn::realFolder()
 method	ClaudeSecretSignIn::secretFile()
 method	ClaudeSecretSignIn::secretPath()
+method	ClaudeSecretSignIn::settleFirstRun()
 method	ClaudeSecretSignIn::signInHosts()
 method	ClaudeSecretSignIn::signOut()
 method	ClaudeSecretSignIn::uninstall()
@@ -12086,6 +12095,7 @@ method	ClaudeSignIn::card()
 method	ClaudeSignIn::challengeFrom()
 method	ClaudeSignIn::hasFinished()
 method	ClaudeSignIn::prove()
+method	ClaudeSignIn::settleFirstRun()
 method	ClaudeSignIn::signInHosts()
 method	ClaudeSignIn::signOut()
 method	ClaudeSignIn::submitCode()
@@ -15299,6 +15309,7 @@ method	FinishTaskTool::writeSchema()
 method	FinishTree::handle()
 method	FinishedToolCalls::__construct()
 method	FinishedToolCalls::announce()
+method	FirstRunSettlement::settleFirstRun()
 method	FlagField::__construct()
 method	FlagField::encode()
 method	FlagField::name()
@@ -19374,6 +19385,7 @@ method	PrivateSignInProcesses::reconcileAtStart()
 method	PrivateSignInProcesses::removeDirectory()
 method	PrivateSignInProcesses::removeStore()
 method	PrivateSignInProcesses::runNext()
+method	PrivateSignInProcesses::settleFirstRun()
 method	PrivateSignInProcesses::waitForEnd()
 method	PrivateSubmission::__construct()
 method	PrivateValues::__construct()
@@ -28849,6 +28861,7 @@ parameter	$firstReader
 parameter	$firstRequest
 parameter	$firstRequestId
 parameter	$firstRound
+parameter	$firstRun
 parameter	$fixed
 parameter	$flag
 parameter	$flags
@@ -30958,6 +30971,7 @@ parameter	$variables
 parameter	$variant
 parameter	$vendorSessionId
 parameter	$verdict
+parameter	$verification
 parameter	$verificationUrl
 parameter	$verified
 parameter	$version
@@ -32773,10 +32787,13 @@ property	ClaudeCodeAdapter::$parser
 property	ClaudeCodeAdapter::$protection
 property	ClaudeDriver::$config
 property	ClaudeDriver::$egress
+property	ClaudeFirstRun::$files
 property	ClaudeSecretSignIn::$claude
 property	ClaudeSecretSignIn::$files
+property	ClaudeSecretSignIn::$firstRun
 property	ClaudeSignIn::$claude
 property	ClaudeSignIn::$files
+property	ClaudeSignIn::$firstRun
 property	ClaudeStatus::$authMethod
 property	ClaudeStatus::$configDirectory
 property	ClaudeStatus::$email
@@ -43157,6 +43174,7 @@ variable	$isExportedUiEvent
 variable	$isFacade
 variable	$isField
 variable	$isFirstLine
+variable	$isFolderTrusted
 variable	$isForeignUndeclared
 variable	$isForm
 variable	$isFull
@@ -43235,6 +43253,7 @@ variable	$isTruncated
 variable	$isUnderWay
 variable	$isWaiting
 variable	$isWeek
+variable	$isWelcomePassed
 variable	$isWritten
 variable	$isolation
 variable	$issued
@@ -44015,6 +44034,7 @@ variable	$sequences
 variable	$server
 variable	$service
 variable	$session
+variable	$sessionFolder
 variable	$sessionId
 variable	$sessionIds
 variable	$sessions

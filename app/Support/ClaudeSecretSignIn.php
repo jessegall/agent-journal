@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Accounts\FirstRunSettlement;
 use App\Contracts\Accounts\SignInProtocol;
 use App\Contracts\Files\Files;
 use App\Enums\Permissions;
@@ -11,6 +12,7 @@ use App\Enums\Place;
 use App\Exceptions\FileExists;
 use App\Exceptions\FileUnwritable;
 use App\Exceptions\SignInSecretUnwritable;
+use App\Support\Drivers\ClaudeFirstRun;
 use App\Values\FilePath;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
@@ -22,14 +24,23 @@ use App\Values\SignInVerification;
  * private file in the account folder, which the driver reads at every launch, never through its arguments or its
  * environment. The status names the method, and one short model call proves the value works.
  */
-abstract readonly class ClaudeSecretSignIn implements SignInProtocol
+abstract readonly class ClaudeSecretSignIn implements FirstRunSettlement, SignInProtocol
 {
     public function signInHosts(): SignInHosts
     {
         return SignInHosts::anthropic();
     }
 
-    public function __construct(protected ClaudeDriver $claude, protected Files $files) {}
+    public function __construct(
+        protected ClaudeDriver $claude,
+        protected Files $files,
+        private ClaudeFirstRun $firstRun,
+    ) {}
+
+    public function settleFirstRun(string $directory): void
+    {
+        $this->firstRun->settle($directory);
+    }
 
     public function begin(string $directory): PrivateAccountProcess
     {

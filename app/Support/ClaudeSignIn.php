@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Accounts\FirstRunSettlement;
 use App\Contracts\Accounts\SignInProtocol;
 use App\Contracts\Files\Files;
 use App\Enums\Place;
 use App\Exceptions\SignInCodeInvalid;
+use App\Support\Drivers\ClaudeFirstRun;
 use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInCode;
@@ -21,14 +23,14 @@ use App\Values\SignInVerification;
  * output, the user's code typed on its standard input, and `claude auth status --json` as the check. The driver
  * exchanges every token itself; nothing here sees one.
  */
-final readonly class ClaudeSignIn implements SignInProtocol
+final readonly class ClaudeSignIn implements FirstRunSettlement, SignInProtocol
 {
     public function signInHosts(): SignInHosts
     {
         return SignInHosts::anthropic();
     }
 
-    public function __construct(private ClaudeDriver $claude, private Files $files) {}
+    public function __construct(private ClaudeDriver $claude, private Files $files, private ClaudeFirstRun $firstRun) {}
 
     public function begin(string $directory): PrivateAccountProcess
     {
@@ -83,6 +85,11 @@ final readonly class ClaudeSignIn implements SignInProtocol
             : SignInIdentity::unproved();
 
         return new SignInVerification($isSignedIn, $identity, $status->isReadable);
+    }
+
+    public function settleFirstRun(string $directory): void
+    {
+        $this->firstRun->settle($directory);
     }
 
     public function signOut(string $directory): void

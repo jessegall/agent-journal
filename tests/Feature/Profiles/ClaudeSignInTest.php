@@ -6,9 +6,11 @@ namespace Tests\Feature\Profiles;
 
 use App\Exceptions\SignInCodeInvalid;
 use App\Support\ClaudeSignIn;
+use App\Support\ContainerManifest;
 use App\Support\PrivateAccountProcess;
 use App\Support\SignInProtocols;
 use App\Values\SignInVerification;
+use stdClass;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -19,6 +21,10 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 8, reason: 'It runs a stand-in program as a host process several times.')]
 final class ClaudeSignInTest extends TestCase
 {
+    private const string OTHER_FOLDER = '/other';
+
+    private const string STATE_BEFORE = '{"numStartups":7,"cachedGrowthBookFeatures":{},"projects":{"/other":{"hasTrustDialogAccepted":true}}}';
+
     private string $directory;
 
     protected function setUp(): void
@@ -84,6 +90,37 @@ final class ClaudeSignInTest extends TestCase
         $this->assertFalse($this->proofAfterLogin('ok', ['auth-method' => 'api_key'])->isSignedIn);
         $this->assertFalse($this->proofAfterLogin('ok', ['config-directory' => '/elsewhere'])->isSignedIn);
         $this->assertFalse($this->proofAfterLogin('ok', ['config-directory' => ''])->isSignedIn);
+    }
+
+    /**
+     * Rule 81: a signed-in folder is left past Claude Code's welcome screens and its trust question for the folder a
+     * session works in, and what Claude Code keeps beside them stays as it wrote it, empty objects included.
+     */
+    public function test_a_folder_is_left_past_the_first_run_questions_and_keeps_what_claude_code_wrote(): void
+    {
+        $state = "{$this->directory}/.claude.json";
+        file_put_contents($state, self::STATE_BEFORE);
+        $protocol = $this->app->make(ClaudeSignIn::class);
+
+        $protocol->settleFirstRun($this->directory);
+        $settled = json_decode((string) file_get_contents($state), flags: JSON_THROW_ON_ERROR);
+        $protocol->settleFirstRun($this->directory);
+
+        $this->assertTrue($settled->hasCompletedOnboarding);
+        $this->assertTrue($settled->projects->{ContainerManifest::WORKDIR}->hasTrustDialogAccepted);
+        $this->assertSame(7, $settled->numStartups);
+        $this->assertEquals(new stdClass(), $settled->cachedGrowthBookFeatures);
+        $this->assertTrue($settled->projects->{self::OTHER_FOLDER}->hasTrustDialogAccepted);
+        $this->assertJsonStringEqualsJsonString(json_encode($settled, JSON_THROW_ON_ERROR), (string) file_get_contents($state));
+    }
+
+    public function test_a_folder_claude_code_has_not_written_to_yet_is_settled_too(): void
+    {
+        $this->app->make(ClaudeSignIn::class)->settleFirstRun($this->directory);
+
+        $settled = json_decode((string) file_get_contents("{$this->directory}/.claude.json"), flags: JSON_THROW_ON_ERROR);
+        $this->assertTrue($settled->hasCompletedOnboarding);
+        $this->assertTrue($settled->projects->{ContainerManifest::WORKDIR}->hasTrustDialogAccepted);
     }
 
     public function test_the_runner_finds_the_claude_protocol(): void

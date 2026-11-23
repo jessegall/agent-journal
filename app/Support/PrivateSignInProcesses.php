@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Accounts\AccountFolders;
 use App\Contracts\Accounts\AccountOwnerDrain;
+use App\Contracts\Accounts\FirstRunSettlement;
 use App\Contracts\Accounts\SignInHost;
 use App\Contracts\Accounts\SignInProtocol;
 use App\Contracts\Files\Files;
@@ -19,6 +20,7 @@ use App\Values\ClaimedCleanup;
 use App\Values\ClaimedSignIn;
 use App\Values\CleanupProgress;
 use App\Values\SignInIdentity;
+use App\Values\SignInVerification;
 use Carbon\CarbonImmutable;
 use Closure;
 
@@ -78,6 +80,7 @@ final readonly class PrivateSignInProcesses
 
         $verification = $protocol->prove($process, $claimed->directory);
         $process->stop();
+        $this->settleFirstRun($protocol, $verification, $claimed->directory);
         $outcome = $verification->isSignedIn ? SignInOutcome::Verified : SignInOutcome::Failed;
         $this->host->report($claimed, $outcome, $verification->identity, $verification->refusal);
 
@@ -110,7 +113,9 @@ final readonly class PrivateSignInProcesses
             return true;
         }
 
-        $verification = $this->protocols->for($claimed->driver, $claimed->method)->verify($claimed->directory);
+        $protocol = $this->protocols->for($claimed->driver, $claimed->method);
+        $verification = $protocol->verify($claimed->directory);
+        $this->settleFirstRun($protocol, $verification, $claimed->directory);
 
         $accountCheck = match (true) {
             ! $verification->isCertain => AccountCheckResult::Unknown,
@@ -293,5 +298,15 @@ final readonly class PrivateSignInProcesses
     {
         $this->folders->make($directory);
         umask(0077);
+    }
+
+    /**
+     * A folder just proven or found signed in is left past its driver's first-run questions, where the driver has any.
+     */
+    private function settleFirstRun(SignInProtocol $protocol, SignInVerification $verification, string $directory): void
+    {
+        if ($verification->isSignedIn && $protocol instanceof FirstRunSettlement) {
+            $protocol->settleFirstRun($directory);
+        }
     }
 }
