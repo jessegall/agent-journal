@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -171,26 +170,8 @@ func (grant StartGrant) signedPost(ctx context.Context, target string, body any)
 	if err != nil {
 		return nil, err
 	}
-	issuedAt := time.Now().Unix()
-	signed, err := signature(grant.Token, http.MethodPost, target, callID, issuedAt, content, grant.ProfileKey, strconv.Itoa(grant.ProfileRevision))
-	if err != nil {
-		return nil, err
-	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, grant.JournalURL+target, bytes.NewReader(content))
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Set("Authorization", "Bearer "+grant.Token)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Accept", "application/json")
-	request.Header.Set(callIDHeader, callID)
-	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
-	request.Header.Set(signatureHeader, signed)
-	request.Header.Set(profileHeader, grant.ProfileKey)
-	request.Header.Set(profileRevisionHeader, strconv.Itoa(grant.ProfileRevision))
-
-	return request, nil
+	return grant.signedRequest(ctx, target, content, callID, time.Now().Unix())
 }
 
 // StartGrantFrom reads a provider session's grant from its start environment; ok is false outside one.

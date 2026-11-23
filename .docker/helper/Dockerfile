@@ -16,7 +16,8 @@ COPY tools/journal-agent/ ./
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-init ./cmd/journal-init \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-exec ./cmd/journal-exec \
-    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-shell ./cmd/journal-shell
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-shell ./cmd/journal-shell \
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-hook ./cmd/journal-hook
 
 FROM ${BASE}
 
@@ -31,9 +32,11 @@ RUN --mount=type=cache,target=/root/.npm --mount=type=cache,target=/var/cache/ap
     && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
     && apt-get purge -y npm && apt-get autoremove -y
 
-# The protected relay console: the hook and MCP relays and the transport-only artisan commands, with no .env and no
-# database; and the protected stop checks.
-COPY --chown=root:root bin/journal-hook bin/journal-mcp /opt/journal/bin/
+# The relays and the protected stop checks. The hook relay is a standalone program that asks the journal itself with
+# the start's grant; the image holds no application console. The MCP relay still is the console's script, which
+# cannot run here until it is a standalone program too (task 2846).
+COPY --chown=root:root bin/journal-mcp /opt/journal/bin/
+COPY --from=protected-start --chown=root:root /out/journal-hook /opt/journal/bin/journal-hook
 COPY --chown=root:root tools/journal-check/journal-check /opt/journal/bin/journal-check
 COPY --from=protected-start --chown=root:root /out/journal-init /out/journal-exec /out/journal-shell /opt/journal/bin/
 # Claude Code takes a shell only by the name bash: the shell bridge under that name hands every command to the executor.

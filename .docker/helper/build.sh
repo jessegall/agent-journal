@@ -33,13 +33,17 @@ docker run --rm --entrypoint codex "$tag" --version | grep -q "$codex"
 if [ "$name" = agent ]; then
     docker run --rm --entrypoint id "$tag" -u | grep -qx 10001
     docker run --rm --entrypoint test "$tag" -x /opt/journal/bin/journal-check
-    for protected in bin/journal-init bin/journal-exec bin/journal-shell shell/bash; do
+    for protected in bin/journal-init bin/journal-exec bin/journal-shell bin/journal-hook shell/bash; do
         docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
     done
     docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' /etc/claude-code/managed-settings.json \
         | grep -qx 'root:root 444'
     docker run --rm --entrypoint id "$tag" journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
     docker run --rm --entrypoint stat "$tag" -c '%u:%g %a' /workspace | grep -qx '10001:10010 2770'
+    # The hook relay runs with nothing but its own program: with no grant it answers the provider's blocking reply.
+    echo '{"hook_event_name":"UserPromptSubmit"}' \
+        | docker run --rm -i --read-only --network none --entrypoint /opt/journal/bin/journal-hook "$tag" claude-code \
+        | grep -q '"decision":"block"'
     docker run --rm --entrypoint bwrap "$tag" --version >/dev/null
     docker run --rm --entrypoint socat "$tag" -V >/dev/null
     for absent in docker journal-agent; do
