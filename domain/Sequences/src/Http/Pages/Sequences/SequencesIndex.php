@@ -100,7 +100,7 @@ final readonly class SequencesIndex
                 'title' => 'New sequence',
                 'confirmation' => 'Draft opened in the editor',
                 'guidedNoun' => 'sequence',
-                'ways' => new LayoutWaysData('Write the steps yourself', 'Build it with an agent'),
+                'ways' => new LayoutWaysData('Write the steps yourself', 'Build it with an agent', true),
             ]),
             $plain,
             LayoutFormData::from(['method' => ActionMethod::Get, 'href' => route('sequences.new', [], false)]),

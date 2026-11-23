@@ -141,8 +141,8 @@ final readonly class TasksIndex
                 'title' => 'New task',
                 'confirmation' => 'Task created',
                 'guidedNoun' => $isGuided ? 'task' : Optional::create(),
-                'ways' => $isGuided && $key === 'creation'
-                    ? new LayoutWaysData('Write it yourself', 'Plan it with an agent')
+                'ways' => $isGuided
+                    ? new LayoutWaysData('Write it yourself', 'Plan it with an agent', $key === 'creation')
                     : Optional::create(),
             ],
         );

@@ -126,8 +126,8 @@ final readonly class PlansIndex
                     'title' => 'New plan',
                     'confirmation' => 'Plan created',
                     'guidedNoun' => $isGuided ? 'plan' : Optional::create(),
-                    'ways' => $isGuided && $key === 'creation'
-                        ? new LayoutWaysData('Write it yourself', 'Plan it with an agent')
+                    'ways' => $isGuided
+                        ? new LayoutWaysData('Write it yourself', 'Plan it with an agent', $key === 'creation')
                         : Optional::create(),
                 ],
             ),

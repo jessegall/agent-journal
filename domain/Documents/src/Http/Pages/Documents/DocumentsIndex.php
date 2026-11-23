@@ -129,8 +129,8 @@ final readonly class DocumentsIndex
                 'title' => $label,
                 'confirmation' => $type === 'doc' ? 'Document filed' : 'Report filed',
                 'guidedNoun' => $guidedNoun,
-                'ways' => is_string($guidedNoun) && $key === 'create'
-                    ? new LayoutWaysData('Write it yourself', 'Write it with an agent')
+                'ways' => is_string($guidedNoun)
+                    ? new LayoutWaysData('Write it yourself', 'Write it with an agent', $key === 'create')
                     : Optional::create(),
             ]),
             LayoutPartData::action('open', $label, LayoutActionData::changing([]), $openerStyle),

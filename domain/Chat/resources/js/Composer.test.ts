@@ -40,7 +40,7 @@ vi.mock("./composables/useComposerHeight", () => ({
 const { useMessageDrafts } = await import("./composables/useMessageDrafts");
 const { default: Composer } = await import("./Composer.vue");
 
-function mountComposer() {
+function mountComposer(replyingTo: { id: string; body: string; stateVersion: number } | null = null) {
   return mount(Composer, {
     props: {
       draftKey: "user-1/inbox-chat",
@@ -49,7 +49,7 @@ function mountComposer() {
       sessionId: null,
       sessionGeneration: 0,
       inboxId: "inbox-chat",
-      replyingTo: null,
+      replyingTo,
       conversationProp: "window_chat_conversation",
       participants: [],
       viewer: "user:user-1",
@@ -85,5 +85,15 @@ describe("Composer", () => {
       (composer.find("textarea").element as HTMLTextAreaElement).value,
     ).toBe("");
     expect(useMessageDrafts().read("user-1/inbox-chat")).toBe("");
+  });
+
+  it("shows the message being answered with a button that stops the reply", async () => {
+    const composer = mountComposer({ id: "m1", body: "Which plan?", stateVersion: 1 });
+
+    expect(composer.text()).toContain("Which plan?");
+
+    await composer.get('button[aria-label="Stop replying"]').trigger("click");
+
+    expect(composer.emitted("cancelReply")).toHaveLength(1);
   });
 });

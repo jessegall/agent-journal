@@ -21,9 +21,10 @@ import { provideFormDraft, provideFormSent } from './layoutForm';
 // focus back to the opener, a page change closes it, and once the form is accepted it closes and a toast says so,
 // offering Undo only when the declaration supplies an inverse action. When the declaration names a noun with a draft
 // producer, the dialog offers the guided entry; the fields it drafts fill this form under a banner naming the agent,
-// and nothing is saved until the form is sent. A dialog that names its other ways draws its opener as the kit's split
-// button: the opener's label as the main part, and a menu of the plain way and the way with an agent; an opener that
-// leads to a page stays a link, and the guided way drafts the fields the form then shows.
+// and nothing is saved until the form is sent. A dialog that names its other ways calls its footer's guided button by
+// the way's name, and, in a page header, draws its opener as the kit's split button: the opener's label as the main
+// part, and a menu of the plain way and the way with an agent; an opener that leads to a page stays a link, and the
+// guided way drafts the fields the form then shows.
 const props = defineProps<{ part: LayoutPartData }>();
 const page = usePage();
 const isOpen = ref(false);
@@ -34,6 +35,9 @@ const draftedFields = ref<Record<string, string> | null>(null);
 const opener = computed(() => props.part.children[0]);
 const form = computed(() => props.part.children[1]);
 const ways = computed(() => props.part.dialog?.ways);
+const guidedFooter = computed(() =>
+    ways.value === undefined ? 'Answer questions instead' : `${ways.value.guided} instead`,
+);
 
 function openFromOpener(event: MouseEvent): void {
     const isItem = (event.target as Element).closest('[role^="menuitem"]') !== null;
@@ -88,7 +92,7 @@ watch(() => page.url, close);
 </script>
 
 <template>
-    <template v-if="ways !== undefined">
+    <template v-if="ways?.isInHeader">
         <SplitButton
             :label="opener.text ?? ''"
             icon="plus"
@@ -127,7 +131,7 @@ watch(() => page.url, close);
         </div>
         <template #footer>
             <template v-if="part.dialog?.guidedNoun !== undefined">
-                <Button variant="ghost" @click="startGuided">Answer questions instead</Button>
+                <Button variant="ghost" @click="startGuided">{{ guidedFooter }}</Button>
             </template>
             <Button variant="ghost" @click="close">Cancel</Button>
         </template>

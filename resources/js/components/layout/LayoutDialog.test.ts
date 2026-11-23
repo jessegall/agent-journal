@@ -48,13 +48,25 @@ afterEach(() => {
 describe('a dialog of a declared layout', () => {
     it('draws its opener as a split button with a menu of its other ways when it names them', () => {
         const buttons = view(
-            dialog({ guidedNoun: 'plan', ways: { plain: 'Write it yourself', guided: 'Plan it with an agent' } }),
+            dialog({ guidedNoun: 'plan', ways: { plain: 'Write it yourself', guided: 'Plan it with an agent', isInHeader: true } }),
         ).findAll('button');
 
         expect(buttons[0].text()).toContain('New plan');
         expect(buttons[1].attributes('aria-label')).toBe('More ways to create a plan');
         expect(document.body.textContent).toContain('Write it yourself');
         expect(document.body.textContent).toContain('Plan it with an agent');
+    });
+
+    it('keeps a plain opener outside a header and names the guided way in its footer', async () => {
+        const plan = view(
+            dialog({ guidedNoun: 'plan', ways: { plain: 'Write it yourself', guided: 'Plan it with an agent', isInHeader: false } }),
+        );
+
+        expect(plan.findAll('button')).toHaveLength(1);
+
+        await plan.get('button').trigger('click');
+
+        expect(document.body.textContent).toContain('Plan it with an agent instead');
     });
 
     it('draws a plain button when it names no other ways', () => {
@@ -67,7 +79,7 @@ describe('a dialog of a declared layout', () => {
     it('leads to the page when its opener is a link and the main part is pressed', async () => {
         const split = view(
             dialog(
-                { guidedNoun: 'sequence', ways: { plain: 'Write the steps yourself', guided: 'Build it with an agent' } },
+                { guidedNoun: 'sequence', ways: { plain: 'Write the steps yourself', guided: 'Build it with an agent', isInHeader: true } },
                 '/sequences/new',
             ),
         );
