@@ -11,6 +11,7 @@ use App\Contracts\Skills\SkillProvider;
 use App\Declarations\Page;
 use App\Enums\AccessType;
 use App\Enums\Icon;
+use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Values\PolicyDefinition;
@@ -20,7 +21,12 @@ use Domain\Reminders\Policies\ReminderPolicy;
 use Domain\Reminders\Resolvers\RemindersWindowResolver;
 use Domain\Reminders\Support\Skills\RemindersSkill;
 
-final class RemindersDomain extends Domain implements CommandProvider, PageProvider, PolicyProvider, SkillProvider
+final class RemindersDomain extends Domain implements
+    CommandProvider,
+    McpToolProvider,
+    PageProvider,
+    PolicyProvider,
+    SkillProvider
 {
     public function description(): string
     {
@@ -69,5 +75,15 @@ final class RemindersDomain extends Domain implements CommandProvider, PageProvi
     public function skills(): array
     {
         return [RemindersSkill::class];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [];
     }
 }

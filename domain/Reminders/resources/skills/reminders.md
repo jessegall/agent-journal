@@ -8,4 +8,4 @@ A reminder is something to do at one given time: a title, the moment it is due, 
 
 ## In this version
 
-A reminder is made with the CreateReminder command (a title and the date and time it is due) and finished with the FinishReminder command, which marks an open reminder done; one already done or cancelled cannot be finished again. No journal tool sends these commands yet, so when a time matters to you now, say it in a task or a message instead of promising a reminder. A reminder has one due time: it does not repeat.
+Make a reminder with the reminders_create tool: a title and the date and time it is due, such as 2026-11-24 09:00; it answers the reminder's id. Finish it with the reminders_finish tool and that id, which marks an open reminder done; one already done or cancelled cannot be finished again. When the user names a time, make the reminder then, so the Reminders window on Home shows it. A reminder has one due time: it does not repeat.

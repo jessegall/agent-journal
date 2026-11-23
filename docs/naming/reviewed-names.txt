@@ -2791,6 +2791,7 @@ class	CreatePlanTool
 class	CreateRecordRequest
 class	CreateReminderCommand
 class	CreateReminderHandler
+class	CreateReminderTool
 class	CreateReportCommand
 class	CreateReportHandler
 class	CreateReportPageController
@@ -3398,6 +3399,7 @@ class	FinishProjectCommandRunCommand
 class	FinishProjectCommandRunHandler
 class	FinishReminderCommand
 class	FinishReminderHandler
+class	FinishReminderTool
 class	FinishTaskCommand
 class	FinishTaskHandler
 class	FinishTaskTool
@@ -13102,6 +13104,9 @@ method	CreateRecordRequest::rules()
 method	CreateRecordRequest::title()
 method	CreateReminderCommand::__construct()
 method	CreateReminderHandler::handle()
+method	CreateReminderTool::command()
+method	CreateReminderTool::present()
+method	CreateReminderTool::writeSchema()
 method	CreateReportCommand::__construct()
 method	CreateReportHandler::__construct()
 method	CreateReportHandler::handle()
@@ -15253,6 +15258,9 @@ method	FinishProjectCommandRunCommand::__construct()
 method	FinishProjectCommandRunHandler::handle()
 method	FinishReminderCommand::__construct()
 method	FinishReminderHandler::handle()
+method	FinishReminderTool::command()
+method	FinishReminderTool::present()
+method	FinishReminderTool::writeSchema()
 method	FinishTaskCommand::__construct()
 method	FinishTaskCommand::subject()
 method	FinishTaskHandler::__construct()
@@ -21515,6 +21523,8 @@ method	ReminderUnavailable::forId()
 method	RemindersDomain::commands()
 method	RemindersDomain::description()
 method	RemindersDomain::exports()
+method	RemindersDomain::mcpResources()
+method	RemindersDomain::overviewContributions()
 method	RemindersDomain::pages()
 method	RemindersDomain::policies()
 method	RemindersDomain::requires()
