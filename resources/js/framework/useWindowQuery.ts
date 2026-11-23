@@ -88,7 +88,7 @@ export function useWindowQueryChange(): (
  * replaces the prop; the window keeps what it already shows.
  */
 export function useWindowReload(): (
-  values: Record<string, string>,
+  values: Record<string, string | string[]>,
   callbacks: {
     onNetworkError: () => boolean;
     onHttpException: (response: { status: number }) => boolean;

@@ -542,9 +542,11 @@ case	Icon::Activity
 case	Icon::Chat
 case	Icon::Connections
 case	Icon::Docs
+case	Icon::File
 case	Icon::Home
 case	Icon::Plan
 case	Icon::Profiles
+case	Icon::Project
 case	Icon::Rules
 case	Icon::Sequence
 case	Icon::Settings
@@ -894,6 +896,11 @@ case	ProjectReadState::Failed
 case	ProjectReadState::Pending
 case	ProjectReadType::Directory
 case	ProjectReadType::File
+case	ProjectWindowState::Failed
+case	ProjectWindowState::None
+case	ProjectWindowState::Offline
+case	ProjectWindowState::Pending
+case	ProjectWindowState::Ready
 case	ProposalState::Approved
 case	ProposalState::Draft
 case	ProposalState::Pending
@@ -4728,6 +4735,7 @@ class	ProjectCreated
 class	ProjectEntry
 class	ProjectEnvironmentList
 class	ProjectFileAnswer
+class	ProjectFileAnswers
 class	ProjectFileText
 class	ProjectInvitation
 class	ProjectInvitationIssued
@@ -4745,6 +4753,10 @@ class	ProjectReceipts
 class	ProjectRoots
 class	ProjectRules
 class	ProjectRunCallers
+class	ProjectTreeEntryData
+class	ProjectWindowData
+class	ProjectWindowRequest
+class	ProjectWindowResolver
 class	PromptDetails
 class	PromptSubmitted
 class	ProofManifestData
@@ -7861,6 +7873,7 @@ constant	ProjectRead::FILE_TEXT_BYTE_LIMIT
 constant	ProjectRead::KEEP_MINUTES_LIMIT
 constant	ProjectRead::PATH_CHARACTER_LIMIT
 constant	ProjectRead::PENDING_SECONDS_LIMIT
+constant	ProjectWindowRequest::OPEN_FOLDER_LIMIT
 constant	PropertyRules::LOOKUP_RULES
 constant	PropertyRules::TYPE_RULES
 constant	ProtectedAccounts::SIGN_IN_COMMAND
@@ -7964,6 +7977,7 @@ constant	ReportShareProvider::CARD_COLUMNS
 constant	ReportWorkspaceReadHandler::ANSWERED
 constant	RequestKey::FORM
 constant	RequestKey::LONGEST
+constant	RequestProjectReadCommand::PATH_COUNT_LIMIT
 constant	RequiredServices::SERVICES
 constant	ReservedWordReader::RESERVED_OUT_OF_PLACE
 constant	ResultBudget::JSON_FLAGS
@@ -8565,6 +8579,7 @@ enum	ProgressType
 enum	ProjectReadFailure
 enum	ProjectReadState
 enum	ProjectReadType
+enum	ProjectWindowState
 enum	ProposalState
 enum	PublicationState
 enum	PublicationView
@@ -15829,7 +15844,7 @@ method	HostDescriptorsData::descriptors()
 method	HostOperatorAccess::isGranted()
 method	HostProjectFiles::__construct()
 method	HostProjectFiles::file()
-method	HostProjectFiles::folder()
+method	HostProjectFiles::folders()
 method	HostRefusal::explanation()
 method	HostRefusal::remedy()
 method	HostRefusalData::__construct()
@@ -19658,6 +19673,7 @@ method	ProjectBinding::isReportableBy()
 method	ProjectBinding::isRevoked()
 method	ProjectBinding::isRootOf()
 method	ProjectBinding::isStopUnconfirmedAt()
+method	ProjectBinding::lastHeardFromIn()
 method	ProjectBinding::liveIdOfLocalHost()
 method	ProjectBinding::lockById()
 method	ProjectBinding::mainAgent()
@@ -19719,9 +19735,11 @@ method	ProjectEnvironmentList::__construct()
 method	ProjectEnvironmentList::of()
 method	ProjectFileAnswer::__construct()
 method	ProjectFileAnswer::of()
+method	ProjectFileAnswers::__construct()
+method	ProjectFileAnswers::of()
 method	ProjectFileText::__construct()
 method	ProjectFiles::file()
-method	ProjectFiles::folder()
+method	ProjectFiles::folders()
 method	ProjectInvitation::casts()
 method	ProjectInvitation::create()
 method	ProjectInvitation::isRedeemableAt()
@@ -19764,12 +19782,14 @@ method	ProjectReadPruning::prune()
 method	ProjectReadRefused::digest()
 method	ProjectReadRefused::entryName()
 method	ProjectReadRefused::missing()
+method	ProjectReadRefused::notAsked()
 method	ProjectReadRefused::notYours()
 method	ProjectReadRefused::pathTooLong()
 method	ProjectReadRefused::settled()
 method	ProjectReadRefused::textNotUtf8()
 method	ProjectReadRefused::textTooLong()
 method	ProjectReadRefused::tooManyEntries()
+method	ProjectReadRefused::tooManyPaths()
 method	ProjectReadRefused::withoutAnswer()
 method	ProjectReadReportController::__invoke()
 method	ProjectReadReportRequest::command()
@@ -19789,6 +19809,14 @@ method	ProjectRules::activeRevisions()
 method	ProjectRules::approvedBundles()
 method	ProjectRunCallers::__construct()
 method	ProjectRunCallers::callerOf()
+method	ProjectTreeEntryData::__construct()
+method	ProjectWindowData::__construct()
+method	ProjectWindowRequest::openFolders()
+method	ProjectWindowRequest::rules()
+method	ProjectWindowResolver::__construct()
+method	ProjectWindowResolver::read()
+method	ProjectWindowResolver::tree()
+method	ProjectWindowResolver::window()
 method	PromptDetails::__construct()
 method	PromptSubmitted::__construct()
 method	PromptSubmitted::accepts()
@@ -28093,6 +28121,7 @@ parameter	$confirmed
 parameter	$confirmsPossibleDuplicate
 parameter	$conflict
 parameter	$conflicts
+parameter	$connectAddress
 parameter	$connection
 parameter	$connectionLost
 parameter	$connections
@@ -28411,7 +28440,9 @@ parameter	$entries
 parameter	$entries	app/Commands/RefreshSkills/RefreshSkillsHandler.php
 parameter	$entries	app/Commands/ReportProjectRead/ReportProjectReadCommand.php
 parameter	$entries	app/Commands/ReportProjectRead/ReportProjectReadHandler.php
+parameter	$entries	app/Data/Connections/ProjectWindowData.php
 parameter	$entries	app/Models/ProjectRead.php
+parameter	$entries	app/Resolvers/ProjectWindowResolver.php
 parameter	$entries	app/Resolvers/Support/SkillStatusResolver.php
 parameter	$entries	app/Support/Attributes.php
 parameter	$entries	app/Support/ShareAuditPage.php
@@ -28858,6 +28889,7 @@ parameter	$isDone
 parameter	$isEffectiveTop
 parameter	$isError
 parameter	$isExpired
+parameter	$isFailed
 parameter	$isFolder
 parameter	$isForOperators
 parameter	$isFound
@@ -28874,6 +28906,7 @@ parameter	$isKeyed
 parameter	$isKnown
 parameter	$isLimit
 parameter	$isLive
+parameter	$isLoading
 parameter	$isLoggedIn
 parameter	$isMeasured
 parameter	$isMine
@@ -30183,6 +30216,7 @@ parameter	$sentSteps
 parameter	$sequence
 parameter	$sequenceId
 parameter	$sequenceRunId
+parameter	$served
 parameter	$serverClock
 parameter	$serverName
 parameter	$serverTime
@@ -36964,10 +36998,12 @@ property	ProjectFileAnswer::$digest
 property	ProjectFileAnswer::$entries
 property	ProjectFileAnswer::$failure
 property	ProjectFileAnswer::$isTruncated
+property	ProjectFileAnswer::$path
 property	ProjectFileAnswer::$readId
 property	ProjectFileAnswer::$size
 property	ProjectFileAnswer::$state
 property	ProjectFileAnswer::$text
+property	ProjectFileAnswers::$answers
 property	ProjectFileText::$digest
 property	ProjectFileText::$size
 property	ProjectFileText::$text
@@ -36990,6 +37026,22 @@ property	ProjectReceipts::$projects
 property	ProjectRoots::$namespaces
 property	ProjectRules::$projects
 property	ProjectRunCallers::$projects
+property	ProjectTreeEntryData::$children
+property	ProjectTreeEntryData::$isFailed
+property	ProjectTreeEntryData::$isFolder
+property	ProjectTreeEntryData::$isLoading
+property	ProjectTreeEntryData::$isOpen
+property	ProjectTreeEntryData::$name
+property	ProjectTreeEntryData::$path
+property	ProjectTreeEntryData::$size
+property	ProjectWindowData::$connectAddress
+property	ProjectWindowData::$entries
+property	ProjectWindowData::$machineLabel
+property	ProjectWindowData::$projectLabel
+property	ProjectWindowData::$state
+property	ProjectWindowResolver::$files
+property	ProjectWindowResolver::$request
+property	ProjectWindowResolver::$served
 property	PromptDetails::$nativePromptId
 property	PromptDetails::$promptId
 property	PromptDetails::$text
@@ -38395,7 +38447,7 @@ property	RequestProgressReportData::$script
 property	RequestProgressReportData::$sequence
 property	RequestProgressReportData::$sessionId
 property	RequestProjectReadCommand::$bindingId
-property	RequestProjectReadCommand::$path
+property	RequestProjectReadCommand::$paths
 property	RequestProjectReadCommand::$type
 property	RequestProjectReadHandler::$clock
 property	RequestReportBinding::$processGeneration

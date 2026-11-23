@@ -177,7 +177,7 @@ final class ProjectReadTest extends TestCase
 
         $this->expectException(CommandNotRegistered::class);
 
-        $this->app->make(ProjectFiles::class)->folder($this->binding, '');
+        $this->app->make(ProjectFiles::class)->folders($this->binding, ['']);
     }
 
     public function test_a_path_over_the_limit_is_refused_by_name(): void

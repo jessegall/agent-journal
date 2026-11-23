@@ -19,6 +19,7 @@ final readonly class ProjectFileAnswer
      */
     public function __construct(
         public string $readId,
+        public string $path,
         public ProjectReadState $state,
         public ProjectReadFailure|null $failure,
         public array $entries,
@@ -32,6 +33,7 @@ final readonly class ProjectFileAnswer
     {
         return new self(
             $read->id,
+            $read->path,
             $read->state,
             $read->failure,
             $read->listedEntries(),

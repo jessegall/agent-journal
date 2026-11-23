@@ -16,6 +16,8 @@ use App\Data\Connections\InstallAttemptListData;
 use App\Data\Connections\InstallAttemptRowData;
 use App\Data\Connections\JoinTargetData;
 use App\Data\Connections\ProjectBindingRowData;
+use App\Data\Connections\ProjectTreeEntryData;
+use App\Data\Connections\ProjectWindowData;
 use App\Data\Connections\ReleaseOfferData;
 use App\Data\Connections\ReleaseTargetData;
 use App\Data\Connections\SupportRecordRowData;
@@ -33,8 +35,10 @@ use App\Enums\DeviceGrantState;
 use App\Enums\Icon;
 use App\Enums\InstallAttemptState;
 use App\Enums\InvitationMode;
+use App\Enums\ProjectWindowState;
 use App\Resolvers\ConnectProjectWindowResolver;
 use App\Resolvers\DeviceApprovalWindowResolver;
+use App\Resolvers\ProjectWindowResolver;
 use App\Support\ConnectionsOwnerCheck;
 
 /**
@@ -63,6 +67,10 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
             )
                 ->at('devices/{code}')
                 ->visibleWhen(ConnectionsOwnerCheck::class),
+            Page::make('project', 'Project', Icon::Project, ProjectWindowResolver::class, 'ProjectWindow.vue')
+                ->at('project')
+                ->onHome(60)
+                ->visibleWhen(ConnectionsOwnerCheck::class),
         ];
     }
 
@@ -89,6 +97,8 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
             InstallAttemptRowData::class,
             JoinTargetData::class,
             ProjectBindingRowData::class,
+            ProjectTreeEntryData::class,
+            ProjectWindowData::class,
             ReleaseOfferData::class,
             ReleaseTargetData::class,
             SupportRecordRowData::class,
@@ -102,6 +112,7 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
             DeviceGrantState::class,
             InstallAttemptState::class,
             InvitationMode::class,
+            ProjectWindowState::class,
         ];
     }
 

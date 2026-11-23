@@ -11,6 +11,7 @@ use App\Models\ProjectBinding;
 use App\Models\ProjectRead;
 use App\Support\ActorIdentity;
 use App\Values\ProjectFileAnswer;
+use App\Values\ProjectFileAnswers;
 
 final readonly class RequestProjectReadHandler implements CommandHandler
 {
@@ -19,18 +20,28 @@ final readonly class RequestProjectReadHandler implements CommandHandler
     /**
      * @throws ProjectReadRefused
      */
-    public function handle(RequestProjectReadCommand $command): ProjectFileAnswer
+    public function handle(RequestProjectReadCommand $command): ProjectFileAnswers
     {
-        if (mb_strlen($command->path) > ProjectRead::PATH_CHARACTER_LIMIT) {
-            throw ProjectReadRefused::pathTooLong(ProjectRead::PATH_CHARACTER_LIMIT);
+        if (count($command->paths) > RequestProjectReadCommand::PATH_COUNT_LIMIT) {
+            throw ProjectReadRefused::tooManyPaths(RequestProjectReadCommand::PATH_COUNT_LIMIT);
+        }
+
+        foreach ($command->paths as $path) {
+            if (mb_strlen($path) > ProjectRead::PATH_CHARACTER_LIMIT) {
+                throw ProjectReadRefused::pathTooLong(ProjectRead::PATH_CHARACTER_LIMIT);
+            }
         }
 
         $binding = ProjectBinding::lockById($command->bindingId);
         $requester = ActorIdentity::of($command->dispatchedBy());
+        $now = $this->clock->now();
 
-        $read = ProjectRead::recentOf($binding, $command->type, $command->path, $requester, $this->clock->now())
-            ->getOrCall(fn () => ProjectRead::create($binding, $command->type, $command->path, $requester));
-
-        return ProjectFileAnswer::of($read);
+        return new ProjectFileAnswers(array_map(
+            fn (string $path) => ProjectFileAnswer::of(
+                ProjectRead::recentOf($binding, $command->type, $path, $requester, $now)
+                    ->getOrCall(fn () => ProjectRead::create($binding, $command->type, $path, $requester)),
+            ),
+            array_values(array_unique($command->paths)),
+        ));
     }
 }

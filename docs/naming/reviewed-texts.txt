@@ -250,6 +250,7 @@ No matches in {{ search.within.value.label }}
 No memories yet
 No module bundle is waiting.
 No output yet. Status {{ part.lifecycle }}, ended by {{ part.end }}.
+No project is connected
 No project is connected yet, so there is nothing to join.
 No projects connected yet
 No questions waiting.
@@ -334,7 +335,9 @@ Reader proof
 Reader {{ reader.readerRevisionId }} for revision {{ reader.declarationRevision }}: {{ reader.proofs.length === 0 ? 'not checked yet' : reader.proofs.join('; ') }}
 Readers
 Readers and proofs
+Reading the project's files
 Reading the questions
+Reading {{ row.entry.name }}
 Ready
 Reason
 Recheck
@@ -608,6 +611,7 @@ unresolved
 until {{ dateTime(signIn.expiresAt) }}
 {{ completed }} of {{ total }}
 {{ counted(memories.length, 'memory', 'memories') }} · the number is its weight, heaviest first
+{{ data.machineLabel }} is not connected, so {{ data.projectLabel }} cannot be read.
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
@@ -617,6 +621,7 @@ until {{ dateTime(signIn.expiresAt) }}
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
 {{ provider.label }}: start it with
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
+{{ row.entry.name }} could not be read
 {{ runtime.isHealthy ? 'Running' : 'Not answering: no sign of life in the last 45 seconds' }}. Version {{ runtime.endpointVersion }}, last seen {{ runtime.lastHealthAt ?? 'never' }}.
 {{ summary.length }} more outcomes
 {{ target.name }} is not offered yet, because it does not run {{ target.missingProviders.join(' or ') }}.

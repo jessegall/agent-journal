@@ -6,14 +6,18 @@ namespace App\Contracts\Hosts;
 
 use App\Models\ProjectBinding;
 use App\Values\ProjectFileAnswer;
+use App\Values\ProjectFileAnswers;
 
 /**
  * The folders and files of a connected project, read through its host for the owner: each answer is pending until
- * the host reports it.
+ * the host reports it. A view asks for all the folders it shows at once.
  */
 interface ProjectFiles
 {
-    public function folder(ProjectBinding $binding, string $path): ProjectFileAnswer;
+    /**
+     * @param  list<string>  $paths
+     */
+    public function folders(ProjectBinding $binding, array $paths): ProjectFileAnswers;
 
     public function file(ProjectBinding $binding, string $path): ProjectFileAnswer;
 }

@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use PhpOption\Option;
 
 /**
  * One project folder on one machine, joined to a project through that machine's host, with the main agent that works
@@ -183,6 +184,22 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     {
         return array_values(self::query()->with('project')->where('main_agent_id', $agentId)
             ->where('readiness', '!=', BindingReadiness::Revoked)->limit(1)->get()->all());
+    }
+
+    /**
+     * The connected folder heard from last, among these environments' or, with none named, among every project's:
+     * the one a Project window shows.
+     *
+     * @param  list<string>  $environmentIds
+     * @return Option<self>
+     */
+    public static function lastHeardFromIn(array $environmentIds): Option
+    {
+        return self::query()
+            ->where('readiness', '!=', BindingReadiness::Revoked)
+            ->when($environmentIds !== [], fn ($query) => $query->whereIn('environment_id', $environmentIds))
+            ->orderByRaw('last_contact_at desc nulls last')
+            ->firstOption();
     }
 
     /**

@@ -21,4 +21,6 @@ enum Icon: string
     case Sequence = 'sequence';
     case Settings = 'settings';
     case Profiles = 'agents';
+    case Project = 'folder';
+    case File = 'file';
 }

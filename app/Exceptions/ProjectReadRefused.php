@@ -23,6 +23,16 @@ final class ProjectReadRefused extends RuntimeException implements CommandRefusa
         return new self("A project read names a path longer than {$limit} characters.");
     }
 
+    public static function tooManyPaths(int $limit): self
+    {
+        return new self("A project read asks for more than {$limit} paths at once.");
+    }
+
+    public static function notAsked(string $path): self
+    {
+        return new self("The project read did not ask for {$path}.");
+    }
+
     public static function notYours(string $readId): self
     {
         return new self("Project read {$readId} belongs to another host's project.");
