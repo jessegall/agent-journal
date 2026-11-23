@@ -176,7 +176,8 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 .turn{display:flex;flex-direction:column;gap:8px}
 .turn .docrow{margin-top:0}
 .me{align-self:flex-end;max-width:78%;background:var(--bubble);border-radius:var(--radius-bubble) var(--radius-bubble) 4px var(--radius-bubble);padding:8px 12px}
-.ag{max-width:92%}
+/* An agent message is only as wide as its text, up to 92% of the column, so its hover controls end where it ends. */
+.ag{max-width:92%;width:fit-content}
 .ag .m{font-size:var(--text-badge);color:var(--text-3);margin-bottom:2px;display:flex;align-items:center;gap:5px}
 .ag .m .nm{color:var(--text-2);font-weight:500}
 .day,.sys{align-self:center;font-size:var(--text-badge);color:var(--text-3);text-align:center;max-width:86%}
@@ -224,9 +225,10 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 .mact:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 /* Your message: Reply at the side of the bubble, level with its first line. */
 .me .mact{right:calc(100% + 6px);top:6px}
-/* An agent message: React and Reply in one row at its top right, on the line with its name and time. The row has the
-   chat's own background, so a long first line runs under it unseen rather than through it. */
-.macts{position:absolute;top:-2px;right:0;display:inline-flex;align-items:center;gap:2px;padding-left:6px;background:var(--bg);opacity:0;transition:opacity var(--duration-hover) var(--ease-journal)}
+/* An agent message: React and Reply in one row, floated to the top right of the message itself. They come first in
+   the message, so its name line, or its first line of text, wraps before them and they never cover it. Their room is
+   kept while hidden, so the text does not move on hover. The negative bottom margin keeps their room to the first line. */
+.macts{float:right;display:flex;align-items:center;gap:2px;height:20px;margin:-2px 0 -4px 10px;opacity:0;transition:opacity var(--duration-hover) var(--ease-journal)}
 .msg:hover .macts,.macts:focus-within{opacity:1}
 .macts .mact{position:static}
 .macts .tm{align-self:center;font-size:var(--text-badge);color:var(--text-3);font-variant-numeric:tabular-nums;opacity:0;padding:0 4px}
@@ -1030,7 +1032,7 @@ function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
     const time=k==='ag'?m[1]:m[2],text=k==='ag'?m[2]:m[3],head=!grp||last!==who;last=who;
     /* An agent's message: React and Reply on hover; its reactions under it; a document it names below, full width. */
     const acts=`<span class="macts">${grp?`<span class="tm">${time}</span>`:''}<button class="mact" data-react="${c}:${i}" data-fk="react:${c}:${i}" aria-haspopup="dialog" aria-label="React to ${MEM[who].name}'s message">${I('smile','s14')}React</button>${act}</span>`;
-    return `<div class="ag msg" data-mi="${i}" title="${grp?esc(MEM[who].name+' · '+time):''}">${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?'':`<span>· ${time}</span>`}</div>`:''}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${sourcesHtml(c,i)}${reactsHtml(c,i)}${acts}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}))}
+    return `<div class="ag msg" data-mi="${i}" title="${grp?esc(MEM[who].name+' · '+time):''}">${acts}${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?'':`<span>· ${time}</span>`}</div>`:''}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${sourcesHtml(c,i)}${reactsHtml(c,i)}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}))}
 /* Which agent's turn a chat item belongs to: 'ag:<id>' for an agent's message, activity or typing line, 'ag' for a
    command, sequence line or question that belongs to whichever agent is acting, and null for everything else. */
 function turnKey(c,m){const k=m[0],agent=id=>id&&MEM[id]&&MEM[id].kind==='agent'?'ag:'+id:null;
@@ -2282,6 +2284,7 @@ const NOTE_CARDS=[
   ['A clean chat, and Activity','What agents do (tasks in hand, memories, searches, documents read, agents started) goes to Activity, each entry with an importance. Only what you choose reaches the chat, as a quiet line: from the panel\'s “In the chat” menu, or per kind in Settings.'],
   ['Documents','Documents, reports and Markdown files open in a reader. Select text to comment on it to any agent, ask an agent for feedback, or drag a document\'s bar from the chat onto an agent to hand it over.'],
   ['The task graph','Tasks and Plans show what waits on what. Click a task to light its whole chain, everything it waits on and everything waiting on it, with its holder and its waits beside it; click again, on empty space, or press Escape to clear. Show bottlenecks finds the tasks that hold up many others; Suggest improvement shows waits that can go, as a before and after.'],
+  ['React and Reply belong to the message','An agent message is only as wide as its text. React and Reply sit at its top right, so their right edge is the message\'s right edge: the column\'s edge for a long message, just past the text for a short one. They take their room on the first line, which wraps before them, so they never cover the text and the text does not move when they appear. A message narrower than the two controls grows to fit them beside its name or first line. They show on hover and when a key moves focus onto them, and come before the message text in the tab order.'],
   ['One signal per fact; safe keys','The agent bar owns the agent\'s state, and the topbar\'s bell is the only bell. Toasts only offer Undo. ⌘K opens everything; ⌥1, ⌥2 and ⌥` are read by key position. There is no ⌘B, ⌘1, ⌘⇧B, ⌃⌥ arrow or Space shortcut.']].concat(SECTION_NOTES);
 STEPS.docs[2]='<button class="tbtn" id="playBtn" style="margin-left:6px">▶ Play</button>';
 startChrome();
