@@ -8,7 +8,7 @@ use App\Contracts\Admission\StackAdmission;
 use App\Contracts\Sessions\StartTransaction;
 use App\Contracts\Work\StackTransaction as StackTransactionContract;
 use App\Contracts\Work\StackTransactionRunner;
-use App\Contracts\Work\UnitOwner;
+use App\Contracts\Work\UnitOfWork;
 use App\Exceptions\StackLockTimedOut;
 use App\Exceptions\StackTransactionRequired;
 use App\Support\StateEvents\StateEventScope;
@@ -32,7 +32,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
         private OperationDeadline $deadline,
         private StackAdmission $admission,
         private StateEventScope $eventScope,
-        private UnitOwner $lifecycle,
+        private UnitOfWork $lifecycle,
     ) {}
 
     /**
@@ -116,7 +116,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
         try {
             $this->database->beginTransaction();
 
-            return $this->lifecycle->own(
+            return $this->lifecycle->run(
                 $this->database,
                 'the stack transaction',
                 function () use ($deadline, $work): mixed {

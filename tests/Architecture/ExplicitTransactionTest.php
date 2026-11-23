@@ -66,7 +66,7 @@ final class ExplicitTransactionTest extends TestCase
         'app/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
         'app/Support/AgentChatAccess.php' => 'owns a unit: the console change of an agent\'s chat access',
         'app/Support/PresentationSweep.php' => 'owns a unit: each settled batch of the sweep',
-        'app/Support/ReceiptDeliveries.php' => 'owns a unit: each delivery the queue tries',
+        'app/Support/ReceiptDeliveries.php' => 'owns a unit: each delivery a pass tries',
     ];
 
     public function test_every_transaction_opener_of_the_application_is_named(): void

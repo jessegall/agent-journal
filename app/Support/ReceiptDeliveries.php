@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Work\UnitOfWork;
 use App\Events\ReceiptDeliveriesScheduled;
 use App\Models\Message;
 use App\Models\MessageAttention;
@@ -32,10 +33,13 @@ final readonly class ReceiptDeliveries
 
     private const int LONGEST_BACKOFF_SECONDS = 900;
 
+    private const string UNIT_OWNER = 'a receipt delivery';
+
     public function __construct(
         private ActorAttention $attention,
         private CommandFacts $facts,
         private ConnectionInterface $database,
+        private UnitOfWork $unitOfWork,
     ) {}
 
     /**
@@ -75,18 +79,29 @@ final readonly class ReceiptDeliveries
             ->pluck('id')
             ->all();
 
-        $this->deliver(array_values(array_map(strval(...), $deliveryIds)), $at);
+        array_map(strval(...), $deliveryIds)
+            |> array_values(...)
+            |> (fn ($x) => $this->deliver($x, $at));
     }
 
     /**
-     * Tries each delivery that is still due, each in its own transaction; one another worker holds is left to it.
+     * Tries each delivery that is still due, each in its own transaction with its own event unit, since no command
+     * runs around a pass; one another worker holds is left to it.
      *
      * @param  list<string>  $deliveryIds
      */
     public function deliver(array $deliveryIds, CarbonImmutable $at): void
     {
         foreach ($deliveryIds as $deliveryId) {
-            $this->database->transaction(fn () => $this->deliverOne($deliveryId, $at));
+            $this->database->beginTransaction();
+
+            $this->unitOfWork->run(
+                $this->database,
+                self::UNIT_OWNER,
+                fn () => $this->deliverOne($deliveryId, $at),
+                fn () => $this->database->commit(),
+                fn () => $this->database->rollBack(),
+            );
         }
     }
 

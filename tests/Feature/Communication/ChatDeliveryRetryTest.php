@@ -10,11 +10,13 @@ use App\Enums\ChatPermission;
 use App\Enums\OutstandingRangeState;
 use App\Enums\ReceiptDeliveryState;
 use App\Enums\WakeState;
+use App\Models\MessageAttention;
 use App\Models\MessageReceipt;
 use App\Models\OutstandingRange;
 use App\Models\ReceiptDelivery;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAccess;
+use App\Support\OutsideCommandAllowance;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
@@ -85,6 +87,39 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         $this->startChatMemberRequestAs($bea->id);
         $this->assertFalse($this->rowOf($inboxId, $messageId)->actions->retryDelivery);
         $this->assertThrows(fn () => $this->runOnBus(new RetryDeliveryCommand($range->id)), Throwable::class);
+    }
+
+    /**
+     * The application never allows a row that raises events to be saved outside a command; the tests do, which hid
+     * that a delivery tried after its message committed saved its row in no unit and so was rolled back whole.
+     */
+    public function test_a_post_tries_its_agent_delivery_where_no_write_outside_a_command_is_allowed(): void
+    {
+        $this->app->make(AgentChatAccess::class)->allow(
+            $this->builder->agent_id,
+            null,
+            [$this->owner->id],
+            ActorIdentity::system(),
+            CarbonImmutable::now(),
+        );
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', []));
+        $this->runOnBus(new AddChatParticipantCommand($inboxId, "agent:{$this->builder->agent_id}"));
+        $allowance = $this->app->make(OutsideCommandAllowance::class);
+        $allowance->forbid();
+
+        try {
+            $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'ada-plan'));
+        } finally {
+            $allowance->allow();
+        }
+
+        $delivery = ReceiptDelivery::query()
+            ->where('receipt_id', $this->receiptOf($messageId, $this->builder->agent_id)->id)
+            ->sole();
+
+        $this->assertTrue(MessageAttention::query()->where('origin_id', $messageId)->exists());
+        $this->assertTrue($delivery->state === ReceiptDeliveryState::Waiting || $delivery->lease_expires_at !== null);
     }
 
     private function receiptOf(string $messageId, string $agentId): MessageReceipt

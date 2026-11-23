@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Contracts\Work\UnitOwner;
+use App\Contracts\Work\UnitOfWork;
 use App\Models\Agent;
 use App\Models\Link;
 use App\Models\Share;
@@ -142,7 +142,7 @@ final class LinkRemovalTest extends TestCase
         $connection = $this->app->make(ConnectionInterface::class);
         $connection->beginTransaction();
 
-        return $this->app->make(UnitOwner::class)->own(
+        return $this->app->make(UnitOfWork::class)->run(
             $connection,
             'the test',
             $work,

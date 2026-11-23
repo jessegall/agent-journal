@@ -134,7 +134,7 @@ final class OrderedStreamTest extends TestCase
     {
         $database = $this->app->make(ConnectionInterface::class);
         $database->beginTransaction();
-        $this->app->make(EventUnitLifecycle::class)->own(
+        $this->app->make(EventUnitLifecycle::class)->run(
             $database,
             'the test',
             $work(...),

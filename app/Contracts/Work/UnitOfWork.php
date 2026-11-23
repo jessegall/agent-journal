@@ -8,9 +8,10 @@ use Closure;
 use Illuminate\Database\ConnectionInterface;
 
 /**
- * What a transaction owner does with the event unit of its transaction, and what a command joining it does.
+ * One transaction together with the events its rows raise: run() gives work a unit of its own, opened with the
+ * transaction and published after its commit, and join() runs work inside the unit already open.
  */
-interface UnitOwner
+interface UnitOfWork
 {
     /**
      * @template TResult
@@ -20,7 +21,7 @@ interface UnitOwner
      * @param  Closure(): void  $rollBack
      * @return TResult
      */
-    public function own(
+    public function run(
         ConnectionInterface $connection,
         string $owner,
         Closure $work,
@@ -34,5 +35,5 @@ interface UnitOwner
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function within(ConnectionInterface $connection, Closure $work): mixed;
+    public function join(ConnectionInterface $connection, Closure $work): mixed;
 }

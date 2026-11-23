@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Events\Event;
 use App\Contracts\Events\FactStaging;
-use App\Contracts\Work\UnitOwner;
+use App\Contracts\Work\UnitOfWork;
 use App\Exceptions\EventUnitRefused;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
@@ -19,7 +19,7 @@ use Throwable;
  * rollback, and detach the unit on every exit; a committed unit goes to the publication. A command joining the
  * transaction drains its required work before it returns and marks the unit failed when a failure crosses it.
  */
-final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
+final readonly class EventUnitLifecycle implements CommandFacts, UnitOfWork
 {
     public function __construct(
         private ActiveEventUnits $units,
@@ -39,7 +39,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
      * @param  Closure(): void  $rollBack
      * @return TResult
      */
-    public function own(
+    public function run(
         ConnectionInterface $connection,
         string $owner,
         Closure $work,
@@ -84,7 +84,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function within(ConnectionInterface $connection, Closure $work): mixed
+    public function join(ConnectionInterface $connection, Closure $work): mixed
     {
         $active = $this->units->activeFor($connection);
 

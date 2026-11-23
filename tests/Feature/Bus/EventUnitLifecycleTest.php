@@ -139,7 +139,7 @@ final class EventUnitLifecycleTest extends TestCase
         $database = $this->app->make(ConnectionInterface::class);
         $unit = null;
         $database->beginTransaction();
-        $this->app->make(EventUnitLifecycle::class)->own(
+        $this->app->make(EventUnitLifecycle::class)->run(
             $database,
             'the test',
             function () use ($work, &$unit): void {
@@ -155,7 +155,7 @@ final class EventUnitLifecycleTest extends TestCase
 
     private function within(callable $work): void
     {
-        $this->app->make(EventUnitLifecycle::class)->within($this->app->make(ConnectionInterface::class), $work(...));
+        $this->app->make(EventUnitLifecycle::class)->join($this->app->make(ConnectionInterface::class), $work(...));
     }
 
     private function activeUnit(): EventUnit

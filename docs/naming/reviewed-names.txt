@@ -7994,6 +7994,7 @@ constant	ReceiptDeliveries::FAILURE_LENGTH
 constant	ReceiptDeliveries::FIRST_BACKOFF_SECONDS
 constant	ReceiptDeliveries::LONGEST_BACKOFF_SECONDS
 constant	ReceiptDeliveries::PASS_LIMIT
+constant	ReceiptDeliveries::UNIT_OWNER
 constant	ReceiptRetention::STANDARD_DAYS
 constant	RecipientNotifications::RECEIPTS_PER_TARGET_LIMIT
 constant	ReconcileAccountsHandler::BATCH
@@ -9218,7 +9219,7 @@ interface	ToolDiscovery
 interface	TypeProvider
 interface	TypeReflections
 interface	UiOwnerAvailability
-interface	UnitOwner
+interface	UnitOfWork
 interface	UnstartableDriver
 interface	UserInterfaceUpdater
 interface	UserPresences
@@ -14656,6 +14657,7 @@ method	EligibleAccountFactory::of()
 method	EligibleAccounts::__construct()
 method	EligibleAccounts::forDriver()
 method	EligibleAccounts::forProfileStart()
+method	EligibleAccounts::modelChoices()
 method	EligibleAccountsData::__construct()
 method	EmittedHit::__construct()
 method	EmittedHit::byteSize()
@@ -14913,10 +14915,10 @@ method	EventUnit::stagedBatch()
 method	EventUnit::takePending()
 method	EventUnitLifecycle::__construct()
 method	EventUnitLifecycle::holdUntilReturn()
-method	EventUnitLifecycle::own()
+method	EventUnitLifecycle::join()
 method	EventUnitLifecycle::publishAfterCommit()
+method	EventUnitLifecycle::run()
 method	EventUnitLifecycle::runTransactionListeners()
-method	EventUnitLifecycle::within()
 method	EventUnitRefused::failedBeforeCommit()
 method	EventUnitRefused::nothingPending()
 method	EventUnitRefused::readyTwice()
@@ -15844,6 +15846,7 @@ method	HookController::__invoke()
 method	HookController::failure()
 method	HookDeadlineExpired::forCall()
 method	HookDigestChanged::forCall()
+method	HookEvent::hasReaderAfterIt()
 method	HookEvent::isSessionStart()
 method	HookEvent::isToolCall()
 method	HookFailure::__construct()
@@ -27324,8 +27327,8 @@ method	UndockInput::__construct()
 method	UndockSourceCommand::__construct()
 method	UndockSourceHandler::__construct()
 method	UndockSourceHandler::handle()
-method	UnitOwner::own()
-method	UnitOwner::within()
+method	UnitOfWork::join()
+method	UnitOfWork::run()
 method	UnjudgedCall::__construct()
 method	UnjudgedCall::replyWith()
 method	UnknownAccessType::forKey()
@@ -30850,6 +30853,7 @@ parameter	$unfinished
 parameter	$unfinishedCount
 parameter	$unfinishedTasks
 parameter	$unit
+parameter	$unitOfWork
 parameter	$units
 parameter	$unprovenStatuses
 parameter	$unread
@@ -33992,6 +33996,7 @@ property	DriverFamily::$hostName
 property	DriverFamily::$isolatesHooksPerSession
 property	DriverFamily::$key
 property	DriverFamily::$label
+property	DriverFamily::$models
 property	DriverFamily::$provider
 property	DriverHeartbeatSource::$beats
 property	DriverHeartbeatSource::$heartbeats
@@ -34145,6 +34150,7 @@ property	EligibleAccountData::$signInRevision
 property	EligibleAccountData::$unavailableReason
 property	EligibleAccountData::$unavailableSentence
 property	EligibleAccounts::$authorizer
+property	EligibleAccounts::$drivers
 property	EligibleAccounts::$profiles
 property	EligibleAccountsData::$accounts
 property	EligibleAccountsData::$driver
@@ -37851,6 +37857,7 @@ property	ReceiptCallers::$workStacks
 property	ReceiptDeliveries::$attention
 property	ReceiptDeliveries::$database
 property	ReceiptDeliveries::$facts
+property	ReceiptDeliveries::$unitOfWork
 property	ReceiptDeliveriesScheduled::$deliveryIds
 property	ReceiptDeliveryChanged::$deliveryId
 property	ReceiptDeliveryChanged::$receiptId

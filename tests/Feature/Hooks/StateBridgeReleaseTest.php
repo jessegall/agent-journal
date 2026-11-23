@@ -109,7 +109,7 @@ final class StateBridgeReleaseTest extends TestCase
     private function within(callable $work): void
     {
         $database = $this->app->make(ConnectionInterface::class);
-        $this->app->make(EventUnitLifecycle::class)->within($database, $work(...));
+        $this->app->make(EventUnitLifecycle::class)->join($database, $work(...));
     }
 
     private function row(): RaisingRow

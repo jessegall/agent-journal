@@ -1229,7 +1229,7 @@
  "app/Contracts/Drivers/ToolDiscovery.php": "app/Agents/Contracts/ToolDiscovery.php",
  "app/Contracts/Reflection/TypeReflections.php": "app/Reflection/Contracts/TypeReflections.php",
  "app/Contracts/Navigation/UiOwnerAvailability.php": "app/Web/Contracts/UiOwnerAvailability.php",
- "app/Contracts/Work/UnitOwner.php": "app/Bus/Contracts/UnitOwner.php",
+ "app/Contracts/Work/UnitOfWork.php": "app/Bus/Contracts/UnitOwner.php",
  "app/Contracts/Drivers/UnstartableDriver.php": "app/Agents/Contracts/UnstartableDriver.php",
  "app/Contracts/Navigation/UserInterfaceUpdater.php": "app/Ui/Contracts/UserInterfaceUpdater.php",
  "app/Contracts/Chat/UserPresences.php": "app/Actors/Contracts/UserPresences.php",

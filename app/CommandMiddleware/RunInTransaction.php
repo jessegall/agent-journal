@@ -54,7 +54,7 @@ final readonly class RunInTransaction implements CommandMiddleware
             $isolation = $this->requireJoinable($call);
 
             if (! $this->running->isRunning() && $this->isUnownedOuterTransaction()) {
-                return $this->lifecycle->own(
+                return $this->lifecycle->run(
                     $this->database,
                     $call->name(),
                     fn () => $this->running->running($call, $isolation, fn () => $next($call)),
@@ -64,7 +64,7 @@ final readonly class RunInTransaction implements CommandMiddleware
             }
 
             // The first command inside a stack transaction is the running command; later ones join it.
-            return $this->lifecycle->within($this->database, fn () => $this->running->isRunning()
+            return $this->lifecycle->join($this->database, fn () => $this->running->isRunning()
                 ? $this->running->joined($call, fn () => $next($call))
                 : $this->running->running($call, $isolation, fn () => $next($call)));
         }
@@ -107,7 +107,7 @@ final readonly class RunInTransaction implements CommandMiddleware
         $isolation = $call->isRepeatableReadNeeded() ? self::REPEATABLE_READ : self::READ_COMMITTED;
         $this->database->beginTransaction();
 
-        return $this->lifecycle->own(
+        return $this->lifecycle->run(
             $this->database,
             $call->name(),
             function () use ($call, $next, $deadline, $isolation): mixed {

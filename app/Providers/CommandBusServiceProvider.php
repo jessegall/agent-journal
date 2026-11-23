@@ -18,7 +18,7 @@ use App\Contracts\Bus\RequestKey as RequestKeyContract;
 use App\Contracts\Events\FactStaging;
 use App\Contracts\Reads\RowCapture;
 use App\Contracts\Refusals\RefusalMapper as RefusalMapperContract;
-use App\Contracts\Work\UnitOwner;
+use App\Contracts\Work\UnitOfWork;
 use App\Resolvers\CallerOperations;
 use App\Support\AcceptedReceipt;
 use App\Support\ActiveEventUnits;
@@ -75,7 +75,7 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->app->bind(RowCapture::class, EventCapture::class);
         $this->app->bind(CommandFacts::class, EventUnitLifecycle::class);
         $this->app->bind(JournalCommands::class, EntryDispatchers::class);
-        $this->app->bind(UnitOwner::class, EventUnitLifecycle::class);
+        $this->app->bind(UnitOfWork::class, EventUnitLifecycle::class);
         $this->app->scoped(Publication::class);
         $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);
         $this->app->alias(CommandStops::class, CommandStopsContract::class);
