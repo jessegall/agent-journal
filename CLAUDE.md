@@ -64,3 +64,12 @@ yours to resolve at its source.
 - Code two scripts need lives once in the shared shell library and is sourced, never copied.
 - No script body inside `compose.yaml`: it is a file of its own.
 - A shell script holds shell only (user message 19367): no Python, PHP or JSON pasted into it. Each such piece is a small file of its own with a plain name that the script calls; JSON a script writes comes from a template file.
+- In a script, `main` declares every value the script works with and takes each from the step that produces it (`newest=$(find_newest_commit)`); a step prints its result or does its work, and every variable it assigns is `local` (rule 79; user message 19393). Function names are short verb_noun words with no articles: `fetch_commit`, never `fetch_the_commit` (user message 19386).
+- The whole standard, the shared library and the stand-ins are described in `docs/shell-scripts.md`.
+
+## A driver's screens belong to the screen navigation (rule 80; user messages 19423, 19424, 19427, 19428)
+
+- A screen, menu or question of Claude Code or Codex is passed only by the host's screen navigation, from a recording of that screen under `tools/journal-agent/testdata/recordings/<driver>/<build>/screens`.
+- Before fixing a start that hangs on a screen, look at what is recorded. A screen that is missing is recorded and added to the screens the navigation knows. Never write a new mechanism for it.
+- No other code reads, guesses or answers a driver's screens, sends it keys, or writes a driver's own state files (such as `.claude.json` and its onboarding and trust fields) to make a screen go away.
+- A screen the navigation does not know ends the start with what the screen shows; it never waits forever.
