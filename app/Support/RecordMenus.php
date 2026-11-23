@@ -53,30 +53,40 @@ final readonly class RecordMenus implements RecordMenusContract
             }
         }
 
-        $groups = [];
-
-        foreach ($grouped as $group => $items) {
-            usort($items, fn (RegisteredMenuItem $one, RegisteredMenuItem $other) => [
-                $one->menuItem->position,
-                $one->key,
-            ] <=> [$other->menuItem->position, $other->key]);
-
-            $groups[] = ['key' => (string) $group, 'position' => $items[0]->menuItem->position, 'items' => $items];
-        }
-
-        usort($groups, fn (array $one, array $other) => [$one['position'], $one['key']] <=> [
-            $other['position'],
-            $other['key'],
-        ]);
+        $grouped = array_map(fn (array $items) => self::inOrder($items), $grouped);
+        $firstOf = $grouped;
+        uksort($grouped, fn (int|string $one, int|string $other) => [
+            $firstOf[$one][0]->menuItem->position,
+            (string) $one,
+        ] <=> [$firstOf[$other][0]->menuItem->position, (string) $other]);
 
         return LayoutMenuData::from([
             'key' => $menu->key,
             'label' => $menu->label,
-            'groups' => array_map(fn (array $group) => LayoutMenuGroupData::from([
-                'key' => $group['key'],
-                'items' => array_map(fn (RegisteredMenuItem $item) => $this->itemData($item, $routeValues), $group['items']),
-            ]), $groups),
+            'groups' => array_map(fn (int|string $group) => LayoutMenuGroupData::from([
+                'key' => (string) $group,
+                'items' => array_map(
+                    fn (RegisteredMenuItem $item) => $this->itemData($item, $routeValues),
+                    $grouped[$group],
+                ),
+            ]), array_keys($grouped)),
         ]);
+    }
+
+    /**
+     * The items of one group by their position, then their key.
+     *
+     * @param  list<RegisteredMenuItem>  $items
+     * @return list<RegisteredMenuItem>
+     */
+    private static function inOrder(array $items): array
+    {
+        usort($items, fn (RegisteredMenuItem $one, RegisteredMenuItem $other) => [
+            $one->menuItem->position,
+            $one->key,
+        ] <=> [$other->menuItem->position, $other->key]);
+
+        return $items;
     }
 
     /**
