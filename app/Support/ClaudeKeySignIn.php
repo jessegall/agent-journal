@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Enums\Permissions;
 use App\Enums\Place;
-use App\Exceptions\FileJsonInvalid;
 use App\Values\FilePath;
 use App\Values\SignInCard;
 use stdClass;
@@ -62,11 +61,7 @@ final readonly class ClaudeKeySignIn extends ClaudeSecretSignIn
             return [];
         }
 
-        try {
-            return $this->files->readJson($file);
-        } catch (FileJsonInvalid) {
-            return [];
-        }
+        return $this->files->readJson($file);
     }
 
     /**

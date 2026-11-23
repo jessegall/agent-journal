@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Exceptions\FileJsonInvalid;
 use App\Support\ClaudeKeySignIn;
 use App\Support\ClaudeSecretSignIn;
 use App\Support\ClaudeTokenSignIn;
@@ -88,6 +89,18 @@ final class ClaudeSecretSignInTest extends TestCase
         $verification = $protocol->verify($this->directory);
         $this->assertTrue($verification->isCertain);
         $this->assertFalse($verification->isSignedIn);
+    }
+
+    public function test_a_settings_file_that_is_not_json_is_kept_and_refuses_the_change(): void
+    {
+        file_put_contents($this->directory.'/settings.json', '{"theme": "dark",');
+
+        try {
+            $this->app->make(ClaudeKeySignIn::class)->signOut($this->directory);
+            $this->fail('An unreadable settings file was overwritten.');
+        } catch (FileJsonInvalid) {
+            $this->assertSame('{"theme": "dark",', file_get_contents($this->directory.'/settings.json'));
+        }
     }
 
     /**
