@@ -3,6 +3,7 @@ import { Form, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
+import Input from '@/components/kit/Input.vue';
 import Menu from '@/components/kit/Menu.vue';
 import MenuItem from '@/components/kit/MenuItem.vue';
 import type { Appearance } from '@/composables/useAppearance';
@@ -59,9 +60,18 @@ function toggleFullScreen(): void {
         <span class="flex-1"></span>
         <div class="flex items-center gap-2" role="group" aria-label="Shell actions">
             <EnvironmentMenu />
-            <Button variant="bordered" size="small" @click="isSearchOpen = true"
-                ><Icon name="search" :size="13" /><span>Search records and passages</span></Button
-            >
+            <label class="relative flex w-56 items-center">
+                <Icon name="search" :size="13" class="pointer-events-none absolute left-2.5 text-text-3" />
+                <Input
+                    size="sm"
+                    class="w-full cursor-pointer pl-7"
+                    aria-label="Search"
+                    placeholder="Search"
+                    readonly
+                    @keydown="isSearchOpen = true"
+                    @click="isSearchOpen = true"
+                />
+            </label>
             <Button variant="icon" aria-label="Open commands" @click="isPaletteOpen = true"
                 ><Icon name="list" :size="13"
             /></Button>

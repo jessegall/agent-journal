@@ -393,10 +393,10 @@ Save revision {{ revision + 1 }}
 Save the current layout to it
 Saved
 Saved draft
+Search
 Search again
 Search all
 Search commands
-Search records and passages
 Search results
 Search windows
 Search {{ key }}
@@ -499,7 +499,6 @@ The unfinished line
 This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
 This item is unavailable
-This journal cannot connect a project yet, for the reasons below.
 This machine and the share service must keep running for the link to work.
 This paste has {{ preview.lines }} lines; each line break may run a command in the terminal.
 This profile does not allow that model.

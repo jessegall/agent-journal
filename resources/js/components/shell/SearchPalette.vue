@@ -146,7 +146,7 @@ watch(isSearchOpen, async (isOpen) => {
 <template>
     <Dialog
         :open="isSearchOpen"
-        title="Search records and passages"
+        title="Search"
         size="lg"
         placement="top-64"
         @close="close"
@@ -156,7 +156,7 @@ watch(isSearchOpen, async (isOpen) => {
                 <div class="min-w-0 flex-1">
                     <SearchField
                         v-model="search.words.value"
-                        label="Search records and passages"
+                        label="Search"
                         placeholder="Type at least two characters"
                         :controls="results?.listId"
                         :active-descendant="results?.activeId ?? undefined"
