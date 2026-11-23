@@ -272,6 +272,26 @@ final class AgentStatusTest extends TestCase
         $this->assertSame(HoldCopy::of(HoldReason::OnboardingRequired, hasTerminal: false)->reason, $status->reason);
     }
 
+    /**
+     * User message 19457: a wake nobody knows the end of carried nothing of its own, so it does not leave the session
+     * on Status unknown; an uncertain delivery still does, until a user settles it.
+     */
+    public function test_an_uncertain_wake_leaves_the_session_as_its_runtime_reports_it(): void
+    {
+        $idle = self::runtime(RuntimeActivity::Idle);
+
+        $afterWake = AgentStatusRules::of(
+            self::live($idle, request: self::uncertain(DriverOperation::Wake)),
+            self::words(false),
+        );
+        $afterDelivery = AgentStatusRules::of(
+            self::live($idle, request: self::uncertain(DriverOperation::Deliver)),
+            self::words(false),
+        );
+
+        $this->assertSame([SessionState::Idle, SessionState::Unknown], [$afterWake->sessionState, $afterDelivery->sessionState]);
+    }
+
     public function test_a_live_session_offers_stop_only_to_an_actor_allowed_to_stop(): void
     {
         $allowed = new AgentEvidence(
@@ -389,6 +409,20 @@ final class AgentStatusTest extends TestCase
             changedAt: null,
             hold: HoldReason::None,
             canRetry: true,
+        );
+    }
+
+    private static function uncertain(DriverOperation $operation): DriverRequestStatus
+    {
+        return new DriverRequestStatus(
+            requestId: '01jd8x0g9m3qz6v4k2t7r5w1cj',
+            sequence: 2,
+            operation: $operation,
+            progress: RequestProgress::DeliveryUncertain,
+            outcome: null,
+            expectedTiming: ExpectedTiming::Unknown,
+            changedAt: null,
+            hold: HoldReason::None,
         );
     }
 

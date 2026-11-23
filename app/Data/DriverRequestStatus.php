@@ -41,4 +41,13 @@ final class DriverRequestStatus extends Data
         public readonly bool $canResumeScript = false,
         public readonly bool $canCancelScript = false,
     ) {}
+
+    /**
+     * Whether the request is a delivery nobody knows the end of, which a user settles; an uncertain wake carried
+     * nothing of its own, so the session's own reports say how it stands.
+     */
+    public function isUnsettledDelivery(): bool
+    {
+        return $this->progress === RequestProgress::DeliveryUncertain && $this->operation !== DriverOperation::Wake;
+    }
 }

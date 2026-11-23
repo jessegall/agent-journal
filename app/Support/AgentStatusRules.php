@@ -58,7 +58,7 @@ final class AgentStatusRules
             return self::stopping($evidence, $request);
         }
 
-        if ($request?->progress === RequestProgress::DeliveryUncertain) {
+        if ($request?->isUnsettledDelivery() === true) {
             return self::unknown($evidence, self::operationOf($request));
         }
 
