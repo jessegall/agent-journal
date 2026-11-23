@@ -30,7 +30,7 @@ final readonly class SettingsGroup
 
     public function withRows(SettingsRow ...$rows): self
     {
-        return new self($this->key, $this->title, $this->help, array_values($rows), $this->save, $this->reset);
+        return clone($this, ['rows' => array_values($rows)]);
     }
 
     /**
@@ -38,7 +38,7 @@ final readonly class SettingsGroup
      */
     public function savingTo(LayoutFormData $save): self
     {
-        return new self($this->key, $this->title, $this->help, $this->rows, $save, $this->reset);
+        return clone($this, ['save' => $save]);
     }
 
     /**
@@ -47,7 +47,7 @@ final readonly class SettingsGroup
      */
     public function resettableBy(LayoutFormData $reset): self
     {
-        return new self($this->key, $this->title, $this->help, $this->rows, $this->save, $reset);
+        return clone($this, ['reset' => $reset]);
     }
 
     public function part(): LayoutPartData

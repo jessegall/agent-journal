@@ -58,18 +58,7 @@ final readonly class ChatEnvelope
      */
     public function underRoot(string $userRootId): self
     {
-        return new self(
-            $this->inbox,
-            $this->author,
-            $this->body,
-            $this->state,
-            $this->parent,
-            $this->addressee,
-            $this->respondent,
-            $userRootId,
-            $this->requestKey,
-            $this->answersParent,
-        );
+        return clone($this, ['userRootId' => $userRootId]);
     }
 
     /**
@@ -77,18 +66,7 @@ final readonly class ChatEnvelope
      */
     public function askedOf(ActorIdentity $respondent): self
     {
-        return new self(
-            $this->inbox,
-            $this->author,
-            $this->body,
-            $this->state,
-            $this->parent,
-            $this->addressee ?? $respondent,
-            $respondent,
-            $this->userRootId,
-            $this->requestKey,
-            $this->answersParent,
-        );
+        return clone($this, ['addressee' => $this->addressee ?? $respondent, 'respondent' => $respondent]);
     }
 
     public function isQuestion(): bool

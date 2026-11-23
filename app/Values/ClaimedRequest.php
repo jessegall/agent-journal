@@ -46,26 +46,6 @@ final readonly class ClaimedRequest
      */
     public function withMessage(string $message): self
     {
-        return new self(
-            $this->runtimeId,
-            $this->requestId,
-            $this->sequence,
-            $this->attempt,
-            $this->operation,
-            $message,
-            $this->parts,
-            $this->model,
-            $this->effort,
-            $this->script,
-            $this->scriptVersion,
-            $this->scriptParameters,
-            $this->scriptStep,
-            $this->navigationRequestId,
-            $this->navigationRound,
-            $this->sessionId,
-            $this->processStartId,
-            $this->processGeneration,
-            $this->bootstrap,
-        );
+        return clone($this, ['message' => $message]);
     }
 }
