@@ -80,6 +80,8 @@ type liveRuntime struct {
 	// interrupts are the interrupts sent to the running turn: done once it ends, however its program exits.
 	interrupts []client.ClaimedRequest
 	hold       contracts.Hold
+	// screenHold says the hold came from a screen that did not let a prompt in, which the next started turn ends.
+	screenHold bool
 }
 
 // NewLoop returns a loop that reports to the journal and opens drivers with open.
@@ -293,9 +295,13 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 		for _, request := range requests {
 			loop.reportResult(ctx, request, result, err)
 		}
+		if err == nil && result.IsHeld() {
+			loop.heldByScreen(ctx, runtime, result.Hold)
+		}
 		return
 	}
 
+	loop.releaseScreenHold(runtime)
 	runtime.turns++
 	runtime.running = requests
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
@@ -622,6 +628,26 @@ func (loop *Loop) exited(ctx context.Context, runtime *liveRuntime, evidence str
 	report := client.LivenessReport{RuntimeID: runtime.id, ProcessGeneration: runtime.driver.Generation(), Evidence: evidence}
 	if err := loop.journal.ReportExit(ctx, report); err != nil {
 		log.Printf("the exit of runtime %s could not be reported: %v", runtime.id, err)
+	}
+}
+
+// heldByScreen keeps what a screen holds the runtime with and tells the journal, so a start or a delivery the
+// screen did not let in shows what waits for a user: the program is up and does nothing until then.
+func (loop *Loop) heldByScreen(ctx context.Context, runtime *liveRuntime, hold contracts.Hold) {
+	loop.mutex.Lock()
+	runtime.hold = hold
+	runtime.screenHold = true
+	loop.mutex.Unlock()
+	loop.activity(ctx, runtime, "idle")
+}
+
+// releaseScreenHold ends a hold a screen raised once a turn starts: the screen let the prompt in.
+func (loop *Loop) releaseScreenHold(runtime *liveRuntime) {
+	loop.mutex.Lock()
+	defer loop.mutex.Unlock()
+	if runtime.screenHold {
+		runtime.hold = contracts.HoldNone
+		runtime.screenHold = false
 	}
 }
 

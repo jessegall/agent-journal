@@ -288,6 +288,39 @@ func TestATurnWhoseProgramFailsLeavesItsDeliveryUncertain(t *testing.T) {
 	}
 }
 
+// menuRuntime is a program whose screen shows a menu: no prompt gets in until a user answers it.
+type menuRuntime struct {
+	fakeRuntime
+	answered bool
+}
+
+func (runtime *menuRuntime) Wake(ctx context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
+	if !runtime.answered {
+		return contracts.OperationResult{Request: wake.Request, Progress: contracts.ProgressStaged, Hold: "onboarding_required"}, nil
+	}
+
+	return runtime.fakeRuntime.Wake(ctx, wake)
+}
+
+func TestAStartThatMeetsAMenuIsReportedHeldByItAndTheHoldEndsWithTheNextTurn(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := &menuRuntime{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+	runtime.answered = true
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("b", 2, "wake", "")})
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if len(journal.activity) < 2 || journal.activity[0] != "idle" || journal.holds[0] != "onboarding_required" {
+		t.Fatalf("the held start was reported as %v with holds %v", journal.activity, journal.holds)
+	}
+	if journal.activity[1] != "running" || journal.holds[1] != string(contracts.HoldNone) {
+		t.Fatalf("the turn after the menu was reported as %v with holds %v", journal.activity, journal.holds)
+	}
+}
+
 // bootstrappingRuntime proves its conversation without a turn.
 type bootstrappingRuntime struct {
 	fakeRuntime

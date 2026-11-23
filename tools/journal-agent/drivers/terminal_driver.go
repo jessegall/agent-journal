@@ -316,7 +316,7 @@ func (driver *TerminalDriver) prompt(
 		}, nil
 	}
 	if !driver.waitUntil(readyDeadline, driver.promptReady) {
-		return staged(request), nil
+		return driver.stagedBehindScreen(request)
 	}
 
 	generation := driver.runtime.Generation(driver.runtime.Composer)
@@ -373,6 +373,23 @@ func (driver *TerminalDriver) awaitTurnEnd(current *turnEnd) {
 	current.seen = true
 	driver.mutex.Unlock()
 	current.ended <- nil
+}
+
+// stagedBehindScreen is a prompt the screen did not let in: it stays staged and is held by what the screen shows, a
+// menu's own reason or an unknown screen, so the journal says what waits for a user instead of nothing. A menu with a
+// recorded Later is answered with it, as for any hold.
+func (driver *TerminalDriver) stagedBehindScreen(request contracts.RequestIdentity) (contracts.OperationResult, error) {
+	reading := driver.runtime.Classifier.Classify(driver.runtime.Clock.Now())
+	holds := terminal.NewHolds(driver.runtime.Layout, "", driver.runtime.Gate)
+	report, err := holds.Observe(reading, request.RequestID, 0)
+	if err != nil {
+		return failed(request), err
+	}
+
+	result := staged(request)
+	result.Hold = contracts.Hold(report.Reason)
+
+	return result, nil
 }
 
 func (driver *TerminalDriver) promptReady() bool {
