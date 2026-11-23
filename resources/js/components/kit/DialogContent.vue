@@ -43,16 +43,20 @@ provide(dialogTitleIdKey, titleId);
         :class="{ sm: 'max-w-115', md: 'max-w-135', lg: 'max-w-140' }[size]"
     >
         <slot name="header">
-            <DialogHeader v-if="hasHeader" :title="title" :close-label="closeLabel" @close="emit('close')" />
+            <template v-if="hasHeader">
+                <DialogHeader :title="title" :close-label="closeLabel" @close="emit('close')" />
+            </template>
         </slot>
         <DialogBody :flush="flush">
             <slot />
         </DialogBody>
-        <DialogFooter v-if="$slots.footer">
-            <template v-if="$slots.secondary" #secondary>
-                <slot name="secondary" />
-            </template>
-            <slot name="footer" />
-        </DialogFooter>
+        <template v-if="$slots.footer">
+            <DialogFooter>
+                <template v-if="$slots.secondary" #secondary>
+                    <slot name="secondary" />
+                </template>
+                <slot name="footer" />
+            </DialogFooter>
+        </template>
     </div>
 </template>

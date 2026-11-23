@@ -18,7 +18,7 @@ const shortcuts = shortcutGroups.flatMap((group) => group.shortcuts);
         <div class="flex max-h-[70dvh] flex-col gap-3 overflow-y-auto">
             <h2 class="m-0 text-body font-semibold text-text">Keyboard shortcuts</h2>
             <dl class="m-0 grid grid-cols-[minmax(0,auto)_1fr] items-baseline gap-x-4 gap-y-2 text-small">
-                <template v-for="(shortcut, place) in shortcuts" :key="place">
+                <template v-for="shortcut in shortcuts" :key="`${shortcut.keys.join('+')} ${shortcut.does}`">
                     <dt class="flex flex-wrap justify-end gap-1">
                         <template v-for="key in shortcut.keys" :key="key">
                             <Kbd>{{ key }}</Kbd>

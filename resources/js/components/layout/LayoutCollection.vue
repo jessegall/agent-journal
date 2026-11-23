@@ -104,11 +104,12 @@ function destinationOf(row: LayoutRowData): string | null {
                                 :key="index"
                             >
                                 <template v-if="index > 0">, </template>
-                                <TextLink
-                                    v-if="piece.href !== undefined"
-                                    :href="piece.href"
-                                    >{{ piece.label }}</TextLink
-                                >
+                                <template v-if="piece.href !== undefined">
+                                    <TextLink
+                                        :href="piece.href"
+                                        >{{ piece.label }}</TextLink
+                                    >
+                                </template>
                                 <template v-else>{{ piece.label }}</template>
                             </template>
                         </template>
@@ -161,16 +162,17 @@ function destinationOf(row: LayoutRowData): string | null {
                                 </template>
                             </template>
                             <template #title>
-                                <Link
-                                    v-if="destinationOf(row) !== null"
-                                    :href="destinationOf(row) ?? ''"
-                                    :data-row-key="row.key"
-                                    preserve-scroll
-                                    :aria-current="row.isCurrent ? 'true' : undefined"
-                                    class="focus-visible:outline-2 focus-visible:outline-focus"
-                                    @click="rememberRow(page.url, row.key)"
-                                    >{{ row.label }}</Link
-                                >
+                                <template v-if="destinationOf(row) !== null">
+                                    <Link
+                                        :href="destinationOf(row) ?? ''"
+                                        :data-row-key="row.key"
+                                        preserve-scroll
+                                        :aria-current="row.isCurrent ? 'true' : undefined"
+                                        class="focus-visible:outline-2 focus-visible:outline-focus"
+                                        @click="rememberRow(page.url, row.key)"
+                                        >{{ row.label }}</Link
+                                    >
+                                </template>
                                 <template v-else>{{ row.label }}</template>
                             </template>
                             <template v-if="row.detail !== undefined" #subline>
@@ -183,9 +185,11 @@ function destinationOf(row: LayoutRowData): string | null {
                                 >
                                     <LayoutPart :part="trail" />
                                 </template>
-                                <span v-if="row.value !== ''" class="shrink-0 text-text-2">{{
-                                    row.value
-                                }}</span>
+                                <template v-if="row.value !== ''">
+                                    <span class="shrink-0 text-text-2">{{
+                                        row.value
+                                    }}</span>
+                                </template>
                             </template>
                         </ListRow>
                         <template v-if="row.menu !== undefined">

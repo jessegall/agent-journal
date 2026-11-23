@@ -117,22 +117,21 @@ const deviceName = computed(
             <dt class="sr-only">Start</dt>
             <dd>
                 <ul class="flex flex-col gap-0.5 text-small">
-                    <li
-                        v-for="provider in binding.capabilities"
-                        :key="provider.driver"
-                    >
-                        <template v-if="provider.canStart">
-                            {{ provider.label }}: start it with
-                            <code>{{ provider.startCommand }}</code> in the
-                            folder
-                        </template>
-                        <template v-else>
-                            <span class="text-muted-foreground"
-                                >{{ provider.label }} unavailable:
-                                {{ provider.unavailableReason }}</span
-                            >
-                        </template>
-                    </li>
+                    <template v-for="provider in binding.capabilities" :key="provider.driver">
+                        <li>
+                            <template v-if="provider.canStart">
+                                {{ provider.label }}: start it with
+                                <code>{{ provider.startCommand }}</code> in the
+                                folder
+                            </template>
+                            <template v-else>
+                                <span class="text-muted-foreground"
+                                    >{{ provider.label }} unavailable:
+                                    {{ provider.unavailableReason }}</span
+                                >
+                            </template>
+                        </li>
+                    </template>
                 </ul>
             </dd>
             <template v-if="binding.revokedAt !== null">
@@ -170,16 +169,15 @@ const deviceName = computed(
                         {{ binding.machineLabel }}
                     </summary>
                     <ul class="flex flex-col gap-0.5 pt-1">
-                        <li
-                            v-for="(step, index) in binding.supportRecord"
-                            :key="index"
-                        >
-                            <time :datetime="step.at">{{
-                                dateTimeWithZone(step.at)
-                            }}</time
-                            >: {{ step.action }} by {{ step.actor }}, project
-                            {{ step.projectId ?? 'not recorded' }}
-                        </li>
+                        <template v-for="step in binding.supportRecord" :key="`${step.at}-${step.action}`">
+                            <li>
+                                <time :datetime="step.at">{{
+                                    dateTimeWithZone(step.at)
+                                }}</time
+                                >: {{ step.action }} by {{ step.actor }}, project
+                                {{ step.projectId ?? 'not recorded' }}
+                            </li>
+                        </template>
                     </ul>
                 </details>
             </dd>

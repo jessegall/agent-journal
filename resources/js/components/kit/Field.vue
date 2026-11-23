@@ -88,36 +88,38 @@ function submitFromKeys(event: KeyboardEvent): void {
         <FieldLabel :for="inputId" data-field-label>{{ label }}</FieldLabel>
         <slot :id="inputId" :described-by="describedBy" :invalid="invalid">
             <div class="relative flex">
-                <Textarea
-                    v-if="multiline"
-                    :id="inputId"
-                    v-model="value"
-                    :rows="rows"
-                    :maxlength="maxlength"
-                    :disabled="disabled"
-                    :readonly="readonly"
-                    :aria-describedby="describedBy"
-                    :invalid="invalid"
-                    class="flex-1"
-                    @keydown="submitFromKeys"
-                />
-                <Input
-                    v-else
-                    :id="inputId"
-                    v-model="value"
-                    :type="secret ? 'password' : 'text'"
-                    :size="size"
-                    :maxlength="maxlength"
-                    :disabled="disabled"
-                    :readonly="readonly"
-                    :autocomplete="autocompleteValue"
-                    :spellcheck="code ? false : undefined"
-                    :aria-describedby="describedBy"
-                    :invalid="invalid"
-                    class="flex-1"
-                    :class="{ 'font-mono tracking-[0.2em] uppercase': code, 'pr-20': $slots.end }"
-                    @keydown="submitFromKeys"
-                />
+                <template v-if="multiline">
+                    <Textarea
+                        :id="inputId"
+                        v-model="value"
+                        :rows="rows"
+                        :maxlength="maxlength"
+                        :disabled="disabled"
+                        :readonly="readonly"
+                        :aria-describedby="describedBy"
+                        :invalid="invalid"
+                        class="flex-1"
+                        @keydown="submitFromKeys"
+                    />
+                </template>
+                <template v-else>
+                    <Input
+                        :id="inputId"
+                        v-model="value"
+                        :type="secret ? 'password' : 'text'"
+                        :size="size"
+                        :maxlength="maxlength"
+                        :disabled="disabled"
+                        :readonly="readonly"
+                        :autocomplete="autocompleteValue"
+                        :spellcheck="code ? false : undefined"
+                        :aria-describedby="describedBy"
+                        :invalid="invalid"
+                        class="flex-1"
+                        :class="{ 'font-mono tracking-[0.2em] uppercase': code, 'pr-20': $slots.end }"
+                        @keydown="submitFromKeys"
+                    />
+                </template>
                 <template v-if="$slots.end">
                     <span class="absolute inset-y-0 right-1 flex items-center"><slot name="end" /></span>
                 </template>

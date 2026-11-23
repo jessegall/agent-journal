@@ -19,8 +19,12 @@ const enabled = defineModel<boolean>('enabled', { default: true });
         <GroupLabel><slot /></GroupLabel>
         <div class="flex items-center gap-2">
             <slot name="actions" />
-            <Button v-if="changed" size="sm" @click="$emit('reset')">Reset</Button>
-            <Toggle v-if="switchLabel" v-model="enabled" :label="switchLabel" />
+            <template v-if="changed">
+                <Button size="sm" @click="$emit('reset')">Reset</Button>
+            </template>
+            <template v-if="switchLabel">
+                <Toggle v-model="enabled" :label="switchLabel" />
+            </template>
         </div>
     </div>
 </template>

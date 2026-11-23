@@ -145,12 +145,13 @@ defineSlots<{
             <slot v-if="commentedLines.includes(line)" name="thread" :line="line" />
             <slot v-if="isComposing && range?.to === line" name="bar" :from="range.from" :to="range.to" :close="close" />
         </template>
-        <CommentButton
-            v-if="range && !isComposing && !isButtonHidden"
-            :top="buttonPlace.top"
-            :left="buttonPlace.left"
-            @comment="comment"
-            @dismiss="isButtonHidden = true"
-        />
+        <template v-if="range && !isComposing && !isButtonHidden">
+            <CommentButton
+                :top="buttonPlace.top"
+                :left="buttonPlace.left"
+                @comment="comment"
+                @dismiss="isButtonHidden = true"
+            />
+        </template>
     </div>
 </template>

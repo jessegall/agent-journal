@@ -18,7 +18,9 @@ const enabled = defineModel<boolean>('enabled', { default: true });
             {{ title }}
             <template #actions><slot name="actions" /></template>
         </SectionHead>
-        <p v-if="help" class="mb-2.5 text-small text-text-3">{{ help }}</p>
+        <template v-if="help">
+            <p class="mb-2.5 text-small text-text-3">{{ help }}</p>
+        </template>
         <slot />
     </section>
 </template>
