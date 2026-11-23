@@ -144,7 +144,7 @@ final readonly class ReceiptDeliveries
             return;
         }
 
-        MessageAttention::create($origin, $interval->inbox_id, $interval->actor, $outcome);
+        MessageAttention::record($origin, $interval->inbox_id, $interval->actor, $outcome);
 
         if ($outcome->requestId === null) {
             $delivery->await();

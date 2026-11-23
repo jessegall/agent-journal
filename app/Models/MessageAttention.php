@@ -61,14 +61,25 @@ final class MessageAttention extends Model implements ReadableModel
         return ['wake_sequence' => 'integer'];
     }
 
-    public static function create(
+    /**
+     * Records how the newest ask of this actor because of the origin went. An origin keeps one row an actor, so an
+     * ask made again, as a delivery tried a second time is, replaces the outcome of the one before.
+     */
+    public static function record(
         AttentionOrigin $origin,
         string $inboxId,
         ActorIdentity $actor,
         AttentionOutcome $outcome,
     ): self {
-        $attention = self::unsaved($origin, $inboxId, $actor, $outcome);
-        $attention->save();
+        $attention = self::query()
+            ->where('origin_type', $origin->type)
+            ->where('origin_id', $origin->id)
+            ->where('actor_type', $actor->type->value)
+            ->where('actor_id', $actor->id)
+            ->firstOption()
+            ->getOrElse(self::unsaved($origin, $inboxId, $actor, $outcome));
+
+        $attention->fill(self::outcomeFields($outcome))->save();
 
         return $attention;
     }
@@ -89,9 +100,21 @@ final class MessageAttention extends Model implements ReadableModel
             'inbox_id' => $inboxId,
             'actor_type' => $actor->type->value,
             'actor_id' => $actor->id,
+            ...self::outcomeFields($outcome),
+        ]);
+    }
+
+    /**
+     * What a row keeps of an ask's outcome: the wake request and its sequence, or neither when no runtime took it.
+     *
+     * @return array{request_id: string|null, wake_sequence: int|null}
+     */
+    private static function outcomeFields(AttentionOutcome $outcome): array
+    {
+        return [
             'request_id' => $outcome->requestId,
             'wake_sequence' => $outcome->requestId === null ? null : $outcome->sequence,
-        ]);
+        ];
     }
 
     // ----------[ Queries ]----------

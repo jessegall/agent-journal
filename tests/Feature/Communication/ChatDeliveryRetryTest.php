@@ -17,6 +17,7 @@ use App\Models\ReceiptDelivery;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAccess;
 use App\Support\OutsideCommandAllowance;
+use App\Support\ReceiptDeliveries;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
@@ -120,6 +121,31 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
 
         $this->assertTrue(MessageAttention::query()->where('origin_id', $messageId)->exists());
         $this->assertTrue($delivery->state === ReceiptDeliveryState::Waiting || $delivery->lease_expires_at !== null);
+    }
+
+    public function test_a_delivery_tried_again_after_its_lease_keeps_one_record_of_the_ask(): void
+    {
+        $this->app->make(AgentChatAccess::class)->allow(
+            $this->builder->agent_id,
+            null,
+            [$this->owner->id],
+            ActorIdentity::system(),
+            CarbonImmutable::now(),
+        );
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', []));
+        $this->runOnBus(new AddChatParticipantCommand($inboxId, "agent:{$this->builder->agent_id}"));
+        $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'ada-plan'));
+        $delivery = ReceiptDelivery::query()
+            ->where('receipt_id', $this->receiptOf($messageId, $this->builder->agent_id)->id)
+            ->sole();
+        $firstLease = $delivery->lease_expires_at;
+        $this->assertNotNull($firstLease);
+
+        $this->app->make(ReceiptDeliveries::class)->deliverDue($firstLease->addSecond());
+
+        $this->assertSame(1, MessageAttention::query()->where('origin_id', $messageId)->count());
+        $this->assertTrue($delivery->refresh()->lease_expires_at->greaterThan($firstLease));
     }
 
     private function receiptOf(string $messageId, string $agentId): MessageReceipt
