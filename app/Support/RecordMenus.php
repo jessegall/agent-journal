@@ -54,12 +54,12 @@ final readonly class RecordMenus implements RecordMenusContract
         }
 
         $grouped = array_map(fn (array $items) => self::inOrder($items), $grouped);
-        $firstOf = $grouped;
+        $itemsByGroup = $grouped;
 
         uksort($grouped, fn (int|string $one, int|string $other) => [
-            $firstOf[$one][0]->menuItem->position,
+            $itemsByGroup[$one][0]->menuItem->position,
             (string) $one,
-        ] <=> [$firstOf[$other][0]->menuItem->position, (string) $other]);
+        ] <=> [$itemsByGroup[$other][0]->menuItem->position, (string) $other]);
 
         return LayoutMenuData::from([
             'key' => $menu->key,

@@ -6243,6 +6243,7 @@ class	ShippedReaderInstaller
 class	ShippedReaderUnmatched
 class	ShippedReaders
 class	ShippedSkillReadOnly
+class	ShortReference
 class	ShowAccountsNotice
 class	ShowAskCall
 class	ShowAskCommand
@@ -7503,7 +7504,6 @@ constant	DesksServiceProvider::OWNER
 constant	DeviceGrant::CODE_MINUTES
 constant	DeviceGrant::GRANT_HOURS
 constant	DeviceGrant::POLL_SECONDS_MINIMUM
-constant	DeviceGrant::REFERENCE_LETTERS
 constant	DeviceGrant::SCOPES
 constant	DeviceOverviews::TASK_LIMIT
 constant	DevicePollOutcome::ISSUED
@@ -7673,7 +7673,6 @@ constant	InspectMergeAttemptsHandler::STALE_MINUTES
 constant	InstallAttempt::LINE_LIMIT
 constant	InstallAttempt::LISTED_DAYS
 constant	InstallAttempt::PAGE_LIMIT
-constant	InstallAttempt::REFERENCE_LETTERS
 constant	InstallScript::SECOND_STAGE
 constant	InstallScript::TEMPLATE
 constant	InstallScriptController::FAILURE
@@ -7838,6 +7837,7 @@ constant	OutputAssessment::UPDATED_AT
 constant	OutputDocking::DOCK_TYPE
 constant	OutputPolicy::HIDING_REDIRECTS
 constant	OutputVerdict::CODE
+constant	OwnReminders::PER_PAGE
 constant	PackageScripts::HARMLESS_CALLBACKS
 constant	PackageScripts::PACKAGE_FILES
 constant	Page::LARGEST_LIMIT
@@ -7982,7 +7982,7 @@ constant	ReceiptDeliveries::FIRST_BACKOFF_SECONDS
 constant	ReceiptDeliveries::LONGEST_BACKOFF_SECONDS
 constant	ReceiptDeliveries::PASS_LIMIT
 constant	ReceiptRetention::STANDARD_DAYS
-constant	RecipientNotifications::MOST_PER_TARGET
+constant	RecipientNotifications::RECEIPTS_PER_TARGET_LIMIT
 constant	ReconcileAccountsHandler::BATCH
 constant	RecordConversationVisit::HOST_SETTINGS
 constant	RecordIdentity::ALIAS_PATTERN
@@ -8016,7 +8016,6 @@ constant	ReleaseManifest::REQUIRED_CAPABILITIES
 constant	ReleaseTarget::REQUIRED_PROVIDERS
 constant	Reminder::LINK_TYPE
 constant	Reminder::TITLE_CHARACTER_LIMIT
-constant	ReminderResolver::PER_PAGE
 constant	RepairRouting::ROUND_LIMIT
 constant	Report::LINK_TYPE
 constant	ReportDockCard::ABSTRACT_CHARACTER_LIMIT
@@ -8206,6 +8205,8 @@ constant	ShellOperations::DECLARATION_REVISION
 constant	ShellOperations::SURFACE
 constant	ShellOperations::UNKNOWN
 constant	ShellWordScanner::WORD_ENDS
+constant	ShortReference::LENGTH
+constant	ShortReference::LETTERS
 constant	SignInAttempt::LINK_TYPE
 constant	SignInCard::CHECK_SENDS_A_REQUEST
 constant	SignInCode::LIMIT
@@ -9075,7 +9076,6 @@ interface	ReflectorFactory
 interface	RefusalDetails
 interface	RefusalMapper
 interface	ReminderContribution
-interface	ReminderResolver
 interface	ReplyInboxes
 interface	ReportReader
 interface	ReportResolver
@@ -9101,7 +9101,6 @@ interface	ScriptObjectProvider
 interface	ScriptObjectRegistration
 interface	ScriptStatement
 interface	ScriptTrigger
-interface	SealedUploads
 interface	SearchAccess
 interface	SearchProvider
 interface	SearchSources
@@ -9894,7 +9893,6 @@ method	AgentChatPermission::activeFor()
 method	AgentChatPermission::admitsInviter()
 method	AgentChatPermission::casts()
 method	AgentChatPermission::create()
-method	AgentChatPermission::inEnvironment()
 method	AgentChatPermission::inviters()
 method	AgentChatPermission::withdraw()
 method	AgentClientSettings::__construct()
@@ -13542,7 +13540,6 @@ method	DeviceGrant::lockById()
 method	DeviceGrant::lockLiveOf()
 method	DeviceGrant::lockOfStart()
 method	DeviceGrant::lockPendingByUserCode()
-method	DeviceGrant::newReference()
 method	DeviceGrant::nextGenerationOf()
 method	DeviceGrant::ofUserCode()
 method	DeviceGrant::recordPoll()
@@ -14817,7 +14814,6 @@ method	EnvironmentUserGrant::allows()
 method	EnvironmentUserGrant::casts()
 method	EnvironmentUserGrant::columnsOf()
 method	EnvironmentUserGrant::create()
-method	EnvironmentUserGrant::inEnvironment()
 method	EnvironmentUserGrant::revoke()
 method	Environments::__construct()
 method	Environments::evaluate()
@@ -15484,6 +15480,7 @@ method	GrantNotWithheld::for()
 method	GrantOfflineReply::__construct()
 method	GrantOfflineReply::handle()
 method	GrantShapeInvalid::for()
+method	GrantedInEnvironment::inEnvironment()
 method	GrantedSessionOutputs::grantedTo()
 method	GrantedSessionOutputs::mayRead()
 method	Grants::__construct()
@@ -16142,7 +16139,6 @@ method	InstallAttempt::invitations()
 method	InstallAttempt::listedFor()
 method	InstallAttempt::lockById()
 method	InstallAttempt::lockOfOwner()
-method	InstallAttempt::newReference()
 method	InstallAttempt::ofOwner()
 method	InstallAttempt::openFor()
 method	InstallAttempt::project()
@@ -16750,6 +16746,8 @@ method	LinkedAccountUses::authorizeRead()
 method	LinkedAccountUses::counts()
 method	LinkedAccountUses::history()
 method	LinksRemoved::__construct()
+method	LinksTargetsOneByOne::linkFor()
+method	LinksTargetsOneByOne::linksFor()
 method	ListAsksCall::__construct()
 method	ListAsksCall::cursor()
 method	ListAsksCommand::handle()
@@ -16855,6 +16853,7 @@ method	LiteralSentenceAssertionScan::sentencesOf()
 method	LiveShareStatus::isPubliclyShared()
 method	LoadMigrations::__construct()
 method	LoadMigrations::__invoke()
+method	LoadsCoreRoutes::loadCoreRoutes()
 method	LocalAccountFolders::__construct()
 method	LocalAccountFolders::make()
 method	LocalAccountFolders::remove()
@@ -17240,7 +17239,6 @@ method	MergeAdmission::requireApproval()
 method	MergeAskNotificationTarget::__construct()
 method	MergeAskNotificationTarget::disclosesMissing()
 method	MergeAskNotificationTarget::linkFor()
-method	MergeAskNotificationTarget::linksFor()
 method	MergeAskNotificationTarget::titleOf()
 method	MergeAttempt::acknowledge()
 method	MergeAttempt::apply()
@@ -18987,6 +18985,7 @@ method	PlanReviewRequested::__construct()
 method	PlanReviewView::__construct()
 method	PlanReviewView::of()
 method	PlanReviewView::receiptOf()
+method	PlanReviewView::receiptOrMissing()
 method	PlanReviewView::workOf()
 method	PlanReviewWithdrawn::__construct()
 method	PlanRevisionChanged::for()
@@ -20845,6 +20844,7 @@ method	RecordLinksPartData::__construct()
 method	RecordLocation::__construct()
 method	RecordMenus::__construct()
 method	RecordMenus::general()
+method	RecordMenus::inOrder()
 method	RecordMenus::isVisible()
 method	RecordMenus::itemData()
 method	RecordMenus::menuOf()
@@ -20896,6 +20896,7 @@ method	RecordReceipt::__construct()
 method	RecordReceipt::handle()
 method	RecordReference::__construct()
 method	RecordReference::idOrNumber()
+method	RecordReference::isNumber()
 method	RecordReference::label()
 method	RecordReference::number()
 method	RecordReference::of()
@@ -21501,7 +21502,6 @@ method	ReminderEnded::as()
 method	ReminderPage::__construct()
 method	ReminderPage::lastPage()
 method	ReminderPolicy::model()
-method	ReminderResolver::own()
 method	ReminderStatus::isWaiting()
 method	ReminderStatus::label()
 method	ReminderUnavailable::forId()
@@ -22508,7 +22508,6 @@ method	RunNamedAdmissionPipeline::pipes()
 method	RunNotificationTarget::__construct()
 method	RunNotificationTarget::disclosesMissing()
 method	RunNotificationTarget::linkFor()
-method	RunNotificationTarget::linksFor()
 method	RunOutcome::casts()
 method	RunOutcome::correct()
 method	RunOutcome::create()
@@ -22898,7 +22897,6 @@ method	ScriptsServiceProvider::boot()
 method	ScriptsServiceProvider::register()
 method	SealedAttachments::__construct()
 method	SealedAttachments::assertReadable()
-method	SealedUploads::consume()
 method	SearchAccess::admitsOpen()
 method	SearchAccess::agentRead()
 method	SearchAccess::canUserSearch()
@@ -24277,6 +24275,7 @@ method	ShippedReaders::vpCheck()
 method	ShippedReaders::vueTsc()
 method	ShippedSkillReadOnly::for()
 method	ShippedSkillReadOnly::refusalCode()
+method	ShortReference::withPrefix()
 method	ShowAccountsNotice::__construct()
 method	ShowAccountsNotice::handle()
 method	ShowAskCall::__construct()
@@ -28967,6 +28966,7 @@ parameter	$inode
 parameter	$input
 parameter	$inputDigest
 parameter	$inputOwner
+parameter	$inputType
 parameter	$insideResults
 parameter	$inspection
 parameter	$inspections
@@ -29124,6 +29124,7 @@ parameter	$items	app/Data/NotificationPage.php
 parameter	$items	app/Data/PresentationBatchData.php
 parameter	$items	app/Data/ProtectionReportData.php
 parameter	$items	app/Support/Layout/LayoutMenuGroupData.php
+parameter	$items	app/Support/RecordMenus.php
 parameter	$items	app/Values/ProtectionReport.php
 parameter	$job
 parameter	$jobId
@@ -32229,7 +32230,6 @@ property	CancelTaskCommand::$reason
 property	CancelTaskCommand::$taskId
 property	CancelTerminalTakeCommand::$agentId
 property	CancelTerminalTakeCommand::$takeId
-property	CancelTerminalTakeHandler::$clock
 property	CancelTerminalTakeHandler::$controls
 property	CandidateQuery::$driver
 property	CandidateQuery::$independent
@@ -33036,7 +33036,7 @@ property	ConnectedProject::$key
 property	ConnectedProject::$root
 property	ConnectionCalls::$sender
 property	ConnectionsHostOperatorAccess::$authorizer
-property	ConnectionsOwnerCheck::$authorizer
+property	ConnectionsOwnerCheck::$access
 property	ConsoleOutput::$key
 property	ConsoleOutput::$lines
 property	ConsoleOutput::$open
@@ -38304,7 +38304,6 @@ property	ReleaseTargetData::$name
 property	ReleaseTargetData::$prerequisites
 property	ReleaseTerminalControlCommand::$agentId
 property	ReleaseTerminalControlCommand::$grantId
-property	ReleaseTerminalControlHandler::$clock
 property	ReleaseTerminalControlHandler::$controls
 property	RemindRequiredSkills::$contexts
 property	ReminderCard::$dueAt
@@ -42123,6 +42122,7 @@ trait	ComparesTypeAndId
 trait	CountsLoads
 trait	CountsPivotLoads
 trait	CreatedWithAttention
+trait	GrantedInEnvironment
 trait	HasActorColumns
 trait	HasAssignables
 trait	HasComments
@@ -42137,6 +42137,8 @@ trait	InsertsRowSets
 trait	KeepsCleanupTries
 trait	KeepsNewestReading
 trait	Linkable
+trait	LinksTargetsOneByOne
+trait	LoadsCoreRoutes
 trait	MeasuresBody
 trait	NamedByRuleScope
 trait	NamesAssignedRecord
@@ -42220,6 +42222,7 @@ variable	$adapter
 variable	$added
 variable	$additions
 variable	$address
+variable	$addressee
 variable	$addresses
 variable	$administrativeAccesses
 variable	$admission
@@ -42494,6 +42497,7 @@ variable	$compatibility
 variable	$compiled
 variable	$completes
 variable	$completion
+variable	$completions
 variable	$component
 variable	$components
 variable	$composed
@@ -42817,7 +42821,6 @@ variable	$firstRequest
 variable	$firstRequestFields
 variable	$firstTable
 variable	$fits
-variable	$fitsInAnInteger
 variable	$fitting
 variable	$fix
 variable	$fixed
@@ -43002,7 +43005,6 @@ variable	$isBareEsac
 variable	$isBootstrap
 variable	$isCall
 variable	$isCallOnThis
-variable	$isCancelled
 variable	$isCandidate
 variable	$isCaptureSafe
 variable	$isClean
@@ -43049,7 +43051,6 @@ variable	$isOwnProperty
 variable	$isOwnTurn
 variable	$isOwner
 variable	$isOwnerStart
-variable	$isPeer
 variable	$isPlain
 variable	$isPlainBool
 variable	$isPositiveNumber
@@ -43109,8 +43110,8 @@ variable	$items	app/Resolvers/Support/NotificationChanges.php
 variable	$items	app/Resolvers/Support/NotificationFeed.php
 variable	$items	app/Support/PresentationBatches.php
 variable	$items	app/Support/PresentationPrompts.php
-variable	$items	app/Support/RecordMenus.php
 variable	$items	app/Support/UiDeclarations.php
+variable	$itemsByGroup
 variable	$job
 variable	$jobId
 variable	$jobs
@@ -43533,6 +43534,7 @@ variable	$positioned
 variable	$positions
 variable	$post
 variable	$postedFrom
+variable	$posts
 variable	$predecessorId
 variable	$preference
 variable	$preferred
@@ -44086,6 +44088,7 @@ variable	$total
 variable	$totals
 variable	$touches
 variable	$tracked
+variable	$trailing
 variable	$trait
 variable	$traitMethods
 variable	$traitUse
@@ -44233,6 +44236,7 @@ variable	$workClass
 variable	$workHolds
 variable	$workProviderClass
 variable	$worker
+variable	$workingActions
 variable	$wrapped
 variable	$write
 variable	$writer
