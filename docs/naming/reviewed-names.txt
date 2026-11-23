@@ -11221,6 +11221,7 @@ method	BoundedReads::all()
 method	BoundedReads::defaultReadLimit()
 method	BoundedReads::defaultReadOrder()
 method	BoundedReads::getRelationshipFromMethod()
+method	BoundedReads::lockedById()
 method	BoundedReads::mutateAttribute()
 method	BoundedReads::mutateAttributeMarkedAttribute()
 method	BoundedReads::newEloquentBuilder()
@@ -17247,7 +17248,6 @@ method	MergeAttempt::becomeUncertain()
 method	MergeAttempt::casts()
 method	MergeAttempt::hasMerged()
 method	MergeAttempt::interrupted()
-method	MergeAttempt::lockedById()
 method	MergeAttempt::merged()
 method	MergeAttempt::outcome()
 method	MergeAttempt::refuse()
@@ -17988,7 +17988,6 @@ method	NotificationReceipt::hide()
 method	NotificationReceipt::isCounted()
 method	NotificationReceipt::isHidden()
 method	NotificationReceipt::isNew()
-method	NotificationReceipt::lockedById()
 method	NotificationReceipt::markRead()
 method	NotificationReceipt::occurrence()
 method	NotificationReceipt::reveal()
@@ -18011,7 +18010,6 @@ method	NotificationScope::casts()
 method	NotificationScope::create()
 method	NotificationScope::findFor()
 method	NotificationScope::finishMarkAll()
-method	NotificationScope::lockedById()
 method	NotificationScope::lockedFor()
 method	NotificationScope::ofRecipient()
 method	NotificationScope::recordChange()
@@ -43049,6 +43047,7 @@ variable	$isNestedApplicationCall
 variable	$isNew
 variable	$isNewRow
 variable	$isOpen
+variable	$isOpener
 variable	$isOutside
 variable	$isOwnInbox
 variable	$isOwnOutputRead
@@ -43484,7 +43483,6 @@ variable	$paths
 variable	$pattern
 variable	$patternFolder
 variable	$patternPathOperands
-variable	$payload	app/Support/Relay/HookRelay.php
 variable	$peer
 variable	$pending
 variable	$perPass
