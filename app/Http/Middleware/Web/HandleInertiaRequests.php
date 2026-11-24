@@ -18,6 +18,7 @@ use App\Http\Responses\PageReadProps;
 use App\Http\Responses\SearchProps;
 use App\Support\ActorContext;
 use App\Support\CoreSettings;
+use App\Support\HostLinkAlarms;
 use App\Support\InstallationFaults;
 use App\Values\ChatMemberAuthority;
 use Illuminate\Http\Request;
@@ -47,6 +48,7 @@ class HandleInertiaRequests extends Middleware
         private readonly SharePolicy $sharing,
         private readonly InstalledVersion $version,
         private readonly InstallationFaults $installationFaults,
+        private readonly HostLinkAlarms $hostLinkAlarms,
         private readonly CurrentActor $actors,
         private readonly NotificationProps $notifications,
         private readonly PageReadProps $pageReads,
@@ -92,7 +94,10 @@ class HandleInertiaRequests extends Middleware
                     'currentUser' => CurrentUserData::from($user->get()),
                     'canShare' => $this->sharing->mayManage(ActorContext::forUser($user->get()->id)),
                     // A chat member is a guest: what the installation could not heal is the operator's to see.
-                    'installationFaults' => $this->isChatMember() ? [] : $this->installationFaults->current(),
+                    'installationFaults' => $this->isChatMember() ? [] : [
+                        ...$this->installationFaults->current(),
+                        ...$this->hostLinkAlarms->current(),
+                    ],
                     ...$this->refusalCodeOf($request),
                 ],
             )->toArray(),

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
+use App\Commands\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
+use App\Commands\RecordHostCallFailure\RecordHostCallFailureCommand;
+use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\HostCalls;
 use App\Contracts\Hosts\LocalProjectHosts;
 use App\Enums\CommandEntry;
@@ -13,28 +16,42 @@ use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostRoleRefused;
 use App\Models\Projects\Host;
 use App\Support\ActorStore;
+use App\Support\Command;
 use App\Support\CommandEntrance;
 use App\Values\HostContext;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as IlluminateResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Admits a signed host call (SignedHostCalls) from the hosts the route's role names: enrolled hosts by default,
  * journal.host:relay for a connected folder's own routes, journal.host:shared for the work routes both use, where a
  * relay must have a live binding and is scoped to it. The host is bound for this request only (Octane), never kept on
- * a singleton.
+ * a singleton. Each answered call is kept on the host for its link alarm: a server error, or an answer after failures.
  */
 final readonly class AuthenticateHost
 {
+    /**
+     * The header a host sends the calls that failed on its side in, on its next call the journal answers.
+     */
+    private const string FAILED_CALLS_HEADER = 'X-Journal-Failed-Calls';
+
+    /**
+     * The most failed calls of one report that are kept, as the host keeps no more.
+     */
+    private const int FAILED_CALL_LIMIT = 20;
+
     public function __construct(
         private Container $container,
         private HostCalls $calls,
         private LocalProjectHosts $localHosts,
         private ActorStore $actors,
         private CommandEntrance $entrance,
+        private CommandBus $commands,
     ) {}
 
     /**
@@ -55,14 +72,82 @@ final readonly class AuthenticateHost
 
         try {
             $handle = fn (): Response => $next($request);
-
-            return $this->entrance->through(
+            $response = $this->entrance->through(
                 CommandEntry::HostControl,
                 fn (): Response => $this->actors->actAsSystem('host request', $handle),
             );
         } finally {
             $this->container->forgetInstance(HostContext::class);
         }
+
+        $this->recordCallOutcome($context->hostId, $request, $response);
+
+        return $response;
+    }
+
+    /**
+     * Keeps a server error the call was answered with, or that it was answered when that ends a failure, carries the
+     * host's own report of failed calls, or follows a minute of quiet.
+     */
+    private function recordCallOutcome(string $hostId, Request $request, Response $response): void
+    {
+        if ($response->getStatusCode() >= Response::HTTP_INTERNAL_SERVER_ERROR) {
+            $route = '/'.$request->path();
+            $this->runForHost(new RecordHostCallFailureCommand($hostId, $route, $response->getStatusCode(), $this->reasonOf($response)));
+
+            return;
+        }
+
+        $reported = $this->reportedFailures($request);
+
+        if (Host::query()->findOrFail($hostId)->hasAnswerToRecord($reported, CarbonImmutable::now())) {
+            $this->runForHost(new RecordHostCallAnsweredCommand($hostId, $reported));
+        }
+    }
+
+    private function runForHost(Command $command): void
+    {
+        $this->entrance->through(
+            CommandEntry::HostControl,
+            fn () => $this->actors->actAsSystem('host request', fn () => $this->commands->run($command)),
+        );
+    }
+
+    /**
+     * Why the journal failed the call: the exception it answered with, else the status's own name.
+     */
+    private function reasonOf(Response $response): string
+    {
+        $exception = $response instanceof IlluminateResponse || $response instanceof JsonResponse ? $response->exception : null;
+        $reason = $exception?->getMessage() ?? Response::$statusTexts[$response->getStatusCode()] ?? 'Server error';
+
+        return mb_substr($reason, 0, 300);
+    }
+
+    /**
+     * The calls the host reports failed on its side, as the host's client sends them; a header it cannot read keeps
+     * none.
+     *
+     * @return list<array{route: string, status: int, reason: string, since: string}>
+     */
+    private function reportedFailures(Request $request): array
+    {
+        $decoded = json_decode((string) $request->header(self::FAILED_CALLS_HEADER, '[]'), true);
+        $reported = [];
+
+        foreach (is_array($decoded) ? array_slice($decoded, 0, self::FAILED_CALL_LIMIT) : [] as $call) {
+            if (is_array($call) && is_string($call['route'] ?? null) && is_int($call['status'] ?? null)
+                && is_string($call['reason'] ?? null) && is_string($call['since'] ?? null)) {
+                $reported[] = [
+                    'route' => mb_substr($call['route'], 0, 200),
+                    'status' => $call['status'],
+                    'reason' => mb_substr($call['reason'], 0, 300),
+                    'since' => $call['since'],
+                ];
+            }
+        }
+
+        return $reported;
     }
 
     /**

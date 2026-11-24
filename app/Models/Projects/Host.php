@@ -13,6 +13,8 @@ use App\Enums\ArrangementType;
 use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\TerminalInputType;
+use App\Events\HostCallAnswered;
+use App\Events\HostCallFailed;
 use App\Events\HostBrowserInputAdvertised;
 use App\Events\HostDescriptorsRecorded;
 use App\Events\HostProtectionRecorded;
@@ -44,6 +46,10 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @property array<string, StoredReport> $protection
  * @property list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}> $descriptors
  * @property CarbonImmutable|null $revoked_at
+ * @property CarbonImmutable|null $last_answered_at
+ * @property CarbonImmutable|null $failing_since
+ * @property string|null $last_failure
+ * @property list<array{route: string, status: int, reason: string, since: string}>|null $reported_failures
  * @property bool $browser_input
  * @property bool $browser_keys
  * @property bool $browser_paste
@@ -76,6 +82,9 @@ final class Host extends Model implements EventSource, ReadableModel
             'browser_resize' => 'boolean',
             'browser_private' => 'boolean',
             'revoked_at' => 'immutable_datetime',
+            'last_answered_at' => 'immutable_datetime',
+            'failing_since' => 'immutable_datetime',
+            'reported_failures' => 'array',
         ];
     }
 
@@ -219,6 +228,38 @@ final class Host extends Model implements EventSource, ReadableModel
 
         $this->assertSaved($this->save());
         $this->raise(new HostBrowserInputAdvertised($this->id));
+    }
+
+    /**
+     * Keeps a server error the journal answered one of the host's calls with: since when its calls fail, and why the
+     * latest did.
+     */
+    public function recordCallFailure(string $route, int $status, string $reason, CarbonImmutable $at): void
+    {
+        $this->failing_since ??= $at;
+        $this->last_failure = "{$route} answered {$status}: {$reason}";
+        $this->assertSaved($this->save());
+        $this->raise(new HostCallFailed($this->id));
+    }
+
+    /**
+     * Keeps that the journal answered one of the host's calls: a failure ends, and the calls the host reported failed
+     * on its side are kept.
+     *
+     * @param  list<array{route: string, status: int, reason: string, since: string}>  $reported
+     */
+    public function recordCallAnswered(array $reported, CarbonImmutable $at): void
+    {
+        $this->last_answered_at = $at;
+        $this->failing_since = null;
+        $this->last_failure = null;
+
+        if ($reported !== []) {
+            $this->reported_failures = $reported;
+        }
+
+        $this->assertSaved($this->save());
+        $this->raise(new HostCallAnswered($this->id));
     }
 
     public function revokeAt(CarbonImmutable $time): void
@@ -368,6 +409,35 @@ final class Host extends Model implements EventSource, ReadableModel
         if ($reported !== $this->arrangement) {
             throw HostArrangementRefused::unlikeEnrollment($reported, $this->arrangement);
         }
+    }
+
+    /**
+     * Whether an answered call has anything to keep: a failure that ends, failures the host reported, or a last answer
+     * older than a minute, so a quiet host shows while a busy one writes its row once a minute.
+     *
+     * @param  list<array{route: string, status: int, reason: string, since: string}>  $reported
+     */
+    public function hasAnswerToRecord(array $reported, CarbonImmutable $at): bool
+    {
+        return $this->failing_since !== null
+            || $reported !== []
+            || $this->last_answered_at === null
+            || $this->last_answered_at->lt($at->subMinute());
+    }
+
+    /**
+     * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when
+     * it has been quiet.
+     */
+    public function linkAlarm(): string
+    {
+        if ($this->failing_since !== null) {
+            return "The host {$this->installation_name} has failed to reach the journal since "
+                ."{$this->failing_since->format('H:i T')}: its last call, {$this->last_failure}.";
+        }
+
+        return "The host {$this->installation_name} has not called the journal since "
+            ."{$this->last_answered_at?->format('H:i T')}.";
     }
 
     public function isRevoked(): bool

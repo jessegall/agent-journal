@@ -372,6 +372,8 @@ type Client struct {
 	arrangement string
 	// browserInput is whether every claim says this host carries out browser control of its terminals.
 	browserInput bool
+	// failed keeps the calls that failed on the host's side until a call the journal answers carries them.
+	failed *failedCalls
 }
 
 // New returns a client for the enrollment.
@@ -380,12 +382,13 @@ func New(enrollment Enrollment) *Client {
 		enrollment: enrollment,
 		http:       &http.Client{Timeout: 30 * time.Second},
 		now:        time.Now,
+		failed:     &failedCalls{},
 	}
 }
 
 // ForRemoteProject is a client for the relay of a project connected to a server journal, over the HTTP client given.
 func ForRemoteProject(enrollment Enrollment, transport *http.Client) *Client {
-	return &Client{enrollment: enrollment, http: transport, now: time.Now}
+	return &Client{enrollment: enrollment, http: transport, now: time.Now, failed: &failedCalls{}}
 }
 
 // WithArrangement makes every claim report where this host runs agents, local or contained.
@@ -714,7 +717,7 @@ func (client *Client) send(ctx context.Context, method, target string, content [
 	if err != nil {
 		return err
 	}
-	response, err := client.http.Do(request)
+	response, err := client.deliver(request, target)
 	if err != nil {
 		return errors.Join(ErrUncertain, err)
 	}
@@ -735,7 +738,7 @@ func (client *Client) sendAnswering(ctx context.Context, method, target string, 
 	if err != nil {
 		return err
 	}
-	response, err := client.http.Do(request)
+	response, err := client.deliver(request, target)
 	if err != nil {
 		return errors.Join(ErrUncertain, err)
 	}
@@ -745,6 +748,27 @@ func (client *Client) sendAnswering(ctx context.Context, method, target string, 
 	}
 
 	return json.NewDecoder(response.Body).Decode(answer)
+}
+
+// deliver sends a signed call with the calls that failed since the journal last answered, keeps this one when it
+// fails too, and forgets those it carried once the journal answers it.
+func (client *Client) deliver(request *http.Request, target string) (*http.Response, error) {
+	carried, count := client.failed.pending()
+	if carried != "" {
+		request.Header.Set(failedCallsHeader, carried)
+	}
+	response, err := client.http.Do(request)
+	if err != nil {
+		client.failed.note(target, 0, err.Error(), client.now())
+		return nil, err
+	}
+	if response.StatusCode >= 500 {
+		client.failed.note(target, response.StatusCode, http.StatusText(response.StatusCode), client.now())
+		return response, nil
+	}
+	client.failed.forget(count)
+
+	return response, nil
 }
 
 // signedRequest is a call signed with the host's credential: its signature covers the method, the exact target, the

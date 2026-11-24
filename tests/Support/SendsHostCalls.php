@@ -41,6 +41,18 @@ trait SendsHostCalls
         return $this->signedHostCall($host, 'POST', $target, $content);
     }
 
+    /**
+     * A host call carrying the calls the host reports failed on its side, as its client sends them.
+     *
+     * @param  list<array{route: string, status: int, reason: string, since: string}>  $failedCalls
+     */
+    private function hostCallReporting(EnrolledHost $host, string $target, array $failedCalls): TestResponse
+    {
+        return $this->signedHostCall($host, 'POST', $target, '{}', [
+            'HTTP_X_JOURNAL_FAILED_CALLS' => json_encode($failedCalls, JSON_THROW_ON_ERROR),
+        ]);
+    }
+
     private function hostRead(EnrolledHost $host, string $target): TestResponse
     {
         return $this->signedHostCall($host, 'GET', $target, '');
@@ -49,7 +61,16 @@ trait SendsHostCalls
     /**
      * A signed call from the host.
      */
-    private function signedHostCall(EnrolledHost $host, string $method, string $target, string $content): TestResponse
+    /**
+     * @param  array<string, string>  $headers  more request headers, by their server key
+     */
+    private function signedHostCall(
+        EnrolledHost $host,
+        string $method,
+        string $target,
+        string $content,
+        array $headers = [],
+    ): TestResponse
     {
         $callId = (string) Str::uuid();
         $issuedAt = CarbonImmutable::now()->getTimestamp();
@@ -69,6 +90,7 @@ trait SendsHostCalls
                 $issuedAt,
                 $content,
             ),
+            ...$headers,
         ], content: $content);
     }
 }
