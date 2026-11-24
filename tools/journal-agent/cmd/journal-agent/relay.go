@@ -120,7 +120,7 @@ func (binder bindingRelay) run(parent context.Context) error {
 			Descriptors:  isolatedDescriptors(),
 			Provisioning: "succeeded", IsTakeover: sequence == 1,
 			SetupGeneration: project.Folder{Root: binder.binding.CanonicalRoot}.SetupGeneration(),
-			IsReconciled:      reconciliation.reportNow(),
+			IsReconciled:    reconciliation.reportNow(),
 		})
 		if err == nil {
 			leases.authority.Store(int64(receipt.AuthorityGeneration))

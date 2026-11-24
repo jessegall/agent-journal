@@ -26,6 +26,7 @@ import (
 	"journal-agent/localsession"
 	"journal-agent/profiles"
 	"journal-agent/project"
+	"journal-agent/release"
 	"journal-agent/userservice"
 )
 
@@ -782,12 +783,28 @@ func (commands dispatcher) status(
 	fmt.Fprintln(stdout, "Folder "+filepath.Base(folder.Root)+" on "+host.MachineLabel())
 	fmt.Fprintln(stdout, "Last confirmed contact "+contactText(contact))
 	fmt.Fprintln(stdout, "Readiness "+readinessText(readiness))
+	printProvidersOff(stdout)
 	if refreshErr != nil {
 		fmt.Fprintln(stdout, "Refresh failed: "+withoutSecret(refreshErr.Error(), binding.Secret))
 		return 1
 	}
 
 	return 0
+}
+
+// printProvidersOff says which drivers the installation left off at its install, and why.
+func printProvidersOff(stdout io.Writer) {
+	installation, err := ownInstallation()
+	if err != nil {
+		return
+	}
+	off, err := release.ProvidersOff(installation)
+	if err != nil {
+		return
+	}
+	for _, provider := range off {
+		fmt.Fprintln(stdout, provider.Name+" is off: "+provider.Reason)
+	}
 }
 
 // contactText is the contact time in the user's own zone, or Never for a binding the journal never confirmed.

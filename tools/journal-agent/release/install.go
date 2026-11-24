@@ -21,17 +21,20 @@ var ErrDownloadFailed = errors.New("a release file could not be downloaded")
 // file directly, so nothing is verified or installed from elsewhere.
 var ErrRedirected = errors.New("a release file was redirected, not served by the journal itself; nothing was installed")
 
-// Installer installs one target of a release from the journal that publishes it.
+// Installer installs one target of a release from the journal that publishes it, with the providers' official
+// installs it finds on ProgramPath, a search path as PATH holds one.
 type Installer struct {
-	Origin    string
-	Target    Target
-	Transport *http.Client
-	PublicKey ed25519.PublicKey
+	Origin      string
+	Target      Target
+	Transport   *http.Client
+	PublicKey   ed25519.PublicKey
+	ProgramPath string
 }
 
 // Install verifies the manifest's signature with the pinned key before reading it, downloads every file of the
-// target into a private staging folder, verifies each against the manifest and installs them sealed into the
-// folder. An installation already there is verified and kept, so a rerun changes nothing.
+// target into a private staging folder, verifies each against the manifest, imports the providers' official
+// programs and installs them all sealed into the folder, with the providers it left off and why. An installation
+// already there is verified and kept, so a rerun changes nothing.
 func (installer Installer) Install(ctx context.Context, manifest, signature []byte, folder string) error {
 	if _, err := os.Lstat(folder); err == nil {
 		_, err := host.Installation{Folder: folder}.Verify()
@@ -67,6 +70,13 @@ func (installer Installer) Install(ctx context.Context, manifest, signature []by
 	if err != nil {
 		return err
 	}
+	imported := importProviders(release.Providers, installer.ProgramPath)
+	providersOff, err := providersFile(imported.Off, staging)
+	if err != nil {
+		return err
+	}
+	installation.Artifacts = append(installation.Artifacts, imported.Artifacts...)
+	installation.Artifacts = append(installation.Artifacts, providersOff)
 
 	return host.Install(installation, folder)
 }

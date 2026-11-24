@@ -72,21 +72,26 @@ var RemoteProject = Profile{
 		{Name: "hooks/claude-code/settings.json", Source: HookTemplate{Profile: profiles.ClaudeCode{}, File: "settings.json"}},
 		{Name: "hooks/codex/hooks.json", Source: HookTemplate{Profile: profiles.Codex{}, File: "hooks.json"}},
 	},
-	Providers: []Provider{
-		officialInstall("claude-code", profiles.ClaudeCode{}),
-		officialInstall("codex", profiles.Codex{}),
-	},
+	Providers: []Provider{officialInstall("claude-code"), officialInstall("codex")},
 }
 
-// officialInstall is a provider the release does not redistribute: it is imported from the official install.
-func officialInstall(name string, profile contracts.DriverProfile) Provider {
+// providerProfiles are the start profiles of the providers a release may name, by the provider's name.
+var providerProfiles = map[string]contracts.DriverProfile{
+	"claude-code": profiles.ClaudeCode{},
+	"codex":       profiles.Codex{},
+}
+
+// officialInstall is a provider the release does not redistribute: the installer imports the official install it
+// finds on the machine's PATH, once that install reports the pinned build (doc 31, Providers).
+func officialInstall(name string) Provider {
+	profile := providerProfiles[name]
+
 	return Provider{
 		Name:        name,
 		Build:       profile.Build(),
 		Acquisition: OfficialInstallImport,
-		Check: fmt.Sprintf("the official %s install reports build %s, and each file imported from it has the SHA-256 "+
-			"and size this manifest records for the target; until the manifest records them the driver stays off",
-			profile.Driver(), profile.Build()),
+		Check: fmt.Sprintf("the official %s install on the machine's PATH is the native program and reports build %s; "+
+			"otherwise the driver stays off and journal status says why", profile.Driver(), profile.Build()),
 	}
 }
 

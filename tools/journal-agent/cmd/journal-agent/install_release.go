@@ -45,6 +45,8 @@ func installRelease(arguments []string) error {
 		Target:    release.Target{OS: runtime.GOOS, Arch: runtime.GOARCH},
 		Transport: &http.Client{Timeout: 5 * time.Minute},
 		PublicKey: key,
+		// The official Claude Code and Codex installs are imported from the PATH of the install line's shell.
+		ProgramPath: os.Getenv("PATH"),
 	}
 
 	return installer.Install(context.Background(), manifest, signature, *folder)
