@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Support\Octane\GiveRequestContainerToEvents;
+use App\Support\Octane\GiveRequestItsTimeLimit;
 use Laravel\Octane\Contracts\OperationTerminated;
 use Laravel\Octane\Events\OperationReleased;
 use Laravel\Octane\Events\RequestHandled;
@@ -79,7 +80,7 @@ return [
             ...Octane::prepareApplicationForNextOperation(),
             ...Octane::prepareApplicationForNextRequest(),
             GiveRequestContainerToEvents::class,
-            //
+            GiveRequestItsTimeLimit::class,
         ],
 
         RequestHandled::class => [
