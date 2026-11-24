@@ -138,7 +138,7 @@ final readonly class TaskWindowResolver implements PageResolver
         $entry = TaskLogEntry::query()->where('task_id', $taskId)->whereKey($this->request->entryId())->first();
 
         if (! $entry instanceof TaskLogEntry) {
-            return ['selectedGone' => true];
+            return ['isSelectedGone' => true];
         }
 
         return ['selected' => TaskStreamEntryData::ofLine($entry->line)];

@@ -81,3 +81,4 @@ secrets/*
 
 # Pictures and reports of tools/design-compare
 /storage/design-compare/
+/storage/acceptance/

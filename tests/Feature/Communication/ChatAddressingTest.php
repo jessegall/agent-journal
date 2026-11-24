@@ -90,7 +90,7 @@ final class ChatAddressingTest extends MessagingTestCase
         $reply = $this->rowAs($replyId);
 
         $this->assertNotNull($reply->replyTo);
-        $this->assertFalse($reply->replyTo->visible);
+        $this->assertFalse($reply->replyTo->isVisible);
         $this->assertNull($reply->replyTo->id);
         $this->assertInstanceOf(Optional::class, $reply->replyTo->original);
     }

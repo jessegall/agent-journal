@@ -276,9 +276,9 @@ final readonly class ChatConversations
             'stateVersion' => $message->stateVersion,
             'respondent' => $respondent,
             'actions' => [
-                'answer' => $settles,
-                'decline' => $settles,
-                'retryDelivery' => array_any($deliveries, fn (DeliveryData $delivery) => $delivery->rangeId !== null),
+                'canAnswer' => $settles,
+                'canDecline' => $settles,
+                'canRetryDelivery' => array_any($deliveries, fn (DeliveryData $delivery) => $delivery->rangeId !== null),
             ],
             'isReadByMe' => $message->isShownToViewer,
             'sentAt' => $message->sentAt,

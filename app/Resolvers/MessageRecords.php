@@ -370,7 +370,7 @@ final readonly class MessageRecords implements ConversationResolver
                 'addresseeId' => $message->addressee_id,
                 'respondentType' => $message->respondent_type,
                 'respondentId' => $message->respondent_id,
-                'shownToViewer' => in_array($message->id, $shown, true),
+                'isShownToViewer' => in_array($message->id, $shown, true),
             ];
         }
 
