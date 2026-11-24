@@ -78,5 +78,4 @@ return [
     'WorkerReservation',
     'WorkReservation',
     'WorkspaceRead',
-    'WorktreeDelivery',
 ];

@@ -14,7 +14,7 @@ use App\Models\Projects\WorkspaceRead;
 
 /**
  * When a connected project's relay claims a child's start, issues the child's claim once, from the commit the
- * parent's latest commit read verified, and hands the relay the checkout its worktree is prepared for. A child of
+ * parent's latest commit read verified, nested under the parent's own claim when the parent is a child, and hands the relay the checkout its worktree is prepared for. A child of
  * a host that serves no binding, or whose parent has no verified commit yet, gets no checkout and works where its
  * start folder is, as before.
  */
@@ -49,15 +49,12 @@ final class IssueChildClaim implements Listener
         }
 
         $binding = ProjectBinding::query()->findOrFail($bindingId);
+        $parentClaims = ChildClaim::ofChildAgent($parent->session->agent_id);
 
         return array_map(
-            fn ($read) => ChildClaim::forMainRuntime(
-                $binding,
-                $parent->id,
-                $request->childAgentId,
-                ChildRole::Writer,
-                $read,
-            ),
+            fn ($read) => $parentClaims === []
+                ? ChildClaim::forMainRuntime($binding, $parent->id, $request->childAgentId, ChildRole::Writer, $read)
+                : ChildClaim::nestedUnder($parentClaims[0], $request->childAgentId, ChildRole::Writer, $read),
             WorkspaceRead::latestCommitReadOf($parent->session->agent_id),
         );
     }

@@ -26,6 +26,8 @@ use App\Support\Storage\RecordedSteps;
 use App\Support\Ticks\TickingTypes;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -78,12 +80,14 @@ final class HookRetentionTest extends TestCase
         $this->assertTrue(AgentStackRow::query()->authorizedFor(self::target(3))->exists());
     }
 
-    public function test_a_held_stack_and_its_calls_outlive_their_retention(): void
+    public function test_a_stack_the_owner_holds_and_its_calls_outlive_their_retention(): void
     {
         $held = $this->stack(1);
         $this->recordCall(1, 'held call');
         $held->closeAt(CarbonImmutable::now());
-        $held->holdForInvestigation(CarbonImmutable::now());
+        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
+        $this->artisan('agents:stack-hold', ['agent' => self::target(1)->agentId, 'session' => self::target(1)->sessionId])
+            ->assertSuccessful();
         $this->moveDays(40);
 
         $pruned = $this->app->make(PruneHookHistory::class)->prune();

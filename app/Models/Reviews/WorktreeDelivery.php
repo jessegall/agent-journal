@@ -99,32 +99,6 @@ final class WorktreeDelivery extends Model implements ReadableModel
         return $delivery;
     }
 
-    // ----------[ Mutations ]----------
-
-    /**
-     * The merger integrated the tip: the target's resulting commit and whether the tip is reachable from it.
-     */
-    public function recordMerged(string $resultingTargetOid, bool $tipIsReachable): void
-    {
-        $this->outcome = DeliveryOutcome::Merged;
-        $this->resulting_target_oid = $resultingTargetOid;
-        $this->tip_is_reachable = $tipIsReachable;
-        $this->save();
-    }
-
-    /**
-     * The merge conflicted: its paths are kept with both commit ids, and the worker branch stays.
-     *
-     * @param  list<string>  $paths
-     */
-    public function recordConflict(string $resultingTargetOid, array $paths): void
-    {
-        $this->outcome = DeliveryOutcome::Conflicted;
-        $this->resulting_target_oid = $resultingTargetOid;
-        $this->conflict_paths = $paths;
-        $this->save();
-    }
-
     // ----------[ Accessors ]----------
 
     /**

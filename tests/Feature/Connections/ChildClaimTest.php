@@ -66,16 +66,6 @@ final class ChildClaimTest extends TestCase
         $this->assertSame(0, ChildClaim::query()->count());
     }
 
-    public function test_a_base_the_head_moved_from_is_refused(): void
-    {
-        $binding = $this->connected();
-        $claim = ChildClaim::forMainRuntime($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $this->read($binding, false, 1));
-
-        $claim->assertHeadUnmoved(CommitObservation::ofHead($binding->id, 'checkout-main', self::HEAD));
-        $this->expectException(ChildClaimRefused::class);
-        $claim->assertHeadUnmoved(CommitObservation::ofHead($binding->id, 'checkout-main', str_repeat('b', 40)));
-    }
-
     private function connected(): ProjectBinding
     {
         $this->issueLine('the-ticket');

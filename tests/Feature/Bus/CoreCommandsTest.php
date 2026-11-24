@@ -34,6 +34,7 @@ use App\Commands\FailDriverSwitchLaunch\FailDriverSwitchLaunchCommand;
 use App\Commands\FailSkillPublication\FailSkillPublicationCommand;
 use App\Commands\FenceProfileRevision\FenceProfileRevisionCommand;
 use App\Commands\HideUnseatedNotifications\HideUnseatedNotificationsCommand;
+use App\Commands\HoldAgentStack\HoldAgentStackCommand;
 use App\Commands\ImportRuleProposals\ImportRuleProposalsCommand;
 use App\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
 use App\Commands\InstallMainAgent\InstallMainAgentCommand;
@@ -99,6 +100,7 @@ use App\Commands\ReturnCodeReview\ReturnCodeReviewCommand;
 use App\Commands\ReviseRuleProposal\ReviseRuleProposalCommand;
 use App\Commands\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessCommand;
 use App\Commands\RouteAsk\RouteAskCommand;
+use App\Commands\SaveCommandAlias\SaveCommandAliasCommand;
 use App\Commands\SaveCommandRule\SaveCommandRuleCommand;
 use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Commands\SettleSample\SettleSampleCommand;
@@ -155,6 +157,7 @@ final class CoreCommandsTest extends CommandBusTestCase
 
         $this->assertEqualsCanonicalizing([
             ClaimStartCommand::class,
+            HoldAgentStackCommand::class,
             MergeReviewedWorkCommand::class,
             OfferNextAskCommand::class,
             ReportRunningCommand::class,
@@ -171,6 +174,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             RequestProjectReadCommand::class,
             RecordScriptStepResultCommand::class,
             PublishSignInChallengeCommand::class,
+            SaveCommandAliasCommand::class,
             TakeSignInCodeCommand::class,
             RecordAccountFailureCommand::class,
             RecordAccountNoticeCommand::class,

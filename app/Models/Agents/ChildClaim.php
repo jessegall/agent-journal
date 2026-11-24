@@ -98,20 +98,6 @@ final class ChildClaim extends Model implements ReadableModel
         return array_values(self::query()->where('child_agent_id', $agentId)->latest()->limit(1)->get()->all());
     }
 
-    // ----------[ Answers ]----------
-
-    /**
-     * Refuses a claim whose parent's HEAD moved since the read: the old reference is never reinterpreted.
-     *
-     * @throws ChildClaimRefused
-     */
-    public function assertHeadUnmoved(CommitObservation $now): void
-    {
-        if ($now->headOid !== $this->base_oid) {
-            throw ChildClaimRefused::baseMoved($this->base_oid, $now->headOid);
-        }
-    }
-
     // ----------[ Accessors ]----------
 
     /**

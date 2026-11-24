@@ -9,7 +9,6 @@ use App\Calls\Processes\PartSummary;
 use App\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\ResultReceipts;
-use App\Enums\RunMode;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -59,7 +58,7 @@ final readonly class OutputSummaries
      */
     private function resultOf(ProcessRun $run, PartRun $part): PartResult
     {
-        if ($run->mode === RunMode::Evidence) {
+        if (! $run->mayAnswer()) {
             return PartResult::evidenceOnly();
         }
 

@@ -205,16 +205,6 @@ final class MenuEntry extends Model implements ReadableModel
     }
 
     /**
-     * Whether a replay on the build may go by the entry: it is current and proven there, and not stale there.
-     */
-    public function isCurrentOn(string $build): bool
-    {
-        $proven = $this->buildOn($build);
-
-        return $this->state->isUsable() && $proven !== null && ! $proven->stale;
-    }
-
-    /**
      * Whether the entry is current but was proven on other builds only, so a replay on this one must prove it again.
      */
     public function wasProvenElsewhere(string $build): bool

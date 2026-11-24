@@ -41,7 +41,7 @@ final class WorktreeDeliveryTest extends TestCase
 
     private const string TIP = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 
-    public function test_a_delivery_is_recorded_once_for_its_own_claim_and_its_result_kept_apart(): void
+    public function test_a_delivery_is_recorded_once_for_its_own_claim(): void
     {
         $claim = $this->claimOf($this->connected('ticket-one', self::NONCE));
         $this->connected('ticket-two', self::OTHER_NONCE);
@@ -55,13 +55,7 @@ final class WorktreeDeliveryTest extends TestCase
 
         $delivery = WorktreeDelivery::query()->sole();
         $this->assertSame(self::BASE, $delivery->base_oid);
-        $delivery->recordMerged(str_repeat('d', 40), true);
-        $this->assertSame(DeliveryOutcome::Merged, $delivery->fresh()?->outcome);
-        $this->assertTrue($delivery->fresh()?->tip_is_reachable);
-        $delivery->recordConflict(str_repeat('e', 40), ['src/Shop.php']);
-        $conflicted = WorktreeDelivery::query()->sole();
-        $this->assertSame(['src/Shop.php'], $conflicted->conflict_paths);
-        $this->assertSame([self::TIP, str_repeat('e', 40)], [$conflicted->delivered_tip, $conflicted->resulting_target_oid]);
+        $this->assertSame(DeliveryOutcome::Submitted, $delivery->outcome);
     }
 
     private function connected(string $ticket, string $nonce): ProjectBinding

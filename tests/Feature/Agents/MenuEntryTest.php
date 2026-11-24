@@ -59,7 +59,7 @@ final class MenuEntryTest extends TestCase
 
         $this->assertSame($entry->id, $found->id);
         $this->assertEquals($this->steps(), $found->steps);
-        $this->assertTrue($found->isCurrentOn('2.1.323'));
+        $this->assertSame(false, $found->buildOn('2.1.323')?->stale);
         $this->assertTrue($found->wasProvenElsewhere('2.2.0'));
     }
 
@@ -71,8 +71,8 @@ final class MenuEntryTest extends TestCase
         $entry->markStaleOn('2.1.323', 'label-missing', ['Model: <redacted>']);
 
         $entry->refresh();
-        $this->assertFalse($entry->isCurrentOn('2.1.323'));
-        $this->assertTrue($entry->isCurrentOn('2.2.0'));
+        $this->assertSame(true, $entry->buildOn('2.1.323')?->stale);
+        $this->assertSame(false, $entry->buildOn('2.2.0')?->stale);
         $this->assertSame(['Model: <redacted>'], $entry->buildOn('2.1.323')?->staleScreen);
         $this->assertSame(MenuEntryState::Current, $entry->state);
     }
@@ -88,7 +88,7 @@ final class MenuEntryTest extends TestCase
 
         $this->assertSame(1, $entry->fresh()?->uses);
         $this->assertSame([MenuEntryState::Superseded, $newer->id], [$entry->state, $entry->superseded_by_id]);
-        $this->assertFalse($newer->fresh()?->isCurrentOn('2.1.323'));
+        $this->assertSame(MenuEntryState::Retired, $newer->fresh()?->state);
         $this->assertSame(0, MenuEntry::query()->current()->count());
         $this->assertSame(2, MenuEntry::query()->count());
     }

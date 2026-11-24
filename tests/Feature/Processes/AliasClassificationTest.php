@@ -13,6 +13,8 @@ use App\Models\CommandRules\CommandAlias;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
@@ -32,10 +34,17 @@ final class AliasClassificationTest extends TestCase
         );
     }
 
-    public function test_an_alias_shows_its_body_id_revision_and_purpose(): void
+    public function test_an_alias_the_owner_saves_shows_its_body_id_revision_and_purpose(): void
     {
-        $this->recordAlias($this->context()->projectKey(), 'checks', 'php artisan test');
-        $alias = $this->recordAlias($this->context()->projectKey(), 'checks', 'php artisan test --compact');
+        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
+        $this->artisan('processes:alias-save', ['project' => base_path(), 'name' => 'checks', 'line' => 'php artisan test'])
+            ->assertSuccessful();
+        $this->artisan('processes:alias-save', [
+            'project' => base_path(),
+            'name' => 'checks',
+            'line' => 'php artisan test --compact',
+        ])->expectsOutput('Saved. The alias is at revision 2.')->assertSuccessful();
+        $alias = CommandAlias::forName($this->context()->projectKey(), 'checks');
 
         $classification = $this->classify('journal run checks');
 

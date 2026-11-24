@@ -28,11 +28,6 @@ final class ChildClaimRefused extends RuntimeException implements CodedRefusal, 
         return new self('This workspace read names no commit, so no child can start from it; read the workspace again.');
     }
 
-    public static function baseMoved(string $base, string $head): self
-    {
-        return new self("The parent's HEAD moved from {$base} to {$head}; read the workspace again and claim afresh.");
-    }
-
     public function refusalCode(): RefusalCode
     {
         return RefusalCode::StateBlocked;

@@ -3624,6 +3624,8 @@ class	HistoryRequest
 class	HitIdentity
 class	HoldAccountUsesCommand
 class	HoldAccountUsesHandler
+class	HoldAgentStackCommand
+class	HoldAgentStackHandler
 class	HoldCopy
 class	HoldFailingJob
 class	HoldHelperJobCommand
@@ -5911,6 +5913,8 @@ class	SampleRefused
 class	SampleSettled
 class	SampleStarted
 class	SaveCall
+class	SaveCommandAliasCommand
+class	SaveCommandAliasHandler
 class	SaveCommandRuleCommand
 class	SaveCommandRuleHandler
 class	SaveDraftPageController
@@ -12105,14 +12109,12 @@ method	ChildCheckout::__construct()
 method	ChildCheckoutRequested::__construct()
 method	ChildCheckoutSlot::checkouts()
 method	ChildCheckoutSlot::fill()
-method	ChildClaim::assertHeadUnmoved()
 method	ChildClaim::casts()
 method	ChildClaim::checkout()
 method	ChildClaim::forMainRuntime()
 method	ChildClaim::issue()
 method	ChildClaim::nestedUnder()
 method	ChildClaim::ofChildAgent()
-method	ChildClaimRefused::baseMoved()
 method	ChildClaimRefused::firstCommitMissing()
 method	ChildClaimRefused::readWithoutCommit()
 method	ChildClaimRefused::refusalCode()
@@ -16086,6 +16088,9 @@ method	HitIdentity::key()
 method	HoldAccountUsesCommand::__construct()
 method	HoldAccountUsesHandler::__construct()
 method	HoldAccountUsesHandler::handle()
+method	HoldAgentStackCommand::__construct()
+method	HoldAgentStackCommand::handle()
+method	HoldAgentStackHandler::handle()
 method	HoldCopy::__construct()
 method	HoldCopy::of()
 method	HoldFailingJob::__construct()
@@ -17569,7 +17574,6 @@ method	MenuEntry::create()
 method	MenuEntry::current()
 method	MenuEntry::forDriver()
 method	MenuEntry::goal()
-method	MenuEntry::isCurrentOn()
 method	MenuEntry::libraryAnswer()
 method	MenuEntry::lockForPath()
 method	MenuEntry::markStaleOn()
@@ -23115,6 +23119,9 @@ method	SampleSettled::__construct()
 method	SampleStarted::__construct()
 method	SaveCall::__construct()
 method	SaveCall::handle()
+method	SaveCommandAliasCommand::__construct()
+method	SaveCommandAliasCommand::handle()
+method	SaveCommandAliasHandler::handle()
 method	SaveCommandRuleCommand::__construct()
 method	SaveCommandRuleHandler::__construct()
 method	SaveCommandRuleHandler::handle()
@@ -28206,8 +28213,6 @@ method	WorkspaceUse::isOwnCheckout()
 method	WorkspaceUse::isWritable()
 method	WorktreeDelivery::casts()
 method	WorktreeDelivery::receipt()
-method	WorktreeDelivery::recordConflict()
-method	WorktreeDelivery::recordMerged()
 method	WorktreeDelivery::submit()
 method	WorktreeDeliveryController::__invoke()
 method	WrapperRule::__construct()
@@ -30700,7 +30705,6 @@ parameter	$resultLabel
 parameter	$resultNote
 parameter	$resultNumber
 parameter	$resultRevision
-parameter	$resultingTargetOid
 parameter	$results	app/Support/StateEvents/StateEventEffects.php
 parameter	$resumable
 parameter	$resumedNumber
@@ -31237,7 +31241,6 @@ parameter	$timeoutSeconds
 parameter	$times
 parameter	$timing
 parameter	$tip
-parameter	$tipIsReachable
 parameter	$title
 parameter	$titleColumn
 parameter	$titleOf
@@ -35432,6 +35435,9 @@ property	HitIdentity::$recordType
 property	HitIdentity::$sourceKey
 property	HoldAccountUsesCommand::$account
 property	HoldAccountUsesHandler::$facts
+property	HoldAgentStackCommand::$description
+property	HoldAgentStackCommand::$signature
+property	HoldAgentStackCommand::$target
 property	HoldCopy::$actions
 property	HoldCopy::$label
 property	HoldCopy::$reason
@@ -40004,6 +40010,12 @@ property	SampleSettled::$state
 property	SampleSettled::$unsampledStatuses
 property	SampleStarted::$runId
 property	SaveCall::$types
+property	SaveCommandAliasCommand::$arguments
+property	SaveCommandAliasCommand::$description
+property	SaveCommandAliasCommand::$line
+property	SaveCommandAliasCommand::$name
+property	SaveCommandAliasCommand::$projectKey
+property	SaveCommandAliasCommand::$signature
 property	SaveCommandRuleCommand::$expectedActiveRevision
 property	SaveCommandRuleCommand::$proposed
 property	SaveCommandRuleCommand::$reason
@@ -44356,6 +44368,7 @@ variable	$parameterText
 variable	$parameters
 variable	$params
 variable	$parent
+variable	$parentClaims
 variable	$parentId
 variable	$parentIds
 variable	$parentRuntime
@@ -44849,6 +44862,7 @@ variable	$sql
 variable	$sqlite
 variable	$stack
 variable	$stackAfter
+variable	$stacks
 variable	$stage
 variable	$staged
 variable	$staging
