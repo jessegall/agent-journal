@@ -41,6 +41,26 @@ final readonly class StandInDocker
     }
 
     /**
+     * Makes Docker hold these volumes, which a later removal takes away.
+     */
+    public function holdVolumes(string ...$volumes): void
+    {
+        File::put("{$this->folder}/volumes", implode("\n", $volumes)."\n");
+    }
+
+    /**
+     * The volumes Docker still holds.
+     *
+     * @return list<string>
+     */
+    public function volumes(): array
+    {
+        $volumes = "{$this->folder}/volumes";
+
+        return File::exists($volumes) ? array_values(array_filter(explode("\n", File::get($volumes)))) : [];
+    }
+
+    /**
      * Makes every later build come out of Docker's cache: the same image as the build before it.
      */
     public function buildFromCache(): void

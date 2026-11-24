@@ -11,7 +11,7 @@ use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\StepOutOfOrder;
 use Closure;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 
 /**
  * Runs a pipeline definition: every step in turn takes the output of the step before it. A step is a pipe, another
@@ -20,11 +20,14 @@ use Illuminate\Contracts\Container\Container;
  * reflection, and kept in BuiltSteps for the rest of that request, so a pipe may take services that hold the request
  * in hand. A pipe handed an input it does not take, or a run that ends on an output the caller does not read, throws
  * StepOutOfOrder.
+ *
+ * The runner outlives a request, as do the registries that hold it, so it builds from the container of the request,
+ * task or tick in hand (the one Octane makes current), never from the one it was made in.
  */
 #[Singleton]
 final class PipelineRunner implements PipelineRunnerContract
 {
-    public function __construct(private readonly Container $container, private readonly ReflectorFactory $reflectors) {}
+    public function __construct(private readonly ReflectorFactory $reflectors) {}
 
     /**
      * Runs the input through every step of the definition and returns the output of the last step.
@@ -74,10 +77,9 @@ final class PipelineRunner implements PipelineRunnerContract
      */
     private function step(string $class): Closure
     {
-        return $this->container->make(BuiltSteps::class)->remember(
-            $class,
-            fn () => $this->build($this->container->make($class)),
-        );
+        $container = Container::getInstance();
+
+        return $container->make(BuiltSteps::class)->remember($class, fn () => $this->build($container->make($class)));
     }
 
     /**

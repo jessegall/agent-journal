@@ -25,7 +25,11 @@ main() {
 
     arrangement=$(setting AGENTS_ARRANGEMENT)
     profiles=$(compose_profiles)
-    if install; then record_installed; else record_failed; fi
+    outcome=installed
+    install || outcome=failed
+    "record_$outcome"
+    prune_docker
+    [ "$outcome" = installed ]
 }
 
 find_newest_commit() {
@@ -99,7 +103,8 @@ has_updater_changed() {
     ! cmp -s "$running_loop" .docker/updater/loop.sh
 }
 
-# Every step must pass for the commit to count as installed, so the steps are chained.
+# Every step must pass for the commit to count as installed, so the steps are chained; what a build left behind is
+# pruned after the install whether it passed or not.
 install() {
     prune_docker &&
         build_services &&
@@ -114,8 +119,7 @@ install() {
         artisan exec agents:install &&
         activate_profiles &&
         artisan exec cache:forget installed-version &&
-        check_front_door &&
-        prune_docker
+        check_front_door
 }
 
 prune_docker() {
@@ -296,7 +300,6 @@ record_installed() {
 record_failed() {
     echo "$newest" > .failed-commit
     echo "$(now) $newest failed to install; the next commit is tried"
-    exit 1
 }
 
 # A short-lived container starts the new updater: started from here, it would stop this container and itself.

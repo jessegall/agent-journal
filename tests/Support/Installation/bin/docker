@@ -21,6 +21,7 @@ main() {
         image) answer_image "$@" ;;
         load) load_archive "$@" ;;
         container) answer_container "$@" ;;
+        volume) answer_volume "$@" ;;
         wait) cat "$STAND_IN/step-exit" 2>/dev/null || echo 0 ;;
         compose) shift; answer_compose "$@" ;;
     esac
@@ -96,6 +97,24 @@ answer_inspect() {
         *'{{.Image}}'*) echo "sha256:$(build_digest journal-app "$(cat "$STAND_IN/running-app-build" 2>/dev/null || echo 0)")" ;;
         *) echo healthy ;;
     esac
+}
+
+# The volumes Docker holds are the lines of $STAND_IN/volumes; a listing keeps those whose name holds the filter's
+# part, and removing one takes its line away.
+answer_volume() {
+    local volume
+    touch "$STAND_IN/volumes"
+    case "$2" in
+        ls) grep -F -- "$(read_name_filter "$@")" "$STAND_IN/volumes" || true ;;
+        rm) shift 2; for volume; do sed -i.before "\|^$volume\$|d" "$STAND_IN/volumes"; done; rm -f "$STAND_IN/volumes.before" ;;
+    esac
+}
+
+read_name_filter() {
+    local argument
+    for argument; do
+        case "$argument" in name=*) echo "${argument#name=}"; return ;; esac
+    done
 }
 
 # With $STAND_IN/daemon-images the stand-in is the agent daemon, holding the image ids that file lists.

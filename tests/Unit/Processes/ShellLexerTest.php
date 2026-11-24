@@ -16,7 +16,6 @@ use App\Support\Syntax\LexedLine;
 use App\Support\Syntax\LexerScan;
 use App\Support\Syntax\ShellLexer;
 use App\Support\Syntax\Token;
-use Illuminate\Container\Container;
 use Tests\TestCase;
 
 /**
@@ -36,7 +35,7 @@ final class ShellLexerTest extends TestCase
     {
         parent::setUp();
 
-        $this->lexer = new ShellLexer(new LexerScan(new PipelineRunner(new Container(), new CatalogueReflectorFactory())));
+        $this->lexer = new ShellLexer(new LexerScan(new PipelineRunner(new CatalogueReflectorFactory())));
     }
 
     public function test_a_quoted_separator_stays_inside_one_word(): void

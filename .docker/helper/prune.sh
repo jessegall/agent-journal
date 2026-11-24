@@ -8,6 +8,8 @@ main() {
     size="${JOURNAL_BUILD_CACHE_SIZE:-3GB}"
     remove_untagged_images
     remove_unused_project_images
+    remove_unused_volumes
+    remove_release_build_caches
     remove_old_build_cache
     cap_build_cache
     docker system df
@@ -27,6 +29,19 @@ remove_unused_project_images() {
         if ! printf '%s\n' "$used_images" | grep -qx -e "$image" -e "${image%:latest}"; then
             docker image rm "$image" >/dev/null
         fi
+    done
+}
+
+# Volumes no container names, such as those a one-off container left behind; a named volume of the project stays.
+remove_unused_volumes() {
+    docker volume prune --force >/dev/null
+}
+
+# The Go caches a host release build keeps grow with every build, and a release is built only when the host changed.
+remove_release_build_caches() {
+    local volume
+    for volume in $(docker volume ls --quiet --filter name=journal-release-go-); do
+        docker volume rm "$volume" >/dev/null
     done
 }
 

@@ -53,6 +53,12 @@ final class UpdateTest extends TestCase
 
     private const string ROLL = '--scale app=2';
 
+    private const string PRUNE_BUILD_CACHE = 'builder prune';
+
+    private const string RELEASE_GO_CACHE = 'journal-release-go-cache';
+
+    private const string DATABASE_VOLUME = 'journal-test_postgres-data';
+
     private StandInInstallation $installation;
 
     protected function setUp(): void
@@ -264,6 +270,44 @@ final class UpdateTest extends TestCase
 
         $this->assertNotSame(0, $update->getExitCode());
         $this->assertSame($pinned, $this->installation->setting(self::AGENT_PIN));
+    }
+
+    public function test_a_failed_install_prunes_what_its_build_left_behind(): void
+    {
+        $this->installation->update();
+        $this->installation->push(['database/migrations/2026_01_01_000000_create_notes_table.php' => '<?php']);
+        $this->installation->docker->failCallsHolding(self::MIGRATE);
+        $this->installation->docker->forgetCalls();
+
+        $update = $this->installation->update();
+
+        $this->assertNotSame(0, $update->getExitCode());
+        $this->assertGreaterThan(
+            $this->lastCallHolding(self::MIGRATE),
+            $this->lastCallHolding(self::PRUNE_BUILD_CACHE),
+        );
+    }
+
+    private function lastCallHolding(string $part): int
+    {
+        $calls = $this->installation->docker->calls();
+
+        return array_key_last(array_filter($calls, fn (string $call): bool => str_contains($call, $part)));
+    }
+
+    public function test_an_install_removes_the_release_build_caches_and_keeps_the_projects_volumes(): void
+    {
+        $this->installation->docker->holdVolumes(
+            self::RELEASE_GO_CACHE,
+            'journal-release-go-modules',
+            self::DATABASE_VOLUME,
+        );
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+        $this->assertSame([self::DATABASE_VOLUME], $this->installation->docker->volumes());
+        $this->assertTrue($this->installation->docker->wasAsked('volume prune --force'));
     }
 
     public function test_a_migration_that_fails_keeps_the_installed_commit_and_records_the_failed_one(): void
