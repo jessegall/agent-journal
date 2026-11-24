@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Tests\Support\AffectedTests;
 
 /*
- * Runs only the tests the changed files can break, found through the code's syntax trees, and refuses a change that
- * reaches more test methods than an affected run takes. Without arguments it reads the changes git sees (staged,
+ * Runs the tests nearest to the changed files, found through the code's syntax trees, up to the most test methods an
+ * affected run takes. Without arguments it reads the changes git sees (staged,
  * unstaged and untracked); --since=<commit> reads what changed since that commit; file paths name the changes.
  *
  *   composer test:affected
@@ -73,37 +73,32 @@ if ($files === []) {
 
 $selection = new AffectedTests($root)->for($files);
 
-if ($selection->isRefused()) {
-    fwrite(STDERR, sprintf(
-        "The change reaches %d test methods, more than the %d an affected run takes. Name the tests to run instead:\n",
-        $selection->methodCount(),
-        AffectedTests::MOST_TEST_METHODS,
-    ));
-
-    foreach ($selection->testMethodsByFile as $file => $methods) {
-        fwrite(STDERR, "  {$file} ({$methods})\n");
-    }
-
-    exit(2);
-}
-
-if ($selection->testMethodsByFile === []) {
+if ($selection->testsByFile === []) {
     fwrite(STDOUT, "No test reaches the changed code.\n");
     exit(0);
 }
 
 fwrite(STDOUT, sprintf(
-    "Running %d test methods in %d files, reached %d steps out from the changed classes.\n",
+    "Running the %d test methods nearest the change, in %d files, reached %d steps out; %d reached methods left out.\n",
     $selection->methodCount(),
-    count($selection->testMethodsByFile),
+    count($selection->testsByFile),
     $selection->reach,
+    $selection->leftOut,
 ));
 
 $configuration = configurationFor($root, $selection->testFiles());
 $processes = processesFor($root, [], $selection->testFiles());
 $heldDatabases = prepareWorkerDatabases($root, $environment, $processes);
 $exitCode = (int) run(
-    ['php', 'artisan', 'test', '--parallel', "--processes={$processes}", "--configuration={$configuration}"],
+    [
+        'php',
+        'artisan',
+        'test',
+        '--parallel',
+        "--processes={$processes}",
+        "--configuration={$configuration}",
+        "--filter={$selection->filter()}",
+    ],
     $environment,
     $root,
     false,

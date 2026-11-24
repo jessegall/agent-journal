@@ -11,14 +11,18 @@ use Tests\Support\ScanCache\ScanCache;
  * Picks the tests a change can break from the code's syntax trees: the classes the changed files declare, then the
  * files that name them, step by step outwards, and the test files among those. A class also reaches the users of what
  * it serves (its interfaces, the command or event it handles) and of the classes a call names with it (the interface
- * a container binds it to, the event it listens to). It goes as many steps out as stays within the most test methods
- * an affected run takes.
+ * a container binds it to, the event it listens to). The reached tests are ranked by how directly they connect to the
+ * change, nearest step first and, within a step, the file naming more of that step's classes first, and the most test
+ * methods an affected run takes are taken in that order.
  *
+ * @phpstan-type TestFile array{class: string, methods: list<string>, names: list<string>}
  * @phpstan-type CodeIndex array{
  *     users: array<string, list<string>>,
  *     links: array<string, list<string>>,
- *     tests: array<string, int>,
+ *     tests: array<string, TestFile>,
  * }
+ *
+ * @phpstan-import-type RankedTest from AffectedTestSelection
  */
 final readonly class AffectedTests
 {
@@ -36,11 +40,16 @@ final readonly class AffectedTests
 
     private const string TEST_FILE_ENDING = 'Test.php';
 
+    /**
+     * The folder of code trees tests read as data, whose files named like tests are not run.
+     */
+    private const string FIXTURES = 'tests/Fixtures/';
+
     public function __construct(private string $root) {}
 
     /**
-     * The tests the changed files reach, from the nearest step out as far as the selection stays within the most test
-     * methods; the nearest step alone when even that holds more, which the run then refuses.
+     * The most directly connected test methods the changed files reach, up to the most an affected run takes; a step
+     * further out is read only while the nearer steps hold fewer.
      *
      * @param  list<string>  $changedFiles  paths relative to the project root
      */
@@ -52,26 +61,22 @@ final readonly class AffectedTests
             array_map(fn (string $file) => "{$this->root}/{$file}", $changedFiles),
             fn (string $path) => isset($findings[$path]),
         ));
+        $ranked = $this->rankedAmong($reached, 0, [], $index['tests']);
         $classes = $this->classesOf($changedFiles, $reached, $findings, $index);
-        $selection = new AffectedTestSelection($this->testsAmong($reached, $index['tests']), 0);
+        $step = 0;
 
-        for ($step = 1; $step <= self::FARTHEST_REACH; $step++) {
-            $users = array_values(array_unique(array_merge([], ...array_map(
+        while ($step < self::FARTHEST_REACH && $this->methodCountOf($ranked) < self::MOST_TEST_METHODS) {
+            $step++;
+            $users = array_values(array_diff(array_unique(array_merge([], ...array_map(
                 fn (string $class) => $index['users'][$class] ?? [],
                 $classes,
-            ))));
-            $reached = array_values(array_unique([...$reached, ...$users]));
-            $next = new AffectedTestSelection($this->testsAmong($reached, $index['tests']), $step);
-
-            if ($next->isRefused()) {
-                return $step === 1 ? $next : $selection;
-            }
-
-            $selection = $next;
+            ))), $reached));
+            $reached = [...$reached, ...$users];
+            $ranked = [...$ranked, ...$this->rankedAmong($users, $step, $classes, $index['tests'])];
             $classes = $this->classesDeclaredIn($users, $findings, $index['links']);
         }
 
-        return $selection;
+        return AffectedTestSelection::nearestOf($ranked, self::MOST_TEST_METHODS, $step);
     }
 
     /**
@@ -88,8 +93,8 @@ final readonly class AffectedTests
     }
 
     /**
-     * The files that name each class, the classes a call names with each class, and the test methods each test file
-     * holds.
+     * The files that name each class, the classes a call names with each class, and each test file with its class, its
+     * test methods and the classes it names.
      *
      * @param  array<string, list<string>>  $findings
      * @return CodeIndex
@@ -115,15 +120,20 @@ final readonly class AffectedTests
                 }
             }
 
-            if (str_ends_with($path, self::TEST_FILE_ENDING)) {
-                $tests[$path] = count(array_filter(
-                    $found,
-                    fn (string $finding) => str_starts_with($finding, CodeReferenceScan::TEST),
-                ));
+            if (str_ends_with($path, self::TEST_FILE_ENDING) && ! str_starts_with($path, "{$this->root}/".self::FIXTURES)) {
+                $test = $this->testFileOf($found);
+
+                if ($test['methods'] !== []) {
+                    $tests[$path] = $test;
+                }
             }
         }
 
-        return ['users' => $users, 'links' => array_map(fn (array $linked) => array_values(array_unique($linked)), $links), 'tests' => $tests];
+        return [
+            'users' => $users,
+            'links' => array_map(fn (array $linked) => array_values(array_unique($linked)), $links),
+            'tests' => $tests,
+        ];
     }
 
     /**
@@ -185,24 +195,67 @@ final readonly class AffectedTests
     }
 
     /**
-     * The test files among the reached files with their test methods, relative to the project root.
+     * What a test file's syntax tree says it is: its class, its test methods in order and the classes it names.
      *
-     * @param  list<string>  $reached
-     * @param  array<string, int>  $tests
-     * @return array<string, int>
+     * @param  list<string>  $found
+     * @return TestFile
      */
-    private function testsAmong(array $reached, array $tests): array
+    private function testFileOf(array $found): array
     {
-        $selected = [];
+        $test = ['class' => '', 'methods' => [], 'names' => []];
 
-        foreach ($reached as $path) {
-            if (($tests[$path] ?? 0) > 0) {
-                $selected[substr($path, strlen($this->root) + 1)] = $tests[$path];
+        foreach ($found as $finding) {
+            if ($test['class'] === '' && str_starts_with($finding, CodeReferenceScan::DECLARES)) {
+                $test['class'] = substr($finding, strlen(CodeReferenceScan::DECLARES));
+            }
+
+            if (str_starts_with($finding, CodeReferenceScan::TEST)) {
+                $test['methods'][] = substr($finding, strlen(CodeReferenceScan::TEST));
+            }
+
+            if (str_starts_with($finding, CodeReferenceScan::NAMES)) {
+                $test['names'][] = substr($finding, strlen(CodeReferenceScan::NAMES));
             }
         }
 
-        ksort($selected);
+        return $test;
+    }
 
-        return $selected;
+    /**
+     * The test files among the files one step reached, the file naming more of the step's classes first, then by path.
+     *
+     * @param  list<string>  $paths
+     * @param  list<string>  $classes  the classes whose users this step reached
+     * @param  array<string, TestFile>  $tests
+     * @return list<RankedTest>
+     */
+    private function rankedAmong(array $paths, int $step, array $classes, array $tests): array
+    {
+        $ranked = [];
+
+        foreach ($paths as $path) {
+            if (isset($tests[$path])) {
+                $ranked[] = [
+                    'file' => substr($path, strlen($this->root) + 1),
+                    'class' => $tests[$path]['class'],
+                    'methods' => $tests[$path]['methods'],
+                    'step' => $step,
+                    'connections' => count(array_intersect($tests[$path]['names'], $classes)),
+                ];
+            }
+        }
+
+        usort($ranked, fn (array $first, array $second) => [$second['connections'], $first['file']]
+            <=> [$first['connections'], $second['file']]);
+
+        return $ranked;
+    }
+
+    /**
+     * @param  list<RankedTest>  $ranked
+     */
+    private function methodCountOf(array $ranked): int
+    {
+        return array_sum(array_map(fn (array $test) => count($test['methods']), $ranked));
     }
 }

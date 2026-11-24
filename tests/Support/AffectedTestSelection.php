@@ -5,27 +5,52 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 /**
- * The test files a change reaches, how many test methods they hold together, and how many steps out from the changed
- * classes the reach went; a selection over the most test methods an affected run takes is refused.
+ * The test methods an affected run takes, nearest to the change first, how many reached methods it left out, and
+ * how many steps out from the changed classes the reach went.
+ *
+ * @phpstan-type RankedTest array{file: string, class: string, methods: list<string>, step: int, connections: int}
  */
 final readonly class AffectedTestSelection
 {
     /**
-     * @param  array<string, int>  $testMethodsByFile  the test files, relative to the project root, with their methods
+     * The taken test files, relative to the project root and in rank order, each with its class and taken methods.
+     *
+     * @param  array<string, array{class: string, methods: list<string>}>  $testsByFile
      */
     public function __construct(
-        public array $testMethodsByFile,
+        public array $testsByFile,
+        public int $leftOut,
         public int $reach,
     ) {}
 
-    public function methodCount(): int
+    /**
+     * The first test methods of the ranked tests, up to the most given; a file only part of which fits gives its
+     * first methods, and every method past the most counts as left out.
+     *
+     * @param  list<RankedTest>  $ranked
+     */
+    public static function nearestOf(array $ranked, int $most, int $reach): self
     {
-        return array_sum($this->testMethodsByFile);
+        $taken = [];
+        $room = $most;
+        $leftOut = 0;
+
+        foreach ($ranked as $test) {
+            $methods = array_slice($test['methods'], 0, max(0, $room));
+            $leftOut += count($test['methods']) - count($methods);
+            $room -= count($methods);
+
+            if ($methods !== []) {
+                $taken[$test['file']] = ['class' => $test['class'], 'methods' => $methods];
+            }
+        }
+
+        return new self($taken, $leftOut, $reach);
     }
 
-    public function isRefused(): bool
+    public function methodCount(): int
     {
-        return $this->methodCount() > AffectedTests::MOST_TEST_METHODS;
+        return array_sum(array_map(fn (array $test) => count($test['methods']), $this->testsByFile));
     }
 
     /**
@@ -33,6 +58,22 @@ final readonly class AffectedTestSelection
      */
     public function testFiles(): array
     {
-        return array_keys($this->testMethodsByFile);
+        return array_keys($this->testsByFile);
+    }
+
+    /**
+     * A PHPUnit filter that runs exactly the taken methods, each as Class::method with any of its data sets.
+     */
+    public function filter(): string
+    {
+        $names = [];
+
+        foreach ($this->testsByFile as $test) {
+            foreach ($test['methods'] as $method) {
+                $names[] = preg_quote("{$test['class']}::{$method}", '/');
+            }
+        }
+
+        return '/^(?:'.implode('|', $names).')(?: with data set .*)?$/';
     }
 }
