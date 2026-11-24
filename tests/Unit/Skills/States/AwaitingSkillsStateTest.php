@@ -23,6 +23,7 @@ use App\Values\CommandPart;
 use App\Values\ShellCommand;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\TestActors;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -69,7 +70,7 @@ final class AwaitingSkillsStateTest extends TestCase
 
         $this->assertInstanceOf(Denied::class, $awaiting->onFileEdit($edit)->answer);
         $this->assertInstanceOf(Denied::class, $awaiting->onShellCommand($write)->answer);
-        $this->assertStringContainsString(self::STATUS_COMMAND, $awaiting->onFileEdit($edit)->refusalReason());
+        $this->assertStringContainsString(self::STATUS_COMMAND, TestText::words($awaiting->onFileEdit($edit)->refusalReason()));
         $this->assertFalse($awaiting->isFinished());
     }
 

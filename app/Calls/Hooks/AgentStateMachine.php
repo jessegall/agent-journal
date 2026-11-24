@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Hooks;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\PipelineRunner;
 use App\Exceptions\HookDeadlineExpired;
 use App\Pipelines\AnswerHookPipeline;
@@ -35,7 +36,7 @@ final readonly class AgentStateMachine
     ) {}
 
     /**
-     * @param  Closure(HookAnswer): DriverReply  $render  the driver adapter's reply to the final answer
+     * @param  Closure(HookAnswer, AgentTexts): DriverReply  $render  the driver adapter's reply to the final answer
      */
     public function answer(
         HookInput $input,

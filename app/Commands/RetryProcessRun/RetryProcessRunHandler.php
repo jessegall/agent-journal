@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RetryProcessRun;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\LifecycleState;
@@ -16,7 +17,11 @@ use App\Values\ExecutionContext;
 
 final readonly class RetryProcessRunHandler implements CommandHandler
 {
-    public function __construct(private ProcessAdministration $administration, private ShellAdmission $admissions) {}
+    public function __construct(
+        private ProcessAdministration $administration,
+        private ShellAdmission $admissions,
+        private AgentTexts $texts,
+    ) {}
 
     /**
      * @throws RetryRefused
@@ -43,7 +48,7 @@ final readonly class RetryProcessRunHandler implements CommandHandler
         $refusal = $admission->decision;
 
         if ($refusal instanceof AdmissionRefusal) {
-            throw RetryRefused::refused($refusal->code->value, $refusal->reason->text);
+            throw RetryRefused::refused($refusal->code->value, $this->texts->render($refusal->reason));
         }
 
         return $admission->runId;

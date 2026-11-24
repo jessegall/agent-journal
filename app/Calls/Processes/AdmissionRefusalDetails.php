@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Processes;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Values\AdmissionRefusal;
 use App\Values\AgentText;
 use Spatie\LaravelData\Attributes\MapName;
@@ -27,17 +28,17 @@ final class AdmissionRefusalDetails extends Data
         public string $notice,
     ) {}
 
-    public static function of(AdmissionRefusal $refusal): self
+    public static function of(AdmissionRefusal $refusal, AgentTexts $texts): self
     {
         return self::from([
             'reasonCode' => $refusal->code->value,
             'node' => $refusal->node,
             'excerpt' => $refusal->excerpt,
-            'reason' => $refusal->reason->text,
-            'correction' => $refusal->correction->text,
+            'reason' => $texts->render($refusal->reason),
+            'correction' => $texts->render($refusal->correction),
             'requestId' => $refusal->requestId,
             'next' => $refusal->next,
-            'notice' => AgentText::of('core.shell.nothing_started')->text,
+            'notice' => $texts->render(AgentText::of('core.shell.nothing_started')),
         ]);
     }
 }

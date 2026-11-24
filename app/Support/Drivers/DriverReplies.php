@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\AnswerType;
 use App\Enums\DriverPermission;
 use App\Enums\DriverStopDecision;
@@ -46,9 +47,9 @@ final class DriverReplies
     /**
      * The refusal of a tool call that reaches a saved account's sign-in, settings or another session's history.
      */
-    public static function denyProtected(): DriverReply
+    public static function denyProtected(AgentTexts $texts): DriverReply
     {
-        return self::denyTool(AgentText::of('core.drivers.protected')->text, []);
+        return self::denyTool($texts->render(AgentText::of('core.drivers.protected')), []);
     }
 
     /**
@@ -79,14 +80,21 @@ final class DriverReplies
     /**
      * The reply to a shell command after the walk and any rewrite check are done.
      */
-    public static function shell(HookAnswer $answer, DriverToolInput $original, RewriteSupport $rewrites): DriverReply
-    {
+    public static function shell(
+        HookAnswer $answer,
+        DriverToolInput $original,
+        RewriteSupport $rewrites,
+        AgentTexts $texts,
+    ): DriverReply {
         $type = $answer->decision->answerType();
 
         return match ($type) {
-            AnswerType::Allow => self::allowTool($answer->shownContext()),
-            AnswerType::Deny => self::denyTool($answer->decision->refusalReason(), $answer->shownContext()),
-            AnswerType::Rewrite => self::rewrite($rewrites, $answer, $original),
+            AnswerType::Allow => self::allowTool($answer->shownContext($texts)),
+            AnswerType::Deny => self::denyTool(
+                $texts->render($answer->decision->refusalReason()),
+                $answer->shownContext($texts),
+            ),
+            AnswerType::Rewrite => self::rewrite($rewrites, $answer, $original, $texts),
             AnswerType::Delegate => throw InvalidShellAnswer::forAnswer($type->value),
         };
     }
@@ -98,27 +106,31 @@ final class DriverReplies
         RewriteSupport $rewrites,
         HookAnswer $answer,
         DriverToolInput $original,
+        AgentTexts $texts,
     ): DriverReply {
         return match ($rewrites) {
             RewriteSupport::WithoutApproval => self::rewriteTool(
                 $original->withCommand($answer->decision->replacementLine()),
-                $answer->shownContext(),
+                $answer->shownContext($texts),
             ),
             RewriteSupport::NeedsApproval => self::denyTool(
-                AgentText::of('core.drivers.rewrite_refused')->text,
-                $answer->shownContext(),
+                $texts->render(AgentText::of('core.drivers.rewrite_refused')),
+                $answer->shownContext($texts),
             ),
         };
     }
 
-    public static function stop(HookAnswer $answer): DriverReply
+    public static function stop(HookAnswer $answer, AgentTexts $texts): DriverReply
     {
         $type = $answer->decision->answerType();
 
         return match ($type) {
             AnswerType::Deny => DriverReply::json(BlockBody::from([
                 'decision' => DriverStopDecision::Block,
-                'reason' => implode("\n", [$answer->decision->refusalReason(), ...$answer->shownContext()]),
+                'reason' => implode("\n", [
+                    $texts->render($answer->decision->refusalReason()),
+                    ...$answer->shownContext($texts),
+                ]),
             ])),
             AnswerType::Allow => DriverReply::emptyObject(),
             AnswerType::Delegate, AnswerType::Rewrite => throw InvalidStopAnswer::forAnswer($type->value),
@@ -128,16 +140,16 @@ final class DriverReplies
     /**
      * The reply to a prompt: a denial blocks the prompt with its reason, an allow passes any context on.
      */
-    public static function prompt(HookAnswer $answer): DriverReply
+    public static function prompt(HookAnswer $answer, AgentTexts $texts): DriverReply
     {
         $type = $answer->decision->answerType();
 
         return match ($type) {
             AnswerType::Deny => DriverReply::json(BlockBody::from([
                 'decision' => DriverStopDecision::Block,
-                'reason' => $answer->decision->refusalReason(),
+                'reason' => $texts->render($answer->decision->refusalReason()),
             ])),
-            AnswerType::Allow => self::observation(HookEvent::UserPromptSubmit, $answer),
+            AnswerType::Allow => self::observation(HookEvent::UserPromptSubmit, $answer, $texts),
             AnswerType::Delegate, AnswerType::Rewrite => throw InvalidObservationAnswer::forAnswer($type->value),
         };
     }
@@ -146,7 +158,7 @@ final class DriverReplies
      * The reply to a hook that only reports: the context for the agent to read, or an empty object when there is none
      * or nobody reads on after the event.
      */
-    public static function observation(HookEvent $event, HookAnswer $answer): DriverReply
+    public static function observation(HookEvent $event, HookAnswer $answer, AgentTexts $texts): DriverReply
     {
         $type = $answer->decision->answerType();
 
@@ -154,13 +166,13 @@ final class DriverReplies
             throw InvalidObservationAnswer::forAnswer($type->value);
         }
 
-        if ($answer->shownContext() === [] || ! $event->hasReaderAfterIt()) {
+        if ($answer->shownContext($texts) === [] || ! $event->hasReaderAfterIt()) {
             return DriverReply::emptyObject();
         }
 
         return DriverReply::json(ContextBody::from(['hookSpecificOutput' => [
             'hookEventName' => $event->value,
-            'additionalContext' => implode("\n", $answer->shownContext()),
+            'additionalContext' => implode("\n", $answer->shownContext($texts)),
         ]]));
     }
 }

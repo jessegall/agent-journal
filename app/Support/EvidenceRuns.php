@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandClassifier;
 use App\Contracts\Bus\CommandPermissionResolver;
 use App\Contracts\Time\VerificationTiming;
@@ -41,6 +42,7 @@ final readonly class EvidenceRuns
         private CommandPermissionResolver $permissions,
         private ProjectKey $projects,
         private VerificationTiming $timing,
+        private AgentTexts $texts,
     ) {}
 
     /**
@@ -103,7 +105,7 @@ final readonly class EvidenceRuns
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : TimingVerdict::allowed();
 
         if (! $timing->isAllowed()) {
-            throw PhaseTimingRefused::by($timing);
+            throw PhaseTimingRefused::by($timing, $this->texts);
         }
 
         $verdict = $this->outputs->check($classification);

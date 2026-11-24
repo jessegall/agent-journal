@@ -20,6 +20,7 @@ use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestText;
 
 /**
  * The user reviews a proposed rule through the ApproveRuleCommand and DenyRuleCommand commands: once, and only while it is proposed.
@@ -62,7 +63,7 @@ final class ReviewRuleTest extends TestCase
 
         $this->assertSame(
             ["Rule {$this->proposed->number}: No phase waits on the user."],
-            array_map(fn ($reminder) => $reminder->text, $this->app->make(ActiveRules::class)->reminders()),
+            array_map(fn ($reminder) => TestText::words($reminder), $this->app->make(ActiveRules::class)->reminders()),
         );
 
         Event::assertDispatched(

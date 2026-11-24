@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\AdmitLineCall;
 use App\Calls\Processes\LineAdmitted;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Admission\ShellAdmission;
 use App\Exceptions\LineRefused;
 use App\Values\AdmissionRefusal;
@@ -16,6 +17,8 @@ use App\Values\ExecutionContext;
  */
 final readonly class AdmitLineController
 {
+    public function __construct(private AgentTexts $texts) {}
+
     /**
      * @throws LineRefused
      */
@@ -25,7 +28,7 @@ final readonly class AdmitLineController
         $admission = $admissions->admit($call->line, $call->dialect, $context, $call->requestKey->value);
 
         if ($admission->decision instanceof AdmissionRefusal) {
-            throw LineRefused::for($admission->decision);
+            throw LineRefused::for($admission->decision, $this->texts);
         }
 
         return LineAdmitted::from(['runId' => (string) $admission->runId]);

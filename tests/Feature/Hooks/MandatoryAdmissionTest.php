@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Admission\ShellAdmission;
 use App\Enums\AnswerType;
 use App\Enums\ExecutionModeType;
@@ -28,6 +29,7 @@ use App\Values\StopConditions;
 use Closure;
 use Tests\Fixtures\Hooks\CountedAdmission;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -75,7 +77,7 @@ final class MandatoryAdmissionTest extends TestCase
         $answer = $this->answerShell('acme publish --everything');
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
-        $this->assertStringStartsWith('command-unknown: ', $answer->decision->refusalReason());
+        $this->assertStringStartsWith('command-unknown: ', TestText::words($answer->decision->refusalReason()));
         $this->assertSame(['acme publish --everything'], $this->admissions->lines);
     }
 
@@ -83,8 +85,8 @@ final class MandatoryAdmissionTest extends TestCase
     {
         $answer = $this->answerShell('vendor/bin/phpstan analyse');
 
-        $this->assertStringStartsWith('reader-required: ', $answer->decision->refusalReason());
-        $this->assertStringContainsString('Request ', $answer->decision->refusalReason());
+        $this->assertStringStartsWith('reader-required: ', TestText::words($answer->decision->refusalReason()));
+        $this->assertStringContainsString('Request ', TestText::words($answer->decision->refusalReason()));
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
@@ -124,8 +126,8 @@ final class MandatoryAdmissionTest extends TestCase
         $check = $this->answerShell('vendor/bin/phpstan analyse');
 
         $this->assertSame(AnswerType::Allow, $known->decision->answerType());
-        $this->assertStringStartsWith('command-unknown: ', $unknown->decision->refusalReason());
-        $this->assertStringStartsWith('runner-unavailable: ', $check->decision->refusalReason());
+        $this->assertStringStartsWith('command-unknown: ', TestText::words($unknown->decision->refusalReason()));
+        $this->assertStringStartsWith('runner-unavailable: ', TestText::words($check->decision->refusalReason()));
         $this->assertSame([], $this->admissions->lines);
         $this->assertCount(3, $this->admissions->judged);
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
@@ -159,19 +161,19 @@ final class MandatoryAdmissionTest extends TestCase
         AgentRuntime::query()->delete();
         $session = $this->answerShell('git status');
 
-        $this->assertStringStartsWith('runner-unavailable: ', $driver->decision->refusalReason());
-        $this->assertStringContainsString(self::NO_REWRITE, $driver->decision->refusalReason());
-        $this->assertStringContainsString(self::NO_RUNTIME, $session->decision->refusalReason());
+        $this->assertStringStartsWith('runner-unavailable: ', TestText::words($driver->decision->refusalReason()));
+        $this->assertStringContainsString(self::NO_REWRITE, TestText::words($driver->decision->refusalReason()));
+        $this->assertStringContainsString(self::NO_RUNTIME, TestText::words($session->decision->refusalReason()));
         $this->assertSame([], $this->admissions->lines);
     }
 
     private function answerShell(string $line, RewriteSupport $rewrites = RewriteSupport::WithoutApproval): HookAnswer
     {
         $answered = null;
-        $render = function (HookAnswer $answer) use ($line, $rewrites, &$answered): DriverReply {
+        $render = function (HookAnswer $answer, AgentTexts $texts) use ($line, $rewrites, &$answered): DriverReply {
             $answered = $answer;
 
-            return $this->reply($line, $rewrites)($answer);
+            return $this->reply($line, $rewrites)($answer, $texts);
         };
         $deadline = new OperationDeadline(3000);
         $this->machine()->answer($this->shell($line), $this->capabilities($rewrites), $deadline, $render);
@@ -182,7 +184,7 @@ final class MandatoryAdmissionTest extends TestCase
     }
 
     /**
-     * @return array{0: mixed, 1: mixed, 2: OperationDeadline, 3: Closure(HookAnswer): DriverReply}
+     * @return array{0: mixed, 1: mixed, 2: OperationDeadline, 3: Closure(HookAnswer, AgentTexts): DriverReply}
      */
     private function shellCall(string $line): array
     {
@@ -197,12 +199,12 @@ final class MandatoryAdmissionTest extends TestCase
     }
 
     /**
-     * @return Closure(HookAnswer): DriverReply
+     * @return Closure(HookAnswer, AgentTexts): DriverReply
      */
     private function reply(string $line, RewriteSupport $rewrites): Closure
     {
         $input = new DriverToolInput(['command' => $line]);
 
-        return fn (HookAnswer $answer) => DriverReplies::shell($answer, $input, $rewrites);
+        return fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::shell($answer, $input, $rewrites, $texts);
     }
 }

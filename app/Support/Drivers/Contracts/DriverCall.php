@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Contracts;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Stack\HookAnswer;
@@ -15,7 +16,7 @@ use Closure;
 interface DriverCall
 {
     /**
-     * @param  Closure(HookInput, Closure(HookAnswer): DriverReply): DriverReply  $answerByJournal
+     * @param  Closure(HookInput, Closure(HookAnswer, AgentTexts): DriverReply): DriverReply  $answerByJournal
      */
     public function replyWith(Closure $answerByJournal): DriverReply;
 }

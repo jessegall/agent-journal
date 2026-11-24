@@ -7,6 +7,7 @@ namespace App\Support;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Sessions\CurrentSession;
 use App\Data\Messages\MessageBatchData;
@@ -67,6 +68,7 @@ final readonly class MessageBatchService
         private CurrentSession $session,
         private ConnectionInterface $database,
         private ActorAttention $attention,
+        private AgentTexts $texts,
     ) {}
 
     /**
@@ -302,8 +304,8 @@ final readonly class MessageBatchService
     private function render(MessageBatchData $batch, string $contextKey): string
     {
         $items = implode("\n\n", array_map(fn (MessageBatchItemData $item) => $this->itemText($item), $batch->items));
-        $more = $batch->more ? "\n".AgentText::of('core.chat.more')->text : '';
-        $new = AgentText::of('core.chat.new', ['inbox' => $batch->inboxLabel, 'items' => $items])->text;
+        $more = $batch->more ? "\n".$this->texts->render(AgentText::of('core.chat.more')) : '';
+        $new = $this->texts->render(AgentText::of('core.chat.new', ['inbox' => $batch->inboxLabel, 'items' => $items]));
 
         return $new.$more.$this->confirmation($batch, $contextKey);
     }
@@ -319,35 +321,35 @@ final readonly class MessageBatchService
 
         $handles = implode(', ', array_map(fn (MessageBatchItemData $item) => $item->handle, $batch->items));
 
-        return "\n".AgentText::of('core.chat.confirm', [
+        return "\n".$this->texts->render(AgentText::of('core.chat.confirm', [
             'tool' => MessageBatchAcknowledgeTool::NAME,
             'batch' => $batch->batchId,
             'context' => $contextKey,
             'handles' => $handles,
-        ])->text;
+        ]));
     }
 
     private function itemText(MessageBatchItemData $item): string
     {
         $label = $item->isReference
-            ? AgentText::of('core.chat.earlier', ['speaker' => $item->speakerLabel])->text
+            ? $this->texts->render(AgentText::of('core.chat.earlier', ['speaker' => $item->speakerLabel]))
             : $item->speakerLabel;
 
         if ($item->endOffset < $item->bodyLength || $item->startOffset > 0) {
-            $label = AgentText::of('core.chat.part', [
+            $label = $this->texts->render(AgentText::of('core.chat.part', [
                 'speaker' => $label,
                 'start' => $item->startOffset,
                 'end' => $item->endOffset,
                 'length' => $item->bodyLength,
-            ])->text;
+            ]));
         }
 
         $answer = $item->claimableRootId === null || $item->isReference
             ? ''
-            : "\n".AgentText::of('core.chat.answer_with', [
+            : "\n".$this->texts->render(AgentText::of('core.chat.answer_with', [
                 'tool' => $this->replyTool(),
                 'message' => $item->messageId,
-            ])->text;
+            ]));
 
         return "{$label}:\n```{$item->fence()}\n{$item->body}\n```{$answer}";
     }

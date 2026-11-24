@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Answer;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\Pipe;
 use App\Support\CallStages\RenderedCall;
 use App\Support\CallStages\SettledCall;
@@ -13,8 +14,10 @@ use App\Support\CallStages\SettledCall;
  */
 final readonly class RenderReply implements Pipe
 {
+    public function __construct(private AgentTexts $texts) {}
+
     public function handle(SettledCall $settled): RenderedCall
     {
-        return $settled->rendered();
+        return $settled->rendered($this->texts);
     }
 }

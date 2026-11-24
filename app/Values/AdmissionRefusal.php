@@ -44,9 +44,9 @@ final readonly class AdmissionRefusal
     {
         $values = [
             'code' => $this->code->value,
-            'reason' => $this->reason->text,
-            'notice' => AgentText::of('core.shell.nothing_started')->text,
-            'correction' => $this->correction->text,
+            'reason' => $this->reason,
+            'notice' => AgentText::of('core.shell.nothing_started'),
+            'correction' => $this->correction,
         ];
 
         if ($this->requestId === '') {

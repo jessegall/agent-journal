@@ -18,7 +18,7 @@ final class ShellLineUnreadable extends RuntimeException
         public readonly int $position,
         public readonly bool $isLimit,
     ) {
-        parent::__construct($reason->text);
+        parent::__construct($reason->key);
     }
 
     public static function unfinished(string $what, int $position): self

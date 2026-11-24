@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Exceptions\ClassificationUnavailable;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\ModuleRuleBundle;
@@ -16,7 +17,7 @@ use Illuminate\Database\QueryException;
  */
 final readonly class ProjectRules
 {
-    public function __construct(private ProjectKey $projects) {}
+    public function __construct(private ProjectKey $projects, private AgentTexts $texts) {}
 
     /**
      * @return list<RuleRevision>
@@ -35,7 +36,7 @@ final readonly class ProjectRules
                 ->map(fn (ClassificationRule $rule): RuleRevision => $rule->activeRevision)
                 ->all());
         } catch (QueryException $failure) {
-            throw ClassificationUnavailable::storeFailed($failure);
+            throw ClassificationUnavailable::storeFailed($failure, $this->texts);
         }
     }
 
@@ -51,7 +52,7 @@ final readonly class ProjectRules
                 ModuleRuleBundle::query()->ofProject($this->projects->current())->readLimit(500)->get()->all(),
             );
         } catch (QueryException $failure) {
-            throw ClassificationUnavailable::storeFailed($failure);
+            throw ClassificationUnavailable::storeFailed($failure, $this->texts);
         }
     }
 }

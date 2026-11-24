@@ -24,6 +24,7 @@ use App\Values\StackTarget;
 use Closure;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -44,7 +45,7 @@ final class DeliveredSkillsGuardTest extends TestCase
 
         $reply = $this->claudeCode('Read', ['file_path' => $path]);
 
-        $this->assertRefusedWith(AgentText::of('core.drivers.other_runtime')->text, $reply);
+        $this->assertRefusedWith(TestText::words(AgentText::of('core.drivers.other_runtime')), $reply);
         $this->assertStringNotContainsString(self::OTHER_RUNTIME, $reply->stdout);
         $this->assertStringNotContainsString(self::STATE_FOLDER, $reply->stdout);
     }
@@ -53,7 +54,7 @@ final class DeliveredSkillsGuardTest extends TestCase
     {
         $reply = $this->claudeCode('Grep', ['pattern' => 'journal', 'path' => $this->otherRuntimeFolder()]);
 
-        $this->assertRefusedWith(AgentText::of('core.drivers.other_runtime')->text, $reply);
+        $this->assertRefusedWith(TestText::words(AgentText::of('core.drivers.other_runtime')), $reply);
     }
 
     public function test_an_edit_of_the_agents_own_delivered_skill_is_refused_without_naming_its_path(): void
@@ -62,7 +63,7 @@ final class DeliveredSkillsGuardTest extends TestCase
 
         $reply = $this->claudeCode('Edit', ['file_path' => $path, 'old_string' => 'a', 'new_string' => 'b']);
 
-        $this->assertRefusedWith(AgentText::of('core.drivers.delivered_skill')->text, $reply);
+        $this->assertRefusedWith(TestText::words(AgentText::of('core.drivers.delivered_skill')), $reply);
         $this->assertStringNotContainsString($this->ownRuntimeId(), $reply->stdout);
         $this->assertStringNotContainsString(self::STATE_FOLDER, $reply->stdout);
     }
@@ -78,7 +79,7 @@ final class DeliveredSkillsGuardTest extends TestCase
         );
 
         $this->assertRefusedWith(
-            AgentText::of('core.drivers.delivered_skill')->text,
+            TestText::words(AgentText::of('core.drivers.delivered_skill')),
             $call->replyWith(fn () => $this->fail('A refused patch went to the journal.')),
         );
     }
@@ -104,7 +105,7 @@ final class DeliveredSkillsGuardTest extends TestCase
         $reply = $this->codexShell('cat '.$this->otherRuntimeFolder().'/skills/journal/SKILL.md')
             ->replyWith(fn () => $this->fail('A refused shell read went to the journal.'));
 
-        $this->assertRefusedWith(AgentText::of('core.drivers.other_runtime')->text, $reply);
+        $this->assertRefusedWith(TestText::words(AgentText::of('core.drivers.other_runtime')), $reply);
         $this->assertStringNotContainsString(self::OTHER_RUNTIME, $reply->stdout);
     }
 
@@ -123,7 +124,7 @@ final class DeliveredSkillsGuardTest extends TestCase
         $call = $this->codexShell('cat "$(echo '.$this->otherRuntimeFolder().'/skills/journal/SKILL.md)"');
 
         $this->assertRefusedWith(
-            AgentText::of('core.drivers.other_runtime')->text,
+            TestText::words(AgentText::of('core.drivers.other_runtime')),
             $call->replyWith(fn () => $this->fail('A refused shell read went to the journal.')),
         );
     }
@@ -134,7 +135,7 @@ final class DeliveredSkillsGuardTest extends TestCase
 
         $reply = $this->claudeCode('Bash', ['command' => 'ls '.$this->otherRuntimeFolder()]);
 
-        $this->assertRefusedWith(AgentText::of('core.drivers.other_runtime')->text, $reply);
+        $this->assertRefusedWith(TestText::words(AgentText::of('core.drivers.other_runtime')), $reply);
     }
 
     private function codexShell(string $line): DriverCall
@@ -162,7 +163,7 @@ final class DeliveredSkillsGuardTest extends TestCase
 
         return $this->app->make(ClaudeCodeAdapter::class)
             ->callFor($this->payload($tool, $arguments), $this->hookIdentity())
-            ->replyWith(fn (HookInput $input, Closure $render) => $render($allowed));
+            ->replyWith(fn (HookInput $input, Closure $render) => $render($allowed, TestText::renderer()));
     }
 
     /**

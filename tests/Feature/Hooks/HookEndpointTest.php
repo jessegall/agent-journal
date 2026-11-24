@@ -27,6 +27,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestStartAuthority;
+use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -104,7 +105,7 @@ final class HookEndpointTest extends TestCase
 
         $this->assertSame('deny', $refused['hookSpecificOutput']['permissionDecision']);
         $this->assertStringContainsString(
-            AgentText::of('core.shell.nothing_started')->text,
+            TestText::words(AgentText::of('core.shell.nothing_started')),
             $refused['hookSpecificOutput']['permissionDecisionReason'],
         );
         $runnerLine = $admitted['hookSpecificOutput']['updatedInput']['command'];

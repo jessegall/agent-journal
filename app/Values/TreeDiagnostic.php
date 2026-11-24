@@ -13,12 +13,4 @@ final readonly class TreeDiagnostic
         public int $position,
         public AgentText $reason,
     ) {}
-
-    /**
-     * The reason as the agent reads it.
-     */
-    public function text(): string
-    {
-        return $this->reason->text;
-    }
 }

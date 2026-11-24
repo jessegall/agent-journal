@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\AnswerType;
 use App\Enums\RewriteSupport;
 use App\Exceptions\HookDeadlineExpired;
@@ -193,22 +194,23 @@ final class AgentStateMachineTest extends TestCase
     }
 
     /**
-     * @return Closure(HookAnswer): DriverReply
+     * @return Closure(HookAnswer, AgentTexts): DriverReply
      */
     private function stopReply(): Closure
     {
-        return fn (HookAnswer $answer) => DriverReplies::stop($answer);
+        return fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts);
     }
 
     /**
-     * @return Closure(HookAnswer): DriverReply
+     * @return Closure(HookAnswer, AgentTexts): DriverReply
      */
     private function shellReply(RewriteSupport $rewrites): Closure
     {
-        return fn (HookAnswer $answer) => DriverReplies::shell(
+        return fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::shell(
             $answer,
             new DriverToolInput(['command' => 'composer test', 'description' => 'Run the tests']),
             $rewrites,
+            $texts,
         );
     }
 }

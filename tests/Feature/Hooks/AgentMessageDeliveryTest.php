@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\DriverOperation;
 use App\Enums\FileOperation;
 use App\Enums\NoSubject;
@@ -112,7 +113,7 @@ final class AgentMessageDeliveryTest extends TestCase
             ),
             $this->messagingCapabilities(),
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => DriverReplies::prompt($answer),
+            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::prompt($answer, $texts),
         )->stdout;
     }
 

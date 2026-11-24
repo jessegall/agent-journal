@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Adapters;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Authorization\FileAccessPolicy;
 use App\Enums\FileAccess;
 use App\Support\Drivers\Contracts\DriverCall;
@@ -22,7 +23,7 @@ use PhpOption\Option;
  */
 final readonly class GuardedFiles
 {
-    public function __construct(private FileAccessPolicy $policy) {}
+    public function __construct(private FileAccessPolicy $policy, private AgentTexts $texts) {}
 
     /**
      * @param  list<string>  $paths
@@ -31,7 +32,9 @@ final readonly class GuardedFiles
     public function callUnlessRefused(HookIdentity $hook, FileAccess $access, array $paths, Closure $call): DriverCall
     {
         return $this->firstRefusal($hook, $access, $paths)
-            ->map(fn (AgentText $refusal): DriverCall => new UnjudgedCall(DriverReplies::denyTool($refusal->text, [])))
+            ->map(fn (AgentText $refusal): DriverCall => new UnjudgedCall(
+                DriverReplies::denyTool($this->texts->render($refusal), []),
+            ))
             ->getOrCall($call);
     }
 
@@ -51,7 +54,7 @@ final readonly class GuardedFiles
             $refusal = $this->firstRefusal($hook, $this->accessOf($part), $part->arguments);
 
             if ($refusal->isDefined()) {
-                return new UnjudgedCall(DriverReplies::denyTool($refusal->get()->text, []));
+                return new UnjudgedCall(DriverReplies::denyTool($this->texts->render($refusal->get()), []));
             }
         }
 

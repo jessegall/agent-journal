@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandFacts;
 use App\Events\RuleActivated;
 use App\Exceptions\ApprovalRefused;
@@ -34,6 +35,7 @@ final readonly class RuleApprovals
         private CommandRuleRegistry $rules,
         private ProjectRules $projectRules,
         private CommandFacts $facts,
+        private AgentTexts $texts,
     ) {}
 
     /**
@@ -83,7 +85,7 @@ final readonly class RuleApprovals
         try {
             $this->rules->withRules(...[...$others, $rule]);
         } catch (CommandRuleConflict $conflict) {
-            throw ApprovalRefused::conflict($conflict);
+            throw ApprovalRefused::conflict($conflict, $this->texts);
         }
     }
 

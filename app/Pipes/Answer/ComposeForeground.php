@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Answer;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\Pipe;
 use App\Support\CallStages\SettledCall;
 use App\Support\Inputs\ContextCompacted;
@@ -16,6 +17,8 @@ use App\Support\Inputs\SessionStarted;
  */
 final readonly class ComposeForeground implements Pipe
 {
+    public function __construct(private AgentTexts $texts) {}
+
     private const array FRESH_INPUTS = [SessionStarted::class, PromptSubmitted::class, ContextCompacted::class];
 
     public function handle(SettledCall $settled): SettledCall
@@ -30,6 +33,6 @@ final readonly class ComposeForeground implements Pipe
             return $settled;
         }
 
-        return $settled->withAnswer($settled->answer->withContextAdded($line->get()->text));
+        return $settled->withAnswer($settled->answer->withContextAdded($this->texts->render($line->get())));
     }
 }

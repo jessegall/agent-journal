@@ -63,15 +63,15 @@ final class AgentStackTest extends TestCase
         $stop = $this->stop();
         $both = $this->exampleStack(TaskState::Started, messageWaits: true);
 
-        $this->assertSame(['message-95 deny'], $this->stepsOf($both->answer($stop)));
+        $this->assertSame(['message-95 deny'], $this->stepsOf($both->answer($stop, TestText::renderer())));
 
         $answered = $this->exampleStack(TaskState::Started, messageWaits: false)->withoutExposedInactive();
 
         $this->assertSame(['ready', 'task-42'], $answered->frameIds());
-        $this->assertSame(['task-42 deny'], $this->stepsOf($answered->answer($stop)));
+        $this->assertSame(['task-42 deny'], $this->stepsOf($answered->answer($stop, TestText::renderer())));
 
         $done = $this->exampleStack(TaskState::Finished, messageWaits: false)->withoutExposedInactive();
-        $answer = $done->answer($stop);
+        $answer = $done->answer($stop, TestText::renderer());
 
         $this->assertTrue($answer->isAllowed());
         $this->assertSame(['ready delegate'], $this->stepsOf($answer));
@@ -80,7 +80,7 @@ final class AgentStackTest extends TestCase
     public function test_a_shell_write_is_refused_by_the_message_and_the_task_is_not_asked(): void
     {
         $answer = $this->exampleStack(TaskState::Started, messageWaits: true)
-            ->answer(HookInputs::all()['shell command']);
+            ->answer(HookInputs::all()['shell command'], TestText::renderer());
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame(['message-95 deny'], $this->stepsOf($answer));
@@ -106,11 +106,11 @@ final class AgentStackTest extends TestCase
         ], $factory, new StackTarget('agent-1', 'session-1'));
 
         $stack = $stack->withStateOnTop($this->reference('sequences.following', '8'));
-        $answer = $stack->answer($this->stop());
+        $answer = $stack->answer($this->stop(), TestText::renderer());
 
         $this->assertSame(['ready', 'task-42', 'pushed-1'], $stack->frameIds());
         $this->assertSame(['pushed-1 deny'], $this->stepsOf($answer));
-        $this->assertSame($answer->steps[0]->denialReason, $answer->decision->refusalReason());
+        $this->assertSame($answer->steps[0]->denialReason, TestText::words($answer->decision->refusalReason()));
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
@@ -120,7 +120,7 @@ final class AgentStackTest extends TestCase
         $middle = ScriptedState::passing();
         $stack = $this->stack($this->ready(), $this->frame('middle', $middle), $this->frame('top', $top));
 
-        $answer = $stack->answer($input);
+        $answer = $stack->answer($input, TestText::renderer());
 
         $this->assertSame(['top delegate', 'middle delegate', 'ready delegate'], $this->stepsOf($answer));
         $this->assertTrue($answer->isAllowed());
@@ -133,15 +133,15 @@ final class AgentStackTest extends TestCase
         $passing = $this->frame('guide', ScriptedState::passing());
         $stack = $this->stack($this->ready(changesFiles: false), $passing);
 
-        $file = $stack->answer(HookInputs::all()['file edit']);
+        $file = $stack->answer(HookInputs::all()['file edit'], TestText::renderer());
 
         $this->assertSame(['guide delegate', 'ready deny'], $this->stepsOf($file));
 
         $pending = $this->frame('skills', new AwaitingSkillsState('publication-1'));
         $guarded = $this->stack($this->ready(), $pending, $passing);
 
-        $this->assertSame(['guide delegate', 'skills deny'], $this->stepsOf($guarded->answer(HookInputs::all()['shell command'])));
-        $this->assertSame(['guide delegate', 'skills deny'], $this->stepsOf($guarded->answer(HookInputs::all()['file edit'])));
+        $this->assertSame(['guide delegate', 'skills deny'], $this->stepsOf($guarded->answer(HookInputs::all()['shell command'], TestText::renderer())));
+        $this->assertSame(['guide delegate', 'skills deny'], $this->stepsOf($guarded->answer(HookInputs::all()['file edit'], TestText::renderer())));
     }
 
     public function test_a_tool_handler_that_passes_cannot_hide_the_operation_policy(): void
@@ -158,11 +158,11 @@ final class AgentStackTest extends TestCase
         );
         $stack = $this->stack($ready, $this->frame('guide', ScriptedState::passing()));
 
-        $answer = $stack->answer(HookInputs::all()['tool requested']);
+        $answer = $stack->answer(HookInputs::all()['tool requested'], TestText::renderer());
 
         $this->assertSame(
-            AgentText::of('core.access.refused', ['reason' => $refusal->reason->text])->text,
-            $answer->decision->refusalReason(),
+            TestText::words(AgentText::of('core.access.refused', ['reason' => $refusal->reason])),
+            TestText::words($answer->decision->refusalReason()),
         );
         $this->assertSame(['guide delegate', 'ready deny'], $this->stepsOf($answer));
     }
@@ -176,8 +176,8 @@ final class AgentStackTest extends TestCase
             $this->frame('guide', ScriptedState::passing()),
         );
 
-        $this->assertSame([], $stack->answer(HookInputs::all()['session start'])->context);
-        $this->assertSame([], $stack->answer(HookInputs::all()['compaction'])->context);
+        $this->assertSame([], $stack->answer(HookInputs::all()['session start'], TestText::renderer())->context);
+        $this->assertSame([], $stack->answer(HookInputs::all()['compaction'], TestText::renderer())->context);
     }
 
     public function test_no_state_below_a_denial_is_asked(): void
@@ -189,7 +189,7 @@ final class AgentStackTest extends TestCase
             $this->frame('top', new ScriptedState(Decision::deny(TestText::of('Not now.')))),
         );
 
-        $answer = $stack->answer(HookInputs::all()['prompt']);
+        $answer = $stack->answer(HookInputs::all()['prompt'], TestText::renderer());
 
         $this->assertSame(['top deny'], $this->stepsOf($answer));
         $this->assertSame(0, $below->askedCount);
@@ -205,10 +205,10 @@ final class AgentStackTest extends TestCase
             $this->frame('top', new StopAnswerState($top)),
         );
 
-        $answer = $stack->answer($this->stop());
+        $answer = $stack->answer($this->stop(), TestText::renderer());
 
-        $this->assertSame([$top->text->text, $middle->text->text], $answer->context);
-        $this->assertSame([$top->text->text], $answer->messages);
+        $this->assertSame([TestText::words($top->text), TestText::words($middle->text)], $answer->context);
+        $this->assertSame([TestText::words($top->text)], $answer->messages);
         $this->assertSame([1, 1, 0], array_column($answer->steps, 'contextCount'));
     }
 
@@ -225,13 +225,13 @@ final class AgentStackTest extends TestCase
             $this->frame('top', new StopAnswerState($above)),
         );
 
-        $answer = $stack->answer($this->stop());
+        $answer = $stack->answer($this->stop(), TestText::renderer());
 
         $this->assertSame($denial, $answer->decision);
-        $this->assertSame([$above->text->text, $before->text->text], $answer->context);
-        $this->assertSame([$before->text->text], $answer->messages);
+        $this->assertSame([TestText::words($above->text), TestText::words($before->text)], $answer->context);
+        $this->assertSame([TestText::words($before->text)], $answer->messages);
         $this->assertSame(['top delegate', 'denier deny'], $this->stepsOf($answer));
-        $this->assertSame([null, $denial->refusalReason()], array_column($answer->steps, 'denialReason'));
+        $this->assertSame([null, TestText::words($denial->refusalReason())], array_column($answer->steps, 'denialReason'));
         $this->assertSame(0, $below->askedCount);
     }
 
@@ -244,7 +244,7 @@ final class AgentStackTest extends TestCase
             $this->frame('top', new ShellAnswerState(fn () => $highest)),
         );
 
-        $answer = $stack->answer(HookInputs::all()['shell command']);
+        $answer = $stack->answer(HookInputs::all()['shell command'], TestText::renderer());
 
         $this->assertSame($highest, $answer->decision);
         $this->assertSame(['top rewrite', 'lower rewrite', 'ready delegate'], $this->stepsOf($answer));
@@ -265,7 +265,7 @@ final class AgentStackTest extends TestCase
             })())),
         );
 
-        $this->assertSame([$first, $event, $second], $stack->answer($this->stop())->effects);
+        $this->assertSame([$first, $event, $second], $stack->answer($this->stop(), TestText::renderer())->effects);
     }
 
     /**
@@ -291,7 +291,7 @@ final class AgentStackTest extends TestCase
 
         $this->expectException(HookAnswerRefused::class);
 
-        $stack->answer($this->stop());
+        $stack->answer($this->stop(), TestText::renderer());
     }
 
     public function test_a_generator_that_yields_something_that_is_no_answer_is_refused_at_that_step(): void
@@ -305,7 +305,7 @@ final class AgentStackTest extends TestCase
 
         $this->expectException(HookAnswerRefused::class);
 
-        $stack->answer($this->stop());
+        $stack->answer($this->stop(), TestText::renderer());
     }
 
     public function test_the_bottom_state_cannot_finish(): void
@@ -332,7 +332,7 @@ final class AgentStackTest extends TestCase
     {
         $this->expectException(MissingBottomState::class);
 
-        $this->stack()->answer($this->stop());
+        $this->stack()->answer($this->stop(), TestText::renderer());
     }
 
     public function test_a_hook_refuses_a_decision_it_cannot_take(): void
@@ -341,7 +341,7 @@ final class AgentStackTest extends TestCase
 
         $this->expectException(InvalidHookAnswer::class);
 
-        $stack->answer(HookInputs::all()['prompt']);
+        $stack->answer(HookInputs::all()['prompt'], TestText::renderer());
     }
 
     /**
@@ -366,7 +366,7 @@ final class AgentStackTest extends TestCase
 
         $this->expectException(InvalidHookAnswer::class);
 
-        $stack->answer(HookInputs::all()[$hook]);
+        $stack->answer(HookInputs::all()[$hook], TestText::renderer());
     }
 
     public function test_pushing_a_state_already_on_the_stack_changes_nothing(): void
@@ -425,7 +425,7 @@ final class AgentStackTest extends TestCase
             $this->frame('top', new ScriptedState(Decision::delegate())),
         );
 
-        $answer = $stack->answer($this->stop());
+        $answer = $stack->answer($this->stop(), TestText::renderer());
 
         $this->assertSame(['top delegate', 'below deny'], $this->stepsOf($answer));
         $this->assertFalse($answer->isAllowed());
@@ -450,7 +450,7 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->exampleStack(TaskState::Finished, messageWaits: false);
 
-        $this->assertSame(['ready'], array_map(fn (WalkStep $step) => $step->frameId, $stack->answer($input)->steps));
+        $this->assertSame(['ready'], array_map(fn (WalkStep $step) => $step->frameId, $stack->answer($input, TestText::renderer())->steps));
     }
 
     public function test_a_finished_state_in_the_middle_stays_buried_when_the_top_is_popped(): void
@@ -498,7 +498,7 @@ final class AgentStackTest extends TestCase
             $this->frame('guide', ScriptedState::passing()),
         );
 
-        $this->assertSame($task->instruction()->get()->text, $stack->instruction()->get()->text);
+        $this->assertEquals($task->instruction()->get(), $stack->instruction()->get());
         $this->assertTrue($this->stack($this->ready())->instruction()->isEmpty());
     }
 
@@ -516,7 +516,7 @@ final class AgentStackTest extends TestCase
             $this->frame('review', $switchedOff),
         );
 
-        $this->assertSame(['task-42 deny'], $this->stepsOf($stack->answer($this->stop())));
+        $this->assertSame(['task-42 deny'], $this->stepsOf($stack->answer($this->stop(), TestText::renderer())));
         $this->assertSame(['ready', 'task-42', 'review'], $stack->frameIds());
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\CallStages;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Models\Agents\AgentStackRow;
 use App\Support\Stack\HookAnswer;
 
@@ -26,8 +27,8 @@ final readonly class SettledCall
         return clone ($this, ['answer' => $answer]);
     }
 
-    public function rendered(): RenderedCall
+    public function rendered(AgentTexts $texts): RenderedCall
     {
-        return new RenderedCall($this->call, $this->row, $this->answer, ($this->call->render)($this->answer));
+        return new RenderedCall($this->call, $this->row, $this->answer, ($this->call->render)($this->answer, $texts));
     }
 }

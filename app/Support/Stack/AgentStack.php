@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Declarations\StateMethods;
 use App\Enums\AnswerType;
 use App\Exceptions\BottomStateCannotFinish;
@@ -47,7 +48,7 @@ final readonly class AgentStack
      * Asks the live states that answer the hook from the top down: the first deny answers and nothing below it is
      * asked; otherwise the highest rewrite counts, and the hook is allowed when every state passed.
      */
-    public function answer(HookInput $input): HookAnswer
+    public function answer(HookInput $input, AgentTexts $texts): HookAnswer
     {
         $bottom = $this->frames[0] ?? null;
 
@@ -76,7 +77,7 @@ final readonly class AgentStack
             );
 
             $decision = $answered->decision;
-            $steps[] = $handler->walkStep($decision, count($answered->lines));
+            $steps[] = $handler->walkStep($decision, count($answered->lines), $texts);
             $effects = [...$effects, ...$answered->effects];
 
             foreach ($answered->pushes as $push) {
@@ -84,10 +85,11 @@ final readonly class AgentStack
             }
 
             foreach ($answered->lines as $line) {
-                $context[] = $line->text->text;
+                $words = $texts->render($line->text);
+                $context[] = $words;
 
                 if ($line instanceof MessageLine) {
-                    $messages[] = $line->text->text;
+                    $messages[] = $words;
                 }
             }
 

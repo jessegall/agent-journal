@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Contracts;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReply;
@@ -86,10 +87,10 @@ interface DriverAdapter
     /**
      * The reply to the driver's shell hook, from the answer and the input the agent sent.
      */
-    public function renderShell(HookAnswer $answer, DriverToolInput $original): DriverReply;
+    public function renderShell(HookAnswer $answer, DriverToolInput $original, AgentTexts $texts): DriverReply;
 
     /**
      * The reply to the driver's stop hook, from the answer.
      */
-    public function renderStop(HookAnswer $answer): DriverReply;
+    public function renderStop(HookAnswer $answer, AgentTexts $texts): DriverReply;
 }

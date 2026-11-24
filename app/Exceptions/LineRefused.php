@@ -6,6 +6,7 @@ namespace App\Exceptions;
 
 use App\Calls\Processes\AdmissionRefusalDetails;
 use App\Concerns\RendersRefusal;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
 use App\Values\AdmissionRefusal;
@@ -18,14 +19,14 @@ final class LineRefused extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    private function __construct(string $message, private readonly AdmissionRefusal $refusal)
+    private function __construct(string $message, private readonly AdmissionRefusalDetails $details)
     {
         parent::__construct($message);
     }
 
-    public static function for(AdmissionRefusal $refusal): self
+    public static function for(AdmissionRefusal $refusal, AgentTexts $texts): self
     {
-        return new self($refusal->message()->text, $refusal);
+        return new self($texts->render($refusal->message()), AdmissionRefusalDetails::of($refusal, $texts));
     }
 
     public function refusalCode(): RefusalCode
@@ -43,6 +44,6 @@ final class LineRefused extends RuntimeException implements CodedRefusal
      */
     protected function details(): array
     {
-        return AdmissionRefusalDetails::of($this->refusal)->toArray();
+        return $this->details->toArray();
     }
 }

@@ -24,6 +24,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\HoldingRules;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
+use Tests\Support\TestText;
 
 /**
  * A proposal keeps its reason, the rule it would replace and its proposer, and does not hold until approved; removal,
@@ -59,7 +60,7 @@ final class RuleProposalTest extends TestCase
             ],
         );
 
-        $reminders = array_map(fn ($reminder) => $reminder->text, $this->app->make(ActiveRules::class)->reminders());
+        $reminders = array_map(TestText::words(...), $this->app->make(ActiveRules::class)->reminders());
         $this->assertSame(["Rule {$old->number}: Old rule."], $reminders);
         $this->assertSame(1, $this->app->make(RuleDetailsResolver::class)->activeCount());
     }

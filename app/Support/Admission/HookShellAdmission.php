@@ -125,7 +125,7 @@ final readonly class HookShellAdmission
     {
         return Decision::deny(AgentText::of('core.shell.runner_unavailable', [
             'code' => AdmissionRefusalCode::RunnerUnavailable->value,
-            'limit' => $limit->text,
+            'limit' => $limit,
         ]));
     }
 }

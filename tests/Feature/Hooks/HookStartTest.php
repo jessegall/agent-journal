@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Calls\Hooks\AgentStateMachine;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\RewriteSupport;
@@ -223,7 +224,7 @@ final class HookStartTest extends TestCase
                 $stop,
                 $capabilities,
                 new OperationDeadline(3000),
-                fn (HookAnswer $answer) => DriverReplies::stop($answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
             )->stdout;
         }, $callId);
     }

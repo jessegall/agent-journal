@@ -63,6 +63,7 @@ final class ProgramRepliesTest extends TestCase
             $this->answer(Decision::rewrite('journal run tests')),
             $original,
             RewriteSupport::WithoutApproval,
+            TestText::renderer()
         );
 
         $this->assertSame(['hookSpecificOutput' => [
@@ -78,6 +79,7 @@ final class ProgramRepliesTest extends TestCase
             $this->answer(Decision::rewrite('journal run tests')),
             new DriverToolInput(['command' => 'composer test']),
             RewriteSupport::NeedsApproval,
+            TestText::renderer()
         );
 
         $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
@@ -92,6 +94,7 @@ final class ProgramRepliesTest extends TestCase
     {
         $reply = DriverReplies::stop(
             $this->answer(Decision::deny(TestText::of('Task 42 still needs work.')), ['Run the phase tests.']),
+            TestText::renderer()
         );
 
         $this->assertSame(
@@ -102,15 +105,15 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_an_allowed_stop_is_an_empty_object(): void
     {
-        $this->assertSame('{}', DriverReplies::stop($this->answer(Decision::allow(), ['Optional context.']))->stdout);
+        $this->assertSame('{}', DriverReplies::stop($this->answer(Decision::allow(), ['Optional context.']), TestText::renderer())->stdout);
     }
 
     public function test_context_goes_to_an_event_the_agent_reads_on_after_and_never_to_a_session_end(): void
     {
         $answer = $this->answer(Decision::allow(), ['Read the overview.']);
 
-        $started = json_decode(DriverReplies::observation(HookEvent::SessionStart, $answer)->stdout, true);
-        $ended = DriverReplies::observation(HookEvent::SessionEnd, $answer);
+        $started = json_decode(DriverReplies::observation(HookEvent::SessionStart, $answer, TestText::renderer())->stdout, true);
+        $ended = DriverReplies::observation(HookEvent::SessionEnd, $answer, TestText::renderer());
 
         $this->assertSame(HookEvent::SessionStart->value, $started['hookSpecificOutput']['hookEventName']);
         $this->assertSame(implode("\n", $answer->context), $started['hookSpecificOutput']['additionalContext']);
@@ -121,7 +124,7 @@ final class ProgramRepliesTest extends TestCase
     {
         $this->expectException(InvalidStopAnswer::class);
 
-        DriverReplies::stop($this->answer(Decision::rewrite('ls')));
+        DriverReplies::stop($this->answer(Decision::rewrite('ls')), TestText::renderer());
     }
 
     /**
@@ -136,13 +139,14 @@ final class ProgramRepliesTest extends TestCase
                 $this->answer(Decision::rewrite('journal run tests')),
                 new DriverToolInput(['command' => 'x']),
                 RewriteSupport::WithoutApproval,
+                TestText::renderer()
             ),
         ];
         $others = [
             $this->shell(Decision::deny(TestText::of('No.'))),
             DriverReplies::undecidedTool(),
-            DriverReplies::stop($this->answer(Decision::allow())),
-            DriverReplies::stop($this->answer(Decision::deny(TestText::of('Wait.')))),
+            DriverReplies::stop($this->answer(Decision::allow()), TestText::renderer()),
+            DriverReplies::stop($this->answer(Decision::deny(TestText::of('Wait.'))), TestText::renderer()),
         ];
 
         foreach ($admitted as $reply) {
@@ -170,6 +174,7 @@ final class ProgramRepliesTest extends TestCase
             $this->answer($decision, $context),
             new DriverToolInput(['command' => 'git status']),
             RewriteSupport::WithoutApproval,
+            TestText::renderer()
         );
     }
 

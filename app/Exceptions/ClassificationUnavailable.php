@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Concerns\RendersRefusal;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
@@ -20,19 +21,23 @@ final class ClassificationUnavailable extends RuntimeException implements CodedR
 {
     use RendersRefusal;
 
-    private function __construct(public readonly AgentText $reason, Throwable $previous)
+    private function __construct(public readonly AgentText $reason, AgentTexts $texts, Throwable $previous)
     {
-        parent::__construct("classification-unavailable: {$reason->text}", previous: $previous);
+        parent::__construct("classification-unavailable: {$texts->render($reason)}", previous: $previous);
     }
 
-    public static function storeFailed(Throwable $failure): self
+    public static function storeFailed(Throwable $failure, AgentTexts $texts): self
     {
-        return new self(AgentText::of('core.shell.rules_unreadable'), $failure);
+        return new self(AgentText::of('core.shell.rules_unreadable'), $texts, $failure);
     }
 
-    public static function conflicting(CommandRuleConflict $conflict): self
+    public static function conflicting(CommandRuleConflict $conflict, AgentTexts $texts): self
     {
-        return new self(AgentText::of('core.shell.rules_conflict', ['conflict' => $conflict->reason->text]), $conflict);
+        return new self(
+            AgentText::of('core.shell.rules_conflict', ['conflict' => $conflict->reason]),
+            $texts,
+            $conflict,
+        );
     }
 
     protected function status(): int

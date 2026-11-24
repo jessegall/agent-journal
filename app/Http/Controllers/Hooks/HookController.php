@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Hooks;
 
 use App\Calls\Hooks\AgentStateMachine;
+use App\Contracts\Actors\AgentTexts;
 use App\Exceptions\ConversationIncompatible;
 use App\Exceptions\HookDigestChanged;
 use App\Exceptions\HookIdentityExpired;
@@ -40,6 +41,7 @@ final readonly class HookController
         private DriverAdapters $adapters,
         private OperationDeadline $deadline,
         private NativeTurns $turns,
+        private AgentTexts $texts,
     ) {}
 
     /**
@@ -59,7 +61,10 @@ final readonly class HookController
             $hookInput = $request->payload();
 
             if ($hookInput->isFromNativeChild() || $hookInput->callsAnyOf($adapter->nativeChildTools())) {
-                $refusal = DriverReplies::denyTool(AgentText::of('core.drivers.own_subagents')->text, []);
+                $refusal = DriverReplies::denyTool(
+                    $this->texts->render(AgentText::of('core.drivers.own_subagents')),
+                    [],
+                );
 
                 return new JsonResponse(HookResponse::fromDriverReply($refusal)->toArray());
             }

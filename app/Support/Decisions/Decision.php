@@ -40,7 +40,7 @@ final readonly class Decision implements AnswerPart
 
     public static function deny(AgentText $reason): self
     {
-        return new self(new Denied(new Reason($reason->text)));
+        return new self(new Denied(new Reason($reason)));
     }
 
     public static function rewrite(string $line): self
@@ -63,7 +63,7 @@ final readonly class Decision implements AnswerPart
     /**
      * The reason a denial or a held stop gives the agent.
      */
-    public function refusalReason(): string
+    public function refusalReason(): AgentText
     {
         if (! $this->answer instanceof Denied) {
             throw NoRefusalReason::forAnswer($this->answerType()->value);

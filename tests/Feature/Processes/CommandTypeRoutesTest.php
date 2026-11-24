@@ -15,6 +15,7 @@ use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsTestAgent;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -35,7 +36,7 @@ final class CommandTypeRoutesTest extends TestCase
     {
         $reply = $this->signed($this->start, '/agent/processes/explain', ['line' => 'acme verify'])->assertOk();
 
-        $this->assertSame(AgentText::of('core.shell.nothing_started')->text, $reply->json('notice'));
+        $this->assertSame(TestText::words(AgentText::of('core.shell.nothing_started')), $reply->json('notice'));
         $this->assertSame('acme', $reply->json('held.0.operation'));
         $this->assertSame(RequestState::CollectingDeclaration->value, $reply->json('held.0.requestState'));
         $this->assertStringStartsWith(self::PROPOSE_STEP, (string) $reply->json('held.0.next'));

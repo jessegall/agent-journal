@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Enums\AnswerType;
-use App\Exceptions\EmptyReason;
 use App\Exceptions\NoRefusalReason;
 use App\Exceptions\NoReplacementLine;
 use App\Support\Decisions\Decision;
@@ -30,14 +29,7 @@ final class DecisionTest extends TestCase
         $denied = Decision::deny(TestText::of(self::REASON))->answer;
 
         $this->assertInstanceOf(Denied::class, $denied);
-        $this->assertSame(self::REASON, $denied->reason()->text);
-    }
-
-    public function test_a_reason_is_never_empty(): void
-    {
-        $this->expectException(EmptyReason::class);
-
-        Decision::deny(TestText::of('   '));
+        $this->assertEquals(TestText::of(self::REASON), $denied->reason()->text);
     }
 
     public function test_a_rewrite_has_no_refusal_reason(): void

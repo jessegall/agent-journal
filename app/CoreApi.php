@@ -235,6 +235,7 @@ use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\ActorVisibilityProvider;
 use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\ChoiceLabel;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -1575,6 +1576,7 @@ final class CoreApi
                 TypeReflections::class,
                 ReflectedType::class,
                 StartAccounts::class,
+                AgentTexts::class,
                 CallerReceipts::class,
                 DockSourceDeleted::class,
                 DockedSources::class,

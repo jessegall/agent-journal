@@ -15,7 +15,7 @@ final class ExecutionPlanRefused extends RuntimeException
 {
     private function __construct(public readonly AgentText $reason)
     {
-        parent::__construct($reason->text);
+        parent::__construct($reason->key);
     }
 
     public static function incomplete(): self

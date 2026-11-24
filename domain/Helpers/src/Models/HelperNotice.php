@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
-use App\Values\AgentText;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -52,13 +51,13 @@ final class HelperNotice extends Model implements ReadableModel
         return ['job_state' => JobState::class, 'delivered_at' => 'immutable_datetime'];
     }
 
-    public static function create(HelperJob $job, AgentText $text): self
+    public static function create(HelperJob $job, string $text): self
     {
         $notice = new self();
         $notice->helper_identity_id = $job->helper_identity_id;
         $notice->helper_job_id = $job->id;
         $notice->job_state = $job->state;
-        $notice->text = $text->text;
+        $notice->text = $text;
         $notice->belongTo($job->actor());
         $notice->save();
 

@@ -23,6 +23,7 @@ use Tests\Support\CommittedHookStack;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -57,7 +58,7 @@ final class McpInstructionsTest extends TestCase
 
     public function test_a_reviewer_hears_only_its_own_journeys(): void
     {
-        $instructions = new McpInstructions(new FixedCurrentAuthorizer())->forCaller()->text;
+        $instructions = TestText::words(new McpInstructions(new FixedCurrentAuthorizer())->forCaller());
 
         $this->assertStringContainsString(self::SEQUENCE_JOURNEY, $instructions);
         $this->assertStringNotContainsString(self::ACCOUNT_WORK, $instructions);
@@ -66,7 +67,7 @@ final class McpInstructionsTest extends TestCase
     public function test_the_instructions_stay_short_and_name_no_token_or_path(): void
     {
         foreach ([[], [AccessType::Delegate]] as $granted) {
-            $instructions = new McpInstructions(new FixedCurrentAuthorizer($granted))->forCaller()->text;
+            $instructions = TestText::words(new McpInstructions(new FixedCurrentAuthorizer($granted))->forCaller());
 
             $this->assertLessThan(1500, mb_strlen($instructions));
             $this->assertStringNotContainsString(

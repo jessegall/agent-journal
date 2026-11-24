@@ -33,6 +33,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -108,9 +109,9 @@ final class StopPreparationTest extends TestCase
         $stillHeld = $this->stopAgain();
 
         $this->assertSame([StopPreparationState::Held, true], [$held->state, $held->tellsOwner]);
-        $reason = AgentText::of('core.stop.unchanged_returns', ['evidence' => self::GUIDANCE])->text;
+        $reason = TestText::words(AgentText::of('core.stop.unchanged_returns', ['evidence' => self::GUIDANCE]));
         $this->assertSame(AgentText::of('core.stop.script_held', ['reason' => $reason])->key, $held->message->key);
-        $this->assertStringContainsString($reason, $held->message->text);
+        $this->assertStringContainsString($reason, TestText::words($held->message));
         $this->assertSame([StopPreparationState::Held, false], [$stillHeld->state, $stillHeld->tellsOwner]);
     }
 
@@ -138,8 +139,8 @@ final class StopPreparationTest extends TestCase
         $stillHeld = $this->stopAgain();
 
         $this->assertSame([StopPreparationState::Held, true], [$held->state, $held->tellsOwner]);
-        $reason = AgentText::of('core.stop.definitions_changed')->text;
-        $this->assertSame(AgentText::of('core.stop.script_held', ['reason' => $reason])->text, $held->message->text);
+        $reason = TestText::words(AgentText::of('core.stop.definitions_changed'));
+        $this->assertSame(TestText::words(AgentText::of('core.stop.script_held', ['reason' => $reason])), TestText::words($held->message));
         $this->assertFalse($stillHeld->tellsOwner);
         $this->assertSame(0, WorkspaceRead::query()->count());
     }

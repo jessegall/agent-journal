@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Enums\AnswerType;
@@ -65,9 +66,9 @@ final readonly class HookAnswer
      *
      * @return list<string>
      */
-    public function shownContext(): array
+    public function shownContext(AgentTexts $texts): array
     {
-        $reason = $this->isDenied() ? [$this->decision->refusalReason()] : [];
+        $reason = $this->isDenied() ? [$texts->render($this->decision->refusalReason())] : [];
 
         return array_values(array_diff(array_unique($this->context), $reason));
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Exceptions\ClassificationUnavailable;
 use App\Exceptions\CommandRuleConflict;
 use App\Models\CommandRules\ModuleRuleBundle;
@@ -19,7 +20,11 @@ use App\Values\RuleReference;
  */
 final readonly class ActiveRules
 {
-    public function __construct(private CommandRuleRegistry $startup, private ProjectRules $project) {}
+    public function __construct(
+        private CommandRuleRegistry $startup,
+        private ProjectRules $project,
+        private AgentTexts $texts,
+    ) {}
 
     /**
      * @throws ClassificationUnavailable
@@ -39,7 +44,7 @@ final readonly class ActiveRules
         try {
             return $this->startup->withApprovedBundles(...$approved)->withRules(...$this->projectRules());
         } catch (CommandRuleConflict $conflict) {
-            throw ClassificationUnavailable::conflicting($conflict);
+            throw ClassificationUnavailable::conflicting($conflict, $this->texts);
         }
     }
 

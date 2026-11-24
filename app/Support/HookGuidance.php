@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\ActorGuidance;
+use App\Contracts\Actors\AgentTexts;
 use App\Models\Agents\PendingAgentMessage;
 use App\Values\AgentText;
 
@@ -14,12 +15,12 @@ use App\Values\AgentText;
  */
 final readonly class HookGuidance implements ActorGuidance
 {
-    public function __construct(private ActorAttention $attention) {}
+    public function __construct(private ActorAttention $attention, private AgentTexts $texts) {}
 
     public function retain(ActorIdentity $actor, AgentText $guidance, string $key): void
     {
         $origin = AttentionOrigin::guidance($key);
-        PendingAgentMessage::create($actor, $origin, [$guidance->text], requestsAttention: true);
+        PendingAgentMessage::create($actor, $origin, [$this->texts->render($guidance)], requestsAttention: true);
         $this->attention->request($actor, $origin);
     }
 }

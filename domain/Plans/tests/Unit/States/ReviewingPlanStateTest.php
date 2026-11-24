@@ -19,6 +19,7 @@ use Domain\Plans\Events\PlanReviewWithdrawn;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\States\ReviewingPlanState;
 use Tests\Support\TestIds;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -34,7 +35,7 @@ final class ReviewingPlanStateTest extends TestCase
         $decision = $state->onStop($this->stop());
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertSame($state->instruction()->get()->text, $decision->refusalReason());
+        $this->assertSame(TestText::words($state->instruction()->get()), TestText::words($decision->refusalReason()));
         $this->assertFalse($state->isFinished());
     }
 

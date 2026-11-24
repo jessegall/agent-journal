@@ -9,7 +9,6 @@ use App\Enums\CallFailure;
 use App\Enums\Place;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverReply;
-use App\Support\Drivers\OutageReply;
 use App\Support\Relay\HookRelay;
 use App\Support\Relay\PreparationState;
 use App\Support\Relay\RelaySettings;
@@ -18,6 +17,7 @@ use Illuminate\Support\Facades\Http;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Hooks\JournalUnreachable;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -65,7 +65,7 @@ final class HookPreparationTest extends TestCase
     {
         Http::fake(fn () => throw JournalUnreachable::now());
 
-        $this->assertEquals(OutageReply::preparationPending('PreToolUse'), $this->relay(self::SHELL));
+        $this->assertEquals(TestText::outages()->preparationPending('PreToolUse'), $this->relay(self::SHELL));
         $this->assertFileDoesNotExist($this->bypassLog);
     }
 
@@ -79,7 +79,7 @@ final class HookPreparationTest extends TestCase
 
         $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $main->stdout);
         $this->assertFileExists($this->bypassLog);
-        $this->assertEquals(OutageReply::for(CallFailure::Unreachable, false, 'PreToolUse'), $helper);
+        $this->assertEquals(TestText::outages()->for(CallFailure::Unreachable, false, 'PreToolUse'), $helper);
     }
 
     public function test_a_session_start_the_journal_answers_prepares_its_generation(): void

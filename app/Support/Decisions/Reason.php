@@ -4,17 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support\Decisions;
 
-use App\Exceptions\EmptyReason;
+use App\Values\AgentText;
 
 /**
- * The words an agent reads when a state denies a hook or holds its stop; never empty.
+ * The text an agent reads when a state denies a hook or holds its stop.
  */
 final readonly class Reason
 {
-    public function __construct(public string $text)
-    {
-        if (trim($text) === '') {
-            throw EmptyReason::forDecision();
-        }
-    }
+    public function __construct(public AgentText $text) {}
 }

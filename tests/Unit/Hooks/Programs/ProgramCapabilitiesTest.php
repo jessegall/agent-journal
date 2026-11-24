@@ -17,6 +17,7 @@ use App\Support\Stack\HookAnswer;
 use App\Support\States\AgentState;
 use App\Values\StackTarget;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class ProgramCapabilitiesTest extends TestCase
@@ -67,8 +68,8 @@ final class ProgramCapabilitiesTest extends TestCase
         );
         $original = new DriverToolInput(['command' => 'composer test']);
 
-        $taken = DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval);
-        $refused = DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval);
+        $taken = DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval, TestText::renderer());
+        $refused = DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval, TestText::renderer());
 
         $this->assertStringContainsString(
             trim((string) json_encode(['updatedInput' => ['command' => 'journal run tests']]), '{}'),

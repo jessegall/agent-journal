@@ -11,7 +11,6 @@ use App\Models\Drivers\HookCall;
 use App\Models\Starts\StartBypass;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverReply;
-use App\Support\Drivers\OutageReply;
 use App\Support\ProtectedAccounts;
 use App\Support\Relay\CallbackEnvelope;
 use App\Support\Relay\HookRelay;
@@ -32,6 +31,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Hooks\JournalUnreachable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class HookRelayTest extends TestCase
@@ -122,7 +122,7 @@ final class HookRelayTest extends TestCase
 
         $reply = $this->relay(self::ACCOUNT_READ);
 
-        $this->assertEquals(OutageReply::protectedRefusal('PreToolUse'), $reply);
+        $this->assertEquals(TestText::outages()->protectedRefusal('PreToolUse'), $reply);
         $this->assertFileDoesNotExist($this->bypassLog);
     }
 
@@ -132,7 +132,7 @@ final class HookRelayTest extends TestCase
 
         $reply = $this->relay('{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Read","tool_input":"unreadable"}');
 
-        $this->assertEquals(OutageReply::protectedRefusal('PreToolUse'), $reply);
+        $this->assertEquals(TestText::outages()->protectedRefusal('PreToolUse'), $reply);
         $this->assertFileDoesNotExist($this->bypassLog);
     }
 
@@ -175,7 +175,7 @@ final class HookRelayTest extends TestCase
 
         $reply = $this->relay(self::SHELL, passesOutages: false);
 
-        $this->assertStringContainsString(AgentText::of('core.drivers.outage')->text, $reply->stdout);
+        $this->assertStringContainsString(TestText::words(AgentText::of('core.drivers.outage')), $reply->stdout);
         $this->assertFileDoesNotExist($this->bypassLog);
     }
 
@@ -244,7 +244,7 @@ final class HookRelayTest extends TestCase
         $reply = $this->relay(self::STOP);
 
         $this->assertSame(1, $sent);
-        $this->assertEquals(OutageReply::for(CallFailure::Unreachable, true, 'Stop'), $reply);
+        $this->assertEquals(TestText::outages()->for(CallFailure::Unreachable, true, 'Stop'), $reply);
         $this->assertCount(1, glob($this->bypassLog.'.pending/*.json') ?: []);
     }
 

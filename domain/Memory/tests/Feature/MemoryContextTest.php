@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Feature;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\ActorType;
 use App\Enums\ContextStartType;
 use App\Enums\HookEvent;
@@ -105,7 +106,11 @@ final class MemoryContextTest extends TestCase
             $input,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionStart, $answer),
+            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::observation(
+                HookEvent::SessionStart,
+                $answer,
+                $texts,
+            ),
         )->stdout;
     }
 }

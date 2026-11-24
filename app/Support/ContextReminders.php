@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Work\ReminderContribution;
 use App\Values\AgentText;
 
@@ -24,17 +25,17 @@ final class ContextReminders implements ReminderContribution
      */
     private array $others = [];
 
-    public function __construct(private readonly ContextBudget $budget) {}
+    public function __construct(private readonly ContextBudget $budget, private readonly AgentTexts $texts) {}
 
     public function add(AgentText $reminder, bool $required): void
     {
         if ($required) {
-            $this->required[] = $reminder->text;
+            $this->required[] = $this->texts->render($reminder);
 
             return;
         }
 
-        $this->others[] = $reminder->text;
+        $this->others[] = $this->texts->render($reminder);
     }
 
     /**
@@ -59,7 +60,7 @@ final class ContextReminders implements ReminderContribution
 
         return $omitted === 0 ? $given : [
             ...$given,
-            AgentText::of('core.reminders.more', ['count' => $omitted])->text,
+            $this->texts->render(AgentText::of('core.reminders.more', ['count' => $omitted])),
         ];
     }
 }

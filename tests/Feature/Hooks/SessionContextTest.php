@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\ContextStartType;
 use App\Enums\HookEvent;
 use App\Enums\RewriteSupport;
@@ -116,7 +117,11 @@ final class SessionContextTest extends TestCase
             $start,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionStart, $answer),
+            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::observation(
+                HookEvent::SessionStart,
+                $answer,
+                $texts,
+            ),
         );
 
         return $reply->stdout;

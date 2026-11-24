@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Scripts\ScriptExecution;
 use App\Values\AccessPolicy;
 use App\Values\BooleanOperand;
@@ -30,6 +31,7 @@ final readonly class ProfileRunExecution implements ScriptExecution
         private ScriptContext $context,
         private AccessPolicy $access,
         private string $step,
+        private AgentTexts $texts,
     ) {}
 
     /**
@@ -45,7 +47,7 @@ final readonly class ProfileRunExecution implements ScriptExecution
         $decision = $this->access->decide($operation);
 
         if (! $decision->allowed) {
-            return StepOutcome::failed("RUN {$command->key} is refused: {$decision->reason->text}");
+            return StepOutcome::failed("RUN {$command->key} is refused: {$this->texts->render($decision->reason)}");
         }
 
         return StepOutcome::pending($this->step);

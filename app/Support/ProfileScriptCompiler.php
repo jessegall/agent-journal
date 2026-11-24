@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Scripts\ScriptChecks;
 use App\Contracts\Scripts\ScriptCompilation;
@@ -29,6 +30,7 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         private KeywordRegistry $keywords,
         private ObjectRegistry $objects,
         private ReadEntitlements $reads,
+        private AgentTexts $texts,
     ) {}
 
     public function compile(ScriptSource $source): CompiledScript
@@ -106,7 +108,7 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         $operation = new Operation('script', $name, $accesses, [ResourceRequest::path('.')], [], 1);
         $decision = $profile->start->decide($operation);
 
-        return $decision->allowed ? null : $decision->reason->text;
+        return $decision->allowed ? null : $this->texts->render($decision->reason);
     }
 
     private function readRefusal(ProfileDefinition $profile, string $read): string|null

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Scripts\ProfileScripts;
 use App\Contracts\Scripts\ScriptChecks;
@@ -50,6 +51,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         private ScriptChecks $checks,
         private KeywordRegistry $keywords,
         private ObjectReader $reader,
+        private AgentTexts $texts,
     ) {}
 
     public function prepare(StopPreparationRequest $request): StopPreparation
@@ -183,6 +185,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
             $this->context($run, $request, $instructionId),
             $request->access,
             "{$run->id}:{$instructionId}",
+            $this->texts,
         );
 
         return $this->keywords->statementFor($instruction->keyword)->execute($instruction, new RunContext($execution));
@@ -204,7 +207,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
     private function hold(ProfileRun $run, AgentText $reason, int $unchangedReturns): StopPreparation
     {
         $wasHeld = $run->followsHeldRun();
-        $run->finish(ProfileRunState::Held, $reason->text, $unchangedReturns);
+        $run->finish(ProfileRunState::Held, $this->texts->render($reason), $unchangedReturns);
 
         return $this->answer($run, tellsOwner: ! $wasHeld);
     }

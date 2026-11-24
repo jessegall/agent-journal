@@ -24,6 +24,7 @@ use Tests\Support\AsksTheStopGate;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
+use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -52,7 +53,7 @@ final class StopConditionRunnerTest extends TestCase
 
         $attempt = StopAttempt::query()->withoutGlobalScopes()->sole();
         $this->assertSame(AnswerType::Allow, $this->typeOf($decision));
-        $this->assertSame([AgentText::of('core.stop.checks_running')->text], $this->messagesOf($decision));
+        $this->assertSame([TestText::words(AgentText::of('core.stop.checks_running'))], $this->messagesOf($decision));
         $this->assertSame(AnswerType::Allow, $this->typeOf($again));
         $this->assertSame(
             StopConditions::make([StopCondition::cleanWorktree()])->definitionHashes(),
@@ -92,7 +93,7 @@ final class StopConditionRunnerTest extends TestCase
         $allowed = $this->stop($start, 'stop-2');
 
         $this->assertSame(AnswerType::Deny, $this->typeOf($refused));
-        $this->assertStringContainsString(self::DIRTY_WORKTREE, $refused->decision?->refusalReason());
+        $this->assertStringContainsString(self::DIRTY_WORKTREE, TestText::words($refused->decision->refusalReason()));
         $this->assertSame(AnswerType::Allow, $this->typeOf($allowed));
         $this->assertSame([], $this->messagesOf($allowed));
     }

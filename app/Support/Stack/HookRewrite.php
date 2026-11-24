@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Exceptions\RepeatedCommandRewrite;
 use App\Support\Inputs\ShellCommandRequested;
@@ -14,11 +15,11 @@ use App\Support\Inputs\ShellCommandRequested;
  */
 final readonly class HookRewrite
 {
-    public function __construct(private ShellCommandParser $parser) {}
+    public function __construct(private ShellCommandParser $parser, private AgentTexts $texts) {}
 
     public function answer(AgentStack $stack, ShellCommandRequested $input): HookAnswer
     {
-        $first = $stack->answer($input);
+        $first = $stack->answer($input, $this->texts);
 
         if (! $first->isRewrite()) {
             return $first;
@@ -26,7 +27,7 @@ final readonly class HookRewrite
 
         $line = $first->decision->replacementLine();
         $replacement = $input->replacedBy($this->parser->parse($line, $input->command->dialect));
-        $second = $first->stack->answer($replacement);
+        $second = $first->stack->answer($replacement, $this->texts);
 
         if ($second->isRewrite()) {
             throw RepeatedCommandRewrite::for($line, $second->decision->replacementLine());

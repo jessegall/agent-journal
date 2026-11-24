@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Answer;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\Pipe;
 use App\Support\Admission\HookShellAdmission;
 use App\Support\CallStages\RestoredCall;
@@ -18,7 +19,11 @@ use App\Support\Stack\HookRewrite;
  */
 final readonly class WalkStack implements Pipe
 {
-    public function __construct(private HookRewrite $rewrite, private HookShellAdmission $admission) {}
+    public function __construct(
+        private HookRewrite $rewrite,
+        private HookShellAdmission $admission,
+        private AgentTexts $texts,
+    ) {}
 
     public function handle(RestoredCall $restored): WalkedCall
     {
@@ -32,7 +37,7 @@ final readonly class WalkStack implements Pipe
         $stack = $restored->stackBefore;
 
         if (! $input instanceof ShellCommandRequested) {
-            return $capabilities->finalAnswer($stack->answer($input), $stack);
+            return $capabilities->finalAnswer($stack->answer($input, $this->texts), $stack);
         }
 
         $rewritten = $this->rewrite->answer($stack, $input);

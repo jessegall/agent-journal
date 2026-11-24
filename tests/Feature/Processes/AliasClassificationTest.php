@@ -15,6 +15,7 @@ use App\Values\Classification;
 use App\Values\ExecutionContext;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -57,7 +58,7 @@ final class AliasClassificationTest extends TestCase
         $this->assertFalse($classification->isKnown());
         $this->assertStringContainsString(
             implode(', ', [$first->id, $second->id, $first->id]),
-            $classification->unresolved()[0]->reason->text,
+            TestText::words($classification->unresolved()[0]->reason),
         );
     }
 

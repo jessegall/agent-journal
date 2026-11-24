@@ -50,6 +50,7 @@ final readonly class HookRelay
         private Files $files,
         private OutputGrantSeal $grantSeal,
         private Repository $config,
+        private OutageReply $outages,
     ) {}
 
     public function relay(string $driver, string $json, RelaySettings $settings): DriverReply
@@ -62,7 +63,7 @@ final readonly class HookRelay
         $event = HookEvent::tryFrom(DriverEventName::of($json));
 
         if ($event?->isToolCall() === true && ! $preparation->isPrepared()) {
-            return OutageReply::preparationPending($event->value);
+            return $this->outages->preparationPending($event->value);
         }
 
         if ($event === HookEvent::SessionStart) {
@@ -134,7 +135,7 @@ final readonly class HookRelay
         $event = DriverEventName::of($json);
 
         if ($failure->isOutage() && $settings->passesOutages && $this->touchesAccounts($json, $settings)) {
-            return OutageReply::protectedRefusal($event);
+            return $this->outages->protectedRefusal($event);
         }
 
         if ($failure->isOutage() && $settings->passesOutages) {
@@ -145,7 +146,7 @@ final readonly class HookRelay
             ]));
         }
 
-        return OutageReply::for($failure, $settings->passesOutages, $event);
+        return $this->outages->for($failure, $settings->passesOutages, $event);
     }
 
     /**

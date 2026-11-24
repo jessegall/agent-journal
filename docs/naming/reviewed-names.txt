@@ -1892,6 +1892,7 @@ class	AgentStatusData
 class	AgentStatusRules
 class	AgentTerminalControlPolicy
 class	AgentText
+class	AgentTextRenderer
 class	AgentTextUnknown
 class	AgentTextValuesMismatch
 class	AgentVisibility
@@ -3269,7 +3270,6 @@ class	EligibleAccountFactory
 class	EligibleAccounts
 class	EligibleAccountsData
 class	EmittedHit
-class	EmptyReason
 class	EmptyRunPolicy
 class	EmptySettingsDefinition
 class	EnableAutoAssignmentCall
@@ -7443,7 +7443,7 @@ constant	AgentReferences::AGENT_TYPES
 constant	AgentRuntime::FRESH_SECONDS
 constant	AgentSessions::START_RESERVATION_LOCKS
 constant	AgentStack::DEPTH_LIMIT
-constant	AgentText::PLACEHOLDER
+constant	AgentTextRenderer::PLACEHOLDER
 constant	AgentWorkStack::RUNNING_SESSIONS_READ
 constant	AgentsServiceProvider::OWNER
 constant	AllOf::TYPE
@@ -8991,6 +8991,7 @@ interface	AgentResolver
 interface	AgentStack
 interface	AgentStackCommand
 interface	AgentStartCommand
+interface	AgentTexts
 interface	AliasResolver
 interface	Answer
 interface	AnswerPart
@@ -10012,6 +10013,7 @@ method	AdmitJournalAssignment::admit()
 method	AdmitLine::__construct()
 method	AdmitLine::handle()
 method	AdmitLineCall::__construct()
+method	AdmitLineController::__construct()
 method	AdmitLineController::__invoke()
 method	AdmitPublicAssignments::__construct()
 method	AdmitPublicAssignments::admitMaintenance()
@@ -10405,9 +10407,12 @@ method	AgentStatusRules::withoutSession()
 method	AgentTerminalControlPolicy::model()
 method	AgentText::__construct()
 method	AgentText::of()
-method	AgentText::translationKeyOf()
+method	AgentTextRenderer::__construct()
+method	AgentTextRenderer::registered()
+method	AgentTextRenderer::render()
 method	AgentTextUnknown::forKey()
 method	AgentTextValuesMismatch::forKey()
+method	AgentTexts::render()
 method	AgentVisibility::canReadAcrossOwners()
 method	AgentVisibility::ownRead()
 method	AgentVisibility::ownRows()
@@ -12278,6 +12283,7 @@ method	ClaudeCodeAdapter::modelArguments()
 method	ClaudeCodeAdapter::namesTranscriptOf()
 method	ClaudeCodeAdapter::nativeChildTools()
 method	ClaudeCodeAdapter::nativeEvents()
+method	ClaudeCodeAdapter::protectedRefusal()
 method	ClaudeCodeAdapter::refusesCommand()
 method	ClaudeCodeAdapter::renderShell()
 method	ClaudeCodeAdapter::renderStop()
@@ -12492,6 +12498,7 @@ method	CodexAdapter::modelArguments()
 method	CodexAdapter::namesTranscriptOf()
 method	CodexAdapter::nativeChildTools()
 method	CodexAdapter::nativeEvents()
+method	CodexAdapter::protectedRefusal()
 method	CodexAdapter::renderShell()
 method	CodexAdapter::renderStop()
 method	CodexAdapter::toolCall()
@@ -13033,6 +13040,7 @@ method	CompleteSignInCommand::__construct()
 method	CompleteSignInHandler::__construct()
 method	CompleteSignInHandler::handle()
 method	CompleteSubstitutions::handle()
+method	ComposeForeground::__construct()
 method	ComposeForeground::handle()
 method	ComposedCard::__construct()
 method	ComposerAutoloadMissing::for()
@@ -14929,7 +14937,6 @@ method	EmittedHit::identity()
 method	EmittedHit::of()
 method	EmittedHit::toArray()
 method	EmittedHit::withoutSnippet()
-method	EmptyReason::forDecision()
 method	EmptyRunPolicy::__construct()
 method	EmptyRunPolicy::allowedSuccess()
 method	EmptyRunPolicy::invalid()
@@ -16083,6 +16090,7 @@ method	HoldCopy::of()
 method	HoldFailingJob::__construct()
 method	HoldFailingJob::handle()
 method	HoldHelperJobCommand::__construct()
+method	HoldHelperJobHandler::__construct()
 method	HoldHelperJobHandler::handle()
 method	HoldReason::needsAUser()
 method	HoldReason::needsAttentionInDriver()
@@ -18646,6 +18654,7 @@ method	OrderedAssigneeLocks::lockExclusive()
 method	OrderedAssigneeLocks::lockShared()
 method	OrderedAssigneeLocks::ordered()
 method	OrderedRecordIds::__construct()
+method	OutageReply::__construct()
 method	OutageReply::for()
 method	OutageReply::neutral()
 method	OutageReply::preparationPending()
@@ -21988,6 +21997,7 @@ method	RenameAccountRequest::attributes()
 method	RenameAccountRequest::label()
 method	RenameAccountRequest::rules()
 method	RenameAccountRequest::seenRevision()
+method	RenderReply::__construct()
 method	RenderReply::handle()
 method	RenderedCall::__construct()
 method	RenderedSkill::__construct()
@@ -27610,7 +27620,6 @@ method	TreeClassifier::unknown()
 method	TreeClassifier::withCandidate()
 method	TreeClassifier::wrapperPart()
 method	TreeDiagnostic::__construct()
-method	TreeDiagnostic::text()
 method	TreeDraft::__construct()
 method	TreeDraft::add()
 method	TreeDraft::adopt()
@@ -30093,6 +30102,7 @@ parameter	$otherId
 parameter	$otherOwner
 parameter	$others
 parameter	$out
+parameter	$outages
 parameter	$outcome
 parameter	$outcomeUserId
 parameter	$outcomes
@@ -31268,6 +31278,7 @@ parameter	$transformed
 parameter	$transformedCollection
 parameter	$transition
 parameter	$transitions
+parameter	$translator
 parameter	$transport
 parameter	$transportProfile
 parameter	$tree
@@ -31725,6 +31736,7 @@ property	ActiveEventUnits::$staging
 property	ActiveEventUnits::$units
 property	ActiveRules::$project
 property	ActiveRules::$startup
+property	ActiveRules::$texts
 property	ActiveRulesOverview::$rules
 property	ActiveStackPermission::$restorer
 property	ActiveTaskAssignments::$assignments
@@ -31831,6 +31843,7 @@ property	AdmitLineCall::$dialect
 property	AdmitLineCall::$line
 property	AdmitLineCall::$requestKey
 property	AdmitLineCall::$workingFolder
+property	AdmitLineController::$texts
 property	AdmitPublicAssignments::$actors
 property	AdmitPublicAssignments::$authorizer
 property	AdmitPublicAssignments::$destinations
@@ -32090,7 +32103,8 @@ property	AgentStatusData::$reason
 property	AgentStatusData::$remedy
 property	AgentStatusData::$sessionState
 property	AgentText::$key
-property	AgentText::$text
+property	AgentText::$values
+property	AgentTextRenderer::$translator
 property	AgentWakes::$requests
 property	AgentWorkStack::$session
 property	AliasLookup::$arguments
@@ -33273,6 +33287,7 @@ property	ClaudeCodeAdapter::$files
 property	ClaudeCodeAdapter::$journalTools
 property	ClaudeCodeAdapter::$parser
 property	ClaudeCodeAdapter::$protection
+property	ClaudeCodeAdapter::$texts
 property	ClaudeDriver::$config
 property	ClaudeDriver::$egress
 property	ClaudeFirstRun::$files
@@ -33375,6 +33390,7 @@ property	CodexAdapter::$files
 property	CodexAdapter::$journalTools
 property	CodexAdapter::$parser
 property	CodexAdapter::$protection
+property	CodexAdapter::$texts
 property	CodexDriver::$config
 property	CodexDriver::$egress
 property	CodexDriver::$files
@@ -33579,6 +33595,7 @@ property	CompleteSignInCommand::$attemptId
 property	CompleteSignInCommand::$generation
 property	CompleteSignInCommand::$identity
 property	CompleteSignInHandler::$completion
+property	ComposeForeground::$texts
 property	ComposedCard::$card
 property	ComposedCard::$source
 property	CompoundParts::$node
@@ -33688,6 +33705,7 @@ property	ContextBody::$hookSpecificOutput
 property	ContextBudget::$characters
 property	ContextCollection::$budget
 property	ContextCollection::$events
+property	ContextCollection::$texts
 property	ContextCompacted::$compaction
 property	ContextCompacted::$hook
 property	ContextLine::$text
@@ -33696,6 +33714,7 @@ property	ContextOutput::$hookEventName
 property	ContextReminders::$budget
 property	ContextReminders::$others
 property	ContextReminders::$required
+property	ContextReminders::$texts
 property	ContextStarted::$hookId
 property	ContextStarted::$reminders
 property	ContextStarted::$target
@@ -33866,6 +33885,7 @@ property	CurrentAskAdmission::$actors
 property	CurrentAskAdmission::$admissions
 property	CurrentAskAdmission::$asks
 property	CurrentAskAdmission::$assignments
+property	CurrentAskAdmission::$texts
 property	CurrentAskAdmission::$types
 property	CurrentRuntimeAttention::$runtimes
 property	CurrentRuntimeAttention::$wakes
@@ -34895,6 +34915,7 @@ property	EvidenceRuns::$permissions
 property	EvidenceRuns::$planner
 property	EvidenceRuns::$projects
 property	EvidenceRuns::$syntax
+property	EvidenceRuns::$texts
 property	EvidenceRuns::$timing
 property	EvidenceValidator::$manifests
 property	ExcerptField::$name
@@ -34990,6 +35011,7 @@ property	ExplanationData::$requiredClasses
 property	Explanations::$classifier
 property	Explanations::$rules
 property	Explanations::$syntax
+property	Explanations::$texts
 property	ExportBuilder::$commands
 property	ExportBuilder::$contracts
 property	ExportBuilder::$events
@@ -35236,6 +35258,7 @@ property	GuardCommandOrigin::$checks
 property	GuardShareRequest::$responses
 property	GuardTickOrigin::$origins
 property	GuardedFiles::$policy
+property	GuardedFiles::$texts
 property	HandOffCodeReviewCommand::$certificate
 property	HandOffCodeReviewHandler::$access
 property	HandOffCodeReviewHandler::$import
@@ -35377,6 +35400,7 @@ property	HelperWork::$purposeText
 property	HelperWork::$sourceSubjects
 property	HelperWork::$subject
 property	HelperWorkRepair::$guidance
+property	HelperWorkRepair::$texts
 property	HereDocument::$body
 property	HereDocument::$delimiter
 property	HereDocument::$isQuoted
@@ -35410,6 +35434,7 @@ property	HoldCopy::$reason
 property	HoldFailingJob::$journal
 property	HoldHelperJobCommand::$jobId
 property	HoldHelperJobCommand::$reference
+property	HoldHelperJobHandler::$texts
 property	HomeData::$barSections
 property	HomeData::$layouts
 property	HomeData::$windows
@@ -35439,9 +35464,11 @@ property	HookCommandAnswered::$command
 property	HookCommandAnswered::$target
 property	HookController::$adapters
 property	HookController::$deadline
+property	HookController::$texts
 property	HookController::$turns
 property	HookFailure::$message
 property	HookGuidance::$attention
+property	HookGuidance::$texts
 property	HookIdentity::$agentId
 property	HookIdentity::$hookId
 property	HookIdentity::$inputDigest
@@ -35466,11 +35493,13 @@ property	HookRelay::$client
 property	HookRelay::$config
 property	HookRelay::$files
 property	HookRelay::$grantSeal
+property	HookRelay::$outages
 property	HookResponse::$exitCode
 property	HookResponse::$stderr
 property	HookResponse::$stdout
 property	HookRetryWindow::$seconds
 property	HookRewrite::$parser
+property	HookRewrite::$texts
 property	HookShellAdmission::$access
 property	HookShellAdmission::$admission
 property	HookShellAdmission::$policies
@@ -35938,7 +35967,7 @@ property	LineAdmission::$runner
 property	LineAdmission::$syntax
 property	LineAdmission::$timing
 property	LineAdmitted::$runId
-property	LineRefused::$refusal
+property	LineRefused::$details
 property	LinesField::$name
 property	Link::$guarded
 property	LinkAccess::$model
@@ -36157,6 +36186,7 @@ property	MarkAllNotificationsReadCommand::$through
 property	MarkAllNotificationsReadHandler::$receipts
 property	MarkHelperJobUnfinishedCommand::$jobId
 property	MarkHelperJobUnfinishedHandler::$starts
+property	MarkHelperJobUnfinishedHandler::$texts
 property	MarkMenuEntryStaleCommand::$build
 property	MarkMenuEntryStaleCommand::$entryId
 property	MarkMenuEntryStaleCommand::$hostId
@@ -36319,6 +36349,7 @@ property	MessageBatchService::$database
 property	MessageBatchService::$inboxes
 property	MessageBatchService::$labels
 property	MessageBatchService::$session
+property	MessageBatchService::$texts
 property	MessageBatchService::$tools
 property	MessageBody::$text
 property	MessageClaimHolder::$claimId
@@ -36858,6 +36889,7 @@ property	OptionStatementToParse::$toParse
 property	OptionalStoredValueCast::$present
 property	OrderedAssigneeLocks::$providers
 property	OrderedRecordIds::$ids
+property	OutageReply::$texts
 property	OuterTransactionOwner::$registered
 property	OutlinePageAsk::$phase
 property	OutlinePageAsk::$phasesAfter
@@ -37787,6 +37819,7 @@ property	ProfileRunExecution::$access
 property	ProfileRunExecution::$context
 property	ProfileRunExecution::$reader
 property	ProfileRunExecution::$step
+property	ProfileRunExecution::$texts
 property	ProfileRunShowCommand::$description
 property	ProfileRunShowCommand::$signature
 property	ProfileScript::$compiled
@@ -37795,6 +37828,7 @@ property	ProfileScriptCompiler::$checks
 property	ProfileScriptCompiler::$keywords
 property	ProfileScriptCompiler::$objects
 property	ProfileScriptCompiler::$reads
+property	ProfileScriptCompiler::$texts
 property	ProfileScriptPageData::$draft
 property	ProfileScriptPageData::$language
 property	ProfileScriptWindowResolver::$drafts
@@ -37932,6 +37966,7 @@ property	ProjectReadClaims::$claims
 property	ProjectReceipts::$projects
 property	ProjectRoots::$namespaces
 property	ProjectRules::$projects
+property	ProjectRules::$texts
 property	ProjectRunCallers::$projects
 property	ProjectTreeEntryData::$children
 property	ProjectTreeEntryData::$isFailed
@@ -38273,6 +38308,7 @@ property	ReadEntitlement::$access
 property	ReadEntitlement::$policy
 property	ReadEntitlement::$type
 property	ReadGrant::$admission
+property	ReadGrant::$texts
 property	ReadHereDocumentBodies::$expansions
 property	ReadIdempotencyKey::$key
 property	ReadInboxHistoryCall::$inboxId
@@ -39057,6 +39093,7 @@ property	RemoveTaskWaitHandler::$rules
 property	RenameAccountCommand::$accountId
 property	RenameAccountCommand::$label
 property	RenameAccountCommand::$seenRevision
+property	RenderReply::$texts
 property	RenderedCall::$answer
 property	RenderedCall::$call
 property	RenderedCall::$reply
@@ -39567,6 +39604,7 @@ property	RetryProcessRunCommand::$requestKey
 property	RetryProcessRunCommand::$runId
 property	RetryProcessRunHandler::$administration
 property	RetryProcessRunHandler::$admissions
+property	RetryProcessRunHandler::$texts
 property	RetryShareCommand::$requestKey
 property	RetryShareCommand::$shareId
 property	RetryShareHandler::$policy
@@ -39667,6 +39705,7 @@ property	RuleActivated::$ruleId
 property	RuleApprovals::$facts
 property	RuleApprovals::$projectRules
 property	RuleApprovals::$rules
+property	RuleApprovals::$texts
 property	RuleApproved::$digest
 property	RuleApproved::$revision
 property	RuleApproved::$ruleId
@@ -40142,6 +40181,7 @@ property	ScriptStopPreparation::$checks
 property	ScriptStopPreparation::$keywords
 property	ScriptStopPreparation::$profiles
 property	ScriptStopPreparation::$reader
+property	ScriptStopPreparation::$texts
 property	ScriptSyntaxError::$diagnostic
 property	SealedAttachments::$sessions
 property	SearchAnswer::$continuation
@@ -41194,6 +41234,7 @@ property	StackCommandAdmission::$actor
 property	StackCommandAdmission::$admissions
 property	StackCommandAdmission::$session
 property	StackCommandAdmission::$stack
+property	StackCommandAdmission::$texts
 property	StackInspection::$agentId
 property	StackInspection::$frames
 property	StackInspection::$lastCall
@@ -41945,6 +41986,7 @@ property	SupervisorCoverage::$reason
 property	SupervisorCoverage::$status
 property	SupervisorCoverage::$type
 property	SupervisorCoverageReader::$commands
+property	SupervisorCoverageReader::$texts
 property	SupervisorCoverageReader::$types
 property	SupervisorGraph::$routes
 property	SupervisorGraphLock::$database
@@ -42802,6 +42844,7 @@ property	WakeStatus::$state
 property	WakeStatuses::$members
 property	WalkStack::$admission
 property	WalkStack::$rewrite
+property	WalkStack::$texts
 property	WalkStep::$answer
 property	WalkStep::$contextCount
 property	WalkStep::$denialReason
@@ -45025,6 +45068,7 @@ variable	$valid
 variable	$validation
 variable	$validator
 variable	$value
+variable	$value	app/Support/AgentTextRenderer.php
 variable	$value	app/Support/Logging/InstallSecretRedaction.php
 variable	$value	app/Support/ObjectReader.php
 variable	$value	app/Support/SettingsValues.php
@@ -45035,7 +45079,6 @@ variable	$value	app/Support/Wire/Fields/InstantField.php
 variable	$value	app/Support/Wire/Fields/LinesField.php
 variable	$value	app/Support/Wire/Fields/NumberField.php
 variable	$value	app/Support/Wire/Fields/TextField.php
-variable	$value	app/Values/AgentText.php
 variable	$value	app/Values/SourcePosition.php
 variable	$values
 variable	$values	app/Support/StateLoading/StateValues.php

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Events\Event;
 use App\Declarations\StateMethod;
 use App\Enums\AnswerType;
@@ -30,7 +31,7 @@ final readonly class SelectedStateMethod
      * The step of a walk this selection took: the frame and method it chose, how the state answered and how many
      * lines it added.
      */
-    public function walkStep(Decision $decision, int $lineCount): WalkStep
+    public function walkStep(Decision $decision, int $lineCount, AgentTexts $texts): WalkStep
     {
         return new WalkStep(
             frameId: $this->frame->id,
@@ -38,7 +39,9 @@ final readonly class SelectedStateMethod
             hookMethod: $this->method->name,
             answer: $decision->answerType(),
             contextCount: $lineCount,
-            denialReason: $decision->answerType() === AnswerType::Deny ? $decision->refusalReason() : null,
+            denialReason: $decision->answerType() === AnswerType::Deny
+                ? $texts->render($decision->refusalReason())
+                : null,
         );
     }
 }

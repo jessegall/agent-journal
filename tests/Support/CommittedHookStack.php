@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Calls\Hooks\AgentStateMachine;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\DriverVariant;
@@ -154,7 +155,7 @@ trait CommittedHookStack
             $this->stop(),
             $this->capabilities(),
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => DriverReplies::stop($answer),
+            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
         )->stdout;
     }
 
@@ -170,7 +171,7 @@ trait CommittedHookStack
             $finished,
             $this->capabilities(),
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => DriverReplies::allowTool($answer->shownContext()),
+            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::allowTool($answer->shownContext($texts)),
         );
     }
 

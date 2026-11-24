@@ -24,6 +24,7 @@ use App\Values\ProcessGrants;
 use App\Values\ProfileBase;
 use App\Values\ResourceRequest;
 use Tests\Fixtures\Hooks\AllowedStops;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -75,7 +76,7 @@ final class OperationPolicyTest extends TestCase
         $decision = $this->ready($withoutDeletes)->onFileEdit(new FileEditRequested($this->hook(), $patch));
 
         $this->assertSame(AnswerType::Deny, $decision->answerType());
-        $this->assertStringContainsString('file:delete', $decision->refusalReason());
+        $this->assertStringContainsString('file:delete', TestText::words($decision->refusalReason()));
     }
 
     public function test_a_web_fetch_needs_a_granted_internet_destination(): void

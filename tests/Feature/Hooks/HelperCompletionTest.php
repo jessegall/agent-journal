@@ -55,6 +55,7 @@ use Tests\Support\AsksTheStopGate;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
+use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -146,7 +147,7 @@ final class HelperCompletionTest extends TestCase
         $this->settle('stop-1', StopResultType::Failed, 'NOTE is not committed');
         $refused = $this->stop($start, 'stop-1');
 
-        $this->assertSame([AgentText::of('core.stop.checks_running')->text], $this->messagesOf($running));
+        $this->assertSame([TestText::words(AgentText::of('core.stop.checks_running'))], $this->messagesOf($running));
         $this->assertSame(AnswerType::Deny, $this->typeOf($refused));
         Event::assertNotDispatched(HelperCompletionCertified::class);
     }

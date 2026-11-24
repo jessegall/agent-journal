@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandClassifier;
 use App\Data\Processes\ExplainedNodeData;
 use App\Data\Processes\ExplanationData;
@@ -38,6 +39,7 @@ final readonly class Explanations
         private TreeParser $syntax,
         private CommandClassifier $classifier,
         private ActiveRules $rules,
+        private AgentTexts $texts,
     ) {}
 
     public function explain(string $line, ShellDialect $dialect): ExplanationData
@@ -55,7 +57,7 @@ final readonly class Explanations
 
         return ExplanationData::from([
             'outcome' => $tree->outcome->value,
-            'diagnostic' => $tree->diagnostic?->text(),
+            'diagnostic' => $tree->diagnostic === null ? null : $this->texts->render($tree->diagnostic->reason),
             'diagnosticPosition' => $tree->diagnostic?->position,
             'executableParts' => count($tree->executableParts()),
             'nodes' => $nodes,
@@ -128,7 +130,10 @@ final readonly class Explanations
             $program === null ? '' : self::safe($program->original),
             array_values(array_unique(array_map(fn (ClassFact $fact): string => $fact->class->value, $facts))),
             array_map(fn (ClassFact $fact): string => $fact->class->value.' from '.$fact->origin->reference(), $facts),
-            array_map(fn (UnresolvedFact $fact) => "{$fact->type->value}: {$fact->reason->text}", $unresolved),
+            array_map(
+                fn (UnresolvedFact $fact) => "{$fact->type->value}: {$this->texts->render($fact->reason)}",
+                $unresolved,
+            ),
             $parts === [] ? '' : $parts[0]->purpose->label(),
             array_merge(...array_map(
                 fn (VerificationContract $contract): array => $contract->description(),

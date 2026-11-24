@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Adapters;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\CodexTool;
 use App\Enums\FileAccess;
@@ -68,6 +69,7 @@ final readonly class CodexAdapter implements DriverAdapter
         private JournalTools $journalTools,
         private GuardedFiles $files,
         private CheckProtectedResources $protection,
+        private AgentTexts $texts,
     ) {}
 
     public function hookProtocol(): string
@@ -148,7 +150,11 @@ final readonly class CodexAdapter implements DriverAdapter
         return match ($event) {
             HookEvent::SessionStart => new JudgedCall(
                 new SessionStarted($hook, $hookInput->startDetails()),
-                fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionStart, $answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::observation(
+                    HookEvent::SessionStart,
+                    $answer,
+                    $texts,
+                ),
             ),
             HookEvent::UserPromptSubmit => new JudgedCall(
                 new PromptSubmitted(
@@ -159,7 +165,7 @@ final readonly class CodexAdapter implements DriverAdapter
                         $hookInput->nativePromptId(),
                     ),
                 ),
-                fn (HookAnswer $answer) => DriverReplies::prompt($answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::prompt($answer, $texts),
             ),
             HookEvent::PreToolUse => $this->toolCall($hookInput, $hook),
             HookEvent::PostToolUse => $this->callsJournalTools($hookInput)
@@ -171,24 +177,28 @@ final readonly class CodexAdapter implements DriverAdapter
                     $hookInput->isAfterRefusedStop(),
                     $hookInput->closingWords(),
                 )),
-                fn (HookAnswer $answer) => DriverReplies::stop($answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
             ),
             HookEvent::SessionEnd => new JudgedCall(
                 new SessionEnded($hook, new SessionEndDetails($hookInput->endReason())),
-                fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionEnd, $answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::observation(
+                    HookEvent::SessionEnd,
+                    $answer,
+                    $texts,
+                ),
             ),
             HookEvent::StopFailure => throw UnsupportedHook::for(self::DRIVER, $hookInput->hookEventName),
         };
     }
 
-    public function renderShell(HookAnswer $answer, DriverToolInput $original): DriverReply
+    public function renderShell(HookAnswer $answer, DriverToolInput $original, AgentTexts $texts): DriverReply
     {
-        return DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval);
+        return DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval, $texts);
     }
 
-    public function renderStop(HookAnswer $answer): DriverReply
+    public function renderStop(HookAnswer $answer, AgentTexts $texts): DriverReply
     {
-        return DriverReplies::stop($answer);
+        return DriverReplies::stop($answer, $texts);
     }
 
     /**
@@ -225,7 +235,7 @@ final readonly class CodexAdapter implements DriverAdapter
             && $this->protection->refusesCommand($hook->sessionId, $hookInput->argument('command'), $folder);
 
         if ($isRefusedCommand) {
-            return new UnjudgedCall(DriverReplies::denyProtected());
+            return $this->protectedRefusal();
         }
 
         if ($tool->isShell()) {
@@ -233,7 +243,7 @@ final readonly class CodexAdapter implements DriverAdapter
 
             return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
                 new ShellCommandRequested($hook, $command),
-                fn (HookAnswer $answer) => $this->renderShell($answer, $original),
+                fn (HookAnswer $answer, AgentTexts $texts) => $this->renderShell($answer, $original, $texts),
             ));
         }
 
@@ -241,7 +251,7 @@ final readonly class CodexAdapter implements DriverAdapter
 
         foreach ($changes->paths() as $path) {
             if ($this->protection->refusesChange(ProtectedFileRead::resolve($folder, $path))) {
-                return new UnjudgedCall(DriverReplies::denyProtected());
+                return $this->protectedRefusal();
             }
         }
 
@@ -251,7 +261,18 @@ final readonly class CodexAdapter implements DriverAdapter
             $hook,
             FileAccess::Write,
             $changes->paths(),
-            fn () => new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original)),
+            fn () => new JudgedCall(
+                $edit,
+                fn (HookAnswer $answer, AgentTexts $texts) => $this->renderShell($answer, $original, $texts),
+            ),
         );
+    }
+
+    /**
+     * The refusal of a call that reaches a saved account's sign-in, settings or another session's history.
+     */
+    private function protectedRefusal(): DriverCall
+    {
+        return new UnjudgedCall(DriverReplies::denyProtected($this->texts));
     }
 }

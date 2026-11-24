@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\Drivers;
 
 use App\Enums\CallFailure;
-use App\Support\Drivers\OutageReply;
 use App\Values\AgentText;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class HookOutageTest extends TestCase
@@ -26,26 +26,26 @@ final class HookOutageTest extends TestCase
 
     public function test_during_an_outage_the_main_agent_gets_the_neutral_reply(): void
     {
-        $reply = OutageReply::for(CallFailure::Unreachable, true, 'PreToolUse');
+        $reply = TestText::outages()->for(CallFailure::Unreachable, true, 'PreToolUse');
 
         $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $reply->stdout);
-        $this->assertSame('{}', OutageReply::for(CallFailure::Unreachable, true, 'Stop')->stdout);
+        $this->assertSame('{}', TestText::outages()->for(CallFailure::Unreachable, true, 'Stop')->stdout);
     }
 
     public function test_during_an_outage_a_helper_is_refused(): void
     {
-        $tool = json_decode(OutageReply::for(CallFailure::Unreachable, false, 'PreToolUse')->stdout, true);
-        $prompt = json_decode(OutageReply::for(CallFailure::Unreachable, false, 'UserPromptSubmit')->stdout, true);
+        $tool = json_decode(TestText::outages()->for(CallFailure::Unreachable, false, 'PreToolUse')->stdout, true);
+        $prompt = json_decode(TestText::outages()->for(CallFailure::Unreachable, false, 'UserPromptSubmit')->stdout, true);
 
         $this->assertSame('deny', $tool['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(AgentText::of('core.drivers.outage')->text, $tool['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertSame(TestText::words(AgentText::of('core.drivers.outage')), $tool['hookSpecificOutput']['permissionDecisionReason']);
         $this->assertSame('block', $prompt['decision']);
     }
 
     #[DataProvider('answersThatAreNotOutages')]
     public function test_a_failure_that_is_not_an_outage_never_falls_back_to_neutral(CallFailure $failure): void
     {
-        $reply = json_decode(OutageReply::for($failure, true, 'PreToolUse')->stdout, true);
+        $reply = json_decode(TestText::outages()->for($failure, true, 'PreToolUse')->stdout, true);
 
         $this->assertFalse($failure->isOutage());
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
@@ -69,7 +69,7 @@ final class HookOutageTest extends TestCase
     public function test_a_server_answer_is_refused_even_for_a_start_that_passes_outages(): void
     {
         foreach ([403, 404, 503] as $status) {
-            $reply = json_decode(OutageReply::for(CallFailure::fromStatus($status), true, 'PreToolUse')->stdout, true);
+            $reply = json_decode(TestText::outages()->for(CallFailure::fromStatus($status), true, 'PreToolUse')->stdout, true);
 
             $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
         }
@@ -80,7 +80,7 @@ final class HookOutageTest extends TestCase
         foreach (CallFailure::cases() as $failure) {
             foreach ([true, false] as $role) {
                 foreach (['PreToolUse', 'UserPromptSubmit', 'Stop'] as $event) {
-                    $reply = OutageReply::for($failure, $role, $event);
+                    $reply = TestText::outages()->for($failure, $role, $event);
 
                     $this->assertDoesNotMatchRegularExpression('/"(allow|ask)"/', $reply->stdout);
                 }

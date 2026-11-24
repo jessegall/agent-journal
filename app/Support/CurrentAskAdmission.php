@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\AskAdmission;
 use App\Contracts\Assignments\AssignmentStorage;
@@ -20,6 +21,7 @@ final readonly class CurrentAskAdmission implements AskAdmission
         private AssignmentStorage $assignments,
         private AskTypeRegistry $types,
         private CommandAdmissions $admissions,
+        private AgentTexts $texts,
     ) {}
 
     /**
@@ -46,7 +48,7 @@ final readonly class CurrentAskAdmission implements AskAdmission
         $decision = $this->admissions->admits($command);
 
         if (! $decision->allowed) {
-            throw AskRefused::operationDenied($decision->reason->text);
+            throw AskRefused::operationDenied($this->texts->render($decision->reason));
         }
 
         return new AdmittedAsk($ask, $actor, $record->workReference, $record->version, $record->head);

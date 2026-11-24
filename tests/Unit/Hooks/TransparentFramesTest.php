@@ -33,6 +33,7 @@ use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -45,7 +46,7 @@ final class TransparentFramesTest extends TestCase
     {
         $stack = $this->stack($this->ready(), $this->plan(), $this->task(finished: true));
 
-        $answer = $stack->answer($this->input('stop'));
+        $answer = $stack->answer($this->input('stop'), TestText::renderer());
 
         $this->assertSame(['ready'], $this->visited($answer->steps));
         $this->assertSame('plan', $stack->top()->id);
@@ -56,8 +57,8 @@ final class TransparentFramesTest extends TestCase
     {
         $stack = $this->stack($this->ready(), $this->plan(), $this->task(finished: true), $this->message());
 
-        $edit = $stack->answer($this->input('file edit'));
-        $read = $stack->answer($this->readOnlyShellLine());
+        $edit = $stack->answer($this->input('file edit'), TestText::renderer());
+        $read = $stack->answer($this->readOnlyShellLine(), TestText::renderer());
 
         $this->assertSame(['message'], $this->visited($edit->steps));
         $this->assertSame(['message'], $this->visited($read->steps));
@@ -69,8 +70,8 @@ final class TransparentFramesTest extends TestCase
     {
         $stack = $this->stack($this->ready(), $this->plan(), $this->message(answered: true), $this->task());
 
-        $stop = $stack->answer($this->input('stop'));
-        $edit = $stack->answer($this->input('file edit'));
+        $stop = $stack->answer($this->input('stop'), TestText::renderer());
+        $edit = $stack->answer($this->input('file edit'), TestText::renderer());
 
         $this->assertSame(['task'], $this->visited($stop->steps));
         $this->assertSame(['ready'], $this->visited($edit->steps));
@@ -86,7 +87,7 @@ final class TransparentFramesTest extends TestCase
             $this->message(answered: true),
         );
 
-        $this->assertSame(['ready'], $this->visited($stack->answer($this->input('stop'))->steps));
+        $this->assertSame(['ready'], $this->visited($stack->answer($this->input('stop'), TestText::renderer())->steps));
         $this->assertSame('ready', $stack->top()->id);
     }
 

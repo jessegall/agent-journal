@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Chat\AskType;
 use App\Enums\SupervisorCoverageType;
 use App\Values\SupervisorCoverage;
@@ -12,7 +13,11 @@ use App\Values\SupervisorRoutes;
 
 final readonly class SupervisorCoverageReader
 {
-    public function __construct(private CommandRegistry $commands, private AskTypeRegistry $types) {}
+    public function __construct(
+        private CommandRegistry $commands,
+        private AskTypeRegistry $types,
+        private AgentTexts $texts,
+    ) {}
 
     /**
      * @param  array<string, SupervisorProfile>  $profiles
@@ -46,7 +51,7 @@ final readonly class SupervisorCoverageReader
             $type->key(),
             $decision->allowed ? SupervisorCoverageType::Supported : SupervisorCoverageType::Unsupported,
             $command,
-            $decision->reason->text,
+            $this->texts->render($decision->reason),
         );
     }
 }

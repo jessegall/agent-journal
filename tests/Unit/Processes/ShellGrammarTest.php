@@ -10,6 +10,7 @@ use App\Enums\ParseOutcome;
 use App\Values\ShellNode;
 use App\Values\ShellTree;
 use Tests\Support\Processes\ParsesBashLines;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -132,8 +133,8 @@ final class ShellGrammarTest extends TestCase
 
         $this->assertNotNull($tooMany->diagnostic);
         $this->assertNotNull($tooDeep->diagnostic);
-        $this->assertStringContainsString('1024', $tooMany->diagnostic->reason->text);
-        $this->assertStringContainsString('depth', $tooDeep->diagnostic->reason->text);
+        $this->assertStringContainsString('1024', TestText::words($tooMany->diagnostic->reason));
+        $this->assertStringContainsString('depth', TestText::words($tooDeep->diagnostic->reason));
     }
 
     /**

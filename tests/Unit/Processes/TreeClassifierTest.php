@@ -30,6 +30,7 @@ use App\Values\UnresolvedFact;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
 use Tests\Fixtures\Processes\NoAliases;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -92,7 +93,7 @@ final class TreeClassifierTest extends TestCase
 
         $this->assertFalse($classification->isKnown());
         $this->assertSame(UnresolvedType::UnknownProgram, $unknown->type);
-        $this->assertStringContainsString('acme', $unknown->reason->text);
+        $this->assertStringContainsString('acme', TestText::words($unknown->reason));
     }
 
     public function test_background_jobs_path_changes_shells_and_unreadable_lines(): void

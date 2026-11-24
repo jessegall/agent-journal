@@ -68,7 +68,7 @@ final class HookRewriteTest extends TestCase
         $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command('composer test'));
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
-        $this->assertSame(self::REFUSAL, $answer->decision->refusalReason());
+        $this->assertSame(self::REFUSAL, TestText::words($answer->decision->refusalReason()));
         $steps = ['rewriter rewrite', 'guard rewrite', 'ready delegate', 'rewriter delegate', 'guard deny'];
         $this->assertSame($steps, $this->stepsOf($answer));
         $this->assertSame([self::ORIGINAL, self::REFUSAL_CONTEXT], $answer->context);
@@ -101,9 +101,9 @@ final class HookRewriteTest extends TestCase
         $parser = $this->createMock(ShellCommandParser::class);
         $parser->expects($this->never())->method('parse');
 
-        $answer = new HookRewrite($parser)->answer($this->stack($rewriter, $guard), $this->command(self::ORIGINAL_LINE));
+        $answer = new HookRewrite($parser, TestText::renderer())->answer($this->stack($rewriter, $guard), $this->command(self::ORIGINAL_LINE));
 
-        $this->assertSame(self::ORIGINAL_LINE, $answer->decision->refusalReason());
+        $this->assertSame(self::ORIGINAL_LINE, TestText::words($answer->decision->refusalReason()));
         $this->assertSame(['rewriter rewrite', 'guard deny'], $this->stepsOf($answer));
     }
 
@@ -123,7 +123,7 @@ final class HookRewriteTest extends TestCase
 
     private function rewrite(): HookRewrite
     {
-        return new HookRewrite(new ListedCommandParser());
+        return new HookRewrite(new ListedCommandParser(), TestText::renderer());
     }
 
     private function stack(AgentState $rewriter, ShellAnswerState ...$guards): AgentStack

@@ -8,17 +8,17 @@ final readonly class StackVerdict
 {
     private function __construct(
         public bool $allowed,
-        public string $reason,
+        public AgentText|null $reason,
         public RecoveryCall|null $recovery,
     ) {}
 
     public static function allow(): self
     {
-        return new self(true, '', null);
+        return new self(true, null, null);
     }
 
     public static function refuse(AgentText $reason, RecoveryCall $recovery): self
     {
-        return new self(false, $reason->text, $recovery);
+        return new self(false, $reason, $recovery);
     }
 }

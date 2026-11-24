@@ -40,6 +40,7 @@ use Tests\Support\CommittedHookStack;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\RegistersNoteStates;
 use Tests\Support\TestStartAuthority;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class StateEventDeliveryTest extends TestCase
@@ -237,7 +238,7 @@ final class StateEventDeliveryTest extends TestCase
             function (HookAnswer $answer): DriverReply {
                 $this->dispatch(new NoteWritten());
 
-                return DriverReplies::stop($answer);
+                return DriverReplies::stop($answer, TestText::renderer());
             },
         );
 

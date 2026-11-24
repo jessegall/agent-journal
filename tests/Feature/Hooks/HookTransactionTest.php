@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\ContextStartType;
 use App\Enums\RewriteSupport;
 use App\Exceptions\StackLockTimedOut;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestActors;
+use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -52,7 +54,7 @@ final class HookTransactionTest extends TestCase
                 $this->stop(),
                 $this->capabilities(),
                 new OperationDeadline(300),
-                fn (HookAnswer $answer) => DriverReplies::stop($answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
             );
             $this->fail('The hook did not time out on the held lock.');
         } catch (StackLockTimedOut $timedOut) {
@@ -76,14 +78,14 @@ final class HookTransactionTest extends TestCase
                 $this->stop(),
                 $this->capabilities(),
                 new OperationDeadline(5000),
-                fn (HookAnswer $answer) => DriverReplies::stop($answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
             );
         } finally {
             $this->assertSame(self::WAITING_THEN_COMMITTED, stream_get_contents($process['stdout']));
             proc_close($process['handle']);
         }
 
-        $this->assertStringContainsString(AgentText::of('tasks.unfinished', ['task' => 43])->text, $reply->stdout);
+        $this->assertStringContainsString(TestText::words(AgentText::of('tasks.unfinished', ['task' => 43])), $reply->stdout);
         $this->assertSame(['pushed-by-other-process deny'], array_map(
             fn (WalkStep $step) => "{$step->frameId} {$step->answer->value}",
             HookCall::query()->sole()->steps->steps,

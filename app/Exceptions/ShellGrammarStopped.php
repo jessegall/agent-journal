@@ -21,7 +21,7 @@ final class ShellGrammarStopped extends RuntimeException
         public readonly int $position,
         public readonly ParseOutcome $outcome,
     ) {
-        parent::__construct($reason->text);
+        parent::__construct($reason->key);
     }
 
     public static function invalid(AgentText $reason, int $position): self

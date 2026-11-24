@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Concerns\RendersRefusal;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
 use RuntimeException;
-use Throwable;
 
 /**
  * An owner's approval was refused: the declaration conflicts with an active rule, or the reader and proof it names do
@@ -19,9 +19,12 @@ final class ApprovalRefused extends RuntimeException implements CodedRefusal, Co
 {
     use RendersRefusal;
 
-    public static function conflict(Throwable $cause): self
+    public static function conflict(CommandRuleConflict $cause, AgentTexts $texts): self
     {
-        return new self("The declaration conflicts with an active rule: {$cause->getMessage()}", previous: $cause);
+        return new self(
+            "The declaration conflicts with an active rule: {$texts->render($cause->reason)}",
+            previous: $cause,
+        );
     }
 
     public static function proofMissing(string $ruleId): self

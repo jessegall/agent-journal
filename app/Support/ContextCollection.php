@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\ContextStartType;
 use App\Events\ContextStarted;
 use App\Support\Inputs\Contracts\HookInput;
@@ -19,6 +20,7 @@ final readonly class ContextCollection
     public function __construct(
         private Dispatcher $events,
         private ContextBudget $budget,
+        private AgentTexts $texts,
     ) {}
 
     /**
@@ -36,7 +38,7 @@ final readonly class ContextCollection
      */
     private function remindersOn(StackTarget $target, HookInput $input, ContextStartType $type): array
     {
-        $reminders = new ContextReminders($this->budget);
+        $reminders = new ContextReminders($this->budget, $this->texts);
         $this->events->dispatch(new ContextStarted($target, $input->identity()->hookId, $type, $reminders));
 
         return $reminders->all();

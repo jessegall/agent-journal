@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\HoldingRules;
 use Tests\Support\TestActors;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class HookCompactionTest extends TestCase
@@ -75,7 +76,7 @@ final class HookCompactionTest extends TestCase
             array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))),
         );
         $this->assertContains(
-            new FollowingSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get()->text,
+            TestText::words(new FollowingSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get()),
             $context,
         );
     }

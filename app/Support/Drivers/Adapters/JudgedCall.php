@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Adapters;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\HookEvent;
 use App\Support\Drivers\Contracts\DriverCall;
 use App\Support\Drivers\DriverReplies;
@@ -22,7 +23,7 @@ use Closure;
 final readonly class JudgedCall implements DriverCall
 {
     /**
-     * @param  Closure(HookAnswer): DriverReply  $render
+     * @param  Closure(HookAnswer, AgentTexts): DriverReply  $render
      */
     public function __construct(
         public HookInput $input,
@@ -42,7 +43,11 @@ final readonly class JudgedCall implements DriverCall
 
         return new self(
             new ToolFinished($hook, $finishedTool),
-            fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::PostToolUse, $answer),
+            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::observation(
+                HookEvent::PostToolUse,
+                $answer,
+                $texts,
+            ),
         );
     }
 

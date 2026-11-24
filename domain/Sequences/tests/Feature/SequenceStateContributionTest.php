@@ -27,6 +27,7 @@ use Domain\Sequences\Support\States\FollowingSequenceState;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
+use Tests\Support\TestText;
 
 final class SequenceStateContributionTest extends TestCase
 {
@@ -115,11 +116,10 @@ final class SequenceStateContributionTest extends TestCase
     {
         $values = ['runId' => $run->id, 'runNumber' => $run->number, 'steps' => $run->steps, 'currentStep' => $step];
 
-        return $this->app->make(StateBuilder::class)
+        return TestText::words($this->app->make(StateBuilder::class)
             ->build(RegisteredStateType::of(FollowingSequenceState::class), $values)
             ->instruction()
-            ->get()
-            ->text;
+            ->get());
     }
 
     /**

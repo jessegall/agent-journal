@@ -24,6 +24,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Support\TestActors;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -99,7 +100,7 @@ final class ReadyStateTest extends TestCase
         );
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('app/Domains/Contracts/Domain.php', $decision->refusalReason());
+        $this->assertStringContainsString('app/Domains/Contracts/Domain.php', TestText::words($decision->refusalReason()));
     }
 
     /**

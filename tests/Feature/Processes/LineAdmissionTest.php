@@ -18,6 +18,7 @@ use App\Values\TimingVerdict;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -86,7 +87,7 @@ final class LineAdmissionTest extends TestCase
         $refusal = $this->refusalOf($this->admit('vendor/bin/phpstan analyse', 'key-1'));
 
         $this->assertSame(AdmissionRefusalCode::PhaseTiming, $refusal->code);
-        $this->assertStringContainsString(self::BLOCKING_TASKS, $refusal->reason->text);
+        $this->assertStringContainsString(self::BLOCKING_TASKS, TestText::words($refusal->reason));
     }
 
     public function test_a_read_only_helper_writing_a_file_is_refused_by_its_ceiling(): void
@@ -117,7 +118,7 @@ final class LineAdmissionTest extends TestCase
         $refusal = $this->refusalOf($this->admit('TOKEN=hunter2 acme verify', 'key-1'));
 
         $this->assertStringNotContainsString('hunter2', $refusal->excerpt);
-        $this->assertSame(self::NOTICE, AgentText::of('core.shell.nothing_started')->text);
+        $this->assertSame(self::NOTICE, TestText::words(AgentText::of('core.shell.nothing_started')));
     }
 
     private function admit(string $line, string $key): Admission

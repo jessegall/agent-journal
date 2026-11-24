@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Concerns\RendersRefusal;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
@@ -19,9 +20,11 @@ final class PhaseTimingRefused extends RuntimeException implements CodedRefusal,
 {
     use RendersRefusal;
 
-    public static function by(TimingVerdict $verdict): self
+    public static function by(TimingVerdict $verdict, AgentTexts $texts): self
     {
-        return new self("phase-timing: {$verdict->reason()->text} ".AgentText::of('core.shell.nothing_started')->text);
+        $notice = $texts->render(AgentText::of('core.shell.nothing_started'));
+
+        return new self("phase-timing: {$texts->render($verdict->reason())} {$notice}");
     }
 
     protected function status(): int

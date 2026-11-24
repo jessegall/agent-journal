@@ -262,17 +262,17 @@ final class AnsweringMessageState extends AgentState
         ]);
     }
 
-    private function howToAnswerText(): string
+    private function howToAnswerText(): AgentText
     {
-        return AgentText::of('core.messages.how_to_answer', ['message' => $this->oldestId()])->text;
+        return AgentText::of('core.messages.how_to_answer', ['message' => $this->oldestId()]);
     }
 
-    private function countText(): string
+    private function countText(): AgentText
     {
         $waiting = count($this->waitingIds);
 
         return $waiting === 1
-            ? AgentText::of('core.messages.one_waiting')->text
-            : AgentText::of('core.messages.several_waiting', ['count' => $waiting])->text;
+            ? AgentText::of('core.messages.one_waiting')
+            : AgentText::of('core.messages.several_waiting', ['count' => $waiting]);
     }
 }

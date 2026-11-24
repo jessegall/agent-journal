@@ -146,7 +146,7 @@ final class CodexTest extends TestCase
 
         $this->assertSame([], $settled->stack->frameIds());
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(AgentText::of('core.drivers.rewrite_refused')->text, $reply['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertSame(TestText::words(AgentText::of('core.drivers.rewrite_refused')), $reply['hookSpecificOutput']['permissionDecisionReason']);
         $this->assertArrayNotHasKey('updatedInput', $reply['hookSpecificOutput']);
     }
 
@@ -178,7 +178,7 @@ final class CodexTest extends TestCase
         $call = $this->adapter()->callFor($this->payload($name), $this->hook());
         $this->assertInstanceOf(JudgedCall::class, $call);
 
-        return ($call->render)($answer);
+        return ($call->render)($answer, TestText::renderer());
     }
 
     private function adapter(): CodexAdapter

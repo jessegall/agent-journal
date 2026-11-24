@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Adapters;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\ContextStartType;
 use App\Enums\FileAccess;
@@ -82,6 +83,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         private GuardedFiles $files,
         private RecordDriverFailure $failures,
         private CheckProtectedResources $protection,
+        private AgentTexts $texts,
     ) {}
 
     public function hookProtocol(): string
@@ -169,7 +171,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
                         $hookInput->nativePromptId(),
                     ),
                 ),
-                fn (HookAnswer $answer) => DriverReplies::prompt($answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::prompt($answer, $texts),
             ),
             HookEvent::PreToolUse => $this->toolCall($hookInput, $hook),
             HookEvent::PostToolUse => $this->callsJournalTools($hookInput)
@@ -181,7 +183,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
                     $hookInput->isAfterRefusedStop(),
                     $hookInput->closingWords(),
                 )),
-                fn (HookAnswer $answer) => DriverReplies::stop($answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
             ),
             HookEvent::StopFailure => new NotificationCall(
                 $hook,
@@ -190,19 +192,23 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
             ),
             HookEvent::SessionEnd => new JudgedCall(
                 new SessionEnded($hook, new SessionEndDetails($hookInput->endReason())),
-                fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionEnd, $answer),
+                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::observation(
+                    HookEvent::SessionEnd,
+                    $answer,
+                    $texts,
+                ),
             ),
         };
     }
 
-    public function renderShell(HookAnswer $answer, DriverToolInput $original): DriverReply
+    public function renderShell(HookAnswer $answer, DriverToolInput $original, AgentTexts $texts): DriverReply
     {
-        return DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval);
+        return DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval, $texts);
     }
 
-    public function renderStop(HookAnswer $answer): DriverReply
+    public function renderStop(HookAnswer $answer, AgentTexts $texts): DriverReply
     {
-        return DriverReplies::stop($answer);
+        return DriverReplies::stop($answer, $texts);
     }
 
     /**
@@ -218,7 +224,11 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
         return new JudgedCall(
             $input,
-            fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionStart, $answer),
+            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::observation(
+                HookEvent::SessionStart,
+                $answer,
+                $texts,
+            ),
         );
     }
 
@@ -251,7 +261,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
         if ($tool->isFileReader()) {
             if ($this->protection->refusesRead($hook->sessionId, $hookInput->fileRead())) {
-                return new UnjudgedCall(DriverReplies::denyProtected());
+                return $this->protectedRefusal();
             }
 
             return $this->files->callUnlessRefused(
@@ -263,7 +273,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         }
 
         if ($tool === ClaudeCodeTool::Bash && $this->refusesCommand($hookInput, $hook)) {
-            return new UnjudgedCall(DriverReplies::denyProtected());
+            return $this->protectedRefusal();
         }
 
         if ($tool === ClaudeCodeTool::Bash) {
@@ -272,7 +282,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
             return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
                 new ShellCommandRequested($hook, $command),
-                fn (HookAnswer $answer) => $this->renderShell($answer, $original),
+                fn (HookAnswer $answer, AgentTexts $texts) => $this->renderShell($answer, $original, $texts),
             ));
         }
 
@@ -281,7 +291,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
             $path = $hookInput->argument('file_path', 'notebook_path');
 
             if ($this->protection->refusesChange(ProtectedFileRead::resolve($hookInput->workFolder(), $path))) {
-                return new UnjudgedCall(DriverReplies::denyProtected());
+                return $this->protectedRefusal();
             }
 
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
@@ -290,7 +300,10 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
                 $hook,
                 FileAccess::Write,
                 [$path],
-                fn () => new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original)),
+                fn () => new JudgedCall(
+                    $edit,
+                    fn (HookAnswer $answer, AgentTexts $texts) => $this->renderShell($answer, $original, $texts),
+                ),
             );
         }
 
@@ -310,7 +323,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
         return new JudgedCall(
             new ToolRequested($hook, $operation),
-            fn (HookAnswer $answer) => $this->renderShell($answer, $original),
+            fn (HookAnswer $answer, AgentTexts $texts) => $this->renderShell($answer, $original, $texts),
         );
     }
 
@@ -319,5 +332,13 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         $command = $hookInput->argument('command');
 
         return $this->protection->refusesCommand($hook->sessionId, $command, $hookInput->workFolder());
+    }
+
+    /**
+     * The refusal of a call that reaches a saved account's sign-in, settings or another session's history.
+     */
+    private function protectedRefusal(): DriverCall
+    {
+        return new UnjudgedCall(DriverReplies::denyProtected($this->texts));
     }
 }

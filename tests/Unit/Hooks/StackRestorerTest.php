@@ -31,6 +31,7 @@ use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\RegistersTestStates;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -59,7 +60,7 @@ final class StackRestorerTest extends TestCase
         $stack = $this->restore($this->bottom(), $this->task('task-42', 42));
 
         $this->assertSame(['ready', 'task-42'], $stack->frameIds());
-        $this->assertTrue($stack->answer(HookInputs::all()['stop'])->isDenied());
+        $this->assertTrue($stack->answer(HookInputs::all()['stop'], TestText::renderer())->isDenied());
     }
 
     public function test_a_restored_state_asks_its_collaborator_each_time(): void
@@ -91,7 +92,7 @@ final class StackRestorerTest extends TestCase
 
         $stack = $this->restore($this->bottom());
 
-        $this->assertTrue($stack->answer(HookInputs::all()['file edit'])->isDenied());
+        $this->assertTrue($stack->answer(HookInputs::all()['file edit'], TestText::renderer())->isDenied());
     }
 
     public function test_a_stack_without_a_bottom_is_refused(): void
