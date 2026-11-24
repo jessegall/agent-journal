@@ -10,13 +10,21 @@ use App\Pipes\Grammar\FindNextSubstitution;
 use App\Pipes\Grammar\ParseFoundSubstitution;
 use App\Pipes\Grammar\QueueWordSegments;
 use App\Support\Grammar\SubstitutionQueue;
+use App\Support\Grammar\SubstitutionsRead;
+use App\Support\Grammar\SubstitutionsToParse;
 use App\Support\Step;
 
 /**
  * Reads every command and process substitution of a word as a line of its own, into children of the owner node.
+ *
+ * @implements PipelineDefinition<SubstitutionsToParse, SubstitutionsRead>
  */
 final readonly class ReadSubstitutionsPipeline implements PipelineDefinition
 {
+    public string $input = SubstitutionsToParse::class;
+
+    public string $output = SubstitutionsRead::class;
+
     public function pipes(): array
     {
         return [

@@ -24,8 +24,9 @@ final readonly class SkipKeywordFunctionHeader implements Pipe
     {
         $cursor = $toParse->cursor();
         $hasParentheses = $cursor->peekIs(2, TokenType::OpenParen);
+        $closesAtOnce = $cursor->peekIs(3, TokenType::CloseParen);
 
-        if ($hasParentheses && ! $cursor->peekIs(3, TokenType::CloseParen)) {
+        if ($hasParentheses && ! $closesAtOnce) {
             throw ShellGrammarStopped::invalid(AgentText::of('core.shell.function_arguments'), $cursor->position());
         }
 

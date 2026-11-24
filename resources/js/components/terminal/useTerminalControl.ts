@@ -24,7 +24,10 @@ async function answered(request: Promise<TerminalControlData | null>): Promise<T
     return (await request) as TerminalControlData;
 }
 
-function clientFor(agentId: string): TerminalControlClient {
+/**
+ * The terminal's control client for one agent, through the journal's terminal control routes.
+ */
+export function terminalControlClientFor(agentId: string): TerminalControlClient {
     return {
         take: (interest, takeId) => answered(postJson(takeTerminalControl.url(agentId), { interest, takeId })),
         cancel: (takeId) => answered(postJson(cancelTerminalTake.url(agentId), { takeId })),
@@ -80,7 +83,7 @@ export function useTerminalControl(
 
     function controlFor(agent: string): TerminalControl {
         return new TerminalControl(
-            clientFor(agent),
+            terminalControlClientFor(agent),
             newRequestId,
             (shown) => (view.value = shown),
             failureOf,

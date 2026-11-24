@@ -14,8 +14,8 @@ vi.mock('@inertiajs/vue3', () => ({
     },
 }));
 
-const { default: TaskLogsTab } = await import('./TaskLogsTab.vue');
-const { default: TaskProofsTab } = await import('./TaskProofsTab.vue');
+const { default: TaskLogsTab } = await import('./pages/tasks/TaskLogsTab.vue');
+const { default: TaskProofsTab } = await import('./pages/tasks/TaskProofsTab.vue');
 
 function entry(id: string, runNumber: number | undefined, text: string): TaskStreamEntryData {
     return {

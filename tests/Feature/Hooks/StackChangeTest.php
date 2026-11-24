@@ -30,7 +30,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -42,7 +42,9 @@ use Tests\TestCase;
  */
 final class StackChangeTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    private const array TABLES = ['agent_stacks'];
 
     private StackTarget $target;
 
@@ -52,7 +54,6 @@ final class StackChangeTest extends TestCase
     {
         parent::setUp();
 
-        AgentStackRow::query()->truncate();
         $this->target = TestActors::stack(1, 10);
         $this->app->instance(
             AgentContext::class,
@@ -74,13 +75,6 @@ final class StackChangeTest extends TestCase
             $event->registry->register(RegisteredStateType::named('test.plans', FinishableState::class));
         });
         $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->open($this->target));
-    }
-
-    protected function tearDown(): void
-    {
-        AgentStackRow::query()->truncate();
-
-        parent::tearDown();
     }
 
     public function test_a_frame_keeps_its_entry_time_through_a_repeated_push_a_cover_a_resume_and_a_restore(): void
@@ -196,17 +190,6 @@ final class StackChangeTest extends TestCase
         $this->expectException(StackTooDeep::class);
 
         $restorer->restore($tooMany, new StackTarget('agent-1', 'session-1'));
-    }
-
-    /**
-     * Stack changes commit for real through StackTransaction, so no wrapping transaction; the stacks are emptied around
-     * each test instead.
-     *
-     * @return array<int, string>
-     */
-    protected function connectionsToTransact(): array
-    {
-        return [];
     }
 
     private function push(string $subject): void

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use Illuminate\Database\ConnectionInterface;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsCommandModules;
-use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
@@ -16,25 +16,12 @@ use Tests\TestCase;
  */
 abstract class CommandBusTestCase extends TestCase
 {
+    use CommitsHookRows;
     use InstallsCommandModules;
     use InstallsCommandModules;
-    use RefreshHookDatabase;
     use StartsAgentRequests;
 
-    protected function tearDown(): void
-    {
-        $this->app->make(ConnectionInterface::class)->table('module_command_rows')->delete();
-
-        parent::tearDown();
-    }
-
-    /**
-     * @return list<string>
-     */
-    protected function connectionsToTransact(): array
-    {
-        return [];
-    }
+    protected const array TABLES = ['module_command_rows'];
 
     protected function rowText(int $id): string
     {

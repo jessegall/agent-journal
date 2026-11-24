@@ -28,7 +28,7 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
 {
     /**
      * How long a request its host could not start yet waits before it is offered again, such as a prompt the screen
-     * did not let in while the program comes up.
+     * did not let in while the driver comes up.
      */
     private const int OFFER_AGAIN_WAIT_MS = 2_000;
 

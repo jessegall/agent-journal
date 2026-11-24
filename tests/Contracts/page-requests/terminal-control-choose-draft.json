@@ -1,0 +1,9 @@
+{
+    "method": "POST",
+    "url": "/web/agents/01JPAGEREQUESTAGENT0000000/terminal/control/draft",
+    "body": {
+        "grantId": "grant-1",
+        "choice": "send",
+        "sequence": 4
+    }
+}

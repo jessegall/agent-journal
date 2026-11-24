@@ -2,8 +2,8 @@
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import { describe, expect, it } from 'vitest';
-import DetachedWindowFrame from './DetachedWindowFrame.vue';
-import PaneTabs from './PaneTabs.vue';
+import DetachedWindowFrame from '@/web/pages/web/partials/DetachedWindowFrame.vue';
+import PaneTabs from '@/components/kit/PaneTabs.vue';
 import type { PaneWindow } from './paneLayout';
 import { providePaneLayout } from './usePaneLayout';
 

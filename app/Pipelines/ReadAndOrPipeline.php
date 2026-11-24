@@ -10,13 +10,21 @@ use App\Pipes\Grammar\ParseFirstAndOrOperand;
 use App\Pipes\Grammar\ParseNextAndOrOperand;
 use App\Pipes\Grammar\SkipAndOrOperator;
 use App\Support\Grammar\AndOrChain;
+use App\Support\Grammar\NodeRead;
+use App\Support\Grammar\NodeToParse;
 use App\Support\Step;
 
 /**
  * and_or := pipeline ((&& | ||) pipeline)*, joined from the left.
+ *
+ * @implements PipelineDefinition<NodeToParse, NodeRead>
  */
 final readonly class ReadAndOrPipeline implements PipelineDefinition
 {
+    public string $input = NodeToParse::class;
+
+    public string $output = NodeRead::class;
+
     public function pipes(): array
     {
         return [

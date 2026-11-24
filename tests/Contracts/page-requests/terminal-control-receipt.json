@@ -1,0 +1,5 @@
+{
+    "method": "GET",
+    "url": "/web/agents/01JPAGEREQUESTAGENT0000000/terminal/control?takeId=take-1&sequence=7",
+    "body": null
+}

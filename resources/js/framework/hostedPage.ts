@@ -1,7 +1,7 @@
 import type { Component, PropType } from "vue";
 import { defineComponent, h } from "vue";
 import type { WindowResult } from "@/generated/types/page-props";
-import PageHost from "./PageHost.vue";
+import PageHost from "../components/framework/PageHost.vue";
 
 /**
  * The one wrapper made for each declared page's component, so every visit to the page renders the same component and

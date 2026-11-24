@@ -22,8 +22,6 @@ use App\Values\ProgramSpellings;
  */
 final readonly class CheckRules
 {
-    private const array PHP_SPELLINGS = ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5'];
-
     private const array TOOLS = [
         'core.php.artisan-test' => ToolType::PhpUnit,
         'core.phpunit' => ToolType::PhpUnit,
@@ -49,7 +47,7 @@ final readonly class CheckRules
 
         $read = CommandClassSet::of(CommandClass::Verification, CommandClass::Read);
         $fix = CommandClassSet::of(CommandClass::Verification, CommandClass::Read, CommandClass::Edit);
-        $php = new ProgramSpellings('php', self::PHP_SPELLINGS);
+        $php = ProgramSpellings::php();
 
         return [
             $this->check('core.php.artisan-test', $php, ['artisan', 'test'], $this->testRunner(), $read),

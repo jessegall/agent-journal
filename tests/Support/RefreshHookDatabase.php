@@ -97,6 +97,26 @@ trait RefreshHookDatabase
     }
 
     /**
+     * The tables of the test database that hold a row now, read in one statement.
+     *
+     * @return list<string>
+     */
+    protected function tablesHoldingRows(): array
+    {
+        $connection = $this->app->make(DatabaseManager::class)->connection();
+        $tables = array_map(
+            fn (object $table) => (string) $table->tablename,
+            $connection->select("select tablename from pg_tables where schemaname = current_schema() and tablename <> 'migrations'"),
+        );
+        $checks = array_map(fn (string $table) => "select '{$table}' as name where exists (select 1 from \"{$table}\")", $tables);
+
+        return $checks === [] ? [] : array_map(
+            fn (object $holding) => (string) $holding->name,
+            $connection->select(implode(' union all ', $checks)),
+        );
+    }
+
+    /**
      * Empties the tables a test committed rows to, in one statement, and starts their sequences again, as some tests
      * read the first id a table hands out.
      */

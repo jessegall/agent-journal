@@ -4,8 +4,8 @@ import { defineComponent, h } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 import type { PaneWindow } from '@/components/panes/paneLayout';
 import { providePaneLayout } from '@/components/panes/usePaneLayout';
-import AgentBar from './AgentBar.vue';
-import InformationBar from './InformationBar.vue';
+import AgentBar from '@/web/pages/web/partials/AgentBar.vue';
+import InformationBar from '@/web/pages/web/partials/InformationBar.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     router: { post: vi.fn(), put: vi.fn(), delete: vi.fn() },

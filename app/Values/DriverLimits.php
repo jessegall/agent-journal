@@ -7,7 +7,7 @@ namespace App\Values;
 /**
  * The waits and retries the journal decides for a runtime's driver, in milliseconds, sent with its start: how long a
  * delivery waits for a ready composer and for its line to show, how often an unsent line gets Enter again, how long a
- * turn has to take the composer, how long a stranded line may settle, and how long a stopped program has to end.
+ * turn has to take the composer, how long a stranded line may settle, and how long a stopped driver has to end.
  */
 final readonly class DriverLimits
 {

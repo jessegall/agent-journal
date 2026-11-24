@@ -2,7 +2,7 @@
 import { mount } from '@vue/test-utils';
 import { defineComponent, h, nextTick } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
-import PaneGrid from './PaneGrid.vue';
+import PaneGrid from '@/web/pages/web/partials/PaneGrid.vue';
 import { floatNewWindow } from './arrangement';
 import type { PaneWindow } from './paneLayout';
 import { providePaneLayout } from './usePaneLayout';

@@ -1,0 +1,8 @@
+{
+    "method": "POST",
+    "url": "/web/agents/01JPAGEREQUESTAGENT0000000/terminal/private/open",
+    "body": {
+        "grantId": "grant-1",
+        "sequence": 5
+    }
+}

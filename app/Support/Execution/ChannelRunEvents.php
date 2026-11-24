@@ -238,7 +238,11 @@ final class ChannelRunEvents implements RunEvents
 
         foreach (RunChunk::collect($chunks) as $index => $chunk) {
             $this->processes->recordRunChunk($this->runId, $this->eventKey, $chunk);
-            $rest = implode('', array_map(fn (string $left) => $left."\n", array_slice($chunks, $index + 1)));
+
+            $rest = array_slice($chunks, $index + 1)
+                    |> (fn ($x) => array_map(fn (string $left) => $left."\n", $x))
+                    |> (fn ($x) => implode('', $x));
+
             $this->files->write($this->spoolFolder->child('chunks.jsonl'), $rest);
         }
     }

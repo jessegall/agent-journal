@@ -11,15 +11,13 @@ defineProps<{ title: string; abstract?: string }>();
         <header class="px-5.5 pt-4.5">
             <template v-if="$slots.meta">
                 <div
-                    class="mb-1 flex min-h-[18px] items-center gap-2 text-small text-text-3"
+                    class="mb-1 flex min-h-[18px] items-center gap-2 text-badge text-text-3"
                 >
                     <slot name="meta" />
                 </div>
             </template>
             <div class="flex items-start gap-3">
-                <h2
-                    class="flex-1 text-reader leading-[1.3] font-semibold tracking-[-0.01em] text-text"
-                >
+                <h2 class="flex-1 text-title font-semibold text-text">
                     {{ title }}
                 </h2>
                 <div class="flex items-center gap-2">
@@ -27,7 +25,7 @@ defineProps<{ title: string; abstract?: string }>();
                 </div>
             </div>
             <template v-if="abstract">
-                <p class="mt-1 text-field text-text-3">{{ abstract }}</p>
+                <p class="mt-1 text-body text-text-2">{{ abstract }}</p>
             </template>
         </header>
         <div class="px-5.5 pb-4.5"><slot /></div>

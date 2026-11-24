@@ -1,29 +1,8 @@
 # Vue files outside the kit that still draw a control the library has, one path:element per line.
 # The list may only shrink: LibraryReuseTest fails on a line that no longer offends.
-domain/Chat/resources/js/AgentPicker.vue:role=listbox
-domain/Chat/resources/js/AgentPicker.vue:role=option
-domain/Chat/resources/js/Composer.vue:textarea
-domain/Chat/resources/js/MessageList.vue:button
-domain/Chat/resources/js/SessionForm.vue:input
-domain/Chat/resources/js/SessionForm.vue:select
-domain/Plans/resources/js/PlanWorkDialog.vue:input
-domain/Tasks/resources/js/TaskGraphCanvas.vue:button
-domain/Tasks/resources/js/TaskWaitDialog.vue:input
-resources/js/components/layout/LayoutTabs.vue:button
-resources/js/components/layout/LayoutTabs.vue:role=tab
-resources/js/components/layout/LayoutTabs.vue:role=tablist
-resources/js/components/panes/LayoutPicker.vue:button
-resources/js/components/panes/LayoutPicker.vue:input
-resources/js/components/panes/LayoutPicker.vue:role=menu
-resources/js/components/panes/PaneTabs.vue:button
-resources/js/components/panes/PaneTabs.vue:role=tab
-resources/js/components/panes/PaneTabs.vue:role=tablist
-resources/js/components/panes/SplitOffer.vue:role=dialog
-resources/js/components/terminal/TerminalControlBar.vue:input
-resources/js/components/text/SourcePane.vue:input
-resources/js/connections/BindingRow.vue:input
-resources/js/connections/InstallLineField.vue:input
-resources/js/framework/DockOfferPicker.vue:input
-resources/js/pages/Login.vue:input
-resources/js/sharing/GatewayConfigureForm.vue:input
-resources/js/sharing/SharePreview.vue:input
+domain/Chat/resources/js/pages/chat/partials/SessionForm.vue:input
+domain/Chat/resources/js/pages/chat/partials/SessionForm.vue:select
+resources/js/web/pages/web/partials/LayoutPicker.vue:button
+resources/js/web/pages/web/partials/LayoutPicker.vue:input
+resources/js/web/pages/web/partials/LayoutPicker.vue:role=menu
+resources/js/web/pages/web/partials/SplitOffer.vue:role=dialog

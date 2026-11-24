@@ -4,9 +4,10 @@ import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import ListRow from '@/components/kit/ListRow.vue';
 import RecordMenu from '@/components/kit/RecordMenu.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
-import TextLink from '@/components/kit/TextLink.vue';
 import { useWindowQueryChange } from '@/framework/useWindowQuery';
 import type { LayoutPartData, LayoutRowData } from '@/generated/types/core';
+import LayoutChoices from './LayoutChoices.vue';
+import LayoutFacts from './LayoutFacts.vue';
 import LayoutPart from './LayoutPart.vue';
 import { useLayoutAppend } from './layoutAppend';
 import { rememberRow, restoreRow } from './listReturn';
@@ -136,50 +137,10 @@ function destinationOf(row: LayoutRowData): string | null {
 <template>
     <SwitchCase :value="part.style">
         <template #facts>
-            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-                <template v-for="row in shown" :key="row.key">
-                    <dt class="text-text-3">{{ row.label }}</dt>
-                    <dd class="text-text">
-                        <template v-if="row.fact !== undefined">
-                            <template
-                                v-for="(piece, index) in row.fact.pieces"
-                                :key="index"
-                            >
-                                <template v-if="index > 0">, </template>
-                                <template v-if="piece.href !== undefined">
-                                    <TextLink
-                                        :href="piece.href"
-                                        >{{ piece.label }}</TextLink
-                                    >
-                                </template>
-                                <template v-else>{{ piece.label }}</template>
-                            </template>
-                        </template>
-                        <template v-else>{{ row.value }}</template>
-                    </dd>
-                </template>
-            </dl>
+            <LayoutFacts :rows="shown" />
         </template>
         <template #choices>
-            <ul
-                class="flex flex-wrap gap-4 border-b border-line px-3 in-data-[layout-box=page-head]:border-0 in-data-[layout-box=page-head]:px-0"
-            >
-                <template v-for="row in shown" :key="row.key">
-                    <li class="flex">
-                        <Link
-                            :href="row.href ?? windowQuery(row.query)"
-                            preserve-scroll
-                            :aria-current="row.isCurrent ? 'true' : undefined"
-                            class="block py-[7px] text-badge tracking-[.03em] focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-focus"
-                            :class="{
-                                'text-text shadow-[inset_0_-1px_0_var(--color-brand)]': row.isCurrent,
-                                'text-text-3 hover:text-text-2': !row.isCurrent,
-                            }"
-                            >{{ row.label }}</Link
-                        >
-                    </li>
-                </template>
-            </ul>
+            <LayoutChoices :rows="shown" />
         </template>
         <template #default>
             <ul ref="list" class="flex flex-col divide-y divide-line">

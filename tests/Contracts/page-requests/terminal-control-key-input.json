@@ -1,0 +1,11 @@
+{
+    "method": "POST",
+    "url": "/web/agents/01JPAGEREQUESTAGENT0000000/terminal/control/input",
+    "body": {
+        "grantId": "grant-1",
+        "type": "key",
+        "key": "escape",
+        "sequence": 2,
+        "screenRevision": 0
+    }
+}

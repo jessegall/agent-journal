@@ -46,7 +46,7 @@ use Tests\Fixtures\Hooks\DomainWrite;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\SwitchableState;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\UsesSecondConnection;
@@ -55,7 +55,10 @@ use Throwable;
 
 final class AgentStacksTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    private const array TABLES = ['agent_stacks', 'settings_records'];
+
     use UsesSecondConnection;
 
     private StackTarget $target;
@@ -64,8 +67,6 @@ final class AgentStacksTest extends TestCase
     {
         parent::setUp();
 
-        AgentStackRow::query()->truncate();
-        SettingsRecord::query()->truncate();
         Schema::dropIfExists('domain_writes');
         Schema::create('domain_writes', fn (Blueprint $table) => $table->string('name'));
 
@@ -97,8 +98,6 @@ final class AgentStacksTest extends TestCase
     protected function tearDown(): void
     {
         Schema::dropIfExists('domain_writes');
-        AgentStackRow::query()->truncate();
-        SettingsRecord::query()->truncate();
 
         parent::tearDown();
     }
@@ -381,14 +380,6 @@ final class AgentStacksTest extends TestCase
         } catch (StackTransactionRequired) {
             $this->assertFalse($ran);
         }
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function connectionsToTransact(): array
-    {
-        return [];
     }
 
     private function startStacks(): StartStacks

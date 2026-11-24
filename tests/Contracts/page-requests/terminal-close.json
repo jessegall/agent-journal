@@ -1,0 +1,7 @@
+{
+    "method": "POST",
+    "url": "/web/agents/01JPAGEREQUESTAGENT0000000/terminal/interests/close",
+    "body": {
+        "interest": "interest-1"
+    }
+}

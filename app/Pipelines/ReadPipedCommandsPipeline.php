@@ -10,14 +10,22 @@ use App\Pipes\Grammar\NoteNegation;
 use App\Pipes\Grammar\ParseFirstPipedCommand;
 use App\Pipes\Grammar\ParseNextPipedCommand;
 use App\Pipes\Grammar\SkipPipeSymbol;
+use App\Support\Grammar\NodeRead;
+use App\Support\Grammar\NodeToParse;
 use App\Support\Grammar\PipedCommands;
 use App\Support\Step;
 
 /**
  * pipeline := [!] command ((| | |&) command)*.
+ *
+ * @implements PipelineDefinition<NodeToParse, NodeRead>
  */
 final readonly class ReadPipedCommandsPipeline implements PipelineDefinition
 {
+    public string $input = NodeToParse::class;
+
+    public string $output = NodeRead::class;
+
     public function pipes(): array
     {
         return [

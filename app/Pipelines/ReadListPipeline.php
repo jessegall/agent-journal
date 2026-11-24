@@ -11,13 +11,21 @@ use App\Pipes\Grammar\CompleteList;
 use App\Pipes\Grammar\ParseListItem;
 use App\Pipes\Grammar\SkipListSeparator;
 use App\Support\Grammar\ListItems;
+use App\Support\Grammar\ListRead;
+use App\Support\Grammar\ListToParse;
 use App\Support\Step;
 
 /**
  * list := and_or ((; | & | newline) and_or)*, up to the closing token of a subshell or group, or the end.
+ *
+ * @implements PipelineDefinition<ListToParse, ListRead>
  */
 final readonly class ReadListPipeline implements PipelineDefinition
 {
+    public string $input = ListToParse::class;
+
+    public string $output = ListRead::class;
+
     public function pipes(): array
     {
         return [

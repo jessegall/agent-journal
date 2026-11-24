@@ -113,8 +113,8 @@ final readonly class UiManifest
     }
 
     /**
-     * Every component by its unique name, as a path from the project root: today's pages under resources/js/pages by
-     * their file name, and each declared page and section by its domain and path.
+     * Every component by its unique name, as a path from the project root: the sign-in page under resources/js/pages/login
+     * by its file name, and each declared page and section by its domain and path.
      *
      * @return array<string, string>
      */
@@ -122,7 +122,7 @@ final readonly class UiManifest
     {
         $components = [];
 
-        foreach ($this->files->matching($base->child('resources/js/pages/*.vue')) as $page) {
+        foreach ($this->files->matching($base->child('resources/js/pages/login/*.vue')) as $page) {
             $components[basename($page->name(), '.vue')] = $this->fromRoot($root, $page->fingerprint->realPath);
         }
 

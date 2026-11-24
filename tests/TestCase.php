@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Contracts\Files\Files;
+use App\Enums\Place;
 use App\Support\OuterTransactionOwner;
 use App\Support\OutsideCommandAllowance;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -13,6 +15,7 @@ use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithCachedConfig;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Translation\Translator;
 use Laravel\Fortify\Features;
@@ -46,6 +49,20 @@ abstract class TestCase extends BaseTestCase
         $this->app->make(OuterTransactionOwner::class)->register();
         $this->app->make(Translator::class)->addNamespace('tests', base_path('tests/Fixtures/AgentTexts/lang'));
         $this->beforeApplicationDestroyed(fn () => $this->closeConnections());
+        $this->keepProcessOutputApart();
+    }
+
+    /**
+     * Points the process-output place at a folder of this worker's own, so a run one parallel worker cleans up or
+     * fills never changes what another worker's admission reads.
+     */
+    private function keepProcessOutputApart(): void
+    {
+        $token = getenv('TEST_TOKEN') ?: 'alone';
+        $folder = sys_get_temp_dir()."/journal-process-output-{$token}";
+        File::ensureDirectoryExists($folder, Place::ProcessOutput->folderMode());
+        config([Place::ProcessOutput->rootSetting() => (string) realpath($folder)]);
+        $this->app->forgetInstance(Files::class);
     }
 
     /**

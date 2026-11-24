@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
-import PendingMessage from "./PendingMessage.vue";
-import RefusedSend from "./RefusedSend.vue";
+import PendingMessage from "./pages/chat/partials/PendingMessage.vue";
+import RefusedSend from "./pages/chat/partials/RefusedSend.vue";
 import type { ConversationIntent } from "./composables/useConversationIntents";
 
 vi.mock("@generated/routes/chat", () => ({

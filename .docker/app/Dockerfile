@@ -39,13 +39,18 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,t
 
 # PHP with the journal's extensions and Composer, and nothing of the journal: it changes only with the PHP version or
 # the extension list, so every later stage starts from its cache.
-FROM dunglas/frankenphp:1-php8.5 AS php
+FROM dunglas/frankenphp:1-php8.6 AS php
 
-RUN install-php-extensions pcntl pdo_pgsql redis intl zip bcmath opcache
+RUN install-php-extensions pcntl pdo_pgsql intl zip bcmath opcache mbstring
 
 # git for the journal-check executable and its tests, which build temporary repositories
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update && apt-get install -y --no-install-recommends git
+
+# phpredis from its development branch with its submodules: its PECL release does not build against PHP 8.6 yet
+RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/phpredis/phpredis /tmp/phpredis \
+    && cd /tmp/phpredis && phpize && ./configure && make -j"$(nproc)" && make install \
+    && docker-php-ext-enable redis && rm -rf /tmp/phpredis
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

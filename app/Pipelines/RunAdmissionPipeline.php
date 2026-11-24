@@ -7,14 +7,22 @@ namespace App\Pipelines;
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Run\FetchAdmission;
 use App\Pipes\Run\ReportAlreadyStarted;
+use App\Support\Run\AdmissionToRun;
 use App\Support\Run\FetchedAdmission;
 use App\Support\Step;
+use App\Values\CommandReport;
 
 /**
  * Fetches an admitted run once and runs it, unless it started before.
+ *
+ * @implements PipelineDefinition<AdmissionToRun, CommandReport>
  */
 final readonly class RunAdmissionPipeline implements PipelineDefinition
 {
+    public string $input = AdmissionToRun::class;
+
+    public string $output = CommandReport::class;
+
     public function pipes(): array
     {
         return [

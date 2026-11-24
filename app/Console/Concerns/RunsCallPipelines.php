@@ -26,7 +26,7 @@ use Spatie\LaravelData\Data;
 trait RunsCallPipelines
 {
     /**
-     * @param  class-string<PipelineDefinition>  $pipeline
+     * @param  class-string<PipelineDefinition<object, object>>  $pipeline
      */
     protected function runCalls(string $pipeline, object $input): int
     {

@@ -64,7 +64,7 @@ final class UiDeclarationsTest extends TestCase
             [BooksResolver::class, RecentNotesData::class, BooksRequest::class],
             [$books->resolver->resolver, $books->resolver->dataClass, $books->resolver->request],
         );
-        $this->assertStringEndsWith('Library/Resources/js/Book/Reader.vue', $book->componentFile);
+        $this->assertStringEndsWith('Library/Resources/js/pages/library/Book/Reader.vue', $book->componentFile);
 
         [$notes, $draft] = $declarations->sections();
         $this->assertSame(
@@ -146,12 +146,12 @@ final class UiDeclarationsTest extends TestCase
     public function test_a_component_outside_its_domain_is_refused(): void
     {
         $this->expectExceptionObject(
-            UiComponentMissing::outsideOwner('library.books', '../../Desk/Resources/js/Notes.vue'),
+            UiComponentMissing::outsideOwner('library.books', '../../../../Desk/Resources/js/pages/desk/Notes.vue'),
         );
 
         $this->check(
             pages: [
-                Page::make('books', 'Books', Icon::Docs, BooksResolver::class, '../../Desk/Resources/js/Notes.vue'),
+                Page::make('books', 'Books', Icon::Docs, BooksResolver::class, '../../../../Desk/Resources/js/pages/desk/Notes.vue'),
             ],
         );
     }

@@ -32,7 +32,7 @@ final readonly class RunStart
     /**
      * The pipeline the request starts with: admitting a line, running a permit, or starting a named admission.
      *
-     * @return class-string<PipelineDefinition>
+     * @return class-string<PipelineDefinition<object, object>>
      */
     public function entryPipeline(): string
     {

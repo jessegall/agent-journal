@@ -3,6 +3,7 @@ import { router } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
 import type { TextPart } from '@/generated/types/core';
 import Button from '@/components/kit/Button.vue';
+import Input from '@/components/kit/Input.vue';
 import { describeRange, quoteIn, type TextRangeChoice } from './textRange';
 
 /**
@@ -18,8 +19,8 @@ const failure = ref('');
 const lines = computed(() => (part.value === null ? [] : part.value.text.split('\n')));
 const pane = ref<HTMLElement | null>(null);
 const chosen = ref<TextRangeChoice | null>(null);
-const typedFirst = ref(props.firstLine);
-const typedLast = ref(props.lastLine);
+const typedFirst = ref(String(props.firstLine));
+const typedLast = ref(String(props.lastLine));
 const hasMarkdown = computed(() => chosen.value?.type === 'quote' && /[*_`[\]]/.test(chosen.value.quote));
 
 // The record page answers the lines it was asked for beside the record.
@@ -69,7 +70,7 @@ function takeSelection(): void {
 }
 
 function takeLines(): void {
-    chosen.value = { type: 'lines', version: props.version, firstLine: Math.min(typedFirst.value, typedLast.value), lastLine: Math.max(typedFirst.value, typedLast.value) };
+    chosen.value = { type: 'lines', version: props.version, firstLine: Math.min(Number(typedFirst.value), Number(typedLast.value)), lastLine: Math.max(Number(typedFirst.value), Number(typedLast.value)) };
 }
 
 function confirm(): void {
@@ -88,8 +89,8 @@ function confirm(): void {
         <pre ref="pane" class="font-mono text-small overflow-x-auto" tabindex="0" @mouseup="takeSelection" @keyup="takeSelection"><template v-for="(line, index) in lines" :key="index"><span class="text-text-3 tabular-nums select-none">{{ String((part?.firstLine ?? 0) + index).padStart(4, ' ') }}  </span><span :data-line="(part?.firstLine ?? 0) + index">{{ line }}</span>
 </template></pre>
         <div class="flex flex-wrap items-center gap-2">
-            <label class="text-small">From line <input v-model.number="typedFirst" type="number" class="input w-20" :min="firstLine" :max="lastLine" /></label>
-            <label class="text-small">to <input v-model.number="typedLast" type="number" class="input w-20" :min="firstLine" :max="lastLine" /></label>
+            <label class="text-small">From line <Input v-model="typedFirst" type="number" class="w-20" :min="firstLine" :max="lastLine" /></label>
+            <label class="text-small">to <Input v-model="typedLast" type="number" class="w-20" :min="firstLine" :max="lastLine" /></label>
             <Button @click="takeLines">Use these lines</Button>
             <Button variant="primary" :disabled="chosen === null" @click="confirm">Comment on this</Button>
             <Button @click="emit('close')">Cancel</Button>

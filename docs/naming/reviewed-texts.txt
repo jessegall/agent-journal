@@ -306,6 +306,7 @@ Ordinary
 Other ways to write it: {{ revision.spellings.join(', ') || 'none' }}
 Outcome
 Outcome unknown: your comment may or may not have been posted.
+Outcome unknown: {{ unknown }}
 Outcomes
 Output removed
 Output {{ part.capture }}, after {{ part.elapsedSeconds }} seconds: {{ JSON.stringify(part.bytes) }} bytes

@@ -3,7 +3,7 @@ import type { DefineComponent } from 'vue';
 import { hostedPage } from '@/framework/hostedPage';
 import { pressedButtons } from '@/framework/pressedButtons';
 import { components, declaredPages } from '@/generated/ui-manifest';
-import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
+import AppSidebarLayout from '@/components/layout/AppSidebarLayout.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Journal';
 

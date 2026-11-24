@@ -10,9 +10,15 @@ use App\Support\Step;
 /**
  * A fixture pipeline with steps listed inline: it drops all words but the last, one each round, then counts what is
  * left through a chosen step, the nested counting pipeline or CountNothing for an empty text.
+ *
+ * @implements PipelineDefinition<Words, Counted>
  */
 final readonly class CountLastWordPipeline implements PipelineDefinition
 {
+    public string $input = Words::class;
+
+    public string $output = Counted::class;
+
     public function pipes(): array
     {
         return [

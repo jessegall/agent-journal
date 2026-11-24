@@ -69,10 +69,7 @@ final readonly class DocumentsShow extends DocumentsPage
         $label = "doc {$number}";
 
         return DetailPage::make($document->title)
-            ->above(
-                LayoutPartData::text('label', $label, 'code'),
-                LayoutPartData::text('revision', "revision {$document->revision}", 'muted'),
-            )
+            ->above(LayoutPartData::text('label', "Doc {$number} · revision {$document->revision}", 'muted'))
             ->summarising($document->abstract)
             ->withActions(LayoutPartData::menu(
                 'actions',

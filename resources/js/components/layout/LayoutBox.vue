@@ -1,62 +1,31 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import LayoutBar from '@/components/layout/LayoutBar.vue';
+import LayoutEmptyPage from '@/components/layout/LayoutEmptyPage.vue';
+import LayoutPageHead from '@/components/layout/LayoutPageHead.vue';
 import LayoutPart from '@/components/layout/LayoutPart.vue';
+import LayoutReaderBox from '@/components/layout/LayoutReaderBox.vue';
+import LayoutSettingBox from '@/components/layout/LayoutSettingBox.vue';
+import LayoutSettingsBox from '@/components/layout/LayoutSettingsBox.vue';
 import ListReaderLayout from '@/components/kit/ListReaderLayout.vue';
 import Card from '@/components/kit/Card.vue';
-import Icon, { type IconName } from '@/components/kit/Icon.vue';
-import Reader from '@/components/kit/Reader.vue';
 import SettingGroup from '@/components/kit/SettingGroup.vue';
-import SettingRow from '@/components/kit/SettingRow.vue';
-import SettingsSection from '@/components/kit/SettingsSection.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import type { LayoutPartData } from '@/generated/types/core';
 
-// A box of a declared layout: a divider, a row, a stack of its children, a page header bar, or a split of its first
-// child as a list beside the rest as its reader. The bar keeps the title, count and views together on the left, the
-// search and creation at the other edge; on a phone the title and creation share the first line, and the views and
-// search wrap below. A reader box draws its title, metadata line, abstract and actions in the kit Reader and the rest
-// of its parts as the body. A card box draws its head, time and actions in the kit Card. The settings styles draw a
-// group in the kit's SettingsSection, SettingGroup and SettingRow: a row's title and hint are its first parts, its
-// control the rest, below the title in a block row and stacked below it on a phone, with long values breaking within
-// their block.
+// A box of a declared layout, by its style: a divider, a row, a card, a reader, the settings parts, a page with its
+// head, list, empty state and footer, a bar, or a split of its first child as a list beside the rest as its reader.
+// Each larger style is drawn by a component of its own; a card box draws its head, time and actions in the kit Card.
 const props = defineProps<{ part: LayoutPartData }>();
-const slotClasses: Record<string, string> = {
-    creation: 'order-3 ml-auto @2xl:order-none @2xl:ml-0',
-    views: 'order-4 w-full @2xl:order-none @2xl:w-auto',
-    search: 'order-5 w-full @2xl:order-none @2xl:w-auto',
-};
 const cardTitle = computed(() => {
     const head = props.part.children.find((child) => child.key === 'head');
 
     return head?.children.find((child) => child.key === 'title')?.text ?? undefined;
 });
-const readerSlots = new Set(['title', 'metadata', 'abstract', 'actions']);
-const sectionSlots = new Set(['title', 'help', 'reset', 'switch']);
-const rowSlots = new Set(['title', 'hint']);
-const sectionBody = computed(() => props.part.children.filter((child) => !sectionSlots.has(child.key)));
-const sectionActions = computed(() =>
-    props.part.children.filter((child) => child.key === 'reset' || child.key === 'switch'),
-);
-const rowControl = computed(() => props.part.children.filter((child) => !rowSlots.has(child.key)));
-const readerBody = computed(() => props.part.children.filter((child) => !readerSlots.has(child.key)));
-// A page that holds nothing yet: its subject's icon on a tile, the title, one sentence and the action that makes the
-// first one, centred in all of the page under its header.
-const firstSlots = new Set(['icon', 'empty']);
-const firstActions = computed(() => props.part.children.filter((child) => !firstSlots.has(child.key)));
 
 function readerPart(key: string): LayoutPartData | undefined {
     return props.part.children.find((child) => child.key === key);
 }
-
-const firstTool = computed(
-    () => props.part.children.find((child) => child.key === 'search' || child.key === 'creation')?.key,
-);
-
-// A page head as the design draws it: the title, its count and its views at the left, the search and the creation at
-// the right edge, in one row of 52 px that does not wrap from a tablet up.
-const HEAD_LEAD_KEYS = ['title', 'count', 'views'];
-const headLead = computed(() => props.part.children.filter((child) => HEAD_LEAD_KEYS.includes(child.key)));
-const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEAD_KEYS.includes(child.key)));
 </script>
 
 <template>
@@ -75,32 +44,7 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
             </div>
         </template>
         <template #reader>
-            <Reader
-                :title="readerPart('title')?.text ?? ''"
-                :abstract="readerPart('abstract')?.text ?? undefined"
-            >
-                <template v-if="readerPart('metadata') !== undefined" #meta>
-                    <template
-                        v-for="child in readerPart('metadata')?.children ?? []"
-                        :key="child.key"
-                    >
-                        <LayoutPart :part="child" />
-                    </template>
-                </template>
-                <template #actions>
-                    <template
-                        v-for="child in readerPart('actions')?.children ?? []"
-                        :key="child.key"
-                    >
-                        <LayoutPart :part="child" />
-                    </template>
-                </template>
-                <div class="flex flex-col gap-3 pt-3">
-                    <template v-for="child in readerBody" :key="child.key">
-                        <LayoutPart :part="child" />
-                    </template>
-                </div>
-            </Reader>
+            <LayoutReaderBox :part="part" />
         </template>
         <template #card>
             <Card
@@ -122,20 +66,7 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
             </div>
         </template>
         <template #settings>
-            <SettingsSection
-                :title="readerPart('title')?.text ?? ''"
-                :help="readerPart('help')?.text ?? undefined"
-                :spoken="readerPart('title')?.style === 'spoken'"
-            >
-                <template #actions>
-                    <template v-for="child in sectionActions" :key="child.key">
-                        <LayoutPart :part="child" />
-                    </template>
-                </template>
-                <template v-for="child in sectionBody" :key="child.key">
-                    <LayoutPart :part="child" />
-                </template>
-            </SettingsSection>
+            <LayoutSettingsBox :part="part" />
         </template>
         <template #settings-group>
             <SettingGroup :label="readerPart('title')?.text ?? undefined" class="[&>form]:gap-0">
@@ -145,32 +76,10 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
             </SettingGroup>
         </template>
         <template #setting>
-            <SettingRow
-                :title="readerPart('title')?.text ?? ''"
-                :hint="readerPart('hint')?.text ?? undefined"
-                class="max-[760px]:flex-col max-[760px]:items-stretch"
-            >
-                <span
-                    class="flex flex-wrap items-center justify-end gap-2 [overflow-wrap:anywhere] max-[760px]:justify-start [&_[data-field-label]]:sr-only"
-                >
-                    <template v-for="child in rowControl" :key="child.key">
-                        <LayoutPart :part="child" />
-                    </template>
-                </span>
-            </SettingRow>
+            <LayoutSettingBox :part="part" />
         </template>
         <template #setting-block>
-            <SettingRow
-                block
-                :title="readerPart('title')?.text ?? ''"
-                :hint="readerPart('hint')?.text ?? undefined"
-            >
-                <span class="flex flex-wrap items-center gap-2 [overflow-wrap:anywhere]">
-                    <template v-for="child in rowControl" :key="child.key">
-                        <LayoutPart :part="child" />
-                    </template>
-                </span>
-            </SettingRow>
+            <LayoutSettingBox :part="part" />
         </template>
         <template #page>
             <div data-layout-box="page" class="flex h-full min-h-0 flex-col">
@@ -192,44 +101,10 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
             </div>
         </template>
         <template #page-empty>
-            <div
-                data-layout-box="page-empty"
-                role="region"
-                :aria-label="readerPart('empty')?.text ?? ''"
-                class="flex min-h-0 flex-1 items-center justify-center overflow-auto p-6"
-            >
-                <div class="flex max-w-[360px] flex-col items-center text-center text-empty text-text-3">
-                    <span
-                        class="mb-3.5 flex size-10 items-center justify-center rounded-card border border-line bg-bg-2 text-text-4"
-                    >
-                        <Icon :name="(readerPart('icon')?.text ?? 'info') as IconName" :size="20" />
-                    </span>
-                    <p class="mb-1 font-medium text-text-2">{{ readerPart('empty')?.text }}</p>
-                    <p>{{ readerPart('empty')?.detail }}</p>
-                    <template v-if="firstActions.length > 0">
-                        <div class="mt-4 flex items-center gap-2">
-                            <template v-for="child in firstActions" :key="child.key">
-                                <LayoutPart :part="child" />
-                            </template>
-                        </div>
-                    </template>
-                </div>
-            </div>
+            <LayoutEmptyPage :part="part" />
         </template>
         <template #page-head>
-            <header
-                data-layout-box="page-head"
-                class="flex min-h-13 flex-none flex-wrap items-center gap-2.5 border-b border-line px-4 py-2 md:h-13 md:flex-nowrap md:py-0"
-            >
-                <template v-for="child in headLead" :key="child.key">
-                    <LayoutPart :part="child" />
-                </template>
-                <div class="ml-auto flex flex-wrap items-center gap-1.5 md:flex-nowrap">
-                    <template v-for="child in headTools" :key="child.key">
-                        <LayoutPart :part="child" />
-                    </template>
-                </div>
-            </header>
+            <LayoutPageHead :part="part" />
         </template>
         <template #settings-footer>
             <div data-layout-box="settings-footer" class="flex items-center justify-end gap-2 px-4 py-2.5">
@@ -239,19 +114,7 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
             </div>
         </template>
         <template #bar>
-            <div
-                data-layout-box="bar"
-                class="@container flex flex-wrap items-center gap-x-3 gap-y-2"
-            >
-                <template v-for="child in part.children" :key="child.key">
-                    <template v-if="child.key === firstTool">
-                        <span class="hidden flex-1 @2xl:block"></span>
-                    </template>
-                    <div :class="slotClasses[child.key]">
-                        <LayoutPart :part="child" />
-                    </div>
-                </template>
-            </div>
+            <LayoutBar :part="part" />
         </template>
         <template #split>
             <ListReaderLayout v-bind="part.split">

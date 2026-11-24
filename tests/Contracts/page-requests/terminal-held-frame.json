@@ -1,0 +1,5 @@
+{
+    "method": "GET",
+    "url": "/web/agents/01JPAGEREQUESTAGENT0000000/terminal/frame?interest=interest-1&epoch=epoch-1&stream=stream-1&after=3",
+    "body": null
+}

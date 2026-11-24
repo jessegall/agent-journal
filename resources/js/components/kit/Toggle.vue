@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
  * On or off: a 30 × 18 switch whose 14 px knob slides over 120 ms. A native button with role switch, so Space and
- * Enter flip it; the label goes on aria-label.
+ * Enter flip it; the label goes on aria-label. With a name it also sends 1 or 0 under that name in a plain form submit.
  */
-defineProps<{ label: string; disabled?: boolean }>();
+defineProps<{ label: string; disabled?: boolean; name?: string }>();
 const checked = defineModel<boolean>({ default: false });
 </script>
 
@@ -23,5 +23,8 @@ const checked = defineModel<boolean>({ default: false });
             class="absolute top-0.5 left-0.5 size-3.5 rounded-full transition-[translate] duration-(--duration-hover)"
             :class="checked ? 'translate-x-3.5 bg-on-brand' : 'bg-bg'"
         />
+        <template v-if="name !== undefined">
+            <input type="hidden" :name="name" :value="checked ? '1' : '0'" />
+        </template>
     </button>
 </template>

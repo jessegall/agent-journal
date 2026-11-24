@@ -1,0 +1,8 @@
+{
+    "method": "POST",
+    "url": "/web/agents/01JPAGEREQUESTAGENT0000000/terminal/control/take",
+    "body": {
+        "interest": "interest-1",
+        "takeId": "take-1"
+    }
+}

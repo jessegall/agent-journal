@@ -1,11 +1,11 @@
 {
     "accounts-reader": {
-        "ranAt": "2026-11-24T05:00:04.901Z",
+        "ranAt": "2026-11-24T14:35:44.974Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
-        "differencesLeft": 115
+        "differencesLeft": 114
     },
     "accounts-row": {
-        "ranAt": "2026-11-24T04:55:32.557Z",
+        "ranAt": "2026-11-24T14:35:22.413Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 30
     },
@@ -15,9 +15,9 @@
         "differencesLeft": 16
     },
     "documents-reader": {
-        "ranAt": "2026-11-24T09:44:51.728Z",
+        "ranAt": "2026-11-24T14:34:13.369Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
-        "differencesLeft": 84
+        "differencesLeft": 0
     },
     "empty-page": {
         "ranAt": "2026-11-24T04:23:42.936Z",
@@ -55,9 +55,9 @@
         "differencesLeft": 7
     },
     "plans-reader": {
-        "ranAt": "2026-11-24T04:53:58.539Z",
+        "ranAt": "2026-11-24T14:34:37.528Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
-        "differencesLeft": 50
+        "differencesLeft": 25
     },
     "plans-row": {
         "ranAt": "2026-11-24T04:53:54.665Z",
@@ -65,14 +65,14 @@
         "differencesLeft": 30
     },
     "profiles-reader": {
-        "ranAt": "2026-11-24T04:56:27.217Z",
+        "ranAt": "2026-11-24T14:35:50.187Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 62
     },
     "sequences-reader": {
-        "ranAt": "2026-11-24T04:55:28.982Z",
+        "ranAt": "2026-11-24T14:35:17.857Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
-        "differencesLeft": 161
+        "differencesLeft": 159
     },
     "sequences-row": {
         "ranAt": "2026-11-24T04:55:24.970Z",
@@ -100,9 +100,9 @@
         "differencesLeft": 46
     },
     "tasks-reader": {
-        "ranAt": "2026-11-24T04:53:47.536Z",
+        "ranAt": "2026-11-24T14:37:27.306Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
-        "differencesLeft": 361
+        "differencesLeft": 298
     },
     "tasks-row": {
         "ranAt": "2026-11-24T04:53:43.650Z",

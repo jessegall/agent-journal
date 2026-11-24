@@ -208,7 +208,7 @@ final readonly class ToolRules
             OptionGrammar::valued(OperandType::Path, '-l'),
         );
 
-        $php = new ProgramSpellings('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5']);
+        $php = ProgramSpellings::php();
         $read = CommandClassSet::of(CommandClass::Read);
 
         return [

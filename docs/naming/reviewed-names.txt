@@ -3573,6 +3573,7 @@ class	FrameRecord
 class	FrameRecords
 class	FrameRecordsCast
 class	FrameSettlement
+class	FrontendLayout
 class	FrozenSessionPolicies
 class	FunctionToParse
 class	GateListenersByDomain
@@ -7785,7 +7786,6 @@ constant	ChatRevocation::INLINE_CHAT_LIMIT
 constant	ChatWindowResolver::INBOX_MISSING
 constant	ChatWindowResolver::PAGE
 constant	CheckDraftPageController::CHECKED_DRAFT
-constant	CheckRules::PHP_SPELLINGS
 constant	CheckRules::TOOLS
 constant	CheckStartStatusController::CHECKED
 constant	ChildEnvironment::SECRET_VARIABLES
@@ -8024,6 +8024,9 @@ constant	Frame::CANCELLED
 constant	Frame::INITIALIZE
 constant	Frame::SMALLEST_START_SECONDS
 constant	FrameSettlement::TIME_FORMAT
+constant	FrontendLayout::IMPORT
+constant	FrontendLayout::KIT
+constant	FrontendLayout::SHELL
 constant	GatewayChildren::GRACE_SECONDS
 constant	GatewayChildren::KILL
 constant	GatewayChildren::LOOK_MICROSECONDS
@@ -14839,6 +14842,7 @@ method	DomainUi::fullKey()
 method	DomainUi::of()
 method	DomainUi::ofCore()
 method	DomainUi::owns()
+method	DomainUi::pageFolder()
 method	DomainUi::presentationFile()
 method	DomainUi::presentationName()
 method	DomainUi::uri()
@@ -16123,6 +16127,18 @@ method	FrameReuse::keepsOneFrame()
 method	FrameSettlement::__construct()
 method	FrameSettlement::at()
 method	FrameSettlement::settledAt()
+method	FrontendLayout::__construct()
+method	FrontendLayout::faults()
+method	FrontendLayout::files()
+method	FrontendLayout::importFaults()
+method	FrontendLayout::importersOf()
+method	FrontendLayout::joined()
+method	FrontendLayout::ofProject()
+method	FrontendLayout::pageOf()
+method	FrontendLayout::placeOf()
+method	FrontendLayout::resolved()
+method	FrontendLayout::rootOf()
+method	FrontendLayout::unaliased()
 method	FrozenSessionPolicies::isFrozenFor()
 method	FrozenSessionPolicies::policyFor()
 method	FunctionToParse::__construct()
@@ -19703,6 +19719,7 @@ method	PipelineDefinition::pipes()
 method	PipelinePump::run()
 method	PipelineRunner::__construct()
 method	PipelineRunner::build()
+method	PipelineRunner::checked()
 method	PipelineRunner::run()
 method	PipelineRunner::runOf()
 method	PipelineRunner::runSteps()
@@ -20696,6 +20713,7 @@ method	ProgramNames::proposalHints()
 method	ProgramSpellings::__construct()
 method	ProgramSpellings::fromArray()
 method	ProgramSpellings::names()
+method	ProgramSpellings::php()
 method	ProgramSpellings::resembles()
 method	ProgramSpellings::toArray()
 method	ProgressPolicy::__construct()
@@ -26663,7 +26681,9 @@ method	Step::resolvedBy()
 method	Step::run()
 method	StepOutOfOrder::ending()
 method	StepOutOfOrder::endingSteps()
+method	StepOutOfOrder::entering()
 method	StepOutOfOrder::handing()
+method	StepOutOfOrder::leaving()
 method	StepOutcome::__construct()
 method	StepOutcome::completed()
 method	StepOutcome::failed()
@@ -30139,6 +30159,8 @@ parameter	$images
 parameter	$implementation
 parameter	$import
 parameter	$importRef
+parameter	$importer
+parameter	$importers
 parameter	$imports
 parameter	$inCommandTransaction
 parameter	$inSidebar
@@ -31643,6 +31665,7 @@ parameter	$shared
 parameter	$sharedFolders
 parameter	$shares
 parameter	$sharing
+parameter	$shell
 parameter	$shellPages
 parameter	$shielded
 parameter	$shortName
@@ -31705,6 +31728,7 @@ parameter	$sourceType
 parameter	$sources
 parameter	$speaker
 parameter	$speakerLabel
+parameter	$specifier
 parameter	$speech
 parameter	$spellings
 parameter	$spent
@@ -32091,6 +32115,7 @@ parameter	$value	app/Support/Layout/LayoutProgressData.php
 parameter	$value	app/Support/Layout/LayoutRowData.php
 parameter	$value	app/Support/Layout/SettingsRow.php
 parameter	$value	app/Support/OneLineRule.php
+parameter	$value	app/Support/PipelineRunner.php
 parameter	$value	app/Support/PrivateValues.php
 parameter	$value	app/Support/ReflectedProperty.php
 parameter	$value	app/Support/Reflector.php
@@ -32884,6 +32909,8 @@ property	AnswerChatQuestionCommand::$claimToken
 property	AnswerChatQuestionCommand::$questionId
 property	AnswerChatQuestionCommand::$requestKey
 property	AnswerChatQuestionHandler::$posting
+property	AnswerHookPipeline::$input
+property	AnswerHookPipeline::$output
 property	AnswerMessageCall::$messageId
 property	AnswerMessageCall::$replyId
 property	AnswerMessageCall::$requestKey
@@ -33478,6 +33505,10 @@ property	BrowserInputCapabilities::$resize
 property	BrowserInputCapabilities::$text
 property	BufferedHit::$identity
 property	BufferedHit::$score
+property	BuildShellTreePipeline::$input
+property	BuildShellTreePipeline::$output
+property	BuildStatePipeline::$input
+property	BuildStatePipeline::$output
 property	BuiltInAskType::$subjects
 property	BuiltInDesks::$desks
 property	BuiltInProfilePins::$dispatchers
@@ -33615,6 +33646,8 @@ property	CapturedChunk::$part
 property	CapturedChunk::$stream
 property	CapturedPart::$partId
 property	CapturedPart::$state
+property	CastStateValuesPipeline::$input
+property	CastStateValuesPipeline::$output
 property	CatalogueOnFirstRead::$build
 property	CatalogueOnFirstRead::$catalogue
 property	CertifyPassedStopsHandler::$access
@@ -36003,6 +36036,10 @@ property	FrameSettlement::$frameId
 property	FrameSettlement::$settledAt
 property	FrameSettlement::$stackId
 property	FrameSettlement::$target
+property	FrontendLayout::$aliases
+property	FrontendLayout::$project
+property	FrontendLayout::$roots
+property	FrontendLayout::$shell
 property	FunctionToParse::$start
 property	FunctionToParse::$toParse
 property	GatedCardContext::$gate
@@ -38198,6 +38235,8 @@ property	PipedCommands::$start
 property	PipedCommandsToParse::$negationStart
 property	PipedCommandsToParse::$toParse
 property	PipelineAdapter::$pipelines
+property	PipelineDefinition::$input
+property	PipelineDefinition::$output
 property	PipelineRunner::$container
 property	PipelineRunner::$reflectors
 property	PlaceRoots::$config
@@ -39235,10 +39274,16 @@ property	ReactInput::$messageId
 property	ReactionData::$count
 property	ReactionData::$emoji
 property	ReactionData::$isOwn
+property	ReadAndOrPipeline::$input
+property	ReadAndOrPipeline::$output
 property	ReadAttachmentTool::$attachments
 property	ReadBuilder::$completeRelationMax
 property	ReadBuilder::$mode
 property	ReadBuilder::$namedLimit
+property	ReadCommandPipeline::$input
+property	ReadCommandPipeline::$output
+property	ReadCompoundPipeline::$input
+property	ReadCompoundPipeline::$output
 property	ReadCounts::$modelsByClass
 property	ReadCounts::$modelsLoaded
 property	ReadCounts::$queriesByCategory
@@ -39256,7 +39301,11 @@ property	ReadHereDocumentBodies::$expansions
 property	ReadIdempotencyKey::$key
 property	ReadInboxHistoryCall::$inboxId
 property	ReadInboxHistoryCall::$page
+property	ReadKeywordFunctionPipeline::$input
+property	ReadKeywordFunctionPipeline::$output
 property	ReadLexerNewline::$documents
+property	ReadListPipeline::$input
+property	ReadListPipeline::$output
 property	ReadLog::$logger
 property	ReadMessagesCall::$inboxId
 property	ReadMessagesCall::$messageIds
@@ -39266,7 +39315,11 @@ property	ReadMessagesCommand::$inboxId
 property	ReadMessagesCommand::$messageIds
 property	ReadMessagesCommand::$signature
 property	ReadMessagesHandler::$messages
+property	ReadNamedFunctionPipeline::$input
+property	ReadNamedFunctionPipeline::$output
 property	ReadOperatorOrWord::$words
+property	ReadOptionStatementPipeline::$input
+property	ReadOptionStatementPipeline::$output
 property	ReadOrder::$columns
 property	ReadOutputBytesCall::$part
 property	ReadOutputBytesCall::$processRun
@@ -39287,10 +39340,14 @@ property	ReadPermit::$reference
 property	ReadPermit::$scopeVersion
 property	ReadPermit::$shareId
 property	ReadPermits::$permits
+property	ReadPipedCommandsPipeline::$input
+property	ReadPipedCommandsPipeline::$output
 property	ReadProgress::$completed
 property	ReadProgress::$total
 property	ReadProjectCommandStatusCall::$bindingId
 property	ReadProjectCommandStatusCall::$requestKey
+property	ReadRedirectPipeline::$input
+property	ReadRedirectPipeline::$output
 property	ReadReportTool::$reports
 property	ReadRequest::$arguments
 property	ReadRequest::$discovery
@@ -39316,10 +39373,16 @@ property	ReadShareHandler::$running
 property	ReadShownInput::$agent
 property	ReadShownInput::$inboxId
 property	ReadShownInput::$messageIds
+property	ReadSimpleCommandPipeline::$input
+property	ReadSimpleCommandPipeline::$output
 property	ReadSite::$callSite
 property	ReadSite::$shape
 property	ReadSource::$sequence
 property	ReadSource::$source
+property	ReadSourcePipeline::$input
+property	ReadSourcePipeline::$output
+property	ReadSubstitutionsPipeline::$input
+property	ReadSubstitutionsPipeline::$output
 property	ReadTally::$modelsByClass
 property	ReadTally::$modelsLoaded
 property	ReadTally::$queriesByCategory
@@ -39337,6 +39400,8 @@ property	ReadTextVersionCall::$target
 property	ReadTextVersionCall::$version
 property	ReadToolSearchAccess::$reads
 property	ReadWakeStatusCall::$messageId
+property	ReadWordPipeline::$input
+property	ReadWordPipeline::$output
 property	ReaderApproval::$proofId
 property	ReaderApproval::$readerRevisionId
 property	ReaderAssessment::$claimed
@@ -40437,6 +40502,8 @@ property	ResolveMergeAttemptCommand::$result
 property	ResolveMergeAttemptCommand::$statement
 property	ResolveMergeAttemptHandler::$owner
 property	ResolveMergeAttemptHandler::$settlement
+property	ResolveNavigationAdmissionPipeline::$input
+property	ResolveNavigationAdmissionPipeline::$output
 property	ResolvedDestinations::$address
 property	ResolvedDestinations::$holder
 property	ResolvedPipe::$pipe
@@ -40758,6 +40825,10 @@ property	RunAdmission::$projectKey
 property	RunAdmission::$registryRevision
 property	RunAdmission::$sourceDigest
 property	RunAdmission::$workingFolder
+property	RunAdmissionPipeline::$input
+property	RunAdmissionPipeline::$output
+property	RunAdmittedLinePipeline::$input
+property	RunAdmittedLinePipeline::$output
 property	RunChanged::$parts
 property	RunChanged::$runId
 property	RunChanged::$sequence
@@ -40797,7 +40868,11 @@ property	RunKeyScriptCommand::$signature
 property	RunKeyScriptHandler::$requests
 property	RunKeyScriptHandler::$scripts
 property	RunKeyScriptHandler::$validators
+property	RunLinePipeline::$input
+property	RunLinePipeline::$output
 property	RunListResolver::$projects
+property	RunNamedAdmissionPipeline::$input
+property	RunNamedAdmissionPipeline::$output
 property	RunNotificationTarget::$pages
 property	RunNotificationTarget::$summaries
 property	RunOutcomePageData::$runId
@@ -40819,8 +40894,12 @@ property	RunOutcomeWindowResolver::$summaries
 property	RunPart::$attempt
 property	RunPart::$node
 property	RunPart::$operation
+property	RunPermitPipeline::$input
+property	RunPermitPipeline::$output
 property	RunProcessCommand::$description
 property	RunProcessCommand::$signature
+property	RunProcessPipeline::$input
+property	RunProcessPipeline::$output
 property	RunProjectCommandCall::$argv
 property	RunProjectCommandCall::$bindingId
 property	RunProjectCommandCall::$requestKey
@@ -40836,6 +40915,8 @@ property	RunRowData::$operations
 property	RunRowData::$startedAt
 property	RunSignInsCommand::$description
 property	RunSignInsCommand::$signature
+property	RunSignedCallPipeline::$input
+property	RunSignedCallPipeline::$output
 property	RunSnapshotData::$lifecycle
 property	RunSnapshotData::$mode
 property	RunSnapshotData::$parts
@@ -44409,6 +44490,7 @@ variable	$cleanup
 variable	$close
 variable	$closed
 variable	$closes
+variable	$closesAtOnce
 variable	$closest
 variable	$closestLength
 variable	$code
@@ -44824,6 +44906,7 @@ variable	$groups
 variable	$grown
 variable	$guard
 variable	$guidedNoun
+variable	$handedOut
 variable	$handle
 variable	$handler
 variable	$handlerEntries
@@ -44961,6 +45044,7 @@ variable	$isConcreteEvent
 variable	$isContained
 variable	$isCoreBase
 variable	$isCoreListener
+variable	$isCounted
 variable	$isCurrent
 variable	$isDirectChild
 variable	$isDirectoryRemoved
@@ -45001,6 +45085,7 @@ variable	$isOwnProperty
 variable	$isOwnTurn
 variable	$isOwner
 variable	$isOwnerStart
+variable	$isPartial
 variable	$isPlain
 variable	$isPlainBool
 variable	$isPositiveNumber
@@ -45027,6 +45112,7 @@ variable	$isScoped
 variable	$isServed
 variable	$isSession
 variable	$isSettled
+variable	$isShared
 variable	$isSignedIn
 variable	$isSignedOut
 variable	$isSilent
@@ -45046,6 +45132,7 @@ variable	$isTouched
 variable	$isTransactionListener
 variable	$isTruncated
 variable	$isUnderWay
+variable	$isUsedByOnePage
 variable	$isWaiting
 variable	$isWanted
 variable	$isWeek
@@ -45186,6 +45273,7 @@ variable	$marker
 variable	$marks
 variable	$match
 variable	$matchOffset
+variable	$matched
 variable	$matches
 variable	$matchesProfile
 variable	$matching

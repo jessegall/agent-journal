@@ -65,8 +65,7 @@ final class DocumentPageTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('layout/DeclaredLayout')
                 ->where('page.data.root.children.1.children.1.children.0.text', 'Design')
-                ->where('page.data.root.children.1.children.1.children.1.children.0.text', 'doc 1')
-                ->where('page.data.root.children.1.children.1.children.1.children.1.text', 'revision 1')
+                ->where('page.data.root.children.1.children.1.children.1.children.0.text', 'Doc 1 · revision 1')
                 ->where('page.data.root.children.1.children.1.children.4.key', 'editing')
                 ->where('page.data.root.children.1.children.1.children.4.tag', 'form')
                 ->where('page.data.root.children.1.children.1.children.5.tabs.0.key', 'text')

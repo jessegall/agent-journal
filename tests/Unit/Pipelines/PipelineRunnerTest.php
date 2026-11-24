@@ -10,6 +10,7 @@ use App\Support\PipelineRunner;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Pipelines\Counted;
+use Tests\Fixtures\Pipelines\CountIntoWordsPipeline;
 use Tests\Fixtures\Pipelines\CountLastWordPipeline;
 use Tests\Fixtures\Pipelines\CountWords;
 use Tests\Fixtures\Pipelines\CountWordsPipeline;
@@ -77,6 +78,26 @@ final class PipelineRunnerTest extends TestCase
         );
 
         new PipelineRunner(new Container(), new CatalogueReflectorFactory())->run(CountWordsPipeline::class, new Words('a b'), Words::class);
+    }
+
+    public function test_a_value_the_pipeline_does_not_take_is_refused_before_its_first_step(): void
+    {
+        $this->expectException(StepOutOfOrder::class);
+        $this->expectExceptionMessage(
+            StepOutOfOrder::entering(CountWordsPipeline::class, Words::class, new Counted(0))->getMessage(),
+        );
+
+        new PipelineRunner(new Container(), new CatalogueReflectorFactory())->run(CountWordsPipeline::class, new Counted(0), Counted::class);
+    }
+
+    public function test_a_pipeline_that_ends_on_another_type_than_it_declares_is_refused(): void
+    {
+        $this->expectException(StepOutOfOrder::class);
+        $this->expectExceptionMessage(
+            StepOutOfOrder::leaving(CountIntoWordsPipeline::class, Words::class, new Counted(2))->getMessage(),
+        );
+
+        new PipelineRunner(new Container(), new CatalogueReflectorFactory())->run(CountIntoWordsPipeline::class, new Words('a b'), Words::class);
     }
 
     public function test_a_nested_pipeline_a_repeated_pipeline_and_a_choice_run_as_steps(): void

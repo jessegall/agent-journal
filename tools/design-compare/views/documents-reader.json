@@ -30,5 +30,455 @@
             }
         ],
         "part": "[data-reader]"
-    }
+    },
+    "accepted": [
+        {
+            "difference": "\"[tablist] Text\" (box) border-top-color",
+            "reason": "The kit Tab draws the window tab look (least width 56px, 12px apart) where the design gives a record its .ftab look; task 3042."
+        },
+        {
+            "difference": "\"History\" (tab) x",
+            "reason": "The kit Tab draws the window tab look (least width 56px, 12px apart) where the design gives a record its .ftab look; task 3042."
+        },
+        {
+            "difference": "\"Links\" (tab) x",
+            "reason": "The kit Tab draws the window tab look (least width 56px, 12px apart) where the design gives a record its .ftab look; task 3042."
+        },
+        {
+            "difference": "\"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\" (div) x",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\" (div) width",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\" (div) height",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\" (div) font-family",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\" (div) font-size",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\" (div) line-height",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\" (div) x",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\" (div) width",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\" (div) height",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\" (div) font-family",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\" (div) font-size",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\" (div) line-height",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\" (div) x",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\" (div) width",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\" (div) height",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\" (div) font-family",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\" (div) font-size",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\" (div) line-height",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The chat alone, and how it grows into an IDE-like Home.\" (p) gap below \"Design: Home, version 6\"",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"[tablist] Text\" (box) gap below \"The chat alone, and how it grows into an IDE-like Home.\"",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"Text\" (tab) gap below \"The chat alone, and how it grows into an IDE-like Home.\"",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"History\" (tab) gap below \"The chat alone, and how it grows into an IDE-like Home.\"",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"Links\" (tab) gap below \"The chat alone, and how it grows into an IDE-like Home.\"",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\" (div) gap below \"[tablist] Text\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\" (div) gap below \"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\" (div) gap below \"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Design: Home, version 6\" (h2) left edge with \"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Design: Home, version 6\" (h2) left edge with \"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Design: Home, version 6\" (h2) left edge with \"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The chat alone, and how it grows into an IDE-like Home.\" (p) left edge with \"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The chat alone, and how it grows into an IDE-like Home.\" (p) left edge with \"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The chat alone, and how it grows into an IDE-like Home.\" (p) left edge with \"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[tablist] Text\" (box) left edge with \"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[tablist] Text\" (box) left edge with \"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[tablist] Text\" (box) left edge with \"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Text\" (tab) left edge with \"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Text\" (tab) left edge with \"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Text\" (tab) left edge with \"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\"",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Doc 101 · revision 4 · today\" (div) only in the design",
+            "reason": "The design's label line ends in the revision's day ('today'), which needs a time the browser writes out; the seeded document's number and revision differ from the design's sample."
+        },
+        {
+            "difference": "\"Ask for feedback\" (button) only in the design",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"[button] Ask for feedback\" (box) only in the design",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"[tab] Text\" (box) only in the design",
+            "reason": "The kit Tab draws the window tab look (least width 56px, 12px apart) where the design gives a record its .ftab look; task 3042."
+        },
+        {
+            "difference": "\"[tab] History\" (box) only in the design",
+            "reason": "The kit Tab draws the window tab look (least width 56px, 12px apart) where the design gives a record its .ftab look; task 3042."
+        },
+        {
+            "difference": "\"[tab] Links\" (box) only in the design",
+            "reason": "The kit Tab draws the window tab look (least width 56px, 12px apart) where the design gives a record its .ftab look; task 3042."
+        },
+        {
+            "difference": "\"The chat, and only the chat\" (h3) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Growing by hand\" (h3) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Docking is tiling on the pane grid, version 6's paneLayout.ts.\" (div) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Floating is for a window taken out of the grid.\" (div) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Every piece of the IDE-like end is added this way.\" (div) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"One signal per fact\" (h3) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Select text to comment on it.\" (div) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Doc 2 · revision 1\" (span) only in the app",
+            "reason": "The design's label line ends in the revision's day ('today'), which needs a time the browser writes out; the seeded document's number and revision differ from the design's sample."
+        },
+        {
+            "difference": "\"[button] Document actions\" (box) only in the app",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"[button] Edit\" (box) only in the app",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"Edit\" (span) only in the app",
+            "reason": "The app keeps Edit and the actions menu beside the title, which makes the title row 28px tall and puts the editing form above the tabs; the design shows Ask for feedback under the title instead; task 3039 adds Ask for feedback and moves Edit into the actions menu."
+        },
+        {
+            "difference": "\"Details\" (span) only in the app",
+            "reason": "The Details tab holds the inspection facts the design has no place for."
+        },
+        {
+            "difference": "\"[button] Comment on this document\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Comment on this document\" (span) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"1\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 1\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"### The chat, and only the chat\" (pre) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"2\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 2\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"3\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 3\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"4\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 4\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"5\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 5\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"### Growing by hand\" (pre) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"6\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 6\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"7\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 7\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"8\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 8\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"9\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 9\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"- Docking is tiling on the pane grid, version 6's paneLayout.ts.\" (pre) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"10\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 10\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"- Floating is for a window taken out of the grid.\" (pre) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"11\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 11\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"- Every piece of the IDE-like end is added this way.\" (pre) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"12\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 12\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"13\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 13\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"### One signal per fact\" (pre) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"14\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 14\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"15\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 15\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"16\" (button) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Line 16\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Comments\" (h2) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"About the whole record\" (p) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Comment on the selected paragraphs\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Comment on the selected paragraphs\" (span) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Choose exact text in the source\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Choose exact text in the source\" (span) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Comment on a section\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Comment on a section\" (span) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"[button] Post comment\" (box) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Post comment\" (span) only in the app",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"Home is the chat until the user asks for more. The chat column, its cards and the composer keep to a reading width however wide the window is.\" (div) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"A window pushed past an edge of Home docks along that side; dropped on a pane's compass it splits that pane or joins its tabs. Panes share edges the user drags.\" (div) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        },
+        {
+            "difference": "\"The agent bar owns the agent's state; the question card's Answer says it waits on you; the bell in the topbar is the only bell.\" (div) only in the design",
+            "reason": "The Text tab shows the numbered source lines with their comment buttons where the design renders the Markdown with select-to-comment; task 3039 builds the rendered text."
+        }
+    ]
 }

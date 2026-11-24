@@ -30,6 +30,24 @@ final class StepOutOfOrder extends LogicException
     }
 
     /**
+     * @param  class-string  $definition
+     * @param  class-string  $declared
+     */
+    public static function entering(string $definition, string $declared, object $input): self
+    {
+        return new self(sprintf('[%s] takes a [%s] and was handed a [%s].', $definition, $declared, $input::class));
+    }
+
+    /**
+     * @param  class-string  $definition
+     * @param  class-string  $declared
+     */
+    public static function leaving(string $definition, string $declared, object $output): self
+    {
+        return new self(sprintf('[%s] hands out a [%s] and ended on a [%s].', $definition, $declared, $output::class));
+    }
+
+    /**
      * @param  class-string  $wanted
      */
     public static function endingSteps(string $wanted, object $output): self

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import Button from '@/components/kit/Button.vue';
+import Input from '@/components/kit/Input.vue';
 import type { ScreenMenuData, TerminalScreenIdentityData } from '@generated/types/core';
 import { PASTE_BYTE_LIMIT } from './terminalControl';
 import TerminalStopAction from './TerminalStopAction.vue';
@@ -23,7 +24,7 @@ const props = defineProps<{
 const emit = defineEmits<{ owner: [label: string] }>();
 
 const typed = ref('');
-const line = ref<HTMLInputElement | null>(null);
+const line = ref<InstanceType<typeof Input> | null>(null);
 const controlsButton = ref<HTMLElement | null>(null);
 const view = computed(() => props.control.view.value);
 
@@ -156,7 +157,7 @@ function onCompositionEnd(): void {
  */
 const privateValue = ref('');
 const privateButton = ref<HTMLElement | null>(null);
-const privateField = ref<HTMLInputElement | null>(null);
+const privateField = ref<InstanceType<typeof Input> | null>(null);
 
 function submitPrivate(): void {
     const value = privateValue.value;
@@ -308,10 +309,11 @@ async function copy(text: string): Promise<void> {
         </template>
         <template v-if="view.state === 'controlling'">
             <div class="flex gap-1.5">
-                <input
+                <Input
                     ref="line"
                     v-model="typed"
-                    class="min-w-0 flex-1 rounded border border-border-2 bg-bg px-2 py-1 font-mono text-small"
+                    size="sm"
+                    class="min-w-0 flex-1 font-mono"
                     aria-label="Type into the terminal; Enter sends the line"
                     autocomplete="off"
                     spellcheck="false"
@@ -359,11 +361,12 @@ async function copy(text: string): Promise<void> {
         </template>
         <template v-if="view.state === 'private'">
             <form class="flex gap-1.5" aria-label="Private input" @submit.prevent="submitPrivate">
-                <input
+                <Input
                     ref="privateField"
                     v-model="privateValue"
                     type="password"
-                    class="min-w-0 flex-1 rounded border border-border-2 bg-bg px-2 py-1 text-small"
+                    size="sm"
+                    class="min-w-0 flex-1"
                     aria-label="Private input; it is sent once and kept nowhere"
                     autocomplete="off"
                     @paste.stop

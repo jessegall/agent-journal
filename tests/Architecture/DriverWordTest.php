@@ -107,7 +107,7 @@ final class DriverWordTest extends TestCase
         'app/Values/ProgramIdentity.php',
         'app/Values/ProgramSpellings.php',
         'app/Values/WrapperRule.php',
-        'resources/js/sharing/GatewayConfigureForm.vue',
+        'resources/js/sharing/pages/sharing/GatewayConfigureForm.vue',
     ];
 
     /**

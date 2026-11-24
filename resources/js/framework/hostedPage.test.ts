@@ -2,7 +2,7 @@
 import { mount } from "@vue/test-utils";
 import { defineComponent, h, nextTick, onMounted, ref } from "vue";
 import { describe, expect, it } from "vitest";
-import ResultView from "./ResultView.vue";
+import ResultView from "../components/framework/ResultView.vue";
 import { hostedPage } from "./hostedPage";
 
 describe("a declared page", () => {

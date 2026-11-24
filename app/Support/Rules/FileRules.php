@@ -132,7 +132,7 @@ final readonly class FileRules
             ),
             CommandRule::forProgram(
                 'core.php.artisan-config-clear',
-                new ProgramSpellings('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5']),
+                ProgramSpellings::php(),
                 ['artisan', 'config:clear'],
                 ArgumentGrammar::options(['--ansi', '--no-ansi']),
                 $deleteClasses,

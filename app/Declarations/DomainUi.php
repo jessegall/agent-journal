@@ -161,7 +161,7 @@ final readonly class DomainUi
         }
 
         return CodeFiles::ofProcess()->realPathOf(
-            FilePath::in(Place::Project, 'resources/js/components/layout/'.self::DECLARED_LAYOUT),
+            FilePath::in(Place::Project, 'resources/js/pages/layout/'.self::DECLARED_LAYOUT),
         );
     }
 
@@ -176,8 +176,8 @@ final readonly class DomainUi
     }
 
     /**
-     * The real path of a component named relative to the domain's script folder; the funnel refuses one that escapes its root
-     * or links out of the project.
+     * The real path of a component named relative to the owner's page folder, pages/<key> of its script folder; the
+     * funnel refuses one that escapes its root or links out of the project.
      */
     public function componentFile(string $declaration, string $component): string
     {
@@ -188,12 +188,21 @@ final readonly class DomainUi
         $code = CodeFiles::ofProcess();
 
         try {
-            return $code->realPathOf($code->projectPathOf($this->scriptFolder)->child($component));
+            return $code->realPathOf($code->projectPathOf($this->pageFolder())->child($component));
         } catch (FilePathInvalid|FileOutsidePlaces|FolderClosed|LinkLeavesPlace $refusal) {
             throw UiComponentMissing::outsideOwner($declaration, $component, $refusal);
         } catch (FileMissing|LinkLoop $refusal) {
-            throw UiComponentMissing::at($declaration, "{$this->scriptFolder}/{$component}", $refusal);
+            throw UiComponentMissing::at($declaration, "{$this->pageFolder()}/{$component}", $refusal);
         }
+    }
+
+    /**
+     * The folder of the owner's page: pages/<key> under its script folder, holding the components it declares and,
+     * in partials, the ones only they use.
+     */
+    public function pageFolder(): string
+    {
+        return "{$this->scriptFolder}/pages/{$this->key}";
     }
 
     /**

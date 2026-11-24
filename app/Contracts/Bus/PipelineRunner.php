@@ -16,7 +16,7 @@ interface PipelineRunner
      *
      * @template TOutput of object
      *
-     * @param  class-string<PipelineDefinition>  $definition
+     * @param  class-string<PipelineDefinition<object, object>>  $definition
      * @param  class-string<TOutput>  $output
      * @return TOutput
      */

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { componentNamed } from '@/framework/manifestComponents';
-import WindowHost from '@/framework/WindowHost.vue';
+import WindowHost from '@/components/framework/WindowHost.vue';
 import type { SlotSectionData } from '@/generated/types/core';
 
 /**

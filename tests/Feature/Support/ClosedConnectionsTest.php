@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Support;
 
 use Illuminate\Support\Facades\DB;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
 
@@ -15,16 +15,10 @@ use Tests\TestCase;
  */
 final class ClosedConnectionsTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
     use UsesSecondConnection;
 
-    /**
-     * @return list<string|null>
-     */
-    protected function connectionsToTransact(): array
-    {
-        return [];
-    }
+    private const array TABLES = [];
 
     public function test_a_transaction_left_open_holds_its_lock_until_the_connections_close(): void
     {

@@ -38,7 +38,7 @@ final class UiManifestTest extends TestCase
 
     private const string SHELF_COMPONENT = "'shelf/Index': () => import('";
 
-    private const string LOGIN_COMPONENT = "'Login': () => import('../../../resources/js/pages/Login.vue')";
+    private const string LOGIN_COMPONENT = "'Login': () => import('../../../resources/js/pages/login/Login.vue')";
 
     private const string READY_STATE = "| { state: 'ready'; data: T; dockOffer?: DockOfferData }";
 
@@ -54,7 +54,7 @@ final class UiManifestTest extends TestCase
 
     private const string PAGE_PROPS_IMPORT = "import type { RecentNotesData } from './types/page-props';";
 
-    private const string SHELF_CHECK = "Shelf/Resources/js/Index.vue').default> = true;";
+    private const string SHELF_CHECK = "Shelf/Resources/js/pages/shelf/Index.vue').default> = true;";
 
     private const string LENT_WINDOW = 'window_shelf_lent?: WindowResult<DeclaredLayoutData>;';
 
@@ -65,8 +65,8 @@ final class UiManifestTest extends TestCase
         parent::setUp();
 
         $this->makeTemporaryFolder('ui-manifest');
-        File::ensureDirectoryExists("{$this->root}/resources/js/pages");
-        File::put("{$this->root}/resources/js/pages/Login.vue", '<template><div /></template>');
+        File::ensureDirectoryExists("{$this->root}/resources/js/pages/login");
+        File::put("{$this->root}/resources/js/pages/login/Login.vue", '<template><div /></template>');
     }
 
     public function test_two_domains_index_components_get_distinct_literal_imports_from_outside_app(): void
@@ -80,7 +80,7 @@ final class UiManifestTest extends TestCase
             self::LOGIN_COMPONENT,
             $components,
         );
-        $this->assertStringContainsString('tests/Fixtures/UiDeclarations/Shelf/Resources/js/Index.vue', $components);
+        $this->assertStringContainsString('tests/Fixtures/UiDeclarations/Shelf/Resources/js/pages/shelf/Index.vue', $components);
 
         foreach ([
             'resources/js/generated/ui-manifest.ts',
@@ -108,8 +108,8 @@ final class UiManifestTest extends TestCase
         $next = $this->manifest([$this->library()]);
         $nextRoot = $this->root;
         $this->makeTemporaryFolder('ui-manifest-next');
-        File::ensureDirectoryExists("{$this->root}/resources/js/pages");
-        File::put("{$this->root}/resources/js/pages/Login.vue", '<template><div /></template>');
+        File::ensureDirectoryExists("{$this->root}/resources/js/pages/login");
+        File::put("{$this->root}/resources/js/pages/login/Login.vue", '<template><div /></template>');
         $nextHash = $next->write($this->root);
         File::deleteDirectory($this->root);
         $this->root = $nextRoot;
@@ -169,8 +169,8 @@ final class UiManifestTest extends TestCase
 
     public function test_a_declared_layout_page_is_typed_with_the_layout_and_drawn_by_the_shared_renderer(): void
     {
-        File::ensureDirectoryExists("{$this->root}/resources/js/components/layout");
-        File::put("{$this->root}/resources/js/components/layout/DeclaredLayout.vue", '<template><div /></template>');
+        File::ensureDirectoryExists("{$this->root}/resources/js/pages/layout");
+        File::put("{$this->root}/resources/js/pages/layout/DeclaredLayout.vue", '<template><div /></template>');
         $shelf = DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
             Page::make('index', 'Shelf', Icon::Docs, ShelfResolver::class, 'Index.vue')->at(''),
             Page::layout('lent', 'Lent', Icon::Docs, ShelfLayoutResolver::class)->at('lent'),

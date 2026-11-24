@@ -15,14 +15,22 @@ use App\Pipes\Answer\RenderReply;
 use App\Pipes\Answer\RestoreStack;
 use App\Pipes\Answer\SaveCall;
 use App\Pipes\Answer\WalkStack;
+use App\Support\CallStages\HookCallStage;
+use App\Support\Drivers\DriverReply;
 
 /**
  * Answers one hook call inside its stack transaction: lock the stack, leave with a recorded reply, prepare the call,
  * restore and walk the stack, keep or hand over the states' messages, settle the frames' lifecycle, render the reply
  * and save it with the stack.
+ *
+ * @implements PipelineDefinition<HookCallStage, DriverReply>
  */
 final readonly class AnswerHookPipeline implements PipelineDefinition
 {
+    public string $input = HookCallStage::class;
+
+    public string $output = DriverReply::class;
+
     public function pipes(): array
     {
         return [

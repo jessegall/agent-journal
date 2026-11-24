@@ -15,9 +15,15 @@ use App\Support\Step;
 
 /**
  * Answers a locked raise with the first admission decision that applies.
+ *
+ * @implements PipelineDefinition<NavigationAdmission, NavigationRaiseAnswer>
  */
 final readonly class ResolveNavigationAdmissionPipeline implements PipelineDefinition
 {
+    public string $input = NavigationAdmission::class;
+
+    public string $output = NavigationRaiseAnswer::class;
+
     public function pipes(): array
     {
         return array_map(

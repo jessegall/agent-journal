@@ -1,0 +1,183 @@
+{
+    "$schema": "commandments:neutral-rule/v2",
+    "engine": [
+        "php",
+        "typescript",
+        "python",
+        "go"
+    ],
+    "sin": {
+        "description": "A condition checks one object twice, once through a named local and once inline.",
+        "name": "mixed-condition-checks",
+        "rule": "Write every check of one object in a condition the same way: name each first as a boolean local ($isPipe = $type->is(Pipe::class)), or write each inline when each is used once and the condition stays readable (user 19331).",
+        "skill": "mixed-condition-checks"
+    },
+    "definitions": {
+        "receiverName": {
+            "args": [
+                "c"
+            ],
+            "expr": [
+                "and",
+                [
+                    "is",
+                    "$c",
+                    "call"
+                ],
+                [
+                    "=",
+                    "$c.callee.form",
+                    "instance"
+                ],
+                [
+                    "is",
+                    "$c.callee.subject",
+                    "reference"
+                ]
+            ]
+        },
+        "standsAsCheck": {
+            "args": [
+                "n"
+            ],
+            "expr": [
+                "or",
+                [
+                    "is",
+                    [
+                        "first",
+                        [
+                            "ancestors",
+                            "$n"
+                        ]
+                    ],
+                    "logical"
+                ],
+                [
+                    "and",
+                    [
+                        "is",
+                        [
+                            "first",
+                            [
+                                "ancestors",
+                                "$n"
+                            ]
+                        ],
+                        "unary"
+                    ],
+                    [
+                        "is",
+                        [
+                            "at",
+                            [
+                                "ancestors",
+                                "$n"
+                            ],
+                            1
+                        ],
+                        "logical"
+                    ]
+                ]
+            ]
+        }
+    },
+    "find": {
+        "select": "logical",
+        "as": "l",
+        "let": [
+            [
+                "named",
+                [
+                    "filter",
+                    [
+                        "descendants",
+                        "$l",
+                        "reference"
+                    ],
+                    "r",
+                    [
+                        "and",
+                        [
+                            "standsAsCheck",
+                            "$r"
+                        ],
+                        [
+                            "receiverName",
+                            [
+                                "assignedOnce",
+                                "$r"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                "inline",
+                [
+                    "filter",
+                    [
+                        "descendants",
+                        "$l",
+                        "call"
+                    ],
+                    "c",
+                    [
+                        "and",
+                        [
+                            "standsAsCheck",
+                            "$c"
+                        ],
+                        [
+                            "receiverName",
+                            "$c"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        "where": [
+            "not",
+            [
+                "exists",
+                [
+                    "enclosing",
+                    "$l",
+                    "logical",
+                    "statement"
+                ]
+            ]
+        ],
+        "having": [
+            "some",
+            "$named",
+            "r",
+            [
+                "some",
+                "$inline",
+                "c",
+                [
+                    "=",
+                    [
+                        "get",
+                        [
+                            "get",
+                            [
+                                "get",
+                                [
+                                    "assignedOnce",
+                                    "$r"
+                                ],
+                                "callee"
+                            ],
+                            "subject"
+                        ],
+                        "name"
+                    ],
+                    "$c.callee.subject.name"
+                ]
+            ]
+        ],
+        "emit": "$l"
+    }
+}

@@ -31,7 +31,10 @@ export type TerminalPresentation = {
     ageSeconds: number;
 };
 
-function clientFor(agentId: string): TerminalClient {
+/**
+ * The terminal's read client for one agent, through the journal's terminal routes.
+ */
+export function terminalClientFor(agentId: string): TerminalClient {
     return {
         open: async (requestId, signal) =>
             (await postJson<TerminalInterestData>(
@@ -116,7 +119,7 @@ export function useTerminalController(agentId: Ref<string>, isShown: Ref<boolean
 
     function subscribe(agent: string): TerminalSubscription {
         return new TerminalSubscription(
-            clientFor(agent),
+            terminalClientFor(agent),
             newRequestId,
             () => Date.now(),
             (shown) => {

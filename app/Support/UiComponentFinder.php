@@ -10,7 +10,7 @@ use InvalidArgumentException;
 
 /**
  * Inertia's page check, answered from the same declarations the UI manifest is built from: a declared page's component
- * by its <domain>/<path> name, and the shell's own pages under resources/js/pages through Laravel's view finder.
+ * by its <domain>/<path> name, and the sign-in page under resources/js/pages/login through Laravel's view finder.
  */
 final readonly class UiComponentFinder
 {

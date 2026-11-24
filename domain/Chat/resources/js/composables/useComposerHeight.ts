@@ -9,7 +9,7 @@ const restingRows = 1;
 const mostRows = 16;
 
 export function useComposerHeight(
-  textarea: Ref<HTMLTextAreaElement | null>,
+  textarea: Readonly<Ref<HTMLTextAreaElement | null>>,
   text: Ref<string>,
 ): void {
   async function fit(): Promise<void> {

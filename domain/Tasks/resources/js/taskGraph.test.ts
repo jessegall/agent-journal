@@ -3,7 +3,7 @@ import { router } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import type { TaskGraph as TaskGraphProps } from '@generated/types/tasks';
-import TaskGraph from './TaskGraph.vue';
+import TaskGraph from './pages/tasks/TaskGraph.vue';
 
 function graph(overrides: Partial<TaskGraphProps> = {}): TaskGraphProps {
     return {

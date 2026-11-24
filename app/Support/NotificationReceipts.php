@@ -112,9 +112,11 @@ final readonly class NotificationReceipts
             return false;
         }
 
+        $isCounted = $locked->isCounted();
+
         match (true) {
-            $wasCounted && ! $locked->isCounted() => $scope->removeUnread(),
-            ! $wasCounted && $locked->isCounted() => $scope->addUnread(),
+            $wasCounted && ! $isCounted => $scope->removeUnread(),
+            ! $wasCounted && $isCounted => $scope->addUnread(),
             default => $scope->recordChange(),
         };
 

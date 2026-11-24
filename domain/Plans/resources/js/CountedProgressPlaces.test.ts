@@ -17,9 +17,9 @@ vi.mock('@generated/routes/plans', () => ({
     plan: { url: ({ plan }: { plan: string }) => `/plans/${plan}` },
 }));
 
-const { default: PlanCard } = await import('./PlanCard.vue');
-const { default: PlanReader } = await import('./PlanReader.vue');
-const { default: PhaseWindow } = await import('./PhaseWindow.vue');
+const { default: PlanCard } = await import('./components/plans/PlanCard.vue');
+const { default: PlanReader } = await import('./pages/plans/partials/PlanReader.vue');
+const { default: PhaseWindow } = await import('./pages/plans/PhaseWindow.vue');
 
 const counts = { finishedTasks: 1, cancelledTasks: 1, totalTasks: 2 };
 const card = {

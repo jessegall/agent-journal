@@ -31,7 +31,7 @@ final class PipelineRunner implements PipelineRunnerContract
      *
      * @template TOutput of object
      *
-     * @param  class-string<PipelineDefinition>  $definition
+     * @param  class-string<PipelineDefinition<object, object>>  $definition
      * @param  class-string<TOutput>  $output
      * @return TOutput
      */
@@ -86,10 +86,38 @@ final class PipelineRunner implements PipelineRunnerContract
     private function build(object $made): Closure
     {
         if ($made instanceof PipelineDefinition) {
-            return $this->sequence($made->pipes());
+            return $this->checked($made, $this->sequence($made->pipes()));
         }
 
         return ResolvedPipe::of($made)->handle(...);
+    }
+
+    /**
+     * The definition's run between its two checks: the value handed in must be its declared input before the first
+     * step, and the value coming out its declared output after the last.
+     *
+     * @param  PipelineDefinition<object, object>  $definition
+     * @param  Closure(object): object  $run
+     * @return Closure(object): object
+     */
+    private function checked(PipelineDefinition $definition, Closure $run): Closure
+    {
+        $input = $this->reflectors->make($definition->input);
+        $output = $this->reflectors->make($definition->output);
+
+        return function (object $value) use ($definition, $input, $output, $run): object {
+            if (! $input->isInstance($value)) {
+                throw StepOutOfOrder::entering($definition::class, $definition->input, $value);
+            }
+
+            $handedOut = $run($value);
+
+            if (! $output->isInstance($handedOut)) {
+                throw StepOutOfOrder::leaving($definition::class, $definition->output, $handedOut);
+            }
+
+            return $handedOut;
+        };
     }
 
     /**

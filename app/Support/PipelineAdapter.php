@@ -22,7 +22,7 @@ abstract readonly class PipelineAdapter implements Pipe
     public function __construct(private PipelineRunner $pipelines) {}
 
     /**
-     * @return class-string<PipelineDefinition>
+     * @return class-string<PipelineDefinition<object, object>>
      */
     abstract protected function definition(): string;
 

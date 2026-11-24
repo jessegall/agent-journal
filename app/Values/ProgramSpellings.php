@@ -16,6 +16,14 @@ final readonly class ProgramSpellings
     public function __construct(public string $family, public array $spellings = []) {}
 
     /**
+     * PHP under each versioned name a system installs it as.
+     */
+    public static function php(): self
+    {
+        return new self('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5', 'php8.6']);
+    }
+
+    /**
      * @return array{family: string, spellings: list<string>}
      */
     public function toArray(): array
