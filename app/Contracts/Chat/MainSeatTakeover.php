@@ -11,5 +11,8 @@ use App\Models\Agents\Agent;
  */
 interface MainSeatTakeover
 {
+    /**
+     * Seats the agent at main in place of the agent there now, which loses the seat.
+     */
     public function takeOver(Agent $agent): void;
 }

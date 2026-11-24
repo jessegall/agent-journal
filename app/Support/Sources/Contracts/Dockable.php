@@ -14,7 +14,13 @@ use App\Support\Sources\DockDefinition;
  */
 interface Dockable
 {
+    /**
+     * The identity a docked card of the record is kept under.
+     */
     public function identifyFor(DockDefinition $definition): DockIdentity;
 
+    /**
+     * The card the record shows when docked, in the context.
+     */
     public function composeDockCard(CardContext $context): DockCard;
 }

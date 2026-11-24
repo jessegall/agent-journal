@@ -12,7 +12,13 @@ use App\Values\CommandPermissions;
  */
 interface CommandPermissionResolver
 {
+    /**
+     * The commands the current session may run.
+     */
     public function forCurrentSession(): CommandPermissions;
 
+    /**
+     * The commands the actor may run.
+     */
     public function forActor(ActorIdentity $actor): CommandPermissions;
 }

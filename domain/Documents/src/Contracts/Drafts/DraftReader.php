@@ -8,5 +8,8 @@ use Domain\Documents\Values\RetainedDraftView;
 
 interface DraftReader
 {
+    /**
+     * The kept draft as its reader shows it.
+     */
     public function draft(string $id): RetainedDraftView;
 }

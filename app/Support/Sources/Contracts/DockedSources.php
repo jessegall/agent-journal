@@ -11,6 +11,9 @@ use App\Support\Cards\DockIdentity;
  */
 interface DockedSources
 {
+    /**
+     * Whether the source has a docked card now.
+     */
     public function isDocked(DockIdentity $source): bool;
 
     /**

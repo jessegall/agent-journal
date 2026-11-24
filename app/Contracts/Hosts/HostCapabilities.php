@@ -12,5 +12,8 @@ use App\Support\HostCapabilityQuery;
  */
 interface HostCapabilities
 {
+    /**
+     * Whether the host can do what the query asks, and why not when it cannot.
+     */
     public function capability(HostCapabilityQuery $query): HostCapability;
 }

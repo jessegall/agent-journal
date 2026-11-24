@@ -12,5 +12,8 @@ use App\Values\ShellCommand;
  */
 interface ShellCommandParser
 {
+    /**
+     * The shell line, read in the dialect, as the commands it holds.
+     */
     public function parse(string $line, ShellDialect $dialect): ShellCommand;
 }

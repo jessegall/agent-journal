@@ -19,8 +19,14 @@ use App\Values\SignInPoll;
  */
 interface SignInHost
 {
+    /**
+     * Takes the next sign-in waiting for the host; none when nothing waits.
+     */
     public function claim(): ClaimedSignIn|null;
 
+    /**
+     * Records how a claimed sign-in ended, with the identity it signed in as and the reason when it was refused.
+     */
     public function report(
         ClaimedSignIn $claimed,
         SignInOutcome $outcome,
@@ -28,12 +34,24 @@ interface SignInHost
         string|null $refusal = null,
     ): void;
 
+    /**
+     * Shows the user the challenge a claimed sign-in asks them to answer, such as a code to enter.
+     */
     public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void;
 
+    /**
+     * Takes the next account check waiting for the host; none when nothing waits.
+     */
     public function claimCheck(): ClaimedAccountCheck|null;
 
+    /**
+     * Records the result of a claimed account check.
+     */
     public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void;
 
+    /**
+     * Takes the next account folder cleanup waiting for the host; none when nothing waits.
+     */
     public function claimCleanup(): ClaimedCleanup|null;
 
     /**
@@ -43,6 +61,9 @@ interface SignInHost
      */
     public function reconcileSignIns(array $runningAttemptIds): void;
 
+    /**
+     * Records how far a claimed cleanup got, so an unfinished one is tried again.
+     */
     public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void;
 
     /**

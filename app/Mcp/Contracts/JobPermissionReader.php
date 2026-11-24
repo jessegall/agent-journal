@@ -8,5 +8,8 @@ use App\Mcp\Tools\JournalTool;
 
 interface JobPermissionReader
 {
+    /**
+     * Whether the current agent's job may use the tool.
+     */
     public function allows(JournalTool $tool): bool;
 }

@@ -32,6 +32,9 @@ abstract class JournalWriteTool extends JournalTool
         ];
     }
 
+    /**
+     * Runs the command a call of the tool builds under the call's request key, so a repeated call gets its first reply.
+     */
     final public function handle(Request $request, CommandBus $bus, RequestKey $key, McpCall $call): ResponseFactory
     {
         return $call->answerTool($this->name(), function () use ($request, $bus, $key): ToolResult {
@@ -56,5 +59,8 @@ abstract class JournalWriteTool extends JournalTool
      */
     abstract protected function command(ToolArguments $arguments): Command;
 
+    /**
+     * The tool's answer from the reply of the command it ran.
+     */
     abstract protected function present(mixed $commandReply): ToolResult;
 }

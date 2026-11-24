@@ -18,6 +18,9 @@ use Laravel\Mcp\ResponseFactory;
  */
 abstract class JournalReadTool extends JournalTool
 {
+    /**
+     * The read a call of the tool makes, or its discovery when no arguments are given yet.
+     */
     public function readRequest(ToolArguments|null $arguments = null): ReadRequest
     {
         return $arguments === null ? ReadRequest::forDiscovery($this->name()) : new ReadRequest($this->name());
@@ -35,6 +38,9 @@ abstract class JournalReadTool extends JournalTool
         return ReadRequest::forRecord($this->name(), $idArgument, $arguments->ulid($idArgument));
     }
 
+    /**
+     * Answers a call of the read tool once the read grant allows it, so its reply is recorded and repeated.
+     */
     final public function handle(Request $request, McpCall $call, ReadGrant $reads): ResponseFactory
     {
         return $call->answerTool($this->name(), function () use ($request, $reads): ToolResult {
@@ -45,5 +51,8 @@ abstract class JournalReadTool extends JournalTool
         });
     }
 
+    /**
+     * The tool's answer to the read its arguments ask for.
+     */
     abstract protected function read(ToolArguments $arguments): ToolResult;
 }

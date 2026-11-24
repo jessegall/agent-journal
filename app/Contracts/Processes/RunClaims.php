@@ -40,5 +40,8 @@ interface RunClaims
      */
     public function holderOf(RecordIdentity $run): Option;
 
+    /**
+     * Ends the claim on the run, so another may take it.
+     */
     public function release(RecordIdentity $run): void;
 }

@@ -48,6 +48,9 @@ interface ConversationResolver
      */
     public function timeline(string $inboxId, string|null $olderCursor, int $limit): MessagePage;
 
+    /**
+     * How many messages of the inbox are unread, waiting and answered.
+     */
     public function counts(string $inboxId): InboxCounts;
 
     /**

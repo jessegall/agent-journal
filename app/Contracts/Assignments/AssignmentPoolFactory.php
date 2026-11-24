@@ -13,6 +13,9 @@ use App\Support\PoolReference;
  */
 interface AssignmentPoolFactory
 {
+    /**
+     * The pool, ready to hand work to the assignee's members.
+     */
     public function open(PoolReference $pool, ActorIdentity $assignee): AssignmentPool;
 
     /**
@@ -20,5 +23,8 @@ interface AssignmentPoolFactory
      */
     public function validate(PoolReference $pool, ActorIdentity $assignee): void;
 
+    /**
+     * The pool as the settings page shows it for the assignee.
+     */
     public function describe(PoolReference $pool, ActorIdentity $assignee): PoolDescription;
 }

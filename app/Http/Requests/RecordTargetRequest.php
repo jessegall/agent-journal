@@ -22,6 +22,9 @@ abstract class RecordTargetRequest extends FormRequest
         return ['target' => ['required', 'string', 'max:64']];
     }
 
+    /**
+     * The record the request's target field names.
+     */
     public function target(RecordResolver $records): RecordIdentity
     {
         return $records->identify(RecordReference::parse($this->string('target')->toString()));

@@ -13,5 +13,8 @@ use App\Values\WorkRepairRequest;
  */
 interface WorkRepair
 {
+    /**
+     * Opens the work again as the request asks, so its holder can mend it, and says what came of it.
+     */
     public function reopen(WorkRepairRequest $request): WorkRepairOutcome;
 }

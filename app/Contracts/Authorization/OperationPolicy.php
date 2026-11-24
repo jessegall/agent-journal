@@ -13,5 +13,8 @@ use App\Values\Operation;
  */
 interface OperationPolicy
 {
+    /**
+     * Whether the operation is allowed, and the reason either way.
+     */
     public function assess(Operation $operation): AccessDecision;
 }

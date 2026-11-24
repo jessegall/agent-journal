@@ -9,5 +9,8 @@ namespace App\Contracts\Settings;
  */
 interface SettingsProvider
 {
+    /**
+     * The settings this provider declares.
+     */
     public function settings(): SettingsDefinition;
 }

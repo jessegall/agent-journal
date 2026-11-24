@@ -12,5 +12,8 @@ use Carbon\CarbonImmutable;
  */
 interface TerminalViewCloser
 {
+    /**
+     * Closes every terminal view the viewer has open on the agent.
+     */
     public function closeAllFor(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void;
 }

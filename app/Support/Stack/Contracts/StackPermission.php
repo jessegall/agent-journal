@@ -10,5 +10,8 @@ use App\Values\StackVerdict;
 
 interface StackPermission
 {
+    /**
+     * Whether the target's stack lets work with the effect go ahead, and which state decides.
+     */
     public function allows(StackTarget $target, CommandEffectType $effect): StackVerdict;
 }

@@ -13,6 +13,9 @@ use App\Exceptions\ActorNotAllowed;
  */
 interface AuthorizerProvider
 {
+    /**
+     * The authorizer that decides what the actor may do.
+     */
     public function forActor(Actor $actor): Authorizer;
 
     /**

@@ -31,10 +31,16 @@ abstract class JournalResource extends Resource
         return $mimeType;
     }
 
+    /**
+     * Answers the request for the resource through the call, so its reply is recorded and repeated.
+     */
     final public function handle(Request $request, McpCall $call): Response
     {
         return $call->answerResource($this->uri(), fn () => $this->read($request));
     }
 
+    /**
+     * The resource's content for the request.
+     */
     abstract protected function read(Request $request): Response;
 }

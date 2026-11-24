@@ -17,6 +17,9 @@ use Illuminate\JsonSchema\Types\ObjectType;
  */
 trait ReadsAssignmentArguments
 {
+    /**
+     * The schema of an assignee argument: its actor type and id.
+     */
     final protected function assigneeSchema(JsonSchema $schema): ObjectType
     {
         return $schema->object([
@@ -25,6 +28,9 @@ trait ReadsAssignmentArguments
         ])->withoutAdditionalProperties()->required();
     }
 
+    /**
+     * The schema of the expected assignment argument: its id and holder.
+     */
     final protected function expectedSchema(JsonSchema $schema): ObjectType
     {
         return $schema->object([
@@ -33,11 +39,17 @@ trait ReadsAssignmentArguments
         ])->withoutAdditionalProperties()->required();
     }
 
+    /**
+     * The assignee the recipient argument names.
+     */
     final protected function recipient(ToolArguments $arguments): AssigneeIdentity
     {
         return $this->assignee($arguments->object('recipient', ['type', 'id']));
     }
 
+    /**
+     * The assignment the expected assignment argument names, which the record must still hold.
+     */
     final protected function expected(ToolArguments $arguments): AssignmentReference
     {
         $expected = $arguments->object('expected_assignment', ['id', 'holder']);

@@ -9,7 +9,13 @@ namespace App\Contracts\Navigation;
  */
 interface PageOption
 {
+    /**
+     * The key the option is chosen by.
+     */
     public function key(): string;
 
+    /**
+     * The words users see for the option.
+     */
     public function label(): string;
 }

@@ -18,5 +18,8 @@ interface NavigationRecords
      */
     public function counts(): NavigationCountsData;
 
+    /**
+     * The navigation the request's reader sees: its groups and pages.
+     */
     public function tree(Request $request): NavigationData;
 }

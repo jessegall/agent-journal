@@ -18,6 +18,9 @@ use App\Values\AgentText;
  */
 abstract readonly class UnsupportedCommandReader implements CommandReader, Pipe
 {
+    /**
+     * Takes the list of shell constructs the parser skips.
+     */
     public function __construct(private UnsupportedConstructs $unsupported) {}
 
     /**
@@ -28,5 +31,8 @@ abstract readonly class UnsupportedCommandReader implements CommandReader, Pipe
         return new NodeRead($this->unsupported->skip($toParse->context, $this->reason(), null));
     }
 
+    /**
+     * Why the parser does not read this construct, as the agent is told.
+     */
     abstract protected function reason(): AgentText;
 }

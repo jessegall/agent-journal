@@ -10,5 +10,8 @@ namespace App\Contracts\Domains;
  */
 interface DomainAvailability
 {
+    /**
+     * Whether the domain of that owner is switched on.
+     */
     public function isEnabled(string $owner): bool;
 }

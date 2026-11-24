@@ -27,6 +27,9 @@ interface ProfileResolver
      */
     public function snapshotAt(ProfileKey $key, int $revision): ProfileSnapshot;
 
+    /**
+     * Whether a profile with the key exists.
+     */
     public function has(ProfileKey $key): bool;
 
     /**

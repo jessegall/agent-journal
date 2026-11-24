@@ -9,5 +9,8 @@ namespace App\Contracts\Hosts;
  */
 interface HostOperatorAccess
 {
+    /**
+     * Whether the current actor may operate the host.
+     */
     public function isGranted(): bool;
 }

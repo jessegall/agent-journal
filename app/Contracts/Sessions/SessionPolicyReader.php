@@ -11,6 +11,9 @@ use App\Values\StartPolicy;
  */
 interface SessionPolicyReader
 {
+    /**
+     * The start policy the session runs under.
+     */
     public function policyFor(string $sessionId): StartPolicy;
 
     /**

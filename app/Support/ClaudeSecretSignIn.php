@@ -31,6 +31,9 @@ abstract readonly class ClaudeSecretSignIn implements FirstRunSettlement, SignIn
         return SignInHosts::anthropic();
     }
 
+    /**
+     * Takes the Claude driver, the files and the first-run settlement every sign-in by a secret uses.
+     */
     public function __construct(
         protected ClaudeDriver $claude,
         protected Files $files,
@@ -147,6 +150,9 @@ abstract readonly class ClaudeSecretSignIn implements FirstRunSettlement, SignIn
      */
     abstract protected function install(string $directory): void;
 
+    /**
+     * Removes what the sign-in wrote into the account directory.
+     */
     abstract protected function uninstall(string $directory): void;
 
     /**

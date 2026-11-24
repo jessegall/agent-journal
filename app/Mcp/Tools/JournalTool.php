@@ -21,11 +21,17 @@ use PhpOption\Option;
  */
 abstract class JournalTool extends Tool
 {
+    /**
+     * Whether the server offers the tool to the current agent, as its job allows.
+     */
     final public function shouldRegister(JobPermissionReader $permissions): bool
     {
         return $permissions->allows($this);
     }
 
+    /**
+     * Whether agents of the discovery profile see the tool, as its VisibleToProfiles attribute says.
+     */
     final public function isVisibleTo(DiscoveryProfile $profile): bool
     {
         foreach (Reflector::of($this)->lineage() as $type) {

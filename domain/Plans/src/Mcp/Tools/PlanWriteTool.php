@@ -26,6 +26,9 @@ abstract class PlanWriteTool extends JournalWriteTool
         ];
     }
 
+    /**
+     * The schema of a plan type argument: one of the plan types.
+     */
     final protected function typeSchema(JsonSchema $schema): StringType
     {
         return $schema->string()->enum(array_column(PlanType::cases(), 'value'));

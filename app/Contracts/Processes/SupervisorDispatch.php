@@ -13,5 +13,8 @@ use App\Values\SupervisorRequest;
  */
 interface SupervisorDispatch
 {
+    /**
+     * Starts the supervisor the request asks for, or says why none started.
+     */
     public function startFor(SupervisorRequest $request): SupervisorDispatchOutcome;
 }

@@ -13,9 +13,18 @@ use App\Support\Wire\DestinationEncoder;
  */
 interface PartField
 {
+    /**
+     * The name of the field on the wire.
+     */
     public function name(): string;
 
+    /**
+     * The TypeScript type of the field, for the generated frontend types.
+     */
     public function typeScript(): string;
 
+    /**
+     * The field's value on the part, as the frontend receives it.
+     */
     public function encode(DockPart $part, DestinationEncoder $destinations): mixed;
 }

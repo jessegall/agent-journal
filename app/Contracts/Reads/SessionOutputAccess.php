@@ -17,5 +17,8 @@ interface SessionOutputAccess
      */
     public function grantedTo(string $sessionId): array;
 
+    /**
+     * Whether the current reader may read the file at the path the session wrote.
+     */
     public function mayRead(string $sessionId, string $path): bool;
 }

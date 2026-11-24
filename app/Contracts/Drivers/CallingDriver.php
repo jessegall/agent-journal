@@ -10,5 +10,8 @@ namespace App\Contracts\Drivers;
  */
 interface CallingDriver
 {
+    /**
+     * The key of the driver the running request came through; none outside a driver call.
+     */
     public function driverKey(): string|null;
 }

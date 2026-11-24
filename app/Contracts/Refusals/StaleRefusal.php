@@ -12,5 +12,8 @@ use App\Contracts\Bus\CommandRefusal;
  */
 interface StaleRefusal extends CommandRefusal
 {
+    /**
+     * The code that says the record moved on since the caller read it.
+     */
     public function staleCode(): string;
 }

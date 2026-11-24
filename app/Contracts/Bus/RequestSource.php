@@ -11,5 +11,9 @@ use App\Support\RecordIdentity;
  */
 interface RequestSource
 {
+    /**
+     * The record the running request was selected from, such as the message an agent works from; none when there is
+     * none.
+     */
     public function selectedSource(): RecordIdentity|null;
 }

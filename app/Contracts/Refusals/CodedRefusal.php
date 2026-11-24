@@ -11,5 +11,8 @@ use App\Enums\RefusalCode;
  */
 interface CodedRefusal
 {
+    /**
+     * The code a caller tells this refusal apart by.
+     */
     public function refusalCode(): RefusalCode;
 }

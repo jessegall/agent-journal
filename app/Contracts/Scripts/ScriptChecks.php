@@ -9,5 +9,8 @@ use App\Values\ScriptSource;
 
 interface ScriptChecks
 {
+    /**
+     * What is wrong with the script source, if anything, before it is saved.
+     */
     public function check(ScriptSource $source): ScriptCheck;
 }

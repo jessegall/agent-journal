@@ -11,5 +11,8 @@ use App\Support\AgentClientSettings;
  */
 interface StartTokenSource
 {
+    /**
+     * The address and token the started agent reaches the journal with.
+     */
     public function forThisStart(): AgentClientSettings;
 }

@@ -31,7 +31,13 @@ interface DriverSkills
      */
     public function supportFiles(): array;
 
+    /**
+     * How skills reach an agent of the driver, as files or through a tool.
+     */
     public function delivery(): SkillDelivery;
 
+    /**
+     * Whether the driver reads changed skills at once or only in a new session.
+     */
     public function reloadMode(): SkillReload;
 }

@@ -12,5 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 interface RowCapture
 {
+    /**
+     * Takes note of a row that was just saved, so its facts are raised.
+     */
     public function persisted(Model&EventSource $row): void;
 }

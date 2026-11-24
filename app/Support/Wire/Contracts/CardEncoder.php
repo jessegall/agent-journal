@@ -13,5 +13,8 @@ use App\Support\Wire\EncodedCard;
  */
 interface CardEncoder
 {
+    /**
+     * The card as the frontend receives it, for the placement and source, with its safe summary.
+     */
     public function encode(DockCard $card, string $placementId, DockIdentity $source, string $safeSummary): EncodedCard;
 }

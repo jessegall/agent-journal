@@ -34,6 +34,9 @@ interface AssignmentWriter
      */
     public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult;
 
+    /**
+     * Moves the record from the assignment it holds now, which must still be the expected one, to the recipient.
+     */
     public function reassign(
         RecordIdentity $record,
         AssignmentReference $expected,

@@ -13,6 +13,10 @@ use App\Support\Compatibility\DriverCompatibility;
  */
 interface AccountSettingsFiller
 {
+    /**
+     * Writes the driver's settings for an account start into its directory under the root, as the driver's version
+     * expects them.
+     */
     public function fill(
         AccountStartSettings $settings,
         string $directory,

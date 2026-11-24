@@ -8,5 +8,8 @@ use App\Values\StackTarget;
 
 interface AgentStackCommand
 {
+    /**
+     * The agent stack the command works on.
+     */
     public function target(): StackTarget;
 }

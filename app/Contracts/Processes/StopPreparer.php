@@ -12,5 +12,8 @@ use App\Values\StopPreparationRequest;
  */
 interface StopPreparer
 {
+    /**
+     * What must happen before a stop as the request asks, such as saving the agent's work.
+     */
     public function prepare(StopPreparationRequest $request): StopPreparation;
 }

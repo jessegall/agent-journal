@@ -14,5 +14,8 @@ interface RuleResolver
 {
     public const int PER_PAGE = RuleFilters::PAGE_SIZE;
 
+    /**
+     * The rules that match the filters.
+     */
     public function list(RuleFilters $filters): RuleList;
 }

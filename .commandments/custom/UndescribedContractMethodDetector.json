@@ -1,0 +1,24 @@
+{
+    "$schema": "commandments:generic-rule/v2",
+    "engine": "php",
+    "sin": {
+        "name": "undescribed-contract-method",
+        "skill": "shared/documentation",
+        "description": "A method of an interface or an abstract class has no doc comment, so whoever implements or extends it guesses when it is called and what it answers.",
+        "rule": "Describe every method of an interface or an abstract class in one or two plain lines: when it is called or what it answers, never its name again."
+    },
+    "find": {
+        "select": "function",
+        "as": "f",
+        "let": [["owner", ["enclosing", "$f", "type"]]],
+        "having": ["and",
+            ["=", "$f.form", "method"],
+            ["or",
+                ["=", "$owner.form", "interface"],
+                ["some", "$owner.modifiers", "m", ["=", "$m", "abstract"]]],
+            ["none", "$f.modifiers", "m", ["=", "$m", "private"]],
+            ["not", ["has", ["functionRole", "$f"], "override"]],
+            ["none", ["commentsOf", "$f"], "c", ["=", "$c.form", "doc"]]],
+        "emit": "$f"
+    }
+}

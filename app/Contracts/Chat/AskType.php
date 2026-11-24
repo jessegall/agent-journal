@@ -11,10 +11,19 @@ use DateInterval;
 
 interface AskType
 {
+    /**
+     * The key asks of this type are routed and stored under.
+     */
     public function key(): AskTypeKey;
 
+    /**
+     * The kind of record an ask of this type is about.
+     */
     public function subject(): SubjectType;
 
+    /**
+     * The resolver that works out what an ask of this type is about.
+     */
     public function resolver(): AskSubjectResolver;
 
     /**
@@ -24,5 +33,8 @@ interface AskType
      */
     public function requiredCommand(): string;
 
+    /**
+     * How long an ask of this type may wait for an answer before it moves up.
+     */
     public function allowance(): DateInterval;
 }

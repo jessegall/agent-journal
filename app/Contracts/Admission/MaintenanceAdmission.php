@@ -6,5 +6,8 @@ namespace App\Contracts\Admission;
 
 interface MaintenanceAdmission
 {
+    /**
+     * Refuses unless the current actor holds the maintenance capability.
+     */
     public function assertMaintenanceGranted(string $capability): void;
 }

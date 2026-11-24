@@ -21,8 +21,14 @@ use PhpOption\Option;
  */
 interface HookInput
 {
+    /**
+     * Who called the hook, in which session, and the call's id and digest.
+     */
     public function identity(): HookIdentity;
 
+    /**
+     * The name of the state method that answers this hook.
+     */
     public function methodName(): string;
 
     /**

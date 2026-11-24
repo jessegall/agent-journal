@@ -11,5 +11,8 @@ use App\Support\AssignmentReference;
  */
 interface ClaimRelease
 {
+    /**
+     * Ends every claim that the source assignment authorized, once that assignment ends.
+     */
     public function releaseAuthorizedBy(AssignmentReference $source): void;
 }

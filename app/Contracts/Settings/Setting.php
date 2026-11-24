@@ -15,8 +15,14 @@ use Spatie\LaravelData\Optional;
  */
 interface Setting
 {
+    /**
+     * The key the setting is stored and read under.
+     */
     public function key(): string;
 
+    /**
+     * The name users see for the setting.
+     */
     public function label(): string;
 
     /**
@@ -24,6 +30,9 @@ interface Setting
      */
     public function description(): string|null;
 
+    /**
+     * Whether the setting holds text, a whole number, a decimal or a yes or no.
+     */
     public function type(): SettingType;
 
     /**

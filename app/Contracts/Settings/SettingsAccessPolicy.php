@@ -12,5 +12,8 @@ use App\Contracts\Actors\Actor;
  */
 interface SettingsAccessPolicy
 {
+    /**
+     * Whether the actor may change these settings.
+     */
     public function allows(Actor $actor): bool;
 }

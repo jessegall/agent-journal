@@ -12,7 +12,13 @@ use App\Contracts\Events\Event;
  */
 interface ShownOnAccounts extends Event
 {
+    /**
+     * The driver whose accounts page shows the fact.
+     */
     public function driver(): string;
 
+    /**
+     * The id of the account or sign-in the fact is about.
+     */
     public function subjectId(): string;
 }

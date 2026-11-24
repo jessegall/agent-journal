@@ -13,11 +13,17 @@ use Illuminate\JsonSchema\Types\Type;
 
 trait PublicationArguments
 {
+    /**
+     * The schema of a document reference: its number or its id.
+     */
     protected function referenceSchema(JsonSchema $schema): Type
     {
         return $schema->anyOf([$schema->integer()->min(1), $schema->string()->max(26)])->required();
     }
 
+    /**
+     * The draft the document and edit arguments name, at the expected revision when one is given.
+     */
     protected function target(ToolArguments $arguments, int|null $expectedRevision = null): DraftTarget
     {
         return new DraftTarget(

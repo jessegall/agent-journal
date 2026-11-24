@@ -21,6 +21,9 @@ use App\Values\SearchReader;
  */
 abstract readonly class ReadToolSearchAccess implements SearchAccess
 {
+    /**
+     * Takes the read grant that decides whether the user may use the read tool.
+     */
     public function __construct(protected ReadGrant $reads) {}
 
     /**

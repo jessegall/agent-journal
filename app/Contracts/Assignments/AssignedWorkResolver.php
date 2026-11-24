@@ -11,5 +11,8 @@ use App\Support\AssigneeIdentity;
  */
 interface AssignedWorkResolver
 {
+    /**
+     * How many records of the type the holder has assigned.
+     */
     public function count(string $type, AssigneeIdentity $holder): int;
 }

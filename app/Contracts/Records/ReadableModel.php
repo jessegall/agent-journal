@@ -11,7 +11,13 @@ use App\Values\ReadOrder;
  */
 interface ReadableModel
 {
+    /**
+     * The most rows a read of the model returns when it names no limit.
+     */
     public function defaultReadLimit(): int;
 
+    /**
+     * The order rows of the model are read in when a read names none.
+     */
     public function defaultReadOrder(): ReadOrder;
 }

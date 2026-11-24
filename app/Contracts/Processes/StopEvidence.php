@@ -13,5 +13,8 @@ use App\Values\StopAttemptResult;
  */
 interface StopEvidence
 {
+    /**
+     * What the stop attempt found: whether the process ended, and how it was seen.
+     */
     public function result(StopAttemptReference $attempt): StopAttemptResult;
 }

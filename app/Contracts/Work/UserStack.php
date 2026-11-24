@@ -14,5 +14,8 @@ use App\Values\StackTarget;
  */
 interface UserStack
 {
+    /**
+     * Puts the state on top of the user's stack for the target.
+     */
     public function push(StackTarget $target, StateReference $state): void;
 }

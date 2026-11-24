@@ -13,6 +13,9 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
 
 abstract class MessageDetailsTool extends JournalReadTool
 {
+    /**
+     * Takes the reader that turns a message into the tool's answer.
+     */
     public function __construct(private readonly MessageReadResult $messages) {}
 
     public function schema(JsonSchema $schema): array

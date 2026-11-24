@@ -9,7 +9,13 @@ namespace App\Contracts\Processes;
  */
 interface StopSignal
 {
+    /**
+     * Whether a stop was asked for.
+     */
     public function isRequested(): bool;
 
+    /**
+     * Why the stop was asked for.
+     */
     public function reason(): string;
 }

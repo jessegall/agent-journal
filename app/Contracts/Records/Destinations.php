@@ -12,7 +12,13 @@ use App\Contracts\Chat\Inbox;
  */
 interface Destinations
 {
+    /**
+     * The assignee work for this destination goes to.
+     */
     public function assignee(): Assignee;
 
+    /**
+     * The inbox messages for this destination go to.
+     */
     public function inbox(): Inbox;
 }

@@ -12,5 +12,8 @@ use App\Values\StackTarget;
  */
 interface StackInspectionQuery
 {
+    /**
+     * The stack of the target as the inspector shows it.
+     */
     public function forTarget(StackTarget $target): StackInspection;
 }

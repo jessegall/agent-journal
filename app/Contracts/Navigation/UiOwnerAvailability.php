@@ -11,5 +11,8 @@ use App\Declarations\DomainUi;
  */
 interface UiOwnerAvailability
 {
+    /**
+     * Whether the domain that owns the screens is switched on, so its pages show.
+     */
     public function isAvailable(DomainUi $owner): bool;
 }

@@ -9,5 +9,8 @@ namespace App\Contracts\Time;
  */
 interface MonotonicClock
 {
+    /**
+     * A count of nanoseconds that only goes up, to measure how long something took.
+     */
     public function nanoseconds(): int;
 }

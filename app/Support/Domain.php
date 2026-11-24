@@ -23,6 +23,9 @@ use App\Support\Bootstrappers\RegisterScriptDefinitions;
  */
 abstract class Domain
 {
+    /**
+     * The sentence that says what the domain does, shown where domains are listed.
+     */
     abstract public function description(): string;
 
     /**

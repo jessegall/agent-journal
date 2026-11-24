@@ -8,8 +8,14 @@ interface RequestKey
 {
     public const int LONGEST = 128;
 
+    /**
+     * Keeps the idempotency key the running request carries, so its write is receipted under it.
+     */
     public function set(string $key): void;
 
+    /**
+     * Drops the key once the request that carried it ends.
+     */
     public function forget(): void;
 
     /**

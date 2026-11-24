@@ -10,6 +10,9 @@ use App\Values\ReadRequest;
 
 interface ReadAdmission
 {
+    /**
+     * Whether the read may go ahead, and why not when it may not.
+     */
     public function assess(ReadRequest $request): AccessDecision;
 
     /**

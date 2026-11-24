@@ -16,6 +16,9 @@ use App\Contracts\Bus\PipelineDefinition;
  */
 abstract readonly class PipelineAdapter implements Pipe
 {
+    /**
+     * Takes the runner that runs the pipeline this adapter names.
+     */
     public function __construct(private PipelineRunner $pipelines) {}
 
     /**

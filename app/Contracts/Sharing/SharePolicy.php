@@ -14,6 +14,9 @@ use App\Support\RecordIdentity;
  */
 interface SharePolicy
 {
+    /**
+     * Whether the actor may create and change shares.
+     */
     public function mayManage(Actor $actor): bool;
 
     /**
@@ -21,5 +24,8 @@ interface SharePolicy
      */
     public function assertManager(Actor $actor): void;
 
+    /**
+     * Whether the record may be shown outside the journal.
+     */
     public function mayDisclose(RecordIdentity $record): bool;
 }

@@ -13,5 +13,8 @@ use App\Values\ProfileRuleGroups;
  */
 interface ProfileRules
 {
+    /**
+     * The rules the profile adds, grouped as the agent is given them.
+     */
     public function of(ProfileKey $profile): ProfileRuleGroups;
 }

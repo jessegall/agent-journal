@@ -9,5 +9,8 @@ namespace App\Contracts\Actors;
  */
 interface ChoiceLabel
 {
+    /**
+     * The words the user sees for this choice.
+     */
     public function label(): string;
 }

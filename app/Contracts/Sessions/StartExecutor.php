@@ -15,7 +15,13 @@ use App\Support\PreparedStart;
  */
 interface StartExecutor
 {
+    /**
+     * Runs the prepared start on its host, and says how it went.
+     */
     public function start(PreparedStart $start): ExecutionReceipt;
 
+    /**
+     * Stops the running execution, and says how it ended.
+     */
     public function stop(ExecutionReference $execution): ExitReceipt;
 }

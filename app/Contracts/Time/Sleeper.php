@@ -9,5 +9,8 @@ namespace App\Contracts\Time;
  */
 interface Sleeper
 {
+    /**
+     * Waits for the nanoseconds before going on.
+     */
     public function sleep(int $nanoseconds): void;
 }

@@ -19,8 +19,14 @@ interface ChatEligibility
      */
     public function lockAdmission(ActorIdentity $user, string|null $environmentId): void;
 
+    /**
+     * Whether the user may use the chat in the environment, or across the journal when none is named.
+     */
     public function isAdmitted(ActorIdentity $user, string|null $environmentId): bool;
 
+    /**
+     * Whether the user holds the chat permission in the environment, or across the journal when none is named.
+     */
     public function holds(ActorIdentity $user, ChatPermission $permission, string|null $environmentId): bool;
 
     /**

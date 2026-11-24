@@ -16,6 +16,10 @@ use App\Values\ExecutionContext;
  */
 interface ShellAdmission
 {
+    /**
+     * Parses and judges a shell line an agent asked to run, and says whether it may run, and how, under the request
+     * key.
+     */
     public function admit(
         string $line,
         ShellDialect $dialect,

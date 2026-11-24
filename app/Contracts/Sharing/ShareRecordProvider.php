@@ -30,9 +30,18 @@ interface ShareRecordProvider
      */
     public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard;
 
+    /**
+     * The records the read names, within the budget.
+     */
     public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords;
 
+    /**
+     * The records linked to the shared ones that the read asks for, within the budget.
+     */
     public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords;
 
+    /**
+     * What a shared record shows to someone outside, within the budget.
+     */
     public function content(ShareContentRead $read, ShareBudget $budget): SharedContent;
 }

@@ -11,5 +11,8 @@ use App\Values\ReadCounts;
  */
 interface ReadLog
 {
+    /**
+     * Logs how many rows the read of the label took.
+     */
     public function record(string $label, ReadCounts $counts): void;
 }

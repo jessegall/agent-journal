@@ -21,6 +21,9 @@ interface SearchSources
      */
     public function source(SearchReader $reader, string $qualifiedKey): DeclaredSearchable;
 
+    /**
+     * Who may search the declared source.
+     */
     public function access(DeclaredSearchable $source): SearchAccess;
 
     /**

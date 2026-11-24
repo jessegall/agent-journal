@@ -12,5 +12,8 @@ use Spatie\LaravelData\Data;
  */
 interface PageResolver
 {
+    /**
+     * The data the page shows.
+     */
     public function read(): Data;
 }

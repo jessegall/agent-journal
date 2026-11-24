@@ -14,6 +14,9 @@ use DateInterval;
 
 abstract readonly class BuiltInAskType implements AskType
 {
+    /**
+     * Takes the subjects an ask of a built-in type may be about.
+     */
     public function __construct(private VisibleAskSubjects $subjects) {}
 
     public function key(): AskTypeKey
@@ -41,5 +44,8 @@ abstract readonly class BuiltInAskType implements AskType
         return new DateInterval('PT'.$this->definition()->minutes().'M');
     }
 
+    /**
+     * The built-in ask type this class stands for.
+     */
     abstract protected function definition(): CoreAskType;
 }

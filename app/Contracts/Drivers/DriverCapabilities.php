@@ -12,5 +12,8 @@ use App\Values\SupportSnapshot;
  */
 interface DriverCapabilities
 {
+    /**
+     * What the driver supports for the bound target, such as rewriting a command or passing a screen.
+     */
     public function capabilities(BoundTarget $target): SupportSnapshot;
 }

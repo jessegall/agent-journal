@@ -36,10 +36,19 @@ interface AssignmentRegistration
         AssignmentPurpose $purpose,
     ): void;
 
+    /**
+     * Adds an automatic assigner that the owning domain provides.
+     */
     public function registerAutoAssigner(AutoAssignerDefinition $definition, string $owner): void;
 
+    /**
+     * Adds a pool of assignees that the owning domain provides.
+     */
     public function registerPool(PoolDefinition $pool, string $owner): void;
 
+    /**
+     * Adds a type of assignee that records may be assigned to.
+     */
     public function registerAssignees(AssigneeDefinition $definition): void;
 
     /**

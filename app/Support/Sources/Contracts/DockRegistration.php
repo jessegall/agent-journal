@@ -21,6 +21,9 @@ interface DockRegistration
      */
     public function register(string $type, string $class, string $provider): DockDefinition;
 
+    /**
+     * Adds a kind of record that may be docked as a card, as the definition says.
+     */
     public function offerDockFor(DockDefinition $definition): void;
 
     /**
@@ -30,5 +33,8 @@ interface DockRegistration
      */
     public function definition(string $type): DockDefinition;
 
+    /**
+     * Whether records of the type may be docked.
+     */
     public function offersDock(string $type): bool;
 }

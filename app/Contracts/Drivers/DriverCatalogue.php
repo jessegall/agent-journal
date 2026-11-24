@@ -17,6 +17,9 @@ use App\Values\PinnedDriver;
  */
 interface DriverCatalogue
 {
+    /**
+     * The driver registered under the key.
+     */
     public function forKey(DriverKey $key): Driver;
 
     /**
@@ -37,6 +40,9 @@ interface DriverCatalogue
      */
     public function catalogue(): array;
 
+    /**
+     * Whether a driver of that family is registered.
+     */
     public function hasFamily(string $key): bool;
 
     /**

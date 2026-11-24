@@ -10,5 +10,8 @@ use Carbon\CarbonImmutable;
 
 interface WorkProgress
 {
+    /**
+     * When the actor took up the work; none when it never did.
+     */
     public function enteredAt(ActorIdentity $actor, WorkReference $work): CarbonImmutable|null;
 }

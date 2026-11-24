@@ -12,9 +12,18 @@ use Domain\Sequences\Models\SequenceRun;
  */
 interface ChatLineSource
 {
+    /**
+     * The id of the sequence run the chat line is about.
+     */
     public function runId(): string;
 
+    /**
+     * The actor who follows the sequence run.
+     */
     public function follower(): ActorIdentity;
 
+    /**
+     * The line the chat shows for the run.
+     */
     public function wordsFor(SequenceRun $run): string;
 }

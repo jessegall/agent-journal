@@ -31,5 +31,8 @@ interface AssigneeProvider
      */
     public function names(array $assignees): array;
 
+    /**
+     * One page of the assignees of the provider's type that may be given work.
+     */
     public function eligible(IdListPage $page): AssigneeList;
 }

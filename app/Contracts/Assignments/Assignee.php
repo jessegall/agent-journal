@@ -11,5 +11,8 @@ use App\Support\AssigneeIdentity;
  */
 interface Assignee
 {
+    /**
+     * The identity assignments to this assignee are kept under.
+     */
     public function assigneeIdentity(): AssigneeIdentity;
 }

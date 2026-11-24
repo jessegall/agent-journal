@@ -12,5 +12,8 @@ use App\Support\Ticks\TickContext;
  */
 interface TickableState
 {
+    /**
+     * Called on every tick of the engine while the state is on a stack; returns the commands it asks for.
+     */
     public function onTick(TickContext $tick): TickCommands;
 }

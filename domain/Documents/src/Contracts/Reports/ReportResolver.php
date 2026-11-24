@@ -19,8 +19,14 @@ use Domain\Documents\Exceptions\ReportMissing;
  */
 interface ReportResolver
 {
+    /**
+     * The reports that match the filters.
+     */
     public function list(DocumentFilters $filters): PublicationList;
 
+    /**
+     * How many reports are still open.
+     */
     public function openCount(): int;
 
     /**

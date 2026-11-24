@@ -15,6 +15,9 @@ interface MemoryResolver
 {
     public const int PER_PAGE = 50;
 
+    /**
+     * One page of the current agent's own memories.
+     */
     public function own(int $page): MemoryPage;
 
     /**

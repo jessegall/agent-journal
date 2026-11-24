@@ -11,8 +11,14 @@ use App\Values\AskReference;
 
 interface AskReader
 {
+    /**
+     * The ask as its card shows it.
+     */
     public function card(AskReference $reference): AskCard;
 
+    /**
+     * The asks waiting for the reader, older than the one given when reading on.
+     */
     public function inbox(AskReference|null $before = null): AskInbox;
 
     /**

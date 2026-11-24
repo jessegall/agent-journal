@@ -11,5 +11,8 @@ use App\Support\PoolMembers;
  */
 interface AssignmentPool
 {
+    /**
+     * The assignees the pool may hand work to, in the order it tries them.
+     */
     public function members(): PoolMembers;
 }

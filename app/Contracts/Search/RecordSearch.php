@@ -14,5 +14,8 @@ use App\Values\SearchRequest;
  */
 interface RecordSearch
 {
+    /**
+     * The records of the owner that match the request and that the reader may see.
+     */
     public function search(SearchOwner $owner, SearchReader $reader, SearchRequest $request): SearchAnswer;
 }

@@ -17,5 +17,8 @@ interface ChatMemberPolicies
      */
     public function allow(string $policy): void;
 
+    /**
+     * Whether the chat member policy of that name is switched on.
+     */
     public function allows(string $policy): bool;
 }

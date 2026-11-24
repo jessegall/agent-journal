@@ -13,5 +13,8 @@ use App\Support\SeatChangeResult;
  */
 interface ActorDesks
 {
+    /**
+     * Gives the actor a desk under the label, and says which seats changed.
+     */
     public function provision(ActorIdentity $actor, string $label): SeatChangeResult;
 }

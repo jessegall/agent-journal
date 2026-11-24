@@ -12,5 +12,8 @@ use App\Values\TimingVerdict;
  */
 interface VerificationTiming
 {
+    /**
+     * Whether the caller's verification ran within its time, and how long it took.
+     */
     public function forCaller(): TimingVerdict;
 }

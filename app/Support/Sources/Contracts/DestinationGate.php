@@ -12,6 +12,9 @@ use App\Support\Cards\DockDestination;
  */
 interface DestinationGate
 {
+    /**
+     * Whether the viewer may see cards placed at the destination.
+     */
     public function permits(Actor $viewer, DockDestination $destination): bool;
 
     /**

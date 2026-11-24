@@ -11,5 +11,8 @@ use App\Data\Profiles\ProfileLanguageData;
  */
 interface ProfileLanguage
 {
+    /**
+     * The words and kinds a profile may be written in, for the profile editor.
+     */
     public function language(): ProfileLanguageData;
 }

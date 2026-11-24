@@ -17,5 +17,8 @@ interface SkillResolver
      */
     public function all(): array;
 
+    /**
+     * The skill registered under the key.
+     */
     public function find(SkillKey $key): SkillEntry;
 }

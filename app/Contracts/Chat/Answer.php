@@ -11,5 +11,8 @@ use App\Enums\AnswerType;
  */
 interface Answer
 {
+    /**
+     * Whether the answer allows, denies, rewrites or passes on.
+     */
     public function type(): AnswerType;
 }

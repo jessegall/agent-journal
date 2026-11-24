@@ -35,6 +35,9 @@ interface Files
      */
     public function realPath(FilePath $path): string;
 
+    /**
+     * The whole text of the file.
+     */
     public function read(FilePath $file): string;
 
     /**
@@ -70,6 +73,9 @@ interface Files
      */
     public function exists(FilePath $file): bool;
 
+    /**
+     * Whether a folder is at the path.
+     */
     public function isFolder(FilePath $folder): bool;
 
     /**
@@ -82,6 +88,9 @@ interface Files
      */
     public function linkTarget(FilePath $link): FilePath;
 
+    /**
+     * The size, change time and digest of the file, to tell whether it changed.
+     */
     public function fingerprint(FilePath $file): Fingerprint;
 
     /**

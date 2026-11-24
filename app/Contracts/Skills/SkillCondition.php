@@ -13,6 +13,9 @@ use App\Values\SkillContext;
  */
 interface SkillCondition
 {
+    /**
+     * Whether the condition holds for the agent and place the context describes.
+     */
     public function evaluate(SkillContext $context): ConditionResult;
 
     /**

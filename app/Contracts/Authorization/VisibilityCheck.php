@@ -11,5 +11,8 @@ use App\Contracts\Actors\Actor;
  */
 interface VisibilityCheck
 {
+    /**
+     * Whether the actor may see the thing this check guards.
+     */
     public function allows(Actor $actor): bool;
 }

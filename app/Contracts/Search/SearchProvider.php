@@ -15,5 +15,8 @@ use App\Values\SearchQuery;
  */
 interface SearchProvider
 {
+    /**
+     * One batch of matches for the query, or the candidates to look at again on a refresh.
+     */
     public function search(SearchQuery|RefreshCandidates $query): SearchBatch;
 }

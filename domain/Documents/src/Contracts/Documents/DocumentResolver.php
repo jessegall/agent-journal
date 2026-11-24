@@ -22,6 +22,9 @@ use Domain\Documents\Exceptions\StaleRead;
  */
 interface DocumentResolver
 {
+    /**
+     * The documents that match the filters.
+     */
     public function list(DocumentFilters $filters): PublicationList;
 
     /**

@@ -12,7 +12,13 @@ use App\Contracts\Authorization\AuthoritySource;
  */
 interface CurrentActorSetter
 {
+    /**
+     * Makes the actor, and the authority it acts under, the one the running request or job acts for.
+     */
     public function set(Actor $actor, AuthoritySource $authority): void;
 
+    /**
+     * Forgets the actor once the request or job that acted for it ends.
+     */
     public function clear(): void;
 }

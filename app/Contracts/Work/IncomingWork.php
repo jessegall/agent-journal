@@ -10,5 +10,8 @@ namespace App\Contracts\Work;
  */
 interface IncomingWork
 {
+    /**
+     * Takes the work that came in onto the agent's stack.
+     */
     public function accept(): void;
 }

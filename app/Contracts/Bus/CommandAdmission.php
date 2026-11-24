@@ -9,5 +9,8 @@ use App\Values\EffectiveCommand;
 
 interface CommandAdmission
 {
+    /**
+     * Whether the command may run, as the current actor asked for it.
+     */
     public function assess(EffectiveCommand $command): CommandDecision;
 }

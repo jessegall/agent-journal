@@ -16,11 +16,23 @@ use App\Support\GatewaySetupCheck;
  */
 interface ShareGateway
 {
+    /**
+     * Whether the gateway is set up well enough to open endpoints, and what is missing when it is not.
+     */
     public function setupCheck(GatewayConfiguration $configuration): GatewaySetupCheck;
 
+    /**
+     * Brings up an endpoint for the operation, and gives its address.
+     */
     public function open(GatewayOperation $operation): GatewayEndpoint;
 
+    /**
+     * Whether the endpoint is up and answering.
+     */
     public function health(GatewayEndpoint $endpoint): GatewayHealth;
 
+    /**
+     * Takes the endpoint down, so nothing is shared through it any more.
+     */
     public function close(GatewayEndpoint $endpoint): void;
 }

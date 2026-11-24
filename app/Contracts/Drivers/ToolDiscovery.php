@@ -11,6 +11,9 @@ use Carbon\CarbonImmutable;
  */
 interface ToolDiscovery
 {
+    /**
+     * Notes that the session looked up the journal's tools at the time signed, so it is not told about them again.
+     */
     public function recordDiscovery(string $sessionId, CarbonImmutable $signedAt): void;
 
     /**

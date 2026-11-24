@@ -9,5 +9,8 @@ namespace App\Contracts\Records;
  */
 interface CountResolver
 {
+    /**
+     * How many records the resolver's reader may see.
+     */
     public function count(): int;
 }

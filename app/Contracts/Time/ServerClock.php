@@ -11,5 +11,8 @@ use Carbon\CarbonImmutable;
  */
 interface ServerClock
 {
+    /**
+     * The current time on the server.
+     */
     public function now(): CarbonImmutable;
 }

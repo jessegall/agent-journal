@@ -43,6 +43,9 @@ interface AssignmentProviders
      */
     public function assertInternal(string $type): void;
 
+    /**
+     * The provider of the record type that the journal's own tools assign through.
+     */
     public function journalProvider(string $type): JournalAssignableProvider;
 
     /**

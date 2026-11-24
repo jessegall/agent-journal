@@ -17,8 +17,14 @@ use Illuminate\Database\Eloquent\Builder;
  */
 interface InboxAccess
 {
+    /**
+     * Locks the inbox against a change to who sits in it while a message is sent, until the transaction ends.
+     */
     public function lockShared(Inbox $inbox): void;
 
+    /**
+     * Locks the inbox for a change to who sits in it, until the transaction ends.
+     */
     public function lockExclusive(Inbox $inbox): void;
 
     /**
@@ -26,6 +32,9 @@ interface InboxAccess
      */
     public function membership(Inbox $inbox, Actor $actor): InboxMembership;
 
+    /**
+     * The actors who read and answer the inbox's messages now.
+     */
     public function members(Inbox $inbox): InboxMembers;
 
     /**

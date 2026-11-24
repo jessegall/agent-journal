@@ -9,8 +9,14 @@ use App\Values\ReadRequest;
 
 interface ReadGrant
 {
+    /**
+     * Whether the grant covers the read.
+     */
     public function allows(ReadRequest $request): bool;
 
+    /**
+     * Refuses the read when the grant does not cover it.
+     */
     public function assertAllowed(ReadRequest $request): void;
 
     /**

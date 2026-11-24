@@ -11,5 +11,8 @@ use App\Support\Stack\StateAnswer;
  */
 interface AnswerPart
 {
+    /**
+     * The state's answer with this part added.
+     */
     public function addTo(StateAnswer $answer): StateAnswer;
 }

@@ -53,6 +53,11 @@ final class ReflectedMethod
         return $this->method->isPublic();
     }
 
+    public function isPrivate(): bool
+    {
+        return $this->method->isPrivate();
+    }
+
     public function isStatic(): bool
     {
         return $this->method->isStatic();

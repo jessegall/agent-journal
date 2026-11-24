@@ -13,5 +13,8 @@ use App\Support\AssignmentResult;
  */
 interface AssignmentFactPublisher
 {
+    /**
+     * Tells the rest of the journal about an assignment change the actor made, for the reason given.
+     */
     public function publish(ActorIdentity $actor, AssignmentReason $reason, AssignmentResult $assignmentChange): void;
 }

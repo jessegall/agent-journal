@@ -18,7 +18,13 @@ interface StateTypes
      */
     public function occurrenceGuardOf(string $typeKey): WorkOccurrenceGuard;
 
+    /**
+     * Every registered state type, by its key.
+     */
     public function registry(): StateTypeRegistry;
 
+    /**
+     * The state types that hear the engine's tick.
+     */
     public function ticking(): TickingTypes;
 }

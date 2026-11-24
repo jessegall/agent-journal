@@ -24,5 +24,8 @@ interface ConversationVisits
         CarbonImmutable $observedAt,
     ): void;
 
+    /**
+     * Notes that the session's context was compacted at the event, so what the agent saw is read again.
+     */
     public function compacted(string $sessionId, string $eventId, CarbonImmutable $observedAt): void;
 }

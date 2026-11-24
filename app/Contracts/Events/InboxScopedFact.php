@@ -9,5 +9,8 @@ namespace App\Contracts\Events;
  */
 interface InboxScopedFact
 {
+    /**
+     * The inbox whose members may hear the fact.
+     */
     public function scopedInboxId(): string;
 }

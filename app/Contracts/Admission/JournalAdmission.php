@@ -13,6 +13,9 @@ use App\Support\ActorContext;
  */
 interface JournalAdmission
 {
+    /**
+     * Whether the actor may use the journal at all.
+     */
     public function admits(Actor $actor): bool;
 
     /**

@@ -6,5 +6,8 @@ namespace App\Contracts\Authorization;
 
 interface OperationNames
 {
+    /**
+     * Whether an operation of that name is known.
+     */
     public function has(string $operation): bool;
 }

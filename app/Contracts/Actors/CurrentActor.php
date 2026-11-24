@@ -18,6 +18,9 @@ interface CurrentActor
      */
     public function actor(): ActorContext;
 
+    /**
+     * Whether the running request or job acts for an actor at all.
+     */
     public function hasActor(): bool;
 
     /**

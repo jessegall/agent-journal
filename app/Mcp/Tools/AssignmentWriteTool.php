@@ -33,6 +33,9 @@ abstract class AssignmentWriteTool extends JournalWriteTool
         ];
     }
 
+    /**
+     * The record the tool's record type and id name.
+     */
     final protected function record(ToolArguments $arguments): RecordIdentity
     {
         return new RecordIdentity($arguments->text('record_type'), $arguments->ulid('record_id'));

@@ -9,5 +9,9 @@ namespace App\Contracts\Drivers;
  */
 interface NativeTurnRecords
 {
+    /**
+     * Keeps the driver's own id of the prompt the session just submitted in the generation, so its turn can be matched
+     * later.
+     */
     public function recordPrompt(string $sessionId, int|null $generation, string|null $nativePromptId): void;
 }

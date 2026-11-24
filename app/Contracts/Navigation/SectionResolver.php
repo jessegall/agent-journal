@@ -13,5 +13,8 @@ use Spatie\LaravelData\Data;
  */
 interface SectionResolver
 {
+    /**
+     * The data the section shows in the slot.
+     */
     public function read(SlotContext $context): Data;
 }

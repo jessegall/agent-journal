@@ -17,6 +17,9 @@ use Illuminate\Http\Client\Response;
  */
 interface AgentRequestClient
 {
+    /**
+     * Sends the body to the journal's path as the agent the settings name, and gives the response.
+     */
     public function post(AgentClientSettings $settings, string $path, string $body): Response;
 
     /**

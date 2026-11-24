@@ -12,6 +12,9 @@ use App\Values\WorkspacePreparation;
  */
 interface WorkspaceSource
 {
+    /**
+     * How the workspace is mounted into an agent's container, writable or read only.
+     */
     public function mount(bool $writable): ManifestMount;
 
     /**

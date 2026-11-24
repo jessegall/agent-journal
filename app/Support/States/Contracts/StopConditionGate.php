@@ -14,5 +14,8 @@ use App\Support\Inputs\Values\HookIdentity;
  */
 interface StopConditionGate
 {
+    /**
+     * The gate's answer to the stop: a decision, or a line to show the agent.
+     */
     public function answer(HookIdentity $stop): Decision|MessageLine;
 }

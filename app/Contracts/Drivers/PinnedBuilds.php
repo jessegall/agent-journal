@@ -9,5 +9,8 @@ namespace App\Contracts\Drivers;
  */
 interface PinnedBuilds
 {
+    /**
+     * The build of the driver that agents run, pinned so a start never takes an untested one.
+     */
     public function versionOf(string $driver): string;
 }

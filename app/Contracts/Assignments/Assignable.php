@@ -12,5 +12,8 @@ use App\Support\RecordIdentity;
  */
 interface Assignable
 {
+    /**
+     * The record identity assignments of this record are kept under.
+     */
     public function assignmentIdentity(): RecordIdentity;
 }

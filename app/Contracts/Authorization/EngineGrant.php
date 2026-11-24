@@ -11,8 +11,14 @@ use App\Values\StackTarget;
  */
 interface EngineGrant
 {
+    /**
+     * Whether the grant covers work on the stack target.
+     */
     public function allowsTarget(StackTarget $target): bool;
 
+    /**
+     * Whether the grant covers the maintenance capability.
+     */
     public function allowsMaintenance(string $capability): bool;
 
     /**

@@ -14,5 +14,8 @@ use Spatie\LaravelData\Data;
  */
 interface SkillConditionEvaluator
 {
+    /**
+     * Whether a condition of this type, with its parameters, holds for the context.
+     */
     public function evaluate(SkillContext $context, Data $parameters): ConditionResult;
 }

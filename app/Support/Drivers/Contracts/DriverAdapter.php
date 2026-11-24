@@ -38,6 +38,9 @@ interface DriverAdapter
      */
     public function nativeChildTools(): array;
 
+    /**
+     * What the driver's hooks support, such as rewriting a command.
+     */
     public function capabilities(): DriverCapabilities;
 
     /**
@@ -80,7 +83,13 @@ interface DriverAdapter
      */
     public function callFor(HookPayload $hookInput, HookIdentity $hook): DriverCall;
 
+    /**
+     * The reply to the driver's shell hook, from the answer and the input the agent sent.
+     */
     public function renderShell(HookAnswer $answer, DriverToolInput $original): DriverReply;
 
+    /**
+     * The reply to the driver's stop hook, from the answer.
+     */
     public function renderStop(HookAnswer $answer): DriverReply;
 }

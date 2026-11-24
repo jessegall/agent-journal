@@ -37,15 +37,33 @@ interface WorkAllowance
      */
     public function chargeBytes(int $count): void;
 
+    /**
+     * How many candidates the work has looked at so far.
+     */
     public function spentCandidates(): int;
 
+    /**
+     * How many bytes the work has read so far.
+     */
     public function spentBytes(): int;
 
+    /**
+     * How many more candidates the work may look at.
+     */
     public function remainingCandidates(): int;
 
+    /**
+     * How many bytes the work may still read.
+     */
     public function remainingBytes(): int;
 
+    /**
+     * Whether the work may still run on.
+     */
     public function hasTimeLeft(): bool;
 
+    /**
+     * How many milliseconds the work may still run.
+     */
     public function remainingMilliseconds(): int;
 }

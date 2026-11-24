@@ -15,6 +15,9 @@ use App\Values\ShellTree;
  */
 interface CommandClassifier
 {
+    /**
+     * What the parsed shell line does in the context: which programs it runs and what they may change.
+     */
     public function classify(ShellTree $tree, ExecutionContext $context): Classification;
 
     /**

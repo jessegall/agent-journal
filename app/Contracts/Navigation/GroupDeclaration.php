@@ -12,8 +12,14 @@ use App\Contracts\Settings\Setting;
  */
 interface GroupDeclaration
 {
+    /**
+     * The key the navigation group is found under.
+     */
     public function key(): string;
 
+    /**
+     * The name users see for the navigation group.
+     */
     public function label(): string;
 
     /**

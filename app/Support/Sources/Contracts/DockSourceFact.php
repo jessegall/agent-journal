@@ -9,7 +9,13 @@ namespace App\Support\Sources\Contracts;
  */
 interface DockSourceFact
 {
+    /**
+     * The type of the record whose docked card the fact touches.
+     */
     public function dockType(): string;
 
+    /**
+     * The id of the record whose docked card the fact touches.
+     */
     public function dockId(): string;
 }

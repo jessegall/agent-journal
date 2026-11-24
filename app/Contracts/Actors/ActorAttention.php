@@ -14,5 +14,9 @@ use App\Support\AttentionOutcome;
  */
 interface ActorAttention
 {
+    /**
+     * Asks the actor to look at something from the origin: wakes a stopped agent or tells a user, and says what came of
+     * it.
+     */
     public function request(ActorIdentity $actor, AttentionOrigin $origin): AttentionOutcome;
 }

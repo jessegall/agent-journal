@@ -11,5 +11,8 @@ use App\Support\RecordIdentity;
  */
 interface RecordVisibility
 {
+    /**
+     * Whether the current reader may see the record.
+     */
     public function isVisible(RecordIdentity $record): bool;
 }

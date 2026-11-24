@@ -12,5 +12,8 @@ use App\Support\ActorIdentity;
  */
 interface AutoAssignmentActivity
 {
+    /**
+     * Whether the actor is active enough to be handed work automatically now.
+     */
     public function mayTakeWork(ActorIdentity $actor): bool;
 }

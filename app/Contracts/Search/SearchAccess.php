@@ -22,6 +22,9 @@ interface SearchAccess
      */
     public function agentRead(): ReadRequest;
 
+    /**
+     * Whether the user may search this source.
+     */
     public function canUserSearch(ActorContext $user): bool;
 
     /**

@@ -11,5 +11,8 @@ use App\Support\RecordIdentity;
  */
 interface ShareStatusResolver
 {
+    /**
+     * Whether the record is in a live public share.
+     */
     public function isPubliclyShared(RecordIdentity $record): bool;
 }

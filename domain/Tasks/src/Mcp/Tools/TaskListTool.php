@@ -23,6 +23,9 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
  */
 abstract class TaskListTool extends JournalReadTool
 {
+    /**
+     * Takes the pages that turn a task list into numbered pages.
+     */
     public function __construct(private readonly NumberedPages $pages) {}
 
     final public function schema(JsonSchema $schema): array
@@ -55,6 +58,9 @@ abstract class TaskListTool extends JournalReadTool
         );
     }
 
+    /**
+     * The tasks the tool lists for the filters.
+     */
     abstract protected function tasks(TaskFilters $filters): TaskList;
 
     private function page(TaskFilters $filters): ListedPage

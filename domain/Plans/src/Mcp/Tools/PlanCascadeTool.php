@@ -29,8 +29,14 @@ abstract class PlanCascadeTool extends JournalWriteTool
 
     private const array ROOT_TYPES = ['plans.plan', 'plans.phase'];
 
+    /**
+     * Takes the request key the cascade's commands run under.
+     */
     public function __construct(private readonly RequestKey $key) {}
 
+    /**
+     * The schema of the root argument: a plan or a phase, by type and id.
+     */
     final protected function rootSchema(JsonSchema $schema): ObjectType
     {
         return $schema->object([
@@ -39,6 +45,9 @@ abstract class PlanCascadeTool extends JournalWriteTool
         ])->withoutAdditionalProperties()->required();
     }
 
+    /**
+     * The plan or phase the root argument names, whose tasks the tool changes.
+     */
     final protected function root(ToolArguments $arguments): RecordIdentity
     {
         $root = $arguments->object('root', ['type', 'id']);

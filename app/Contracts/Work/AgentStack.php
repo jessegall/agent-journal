@@ -14,6 +14,9 @@ use App\Values\StackTarget;
  */
 interface AgentStack
 {
+    /**
+     * Puts the state on top of the agent's stack for the target.
+     */
     public function push(StackTarget $target, StateReference $state): void;
 
     /**

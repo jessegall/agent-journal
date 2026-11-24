@@ -16,5 +16,8 @@ interface OverviewContribution
      */
     public function section(): string;
 
+    /**
+     * The section this contribution adds to the journal overview.
+     */
     public function read(): OverviewSection;
 }

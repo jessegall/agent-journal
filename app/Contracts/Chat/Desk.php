@@ -12,7 +12,13 @@ use App\Contracts\Assignments\Assignee;
  */
 interface Desk extends Assignee, Inbox
 {
+    /**
+     * The id of the desk, the seat an actor takes in a chat.
+     */
     public function deskId(): string;
 
+    /**
+     * How many actors sit at the desk now.
+     */
     public function seatCount(): int;
 }

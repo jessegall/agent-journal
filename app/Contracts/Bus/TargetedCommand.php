@@ -10,5 +10,8 @@ namespace App\Contracts\Bus;
  */
 interface TargetedCommand
 {
+    /**
+     * The key the command's receipt is kept under, so a repeat of it finds the first outcome.
+     */
     public function receiptTarget(): string;
 }

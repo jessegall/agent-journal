@@ -11,5 +11,8 @@ namespace App\Contracts\Work;
  */
 interface ConditionalState
 {
+    /**
+     * Whether states of this type may go on a stack now.
+     */
     public function isEnabled(): bool;
 }

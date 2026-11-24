@@ -12,5 +12,8 @@ use App\Support\ActorIdentity;
  */
 interface ActivityLog
 {
+    /**
+     * Adds one line of what the agent did, of the type, about the subject.
+     */
     public function record(ActorIdentity $agent, ActivityType $type, string $subject): void;
 }

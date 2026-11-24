@@ -18,5 +18,8 @@ interface EngineListener
      */
     public function maintenanceScope(): string;
 
+    /**
+     * Does the listener's periodic work when the engine ticks.
+     */
     public function __invoke(EngineTicked $event): void;
 }

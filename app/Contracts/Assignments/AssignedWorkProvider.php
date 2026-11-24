@@ -11,5 +11,8 @@ use App\Support\AssigneeIdentity;
  */
 interface AssignedWorkProvider
 {
+    /**
+     * How many records of the provider's type the holder has assigned.
+     */
     public function countFor(AssigneeIdentity $holder): int;
 }

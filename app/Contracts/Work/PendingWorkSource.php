@@ -11,5 +11,8 @@ use App\Support\ActorIdentity;
  */
 interface PendingWorkSource
 {
+    /**
+     * How much work of this source waits for the actor.
+     */
     public function pendingCount(ActorIdentity $actor): int;
 }

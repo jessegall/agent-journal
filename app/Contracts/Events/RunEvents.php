@@ -15,24 +15,54 @@ use App\Values\PartKey;
  */
 interface RunEvents
 {
+    /**
+     * The part waits for its turn to start.
+     */
     public function queued(PartKey $part): void;
 
+    /**
+     * The part's process started on the host under the process id.
+     */
     public function started(PartKey $part, int $pid, string $host): void;
 
+    /**
+     * The part started inside a process that already runs on the host, so it has no process of its own.
+     */
     public function startedInside(PartKey $part, string $host): void;
 
+    /**
+     * The part wrote these bytes on the stream.
+     */
     public function output(PartKey $part, OutputStream $stream, string $bytes): void;
 
+    /**
+     * The part ended as the end says, with all its output read when drained.
+     */
     public function ended(PartKey $part, PartEnd $end, bool $drained): void;
 
+    /**
+     * The part never started, because the result of an earlier part decided against it.
+     */
     public function skipped(PartKey $part, string $controllingResult): void;
 
+    /**
+     * The part's process could not be started, for the reason given.
+     */
     public function spawnFailed(PartKey $part, string $reason): void;
 
+    /**
+     * The part was stopped before it ended, for the reason given.
+     */
     public function stopped(PartKey $part, string $reason): void;
 
+    /**
+     * The part's process was lost, so how it ended is unknown.
+     */
     public function lost(PartKey $part): void;
 
+    /**
+     * The whole run was stopped, for the reason given.
+     */
     public function runStopped(string $reason): void;
 
     /**

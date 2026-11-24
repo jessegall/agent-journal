@@ -23,6 +23,9 @@ abstract class CommandStopped extends RuntimeException
         return [$this->getMessage()];
     }
 
+    /**
+     * The key a retry of the stopped command runs under; none when it is not retried.
+     */
     public function retryKey(): CallKey|null
     {
         return null;

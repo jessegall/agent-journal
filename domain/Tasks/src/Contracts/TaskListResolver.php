@@ -12,5 +12,8 @@ use Domain\Tasks\Values\TaskList;
  */
 interface TaskListResolver
 {
+    /**
+     * The tasks that match the filters.
+     */
     public function list(TaskFilters $filters): TaskList;
 }

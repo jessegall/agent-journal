@@ -23,6 +23,9 @@ interface AssigneeResolver
      */
     public function names(array $actors): array;
 
+    /**
+     * One page of the assignees of the type that may be given work.
+     */
     public function eligible(string $type, IdListPage $page): AssigneeList;
 
     /**

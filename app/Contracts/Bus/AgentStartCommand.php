@@ -9,5 +9,8 @@ namespace App\Contracts\Bus;
  */
 interface AgentStartCommand
 {
+    /**
+     * The id of the agent the command starts.
+     */
     public function startedAgentId(): string;
 }

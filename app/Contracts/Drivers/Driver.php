@@ -16,11 +16,23 @@ use App\Values\SupportSnapshot;
  */
 interface Driver
 {
+    /**
+     * The driver's registration: its key, family, label, pinned builds and the protocols it speaks.
+     */
     public function descriptor(): DriverRegistration;
 
+    /**
+     * What the driver supports for the bound target, such as rewriting a command or passing a screen.
+     */
     public function capabilities(BoundTarget $target): SupportSnapshot;
 
+    /**
+     * Starts the agent in a new session, as the request asks.
+     */
     public function start(StartRequest $request): StartReceipt;
 
+    /**
+     * Starts the agent again in the session it ran before, as the request asks.
+     */
     public function resume(StartRequest $request): StartReceipt;
 }

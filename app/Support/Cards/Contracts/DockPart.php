@@ -12,8 +12,14 @@ use App\Enums\PartType;
  */
 interface DockPart
 {
+    /**
+     * The key the part is found under within its card.
+     */
     public function key(): string;
 
+    /**
+     * The kind of part, which tells the frontend how to draw it.
+     */
     public function type(): PartType;
 
     /**

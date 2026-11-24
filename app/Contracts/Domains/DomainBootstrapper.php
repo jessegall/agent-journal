@@ -12,5 +12,8 @@ use App\Support\DomainEntry;
  */
 interface DomainBootstrapper
 {
+    /**
+     * Boots one registered domain: registers what it declares.
+     */
     public function __invoke(DomainEntry $domain): void;
 }

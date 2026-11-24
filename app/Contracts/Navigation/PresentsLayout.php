@@ -12,5 +12,8 @@ use App\Support\Layout\DeclaredLayoutData;
  */
 interface PresentsLayout
 {
+    /**
+     * The layout the page draws, as parts the frontend renders.
+     */
     public function layout(): DeclaredLayoutData;
 }

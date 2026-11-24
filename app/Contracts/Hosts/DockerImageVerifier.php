@@ -9,5 +9,8 @@ namespace App\Contracts\Hosts;
  */
 interface DockerImageVerifier
 {
+    /**
+     * Whether the image is one the journal built and signed, so it may run.
+     */
     public function isVerified(string $imageReference): bool;
 }

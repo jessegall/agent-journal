@@ -9,6 +9,9 @@ namespace App\Contracts\Navigation;
  */
 interface DeclaredPages
 {
+    /**
+     * Whether a page of that name is declared.
+     */
     public function declares(string $page): bool;
 
     /**

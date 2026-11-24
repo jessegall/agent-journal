@@ -16,6 +16,9 @@ use Domain\Plans\Values\PlanList;
  */
 interface PlanResolver
 {
+    /**
+     * The plans that match the filters.
+     */
     public function list(PlanFilters $filters): PlanList;
 
     /**

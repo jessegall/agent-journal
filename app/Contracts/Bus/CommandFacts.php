@@ -26,5 +26,8 @@ interface CommandFacts
      */
     public function holdUntilReturn(Closure $work): mixed;
 
+    /**
+     * Sends the fact to its listeners once the running command's transaction commits, and never when it rolls back.
+     */
     public function publishAfterCommit(Event $event): void;
 }

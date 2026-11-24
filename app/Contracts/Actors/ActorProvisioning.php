@@ -11,5 +11,8 @@ use App\Support\ActorIdentity;
  */
 interface ActorProvisioning
 {
+    /**
+     * Gives a new actor what it needs to take part, under the label users see.
+     */
     public function provision(ActorIdentity $actor, string $label): void;
 }

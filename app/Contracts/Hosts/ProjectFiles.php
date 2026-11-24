@@ -19,5 +19,8 @@ interface ProjectFiles
      */
     public function folders(ProjectBinding $binding, array $paths): ProjectFileAnswers;
 
+    /**
+     * The file at the path in the binding's project folder, or why it cannot be read.
+     */
     public function file(ProjectBinding $binding, string $path): ProjectFileAnswer;
 }

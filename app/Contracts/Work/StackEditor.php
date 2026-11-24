@@ -11,7 +11,13 @@ use App\Support\References\StateReference;
  */
 interface StackEditor
 {
+    /**
+     * Takes the state that answers the current hook off the stack.
+     */
     public function popAnsweringState(): void;
 
+    /**
+     * Puts the state on the stack above the state that answers the current hook.
+     */
     public function pushOverAnsweringState(StateReference $state): void;
 }

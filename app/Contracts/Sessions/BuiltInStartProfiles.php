@@ -14,6 +14,9 @@ use App\Values\StartPolicy;
  */
 interface BuiltInStartProfiles
 {
+    /**
+     * The driver selection with the built-in profile of that key pinned to it.
+     */
     public function pin(SelectedDriver $selection, string $profileKey): SelectedDriver;
 
     /**

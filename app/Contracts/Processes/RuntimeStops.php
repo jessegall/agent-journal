@@ -11,5 +11,8 @@ use App\Support\ActorIdentity;
  */
 interface RuntimeStops
 {
+    /**
+     * Stops the agent's running session, once per key.
+     */
     public function stopAgent(ActorIdentity $agent, string $idempotencyKey): void;
 }

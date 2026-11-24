@@ -8,5 +8,8 @@ use App\Values\TriggerPolicy;
 
 interface ScriptTrigger
 {
+    /**
+     * When a script with this trigger runs.
+     */
     public function policy(): TriggerPolicy;
 }

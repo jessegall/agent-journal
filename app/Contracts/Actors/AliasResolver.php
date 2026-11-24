@@ -11,5 +11,8 @@ use App\Values\AliasLookup;
  */
 interface AliasResolver
 {
+    /**
+     * The actor or record an alias names in the project, or why none answers to it.
+     */
     public function find(string $name, string $projectKey): AliasLookup;
 }

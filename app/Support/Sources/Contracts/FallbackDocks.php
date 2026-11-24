@@ -11,7 +11,13 @@ use App\Support\Sources\DockDefinition;
  */
 interface FallbackDocks
 {
+    /**
+     * Whether a fallback dock is defined for records of the type.
+     */
     public function covers(string $type): bool;
 
+    /**
+     * The fallback dock for records of the type.
+     */
     public function definition(string $type): DockDefinition;
 }

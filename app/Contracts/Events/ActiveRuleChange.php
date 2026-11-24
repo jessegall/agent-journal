@@ -9,6 +9,9 @@ namespace App\Contracts\Events;
  */
 interface ActiveRuleChange extends Event
 {
+    /**
+     * The key of the project whose active rules changed.
+     */
     public function project(): string;
 
     /**

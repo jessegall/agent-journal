@@ -11,5 +11,8 @@ use App\Support\Compatibility\DriverCompatibility;
  */
 interface DriverCompatibilities
 {
+    /**
+     * What the installed version of the driver understands, such as the settings it reads.
+     */
     public function for(string $driver): DriverCompatibility;
 }

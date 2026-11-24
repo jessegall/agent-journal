@@ -12,7 +12,13 @@ use App\Support\ShareRelationSet;
  */
 interface Shareable
 {
+    /**
+     * The record identity a share of this record names.
+     */
     public function shareIdentity(): RecordIdentity;
 
+    /**
+     * The records of other kinds a share of this kind may take along.
+     */
     public static function shareRelations(): ShareRelationSet;
 }

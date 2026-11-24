@@ -12,7 +12,13 @@ use App\Enums\ActorType;
  */
 interface Actor
 {
+    /**
+     * Whether the actor is a user, an agent or the system.
+     */
     public function actorType(): ActorType;
 
+    /**
+     * The id of the user, agent or system behind the actor.
+     */
     public function actorId(): string;
 }

@@ -15,5 +15,8 @@ use App\Enums\StartUnavailableReason;
  */
 interface StartRefusal extends CommandRefusal
 {
+    /**
+     * Why the start was refused, for a caller that tells the reasons apart.
+     */
     public function reason(): StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason;
 }

@@ -15,6 +15,9 @@ use App\Values\Word;
  */
 interface ProgramClassifier
 {
+    /**
+     * Whether this classifier knows what the program does.
+     */
     public function classifies(ProgramIdentity $program): bool;
 
     /**

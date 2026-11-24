@@ -14,7 +14,13 @@ use App\Values\PartEnd;
  */
 interface OutputRecorder
 {
+    /**
+     * Keeps the captured chunk of output, and gives where it was written.
+     */
     public function append(CapturedChunk $chunk): OutputPosition;
 
+    /**
+     * Closes the part's output once it ended.
+     */
     public function finish(PartRun $part, PartEnd $end): void;
 }

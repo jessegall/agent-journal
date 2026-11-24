@@ -16,8 +16,14 @@ use App\Support\TextSelection;
  */
 interface CommentResolver
 {
+    /**
+     * One page of the record's comments.
+     */
     public function list(RecordIdentity $target, IdListPage $page): CommentList;
 
+    /**
+     * Where the comment sits in the record: on the whole record, or on the text the selection marks.
+     */
     public function location(
         RecordIdentity $target,
         string $commentId,

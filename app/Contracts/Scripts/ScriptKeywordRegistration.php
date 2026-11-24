@@ -9,5 +9,8 @@ namespace App\Contracts\Scripts;
  */
 interface ScriptKeywordRegistration
 {
+    /**
+     * Adds a script keyword the owning domain provides.
+     */
     public function registerOwned(string $owner, ScriptKeywordDefinition $keyword): void;
 }

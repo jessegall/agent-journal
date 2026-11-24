@@ -12,7 +12,13 @@ use Carbon\CarbonImmutable;
  */
 interface ActiveActorCounter
 {
+    /**
+     * The type of actor this counter counts.
+     */
     public static function type(): ActorType;
 
+    /**
+     * How many actors of this counter's type were active at the moment observed.
+     */
     public function count(CarbonImmutable $observedAt): int;
 }

@@ -9,7 +9,13 @@ namespace App\Contracts\Chat;
  */
 interface Inbox
 {
+    /**
+     * The id messages to this inbox are addressed to.
+     */
     public function inboxId(): string;
 
+    /**
+     * The name users see for the inbox.
+     */
     public function inboxLabel(): string;
 }

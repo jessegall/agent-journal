@@ -12,6 +12,9 @@ namespace App\Contracts\Reflection;
  */
 interface ReflectedType
 {
+    /**
+     * Whether the type declares or inherits a method of that name.
+     */
     public function hasMethod(string $name): bool;
 
     /**

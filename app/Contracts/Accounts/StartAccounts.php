@@ -12,6 +12,9 @@ use App\Data\Accounts\EligibleAccountsData;
  */
 interface StartAccounts
 {
+    /**
+     * The accounts an agent of the driver may start with, and the one chosen by default.
+     */
     public function forDriver(string $driver): EligibleAccountsData;
 
     /**

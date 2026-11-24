@@ -11,6 +11,9 @@ use App\Values\ReadEntitlement;
  */
 interface ReadEntitlements
 {
+    /**
+     * Adds a named entitlement that read rules may require.
+     */
     public function declare(string $name, ReadEntitlement $entitlement): void;
 
     /**
