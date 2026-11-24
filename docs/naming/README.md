@@ -1,33 +1,51 @@
-# The name review
+# The names check
 
-`reviewed-names.txt` holds every name declared in `app`, `domain/*/src` and `tests/Architecture/Support` that has
-been read and judged. It includes classes, interfaces, enums, traits, methods, properties, constants, enum cases,
-parameters and local variables. Each line has the declaration type and name. Check 2 runs the same command every hour.
+No name is written down as approved. One scan reads every name of the project fresh from the code (PHP classes,
+members, parameters and variables; the frontend's names; the Go host's; the shell scripts' functions and variables;
+and the file names) and refuses each that breaks a rule of `tools/refactoring/name-grammar.php` or holds a word of
+`forbidden-words.txt`. Run it at every phase end, every plan end, or whenever asked; check 2 and
+`NamesFollowTheRulesTest` run it too.
 
 ```sh
-php tools/refactoring/list-names.php --check docs/naming/reviewed-names.txt app domain/*/src tests/Architecture/Support
-php tools/refactoring/list-names.php --accept docs/naming/reviewed-names.txt app domain/*/src tests/Architecture/Support
+php tools/refactoring/name-faults.php                     # every name of the project
+php tools/refactoring/name-faults.php app/Pipes           # only the names under a path
+php tools/refactoring/name-words.php                      # every word the names use, most used first
+php tools/refactoring/name-words.php --type=method        # the words of one kind of name
+php tools/refactoring/name-words.php --since=<commit>     # only the words that are new since that commit
+php tools/refactoring/name-faults.php rename report notify --verb --path=app             # list the renames
+php tools/refactoring/name-faults.php rename report notify --verb --path=app --apply     # make them
 ```
 
-`--check` lists the names not yet reviewed. `--accept` writes the list from the names declared now, which also drops
-the names of renamed and removed code; run it only once every name `--check` listed has been read and passes.
+A word that should never be used again goes into `forbidden-words.txt`; a verb that has a better word goes there as
+`verb:<word>`; a bad shape of name goes into the grammar. Look over the words now and then with `name-words.php
+--since` so nothing slips through.
+
+The rename command renames from the syntax tree of each language, loading it once for the whole list: `move.php` for
+PHP types, `rename-member.php` for PHP members and variables, `rename-go.php` (gopls) for Go and `rename-frontend.cjs`
+(the TypeScript service with Vue's plugin) for .ts and .vue. Every PHP parse goes through one funnel
+(`php-parse.php`) that stops a run the moment it would parse a file twice. Shell names are renamed by hand.
 
 ## What a name must be
 
 - A class, interface or enum is a noun for what it is or the role it plays (`PipelineRunner`, `PageProvider`,
-  `MessageSender`), never a verb phrase about what its implementer does (`RunsPipelines`, `ProvidesPages`). A contract
+  `MessageSender`), never a verb phrase about what its implementer does (`RunsPipelines`, `ProvidesPages`), and never
+  named for what will be done with it (`StepToRun` is a `PendingStep`). A contract
   that stands for one class takes that class's name; the class implements it through an alias (rule 43).
 - A trait and an attribute keep verb names, since they say what the class using them does (`HasComments`,
   `#[RequiresRequestKey]`).
 - An action, a listener, a pipe or a command middleware is named for the step it takes, in the imperative
   (`CheckCommandHandlers`, `ShowAccountsNotice`).
 - A type is never an adjective or a state alone (`BuiltFresh`), and never a sentence (`ChangesWhatUsersSee`).
-- A method that answers yes or no reads as a question (`isOpen`, `hasTests`); one that changes something is a plain
-  verb; one that answers is named for its answer.
+- An event says what happened, in a past form (`StopRequested`).
+- A method that answers yes or no reads as a question (`isOpen`, `hasTests`, `allows`), and so does a boolean property,
+  parameter or variable; one that changes something is a plain verb in the imperative (`close`, never `closes`); one
+  that answers is named for its answer, never `get` first.
+- An action that tells someone something happened notifies (`NotifyStop`); it does not report.
+- A shell function is a short verb_noun (`fetch_commit`).
 - No typos, no vague words (`data`, `info`, `handle` outside a handler, `process`, `manage`).
 
-Whoever writes a name judges it before the commit, and the main agent judges every name a worker brings in before the
-merge (rule 44). `TypeNameTest` and the `type-name-is-noun` commandment fail on a type that opens with a verb.
+Whoever writes a name judges it before the commit, and the names check judges every name again at each phase end
+(rules 44, 99, 100). `TypeNameTest` and the `type-name-is-noun` commandment fail on a type that opens with a verb.
 Rename a type with `php tools/refactoring/move.php <Old> <New>` and a member with
 `php tools/refactoring/rename-member.php`, so every reference follows.
 

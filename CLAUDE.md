@@ -129,5 +129,6 @@ yours to resolve at its source.
   `forbidden-words.txt`; a verb with a better word goes in as `verb:<word>`; a bad shape goes into the grammar.
 - A name says what a thing is, never what will be done with it (`PendingStep`, not `StepToRun`); an action starts with
   its verb; an event says what happened; a yes or no reads as a question; an action that tells someone notifies.
-- Rename PHP names with `php tools/refactoring/name-faults.php rename <word> <new word> [--type=] [--namespace=]
-  [--path=]`, read the list it prints, then add `--apply`: it renames from the syntax tree, never by search and replace.
+- Rename with `php tools/refactoring/name-faults.php rename <word> <new word> [--type=] [--namespace=] [--path=]
+  [--verb]`, read the list it prints, then add `--apply`: it renames PHP, Go, TypeScript and Vue names from each
+  language's syntax tree, loading each once, never by search and replace. Shell names are renamed by hand.
