@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# Refuses a commit whose staged files hold a name that breaks the naming rules, judged with the words of the whole
+# code that the last full names scan learned (docs/naming/README.md).
+set -eu
+
+main() {
+    check_staged_names
+}
+
+check_staged_names() {
+    php tools/refactoring/name-faults.php --staged
+}
+
+main "$@"

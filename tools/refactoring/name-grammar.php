@@ -100,21 +100,80 @@ function inflectedVerbsOf(array $names): array
 }
 
 /**
- * Each name that breaks a naming rule, as "type name (place): why".
+ * The words the grammar learns from the whole code: its verbs, nouns, events and type names. A scan of the whole code
+ * writes it to a file, and a scan of a few files (the staged ones) reads it from there, so they judge alike.
+ */
+final readonly class NameVocabulary
+{
+    /**
+     * @param  array<string, true>  $verbs
+     * @param  array<string, true>  $commandVerbs
+     * @param  array<string, true>  $nouns
+     * @param  array<string, true>  $sharedVerbs
+     * @param  array<string, true>  $happenings
+     * @param  array<string, true>  $typeNames
+     */
+    public function __construct(
+        public array $verbs,
+        public array $commandVerbs,
+        public array $nouns,
+        public array $sharedVerbs,
+        public array $happenings,
+        public array $typeNames,
+    ) {}
+
+    /**
+     * @param  list<DeclaredName>  $names
+     */
+    public static function of(array $names): self
+    {
+        $types = array_filter($names, fn (DeclaredName $declared) => $declared->declarationType === 'class');
+
+        return new self(
+            verbsOf($names, shouldIncludeActionClasses: true),
+            verbsOf($names, shouldIncludeActionClasses: false),
+            nounsOf($names),
+            sharedActionWordsOf($names),
+            happeningsOf($names),
+            array_fill_keys(array_map(fn (DeclaredName $declared) => $declared->name, $types), true),
+        );
+    }
+
+    public static function fromFile(string $path): self
+    {
+        $words = json_decode((string) file_get_contents($path), true, 4, JSON_THROW_ON_ERROR);
+        $set = fn (string $key) => array_fill_keys($words[$key], true);
+
+        return new self($set('verbs'), $set('commandVerbs'), $set('nouns'), $set('sharedVerbs'), $set('happenings'), $set('typeNames'));
+    }
+
+    public function writeTo(string $path): void
+    {
+        if (! is_dir(dirname($path))) {
+            mkdir(dirname($path), 0o755, true);
+        }
+
+        $words = array_map(fn (array $set) => array_map('strval', array_keys($set)), get_object_vars($this));
+        file_put_contents($path, json_encode($words, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)."\n");
+    }
+}
+
+/**
+ * Each name that breaks a naming rule, as "type name (place): why", judged with the words of the whole code.
  *
  * @param  list<DeclaredName>  $names
  * @return list<string>
  */
-function nameFaults(array $names, string $forbiddenWordsFile): array
+function nameFaults(array $names, NameVocabulary $vocabulary, string $forbiddenWordsFile): array
 {
     $forbidden = forbiddenWords($forbiddenWordsFile);
     $betterVerbs = betterVerbs($forbiddenWordsFile);
-    $verbs = verbsOf($names, shouldIncludeActionClasses: true);
-    $commandVerbs = verbsOf($names, shouldIncludeActionClasses: false);
-    $nouns = nounsOf($names);
-    $sharedVerbs = sharedActionWordsOf($names);
-    $happenings = happeningsOf($names);
-    $typeNames = array_fill_keys(array_map(fn (DeclaredName $declared) => $declared->name, array_filter($names, fn (DeclaredName $declared) => $declared->declarationType === 'class')), true);
+    $verbs = $vocabulary->verbs;
+    $commandVerbs = $vocabulary->commandVerbs;
+    $nouns = $vocabulary->nouns;
+    $sharedVerbs = $vocabulary->sharedVerbs;
+    $happenings = $vocabulary->happenings;
+    $typeNames = $vocabulary->typeNames;
     $faults = [];
 
     foreach ($names as $declared) {
@@ -189,10 +248,12 @@ function purposeFault(DeclaredName $declared, array $verbs, array $nouns): ?stri
         $before = $words[$at - 1] ?? '';
         $isState = preg_match('/(ed|ing)$/', $before) === 1;
         $isInterrogative = in_array($before, INTERROGATIVE_WORDS, true);
-        // A name that opens with a verb says what it does when what follows "to" is a thing the code names a type for,
-        // or when no type is named for its verb: ReplyToMessageCall.
+        // A name that opens with a verb says what it does when no type is named for its verb, or when what follows
+        // "to" is a thing the code names a type for and a word naming the carrier comes after it: ReplyToMessageCall.
+        // One that ends on that thing names what will be done with it (StepToRun).
         $after = $words[$at + 1] ?? '';
-        $isVerbPhrase = $at === 1 && isset($verbs[$before]) && (! isset($nouns[$before]) || isset($nouns[$after]));
+        $hasCarrier = isset($words[$at + 2]);
+        $isVerbPhrase = $at === 1 && isset($verbs[$before]) && (! isset($nouns[$before]) || (isset($nouns[$after]) && $hasCarrier));
         // "from a to b" names a mapping between two things (fromRecordToType), not a purpose.
         $isMapping = in_array('from', array_slice($words, 0, $at), true);
 

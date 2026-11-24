@@ -174,7 +174,8 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
         "post-install-cmd": [
-            "@php vendor/bin/commandments sync"
+            "@php vendor/bin/commandments sync",
+            "git config core.hooksPath .githooks 2>/dev/null || true"
         ]
     },
     "extra": {

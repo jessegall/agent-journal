@@ -63,19 +63,24 @@ function projectFiles(array $paths): array
 
     return array_values(array_filter($listed, fn (string $file) => is_file($file)
         && (preg_match(NOT_PROJECT_NAMES, $file) !== 1
-            || array_any($named, fn (string $path) => str_starts_with($file, rtrim($path, '/').'/')))));
+            || array_any($named, fn (string $path) => $file === $path || str_starts_with($file, rtrim($path, '/').'/')))));
 }
 
 /**
- * The frontend's names, as list-frontend-names.ts reads them from the .ts and .vue files under the paths.
+ * The frontend's names, as list-frontend-names.ts reads them from the .ts and .vue files under the paths or named.
  *
  * @param  list<string>  $paths
  * @return list<DeclaredName>
  */
 function frontendNames(array $paths): array
 {
-    $folders = array_values(array_filter($paths, is_dir(...)));
-    $lines = commandLines(['node', '--experimental-strip-types', __DIR__.'/list-frontend-names.ts', ...$folders]);
+    $sources = array_values(array_filter($paths, fn (string $path) => is_dir($path) || preg_match('/\.(ts|vue)$/', $path) === 1));
+
+    if ($sources === []) {
+        return [];
+    }
+
+    $lines = commandLines(['node', '--experimental-strip-types', __DIR__.'/list-frontend-names.ts', ...$sources]);
 
     return array_map(function (string $line): DeclaredName {
         [$declarationType, $name, $place] = explode("\t", $line) + [1 => '', 2 => ''];

@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Architecture\Names\Pipes;
 /**
  * An action class that does not start with its verb.
  */
-final class StepRunner
+final class LedgerRunner
 {
     public function handle(): void {}
 }

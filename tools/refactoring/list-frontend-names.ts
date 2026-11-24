@@ -24,6 +24,11 @@ function namesUnder(folder: string): Placed[] {
 }
 
 function sourceFiles(folder: string): string[] {
+    // a file named on its own, as the staged files of a commit are
+    if (!lstatSync(folder).isDirectory()) {
+        return /\.(ts|vue)$/.test(folder) && !/\.(test|d)\.ts$/.test(folder) ? [folder] : [];
+    }
+
     return readdirSync(folder).flatMap((entry) => {
         const path = join(folder, entry);
 

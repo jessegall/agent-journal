@@ -4,14 +4,14 @@ set -eu
 
 main() {
     report_stop
-    architecture_of
+    ledger_of
 }
 
 report_stop() {
     echo stopped
 }
 
-architecture_of() {
+ledger_of() {
     uname -m
 }
 
