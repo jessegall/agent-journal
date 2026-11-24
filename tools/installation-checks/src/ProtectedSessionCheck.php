@@ -52,6 +52,11 @@ final class ProtectedSessionCheck
      */
     public function run(): array
     {
+        // The check judges a fresh start, so a session the main agent still runs is stopped first.
+        if ($this->containers->read('main-agent')['isRunning']) {
+            $this->stop();
+        }
+
         $container = $this->start();
         $this->containers->probe('setup', $container, $this->program());
         $this->judgeReads($container);
@@ -67,7 +72,8 @@ final class ProtectedSessionCheck
     }
 
     /**
-     * Starts the main agent's session as the Start dialog does and answers its container once it runs.
+     * Starts the main agent's session as the Start dialog does and answers its container once it runs: a headless
+     * program starts on its first message, so one is sent once the session runs.
      */
     private function start(): string
     {
@@ -85,8 +91,9 @@ final class ProtectedSessionCheck
         $session = $this->waitFor(self::START_LIMIT, function (): string|null {
             $agent = $this->containers->read('main-agent');
 
-            return $agent['status'] === 'running' ? (string) $agent['session'] : null;
+            return $agent['isRunning'] ? (string) $agent['session'] : null;
         }, 'the session to run');
+        $this->send('Reply with the single word ready.');
 
         return $this->waitFor(
             self::START_LIMIT,
@@ -102,10 +109,10 @@ final class ProtectedSessionCheck
         $this->journal->postKeyed("/agents/{$agent['agent']}/stop", [
             'requestId' => $requestId,
             'sessionId' => $agent['session'],
-            'generation' => $agent['generation'],
+            'generation' => $agent['processGeneration'],
         ], $requestId);
         $this->waitFor(self::START_LIMIT, function (): bool|null {
-            return $this->containers->read('main-agent')['status'] !== 'running' ? true : null;
+            return $this->containers->read('main-agent')['isRunning'] ? null : true;
         }, 'the session to stop');
     }
 
@@ -248,7 +255,7 @@ final class ProtectedSessionCheck
             'body' => $text,
             'agent' => $agent['agent'],
             'expectedSessionId' => $agent['session'],
-            'expectedGeneration' => $agent['generation'],
+            'expectedGeneration' => $agent['processGeneration'],
             'inboxId' => $inbox,
             'requestKey' => $key,
             'addressee' => null,
@@ -304,12 +311,19 @@ final class ProtectedSessionCheck
     private function waitFor(int $seconds, callable $question, string $awaited): mixed
     {
         $deadline = time() + $seconds;
+        $nextLine = time();
 
         while (time() < $deadline) {
             $answer = $question();
 
             if ($answer !== null) {
                 return $answer;
+            }
+
+            // A line at least every half minute, so whoever runs the check sees it still works.
+            if (time() >= $nextLine) {
+                echo 'waiting for ', $awaited, ', ', $deadline - time(), " seconds left\n";
+                $nextLine = time() + 30;
             }
 
             sleep(3);

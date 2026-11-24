@@ -36,6 +36,8 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
+use App\Contracts\Actors\AgentTexts;
+use App\Values\AgentText;
 use Tests\TestCase;
 
 /**
@@ -90,7 +92,8 @@ final class StartIdentityTest extends TestCase
         $this->notifyApplied($host, $wake, self::CONVERSATION);
         $after = $this->claimed($host);
 
-        $this->assertSame([[$wake->id, true, null]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap, $request->message], $bootstrap));
+        $pendingWork = $this->app->make(AgentTexts::class)->render(AgentText::of('core.drivers.pending_work'));
+        $this->assertSame([[$wake->id, true, $pendingWork]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap, $request->message], $bootstrap));
         $this->assertSame([[$opened->firstRequestId, false]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap], $after));
     }
 

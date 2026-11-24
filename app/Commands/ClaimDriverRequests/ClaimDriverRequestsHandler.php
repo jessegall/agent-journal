@@ -176,8 +176,8 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
     /**
      * A wake carries its whole prompt: the next batch of chat text for the runtime's driver when one waits, otherwise
-     * the pending-work prompt, so desk work is never starved by a chat backlog. A bootstrap carries no prompt: the
-     * backlog waits for the first wake after the start is ready.
+     * the pending-work prompt, so desk work is never starved by a chat backlog. A bootstrap carries the pending-work
+     * prompt only, for a driver that proves its conversation with a turn; the backlog waits for the start to be ready.
      */
     private function withMessageBatch(
         DriverRequest $request,
@@ -185,13 +185,14 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         ClaimedRequest $claim,
         CarbonImmutable $now,
     ): ClaimedRequest {
-        if ($request->operation !== DriverOperation::Wake || $claim->shouldBootstrap) {
+        if ($request->operation !== DriverOperation::Wake) {
             return $claim;
         }
 
+        $pendingWork = fn (): string => $this->texts->render(AgentText::of('core.drivers.pending_work'));
+
         return $claim->withMessage(
-            $this->messageBatches->textFor($runtime, $now)
-                ?? $this->texts->render(AgentText::of('core.drivers.pending_work')),
+            $claim->shouldBootstrap ? $pendingWork() : $this->messageBatches->textFor($runtime, $now) ?? $pendingWork(),
         );
     }
 

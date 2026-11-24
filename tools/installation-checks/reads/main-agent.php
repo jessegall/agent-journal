@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\ActorType;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\MainAgentDesignation;
 use App\Support\ActorIdentity;
@@ -11,7 +12,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\DirectChat;
 
 // Prints, as JSON, what the protected-session check needs of the main agent: its id and profile, the inbox of its
-// chat with the owner, and its newest session with that session's status and the agent's runtime generation.
+// chat with the owner, its newest session, whether that session runs and the process generation it runs.
 $owner = User::query()->findOrFail(app(AccessSettings::class)->ownerId);
 $agent = MainAgentDesignation::designatedAgent();
 $pair = DirectChat::findPair(
@@ -26,6 +27,6 @@ echo json_encode([
     'profile' => $agent->profile_key,
     'inbox' => $pair?->conversation->inbox_id,
     'session' => $session?->id,
-    'status' => $session?->status->value,
-    'generation' => $agent->runtime_generation,
+    'isRunning' => $session?->status->isRunning() ?? false,
+    'processGeneration' => AgentRuntime::query()->where('agent_session_id', $session?->id)->value('process_generation'),
 ]), "\n";
