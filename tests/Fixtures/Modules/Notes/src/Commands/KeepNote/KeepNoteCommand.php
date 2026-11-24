@@ -17,7 +17,7 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<int>
  */
 #[Authorize(NoteWorkPolicy::class, AccessType::Edit)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 final readonly class KeepNoteCommand extends Command
 {
     public function __construct(public string $text) {}

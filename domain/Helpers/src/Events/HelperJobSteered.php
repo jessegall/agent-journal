@@ -13,5 +13,6 @@ final readonly class HelperJobSteered extends HelperEvent implements HelperJobEv
 {
     public function __construct(
         public string $jobId,
+        public string $steering,
     ) {}
 }

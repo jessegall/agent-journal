@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\SendMessage\SendMessageCommand;
+use App\Events\MessageEvent;
 use App\Events\MessageSent;
 use App\Exceptions\CommittedFactListenerFailed;
 use App\Exceptions\InboxUnavailable;
@@ -16,7 +17,7 @@ use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Architecture\Support\FormerPaths;
+use Tests\Architecture\Support\DomainFiles;
 use Tests\Fixtures\Communication\FailingMessageListener;
 use Tests\Support\MessagingTestCase;
 
@@ -75,9 +76,14 @@ final class MessageEventsTest extends MessagingTestCase
 
     public function test_no_message_fact_carries_a_body_or_a_model(): void
     {
-        // The message facts by the folder they had before the move to Laravel's layout.
-        foreach (FormerPaths::filesFrom(['app/Communication/Events/']) as $file) {
-            $parameters = Reflector::of('App\\Events\\'.basename($file, '.php'))->constructor()
+        foreach (DomainFiles::in([app_path('Events')]) as $file) {
+            $event = Reflector::of('App\\Events\\'.basename($file, '.php'));
+
+            if (! $event->isSubclassOf(MessageEvent::class)) {
+                continue;
+            }
+
+            $parameters = $event->constructor()
                 ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
                 ->getOrElse([]);
 

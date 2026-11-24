@@ -15,7 +15,7 @@ use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
-#[TimeLimit(5, 'The task journeys cross several signed requests and inspect persisted outcomes.')]
+#[TimeLimit(5, 'The task flowsOutsideMcp cross several signed requests and inspect persisted outcomes.')]
 final class TaskToolsTest extends TestCase
 {
     use CommitsHookRows;

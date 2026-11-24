@@ -10,11 +10,11 @@ use App\Events\CodeReviewImportFailed;
 use App\Events\CodeReviewOpened;
 use App\Events\CodeReviewSettled;
 use App\Events\MergeAttemptAcknowledged;
-use App\Events\MergeAttemptApplying;
+use App\Events\MergeAttemptBecameUncertain;
 use App\Events\MergeAttemptMerged;
 use App\Events\MergeAttemptRefused;
 use App\Events\MergeAttemptResolvedByOwner;
-use App\Events\MergeAttemptUncertain;
+use App\Events\MergeAttemptStarted;
 use App\Events\RepairRequestSettled;
 use App\Events\ReviewDecisionMergeLinked;
 use App\Events\WorkerReservationEmptied;
@@ -65,12 +65,12 @@ return [
         'producers' => [],
         'sample' => fn () => new MergeAttemptResolvedByOwner('attempt', MergeAttemptState::cases()[0]),
     ],
-    MergeAttemptApplying::class => [
+    MergeAttemptStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'MergeAttempt::apply',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MergeAttemptApplying('attempt'),
+        'sample' => fn () => new MergeAttemptStarted('attempt'),
     ],
     MergeAttemptMerged::class => [
         'role' => EventRole::RowFact,
@@ -86,12 +86,12 @@ return [
         'producers' => [],
         'sample' => fn () => new MergeAttemptRefused('attempt', MergeRefusalReason::cases()[0]),
     ],
-    MergeAttemptUncertain::class => [
+    MergeAttemptBecameUncertain::class => [
         'role' => EventRole::RowFact,
         'owner' => 'MergeAttempt::becomeUncertain',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MergeAttemptUncertain('attempt'),
+        'sample' => fn () => new MergeAttemptBecameUncertain('attempt'),
     ],
     RepairRequestSettled::class => [
         'role' => EventRole::RowFact,

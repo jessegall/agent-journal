@@ -19,7 +19,7 @@ use App\Support\GatewayConfiguration;
  * @extends Command<GatewayConfiguration>
  */
 #[Authorize(SharingPolicy::class, AccessType::Create)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 final readonly class ConfigureShareGatewayCommand extends Command
 {
     /**

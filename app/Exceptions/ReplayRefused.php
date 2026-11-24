@@ -37,7 +37,7 @@ final class ReplayRefused extends RuntimeException implements CodedRefusal, Comm
         return new self("The contract of part {$partRunId}'s operation changed since it ran; run it again instead.");
     }
 
-    public static function notYours(string $partRunId): self
+    public static function ofAnotherActor(string $partRunId): self
     {
         return new self("Only a user, or the actor who ran part {$partRunId}, may replay it.");
     }

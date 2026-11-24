@@ -18,7 +18,7 @@ use App\Support\ShareSummary;
  * @extends Command<ShareSummary>
  */
 #[Authorize(SharingPolicy::class, AccessType::Edit)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 final readonly class RevokeShareCommand extends Command
 {
     public function __construct(

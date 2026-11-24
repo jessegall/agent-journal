@@ -23,7 +23,7 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
-use Domain\Tasks\Exceptions\TaskRunNotYours;
+use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
@@ -116,7 +116,7 @@ final class TaskRunOwnershipTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->bus()->run(new BlockTaskCommand($this->task->id, $run + 1, 'Wrong run.')),
-            TaskRunNotYours::class,
+            TaskRunOfAnotherActor::class,
         );
 
         $this->bus()->run(new BlockTaskCommand($this->task->id, $run, 'Waits on review.'));

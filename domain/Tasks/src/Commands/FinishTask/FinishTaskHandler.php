@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Processes\RunClaims;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskRunFinished;
-use Domain\Tasks\Exceptions\TaskRunNotYours;
+use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Models\Task;
 
 final readonly class FinishTaskHandler extends TaskCommandHandler
@@ -21,7 +21,7 @@ final readonly class FinishTaskHandler extends TaskCommandHandler
     /**
      * Finishes the task, then its run and the run's claim; the task's fact follows the claim work's facts.
      *
-     * @throws TaskRunNotYours
+     * @throws TaskRunOfAnotherActor
      * @throws TaskRunFinished
      */
     public function handle(FinishTaskCommand $command, Task $task): void

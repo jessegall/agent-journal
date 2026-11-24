@@ -54,13 +54,13 @@ final readonly class PlanWaitSuggester
     private function isImplied(TaskGraphEdge $edge, array $edges): bool
     {
         $seen = [$edge->prerequisiteId => true];
-        $frontier = [$edge->prerequisiteId];
+        $lastShown = [$edge->prerequisiteId];
 
-        while ($frontier !== []) {
+        while ($lastShown !== []) {
             $next = [];
 
             foreach ($edges as $other) {
-                if ($other === $edge || ! in_array($other->prerequisiteId, $frontier, true)) {
+                if ($other === $edge || ! in_array($other->prerequisiteId, $lastShown, true)) {
                     continue;
                 }
 
@@ -74,7 +74,7 @@ final readonly class PlanWaitSuggester
                 }
             }
 
-            $frontier = $next;
+            $lastShown = $next;
         }
 
         return false;

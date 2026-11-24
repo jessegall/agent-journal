@@ -65,7 +65,7 @@ final readonly class Frame
         return is_int($requestId) || is_string($requestId) ? $requestId : null;
     }
 
-    public function isLegacyInitialize(): bool
+    public function negotiatesVersion(): bool
     {
         return $this->method() === self::INITIALIZE && $this->protocolVersion() === null;
     }

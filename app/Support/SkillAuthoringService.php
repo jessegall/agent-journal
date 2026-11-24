@@ -48,7 +48,7 @@ final readonly class SkillAuthoringService
      * @throws ShippedSkillReadOnly
      * @throws SkillMissing
      */
-    public function stored(string $numberOrKey): Skill
+    public function storedSkill(string $numberOrKey): Skill
     {
         if (ctype_digit($numberOrKey)) {
             $id = Skill::idOfNumber((int) $numberOrKey);

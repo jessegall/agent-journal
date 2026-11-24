@@ -28,7 +28,7 @@ use Tests\TestCase;
 
 /**
  * A started agent's start context tells it once to use the journal MCP tools, and lists only the CLI and web
- * journeys its role has.
+ * flowsOutsideMcp its role has.
  */
 final class McpInstructionsTest extends TestCase
 {

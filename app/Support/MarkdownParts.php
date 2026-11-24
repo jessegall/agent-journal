@@ -138,7 +138,7 @@ final readonly class MarkdownParts implements MarkdownPartsContract
 
     /**
      * The text of a skill source inside its owner's resources/skills folder, read through the funnel, which refuses a
-     * path that climbs out and a link that leaves the place; each refusal is told as the skill's own.
+     * path that escapesItsRoot out and a link that leaves the place; each refusal is told as the skill's own.
      *
      * @throws SkillSourceInvalid
      */

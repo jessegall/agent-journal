@@ -20,7 +20,7 @@ use Spatie\LaravelData\Attributes\Validation\Min;
  * @extends Command<string>
  */
 #[Authorize(PlanPolicy::class, AccessType::Admin)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 final readonly class RequestPlanChangesCommand extends Command
 {
     public function __construct(

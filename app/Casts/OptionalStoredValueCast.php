@@ -21,14 +21,14 @@ final class OptionalStoredValueCast implements CastsAttributes
     /**
      * @var StoredValueCast<TValue>
      */
-    private readonly StoredValueCast $present;
+    private readonly StoredValueCast $valueCast;
 
     /**
      * @param  class-string<TValue>  $valueClass
      */
     public function __construct(string $valueClass)
     {
-        $this->present = new StoredValueCast($valueClass);
+        $this->valueCast = new StoredValueCast($valueClass);
     }
 
     /**
@@ -37,7 +37,7 @@ final class OptionalStoredValueCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): StoredValue|null
     {
-        return $value === null ? null : $this->present->get($model, $key, $value, $attributes);
+        return $value === null ? null : $this->valueCast->get($model, $key, $value, $attributes);
     }
 
     /**
@@ -46,6 +46,6 @@ final class OptionalStoredValueCast implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): string|null
     {
-        return $value === null ? null : $this->present->set($model, $key, $value, $attributes);
+        return $value === null ? null : $this->valueCast->set($model, $key, $value, $attributes);
     }
 }

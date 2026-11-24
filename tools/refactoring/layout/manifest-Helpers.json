@@ -1436,10 +1436,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "008a5f910219814ef1631066067db9dc2ccc9696",
-        "old_path": "domain/Helpers/src/Listeners/SupplyHelperContext.php",
-        "old_class": "Domain\\Helpers\\Listeners\\SupplyHelperContext",
-        "final_path": "domain/Helpers/src/Listeners/SupplyHelperContext.php",
-        "final_class": "Domain\\Helpers\\Listeners\\SupplyHelperContext",
+        "old_path": "domain/Helpers/src/Listeners/SupplyHelperNotices.php",
+        "old_class": "Domain\\Helpers\\Listeners\\SupplyHelperNotices",
+        "final_path": "domain/Helpers/src/Listeners/SupplyHelperNotices.php",
+        "final_class": "Domain\\Helpers\\Listeners\\SupplyHelperNotices",
         "status": "stay",
         "kind": "class",
         "generator": {

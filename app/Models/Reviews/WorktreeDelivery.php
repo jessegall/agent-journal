@@ -33,9 +33,6 @@ use Illuminate\Support\Carbon;
  * @property string $target_ref
  * @property string $expected_target_oid
  * @property DeliveryOutcome $outcome
- * @property string|null $resulting_target_oid
- * @property bool|null $tip_is_reachable
- * @property list<string> $conflict_paths
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -59,8 +56,6 @@ final class WorktreeDelivery extends Model implements ReadableModel
         return [
             'runtime_generation' => 'integer',
             'outcome' => DeliveryOutcome::class,
-            'tip_is_reachable' => 'boolean',
-            'conflict_paths' => 'array',
         ];
     }
 
@@ -93,7 +88,6 @@ final class WorktreeDelivery extends Model implements ReadableModel
         $delivery->target_ref = $submission->targetRef;
         $delivery->expected_target_oid = $submission->expectedTargetOid;
         $delivery->outcome = DeliveryOutcome::Submitted;
-        $delivery->conflict_paths = [];
         $delivery->save();
 
         return $delivery;

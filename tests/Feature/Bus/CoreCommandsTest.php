@@ -108,8 +108,8 @@ use App\Commands\SettleSample\SettleSampleCommand;
 use App\Commands\StartAgent\StartAgentCommand;
 use App\Commands\StartSample\StartSampleCommand;
 use App\Commands\StartSwitchReplacement\StartSwitchReplacementCommand;
+use App\Commands\StopLeftoverProcesses\StopLeftoverProcessesCommand;
 use App\Commands\StopProcessRun\StopProcessRunCommand;
-use App\Commands\StopSurvivors\StopSurvivorsCommand;
 use App\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Commands\TakeSignInCode\TakeSignInCodeCommand;
 use App\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
@@ -220,7 +220,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             FenceProfileRevisionCommand::class,
             MarkRunsStaleCommand::class,
             ReconcileLostRunsCommand::class,
-            StopSurvivorsCommand::class,
+            StopLeftoverProcessesCommand::class,
             ReadPartLiveCommand::class,
             ProposeCommandRuleCommand::class,
             ReviseRuleProposalCommand::class,

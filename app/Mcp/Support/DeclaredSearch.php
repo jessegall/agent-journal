@@ -11,8 +11,6 @@ use App\Enums\SearchSurface;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Exceptions\ContinuationInvalid;
-use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Values\DeclaredSearchable;
@@ -33,18 +31,6 @@ final readonly class DeclaredSearch
 
     private const string DISCOVERY_SELECTOR = 'discover';
 
-    /**
-     * The arguments of the search contract that came before, refused with the current ones named.
-     */
-    public const array RETIRED_ARGUMENTS = ['types', 'page'];
-
-    /**
-     * The selector the search contract that came before signed its cursors with.
-     */
-    private const string OBSOLETE_SELECTOR = '';
-
-    public const string CURRENT_ARGUMENTS = 'query, within, limit, continuation, discover or prefix';
-
     public function __construct(
         private RecordSearch $coordinator,
         private SearchSources $eligibility,
@@ -55,12 +41,6 @@ final readonly class DeclaredSearch
 
     public function search(ToolArguments $arguments): ToolResult
     {
-        foreach (self::RETIRED_ARGUMENTS as $retired) {
-            if ($arguments->sent($retired)) {
-                throw ToolArgumentInvalid::for($retired, self::CURRENT_ARGUMENTS);
-            }
-        }
-
         $continuation = $arguments->optionalText('continuation');
 
         if ($continuation !== null && self::isSignedCursor($continuation)) {
@@ -84,18 +64,11 @@ final readonly class DeclaredSearch
     }
 
     /**
-     * A signed two-part cursor: the next discovery page, or a cursor of the search contract that came before,
-     * which answers restart; a cursor not issued to this caller is refused.
+     * A signed two-part cursor: the next discovery page; a cursor not issued to this caller is refused.
      */
     private function signedCursor(string $cursor): ToolResult
     {
-        try {
-            $read = $this->continuations->open($cursor, self::TOOL, self::DISCOVERY_SELECTOR);
-        } catch (ContinuationInvalid) {
-            $this->continuations->open($cursor, self::TOOL, self::OBSOLETE_SELECTOR);
-
-            return $this->answer(SearchAnswer::restart());
-        }
+        $read = $this->continuations->open($cursor, self::TOOL, self::DISCOVERY_SELECTOR);
 
         return $this->discover(
             (string) $read->filters['prefix'],

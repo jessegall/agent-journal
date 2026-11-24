@@ -35,16 +35,16 @@ use App\Events\NotificationReceiptRead;
 use App\Events\NotificationReceiptRevealed;
 use App\Events\NotificationsChanged;
 use App\Events\NotificationsMarkAllAdvanced;
-use App\Events\NotificationsMarkAllBegun;
 use App\Events\NotificationsMarkAllFinished;
+use App\Events\NotificationsMarkAllStarted;
 use App\Events\NotificationsWithdrawn;
 use App\Events\OutstandingMessageRangeConfirmed;
 use App\Events\OutstandingMessageRangeExhausted;
 use App\Events\OutstandingMessageRangeFailed;
 use App\Events\OutstandingMessageRangeReopened;
 use App\Events\ReceiptDeliveriesScheduled;
-use App\Events\ReceiptDeliveryAwaitingShown;
 use App\Events\ReceiptDeliveryChanged;
+use App\Events\ReceiptDeliveryWakeTaken;
 use App\Events\ReceiptProgressAdvanced;
 use App\Events\SpeechOpportunityClaimed;
 use App\Events\SpeechOpportunityReleased;
@@ -247,19 +247,19 @@ return [
         'producers' => [],
         'sample' => fn () => new SpeechOpportunityReleased('opportunity'),
     ],
-    ReceiptDeliveryAwaitingShown::class => [
+    ReceiptDeliveryWakeTaken::class => [
         'role' => EventRole::RowFact,
         'owner' => 'ReceiptDelivery::awaitShown',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ReceiptDeliveryAwaitingShown('delivery', 'receipt'),
+        'sample' => fn () => new ReceiptDeliveryWakeTaken('delivery', 'receipt'),
     ],
-    NotificationsMarkAllBegun::class => [
+    NotificationsMarkAllStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'NotificationScope::beginMarkAll',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new NotificationsMarkAllBegun('scope', 10),
+        'sample' => fn () => new NotificationsMarkAllStarted('scope', 10),
     ],
     NotificationsMarkAllAdvanced::class => [
         'role' => EventRole::RowFact,

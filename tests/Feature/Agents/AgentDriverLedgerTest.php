@@ -45,6 +45,8 @@ use App\Enums\ExecutionModeType;
 use App\Enums\HoldReason;
 use App\Enums\HostRefusal;
 use App\Enums\HostWakeRefusal;
+use App\Enums\IntervalRole;
+use App\Enums\MessageBatchState;
 use App\Enums\RecoveryAction;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
@@ -64,10 +66,14 @@ use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
+use App\Models\Chats\InboxInterval;
+use App\Models\Chats\InboxRecord;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverTurn;
 use App\Models\Drivers\RuntimeEvent;
+use App\Models\Messages\MessageBatch;
 use App\Models\Projects\Host;
+use App\Models\Records\GlobalGroup;
 use App\Models\Starts\ProcessStart;
 use App\Models\Starts\SessionPolicy;
 use App\Support\ActorContext;
@@ -81,6 +87,7 @@ use App\Support\EnrolledHost;
 use App\Support\HeartbeatService;
 use App\Support\InitialWakeSettlement;
 use App\Support\LaunchProfiles;
+use App\Support\MessageBatchService;
 use App\Support\NativeTurns;
 use App\Support\OpenedRuntime;
 use App\Support\PendingWorkSources;
@@ -111,6 +118,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
+use Tests\Support\TestActors;
 use Tests\Support\TestStartAuthority;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -154,6 +162,29 @@ final class AgentDriverLedgerTest extends TestCase
     ];
 
     private const string FOLDER = '/work/project';
+
+    public function test_a_batch_is_taken_by_the_turn_its_prompt_starts_and_settles_when_that_turn_ends(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        GlobalGroup::installJournal();
+        $inbox = InboxRecord::create('test-chat', (string) str()->ulid());
+        $interval = InboxInterval::create($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
+        $at = CarbonImmutable::now();
+        $batch = MessageBatch::create($interval->id, $opened->sessionId, 1, 'thread-1', 1, $at, $at->addHour());
+
+        $this->asSystem(
+            new ReportDriverTurnCommand($host->hostId, $opened->runtimeId, 1, 'prompt-1', false, 'opus', 'high', null),
+        );
+        $turn = DriverTurn::query()->where('agent_runtime_id', $opened->runtimeId)->sole();
+        $this->assertSame($turn->id, $batch->refresh()->driver_turn_id);
+
+        $this->asSystem(
+            new ReportDriverTurnCommand($host->hostId, $opened->runtimeId, 1, 'prompt-1', true, 'opus', 'high', 'finished'),
+        );
+        $this->app->make(MessageBatchService::class)->sweep($at->addMinute());
+
+        $this->assertNotSame(MessageBatchState::Dispatched, $batch->refresh()->state);
+    }
 
     public function test_opening_a_runtime_records_its_first_delivery(): void
     {

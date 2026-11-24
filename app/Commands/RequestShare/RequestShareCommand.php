@@ -17,8 +17,8 @@ use App\Support\ShareProposalStatus;
  *
  * @extends Command<ShareProposalStatus>
  */
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 #[Authorize(ShareRequestPolicy::class, AccessType::Create)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 final readonly class RequestShareCommand extends Command
 {
     public function __construct(

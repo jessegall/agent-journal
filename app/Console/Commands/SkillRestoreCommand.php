@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Commands\RestoreSkill\RestoreSkillCommand;
+use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Contracts\Bus\CommandBus;
 use App\Support\SkillAuthoringService;
@@ -16,6 +17,7 @@ use Illuminate\Support\Str;
  */
 final class SkillRestoreCommand extends Command
 {
+    use NamesStoredSkill;
     use PrintsSkillRefusals;
 
     protected $signature = 'skill:restore {number : The skill number or key} {--revision= : The revision to restore} {--expected-revision= : The revision you read} {--request-id= : Send again under the id a failed attempt printed}';
@@ -29,7 +31,7 @@ final class SkillRestoreCommand extends Command
 
         return $this->printRefusals(function () use ($console, $commands, $requestId) {
             $console->actAsOwner();
-            $skill = $console->stored((string) $this->argument('number'));
+            $skill = $console->storedSkill($this->skillNumber());
 
             return $console->savedLines(
                 $commands->run(

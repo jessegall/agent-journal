@@ -23,11 +23,11 @@ use RuntimeException;
  */
 final readonly class ReceiptDeliveryService
 {
-    public const int ALLOWED_TRIES = 5;
+    public const int TRY_LIMIT = 5;
 
     public const int PASS_LIMIT = 50;
 
-    private const int FAILURE_LENGTH = 255;
+    private const int FAILURE_LENGTH_LIMIT = 255;
 
     private const int FIRST_BACKOFF_SECONDS = 15;
 
@@ -163,9 +163,9 @@ final readonly class ReceiptDeliveryService
 
     private function recordFailure(ReceiptDelivery $delivery, string $failure, CarbonImmutable $at): void
     {
-        $reason = mb_strimwidth($failure, 0, self::FAILURE_LENGTH, '…');
+        $reason = mb_strimwidth($failure, 0, self::FAILURE_LENGTH_LIMIT, '…');
 
-        if ($delivery->isLastTry(self::ALLOWED_TRIES)) {
+        if ($delivery->isLastTry(self::TRY_LIMIT)) {
             $delivery->exhaust($reason);
 
             return;

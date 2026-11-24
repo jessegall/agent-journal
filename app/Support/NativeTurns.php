@@ -21,7 +21,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class NativeTurns implements NativeTurnRecords
 {
-    public function __construct(private StackTransactionRunner $transaction) {}
+    public function __construct(private StackTransactionRunner $transaction, private WaitingBatches $batches) {}
 
     /**
      * @throws StaleProcessGeneration
@@ -70,6 +70,7 @@ final readonly class NativeTurns implements NativeTurnRecords
         }
 
         $turnGeneration = $generation ?? $runtime->process_generation;
-        DriverTurn::recordStart($runtime->id, $turnGeneration, $promptId, CarbonImmutable::now());
+        $turn = DriverTurn::recordStart($runtime->id, $turnGeneration, $promptId, CarbonImmutable::now());
+        $this->batches->bindTo($runtime->agent_session_id, $turnGeneration, $turn->id);
     }
 }

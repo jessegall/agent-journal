@@ -397,8 +397,7 @@ final readonly class PublicContracts
             fn (PublicOwner $candidate) => $candidate->isCore() && $candidate->exportsName($name),
         );
 
-        // The domain foundation, the classes that left app/Domains, is public to every package as before.
-        if ($owner->exportsName($name) || $coreExports || FormerPaths::classWasIn($name, ['app/Domains/'])) {
+        if ($owner->exportsName($name) || $coreExports) {
             return null;
         }
 

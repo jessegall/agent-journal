@@ -22,9 +22,6 @@ import (
 // while the journal could not be reached, to send them once it answers again.
 const BypassLogName = "bypasses.jsonl"
 
-// HeadlessVariant is the driver type the journal names for a runtime run one child per turn.
-const HeadlessVariant = "headless"
-
 // ErrConversationUnknown is returned when a resume has no exact conversation reference; the latest is never taken.
 var ErrConversationUnknown = errors.New("the runtime has no exact conversation reference")
 

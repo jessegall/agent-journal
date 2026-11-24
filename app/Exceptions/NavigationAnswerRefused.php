@@ -55,7 +55,7 @@ final class NavigationAnswerRefused extends RuntimeException implements CommandR
         return new self("Navigation request {$navigationId} is {$state}; it takes no round.");
     }
 
-    public static function notYours(string $navigationId): self
+    public static function ofAnotherActor(string $navigationId): self
     {
         return new self("Navigation request {$navigationId} is answered by the main desk's occupant or the owner.");
     }

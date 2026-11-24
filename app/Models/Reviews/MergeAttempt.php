@@ -12,11 +12,11 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\MergeAttemptState;
 use App\Enums\MergeRefusalReason;
 use App\Events\MergeAttemptAcknowledged;
-use App\Events\MergeAttemptApplying;
+use App\Events\MergeAttemptBecameUncertain;
 use App\Events\MergeAttemptMerged;
 use App\Events\MergeAttemptRefused;
 use App\Events\MergeAttemptResolvedByOwner;
-use App\Events\MergeAttemptUncertain;
+use App\Events\MergeAttemptStarted;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\HasWorkColumns;
 use App\Values\ApprovedHead;
@@ -206,7 +206,7 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
         $this->state = MergeAttemptState::Applying;
         $this->target_before = $targetBefore;
         $this->assertSaved($this->save());
-        $this->raise(new MergeAttemptApplying($this->id));
+        $this->raise(new MergeAttemptStarted($this->id));
     }
 
     public function merged(string $result): void
@@ -231,7 +231,7 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
         $this->state = MergeAttemptState::Uncertain;
         $this->evidence = $evidence;
         $this->assertSaved($this->save());
-        $this->raise(new MergeAttemptUncertain($this->id));
+        $this->raise(new MergeAttemptBecameUncertain($this->id));
     }
 
     // ----------[ Accessors ]----------

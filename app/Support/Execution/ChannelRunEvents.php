@@ -101,7 +101,7 @@ final class ChannelRunEvents implements RunEvents
     public function staleReason(PartKey $part): string
     {
         try {
-            return $this->processes->checkRunCurrency($this->runId, $this->eventKey)->staleReason;
+            return $this->processes->checkRunStaleness($this->runId, $this->eventKey)->staleReason;
         } catch (CallFailed $failure) {
             return sprintf(
                 'registry-unavailable: the journal could not confirm the rules this part was admitted under (%s: %s)',

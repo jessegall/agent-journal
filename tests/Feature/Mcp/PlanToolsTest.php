@@ -21,7 +21,7 @@ use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
-#[TimeLimit(8, 'The plan journeys cross several signed requests and inspect persisted outcomes.')]
+#[TimeLimit(8, 'The plan flowsOutsideMcp cross several signed requests and inspect persisted outcomes.')]
 final class PlanToolsTest extends TestCase
 {
     use ActsAsActors;

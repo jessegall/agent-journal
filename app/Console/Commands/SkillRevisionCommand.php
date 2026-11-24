@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Models\Skills\SkillRevision;
 use App\Support\SkillAuthoringService;
@@ -15,6 +16,7 @@ use Illuminate\Console\Command;
  */
 final class SkillRevisionCommand extends Command
 {
+    use NamesStoredSkill;
     use PrintsSkillRefusals;
 
     protected $signature = 'skill:revision {number : The skill number or key} {revision : The revision number}';
@@ -27,7 +29,7 @@ final class SkillRevisionCommand extends Command
             $console->actAsOwner();
 
             $revision = SkillRevision::numbered(
-                $console->stored((string) $this->argument('number')),
+                $console->storedSkill($this->skillNumber()),
                 (int) $this->argument('revision'),
             );
 

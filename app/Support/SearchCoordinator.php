@@ -379,16 +379,16 @@ final readonly class SearchCoordinator implements RecordSearch
                 return false;
             }
 
-            $leader = $progress->leader();
-            $head = $leader?->head();
+            $leadingSource = $progress->leadingSource();
+            $head = $leadingSource?->head();
 
-            if ($leader === null || $head === null) {
+            if ($leadingSource === null || $head === null) {
                 return false;
             }
 
-            $leader->dropHead();
+            $leadingSource->dropHead();
 
-            if ($progress->wasDelivered($head->identity) || ! $progress->isPastFrontier($head)) {
+            if ($progress->wasDelivered($head->identity) || ! $progress->isAfterLastShown($head)) {
                 continue;
             }
 
@@ -396,7 +396,7 @@ final readonly class SearchCoordinator implements RecordSearch
                 continue;
             }
 
-            $hit = $this->shown($reader, $sources[$leader->sourceKey], $fresh[$head->identity->key()] ?? null);
+            $hit = $this->shown($reader, $sources[$leadingSource->sourceKey], $fresh[$head->identity->key()] ?? null);
 
             if ($hit === null) {
                 continue;
@@ -405,7 +405,7 @@ final readonly class SearchCoordinator implements RecordSearch
             $fitting = self::fitting($hit, $emitted);
 
             if ($fitting === null) {
-                $leader->putBack($head);
+                $leadingSource->putBack($head);
 
                 return true;
             }

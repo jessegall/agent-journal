@@ -24,7 +24,7 @@ use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use PhpOption\Option;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
-use Tests\Architecture\Support\FormerPaths;
+use Tests\Architecture\Support\DomainFiles;
 use Tests\TestCase;
 
 /**
@@ -115,9 +115,8 @@ final class SettingsCatalogueDataTest extends TestCase
 
     public function test_no_catalogue_property_is_mixed_or_an_untyped_array(): void
     {
-        // The catalogue's data classes by the folder they had before the move to Laravel's layout.
-        foreach (FormerPaths::filesFrom(['app/Settings/Data/']) as $file) {
-            $class = Reflector::of('App\\'.str_replace('/', '\\', substr($file, 4, -4)));
+        foreach (DomainFiles::in([app_path('Data/Settings')]) as $file) {
+            $class = Reflector::of('App\\Data\\Settings\\'.basename($file, '.php'));
             $this->assertTrue($class->isFinal(), $class->name());
 
             $ownProperties = array_filter(

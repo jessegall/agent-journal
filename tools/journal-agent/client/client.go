@@ -549,9 +549,8 @@ func (grant Grant) HasContainer() bool {
 	return len(grant.Container) > 0 && string(grant.Container) != "null"
 }
 
-// RuntimeStart mirrors App\Agents\Support\RuntimeStart: what the host needs to start the runtime's program.
+// RuntimeStart mirrors App\Support\RuntimeStart: what the host needs to start the runtime's program.
 type RuntimeStart struct {
-	Variant           string  `json:"variant"`
 	SessionID         string  `json:"session_id"`
 	Driver            string  `json:"driver"`
 	DriverKey         string  `json:"driver_key"`

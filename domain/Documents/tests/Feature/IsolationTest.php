@@ -47,7 +47,7 @@ final class IsolationTest extends TestCase
         $this->actAsUser(1);
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Private draft text\n"));
         $this->bus()->run(new OpenDocumentCommand('1'));
-        $this->assertSame(EditingState::Yours, $this->app->make(DraftResolver::class)->stateOf(1)->state);
+        $this->assertSame(EditingState::HeldByViewer, $this->app->make(DraftResolver::class)->stateOf(1)->state);
 
         $this->app->forgetScopedInstances();
         $this->actAsUser(2);

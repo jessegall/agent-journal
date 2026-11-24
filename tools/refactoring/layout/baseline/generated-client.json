@@ -79,7 +79,7 @@
             "approveProposal",
             "approveSample",
             "checkRestoredOutput",
-            "checkRunCurrency",
+            "checkRunStaleness",
             "cleanOutput",
             "explainCommand",
             "fetchAdmission",

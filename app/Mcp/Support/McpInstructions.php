@@ -12,23 +12,23 @@ use App\Values\AgentText;
 
 /**
  * What a started agent is told about the journal's MCP tools at every context start, by what its profile grants: how
- * to use them, and which of its journeys still go through the CLI or the web. It names no token and no path.
+ * to use them, and which of its flowsOutsideMcp still go through the CLI or the web. It names no token and no path.
  */
 final readonly class McpInstructions
 {
     public function __construct(private CurrentAuthorizer $authorizer) {}
 
     /**
-     * The guidance for the calling agent: the journeys outside MCP its own profile lets it take.
+     * The guidance for the calling agent: the flowsOutsideMcp outside MCP its own profile lets it take.
      */
     public function forCaller(): AgentText
     {
-        $journeys = array_keys(array_filter(
-            $this->journeys(),
+        $flowsOutsideMcp = array_keys(array_filter(
+            $this->flowsOutsideMcp(),
             fn (array $requirements) => $this->grantsAll($requirements),
         ));
 
-        return AgentText::of('core.mcp.instructions', ['journeys' => implode('; ', $journeys)]);
+        return AgentText::of('core.mcp.instructions', ['flowsOutsideMcp' => implode('; ', $flowsOutsideMcp)]);
     }
 
     /**
@@ -36,7 +36,7 @@ final readonly class McpInstructions
      *
      * @return array<string, list<AccessRequirement>>
      */
-    private function journeys(): array
+    private function flowsOutsideMcp(): array
     {
         $dispatch = [new AccessRequirement(AssignmentRecipientPolicy::class, AccessType::Delegate)];
 

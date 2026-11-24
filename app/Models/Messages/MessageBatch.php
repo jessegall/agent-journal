@@ -213,6 +213,20 @@ final class MessageBatch extends Model implements EventSource, ReadableModel
     // ----------[ Scopes ]----------
 
     /**
+     * The batches dispatched to the session in this process generation that no turn has taken yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function awaitingTurn(Builder $query, string $sessionId, int $runtimeGeneration): void
+    {
+        $query->where('agent_session_id', $sessionId)
+            ->where('runtime_generation', $runtimeGeneration)
+            ->where('state', MessageBatchState::Dispatched)
+            ->whereNull('driver_turn_id');
+    }
+
+    /**
      * The batches of one session and interval that carried a piece of a message under the user message.
      *
      * @param  Builder<self>  $query

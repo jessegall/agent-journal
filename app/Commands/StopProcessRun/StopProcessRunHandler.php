@@ -30,7 +30,7 @@ final readonly class StopProcessRunHandler implements CommandHandler
         $actor = ActorIdentity::of($command->dispatchedBy());
 
         if (! $this->administration->isGrantedToCaller() && ! $run->isByActor($actor)) {
-            throw StopRefused::notYours($run->id);
+            throw StopRefused::ofAnotherActor($run->id);
         }
 
         if ($run->lifecycle->isFinal()) {

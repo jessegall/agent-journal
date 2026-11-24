@@ -1670,8 +1670,8 @@
     {
       "owner": "Processes",
       "stem": "StopSurvivors",
-      "command": "App\\Processes\\Commands\\StopSurvivors\\StopSurvivorsCommand",
-      "handler": "App\\Processes\\Commands\\StopSurvivors\\StopSurvivorsHandler",
+      "command": "App\\Processes\\Commands\\StopSurvivors\\StopLeftoverProcessesCommand",
+      "handler": "App\\Processes\\Commands\\StopSurvivors\\StopLeftoverProcessesHandler",
       "class": "paired Core area"
     },
     {

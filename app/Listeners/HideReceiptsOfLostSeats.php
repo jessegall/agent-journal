@@ -24,7 +24,7 @@ final readonly class HideReceiptsOfLostSeats implements Listener
 
     public function handle(AssignmentsChanged $fact): void
     {
-        foreach ($this->formerHolders($fact) as $holder) {
+        foreach ($this->previousHolders($fact) as $holder) {
             do {
                 $hidden = $this->journal->runAsJournal(
                     CommandEntry::EngineMaintenance,
@@ -40,7 +40,7 @@ final readonly class HideReceiptsOfLostSeats implements Listener
      *
      * @return list<AssigneeIdentity>
      */
-    private function formerHolders(AssignmentsChanged $fact): array
+    private function previousHolders(AssignmentsChanged $fact): array
     {
         $holders = [];
 

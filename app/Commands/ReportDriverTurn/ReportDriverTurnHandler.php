@@ -10,11 +10,12 @@ use App\Enums\RuntimeActivity;
 use App\Exceptions\HostReportRefused;
 use App\Models\Drivers\DriverTurn;
 use App\Support\HostRuntimes;
+use App\Support\WaitingBatches;
 use Carbon\CarbonImmutable;
 
 final readonly class ReportDriverTurnHandler implements CommandHandler
 {
-    public function __construct(private HostRuntimes $runtimes) {}
+    public function __construct(private HostRuntimes $runtimes, private WaitingBatches $batches) {}
 
     /**
      * A started turn sets the runtime Running; a finished one closes the turn and sets it Idle.
@@ -25,6 +26,7 @@ final readonly class ReportDriverTurnHandler implements CommandHandler
         $now = CarbonImmutable::now();
 
         $turn = DriverTurn::recordStart($runtime->id, $command->processGeneration, $command->nativePromptId, $now);
+        $this->batches->bindTo($runtime->agent_session_id, $command->processGeneration, $turn->id);
 
         $activity = $command->finished ? RuntimeActivity::Idle : RuntimeActivity::Running;
 

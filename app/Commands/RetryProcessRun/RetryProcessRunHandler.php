@@ -32,7 +32,7 @@ final readonly class RetryProcessRunHandler implements CommandHandler
         $actor = ActorIdentity::of($command->dispatchedBy());
 
         if (! $this->administration->isGrantedToCaller() && ! $lost->isByActor($actor)) {
-            throw RetryRefused::notYours($lost->id);
+            throw RetryRefused::ofAnotherActor($lost->id);
         }
 
         if ($lost->lifecycle !== LifecycleState::Lost) {

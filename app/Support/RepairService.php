@@ -50,7 +50,7 @@ final readonly class RepairService
         }
 
         if ($request->earlierRounds() >= self::ROUND_LIMIT) {
-            $this->cap($request, $decider);
+            $this->askForDecision($request, $decider);
 
             return $request;
         }
@@ -79,7 +79,7 @@ final readonly class RepairService
         return $request;
     }
 
-    private function cap(RepairRequest $request, ActorIdentity $decider): void
+    private function askForDecision(RepairRequest $request, ActorIdentity $decider): void
     {
         $ask = $this->opening->open(
             $decider,

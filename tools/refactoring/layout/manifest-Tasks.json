@@ -2485,10 +2485,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6ab58d3b8b4b68e327e052b3c94f764d8216c1b8",
-        "old_path": "domain/Tasks/src/Exceptions/TaskRunNotYours.php",
-        "old_class": "Domain\\Tasks\\Exceptions\\TaskRunNotYours",
-        "final_path": "domain/Tasks/src/Exceptions/TaskRunNotYours.php",
-        "final_class": "Domain\\Tasks\\Exceptions\\TaskRunNotYours",
+        "old_path": "domain/Tasks/src/Exceptions/TaskRunOfAnotherActor.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskRunOfAnotherActor",
+        "final_path": "domain/Tasks/src/Exceptions/TaskRunOfAnotherActor.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskRunOfAnotherActor",
         "status": "stay",
         "kind": "class",
         "generator": {

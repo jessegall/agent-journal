@@ -27,7 +27,7 @@ use App\Values\RefreshResult;
  */
 final readonly class SkillPublishingService
 {
-    private const int MOST_PUBLICATIONS = 100;
+    private const int PUBLICATION_LIMIT = 100;
 
     public function __construct(
         private EntryDispatchers $dispatchers,
@@ -65,7 +65,7 @@ final readonly class SkillPublishingService
     {
         $outcomes = [];
 
-        foreach (SkillPublication::open(self::MOST_PUBLICATIONS) as $publication) {
+        foreach (SkillPublication::open(self::PUBLICATION_LIMIT) as $publication) {
             $outcomes[$publication->id] = $this->publish($publication->id, $holder);
         }
 

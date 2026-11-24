@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Commands\ReviseSkill\ReviseSkillCommand;
+use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Console\Concerns\ReadsAudienceOptions;
 use App\Contracts\Bus\CommandBus;
@@ -19,6 +20,7 @@ use Illuminate\Support\Str;
  */
 final class SkillEditCommand extends Command
 {
+    use NamesStoredSkill;
     use PrintsSkillRefusals;
     use ReadsAudienceOptions;
 
@@ -33,7 +35,7 @@ final class SkillEditCommand extends Command
 
         return $this->printRefusals(function () use ($console, $commands, $requestId) {
             $console->actAsOwner();
-            $skill = $console->stored((string) $this->argument('number'));
+            $skill = $console->storedSkill($this->skillNumber());
             $current = SkillRevision::currentOf($skill)->draft;
 
             $draft = new SkillDraft(

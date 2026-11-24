@@ -13,5 +13,6 @@ final readonly class HelperJobReopenedForRepair extends HelperEvent implements H
 {
     public function __construct(
         public string $jobId,
+        public string $findings,
     ) {}
 }

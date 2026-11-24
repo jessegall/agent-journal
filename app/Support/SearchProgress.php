@@ -27,7 +27,7 @@ final class SearchProgress
         public readonly int $limit,
         public array $sources,
         public array $delivered = [],
-        public BufferedHit|null $frontier = null,
+        public BufferedHit|null $lastShown = null,
         public int $idleCalls = 0,
         public int $calls = 0,
     ) {}
@@ -54,15 +54,15 @@ final class SearchProgress
     /**
      * Whether the hit sorts after the last one shown, so showing it keeps the one global order.
      */
-    public function isPastFrontier(BufferedHit $hit): bool
+    public function isAfterLastShown(BufferedHit $hit): bool
     {
-        return $this->frontier === null || $this->frontier->compare($hit) < 0;
+        return $this->lastShown === null || $this->lastShown->compare($hit) < 0;
     }
 
     public function deliver(BufferedHit $hit): void
     {
         $this->delivered[] = $hit->identity->key();
-        $this->frontier = $hit;
+        $this->lastShown = $hit;
     }
 
     /**
@@ -94,21 +94,21 @@ final class SearchProgress
     /**
      * The source whose head leads the one global order, among the sources with a head.
      */
-    public function leader(): SourceProgress|null
+    public function leadingSource(): SourceProgress|null
     {
-        $leader = null;
+        $leadingSource = null;
 
         foreach ($this->sources as $source) {
             if ($source->head() === null) {
                 continue;
             }
 
-            if ($leader === null || $source->leads($leader)) {
-                $leader = $source;
+            if ($leadingSource === null || $source->leads($leadingSource)) {
+                $leadingSource = $source;
             }
         }
 
-        return $leader;
+        return $leadingSource;
     }
 
     public function toJson(): string
@@ -136,7 +136,7 @@ final class SearchProgress
             $stored->limit,
             $sources,
             $stored->delivered,
-            $stored->frontier?->toBufferedHit(),
+            $stored->lastShown?->toBufferedHit(),
             $stored->idleCalls,
             $stored->calls,
         );

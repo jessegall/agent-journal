@@ -28,7 +28,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
     /**
      * How many never-started sessions one sweep ends; the next sweep takes the rest.
      */
-    private const int UNCLAIMED_ENDED_PER_SWEEP = 50;
+    private const int UNCLAIMED_ENDED_LIMIT = 50;
 
     /**
      * How long a session may stay silent while its host is still present before the journal ends it as unserved.
@@ -38,7 +38,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
     /**
      * How many unserved sessions one sweep ends; the next sweep takes the rest.
      */
-    private const int UNSERVED_ENDED_PER_SWEEP = 50;
+    private const int UNSERVED_ENDED_LIMIT = 50;
 
     public function __construct(
         private StartTransaction $transaction,
@@ -121,7 +121,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
                 ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
                 ->whereNull('last_heartbeat_at')
                 ->select('id'))
-            ->limit(self::UNCLAIMED_ENDED_PER_SWEEP)
+            ->limit(self::UNCLAIMED_ENDED_LIMIT)
             ->get()
             ->each(fn (ProcessStart $start) => $this->endUnclaimed($start->session_id, $now));
     }
@@ -142,7 +142,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
             ->where('status', SessionStatus::Silent->value)
             ->where('silent_since', '<=', $cutoff)
             ->whereIn('id', AgentRuntime::query()->whereIn('host_id', $liveHosts)->select('agent_session_id'))
-            ->limit(self::UNSERVED_ENDED_PER_SWEEP)
+            ->limit(self::UNSERVED_ENDED_LIMIT)
             ->get()
             ->each(fn (AgentSession $session) => $this->endSession(
                 $session,

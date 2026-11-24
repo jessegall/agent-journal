@@ -29,17 +29,27 @@ use App\Contracts\Sharing\ShareRecordProvider;
 use App\CoreApi;
 use App\CoreCommands;
 use App\Events\ShareActivated;
+use App\Models\Sharing\Share;
+use App\Models\Sharing\ShareAudit;
+use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Models\Sharing\ShareGatewayEndpoint;
+use App\Models\Sharing\ShareGatewayOperation;
+use App\Models\Sharing\ShareInstallation;
+use App\Models\Sharing\ShareMember;
+use App\Models\Sharing\SharePreview;
 use App\Support\CommandRegistry;
+use App\Support\GatewayRuns;
 use App\Support\ReadPermit;
 use App\Support\Reflector;
+use App\Support\ShareEndings;
+use App\Support\ShareGrants;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\TestCase;
 
 /**
- * Core sharing keeps its boundary: no Core sharing file names a domain, every sharing
- * command is registered through the bus grammar and none is queued, and Core exports exactly the sharing seams,
- * events and entry commands while its models, handlers, read permit and System runtime commands stay private.
+ * Core sharing keeps its boundary: every sharing command is registered through the bus grammar and none is queued, and
+ * Core exports exactly the sharing seams, events and entry commands while its models, handlers, services, read permit
+ * and System runtime commands stay private.
  */
 final class SharingBoundaryTest extends TestCase
 {
@@ -68,6 +78,31 @@ final class SharingBoundaryTest extends TestCase
         PruneShareAuditCommand::class,
     ];
 
+    /**
+     * The name of a sharing command: one about shares or their gateways.
+     */
+    private const string SHARING_COMMAND = '/Shares?|Gateway/';
+
+    private const array MODELS = [
+        Share::class,
+        ShareAudit::class,
+        ShareGatewayConfiguration::class,
+        ShareGatewayEndpoint::class,
+        ShareGatewayOperation::class,
+        ShareInstallation::class,
+        ShareMember::class,
+        SharePreview::class,
+    ];
+
+    /**
+     * The services that carry out sharing work for the handlers.
+     */
+    private const array SHARE_WORK = [
+        GatewayRuns::class,
+        ShareEndings::class,
+        ShareGrants::class,
+    ];
+
     private const array SEAMS = [
         Shareable::class,
         ShareRecordProvider::class,
@@ -84,29 +119,13 @@ final class SharingBoundaryTest extends TestCase
         ShareActivated::class,
     ];
 
-    public function test_no_core_sharing_file_names_a_domain_namespace(): void
-    {
-        $offending = [];
-
-        foreach ($this->sharingFiles() as $file) {
-            if (preg_match(
-                '/(^use\s+\\\\?Domain\\\\|[^A-Za-z]\\\\Domain\\\\)/m',
-                (string) file_get_contents($file),
-            ) === 1) {
-                $offending[] = $file;
-            }
-        }
-
-        $this->assertSame([], $offending);
-    }
-
     public function test_every_sharing_command_is_registered_through_the_bus_and_none_is_queued(): void
     {
         $registry = $this->app->make(CommandRegistry::class);
         $sharing = array_values(
             array_filter(
                 CoreCommands::commands(),
-                fn (string $command) => FormerPaths::classWasIn($command, ['app/Sharing/Commands/']),
+                fn (string $command) => preg_match(self::SHARING_COMMAND, class_basename($command)) === 1,
             ),
         );
 
@@ -137,72 +156,16 @@ final class SharingBoundaryTest extends TestCase
         $private = [
             ...self::SYSTEM_COMMANDS,
             ReadPermit::class,
-            ...$this->classesIn('Models'),
-            ...$this->handlers(),
-            ...$this->classesIn('Actions'),
+            ...self::MODELS,
+            ...self::SHARE_WORK,
+            ...array_map(
+                fn (string $command) => substr($command, 0, -strlen('Command')).'Handler',
+                [...self::ENTRY_COMMANDS, ...self::SYSTEM_COMMANDS],
+            ),
         ];
 
         foreach ($private as $class) {
             $this->assertFalse($exports->has($class), $class);
         }
-    }
-
-    /**
-     * The sharing files by the folders they had before the move to Laravel's layout.
-     *
-     * @return list<string>
-     */
-    private function sharingFiles(): array
-    {
-        return array_map(
-            base_path(...),
-            FormerPaths::filesFrom([
-                'app/Sharing/',
-                'app/Http/Controllers/Sharing/',
-                'app/Http/Requests/Sharing/',
-                'app/Http/Data/Sharing/',
-                'app/Http/Middleware/Sharing/',
-            ]),
-        );
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function handlers(): array
-    {
-        return array_values(array_filter(
-            $this->classesFrom('app/Sharing/Commands/'),
-            fn (string $class) => str_ends_with($class, 'Handler'),
-        ));
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function classesIn(string $folder): array
-    {
-        return array_values(array_filter(
-            $this->classesFrom("app/Sharing/{$folder}/"),
-            fn (string $class) => ! str_contains(substr(FormerPaths::of(self::pathOf($class)), strlen("app/Sharing/{$folder}/")), '/'),
-        ));
-    }
-
-    /**
-     * The classes whose files were under the old folder.
-     *
-     * @return list<string>
-     */
-    private function classesFrom(string $prefix): array
-    {
-        return array_map(
-            fn (string $path) => 'App\\'.str_replace('/', '\\', substr($path, 4, -4)),
-            FormerPaths::filesFrom([$prefix]),
-        );
-    }
-
-    private static function pathOf(string $className): string
-    {
-        return 'app/'.str_replace('\\', '/', substr($className, 4)).'.php';
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\CallScan;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -20,26 +19,23 @@ final class ExplicitTransactionTest extends TestCase
     private const string HOW_TO_FIX = 'Name each transaction opener in OPENERS with its unit decision.';
 
     /**
-     * The folders judged: the test modules now; each later phase adds the owner it moves.
+     * The folders that never open a transaction themselves: Core's handlers, pages, listeners and models, and the
+     * domains.
      */
     public const array CHECKED = [
-        'app/Agents/Commands',
-        'app/Assignments/Commands',
-        'app/Bus',
-        'app/Records',
-        'app/Sharing',
+        'app/Commands',
+        'app/Http',
+        'app/Listeners',
+        'app/Models',
         'domain/Access/src',
         'domain/Chat/src',
         'domain/Documents/src',
         'domain/Memory/src',
         'domain/Plans/src',
-        'app/Processes',
-        'app/Profiles',
         'domain/Reminders/src',
         'domain/Rules/src',
         'domain/Sequences/src',
         'domain/Tasks/src',
-        'tests/Fixtures/Modules',
     ];
 
     private const array TRANSACTION_CALLS = ['transaction', 'beginTransaction', 'commit', 'rollBack'];
@@ -67,6 +63,7 @@ final class ExplicitTransactionTest extends TestCase
         'app/Support/AgentChatAccessService.php' => 'owns a unit: the console change of an agent\'s chat access',
         'app/Support/MessageBatchService.php' => 'owns a unit: each settled batch of the sweep',
         'app/Support/ReceiptDeliveryService.php' => 'owns a unit: each delivery a pass tries',
+        'app/Support/StatementDeadline.php' => 'joins the open unit: scopes a statement time limit with SET LOCAL',
     ];
 
     public function test_every_transaction_opener_of_the_application_is_named(): void
@@ -108,13 +105,8 @@ final class ExplicitTransactionTest extends TestCase
     {
         $found = [];
 
-        // Core's checked areas are judged by the folders their files had before the move to Laravel's layout.
-        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), FormerPaths::foldersToScan($folders))) as $path => $calls) {
+        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), $folders)) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
-
-            if (FormerPaths::liesOutside($file, $folders)) {
-                continue;
-            }
 
             if (in_array($file, self::ALLOWED, true)) {
                 continue;

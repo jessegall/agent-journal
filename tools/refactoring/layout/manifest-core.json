@@ -31776,10 +31776,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2f3d87c38d1cd263ea755915373d9f6d45ad6573",
-        "old_path": "app/Events/AccountRemovalBegun.php",
-        "old_class": "App\\Events\\AccountRemovalBegun",
-        "final_path": "app/Events/AccountRemovalBegun.php",
-        "final_class": "App\\Events\\AccountRemovalBegun",
+        "old_path": "app/Events/AccountRemovalStarted.php",
+        "old_class": "App\\Events\\AccountRemovalStarted",
+        "final_path": "app/Events/AccountRemovalStarted.php",
+        "final_class": "App\\Events\\AccountRemovalStarted",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -56652,10 +56652,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "abc2e5a9e3fb2bc67ea8e122bd40c2950ae1959c",
-        "old_path": "app/Processes/Calls/CheckRunCurrencyCall.php",
-        "old_class": "App\\Processes\\Calls\\CheckRunCurrencyCall",
-        "final_path": "app/Calls/Processes/CheckRunCurrencyCall.php",
-        "final_class": "App\\Calls\\Processes\\CheckRunCurrencyCall",
+        "old_path": "app/Processes/Calls/CheckRunStalenessCall.php",
+        "old_class": "App\\Processes\\Calls\\CheckRunStalenessCall",
+        "final_path": "app/Calls/Processes/CheckRunStalenessCall.php",
+        "final_class": "App\\Calls\\Processes\\CheckRunStalenessCall",
         "status": "move",
         "kind": "class",
         "generator": {
@@ -57393,10 +57393,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b97c7c0689235f41761da4e275818eec1ed49c21",
-        "old_path": "app/Processes/Calls/RunCurrency.php",
-        "old_class": "App\\Processes\\Calls\\RunCurrency",
-        "final_path": "app/Calls/Processes/RunCurrency.php",
-        "final_class": "App\\Calls\\Processes\\RunCurrency",
+        "old_path": "app/Processes/Calls/RunStaleness.php",
+        "old_class": "App\\Processes\\Calls\\RunStaleness",
+        "final_path": "app/Calls/Processes/RunStaleness.php",
+        "final_class": "App\\Calls\\Processes\\RunStaleness",
         "status": "move",
         "kind": "class",
         "generator": {
@@ -58901,10 +58901,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6dc8a955202a50ac25d9ae92af2d65eee71038c1",
-        "old_path": "app/Processes/Commands/StopSurvivors/StopSurvivorsCommand.php",
-        "old_class": "App\\Processes\\Commands\\StopSurvivors\\StopSurvivorsCommand",
-        "final_path": "app/Commands/StopSurvivors/StopSurvivorsCommand.php",
-        "final_class": "App\\Commands\\StopSurvivors\\StopSurvivorsCommand",
+        "old_path": "app/Processes/Commands/StopLeftoverProcesses/StopLeftoverProcessesCommand.php",
+        "old_class": "App\\Processes\\Commands\\StopSurvivors\\StopLeftoverProcessesCommand",
+        "final_path": "app/Commands/StopLeftoverProcesses/StopLeftoverProcessesCommand.php",
+        "final_class": "App\\Commands\\StopSurvivors\\StopLeftoverProcessesCommand",
         "status": "move",
         "kind": "class",
         "generator": {
@@ -58923,10 +58923,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7eb8afd8e0aebdf9ff64f76a4b56162672a0db8a",
-        "old_path": "app/Processes/Commands/StopSurvivors/StopSurvivorsHandler.php",
-        "old_class": "App\\Processes\\Commands\\StopSurvivors\\StopSurvivorsHandler",
-        "final_path": "app/Commands/StopSurvivors/StopSurvivorsHandler.php",
-        "final_class": "App\\Commands\\StopSurvivors\\StopSurvivorsHandler",
+        "old_path": "app/Processes/Commands/StopLeftoverProcesses/StopLeftoverProcessesHandler.php",
+        "old_class": "App\\Processes\\Commands\\StopSurvivors\\StopLeftoverProcessesHandler",
+        "final_path": "app/Commands/StopLeftoverProcesses/StopLeftoverProcessesHandler.php",
+        "final_class": "App\\Commands\\StopSurvivors\\StopLeftoverProcessesHandler",
         "status": "move",
         "kind": "class",
         "generator": {
@@ -60044,10 +60044,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "acdf3d1bc112a2cf477539fce4bcd6da59935264",
-        "old_path": "app/Processes/Http/Controllers/Calls/CheckRunCurrencyController.php",
-        "old_class": "App\\Processes\\Http\\Controllers\\Calls\\CheckRunCurrencyController",
-        "final_path": "app/Http/Controllers/Calls/CheckRunCurrencyController.php",
-        "final_class": "App\\Http\\Controllers\\Calls\\CheckRunCurrencyController",
+        "old_path": "app/Processes/Http/Controllers/Calls/CheckRunStalenessController.php",
+        "old_class": "App\\Processes\\Http\\Controllers\\Calls\\CheckRunStalenessController",
+        "final_path": "app/Http/Controllers/Calls/CheckRunStalenessController.php",
+        "final_class": "App\\Http\\Controllers\\Calls\\CheckRunStalenessController",
         "status": "move",
         "kind": "class",
         "generator": {

@@ -14,7 +14,7 @@ use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewDecided;
 use Domain\Plans\Events\PlanReviewEditionApproved;
 use Domain\Plans\Events\PlanReviewEditionChangesRequested;
-use Domain\Plans\Events\PlanReviewEditionHistorical;
+use Domain\Plans\Events\PlanReviewEditionOutdated;
 use Domain\Plans\Events\PlanReviewEditionWithdrawn;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanReviewWithdrawn;
@@ -118,11 +118,11 @@ return [
         'producers' => [],
         'sample' => fn () => new PlanReviewEditionChangesRequested('edition'),
     ],
-    PlanReviewEditionHistorical::class => [
+    PlanReviewEditionOutdated::class => [
         'role' => EventRole::RowFact,
         'owner' => 'PlanReviewEdition::markHistorical',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanReviewEditionHistorical('edition'),
+        'sample' => fn () => new PlanReviewEditionOutdated('edition'),
     ],
 ];

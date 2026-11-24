@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\CallScan;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -18,27 +17,19 @@ use Tests\TestCase;
 final class CommandBypassTest extends TestCase
 {
     /**
-     * The folders judged: Core's handlers and bus, every domain and the test modules.
+     * The folders judged: Core and every domain.
      */
     public const array CHECKED = [
-        'app/Agents/Commands',
-        'app/Assignments/Commands',
-        'app/Bus',
-        'app/Records',
-        'app/Sharing',
+        'app',
         'domain/Access/src',
         'domain/Chat/src',
         'domain/Documents/src',
         'domain/Memory/src',
         'domain/Plans/src',
-        'app/Processes',
-        'app/Profiles',
-        'app/Skills',
         'domain/Reminders/src',
         'domain/Rules/src',
         'domain/Sequences/src',
         'domain/Tasks/src',
-        'tests/Fixtures/Modules',
     ];
 
     /**
@@ -72,13 +63,8 @@ final class CommandBypassTest extends TestCase
     {
         $found = [];
 
-        // Core's checked areas are judged by the folders their files had before the move to Laravel's layout.
-        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), FormerPaths::foldersToScan($folders))) as $path => $calls) {
+        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), $folders)) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
-
-            if (FormerPaths::liesOutside($file, $folders)) {
-                continue;
-            }
 
             if ($file === self::BUS) {
                 continue;

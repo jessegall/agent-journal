@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Domain\Helpers\Events\HelperDesignated;
 use Domain\Helpers\Events\HelperDesignationReleased;
+use Domain\Helpers\Events\HelperJobAttached;
 use Domain\Helpers\Events\HelperJobCancelled;
 use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobLeftUnfinished;
@@ -54,14 +55,21 @@ return [
         'owner' => 'HelperJob::reopenForRepair',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HelperJobReopenedForRepair('job'),
+        'sample' => fn () => new HelperJobReopenedForRepair('job', 'findings'),
+    ],
+    HelperJobAttached::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HelperJob::attachTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HelperJobAttached('job', 'session'),
     ],
     HelperJobSteered::class => [
         'role' => EventRole::RowFact,
         'owner' => 'HelperJob::addSteering',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HelperJobSteered('job'),
+        'sample' => fn () => new HelperJobSteered('job', 'steering'),
     ],
     HelperJobReported::class => [
         'role' => EventRole::RowFact,

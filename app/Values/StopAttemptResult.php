@@ -24,6 +24,24 @@ final readonly class StopAttemptResult
     ) {}
 
     /**
+     * The result the host's reports settle an attempt with.
+     *
+     * @param  list<StopResultReport>  $reports
+     */
+    public static function ofReports(StopAttemptState $state, array $reports): self
+    {
+        $statuses = [];
+        $summaries = [];
+
+        foreach ($reports as $report) {
+            $statuses[$report->conditionKey] = $report->status;
+            $summaries[$report->conditionKey] = $report->summary;
+        }
+
+        return new self($state, $statuses, $summaries);
+    }
+
+    /**
      * What the conditions that refused the stop said, one line each, for the helper to act on.
      */
     public function failureSummary(): string

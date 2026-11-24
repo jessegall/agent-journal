@@ -13,7 +13,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 enum EditingState: string
 {
     case Free = 'free';
-    case Yours = 'yours';
+    case HeldByViewer = 'held_by_viewer';
     case Held = 'held';
 
     /**
@@ -23,7 +23,7 @@ enum EditingState: string
     {
         return match ($this) {
             self::Free => 'free',
-            self::Yours => 'held by you',
+            self::HeldByViewer => 'held by you',
             self::Held => "held by {$holder}",
         };
     }

@@ -19,7 +19,7 @@ use App\Support\ShareSummary;
  * @extends Command<ShareSummary>
  */
 #[Authorize(SharingPolicy::class, AccessType::Create)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 final readonly class CreateShareCommand extends Command
 {
     public function __construct(

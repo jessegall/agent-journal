@@ -6,7 +6,7 @@ use App\Http\Controllers\Calls\AdmitLineController;
 use App\Http\Controllers\Calls\ApproveProposalController;
 use App\Http\Controllers\Calls\ApproveSampleController;
 use App\Http\Controllers\Calls\CheckRestoredOutputController;
-use App\Http\Controllers\Calls\CheckRunCurrencyController;
+use App\Http\Controllers\Calls\CheckRunStalenessController;
 use App\Http\Controllers\Calls\CleanOutputController;
 use App\Http\Controllers\Calls\ExplainCommandController;
 use App\Http\Controllers\Calls\FetchAdmissionController;
@@ -43,7 +43,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
         $calls->register(AdmitLineController::class)->name('admit');
         $calls->register(FetchAdmissionController::class)->name('admission');
         $calls->register(StartEvidenceRunController::class)->name('evidence');
-        $calls->register(CheckRunCurrencyController::class)->name('currency');
+        $calls->register(CheckRunStalenessController::class)->name('staleness');
         $calls->register(ReadOutputSummaryController::class)->name('output.summary');
         $calls->register(ReadOutputTailController::class)->name('output.tail');
         $calls->register(SearchOutputController::class)->name('output.search');

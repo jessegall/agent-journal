@@ -24,9 +24,6 @@ return new class extends Migration
             $table->string('target_ref');
             $table->string('expected_target_oid', 64);
             $table->string('outcome')->default('submitted');
-            $table->string('resulting_target_oid', 64)->nullable();
-            $table->boolean('tip_is_reachable')->nullable();
-            $table->jsonb('conflict_paths')->default('[]');
             $table->timestampsTz();
         });
     }

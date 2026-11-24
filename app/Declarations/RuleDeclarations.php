@@ -37,7 +37,7 @@ final readonly class RuleDeclarations
 {
     private const string RULE_ID = 'regex:/^[a-z0-9-]+(\.[a-z0-9-]+)+$/';
 
-    private const string NOT_ONE = 'a proposal sends exactly one declaration';
+    private const string ONE_DECLARATION_REQUIRED = 'a proposal sends exactly one declaration';
 
     public function __construct(private Factory $validators) {}
 
@@ -81,7 +81,7 @@ final readonly class RuleDeclarations
         $declared = $this->read($text);
 
         if (count($declared) !== 1) {
-            throw DeclarationInvalid::fields([self::NOT_ONE]);
+            throw DeclarationInvalid::fields([self::ONE_DECLARATION_REQUIRED]);
         }
 
         return $declared[0];

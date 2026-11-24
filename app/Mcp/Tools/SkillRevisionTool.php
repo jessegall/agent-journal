@@ -36,7 +36,7 @@ final class SkillRevisionTool extends JournalReadTool
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        $skill = $this->authoring->stored($arguments->text('skill'));
+        $skill = $this->authoring->storedSkill($arguments->text('skill'));
 
         $view = $this->authoring->revisionView($skill, $arguments->positiveInteger('revision'));
 

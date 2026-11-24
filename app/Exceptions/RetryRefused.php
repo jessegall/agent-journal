@@ -11,7 +11,7 @@ use App\Enums\RefusalCode;
 use RuntimeException;
 
 /**
- * A lost run cannot be retried or its survivors stopped this way.
+ * A run that is not lost cannot be retried or have its leftover processes stopped.
  */
 final class RetryRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
@@ -19,7 +19,7 @@ final class RetryRefused extends RuntimeException implements CodedRefusal, Comma
 
     public static function notLost(string $runId): self
     {
-        return new self("Run {$runId} is not lost; only a lost run is retried or has its survivors stopped.");
+        return new self("Run {$runId} is not lost; only a lost run is retried or has its leftover processes stopped.");
     }
 
     public static function otherLine(string $runId): self
@@ -27,7 +27,7 @@ final class RetryRefused extends RuntimeException implements CodedRefusal, Comma
         return new self("The line is not the one run {$runId} ran; a retry admits the same line again.");
     }
 
-    public static function notYours(string $runId): self
+    public static function ofAnotherActor(string $runId): self
     {
         return new self("Only a user, or the actor who ran it, may retry run {$runId}.");
     }

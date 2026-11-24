@@ -13,7 +13,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class NotificationChangeRetentionService
 {
-    public const int BATCH = 200;
+    public const int BATCH_LIMIT = 200;
 
     /**
      * @return int how many changes it deleted
@@ -28,12 +28,12 @@ final readonly class NotificationChangeRetentionService
                 ->whereIn('id', NotificationChange::query()
                     ->where('created_at', '<', $before)
                     ->orderBy('created_at')
-                    ->limit(self::BATCH)
+                    ->limit(self::BATCH_LIMIT)
                     ->select('id'))
                 ->delete();
 
             $deleted += $batch;
-        } while ($batch === self::BATCH);
+        } while ($batch === self::BATCH_LIMIT);
 
         return $deleted;
     }

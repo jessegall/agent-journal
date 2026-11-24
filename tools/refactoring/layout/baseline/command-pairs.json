@@ -1430,8 +1430,8 @@
     [
         "Processes",
         "StopSurvivors",
-        "App\\Processes\\Commands\\StopSurvivors\\StopSurvivorsCommand",
-        "App\\Processes\\Commands\\StopSurvivors\\StopSurvivorsHandler"
+        "App\\Processes\\Commands\\StopSurvivors\\StopLeftoverProcessesCommand",
+        "App\\Processes\\Commands\\StopSurvivors\\StopLeftoverProcessesHandler"
     ],
     [
         "Processes",

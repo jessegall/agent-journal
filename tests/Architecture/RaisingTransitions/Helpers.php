@@ -11,6 +11,7 @@ return [
     'HelperIdentity::releaseDesignation',
     'HelperJob::reopenForAttempt',
     'HelperJob::reopenForRepair',
+    'HelperJob::attachTo',
     'HelperJob::addSteering',
     'HelperJob::finish',
     'HelperJob::cancel',

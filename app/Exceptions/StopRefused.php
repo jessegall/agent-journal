@@ -17,7 +17,7 @@ final class StopRefused extends RuntimeException implements CodedRefusal, Comman
 {
     use RendersRefusal;
 
-    public static function notYours(string $runId): self
+    public static function ofAnotherActor(string $runId): self
     {
         return new self("Only a user, or the actor who runs it, may stop run {$runId}.");
     }

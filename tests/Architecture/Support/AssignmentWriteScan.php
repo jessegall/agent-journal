@@ -25,6 +25,13 @@ final readonly class AssignmentWriteScan implements FileScan
     ];
 
     /**
+     * The assignment code a state never reaches: the contracts of assignments and their writers.
+     */
+    private const string ASSIGNMENT_CONTRACTS = 'App\\Contracts\\Assignments\\';
+
+    private const array WRITERS = ['App\\Support\\WriteAssignments', 'App\\Support\\WriteResponsibilities'];
+
+    /**
      * The fields only the models and their writers set.
      */
     public const array FIELDS = [
@@ -76,7 +83,7 @@ final readonly class AssignmentWriteScan implements FileScan
 
     private static function isAssignmentType(Node $node): bool
     {
-        return $node instanceof Node\Name && FormerPaths::classWasIn($node->toString(), ['app/Assignments/'])
+        return $node instanceof Node\Name && self::isAssignmentClass($node->toString())
             && ! $node->getAttribute('parent') instanceof Node\UseItem;
     }
 
@@ -113,5 +120,11 @@ final readonly class AssignmentWriteScan implements FileScan
     private static function identifier(Expr|Node\Identifier $name): string
     {
         return $name instanceof Node\Identifier ? $name->toString() : '';
+    }
+
+    private static function isAssignmentClass(string $name): bool
+    {
+        return str_starts_with($name, self::ASSIGNMENT_CONTRACTS)
+            || in_array($name, [...self::MODELS, ...self::WRITERS], true);
     }
 }

@@ -23,7 +23,7 @@ final class PruneReceiptsCommand extends Command
     public function handle(ExpiredReceipts $receipts): int
     {
         $now = CarbonImmutable::now();
-        $pruned = CommandReceipt::query()->pastTombstone($now)->delete();
+        $pruned = CommandReceipt::query()->pastRefusalWindow($now)->delete();
         $expired = $receipts->expirePastRetention($now);
 
         $this->info("Expired {$expired} and removed {$pruned} command receipts.");

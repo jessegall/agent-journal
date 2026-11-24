@@ -35,13 +35,13 @@ final readonly class MainTakeover implements MainSeatTakeover
             return;
         }
 
-        $former = SeatOccupant::of($current->get());
+        $previous = SeatOccupant::of($current->get());
 
-        if ($former->isSameAs($starter)) {
+        if ($previous->isSameAs($starter)) {
             return;
         }
 
         $this->seating->replace(new SeatChange($main->id, $seat->id, $current->get()->reference, $starter));
-        Agent::withId($former->id)->forAll(fn (Agent $agent) => $agent->fenceRuntimes());
+        Agent::withId($previous->id)->forAll(fn (Agent $agent) => $agent->fenceRuntimes());
     }
 }

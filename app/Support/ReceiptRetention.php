@@ -17,7 +17,7 @@ final readonly class ReceiptRetention
 {
     private const int STANDARD_DAYS = 30;
 
-    private function __construct(public int $retentionDays, public int|null $tombstoneDays) {}
+    private function __construct(public int $retentionDays, public int|null $refusalDays) {}
 
     public static function standard(): self
     {
@@ -29,11 +29,11 @@ final readonly class ReceiptRetention
      */
     public static function declaredBy(string $command, RequiresRequestKey $declaration): self
     {
-        if ($declaration->retentionDays < 1 || $declaration->tombstoneDays < $declaration->retentionDays) {
+        if ($declaration->retentionDays < 1 || $declaration->refusalDays < $declaration->retentionDays) {
             throw CommandDeclarationInvalid::for($command, 'RequiresRequestKey keeps a receipt at least a day and its tombstone no shorter than the receipt');
         }
 
-        return new self($declaration->retentionDays, $declaration->tombstoneDays);
+        return new self($declaration->retentionDays, $declaration->refusalDays);
     }
 
     /**
@@ -60,6 +60,6 @@ final readonly class ReceiptRetention
      */
     public function refusesUntil(CarbonImmutable $taken): CarbonImmutable|null
     {
-        return $this->tombstoneDays === null ? null : $taken->addDays($this->tombstoneDays);
+        return $this->refusalDays === null ? null : $taken->addDays($this->refusalDays);
     }
 }

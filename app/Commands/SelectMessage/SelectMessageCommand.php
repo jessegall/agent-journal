@@ -14,7 +14,7 @@ use App\Support\Command;
  * @extends Command<string>
  */
 #[Authorize(MessagePolicy::class, AccessType::Edit)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 final readonly class SelectMessageCommand extends Command
 {
     public function __construct(public string $messageId) {}

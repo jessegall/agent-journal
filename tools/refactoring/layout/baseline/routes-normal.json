@@ -2374,9 +2374,9 @@
         "methods": [
             "POST"
         ],
-        "uri": "agent/processes/runs/{processRun}/currency",
+        "uri": "agent/processes/runs/{processRun}/staleness",
         "name": "processes.agent.currency",
-        "action": "App\\Http\\Controllers\\Calls\\CheckRunCurrencyController",
+        "action": "App\\Http\\Controllers\\Calls\\CheckRunStalenessController",
         "middleware": [
             "journal.agent",
             "Illuminate\\Routing\\Middleware\\SubstituteBindings"

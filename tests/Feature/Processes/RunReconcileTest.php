@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Commands\RetryProcessRun\RetryProcessRunCommand;
-use App\Commands\StopSurvivors\StopSurvivorsCommand;
+use App\Commands\StopLeftoverProcesses\StopLeftoverProcessesCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Bus\CommandBus;
@@ -90,7 +90,7 @@ final class RunReconcileTest extends TestCase
         $other = new RetryProcessRunCommand($this->run->id, 'cat README.md', 'key-2');
         $this->assertThrows(fn () => $bus->run($other), RetryRefused::class);
         $retried = $bus->run(new RetryProcessRunCommand($this->run->id, 'cat composer.json', 'key-2'));
-        $bus->run(new StopSurvivorsCommand($this->run->id));
+        $bus->run(new StopLeftoverProcessesCommand($this->run->id));
 
         $this->assertNotSame($this->run->id, $retried);
         $this->assertSame(LifecycleState::Lost, $this->run->refresh()->lifecycle);

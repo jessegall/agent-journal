@@ -149,7 +149,7 @@ final class UiDeclarationValuesTest extends TestCase
     {
         $this->expectExceptionObject(InvalidNavigationDeclaration::rootOnlyOnChild('list', 'settings'));
 
-        NavigationItem::page('list', 'Plans')->children([NavigationItem::page('settings', 'Settings')->atFoot()]);
+        NavigationItem::page('list', 'Plans')->children([NavigationItem::page('settings', 'Settings')->atBottom()]);
     }
 
     public function test_a_section_names_its_slot_by_full_key_and_records_its_reader_data_class(): void

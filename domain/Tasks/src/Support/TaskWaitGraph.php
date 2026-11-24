@@ -22,11 +22,11 @@ final readonly class TaskWaitGraph
     public function assertNoCycle(Task $dependent, Task $prerequisite): void
     {
         $seen = [$prerequisite->id => true];
-        $frontier = [$prerequisite->id];
+        $lastShown = [$prerequisite->id];
 
-        while ($frontier !== []) {
+        while ($lastShown !== []) {
             $next = array_values(array_filter(
-                TaskWait::prerequisiteIdsOf($frontier, self::MOST_TASKS_WALKED),
+                TaskWait::prerequisiteIdsOf($lastShown, self::MOST_TASKS_WALKED),
                 fn (string $id) => ! isset($seen[$id]),
             ));
 
@@ -42,7 +42,7 @@ final readonly class TaskWaitGraph
                 throw TaskWaitRefused::tooDeep($dependent->number);
             }
 
-            $frontier = $next;
+            $lastShown = $next;
         }
     }
 }

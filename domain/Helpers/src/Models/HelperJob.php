@@ -16,9 +16,9 @@ use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
-use App\Values\AgentText;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Events\HelperJobAttached;
 use Domain\Helpers\Events\HelperJobCancelled;
 use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobLeftUnfinished;
@@ -175,7 +175,17 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         $this->finished_at = null;
         $this->steering = [...$this->steering, $findings];
         $this->assertSaved($this->save());
-        $this->raise(new HelperJobReopenedForRepair($this->id));
+        $this->raise(new HelperJobReopenedForRepair($this->id, $findings));
+    }
+
+    /**
+     * The accepted job attached to the session its start opened, and runs there.
+     */
+    public function attachTo(string $sessionId): void
+    {
+        $this->moveTo(JobState::Running);
+        $this->assertSaved($this->save());
+        $this->raise(new HelperJobAttached($this->id, $sessionId));
     }
 
     public function addSteering(string $steering): void
@@ -183,7 +193,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         $this->moveTo($this->state);
         $this->steering = [...$this->steering, $steering];
         $this->assertSaved($this->save());
-        $this->raise(new HelperJobSteered($this->id));
+        $this->raise(new HelperJobSteered($this->id, $steering));
     }
 
     /**
@@ -238,36 +248,6 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             $this->launch,
             $start,
         );
-    }
-
-    /**
-     * What the helper working this job must be told when its context starts: who it is, the purpose, the whole brief,
-     * the steering so far and the records it was given.
-     *
-     * @return list<AgentText>
-     */
-    public function contextFor(HelperIdentity $identity, string $purposeLabel): array
-    {
-        $lines = [
-            AgentText::of('helpers.identity', [
-                'helper' => $identity->id,
-                'profile' => $identity->profile_key,
-                'revision' => $this->profile_revision,
-                'job' => $this->id,
-                'purpose' => $purposeLabel,
-            ]),
-            AgentText::of('helpers.brief', ['brief' => $this->brief]),
-        ];
-
-        foreach ($this->steering as $steering) {
-            $lines[] = AgentText::of('helpers.steering', ['steering' => $steering]);
-        }
-
-        foreach ($this->sourceSubjects as $subject) {
-            $lines[] = AgentText::of('helpers.source', ['subject' => $subject]);
-        }
-
-        return $lines;
     }
 
     public function wasDispatchedAs(string $payloadDigest): bool

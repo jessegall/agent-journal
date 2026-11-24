@@ -224,7 +224,7 @@ func serve(arguments []string) error {
 	return nil
 }
 
-// runtimeOpener opens the driver of a runtime the journal hands this host, by the variant its start grant names:
+// runtimeOpener opens the driver of a runtime the journal hands this host, by the driver key its start grant names:
 // a headless runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
 // owns.
 type runtimeOpener struct {

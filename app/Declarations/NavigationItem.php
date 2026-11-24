@@ -38,7 +38,7 @@ final class NavigationItem
         public readonly string|null $childrenResolver = null,
         public readonly int $position = 0,
         public readonly string|null $group = null,
-        public readonly bool $atFoot = false,
+        public readonly bool $atBottom = false,
         public readonly string|null $visibility = null,
         public readonly string|null $count = null,
         public readonly bool $inSidebar = true,
@@ -127,9 +127,9 @@ final class NavigationItem
         return clone ($this, ['visibility' => $check]);
     }
 
-    public function atFoot(): self
+    public function atBottom(): self
     {
-        return clone ($this, ['atFoot' => true]);
+        return clone ($this, ['atBottom' => true]);
     }
 
     /**
@@ -148,7 +148,7 @@ final class NavigationItem
     private function withChildren(array $children, string|null $resolver): self
     {
         foreach ($children as $child) {
-            if ($child->group !== null || $child->atFoot) {
+            if ($child->group !== null || $child->atBottom) {
                 throw InvalidNavigationDeclaration::rootOnlyOnChild($this->key, $child->key);
             }
         }

@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"journal-agent/client"
-	"journal-agent/drivers"
 	"journal-agent/host"
 	"journal-agent/profiles"
 )
@@ -32,7 +31,7 @@ func TestALocalHostAdvertisesCodexOnlyHeadlessAndAContainedHostNoCodex(t *testin
 func TestAGrantForADriverTheHostDidNotAdvertiseStartsNothing(t *testing.T) {
 	opener := runtimeOpener{stateFolder: t.TempDir(), declared: descriptorsOf(host.Contained)}
 	prepared := host.PreparedStart{Grant: client.Grant{Runtime: client.RuntimeStart{
-		Driver: "codex", DriverKey: "codex-headless", DriverBuild: profiles.Codex{}.Build(), Variant: drivers.HeadlessVariant,
+		Driver: "codex", DriverKey: "codex-headless", DriverBuild: profiles.Codex{}.Build(),
 	}}}
 
 	_, err := opener.open("runtime-1", prepared)
@@ -78,7 +77,6 @@ func TestAGrantForAnAdvertisedKeyWithNoRegistrationStartsNothing(t *testing.T) {
 	opener := runtimeOpener{stateFolder: t.TempDir(), declared: declared}
 	prepared := host.PreparedStart{Grant: client.Grant{Runtime: client.RuntimeStart{
 		Driver: "claude-code", DriverKey: "acme/reader", DriverBuild: profiles.ClaudeCode{}.Build(),
-		Variant: drivers.HeadlessVariant,
 	}}}
 
 	_, err := opener.open("runtime-1", prepared)

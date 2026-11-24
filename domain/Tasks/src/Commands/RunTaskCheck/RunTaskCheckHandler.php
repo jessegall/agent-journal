@@ -8,7 +8,7 @@ use App\Contracts\Processes\ProcessRunCallers;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskCheckRefused;
-use Domain\Tasks\Exceptions\TaskRunNotYours;
+use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskCheck;
 use Domain\Tasks\Models\TaskRun;
@@ -21,7 +21,7 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
      * The new check's id; a run that is not the task's current one, a process run another caller opened, and a process
      * run that already checks a task run are refused.
      *
-     * @throws TaskRunNotYours
+     * @throws TaskRunOfAnotherActor
      * @throws TaskCheckRefused
      */
     public function handle(RunTaskCheckCommand $command, Task $task): string
@@ -30,7 +30,7 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
         $run = TaskRun::ofTask($task, $command->runNumber);
 
         if ($run === null) {
-            throw TaskRunNotYours::forRun($task->number, $command->runNumber);
+            throw TaskRunOfAnotherActor::forRun($task->number, $command->runNumber);
         }
 
         $caller = ActorIdentity::of($command->dispatchedBy());

@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use App\Support\Reflector;
 use Spatie\LaravelData\Data;
 use Tests\Architecture\Support\DomainFiles;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Architecture\Support\JsonDecodeScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -31,8 +30,8 @@ final class JsonIntoDataTest extends TestCase
      * The only methods allowed #[DecodesAnyJson], each because its JSON has no shape of ours to name: a value of any
      * type kept as stored, a tool's own JSON line, a user's option or file sent on for the journal to check, a tree
      * checked node by node against its limits, a bare list of texts, a map keyed by the operator's own environment
-     * names whose entries each go into their own Data class, or a driver's own state file, kept whole with the fields
-     * the journal does not know.
+     * names whose entries each go into their own Data class, a driver's own state file, kept whole with the fields
+     * the journal does not know, or a page's layout, kept as the page wrote it.
      */
     private const array ANY_JSON_METHODS = [
         'App\\Support\\Storage\\EncodedValue::jsonSerialize',
@@ -44,6 +43,7 @@ final class JsonIntoDataTest extends TestCase
         'App\\Casts\\ProfileAuthorizationCast::deniedCommandsOf',
         'App\\Support\\WorkspaceSources::fromJson',
         'App\\Support\\Drivers\\ClaudeFirstRun::settle',
+        'App\\Values\\LayoutShape::toArray',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void
@@ -54,8 +54,8 @@ final class JsonIntoDataTest extends TestCase
         foreach (ScanCache::findingsInFolders(new JsonDecodeScan(), $folders) as $path => $decodes) {
             $relative = substr($path, strlen(base_path()) + 1);
 
-            // The Files area decodes files as it reads them: its files moved to Laravel's layout, and LocalFiles, moved before.
-            if (FormerPaths::wasIn($relative, ['app/Files/']) || $relative === 'app/Support/LocalFiles.php') {
+            // The Files area decodes a file as it reads it, behind the Files contract.
+            if ($relative === 'app/Support/LocalFiles.php') {
                 continue;
             }
 

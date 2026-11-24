@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Architecture\Support\WordLines;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -29,22 +28,92 @@ final class DriverWordTest extends TestCase
     private const string GO_EXECUTABLE_CALL = 'program, err := os.Executable()';
 
     /**
-     * Folders and files where program means an operating-system executable; a moved file counts by its former path.
+     * The files where program means an operating-system executable: the command classifier and its rules, the shell, the
+     * sharing gateways' binaries, a shell part's program and the sign-in executable.
      */
     private const array EXECUTABLE_SENSE = [
-        'app/Processes/',
-        'app/Shell/',
-        'app/Sharing/',
+        'app/Calls/Processes/ProposalList.php',
+        'app/Commands/ConfigureShareGateway/ConfigureShareGatewayCommand.php',
+        'app/Console/Commands/ConfigureShareGatewayCommand.php',
+        'app/Console/Commands/SuperviseSharingCommand.php',
+        'app/Contracts/Bus/CommandClassifier.php',
+        'app/Contracts/Bus/CommandRuleProvider.php',
+        'app/Contracts/Processes/ProgramClassifier.php',
+        'app/Contracts/Sharing/ShareGateway.php',
+        'app/Data/Pages/DeclarationData.php',
+        'app/Data/Processes/ExplainedNodeData.php',
+        'app/Data/Processes/PartSummaryData.php',
+        'app/Declarations/RuleDeclarations.php',
+        'app/Enums/GatewayAddressCheck.php',
+        'app/Enums/GatewayOutcome.php',
         'app/Enums/PlaceExemption.php',
-        'app/Support/ShellOperations.php',
+        'app/Enums/StepType.php',
+        'app/Enums/UnresolvedType.php',
+        'app/Exceptions/CommandRuleConflict.php',
+        'app/Exceptions/GatewayOpenFailed.php',
         'app/Exceptions/SignInProtocolMissing.php',
+        'app/Exceptions/SupervisorInsideTransaction.php',
+        'app/Http/Controllers/Calls/ListProposalsController.php',
+        'app/Http/Pages/Resolvers/GatewaySettingsResolver.php',
+        'app/Models/CommandRules/RuleProposal.php',
+        'app/Models/Sharing/ShareGatewayEndpoint.php',
+        'app/Models/Sharing/ShareGatewayOperation.php',
+        'app/Pipelines/ReadSimpleCommandPipeline.php',
+        'app/Providers/ProcessesServiceProvider.php',
+        'app/Support/Admission/LineAdmission.php',
+        'app/Support/Classification/ChildCommand.php',
+        'app/Support/Classification/TreeClassifier.php',
+        'app/Support/CommandRuleRegistry.php',
+        'app/Support/ExecutableCheck.php',
+        'app/Support/Execution/BuiltinSteps.php',
+        'app/Support/Execution/Supervisor.php',
+        'app/Support/Explanations.php',
+        'app/Support/GatewayEndpoint.php',
+        'app/Support/GatewaySettings.php',
+        'app/Support/Gateways/Ngrok/NgrokGateway.php',
+        'app/Support/Gateways/Support/GatewayChildren.php',
+        'app/Support/Gateways/Support/GatewayStarts.php',
+        'app/Support/Gateways/Tunler/TunlerGateway.php',
+        'app/Support/PackageScripts.php',
+        'app/Support/PlanBuilder.php',
+        'app/Support/ProgramClassifiers.php',
+        'app/Support/ProgramNames.php',
+        'app/Support/Rules/BuildRules.php',
+        'app/Support/Rules/CheckRules.php',
+        'app/Support/Rules/FileRules.php',
+        'app/Support/Rules/GitRules.php',
+        'app/Support/Rules/JournalClassifier.php',
+        'app/Support/Rules/NetworkRules.php',
+        'app/Support/Rules/PackageRules.php',
+        'app/Support/Rules/ProcessRules.php',
+        'app/Support/Rules/ReadingRules.php',
+        'app/Support/Rules/ToolRules.php',
+        'app/Support/Rules/WrapperRules.php',
+        'app/Support/SharingSupervisor.php',
+        'app/Support/ShellOperations.php',
+        'app/Support/ShellParser.php',
+        'app/Support/Stored/StoredCommandRule.php',
+        'app/Values/ArgumentGrammar.php',
+        'app/Values/Classification.php',
+        'app/Values/CommandOperation.php',
+        'app/Values/CommandPart.php',
+        'app/Values/CommandPattern.php',
+        'app/Values/CommandRule.php',
+        'app/Values/CommandShape.php',
+        'app/Values/ExecutableBinding.php',
+        'app/Values/ExecutableVerdict.php',
+        'app/Values/ExecutionContext.php',
+        'app/Values/PartClassification.php',
+        'app/Values/ProgramIdentity.php',
+        'app/Values/ProgramSpellings.php',
+        'app/Values/WrapperRule.php',
+        'resources/js/sharing/GatewayConfigureForm.vue',
     ];
 
     /**
-     * Lines elsewhere that name the command classifier's program types or a driver's executable path setting; a line
-     * naming a class that was in app/Processes is kept too.
+     * Lines elsewhere that name the command classifier's program types or a driver's executable path setting.
      */
-    private const string EXECUTABLE_LINE = '/Program(Classifier|Spellings|Identity)::class|accounts\\.(claude|codex)_program/';
+    private const string EXECUTABLE_LINE = '/Program(Classifier|Spellings|Identity)\b|accounts\\.(claude|codex)_program/';
 
     public function test_no_code_calls_a_driver_a_program(): void
     {
@@ -57,9 +126,8 @@ final class DriverWordTest extends TestCase
 
         $found = array_values(array_filter(
             WordLines::in(WordLines::DRIVER_WORDS, $folders),
-            fn (string $line): bool => ! FormerPaths::wasIn(self::relativePath($line), self::EXECUTABLE_SENSE)
-                && preg_match(self::EXECUTABLE_LINE, self::text($line)) !== 1
-                && ! self::namesAProcessesClass(self::text($line)),
+            fn (string $line): bool => ! in_array(self::relativePath($line), self::EXECUTABLE_SENSE, true)
+                && preg_match(self::EXECUTABLE_LINE, self::text($line)) !== 1,
         ));
 
         $this->assertSame([], $found, self::HOW_TO_FIX);
@@ -85,16 +153,6 @@ final class DriverWordTest extends TestCase
     private static function relativePath(string $line): string
     {
         return substr(explode(':', $line)[0], strlen(base_path()) + 1);
-    }
-
-    /**
-     * Whether the line names an App class whose file was in app/Processes before the move to Laravel's layout.
-     */
-    private static function namesAProcessesClass(string $text): bool
-    {
-        preg_match_all('/App\\\\[A-Za-z\\\\]+/', $text, $names);
-
-        return array_any($names[0], fn (string $name) => FormerPaths::classWasIn($name, ['app/Processes/']));
     }
 
     private static function text(string $line): string

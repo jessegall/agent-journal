@@ -5,28 +5,32 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Finder\Finder;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Nothing above the driver chooses how an operation is carried out by the runtime's driver type: only Agents records
- * it, and only the host's runtime factory picks a driver by it.
+ * Only the driver registration decides anything by how a driver runs, headless or in a terminal: other code may carry
+ * the variant through, record it or declare a default, but never compares or matches on it.
  */
 #[TimeLimit(seconds: 5, reason: 'It reads every PHP file of Core and the domains.')]
 final class DriverVariantBoundaryTest extends TestCase
 {
     /**
-     * The words that read a runtime's variant.
+     * A comparison or a match on a variant, or a case of one.
      */
-    private const string READS = '/->variant\b|DriverVariant::(Headless|Terminal)\b/';
+    private const string DECIDES = '/->variant\s*[!=]==?|[!=]==?\s*\$?[\w>-]*->variant\b|DriverVariant::\w+\s*[!=]==?|'
+        .'[!=]==?\s*DriverVariant::|match\s*\([^)]*variant\)|case\s+DriverVariant::/';
 
     /**
-     * The one place outside app/Agents that may name a variant: Core's public list of exported types.
+     * The driver registration, which refuses a request for a variant it was not registered for.
      */
-    private const array ALLOWED = ['app/CoreApi.php'];
+    private const string REGISTRATION = 'app/Support/RegisteredDriver.php';
 
-    public function test_no_code_outside_agents_reads_a_runtimes_variant(): void
+    private const string SAMPLE_DECISION = 'if ($runtime->variant === DriverVariant::Terminal) {';
+
+    private const string SAMPLE_CARRIED = '$this->drivers->pinned($request->driver, $request->variant);';
+
+    public function test_no_code_but_the_driver_registration_decides_by_a_variant(): void
     {
         $found = [];
         $files = Finder::create()->files()->name('*.php')->in([base_path('app'), base_path('domain')])
@@ -35,11 +39,7 @@ final class DriverVariantBoundaryTest extends TestCase
         foreach ($files as $file) {
             $path = substr($file->getPathname(), strlen(base_path()) + 1);
 
-            if (self::mayNameVariant($path)) {
-                continue;
-            }
-
-            if (preg_match(self::READS, $file->getContents()) === 1) {
+            if ($path !== self::REGISTRATION && preg_match(self::DECIDES, $file->getContents()) === 1) {
                 $found[] = $path;
             }
         }
@@ -47,13 +47,9 @@ final class DriverVariantBoundaryTest extends TestCase
         $this->assertSame([], $found);
     }
 
-    /**
-     * Agents keeps a runtime's variant, Profiles declares and chooses the default a launch runs with, and Drivers
-     * registers the mode each driver runs in.
-     */
-    private static function mayNameVariant(string $path): bool
+    public function test_a_decision_is_caught_and_a_variant_carried_through_is_not(): void
     {
-        return FormerPaths::wasIn($path, ['app/Agents/', 'app/Profiles/', 'app/Drivers/'])
-            || in_array($path, self::ALLOWED, true);
+        $this->assertMatchesRegularExpression(self::DECIDES, self::SAMPLE_DECISION);
+        $this->assertDoesNotMatchRegularExpression(self::DECIDES, self::SAMPLE_CARRIED);
     }
 }

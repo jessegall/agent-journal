@@ -12,7 +12,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * A search's progress as its stored state writes it: the words, scope and limit, each source's progress, what was
- * shown, the frontier hit and the call counts.
+ * shown, the last hit shown and the call counts.
  */
 #[MapName(SnakeCaseMapper::class)]
 final class StoredSearchProgress extends Data
@@ -28,7 +28,7 @@ final class StoredSearchProgress extends Data
         #[DataCollectionOf(StoredSourceProgress::class)]
         public readonly array $sources,
         public readonly array $delivered,
-        public readonly StoredSearchHit|null $frontier,
+        public readonly StoredSearchHit|null $lastShown,
         public readonly int $idleCalls,
         public readonly int $calls,
     ) {}
@@ -41,7 +41,9 @@ final class StoredSearchProgress extends Data
             'limit' => $progress->limit,
             'sources' => array_values($progress->sources),
             'delivered' => $progress->delivered,
-            'frontier' => $progress->frontier === null ? null : StoredSearchHit::fromBufferedHit($progress->frontier),
+            'lastShown' => $progress->lastShown === null
+                ? null
+                : StoredSearchHit::fromBufferedHit($progress->lastShown),
             'idle_calls' => $progress->idleCalls,
             'calls' => $progress->calls,
         ]);

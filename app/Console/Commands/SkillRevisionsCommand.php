@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Models\Skills\SkillRevision;
 use App\Support\SkillAuthoringService;
@@ -14,6 +15,7 @@ use Illuminate\Console\Command;
  */
 final class SkillRevisionsCommand extends Command
 {
+    use NamesStoredSkill;
     use PrintsSkillRefusals;
 
     private const int ROWS = 100;
@@ -26,7 +28,7 @@ final class SkillRevisionsCommand extends Command
     {
         return $this->printRefusals(function () use ($console) {
             $console->actAsOwner();
-            $skill = $console->stored((string) $this->argument('number'));
+            $skill = $console->storedSkill($this->skillNumber());
 
             $this->table(
                 ['Revision', 'Name', 'Author', 'Copied from', 'Saved'],

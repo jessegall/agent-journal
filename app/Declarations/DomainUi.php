@@ -176,7 +176,7 @@ final readonly class DomainUi
     }
 
     /**
-     * The real path of a component named relative to the domain's script folder; the funnel refuses one that climbs out
+     * The real path of a component named relative to the domain's script folder; the funnel refuses one that escapesItsRoot out
      * or links out of the project.
      */
     public function componentFile(string $declaration, string $component): string

@@ -16,18 +16,17 @@ use App\Enums\HoldReason;
 use App\Enums\RequestProgress;
 use App\Enums\RuntimeActivity;
 use App\Enums\SessionStatus;
-use App\Events\AgentRuntimeBegun;
 use App\Events\AgentRuntimeClosed;
 use App\Events\AgentRuntimeConfirmedAlive;
 use App\Events\AgentRuntimeHeld;
 use App\Events\AgentRuntimeHostChanged;
-use App\Events\AgentRuntimeModelRequested;
 use App\Events\AgentRuntimeObserved;
 use App\Events\AgentRuntimeRequestedSettingsRecomputed;
 use App\Events\AgentRuntimeSettingsObserved;
+use App\Events\AgentRuntimeStarted;
 use App\Events\AgentRuntimeStartGrantClaimed;
 use App\Events\AgentRuntimeStartGrantHeld;
-use App\Events\AgentRuntimeStopping;
+use App\Events\AgentRuntimeStopRequested;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalView;
 use App\Models\Projects\Host;
@@ -266,7 +265,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     {
         $this->activity = RuntimeActivity::Stopping;
         $this->assertSaved($this->save());
-        $this->raise(new AgentRuntimeStopping($this->id));
+        $this->raise(new AgentRuntimeStopRequested($this->id));
     }
 
     /**
@@ -300,7 +299,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
         $this->process_generation = 1;
         $this->generation_started_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
-        $this->raise(new AgentRuntimeBegun($this->id));
+        $this->raise(new AgentRuntimeStarted($this->id));
     }
 
     /**
@@ -411,13 +410,6 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
         $this->start_grant = $startToken;
         $this->assertSaved($this->save());
         $this->raise(new AgentRuntimeHostChanged($this->id, $hostId, $this->process_generation));
-    }
-
-    public function requestModel(string $model): void
-    {
-        $this->requested_model = $model;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentRuntimeModelRequested($this->id, $model));
     }
 
     /**

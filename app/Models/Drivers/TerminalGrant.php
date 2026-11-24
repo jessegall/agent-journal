@@ -10,10 +10,10 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\TerminalGrantState;
+use App\Events\TerminalGrantGivenBack;
 use App\Events\TerminalGrantIssued;
 use App\Events\TerminalGrantRefused;
 use App\Events\TerminalGrantReleased;
-use App\Events\TerminalGrantReleasing;
 use App\Events\TerminalGrantRenewed;
 use App\Events\TerminalGrantRetired;
 use App\Events\TerminalGrantSequenceTaken;
@@ -155,7 +155,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
         $this->state = TerminalGrantState::Releasing;
         $this->release_request_id = $request->id;
         $this->assertSaved($this->save());
-        $this->raise(new TerminalGrantReleasing($this->id, $request->id));
+        $this->raise(new TerminalGrantGivenBack($this->id, $request->id));
     }
 
     /**

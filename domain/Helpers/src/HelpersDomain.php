@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Domain\Helpers;
 
 use App\Concerns\HasAssignables;
+use App\Concerns\HasStates;
 use App\Contracts\Assignments\InternalAssignableContributor;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Records\StateProvider;
 use App\Declarations\Page;
 use App\Enums\AccessType;
 use App\Enums\Icon;
@@ -39,6 +41,7 @@ use Domain\Helpers\Http\Pages\Resolvers\HelperJobsLayoutResolver;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Resolvers\HelperJobAssignments;
+use Domain\Helpers\Support\States\HelperJobState;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Domain\Helpers\Values\JobLaunch;
@@ -49,9 +52,11 @@ final class HelpersDomain extends Domain implements
     InternalAssignableContributor,
     McpToolProvider,
     PageProvider,
-    PolicyProvider
+    PolicyProvider,
+    StateProvider
 {
     use HasAssignables;
+    use HasStates;
 
     /**
      * @return list<Page>
@@ -134,6 +139,11 @@ final class HelpersDomain extends Domain implements
     public function internalAssignables(): array
     {
         return [HelperJob::LINK_TYPE => HelperJobAssignments::class];
+    }
+
+    public function states(): array
+    {
+        return [HelperJobState::class];
     }
 
     public function mcpResources(): array

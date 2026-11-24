@@ -11,8 +11,8 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Messages\WakeStatus;
 use App\Enums\ReceiptDeliveryState;
-use App\Events\ReceiptDeliveryAwaitingShown;
 use App\Events\ReceiptDeliveryChanged;
+use App\Events\ReceiptDeliveryWakeTaken;
 use App\Exceptions\ChatStateConflict;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -150,7 +150,7 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
         $this->lease_expires_at = $leaseUntil;
         $this->next_attempt_at = $leaseUntil;
         $this->assertSaved($this->save());
-        $this->raise(new ReceiptDeliveryAwaitingShown($this->id, $this->receipt_id));
+        $this->raise(new ReceiptDeliveryWakeTaken($this->id, $this->receipt_id));
     }
 
     /**

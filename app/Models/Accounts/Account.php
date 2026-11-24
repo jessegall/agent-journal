@@ -20,7 +20,7 @@ use App\Events\AccountCleanupReleased;
 use App\Events\AccountCleanupRetried;
 use App\Events\AccountHeldForMaintenance;
 use App\Events\AccountRecheckRequested;
-use App\Events\AccountRemovalBegun;
+use App\Events\AccountRemovalStarted;
 use App\Events\AccountRemoved;
 use App\Events\AccountRenamed;
 use App\Events\AccountSignedIn;
@@ -593,7 +593,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->operation_id = strtolower((string) Str::ulid());
         $this->sign_in_generation++;
         $this->assertSaved($this->save());
-        $this->raise(new AccountRemovalBegun($this->account_protocol, $this->id));
+        $this->raise(new AccountRemovalStarted($this->account_protocol, $this->id));
     }
 
     /**

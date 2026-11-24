@@ -19,7 +19,7 @@ trait RefusesOtherDrafts
     private function assertDraftEditor(DocumentDraft $draft, RequestEditor $editors): void
     {
         if (! $editors->isEditing($draft)) {
-            throw DraftConflict::notYours();
+            throw DraftConflict::ofAnotherActor();
         }
     }
 

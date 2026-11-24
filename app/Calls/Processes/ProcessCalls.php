@@ -76,11 +76,11 @@ final readonly class ProcessCalls
         ]));
     }
 
-    public function checkRunCurrency(
+    public function checkRunStaleness(
         string $processRun,
         string $eventKey,
-    ): RunCurrency {
-        return $this->sender->send(CheckRunCurrencyCall::from([
+    ): RunStaleness {
+        return $this->sender->send(CheckRunStalenessCall::from([
             'processRun' => $processRun,
             'eventKey' => $eventKey,
         ]));

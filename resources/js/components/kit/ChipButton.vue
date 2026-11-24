@@ -3,7 +3,7 @@
  * A chip that acts or toggles: a reaction, a sequence run, a window chip, a docked card beside the composer, a
  * suggested answer, a graph link. Sizes xs 20, sm 22, md 24 and lg 28; square (radius 5 at 20 and 22, 7 at 24 and
  * 28) or pill. The leading slot holds an icon, a dot or a spinner; count trails in tabular numbers. A toggle takes
- * pressed (aria-pressed); `mine` gives your own reaction the brand border; `selected` marks the active window's chip.
+ * pressed (aria-pressed); `own` gives your own reaction the brand border; `selected` marks the active window's chip.
  */
 withDefaults(
     defineProps<{
@@ -13,9 +13,9 @@ withDefaults(
         count?: number;
         pressed?: boolean;
         selected?: boolean;
-        mine?: boolean;
+        own?: boolean;
     }>(),
-    { size: 'sm', shape: 'square', tone: 'normal', count: undefined, pressed: undefined, selected: false, mine: false },
+    { size: 'sm', shape: 'square', tone: 'normal', count: undefined, pressed: undefined, selected: false, own: false },
 );
 </script>
 
@@ -31,7 +31,7 @@ withDefaults(
             tone === 'quiet' ? 'text-text-3' : 'text-text-2',
             pressed && 'border-border-3 bg-sel text-text',
             selected && 'border-border-3 text-text',
-            mine && 'border-brand',
+            own && 'border-brand',
         ]"
     >
         <slot name="leading" />

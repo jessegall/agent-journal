@@ -10,6 +10,7 @@ use App\Exceptions\StopResultsRefused;
 use App\Models\Starts\StopAttempt;
 use App\Models\Starts\StopResult;
 use App\Models\Support\AgentSessionScope;
+use App\Values\StopAttemptResult;
 use App\Values\StopResultReport;
 
 final readonly class RecordStopResultsHandler implements CommandHandler
@@ -48,7 +49,8 @@ final readonly class RecordStopResultsHandler implements CommandHandler
             array_map(fn (StopResultReport $stopReport) => $stopReport->status, $command->stopReports),
         );
 
-        $attempt->settle($state, $submission);
+        $result = StopAttemptResult::ofReports($state, $command->stopReports);
+        $attempt->settle($state, $submission, $result->failureSummary());
 
         return $state;
     }

@@ -141,7 +141,7 @@ final readonly class DocumentsShow extends DocumentsPage
      */
     private function editingOf(DocumentView $document, DraftState $editing): LayoutPartData
     {
-        if ($editing->state === EditingState::Yours && ! $editing->draft instanceof Optional) {
+        if ($editing->state === EditingState::HeldByViewer && ! $editing->draft instanceof Optional) {
             $editor = DraftEditorPartData::from(['number' => $document->number, 'draft' => $editing->draft]);
 
             return LayoutPartData::native('editing', LayoutNativeData::of('documents/DraftEditor', $editor));

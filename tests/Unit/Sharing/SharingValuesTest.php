@@ -30,7 +30,6 @@ use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Tests\Architecture\Support\FormerPaths;
 
 /**
  * The sharing values and enums: states answer which are live, terminal or retryable, relation sets are built from
@@ -114,7 +113,7 @@ final class SharingValuesTest extends TestCase
     public function test_every_sharing_value_fits_the_bus_grammar(string $class): void
     {
         $grammar = new CommandGrammar(
-            static fn (string $name): bool => FormerPaths::classWasIn($name, ['app/Sharing/'])
+            static fn (string $name): bool => preg_match('/Share|Gateway/', class_basename($name)) === 1
                 || $name === RecordIdentity::class,
         );
 

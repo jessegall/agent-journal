@@ -13,7 +13,7 @@ use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 
-#[TimeLimit(6, 'The message journeys compare several signed MCP and HTTP calls.')]
+#[TimeLimit(6, 'The message flowsOutsideMcp compare several signed MCP and HTTP calls.')]
 final class MessageToolsTest extends MessagingTestCase
 {
     use SendsMcpFrames;

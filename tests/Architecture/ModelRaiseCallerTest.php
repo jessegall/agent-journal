@@ -19,7 +19,7 @@ use Tests\TestCase;
  * tests/Architecture/RaisingTransitions name is reached from a registered command's handler, is a transaction listener
  * or is a model; a public listener, a job, a console command, a controller or unreached code fails.
  */
-#[TimeLimit(seconds: 30, reason: 'It parses every PHP file of app and the domains.')]
+#[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and the domains and follows the command reach twice.')]
 final class ModelRaiseCallerTest extends TestCase
 {
     private const string HOW_TO_FIX = "Call a raising transition only inside a unit (%s):\n";

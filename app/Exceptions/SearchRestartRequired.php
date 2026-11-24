@@ -23,11 +23,6 @@ final class SearchRestartRequired extends RuntimeException implements CodedRefus
         return new self('This search expired or was set aside; search again with fresh words.');
     }
 
-    public static function obsolete(): self
-    {
-        return new self('This continuation belongs to an earlier search; search again with fresh words.');
-    }
-
     protected function status(): int
     {
         return 410;

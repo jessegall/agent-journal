@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\AssignmentWriteScan;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -19,9 +18,9 @@ use Tests\TestCase;
 final class AssignmentWriteBoundaryTest extends TestCase
 {
     /**
-     * The folders whose files may write the fields: the models and the writers; a moved file counts by its former path.
+     * The files that may write the fields: the assignment models.
      */
-    private const array WRITERS = ['app/Assignments/', 'app/Desks/Support/'];
+    private const array WRITERS = ['app/Models/Records/AssignmentRecord.php', 'app/Models/Records/ClaimAuthorization.php'];
 
     private const string FIXTURES = 'tests/Fixtures/Assignments/WriteBoundary';
 
@@ -53,7 +52,7 @@ final class AssignmentWriteBoundaryTest extends TestCase
                 continue;
             }
 
-            if (FormerPaths::wasIn($file, self::WRITERS)) {
+            if (in_array($file, self::WRITERS, true)) {
                 continue;
             }
 

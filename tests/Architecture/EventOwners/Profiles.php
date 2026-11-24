@@ -12,7 +12,7 @@ use App\Events\AccountHeldForMaintenance;
 use App\Events\AccountNoticeRecorded;
 use App\Events\AccountNoticeResolved;
 use App\Events\AccountRecheckRequested;
-use App\Events\AccountRemovalBegun;
+use App\Events\AccountRemovalStarted;
 use App\Events\AccountRemoved;
 use App\Events\AccountRenamed;
 use App\Events\AccountsChanged;
@@ -39,9 +39,9 @@ use App\Events\SignInAttemptEnded;
 use App\Events\SignInAttemptFingerprinted;
 use App\Events\SignInAttemptFinished;
 use App\Events\SignInAttemptGenerationSet;
+use App\Events\SignInAttemptHandedToUser;
 use App\Events\SignInAttemptReleased;
 use App\Events\SignInAttemptStarted;
-use App\Events\SignInAttemptWaitingForUser;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -106,12 +106,12 @@ return [
         'producers' => [],
         'sample' => fn () => new AccountNoticeResolved('claude-code', 'notice'),
     ],
-    AccountRemovalBegun::class => [
+    AccountRemovalStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Account::beginRemoval',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AccountRemovalBegun('claude-code', 'account'),
+        'sample' => fn () => new AccountRemovalStarted('claude-code', 'account'),
     ],
     AccountRenamed::class => [
         'role' => EventRole::RowFact,
@@ -253,12 +253,12 @@ return [
         'producers' => [],
         'sample' => fn () => new SignInAttemptEnded('claude-code', 'attempt', SignInState::Complete),
     ],
-    SignInAttemptWaitingForUser::class => [
+    SignInAttemptHandedToUser::class => [
         'role' => EventRole::RowFact,
         'owner' => 'SignInAttempt::waitForUser',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new SignInAttemptWaitingForUser('claude-code', 'attempt'),
+        'sample' => fn () => new SignInAttemptHandedToUser('claude-code', 'attempt'),
     ],
     SignInAttemptAnswerAccepted::class => [
         'role' => EventRole::RowFact,

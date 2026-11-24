@@ -16,7 +16,7 @@ use Domain\Tasks\Policies\TaskPolicy;
  * @extends Command<string>
  */
 #[Authorize(TaskPolicy::class, AccessType::Edit)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 final readonly class AddTaskWaitCommand extends Command
 {
     public function __construct(

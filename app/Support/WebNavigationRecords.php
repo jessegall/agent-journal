@@ -84,7 +84,7 @@ final readonly class WebNavigationRecords implements NavigationRecordsContract
             'key' => $navigation->key,
             'label' => $navigation->navigationItem->label,
             'children' => $children,
-            'atFoot' => $navigation->navigationItem->atFoot,
+            'atBottom' => $navigation->navigationItem->atBottom,
             'counted' => $navigation->navigationItem->count !== null,
             'inSidebar' => $navigation->navigationItem->inSidebar,
             'icon' => $navigation->navigationItem->icon,

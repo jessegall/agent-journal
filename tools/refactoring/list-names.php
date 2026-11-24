@@ -11,6 +11,7 @@ declare(strict_types=1);
  *       prints the names not on the reviewed list and fails while there is one.
  *   php tools/refactoring/list-names.php --accept docs/naming/reviewed-names.txt app tests/Architecture/Support
  *       writes every current name to the reviewed list, after they were read and the unclear ones renamed.
+ * Both refuse while a name holds a word of forbidden-words.txt beside the reviewed list.
  */
 
 use PhpParser\Node;
@@ -30,6 +31,7 @@ use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/promoted-parameters.php';
+require_once __DIR__.'/name-word-splitting.php';
 
 /**
  * One name the code declares: what type of declaration it is, the name, and where it is declared.
@@ -84,6 +86,19 @@ if ($mode === '--list') {
 
 $current = array_values(array_unique(array_map(fn (DeclaredName $declared) => $declared->reviewLine(), $names)));
 sort($current);
+$forbidden = forbiddenWords(dirname($reviewedFile).'/forbidden-words.txt');
+$refused = array_values(array_filter($names, fn (DeclaredName $declared) => forbiddenIn($declared->name, $forbidden) !== []));
+
+if ($refused !== []) {
+    echo count($refused)." declared names hold a forbidden word; rename each before it can be reviewed:\n";
+
+    foreach ($refused as $declared) {
+        $words = implode(', ', forbiddenIn($declared->name, $forbidden));
+        echo "  {$declared->declarationType} {$declared->name} ({$declared->place}): {$words}\n";
+    }
+
+    exit(1);
+}
 
 if ($mode === '--accept') {
     file_put_contents($reviewedFile, implode("\n", $current)."\n");
@@ -110,6 +125,36 @@ foreach ($names as $declared) {
 }
 
 exit(1);
+
+/**
+ * The forbidden words, one to a line before an optional tab and the reason; a line starting with # is a comment.
+ *
+ * @return array<string, string> word => why it is forbidden
+ */
+function forbiddenWords(string $file): array
+{
+    $words = [];
+
+    foreach (is_file($file) ? file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [] as $line) {
+        if (! str_starts_with($line, '#')) {
+            [$word] = explode("\t", $line, 2);
+            $words[strtolower(trim($word))] = $line;
+        }
+    }
+
+    return $words;
+}
+
+/**
+ * The forbidden words a name holds.
+ *
+ * @param  array<string, string>  $forbidden
+ * @return list<string>
+ */
+function forbiddenIn(string $name, array $forbidden): array
+{
+    return array_values(array_unique(array_filter(wordsOf($name), fn (string $word) => isset($forbidden[$word]))));
+}
 
 /**
  * @param  list<string>  $folders

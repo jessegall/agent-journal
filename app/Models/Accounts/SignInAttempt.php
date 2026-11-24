@@ -24,9 +24,9 @@ use App\Events\SignInAttemptEnded;
 use App\Events\SignInAttemptFingerprinted;
 use App\Events\SignInAttemptFinished;
 use App\Events\SignInAttemptGenerationSet;
+use App\Events\SignInAttemptHandedToUser;
 use App\Events\SignInAttemptReleased;
 use App\Events\SignInAttemptStarted;
-use App\Events\SignInAttemptWaitingForUser;
 use App\Exceptions\SignInAnswerRefused;
 use App\Exceptions\SignInAttemptMissing;
 use App\Models\Support\AccountOwnerScope;
@@ -423,7 +423,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
 
         $this->state = SignInState::Waiting;
         $this->save();
-        $this->raise(new SignInAttemptWaitingForUser($this->account_protocol, $this->id));
+        $this->raise(new SignInAttemptHandedToUser($this->account_protocol, $this->id));
     }
 
     /**

@@ -28,7 +28,7 @@ final class OutputsReadTool extends JournalReadTool
 {
     public const string NAME = CoreToolName::OutputsRead->value;
 
-    private const int MOST_LINES = 10_000;
+    private const int LINE_LIMIT = 10_000;
 
     public function __construct(private readonly OutputTailReads $reads) {}
 
@@ -38,7 +38,7 @@ final class OutputsReadTool extends JournalReadTool
             'run' => $this->recordIdArgument($schema),
             'part' => $schema->integer()->min(0)->required(),
             'stream' => $this->caseArgument($schema, OutputStream::class)->required(),
-            'lines' => $this->wholeNumberArgument($schema, 1, self::MOST_LINES),
+            'lines' => $this->wholeNumberArgument($schema, 1, self::LINE_LIMIT),
         ];
     }
 
@@ -48,7 +48,7 @@ final class OutputsReadTool extends JournalReadTool
             $arguments->ulid('run'),
             $arguments->wholeNumber('part'),
             $arguments->enum('stream', OutputStream::class),
-            $arguments->positiveIntegerOr('lines', 200, self::MOST_LINES),
+            $arguments->positiveIntegerOr('lines', 200, self::LINE_LIMIT),
         );
 
         return ToolResult::ok($tail->toArray(), []);

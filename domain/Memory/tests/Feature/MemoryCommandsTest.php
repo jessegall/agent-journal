@@ -111,16 +111,16 @@ final class MemoryCommandsTest extends TestCase
         $this->artisan('memory:save', ['text' => self::MEMORY_TEXT])->assertExitCode(0);
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
 
-        $notYours = "Memory {$memory->id} does not exist or is not available to you.";
+        $ofAnotherActor = "Memory {$memory->id} does not exist or is not available to you.";
         $edit = ['memory_id' => $memory->id, 'revision' => 1, 'text' => 'Taken.', 'weight' => null];
 
         $this->signed($this->other, '/agent/memory/edit', [...$edit, 'request_key' => bin2hex(random_bytes(8))])
-            ->assertJsonPath('message', $notYours);
+            ->assertJsonPath('message', $ofAnotherActor);
 
         $this->signed($this->other, '/agent/memory/remove', [
             'memory_id' => $memory->id,
             'request_key' => bin2hex(random_bytes(8)),
-        ])->assertJsonPath('message', $notYours);
+        ])->assertJsonPath('message', $ofAnotherActor);
 
         $this->signed($this->other, '/agent/memory/list', [])->assertJsonPath('memories', []);
         $this->assertSame(self::MEMORY_TEXT, $memory->refresh()->text);

@@ -4,14 +4,28 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\ContextStartType;
 use App\Events\ContextStarted;
 use App\Events\LaunchEnded;
 use App\Support\ContextReminders;
+use App\Support\Decisions\ContextLine;
+use App\Support\Inputs\ContextCompacted;
+use App\Support\Inputs\SessionStarted;
+use App\Support\Inputs\Values\CompactionDetails;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\Inputs\Values\SessionStartDetails;
+use App\Support\Stack\RegisteredStateFactory;
 use App\Values\StackTarget;
-use Domain\Helpers\Listeners\SupplyHelperContext;
+use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Events\HelperJobHeld;
+use Domain\Helpers\Events\HelperJobSteered;
+use Domain\Helpers\Listeners\SupplyHelperNotices;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Models\HelperPurpose;
+use Domain\Helpers\Support\States\HelperJobState;
+use Domain\Helpers\Support\States\Support\HelperJobStateReference;
 use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
@@ -21,8 +35,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A helper is given its whole job context every time its context starts, and a parent the notices about its
- * helpers' jobs once each.
+ * A started helper job attaches to its session, its state gives the helper the whole job context every time its
+ * context starts and ends with the job, and a parent is told the notices about its helpers' jobs once each.
  */
 #[TimeLimit(seconds: 6, reason: 'It activates profiles and starts agent sessions for a dispatch.')]
 final class HelperContextTest extends TestCase
@@ -40,20 +54,49 @@ final class HelperContextTest extends TestCase
 
     private const string CONTINUE_CALL = "helpers_continue with identity_id '%s'";
 
+    public function test_a_started_helper_job_attaches_to_its_session_and_runs(): void
+    {
+        $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE, self::PHASE_BRIEF);
+
+        $this->assertSame(JobState::Running, HelperJob::query()->acrossActors()->findOrFail($receipt->jobId)->state);
+    }
+
     public function test_a_helper_gets_its_brief_and_steering_again_after_a_compaction(): void
     {
         $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE, self::PHASE_BRIEF);
-        HelperJob::query()->findOrFail($receipt->jobId)->addSteering(self::STEERING);
+        $job = HelperJob::query()->acrossActors()->findOrFail($receipt->jobId);
+        $state = $this->jobStateOf($receipt, $job);
+        $job->addSteering(self::STEERING);
+        $state->onHelperJobSteered(new HelperJobSteered($job->id, self::STEERING));
+        $hook = new HookIdentity('agent', 'session', 'hook', 'digest');
 
-        $started = $this->remindersOn($this->helperAgentOf($receipt), ContextStartType::Start);
-        $compacted = $this->remindersOn($this->helperAgentOf($receipt), ContextStartType::Compact);
+        $start = new SessionStartDetails('vendor', ContextStartType::Start, null);
+        $started = $state->onSessionStart(new SessionStarted($hook, $start));
+        $compacted = $state->onCompaction(new ContextCompacted($hook, new CompactionDetails('compaction')));
 
-        foreach ([$started, $compacted] as $reminders) {
-            $context = implode("\n", $reminders);
+        foreach ([$started, $compacted] as $lines) {
+            $context = implode("\n", array_map(
+                fn (ContextLine $line) => $this->app->make(AgentTexts::class)->render($line->text),
+                $lines,
+            ));
+
             $this->assertSame(1, substr_count($context, self::PHASE_BRIEF));
             $this->assertStringContainsString(sprintf(self::STEERING_REMINDER, self::STEERING), $context);
             $this->assertStringContainsString(self::REVIEW_TITLE, $context);
         }
+    }
+
+    public function test_a_helper_job_state_ends_when_its_job_is_held(): void
+    {
+        $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE, self::PHASE_BRIEF);
+        $job = HelperJob::query()->acrossActors()->findOrFail($receipt->jobId);
+        $state = $this->jobStateOf($receipt, $job);
+
+        $state->onHelperJobHeld(new HelperJobHeld('another-job'));
+        $this->assertFalse($state->isFinished());
+
+        $state->onHelperJobHeld(new HelperJobHeld($job->id));
+        $this->assertTrue($state->isFinished());
     }
 
     public function test_a_parent_sees_the_notice_of_a_lost_helper_once(): void
@@ -77,7 +120,7 @@ final class HelperContextTest extends TestCase
     {
         $reminders = $this->app->make(ContextReminders::class);
 
-        $this->app->make(SupplyHelperContext::class)->handle(new ContextStarted(
+        $this->app->make(SupplyHelperNotices::class)->handle(new ContextStarted(
             new StackTarget($agentId, (string) Str::ulid()),
             'hook-'.Str::random(8),
             $type,
@@ -87,8 +130,14 @@ final class HelperContextTest extends TestCase
         return $reminders->all();
     }
 
-    private function helperAgentOf(HelperReceipt $receipt): string
+    private function jobStateOf(HelperReceipt $receipt, HelperJob $job): HelperJobState
     {
-        return HelperIdentity::query()->findOrFail($receipt->identityId)->helper_actor_id;
+        $identity = HelperIdentity::query()->acrossActors()->findOrFail($receipt->identityId);
+        $purpose = HelperPurpose::query()->acrossActors()->findOrFail($job->helper_purpose_id);
+        $reference = HelperJobStateReference::forJob($job, $identity, $purpose->label);
+        $state = $this->app->make(RegisteredStateFactory::class)->frameFor($reference)->state;
+        $this->assertInstanceOf(HelperJobState::class, $state);
+
+        return $state;
     }
 }

@@ -7,11 +7,11 @@ namespace App\Exceptions;
 use InvalidArgumentException;
 
 /**
- * A path inside a place that could reach outside it: it climbs with '..', starts at the root, or holds a NUL byte.
+ * A path inside a place that could reach outside it: it escapesItsRoot with '..', starts at the root, or holds a NUL byte.
  */
 final class FilePathInvalid extends InvalidArgumentException
 {
-    public static function climbs(string $relative): self
+    public static function escapesItsRoot(string $relative): self
     {
         return new self(
             "The path {$relative} leaves its place: name a path inside the place, without '..' or a leading '/'.",

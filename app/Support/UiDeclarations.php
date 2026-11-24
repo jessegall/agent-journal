@@ -318,7 +318,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
     public function childrenOf(RegisteredNavigation $parent, array $navigationItems): array
     {
         foreach ($navigationItems as $navigationItem) {
-            if ($navigationItem->group !== null || $navigationItem->atFoot) {
+            if ($navigationItem->group !== null || $navigationItem->atBottom) {
                 throw InvalidNavigationDeclaration::rootOnlyOnChild($parent->key, $navigationItem->key);
             }
         }

@@ -15,7 +15,7 @@ use App\Enums\TransportProfileType;
 use App\Events\ProcessStartCancelled;
 use App\Events\ProcessStartClaimed;
 use App\Events\ProcessStartOutputAdvanced;
-use App\Events\ProcessStartRunning;
+use App\Events\ProcessStartSeenRunning;
 use App\Events\ProcessStartStopped;
 use App\Events\StartRefused;
 use App\Exceptions\ProcessStartUnknown;
@@ -315,7 +315,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         $this->state = ProcessStartState::Running;
         $this->execution_id = $executionId;
         $this->save();
-        $this->raise(new ProcessStartRunning($this->id, $executionId));
+        $this->raise(new ProcessStartSeenRunning($this->id, $executionId));
 
         return true;
     }

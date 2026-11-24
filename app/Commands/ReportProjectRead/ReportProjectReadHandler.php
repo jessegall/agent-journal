@@ -26,7 +26,7 @@ final readonly class ReportProjectReadHandler implements CommandHandler
         $read = ProjectRead::lockById($command->readId);
 
         if (! $read->isOfHost($command->hostId)) {
-            throw ProjectReadRefused::notYours($read->id);
+            throw ProjectReadRefused::ofAnotherActor($read->id);
         }
 
         if ($read->isExpired()) {

@@ -24,7 +24,6 @@ return [
     'AgentRuntime::claimStartGrant',
     'AgentRuntime::recomputeRequestedSettings',
     'AgentRuntime::reassignTo',
-    'AgentRuntime::requestModel',
     'StartToken::issueFor',
     'StartToken::rotateTo',
     'StartToken::revokeAt',

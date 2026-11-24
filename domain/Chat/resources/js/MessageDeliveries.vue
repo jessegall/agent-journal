@@ -58,7 +58,7 @@ function retry(delivery: DeliveryData): void {
       'text-right text-meta leading-[15px] text-text-4 tabular-nums',
       isLatest
         ? ''
-        : 'pointer-events-none absolute top-[calc(100%+3px)] right-0 whitespace-nowrap opacity-0 transition-opacity duration-(--duration-hover) group-focus-within/mine:opacity-100 group-hover/mine:opacity-100',
+        : 'pointer-events-none absolute top-[calc(100%+3px)] right-0 whitespace-nowrap opacity-0 transition-opacity duration-(--duration-hover) group-focus-within/own:opacity-100 group-hover/own:opacity-100',
     ]"
   >
     Delivered

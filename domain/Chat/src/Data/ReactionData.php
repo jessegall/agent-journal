@@ -16,6 +16,6 @@ final class ReactionData extends Data
     public function __construct(
         public readonly string $emoji,
         public readonly int $count,
-        public readonly bool $isMine,
+        public readonly bool $isOwn,
     ) {}
 }

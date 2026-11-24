@@ -21,12 +21,12 @@ use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
 use App\Events\DriverRequestAccepted;
 use App\Events\DriverRequestApplied;
-use App\Events\DriverRequestApplying;
+use App\Events\DriverRequestAttemptStarted;
 use App\Events\DriverRequestHeld;
-use App\Events\DriverRequestPossibleDuplicate;
 use App\Events\DriverRequestRetried;
 use App\Events\DriverRequestScriptProgressed;
 use App\Events\DriverRequestStaged;
+use App\Events\DriverRequestSuspectedDuplicate;
 use App\Events\DriverRequestWakeAcknowledged;
 use App\Events\DriverRequestWakeClaimed;
 use App\Exceptions\NavigationRaiseRefused;
@@ -203,7 +203,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         $this->moveTo(RequestProgress::Applying);
         $this->attempt_version = $attempt;
         $this->assertSaved($this->save());
-        $this->raise(new DriverRequestApplying($this->id, $attempt));
+        $this->raise(new DriverRequestAttemptStarted($this->id, $attempt));
     }
 
     public function markApplied(string $actualBinding, RequestOutcome|null $outcome = null): void
@@ -241,7 +241,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     {
         $this->possible_duplicate_of_id = $original->id;
         $this->assertSaved($this->save());
-        $this->raise(new DriverRequestPossibleDuplicate($this->id, $original->id));
+        $this->raise(new DriverRequestSuspectedDuplicate($this->id, $original->id));
     }
 
     public function hold(HoldReason $reason): void

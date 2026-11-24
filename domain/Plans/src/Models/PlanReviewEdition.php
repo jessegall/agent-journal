@@ -14,7 +14,7 @@ use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Events\PlanReviewEditionApproved;
 use Domain\Plans\Events\PlanReviewEditionChangesRequested;
-use Domain\Plans\Events\PlanReviewEditionHistorical;
+use Domain\Plans\Events\PlanReviewEditionOutdated;
 use Domain\Plans\Events\PlanReviewEditionWithdrawn;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -174,7 +174,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     {
         $this->is_historical = true;
         $this->assertSaved($this->save());
-        $this->raise(new PlanReviewEditionHistorical($this->id));
+        $this->raise(new PlanReviewEditionOutdated($this->id));
     }
 
     // ----------[ Internals ]----------

@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Mcp\Contracts\Continuations;
-use App\Mcp\Exceptions\ToolArgumentInvalid;
-use App\Mcp\Support\Continuation;
-use App\Mcp\Support\DeclaredSearch;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use Domain\Plans\Models\Plan;
@@ -69,30 +65,5 @@ final class SearchToolTest extends TestCase
 
             $this->assertContains($id, array_map(fn (array $hit): string => $hit['reference']['id'], $hits), $within);
         }
-    }
-
-    public function test_the_retired_types_argument_names_the_current_arguments(): void
-    {
-        $caller = TestStart::start();
-
-        $answer = $this->callMcpTool($caller, 'search', ['query' => 'runway', 'types' => ['tasks.task']])
-            ->assertJsonPath('result.isError', true)
-            ->json('result.structuredContent');
-        $refusal = ToolArgumentInvalid::for('types', DeclaredSearch::CURRENT_ARGUMENTS)->getMessage();
-
-        $this->assertSame($refusal, $answer['message']);
-    }
-
-    public function test_a_cursor_of_the_old_contract_answers_restart(): void
-    {
-        $caller = TestStart::start();
-        $caller->startRequest($this->app);
-        $old = $this->app->make(Continuations::class)->issue(
-            new Continuation('search', '', ['query' => 'runway', 'types' => ['tasks.task']], 2),
-        );
-
-        $this->callMcpTool($caller, 'search', ['continuation' => $old])
-            ->assertJsonPath('result.isError', false)
-            ->assertJsonPath('result.structuredContent.search_status', 'restart');
     }
 }

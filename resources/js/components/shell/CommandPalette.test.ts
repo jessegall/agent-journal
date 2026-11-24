@@ -10,9 +10,9 @@ const page = reactive({
         name: 'Journal',
         navigation: {
             items: [
-                { key: 'home', label: 'Home', url: '/', children: [], atFoot: false, counted: false, inSidebar: true },
-                { key: 'plans', label: 'Plans', url: '/plans', children: [], atFoot: false, counted: false, inSidebar: true },
-                { key: 'rules', label: 'Rules', url: '/rules', children: [], atFoot: false, counted: false, inSidebar: false },
+                { key: 'home', label: 'Home', url: '/', children: [], atBottom: false, counted: false, inSidebar: true },
+                { key: 'plans', label: 'Plans', url: '/plans', children: [], atBottom: false, counted: false, inSidebar: true },
+                { key: 'rules', label: 'Rules', url: '/rules', children: [], atBottom: false, counted: false, inSidebar: false },
             ],
             groups: [],
             current: [],

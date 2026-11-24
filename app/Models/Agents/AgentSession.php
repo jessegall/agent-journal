@@ -17,7 +17,7 @@ use App\Enums\WorkspaceUse;
 use App\Events\AgentSessionConversationEntered;
 use App\Events\AgentSessionDriverLabelKept;
 use App\Events\AgentSessionEnded;
-use App\Events\AgentSessionHeartbeat;
+use App\Events\AgentSessionHeartbeatRecorded;
 use App\Events\AgentSessionSelectionUsed;
 use App\Events\AgentSessionSkillsGenerated;
 use App\Exceptions\SessionSelectionFixed;
@@ -369,7 +369,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
         $this->silent_since = null;
         $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
         $this->assertSaved($this->save());
-        $this->raise(new AgentSessionHeartbeat($this->id));
+        $this->raise(new AgentSessionHeartbeatRecorded($this->id));
     }
 
     // ----------[ Answers ]----------

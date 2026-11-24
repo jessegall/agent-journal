@@ -20,7 +20,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<null>
  */
 #[Authorize(TaskPolicy::class, AccessType::Admin)]
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[RequiresRequestKey(retentionDays: 31, refusalDays: 365)]
 final readonly class WaiveTaskWaitCommand extends Command
 {
     public function __construct(

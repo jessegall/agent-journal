@@ -14,7 +14,7 @@ use RuntimeException;
  */
 final class RunOutcomeAccessRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    public static function notYours(string $runId): self
+    public static function ofAnotherActor(string $runId): self
     {
         return new self("Only the actor run {$runId} belongs to may take back who hears of its outcome.");
     }

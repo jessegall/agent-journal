@@ -27,7 +27,7 @@ final class CommandRequestProveTool extends JournalWriteTool
 {
     public const string NAME = 'command_requests_prove';
 
-    private const int MOST_RUNS = 20;
+    private const int RUN_LIMIT = 20;
 
     protected function writeSchema(JsonSchema $schema): array
     {
@@ -37,7 +37,7 @@ final class CommandRequestProveTool extends JournalWriteTool
             'runs' => $schema->array()
                 ->items($this->optionalRecordIdArgument($schema))
                 ->min(1)
-                ->max(self::MOST_RUNS)
+                ->max(self::RUN_LIMIT)
                 ->required(),
         ];
     }

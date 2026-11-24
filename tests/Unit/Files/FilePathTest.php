@@ -30,7 +30,7 @@ final class FilePathTest extends TestCase
     #[DataProvider('climbingPaths')]
     public function test_a_path_that_climbs_out_of_its_place_is_refused_by_name(string $relative): void
     {
-        $this->expectExceptionObject(FilePathInvalid::climbs($relative));
+        $this->expectExceptionObject(FilePathInvalid::escapesItsRoot($relative));
 
         FilePath::in(Place::Project, $relative);
     }
@@ -59,7 +59,7 @@ final class FilePathTest extends TestCase
 
     public function test_a_child_name_from_the_root_is_refused(): void
     {
-        $this->expectExceptionObject(FilePathInvalid::climbs('/etc/passwd'));
+        $this->expectExceptionObject(FilePathInvalid::escapesItsRoot('/etc/passwd'));
 
         FilePath::in(Place::Project, 'app')->child('/etc/passwd');
     }

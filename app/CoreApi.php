@@ -747,6 +747,7 @@ use App\Events\MessageSent;
 use App\Events\RunChanged;
 use App\Events\SessionClosed;
 use App\Events\ShareActivated;
+use App\Events\StartSessionOpened;
 use App\Events\StateTypesRequested;
 use App\Exceptions\AccessPolicyInvalid;
 use App\Exceptions\AccountContainerUnsupported;
@@ -1543,6 +1544,7 @@ final class CoreApi
             ->events(
                 MessageSent::class,
                 ContextStarted::class,
+                StartSessionOpened::class,
                 HelperCompletionCertified::class,
                 HelperSentOnRecord::class,
                 HelperReportedOnRecord::class,

@@ -14,6 +14,7 @@ use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Readers\SessionInspections;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Values\ProfileKey;
+use App\Values\SettledStopAttempts;
 use App\Values\StartPolicy;
 use App\Values\StopCondition;
 use App\Values\StopConditions;
@@ -85,7 +86,7 @@ final class SessionInspectionTest extends TestCase
     {
         $writer->startRequest($this->app);
         $hook = new HookIdentity($writer->agent->id, $writer->session->id, 'stop-1', 'digest');
-        $this->app->make(StopConditionGate::class)->answer($hook);
+        $this->app->make(StopConditionGate::class)->answer($hook, new SettledStopAttempts([]));
         $attempt = StopAttempt::query()->withoutGlobalScopes()->where('stop_id', 'stop-1')->sole();
         $condition = StopCondition::cleanWorktree();
 

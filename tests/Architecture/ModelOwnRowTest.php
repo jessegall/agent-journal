@@ -14,7 +14,7 @@ use Tests\TestCase;
 
 /**
  * A model method writes only its own row: every write of a model, its traits and helpers outside that row
- * is either on the frozen list of its area, tests/Architecture/FormerPaths/ModelWrites, or the test fails; a listed method
+ * is either on the frozen list of its area, tests/Architecture/FrozenModelWrites, or the test fails; a listed method
  * that writes only its own row fails it too, so the lists only shrink.
  */
 #[TimeLimit(seconds: 30, reason: 'It parses every model file of app and the domains.')]

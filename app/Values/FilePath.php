@@ -23,7 +23,7 @@ final readonly class FilePath
         $segments = explode('/', $relative);
 
         if (str_starts_with($relative, '/') || in_array('..', $segments, true)) {
-            throw FilePathInvalid::climbs($relative);
+            throw FilePathInvalid::escapesItsRoot($relative);
         }
 
         $named = array_filter($segments, fn (string $segment) => $segment !== '' && $segment !== '.');
@@ -34,7 +34,7 @@ final readonly class FilePath
     public function child(string $name): self
     {
         if (str_starts_with($name, '/')) {
-            throw FilePathInvalid::climbs($name);
+            throw FilePathInvalid::escapesItsRoot($name);
         }
 
         return self::in($this->place, $this->relative === '' ? $name : "{$this->relative}/{$name}");
@@ -46,7 +46,7 @@ final readonly class FilePath
     public function parent(): self
     {
         if ($this->relative === '') {
-            throw FilePathInvalid::climbs('..');
+            throw FilePathInvalid::escapesItsRoot('..');
         }
 
         $folder = dirname($this->relative);

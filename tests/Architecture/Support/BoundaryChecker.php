@@ -346,17 +346,8 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && ! self::isDomainFoundation($name) && self::isDeclared($name)
+        return stripos($name, 'App\\') === 0 && self::isDeclared($name)
             && ! $this->coreExports->has($name);
-    }
-
-    /**
-     * The domain foundation every package builds on, the classes that left app/Domains: the Domain base,
-     * its registry and entries, bootstrappers and their contracts. A package may name them as it did before.
-     */
-    private static function isDomainFoundation(string $name): bool
-    {
-        return FormerPaths::classWasIn($name, ['app/Domains/']);
     }
 
     /**
@@ -376,7 +367,7 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && ! self::isDomainFoundation($name) && Reflector::find($name)
+        return stripos($name, 'App\\') === 0 && Reflector::find($name)
             ->filter(fn (Reflector $type) => $type->isSubclassOf(Event::class) && $type->isInstantiable())
             ->isDefined();
     }

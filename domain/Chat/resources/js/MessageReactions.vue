@@ -26,8 +26,8 @@ function toggle(emoji: string): void {
         <ChipButton
           size="sm"
           :count="reaction.count"
-          :pressed="reaction.isMine"
-          :mine="reaction.isMine"
+          :pressed="reaction.isOwn"
+          :own="reaction.isOwn"
           :aria-label="`${reaction.emoji} ${reaction.count}`"
           @click="toggle(reaction.emoji)"
         >

@@ -163,7 +163,7 @@ final class Reflector implements ReflectedType
      */
     public static function propertiesMatch(object $first, object $second, array $leftOut = []): bool
     {
-        $theirs = self::of($second);
+        $secondClass = self::of($second);
 
         foreach (self::of($first)->properties() as $property) {
             $name = $property->name();
@@ -172,13 +172,13 @@ final class Reflector implements ReflectedType
                 continue;
             }
 
-            if (! $theirs->hasProperty($name) || ! $theirs->property($name)->isPublic()) {
+            if (! $secondClass->hasProperty($name) || ! $secondClass->property($name)->isPublic()) {
                 continue;
             }
 
             if (! self::valuesMatch(
                 $property->readFrom($first),
-                $theirs->property($name)->readFrom($second),
+                $secondClass->property($name)->readFrom($second),
                 self::leftOutBelow($leftOut, $name),
             )) {
                 return false;
@@ -642,13 +642,13 @@ final class Reflector implements ReflectedType
     /**
      * @param  list<string>  $leftOut  the left-out paths inside these values
      */
-    private static function valuesMatch(mixed $mine, mixed $theirs, array $leftOut): bool
+    private static function valuesMatch(mixed $first, mixed $second, array $leftOut): bool
     {
-        if (is_object($mine) && is_object($theirs) && ! $mine instanceof UnitEnum) {
-            return $leftOut === [] ? $mine == $theirs : self::propertiesMatch($mine, $theirs, $leftOut);
+        if (is_object($first) && is_object($second) && ! $first instanceof UnitEnum) {
+            return $leftOut === [] ? $first == $second : self::propertiesMatch($first, $second, $leftOut);
         }
 
-        return $mine === $theirs;
+        return $first === $second;
     }
 
     /**

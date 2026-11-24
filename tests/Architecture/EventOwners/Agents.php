@@ -13,24 +13,23 @@ use App\Events\ActivityRecorded;
 use App\Events\AgentHoldReleased;
 use App\Events\AgentRetired;
 use App\Events\AgentRuntimeAdopted;
-use App\Events\AgentRuntimeBegun;
 use App\Events\AgentRuntimeClosed;
 use App\Events\AgentRuntimeConfirmedAlive;
 use App\Events\AgentRuntimeHeld;
 use App\Events\AgentRuntimeHostChanged;
-use App\Events\AgentRuntimeModelRequested;
 use App\Events\AgentRuntimeObserved;
 use App\Events\AgentRuntimeReassigned;
 use App\Events\AgentRuntimeRequestedSettingsRecomputed;
 use App\Events\AgentRuntimeSettingsObserved;
 use App\Events\AgentRuntimesFenced;
+use App\Events\AgentRuntimeStarted;
 use App\Events\AgentRuntimeStartGrantClaimed;
 use App\Events\AgentRuntimeStartGrantHeld;
-use App\Events\AgentRuntimeStopping;
+use App\Events\AgentRuntimeStopRequested;
 use App\Events\AgentSessionConversationEntered;
 use App\Events\AgentSessionDriverLabelKept;
 use App\Events\AgentSessionEnded;
-use App\Events\AgentSessionHeartbeat;
+use App\Events\AgentSessionHeartbeatRecorded;
 use App\Events\AgentSessionSelectionUsed;
 use App\Events\AgentSessionSkillsGenerated;
 use App\Events\AgentVariantPreferred;
@@ -40,13 +39,13 @@ use App\Events\DriverBuildsApproved;
 use App\Events\DriverFailed;
 use App\Events\DriverRequestAccepted;
 use App\Events\DriverRequestApplied;
-use App\Events\DriverRequestApplying;
+use App\Events\DriverRequestAttemptStarted;
 use App\Events\DriverRequestHeld;
-use App\Events\DriverRequestPossibleDuplicate;
 use App\Events\DriverRequestRecovered;
 use App\Events\DriverRequestRetried;
 use App\Events\DriverRequestScriptProgressed;
 use App\Events\DriverRequestStaged;
+use App\Events\DriverRequestSuspectedDuplicate;
 use App\Events\DriverRequestWakeAcknowledged;
 use App\Events\DriverRequestWakeClaimed;
 use App\Events\DriverSwitchCancelled;
@@ -54,9 +53,9 @@ use App\Events\DriverSwitchConfirmed;
 use App\Events\DriverSwitchLaunchFailed;
 use App\Events\DriverSwitchPreflighted;
 use App\Events\DriverSwitchRefused;
-use App\Events\DriverSwitchStartBegun;
-use App\Events\DriverSwitchStopBegun;
+use App\Events\DriverSwitchStartRequested;
 use App\Events\DriverSwitchStopped;
+use App\Events\DriverSwitchStopRequested;
 use App\Events\DriverTurnFinished;
 use App\Events\LaunchCancelled;
 use App\Events\LaunchEnded;
@@ -69,7 +68,7 @@ use App\Events\MergeOutcomeRecorded;
 use App\Events\ProcessStartCancelled;
 use App\Events\ProcessStartClaimed;
 use App\Events\ProcessStartOutputAdvanced;
-use App\Events\ProcessStartRunning;
+use App\Events\ProcessStartSeenRunning;
 use App\Events\ProcessStartStopped;
 use App\Events\RevisionFenceReconciled;
 use App\Events\SessionClosed;
@@ -77,14 +76,14 @@ use App\Events\SessionOpened;
 use App\Events\SessionStateChanged;
 use App\Events\StartAccepted;
 use App\Events\StartGrantRequested;
+use App\Events\StartIdentityBecameUncertain;
 use App\Events\StartIdentityBound;
 use App\Events\StartIdentityPrepared;
-use App\Events\StartIdentityUncertain;
 use App\Events\StartIntentForgotten;
 use App\Events\StartRecordRefused;
 use App\Events\StartRefused;
+use App\Events\StartSessionOpened;
 use App\Events\StartSettingsRequested;
-use App\Events\StartStartedAs;
 use App\Events\StartTokenIssued;
 use App\Events\StartTokenRevoked;
 use App\Events\StartTokenRotated;
@@ -92,16 +91,18 @@ use App\Events\StartUnavailable;
 use App\Events\StartVerificationCancelled;
 use App\Events\StopAttemptCertified;
 use App\Events\StopAttemptSettled;
+use App\Events\TerminalGrantGivenBack;
 use App\Events\TerminalGrantIssued;
 use App\Events\TerminalGrantRefused;
 use App\Events\TerminalGrantReleased;
-use App\Events\TerminalGrantReleasing;
 use App\Events\TerminalGrantRenewed;
 use App\Events\TerminalGrantRetired;
 use App\Events\TerminalGrantSequenceTaken;
 use App\Events\TerminalTakeSent;
 use App\Events\TerminalViewClosed;
 use App\Events\TerminalViewFollowed;
+use App\Support\RecordIdentity;
+use Illuminate\Support\Str;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -280,19 +281,19 @@ return [
         'producers' => [],
         'sample' => fn () => new DriverSwitchRefused('switch', 'the build is missing'),
     ],
-    DriverSwitchStopBegun::class => [
+    DriverSwitchStopRequested::class => [
         'role' => EventRole::RowFact,
         'owner' => 'DriverSwitch::beginStopping',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new DriverSwitchStopBegun('switch'),
+        'sample' => fn () => new DriverSwitchStopRequested('switch'),
     ],
-    DriverSwitchStartBegun::class => [
+    DriverSwitchStartRequested::class => [
         'role' => EventRole::RowFact,
         'owner' => 'DriverSwitch::beginStarting',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new DriverSwitchStartBegun('switch', 'session'),
+        'sample' => fn () => new DriverSwitchStartRequested('switch', 'session'),
     ],
     DriverSwitchConfirmed::class => [
         'role' => EventRole::RowFact,
@@ -322,12 +323,12 @@ return [
         'producers' => [],
         'sample' => fn () => new ProcessStartOutputAdvanced('start', 2),
     ],
-    ProcessStartRunning::class => [
+    ProcessStartSeenRunning::class => [
         'role' => EventRole::RowFact,
         'owner' => 'ProcessStart::recordRunning',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProcessStartRunning('start', 'execution'),
+        'sample' => fn () => new ProcessStartSeenRunning('start', 'execution'),
     ],
     ProcessStartStopped::class => [
         'role' => EventRole::RowFact,
@@ -378,12 +379,12 @@ return [
         'producers' => [],
         'sample' => fn () => new AgentRetired('agent'),
     ],
-    AgentRuntimeStopping::class => [
+    AgentRuntimeStopRequested::class => [
         'role' => EventRole::RowFact,
         'owner' => 'AgentRuntime::markStopping',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AgentRuntimeStopping('runtime'),
+        'sample' => fn () => new AgentRuntimeStopRequested('runtime'),
     ],
     AgentRuntimeHeld::class => [
         'role' => EventRole::RowFact,
@@ -399,12 +400,12 @@ return [
         'producers' => [],
         'sample' => fn () => new AgentRuntimeClosed('runtime'),
     ],
-    AgentRuntimeBegun::class => [
+    AgentRuntimeStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'AgentRuntime::begin',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AgentRuntimeBegun('runtime'),
+        'sample' => fn () => new AgentRuntimeStarted('runtime'),
     ],
     AgentRuntimeConfirmedAlive::class => [
         'role' => EventRole::RowFact,
@@ -454,13 +455,6 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new AgentRuntimeHostChanged('runtime', 'host', 2),
-    ],
-    AgentRuntimeModelRequested::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'AgentRuntime::requestModel',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new AgentRuntimeModelRequested('runtime', 'model'),
     ],
     StartTokenIssued::class => [
         'role' => EventRole::RowFact,
@@ -553,12 +547,12 @@ return [
         'producers' => [],
         'sample' => fn () => new TerminalGrantRenewed('grant'),
     ],
-    TerminalGrantReleasing::class => [
+    TerminalGrantGivenBack::class => [
         'role' => EventRole::RowFact,
         'owner' => 'TerminalGrant::release',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TerminalGrantReleasing('grant', 'request'),
+        'sample' => fn () => new TerminalGrantGivenBack('grant', 'request'),
     ],
     TerminalGrantReleased::class => [
         'role' => EventRole::RowFact,
@@ -644,12 +638,12 @@ return [
         'producers' => [],
         'sample' => fn () => new AgentSessionEnded('session'),
     ],
-    AgentSessionHeartbeat::class => [
+    AgentSessionHeartbeatRecorded::class => [
         'role' => EventRole::RowFact,
         'owner' => 'AgentSession::recordHeartbeatAt',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AgentSessionHeartbeat('session'),
+        'sample' => fn () => new AgentSessionHeartbeatRecorded('session'),
     ],
     StartIdentityPrepared::class => [
         'role' => EventRole::RowFact,
@@ -665,12 +659,12 @@ return [
         'producers' => [],
         'sample' => fn () => new StartIdentityBound('start', 'native'),
     ],
-    StartIdentityUncertain::class => [
+    StartIdentityBecameUncertain::class => [
         'role' => EventRole::RowFact,
         'owner' => 'StartRecord::markIdentityUncertain',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StartIdentityUncertain('start'),
+        'sample' => fn () => new StartIdentityBecameUncertain('start'),
     ],
     StartVerificationCancelled::class => [
         'role' => EventRole::RowFact,
@@ -679,12 +673,12 @@ return [
         'producers' => [],
         'sample' => fn () => new StartVerificationCancelled('start'),
     ],
-    StartStartedAs::class => [
+    StartSessionOpened::class => [
         'role' => EventRole::RowFact,
         'owner' => 'StartRecord::startedAs',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StartStartedAs('start', 'session'),
+        'sample' => fn () => new StartSessionOpened('start', 'agent', 'session', new RecordIdentity('helpers.job', (string) Str::ulid())),
     ],
     StartRecordRefused::class => [
         'role' => EventRole::RowFact,
@@ -705,7 +699,7 @@ return [
         'owner' => 'StopAttempt::settle',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StopAttemptSettled('attempt', StopAttemptState::cases()[0]),
+        'sample' => fn () => new StopAttemptSettled('attempt', StopAttemptState::cases()[0], 'outcome'),
     ],
     StopAttemptCertified::class => [
         'role' => EventRole::RowFact,
@@ -735,12 +729,12 @@ return [
         'producers' => [],
         'sample' => fn () => new DriverRequestStaged('request'),
     ],
-    DriverRequestApplying::class => [
+    DriverRequestAttemptStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'DriverRequest::beginApplying',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new DriverRequestApplying('request', 1),
+        'sample' => fn () => new DriverRequestAttemptStarted('request', 1),
     ],
     DriverRequestApplied::class => [
         'role' => EventRole::RowFact,
@@ -756,12 +750,12 @@ return [
         'producers' => [],
         'sample' => fn () => new DriverRequestRetried('request'),
     ],
-    DriverRequestPossibleDuplicate::class => [
+    DriverRequestSuspectedDuplicate::class => [
         'role' => EventRole::RowFact,
         'owner' => 'DriverRequest::markPossibleDuplicateOf',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new DriverRequestPossibleDuplicate('request', 'original'),
+        'sample' => fn () => new DriverRequestSuspectedDuplicate('request', 'original'),
     ],
     DriverRequestHeld::class => [
         'role' => EventRole::RowFact,

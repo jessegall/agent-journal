@@ -23,12 +23,12 @@ use App\Enums\StartPreflightRefusal;
 use App\Enums\StartReadiness;
 use App\Enums\StartRefusalType;
 use App\Enums\StartUnavailableReason;
+use App\Events\StartIdentityBecameUncertain;
 use App\Events\StartIdentityBound;
 use App\Events\StartIdentityPrepared;
-use App\Events\StartIdentityUncertain;
 use App\Events\StartIntentForgotten;
 use App\Events\StartRecordRefused;
-use App\Events\StartStartedAs;
+use App\Events\StartSessionOpened;
 use App\Events\StartVerificationCancelled;
 use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRequestConflict;
@@ -383,7 +383,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     {
         $this->readiness = StartReadiness::Uncertain;
         $this->assertSaved($this->save());
-        $this->raise(new StartIdentityUncertain($this->id));
+        $this->raise(new StartIdentityBecameUncertain($this->id));
     }
 
     /**
@@ -418,7 +418,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         $this->session_id = $session->id;
         $this->disposition = StartDisposition::Started;
         $this->assertSaved($this->save());
-        $this->raise(new StartStartedAs($this->id, $session->id));
+        $this->raise(new StartSessionOpened($this->id, $this->agent_id, $session->id, $this->ownerWork));
     }
 
     /**

@@ -5,28 +5,34 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Architecture\Support\PrivatePlaceScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Only the area that owns a private place names it: the accounts belong to Profiles and Hooks, the sharing secrets
- * and tunnel folders to Sharing, the hook runtime folder to Hooks (story 64). The Files area itself is exempt.
+ * Only the subject that owns a private place names it: the accounts belong to accounts, profiles, sign-in, drivers and
+ * hooks, the sharing secrets and tunnel folders to sharing and its gateways, the hook runtime folder to hooks and the
+ * relay (story 64), and the file primitives behind the Files contract name every place.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app/ and the domains.')]
 final class PrivatePlaceOwnerTest extends TestCase
 {
     /**
-     * The folders, from the project root, that may name each private place; a moved file counts by its former path.
+     * The subject words of the file paths that may name each private place: accounts, their sign-in and the drivers
+     * that run in them; sharing and its gateways; hooks and the relay that runs them.
      */
     private const array OWNERS = [
-        'Accounts' => ['app/Profiles/', 'app/Hooks/'],
-        'SharingSecrets' => ['app/Sharing/'],
-        'SharingTunnels' => ['app/Sharing/'],
-        'HookRuntime' => ['app/Hooks/'],
+        'Accounts' => '#Account|Profile|Hook|SignIn|Driver#',
+        'SharingSecrets' => '#Shar(e|ing)|Gateway#',
+        'SharingTunnels' => '#Shar(e|ing)|Gateway#',
+        'HookRuntime' => '#Hook|Relay#',
     ];
+
+    /**
+     * The file primitives behind the Files contract, which name every place.
+     */
+    private const string FILE_PRIMITIVES = '#^app/(Support/(LocalFiles|PlaceRoots|PathConfinement)|Enums/Place)\.php$#';
 
     public function test_only_the_owner_of_a_private_place_names_it(): void
     {
@@ -80,9 +86,10 @@ final class PrivatePlaceOwnerTest extends TestCase
             $relative = substr($path, strlen($projectRoot) + 1);
 
             foreach ($found as $finding) {
-                $owners = [...self::OWNERS[$finding['place']], 'app/Files/'];
+                $owned = preg_match(self::OWNERS[$finding['place']], "/{$relative}") === 1
+                    || preg_match(self::FILE_PRIMITIVES, $relative) === 1;
 
-                if (! FormerPaths::wasIn($relative, $owners)) {
+                if (! $owned) {
                     $strangers[] = "{$relative}:{$finding['line']} names Place::{$finding['place']}";
                 }
             }

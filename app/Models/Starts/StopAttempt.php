@@ -174,14 +174,14 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Records that one submission of the host's results settled the attempt.
+     * Records that one submission of the host's results settled the attempt, with what its refusing conditions said.
      */
-    public function settle(StopAttemptState $state, string $submissionDigest): void
+    public function settle(StopAttemptState $state, string $submissionDigest, string $failureSummary): void
     {
         $this->state = $state;
         $this->submission_digest = $submissionDigest;
         $this->assertSaved($this->save());
-        $this->raise(new StopAttemptSettled($this->id, $state));
+        $this->raise(new StopAttemptSettled($this->id, $state, $this->outcomeOf($failureSummary)));
     }
 
     /**
@@ -217,6 +217,20 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
         ksort($definitionHashes);
 
         return $asked === $definitionHashes;
+    }
+
+    /**
+     * The attempt's outcome: the same for two attempts that settled alike, with the same failures under the same
+     * policy and workspace generation.
+     */
+    public function outcomeOf(string $failureSummary): string
+    {
+        return hash('sha256', implode("\n", [
+            $this->state->value,
+            $this->policy_digest,
+            (string) $this->workspace_generation,
+            $failureSummary,
+        ]));
     }
 
     public function isSettled(): bool

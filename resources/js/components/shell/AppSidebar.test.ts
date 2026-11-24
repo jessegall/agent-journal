@@ -33,7 +33,7 @@ const { default: AppSidebar } = await import('./AppSidebar.vue');
 function item(
     fields: Partial<NavigationItemData> & Pick<NavigationItemData, 'key' | 'label'>,
 ): NavigationItemData {
-    return { children: [], atFoot: false, counted: false, inSidebar: true, ...fields };
+    return { children: [], atBottom: false, counted: false, inSidebar: true, ...fields };
 }
 
 describe('the sidebar', () => {
@@ -53,7 +53,7 @@ describe('the sidebar', () => {
                 }),
                 item({ key: 'rules.list', label: 'Rules', url: '/rules', group: 'web.agents' }),
                 item({ key: 'other.list', label: 'Rules', url: '/other', group: 'other.agents' }),
-                item({ key: 'help.page', label: 'Help', url: '/help', atFoot: true }),
+                item({ key: 'help.page', label: 'Help', url: '/help', atBottom: true }),
             ],
             groups: [
                 { key: 'web.work', label: 'Work' },

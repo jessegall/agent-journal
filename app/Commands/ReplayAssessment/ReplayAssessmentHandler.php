@@ -35,7 +35,7 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
         $actor = ActorIdentity::of($command->dispatchedBy());
 
         if (! $this->administration->isGrantedToCaller() && ! $run->isByActor($actor)) {
-            throw ReplayRefused::notYours($part->id);
+            throw ReplayRefused::ofAnotherActor($part->id);
         }
 
         if ($run->mode !== RunMode::Normal) {

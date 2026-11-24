@@ -21,7 +21,7 @@ final class DraftConflict extends RuntimeException implements CodedRefusal, Comm
         );
     }
 
-    public static function notYours(): self
+    public static function ofAnotherActor(): self
     {
         return new self('This draft belongs to another editor or session; open your own draft.');
     }

@@ -6,7 +6,7 @@ namespace Domain\Tasks\Commands\LogTaskRun;
 
 use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
-use Domain\Tasks\Exceptions\TaskRunNotYours;
+use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Models\TaskRun;
@@ -16,7 +16,7 @@ final readonly class LogTaskRunHandler extends TaskCommandHandler
     /**
      * The new entry's id; a run that is not the task's current one is refused.
      *
-     * @throws TaskRunNotYours
+     * @throws TaskRunOfAnotherActor
      */
     public function handle(LogTaskRunCommand $command, Task $task): string
     {
@@ -24,7 +24,7 @@ final readonly class LogTaskRunHandler extends TaskCommandHandler
         $run = TaskRun::ofTask($task, $command->runNumber);
 
         if ($run === null) {
-            throw TaskRunNotYours::forRun($task->number, $command->runNumber);
+            throw TaskRunOfAnotherActor::forRun($task->number, $command->runNumber);
         }
 
         return TaskLogEntry::create($task, $run, ActorIdentity::of($command->dispatchedBy()), $command->text)->id;

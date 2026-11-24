@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DirectFileAccess;
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -19,22 +18,28 @@ final class DirectFileAccessTest extends TestCase
 {
     private const string HOW_TO_FIX = "Read, list, stat and write files through App\\Contracts\\Files\\Files:\n";
 
+    /**
+     * The Files area's code that touches the disk, behind the Files contract.
+     */
     private const array FILES_PRIMITIVES = [
+        'app/Enums/EntryType.php',
+        'app/Providers/FilesServiceProvider.php',
+        'app/Support/ClosedFolders.php',
         'app/Support/CodeFiles.php',
+        'app/Support/FileContents.php',
         'app/Support/FileWriter.php',
         'app/Support/FolderWalker.php',
         'app/Support/LocalFiles.php',
         'app/Support/PathConfinement.php',
         'app/Support/PlaceRoots.php',
+        'app/Values/Fingerprint.php',
     ];
 
     public function test_only_the_files_area_touches_the_disk(): void
     {
         $found = DirectFileAccess::across(base_path());
 
-        // The Files area's own files touch the disk: those that left app/Files in the move to Laravel's layout, and the primitives that
-        // already sat in app/Support by role.
-        foreach ([...FormerPaths::filesFrom(['app/Files/']), ...self::FILES_PRIMITIVES] as $primitive) {
+        foreach (self::FILES_PRIMITIVES as $primitive) {
             $found = $found->outside($primitive);
         }
 

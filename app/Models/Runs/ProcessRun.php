@@ -336,9 +336,9 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     }
 
     /**
-     * A user stops what survived a lost run; only a lost run has survivors to stop.
+     * A user stops the processes a lost run left running; only a lost run has leftover processes to stop.
      */
-    public function stopSurvivors(): void
+    public function stopLeftoverProcesses(): void
     {
         if ($this->lifecycle !== LifecycleState::Lost) {
             throw RetryRefused::notLost($this->id);

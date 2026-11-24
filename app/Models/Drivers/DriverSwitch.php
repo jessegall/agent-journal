@@ -17,9 +17,9 @@ use App\Events\DriverSwitchConfirmed;
 use App\Events\DriverSwitchLaunchFailed;
 use App\Events\DriverSwitchPreflighted;
 use App\Events\DriverSwitchRefused;
-use App\Events\DriverSwitchStartBegun;
-use App\Events\DriverSwitchStopBegun;
+use App\Events\DriverSwitchStartRequested;
 use App\Events\DriverSwitchStopped;
+use App\Events\DriverSwitchStopRequested;
 use App\Exceptions\DriverSwitchStageRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -194,7 +194,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     {
         $this->stop_boundary_sequence = $source?->observation_sequence;
         $this->moveTo(DriverSwitchStage::Stopping);
-        $this->raise(new DriverSwitchStopBegun($this->id));
+        $this->raise(new DriverSwitchStopRequested($this->id));
     }
 
     /**
@@ -213,7 +213,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     {
         $this->replacement_session_id = $sessionId;
         $this->moveTo(DriverSwitchStage::Starting);
-        $this->raise(new DriverSwitchStartBegun($this->id, $sessionId));
+        $this->raise(new DriverSwitchStartRequested($this->id, $sessionId));
     }
 
     public function confirm(): void

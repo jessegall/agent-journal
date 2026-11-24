@@ -307,7 +307,7 @@ final class RelayFrames
      */
     private function rememberNegotiatedVersion(Frame $frame, JsonRpcReplyData $answer): void
     {
-        if (! $frame->isLegacyInitialize() || $answer->result instanceof Optional) {
+        if (! $frame->negotiatesVersion() || $answer->result instanceof Optional) {
             return;
         }
 

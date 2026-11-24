@@ -64,6 +64,6 @@ final readonly class DraftRecords implements DraftResolver
             return DraftState::from($mayAdminister ? [...$held, 'held' => $draft->view($document)] : $held);
         }
 
-        return DraftState::from(['state' => EditingState::Yours, 'draft' => $draft->view($document)]);
+        return DraftState::from(['state' => EditingState::HeldByViewer, 'draft' => $draft->view($document)]);
     }
 }

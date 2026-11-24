@@ -26,7 +26,7 @@ final class NavigationItemData extends Data
         public readonly string $label,
         #[DataCollectionOf(NavigationItemData::class)]
         public readonly array $children,
-        public readonly bool $atFoot,
+        public readonly bool $atBottom,
         public readonly bool $counted,
         public readonly bool $inSidebar,
         public readonly Icon|Optional $icon = new Optional(),

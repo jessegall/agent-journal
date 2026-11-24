@@ -275,7 +275,7 @@ const isEmpty = computed(
             </p>
           </template>
           <template v-if="message !== null && isOwn(message)">
-            <div class="group/mine relative flex max-w-[78%] flex-col items-end gap-[3px] self-end">
+            <div class="group/own relative flex max-w-[78%] flex-col items-end gap-[3px] self-end">
               <MessageRow
                 :message="message"
                 :time="time"

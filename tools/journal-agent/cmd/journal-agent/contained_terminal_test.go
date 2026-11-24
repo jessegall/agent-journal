@@ -15,7 +15,7 @@ func containedStart() host.PreparedStart {
 	return host.PreparedStart{
 		Grant: client.Grant{
 			Token: "start-token", ProfileKey: "main-agent", ProfileRevision: 3,
-			Runtime: client.RuntimeStart{Variant: "terminal", SessionID: "session-7", ProcessGeneration: 2},
+			Runtime: client.RuntimeStart{SessionID: "session-7", ProcessGeneration: 2},
 		},
 		Claim: client.ClaimedStart{
 			StartKey: "start-key-7", Directory: "/srv/journal/accounts/a7", AccountID: "a7",
