@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
+use App\Support\CoreInboxes;
+use Domain\Chat\Support\ChatDepartures;
+use Domain\Chat\Support\ChatInboxes;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Chat\ChatMemberPolicies;
@@ -16,13 +19,8 @@ use App\Support\RefusalReason;
 use App\Support\Sources\Contracts\DockedSources;
 use App\Support\Sources\Contracts\DockOffers;
 use App\Values\ReadEntitlement;
-use Domain\Chat\Models\Conversation;
-use Domain\Chat\Policies\ConversationPolicy;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Support\AgentDockOffers;
-use Domain\Chat\Support\ChatInboxAccess;
-use Domain\Chat\Support\ChatInboxProvider;
-use Domain\Chat\Support\ChatRevocation;
 use Domain\Chat\Support\PlacedSources;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -42,7 +40,7 @@ final class ChatServiceProvider extends ServiceProvider
     {
         $this->app->bind(DockOffers::class, AgentDockOffers::class);
         $this->app->bind(DockedSources::class, PlacedSources::class);
-        $this->app->bind(ChatParticipationEnding::class, ChatRevocation::class);
+        $this->app->bind(ChatParticipationEnding::class, ChatDepartures::class);
     }
 
     public function boot(
@@ -51,9 +49,9 @@ final class ChatServiceProvider extends ServiceProvider
         InboxRegistration $inboxes,
         ChatMemberPolicies $members,
     ): void {
-        $members->allow(ConversationPolicy::class);
         $members->allow(MessagePinPolicy::class);
-        $inboxes->register(Conversation::CHAT_INBOX_PROVIDER, ChatInboxProvider::class, ChatInboxAccess::class);
+        $inboxes->register(ChatInboxes::PAIR_PROVIDER, CoreInboxes::class);
+        $inboxes->register(ChatInboxes::GROUP_PROVIDER, CoreInboxes::class);
 
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');

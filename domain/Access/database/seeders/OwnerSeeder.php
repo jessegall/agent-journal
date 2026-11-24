@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Database\Seeders;
 
-use App\Commands\Desks\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\CommandEntry;
 use App\Support\ActorIdentity;
@@ -25,7 +25,7 @@ final class OwnerSeeder extends Seeder
             $commands->runAsJournal(
                 CommandEntry::HostControl,
                 'desk install',
-                new ProvisionActorDeskCommand(ActorIdentity::of($owner), $owner->name),
+                new ProvisionActorInboxCommand(ActorIdentity::of($owner), $owner->name),
             );
         }
     }

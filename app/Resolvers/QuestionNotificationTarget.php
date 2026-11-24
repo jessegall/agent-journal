@@ -7,18 +7,17 @@ namespace App\Resolvers;
 use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Data\Notifications\NotificationLink;
-use App\Models\Messages\Message;
+use App\Models\Questions\Question;
 
 /**
- * A question notification leads to the exact question in the chat, while the actor may still see the message: the
- * message's visibility scope decides, as ConversationResolver::canSee does. A question out of sight is never named.
+ * The notification of a question, linked to the page that opens it; only its target is notified.
  */
 final readonly class QuestionNotificationTarget implements NotificationTargetResolver
 {
-    public const string KEY = 'chat.question';
+    public const string KEY = 'core.question';
 
     /**
-     * The chat page the exact question opens on, with the message id in its question query value.
+     * The page the exact question opens on, with the question's id in its question query value.
      */
     private const string CHAT_PAGE = 'chat.conversation';
 
@@ -27,19 +26,19 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
     /**
      * The key of the one occurrence a question issues, so a replay finds it.
      */
-    public static function occurrenceKey(string $messageId): string
+    public static function occurrenceKey(string $questionId): string
     {
-        return "question:{$messageId}";
+        return "question:{$questionId}";
     }
 
     public function linksFor(array $ids): array
     {
         $links = [];
 
-        foreach (Message::query()->whereKey($ids)->readExactly(count($ids))->get() as $message) {
-            $links[$message->id] = new NotificationLink(
-                $message->firstLine,
-                $this->pages->addressOf(self::CHAT_PAGE, ['question' => $message->id]),
+        foreach (Question::query()->whereKey($ids)->limit(count($ids))->get() as $question) {
+            $links[$question->id] = new NotificationLink(
+                strtok($question->text, "\n") ?: $question->text,
+                $this->pages->addressOf(self::CHAT_PAGE, ['question' => $question->id]),
             );
         }
 

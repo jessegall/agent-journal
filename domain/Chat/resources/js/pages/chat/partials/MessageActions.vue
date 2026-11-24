@@ -1,23 +1,16 @@
 <script setup lang="ts">
-import type { QuestionActionsData, SpeakerData } from "@generated/types/chat";
 import MessageAction from "./MessageAction.vue";
 import ReactionChoice from "./ReactionChoice.vue";
 
 /**
- * The hover controls of another's message, in the order the design draws them on its name line: React, then Reply
- * (Answer when the message asks you something), then Decline where the server offers it.
+ * The hover controls of a message, in the order the design draws them on its name line: React, then Reply.
  */
-defineProps<{ speaker: SpeakerData; actions: QuestionActionsData }>();
+defineProps<{ authorLabel: string }>();
 
-const emit = defineEmits<{ react: [emoji: string]; reply: []; decline: [] }>();
+const emit = defineEmits<{ react: [emoji: string]; reply: [] }>();
 </script>
 
 <template>
-  <ReactionChoice :speaker="speaker.label" @choose="(emoji) => emit('react', emoji)" />
-  <MessageAction icon="reply" @click="emit('reply')">
-    {{ actions.canAnswer ? "Answer" : "Reply" }}
-  </MessageAction>
-  <template v-if="actions.canDecline">
-    <MessageAction @click="emit('decline')">Decline</MessageAction>
-  </template>
+  <ReactionChoice :speaker="authorLabel" @choose="(emoji) => emit('react', emoji)" />
+  <MessageAction icon="reply" @click="emit('reply')">Reply</MessageAction>
 </template>

@@ -8,21 +8,21 @@ use App\Support\Wire\EncodedCard;
 use Domain\Chat\Data\DockedSourceData;
 use Domain\Chat\Data\DockListData;
 use Domain\Chat\Enums\DockedState;
-use Domain\Chat\Models\Conversation;
+use App\Models\Inboxes\Inbox;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
 
 /**
- * The placements of one conversation for a journal or MCP caller: type, source, title and state, never a card's
+ * The placements of one chat for a journal or MCP caller: type, source, title and state, never a card's
  * body, a nested chat or an action. A source the caller may not read shows no title.
  */
 final readonly class DockListing
 {
     public function __construct(private DockProjection $projection) {}
 
-    public function of(Conversation $conversation, int $limit): DockListData
+    public function of(Inbox $inbox, int $limit): DockListData
     {
-        $page = $this->projection->page($conversation, null, $limit);
+        $page = $this->projection->page($inbox, null, $limit);
         $shown = [];
 
         foreach ($page->cards as $card) {
@@ -30,7 +30,7 @@ final readonly class DockListing
         }
 
         $placements = DockPlacement::query()
-            ->inConversation($conversation)
+            ->inInbox($inbox)
             ->orderBy('assigned_at')
             ->orderBy('id')
             ->readExactly($limit + 1)
@@ -41,7 +41,7 @@ final readonly class DockListing
         );
 
         return DockListData::from([
-            'conversationId' => $conversation->id,
+            'inboxId' => $inbox->id,
             'placements' => array_values($listed->all()),
             'hasMore' => $placements->count() > $limit,
         ]);

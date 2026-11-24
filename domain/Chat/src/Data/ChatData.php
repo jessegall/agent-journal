@@ -37,10 +37,6 @@ final class ChatData extends Data
         public readonly EligibleAccountsData|Optional $eligibleAccounts = new Optional(),
         // A setup problem the reader cannot fix here, such as a missing own inbox; it replaces the conversation.
         public readonly string|Optional $setupNotice = new Optional(),
-        // The id of the question a notification opened, when one was asked for, and that question when the reader
-        // may see it; an id without its question is unavailable.
-        public readonly string|Optional $focusedQuestionId = new Optional(),
-        public readonly FocusedQuestionData|Optional $focusedQuestion = new Optional(),
         // The chats the viewer is in, for the inbox selector, and whether it may open a new one.
         #[DataCollectionOf(ChatSummaryData::class)]
         public readonly array $chats = [],

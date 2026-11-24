@@ -87,7 +87,8 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
             'user_id' => $user->id,
             'environment_key' => $environmentId ?? self::LOCAL_ENVIRONMENT,
             ...self::columnsOf($permissions),
-            ...$grantedBy->asColumns('granted_by'),
+            'granted_by_type' => $grantedBy->type->value,
+            'granted_by_id' => $grantedBy->id,
             'granted_at' => $at,
         ]);
 

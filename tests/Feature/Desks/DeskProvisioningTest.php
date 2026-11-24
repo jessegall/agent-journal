@@ -10,10 +10,10 @@ use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\ActorDesks;
-use App\Contracts\Chat\Inbox;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Chat\InboxResolver;
 use App\Models\Agents\Agent;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
 use App\Support\ActorIdentity;
@@ -60,7 +60,7 @@ final class DeskProvisioningTest extends TestCase
         $inboxes = $this->app->make(InboxResolver::class);
 
         $this->assertSame(3, DeskRecord::query()->count());
-        $this->assertSame(3, InboxRecord::query()->count());
+        $this->assertSame(3, Inbox::query()->count());
         $this->assertTrue($main->forwards_occupants);
         $this->assertSame(1, DeskSeat::query()->ofDesk($main)->vacant()->count());
         $this->assertSame(0, $this->deskOf($inboxes->named('system'))->seat_count);
@@ -133,7 +133,7 @@ final class DeskProvisioningTest extends TestCase
         return $this->app->make(AssignmentTransaction::class)->run($work);
     }
 
-    private function deskOf(Inbox $inbox): DeskRecord
+    private function deskOf(LabeledInbox $inbox): DeskRecord
     {
         return DeskRecord::query()->where('inbox_id', $inbox->inboxId())->sole();
     }

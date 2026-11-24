@@ -7,17 +7,13 @@ namespace App\Support;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\ReadAdmission;
 use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Sessions\CurrentSession;
 use App\Enums\AccessRuleType;
-use App\Enums\CommandEffectType;
 use App\Enums\ReadEntitlementType;
-use App\Support\Stack\Contracts\StackPermission;
 use App\Values\AccessDecision;
 use App\Values\AgentText;
 use App\Values\AllowedNames;
 use App\Values\ProfileAuthorization;
 use App\Values\ReadRequest;
-use App\Values\StackTarget;
 use App\Values\StartProfileAuthority;
 
 /**
@@ -28,9 +24,7 @@ final readonly class PolicyReadAdmission implements ReadAdmission
 {
     public function __construct(
         private CurrentActor $actors,
-        private CurrentSession $session,
         private ReadEntitlements $reads,
-        private StackPermission $stack,
     ) {}
 
     public function assess(ReadRequest $request): AccessDecision
@@ -136,18 +130,6 @@ final readonly class PolicyReadAdmission implements ReadAdmission
                 AccessRuleType::OperationGrant,
                 AgentText::of('core.access.profile_holds', ['name' => $request->name]),
             );
-        }
-
-        if ($this->session->hasSession()) {
-            $target = new StackTarget($this->actors->actor()->id, $this->session->sessionId());
-            $recovery = $this->stack->allows($target, CommandEffectType::StateChange)->recovery;
-
-            if ($recovery !== null && $request->matchesRecovery($recovery)) {
-                return AccessDecision::allowed(
-                    AccessRuleType::OperationGrant,
-                    AgentText::of('core.access.open_state_asks'),
-                );
-            }
         }
 
         return AccessDecision::refused(

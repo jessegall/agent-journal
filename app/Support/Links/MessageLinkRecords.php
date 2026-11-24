@@ -46,15 +46,14 @@ final readonly class MessageLinkRecords implements RecordProvider
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "message {$record->number}",
-            'title' => $record->firstLine,
+            'title' => strtok($record->body, "\n") ?: $record->body,
             'abstract' => null,
             'route' => null,
         ]);
     }
 
     /**
-     * A message's participants, the agent it is addressed to and the user, read it; reading it is what changing its
-     * links needs.
+     * A message is linked by whoever may read it; reading it is what changing its links needs.
      */
     protected function mayChange(Model $record): bool
     {

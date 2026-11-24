@@ -8,7 +8,7 @@ use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Chat\Inbox;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Enums\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agents\Agent;
@@ -112,7 +112,7 @@ final class ChatWindowTest extends TestCase
     {
         $this->app->instance(ActorInboxResolver::class, new class implements ActorInboxResolver
         {
-            public function preferredFor(Actor $actor): Inbox
+            public function preferredFor(Actor $actor): LabeledInbox
             {
                 throw InboxUnavailable::forActor($actor->actorId());
             }

@@ -4,50 +4,31 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentDirectory;
 use Domain\Chat\Data\MessageInput;
-use Domain\Chat\Support\SentMessageAnswer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Redirector;
 
 /**
- * Sends the composer's message to the chosen agent through Chat, once per request key. Core says whether the agent is
- * visible, on every request; whether it still runs the session the user saw is checked when the send first runs, so a
- * repeat of a send that went through answers its message again.
+ * Sends the composer's message into the chat the window showed, as a reply when it names the message it answers.
+ * With an agent chosen, the agent must still run the session the user saw.
  */
 final readonly class SendMessageController
 {
-    /**
-     * Posts in the chat inbox the conversation showed, so a send keeps its room even when the window has moved on,
-     * and goes back to the page with the message id flashed, or to Home with the same agent chosen.
-     */
     public function __invoke(
         MessageInput $input,
         AgentDirectory $agents,
         CommandBus $commands,
-        SentMessageAnswer $answer,
+        Redirector $redirect,
     ): RedirectResponse {
         if ($input->agent !== null) {
             $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId, $input->expectedGeneration);
         }
 
-        $messageId = $input->isQuestion
-            ? $commands->run(new AskChatQuestionCommand(
-                $input->inboxId,
-                $input->body,
-                $input->requestKey,
-                $input->addressee,
-            ))
-            : $commands->run(new PostChatMessageCommand(
-                $input->inboxId,
-                $input->body,
-                $input->requestKey,
-                null,
-                $input->addressee,
-            ));
+        $commands->run(new SendMessageCommand($input->inboxId, $input->body, $input->targetMessageNumber));
 
-        return $answer->to($messageId, $input->agent, $input->inboxId);
+        return $redirect->back(303);
     }
 }

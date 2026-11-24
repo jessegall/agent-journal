@@ -69,7 +69,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Chats\InboxInterval;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverTurn;
 use App\Models\Drivers\RuntimeEvent;
@@ -173,7 +173,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         GlobalGroup::installJournal();
-        $inbox = InboxRecord::create('test-chat', (string) str()->ulid());
+        $inbox = Inbox::create('test-chat', (string) str()->ulid());
         $interval = InboxInterval::create($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
         $at = CarbonImmutable::now();
         $batch = MessageBatch::create($interval->id, $opened->sessionId, 1, 'thread-1', 1, $at, $at->addHour());

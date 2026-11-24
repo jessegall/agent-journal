@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
+use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Events\ChatMessageChanged;
+use Domain\Chat\Http\Controllers\AnswerQuestionController;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
-use App\Contracts\Drivers\NativePartProvider;
 use App\Contracts\Events\EngineListenerProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Navigation\SectionProvider;
@@ -27,14 +29,8 @@ use App\Support\FolderClasses;
 use App\Support\MessageSearchAccess;
 use App\Support\Searchable;
 use App\Values\PolicyDefinition;
-use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
-use Domain\Chat\Events\ChatReconciled;
-use Domain\Chat\Events\ChatReconcileMarked;
 use Domain\Chat\Events\DockChanged;
-use Domain\Chat\Http\Controllers\CancelMessageController;
-use Domain\Chat\Http\Controllers\ChatEventsController;
 use Domain\Chat\Http\Controllers\ChatRowsController;
-use Domain\Chat\Http\Controllers\DeclineQuestionController;
 use Domain\Chat\Http\Controllers\DockController;
 use Domain\Chat\Http\Controllers\Membership\AddParticipantController;
 use Domain\Chat\Http\Controllers\Membership\ChatCandidatesController;
@@ -45,29 +41,17 @@ use Domain\Chat\Http\Controllers\Membership\RemoveParticipantController;
 use Domain\Chat\Http\Controllers\Membership\TransferChatController;
 use Domain\Chat\Http\Controllers\ReactController;
 use Domain\Chat\Http\Controllers\ReadShownController;
-use Domain\Chat\Http\Controllers\ReplyController;
-use Domain\Chat\Http\Controllers\RequestOutcomeController;
-use Domain\Chat\Http\Controllers\RetryDeliveryController;
 use Domain\Chat\Http\Controllers\SendMessageController;
-use Domain\Chat\Http\Controllers\TakeNextController;
 use Domain\Chat\Http\Controllers\UndockController;
 use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Pages\Resolvers\ChosenAgentSection;
-use Domain\Chat\Http\Pages\Resolvers\HistoryPageResolver;
-use Domain\Chat\Http\Pages\Resolvers\InboxPageResolver;
-use Domain\Chat\Mcp\Resources\MessageResource;
-use Domain\Chat\Policies\ConversationPolicy;
 use Domain\Chat\Policies\MessagePinPolicy;
-use Domain\Chat\Policies\MessageReactionPolicy;
-use Domain\Chat\Support\Mcp\PendingMessagesOverview;
-use Domain\Chat\Support\SettleMarkedChatsOnTick;
 use Domain\Chat\Support\Skills\ChatSkill;
 
 final class ChatDomain extends Domain implements
     CommandProvider,
     EngineListenerProvider,
     McpToolProvider,
-    NativePartProvider,
     PageProvider,
     PolicyProvider,
     SectionProvider,
@@ -89,14 +73,14 @@ final class ChatDomain extends Domain implements
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(DockChanged::class, ChatReconcileMarked::class, ChatReconciled::class)
-            ->commands(OpenPairChatCommand::class)
+            ->events(DockChanged::class, ChatMessageChanged::class)
+            ->support(ChatInboxes::class)
             ->build();
     }
 
     public function engineListeners(): array
     {
-        return [SettleMarkedChatsOnTick::class];
+        return [];
     }
 
     public function commands(): array
@@ -109,14 +93,6 @@ final class ChatDomain extends Domain implements
         return [
             new PolicyDefinition(
                 MessagePinPolicy::class,
-                [AccessType::Edit],
-            ),
-            new PolicyDefinition(
-                MessageReactionPolicy::class,
-                [AccessType::Edit],
-            ),
-            new PolicyDefinition(
-                ConversationPolicy::class,
                 [AccessType::Edit],
             ),
         ];
@@ -132,12 +108,8 @@ final class ChatDomain extends Domain implements
                 ->actions(
                     ActionRoute::post('messages', SendMessageController::class, 'send'),
                     ActionRoute::post('messages/read', ReadShownController::class, 'read'),
-                    ActionRoute::post('messages/reply', ReplyController::class, 'reply'),
-                    ActionRoute::post('messages/decline', DeclineQuestionController::class, 'decline'),
                     ActionRoute::post('messages/react', ReactController::class, 'react'),
-                    ActionRoute::post('messages/retry-delivery', RetryDeliveryController::class, 'retry-delivery'),
-                    ActionRoute::get('messages/outcome', RequestOutcomeController::class, 'outcome'),
-                    ActionRoute::get('events', ChatEventsController::class, 'events'),
+                    ActionRoute::post('questions/answer', AnswerQuestionController::class, 'answer'),
                     ActionRoute::get('messages/rows', ChatRowsController::class, 'rows'),
                     ActionRoute::post('dock', DockController::class, 'dock'),
                     ActionRoute::post('dock/remove', UndockController::class, 'undock'),
@@ -149,24 +121,9 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('chats/leave', LeaveChatController::class, 'leave'),
                     ActionRoute::post('chats/close', CloseChatController::class, 'close'),
                 ),
-            Page::layout('inbox', 'Inbox', Icon::Chat, InboxPageResolver::class)
-                ->at('inbox')
-                ->actions(ActionRoute::post('inbox/take-next', TakeNextController::class, 'take-next')),
-            Page::layout('history', 'History', Icon::Chat, HistoryPageResolver::class)
-                ->at('history')
-                ->actions(ActionRoute::post('history/cancel', CancelMessageController::class, 'cancel')),
         ];
     }
 
-    /**
-     * The native part the Inbox layout mounts: one inbox's newest messages.
-     *
-     * @return list<string>
-     */
-    public function nativeParts(): array
-    {
-        return ['InboxMessages.vue'];
-    }
 
     public function sections(): array
     {
@@ -189,12 +146,12 @@ final class ChatDomain extends Domain implements
 
     public function mcpResources(): array
     {
-        return [MessageResource::class];
+        return [];
     }
 
     public function overviewContributions(): array
     {
-        return [PendingMessagesOverview::class];
+        return [];
     }
 
     /**

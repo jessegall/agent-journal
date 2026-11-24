@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Enums\IntervalRole;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -19,6 +18,5 @@ final class ParticipantData extends Data
         public readonly string $actor,
         public readonly string $label,
         public readonly string|null $driver,
-        public readonly IntervalRole $role,
     ) {}
 }

@@ -19,7 +19,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
- * Sends a message from one of your inboxes to another inbox.
+ * Sends a message into an inbox you are attached to, as a reply when it names the message it answers.
  *
  * @implements JournalCall<MessageNamed>
  */

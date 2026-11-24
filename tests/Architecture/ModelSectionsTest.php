@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 /**
  * An Eloquent model's methods sit in marked sections, Constructors, Queries, Mutations, Answers, Accessors,
- * Relations, Internals and Scopes, in that order, and an accessor (a method returning Attribute) sits only in
+ * Relations, Asserts, Internals and Scopes, in that order, and an accessor (a method returning Attribute) sits only in
  * Accessors. tools/refactoring/model-sections.php lists every fault, and sorts with --fix.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]

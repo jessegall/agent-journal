@@ -3,7 +3,6 @@ import { router } from '@inertiajs/vue3';
 import Icon from '@kit/Icon';
 import Menu from '@kit/Menu';
 import MenuItem from '@kit/MenuItem';
-import { newRequestId } from '@kit/requestId';
 import type { DocumentFeedbackPartData } from '@generated/types/documents';
 
 /**
@@ -13,7 +12,7 @@ import type { DocumentFeedbackPartData } from '@generated/types/documents';
 const props = defineProps<DocumentFeedbackPartData>();
 
 function ask(agentId: string): void {
-    router.post(props.address, { agent: agentId, request_key: newRequestId() }, { preserveScroll: true });
+    router.post(props.address, { agent: agentId }, { preserveScroll: true });
 }
 </script>
 

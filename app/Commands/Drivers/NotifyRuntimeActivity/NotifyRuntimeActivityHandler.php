@@ -17,7 +17,7 @@ use App\Models\Drivers\RuntimeEvent;
 use App\Support\ActorIdentity;
 use App\Support\AttentionOrigin;
 use App\Support\HostRuntimes;
-use App\Support\MessageBatchService;
+use App\Models\Messages\Message;
 use Carbon\CarbonImmutable;
 
 final readonly class NotifyRuntimeActivityHandler implements CommandHandler
@@ -25,7 +25,6 @@ final readonly class NotifyRuntimeActivityHandler implements CommandHandler
     public function __construct(
         private HostRuntimes $runtimes,
         private CommandFacts $facts,
-        private MessageBatchService $messageBatches,
         private ActorAttention $attention,
     ) {}
 
@@ -85,7 +84,7 @@ final readonly class NotifyRuntimeActivityHandler implements CommandHandler
         $runtime->loadMissing('session.agent');
         $agent = ActorIdentity::of($runtime->session->agent);
 
-        if ($this->messageBatches->hasUnshownText($agent)) {
+        if (Message::query()->unreadBy($runtime->session->agent)->exists()) {
             $this->attention->request($agent, AttentionOrigin::processStart($runtime->id, $processGeneration));
         }
     }

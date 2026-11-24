@@ -9,7 +9,7 @@ use App\Enums\MessageBatchState;
 use App\Enums\OutstandingMessageRangeState;
 use App\Exceptions\ChatStateConflict;
 use App\Models\Chats\InboxInterval;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageBatch;
@@ -44,7 +44,7 @@ final class MessageBatchModelsTest extends TestCase
     public function test_a_batch_confirms_a_range_settles_once_and_a_retry_keeps_the_range_identity(): void
     {
         GlobalGroup::installJournal();
-        $inbox = InboxRecord::create('test-chat', (string) str()->ulid());
+        $inbox = Inbox::create('test-chat', (string) str()->ulid());
         $interval = InboxInterval::create($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
         $receipt = MessageReceipt::forAudience($this->message(), [$interval], TestIds::of(9))[0];
         $now = CarbonImmutable::now();

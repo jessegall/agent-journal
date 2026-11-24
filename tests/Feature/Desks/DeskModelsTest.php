@@ -8,7 +8,7 @@ use App\Contracts\Chat\InboxResolver;
 use App\Exceptions\DeskSeatCountInvalid;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agents\Agent;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
 use App\Models\Records\AssignmentRecord;
@@ -31,7 +31,7 @@ final class DeskModelsTest extends TestCase
         $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 3, false);
 
         $this->assertSame([1, 2, 3], DeskSeat::query()->ofDesk($desk)->orderBy('number')->pluck('number')->all());
-        $this->assertSame(1, InboxRecord::query()->count());
+        $this->assertSame(1, Inbox::query()->count());
         $this->assertSame($desk->id, $this->app->make(InboxResolver::class)->resolve($desk->inboxId())->deskId());
         $this->assertSame('Team', $desk->inboxLabel());
         $this->assertTrue($desk->assigneeIdentity()->isSameAs(new AssigneeIdentity('desk', $desk->id)));

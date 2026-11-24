@@ -69,7 +69,8 @@ final class AskHop extends Model implements EventSource, ReadableModel
     {
         $hop = new self([
             'ask_id' => $ask->id,
-            ...$holder->asColumns('actor'),
+            'actor_type' => $holder->type->value,
+            'actor_id' => $holder->id,
             'type_key' => $ask->type_key->key,
             'version' => $ask->version,
             'route_version' => $routeVersion,

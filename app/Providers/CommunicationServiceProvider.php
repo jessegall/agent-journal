@@ -4,55 +4,57 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Concerns\LoadsCoreRoutes;
+use App\Console\Commands\InstallInboxesCommand;
+use App\Contracts\Actors\ActorInboxResolver;
+use App\Contracts\Actors\ActorProvisioning;
+use App\Contracts\Assignments\AssignmentDestinationResolver;
 use App\Contracts\Assignments\AssignmentRegistration;
+use App\Contracts\Chat\InboxDestinationResolver;
+use App\Contracts\Inboxes\MainInbox;
+use App\Contracts\Inboxes\MainInboxTakeover;
+use App\Contracts\Processes\RunClaims;
+use App\Contracts\Sharing\SharedHolders;
+use App\Enums\ActorType;
+use App\Models\Inboxes\Inbox;
+use App\Support\ActorDestinationProvider;
+use App\Support\AssigneeDefinition;
+use App\Support\AttachedInboxes;
+use App\Support\CoreInboxes;
+use App\Support\DestinationRegistry;
+use App\Support\InboxAssignees;
+use App\Support\InboxDestinationProvider;
+use App\Support\InboxRunClaims;
+use App\Support\MainInboxHandover;
+use App\Support\MainInboxNavigation;
+use App\Support\PersonalInboxResolver;
+use App\Support\PersonalInboxes;
+use App\Support\RegisteredAssignmentDestinations;
+use App\Support\RegisteredInboxDestinations;
+use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Bus\RequestSource;
-use App\Contracts\Chat\AgentMessageReader;
-use App\Contracts\Chat\ChatDepartures;
-use App\Contracts\Chat\ChatInboxStore;
-use App\Contracts\Chat\ChatLines;
 use App\Contracts\Chat\ChatMemberPolicies;
-use App\Contracts\Chat\ChatTimeline;
-use App\Contracts\Chat\ConversationResolver;
-use App\Contracts\Chat\InboxIntervalWriter;
-use App\Contracts\Chat\InboxNotices as InboxNoticesContract;
+use App\Contracts\Agents\AgentNotices;
 use App\Contracts\Chat\InboxRegistration;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Chat\Notifications;
 use App\Contracts\Chat\NotificationTargets;
 use App\Contracts\Records\RecordProviderRegistration;
-use App\Contracts\Work\IncomingWorkRegistration;
 use App\Enums\AccessType;
-use App\Enums\AssignmentPurpose;
 use App\Models\Messages\Message;
+use App\Models\Questions\Question;
 use App\Policies\MessageAdministrationPolicy;
 use App\Policies\MessagePolicy;
-use App\Resolvers\AgentMessages;
-use App\Resolvers\MessageRecords;
 use App\Resolvers\QuestionNotificationTarget;
-use App\Resolvers\Support\IntervalChatTimeline;
-use App\Support\ChatInboxes;
 use App\Support\EngineListenerSet;
-use App\Support\InboxIntervals;
-use App\Support\InboxNotices;
-use App\Support\IntervalChatDepartures;
+use App\Support\JournalAgentNotices;
 use App\Support\Links\MessageLinkRecords;
 use App\Support\LinkTypeRegistry;
-use App\Support\MessageAnswerActivation;
-use App\Support\MessageClaimProvider;
 use App\Support\NotificationChangeRetentionService;
 use App\Support\NotificationTargetRegistry;
-use App\Support\PendingInboxWork;
-use App\Support\PendingWorkSources;
-use App\Support\ReceiptDeliveryService;
 use App\Support\RecipientNotifications;
 use App\Support\RegisteredInboxes;
-use App\Support\SelectedMessages;
-use App\Support\SettleDispatchedBatchesOnTick;
-use App\Support\SystemEntryPolicies;
-use App\Support\TimelineChatLines;
 use App\Values\AnswerBudget;
 use App\Values\PolicyDefinition;
 use App\Values\ReadEntitlement;
@@ -61,7 +63,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Core's messaging between actors: the message as a numbered, linkable record.
+ * Core's messaging between actors: messages, their reads and the inboxes they are sent into.
  */
 final class CommunicationServiceProvider extends ServiceProvider
 {
@@ -71,17 +73,18 @@ final class CommunicationServiceProvider extends ServiceProvider
     {
         $this->app->singleton(RegisteredInboxes::class);
         $this->app->singleton(InboxRegistration::class, RegisteredInboxes::class);
+        $this->app->scoped(ActorProvisioning::class, PersonalInboxes::class);
+        $this->app->scoped(ActorInboxResolver::class, PersonalInboxResolver::class);
+        $this->app->scoped(RunClaims::class, InboxRunClaims::class);
+        $this->app->scoped(MainInboxTakeover::class, MainInboxHandover::class);
+        $this->app->scoped(MainInbox::class, MainInboxNavigation::class);
+        $this->app->scoped(SharedHolders::class, AttachedInboxes::class);
+        $this->app->singleton(DestinationRegistry::class);
+        $this->app->scoped(AssignmentDestinationResolver::class, RegisteredAssignmentDestinations::class);
+        $this->app->scoped(InboxDestinationResolver::class, RegisteredInboxDestinations::class);
         $this->app->singleton(InboxResolver::class, RegisteredInboxes::class);
         $this->app->singleton(RegisteredInboxes::class);
-        $this->app->scoped(ConversationResolver::class, MessageRecords::class);
-        $this->app->scoped(ChatLines::class, TimelineChatLines::class);
-        $this->app->bind(InboxNoticesContract::class, InboxNotices::class);
-        $this->app->bind(ChatDepartures::class, IntervalChatDepartures::class);
-        $this->app->bind(ChatInboxStore::class, ChatInboxes::class);
-        $this->app->bind(InboxIntervalWriter::class, InboxIntervals::class);
-        $this->app->bind(ChatTimeline::class, IntervalChatTimeline::class);
-        $this->app->scoped(AgentMessageReader::class, AgentMessages::class);
-        $this->app->scoped(RequestSource::class, SelectedMessages::class);
+        $this->app->bind(AgentNotices::class, JournalAgentNotices::class);
         $this->app->singleton(NotificationTargetRegistry::class);
         $this->app->singleton(NotificationTargets::class, NotificationTargetRegistry::class);
         $this->app->bind(Notifications::class, RecipientNotifications::class);
@@ -95,27 +98,25 @@ final class CommunicationServiceProvider extends ServiceProvider
         LinkTypeRegistry $links,
         RecordProviderRegistration $records,
         PolicyCatalogue $policies,
-        AssignmentRegistration $assignments,
-        PendingWorkSources $pendingWork,
-        IncomingWorkRegistration $incoming,
-        SystemEntryPolicies $system,
         ReadEntitlements $reads,
+        InboxRegistration $inboxes,
+        DestinationRegistry $destinations,
+        AssignmentRegistration $assignments,
         NotificationTargetRegistry $notificationTargets,
         ChatMemberPolicies $chatMembers,
         EngineListenerSet $engineListeners,
     ): void {
-        $engineListeners->add(SettleDispatchedBatchesOnTick::class);
         $chatMembers->allow(MessagePolicy::class);
         $readGrant = ReadEntitlement::grant(MessagePolicy::class);
 
-        $reads->declare('messages_show', $readGrant);
         $reads->declare('messages_read', $readGrant);
+        $reads->declare('messages_read_unread', $readGrant);
+        $reads->declare('questions_read', $readGrant);
         $reads->declare('messages_list', $readGrant);
         $reads->declare('messages_context', $readGrant);
         $reads->declare('inbox_history', $readGrant);
         $reads->declare('inbox_counts', $readGrant);
         $reads->declare('attachments_read', $readGrant);
-        $system->allow(InboxNotices::SYSTEM_ENTRY, MessagePolicy::class);
 
         $policies->register('Core', new PolicyDefinition(
             MessagePolicy::class,
@@ -127,8 +128,17 @@ final class CommunicationServiceProvider extends ServiceProvider
             [AccessType::Read, AccessType::Edit],
         ));
 
-        $links->register([Message::LINK_TYPE => Message::class]);
-        $pendingWork->register(PendingInboxWork::class);
+        $links->register([Message::LINK_TYPE => Message::class, Question::LINK_TYPE => Question::class]);
+        $inboxes->register(Inbox::NAMED_PROVIDER, CoreInboxes::class);
+        $inboxes->register(Inbox::PERSONAL_PROVIDER, CoreInboxes::class);
+        $this->commands([InstallInboxesCommand::class]);
+        $destinations->register(Inbox::ASSIGNEE_TYPE, InboxDestinationProvider::class);
+
+        foreach (ActorType::cases() as $actorType) {
+            $destinations->register($actorType->value, ActorDestinationProvider::class);
+        }
+
+        $assignments->registerAssignees(new AssigneeDefinition(Inbox::ASSIGNEE_TYPE, InboxAssignees::class));
         $notificationTargets->register(QuestionNotificationTarget::KEY, QuestionNotificationTarget::class);
 
         $this->callAfterResolving(
@@ -138,24 +148,7 @@ final class CommunicationServiceProvider extends ServiceProvider
                 ->hourly(),
         );
 
-        $this->callAfterResolving(
-            Schedule::class,
-            fn (Schedule $schedule) => $schedule
-                ->call(fn (ReceiptDeliveryService $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
-                ->everyMinute(),
-        );
-
         $this->loadCoreRoutes('communication/communication.php');
-        $incoming->register(MessageAnswerActivation::class);
-        $assignments->registerOwner('Communication', []);
-
-        $assignments->registerRecord(
-            Message::LINK_TYPE,
-            MessageClaimProvider::class,
-            'Communication',
-            AssignmentPurpose::InternalResponsibility,
-        );
-
         $records->register(Message::LINK_TYPE, MessageLinkRecords::class);
     }
 }

@@ -8,7 +8,7 @@ use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Chat\ConversationResolver;
 use App\Contracts\Chat\InboxRegistration;
 use App\Exceptions\StackLockTimedOut;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageAttention;
 use App\Support\OperationDeadline;
@@ -28,7 +28,7 @@ final class InboxProviderContractTest extends MessagingTestCase
 {
     use UsesSecondConnection;
 
-    private InboxRecord $team;
+    private Inbox $team;
 
     protected function setUp(): void
     {
@@ -37,7 +37,7 @@ final class InboxProviderContractTest extends MessagingTestCase
         $roster = new TeamRoster();
         $this->app->instance(TeamRoster::class, $roster);
         $this->app->make(InboxRegistration::class)->register('team', TeamInboxProvider::class, TeamInboxAccess::class);
-        $this->team = InboxRecord::create('team', 'alpha');
+        $this->team = Inbox::create('team', 'alpha');
         $roster->join($this->team->id, $this->actorOf($this->builder));
     }
 

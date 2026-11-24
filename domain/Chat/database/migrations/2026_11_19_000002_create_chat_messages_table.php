@@ -12,16 +12,18 @@ return new class extends Migration
     {
         Schema::create('chat_messages', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('message_id')->nullable()->constrained('messages')->restrictOnDelete();
+            $table->foreignUlid('inbox_id')->constrained('inboxes')->cascadeOnDelete();
+            $table->string('source_type', 64);
+            $table->string('source_id', 64);
             $table->string('type', 16);
+            $table->unsignedInteger('group_number');
+            $table->string('author_type', 16);
+            $table->string('author_id', 64);
             $table->timestampsTz();
 
-            $table->index('message_id');
+            $table->unique(['source_type', 'source_id']);
+            $table->index(['inbox_id', 'created_at', 'id']);
+            $table->index(['inbox_id', 'group_number']);
         });
-    }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('chat_messages');
     }
 };

@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('dock_placements', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('conversation_id')->constrained('conversations')->cascadeOnDelete();
+            $table->foreignUlid('inbox_id')->constrained('inboxes')->cascadeOnDelete();
             $table->string('dockable_type', 64);
             $table->string('dockable_id');
             $table->string('presentation', 64)->default('default');
@@ -21,9 +21,9 @@ return new class extends Migration
             $table->timestampTz('assigned_at');
             $table->timestampsTz();
 
-            $table->unique(['conversation_id', 'dockable_type', 'dockable_id']);
+            $table->unique(['inbox_id', 'dockable_type', 'dockable_id']);
             $table->index(['dockable_type', 'dockable_id']);
-            $table->index(['conversation_id', 'assigned_at', 'id']);
+            $table->index(['inbox_id', 'assigned_at', 'id']);
         });
     }
 

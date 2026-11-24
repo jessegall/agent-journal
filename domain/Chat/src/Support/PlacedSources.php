@@ -6,11 +6,10 @@ namespace Domain\Chat\Support;
 
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\DockedSources;
-use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
 
 /**
- * A source is docked while some conversation holds a placement of it.
+ * A source is docked while some chat holds a placement of it.
  */
 final readonly class PlacedSources implements DockedSources
 {
@@ -23,8 +22,8 @@ final readonly class PlacedSources implements DockedSources
 
     public function inboxesDocking(DockIdentity $source): array
     {
-        return array_values(array_map(strval(...), Conversation::query()
-            ->whereIn('id', DockPlacement::query()->ofSource($source)->select('conversation_id'))
+        return array_values(array_map(strval(...), DockPlacement::query()
+            ->ofSource($source)
             ->limit(self::INBOX_LIMIT)
             ->pluck('inbox_id')
             ->all()));

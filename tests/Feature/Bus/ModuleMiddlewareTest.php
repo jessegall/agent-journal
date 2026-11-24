@@ -18,7 +18,7 @@ use App\Exceptions\MiddlewareSkippedCommand;
 use App\Exceptions\MiddlewareSwallowedFailure;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Desks\DeskPreference;
 use App\Models\Desks\DeskRecord;
@@ -90,7 +90,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         DeskPreference::query()->delete();
         DeskSeat::query()->delete();
         DeskRecord::query()->delete();
-        InboxRecord::query()->delete();
+        Inbox::query()->delete();
         Agent::query()->delete();
         CommandReceipt::query()->delete();
 

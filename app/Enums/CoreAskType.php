@@ -6,7 +6,7 @@ namespace App\Enums;
 
 use App\Commands\Reviews\ApproveCodeReview\ApproveCodeReviewCommand;
 use App\Commands\Reviews\MergeReviewedWork\MergeReviewedWorkCommand;
-use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\Command;
 use App\Values\AskTypeKey;
 use App\Values\SubjectType;
@@ -31,7 +31,7 @@ enum CoreAskType: string
     public function requiredCommand(): string
     {
         return match ($this) {
-            self::Question, self::Stuck => ReplyToMessageCommand::class,
+            self::Question, self::Stuck => SendMessageCommand::class,
             self::ReviewReady => ApproveCodeReviewCommand::class,
             self::MergeReady => MergeReviewedWorkCommand::class,
         };

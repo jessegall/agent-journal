@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
+use App\Support\CallStages\RestoredCall;
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Answer\ComposeForeground;
 use App\Pipes\Answer\FindReplay;
 use App\Pipes\Answer\HandOverWaitingMessages;
+use App\Pipes\Answer\KeepRepeatedClosingWordsPrivate;
+use App\Pipes\Answer\OfferClosingWords;
 use App\Pipes\Answer\KeepMessagesAndWake;
 use App\Pipes\Answer\LockStack;
 use App\Pipes\Answer\PrepareCall;
@@ -41,7 +44,12 @@ final readonly class AnswerHookPipeline implements PipelineDefinition
             FindReplay::class,
             PrepareCall::class,
             RestoreStack::class,
-            WalkStack::class,
+            KeepRepeatedClosingWordsPrivate::class,
+            Step::chosen(
+                fn (RestoredCall $restored) => OfferClosingWords::isNeeded($restored),
+                OfferClosingWords::class,
+                WalkStack::class,
+            ),
             Step::chosen(
                 fn (WalkedCall $walked) => $walked->leavesMessagesWithIdleAgent(),
                 KeepMessagesAndWake::class,

@@ -6,7 +6,7 @@ namespace App\Commands\Agents\OpenHostMainRuntime;
 
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeHandler;
 use App\Contracts\Bus\CommandHandler;
-use App\Contracts\Chat\MainSeatTakeover;
+use App\Contracts\Inboxes\MainInboxTakeover;
 use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Models\Agents\Agent;
 use App\Support\OpenedRuntime;
@@ -15,7 +15,7 @@ final readonly class OpenHostMainRuntimeHandler implements CommandHandler
 {
     public function __construct(
         private OpenAgentRuntimeHandler $runtimes,
-        private MainSeatTakeover $takeover,
+        private MainInboxTakeover $takeover,
         private BuiltInStartProfiles $builtInProfiles,
     ) {}
 

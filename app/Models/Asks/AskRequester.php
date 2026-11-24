@@ -34,7 +34,8 @@ final class AskRequester extends Model implements ReadableModel
 
         $requester->setRawAttributes([
             $requester->getKeyName() => $requester->newUniqueId(),
-            ...$actor->asColumns('actor'),
+            'actor_type' => $actor->type->value,
+            'actor_id' => $actor->id,
         ]);
 
         $requester->insertIfAbsent();

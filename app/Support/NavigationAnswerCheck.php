@@ -6,21 +6,21 @@ namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Chat\MainDesk;
+use App\Contracts\Inboxes\MainInbox;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Drivers\NavigationRequest;
 
 /**
  * What every command of the main agent on a navigation request checks first: the request, locked; that the caller
- * answers it, as the main desk's occupant or the owner; and that it read the newest row version.
+ * answers it, as main's occupant or the owner; and that it read the newest row version.
  */
 final readonly class NavigationAnswerCheck
 {
     public function __construct(
         private CurrentActor $actors,
         private JournalAdmission $admission,
-        private MainDesk $mainDesk,
+        private MainInbox $main,
     ) {}
 
     /**
@@ -43,7 +43,7 @@ final readonly class NavigationAnswerCheck
     }
 
     /**
-     * Refuses a caller who neither sits at the main desk nor owns the journal.
+     * Refuses a caller who neither sits at main nor owns the journal.
      *
      * @throws NavigationAnswerRefused
      */
@@ -51,7 +51,7 @@ final readonly class NavigationAnswerCheck
     {
         $actor = ActorIdentity::of($this->actors->actor());
         $owner = ActorIdentity::of($this->admission->owner());
-        $seated = $this->mainDesk->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
+        $seated = $this->main->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
 
         if (! $actor->isSameAs($owner) && ! $seated->getOrElse(false)) {
             throw NavigationAnswerRefused::ofAnotherActor($navigation->id);

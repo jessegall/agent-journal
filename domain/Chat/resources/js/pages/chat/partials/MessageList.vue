@@ -1,58 +1,53 @@
 <script setup lang="ts">
 import { timeOfDay } from "@kit/format";
-import TextLink from '@kit/TextLink';
+import TextLink from "@kit/TextLink";
+import QuietLine from "@kit/QuietLine";
 import { computed, useTemplateRef } from "vue";
-import Card from "@kit/Card";
 import type { DockCardEnvelope } from "@kit/dockCards";
 import { ACTING_AGENT, groupTurns } from "../../../chatTurns";
-import LineWords from "./LineWords.vue";
-import RecordCard from "./RecordCard.vue";
+import { entriesByMessage, reactionsByMessage } from "../../../chatEntries";
 import type {
-  ChatLineData,
-  ChatMessageData,
+  ChatEntryData,
+  MessageEntryData,
   ParticipantData,
 } from "@generated/types/chat";
-import type { ConversationIntent } from "../../../composables/useConversationIntents";
+import type {
+  ConversationIntent,
+  ReplyTarget,
+} from "../../../composables/useConversationIntents";
 import type { RecoveryEntry } from "../../../composables/useMessageDrafts";
 import { useChatScroll } from "../../../composables/useChatScroll";
-import MessageDeliveries from "./MessageDeliveries.vue";
 import MessageRow from "./MessageRow.vue";
 import NoMessages from "./NoMessages.vue";
 import PendingMessage from "./PendingMessage.vue";
+import QuestionCard from "./QuestionCard.vue";
 import RefusedSend from "./RefusedSend.vue";
 
 /**
- * The rows of one chat in timeline order: the viewer's own on the right, everyone else's on the left with the name of
- * whoever wrote it and, for an agent, the driver it runs through; for each incoming row whether the viewer has not
- * read it yet, for a question whether it still waits, and for the author or an operator which recipients were not
- * reached yet or were given up. Each row is reached by keyboard in order and named by its speaker and addressee; a
- * reply's link names its original and moves the focus there, and a hidden original is only words. After them
- * come the user's own sends still settling, and the refused ones to restore or discard. Bodies are shown as text,
- * never as HTML.
+ * The entries of one chat in order: the viewer's own messages on the right, everyone else's on the left with the name
+ * of whoever wrote it and, for an agent, the driver it runs through; reactions on the message they answer, questions
+ * as cards, and events as a line that opens their record. Each message is reached by keyboard in order and named by
+ * its author; a reply's line names its original and moves the focus there. After them come the user's own sends still
+ * settling, and the refused ones to restore or discard. Bodies are shown as text, never as HTML.
  */
 const props = defineProps<{
-  messages: ChatMessageData[];
-  /** The plain lines among the messages, such as a sequence's steps, oldest first. */
-  lines: ChatLineData[];
-  // Whether older rows wait before the first one shown.
+  entries: ChatEntryData[];
+  // Whether older entries wait before the first one shown.
   hasOlder: boolean;
   pending: ConversationIntent[];
   refused: { entry: RecoveryEntry; reason: string }[];
-  // The viewing actor as type:id, the speaker of the viewer's own rows.
+  // The viewing actor as type:id, the author of the viewer's own entries.
   viewer: string;
   participants: ParticipantData[];
-  // The address that opens one question passively, as a notification opens it.
-  questionUrl: (messageId: string) => string;
-  // The page prop a retry reads again.
+  // The page prop a send or an answer reads again.
   conversationProp: string;
-  // The chat the messages are in, which a reaction names.
+  // The chat the entries are in, which a reaction names.
   inboxId: string;
 }>();
 
 const emit = defineEmits<{
-  reply: [message: ChatMessageData];
+  reply: [target: ReplyTarget];
   older: [];
-  decline: [message: ChatMessageData];
   checkAgain: [intent: ConversationIntent];
   restore: [intentKey: string];
   discard: [intentKey: string];
@@ -65,8 +60,8 @@ const dayFormat = new Intl.DateTimeFormat(undefined, {
   month: "long",
 });
 
-/** The day a message was sent, as the divider above the first message of that day names it. */
-function dayLabel(sentAt: Date): string {
+/** The day an entry was made, as the divider above the first entry of that day names it. */
+function dayLabel(madeAt: Date): string {
   const today = new Date();
   const yesterday = new Date(
     today.getFullYear(),
@@ -74,98 +69,70 @@ function dayLabel(sentAt: Date): string {
     today.getDate() - 1,
   );
 
-  if (sentAt.toDateString() === today.toDateString()) {
+  if (madeAt.toDateString() === today.toDateString()) {
     return "Today";
   }
 
-  return sentAt.toDateString() === yesterday.toDateString()
+  return madeAt.toDateString() === yesterday.toDateString()
     ? "Yesterday"
-    : dayFormat.format(sentAt);
+    : dayFormat.format(madeAt);
 }
 
-/**
- * One entry of the log, a message or a plain line at its position, with its time and the day divider it starts when it
- * is the first of its day.
- */
+/** One row of the log: an entry with its time and the day divider it starts when it is the first of its day. */
 type LogRow = {
-  key: string;
-  message: ChatMessageData | null;
-  line: ChatLineData | null;
+  entry: ChatEntryData;
   time: string;
   day: string | null;
 };
 
-/** The messages and the plain lines in timeline order, each with its time and the day it starts. */
+/** Every entry but the reactions, which show on the message they answer, each with its time and the day it starts. */
 const rows = computed((): LogRow[] => {
-  const entries = [
-    ...props.messages.map((message) => ({
-      sequence: message.sequence,
-      at: message.sentAt,
-      message,
-      line: null,
-    })),
-    ...props.lines.map((line) => ({
-      sequence: line.sequence,
-      at: line.postedAt,
-      message: null,
-      line,
-    })),
-  ].sort((one, other) => one.sequence - other.sequence);
+  const shown = props.entries.filter((entry) => entry.type !== "reaction");
 
-  return entries.map((entry, index): LogRow => {
-    const at = new Date(entry.at);
-    const previous = index === 0 ? null : new Date(entries[index - 1].at);
+  return shown.map((entry, index): LogRow => {
+    const at = new Date(entry.createdAt);
+    const previous = index === 0 ? null : new Date(shown[index - 1].createdAt);
     const startsDay =
       previous === null || previous.toDateString() !== at.toDateString();
 
-    return {
-      key: entry.message?.id ?? `line-${entry.sequence}`,
-      message: entry.message,
-      line: entry.line,
-      time: timeOfDay(at),
-      day: startsDay ? dayLabel(at) : null,
-    };
+    return { entry, time: timeOfDay(at), day: startsDay ? dayLabel(at) : null };
   });
 });
 
+const reactions = computed(() => reactionsByMessage(props.entries, props.viewer));
+const messages = computed(() => entriesByMessage(props.entries));
+
 /**
- * The agent whose turn a row belongs to: an agent's own message names it, a plain line or card belongs to whichever
- * agent is acting, and a user's message is no part of a turn.
+ * The agent whose turn a row belongs to: an agent's own entry names it, an event belongs to whichever agent is
+ * acting, and a user's entry is no part of a turn.
  */
 function turnOf(row: LogRow): string | null {
-  if (row.message === null) {
+  if (row.entry.type === "event") {
     return ACTING_AGENT;
   }
 
-  return row.message.speaker.driver === null || isOwn(row.message) ? null : row.message.speaker.actor;
+  return row.entry.author?.startsWith("agent:") === true && !isOwn(row.entry) ? row.entry.author : null;
 }
 
 /** The rows as the design spaces them: each agent turn close together, with the day that starts above it. */
 const turns = computed(() =>
   groupTurns(rows.value, turnOf, (row) => row.day !== null).map((turn) => ({
-    key: turn[0].key,
+    key: turn[0].entry.id,
     day: turn[0].day,
     rows: turn,
   })),
 );
 
-/** How long after a speaker's message their next one still joins it as one run. */
-const RUN_GAP_MILLISECONDS = 5 * 60 * 1000;
-
-/**
- * Whether a row joins the one above as a run: the same speaker, not the viewer, nothing between, within five minutes.
- */
+/** Whether a row joins the one above in one bubble run: the same group, by another than the viewer. */
 function continuesRun(turnRows: LogRow[], index: number): boolean {
-  const message = turnRows[index].message;
-  const previous = index === 0 ? null : turnRows[index - 1].message;
-
-  if (message === null || previous === null || isOwn(message)) {
-    return false;
-  }
+  const entry = turnRows[index].entry;
+  const previous = index === 0 ? null : turnRows[index - 1].entry;
 
   return (
-    previous.speaker.actor === message.speaker.actor &&
-    new Date(message.sentAt).getTime() - new Date(previous.sentAt).getTime() < RUN_GAP_MILLISECONDS
+    previous !== null &&
+    previous.type === "message" &&
+    !isOwn(entry) &&
+    previous.groupNumber === entry.groupNumber
   );
 }
 
@@ -173,46 +140,39 @@ const log = useTemplateRef<HTMLElement>("log");
 
 useChatScroll(
   log,
-  () => rows.value.map((row) => row.key),
+  () => rows.value.map((row) => row.entry.id),
   () => props.pending.length,
 );
 
-/** The viewer's latest message, the only one that keeps Delivered in view. */
-const latestOwnId = computed(() => props.messages.findLast((message) => isOwn(message))?.id ?? null);
-
-function isOwn(message: ChatMessageData): boolean {
-  return message.speaker.actor === props.viewer;
+function isOwn(entry: ChatEntryData): boolean {
+  return entry.author === props.viewer;
 }
 
-function speakerOf(message: ChatMessageData): string {
-  return message.speaker.driver === null
-    ? message.speaker.label
-    : `${message.speaker.label} · ${message.speaker.driver}`;
+function nameOf(entry: ChatEntryData): string {
+  return entry.authorLabel ?? "someone who left";
 }
 
-/**
- * The name the roster shows for a member, or the words someone who left for one no longer in the chat.
- */
-function labelOf(actor: string): string {
-  return (
-    props.participants.find((member) => member.actor === actor)?.label ??
-    "someone who left"
-  );
+/** The driver of the agent that wrote an entry, as the roster names it; a user has none. */
+function driverOf(entry: ChatEntryData): string | null {
+  return props.participants.find((member) => member.actor === entry.author)?.driver ?? null;
 }
 
-/**
- * What a screen reader says for a row: who wrote it, with the driver for an agent, and whom it addresses.
- */
-function rowLabel(message: ChatMessageData): string {
-  const speaker = isOwn(message) ? "You" : speakerOf(message);
-  const addressee =
-    message.addressedTo === null ? "" : ` to ${labelOf(message.addressedTo)}`;
+/** What a screen reader says for a message: who wrote it, with the driver for an agent. */
+function rowLabel(entry: ChatEntryData): string {
+  if (isOwn(entry)) {
+    return "You";
+  }
 
-  return `${speaker}${addressee}`;
+  const driver = driverOf(entry);
+
+  return driver === null ? nameOf(entry) : `${nameOf(entry)} · ${driver}`;
 }
 
+function replyTo(message: MessageEntryData): void {
+  emit("reply", { id: message.id, number: message.number, body: message.body });
+}
 
-// Nothing to show yet: no message, no plain line, none being sent and none refused.
+// Nothing to show yet: no entry, none being sent and none refused.
 const isEmpty = computed(
   () =>
     rows.value.length === 0 &&
@@ -233,11 +193,7 @@ const isEmpty = computed(
       <NoMessages />
     </template>
     <template v-if="hasOlder">
-      <TextLink
-        variant="quiet"
-        class="self-center"
-        @click="emit('older')"
-      >
+      <TextLink variant="quiet" class="self-center" @click="emit('older')">
         Show earlier messages
       </TextLink>
     </template>
@@ -246,72 +202,53 @@ const isEmpty = computed(
         <p class="self-center text-badge text-text-3">{{ turn.day }}</p>
       </template>
       <div class="flex flex-col gap-2" data-turn>
-        <template v-for="({ key, message, line, time }, index) in turn.rows" :key="key">
-          <template
-            v-if="
-              line !== null && line.card !== null && line.cardPlacement === 'inline'
-            "
-          >
-            <Card tone="plain" class="w-full px-3 py-2">
-              <RecordCard :card="line.card" />
-            </Card>
-          </template>
-          <template v-else-if="line !== null && line.card !== null">
+        <template v-for="({ entry, time }, index) in turn.rows" :key="entry.id">
+          <template v-if="entry.event !== undefined">
             <QuietLine
               icon="sequence"
               class="self-start"
               :title="time"
-              @click="emit('openRecord', line.card)"
+              @click="entry.event && emit('openRecord', entry.event)"
             >
-              <b>{{ line.subject }}</b> · {{ line.line }}
+              {{ entry.event.accessibleName }}
             </QuietLine>
           </template>
-          <template v-else-if="line !== null">
-            <p
-              class="flex items-center gap-1.75 self-start text-badge text-text-3"
-              :title="time"
-            >
-              <LineWords :subject="line.subject" :words="line.line" />
-            </p>
+          <template v-else-if="entry.question !== undefined">
+            <QuestionCard
+              :question="entry.question"
+              :asked-by="isOwn(entry) ? 'you' : nameOf(entry)"
+              :time="time"
+              :conversation-prop="conversationProp"
+            />
           </template>
-          <template v-if="message !== null && isOwn(message)">
-            <div class="group/own relative flex max-w-[78%] flex-col items-end gap-[3px] self-end">
+          <template v-else-if="entry.message !== undefined">
+            <div
+              :class="
+                isOwn(entry)
+                  ? 'group/own relative flex max-w-[78%] flex-col items-end gap-[3px] self-end'
+                  : 'contents'
+              "
+            >
               <MessageRow
-                :message="message"
+                :message="entry.message"
                 :time="time"
-                :is-own="isOwn(message)"
+                :is-own="isOwn(entry)"
                 :continues-run="continuesRun(turn.rows, index)"
-                :label="rowLabel(message)"
-                :addressee="message.addressedTo === null ? null : labelOf(message.addressedTo)"
+                :label="rowLabel(entry)"
+                :name="nameOf(entry)"
+                :driver="driverOf(entry)"
+                :original="
+                  entry.message.targetMessageId === null
+                    ? undefined
+                    : messages.get(entry.message.targetMessageId)
+                "
+                :reactions="reactions.get(entry.message.id) ?? []"
                 :viewer="viewer"
-                :question-url="questionUrl(message.id)"
                 :inbox-id="inboxId"
                 :conversation-prop="conversationProp"
-                @reply="emit('reply', message)"
-                @decline="emit('decline', message)"
-              />
-              <MessageDeliveries
-                :message="message"
-                :conversation-prop="conversationProp"
-                :is-latest="message.id === latestOwnId"
+                @reply="entry.message && replyTo(entry.message)"
               />
             </div>
-          </template>
-          <template v-else-if="message !== null">
-            <MessageRow
-              :message="message"
-              :time="time"
-              :is-own="isOwn(message)"
-              :continues-run="continuesRun(turn.rows, index)"
-              :label="rowLabel(message)"
-              :addressee="message.addressedTo === null ? null : labelOf(message.addressedTo)"
-              :viewer="viewer"
-              :question-url="questionUrl(message.id)"
-              :inbox-id="inboxId"
-              :conversation-prop="conversationProp"
-              @reply="emit('reply', message)"
-              @decline="emit('decline', message)"
-            />
           </template>
         </template>
       </div>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Chat;
 
 use PhpOption\Option;
+use App\Contracts\Inboxes\LabeledInbox;
 
 /**
  * An inbox provider whose inboxes can be found by a stable name, such as the desk named main.
@@ -12,7 +13,7 @@ use PhpOption\Option;
 interface NamedInboxes
 {
     /**
-     * @return Option<Inbox>
+     * @return Option<LabeledInbox>
      */
     public function inboxNamed(string $name): Option;
 }

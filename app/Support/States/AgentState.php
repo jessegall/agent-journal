@@ -21,7 +21,6 @@ use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Support\References\StateReference;
 use App\Values\AgentText;
-use App\Values\StackVerdict;
 use PhpOption\None;
 use PhpOption\Option;
 
@@ -47,15 +46,6 @@ abstract class AgentState implements HookAnswerer
     public function isFinished(): bool
     {
         return false;
-    }
-
-    /**
-     * Whether the agent may do other work while this state is on its stack; a refusal names its reason and the tool
-     * call that gets the agent out of it. Allowed by default.
-     */
-    public function workPermission(): StackVerdict
-    {
-        return StackVerdict::allow();
     }
 
     /**

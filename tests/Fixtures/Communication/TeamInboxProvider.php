@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Contracts\Chat\Inbox;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Chat\InboxProvider;
 
 /**
@@ -12,7 +12,7 @@ use App\Contracts\Chat\InboxProvider;
  */
 final readonly class TeamInboxProvider implements InboxProvider
 {
-    public function inboxFor(string $inboxId, string $providerId): Inbox
+    public function inboxFor(string $inboxId, string $providerId): LabeledInbox
     {
         return new TeamInbox($inboxId, "Team {$providerId}");
     }

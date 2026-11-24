@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Data\ReadShownInput;
 use Domain\Chat\Http\Requests\ConversationRequest;
@@ -14,11 +14,14 @@ use Illuminate\Routing\Redirector;
 final readonly class ReadShownController
 {
     /**
-     * Marks the shown incoming messages read for everyone at the inbox, and claims the questions among them.
+     * Records that the viewer read each message the page showed it.
      */
     public function __invoke(ReadShownInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new ReadMessagesCommand($input->inboxId, $input->messageIds));
+        foreach ($input->messageIds as $messageId) {
+            $commands->run(new ReadMessageCommand($messageId));
+        }
+
         $home = $redirect->getUrlGenerator()->route('home', ConversationRequest::queryFor($input->agent), false);
 
         // The page that showed the messages, Home or Chat's own, is shown again.

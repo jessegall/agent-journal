@@ -14,8 +14,6 @@ use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\States\Support\AwaitingSkillsStateReference;
 use App\Values\AgentText;
-use App\Values\RecoveryCall;
-use App\Values\StackVerdict;
 use PhpOption\Option;
 use PhpOption\Some;
 
@@ -40,11 +38,6 @@ final class AwaitingSkillsState extends AgentState
         return ! $this->publication->awaitsDelivery();
     }
 
-    public function workPermission(): StackVerdict
-    {
-        return StackVerdict::refuse($this->reason(), new RecoveryCall('overview_read'));
-    }
-
     /**
      * @return Option<AgentText>
      */
@@ -57,7 +50,7 @@ final class AwaitingSkillsState extends AgentState
 
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        if ($input->command->readsOnly()) {
+        if ($input->isReadOnly()) {
             return Decision::delegate();
         }
 

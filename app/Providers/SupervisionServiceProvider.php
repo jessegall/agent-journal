@@ -34,7 +34,7 @@ use App\Support\SettleMergeOutcomesOnTick;
 use App\Support\SupervisorRouting;
 use App\Support\Types\CodeReviewType;
 use App\Support\Types\MergeReadyType;
-use App\Support\Types\QuestionType;
+use App\Support\Types\QuestionAskType;
 use App\Support\Types\StuckType;
 use App\Support\UnavailableSupervisorDispatch;
 use App\Support\UnavailableWorkRepair;
@@ -90,7 +90,7 @@ final class SupervisionServiceProvider extends ServiceProvider
             [AccessType::Edit],
         ));
 
-        $types->register($this->app->make(QuestionType::class));
+        $types->register($this->app->make(QuestionAskType::class));
         $types->register($this->app->make(CodeReviewType::class));
         $types->register($this->app->make(MergeReadyType::class));
         $types->register($this->app->make(StuckType::class));

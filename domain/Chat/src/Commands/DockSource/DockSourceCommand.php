@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\DockSource;
 
-use App\Attributes\Authorize;
 use App\Attributes\RetainedActorRequestKey;
-use App\Enums\AccessType;
 use App\Support\Command;
 use App\Support\Sources\DockDefinition;
-use Domain\Chat\Policies\ConversationPolicy;
 use Domain\Chat\Values\DockResult;
 
 /**
@@ -19,7 +16,6 @@ use Domain\Chat\Values\DockResult;
  * @extends Command<DockResult>
  */
 #[RetainedActorRequestKey]
-#[Authorize(ConversationPolicy::class, AccessType::Edit)]
 final readonly class DockSourceCommand extends Command
 {
     public function __construct(

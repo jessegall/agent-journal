@@ -94,7 +94,12 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
      */
     public static function retain(WorkspaceReadReference $reference, ActorIdentity $actor, WorkReference $work): self
     {
-        $read = new self(['read_reference' => $reference->key, ...$actor->asColumns('actor'), 'work' => $work->key]);
+        $read = new self([
+            'read_reference' => $reference->key,
+            'actor_type' => $actor->type->value,
+            'actor_id' => $actor->id,
+            'work' => $work->key,
+        ]);
         $read->setAttribute($read->getKeyName(), $read->newUniqueId());
         $read->insertIfAbsent();
 

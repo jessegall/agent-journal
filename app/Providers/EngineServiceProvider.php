@@ -6,20 +6,17 @@ namespace App\Providers;
 
 use App\Console\Commands\TickCommand;
 use App\Contracts\Admission\MaintenanceAdmission;
-use App\Contracts\Authorization\AuthorizerProviderRegistration;
 use App\Contracts\Authorization\EngineTargetAccess;
 use App\Contracts\Processes\StopTimes;
 use App\Contracts\Processes\Watchdog;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\Sleeper;
-use App\Enums\ActorType;
 use App\Support\AdvisoryEngineLock;
 use App\Support\AlarmWatchdog;
 use App\Support\CertifyPassedStopsOnTick;
 use App\Support\EndTerminalViewsOnTick;
 use App\Support\EnforceLaunchLimitsOnTick;
 use App\Support\EngineAccess;
-use App\Support\EngineAuthorizerProvider;
 use App\Support\EngineListenerSet;
 use App\Support\EngineLoop;
 use App\Support\EngineSettings;
@@ -78,9 +75,7 @@ final class EngineServiceProvider extends ServiceProvider
     public function boot(
         SelfMeasuredCommands $selfMeasured,
         EngineListenerSet $listeners,
-        AuthorizerProviderRegistration $authorizers,
     ): void {
-        $authorizers->register(ActorType::Engine, EngineAuthorizerProvider::class);
         $listeners->add(MarkSilentSessionsOnTick::class);
         $listeners->add(CertifyPassedStopsOnTick::class);
         $listeners->add(InspectMergeAttemptsOnTick::class);

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Connections;
 
-use App\Commands\Messages\AskMessage\AskMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Models\Projects\ProjectRead;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Tells an agent about a comment just left on lines of a project file: the chat message names the file, the lines and
- * the comment, sent from the user's inbox to the agent's, and the request's Idempotency-Key makes a retry the same
- * message.
+ * Tells an agent about a comment just left on lines of a project file: the message names the file, the lines and the
+ * comment, sent into the agent's inbox, and the request's Idempotency-Key makes a retry the same message.
  */
 final class TellFileCommentRequest extends FormRequest
 {
@@ -34,7 +33,7 @@ final class TellFileCommentRequest extends FormRequest
         return $this->string('agent')->toString();
     }
 
-    public function command(string $sourceInboxId, string $destinationInboxId): AskMessageCommand
+    public function command(string $inboxId): SendMessageCommand
     {
         $first = $this->integer('first_line');
         $last = $this->integer('last_line');
@@ -42,6 +41,6 @@ final class TellFileCommentRequest extends FormRequest
         $path = $this->string('path')->toString();
         $comment = $this->string('comment')->toString();
 
-        return new AskMessageCommand($sourceInboxId, $destinationInboxId, "About {$path}, {$lines}: {$comment}");
+        return new SendMessageCommand($inboxId, "About {$path}, {$lines}: {$comment}");
     }
 }

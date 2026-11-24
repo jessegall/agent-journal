@@ -136,7 +136,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
                 ? $accountOrDriver->account_protocol
                 : $accountOrDriver,
             'method' => $method,
-            ...$starter->asColumns('actor'),
+            'actor_type' => $starter->type->value,
+            'actor_id' => $starter->id,
         ]);
 
         if ($accountOrDriver instanceof Account) {

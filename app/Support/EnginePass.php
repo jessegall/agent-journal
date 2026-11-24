@@ -45,7 +45,7 @@ final readonly class EnginePass
 
         try {
             $authority = new TrustedEntryAuthority('engine pass');
-            $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), $authority);
+            $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), $authority);
 
             return $this->app->make(CommandEntrance::class)->through(CommandEntry::EngineMaintenance, $work(...));
         } finally {

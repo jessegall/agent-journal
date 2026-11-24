@@ -2,10 +2,10 @@ import { router } from "@inertiajs/vue3";
 import { react } from "@generated/routes/chat";
 
 /**
- * Adds the viewer's reaction to a message, or takes it back when it is already theirs, and reads the conversation
- * again in place.
+ * Reacts to a message with one emoji, a reply whose whole body is that emoji, and reads the conversation again in
+ * place.
  */
-export function toggleReaction(inboxId: string, messageId: string, emoji: string, conversationProp: string): void {
+export function sendReaction(inboxId: string, messageId: string, emoji: string, conversationProp: string): void {
   router.post(
     react().url,
     { inboxId, messageId, emoji },

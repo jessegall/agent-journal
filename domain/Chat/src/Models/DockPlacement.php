@@ -22,11 +22,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A source docked in one conversation, shared by both sides of it: which source, in which presentation, and who
+ * A source docked in one chat, shared by both sides of it: which source, in which presentation, and who
  * docked it when. Removing it never touches the source.
  *
  * @property string $id
- * @property string $conversation_id
+ * @property string $inbox_id
  * @property string $dockable_type
  * @property string $dockable_id
  * @property string $presentation
@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable $assigned_at
  */
 #[Fillable([
-    'conversation_id',
+    'inbox_id',
     'dockable_type',
     'dockable_id',
     'presentation',
@@ -65,16 +65,16 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Docks the source in the locked conversation; its caller has found no placement of it there.
+     * Docks the source in the locked chat; its caller has found no placement of it there.
      */
     public static function create(
-        Conversation $conversation,
+        Inbox $inbox,
         DockIdentity $source,
         string $presentation,
         ActorIdentity $assignedBy,
     ): self {
         $placement = new self([
-            'conversation_id' => $conversation->id,
+            'inbox_id' => $inbox->id,
             'dockable_type' => $source->type,
             'dockable_id' => $source->id,
             'presentation' => $presentation,
@@ -84,7 +84,7 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         ]);
 
         $placement->assertSaved($placement->save());
-        $placement->raise(new DockChanged($conversation->id));
+        $placement->raise(new DockChanged($inbox->id));
 
         return $placement;
     }
@@ -92,20 +92,20 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The placement of the source in the conversation, when it is docked there.
+     * The placement of the source in the chat, when it is docked there.
      */
-    public static function docked(Conversation $conversation, DockIdentity $source): self|null
+    public static function docked(Inbox $inbox, DockIdentity $source): self|null
     {
-        return self::query()->inConversation($conversation)->ofSource($source)->lockForUpdate()->first();
+        return self::query()->inInbox($inbox)->ofSource($source)->lockForUpdate()->first();
     }
 
     /**
-     * The placement of this id in the conversation, when it still docks this source there.
+     * The placement of this id in the chat, when it still docks this source there.
      */
-    public static function matching(Conversation $conversation, string $placementId, DockIdentity $source): self|null
+    public static function matching(Inbox $inbox, string $placementId, DockIdentity $source): self|null
     {
         return self::query()
-            ->inConversation($conversation)
+            ->inInbox($inbox)
             ->ofSource($source)
             ->whereKey($placementId)
             ->lockForUpdate()
@@ -117,7 +117,7 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
     public function remove(): void
     {
         $this->assertSaved((bool) $this->delete());
-        $this->raise(new DockChanged($this->conversation_id));
+        $this->raise(new DockChanged($this->inbox_id));
     }
 
     /**
@@ -148,9 +148,9 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inConversation(Builder $query, Conversation $conversation): void
+    protected function inInbox(Builder $query, Inbox $inbox): void
     {
-        $query->where('conversation_id', $conversation->id);
+        $query->where('inbox_id', $inbox->id);
     }
 
     /**

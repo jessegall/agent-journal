@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Chat\Inbox;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Chat\InboxDestinationResolver;
 
 /**
@@ -14,7 +14,7 @@ final readonly class RegisteredInboxDestinations implements InboxDestinationReso
 {
     public function __construct(private DestinationRegistry $destinations) {}
 
-    public function resolve(AssigneeIdentity $requested): Inbox
+    public function resolve(AssigneeIdentity $requested): LabeledInbox
     {
         return $this->destinations->destinationsFor($requested)->inbox();
     }

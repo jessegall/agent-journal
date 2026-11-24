@@ -39,6 +39,14 @@ final readonly class ShellCommandRequested implements HookInput
         return $this->hook;
     }
 
+    /**
+     * Whether the whole command line only reads, which no state ever denies.
+     */
+    public function isReadOnly(): bool
+    {
+        return $this->command->readsOnly();
+    }
+
     public function methodName(): string
     {
         return 'onShellCommand';

@@ -6,22 +6,19 @@ namespace Domain\Chat\Http\Controllers;
 
 use Domain\Chat\Data\ChatRowsInput;
 use Domain\Chat\Data\ChatRowsPageData;
-use Domain\Chat\Resolvers\Support\ChatConversations;
-use Domain\Chat\Support\AuthorizedConversations;
+use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Support\ChatInboxes;
 
+/**
+ * The page of a chat's entries before the one named, for a window scrolled up, or the newest page; only for a chat the
+ * viewer is attached to.
+ */
 final readonly class ChatRowsController
 {
-    /**
-     * A page of a chat's rows for a member, the newest or the one before an older cursor, so the window fills a gap
-     * or pages back without reading the whole window again.
-     */
-    public function __invoke(
-        ChatRowsInput $input,
-        AuthorizedConversations $conversations,
-        ChatConversations $chats,
-    ): ChatRowsPageData {
-        $conversations->inInbox($input->inboxId);
+    public function __invoke(ChatRowsInput $input, ChatInboxes $chats, ChatPages $pages): ChatRowsPageData
+    {
+        $chats->attached($input->inboxId);
 
-        return $chats->rowsPage($input->inboxId, $input->olderCursor);
+        return $pages->entriesBefore($input->inboxId, $input->beforeId);
     }
 }

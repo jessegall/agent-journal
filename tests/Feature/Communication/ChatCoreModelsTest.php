@@ -11,7 +11,7 @@ use App\Enums\SpeechOpportunityState;
 use App\Enums\TimelineEventType;
 use App\Exceptions\ChatStateConflict;
 use App\Models\Chats\InboxInterval;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\Chats\SpeechOpportunity;
 use App\Models\Chats\TimelineEvent;
 use App\Models\CommandRules\CommandReceipt;
@@ -46,7 +46,7 @@ final class ChatCoreModelsTest extends TestCase
 
     private ActorIdentity $agent;
 
-    private InboxRecord $inbox;
+    private Inbox $inbox;
 
     protected function setUp(): void
     {
@@ -54,13 +54,13 @@ final class ChatCoreModelsTest extends TestCase
 
         GlobalGroup::installJournal();
         $this->agent = TestActors::agentIdentity(7);
-        $this->inbox = InboxRecord::create('test-chat', (string) str()->ulid());
+        $this->inbox = Inbox::create('test-chat', (string) str()->ulid());
     }
 
     public function test_the_inbox_hands_out_each_sequence_once_in_order(): void
     {
-        $first = InboxRecord::lockedForSequence($this->inbox->id)->takeSequence();
-        $second = InboxRecord::lockedForSequence($this->inbox->id)->takeSequence();
+        $first = Inbox::lockedForSequence($this->inbox->id)->takeSequence();
+        $second = Inbox::lockedForSequence($this->inbox->id)->takeSequence();
 
         $this->assertSame([1, 2], [$first, $second]);
         $this->assertSame(2, $this->inbox->refresh()->next_sequence);

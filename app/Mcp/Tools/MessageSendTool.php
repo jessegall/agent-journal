@@ -20,24 +20,24 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('messages_send')]
 #[Dispatches(SendMessageCommand::class)]
-#[Description('Send a note from one of your inboxes to another inbox; nobody has to answer it.')]
+#[Description('Send a message into an inbox you are attached to; name target_message_number to reply to that message of the inbox.')]
 final class MessageSendTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'source_inbox_id' => $this->recordIdArgument($schema),
-            'destination_inbox_id' => $this->recordIdArgument($schema),
+            'inbox_id' => $this->recordIdArgument($schema),
             'body' => $schema->string()->required(),
+            'target_message_number' => $schema->integer()->min(1),
         ];
     }
 
     protected function command(ToolArguments $arguments): Command
     {
         return new SendMessageCommand(
-            $arguments->text('source_inbox_id'),
-            $arguments->text('destination_inbox_id'),
+            $arguments->text('inbox_id'),
             $arguments->text('body'),
+            $arguments->optionalPositiveInteger('target_message_number'),
         );
     }
 

@@ -16,8 +16,8 @@ final readonly class DockListController
 {
     public function __invoke(DockListCall $call, DockRequests $requests, DockListing $listing): DockListData
     {
-        $conversation = $requests->chosenConversation($call->chat);
+        $inbox = $requests->chosenInbox($call->chat);
 
-        return $listing->of($conversation, $call->limit);
+        return $listing->of($inbox, $call->limit);
     }
 }

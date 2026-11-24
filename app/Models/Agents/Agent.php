@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use App\Concerns\TakesPartInMessages;
+use App\Contracts\Messages\MessageReceiver;
+use App\Contracts\Messages\MessageSender;
+use App\Contracts\Questions\AnswersQuestions;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignee;
-use App\Contracts\Chat\MessageRecipient;
-use App\Contracts\Chat\MessageSender;
-use App\Contracts\Chat\SeatedActor;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
@@ -48,13 +49,14 @@ use PhpOption\Some;
  */
 #[Fillable(['name', 'profile_key'])]
 final class Agent extends Model implements
+    MessageReceiver,
+    MessageSender,
     Assignee,
     EventSource,
-    MessageRecipient,
-    MessageSender,
-    ReadableModel,
-    SeatedActor
+    AnswersQuestions,
+    ReadableModel
 {
+    use TakesPartInMessages;
     use BoundedReads;
     use HasUlids;
     use Linkable;

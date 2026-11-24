@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Chat\Inbox;
-use App\Contracts\Chat\InboxAccess;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Chat\InboxProvider;
 use App\Contracts\Chat\InboxRegistration;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Chat\NamedInboxes;
 use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * The inbox providers registered at boot, each under one key with the access that guards it, and the resolution of
@@ -23,7 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 final class RegisteredInboxes implements InboxRegistration, InboxResolver
 {
     /**
-     * @var Registry<array{class-string<InboxProvider>, class-string<InboxAccess>}>
+     * @var Registry<class-string<InboxProvider>>
      */
     private readonly Registry $providers;
 
@@ -32,30 +30,26 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
         $this->providers = Registry::once(InboxUnavailable::forId(...), InboxProviderInvalid::repeated(...));
     }
 
-    public function register(string $providerKey, string $providerClass, string $accessClass): void
+    public function register(string $providerKey, string $providerClass): void
     {
         if (! Reflector::factory()->isSubclassOf($providerClass, InboxProvider::class)) {
             throw InboxProviderInvalid::notAProvider($providerKey, $providerClass);
         }
 
-        if (! Reflector::factory()->isSubclassOf($accessClass, InboxAccess::class)) {
-            throw InboxProviderInvalid::withoutAccess($providerKey, $accessClass);
-        }
-
-        $this->providers->put($providerKey, [$providerClass, $accessClass]);
+        $this->providers->put($providerKey, $providerClass);
     }
 
-    public function resolve(string $inboxId): Inbox
+    public function resolve(string $inboxId): LabeledInbox
     {
-        $record = InboxRecord::query()->findOr($inboxId, fn () => throw InboxUnavailable::forId($inboxId));
-        [$providerClass] = $this->providers->find($record->provider_key)->getOrThrow(InboxUnavailable::forId($inboxId));
+        $record = Inbox::query()->findOr($inboxId, fn () => throw InboxUnavailable::forId($inboxId));
+        $providerClass = $this->providers->find($record->provider_key)->getOrThrow(InboxUnavailable::forId($inboxId));
 
         return Container::getInstance()->make($providerClass)->inboxFor($record->id, $record->provider_id);
     }
 
-    public function named(string $name): Inbox
+    public function named(string $name): LabeledInbox
     {
-        foreach ($this->providers->all() as [$providerClass]) {
+        foreach ($this->providers->all() as $providerClass) {
             $provider = Container::getInstance()->make($providerClass);
 
             if (! $provider instanceof NamedInboxes) {
@@ -72,42 +66,6 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
         throw InboxUnavailable::forName($name);
     }
 
-    public function accessFor(Inbox $inbox): InboxAccess
-    {
-        $record = InboxRecord::query()->findOr(
-            $inbox->inboxId(),
-            fn () => throw InboxUnavailable::forId($inbox->inboxId()),
-        );
 
-        [, $accessClass] = $this->providers->find($record->provider_key)
-            ->getOrThrow(InboxUnavailable::forId($inbox->inboxId()));
 
-        return Container::getInstance()->make($accessClass);
-    }
-
-    public function membersOf(Inbox $inbox): array
-    {
-        return $this->accessFor($inbox)->members($inbox)->memberships;
-    }
-
-    /**
-     * Every registered provider's inboxes the actor is seated at, as one query.
-     *
-     * @return Builder<*>
-     */
-    public function inboxIdsOf(ActorIdentity $actor): Builder
-    {
-        $queries = array_map(
-            fn (array $provider) => Container::getInstance()->make($provider[1])->memberInboxIds($actor),
-            array_values($this->providers->all()),
-        );
-
-        $first = array_shift($queries) ?? InboxRecord::query()->whereKey([])->select('id');
-
-        return array_reduce(
-            $queries,
-            fn (Builder $combinedMessages, Builder $more) => $combinedMessages->union($more),
-            $first,
-        );
-    }
 }

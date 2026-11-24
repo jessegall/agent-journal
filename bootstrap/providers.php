@@ -12,7 +12,6 @@ use App\Providers\CommentsServiceProvider;
 use App\Providers\CommunicationServiceProvider;
 use App\Providers\ConnectionsServiceProvider;
 use App\Providers\CoreServiceProvider;
-use App\Providers\DesksServiceProvider;
 use App\Providers\DockingServiceProvider;
 use App\Providers\DomainEventServiceProvider;
 use App\Providers\DomainServiceProvider;
@@ -65,7 +64,6 @@ return [
     SharingServiceProvider::class,
     ConnectionsServiceProvider::class,
     CommunicationServiceProvider::class,
-    DesksServiceProvider::class,
     CommentsServiceProvider::class,
     TextServiceProvider::class,
     HooksServiceProvider::class,

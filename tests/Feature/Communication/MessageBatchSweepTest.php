@@ -9,7 +9,7 @@ use App\Enums\MessageBatchState;
 use App\Enums\OutstandingMessageRangeState;
 use App\Events\Engine\EngineTicked;
 use App\Models\Chats\InboxInterval;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageBatch;
@@ -50,7 +50,7 @@ final class MessageBatchSweepTest extends TestCase
     public function test_only_the_unconfirmed_suffix_counts_failures_and_is_exhausted_after_five(): void
     {
         GlobalGroup::installJournal();
-        $inbox = InboxRecord::create('test-chat', (string) str()->ulid());
+        $inbox = Inbox::create('test-chat', (string) str()->ulid());
         $interval = InboxInterval::create($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
         $receipt = MessageReceipt::forAudience($this->message(), [$interval], TestIds::of(9))[0];
         $start = CarbonImmutable::now();
@@ -75,7 +75,7 @@ final class MessageBatchSweepTest extends TestCase
     public function test_an_engine_pass_settles_a_dispatched_batch_inside_a_command(): void
     {
         GlobalGroup::installJournal();
-        $inbox = InboxRecord::create('test-chat', (string) str()->ulid());
+        $inbox = Inbox::create('test-chat', (string) str()->ulid());
         $interval = InboxInterval::create($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
         $receipt = MessageReceipt::forAudience($this->message(), [$interval], TestIds::of(9))[0];
         $dispatched = CarbonImmutable::now()->subHour();

@@ -35,6 +35,14 @@ final readonly class ToolRequested implements HookInput
         return $this->hook;
     }
 
+    /**
+     * Whether the tool only reads, which no state ever denies.
+     */
+    public function isReadOnly(): bool
+    {
+        return $this->operation->readsOnly();
+    }
+
     public function methodName(): string
     {
         return 'onToolRequested';

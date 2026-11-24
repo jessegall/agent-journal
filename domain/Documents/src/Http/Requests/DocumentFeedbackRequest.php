@@ -22,7 +22,6 @@ final class DocumentFeedbackRequest extends FormRequest
     {
         return [
             'agent' => ['required', 'ulid'],
-            'request_key' => ['required', 'regex:/^[A-Za-z0-9-]{1,64}$/'],
             'first_line' => ['required_with:last_line', 'integer', 'min:1'],
             'last_line' => ['required_with:first_line', 'integer', 'gte:first_line'],
         ];
@@ -36,11 +35,6 @@ final class DocumentFeedbackRequest extends FormRequest
     public function agentId(): string
     {
         return $this->string('agent')->toString();
-    }
-
-    public function requestKey(): string
-    {
-        return $this->string('request_key')->toString();
     }
 
     /**

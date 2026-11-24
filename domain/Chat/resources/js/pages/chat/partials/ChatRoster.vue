@@ -4,7 +4,7 @@ import { router } from "@inertiajs/vue3";
 import { readPage } from "@kit/pageReads";
 import { computed, ref } from "vue";
 import Button from "@kit/Button";
-import type { ConversationData, SpeakerData } from "@generated/types/chat";
+import type { ConversationData, ParticipantData } from "@generated/types/chat";
 import {
   addMember,
   close,
@@ -15,7 +15,7 @@ import {
 import ParticipantRow from "./ParticipantRow.vue";
 
 /**
- * Who is in the chat and, offered only where the server's capabilities allow, the owner's controls: add an eligible
+ * Who is in the chat and, offered only where the server's capabilities allow, the member controls: add an eligible
  * user or agent, remove a member, hand the chat over, close it; any member may leave. Each change posts and reloads the room,
  * and the server checks it again.
  */
@@ -33,13 +33,7 @@ const others = computed(() =>
     (member) => member.actor !== props.conversation.viewer,
   ),
 );
-const isOwner = computed(() =>
-  props.conversation.participants.some(
-    (member) =>
-      member.actor === props.conversation.viewer && member.role === "owner",
-  ),
-);
-const found = ref<SpeakerData[]>([]);
+const found = ref<ParticipantData[]>([]);
 
 const membersList = ref<HTMLElement | null>(null);
 
@@ -72,7 +66,7 @@ function remove(participant: string): void {
 }
 
 function findCandidates(): void {
-  void readPage<{ candidates: SpeakerData[] }>("chat.candidates", {
+  void readPage<{ candidates: ParticipantData[] }>("chat.candidates", {
     inboxId: props.conversation.inboxId,
   }).then((answer) => (found.value = answer.candidates));
 }
@@ -115,17 +109,6 @@ function findCandidates(): void {
               Remove
             </TextLink>
           </template>
-          <template
-            v-if="
-              participant.actor !== conversation.viewer && capabilities.canTransfer
-            "
-          >
-            <TextLink
-              @click="post(transfer().url, { participant: participant.actor })"
-            >
-              Make owner
-            </TextLink>
-          </template>
         </ParticipantRow>
       </template>
     </ul>
@@ -149,11 +132,21 @@ function findCandidates(): void {
                   }}</span>
                 </template>
               </span>
-              <TextLink
-                @click="post(addMember().url, { participant: candidate.actor })"
-              >
-                Add
-              </TextLink>
+              <span class="flex gap-2">
+                <TextLink
+                  @click="post(addMember().url, { participant: candidate.actor })"
+                >
+                  Add
+                </TextLink>
+                <template v-if="capabilities.canTransfer">
+                  <TextLink
+                    :aria-label="`Hand your place over to ${candidate.label}`"
+                    @click="post(transfer().url, { participant: candidate.actor })"
+                  >
+                    Hand over
+                  </TextLink>
+                </template>
+              </span>
             </li>
           </template>
         </ul>
@@ -168,11 +161,6 @@ function findCandidates(): void {
           @click="post(leave().url, {})"
           >Leave</Button
         >
-      </template>
-      <template v-else-if="isOwner && others.length > 0">
-        <p class="text-small text-text-3">
-          Make another member the owner before you leave, or close the chat.
-        </p>
       </template>
       <template v-if="capabilities.canClose">
         <Button

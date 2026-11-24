@@ -8,7 +8,7 @@ use App\Contracts\Actors\ActorAttention;
 use App\Enums\IntervalRole;
 use App\Enums\ReceiptDeliveryState;
 use App\Models\Chats\InboxInterval;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageReceipt;
@@ -48,7 +48,7 @@ final class ReceiptDeliveriesTest extends TestCase
 
     private ActorIdentity $user;
 
-    private InboxRecord $inbox;
+    private Inbox $inbox;
 
     /**
      * @var list<AttentionOutcome|RuntimeException>
@@ -64,7 +64,7 @@ final class ReceiptDeliveriesTest extends TestCase
         GlobalGroup::installJournal();
         $this->agent = TestActors::agentIdentity(7);
         $this->user = TestActors::userIdentity(8);
-        $this->inbox = InboxRecord::create('test-chat', (string) str()->ulid());
+        $this->inbox = Inbox::create('test-chat', (string) str()->ulid());
         $this->app->instance(ActorAttention::class, new class($this) implements ActorAttention
         {
             public function __construct(private ReceiptDeliveriesTest $test) {}

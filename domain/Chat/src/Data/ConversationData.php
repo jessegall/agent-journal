@@ -9,22 +9,19 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One chat at its own inbox, with an agent or among users only: who is viewing, who takes part, the newest page of its rows by speaker,
- * how far it has got and how much the viewer has not read, and the sources docked in it; its inbox id keys the
- * composer's draft.
- *
- * @method static static from(array<string, mixed> $conversation)
+ * One chat as its window shows it: its members, what the viewer may do, the newest entries with whether older ones
+ * exist, and what is docked in it.
  */
 #[TypeScript]
 final class ConversationData extends Data
 {
     /**
      * @param  list<ParticipantData>  $participants
-     * @param  list<ChatMessageData>  $messages
-     * @param  list<ChatLineData>  $lines
+     * @param  list<ChatEntryData>  $entries
      */
     public function __construct(
         public readonly string $inboxId,
+        public readonly string $label,
         public readonly string|null $agentId,
         public readonly string|null $sessionId,
         public readonly int $sessionGeneration,
@@ -33,13 +30,10 @@ final class ConversationData extends Data
         public readonly array $participants,
         public readonly bool $canManageParticipants,
         public readonly ChatCapabilitiesData $capabilities,
-        public readonly int $latestSequence,
         public readonly int $unreadCount,
-        public readonly string|null $olderCursor,
-        #[DataCollectionOf(ChatMessageData::class)]
-        public readonly array $messages,
-        #[DataCollectionOf(ChatLineData::class)]
-        public readonly array $lines,
+        public readonly bool $hasOlder,
+        #[DataCollectionOf(ChatEntryData::class)]
+        public readonly array $entries,
         public readonly DockPageData $dock,
     ) {}
 }

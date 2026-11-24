@@ -7,7 +7,7 @@ namespace App\Support\StateEvents;
 use App\Contracts\Authorization\AuthoritySource;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
-use App\Support\EngineActor;
+use App\Support\SystemActor;
 use App\Values\FrameGrant;
 use App\Values\StackTarget;
 use App\Values\TrustedEntryAuthority;
@@ -40,7 +40,7 @@ final readonly class StateEventAudience
     public static function listening(StackTarget $target, string $frameId): self
     {
         return new self(
-            ActorContext::of(new EngineActor()),
+            ActorContext::of(new SystemActor()),
             new TrustedEntryAuthority('state listener'),
             [$target],
             None::create(),

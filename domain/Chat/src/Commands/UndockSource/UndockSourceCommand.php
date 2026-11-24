@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\UndockSource;
 
-use App\Attributes\Authorize;
 use App\Attributes\RetainedActorRequestKey;
-use App\Enums\AccessType;
 use App\Support\Command;
-use Domain\Chat\Policies\ConversationPolicy;
 use Domain\Chat\Values\DockResult;
 
 /**
@@ -18,7 +15,6 @@ use Domain\Chat\Values\DockResult;
  * @extends Command<DockResult>
  */
 #[RetainedActorRequestKey]
-#[Authorize(ConversationPolicy::class, AccessType::Edit)]
 final readonly class UndockSourceCommand extends Command
 {
     public function __construct(

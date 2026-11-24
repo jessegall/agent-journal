@@ -58,7 +58,8 @@ final class ReportJobDiscrepancy extends Model implements ReadableModel
         $discrepancy = new self([
             'report_id' => $reportId,
             'owner_reference' => $ownerReference,
-            ...$filer->asColumns('filer'),
+            'filer_type' => $filer->type->value,
+            'filer_id' => $filer->id,
             'reason' => $reason,
         ]);
 

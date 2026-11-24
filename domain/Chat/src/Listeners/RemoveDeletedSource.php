@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Listeners;
 
-use App\Contracts\Bus\CommandBus;
+use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
+use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\DockSourceDeleted;
-use Domain\Chat\Commands\ClearDeletedSource\ClearDeletedSourceCommand;
+use Domain\Chat\Models\DockPlacement;
 
 /**
- * Heard after an owner's deletion commits, so a rolled-back deletion removes nothing; the command removes the
- * deleted source from every conversation.
+ * A deleted source leaves every chat it was docked in.
  */
+#[InCommandTransaction]
 final readonly class RemoveDeletedSource implements Listener
 {
-    public function __construct(private CommandBus $commands) {}
-
     public function handle(DockSourceDeleted $fact): void
     {
-        $this->commands->run(new ClearDeletedSourceCommand($fact->dockType(), $fact->dockId()));
+        $source = new DockIdentity($fact->dockType(), $fact->dockId());
+
+        foreach (DockPlacement::query()->ofSource($source)->lockForUpdate()->get() as $placement) {
+            $placement->remove();
+        }
     }
 }

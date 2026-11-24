@@ -59,8 +59,6 @@ use App\Support\PendingWorkSources;
 use App\Support\ProtectedAccounts;
 use App\Support\Readers\FrameProgress;
 use App\Support\RetentionPeriods;
-use App\Support\Stack\ActiveStackPermission;
-use App\Support\Stack\Contracts\StackPermission;
 use App\Support\Stack\Contracts\StateFactory;
 use App\Support\Stack\RegisteredStateFactory;
 use App\Support\Stack\StateTypes;
@@ -107,7 +105,6 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bind(UserStack::class, UserStacks::class);
         $this->app->bind(StackInspectionQueryContract::class, StackInspectionQuery::class);
         $this->app->bind(StackTransactionContract::class, StackTransaction::class);
-        $this->app->bind(StackPermission::class, ActiveStackPermission::class);
         $this->app->bind(StateTypesContract::class, StateTypes::class);
         $this->app->singleton(IncomingWorkList::class);
         $this->app->singleton(IncomingWorkRegistration::class, IncomingWorkList::class);

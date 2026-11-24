@@ -4,23 +4,27 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
+use App\Commands\Inboxes\JoinInbox\JoinInboxCommand;
 use App\Contracts\Bus\CommandBus;
-use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
+use App\Support\ActorIdentity;
 use Domain\Chat\Data\ParticipantInput;
+use Domain\Chat\Support\ChatInboxes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
+/**
+ * Adds a member to a group chat; the viewer must manage its members.
+ */
 final readonly class AddParticipantController
 {
-    /**
-     * Adds a member to a chat the asker owns. The command rechecks every rule on submission.
-     */
     public function __invoke(
         ParticipantInput $input,
+        ChatInboxes $chats,
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new AddChatParticipantCommand($input->inboxId, $input->participant));
+        $chats->assertManages($input->inboxId);
+        $commands->run(new JoinInboxCommand($input->inboxId, ActorIdentity::fromText($input->participant)));
 
         return $redirect->back(303);
     }

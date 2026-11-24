@@ -25,4 +25,15 @@ final readonly class Operation
         public array $arguments,
         public int $declarationRevision,
     ) {}
+
+    /**
+     * Whether the operation only reads: it reads, searches or fetches, and changes nothing.
+     */
+    public function readsOnly(): bool
+    {
+        return $this->accessTypes !== [] && array_all(
+            $this->accessTypes,
+            fn (AccessType $type) => in_array($type, [AccessType::Read, AccessType::Search, AccessType::Network], true),
+        );
+    }
 }

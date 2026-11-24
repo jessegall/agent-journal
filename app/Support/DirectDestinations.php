@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Assignments\Assignee;
-use App\Contracts\Chat\Inbox;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Records\Destinations;
 
 /**
@@ -27,7 +27,7 @@ final readonly class DirectDestinations implements Destinations
         return $this->holder;
     }
 
-    public function inbox(): Inbox
+    public function inbox(): LabeledInbox
     {
         return $this->inboxes->preferredFor($this->actor);
     }

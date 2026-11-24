@@ -19,17 +19,13 @@ import Popover from "@kit/Popover";
 import { isRevealed } from "@kit/protectedView";
 import { liveStage, retryLiveConnection } from "@kit/liveConnection";
 import SlotSections from "@kit/SlotSections";
-import {
-  decline as declineRoute,
-  read as readRoute,
-} from "@generated/routes/chat";
+import { read as readRoute } from "@generated/routes/chat";
 import AgentPicker from "./AgentPicker.vue";
 import AgentSessionActions from "./AgentSessionActions.vue";
 import Composer from "./Composer.vue";
 import VerifyingSessionCard from "./VerifyingSessionCard.vue";
 import RecordPanel from "./RecordPanel.vue";
 import DockStack from "./DockStack.vue";
-import FocusedQuestion from "./FocusedQuestion.vue";
 import MessageList from "./MessageList.vue";
 import ChatRoster from "./ChatRoster.vue";
 import { chatRoster } from "../../../composables/useChatRoster";
@@ -46,7 +42,6 @@ const props = defineProps<{
   offersChoice: boolean;
   agentUrl: (agent: AgentOptionData) => string;
   chatUrl: (inboxId: string) => string;
-  questionUrl: (messageId: string) => string;
   loadMore: (token: string) => void;
   protectedProp: string;
 }>();
@@ -119,7 +114,7 @@ const key = computed(() => {
 const replyingTo = ref<ReplyTarget | null>(null);
 
 /**
- * This view's own rows of the chat, merged in timeline order without gaps or duplicates, and paged back on request.
+ * This view's own entries of the chat, merged by id in order, and paged back on request.
  */
 const timeline = useChatTimeline(conversation);
 
@@ -137,7 +132,7 @@ const owner = computed(() =>
   key.value === undefined ? undefined : useConversationIntents(key.value),
 );
 const shownRows = computed(
-  () => owner.value?.rows(timeline.messages.value) ?? [],
+  () => owner.value?.rows(timeline.entries.value) ?? [],
 );
 const pending = computed(() =>
   shownRows.value.flatMap((row) => (row.kind === "intent" ? [row.intent] : [])),
@@ -150,14 +145,14 @@ const refused = computed(() =>
 );
 
 /**
- * The record a chat line names, open beside the chat: the one the user chose, else the newest that still runs, such as
- * a sequence on its way; it closes when it ends, and stays closed once the user closes it.
+ * The record a chat event shows, open beside the chat: the one the user chose, else the newest that still runs, such
+ * as a sequence on its way; it closes when it ends, and stays closed once the user closes it.
  */
 const chosenRecord = ref<string | null>(null);
 const closedRecords = ref<string[]>([]);
 const panelCards = computed(() =>
-  timeline.lines.value.flatMap((line) =>
-    line.cardPlacement === "panel" && line.card !== null ? [line.card] : [],
+  timeline.entries.value.flatMap((entry) =>
+    entry.event === undefined ? [] : [entry.event],
   ),
 );
 const openedRecord = computed(() =>
@@ -178,7 +173,7 @@ function closeRecord(): void {
 }
 
 // A read that returned the user's own sends settles them.
-watch(timeline.messages, (messages) => owner.value?.settle(messages));
+watch(timeline.entries, () => owner.value?.settle());
 
 // A record let go on this chat's agent is sent here once the chat has opened, as the hand-over's message.
 const handOver = useHandOver();
@@ -217,16 +212,11 @@ watch(
 );
 
 /**
- * Each new post by someone else, said once in the polite region; a chat opened afresh starts quiet.
+ * Each new message or question by someone else, said once in the polite region; a chat opened afresh starts quiet.
  */
 const arrival = ref<string | null>(null);
 function freshAnnouncer(): ReturnType<typeof arrivalAnnouncement> {
-  return arrivalAnnouncement(
-    () => conversation.value?.viewer ?? "",
-    (actor) =>
-      conversation.value?.participants.find((member) => member.actor === actor)
-        ?.label ?? "someone who left",
-  );
+  return arrivalAnnouncement(() => conversation.value?.viewer ?? "");
 }
 
 let announceArrivals = freshAnnouncer();
@@ -234,8 +224,8 @@ watch(
   () => conversation.value?.inboxId,
   () => (announceArrivals = freshAnnouncer()),
 );
-watch(timeline.messages, (messages) => {
-  const said = announceArrivals(messages);
+watch(timeline.entries, (entries) => {
+  const said = announceArrivals(entries);
 
   if (said !== null) {
     arrival.value = said;
@@ -244,8 +234,8 @@ watch(timeline.messages, (messages) => {
 const unreadShown = timeline.unreadShown;
 
 /**
- * Marks the incoming rows this view shows as read by the viewer alone: only rows actually shown, never one held past
- * a gap; acknowledging one already read changes nothing. It runs when the user opens the
+ * Marks the messages by others this view shows as read by the viewer alone; acknowledging one already read changes
+ * nothing. It runs when the user opens the
  * conversation or asks for it, never on a background refresh.
  */
 function readShown(): void {
@@ -275,19 +265,12 @@ let openedConversationId: string | undefined;
 
 /**
  * Reads what the conversation shows once each time the user opens a conversation, when it is first shown; showing
- * the same conversation again after a catch-up reads nothing, and neither does opening one question passively.
+ * the same conversation again after a reload reads nothing.
  */
 function readOnOpen(): void {
   const id = conversation.value?.inboxId;
 
-  const opensOneQuestion = props.chat.focusedQuestionId !== undefined;
-
-  if (
-    !isShown.value ||
-    id === undefined ||
-    id === openedConversationId ||
-    opensOneQuestion
-  ) {
+  if (!isShown.value || id === undefined || id === openedConversationId) {
     return;
   }
 
@@ -311,25 +294,6 @@ watch(
   },
 );
 watch(isShown, readOnOpen);
-watch(isShown, readOnOpen);
-
-/**
- * Declines a question the viewer was asked; the server checks it is the respondent and records why.
- */
-function decline(message: ReplyTarget): void {
-  router.post(
-    declineRoute().url,
-    { messageId: message.id, reason: "Declined in the chat." },
-    { preserveScroll: true, preserveState: true, only: [props.protectedProp] },
-  );
-}
-
-/**
- * Reads the chat window again for a question that failed to show; it marks nothing.
- */
-function retryFocused(): void {
-  router.reload({ only: [props.protectedProp] });
-}
 </script>
 
 <template>
@@ -420,28 +384,17 @@ function retryFocused(): void {
         </div>
       </Teleport>
       <template v-if="isShown">
-        <template v-if="chat.focusedQuestionId !== undefined">
-          <FocusedQuestion
-            :key="chat.focusedQuestionId"
-            :focused="chat.focusedQuestion"
-            @reply="(message) => (replyingTo = message)"
-            @retry="retryFocused"
-          />
-        </template>
         <MessageList
-          :messages="timeline.messages.value"
-          :lines="timeline.lines.value"
+          :entries="timeline.entries.value"
           :has-older="timeline.hasOlder.value"
           :pending="pending"
           :refused="refused"
           :viewer="conversation.viewer"
           :participants="conversation.participants"
-          :question-url="questionUrl"
           :conversation-prop="protectedProp"
           :inbox-id="conversation.inboxId"
-          @reply="(message) => (replyingTo = message)"
+          @reply="(target) => (replyingTo = target)"
           @older="timeline.loadOlder"
-          @decline="decline"
           @check-again="(intent) => owner?.retry(intent, protectedProp)"
           @restore="(intentKey) => owner?.restore(intentKey)"
           @discard="(intentKey) => owner?.discardRecovery(intentKey)"
@@ -477,8 +430,6 @@ function retryFocused(): void {
           :session-generation="conversation.sessionGeneration"
           :inbox-id="conversation.inboxId"
           :replying-to="replyingTo"
-          :participants="conversation.participants"
-          :viewer="conversation.viewer"
           :conversation-prop="protectedProp"
           @replied="replyingTo = null"
           @cancel-reply="replyingTo = null"

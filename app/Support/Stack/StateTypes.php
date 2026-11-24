@@ -11,6 +11,7 @@ use App\Support\StateCatalog\StateTypeRegistry;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\States\AnsweringAskState;
 use App\Support\States\AnsweringMessageState;
+use App\Support\States\ReadingMessageState;
 use App\Support\States\AwaitingSkillsState;
 use App\Support\States\ReadyState;
 use App\Support\Ticks\TickingTypes;
@@ -29,6 +30,7 @@ final class StateTypes implements StateTypesContract
     private const array CORE_STATES = [
         ReadyState::class,
         AnsweringAskState::class,
+        ReadingMessageState::class,
         AnsweringMessageState::class,
         AwaitingSkillsState::class,
     ];

@@ -11,7 +11,6 @@ import MenuTrigger from '@kit/MenuTrigger';
 import Button from '@kit/Button';
 import type { DocumentCommentsPartData } from '@generated/types/documents';
 import { draftFor, sendLineComment } from '@kit/lineComments';
-import { newRequestId } from '@kit/requestId';
 
 /**
  * A document's text drawn as its Markdown blocks (headings, paragraphs, list items and code) that a reader comments on:
@@ -82,7 +81,7 @@ function sendFeedback(recipientId: string, from: number, to: number): void {
     const { first, last } = linesOf(from, to);
     router.post(
         props.feedbackAddress,
-        { agent: recipientId, request_key: newRequestId(), first_line: first, last_line: last },
+        { agent: recipientId, first_line: first, last_line: last },
         {
             preserveScroll: true,
             onSuccess: () => void nextTick(() => feedback.value?.querySelector<HTMLElement>('button')?.focus()),

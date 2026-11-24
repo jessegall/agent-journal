@@ -8,11 +8,16 @@ use App\Support\Command;
 use Domain\Chat\Enums\ChatMessageType;
 
 /**
- * Makes the chat show a message as the type given.
+ * Shows a source in an inbox's chat as the type given, once; only the chat domain's own listeners run it.
  *
- * @extends Command<null>
+ * @extends Command<string>
  */
 final readonly class CreateChatMessageCommand extends Command
 {
-    public function __construct(public string $messageId, public ChatMessageType $type) {}
+    public function __construct(
+        public string $inboxId,
+        public string $sourceType,
+        public string $sourceId,
+        public ChatMessageType $type,
+    ) {}
 }

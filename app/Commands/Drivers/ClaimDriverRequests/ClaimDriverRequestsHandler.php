@@ -16,7 +16,6 @@ use App\Models\Starts\ProcessStart;
 use App\Models\Starts\StartRecord;
 use App\Support\ActorIdentity;
 use App\Support\ClaimedRequests;
-use App\Support\MessageBatchService;
 use App\Support\PendingWorkSources;
 use App\Support\PrivateValues;
 use App\Values\AgentText;
@@ -34,7 +33,6 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 {
     public function __construct(
         private PendingWorkSources $pendingWork,
-        private MessageBatchService $messageBatches,
         private AgentTexts $texts,
         private PrivateValues $privateValues,
     ) {}
@@ -148,7 +146,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
                 $request->stage($now);
                 $claim = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, $isBootstrap);
-                $claimed[] = $this->withMessageBatch($request, $runtime, $claim, $now);
+                $claimed[] = $this->withWakePrompt($request, $claim);
 
                 if (count($claimed) === $command->limit) {
                     break;
@@ -175,25 +173,15 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
     }
 
     /**
-     * A wake carries its whole prompt: the next batch of chat text for the runtime's driver when one waits, otherwise
-     * the pending-work prompt, so desk work is never starved by a chat backlog. A bootstrap carries the pending-work
-     * prompt only, for a driver that proves its conversation with a turn; the backlog waits for the start to be ready.
+     * A wake carries the pending-work prompt; the agent's states say what waits, such as an unread message.
      */
-    private function withMessageBatch(
-        DriverRequest $request,
-        AgentRuntime $runtime,
-        ClaimedRequest $claim,
-        CarbonImmutable $now,
-    ): ClaimedRequest {
+    private function withWakePrompt(DriverRequest $request, ClaimedRequest $claim): ClaimedRequest
+    {
         if ($request->operation !== DriverOperation::Wake) {
             return $claim;
         }
 
-        $pendingWork = fn (): string => $this->texts->render(AgentText::of('core.drivers.pending_work'));
-
-        return $claim->withMessage(
-            $claim->shouldBootstrap ? $pendingWork() : $this->messageBatches->textFor($runtime, $now) ?? $pendingWork(),
-        );
+        return $claim->withMessage($this->texts->render(AgentText::of('core.drivers.pending_work')));
     }
 
     private function settledWithoutWork(DriverRequest $request, AgentRuntime $runtime): bool

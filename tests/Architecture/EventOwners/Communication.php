@@ -17,7 +17,7 @@ use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Messages\ChatMessageOffered;
 use App\Events\Messages\ChatReceiptPresented;
 use App\Events\Messages\ChatRoleChanged;
-use App\Events\Messages\InboxSequenceTaken;
+use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Messages\MessageAnswered;
 use App\Events\Messages\MessageAnswerRequired;
 use App\Events\Messages\MessageBatchClaimsGranted;
@@ -366,12 +366,12 @@ return [
         'producers' => [],
         'sample' => fn () => new NotificationReceiptRevealed('receipt'),
     ],
-    InboxSequenceTaken::class => [
+    InboxMessageNumberTaken::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'InboxRecord::takeSequence',
+        'owner' => 'Inbox::takeMessageNumber',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new InboxSequenceTaken('inbox'),
+        'sample' => fn () => new InboxMessageNumberTaken('inbox'),
     ],
     UserPresenceConfirmed::class => [
         'role' => EventRole::RowFact,

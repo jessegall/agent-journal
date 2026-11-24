@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\ReadMessage\ReadMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Events\Listener;
-use App\Data\Messages\MessageBatchItemData;
 use App\Events\Hooks\ContextStarted;
 use App\Mcp\Support\McpCatalogue;
 use App\Models\Agents\AgentSession;
@@ -28,9 +28,8 @@ final readonly class RemindAgentInstructions implements Listener
     public function handle(ContextStarted $event): void
     {
         $event->reminders->add(AgentText::of('core.instructions.prelude', [
-            'user' => MessageBatchItemData::USER_FENCE,
-            'agent' => MessageBatchItemData::AGENT_FENCE,
-            'reply' => $this->tools->toolNameDispatching(ReplyToMessageCommand::class),
+            'read' => $this->tools->toolNameDispatching(ReadMessageCommand::class),
+            'send' => $this->tools->toolNameDispatching(SendMessageCommand::class),
         ]), true);
 
         $profile = $this->contexts->forSession(AgentSession::byId($event->target->sessionId))->profile;

@@ -1,57 +1,44 @@
 <script setup lang="ts">
-import { Link } from "@inertiajs/vue3";
 import { computed } from "vue";
-import Button from "@kit/Button";
-import Card from "@kit/Card";
-import Icon from "@kit/Icon";
-import type { ChatMessageData } from "@generated/types/chat";
+import type { ChatEntryData, MessageEntryData } from "@generated/types/chat";
+import type { ReactionCount } from "../../../chatEntries";
+import { sendReaction } from "../../../reactions";
 import MessageActions from "./MessageActions.vue";
 import MessageHead from "./MessageHead.vue";
 import MessageReactions from "./MessageReactions.vue";
 import ReplyLine from "./ReplyLine.vue";
-import { toggleReaction } from "../../../reactions";
 
 /**
  * One message of a chat: the viewer's own as a bubble on the right, another's on the left, only as wide as its text,
- * under its name line with React and Reply at that line's right end. A question to the viewer is a card with its
- * Answer button; a reply shows who it answers and a line of the original above its text. Under the text come whether it
- * is unread or waits for an answer, its reactions, and the recipients it has not reached.
+ * under its name line with React and Reply at that line's right end. A reply shows who it answers and a line of the
+ * original above its text. Under the text come whether it is unread and its reactions.
  */
 const props = defineProps<{
-  message: ChatMessageData;
+  message: MessageEntryData;
   time: string;
   isOwn: boolean;
-  // The same speaker again, with nothing between and within five minutes: no name line, joined to the bubble above.
+  // The same author again in the same group: no name line, joined to the bubble above.
   continuesRun: boolean;
-  // What a screen reader says for the row: who wrote it and whom it addresses.
+  // What a screen reader says for the row: who wrote it.
   label: string;
-  addressee: string | null;
+  name: string;
+  driver: string | null;
+  // The entry of the message this one answers, when its page is loaded.
+  original: ChatEntryData | undefined;
+  reactions: ReactionCount[];
   // The viewing actor as type:id.
   viewer: string;
-  // The address that opens the question passively, as a notification opens it.
-  questionUrl: string;
   inboxId: string;
   conversationProp: string;
 }>();
 
-const emit = defineEmits<{ reply: []; decline: [] }>();
+const emit = defineEmits<{ reply: [] }>();
 
-const original = computed(() => props.message.replyTo);
-const actions = computed(() => props.message.actions);
+const isUnread = computed(() => !props.isOwn && !props.message.isReadByViewer);
 
-/** A question someone asked you that waits for your answer: drawn as a card with its Answer button. */
-const isQuestionToMe = computed(
-  () => !props.isOwn && props.message.state === "waiting_for_answer" && actions.value.canAnswer,
-);
-
-const state = computed(() => {
-  if (props.message.state === "waiting_for_answer") {
-    return props.isOwn ? "Waiting for an answer" : "Waiting for your answer";
-  }
-
-  return props.isOwn || props.message.isReadByMe ? null : "Unread";
-});
-
+function react(emoji: string): void {
+  sendReaction(props.inboxId, props.message.id, emoji, props.conversationProp);
+}
 </script>
 
 <template>
@@ -75,87 +62,33 @@ const state = computed(() => {
         <template v-if="continuesRun && !isOwn">
           <span class="pr-1">{{ time }}</span>
         </template>
-        <MessageActions
-          :speaker="message.speaker"
-          :actions="actions"
-          @react="(emoji) => toggleReaction(inboxId, message.id, emoji, conversationProp)"
-          @reply="emit('reply')"
-          @decline="emit('decline')"
-        />
+        <MessageActions :author-label="name" @react="react" @reply="emit('reply')" />
       </span>
     </template>
     <template v-if="!isOwn && !continuesRun">
-      <MessageHead
-        :speaker="message.speaker"
-        :time="time"
-        :addressee="addressee"
-      >
-        <template v-if="!isQuestionToMe" #actions>
-          <MessageActions
-            :speaker="message.speaker"
-            :actions="actions"
-            @react="(emoji) => toggleReaction(inboxId, message.id, emoji, conversationProp)"
-            @reply="emit('reply')"
-            @decline="emit('decline')"
-          />
+      <MessageHead :name="name" :driver="driver" :time="time">
+        <template #actions>
+          <MessageActions :author-label="name" @react="react" @reply="emit('reply')" />
         </template>
       </MessageHead>
     </template>
-    <template v-if="original !== undefined">
-      <ReplyLine :target="original" :viewer="viewer" />
+    <template v-if="message.targetMessageId !== null && message.targetNumber !== null">
+      <ReplyLine
+        :target-id="message.targetMessageId"
+        :target-number="message.targetNumber"
+        :original="original"
+        :viewer="viewer"
+      />
     </template>
-    <template v-if="isQuestionToMe">
-      <Card padding="sm" class="flex items-center gap-2.5">
-        <Icon name="question" :size="16" class="flex-none text-text-3" />
-        <span class="min-w-0 flex-1">
-          <span class="block text-body whitespace-pre-wrap text-text">{{
-            message.body
-          }}</span>
-          <small class="block text-badge text-text-3"
-            >Question · asked {{ time }}</small
-          >
-        </span>
-        <Button
-          size="small"
-          variant="bordered"
-          @click="emit('reply')"
-          >Answer</Button
-        >
-        <template v-if="actions.canDecline">
-          <Button
-            size="small"
-            variant="ghost"
-            @click="emit('decline')"
-            >Decline</Button
-          >
-        </template>
-      </Card>
-    </template>
-    <template v-else>
-      <p class="text-body whitespace-pre-wrap text-text">
-        {{ message.body }}
-      </p>
-    </template>
-    <template
-      v-if="state !== null || message.state === 'waiting_for_answer'"
-    >
-      <span class="flex gap-2 text-small text-text-3">
-        <template v-if="state !== null">
-          <span>{{ state }}</span>
-        </template>
-        <template v-if="message.state === 'waiting_for_answer'">
-          <Link
-            :href="questionUrl"
-            class="underline"
-            preserve-scroll
-          >
-            Open question
-          </Link>
-        </template>
-      </span>
+    <p class="text-body whitespace-pre-wrap text-text">
+      {{ message.body }}
+    </p>
+    <template v-if="isUnread">
+      <span class="text-small text-text-3">Unread</span>
     </template>
     <MessageReactions
-      :message="message"
+      :reactions="reactions"
+      :message-id="message.id"
       :inbox-id="inboxId"
       :conversation-prop="conversationProp"
     />

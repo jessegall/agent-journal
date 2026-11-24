@@ -18,13 +18,6 @@ final class InboxProviderInvalid extends RuntimeException
         return new self("{$class}, registered as inbox provider {$providerKey}, does not implement InboxProvider.");
     }
 
-    public static function withoutAccess(string $providerKey, string $class): self
-    {
-        $access = "{$class}, registered as the access of inbox provider {$providerKey}";
-
-        return new self("{$access}, does not implement InboxAccess.");
-    }
-
     public static function tooManyMembers(int $count): self
     {
         return new self("An inbox read {$count} members; an inbox holds at most 100.");

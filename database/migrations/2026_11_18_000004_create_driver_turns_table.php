@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('outcome', 32)->nullable();
             $table->timestampTz('started_at');
             $table->timestampTz('finished_at')->nullable();
+            $table->text('closing_words')->nullable();
+            $table->string('closing_words_digest', 64)->nullable();
+            $table->ulid('delivered_message_id')->nullable();
             $table->timestampsTz();
 
             $table->unique(['agent_runtime_id', 'process_generation', 'native_prompt_id']);

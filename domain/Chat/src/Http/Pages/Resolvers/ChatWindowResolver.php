@@ -4,37 +4,35 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Pages\Resolvers;
 
+use App\Enums\ActorType;
+use App\Exceptions\InboxUnavailable;
+use App\Models\Inboxes\Inbox;
+use App\Models\Inboxes\InboxMember;
+use App\Support\ActorIdentity;
+use Domain\Chat\Data\ConversationData;
+use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Support\ChatInboxes;
 use App\Contracts\Accounts\StartAccounts;
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Chat\ConversationResolver;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Navigation\PageResolver;
 use App\Contracts\Navigation\SlotSections;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Data\Accounts\EligibleAccountsData;
-use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\StackTargetRefused;
-use App\Support\ActorIdentity;
 use App\Support\AgentOption;
-use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
-use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\DriverChoiceData;
-use Domain\Chat\Data\FocusedQuestionData;
 use Domain\Chat\Http\Requests\ConversationRequest;
-use Domain\Chat\Resolvers\Support\ChatConversations;
-use Domain\Chat\Support\AuthorizedConversations;
-use Domain\Chat\Support\ChatAdmissionPolicy;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
 /**
  * The chat window, on Home and on its own page: every agent the user can see, idle ones included, the chosen one
- * (the main agent unless the query names another) and its conversation, which is there with or without a session,
- * and the one question a notification opened. An agent out of sight is refused like a missing one.
+ * (the main agent unless the query names another) and its conversation, which is there with or without a session.
+ * An agent out of sight is refused like a missing one.
  */
 final readonly class ChatWindowResolver implements PageResolver
 {
@@ -45,14 +43,11 @@ final readonly class ChatWindowResolver implements PageResolver
     public function __construct(
         private ConversationRequest $request,
         private AgentDirectory $agents,
-        private ConversationResolver $messages,
-        private ChatConversations $chats,
-        private AuthorizedConversations $conversations,
-        private ChatAdmissionPolicy $admission,
+        private ChatPages $pages,
+        private ChatInboxes $chats,
         private CurrentActor $actors,
         private SlotSections $slots,
         private StartAccounts $startAccounts,
-        private CommandBus $commands,
         private DriverCatalogue $drivers,
     ) {}
 
@@ -78,7 +73,6 @@ final readonly class ChatWindowResolver implements PageResolver
             ...$chosen->map($this->conversationFields(...))->getOrElse([]),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->eligibleAccounts($chosen),
-            ...$this->focusedQuestion(),
             ...$this->chatList(),
             'drivers' => DriverChoiceData::listed($this->drivers),
         ]);
@@ -93,7 +87,7 @@ final readonly class ChatWindowResolver implements PageResolver
      */
     private function readChat(array $agents, Option $main, string $inboxId): ChatData
     {
-        $this->conversations->inInbox($inboxId);
+        $inbox = $this->chats->attached($inboxId);
 
         return ChatData::from([
             'agents' => $agents,
@@ -101,9 +95,8 @@ final readonly class ChatWindowResolver implements PageResolver
             'mainAgentId' => $main->getOrElse(Optional::create()),
             'selectedAgentId' => Optional::create(),
             'selectedInboxId' => $inboxId,
-            'conversation' => $this->chats->pageFor(null, $inboxId, $this->request->dockToken()),
+            'conversation' => $this->pages->pageFor(null, $inbox, $this->request->dockToken()),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
-            ...$this->focusedQuestion(),
             ...$this->chatList(),
         ]);
     }
@@ -115,42 +108,12 @@ final readonly class ChatWindowResolver implements PageResolver
      */
     private function chatList(): array
     {
-        $viewer = ActorIdentity::of($this->actors->actor());
-
         return [
-            'chats' => $this->chats->summariesFor($this->messages->ownInboxes()),
-            'canCreateChats' => $this->admission->mayCreate($viewer, null),
+            'chats' => $this->pages->summariesOf($this->chats->joined()->limit(InboxMember::ATTACHED_LIMIT)->get()),
+            'canCreateChats' => $this->chats->mayCreate(),
         ];
     }
 
-    /**
-     * The question a notification opened, under the keys ChatData reads it by: found by the membership of its own
-     * destination inbox, whichever agent is chosen and whatever page is loaded. It reads nothing and claims nothing.
-     *
-     * @return array<string, string|FocusedQuestionData>
-     */
-    private function focusedQuestion(): array
-    {
-        $asked = [];
-
-        foreach ($this->request->focusedQuestionId() as $messageId) {
-            $asked['focusedQuestionId'] = $messageId;
-
-            if (! $this->messages->canSee($messageId)) {
-                continue;
-            }
-
-            $question = $this->messages->detail($messageId);
-
-            $answer = $question->answerId !== null && $this->messages->canSee($question->answerId)
-                ? $this->messages->detail($question->answerId)
-                : Optional::create();
-
-            $asked['focusedQuestion'] = new FocusedQuestionData($question, $question->state->label(), $answer);
-        }
-
-        return $asked;
-    }
 
     /**
      * The eligible accounts a start or switch form asked for, under the key ChatData reads them by, with the models the
@@ -203,8 +166,8 @@ final readonly class ChatWindowResolver implements PageResolver
 
     private function conversationWith(AgentOption $agent): ConversationData
     {
-        $chatInboxId = $this->commands->run(new OpenPairChatCommand($agent->agentId));
+        $inboxId = $this->chats->pairWith(new ActorIdentity(ActorType::Agent, $agent->agentId));
 
-        return $this->chats->pageFor($agent, $chatInboxId, $this->request->dockToken());
+        return $this->pages->pageFor($agent, Inbox::query()->findOrFail($inboxId), $this->request->dockToken());
     }
 }

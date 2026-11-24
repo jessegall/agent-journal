@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Database\Factories;
 
-use App\Commands\Desks\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Enums\CommandEntry;
 use App\Support\ActorIdentity;
 use App\Support\EntryDispatchers;
@@ -73,7 +73,7 @@ class UserFactory extends Factory
             Container::getInstance()->make(EntryDispatchers::class)->runAsJournal(
                 CommandEntry::HostControl,
                 'desk install',
-                new ProvisionActorDeskCommand(ActorIdentity::of($user), $user->name),
+                new ProvisionActorInboxCommand(ActorIdentity::of($user), $user->name),
             );
         });
     }

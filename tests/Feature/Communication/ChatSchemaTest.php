@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Contracts\Chat\Inbox;
-use App\Models\Chats\InboxRecord;
+use App\Contracts\Inboxes\LabeledInbox;
+use App\Models\Inboxes\Inbox;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Messages\Message;
 use App\Models\Records\GlobalGroup;
@@ -62,7 +62,7 @@ final class ChatSchemaTest extends TestCase
 
     public function test_an_open_chat_must_name_its_owner(): void
     {
-        $inbox = InboxRecord::create('chat', (string) str()->ulid());
+        $inbox = Inbox::create('chat', (string) str()->ulid());
 
         $this->assertThrows(fn () => DB::table('conversations')->insert([
             'id' => (string) str()->ulid(),
@@ -74,7 +74,7 @@ final class ChatSchemaTest extends TestCase
         ]), QueryException::class);
     }
 
-    private function message(Inbox $destination): Message
+    private function message(LabeledInbox $destination): Message
     {
         $receipt = CommandReceipt::create(
             ReceiptCaller::withoutSession(ActorContext::forAgent(TestIds::of(7))),

@@ -4,23 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Chat\ChatInboxStore;
-use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Sessions\AgentDirectory;
+use App\Enums\ActorType;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\StackTargetRefused;
+use App\Models\Inboxes\Inbox;
+use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
-use App\Support\InboxMembers;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Support\Sources\DockDefinition;
-use Domain\Chat\Exceptions\ConversationUnavailable;
-use Domain\Chat\Models\Conversation;
+use Domain\Chat\Exceptions\ChatUnavailable;
 use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Builder;
+
 
 /**
  * What a dock or an undock checks before it touches the dock: the chat the actor is a member of, named by its inbox,
@@ -31,90 +29,73 @@ final readonly class DockRequests
 {
     public function __construct(
         private AgentDirectory $agents,
-        private PairChats $pairs,
-        private AuthorizedConversations $conversations,
-        private ChatInboxStore $chats,
-        private InboxResolver $inboxes,
-        private CurrentActor $actors,
+        private ChatInboxes $chats,
         private DockRegistration $registry,
         private Container $container,
     ) {}
 
     /**
-     * The direct chat the current actor holds with the agent, opened the first time.
+     * The pair chat the current actor holds with the agent, opened the first time.
      *
-     * @throws ConversationUnavailable
+     * @throws ChatUnavailable
      */
-    public function conversationWith(string $agentId): Conversation
+    public function inboxWith(string $agentId): Inbox
     {
         try {
             $agent = $this->agents->visibleAgent($agentId);
         } catch (StackTargetRefused $refused) {
-            throw ConversationUnavailable::withPeer($refused);
+            throw ChatUnavailable::notAttached($agentId);
         }
 
-        return $this->pairs->open($this->actor(), $agent);
+        return Inbox::query()->findOrFail($this->chats->pairWith(new ActorIdentity(ActorType::Agent, $agent->agentId)));
     }
 
     /**
-     * The chat a caller means by its inbox id, which it must be a member of now.
-     *
-     * @throws ConversationUnavailable
-     */
-    public function conversationIn(string $inboxId): Conversation
-    {
-        return $this->conversations->inInbox($inboxId);
-    }
-
-    /**
-     * The chats the current actor is a member of now, as the choices an Add to chat offers: each inbox id with the
-     * chat's label.
+     * The chats the current actor is attached to now, as the choices an Add to chat offers: each inbox id with its
+     * label.
      *
      * @return list<array{value: string, label: string}>
      */
     public function joinedChats(): array
     {
-        $inboxIds = $this->joined()->limit(InboxMembers::LIMIT)->pluck('inbox_id')->all();
-
-        return array_values(array_map(fn (string $inboxId) => [
-            'value' => $inboxId,
-            'label' => $this->inboxes->resolve($inboxId)->inboxLabel(),
-        ], array_map(strval(...), $inboxIds)));
+        return array_values($this->chats->joined()->limit(InboxMember::ATTACHED_LIMIT)->get()
+            ->map(fn (Inbox $inbox) => ['value' => $inbox->id, 'label' => $inbox->label])
+            ->all());
     }
 
     /**
-     * The chat a journal caller means: the one whose inbox it names, which it must be a member of, or else the only
+     * The chat a journal caller means: the one whose inbox it names, which it must be attached to, or else the only
      * one it has. With several and none named it refuses, and docks nothing.
      *
-     * @throws ConversationUnavailable
+     * @throws ChatUnavailable
      */
-    public function chosenConversation(string|null $chat): Conversation
+    public function chosenInbox(string|null $chat): Inbox
     {
         if ($chat !== null) {
-            return $this->conversationIn($chat);
+            return $this->chats->attached($chat);
         }
 
-        $joined = $this->joined()->limit(2)->get();
+        $joined = $this->chats->joined()->limit(2)->get();
 
         if ($joined->isEmpty()) {
-            throw ConversationUnavailable::none();
+            throw ChatUnavailable::none();
         }
 
         if ($joined->count() > 1) {
-            throw ConversationUnavailable::unnamed();
+            throw ChatUnavailable::unnamed();
         }
 
         return $joined->sole();
     }
 
     /**
-     * The conversation a dock or undock changes, chosen as chosenConversation does, under its row lock.
+     * The chat a dock or undock changes, chosen as chosenInbox does, under its row lock.
      *
-     * @throws ConversationUnavailable
+     * @throws ChatUnavailable
      */
-    public function lockedConversation(string|null $chat): Conversation
+    public function lockedInbox(string|null $chat): Inbox
     {
-        return Conversation::lockedById($this->chosenConversation($chat)->id);
+        return Inbox::lockedById($this->chosenInbox($chat)->id);
     }
 
     /**
@@ -143,16 +124,5 @@ final readonly class DockRequests
         $definition->assertOwns($provider->requireReadable($definition, $source->id));
     }
 
-    private function actor(): ActorIdentity
-    {
-        return ActorIdentity::of($this->actors->actor());
-    }
 
-    /**
-     * @return Builder<Conversation>
-     */
-    private function joined(): Builder
-    {
-        return Conversation::query()->whereIn('inbox_id', $this->chats->memberInboxIds($this->actor()));
-    }
 }

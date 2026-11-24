@@ -8,7 +8,7 @@ use App\Contracts\Chat\InboxRegistration;
 use App\Contracts\Chat\InboxResolver;
 use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
-use App\Models\Chats\InboxRecord;
+use App\Models\Inboxes\Inbox;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Tests\Fixtures\Communication\TeamInboxAccess;
 use Tests\Fixtures\Communication\TeamInboxProvider;
@@ -22,17 +22,17 @@ final class InboxRegistrationTest extends TestCase
 
     public function test_a_provider_pair_opens_one_inbox(): void
     {
-        InboxRecord::create('team', TestIds::of(1));
+        Inbox::create('team', TestIds::of(1));
 
         $this->expectException(UniqueConstraintViolationException::class);
 
-        InboxRecord::create('team', TestIds::of(1));
+        Inbox::create('team', TestIds::of(1));
     }
 
     public function test_a_registered_provider_resolves_its_inbox_by_id(): void
     {
         $this->app->make(InboxRegistration::class)->register('team', TeamInboxProvider::class, TeamInboxAccess::class);
-        $record = InboxRecord::create('team', TestIds::of(2));
+        $record = Inbox::create('team', TestIds::of(2));
 
         $inbox = $this->app->make(InboxResolver::class)->resolve($record->id);
 
@@ -55,6 +55,6 @@ final class InboxRegistrationTest extends TestCase
             fn () => $this->app->make(InboxResolver::class)->resolve(TestIds::of(99)),
             InboxUnavailable::class,
         );
-        $this->assertSame(0, InboxRecord::query()->count());
+        $this->assertSame(0, Inbox::query()->count());
     }
 }

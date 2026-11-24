@@ -74,7 +74,8 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     {
         $scope = new self([
             'scope_key' => $key,
-            ...$recipient->asColumns('recipient'),
+            'recipient_type' => $recipient->type->value,
+            'recipient_id' => $recipient->id,
             'next_sequence' => 1,
             'mutation_version' => 0,
             'unread_count' => 0,

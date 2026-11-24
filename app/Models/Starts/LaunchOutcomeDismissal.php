@@ -47,7 +47,8 @@ final class LaunchOutcomeDismissal extends Model implements ReadableModel
     public static function dismiss(ActorIdentity $viewer, StartRecord $start, StartDisposition $version): void
     {
         $dismissal = new self([
-            ...$viewer->asColumns('viewer'),
+            'viewer_type' => $viewer->type->value,
+            'viewer_id' => $viewer->id,
             'agent_id' => $start->agent_id,
             'request_id' => $start->request_id,
             'outcome_version' => $version->value,

@@ -17,9 +17,8 @@ final class NewMessage extends Data
 {
     public function __construct(
         #[Size(26)]
-        public readonly string $sourceInboxId,
-        #[Size(26)]
-        public readonly string $destinationInboxId,
+        public readonly string $inboxId,
         public readonly string $body,
+        public readonly int|null $targetMessageNumber = null,
     ) {}
 }

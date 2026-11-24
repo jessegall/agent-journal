@@ -13,21 +13,23 @@ final class SendMessageCommand extends Command
     use RunsCallPipelines;
 
     protected $signature = 'message:send
-        {from : Your inbox id}
-        {to : The destination inbox id}
+        {inbox : The inbox id}
         {body}
+        {--target= : The number, in the inbox, of the message this one replies to}
         {--request-key= : Send again under the key a failed attempt printed}
         {--json}';
 
-    protected $description = 'Send a note from your inbox to another inbox';
+    protected $description = 'Send a message into an inbox you are attached to';
 
     public function handle(): int
     {
+        $target = $this->option('target');
+
         return $this->runCall(SendMessageCall::from([
             'message' => [
-                'sourceInboxId' => (string) $this->argument('from'),
-                'destinationInboxId' => (string) $this->argument('to'),
+                'inboxId' => (string) $this->argument('inbox'),
                 'body' => (string) $this->argument('body'),
+                'targetMessageNumber' => $target === null ? null : (int) $target,
             ],
             'requestKey' => $this->requestKey(),
         ]));

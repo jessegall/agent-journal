@@ -14,7 +14,6 @@ enum ActorType: string
     case Agent = 'agent';
     case User = 'user';
     case System = 'system';
-    case Engine = 'engine';
 
     /**
      * The types a request or a command line may name, such as a recipient of work.

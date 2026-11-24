@@ -18,13 +18,21 @@ use App\Values\TrustedEntryAuthority;
  */
 final readonly class SystemAuthorizerProvider implements AuthorizerProvider
 {
-    public function __construct(private CurrentActor $actors, private SystemEntryPolicies $systemPolicies) {}
+    public function __construct(
+        private CurrentActor $actors,
+        private SystemEntryPolicies $systemPolicies,
+        private EngineAccess $engine,
+    ) {}
 
     /**
      * @throws ActorNotAllowed
      */
     public function forActor(Actor $actor): Authorizer
     {
+        if ($this->engine->isGranted()) {
+            return new UnrestrictedAuthorizer();
+        }
+
         $authority = $this->actors->authority();
         $entry = $authority instanceof TrustedEntryAuthority ? $authority->entry : '';
 

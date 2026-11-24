@@ -6,15 +6,12 @@ import Icon from "@kit/Icon";
 import Textarea from "@kit/Textarea";
 import IconButton from "@kit/IconButton";
 import Menu from "@kit/Menu";
-import MenuGroup from "@kit/MenuGroup";
 import MenuItem from "@kit/MenuItem";
-import MenuSeparator from "@kit/MenuSeparator";
 import { useComposerHeight } from "../../../composables/useComposerHeight";
 import {
   useConversationIntents,
   type ReplyTarget,
 } from "../../../composables/useConversationIntents";
-import type { ParticipantData } from "@generated/types/chat";
 import { useMessageDrafts } from "../../../composables/useMessageDrafts";
 
 /**
@@ -31,9 +28,6 @@ const props = defineProps<{
   inboxId: string;
   replyingTo: ReplyTarget | null;
   conversationProp: string;
-  // The other members the post may be addressed to, as type:id with the label the roster shows.
-  participants: ParticipantData[];
-  viewer: string;
 }>();
 
 const emit = defineEmits<{ replied: []; cancelReply: [] }>();
@@ -43,33 +37,10 @@ const body = ref("");
 const field = ref<InstanceType<typeof Textarea> | null>(null);
 const textarea = computed(() => field.value?.element ?? null);
 const hasText = computed(() => body.value.trim() !== "");
-const addressee = ref("");
-const asking = ref(false);
 // The field names whom the message goes to, as the design's composer does: Message Ada, or the whole chat.
 const placeholder = computed(
   () => `Message ${props.addresseeName ?? "everyone in this chat"}`,
 );
-const others = computed(() =>
-  props.participants.filter((member) => member.actor !== props.viewer),
-);
-// A question among more than two members must name who settles it; in a pair the other member is implied.
-const needsRespondent = computed(
-  () => asking.value && others.value.length > 1 && addressee.value === "",
-);
-
-/**
- * How a member is named in the picker: two members with the same name are told apart by driver and id.
- */
-function optionLabel(member: ParticipantData): string {
-  const namesake =
-    others.value.filter((other) => other.label === member.label).length > 1;
-  const driver = member.driver === null ? "" : ` (${member.driver})`;
-
-  return namesake
-    ? `${member.label}${driver} · ${member.actor.slice(-6)}`
-    : `${member.label}${driver}`;
-}
-
 useComposerHeight(textarea, body);
 
 // The stored draft is read in the browser only, after the server-rendered page has been taken over; the composer is
@@ -94,10 +65,10 @@ watch(
 
 /**
  * Sends the draft through the conversation's owner: the text clears and a Sending bubble shows at once, and the
- * owner settles it; a reply goes to the message at the version shown, so a stale one is refused with its text kept.
+ * owner settles it; a reply names the number of the message it answers.
  */
 function submit(): void {
-  if (!hasText.value || needsRespondent.value) {
+  if (!hasText.value) {
     return;
   }
 
@@ -109,14 +80,12 @@ function submit(): void {
     expectedSessionId: props.sessionId,
     expectedGeneration: props.sessionGeneration,
     inboxId: props.inboxId,
-    addressee: addressee.value === "" ? null : addressee.value,
-    question: asking.value,
   };
   const replyingTo = props.replyingTo;
   const intent =
     replyingTo === null
       ? owner.beginSend(draft)
-      : owner.beginReply(draft, replyingTo, replyingTo.stateVersion);
+      : owner.beginReply(draft, replyingTo);
   body.value = drafts.read(props.draftKey);
 
   if (replyingTo !== null) {
@@ -141,11 +110,6 @@ function sendOnEnter(event: KeyboardEvent): void {
     class="mb-3.5 flex flex-col rounded-composer border border-border-3 bg-bg pt-2.5 pr-2.5 pb-2 pl-3"
     @submit.prevent="submit"
   >
-    <template v-if="needsRespondent">
-      <p class="mb-1.5 text-small text-danger" role="alert">
-        Choose who should answer this question.
-      </p>
-    </template>
     <template v-if="replyingTo">
       <p class="mb-1.5 flex items-center gap-1.5 text-small text-text-3">
         <Icon name="reply" :size="14" />
@@ -180,28 +144,7 @@ function sendOnEnter(event: KeyboardEvent): void {
         disabled
       />
       <span class="flex-1"></span>
-      <template v-if="asking">
-        <span class="text-badge text-text-3">Question</span>
-      </template>
       <Menu label="Message options">
-        <MenuGroup label="Send to">
-          <MenuItem radio :checked="addressee === ''" @click="addressee = ''"
-            >Everyone</MenuItem
-          >
-          <template v-for="member in others" :key="member.actor">
-            <MenuItem
-              radio
-              :checked="addressee === member.actor"
-              @click="addressee = member.actor"
-            >
-              {{ optionLabel(member) }}
-            </MenuItem>
-          </template>
-        </MenuGroup>
-        <MenuSeparator />
-        <MenuItem :checked="asking" @click="asking = !asking"
-          >Ask as a question</MenuItem
-        >
         <MenuItem disabled>Dump files</MenuItem>
       </Menu>
       <Button

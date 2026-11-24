@@ -38,11 +38,11 @@ final class DockListTool extends JournalReadTool
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        $conversation = $this->requests->chosenConversation($arguments->optionalText('chat'));
+        $inbox = $this->requests->chosenInbox($arguments->optionalText('chat'));
 
         $largest = DockProjection::LARGEST_CARD_LIMIT;
         $limit = $arguments->positiveIntegerOr('limit', $largest, $largest);
-        $listed = $this->listing->of($conversation, $limit);
+        $listed = $this->listing->of($inbox, $limit);
 
         return ToolResult::ok($listed->toArray());
     }

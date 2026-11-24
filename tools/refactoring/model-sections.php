@@ -24,7 +24,9 @@ require_once __DIR__.'/models.php';
 require_once __DIR__.'/sections.php';
 require_once __DIR__.'/php-parse.php';
 
-const SECTIONS = ['Constructors', 'Queries', 'Mutations', 'Answers', 'Accessors', 'Relations', 'Internals', 'Scopes'];
+const SECTIONS = [
+    'Constructors', 'Queries', 'Mutations', 'Answers', 'Accessors', 'Relations', 'Asserts', 'Internals', 'Scopes',
+];
 
 const RELATIONS = [
     'BelongsTo', 'BelongsToMany', 'HasMany', 'HasOne', 'HasManyThrough', 'HasOneThrough', 'MorphTo', 'MorphMany',
@@ -57,6 +59,7 @@ function sectionOf(ClassMethod $method, string $body): string
         $isScope => 'Scopes',
         isAccessor($method) => 'Accessors',
         in_array($returns, RELATIONS, true) => 'Relations',
+        str_starts_with($name, 'assert') => 'Asserts',
         ! $method->isPublic() => 'Internals',
         $method->isStatic() && preg_match(ROW_MAKES, $body) === 1 => 'Constructors',
         $method->isStatic() => 'Queries',

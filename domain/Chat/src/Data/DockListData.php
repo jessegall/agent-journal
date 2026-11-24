@@ -8,7 +8,7 @@ use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
 /**
- * A conversation's placements with only their safe facts, and whether more lie past them.
+ * A chat's placements with only their safe facts, and whether more lie past them.
  */
 final class DockListData extends Data
 {
@@ -16,7 +16,7 @@ final class DockListData extends Data
      * @param  list<DockedSourceData>  $placements
      */
     public function __construct(
-        public readonly string $conversationId,
+        public readonly string $inboxId,
         #[DataCollectionOf(DockedSourceData::class)]
         public readonly array $placements,
         public readonly bool $hasMore,

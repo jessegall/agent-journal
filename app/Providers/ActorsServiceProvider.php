@@ -93,7 +93,6 @@ final class ActorsServiceProvider extends ServiceProvider
     {
         $actors->register(ActorType::System, SystemActors::class);
         $actors->registerVisibility(ActorType::System, JournalVisibility::class);
-        $actors->registerVisibility(ActorType::Engine, JournalVisibility::class);
         $authorizers->register(ActorType::System, SystemAuthorizerProvider::class);
         $this->app->booted(fn () => $authorizers->requireEveryType());
         $this->loadCoreRoutes('actors/actors.php');

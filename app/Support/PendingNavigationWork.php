@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Chat\MainDesk;
+use App\Contracts\Inboxes\MainInbox;
 use App\Contracts\Work\PendingWorkSource;
 
 /**
- * Counts the open navigation requests waiting for an actor: those the main desk holds, for the actor seated there.
+ * Counts the open navigation requests waiting for an actor: those main holds, for the actor seated there.
  */
 final readonly class PendingNavigationWork implements PendingWorkSource
 {
-    public function __construct(private MainDesk $mainDesk) {}
+    public function __construct(private MainInbox $main) {}
 
     public function pendingCount(ActorIdentity $actor): int
     {
-        return $this->mainDesk->openRequestsFor($actor);
+        return $this->main->openRequestsFor($actor);
     }
 }

@@ -15,18 +15,18 @@ final class SendMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sourceInboxId' => ['required', 'string', 'size:26'],
-            'destinationInboxId' => ['required', 'string', 'size:26'],
+            'inboxId' => ['required', 'string', 'size:26'],
             'body' => ['required', 'string'],
+            'targetMessageNumber' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
     public function command(): SendMessageCommand
     {
         return new SendMessageCommand(
-            $this->string('sourceInboxId')->toString(),
-            $this->string('destinationInboxId')->toString(),
+            $this->string('inboxId')->toString(),
             $this->string('body')->toString(),
+            $this->filled('targetMessageNumber') ? $this->integer('targetMessageNumber') : null,
         );
     }
 }

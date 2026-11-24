@@ -20,6 +20,6 @@ final class ChatRowsInput extends Data
         #[Ulid]
         public readonly string $inboxId,
         #[Max(4096)]
-        public readonly string|null $olderCursor = null,
+        public readonly string|null $beforeId = null,
     ) {}
 }

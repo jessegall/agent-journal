@@ -28,7 +28,7 @@ return [
     'NotificationReceipt::markRead',
     'NotificationReceipt::hide',
     'NotificationReceipt::reveal',
-    'InboxRecord::takeSequence',
+    'Inbox::takeMessageNumber',
     'UserPresence::beatAt',
     'AgentChatPermission::withdraw',
 ];

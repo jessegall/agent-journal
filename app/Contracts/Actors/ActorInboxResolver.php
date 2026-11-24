@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Actors;
 
-use App\Contracts\Chat\Inbox;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Exceptions\InboxUnavailable;
 
 /**
@@ -15,5 +15,5 @@ interface ActorInboxResolver
     /**
      * @throws InboxUnavailable
      */
-    public function preferredFor(Actor $actor): Inbox;
+    public function preferredFor(Actor $actor): LabeledInbox;
 }

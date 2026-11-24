@@ -5,33 +5,24 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * The shape of the proof behind a claim: a seat at the inbox's desk, a seat at the desk that holds the run's task, or
- * the task held by the claimant itself.
+ * What a run claim stands on: the claimant holding the work itself, or the claimant attached to the inbox that holds
+ * the work.
  */
 enum ClaimBasis: string
 {
-    case Inbox = 'inbox';
-    case DeskRun = 'desk-run';
+    case InboxRun = 'inbox-run';
     case DirectRun = 'direct-run';
 
     /**
-     * Whether the claim stands on a seat assignment.
+     * Whether the claim stands on the claimant's membership of the inbox holding the work.
      */
-    public function needsParticipation(): bool
+    public function needsMembership(): bool
     {
-        return $this !== self::DirectRun;
+        return $this === self::InboxRun;
     }
 
     /**
-     * Whether the claim stands on the assignment of the work it runs.
-     */
-    public function needsWork(): bool
-    {
-        return $this !== self::Inbox;
-    }
-
-    /**
-     * Whether the claimant itself must hold that work, rather than the desk it sits at.
+     * Whether the claimant itself must hold that work, rather than the inbox it is attached to.
      */
     public function needsClaimantToHoldWork(): bool
     {

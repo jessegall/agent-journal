@@ -45,7 +45,7 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
             return None::create();
         }
 
-        $owner = ActorIdentity::of(new EngineActor());
+        $owner = ActorIdentity::of(new SystemActor());
 
         return $owner->isSameAs(ActorIdentity::of($actor)) ? new Some($this->grant) : None::create();
     }
@@ -72,13 +72,21 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
     }
 
     /**
+     * Whether an engine pass holds a frame or maintenance grant now.
+     */
+    public function isGranted(): bool
+    {
+        return ! $this->grant instanceof NoEngineGrant;
+    }
+
+    /**
      * Refuses an engine that acts without a frame or maintenance grant.
      *
      * @throws EngineAccessRefused
      */
     public function assertGranted(): void
     {
-        if ($this->grant instanceof NoEngineGrant) {
+        if (! $this->isGranted()) {
             throw EngineAccessRefused::ungranted();
         }
     }

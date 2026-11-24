@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Models;
 
+use App\Enums\ActorType;
+use App\Contracts\Records\AuthoredRecord;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
@@ -62,7 +64,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'steps'])]
-final class SequenceRun extends Model implements Dockable, EventSource, Numbered, ReadableModel
+final class SequenceRun extends Model implements AuthoredRecord, Dockable, EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
@@ -98,6 +100,18 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
             'current_step' => 'integer',
             'state' => SequenceRunState::class,
         ];
+    }
+
+    /**
+     * The actor the run was started for, or the system actor for a run nobody follows.
+     */
+    public function author(): ActorIdentity
+    {
+        if ($this->actor_type === null || $this->actor_id === null) {
+            return ActorIdentity::system();
+        }
+
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
     /**

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Contracts\Chat\Inbox;
+use App\Contracts\Inboxes\LabeledInbox;
 
-final readonly class TeamInbox implements Inbox
+final readonly class TeamInbox implements LabeledInbox
 {
     public function __construct(private string $id, private string $label) {}
 

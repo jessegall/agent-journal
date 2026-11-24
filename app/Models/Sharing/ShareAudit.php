@@ -162,7 +162,7 @@ final class ShareAudit extends Model implements ReadableModel
         return match ($this->actor_type) {
             ActorType::User => ShareAuditActor::Owner,
             ActorType::Agent => ShareAuditActor::Agent,
-            ActorType::System, ActorType::Engine => ShareAuditActor::System,
+            ActorType::System => ShareAuditActor::System,
         };
     }
 

@@ -67,7 +67,8 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
     {
         $reservation = new self([
             'certificate' => $work->certificate,
-            ...$actor->asColumns('actor'),
+            'actor_type' => $actor->type->value,
+            'actor_id' => $actor->id,
             'generation' => $generation,
         ]);
 

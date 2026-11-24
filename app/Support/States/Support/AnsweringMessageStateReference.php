@@ -4,36 +4,25 @@ declare(strict_types=1);
 
 namespace App\Support\States\Support;
 
-use App\Events\Messages\ChatMessageOffered;
 use App\Models\Messages\Message;
-use App\Support\AssigneeIdentity;
 use App\Support\Decisions\StateReferenceFactory;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 
 /**
- * The answering frame of one agent in one chat, made with the first message that waits for its answer.
+ * Builds the answering state of one message for one agent.
  */
 final class AnsweringMessageStateReference extends StateReferenceFactory
 {
     public const string TYPE_KEY = 'core.messages.answering';
 
-    public static function forOffer(ChatMessageOffered $offer): StateReference
+    public static function forMessage(Message $message, string $agentId): StateReference
     {
-        return self::waiting($offer->inboxId, $offer->agent->id, $offer->messageId);
-    }
-
-    public static function forClaim(Message $message, AssigneeIdentity $holder): StateReference
-    {
-        return self::waiting($message->destination_inbox_id, $holder->id, $message->id);
-    }
-
-    private static function waiting(string $inboxId, string $agentId, string $messageId): StateReference
-    {
-        return self::about(new SubjectReference($inboxId, 0), [
-            'inboxId' => $inboxId,
+        return self::about(new SubjectReference($message->id, 0), [
+            'messageId' => $message->id,
+            'messageNumber' => $message->number,
+            'inboxId' => $message->inbox_id,
             'agentId' => $agentId,
-            'waitingIds' => [$messageId],
         ]);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\Records\AssignmentRecord;
+use App\Models\Inboxes\InboxMember;
 use App\Models\Records\ClaimAuthorization;
 
 /**
@@ -31,13 +32,17 @@ final readonly class ProvedClaims
             array_values($proofs),
         )));
 
+        $activeMemberIds = InboxMember::activeIdsAmong(array_values(array_filter(array_map(
+            fn (ClaimAuthorization $proof) => $proof->inbox_member_id,
+            array_values($proofs),
+        ))));
         $valid = [];
 
         foreach ($claims as $claim) {
             $assignment = $claim->toAssignment;
             $proof = $proofs[$claim->id] ?? null;
 
-            if ($proof?->isValidAgainst($assignment->holder(), $liveHolders) === true) {
+            if ($proof?->isValidAgainst($assignment->holder(), $liveHolders, $activeMemberIds) === true) {
                 $valid[$assignment->record->id] = $assignment;
             }
         }

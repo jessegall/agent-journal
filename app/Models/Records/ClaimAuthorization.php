@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ClaimBasis;
+use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -24,8 +25,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string $claim_assignment_id
  * @property ClaimBasis $basis_type
- * @property string|null $participation_assignment_id
- * @property string|null $work_assignment_id
+ * @property string|null $inbox_member_id
+ * @property string $work_assignment_id
  */
 #[Table('claim_authorizations')]
 #[Fillable(['claim_assignment_id', 'basis_type', 'participation_assignment_id', 'work_assignment_id'])]
@@ -47,23 +48,13 @@ final class ClaimAuthorization extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    /**
-     * A waiting message claimed through the claimant's seat at the inbox's desk.
-     */
-    public static function forInbox(AssignmentReference $claim, AssignmentReference $participation): self
-    {
-        return self::prove($claim, ClaimBasis::Inbox, $participation->id, null);
-    }
 
     /**
-     * A task run claimed through the claimant's seat at the desk that holds the task.
+     * A task run claimed through the claimant's membership of the inbox that holds the task.
      */
-    public static function forDeskRun(
-        AssignmentReference $claim,
-        AssignmentReference $participation,
-        AssignmentReference $work,
-    ): self {
-        return self::prove($claim, ClaimBasis::DeskRun, $participation->id, $work->id);
+    public static function forInboxRun(AssignmentReference $claim, InboxMember $member, AssignmentReference $work): self
+    {
+        return self::prove($claim, ClaimBasis::InboxRun, $member->id, $work->id);
     }
 
     /**
@@ -91,9 +82,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
     {
         return self::query()
             ->select('claim_assignment_id')
-            ->where(fn (Builder $query) => $query
-                ->where('participation_assignment_id', $source->id)
-                ->orWhere('work_assignment_id', $source->id));
+            ->where('work_assignment_id', $source->id);
     }
 
     /**
@@ -119,26 +108,26 @@ final class ClaimAuthorization extends Model implements ReadableModel
      */
     public function isValidFor(AssigneeIdentity $claimant): bool
     {
-        return $this->isValidAgainst($claimant, AssignmentRecord::holdersOf($this->sourceIds));
+        return $this->isValidAgainst(
+            $claimant,
+            AssignmentRecord::holdersOf($this->sourceIds),
+            InboxMember::activeIdsAmong(array_filter([$this->inbox_member_id])),
+        );
     }
 
     /**
      * The same check against the current holders of the source assignments, read beforehand for many proofs.
      *
      * @param  array<string, AssigneeIdentity>  $liveHolders
+     * @param  list<string>  $activeMemberIds
      */
-    public function isValidAgainst(AssigneeIdentity $claimant, array $liveHolders): bool
+    public function isValidAgainst(AssigneeIdentity $claimant, array $liveHolders, array $activeMemberIds): bool
     {
-        $participation = $liveHolders[(string) $this->participation_assignment_id] ?? null;
-        $work = $liveHolders[(string) $this->work_assignment_id] ?? null;
+        $work = $liveHolders[$this->work_assignment_id] ?? null;
+        $isMember = ! $this->basis_type->needsMembership() || in_array($this->inbox_member_id, $activeMemberIds, true);
+        $workHolds = $work !== null && (! $this->basis_type->needsClaimantToHoldWork() || $work->isSameAs($claimant));
 
-        $participationHolds = ! $this->basis_type->needsParticipation()
-            || ($participation !== null && $participation->isSameAs($claimant));
-
-        $workHolds = ! $this->basis_type->needsWork()
-            || ($work !== null && (! $this->basis_type->needsClaimantToHoldWork() || $work->isSameAs($claimant)));
-
-        return $participationHolds && $workHolds;
+        return $isMember && $workHolds;
     }
 
     // ----------[ Accessors ]----------
@@ -146,13 +135,11 @@ final class ClaimAuthorization extends Model implements ReadableModel
     /**
      * The ids of the assignments the claim stands on.
      *
-     * @return Attribute<list{0?: string, 1?: string}, never>
+     * @return Attribute<list{string}, never>
      */
     protected function sourceIds(): Attribute
     {
-        return Attribute::get(
-            fn () => array_values(array_filter([$this->participation_assignment_id, $this->work_assignment_id])),
-        );
+        return Attribute::get(fn () => [$this->work_assignment_id]);
     }
 
     // ----------[ Internals ]----------
@@ -160,13 +147,13 @@ final class ClaimAuthorization extends Model implements ReadableModel
     private static function prove(
         AssignmentReference $claim,
         ClaimBasis $basis,
-        string|null $participationId,
-        string|null $workId,
+        string|null $memberId,
+        string $workId,
     ): self {
         $proof = new self([
             'claim_assignment_id' => $claim->id,
             'basis_type' => $basis,
-            'participation_assignment_id' => $participationId,
+            'inbox_member_id' => $memberId,
             'work_assignment_id' => $workId,
         ]);
 

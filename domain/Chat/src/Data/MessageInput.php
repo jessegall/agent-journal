@@ -22,15 +22,11 @@ final class MessageInput extends Data
         public readonly string $body,
         #[Ulid]
         public readonly string $inboxId,
-        #[Regex('/^[A-Za-z0-9-]{1,64}$/')]
-        public readonly string $requestKey,
         #[Ulid]
         public readonly string|null $agent = null,
-        #[Regex('/^(user|agent):[0-9a-hjkmnp-tv-z]{26}$/i')]
-        public readonly string|null $addressee = null,
-        public readonly bool $isQuestion = false,
         #[Ulid]
         public readonly string|null $expectedSessionId = null,
         public readonly int $expectedGeneration = 0,
+        public readonly int|null $targetMessageNumber = null,
     ) {}
 }

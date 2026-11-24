@@ -33,9 +33,4 @@ final readonly class ReadRequest
         return new self($name, isDiscovery: true);
     }
 
-    public function matchesRecovery(RecoveryCall $recovery): bool
-    {
-        return $this->name === $recovery->tool
-            && ($this->isDiscovery || array_diff_assoc($recovery->arguments, $this->arguments) === []);
-    }
 }

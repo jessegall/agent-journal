@@ -9,7 +9,7 @@ use App\Contracts\Actors\ActorProvider;
 use App\Exceptions\ActorUnavailable;
 
 /**
- * The one system actor, system:1.
+ * The one system actor, the journal itself.
  */
 final readonly class SystemActors implements ActorProvider
 {

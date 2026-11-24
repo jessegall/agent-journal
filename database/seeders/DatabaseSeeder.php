@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(NumbersSeeder::class);
-        $this->call(DesksSeeder::class);
+        $this->call(InboxesSeeder::class);
         $this->call(OwnerSeeder::class);
         $tasks = $this->container->make(PlanTasksSeeder::class);
         $this->callWith(PlansSeeder::class, [

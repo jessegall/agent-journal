@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Models\Concerns\PlacedInConversation;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +31,6 @@ final class MessagePin extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids;
     use Linkable;
-    use PlacedInConversation;
 
     public const int DEFAULT_LIMIT = 50;
 
@@ -58,7 +56,7 @@ final class MessagePin extends Model implements ReadableModel
     ): self {
         $existing = self::query()
             ->ownedBy($owner)
-            ->inConversation($inboxId)
+            ->where('inbox_id', $inboxId)
             ->where('message_id', $messageId)
             ->first();
 
@@ -77,7 +75,4 @@ final class MessagePin extends Model implements ReadableModel
 
         return $pin;
     }
-
-    // ----------[ Queries ]----------
-
 }

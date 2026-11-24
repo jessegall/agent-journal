@@ -15,24 +15,15 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulid('claim_assignment_id')->unique();
             $table->string('basis_type', 16);
-            $table->ulid('participation_assignment_id')->nullable()->index();
-            $table->ulid('work_assignment_id')->nullable()->index();
+            $table->foreignUlid('inbox_member_id')->nullable()->index()->constrained('inbox_members')->cascadeOnDelete();
+            $table->ulid('work_assignment_id')->index();
             $table->timestampsTz();
         });
 
         DB::statement(<<<'SQL'
             ALTER TABLE claim_authorizations ADD CONSTRAINT claim_authorizations_shape CHECK (
-                (basis_type = 'inbox' AND participation_assignment_id IS NOT NULL AND work_assignment_id IS NULL)
-                OR (
-                    basis_type = 'desk-run'
-                    AND participation_assignment_id IS NOT NULL
-                    AND work_assignment_id IS NOT NULL
-                )
-                OR (
-                    basis_type = 'direct-run'
-                    AND participation_assignment_id IS NULL
-                    AND work_assignment_id IS NOT NULL
-                )
+                (basis_type = 'inbox-run' AND inbox_member_id IS NOT NULL)
+                OR (basis_type = 'direct-run' AND inbox_member_id IS NULL)
             )
             SQL);
     }

@@ -17,7 +17,7 @@ final readonly class SendMessageController
     public function __invoke(SendMessageCall $call, CommandBus $commands): MessageNamed
     {
         $message = $call->message;
-        $command = new SendMessageCommand($message->sourceInboxId, $message->destinationInboxId, $message->body);
+        $command = new SendMessageCommand($message->inboxId, $message->body, $message->targetMessageNumber);
         $messageId = $commands->run($command);
 
         return MessageNamed::from(['messageId' => $messageId]);

@@ -18,14 +18,14 @@ use App\Support\Sources\Contracts\DockRegistration;
 use App\Support\Wire\Contracts\CardEncoder;
 use App\Support\Wire\EncodedCard;
 use Domain\Chat\Data\DockPageData;
-use Domain\Chat\Models\Conversation;
+use App\Models\Inboxes\Inbox;
 use Domain\Chat\Models\DockPlacement;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * One page of the cards docked in a conversation, as the viewer may see them: placements read newest first in
+ * One page of the cards docked in a chat, as the viewer may see them: placements read newest first in
  * batches, each type's cards composed by its owner in one batch, then put back in placement order. A page stops at its
  * card limit, its scan limit or its byte budget, and never says what it left out or why.
  */
@@ -58,22 +58,22 @@ final readonly class DockProjection
      * One page of the chat's docked sources the actor may read; a chat not yet opened shows none.
      */
     public function page(
-        Conversation|null $conversation,
+        Inbox|null $inbox,
         string|null $token,
         int $limit = self::CARD_LIMIT,
     ): DockPageData {
         $actor = $this->actors->actor();
         $identity = ActorIdentity::of($actor);
         $viewer = "{$identity->type->value}:{$identity->id}";
-        $conversationKey = $conversation === null ? self::UNOPENED_CHAT : $conversation->id;
-        $first = DockCursor::start($viewer, $conversationKey);
-        $end = DockCursor::end($viewer, $conversationKey);
+        $inboxKey = $inbox === null ? self::UNOPENED_CHAT : $inbox->id;
+        $first = DockCursor::start($viewer, $inboxKey);
+        $end = DockCursor::end($viewer, $inboxKey);
 
         $start = $token === null
             ? $first
-            : DockCursor::read($this->encrypter, $token, $viewer, $conversationKey)->getOrElse($first);
+            : DockCursor::read($this->encrypter, $token, $viewer, $inboxKey)->getOrElse($first);
 
-        if ($conversation === null || $start->hasEnded) {
+        if ($inbox === null || $start->hasEnded) {
             return new DockPageData([], $end->token($this->encrypter));
         }
 
@@ -85,13 +85,13 @@ final readonly class DockProjection
         $wanted = max(1, min($limit, self::LARGEST_CARD_LIMIT));
 
         while ($scanned < self::SCAN_LIMIT) {
-            $batch = $this->batchAfter($conversation, $place);
+            $batch = $this->batchAfter($inbox, $place);
             $composed = $this->composed($batch, $context);
 
             foreach ($batch as $placement) {
                 $scanned++;
                 $card = $composed->find($placement->source);
-                $next = DockCursor::after($viewer, $conversationKey, $placement->assigned_at, $placement->id);
+                $next = DockCursor::after($viewer, $inboxKey, $placement->assigned_at, $placement->id);
 
                 if ($card->isEmpty()) {
                     $place = $next;
@@ -148,10 +148,10 @@ final readonly class DockProjection
     /**
      * @return Collection<int, DockPlacement>
      */
-    private function batchAfter(Conversation $conversation, DockCursor $place): Collection
+    private function batchAfter(Inbox $inbox, DockCursor $place): Collection
     {
         return DockPlacement::query()
-            ->inConversation($conversation)
+            ->inInbox($inbox)
             ->olderThan($place->assignedAt, $place->placementId)
             ->orderByDesc('assigned_at')
             ->orderByDesc('id')

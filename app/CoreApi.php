@@ -27,19 +27,12 @@ use App\Calls\Assignments\Concerns\NamesRecipient;
 use App\Calls\Comments\ListCommentsCall;
 use App\Casts\CallKeyCast;
 use App\Commands\Navigation\AbandonNavigation\AbandonNavigationCommand;
-use App\Commands\Messages\AcknowledgeChatMessages\AcknowledgeChatMessagesCommand;
-use App\Commands\Messages\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Asks\AdvanceAsk\AdvanceAskCommand;
-use App\Commands\Messages\AnswerChatQuestion\AnswerChatQuestionCommand;
-use App\Commands\Messages\AnswerMessage\AnswerMessageCommand;
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
 use App\Commands\Drivers\ApproveDriver\ApproveDriverCommand;
 use App\Commands\Sharing\ApproveShareRequest\ApproveShareRequestCommand;
-use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\Messages\AskMessage\AskMessageCommand;
-use App\Commands\Messages\AskQuestion\AskQuestionCommand;
 use App\Commands\Projects\AssertBindingStart\AssertBindingStartCommand;
 use App\Commands\Projects\AssignBindingEnvironment\AssignBindingEnvironmentCommand;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
@@ -61,17 +54,14 @@ use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
 use App\Commands\Terminals\CheckTerminalScreen\CheckTerminalScreenCommand;
 use App\Commands\Terminals\ChooseTerminalDraft\ChooseTerminalDraftCommand;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
-use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
 use App\Commands\Terminals\CloseTerminalView\CloseTerminalViewCommand;
 use App\Commands\Assignments\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
 use App\Commands\Sharing\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use App\Commands\Agents\ContinueStart\ContinueStartCommand;
 use App\Commands\Skills\CopySkill\CopySkillCommand;
 use App\Commands\Agents\CreateAgent\CreateAgentCommand;
-use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Commands\Sharing\CreateShare\CreateShareCommand;
 use App\Commands\Skills\CreateSkill\CreateSkillCommand;
-use App\Commands\Messages\DeclineChatQuestion\DeclineChatQuestionCommand;
 use App\Commands\Layouts\DeleteLayout\DeleteLayoutCommand;
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Assignments\DisableAutoAssignment\DisableAutoAssignmentCommand;
@@ -79,11 +69,9 @@ use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\Sharing\DisableShareGateway\DisableShareGatewayCommand;
 use App\Commands\Accounts\DismissAccountNotice\DismissAccountNoticeCommand;
 use App\Commands\Starts\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
-use App\Commands\Messages\DismissMessage\DismissMessageCommand;
 use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Commands\Terminals\EndTerminalViews\EndTerminalViewsCommand;
-use App\Commands\Messages\SettleDispatchedBatches\SettleDispatchedBatchesCommand;
 use App\Commands\Agents\EnforceLaunchLimits\EnforceLaunchLimitsCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Navigation\ExpireNavigationRequests\ExpireNavigationRequestsCommand;
@@ -92,7 +80,6 @@ use App\Commands\Reviews\HandOffCodeReview\HandOffCodeReviewCommand;
 use App\Commands\Accounts\HoldAccountUses\HoldAccountUsesCommand;
 use App\Commands\Agents\ImportHelperCommits\ImportHelperCommitsCommand;
 use App\Commands\Reviews\InspectMergeAttempts\InspectMergeAttemptsCommand;
-use App\Commands\Desks\InstallDesks\InstallDesksCommand;
 use App\Commands\Records\InstallNumbers\InstallNumbersCommand;
 use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
 use App\Commands\Navigation\InterruptNavigation\InterruptNavigationCommand;
@@ -117,13 +104,15 @@ use App\Commands\Agents\OpenHostMainRuntime\OpenHostMainRuntimeCommand;
 use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
 use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
 use App\Commands\Projects\PollDeviceGrant\PollDeviceGrantCommand;
-use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Commands\Comments\PostComment\PostCommentCommand;
 use App\Commands\Comments\PostTextComment\PostTextCommentCommand;
 use App\Commands\Navigation\ProveNavigation\ProveNavigationCommand;
-use App\Commands\Desks\ProvisionActorDesk\ProvisionActorDeskCommand;
 use App\Commands\Navigation\RaiseNavigation\RaiseNavigationCommand;
-use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
+use App\Commands\Inboxes\HandOverInbox\HandOverInboxCommand;
+use App\Commands\Inboxes\JoinInbox\JoinInboxCommand;
+use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
+use App\Commands\Messages\ReadMessage\ReadMessageCommand;
+use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use App\Commands\Agents\ReassignAgentRuntime\ReassignAgentRuntimeCommand;
 use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
 use App\Commands\Accounts\RecheckAccount\RecheckAccountCommand;
@@ -138,9 +127,6 @@ use App\Commands\Projects\RecoverProjectBinding\RecoverProjectBindingCommand;
 use App\Commands\Projects\RedeemProjectInvitation\RedeemProjectInvitationCommand;
 use App\Commands\Sharing\RefreshShareScope\RefreshShareScopeCommand;
 use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
-use App\Commands\Messages\ReleaseMessageClaim\ReleaseMessageClaimCommand;
-use App\Commands\Desks\ReleaseSeat\ReleaseSeatCommand;
-use App\Commands\Messages\ReleaseSpeech\ReleaseSpeechCommand;
 use App\Commands\Terminals\ReleaseTerminalControl\ReleaseTerminalControlCommand;
 use App\Commands\Accounts\RemoveAccount\RemoveAccountCommand;
 use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
@@ -148,15 +134,10 @@ use App\Commands\Agents\RenewRuntimeLease\RenewRuntimeLeaseCommand;
 use App\Commands\Terminals\RenewTerminalControl\RenewTerminalControlCommand;
 use App\Commands\Terminals\RenewTerminalView\RenewTerminalViewCommand;
 use App\Commands\Agents\RepairDriverSettings\RepairDriverSettingsCommand;
-use App\Commands\Desks\ReplaceSeatOccupant\ReplaceSeatOccupantCommand;
-use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
-use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Commands\Sharing\RequestShare\RequestShareCommand;
-use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Commands\Settings\ResetSetting\ResetSettingCommand;
 use App\Commands\Settings\ResetSettingGroup\ResetSettingGroupCommand;
 use App\Commands\Drivers\ResolveDriverDelivery\ResolveDriverDeliveryCommand;
-use App\Commands\Desks\RestoreActorDesk\RestoreActorDeskCommand;
 use App\Commands\Skills\RestoreSkill\RestoreSkillCommand;
 use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
@@ -164,7 +145,6 @@ use App\Commands\Navigation\RetireMenuEntry\RetireMenuEntryCommand;
 use App\Commands\Skills\RetireSkill\RetireSkillCommand;
 use App\Commands\Accounts\RetryAccountCleanup\RetryAccountCleanupCommand;
 use App\Commands\Accounts\RetryAttemptCleanup\RetryAttemptCleanupCommand;
-use App\Commands\Messages\RetryDelivery\RetryDeliveryCommand;
 use App\Commands\Drivers\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Commands\Sharing\RetryShare\RetryShareCommand;
 use App\Commands\Skills\ReviseSkill\ReviseSkillCommand;
@@ -178,8 +158,6 @@ use App\Commands\Sharing\RevokeShare\RevokeShareCommand;
 use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
 use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
 use App\Commands\Sharing\SaveSharePreview\SaveSharePreviewCommand;
-use App\Commands\Desks\SeatActor\SeatActorCommand;
-use App\Commands\Messages\SelectMessage\SelectMessageCommand;
 use App\Commands\Drivers\SendDriverRequestAgain\SendDriverRequestAgainCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Commands\Terminals\SendTerminalInput\SendTerminalInputCommand;
@@ -202,7 +180,6 @@ use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
 use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Commands\Agents\SubmitWorktreeDelivery\SubmitWorktreeDeliveryCommand;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
-use App\Commands\Messages\TakeNextMessages\TakeNextMessagesCommand;
 use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
 use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
@@ -309,34 +286,23 @@ use App\Contracts\Bus\OwnerCommands;
 use App\Contracts\Bus\RecordCommand;
 use App\Contracts\Bus\RequestKey;
 use App\Contracts\Bus\ResultReceipts;
-use App\Contracts\Chat\ActorDesks;
 use App\Contracts\Chat\AdmittedRecipients;
-use App\Contracts\Chat\AgentMessageReader;
 use App\Contracts\Chat\Answer;
-use App\Contracts\Chat\ChatAnswer;
-use App\Contracts\Chat\ChatDepartures;
 use App\Contracts\Chat\ChatEligibility;
-use App\Contracts\Chat\ChatInboxStore;
-use App\Contracts\Chat\ChatLines;
 use App\Contracts\Chat\ChatMemberPolicies;
 use App\Contracts\Chat\ChatParticipationEnding;
-use App\Contracts\Chat\ChatTimeline;
-use App\Contracts\Chat\ConversationResolver;
-use App\Contracts\Chat\Desk;
-use App\Contracts\Chat\Inbox;
-use App\Contracts\Chat\InboxAccess;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Chat\InboxDestinationResolver;
-use App\Contracts\Chat\InboxIntervalWriter;
-use App\Contracts\Chat\InboxNotices;
+use App\Contracts\Agents\AgentNotices;
+use App\Contracts\Messages\MessageParticipant;
+use App\Contracts\Messages\MessageReceiver;
+use App\Contracts\Messages\MessageSender;
 use App\Contracts\Chat\InboxProvider;
 use App\Contracts\Chat\InboxRegistration;
 use App\Contracts\Chat\InboxResolver;
-use App\Contracts\Chat\MessageRecipient;
-use App\Contracts\Chat\MessageSender;
 use App\Contracts\Chat\Notifications;
 use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Chat\NotificationTargets;
-use App\Contracts\Chat\SeatedActor;
 use App\Contracts\Chat\UserPresences;
 use App\Contracts\Domains\CallRegistrar;
 use App\Contracts\Domains\CallSender;
@@ -393,6 +359,21 @@ use App\Contracts\Reads\MarkdownParts;
 use App\Contracts\Reads\ReadMeter;
 use App\Contracts\Reads\TextContent;
 use App\Contracts\Reads\TextResolver;
+use App\Commands\Questions\AnswerQuestion\AnswerQuestionCommand;
+use App\Commands\Questions\AskQuestion\AskQuestionCommand;
+use App\Commands\Questions\ReadQuestion\ReadQuestionCommand;
+use App\Events\Messages\MessageRead;
+use App\Events\Inboxes\InboxJoined;
+use App\Events\Inboxes\InboxLeft;
+use App\Events\Questions\QuestionAsked;
+use App\Events\Questions\QuestionAnswered;
+use App\Enums\QuestionType;
+use App\Data\Questions\QuestionView;
+use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
+use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
+use App\Contracts\Inboxes\MainInbox;
+use App\Contracts\Inboxes\MainInboxTakeover;
+use App\Contracts\Questions\AnswersQuestions;
 use App\Contracts\Records\Commentable;
 use App\Contracts\Records\CommentResolver;
 use App\Contracts\Records\CountResolver;
@@ -491,29 +472,10 @@ use App\Data\Docks\DockablePublicationData;
 use App\Data\Docks\DockDestinationOptionData;
 use App\Data\Docks\DockOfferData;
 use App\Data\Docks\SourceActionData;
-use App\Data\Messages\AgentChatPart;
-use App\Data\Messages\AgentInbox;
-use App\Data\Messages\AgentInboxCounts;
-use App\Data\Messages\AgentMessageCard;
-use App\Data\Messages\AgentMessageDetails;
-use App\Data\Messages\ChatEventPage;
-use App\Data\Messages\ChatEventView;
-use App\Data\Messages\DeliveryView;
 use App\Data\Messages\DraftQuestionData;
-use App\Data\Messages\InboxCounts;
-use App\Data\Messages\InboxView;
 use App\Data\Messages\MessageAttachmentData;
-use App\Data\Messages\MessageBatchData;
-use App\Data\Messages\MessageBatchItemData;
-use App\Data\Messages\MessageClaimHolder;
-use App\Data\Messages\MessagePage;
-use App\Data\Messages\MessageReadBatch;
-use App\Data\Messages\MessageReader;
-use App\Data\Messages\MessageReadResult;
 use App\Data\Messages\MessageTextData;
 use App\Data\Messages\MessageView;
-use App\Data\Messages\ReplyOriginal;
-use App\Data\Messages\WakeStatus;
 use App\Data\Notifications\NotificationLink;
 use App\Data\Notifications\NotificationTarget;
 use App\Data\Pages\DraftedRecordData;
@@ -726,7 +688,6 @@ use App\Enums\TerminalInputType;
 use App\Enums\TerminalNamedKey;
 use App\Enums\TerminalReceiptOutcome;
 use App\Enums\TextAnchorType;
-use App\Enums\TimelineEventType;
 use App\Enums\Tone;
 use App\Enums\ToolOutcome;
 use App\Enums\ToolType;
@@ -803,8 +764,6 @@ use App\Exceptions\CallKeyInvalid;
 use App\Exceptions\CallRefused;
 use App\Exceptions\CallTooLarge;
 use App\Exceptions\CapacityUnavailable;
-use App\Exceptions\ChatCursorRefused;
-use App\Exceptions\ChatStateConflict;
 use App\Exceptions\ClassMissing;
 use App\Exceptions\ClientOutOfDate;
 use App\Exceptions\CommandDeclarationInvalid;
@@ -834,8 +793,6 @@ use App\Exceptions\CrossOwnerReadRefused;
 use App\Exceptions\DeadlineExpired;
 use App\Exceptions\DecimalInvalid;
 use App\Exceptions\DefaultUnavailable;
-use App\Exceptions\DeskSeatCountInvalid;
-use App\Exceptions\DeskUnavailable;
 use App\Exceptions\DockCardInvalid;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\DockSourceUnavailable;
@@ -852,7 +809,6 @@ use App\Exceptions\DriverTypeAmbiguous;
 use App\Exceptions\DriverUnknown;
 use App\Exceptions\DriverUnsupported;
 use App\Exceptions\EndpointDeclarationInvalid;
-use App\Exceptions\EngineActorRequired;
 use App\Exceptions\ExecutionBudgetInvalid;
 use App\Exceptions\ExecutionPolicyInvalid;
 use App\Exceptions\ExplicitTransactionInCommand;
@@ -894,7 +850,6 @@ use App\Exceptions\LinkLoop;
 use App\Exceptions\MalformedExports;
 use App\Exceptions\ManifestRefused;
 use App\Exceptions\MarkdownInvalid;
-use App\Exceptions\MembershipEvidenceMismatch;
 use App\Exceptions\MenuStepRefused;
 use App\Exceptions\MessageBodyTooLong;
 use App\Exceptions\MessageMissing;
@@ -946,9 +901,6 @@ use App\Exceptions\SearchableInvalid;
 use App\Exceptions\SearchBatchInvalid;
 use App\Exceptions\SearchValueInvalid;
 use App\Exceptions\SearchWordsInvalid;
-use App\Exceptions\SeatCapacityReached;
-use App\Exceptions\SeatConflict;
-use App\Exceptions\SecondForwardingSeat;
 use App\Exceptions\SectionMissing;
 use App\Exceptions\SessionOutdated;
 use App\Exceptions\SettingDeclarationInvalid;
@@ -1045,13 +997,11 @@ use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\AssignableListing;
 use App\Models\Support\BelongsToOneActor;
 use App\Policies\CommentPolicy;
-use App\Resolvers\Support\ChatDeliveries;
 use App\Support\AccountUseCounts;
 use App\Support\ActivityDefinition;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\ActorLabelSet;
-use App\Support\AgentChatAdmission;
 use App\Support\AgentDrivers;
 use App\Support\AgentLabel;
 use App\Support\AgentOption;
@@ -1098,9 +1048,6 @@ use App\Support\Cards\Stack;
 use App\Support\Cards\StateLabel;
 use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
-use App\Support\ChatInboxes;
-use App\Support\ChatInterval;
-use App\Support\ChatIntervalEvidence;
 use App\Support\ClaimedRequests;
 use App\Support\CodeFiles;
 use App\Support\Command as BaseCommand;
@@ -1127,7 +1074,6 @@ use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Decisions\StateReferenceFactory;
-use App\Support\DeskSeatEvidence;
 use App\Support\DisabledSettingsGroup;
 use App\Support\Domain;
 use App\Support\DraftAnswers;
@@ -1149,9 +1095,6 @@ use App\Support\HeldAccountUses;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\IdListPage;
-use App\Support\InboxIntervals;
-use App\Support\InboxMembers;
-use App\Support\InboxMembership;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\Inputs\Contracts\HookInput;
@@ -1246,7 +1189,6 @@ use App\Support\RunClaim;
 use App\Support\SavedSharePreview;
 use App\Support\ScreenReportAnswer;
 use App\Support\Searchable;
-use App\Support\SeatChangeResult;
 use App\Support\Section as TextSection;
 use App\Support\SecurityOptions;
 use App\Support\SessionOption;
@@ -1317,7 +1259,6 @@ use App\Values\BoundTarget;
 use App\Values\BrowserInputCapabilities;
 use App\Values\CallAccepted;
 use App\Values\CallAnswer;
-use App\Values\ChatLine;
 use App\Values\ChatMemberAuthority;
 use App\Values\Choice;
 use App\Values\ChosenAccount;
@@ -1487,7 +1428,6 @@ use App\Values\SourceHit;
 use App\Values\SourcePosition;
 use App\Values\SourceRange;
 use App\Values\StackTarget;
-use App\Values\StackVerdict;
 use App\Values\StartPolicy;
 use App\Values\StartProfile;
 use App\Values\StartProfileAuthority;
@@ -1544,6 +1484,11 @@ final class CoreApi
         return Exports::make()
             ->events(
                 MessageSent::class,
+                MessageRead::class,
+                InboxJoined::class,
+                InboxLeft::class,
+                QuestionAsked::class,
+                QuestionAnswered::class,
                 ContextStarted::class,
                 StartSessionOpened::class,
                 HelperCompletionCertified::class,
@@ -1577,8 +1522,6 @@ final class CoreApi
                 EngineListener::class,
                 EngineListenerProvider::class,
                 MaintenanceAdmission::class,
-                ChatDepartures::class,
-                ChatTimeline::class,
                 ChatParticipationEnding::class,
                 ChatEligibility::class,
                 MembershipEvidence::class,
@@ -1630,7 +1573,10 @@ final class CoreApi
                 RecordLinker::class,
                 CommandTransaction::class,
                 SessionProvenance::class,
-                InboxNotices::class,
+                AgentNotices::class,
+                MessageParticipant::class,
+                MessageReceiver::class,
+                MessageSender::class,
                 CurrentSession::class,
                 SearchProvider::class,
                 SearchAccess::class,
@@ -1671,8 +1617,9 @@ final class CoreApi
                 TextContent::class,
                 TextResolver::class,
                 Commentable::class,
-                MessageSender::class,
-                MessageRecipient::class,
+                AnswersQuestions::class,
+                MainInbox::class,
+                MainInboxTakeover::class,
                 ActorResolver::class,
                 ActorProvider::class,
                 ActorProviderRegistration::class,
@@ -1685,14 +1632,10 @@ final class CoreApi
                 PolicyCatalogue::class,
                 WorkProgress::class,
                 ScriptKeywordDefinition::class,
-                Inbox::class,
+                LabeledInbox::class,
                 InboxResolver::class,
                 InboxRegistration::class,
                 InboxProvider::class,
-                InboxAccess::class,
-                ChatInboxStore::class,
-                InboxIntervalWriter::class,
-                ActorDesks::class,
                 ActorProvisioning::class,
                 RunClaims::class,
                 InternalAssignableContributor::class,
@@ -1700,8 +1643,6 @@ final class CoreApi
                 IncomingWork::class,
                 ListenerFailureLog::class,
                 IncomingWorkRegistration::class,
-                Desk::class,
-                SeatedActor::class,
                 AssignmentDestinationResolver::class,
                 InboxDestinationResolver::class,
                 ActorInboxResolver::class,
@@ -1722,8 +1663,6 @@ final class CoreApi
                 ActiveActorRegistration::class,
                 ActiveActorCounter::class,
                 UserPresences::class,
-                ConversationResolver::class,
-                ChatLines::class,
                 Notifications::class,
                 NotificationTargets::class,
                 NotificationTargetResolver::class,
@@ -1779,7 +1718,6 @@ final class CoreApi
                 CommandHandler::class,
                 CommandProvider::class,
                 McpToolProvider::class,
-                AgentMessageReader::class,
                 RefusalDetails::class,
                 McpCall::class,
                 NumberedPages::class,
@@ -1790,7 +1728,6 @@ final class CoreApi
                 WorkRepair::class,
                 ActorGuidance::class,
                 UserInterfaceUpdater::class,
-                ChatAnswer::class,
                 CountResolver::class,
                 NavigationChildren::class,
                 PageOption::class,
@@ -1858,7 +1795,6 @@ final class CoreApi
                 TerminalReceiptData::class,
                 TerminalInputType::class,
                 TerminalNamedKey::class,
-                TimelineEventType::class,
                 LayoutSplitData::class,
                 LayoutProgressData::class,
                 LayoutDialogData::class,
@@ -1887,7 +1823,6 @@ final class CoreApi
                 DockDestination::class,
                 DockIdentity::class,
                 Searchable::class,
-                ChatLine::class,
                 LineCardPlacement::class,
                 DockLink::class,
                 Duration::class,
@@ -1936,7 +1871,6 @@ final class CoreApi
                 AskTypeKey::class,
                 SupervisorCoverageType::class,
                 CommandDirectory::class,
-                StackVerdict::class,
                 WorkspaceReadReference::class,
                 WorkReference::class,
                 HelperImportReceipt::class,
@@ -1964,11 +1898,6 @@ final class CoreApi
                 ReceiptState::class,
                 Operation::class,
                 McpToolResult::class,
-                AgentInboxCounts::class,
-                AgentInbox::class,
-                AgentMessageCard::class,
-                AgentChatPart::class,
-                AgentMessageDetails::class,
                 AgentInboxState::class,
                 ReadView::class,
                 NextAction::class,
@@ -2089,6 +2018,7 @@ final class CoreApi
                 ReadCounts::class,
                 Measurement::class,
                 ActorType::class,
+                QuestionType::class,
                 ActorContext::class,
                 AgentLabel::class,
                 SessionOption::class,
@@ -2140,17 +2070,9 @@ final class CoreApi
                 WholeRecord::class,
                 CommentType::class,
                 MessageView::class,
-                ReplyOriginal::class,
+                QuestionView::class,
                 AgentText::class,
-                MessagePage::class,
-                MessageReader::class,
-                MessageClaimHolder::class,
-                InboxCounts::class,
-                InboxView::class,
-                MessageReadBatch::class,
-                MessageReadResult::class,
                 DismissalType::class,
-                WakeStatus::class,
                 MessageState::class,
                 NotificationTarget::class,
                 NotificationLink::class,
@@ -2287,23 +2209,8 @@ final class CoreApi
                 AssigneeIdentity::class,
                 AssignmentRequest::class,
                 AssignmentPurpose::class,
-                SeatChangeResult::class,
-                InboxMembership::class,
-                DeskSeatEvidence::class,
-                ChatIntervalEvidence::class,
-                InboxMembers::class,
-                ChatInboxes::class,
-                ChatInterval::class,
-                InboxIntervals::class,
-                MessageBatchData::class,
-                MessageBatchItemData::class,
-                AgentChatAdmission::class,
                 AgentDrivers::class,
-                ChatDeliveries::class,
-                DeliveryView::class,
                 WakeState::class,
-                ChatEventPage::class,
-                ChatEventView::class,
                 IntervalRole::class,
                 LeaveReason::class,
                 ActorLabelSet::class,
@@ -2604,26 +2511,16 @@ final class CoreApi
                 PostCommentCommand::class,
                 PostTextCommentCommand::class,
                 SendMessageCommand::class,
-                PostChatMessageCommand::class,
-                AskChatQuestionCommand::class,
-                ReplyInChatCommand::class,
-                AcknowledgeChatMessagesCommand::class,
-                AcknowledgeMessageBatchCommand::class,
-                RetryDeliveryCommand::class,
-                ClaimSpeechCommand::class,
-                ReleaseSpeechCommand::class,
-                AnswerChatQuestionCommand::class,
-                DeclineChatQuestionCommand::class,
-                SelectMessageCommand::class,
+                ReadMessageCommand::class,
+                ReadUnreadMessagesCommand::class,
+                JoinInboxCommand::class,
+                ProvisionActorInboxCommand::class,
+                InstallInboxesCommand::class,
+                LeaveInboxCommand::class,
+                HandOverInboxCommand::class,
                 AskQuestionCommand::class,
-                AnswerMessageCommand::class,
-                AskMessageCommand::class,
-                ReadMessagesCommand::class,
-                TakeNextMessagesCommand::class,
-                ReplyToMessageCommand::class,
-                ReleaseMessageClaimCommand::class,
-                RequireMessageAnswerCommand::class,
-                DismissMessageCommand::class,
+                AnswerQuestionCommand::class,
+                ReadQuestionCommand::class,
                 RetireAgentCommand::class,
                 StartAgentCommand::class,
                 StartOwnedAgentCommand::class,
@@ -2690,7 +2587,6 @@ final class CoreApi
                 MarkSilentSessionsCommand::class,
                 CertifyPassedStopsCommand::class,
                 EndTerminalViewsCommand::class,
-                SettleDispatchedBatchesCommand::class,
                 EnforceLaunchLimitsCommand::class,
                 AdvanceAskCommand::class,
                 HandOffCodeReviewCommand::class,
@@ -2737,13 +2633,6 @@ final class CoreApi
                 LinkRecordsCommand::class,
                 UnlinkRecordsCommand::class,
                 AssignRecordCommand::class,
-                CreateDeskCommand::class,
-                InstallDesksCommand::class,
-                ProvisionActorDeskCommand::class,
-                RestoreActorDeskCommand::class,
-                SeatActorCommand::class,
-                ReplaceSeatOccupantCommand::class,
-                ReleaseSeatCommand::class,
                 EnableAutoAssignmentCommand::class,
                 ConfigureAutoAssignmentCommand::class,
                 DisableAutoAssignmentCommand::class,
@@ -2770,10 +2659,7 @@ final class CoreApi
                 DriverFamilyUnknown::class,
                 DriverRequestRefused::class,
                 StatementTimedOut::class,
-                ChatCursorRefused::class,
                 HookAnswerRefused::class,
-                MembershipEvidenceMismatch::class,
-                ChatStateConflict::class,
                 TerminalControlRefused::class,
                 ClassMissing::class,
                 LayoutRefused::class,
@@ -2828,7 +2714,6 @@ final class CoreApi
                 AutoAssignmentSizeInvalid::class,
                 OfflineReplyModeInvalid::class,
                 SkillSourceInvalid::class,
-                EngineActorRequired::class,
                 ActiveActorCounterRepeated::class,
                 MonotonicClockWentBack::class,
                 ShareBudgetExceeded::class,
@@ -2893,11 +2778,6 @@ final class CoreApi
                 MessageStateConflict::class,
                 MessageToSelf::class,
                 IncomingWorkRepeated::class,
-                DeskUnavailable::class,
-                DeskSeatCountInvalid::class,
-                SeatCapacityReached::class,
-                SecondForwardingSeat::class,
-                SeatConflict::class,
                 RunClaimRefused::class,
                 InboxProviderInvalid::class,
                 PolicyDefinitionConflict::class,

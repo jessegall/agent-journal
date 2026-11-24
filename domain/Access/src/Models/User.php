@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Access\Models;
 
+use App\Concerns\TakesPartInMessages;
+use App\Contracts\Messages\MessageReceiver;
+use App\Contracts\Messages\MessageSender;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Assignments\Assignee;
-use App\Contracts\Chat\MessageRecipient;
-use App\Contracts\Chat\MessageSender;
-use App\Contracts\Chat\SeatedActor;
+use App\Contracts\Questions\AnswersQuestions;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Support\AssigneeIdentity;
@@ -49,14 +50,15 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements
-    Assignee,
-    MessageRecipient,
+    MessageReceiver,
     MessageSender,
+    Assignee,
+    AnswersQuestions,
     MustVerifyEmail,
     PasskeyUser,
-    ReadableModel,
-    SeatedActor
+    ReadableModel
 {
+    use TakesPartInMessages;
     use BoundedReads;
 
     /**

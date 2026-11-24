@@ -22,7 +22,6 @@ use App\Support\Stack\Frames\Frame;
 use App\Support\Storage\FrameRecords;
 use App\Values\AgentText;
 use App\Values\StackTarget;
-use App\Values\StackVerdict;
 use PhpOption\None;
 use PhpOption\Option;
 
@@ -138,22 +137,6 @@ final readonly class AgentStack
         return None::create();
     }
 
-    public function permission(): StackVerdict
-    {
-        foreach (array_reverse($this->frames) as $frame) {
-            if (! $frame->isLive()) {
-                continue;
-            }
-
-            $permission = $frame->state->workPermission();
-
-            if (! $permission->isAllowed) {
-                return $permission;
-            }
-        }
-
-        return StackVerdict::allow();
-    }
 
     /**
      * Whether a frame for the reference is on the stack as live work, read for the stack's own agent.

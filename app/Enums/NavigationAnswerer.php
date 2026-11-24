@@ -10,6 +10,6 @@ namespace App\Enums;
  */
 enum NavigationAnswerer: string
 {
-    case MainDesk = 'main-desk';
+    case MainInbox = 'main-inbox';
     case User = 'user';
 }

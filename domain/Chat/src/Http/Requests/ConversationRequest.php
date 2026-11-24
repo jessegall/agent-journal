@@ -14,8 +14,8 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The chat window's own query: the agent it talks to, when one is chosen, where the dock's next page starts and the
- * question a notification opened.
+ * The chat window's own query: the agent it talks to, when one is chosen, the chat, and where the dock's next page
+ * starts.
  */
 final class ConversationRequest extends FormRequest
 {
@@ -29,7 +29,6 @@ final class ConversationRequest extends FormRequest
             'inbox' => ['nullable', 'string', 'ulid'],
             'dock' => ['nullable', 'string', 'max:2048'],
             'accountsFor' => ['nullable', Rule::in($drivers->familyKeys())],
-            'question' => ['nullable', 'string', 'ulid'],
         ];
     }
 
@@ -87,17 +86,5 @@ final class ConversationRequest extends FormRequest
     public function chosenAgent(): Option
     {
         return $this->filled('agent') ? Some::create($this->string('agent')->lower()->toString()) : None::create();
-    }
-
-    /**
-     * The id of the one question a notification opened, when the query names one.
-     *
-     * @return Option<string>
-     */
-    public function focusedQuestionId(): Option
-    {
-        return $this->filled('question')
-            ? Some::create($this->string('question')->lower()->toString())
-            : None::create();
     }
 }
