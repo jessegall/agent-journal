@@ -151,7 +151,7 @@ type RequestReport struct {
 	Navigation *NavigationReport `json:"navigation,omitempty"`
 	// RefusalReason is the allowlisted reason the host refused the request for, and NoProcessCreated whether it knows
 	// no process of the program was made; both empty for every other failure.
-	RefusalReason    *string `json:"refusal_reason,omitempty"`
+	RefusalReason       *string `json:"refusal_reason,omitempty"`
 	HasCreatedNoProcess bool    `json:"has_created_no_process,omitempty"`
 	// Sequence numbers the reports of one runtime in the order the host sends them, as ActivityReport's does.
 	Sequence uint64 `json:"sequence"`
@@ -248,7 +248,7 @@ type NavigationAnswer struct {
 	RetryAfterSeconds *int    `json:"retryAfterSeconds"`
 	// Entry is the library entry to replay, as keyscripts.Entry reads it; Guarded is set when it was proven on
 	// another build only.
-	Entry   json.RawMessage `json:"entry"`
+	Entry     json.RawMessage `json:"entry"`
 	IsGuarded bool            `json:"isGuarded"`
 }
 
@@ -268,7 +268,7 @@ type TurnReport struct {
 	RuntimeID         string  `json:"runtime_id"`
 	ProcessGeneration int     `json:"process_generation"`
 	NativePromptID    string  `json:"native_prompt_id"`
-	HasFinished          bool    `json:"has_finished"`
+	HasFinished       bool    `json:"has_finished"`
 	Model             *string `json:"model"`
 	Effort            *string `json:"effort"`
 	Outcome           *string `json:"outcome"`
@@ -335,10 +335,10 @@ type ProtectionReport struct {
 
 // ProtectionItem mirrors App\Agents\Data\ProtectedItemData.
 type ProtectionItem struct {
-	Item     string `json:"item"`
+	Item       string `json:"item"`
 	IsEnforced bool   `json:"isEnforced"`
-	Evidence string `json:"evidence"`
-	Reason   string `json:"reason"`
+	Evidence   string `json:"evidence"`
+	Reason     string `json:"reason"`
 }
 
 // ErrRefused is returned when the journal refuses a call outright (4xx): a retry would be refused again.

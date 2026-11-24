@@ -34,11 +34,11 @@ type BoundaryMechanism struct {
 
 // BoundaryResult is one item of a capability report: the mechanism, and the native evidence that showed it hold.
 type BoundaryResult struct {
-	Item      BoundaryItem      `json:"item"`
-	Mechanism BoundaryMechanism `json:"mechanism"`
-	Evidence  string            `json:"evidence,omitempty"`
-	IsEnforced  bool              `json:"isEnforced"`
-	Reason    string            `json:"reason,omitempty"`
+	Item       BoundaryItem      `json:"item"`
+	Mechanism  BoundaryMechanism `json:"mechanism"`
+	Evidence   string            `json:"evidence,omitempty"`
+	IsEnforced bool              `json:"isEnforced"`
+	Reason     string            `json:"reason,omitempty"`
 }
 
 // ProtectionCapability says whether this host can enforce a program's protected arrangement on its platform. It is

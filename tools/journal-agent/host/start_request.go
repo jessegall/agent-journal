@@ -61,7 +61,7 @@ type DrainRequest struct {
 // DrainReply answers whether nothing of the account runs any more.
 type DrainReply struct {
 	IsDrained bool   `json:"isDrained"`
-	Reason  string `json:"reason,omitempty"`
+	Reason    string `json:"reason,omitempty"`
 }
 
 // FolderUseRequest asks whether any container on the agent daemon, running or not yet removed, binds the account
@@ -72,8 +72,8 @@ type FolderUseRequest struct {
 
 // FolderUseReply answers whether the folder is still bound; a daemon that cannot be asked answers bound, with why.
 type FolderUseReply struct {
-	IsBound  bool   `json:"isBound"`
-	Reason string `json:"reason,omitempty"`
+	IsBound bool   `json:"isBound"`
+	Reason  string `json:"reason,omitempty"`
 }
 
 // AccountFolderRequest names one account folder by its plain id, for the host to make or remove: the accounts root

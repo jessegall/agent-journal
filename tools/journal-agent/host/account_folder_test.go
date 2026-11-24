@@ -183,7 +183,9 @@ func TestTheHostMakesAnAccountFolderAsRootForTheProgramAndKeepsTheRootRoots(t *t
 	}
 	made := scriptOf(run)
 	for _, want := range []string{"chown 0:0 /accounts && chmod 0755 /accounts", `mkdir -m 0700 "$folder"`,
-		`chown 10001:10001 "$folder" && chmod 0700 "$folder"`, `mkdir -m 0700 "$folder/projects"`} {
+		`chown 10001:10001 "$folder" && chmod 0700 "$folder"`, `mkdir -m 0700 "$folder/projects"`,
+		// The mark is the program's and private, or the start's own folder check refuses it (23 November).
+		`chown 10001:10001 "$mark" && chmod 0600 "$mark"`} {
 		if !strings.Contains(made, want) {
 			t.Fatalf("the folder was made without %q: %s", want, made)
 		}

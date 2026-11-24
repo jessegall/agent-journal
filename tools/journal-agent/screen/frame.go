@@ -16,18 +16,18 @@ import (
 // shielded frame stands for a screen the host would not export, with no rows and no cursor; the privacy revision goes
 // up each time the runtime's screen turns from public to shielded, so a public frame of an earlier revision is void.
 type Frame struct {
-	Epoch      string           `json:"epoch"`
-	Sequence   uint64           `json:"sequence"`
-	Captured   time.Time        `json:"captured"`
-	Columns    int              `json:"columns"`
-	Rows       [][]Run          `json:"rows"`
-	Cursor     contracts.Cursor `json:"cursor"`
-	Buffer     contracts.Buffer `json:"buffer"`
-	IsPlain      bool             `json:"is_plain"`
-	IsTooLarge   bool             `json:"is_too_large"`
-	IsUnreadable bool             `json:"is_unreadable"`
+	Epoch         string           `json:"epoch"`
+	Sequence      uint64           `json:"sequence"`
+	Captured      time.Time        `json:"captured"`
+	Columns       int              `json:"columns"`
+	Rows          [][]Run          `json:"rows"`
+	Cursor        contracts.Cursor `json:"cursor"`
+	Buffer        contracts.Buffer `json:"buffer"`
+	IsPlain       bool             `json:"is_plain"`
+	IsTooLarge    bool             `json:"is_too_large"`
+	IsUnreadable  bool             `json:"is_unreadable"`
 	HasNoTerminal bool             `json:"has_no_terminal"`
-	IsShielded   bool             `json:"is_shielded"`
+	IsShielded    bool             `json:"is_shielded"`
 	// PrivacyRevision is the runtime's privacy revision this frame was captured under.
 	PrivacyRevision uint64 `json:"privacy_revision"`
 	// Stream names the sender that sent the frame: a sender started over is a new stream, its sequence from one.
@@ -39,13 +39,13 @@ type Frame struct {
 	// InputOwner is who holds the program's input as every viewer sees it, with a take still being settled and the
 	// prompt revision a browser writer's input names; the grant's own id never leaves for viewers.
 	InputOwner     string `json:"input_owner"`
-	IsTakePending    bool   `json:"is_take_pending"`
+	IsTakePending  bool   `json:"is_take_pending"`
 	PromptRevision uint64 `json:"prompt_revision"`
 	// Attachment and ContainerInstance name the attachment the screen was read through and its verified container;
 	// ConnectionLost is a marker of a contained attachment that ended while its container runs.
 	Attachment        string `json:"attachment"`
 	ContainerInstance string `json:"container_instance"`
-	IsConnectionLost    bool   `json:"is_connection_lost"`
+	IsConnectionLost  bool   `json:"is_connection_lost"`
 	// Menu is the recognized menu on a public screen, with its labels and highlight, for a choice made by name.
 	Menu *FrameMenu `json:"menu,omitempty"`
 }
@@ -61,11 +61,11 @@ type Run struct {
 
 // Style is how a run is drawn; an empty colour is the terminal's default.
 type Style struct {
-	Foreground string `json:"fg,omitempty"`
-	Background string `json:"bg,omitempty"`
+	Foreground   string `json:"fg,omitempty"`
+	Background   string `json:"bg,omitempty"`
 	IsBold       bool   `json:"isBold,omitempty"`
 	IsItalic     bool   `json:"isItalic,omitempty"`
-	IsUnderlined  bool   `json:"isUnderlined,omitempty"`
+	IsUnderlined bool   `json:"isUnderlined,omitempty"`
 	IsInverse    bool   `json:"isInverse,omitempty"`
 }
 
@@ -109,12 +109,12 @@ func (reader *EmulatorReader) ShieldFrame(epoch string, sequence uint64, now tim
 // shieldFrame is the placeholder frame; the caller holds the lock.
 func (reader *EmulatorReader) shieldFrame(epoch string, sequence uint64, now time.Time) Frame {
 	return Frame{
-		Epoch:    epoch,
-		Sequence: sequence,
-		Captured: now,
-		Columns:  reader.terminal.Width(),
-		Rows:     [][]Run{},
-		Buffer:   reader.buffer(),
+		Epoch:      epoch,
+		Sequence:   sequence,
+		Captured:   now,
+		Columns:    reader.terminal.Width(),
+		Rows:       [][]Run{},
+		Buffer:     reader.buffer(),
 		IsShielded: true,
 	}
 }
@@ -241,11 +241,11 @@ func withoutTrailingSpaces(runs []Run) []Run {
 // styleOf turns the emulator's cell style into the style a frame carries.
 func styleOf(style uv.Style) Style {
 	return Style{
-		Foreground: hexOf(style.Fg),
-		Background: hexOf(style.Bg),
+		Foreground:   hexOf(style.Fg),
+		Background:   hexOf(style.Bg),
 		IsBold:       style.Attrs&uv.AttrBold != 0,
 		IsItalic:     style.Attrs&uv.AttrItalic != 0,
-		IsUnderlined:  style.Underline != uv.UnderlineNone,
+		IsUnderlined: style.Underline != uv.UnderlineNone,
 		IsInverse:    style.Attrs&uv.AttrReverse != 0,
 	}
 }

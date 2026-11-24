@@ -71,7 +71,7 @@ type PresenceReport struct {
 	Release      string           `json:"release"`
 	Descriptors  []HostDescriptor `json:"descriptors"`
 	Provisioning string           `json:"provisioning"`
-	IsTakeover     bool             `json:"isTakeover"`
+	IsTakeover   bool             `json:"isTakeover"`
 	// SetupGeneration is the folder's setup generation, which rises on every setup or resume of it.
 	SetupGeneration int `json:"setupGeneration"`
 	// IsReconciled is whether this boot already reported what became of its earlier sessions: until it did, the

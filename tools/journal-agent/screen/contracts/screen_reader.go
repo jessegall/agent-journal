@@ -14,8 +14,8 @@ const (
 
 // Cursor is where the terminal's cursor is and whether it shows.
 type Cursor struct {
-	Row     int  `json:"row"`
-	Column  int  `json:"column"`
+	Row       int  `json:"row"`
+	Column    int  `json:"column"`
 	IsVisible bool `json:"isVisible"`
 }
 

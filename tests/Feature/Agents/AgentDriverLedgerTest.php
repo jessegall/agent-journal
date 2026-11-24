@@ -724,6 +724,39 @@ final class AgentDriverLedgerTest extends TestCase
 
     public function test_a_protected_headless_start_runs_on_the_messages_both_sides_keep(): void
     {
+        [$host, $fixedValues] = $this->claimedProtectedStart();
+
+        // What the host's scenario reports once the turn ran in its container: the journal keeps the conversation whole.
+        $applied = HostContract::of('host-start/protected-headless-claude/request-report.json')->readFor($fixedValues);
+        $this->hostCall($host, '/host/reports/request', $applied)->assertSuccessful();
+
+        $request = DriverRequest::query()->findOrFail($applied['request_id']);
+        $this->assertSame(RequestProgress::Applied, $request->progress);
+        $this->assertSame($applied['actual_binding'], $request->actual_binding);
+    }
+
+    public function test_a_protected_start_the_host_refused_ends_its_session_with_the_reason(): void
+    {
+        [$host, $fixedValues] = $this->claimedProtectedStart();
+
+        // What the host's scenario reports when it cannot carry the start out: the session ends, saying why.
+        $refused = HostContract::of('host-start/protected-headless-claude/request-report-refused.json')->readFor($fixedValues);
+        $this->hostCall($host, '/host/reports/request', $refused)->assertSuccessful();
+
+        $request = DriverRequest::query()->findOrFail($refused['request_id']);
+        $session = AgentSession::query()->findOrFail(array_search('01contractsession000000000', $fixedValues, true));
+        $this->assertTrue($request->progress->isRefused());
+        $this->assertStringContainsString('the host never started it', (string) $session->end_evidence);
+    }
+
+    /**
+     * A protected headless start on a contained host, walked on the journal's side up to the host's claim, each
+     * message held to the contract the host's scenarios read: the host and the run's ids under their fixed values.
+     *
+     * @return array{0: EnrolledHost, 1: array<string, string>}
+     */
+    private function claimedProtectedStart(): array
+    {
         config(['agents.protected_account_trial' => DefaultDrivers::CLAUDE_CODE]);
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
         ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
@@ -782,13 +815,7 @@ final class AgentDriverLedgerTest extends TestCase
             $account->id => '01contractaccount000000000',
         ]);
 
-        // What the host's scenario reports once the turn ran in its container: the journal keeps the conversation whole.
-        $applied = HostContract::of('host-start/protected-headless-claude/request-report.json')->readFor($fixedValues);
-        $this->hostCall($host, '/host/reports/request', $applied)->assertSuccessful();
-
-        $request = DriverRequest::query()->findOrFail($applied['request_id']);
-        $this->assertSame(RequestProgress::Applied, $request->progress);
-        $this->assertSame($applied['actual_binding'], $request->actual_binding);
+        return [$host, $fixedValues];
     }
 
     public function test_a_contained_session_whose_account_folder_is_no_plain_id_gets_no_grant(): void

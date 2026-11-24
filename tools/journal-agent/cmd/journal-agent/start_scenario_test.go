@@ -522,6 +522,8 @@ func TestScenarioAStartTheHostCannotCarryOutIsReportedRefusedWithItsReason(t *te
 			if *report.RefusalReason != string(contracts.RefusalContainerUnavailable) || !report.HasCreatedNoProcess {
 				t.Fatalf("the refusal was reported as %q, no process made: %t", *report.RefusalReason, report.HasCreatedNoProcess)
 			}
+			// The journal's test posts this report and sees the session end with its reason.
+			holdContract(t, "request-report-refused.json", report)
 
 			return
 		case <-time.After(15 * time.Second):

@@ -36,7 +36,7 @@ type StopConditionResult struct {
 	Signal         *string `json:"signal"`
 	Summary        string  `json:"summary"`
 	Output         *string `json:"output"`
-	IsTruncated      bool    `json:"is_truncated"`
+	IsTruncated    bool    `json:"is_truncated"`
 }
 
 // PendingStopAttempts lists the stop attempts of this host's sessions that wait for their conditions to run.

@@ -45,9 +45,9 @@ const maxContainedMounts = 4
 
 // ContainerMount mirrors App\Agents\Support\ManifestMount: one folder a container sees, and where it comes from.
 type ContainerMount struct {
-	Type     MountType `json:"type"`
-	Source   string    `json:"source"`
-	Target   string    `json:"target"`
+	Type       MountType `json:"type"`
+	Source     string    `json:"source"`
+	Target     string    `json:"target"`
 	IsWritable bool      `json:"isWritable"`
 	// MustExist is a volume the host finds and never makes, such as the history of a resumed conversation.
 	MustExist bool `json:"mustExist"`
@@ -79,18 +79,18 @@ type SecurityOptions struct {
 // ContainerManifest mirrors App\Agents\Support\ContainerManifest, which the journal already validated: the host
 // translates it, it never builds a policy of its own.
 type ContainerManifest struct {
-	Image           string           `json:"image"`
-	User            string           `json:"user"`
-	Workdir         string           `json:"workdir"`
-	IsReadOnlyRoot    bool             `json:"isReadOnlyRoot"`
-	Capabilities    []string         `json:"capabilities"`
+	Image               string           `json:"image"`
+	User                string           `json:"user"`
+	Workdir             string           `json:"workdir"`
+	IsReadOnlyRoot      bool             `json:"isReadOnlyRoot"`
+	Capabilities        []string         `json:"capabilities"`
 	BlocksNewPrivileges bool             `json:"blocksNewPrivileges"`
-	IsPrivileged      bool             `json:"isPrivileged"`
-	Network         string           `json:"network"`
-	Mounts          []ContainerMount `json:"mounts"`
-	PublishedPorts  []int            `json:"publishedPorts"`
-	Budgets         ContainerBudgets `json:"budgets"`
-	SecurityOptions SecurityOptions  `json:"securityOptions"`
+	IsPrivileged        bool             `json:"isPrivileged"`
+	Network             string           `json:"network"`
+	Mounts              []ContainerMount `json:"mounts"`
+	PublishedPorts      []int            `json:"publishedPorts"`
+	Budgets             ContainerBudgets `json:"budgets"`
+	SecurityOptions     SecurityOptions  `json:"securityOptions"`
 	// IsAttachable is a session's own terminal process, such as the main agent's program: it gets a tty and an open
 	// stdin, and the host attaches to it, again after a restart. Helpers are not attachable.
 	IsAttachable bool `json:"isAttachable"`

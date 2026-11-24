@@ -744,14 +744,14 @@ func (loop *Loop) notify(
 	result contracts.OperationResult,
 ) client.RequestReport {
 	report := client.RequestReport{
-		RequestID:         request.RequestID,
-		Attempt:           request.Attempt,
-		Progress:          string(result.Progress),
-		SessionID:         request.SessionID,
-		ProcessStartID:    request.ProcessStartID,
-		ProcessGeneration: request.ProcessGeneration,
-		HasCreatedNoProcess:  result.NoProcessCreated,
-		Sequence:          loop.nextSequence(request.RuntimeID),
+		RequestID:           request.RequestID,
+		Attempt:             request.Attempt,
+		Progress:            string(result.Progress),
+		SessionID:           request.SessionID,
+		ProcessStartID:      request.ProcessStartID,
+		ProcessGeneration:   request.ProcessGeneration,
+		HasCreatedNoProcess: result.NoProcessCreated,
+		Sequence:            loop.nextSequence(request.RuntimeID),
 	}
 	if result.RefusalReason != "" {
 		reason := string(result.RefusalReason)
