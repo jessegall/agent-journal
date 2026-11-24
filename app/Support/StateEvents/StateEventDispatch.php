@@ -32,7 +32,7 @@ final readonly class StateEventDispatch
 
     public function scheduledAfterCommit(): self
     {
-        return clone ($this, ['afterCommit' => true]);
+        return clone ($this, ['isAfterCommit' => true]);
     }
 
     /**

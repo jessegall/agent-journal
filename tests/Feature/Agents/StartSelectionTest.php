@@ -7,8 +7,8 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverSourceType;
 use App\Enums\DriverType;
-use App\Enums\ModelTier;
 use App\Enums\ModelSelectionType;
+use App\Enums\ModelTier;
 use App\Enums\StartRefusalType;
 use App\Exceptions\DefaultUnavailable;
 use App\Exceptions\DriverRequired;
@@ -108,12 +108,19 @@ final class StartSelectionTest extends TestCase
     public static function tierModels(): iterable
     {
         yield 'Claude Code, simplest' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Simplest, 'haiku'];
+
         yield 'Claude Code, general' => [DefaultDrivers::CLAUDE_CODE, ModelTier::General, 'sonnet'];
+
         yield 'Claude Code, complex' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Inventive, 'opus'];
+
         yield 'Claude Code, exceptional' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Exceptional, 'fable'];
+
         yield 'Codex, simplest' => [DefaultDrivers::CODEX, ModelTier::Simplest, 'gpt-6-luna'];
+
         yield 'Codex, general' => [DefaultDrivers::CODEX, ModelTier::General, 'gpt-6.1-terra'];
+
         yield 'Codex, complex' => [DefaultDrivers::CODEX, ModelTier::Inventive, 'gpt-6.2-sol'];
+
         yield 'Codex, exceptional' => [DefaultDrivers::CODEX, ModelTier::Exceptional, 'gpt-6.2-astra'];
     }
 

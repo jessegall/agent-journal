@@ -129,7 +129,7 @@ final class NavigationItem
 
     public function atBottom(): self
     {
-        return clone ($this, ['atBottom' => true]);
+        return clone ($this, ['isAtBottom' => true]);
     }
 
     /**
@@ -138,7 +138,7 @@ final class NavigationItem
      */
     public function offSidebar(): self
     {
-        return clone ($this, ['inSidebar' => false]);
+        return clone ($this, ['isInSidebar' => false]);
     }
 
     /**

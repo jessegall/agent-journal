@@ -6,8 +6,8 @@ namespace App\Pipelines;
 
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Grammar\CheckCommandStart;
-use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Step;
 use App\Support\Syntax\CommandReaders\CommandReaderResolver;
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Projects\Host;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
 use App\Contracts\Sessions\StartTransaction;
@@ -15,6 +14,7 @@ use App\Events\SessionClosed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
+use App\Models\Projects\Host;
 use App\Models\Starts\ProcessStart;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;

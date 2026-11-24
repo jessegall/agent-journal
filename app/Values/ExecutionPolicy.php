@@ -63,6 +63,6 @@ final readonly class ExecutionPolicy
      */
     public function forDriverScreen(bool $hasScreen): self
     {
-        return clone ($this, ['attachable' => $this->isAttachable && $hasScreen]);
+        return clone ($this, ['isAttachable' => $this->isAttachable && $hasScreen]);
     }
 }

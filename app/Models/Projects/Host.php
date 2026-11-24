@@ -13,9 +13,9 @@ use App\Enums\ArrangementType;
 use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\TerminalInputType;
+use App\Events\HostBrowserInputAdvertised;
 use App\Events\HostCallAnswered;
 use App\Events\HostCallFailed;
-use App\Events\HostBrowserInputAdvertised;
 use App\Events\HostDescriptorsRecorded;
 use App\Events\HostProtectionRecorded;
 use App\Events\HostRevoked;
@@ -23,6 +23,7 @@ use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
 use App\Values\BrowserInputCapabilities;
+use App\Values\FailedHostCall;
 use App\Values\ProtectionReport;
 use App\Values\StartProposal;
 use Carbon\CarbonImmutable;
@@ -246,7 +247,7 @@ final class Host extends Model implements EventSource, ReadableModel
      * Keeps that the journal answered one of the host's calls: a failure ends, and the calls the host reported failed
      * on its side are kept.
      *
-     * @param  list<array{route: string, status: int, reason: string, since: string}>  $reported
+     * @param  list<FailedHostCall>  $reported
      */
     public function recordCallAnswered(array $reported, CarbonImmutable $at): void
     {
@@ -255,7 +256,7 @@ final class Host extends Model implements EventSource, ReadableModel
         $this->last_failure = null;
 
         if ($reported !== []) {
-            $this->reported_failures = $reported;
+            $this->reported_failures = array_map(fn (FailedHostCall $call) => $call->toArray(), $reported);
         }
 
         $this->assertSaved($this->save());
@@ -415,7 +416,7 @@ final class Host extends Model implements EventSource, ReadableModel
      * Whether an answered call has anything to keep: a failure that ends, failures the host reported, or a last answer
      * older than a minute, so a quiet host shows while a busy one writes its row once a minute.
      *
-     * @param  list<array{route: string, status: int, reason: string, since: string}>  $reported
+     * @param  list<FailedHostCall>  $reported
      */
     public function hasAnswerToRecord(array $reported, CarbonImmutable $at): bool
     {

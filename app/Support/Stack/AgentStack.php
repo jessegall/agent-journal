@@ -147,7 +147,7 @@ final readonly class AgentStack
 
             $permission = $frame->state->workPermission();
 
-            if (! $permission->allowed) {
+            if (! $permission->isAllowed) {
                 return $permission;
             }
         }

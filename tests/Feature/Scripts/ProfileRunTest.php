@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Scripts;
 
-use App\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
 use App\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
+use App\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
 use App\Enums\ProfileRunState;
 use App\Enums\StepStatus;
 use App\Exceptions\ProfileRunRefused;

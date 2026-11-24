@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
-use App\Enums\ModelTier;
 use App\Casts\ProfileAuthorizationCast;
 use App\Casts\ProfileBaseCast;
 use App\Casts\ProfileStartPolicyCast;
@@ -15,6 +14,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\InstancePolicy;
+use App\Enums\ModelTier;
 use App\Exceptions\ProfileMissing;
 use App\Models\Concerns\PreventsRevisionUpdates;
 use App\Support\ActorIdentity;
@@ -72,7 +72,7 @@ use PhpOption\Some;
     'revision',
     'base',
     'instructions',
-    'model',
+    'preferred_tier',
     'skill_allowlist',
     'required_skills',
     'start_policy',

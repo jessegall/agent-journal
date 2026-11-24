@@ -35,7 +35,7 @@ final readonly class ClaudeStatus
 
         return new self(
             true,
-            $report->loggedIn,
+            $report->isLoggedIn,
             $report->authMethod,
             $report->configDirectory,
             $report->email,

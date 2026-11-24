@@ -25,6 +25,8 @@ final class HostLinkAlarmTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const array TABLES = ['hosts'];
+
     private const string FAILING_ROUTE = '/host/link-alarm-test/failing';
 
     private const string REASON = 'Maximum execution time of 30 seconds exceeded';
@@ -73,6 +75,6 @@ final class HostLinkAlarmTest extends TestCase
 
         $this->hostCallReporting($host, self::ANSWERED_ROUTE, $reported)->assertSuccessful();
 
-        $this->assertSame($reported, Host::query()->findOrFail($host->hostId)->reported_failures);
+        $this->assertEquals($reported, Host::query()->findOrFail($host->hostId)->reported_failures);
     }
 }

@@ -7,9 +7,9 @@ namespace App\Pipes\Supervision;
 use App\Contracts\Bus\Pipe;
 use App\Enums\StepType;
 use App\Exceptions\SupervisorRefused;
+use App\Support\Execution\PendingStep;
 use App\Support\Execution\PipedCommands;
 use App\Support\Execution\QueuedPart;
-use App\Support\Execution\PendingStep;
 
 /**
  * Queues each command of a shell pipeline: the first reads nothing, each later one the command before it. A pipeline

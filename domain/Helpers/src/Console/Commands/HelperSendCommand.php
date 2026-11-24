@@ -63,7 +63,7 @@ final class HelperSendCommand extends Command
             $call->brief,
             $call->requestKey,
             $call->sourceSubjects,
-            $call->independent,
+            $call->isIndependent,
         )));
     }
 }

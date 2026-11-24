@@ -40,7 +40,7 @@ final readonly class HostAccountDrain implements AccountOwnerDrain
             DrainReplyData::class,
         );
 
-        return $reply instanceof DrainReplyData && $reply->drained;
+        return $reply instanceof DrainReplyData && $reply->isDrained;
     }
 
     public function isDisplacedFolderFree(string $directory, string $accountId): bool

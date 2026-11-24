@@ -13,6 +13,8 @@ use App\Events\DeviceGrantRestarted;
 use App\Events\DeviceGrantRevoked;
 use App\Events\EnvironmentOpened;
 use App\Events\HostBrowserInputAdvertised;
+use App\Events\HostCallAnswered;
+use App\Events\HostCallFailed;
 use App\Events\HostDescriptorsRecorded;
 use App\Events\HostProtectionRecorded;
 use App\Events\HostRevoked;
@@ -215,6 +217,20 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new HostBrowserInputAdvertised('host'),
+    ],
+    HostCallFailed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::recordCallFailure',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostCallFailed('host'),
+    ],
+    HostCallAnswered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::recordCallAnswered',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostCallAnswered('host'),
     ],
     HostRevoked::class => [
         'role' => EventRole::RowFact,

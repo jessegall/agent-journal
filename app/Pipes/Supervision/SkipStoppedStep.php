@@ -6,8 +6,8 @@ namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
 use App\Enums\ExitStatus;
-use App\Support\Execution\StepOutcome;
 use App\Support\Execution\PendingStep;
+use App\Support\Execution\StepOutcome;
 
 /**
  * A step reached after a stop was asked for does not run: each of its parts is recorded as skipped.

@@ -261,7 +261,7 @@ final readonly class MessageRecords implements ConversationResolver
             'replyToId' => in_array($message->reply_to_id, $hiddenParents, true) ? null : $message->reply_to_id,
             'isReplyUnavailable' => in_array($message->reply_to_id, $hiddenParents, true),
             'answerId' => $message->answer_message_id,
-            'firstReader' => $message->isFirstRead,
+            'firstReader' => $message->firstRead,
             ...$holderFields[$message->id] ?? [],
             ...$originalFields[$message->reply_to_id] ?? [],
             'sentAt' => (string) $message->created_at?->toIso8601String(),

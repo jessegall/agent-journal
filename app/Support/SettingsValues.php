@@ -25,7 +25,7 @@ final class SettingsValues
 
         return match (true) {
             $value instanceof StringValueData => $value->settingText,
-            $value instanceof BooleanValueData => $value->enabled ? '1' : '0',
+            $value instanceof BooleanValueData => $value->isEnabled ? '1' : '0',
             $value instanceof IntegerValueData => (string) $value->settingNumber,
             $value instanceof StringChoiceValueData => $value->selectedKey,
             $value instanceof InvalidValueData => null,

@@ -226,10 +226,10 @@ final class RelayTest extends TestCase
     {
         $calls = array_map(fn (array $call): array => [
             'path' => $call['path'],
-            'body' => json_decode($call['body'], true, flags: JSON_THROW_ON_ERROR),
+            'body' => json_decode($call['body'], flags: JSON_THROW_ON_ERROR),
             'headers' => $this->comparedHeaders($call['headers']),
         ], $this->serverCalls());
-        usort($calls, fn (array $first, array $second) => strcmp($first['body']['method'], $second['body']['method']));
+        usort($calls, fn (array $first, array $second) => strcmp($first['body']->method, $second['body']->method));
 
         return $calls;
     }

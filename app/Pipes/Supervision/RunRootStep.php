@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Pipelines\ExecuteStepPipeline;
-use App\Support\Execution\RunEnded;
 use App\Support\Execution\ActiveRun;
-use App\Support\Execution\StepOutcome;
 use App\Support\Execution\PendingStep;
+use App\Support\Execution\RunEnded;
+use App\Support\Execution\StepOutcome;
 use App\Support\PipelineAdapter;
 
 /**

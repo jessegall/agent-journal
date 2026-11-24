@@ -23,7 +23,7 @@ function ask(agentId: string): void {
         align="left"
         trigger-class="h-6 gap-1.5 rounded-button border border-border-2 px-2 text-small text-text-2 hover:bg-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
-        <template #trigger><Icon name="comment" :size="14" />Ask for feedback</template>
+        <template #trigger><Icon name="chat" :size="14" />Ask for feedback</template>
         <template v-for="recipient in recipients" :key="recipient.id">
             <MenuItem @click="ask(recipient.id)">{{ recipient.name }}</MenuItem>
         </template>

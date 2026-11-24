@@ -109,7 +109,7 @@ function declaredNames(array $files): array
 /**
  * Whether a method is a model's query scope, which names the rows it narrows to (turnsApplyingSince), not a command.
  */
-function isQueryScope(Node\Stmt\ClassMethod $method): bool
+function isQueryScope(ClassMethod $method): bool
 {
     return array_any($method->attrGroups, fn ($group) => array_any($group->attrs, fn ($attribute) => $attribute->name->getLast() === 'Scope'));
 }
@@ -176,7 +176,7 @@ function localNamesOf(array $statements, string $path): array
 /**
  * Whether a declared type makes a name a question (bool), an action (void or never) or leaves it a thing.
  */
-function roleOfType(?Node $type, bool $returns): string
+function roleOfType(Node|null $type, bool $returns): string
 {
     $name = $type instanceof Node\Identifier ? $type->toLowerString() : '';
 

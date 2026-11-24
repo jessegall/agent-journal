@@ -116,7 +116,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
         $runtime->agent_session_id = $session->id;
         $runtime->host_id = $intent->hostId;
         $runtime->driver_type = $intent->driverType;
-        $runtime->shouldRemember = $intent->savesDriverType;
+        $runtime->remember = $intent->savesDriverType;
         $runtime->driver_key = (string) $registration->key;
         $runtime->family = $registration->family;
         $runtime->driver_label = $registration->label;

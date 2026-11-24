@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ModelTier;
 use App\Data\Profiles\PolicyOverrideData;
 use App\Data\Profiles\ProfileConfigurationData;
 use App\Data\Profiles\ProposedProfileData;
 use App\Data\Profiles\ProposedStopConditionData;
 use App\Data\Profiles\WithheldGrantData;
 use App\Enums\ExecutionModeType;
+use App\Enums\ModelTier;
 use App\Exceptions\ProfileProposalRefused;
 use App\Exceptions\SupervisorRouteInvalid;
 use App\Values\ProfileBase;

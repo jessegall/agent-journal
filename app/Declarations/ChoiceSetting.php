@@ -25,13 +25,13 @@ use Spatie\LaravelData\Optional;
 final readonly class ChoiceSetting implements OptionSetting
 {
     /**
-     * @param  TValue  $isDefault
+     * @param  TValue  $defaultValue
      * @param  ChoiceOptions<TValue>  $options
      */
     private function __construct(
         public string $key,
         public string $label,
-        public string|int $isDefault,
+        public string|int $defaultValue,
         public ChoiceOptions $options,
         public string|null $description = null,
     ) {}
@@ -98,7 +98,7 @@ final readonly class ChoiceSetting implements OptionSetting
 
     public function isEnabledByDefault(): string|int
     {
-        return $this->isDefault;
+        return $this->defaultValue;
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

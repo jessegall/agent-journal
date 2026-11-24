@@ -6,9 +6,9 @@ namespace App\Support\Syntax\CommandReaders;
 
 use App\Contracts\Bus\CommandReader;
 use App\Pipelines\ReadCompoundPipeline;
+use App\Support\Grammar\NodeRead;
 use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\UnparsedCompound;
-use App\Support\Grammar\NodeRead;
 use App\Support\PipelineAdapter;
 use App\Support\Syntax\TokenCursor;
 

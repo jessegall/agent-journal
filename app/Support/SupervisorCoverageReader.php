@@ -49,7 +49,7 @@ final readonly class SupervisorCoverageReader
 
         return new SupervisorCoverage(
             $type->key(),
-            $decision->allowed ? SupervisorCoverageType::Supported : SupervisorCoverageType::Unsupported,
+            $decision->isAllowed ? SupervisorCoverageType::Supported : SupervisorCoverageType::Unsupported,
             $command,
             $this->texts->render($decision->reason),
         );

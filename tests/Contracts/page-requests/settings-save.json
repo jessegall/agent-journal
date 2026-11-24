@@ -1,0 +1,11 @@
+{
+    "method": "POST",
+    "url": "/settings/save",
+    "body": {
+        "owner": "Core",
+        "group": "connected_projects",
+        "revision": 0,
+        "remote_projects": "1"
+    },
+    "headers": {}
+}

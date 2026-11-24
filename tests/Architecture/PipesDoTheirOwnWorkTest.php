@@ -33,7 +33,9 @@ final class PipesDoTheirOwnWorkTest extends TestCase
         $forwarding = [];
         $folders = array_filter([base_path('app'), ...glob(base_path('domain/*/src')) ?: []], is_dir(...));
 
-        foreach (Finder::create()->files()->in($folders)->name('*.php') as $file) {
+        $pipes = Finder::create()->files()->in($folders)->name('*.php')->contains('/implements[^{]*\bPipe\b/');
+
+        foreach ($pipes as $file) {
             if ($this->forwards(ParsedFile::fromPath($file->getPathname()))) {
                 $forwarding[] = $file->getRelativePathname();
             }
@@ -85,9 +87,15 @@ final class PipesDoTheirOwnWorkTest extends TestCase
             return [];
         }
 
-        $promoted = array_filter($constructor->params, fn (Node\Param $param) => $param->flags !== 0);
+        $names = [];
 
-        return array_values(array_map(fn (Node\Param $param) => (string) $param->var->name, $promoted));
+        foreach ($constructor->params as $param) {
+            if ($param->flags !== 0 && $param->var instanceof Variable && is_string($param->var->name)) {
+                $names[] = $param->var->name;
+            }
+        }
+
+        return $names;
     }
 
     /**

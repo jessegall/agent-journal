@@ -8,8 +8,8 @@ use App\Contracts\Bus\CommandReader;
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Grammar\NoteOptionStatement;
 use App\Pipes\Grammar\ParseOptionStatement;
-use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Syntax\TokenCursor;
 
 /**

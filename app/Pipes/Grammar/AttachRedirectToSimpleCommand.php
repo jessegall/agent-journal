@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Pipelines\ReadRedirectPipeline;
-use App\Support\Grammar\UnparsedRedirect;
 use App\Support\Grammar\SimpleCommandDraft;
+use App\Support\Grammar\UnparsedRedirect;
 use App\Support\PipelineAdapter;
 use App\Values\Redirect;
 

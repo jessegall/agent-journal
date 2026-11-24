@@ -6,7 +6,7 @@ set -eu
 main() {
     local architecture binaries=.build/dev/bin built=.build/dev/built
     cd "$(dirname "$0")/.."
-    architecture=$(docker_architecture)
+    architecture=$(read_architecture)
     mkdir -p "$binaries"
     build_binaries "$architecture" "$binaries" "$built"
     echo "Built journal-agent for linux/$architecture into $binaries."
@@ -14,7 +14,7 @@ main() {
     watch_changes "$architecture" "$binaries" "$built"
 }
 
-docker_architecture() {
+read_architecture() {
     docker info --format '{{.Architecture}}' | sed 's/x86_64/amd64/; s/aarch64/arm64/'
 }
 

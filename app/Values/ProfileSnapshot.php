@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ModelTier;
 use App\Attributes\Authorize;
 use App\Contracts\Authorization\Policy;
 use App\Contracts\Bus\Command;
 use App\Enums\AccessType;
 use App\Enums\InstancePolicy;
+use App\Enums\ModelTier;
 use Spatie\LaravelData\Data;
 
 /**

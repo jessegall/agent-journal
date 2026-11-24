@@ -68,7 +68,9 @@ final readonly class DockCursor
             return None::create();
         }
 
-        return Some::create(new self($viewer, $conversation, $place->assignedAt, $place->placementId, $place->ended));
+        return Some::create(
+            new self($viewer, $conversation, $place->assignedAt, $place->placementId, $place->hasEnded),
+        );
     }
 
     public function token(Encrypter $encrypter): string

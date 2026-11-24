@@ -11,10 +11,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
-use Tests\Fixtures\Contracts\StreamedRenameNoticed;
 use Tests\Fixtures\Contracts\RaisingRow;
 use Tests\Fixtures\Contracts\RowRenamed;
 use Tests\Fixtures\Contracts\StagesProgress;
+use Tests\Fixtures\Contracts\StreamedRenameNoticed;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 

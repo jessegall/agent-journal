@@ -10,7 +10,6 @@ declare(strict_types=1);
  *   php tools/refactoring/rename-go.php --list=<file> [--dry-run]   lines "<file>:<line>:<column> <new name>",
  *                                                                    paths and columns as in the module folder
  */
-
 const MODULE = 'tools/journal-agent';
 
 $options = getopt('', ['list:', 'dry-run']);

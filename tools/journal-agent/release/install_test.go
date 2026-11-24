@@ -3,6 +3,7 @@ package release
 import (
 	"context"
 	"errors"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -36,7 +37,7 @@ func TestTheInstallerVerifiesDownloadsAndSealsTheTarget(t *testing.T) {
 	if err := installer.Install(context.Background(), content, signature, into); err != nil {
 		t.Fatalf("installing again into the installed folder: %v", err)
 	}
-	t.Cleanup(func() { _ = os.Chmod(into, 0o700) })
+	t.Cleanup(func() { unsealFolders(into) })
 
 	installed, err := os.ReadFile(filepath.Join(into, ProgramName))
 	if err != nil || string(installed) != "program for "+Targets[0].String() {
@@ -92,9 +93,19 @@ func TestTheInstallerStopsAtARedirectedReleaseFileAndInstallsNothing(t *testing.
 	}
 }
 
-// officialInstall writes a stand-in official program into a folder of its own, linked from a bin folder as an
+// unsealFolders makes every folder of a sealed installation writable again, so the test's folder can be removed.
+func unsealFolders(into string) {
+	_ = filepath.WalkDir(into, func(path string, entry fs.DirEntry, err error) error {
+		if err == nil && entry.IsDir() {
+			_ = os.Chmod(path, 0o700)
+		}
+		return nil
+	})
+}
+
+// linkedOfficialProgram writes a stand-in official program into a folder of its own, linked from a bin folder as an
 // official installer links it, and answers the bin folder to search.
-func officialInstall(t *testing.T, program, content string) string {
+func linkedOfficialProgram(t *testing.T, program, content string) string {
 	t.Helper()
 	versions, bin := filepath.Join(t.TempDir(), "versions"), filepath.Join(t.TempDir(), "bin")
 	for _, folder := range []string{versions, bin} {
@@ -124,14 +135,14 @@ func installWith(t *testing.T, programPath string) string {
 	if err := installer.Install(context.Background(), content, signature, into); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.Chmod(into, 0o700) })
+	t.Cleanup(func() { unsealFolders(into) })
 
 	return into
 }
 
 func TestTheInstallerSealsTheOfficialProviderThatReportsThePinnedBuild(t *testing.T) {
 	program := "#!/bin/sh\necho '" + providerProfiles["claude-code"].Build() + " (Claude Code)'\n"
-	into := installWith(t, officialInstall(t, "claude", program))
+	into := installWith(t, linkedOfficialProgram(t, "claude", program))
 
 	installed, err := os.ReadFile(filepath.Join(into, "bin", "claude"))
 	if err != nil || string(installed) != program {
@@ -152,7 +163,7 @@ func TestTheInstallerLeavesADriverOffWhoseOfficialInstallIsNotThePinnedNativePro
 		"the npm launcher": "#!/usr/bin/env node\nconsole.log('" + providerProfiles["claude-code"].Build() + " (Claude Code)')\n",
 	} {
 		t.Run(name, func(t *testing.T) {
-			into := installWith(t, officialInstall(t, "claude", program))
+			into := installWith(t, linkedOfficialProgram(t, "claude", program))
 
 			if _, err := os.Stat(filepath.Join(into, "bin", "claude")); !errors.Is(err, os.ErrNotExist) {
 				t.Fatalf("bin/claude was installed from %s: %v", name, err)

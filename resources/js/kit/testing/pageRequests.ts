@@ -81,6 +81,8 @@ export function recordingInertia(sent: SentRequest[]) {
                     sent.push({ method: method.toUpperCase(), url, body: body(), headers: options.headers ?? {} });
                 },
                 reset: () => undefined,
+                defaults: () => form,
+                data: () => current(),
             });
             const current = () => Object.fromEntries(names.map((name) => [name, (form as Record<string, unknown>)[name]]));
             let body: () => unknown = current;

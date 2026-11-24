@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Enums\BuiltinCommand;
-use App\Enums\StepType;
-use App\Values\PlanWord;
 use App\Contracts\Events\RunEvents;
 use App\Contracts\Processes\StopSignal;
+use App\Enums\BuiltinCommand;
+use App\Enums\StepType;
 use App\Values\ExecutionContext;
 use App\Values\ExecutionPlan;
+use App\Values\PlanWord;
 
 /**
  * An execution plan handed to the supervisor: where its events go, the plan, the shell context it starts in and the

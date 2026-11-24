@@ -22,7 +22,7 @@ function part(fields: Partial<LayoutPartData> & Pick<LayoutPartData, 'tag' | 'ke
 
 // A form of the settings page as SettingsIndex declares it, with one field.
 function settingsForm(href: string, fixed: Record<string, string | number>, field: string, value: string): LayoutPartData {
-    const form: LayoutFormData = { method: 'post', href, fixed, isKeyed: false };
+    const form: LayoutFormData = { method: 'POST', href, fixed, isKeyed: false };
 
     return part({
         tag: 'form',

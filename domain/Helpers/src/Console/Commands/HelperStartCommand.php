@@ -63,7 +63,7 @@ final class HelperStartCommand extends Command
             $call->brief,
             $call->requestKey,
             $call->sourceSubjects,
-            $call->independent,
+            $call->isIndependent,
             $call->driverType,
         )));
     }

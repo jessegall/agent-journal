@@ -28,7 +28,7 @@ final readonly class IntegerSetting implements Setting
     private function __construct(
         public string $key,
         public string $label,
-        public int $isDefault,
+        public int $defaultValue,
         public int $minimum,
         public int $maximum,
         public string|null $description = null,
@@ -93,7 +93,7 @@ final readonly class IntegerSetting implements Setting
 
     public function isEnabledByDefault(): int
     {
-        return $this->isDefault;
+        return $this->defaultValue;
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

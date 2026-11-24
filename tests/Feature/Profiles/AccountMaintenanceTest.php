@@ -6,8 +6,8 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\ClaimStart\ClaimStartCommand;
 use App\Commands\EnrollHost\EnrollHostCommand;
-use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\NotifyStopped\NotifyStoppedCommand;
+use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\RetireAgent\RetireAgentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;

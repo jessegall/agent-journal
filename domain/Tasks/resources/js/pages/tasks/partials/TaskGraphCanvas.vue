@@ -27,7 +27,10 @@ const props = withDefaults(
 defineEmits<{ select: [id: string] }>();
 
 const markerId = `graph-arrow-${useId()}`;
-const drawn = computed(() => [
+// A wait as the graph draws it: marked added or removed by the change, or unmarked.
+type DrawnEdge = TaskGraphEdge & { mark: string };
+
+const drawn = computed((): DrawnEdge[] => [
     ...props.edges.map((edge) => ({ ...edge, mark: props.added.some((each) => sameWait(each, edge)) ? 'added' : '' })),
     ...props.removed.map((edge) => ({ ...edge, mark: 'removed' })),
 ]);
@@ -63,7 +66,7 @@ function isLit(edge: TaskGraphEdge): boolean {
 /**
  * An edge the change adds is the thickest, a lit edge thicker than the rest.
  */
-function strokeWidthOf(edge: TaskGraphEdge): number {
+function strokeWidthOf(edge: DrawnEdge): number {
     if (edge.mark === 'added') {
         return 3;
     }

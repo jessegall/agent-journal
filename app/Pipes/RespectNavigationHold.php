@@ -6,8 +6,8 @@ namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
 use App\Enums\NavigationAnswerer;
-use App\Values\NavigationAdmission;
 use App\Support\NavigationRaiseAnswer;
+use App\Values\NavigationAdmission;
 
 /**
  * Leaves a runtime held if the user answers its navigation.

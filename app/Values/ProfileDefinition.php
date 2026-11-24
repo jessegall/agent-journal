@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ModelTier;
 use App\Enums\InstancePolicy;
+use App\Enums\ModelTier;
 use App\Support\Reflector;
 
 /**

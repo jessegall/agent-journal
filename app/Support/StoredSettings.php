@@ -99,7 +99,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->isDefault);
+            ->getOrElse($setting->defaultValue);
     }
 
     /**
@@ -127,7 +127,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->isDefault);
+            ->getOrElse($setting->defaultValue);
     }
 
     /**
@@ -141,7 +141,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->isDefault);
+            ->getOrElse($setting->defaultValue);
     }
 
     /**
@@ -160,7 +160,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->isDefault);
+            ->getOrElse($setting->defaultValue);
     }
 
     /**
@@ -179,6 +179,6 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->isDefault);
+            ->getOrElse($setting->defaultValue);
     }
 }

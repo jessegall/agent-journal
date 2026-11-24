@@ -1,0 +1,11 @@
+{
+    "method": "POST",
+    "url": "/settings/switch",
+    "body": {
+        "owner": "Core",
+        "group": "domain_reminders",
+        "revision": 0,
+        "enabled": "1"
+    },
+    "headers": {}
+}

@@ -8,8 +8,8 @@ use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Supervision\RunNextSubstitution;
 use App\Pipes\Supervision\StartPart;
 use App\Support\Execution\PendingPart;
-use App\Support\Execution\StepOutcome;
 use App\Support\Execution\PendingStep;
+use App\Support\Execution\StepOutcome;
 use App\Support\Step;
 
 /**

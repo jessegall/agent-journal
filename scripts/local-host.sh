@@ -48,9 +48,9 @@ read_checkout_tree() {
     local index tree
     index=$(mktemp)
     cp "$(git rev-parse --git-path index)" "$index"
-    GIT_INDEX_FILE=$index git add -A
-    GIT_INDEX_FILE=$index git rm -q --cached --ignore-unmatch docs/accounts/docker-images.json
-    tree=$(GIT_INDEX_FILE=$index git write-tree)
+    env GIT_INDEX_FILE="$index" git add -A
+    env GIT_INDEX_FILE="$index" git rm -q --cached --ignore-unmatch docs/accounts/docker-images.json
+    tree=$(env GIT_INDEX_FILE="$index" git write-tree)
     rm -f "$index"
     echo "$tree"
 }

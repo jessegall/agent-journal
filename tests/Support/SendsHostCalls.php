@@ -70,8 +70,7 @@ trait SendsHostCalls
         string $target,
         string $content,
         array $headers = [],
-    ): TestResponse
-    {
+    ): TestResponse {
         $callId = (string) Str::uuid();
         $issuedAt = CarbonImmutable::now()->getTimestamp();
         $this->app->forgetScopedInstances();

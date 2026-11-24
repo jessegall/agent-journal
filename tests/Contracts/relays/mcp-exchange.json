@@ -1,0 +1,91 @@
+{
+    "frames": [
+        "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-11-25\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1\"}}}",
+        "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}",
+        "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}"
+    ],
+    "calls": [
+        {
+            "path": "/agent/mcp/v1",
+            "body": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-11-25",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "test",
+                        "version": "1"
+                    }
+                }
+            },
+            "headers": {
+                "authorization": "Bearer test-start-token",
+                "content-type": "application/json",
+                "x-journal-call-id": "varies",
+                "x-journal-call-issued-at": "varies",
+                "x-journal-call-signature": "varies",
+                "x-journal-profile": "main-agent",
+                "x-journal-profile-revision": "1"
+            }
+        },
+        {
+            "path": "/agent/mcp/v1",
+            "body": {
+                "jsonrpc": "2.0",
+                "method": "notifications/initialized"
+            },
+            "headers": {
+                "authorization": "Bearer test-start-token",
+                "content-type": "application/json",
+                "mcp-protocol-version": "2025-11-25",
+                "x-journal-call-id": "varies",
+                "x-journal-call-issued-at": "varies",
+                "x-journal-call-signature": "varies",
+                "x-journal-profile": "main-agent",
+                "x-journal-profile-revision": "1"
+            }
+        },
+        {
+            "path": "/agent/mcp/v1",
+            "body": {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/list"
+            },
+            "headers": {
+                "authorization": "Bearer test-start-token",
+                "content-type": "application/json",
+                "mcp-protocol-version": "2025-11-25",
+                "x-journal-call-id": "varies",
+                "x-journal-call-issued-at": "varies",
+                "x-journal-call-signature": "varies",
+                "x-journal-profile": "main-agent",
+                "x-journal-profile-revision": "1"
+            }
+        }
+    ],
+    "printed": [
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": {
+                "protocolVersion": "2025-11-25",
+                "serverInfo": {
+                    "name": "journal",
+                    "version": "1.0.0"
+                }
+            }
+        },
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "result": {
+                "method": "tools/list",
+                "signed": true,
+                "protocol": "2025-11-25"
+            }
+        }
+    ]
+}

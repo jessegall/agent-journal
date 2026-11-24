@@ -73,7 +73,7 @@ final readonly class DockProjection
             ? $first
             : DockCursor::read($this->encrypter, $token, $viewer, $conversationKey)->getOrElse($first);
 
-        if ($conversation === null || $start->ended) {
+        if ($conversation === null || $start->hasEnded) {
             return new DockPageData([], $end->token($this->encrypter));
         }
 

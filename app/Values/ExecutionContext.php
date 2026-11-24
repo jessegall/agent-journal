@@ -94,7 +94,7 @@ final readonly class ExecutionContext
 
     public function withPipefail(bool $isPipefail): self
     {
-        return clone ($this, ['pipefail' => $isPipefail]);
+        return clone ($this, ['isPipefail' => $isPipefail]);
     }
 
     public function withLastStatus(int $status): self

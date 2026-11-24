@@ -100,7 +100,7 @@ final class DraftsTest extends TestCase
         $closed = $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
         $this->assertSame(3, $draft->version);
-        $this->assertSame([2, true], [$closed->revisionNumber, $closed->published]);
+        $this->assertSame([2, true], [$closed->revisionNumber, $closed->isPublished]);
 
         $this->assertStringContainsString(self::RISKS_TEXT, $this->documents()->show(1)->body);
 
@@ -120,7 +120,7 @@ final class DraftsTest extends TestCase
         $first = $this->bus()->run(new CloseDocumentCommand($draft->target()));
         $repeated = $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
-        $this->assertSame([1, false], [$first->revisionNumber, $first->published]);
+        $this->assertSame([1, false], [$first->revisionNumber, $first->isPublished]);
         $this->assertEquals($first, $repeated);
         $this->assertSame(1, DocumentClose::query()->count());
         $this->assertSame('1', $this->documents()->show(1)->revision);

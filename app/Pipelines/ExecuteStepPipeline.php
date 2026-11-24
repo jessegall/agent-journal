@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipelines;
 
 use App\Contracts\Bus\PipelineDefinition;
-use App\Support\Execution\StepOutcome;
 use App\Support\Execution\PendingStep;
+use App\Support\Execution\StepOutcome;
 use App\Support\Step;
 
 /**

@@ -11,8 +11,8 @@ use App\Pipes\Grammar\OpenCompoundNode;
 use App\Pipes\Grammar\ParseCompoundList;
 use App\Pipes\Grammar\SkipCompoundClosingToken;
 use App\Support\Grammar\CompoundParts;
-use App\Support\Grammar\UnparsedCompound;
 use App\Support\Grammar\NodeRead;
+use App\Support\Grammar\UnparsedCompound;
 use App\Support\Step;
 
 /**

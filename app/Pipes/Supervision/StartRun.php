@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
-use App\Support\Execution\PlannedRun;
 use App\Support\Execution\ActiveRun;
+use App\Support\Execution\PlannedRun;
 
 /**
  * Opens the run's state: where its events go, the stop signal, its attempts and its background parts.

@@ -40,7 +40,7 @@ $startedAt = gmdate('Ymd-His');
 
 try {
     $journal->signIn((string) ($options['email'] ?? 'owner@journal.local'), (string) ($options['password'] ?? 'password'));
-    $outcomes = (new ProtectedSessionCheck($journal, $containers, $driver, isset($options['skip-renewal'])))->run();
+    $outcomes = new ProtectedSessionCheck($journal, $containers, $driver, isset($options['skip-renewal']))->run();
 } catch (RuntimeException $stopped) {
     $outcomes = [Outcome::judged('the check ran to its end', false, $stopped->getMessage())];
 }

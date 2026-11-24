@@ -31,7 +31,7 @@ final class CoreSettings implements SettingsDefinition
         $this->displayName = StringSetting::make(
             key: 'display_name',
             label: 'Journal name',
-            isDefault: 'Journal',
+            default: 'Journal',
             minimumLength: 1,
             maximumLength: 200,
             description: 'Shown at the top of every page and in the browser tab.',

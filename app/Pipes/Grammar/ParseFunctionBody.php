@@ -6,9 +6,9 @@ namespace App\Pipes\Grammar;
 
 use App\Enums\NodeType;
 use App\Pipelines\ReadCompoundPipeline;
+use App\Support\Grammar\NodeRead;
 use App\Support\Grammar\UnparsedCompound;
 use App\Support\Grammar\UnparsedFunction;
-use App\Support\Grammar\NodeRead;
 use App\Support\PipelineAdapter;
 use App\Values\AgentText;
 use App\Values\SourceRange;

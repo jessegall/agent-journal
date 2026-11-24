@@ -134,7 +134,7 @@ function goNames(array $files): array
 /**
  * The block a Go line leaves open: a struct's fields, an interface's methods, or a grouped const or var.
  */
-function goBlockAfter(string $line, ?string $block): ?string
+function goBlockAfter(string $line, string|null $block): string|null
 {
     return match (true) {
         preg_match('/^type \w+ struct \{$/', $line) === 1 => 'property',
@@ -149,7 +149,7 @@ function goBlockAfter(string $line, ?string $block): ?string
 /**
  * @return list<DeclaredName>
  */
-function goDeclaration(string $line, ?string $block, string $place): array
+function goDeclaration(string $line, string|null $block, string $place): array
 {
     if (preg_match('/^func (\([^)]*\) )?(\w+)(\[[^\]]*\])?\(/', $line, $match, PREG_OFFSET_CAPTURE) === 1) {
         $declarationType = $match[1][0] === '' ? 'function' : 'method';

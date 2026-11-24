@@ -30,7 +30,7 @@ final class TypedSettingsTest extends TestCase
     {
         $this->assertSame(SettingType::Boolean, BooleanSetting::make('notify', 'Notify', true)->type());
         $this->assertTrue(IntegerSetting::make('retries', 'Retries', 3, 0, 10)->accepts(10));
-        $this->assertSame('0.50', DecimalSetting::make('weight', 'Weight', Decimal::parse('0.5'), 5, 2)->isDefault->text);
+        $this->assertSame('0.50', DecimalSetting::make('weight', 'Weight', Decimal::parse('0.5'), 5, 2)->defaultValue->text);
     }
 
     /**

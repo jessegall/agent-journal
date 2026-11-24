@@ -22,7 +22,7 @@ final readonly class CleanOutputController
             'runs' => $preview->runIds,
             'parts' => $preview->partRunIds,
             'bytes' => $preview->bytes,
-            'isRemoved' => $preview->removed,
+            'isRemoved' => $preview->isRemoved,
         ]);
     }
 }

@@ -31,6 +31,6 @@ final readonly class TunlerStatus
             throw TunlerStatusUnreadable::because($failure);
         }
 
-        return new self($status->loggedIn && $status->isAuthenticated, $status->host);
+        return new self($status->isLoggedIn && $status->isAuthenticated, $status->host);
     }
 }

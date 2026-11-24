@@ -39,7 +39,6 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\Parser;
 use PhpParser\ParserFactory;
 
 ini_set('memory_limit', '4G');
@@ -1139,8 +1138,7 @@ function namedArgumentEdits(ParsedProject $project, Node\FunctionLike $function,
     $callsFunction = static fn (Node $node): bool => match (true) {
         $functionName === null => false,
         $isConstructor => $node instanceof Node\Expr\New_ && $classOf($node) === declaringType($function),
-        $node instanceof Node\Expr\MethodCall, $node instanceof Node\Expr\NullsafeMethodCall, $node instanceof Node\Expr\StaticCall
-            => $node->name instanceof Node\Identifier && $node->name->toString() === $functionName,
+        $node instanceof Node\Expr\MethodCall, $node instanceof Node\Expr\NullsafeMethodCall, $node instanceof Node\Expr\StaticCall => $node->name instanceof Node\Identifier && $node->name->toString() === $functionName,
         $node instanceof Node\Expr\FuncCall => $node->name instanceof Node\Name && $node->name->getLast() === $functionName,
         default => false,
     };

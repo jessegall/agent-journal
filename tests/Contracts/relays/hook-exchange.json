@@ -1,0 +1,35 @@
+{
+    "payload": "{\"session_id\":\"session-1\",\"hook_event_name\":\"Stop\",\"stop_hook_active\":false}",
+    "profile": "main-agent",
+    "profileRevision": 1,
+    "calls": [
+        {
+            "path": "/hooks/claude-code",
+            "body": {
+                "session_id": "session-1",
+                "hook_event_name": "Stop",
+                "stop_hook_active": false
+            },
+            "headers": {
+                "authorization": "varies",
+                "content-type": "application/json",
+                "x-journal-call-id": "varies",
+                "x-journal-call-issued-at": "varies",
+                "x-journal-call-signature": "varies",
+                "x-journal-profile": "main-agent",
+                "x-journal-profile-revision": "1"
+            }
+        }
+    ],
+    "answers": [
+        {
+            "status": 200,
+            "body": "{\"stdout\":\"{}\",\"stderr\":\"\",\"exitCode\":0}"
+        }
+    ],
+    "printed": {
+        "stdout": "{}",
+        "stderr": "",
+        "exitCode": 0
+    }
+}

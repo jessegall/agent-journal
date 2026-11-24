@@ -45,7 +45,7 @@ final readonly class NotifyRunningHandler implements CommandHandler
     {
         $runtime = AgentRuntime::ofSession($sessionId);
 
-        if ($runtime !== null && $runtime->shouldRemember) {
+        if ($runtime !== null && $runtime->remember) {
             return $runtime->driver_type;
         }
 

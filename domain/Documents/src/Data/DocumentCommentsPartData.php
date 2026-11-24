@@ -6,8 +6,8 @@ namespace Domain\Documents\Data;
 
 use App\Data\Comments\CommentList;
 use App\Data\Comments\TextCommentView;
-use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Domain\Documents\Support\MarkdownBlocks;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

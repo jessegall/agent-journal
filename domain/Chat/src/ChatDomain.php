@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
-use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
@@ -28,6 +27,7 @@ use App\Support\FolderClasses;
 use App\Support\MessageSearchAccess;
 use App\Support\Searchable;
 use App\Values\PolicyDefinition;
+use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Domain\Chat\Events\ChatReconciled;
 use Domain\Chat\Events\ChatReconcileMarked;
 use Domain\Chat\Events\DockChanged;

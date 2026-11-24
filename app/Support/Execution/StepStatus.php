@@ -10,7 +10,7 @@ use App\Values\PartEnd;
 
 /**
  * The status a step ended with, which the next branch decides on: one the journal decides itself, or the exit code a
- * program chose, or 128 plus the signal that ended it.
+ * command chose, or 128 plus the signal that ended it.
  */
 final readonly class StepStatus
 {

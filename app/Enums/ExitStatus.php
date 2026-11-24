@@ -7,7 +7,7 @@ namespace App\Enums;
 use App\Support\Execution\StepStatus;
 
 /**
- * Every exit status the journal decides itself when it runs a command line, by its name; a program's own exit code is
+ * Every exit status the journal decides itself when it runs a command line, by its name; a command's own exit code is
  * its own and never one of these unless it happens to share the number.
  */
 enum ExitStatus: int

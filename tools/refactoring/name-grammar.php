@@ -203,7 +203,7 @@ function nameFaults(array $names, NameVocabulary $vocabulary, string $forbiddenW
 /**
  * @param  array<string, string>  $forbidden
  */
-function forbiddenWordFault(DeclaredName $declared, array $forbidden): ?string
+function forbiddenWordFault(DeclaredName $declared, array $forbidden): string|null
 {
     if ($declared->role === 'override') {
         return null;
@@ -219,9 +219,10 @@ function forbiddenWordFault(DeclaredName $declared, array $forbidden): ?string
  *
  * @param  array<string, string>  $betterVerbs
  */
-function betterVerbFault(DeclaredName $declared, array $betterVerbs): ?string
+function betterVerbFault(DeclaredName $declared, array $betterVerbs): string|null
 {
     $first = firstWordOf($declared->name);
+
     return $declared->role === 'action' && isset($betterVerbs[$first]) ? "its verb {$first}: {$betterVerbs[$first]}" : null;
 }
 
@@ -234,7 +235,7 @@ function betterVerbFault(DeclaredName $declared, array $betterVerbs): ?string
  * @param  array<string, true>  $verbs
  * @param  array<string, true>  $nouns
  */
-function purposeFault(DeclaredName $declared, array $verbs, array $nouns): ?string
+function purposeFault(DeclaredName $declared, array $verbs, array $nouns): string|null
 {
     $words = wordsOf($declared->name);
     $first = $words[0] ?? '';
@@ -274,7 +275,7 @@ function purposeFault(DeclaredName $declared, array $verbs, array $nouns): ?stri
  * @param  array<string, true>  $nouns
  * @param  array<string, true>  $sharedVerbs  first words several action classes share, which is a verb's evidence
  */
-function actionClassFault(DeclaredName $declared, array $commandVerbs, array $nouns, array $sharedVerbs): ?string
+function actionClassFault(DeclaredName $declared, array $commandVerbs, array $nouns, array $sharedVerbs): string|null
 {
     $first = firstWordOf($declared->name);
     $isNoun = ! isset($commandVerbs[$first]) && ! isset($sharedVerbs[$first])
@@ -334,7 +335,7 @@ function nounsOf(array $names): array
  * An event (a class of an event contract) says what happened: a word after its subject is a past form
  * (StopRequested, AccountHeldForMaintenance).
  */
-function eventFault(DeclaredName $declared): ?string
+function eventFault(DeclaredName $declared): string|null
 {
     $isEvent = $declared->role === 'event';
     $saysWhatHappened = array_any(array_slice(wordsOf($declared->name), 1), fn (string $word) => preg_match(PAST_FORM, $word) === 1);
@@ -352,7 +353,7 @@ function eventFault(DeclaredName $declared): ?string
  * @param  array<string, true>  $nouns
  * @param  array<string, true>  $happenings  the events of the code, as their words joined by spaces
  */
-function participleOrderFault(DeclaredName $declared, array $verbs, array $nouns, array $happenings): ?string
+function participleOrderFault(DeclaredName $declared, array $verbs, array $nouns, array $happenings): string|null
 {
     $words = wordsOf($declared->name);
     [$verb, $participle] = [$words[0] ?? '', $words[1] ?? ''];
@@ -421,7 +422,7 @@ function isParticiple(string $word, array $verbs): bool
  *
  * @param  array<string, true>  $verbs
  */
-function commandMoodFault(DeclaredName $declared, array $verbs): ?string
+function commandMoodFault(DeclaredName $declared, array $verbs): string|null
 {
     $first = firstWordOf($declared->name);
     $isCommand = $declared->role === 'action' && in_array($declared->declarationType, ['method', 'function'], true);
@@ -437,7 +438,7 @@ function commandMoodFault(DeclaredName $declared, array $verbs): ?string
  *
  * @param  array<string, true>  $verbs
  */
-function questionFault(DeclaredName $declared, array $verbs): ?string
+function questionFault(DeclaredName $declared, array $verbs): string|null
 {
     $first = firstWordOf($declared->name);
 
@@ -458,7 +459,7 @@ function questionFault(DeclaredName $declared, array $verbs): ?string
  * A method that answers is named for its answer, never get first; a name a vendor type gives (a cast's get, an
  * iterator's getIterator) is kept, and so is get alone.
  */
-function getterFault(DeclaredName $declared): ?string
+function getterFault(DeclaredName $declared): string|null
 {
     $words = wordsOf($declared->name);
     $isFunction = in_array($declared->declarationType, ['method', 'function'], true);
@@ -475,7 +476,7 @@ function getterFault(DeclaredName $declared): ?string
  * @param  array<string, true>  $verbs
  * @param  array<string, true>  $nouns
  */
-function shellFunctionFault(DeclaredName $declared, array $verbs, array $nouns): ?string
+function shellFunctionFault(DeclaredName $declared, array $verbs, array $nouns): string|null
 {
     $first = firstWordOf($declared->name);
     $isShellFunction = $declared->declarationType === 'function' && str_contains($declared->place, '.sh');
@@ -490,16 +491,16 @@ function shellFunctionFault(DeclaredName $declared, array $verbs, array $nouns):
 }
 
 /**
- * The verb a word is the third person of (allows of allow, carries of carry), or null when it is none.
+ * The verb a word is the third person of (allows of allow, closes of close, carries of carry), or null when it is none.
  *
  * @param  array<string, true>  $verbs
  */
-function stemOfThirdPerson(string $word, array $verbs): ?string
+function stemOfThirdPerson(string $word, array $verbs): string|null
 {
     $stems = array_filter([
         str_ends_with($word, 'ies') ? substr($word, 0, -3).'y' : null,
-        str_ends_with($word, 'es') ? substr($word, 0, -2) : null,
         str_ends_with($word, 's') && ! str_ends_with($word, 'ss') ? substr($word, 0, -1) : null,
+        str_ends_with($word, 'es') ? substr($word, 0, -2) : null,
     ]);
 
     foreach ($stems as $stem) {

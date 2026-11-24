@@ -11,8 +11,8 @@ use App\Pipes\Grammar\ParseFirstPipedCommand;
 use App\Pipes\Grammar\ParseNextPipedCommand;
 use App\Pipes\Grammar\SkipPipeSymbol;
 use App\Support\Grammar\NodeRead;
-use App\Support\Grammar\UnparsedNode;
 use App\Support\Grammar\PipedCommands;
+use App\Support\Grammar\UnparsedNode;
 use App\Support\Step;
 
 /**

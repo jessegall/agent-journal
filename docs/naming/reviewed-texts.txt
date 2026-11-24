@@ -4,6 +4,7 @@ ${hit.title}, ${hit.locationLabel}
 ${node.line}: ${node.label}
 ${option.description} ${option.billingNote}
 (on an older version): open where it was
+01JPAGEREQUESTMESSAGE00000
 1 day
 1 hour
 30 days
@@ -38,6 +39,7 @@ All sources
 Allow one sample run of this exact line
 An agent asks a few questions, then drafts it.
 An agent asks three short questions and drafts it.
+Answered
 Anywhere
 Approve
 Approve a terminal
@@ -91,6 +93,7 @@ Close to the right
 Code from the sign-in page
 Code theme
 Codex cannot run in a container yet: its sandbox does not keep its tools
+Coding where the way is clear.
 Color scheme
 Command output
 Command palette
@@ -104,6 +107,8 @@ Comment on this
 Comment on {{ range }} · “{{ quote }}”
 Comments
 Compare code
+Complex coding that needs invention.
+Complex work
 Configure a gateway
 Confirm
 Confirm {{ mayConfirm ? highlightedLabel : '' }}
@@ -131,6 +136,7 @@ Detail
 Device
 Disconnected. The events below are kept.
 Dismiss
+Dismissed
 Doc {{ number }} · {{ title }}
 Dock
 Dock above
@@ -156,6 +162,7 @@ Environment
 Estimated USD value observed by the journal. It covers only the sessions the journal ran.
 Everything
 Examples
+Exceptional work
 Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
 Expires
 Expires {{ dateOnly(account.expiresAt) }}
@@ -172,6 +179,7 @@ Full
 Full screen
 Gateway
 Gateway runtime
+General work
 Generate install line
 Give back
 Go back
@@ -286,6 +294,7 @@ On the whole record: open record
 On {{ text.anchor.versionLabel }}, lines {{ text.anchor.firstLine }}–{{ text.anchor.lastLine }}
 One piece of text, without spaces.
 Only one new {{ driverName(shownDriver) }} account signs in at a time. Resume this one, or cancel it and choose again.
+Only when you ask for it.
 Open
 Open ${item.label}
 Open Claude's sign-in page and sign in.
@@ -349,6 +358,7 @@ Readers and proofs
 Reading the project's files
 Reading the questions
 Reading {{ row.entry.name }}
+Reading, sorting and small chores.
 Ready
 Reason
 Recheck
@@ -424,6 +434,7 @@ Send code
 Send it
 Send presses Enter on the line; Save and clear keeps it in this tab only and empties the prompt.
 Send privately
+Sent
 Session not verified
 Set it up with an agent
 Setting up
@@ -450,6 +461,7 @@ Sign out
 Sign-in
 Signed in
 Signed in as {{ accountIdentity }}.
+Simplest work
 Sorting a command into kinds does not allow it to run, and a sample run only shows what the command does.
 Source text
 Sources
@@ -520,8 +532,6 @@ This browser did not let the journal copy the line. Select the line above and co
 This item is unavailable
 This machine and the share service must keep running for the link to work.
 This paste has {{ preview.lines }} lines; each line break may run a command in the terminal.
-This profile does not allow that model.
-This profile runs only its own driver.
 This project is empty
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
 This search expired.
@@ -557,6 +567,7 @@ Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }
 Version {{ version }}, lines {{ firstLine }}–{{ lastLine }}
 Waiting
 Waiting for activity
+Waiting for an answer
 Waiting for sign-in
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
@@ -597,7 +608,6 @@ in the folder
 in the list.
 in {{ problem.stream }} bytes {{ problem.start }} to {{ problem.end }}:
 is saved as a {{ driverName(driver) }} account.
-known
 label
 model
 ms

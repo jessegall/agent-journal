@@ -69,7 +69,7 @@ final class HelperDispatchTest extends TestCase
         $this->assertTrue($receipt->launch->isNewIdentity);
         $this->assertTrue($receipt->isNewJob);
         $this->assertTrue($receipt->start->isNewSession);
-        $this->assertSame('opus', $selection->model);
+        $this->assertSame('gpt-6.2-sol', $selection->model);
         $this->assertSame(DefaultDrivers::CODEX, $selection->driver);
         $this->assertSame(1, $receipt->launch->profileRevision);
         $this->assertSame('read-only-helper', $receipt->profileType);
@@ -242,7 +242,7 @@ final class HelperDispatchTest extends TestCase
 
         $this->assertSame($receipt->start->launchReference, $read->start->launchReference);
         $this->assertSame($receipt->launch->conversationReason, $read->launch->conversationReason);
-        $this->assertSame('opus', $read->start->selection->model);
+        $this->assertSame('gpt-6.2-sol', $read->start->selection->model);
 
         TestStart::start()->startRequest($this->app);
 

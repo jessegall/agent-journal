@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Enums\StepType;
-use App\Values\PlanStep;
 use App\Contracts\Events\RunEvents;
 use App\Contracts\Processes\StopSignal;
+use App\Enums\StepType;
 use App\Values\PartKey;
+use App\Values\PlanStep;
 
 /**
  * What one supervised run tracks while it goes: where it reports, its stop signal, how many attempts each syntax

@@ -7,8 +7,8 @@ namespace App\Pipelines;
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\NotifyAnswer;
 use App\Pipes\SendCall;
-use App\Values\PendingCall;
 use App\Values\CommandReport;
+use App\Values\PendingCall;
 
 /**
  * Runs one signed call for a console command: sends it and reports its answer.

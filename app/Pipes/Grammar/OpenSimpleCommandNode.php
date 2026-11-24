@@ -6,9 +6,9 @@ namespace App\Pipes\Grammar;
 
 use App\Contracts\Bus\Pipe;
 use App\Enums\NodeType;
-use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\SimpleCommandDraft;
 use App\Support\Grammar\SimpleCommandParts;
+use App\Support\Grammar\UnparsedCommand;
 use App\Values\SourceRange;
 
 /**

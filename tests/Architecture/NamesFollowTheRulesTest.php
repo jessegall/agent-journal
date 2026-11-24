@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Support\Facades\File;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Process\Process;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,7 @@ final class NamesFollowTheRulesTest extends TestCase
 {
     private const string FIXTURE = 'tests/Fixtures/Architecture/Names';
 
+    #[TimeLimit(seconds: 60, reason: 'It reads every name of the project, PHP, frontend, Go and shell, fresh.')]
     public function test_every_name_follows_the_naming_rules(): void
     {
         $scan = $this->scan();
@@ -84,6 +86,7 @@ final class NamesFollowTheRulesTest extends TestCase
         $this->assertSame(0, $scan->getExitCode(), $scan->getOutput().$scan->getErrorOutput());
     }
 
+    #[TimeLimit(seconds: 60, reason: 'It reads every name of the project to learn its words.')]
     public function test_the_learned_words_are_written_for_the_scans_of_part_of_the_code(): void
     {
         $scan = $this->scan(['--vocabulary']);

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Pipelines\ReadSimpleCommandPipeline;
-use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\UnparsedOptionStatement;
 use App\Support\PipelineAdapter;
 

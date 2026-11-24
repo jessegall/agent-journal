@@ -6,8 +6,8 @@ namespace App\Pipes\Supervision;
 
 use App\Pipelines\ExecuteStepPipeline;
 use App\Support\Execution\ConditionalSteps;
-use App\Support\Execution\StepOutcome;
 use App\Support\Execution\PendingStep;
+use App\Support\Execution\StepOutcome;
 use App\Support\PipelineAdapter;
 
 /**

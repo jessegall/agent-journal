@@ -32,7 +32,7 @@ final class ProfileShowCommand extends Command
         $this->line("Profile {$profile->key}: {$profile->label}".($profile->isRetired() ? ' (retired)' : ''));
         $this->line("Revision: {$revision->revision}");
         $this->line("Starts from: {$revision->base->label}");
-        $this->line("Model: {$revision->model}");
+        $this->line("Model: {$revision->preferred_tier->label()}");
         $this->line('Skill allowlist: '.$this->allowlist($revision->skill_allowlist));
 
         $this->line(

@@ -17,15 +17,15 @@ const page = usePage<{
     navigationCounts?: NavigationCountsData;
 }>();
 
-const navigation = computedbottomItemse.props.navigation);
+const navigation = computed(() => page.props.navigation);
 const counts = computed(() => page.props.navigationCounts?.counts ?? {});
 const currentKey = computed(() => navigation.value.current.at(-1) ?? null);
-// The items above the foot in the server's bottomItems plain list as the design draws it.
-const sidebarItems = computed(() => navigation.value.items.filter((root) => root.inSidebar));
-const mainItems = computed(() => sidebarItems.value.filter((root) => !root.atBottom));
+// The items above the foot in the server's order, one plain list as the design draws it.
+const sidebarItems = computed(() => navigation.value.items.filter((root) => root.isInSidebar));
+const mainItems = computed(() => sidebarItems.value.filter((root) => !root.isAtBottom));
 
-cobottomItemsems = computed(() =>
-    sidebarItems.value.filter((root) => root.atBottom),
+const bottomItems = computed(() =>
+    sidebarItems.value.filter((root) => root.isAtBottom),
 );
 </script>
 
@@ -44,12 +44,12 @@ cobottomItemsems = computed(() =>
             />
         </template>
     </nav>
-    <template v-if="footItems.length > 0">
+    <template v-if="bottomItems.length > 0">
         <nav
             class="flex shrink-0 flex-col gap-px border-t border-border px-2 pt-1.5"
             aria-label="More pages"
         >
-            <template v-for="item in footItems" :key="item.key">
+            <template v-for="item in bottomItems" :key="item.key">
                 <SidebarRow
                     :item="item"
                     :current-key="currentKey"

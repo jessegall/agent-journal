@@ -29,7 +29,7 @@ final readonly class HostLinkAlarms
         $failingSince = $now->subMinute();
         $quietSince = $now->subMinutes(2);
 
-        return Host::query()
+        return array_values(Host::query()
             ->whereNull('revoked_at')
             ->where(fn ($hosts) => $hosts
                 ->where('failing_since', '<', $failingSince)
@@ -40,7 +40,6 @@ final readonly class HostLinkAlarms
             ->limit(self::HOST_LIMIT)
             ->get()
             ->map(fn (Host $host): string => $host->linkAlarm())
-            ->values()
-            ->all();
+            ->all());
     }
 }

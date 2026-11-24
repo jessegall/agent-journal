@@ -29,14 +29,14 @@ final readonly class EnumSetting implements OptionSetting
 {
     /**
      * @param  class-string<TEnum>  $enum
-     * @param  TEnum  $isDefault
+     * @param  TEnum  $defaultValue
      * @param  ChoiceOptions<string|int>  $options
      */
     private function __construct(
         public string $key,
         public string $label,
         public string $enum,
-        public BackedEnum $isDefault,
+        public BackedEnum $defaultValue,
         public SettingType $backing,
         public ChoiceOptions $options,
         public string|null $description = null,
@@ -146,7 +146,7 @@ final readonly class EnumSetting implements OptionSetting
 
     public function isEnabledByDefault(): BackedEnum
     {
-        return $this->isDefault;
+        return $this->defaultValue;
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

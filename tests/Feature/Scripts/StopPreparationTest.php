@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Scripts;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
 use App\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
+use App\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
 use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\StopPreparer;

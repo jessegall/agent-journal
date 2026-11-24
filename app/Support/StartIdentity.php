@@ -54,7 +54,7 @@ final readonly class StartIdentity
             return;
         }
 
-        if ($runtime->shouldRemember) {
+        if ($runtime->remember) {
             $session->agent->preferDriverType($runtime->driver_type);
         }
     }

@@ -82,7 +82,7 @@ final class ProtectedSessionCheck
             'saveDriverType' => false,
         ], $requestId);
 
-        $session = $this->waitFor(self::START_LIMIT, function (): ?string {
+        $session = $this->waitFor(self::START_LIMIT, function (): string|null {
             $agent = $this->containers->read('main-agent');
 
             return $agent['status'] === 'running' ? (string) $agent['session'] : null;
@@ -90,7 +90,7 @@ final class ProtectedSessionCheck
 
         return $this->waitFor(
             self::START_LIMIT,
-            fn (): ?string => $this->containers->sessionContainer($session) ?: null,
+            fn (): string|null => $this->containers->sessionContainer($session) ?: null,
             'the session container',
         );
     }
@@ -104,7 +104,7 @@ final class ProtectedSessionCheck
             'sessionId' => $agent['session'],
             'generation' => $agent['generation'],
         ], $requestId);
-        $this->waitFor(self::START_LIMIT, function (): ?bool {
+        $this->waitFor(self::START_LIMIT, function (): bool|null {
             return $this->containers->read('main-agent')['status'] !== 'running' ? true : null;
         }, 'the session to stop');
     }
@@ -170,7 +170,7 @@ final class ProtectedSessionCheck
     {
         $before = count($this->containers->transcript($container));
         $this->send('What is two plus two? Reply with the number alone.');
-        $answer = $this->waitFor(self::ANSWER_LIMIT, function () use ($container, $before): ?string {
+        $answer = $this->waitFor(self::ANSWER_LIMIT, function () use ($container, $before): string|null {
             foreach (array_slice($this->containers->transcript($container), $before) as $entry) {
                 $text = $this->assistantText($entry);
 
@@ -195,7 +195,7 @@ final class ProtectedSessionCheck
         }
 
         $before = $this->expiry($container);
-        $this->waitFor(max(60, $before - time() + 120), fn (): ?bool => time() > $before ? true : null, 'the expiry');
+        $this->waitFor(max(60, $before - time() + 120), fn (): bool|null => time() > $before ? true : null, 'the expiry');
         $this->judgeAnswer($container, 'a question is answered once the access token expired');
         $after = $this->expiry($container);
         $this->outcomes[] = Outcome::judged('the credential renewed', $after > $before, "expiry {$before} became {$after}");
@@ -218,7 +218,7 @@ final class ProtectedSessionCheck
         $before = count($this->containers->transcript($container));
         $this->send($message);
 
-        return $this->waitFor(self::ANSWER_LIMIT, function () use ($container, $before, $tool): ?array {
+        return $this->waitFor(self::ANSWER_LIMIT, function () use ($container, $before, $tool): array|null {
             $entries = array_slice($this->containers->transcript($container), $before);
             $callId = null;
 

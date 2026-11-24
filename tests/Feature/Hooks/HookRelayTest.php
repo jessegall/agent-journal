@@ -29,8 +29,8 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\Agents\HostContract;
 use Tests\Fixtures\Hooks\JournalUnreachable;
+use Tests\Support\Agents\HostContract;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -121,7 +121,8 @@ final class HookRelayTest extends TestCase
     {
         $exchange = ['calls' => [], 'answers' => []];
         Http::fake(function (Request $request) use (&$exchange) {
-            $response = $this->forward($request)->wait();
+            $answer = $this->forward($request);
+            $response = $answer->wait();
             $exchange['calls'][] = [
                 'path' => (string) parse_url($request->url(), PHP_URL_PATH),
                 'body' => json_decode($request->body(), true, flags: JSON_THROW_ON_ERROR),
@@ -129,7 +130,7 @@ final class HookRelayTest extends TestCase
             ];
             $exchange['answers'][] = ['status' => $response->getStatusCode(), 'body' => (string) $response->getBody()];
 
-            return $response;
+            return $answer;
         });
 
         $reply = $this->relay(self::STOP);

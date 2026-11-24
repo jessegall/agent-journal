@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Pipelines;
 
 use App\Contracts\Bus\PipelineDefinition;
-use App\Pipes\Supervision\QueuePipedCommands;
 use App\Pipes\Supervision\NotifyPipedCommandsRefused;
+use App\Pipes\Supervision\QueuePipedCommands;
 use App\Pipes\Supervision\SpawnPart;
+use App\Support\Execution\PendingStep;
 use App\Support\Execution\PipedCommands;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\PendingStep;
 use App\Support\Step;
 
 /**
