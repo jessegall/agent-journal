@@ -41,6 +41,7 @@ final readonly class DocumentsIndex extends DocumentsPage
         LibraryTypeFilter $type,
         PublicationList|null $documents,
         PublicationList|null $reports,
+        LayoutPartData ...$reader,
     ): DeclaredLayoutData {
         $rows = [
             ...($documents === null ? [] : $this->rowsOf($documents, 'doc', 'docs', true)),
@@ -54,7 +55,7 @@ final readonly class DocumentsIndex extends DocumentsPage
             )
             ->creatingWith($this->creation('doc', 'New document'), $this->creation('report', 'New report'))
             ->paged(ListPaging::cursor($type === LibraryTypeFilter::All ? null : $this->nextOf($documents ?? $reports)))
-            ->withReader(LayoutBackData::from(['href' => '/documents', 'label' => 'Documents']))
+            ->withReader(LayoutBackData::from(['href' => '/documents', 'label' => 'Documents']), ...$reader)
             ->layout();
     }
 

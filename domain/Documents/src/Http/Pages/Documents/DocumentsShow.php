@@ -8,15 +8,13 @@ use App\Contracts\Navigation\RecordMenus;
 use App\Data\Comments\CommentList;
 use App\Data\Pages\RecordCard;
 use App\Enums\ActionMethod;
-use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;
-use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\PublicationPage;
 use App\Support\Layout\PublicationTab;
 use Closure;
 use Domain\Documents\Data\DocumentCommentsPartData;
@@ -37,7 +35,7 @@ use Domain\Documents\Enums\EditingState;
 use Spatie\LaravelData\Optional;
 
 /**
- * A document's page as a publication: its title, label, revision, actions menu and abstract; under them the editing
+ * A document in the library's reader, as a publication: its title, label, revision, actions menu and abstract; under them the editing
  * part, which stays mounted whichever tab is shown, so a held draft survives a tab change; then the tab the window
  * chose. Text is the numbered lines to comment on, the public-comment notice and the record's comments; History its revisions, each
  * linking to its own page; Links its linked records; Details its editing and attention, settlements, Settle and Share.
@@ -66,23 +64,22 @@ final readonly class DocumentsShow extends DocumentsPage
         Closure $links,
         Closure $inspection,
         Closure $revisions,
-    ): DeclaredLayoutData {
+    ): LayoutPartData {
         $number = (int) $document->number;
         $label = "doc {$number}";
 
-        return PublicationPage::make(
-            $document->title,
-            [
+        return DetailPage::make($document->title)
+            ->above(
                 LayoutPartData::text('label', $label, 'code'),
                 LayoutPartData::text('revision', "revision {$document->revision}", 'muted'),
-                LayoutPartData::menu(
-                    'actions',
-                    $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, (string) $number),
-                ),
-            ],
-            $document->abstract,
-            fn () => LayoutBodyData::fromMarkdown($document->body),
-            [
+            )
+            ->summarising($document->abstract)
+            ->withActions(LayoutPartData::menu(
+                'actions',
+                $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, (string) $number),
+            ))
+            ->withStanding($this->editingOf($document, $editing))
+            ->withTabs(
                 PublicationTab::deferred(
                     'text',
                     'Text',
@@ -101,8 +98,8 @@ final readonly class DocumentsShow extends DocumentsPage
                     'Details',
                     fn () => $this->detailsOf($document, $editing, $label, $inspection()),
                 ),
-            ],
-        )->withStanding($this->editingOf($document, $editing))->layout($tab);
+            )
+            ->part($tab);
     }
 
     private function textOf(

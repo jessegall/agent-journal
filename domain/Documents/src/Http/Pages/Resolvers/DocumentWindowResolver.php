@@ -14,6 +14,7 @@ use App\Support\RecordReference;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Http\Pages\Documents\DocumentsShow;
+use Domain\Documents\Http\Pages\Resolvers\Support\LibraryListing;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Support\RecordPageReads;
@@ -34,6 +35,7 @@ final readonly class DocumentWindowResolver implements PageResolver
         private ShareStatusResolver $shares,
         private RecordPageReads $reads,
         private DocumentsShow $page,
+        private LibraryListing $library,
     ) {}
 
     public function read(): DockablePublicationData
@@ -42,7 +44,7 @@ final readonly class DocumentWindowResolver implements PageResolver
         $document = $this->documents->show($number);
         $identity = $this->records->identify(RecordReference::of('doc', $number));
 
-        $layout = $this->page->of(
+        $reader = $this->page->of(
             $document,
             $this->drafts->stateOf($number),
             $this->request->chosenTab(),
@@ -54,6 +56,9 @@ final readonly class DocumentWindowResolver implements PageResolver
             fn () => $this->documents->revisions($number, 1),
         );
 
-        return DockablePublicationData::of($layout, new DockIdentity(Document::LINK_TYPE, $document->id));
+        return DockablePublicationData::of(
+            $this->library->layout($reader),
+            new DockIdentity(Document::LINK_TYPE, $document->id),
+        );
     }
 }

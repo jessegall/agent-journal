@@ -766,6 +766,8 @@ use App\Exceptions\AgentContextMissing;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AgentReservedForReview;
 use App\Exceptions\AgentRetirementDenied;
+use App\Exceptions\AgentTextUnknown;
+use App\Exceptions\AgentTextValuesMismatch;
 use App\Exceptions\AnchorMismatch;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\AnswerUnreadable;
@@ -2749,6 +2751,8 @@ final class CoreApi
                 DraftAnswerMissing::class,
                 WorkOccurrenceStale::class,
                 StateTypeUnknown::class,
+                AgentTextUnknown::class,
+                AgentTextValuesMismatch::class,
                 WorkBudgetSpent::class,
                 DriverFamilyUnknown::class,
                 DriverRequestRefused::class,

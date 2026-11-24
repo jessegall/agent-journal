@@ -127,7 +127,7 @@ final class ShareStatusTest extends TestCase
     {
         $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.2.children.0.children.1.key', 'comments'),
+                ->where('page.data.root.children.1.children.1.children.5.children.0.children.1.key', 'comments'),
         );
 
         Share::create(
@@ -143,7 +143,7 @@ final class ShareStatusTest extends TestCase
 
         $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.2.children.0.children.0.key', 'public'),
+                ->where('page.data.root.children.1.children.1.children.5.children.0.children.0.key', 'public'),
         );
     }
 }

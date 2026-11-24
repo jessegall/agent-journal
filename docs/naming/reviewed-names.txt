@@ -3908,6 +3908,7 @@ class	LexedLine
 class	LexerCursor
 class	LexerScan
 class	LibraryEntryAnswer
+class	LibraryListing
 class	LibraryReuse
 class	LibraryWindowResolver
 class	LimitMcpMessage
@@ -17001,6 +17002,8 @@ method	LexerScan::__construct()
 method	LexerScan::nextPipe()
 method	LexerScan::tokens()
 method	LibraryEntryAnswer::__construct()
+method	LibraryListing::__construct()
+method	LibraryListing::layout()
 method	LibraryReuse::componentFor()
 method	LibraryReuse::in()
 method	LibraryReuse::isSkipped()
@@ -34398,6 +34401,7 @@ property	DocumentView::$title
 property	DocumentWindowResolver::$comments
 property	DocumentWindowResolver::$documents
 property	DocumentWindowResolver::$drafts
+property	DocumentWindowResolver::$library
 property	DocumentWindowResolver::$page
 property	DocumentWindowResolver::$reads
 property	DocumentWindowResolver::$records
@@ -35950,10 +35954,11 @@ property	LibraryEntryAnswer::$id
 property	LibraryEntryAnswer::$nextStep
 property	LibraryEntryAnswer::$proof
 property	LibraryEntryAnswer::$steps
-property	LibraryWindowResolver::$documents
-property	LibraryWindowResolver::$page
-property	LibraryWindowResolver::$reports
-property	LibraryWindowResolver::$request
+property	LibraryListing::$documents
+property	LibraryListing::$page
+property	LibraryListing::$reports
+property	LibraryListing::$request
+property	LibraryWindowResolver::$library
 property	LineAdmission::$actors
 property	LineAdmission::$capacity
 property	LineAdmission::$commands
