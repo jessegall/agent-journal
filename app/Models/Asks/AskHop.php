@@ -67,7 +67,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
         $hop = new self([
             'ask_id' => $ask->id,
             ...$holder->asColumns('actor'),
-            'type_key' => $ask->type_key,
+            'type_key' => $ask->type_key->key,
             'version' => $ask->version,
             'route_version' => $routeVersion,
             'accepted_at' => CarbonImmutable::now(),

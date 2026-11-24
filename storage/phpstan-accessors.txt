@@ -1,0 +1,19 @@
+Note: Using configuration file /app/phpstan.neon.
+/app/app/Data/Sharing/GatewayRevisionData.php:64:Access to an undefined property App\Models\Sharing\ShareGatewayConfiguration::$endpointHealth.
+/app/app/Data/Sharing/GatewayRevisionData.php:65:Access to an undefined property App\Models\Sharing\ShareGatewayConfiguration::$unendedShares.
+/app/app/Data/Sharing/GatewayRevisionData.php:65:Parameter #13 $dependentShares of class App\Data\Sharing\GatewayRevisionData constructor expects list<App\Data\Sharing\RootShareData>, array<App\Data\Sharing\RootShareData> given.
+/app/app/Resolvers/Support/CurrentAgentRuntimes.php:29:Access to an undefined property App\Models\Agents\Agent::$currentRuntime.
+/app/app/Support/CurrentRuntimes.php:25:Access to an undefined property App\Models\Agents\Agent::$currentRuntime.
+/app/app/Support/CurrentRuntimes.php:29:Access to an undefined property App\Models\Agents\Agent::$currentRuntime.
+/app/app/Support/ProjectReceipts.php:28:Access to an undefined property App\Models\Runs\ResultReceipt::$published.
+/app/app/Support/ProjectReceipts.php:28:Unable to resolve the template type U in call to static method PhpOption\Some<mixed>::create()
+/app/app/Support/ProjectReceipts.php:39:Access to an undefined property App\Models\Runs\ResultReceipt::$published.
+/app/app/Support/ProjectReceipts.php:39:Unable to resolve the template type U in call to static method PhpOption\Some<mixed>::create()
+/app/app/Support/RuntimeStatuses.php:50:Access to an undefined property App\Models\Agents\AgentRuntime::$watcherCount.
+/app/domain/Documents/src/Resolvers/AttachmentPages.php:28:Access to an undefined property Domain\Documents\Models\TextUpload::$attachmentText.
+/app/domain/Plans/src/Resolvers/PlanDetailRecords.php:45:Access to an undefined property Domain\Plans\Models\Phase::$details.
+/app/domain/Tasks/src/Commands/FinishTask/FinishTaskHandler.php:33:Access to an undefined property Domain\Tasks\Models\Task::$currentRun.
+/app/domain/Tasks/src/Commands/StartTask/StartTaskHandler.php:94:Access to an undefined property Domain\Tasks\Models\Task::$currentRun.
+/app/domain/Tasks/src/Policies/TaskRunPolicy.php:44:Access to an undefined property Domain\Tasks\Models\Task::$currentRun.
+/app/domain/Tasks/src/Resolvers/Support/TaskExecutions.php:32:Access to an undefined property Domain\Tasks\Models\Task::$currentRun.
+/app/domain/Tasks/src/Resolvers/Support/TaskExecutions.php:32:Unable to resolve the template type TMapWithKeysValue in call to method Illuminate\Support\Collection<int,Domain\Tasks\Models\Task>::mapWithKeys()

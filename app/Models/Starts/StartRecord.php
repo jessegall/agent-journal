@@ -447,16 +447,6 @@ final class StartRecord extends Model implements ReadableModel
 
     // ----------[ Answers ]----------
 
-    /**
-     * The inbox the started agent answers to, when its dispatcher had one.
-     *
-     * @return Option<string>
-     */
-    public function replyInboxId(): Option
-    {
-        return Option::fromValue($this->reply_inbox_id);
-    }
-
     public function wasRequestedBy(ActorIdentity $actor): bool
     {
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id)->isSameAs($actor);

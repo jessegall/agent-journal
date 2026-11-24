@@ -18,6 +18,7 @@ use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
+use App\Support\Storage\AskTypeKeyCast;
 use App\Values\AskReference;
 use App\Values\AskSubject;
 use App\Values\AskTypeKey;
@@ -39,7 +40,7 @@ use PhpOption\Option;
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
- * @property string $type_key
+ * @property AskTypeKey $type_key
  * @property string $body
  * @property string $submission_hash
  * @property string $work
@@ -73,7 +74,12 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
     protected function casts(): array
     {
-        return ['version' => 'integer', 'open' => 'boolean', 'outcome' => UnansweredReason::class];
+        return [
+            'version' => 'integer',
+            'open' => 'boolean',
+            'outcome' => UnansweredReason::class,
+            'type_key' => AskTypeKeyCast::class,
+        ];
     }
 
     public static function newReference(): AskReference
@@ -220,14 +226,14 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         $this->open = false;
         $this->pending_target = null;
         $this->assertSaved($this->save());
-        $this->raise(new AskClosed($this->id, $this->type_key));
+        $this->raise(new AskClosed($this->id, $this->type_key->key));
     }
 
     // ----------[ Answers ]----------
 
     public function replay(AskTypeKey $type, string $body): AskReference
     {
-        if ($type->key !== $this->type_key || $body !== $this->body) {
+        if ($type->key !== $this->type_key->key || $body !== $this->body) {
             throw AskRefused::submissionChanged();
         }
 
@@ -237,11 +243,6 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    public function typeKey(): AskTypeKey
-    {
-        return AskTypeKey::from($this->type_key);
     }
 
     public function requirePending(int $version): SupervisorTarget

@@ -141,16 +141,6 @@ final class TaskRun extends Model implements Assignable, ReadableModel
 
     // ----------[ Answers ]----------
 
-    /**
-     * The inbox the run answers to, when its dispatcher had one.
-     *
-     * @return Option<string>
-     */
-    public function replyInboxId(): Option
-    {
-        return Option::fromValue($this->reply_inbox_id);
-    }
-
     public function isFinished(): bool
     {
         return $this->state === TaskRunState::Finished;

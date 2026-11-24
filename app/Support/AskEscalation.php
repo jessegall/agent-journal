@@ -70,7 +70,7 @@ final readonly class AskEscalation
     private function nextTarget(Ask $ask, AskHop $hop): SupervisorTarget
     {
         try {
-            return $this->routes->routeFor($hop->actor(), $ask->typeKey())->target;
+            return $this->routes->routeFor($hop->actor(), $ask->type_key)->target;
         } catch (SupervisorRouteRefused) {
             return new SupervisorTarget();
         }

@@ -160,7 +160,7 @@ final class AskRecordsTest extends TestCase
 
         $ask = Ask::query()->ownedBy(ActorIdentity::of($start->agent))->firstOrFail();
         $this->artisan('ask:show', ['ask' => $ask->id])->assertSuccessful();
-        $this->assertSame('question', $ask->type_key);
+        $this->assertSame('question', $ask->type_key->key);
         $this->assertStringStartsWith('free:', $ask->work);
         $this->assertTrue(
             AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->firstOrFail()
@@ -246,7 +246,7 @@ final class AskRecordsTest extends TestCase
         $expected = WorkReference::forRecord($task->assignmentIdentity());
         $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference);
         $this->assertEquals($expected, Ask::query()->findOrFail($review->id)->workReference);
-        $this->assertSame('review.ready', Ask::query()->findOrFail($review->id)->type_key);
+        $this->assertSame('review.ready', Ask::query()->findOrFail($review->id)->type_key->key);
     }
 
     public function test_the_owner_sees_the_ask_card_on_the_inbox_page(): void

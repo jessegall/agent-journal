@@ -41,7 +41,8 @@ final readonly class AskRecords implements AskReader
         $ask = $this->asks->read($reference);
         $card = $this->cards([$ask])[0];
         $result = AskResult::of($ask);
-        $decisionId = $ask->type_key === CoreAskType::MergeReady->value ? ReviewDecision::idMerging($ask->id) : null;
+        $isMerge = $ask->type_key->key === CoreAskType::MergeReady->value;
+        $decisionId = $isMerge ? ReviewDecision::idMerging($ask->id) : null;
 
         return new AskDetail(
             $card,
@@ -94,7 +95,7 @@ final readonly class AskRecords implements AskReader
 
             return AskCard::from([
                 'id' => $ask->id,
-                'type' => $ask->type_key,
+                'type' => $ask->type_key->key,
                 'body' => $ask->body,
                 'open' => $ask->open,
                 'obligation' => $current?->isSameAs($holder) === true,

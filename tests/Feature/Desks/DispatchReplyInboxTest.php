@@ -94,7 +94,7 @@ final class DispatchReplyInboxTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
 
-        $this->assertSame($main->inbox_id, $run->replyInboxId()->get());
+        $this->assertSame($main->inbox_id, $run->reply_inbox_id);
 
         $this->startUserRequestAs($owner->id);
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
@@ -106,7 +106,7 @@ final class DispatchReplyInboxTest extends TestCase
             ),
         ));
 
-        $this->assertSame($main->inbox_id, $run->refresh()->replyInboxId()->get());
+        $this->assertSame($main->inbox_id, $run->refresh()->reply_inbox_id);
     }
 
     #[TimeLimit(seconds: 5, reason: 'It starts two agent sessions and seats a desk before it dispatches.')]
@@ -141,7 +141,7 @@ final class DispatchReplyInboxTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartAgentCommand($request));
         $record = StartRecord::query()->where('request_id', $request->requestId)->sole();
 
-        $this->assertSame($main->inbox_id, $record->replyInboxId()->get());
+        $this->assertSame($main->inbox_id, $record->reply_inbox_id);
 
         $this->startUserRequestAs($owner->id);
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
@@ -153,7 +153,7 @@ final class DispatchReplyInboxTest extends TestCase
             ),
         ));
 
-        $this->assertSame($main->inbox_id, $record->refresh()->replyInboxId()->get());
+        $this->assertSame($main->inbox_id, $record->refresh()->reply_inbox_id);
     }
 
     private function started(string $name): AgentSession
