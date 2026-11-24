@@ -222,17 +222,28 @@ build_release() {
         sh "$2/.docker/updater/build-release.sh" "$3" "$4"
 }
 
-# The new app container starts beside the old one, which stops only once the new one is healthy.
+# The new app container starts beside the old one, which stops only once the new one is healthy; an app image that
+# came out the same as the running one is left running.
 roll_app() {
     local old_container new_container
     old_container=$(docker compose ps -q app)
     [ -n "$old_container" ] || return 0
+    is_app_image_new "$old_container" || return 0
     docker compose up -d --no-deps --no-recreate --scale app=2 app &&
         new_container=$(docker compose ps -q app | grep -v "$old_container") &&
         wait_healthy "$new_container" &&
         docker stop "$old_container" >/dev/null &&
         docker rm "$old_container" >/dev/null &&
         docker compose up -d --no-deps --no-recreate --scale app=1 app
+}
+
+# Whether the app image built for this commit differs from the one the running app container started on; one that
+# cannot be read counts as new, so the app is never left on an old image.
+is_app_image_new() {
+    local running built
+    running=$(docker inspect -f '{{.Image}}' "$1") || return 0
+    built=$(docker image inspect -f '{{.Id}}' "$(docker compose config --images app)") || return 0
+    [ "$running" != "$built" ]
 }
 
 wait_healthy() {

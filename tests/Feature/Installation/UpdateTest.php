@@ -51,6 +51,8 @@ final class UpdateTest extends TestCase
 
     private const string MOUNTING_SERVICE = 'web';
 
+    private const string ROLL = '--scale app=2';
+
     private StandInInstallation $installation;
 
     protected function setUp(): void
@@ -109,6 +111,35 @@ final class UpdateTest extends TestCase
 
         $this->assertSame(substr($pushed, 0, 12), $this->installation->setting(self::RELEASE));
         $this->assertCount(2, $this->releaseBuilds());
+    }
+
+    public function test_a_push_whose_images_come_out_the_same_leaves_the_running_app_and_saves_no_image(): void
+    {
+        $this->installation->update();
+        $this->installation->docker->buildFromCache();
+        $this->installation->docker->forgetCalls();
+        $pushed = $this->installation->push(['docs/notes.md' => '# Notes']);
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+        $this->assertSame($pushed, $this->installation->installedCommit());
+        $this->assertFalse($this->installation->docker->wasAsked(self::ROLL));
+        $this->assertFalse($this->installation->docker->wasAsked(self::SAVE_CALL));
+        $this->assertSame([], $this->releaseBuilds());
+    }
+
+    public function test_a_push_that_changes_the_app_image_rolls_the_app_onto_it(): void
+    {
+        $this->installation->update();
+        $this->installation->docker->forgetCalls();
+        $this->installation->push(['resources/js/pages/Home.vue' => '<template />']);
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+        $this->assertTrue($this->installation->docker->wasAsked(self::ROLL));
+        $this->assertTrue($this->installation->docker->wasAsked('stop app-1'));
     }
 
     public function test_the_images_built_here_stay_in_the_record_a_later_commit_replaces(): void

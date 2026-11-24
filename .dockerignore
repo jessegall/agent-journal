@@ -21,3 +21,18 @@ images
 .build
 .playwright-mcp
 tools/journal-agent/bin
+# Documents, tests and the tools no image runs are never part of an image, so a push of only those rebuilds nothing.
+# The app reads its MCP contract from docs; docs/accounts, which the image builds write their record into, is mounted
+# from the installation instead (compose.yaml).
+docs/**
+!docs/mcp/contract-v1.json
+tests
+domain/*/tests
+tools/checks
+tools/code-style
+tools/container-run
+tools/container-run.sh
+tools/design-compare
+tools/processes
+tools/refactoring
+tools/shell-oracle

@@ -16,7 +16,7 @@ main() {
         buildx) remember_build "$@" ;;
         run) answer_run "$@" ;;
         save) save_archive "$@" ;;
-        inspect) echo healthy ;;
+        inspect) answer_inspect "$@" ;;
         image) answer_image "$@" ;;
         load) load_archive "$@" ;;
         container) answer_container "$@" ;;
@@ -41,13 +41,18 @@ fail_when_asked() {
 remember_build() {
     local argument tag
     tag=$(read_option --tag "$@")
-    [ -f "$STAND_IN/cached" ] || echo $(($(count_builds "$tag") + 1)) > "$(read_builds_file "$tag")"
+    count_build "$tag"
     for argument in "$@"; do
         case "$argument" in
             CLAUDE_CODE_VERSION=*) echo "${argument#*=} (Claude Code)" > "$STAND_IN/claude-version" ;;
             CODEX_VERSION=*) echo "codex-cli ${argument#*=}" > "$STAND_IN/codex-version" ;;
         esac
     done
+}
+
+# A build of the tag counts, unless the test said every layer is cached.
+count_build() {
+    [ -f "$STAND_IN/cached" ] || echo $(($(count_builds "$1") + 1)) > "$(read_builds_file "$1")"
 }
 
 read_builds_file() {
@@ -60,7 +65,20 @@ count_builds() {
 
 # The digest of a tag's newest build: image_digest <tag>
 image_digest() {
-    printf 'image %s %s' "$1" "$(count_builds "$1")" | sha256sum | cut -d' ' -f1
+    build_digest "$1" "$(count_builds "$1")"
+}
+
+# The digest of one build of a tag: build_digest <tag> <build>
+build_digest() {
+    printf 'image %s %s' "$1" "$2" | sha256sum | cut -d' ' -f1
+}
+
+# A container is healthy and runs on the app image of the build it started from ($STAND_IN/running-app-build).
+answer_inspect() {
+    case "$*" in
+        *'{{.Image}}'*) echo "sha256:$(build_digest journal-app "$(cat "$STAND_IN/running-app-build" 2>/dev/null || echo 0)")" ;;
+        *) echo healthy ;;
+    esac
 }
 
 # With $STAND_IN/daemon-images the stand-in is the agent daemon, holding the image ids that file lists.
@@ -147,13 +165,50 @@ save_archive() {
 answer_compose() {
     case "$*" in
         *"config --format json"*) fill_template "$answers/compose-config.json" "root=$JOURNAL_ROOT" ;;
-        *"config --images"*) echo journal-updater ;;
+        *"config --images"*) echo "journal-$(read_last "$@")" ;;
+        *" build "* | "build "*) count_service_builds "$@" ;;
         *"ps -q app"*) cat "$STAND_IN/app-containers" 2>/dev/null || true ;;
-        *"--scale app=2"*) printf 'app-old\napp-new\n' > "$STAND_IN/app-containers" ;;
-        *"--scale app=1"*) echo app-new > "$STAND_IN/app-containers" ;;
+        *"--scale app=2"*) start_new_app ;;
+        *"--scale app=1"*) keep_newest_app ;;
+        *"up -d --wait"*) start_first_app ;;
         *agents:host-enroll*) fill_template "$answers/host-enrolled.txt" host=01standinhost secret=stand-in-secret ;;
         *"artisan tinker"*) answer_host_known ;;
     esac
+}
+
+read_last() {
+    local last
+    for last; do :; done
+    echo "$last"
+}
+
+# Each service a compose build names is built as the image journal-<service>.
+count_service_builds() {
+    local argument building=false
+    for argument; do
+        if $building; then
+            case "$argument" in -*) ;; *) count_build "journal-$argument" ;; esac
+        fi
+        [ "$argument" != build ] || building=true
+    done
+}
+
+# The services start with one app container, on the app image built last.
+start_first_app() {
+    [ ! -f "$STAND_IN/app-containers" ] || return 0
+    echo app-1 > "$STAND_IN/app-containers"
+    count_builds journal-app > "$STAND_IN/running-app-build"
+}
+
+# A roll starts a new app container beside the old one, on the app image built last.
+start_new_app() {
+    echo "app-$(($(wc -l < "$STAND_IN/app-containers") + 1))" >> "$STAND_IN/app-containers"
+    count_builds journal-app > "$STAND_IN/running-app-build"
+}
+
+keep_newest_app() {
+    tail -n 1 "$STAND_IN/app-containers" > "$STAND_IN/app-containers.next"
+    mv "$STAND_IN/app-containers.next" "$STAND_IN/app-containers"
 }
 
 # The database knows the enrolled host until the test said it was made again ($STAND_IN/host-gone).

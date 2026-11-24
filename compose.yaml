@@ -40,6 +40,9 @@ services:
         # The signed host releases install lines hand out (files.places.releases); the updater publishes one per install.
         volumes:
             - releases:/app/storage/app/releases
+            # The record of the images built for this installation, which no image holds (.dockerignore): the builds
+            # write it, and a start is admitted only on an image it records.
+            - ./docs/accounts:/app/docs/accounts:ro
         depends_on:
             postgres:
                 condition: service_healthy
@@ -86,6 +89,8 @@ services:
         image: ${COMPOSE_PROJECT_NAME}-app
         pull_policy: never
         command: ['php', 'artisan', 'queue:work', '--tries=3', '--backoff=5']
+        volumes:
+            - ./docs/accounts:/app/docs/accounts:ro
         # A worker listens on no port; the image's web server check does not apply.
         healthcheck:
             disable: true
@@ -104,6 +109,8 @@ services:
         image: ${COMPOSE_PROJECT_NAME}-app
         pull_policy: never
         command: ['php', 'artisan', 'schedule:work']
+        volumes:
+            - ./docs/accounts:/app/docs/accounts:ro
         # The scheduler listens on no port; the image's web server check does not apply.
         healthcheck:
             disable: true
@@ -122,6 +129,8 @@ services:
         image: ${COMPOSE_PROJECT_NAME}-app
         pull_policy: never
         command: ['php', 'artisan', 'engine:tick']
+        volumes:
+            - ./docs/accounts:/app/docs/accounts:ro
         # The ticker listens on no port; the image's web server check does not apply.
         healthcheck:
             disable: true
