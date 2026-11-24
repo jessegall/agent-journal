@@ -105,7 +105,7 @@ final class TerminalJsonReadTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
         $agentId = $runtime->session->agent_id;
         $interest = $this->openInterest($agentId);
-        $this->store($runtime, 1, ['stream' => 'stream-1', 'shielded' => true, 'privacy_revision' => 1, 'rows' => []]);
+        $this->store($runtime, 1, ['stream' => 'stream-1', 'is_shielded' => true, 'privacy_revision' => 1, 'rows' => []]);
 
         $this->read($agentId, ['interest' => $interest])
             ->assertOk()
@@ -147,7 +147,7 @@ final class TerminalJsonReadTest extends TestCase
         return (string) $this->actingAs($this->owner)
             ->postJson("/web/agents/{$agentId}/terminal/interests", ['requestId' => (string) Str::ulid()])
             ->assertOk()
-            ->assertJsonPath('live', true)
+            ->assertJsonPath('isLive', true)
             ->json('readInterestId');
     }
 
@@ -171,12 +171,12 @@ final class TerminalJsonReadTest extends TestCase
             'captured' => '2026-11-19T12:00:00Z',
             'columns' => 20,
             'rows' => [[['text' => 'hello']]],
-            'cursor' => ['row' => 0, 'column' => 5, 'visible' => true],
+            'cursor' => ['row' => 0, 'column' => 5, 'isVisible' => true],
             'buffer' => 'normal',
             'isPlain' => false,
-            'too_large' => false,
+            'is_too_large' => false,
             'isUnreadable' => false,
-            'no_terminal' => false,
+            'has_no_terminal' => false,
             ...$fields,
         ]);
 

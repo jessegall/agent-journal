@@ -470,6 +470,15 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * Whether this request starts the session's process: its initial wake, or the first message it was opened with.
+     */
+    public function isStartingRequestOf(string $sessionId): bool
+    {
+        return $this->isInitialWakeOf($sessionId)
+            || ($this->operation === DriverOperation::Deliver && $this->sequence === 1);
+    }
+
+    /**
      * Whether this is the wake a start gives its new session, which bootstraps its driver.
      */
     public function isInitialWakeOf(string $sessionId): bool

@@ -120,7 +120,7 @@ final class ScreenReportRouteTest extends TestCase
     {
         $host = $this->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
-        $this->notify($host, $runtime, 2, 'secret', ['shielded' => true, 'rows' => [], 'privacy_revision' => 1]);
+        $this->notify($host, $runtime, 2, 'secret', ['is_shielded' => true, 'rows' => [], 'privacy_revision' => 1]);
 
         $delayed = $this->notify($host, $runtime, 1, 'before shield', ['privacy_revision' => 0]);
 
@@ -191,12 +191,12 @@ final class ScreenReportRouteTest extends TestCase
                 'captured' => '2026-11-19T12:00:00Z',
                 'columns' => 20,
                 'rows' => [[['text' => $text, 'style' => (object) []]]],
-                'cursor' => ['row' => 0, 'column' => 5, 'visible' => true],
+                'cursor' => ['row' => 0, 'column' => 5, 'isVisible' => true],
                 'buffer' => 'normal',
-                'plain' => false,
-                'too_large' => false,
-                'unreadable' => false,
-                'no_terminal' => false,
+                'is_plain' => false,
+                'is_too_large' => false,
+                'is_unreadable' => false,
+                'has_no_terminal' => false,
             ], ...$frame],
         ]);
     }

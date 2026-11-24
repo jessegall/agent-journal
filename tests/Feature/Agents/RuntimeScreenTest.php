@@ -30,9 +30,9 @@ final class RuntimeScreenTest extends TestCase
         $this->assertTrue($frame->rows[0]->runs[1]->style->isBold);
         $this->assertNull($frame->rows[0]->runs[0]->style->bg);
         $this->assertSame([], $frame->rows[1]->runs);
-        $this->assertSame(['row' => 1, 'column' => 4, 'visible' => false], $frame->cursor->toArray());
+        $this->assertSame(['row' => 1, 'column' => 4, 'isVisible' => false], $frame->cursor->toArray());
         $this->assertSame('red', $frame->toArray()['rows'][0]['runs'][1]['text']);
-        $this->assertArrayHasKey('tooLarge', $frame->toArray());
+        $this->assertArrayHasKey('isTooLarge', $frame->toArray());
     }
 
     public function test_a_shield_frame_hydrates_its_privacy_and_an_older_host_frame_is_public(): void

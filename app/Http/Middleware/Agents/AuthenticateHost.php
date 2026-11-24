@@ -92,8 +92,9 @@ final readonly class AuthenticateHost
      */
     private function recordCallOutcome(string $hostId, Request $request, Response $response): void
     {
+        $route = '/'.$request->path();
+
         if ($response->getStatusCode() >= Response::HTTP_INTERNAL_SERVER_ERROR) {
-            $route = '/'.$request->path();
             $this->runForHost(new RecordHostCallFailureCommand($hostId, $route, $response->getStatusCode(), $this->reasonOf($response)));
 
             return;
@@ -101,8 +102,8 @@ final readonly class AuthenticateHost
 
         $reported = $this->reportedFailures($request);
 
-        if (Host::query()->findOrFail($hostId)->hasAnswerToRecord($reported, CarbonImmutable::now())) {
-            $this->runForHost(new RecordHostCallAnsweredCommand($hostId, $reported));
+        if (Host::query()->findOrFail($hostId)->hasAnswerToRecord($route, $reported, CarbonImmutable::now())) {
+            $this->runForHost(new RecordHostCallAnsweredCommand($hostId, $route, $reported));
         }
     }
 

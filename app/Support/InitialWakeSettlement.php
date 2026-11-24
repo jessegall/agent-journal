@@ -34,14 +34,14 @@ final readonly class InitialWakeSettlement
         return 'start-'.$sessionId;
     }
 
-    public function settle(DriverRequest $wake, AgentRuntime $runtime, NotifyRequestProgressCommand $report): void
+    public function settle(DriverRequest $starting, AgentRuntime $runtime, NotifyRequestProgressCommand $report): void
     {
         $sessionId = $runtime->agent_session_id;
         $binding = $report->binding;
 
-        $isProvedUnstarted = $wake->isInitialWakeOf($sessionId)
+        $isProvedUnstarted = $starting->isStartingRequestOf($sessionId)
             && $report->hasCreatedNoProcess
-            && $report->attempt === $wake->attempt_version
+            && $report->attempt === $starting->attempt_version
             && $binding?->sessionId === $sessionId
             && $binding->processGeneration === $runtime->process_generation;
 

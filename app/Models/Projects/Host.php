@@ -49,6 +49,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $last_answered_at
  * @property CarbonImmutable|null $failing_since
+ * @property string|null $failing_route
  * @property string|null $last_failure
  * @property list<array{route: string, status: int, reason: string, since: string}>|null $reported_failures
  * @property bool $browser_input
@@ -232,28 +233,41 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Keeps a server error the journal answered one of the host's calls with: since when its calls fail, and why the
-     * latest did.
+     * Keeps a server error the journal answered one of the host's calls with: since when its calls fail, on which
+     * route, and why the latest did.
      */
     public function recordCallFailure(string $route, int $status, string $reason, CarbonImmutable $at): void
     {
         $this->failing_since ??= $at;
+        $this->failing_route ??= $route;
         $this->last_failure = "{$route} answered {$status}: {$reason}";
         $this->assertSaved($this->save());
         $this->raise(new HostCallFailed($this->id));
     }
 
     /**
-     * Keeps that the journal answered one of the host's calls: a failure ends, and the calls the host reported failed
-     * on its side are kept.
+     * Keeps that the journal answered one of the host's calls: an answer on the failing route ends the failure, and a
+     * call the host reported failed on another route, such as one the journal stopped before it could answer, fails.
      *
      * @param  list<FailedHostCall>  $reported
      */
-    public function recordCallAnswered(array $reported, CarbonImmutable $at): void
+    public function recordCallAnswered(string $route, array $reported, CarbonImmutable $at): void
     {
         $this->last_answered_at = $at;
-        $this->failing_since = null;
-        $this->last_failure = null;
+
+        if ($route === $this->failing_route) {
+            $this->failing_since = null;
+            $this->failing_route = null;
+            $this->last_failure = null;
+        }
+
+        foreach ($reported as $call) {
+            if ($call->route !== $route) {
+                $this->failing_since ??= CarbonImmutable::parse($call->since);
+                $this->failing_route ??= $call->route;
+                $this->last_failure = "{$call->route} answered {$call->status}: {$call->reason}";
+            }
+        }
 
         if ($reported !== []) {
             $this->reported_failures = array_map(fn (FailedHostCall $call) => $call->toArray(), $reported);
@@ -413,14 +427,14 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Whether an answered call has anything to keep: a failure that ends, failures the host reported, or a last answer
-     * older than a minute, so a quiet host shows while a busy one writes its row once a minute.
+     * Whether an answered call has anything to keep: a failure its route ends, failures the host reported, or a last
+     * answer older than a minute, so a quiet host shows while a busy one writes its row once a minute.
      *
      * @param  list<FailedHostCall>  $reported
      */
-    public function hasAnswerToRecord(array $reported, CarbonImmutable $at): bool
+    public function hasAnswerToRecord(string $route, array $reported, CarbonImmutable $at): bool
     {
-        return $this->failing_since !== null
+        return $route === $this->failing_route
             || $reported !== []
             || $this->last_answered_at === null
             || $this->last_answered_at->lt($at->subMinute());

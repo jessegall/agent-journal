@@ -23,6 +23,7 @@ final readonly class RecordHostCallAnsweredCommand extends Command
      */
     public function __construct(
         public string $hostId,
+        public string $route,
         public array $reportedFailures,
     ) {}
 }

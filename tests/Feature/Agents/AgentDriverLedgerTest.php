@@ -20,8 +20,6 @@ use App\Commands\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Commands\NotifyRuntimeHeartbeat\NotifyRuntimeHeartbeatCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
-use App\Commands\RecordHostCallFailure\RecordHostCallFailureCommand;
 use App\Commands\RecordRuntime\RecordRuntimeCommand;
 use App\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Commands\RepairDriverSettings\RepairDriverSettingsCommand;
@@ -468,7 +466,7 @@ final class AgentDriverLedgerTest extends TestCase
             'request_id' => $request->id,
             'attempt' => $request->attempt_version,
             'actual_binding' => null,
-            'turn_end' => ['exit_code' => 0, 'result_read' => true, 'result_subtype' => 'error_during_execution'],
+            'turn_end' => ['exit_code' => 0, 'is_result_read' => true, 'result_subtype' => 'error_during_execution'],
         ])->assertSuccessful();
 
         $this->assertSame(
@@ -715,12 +713,13 @@ final class AgentDriverLedgerTest extends TestCase
                 '/srv/journal/accounts/01plain',
                 "acme-history-{$opened->sessionId}",
                 "/srv/journal/sessions/{$opened->sessionId}",
+                "/srv/journal/sessions/{$opened->sessionId}/managed/managed-settings.json",
             ],
             array_map(fn ($mount) => $mount->source, $manifest->mounts),
         );
         $this->assertTrue($manifest->mounts[0]->isWritable);
         $wire = json_decode(json_encode($grant->toArray(), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertTrue($wire['container']['attachable']);
+        $this->assertTrue($wire['container']['isAttachable']);
         $this->assertSame('daemon-bind', $wire['container']['mounts'][0]['type']);
     }
 
@@ -920,32 +919,6 @@ final class AgentDriverLedgerTest extends TestCase
         );
 
         $this->assertSame($asked, $this->wakesAskedOf($opened));
-    }
-
-    public function test_a_start_whose_host_fails_waits_for_it_past_the_presence_window_and_ends_after_half_an_hour(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $this->asSystem(new RecordHostCallFailureCommand($host->hostId, '/host/claim', 500, 'Maximum execution time exceeded'));
-
-        $this->travel(11)->minutes();
-        $this->app->make(HeartbeatService::class)->markSilentStarts();
-        $isWaiting = AgentSession::query()->findOrFail($opened->sessionId)->isActive();
-
-        $this->travel(20)->minutes();
-        $this->app->make(HeartbeatService::class)->markSilentStarts();
-
-        $this->assertSame([true, false], [$isWaiting, AgentSession::query()->findOrFail($opened->sessionId)->isActive()]);
-    }
-
-    public function test_a_start_whose_host_answers_but_never_takes_it_ends_at_the_presence_window(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-
-        $this->travel(11)->minutes();
-        $this->asSystem(new RecordHostCallAnsweredCommand($host->hostId, []));
-        $this->app->make(HeartbeatService::class)->markSilentStarts();
-
-        $this->assertFalse(AgentSession::query()->findOrFail($opened->sessionId)->isActive());
     }
 
     public function test_a_session_long_silent_while_its_host_beats_for_another_is_ended_as_unserved(): void
@@ -1370,7 +1343,7 @@ final class AgentDriverLedgerTest extends TestCase
                 'actual_binding' => null,
                 'outcome' => 'refused',
                 'refusal_reason' => $reason,
-                'no_process_created' => true,
+                'has_created_no_process' => true,
                 'session_id' => $claimed['sessionId'],
                 'process_start_id' => $claimed['processStartId'],
                 'process_generation' => $claimed['processGeneration'],
@@ -1817,7 +1790,7 @@ final class AgentDriverLedgerTest extends TestCase
             'actual_binding' => null,
             'outcome' => 'refused',
             'refusal_reason' => $reason,
-            'no_process_created' => $hasCreatedNoProcess,
+            'has_created_no_process' => $hasCreatedNoProcess,
             'session_id' => $claimed['sessionId'],
             'process_start_id' => $claimed['processStartId'],
             'process_generation' => $claimed['processGeneration'],

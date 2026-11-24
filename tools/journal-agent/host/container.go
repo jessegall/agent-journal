@@ -39,10 +39,6 @@ var containedTargets = []string{
 	"/workspace", "/home/journal/.account", "/home/journal/.account/projects", SessionFilesTarget, ManagedSettingsTarget,
 }
 
-// maxContainedMounts is the most mounts a contained container has: its workspace, its account, its projects and its
-// session's handed files.
-const maxContainedMounts = 4
-
 // ContainerMount mirrors App\Agents\Support\ManifestMount: one folder a container sees, and where it comes from.
 type ContainerMount struct {
 	Type       MountType `json:"type"`
@@ -341,7 +337,7 @@ func (rules ContainerRules) permit(mounts []ContainerMount) bool {
 		return len(mounts) == 1 && mounts[0].Type == MountBind
 	}
 
-	if len(mounts) == 0 || len(mounts) > maxContainedMounts {
+	if len(mounts) == 0 || len(mounts) > len(containedTargets) {
 		return false
 	}
 

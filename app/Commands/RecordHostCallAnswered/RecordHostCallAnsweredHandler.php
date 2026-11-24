@@ -15,6 +15,6 @@ final readonly class RecordHostCallAnsweredHandler implements CommandHandler
         Host::query()
             ->lockForUpdate()
             ->findOrFail($command->hostId)
-            ->recordCallAnswered($command->reportedFailures, CarbonImmutable::now());
+            ->recordCallAnswered($command->route, $command->reportedFailures, CarbonImmutable::now());
     }
 }

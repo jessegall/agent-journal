@@ -117,7 +117,8 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
     /**
      * Ends each running session that never beat and whose start is still waiting for a host since the cutoff, so the
      * agent can start again and its reserved capacity is freed. A start whose host cannot be reached, its calls failing
-     * or stopped, waits for it to come back instead, up to half an hour.
+     * or stopped, waits for it to come back instead, up to half an hour; so does a start no host was chosen for yet
+     * while no enrolled host can be reached.
      */
     private function endUnclaimedSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
@@ -125,6 +126,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
             ->whereNotNull('failing_since')
             ->orWhere('last_answered_at', '<', $cutoff)
             ->select('id');
+        $isAnyHostReachable = Host::query()->whereNull('revoked_at')->whereNotIn('id', $unreachableHosts)->exists();
 
         ProcessStart::supervised()
             ->where('state', ProcessStartState::Pending->value)
@@ -132,9 +134,9 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
                 ->where('created_at', '<=', $now->subMinutes(self::UNREACHABLE_HOST_WAIT_MINUTES))
                 ->orWhere(fn ($reachable) => $reachable
                     ->where('created_at', '<=', $cutoff)
-                    ->where(fn ($hosted) => $hosted
-                        ->whereNull('host_id')
-                        ->orWhereNotIn('host_id', $unreachableHosts))))
+                    ->where(fn ($hosted) => $isAnyHostReachable
+                        ? $hosted->whereNull('host_id')->orWhereNotIn('host_id', $unreachableHosts)
+                        : $hosted->whereNotIn('host_id', $unreachableHosts))))
             ->whereIn('session_id', AgentSession::query()
                 ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
                 ->whereNull('last_heartbeat_at')

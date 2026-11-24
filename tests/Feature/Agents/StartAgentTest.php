@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Commands\RecordHostCallFailure\RecordHostCallFailureCommand;
 use App\Commands\RetireAgent\RetireAgentCommand;
 use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
@@ -42,6 +43,9 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use App\Enums\CommandEntry;
+use App\Support\ActorStore;
+use App\Support\CommandEntrance;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\FixedServerClock;
@@ -226,6 +230,24 @@ final class StartAgentTest extends TestCase
         $this->assertNotSame($receipt->sessionId, $this->start($this->request())->sessionId);
     }
 
+    public function test_a_start_while_every_host_fails_waits_past_the_presence_window_and_ends_after_half_an_hour(): void
+    {
+        $receipt = $this->start($this->request());
+        Host::query()->pluck('id')->each(fn (string $hostId) => $this->failCallsOf($hostId));
+
+        $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+        $hasWaited = AgentSession::query()->findOrFail($receipt->sessionId)->isActive();
+
+        $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addMinutes(31)));
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+
+        $this->assertSame(
+            [true, SessionStatus::Ended],
+            [$hasWaited, AgentSession::query()->findOrFail($receipt->sessionId)->status],
+        );
+    }
+
     public function test_a_start_a_host_took_up_stays_running_when_it_falls_silent(): void
     {
         $receipt = $this->start($this->request());
@@ -262,6 +284,22 @@ final class StartAgentTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
             previewRevision: $previewRevision,
+        );
+    }
+
+    /**
+     * The journal answers the host's claim with a server error, as the host's own calls record it.
+     */
+    private function failCallsOf(string $hostId): void
+    {
+        $failure = new RecordHostCallFailureCommand($hostId, '/host/claim', 500, 'Maximum execution time exceeded');
+
+        $this->app->make(CommandEntrance::class)->through(
+            CommandEntry::HostControl,
+            fn () => $this->app->make(ActorStore::class)->actAsSystem(
+                'host request',
+                fn () => $this->app->make(CommandBus::class)->run($failure),
+            ),
         );
     }
 

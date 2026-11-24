@@ -190,6 +190,22 @@ func TestAContainedManifestMountsItsVolumesAndDaemonFoldersUnderItsProfiles(t *t
 	}
 }
 
+func TestAContainedManifestMountsEveryTargetItMayHaveOnce(t *testing.T) {
+	full := containedManifest()
+	full.Mounts = append(full.Mounts,
+		ContainerMount{Type: MountDaemonBind, Source: "/srv/journal/sessions/7", Target: SessionFilesTarget},
+		ContainerMount{Type: MountDaemonBind, Source: "/srv/journal/sessions/7/managed/managed-settings.json", Target: ManagedSettingsTarget},
+	)
+
+	options, err := full.CreateOptions("journal-session-7", accountLabels("7"), containedRules)
+	if err != nil {
+		t.Fatalf("a manifest with its workspace, account, projects, session files and managed settings was refused: %v", err)
+	}
+	if settings := mountAt(t, options, ManagedSettingsTarget); !settings.ReadOnly {
+		t.Fatalf("the managed settings are mounted as %+v", settings)
+	}
+}
+
 func TestASeccompProfileThatCannotBeReadRefusesTheContainer(t *testing.T) {
 	unreadable := containedManifest()
 	unreadable.SecurityOptions.Seccomp = filepath.Join(t.TempDir(), "missing.json")

@@ -1,6 +1,17 @@
 {
     "token": "contract-token",
-    "folders": [],
+    "folders": [
+        {
+            "name": "managed",
+            "files": [
+                {
+                    "path": "managed-settings.json",
+                    "content": "{\n    \"allowManagedPermissionRulesOnly\": true,\n    \"allowManagedHooksOnly\": true,\n    \"allowManagedMcpServersOnly\": true,\n    \"allowedMcpServers\": [{ \"serverName\": \"journal\" }],\n    \"skipDangerousModePermissionPrompt\": true,\n    \"permissions\": {\n        \"defaultMode\": \"bypassPermissions\",\n        \"allow\": [\n            \"Read(//workspace/**)\",\n            \"Edit(//workspace/**)\",\n            \"Read(//tmp/**)\",\n            \"Edit(//tmp/**)\",\n            \"Bash(journal:*)\",\n            \"Bash(ls:*)\",\n            \"Bash(git status:*)\",\n            \"Bash(git diff:*)\",\n            \"Bash(git log:*)\",\n            \"mcp__journal__*\"\n        ],\n        \"deny\": [\n            \"Read(//home/**)\",\n            \"Edit(//home/**)\",\n            \"Read(//root/**)\",\n            \"Edit(//root/**)\",\n            \"Read(//proc/**)\",\n            \"Edit(//proc/**)\",\n            \"Read(//dev/fd/**)\",\n            \"Edit(//dev/fd/**)\",\n            \"Read(//run/**)\",\n            \"Edit(//run/**)\",\n            \"Read(//sys/**)\",\n            \"Edit(//sys/**)\",\n            \"Read(//etc/claude-code/**)\",\n            \"Edit(//etc/**)\",\n            \"Edit(//opt/**)\",\n            \"Agent\",\n            \"Task\",\n            \"Workflow\",\n            \"SendMessage\",\n            \"ListAgents\",\n            \"RemoteTrigger\",\n            \"Skill\",\n            \"Bash(claude:*)\",\n            \"Bash(codex:*)\",\n            \"Bash(*claude -p*)\",\n            \"Bash(*codex exec*)\"\n        ]\n    },\n    \"hooks\": {\n        \"SessionStart\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"/opt/journal/bin/journal-hook claude-code\" }] }],\n        \"UserPromptSubmit\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"/opt/journal/bin/journal-hook claude-code\" }] }],\n        \"PreToolUse\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"/opt/journal/bin/journal-hook claude-code\" }] }],\n        \"PostToolUse\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"/opt/journal/bin/journal-hook claude-code\" }] }],\n        \"Stop\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"/opt/journal/bin/journal-hook claude-code\" }] }],\n        \"SessionEnd\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"/opt/journal/bin/journal-hook claude-code\" }] }]\n    }\n}\n"
+                }
+            ],
+            "arguments": []
+        }
+    ],
     "profile_key": "main-agent",
     "profile_revision": 1,
     "offline_reply": "neutral",
@@ -77,6 +88,14 @@
                 "type": "daemon-bind",
                 "source": "/srv/journal/sessions/01contractsession000000000",
                 "target": "/tmp/journal-session",
+                "isWritable": false,
+                "mustExist": false,
+                "isCheckout": false
+            },
+            {
+                "type": "daemon-bind",
+                "source": "/srv/journal/sessions/01contractsession000000000/managed/managed-settings.json",
+                "target": "/etc/claude-code/managed-settings.json",
                 "isWritable": false,
                 "mustExist": false,
                 "isCheckout": false
