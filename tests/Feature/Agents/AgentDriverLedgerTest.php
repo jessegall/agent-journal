@@ -1019,6 +1019,22 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertNotNull(AgentSession::query()->findOrFail($opened->sessionId)->last_heartbeat_at);
     }
 
+    public function test_a_heartbeat_of_a_restarted_program_is_taken_and_one_of_a_replaced_generation_is_refused(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
+
+        $this->asSystem(new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation + 1, 'restarted'));
+
+        $this->assertNotNull(AgentSession::query()->findOrFail($opened->sessionId)->last_heartbeat_at);
+        $this->assertThrows(
+            fn () => $this->asSystem(
+                new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation - 1, 'replaced'),
+            ),
+            HostReportRefused::class,
+        );
+    }
+
     /**
      * An idle runtime reports nothing between two turns, so its last report grew stale after a
      * minute and its session read as Status unknown though nothing was wrong.
@@ -1082,15 +1098,6 @@ final class AgentDriverLedgerTest extends TestCase
         $this->travel(AgentRuntime::FRESH_SECONDS + 1)->seconds();
         $this->asSystem($beat);
         Event::assertDispatchedTimes(SessionStateChanged::class, 2);
-    }
-
-    public function test_a_heartbeat_of_another_generation_is_refused(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-
-        $this->expectException(HostReportRefused::class);
-
-        $this->asSystem(new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, 99, 'owned process alive'));
     }
 
     public function test_a_verified_exit_ends_the_session(): void

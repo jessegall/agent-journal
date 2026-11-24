@@ -72,8 +72,7 @@ final class ProtectedSessionCheck
     }
 
     /**
-     * Starts the main agent's session as the Start dialog does and answers its container once it runs: a headless
-     * program starts on its first message, so one is sent once the session runs.
+     * Starts the main agent's session as the Start dialog does and answers its container once it runs.
      */
     private function start(): string
     {
@@ -93,7 +92,6 @@ final class ProtectedSessionCheck
 
             return $agent['isRunning'] ? (string) $agent['session'] : null;
         }, 'the session to run');
-        $this->send('Reply with the single word ready.');
 
         return $this->waitFor(
             self::START_LIMIT,
