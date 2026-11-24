@@ -13,7 +13,10 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\AskOriginType;
 use App\Enums\UnansweredReason;
+use App\Events\AskAccepted;
+use App\Events\AskAnsweredLate;
 use App\Events\AskClosed;
+use App\Events\AskEscalated;
 use App\Exceptions\AskRefused;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
@@ -199,6 +202,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         $this->version++;
         $this->pending_target = null;
         $this->save();
+        $this->raise(new AskAccepted($this->id));
     }
 
     /**
@@ -208,6 +212,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     {
         $this->pending_target = $target->key;
         $this->save();
+        $this->raise(new AskEscalated($this->id, $target->key));
     }
 
     /**
@@ -218,6 +223,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         $this->late_answer = $text;
         $this->version++;
         $this->save();
+        $this->raise(new AskAnsweredLate($this->id));
     }
 
     public function close(): void

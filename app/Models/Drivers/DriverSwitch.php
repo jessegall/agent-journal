@@ -12,6 +12,13 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\DriverSwitchStage;
 use App\Enums\DriverVariant;
 use App\Enums\ProcessStartState;
+use App\Events\DriverSwitchCancelled;
+use App\Events\DriverSwitchConfirmed;
+use App\Events\DriverSwitchLaunchFailed;
+use App\Events\DriverSwitchPreflighted;
+use App\Events\DriverSwitchRefused;
+use App\Events\DriverSwitchStartBegun;
+use App\Events\DriverSwitchStopBegun;
 use App\Events\DriverSwitchStopped;
 use App\Exceptions\DriverSwitchStageRefused;
 use App\Models\Agents\AgentRuntime;
@@ -170,11 +177,13 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     public function markPreflighted(): void
     {
         $this->moveTo(DriverSwitchStage::Preflighted);
+        $this->raise(new DriverSwitchPreflighted($this->id));
     }
 
     public function refuse(string $reason): void
     {
         $this->moveTo(DriverSwitchStage::Refused, $reason);
+        $this->raise(new DriverSwitchRefused($this->id, $reason));
     }
 
     /**
@@ -185,6 +194,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     {
         $this->stop_boundary_sequence = $source?->observation_sequence;
         $this->moveTo(DriverSwitchStage::Stopping);
+        $this->raise(new DriverSwitchStopBegun($this->id));
     }
 
     /**
@@ -203,21 +213,25 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     {
         $this->replacement_session_id = $sessionId;
         $this->moveTo(DriverSwitchStage::Starting);
+        $this->raise(new DriverSwitchStartBegun($this->id, $sessionId));
     }
 
     public function confirm(): void
     {
         $this->moveTo(DriverSwitchStage::Confirmed);
+        $this->raise(new DriverSwitchConfirmed($this->id));
     }
 
     public function failLaunch(string $reason): void
     {
         $this->moveTo(DriverSwitchStage::LaunchFailed, $reason);
+        $this->raise(new DriverSwitchLaunchFailed($this->id, $reason));
     }
 
     public function cancel(string|null $reason = null): void
     {
         $this->moveTo(DriverSwitchStage::Cancelled, $reason);
+        $this->raise(new DriverSwitchCancelled($this->id, $reason));
     }
 
     /**

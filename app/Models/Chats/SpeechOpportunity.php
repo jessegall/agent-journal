@@ -12,6 +12,9 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\SpeechOpportunityState;
 use App\Events\ChatMessageOffered;
+use App\Events\SpeechOpportunityClaimed;
+use App\Events\SpeechOpportunityReleased;
+use App\Events\SpeechOpportunityReserved;
 use App\Events\SpeechOpportunitySettled;
 use App\Exceptions\ChatStateConflict;
 use App\Models\Messages\Message;
@@ -102,6 +105,7 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
         $this->assertOpen();
         $this->reserved_question_id = $question->id;
         $this->assertSaved($this->save());
+        $this->raise(new SpeechOpportunityReserved($this->id, $question->id));
     }
 
     /**
@@ -117,6 +121,7 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
         $this->claim_token_digest = $tokenDigest;
         $this->lease_expires_at = $expiresAt;
         $this->assertSaved($this->save());
+        $this->raise(new SpeechOpportunityClaimed($this->id));
     }
 
     /**
@@ -133,6 +138,7 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
         $this->state = SpeechOpportunityState::Offered;
         $this->releaseLease();
         $this->assertSaved($this->save());
+        $this->raise(new SpeechOpportunityReleased($this->id));
     }
 
     /**

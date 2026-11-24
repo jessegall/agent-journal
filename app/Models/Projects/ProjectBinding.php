@@ -13,6 +13,8 @@ use App\Enums\ArrangementType;
 use App\Enums\BindingReadiness;
 use App\Events\ProjectBindingCreated;
 use App\Events\ProjectBindingEnvironmentAssigned;
+use App\Events\ProjectBindingLeased;
+use App\Events\ProjectBindingLeaseEnded;
 use App\Events\ProjectBindingReadinessChanged;
 use App\Events\ProjectBindingRevoked;
 use App\Exceptions\BindingStartRefused;
@@ -303,6 +305,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $this->leased_runtime_id = $runtimeId;
         $this->lease_expires_at = $expiresAt;
         $this->assertSaved($this->save());
+        $this->raise(new ProjectBindingLeased($this->id, $runtimeId));
     }
 
     /**
@@ -318,6 +321,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $this->leased_runtime_id = null;
         $this->lease_expires_at = null;
         $this->assertSaved($this->save());
+        $this->raise(new ProjectBindingLeaseEnded($this->id, $runtimeId));
     }
 
     /**

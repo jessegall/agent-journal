@@ -7,7 +7,13 @@ use App\Enums\RunLogicalResult;
 use App\Events\BundleActivated;
 use App\Events\EvidenceInvalid;
 use App\Events\OutputChunkCommitted;
+use App\Events\ProcessRunConsumed;
+use App\Events\ProcessRunLost;
+use App\Events\ProcessRunMarkedStale;
+use App\Events\ProcessRunOutcomeUserRevoked;
 use App\Events\ProcessRunOutlasted;
+use App\Events\ProcessRunStopped;
+use App\Events\ProcessRunUpdateCounted;
 use App\Events\RuleActivated;
 use App\Events\RuleRejected;
 use App\Events\RuleRetired;
@@ -84,5 +90,47 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new RunOutcomeRecorded('run', 'attempt', RunLogicalResult::Failed, false),
+    ],
+    ProcessRunMarkedStale::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessRun::markStale',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessRunMarkedStale('run', 'the checkout moved'),
+    ],
+    ProcessRunUpdateCounted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessRun::nextUpdate',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessRunUpdateCounted('run', 1),
+    ],
+    ProcessRunConsumed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessRun::consumeFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessRunConsumed('run'),
+    ],
+    ProcessRunLost::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessRun::markLost',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessRunLost('run'),
+    ],
+    ProcessRunStopped::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessRun::markStopped',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessRunStopped('run', 'the user stopped it'),
+    ],
+    ProcessRunOutcomeUserRevoked::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessRun::revokeOutcomeUser',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessRunOutcomeUserRevoked('run'),
     ],
 ];

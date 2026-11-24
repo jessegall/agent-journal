@@ -23,9 +23,16 @@ use App\Events\MessageDismissed;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
 use App\Events\NotificationsChanged;
+use App\Events\NotificationsMarkAllAdvanced;
+use App\Events\NotificationsMarkAllBegun;
+use App\Events\NotificationsMarkAllFinished;
 use App\Events\NotificationsWithdrawn;
 use App\Events\ReceiptDeliveriesScheduled;
+use App\Events\ReceiptDeliveryAwaitingShown;
 use App\Events\ReceiptDeliveryChanged;
+use App\Events\SpeechOpportunityClaimed;
+use App\Events\SpeechOpportunityReleased;
+use App\Events\SpeechOpportunityReserved;
 use App\Events\SpeechOpportunitySettled;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
@@ -201,5 +208,54 @@ return [
             'app/Commands/HideUnseatedNotifications/HideUnseatedNotificationsHandler.php',
             'app/Support/RecipientNotifications.php',
         ],
+    ],
+    SpeechOpportunityReserved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SpeechOpportunity::reserveFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SpeechOpportunityReserved('opportunity', 'message'),
+    ],
+    SpeechOpportunityClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SpeechOpportunity::claim',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SpeechOpportunityClaimed('opportunity'),
+    ],
+    SpeechOpportunityReleased::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SpeechOpportunity::release',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SpeechOpportunityReleased('opportunity'),
+    ],
+    ReceiptDeliveryAwaitingShown::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ReceiptDelivery::awaitShown',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ReceiptDeliveryAwaitingShown('delivery', 'receipt'),
+    ],
+    NotificationsMarkAllBegun::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NotificationScope::beginMarkAll',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NotificationsMarkAllBegun('scope', 10),
+    ],
+    NotificationsMarkAllAdvanced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NotificationScope::advanceMarkAll',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NotificationsMarkAllAdvanced('scope', 5),
+    ],
+    NotificationsMarkAllFinished::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NotificationScope::finishMarkAll',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NotificationsMarkAllFinished('scope'),
     ],
 ];

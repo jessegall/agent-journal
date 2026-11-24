@@ -11,6 +11,8 @@ use App\Events\InstallAttemptReplaced;
 use App\Events\InstallAttemptSpent;
 use App\Events\ProjectBindingCreated;
 use App\Events\ProjectBindingEnvironmentAssigned;
+use App\Events\ProjectBindingLeased;
+use App\Events\ProjectBindingLeaseEnded;
 use App\Events\ProjectBindingReadinessChanged;
 use App\Events\ProjectBindingRevoked;
 use App\Events\ProjectCreated;
@@ -122,5 +124,19 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProjectBindingRevoked('binding', 2, new DateTimeImmutable('2026-01-01')),
+    ],
+    ProjectBindingLeased::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectBinding::holdLease',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectBindingLeased('binding', 'runtime'),
+    ],
+    ProjectBindingLeaseEnded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectBinding::confirmStop',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectBindingLeaseEnded('binding', 'runtime'),
     ],
 ];

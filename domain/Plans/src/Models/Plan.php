@@ -32,6 +32,7 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanCancelled;
+use Domain\Plans\Events\PlanDescribed;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewDecided;
@@ -214,6 +215,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         $this->type = $type;
         $this->revision++;
         $this->save();
+        $this->raise(new PlanDescribed($this->id, $this->revision));
     }
 
     /**

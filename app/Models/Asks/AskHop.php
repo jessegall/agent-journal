@@ -10,7 +10,10 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CoreAskType;
+use App\Events\AskHopAnswered;
 use App\Events\AskHopAssigned;
+use App\Events\AskHopAttentionRecorded;
+use App\Events\AskHopWakeRecorded;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
@@ -207,18 +210,21 @@ final class AskHop extends Model implements EventSource, ReadableModel
         $this->result = $body;
         $this->attention = $attention;
         $this->save();
+        $this->raise(new AskHopAnswered($this->ask_id, $this->id));
     }
 
     public function recordWake(string $wake): void
     {
         $this->wake = $wake;
         $this->save();
+        $this->raise(new AskHopWakeRecorded($this->ask_id, $this->id, $wake));
     }
 
     public function recordAttention(string $attention): void
     {
         $this->attention = $attention;
         $this->save();
+        $this->raise(new AskHopAttentionRecorded($this->ask_id, $this->id, $attention));
     }
 
     // ----------[ Answers ]----------

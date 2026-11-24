@@ -14,13 +14,19 @@ use App\Enums\AccountState;
 use App\Enums\CleanupProblem;
 use App\Enums\SignInMethod;
 use App\Enums\StartUnavailableReason;
+use App\Events\AccountCheckRequested;
 use App\Events\AccountCleaned;
+use App\Events\AccountCleanupReleased;
 use App\Events\AccountCleanupRetried;
 use App\Events\AccountHeldForMaintenance;
+use App\Events\AccountRecheckRequested;
 use App\Events\AccountRemovalBegun;
+use App\Events\AccountRemoved;
 use App\Events\AccountRenamed;
 use App\Events\AccountSignedIn;
 use App\Events\AccountSignedOut;
+use App\Events\AccountWriterClaimed;
+use App\Events\AccountWriterReleased;
 use App\Exceptions\AccountLabelTaken;
 use App\Exceptions\AccountMissing;
 use App\Exceptions\AccountNameChanged;
@@ -427,6 +433,7 @@ final class Account extends Model implements EventSource, ReadableModel
 
         $this->check_inconclusive_at = null;
         $this->assertSaved($this->save());
+        $this->raise(new AccountRecheckRequested($this->account_protocol, $this->id));
     }
 
     /**
@@ -441,6 +448,7 @@ final class Account extends Model implements EventSource, ReadableModel
 
         $this->check_requested_generation = $generation;
         $this->save();
+        $this->raise(new AccountCheckRequested($this->account_protocol, $this->id, $generation));
 
         return true;
     }
@@ -535,6 +543,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->live_writer_attempt_id = $attempt->id;
         $this->sign_in_generation++;
         $this->save();
+        $this->raise(new AccountWriterClaimed($this->account_protocol, $this->id, $attempt->id));
 
         return $attempt->id;
     }
@@ -550,6 +559,7 @@ final class Account extends Model implements EventSource, ReadableModel
 
         $this->live_writer_attempt_id = null;
         $this->save();
+        $this->raise(new AccountWriterReleased($this->account_protocol, $this->id, $attemptId));
     }
 
     /**
@@ -607,6 +617,7 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         $this->cleanup_released = true;
         $this->save();
+        $this->raise(new AccountCleanupReleased($this->account_protocol, $this->id));
     }
 
     /**
@@ -643,6 +654,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->cleanup_pending = false;
         $this->live_writer_attempt_id = null;
         $this->assertSaved($this->save());
+        $this->raise(new AccountRemoved($this->account_protocol, $this->id));
     }
 
     // ----------[ Answers ]----------

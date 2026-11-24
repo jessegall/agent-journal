@@ -16,6 +16,8 @@ use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ConversationState;
 use Domain\Chat\Events\ChatReconciled;
 use Domain\Chat\Events\ChatReconcileMarked;
+use Domain\Chat\Events\ConversationClosed;
+use Domain\Chat\Events\ConversationTransferred;
 use Domain\Chat\Exceptions\ConversationUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -159,6 +161,7 @@ final class Conversation extends Model implements EventSource, ReadableModel
         $this->owner_type = null;
         $this->owner_id = null;
         $this->save();
+        $this->raise(new ConversationClosed($this->id));
     }
 
     /**
@@ -170,6 +173,7 @@ final class Conversation extends Model implements EventSource, ReadableModel
         $this->owner_type = $owner->type->value;
         $this->owner_id = $owner->id;
         $this->save();
+        $this->raise(new ConversationTransferred($this->id, $owner));
     }
 
     /**

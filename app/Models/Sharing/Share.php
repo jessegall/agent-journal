@@ -17,7 +17,9 @@ use App\Events\ShareActivated;
 use App\Events\ShareCreated;
 use App\Events\ShareExpired;
 use App\Events\ShareFailed;
+use App\Events\SharePruned;
 use App\Events\ShareRequested;
+use App\Events\ShareRetried;
 use App\Events\ShareRevoked;
 use App\Events\ShareScopeChanged;
 use App\Exceptions\ShareEndInvalid;
@@ -505,6 +507,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
 
         $this->state = ShareState::Pending;
         $this->save();
+        $this->raise(new ShareRetried($this->factAt(CarbonImmutable::now())));
     }
 
     /**
@@ -518,6 +521,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         $this->pruned_lifecycle_rows += $lifecycleRows;
         $this->last_pruned_at = $at;
         $this->save();
+        $this->raise(new SharePruned($this->id, $at));
     }
 
     /**

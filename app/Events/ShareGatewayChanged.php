@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Events;
 
 use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Sharing\ShareGatewayEvent;
 use DateTimeImmutable;
 
 /**
@@ -12,7 +13,7 @@ use DateTimeImmutable;
  * configuration, its version and whether it is now disabled, never a setting or secret. The owner's open sharing pages
  * reread on it.
  */
-final readonly class ShareGatewayChanged extends ShareEvent implements UserInterfaceUpdater
+final readonly class ShareGatewayChanged extends ShareEvent implements ShareGatewayEvent, UserInterfaceUpdater
 {
     public function __construct(
         public string $configurationId,

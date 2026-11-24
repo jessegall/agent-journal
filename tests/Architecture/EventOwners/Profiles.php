@@ -2,23 +2,40 @@
 
 declare(strict_types=1);
 
+use App\Enums\SignInState;
+use App\Events\AccountCheckRequested;
 use App\Events\AccountCleaned;
+use App\Events\AccountCleanupReleased;
 use App\Events\AccountCleanupRetried;
 use App\Events\AccountHeldForMaintenance;
 use App\Events\AccountNoticeRecorded;
 use App\Events\AccountNoticeResolved;
+use App\Events\AccountRecheckRequested;
 use App\Events\AccountRemovalBegun;
+use App\Events\AccountRemoved;
 use App\Events\AccountRenamed;
 use App\Events\AccountsChanged;
 use App\Events\AccountSignedIn;
 use App\Events\AccountSignedOut;
 use App\Events\AccountSwitched;
 use App\Events\AccountUsageChanged;
+use App\Events\AccountWriterClaimed;
+use App\Events\AccountWriterReleased;
+use App\Events\ActiveAccountCleared;
+use App\Events\ActiveAccountSelected;
 use App\Events\ProfileRevisionRevoked;
+use App\Events\SignInAttemptAnswerAccepted;
+use App\Events\SignInAttemptClaimed;
+use App\Events\SignInAttemptCleanupApplied;
 use App\Events\SignInAttemptCleanupRetried;
+use App\Events\SignInAttemptDisplaced;
+use App\Events\SignInAttemptEnded;
+use App\Events\SignInAttemptFingerprinted;
 use App\Events\SignInAttemptFinished;
+use App\Events\SignInAttemptGenerationSet;
 use App\Events\SignInAttemptReleased;
 use App\Events\SignInAttemptStarted;
+use App\Events\SignInAttemptWaitingForUser;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -152,5 +169,117 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SignInAttemptStarted('claude-code', 'attempt', null),
+    ],
+    AccountRecheckRequested::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Account::recheck',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AccountRecheckRequested('claude-code', 'account'),
+    ],
+    AccountCheckRequested::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Account::requestCheck',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AccountCheckRequested('claude-code', 'account', 1),
+    ],
+    AccountWriterClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Account::writerFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AccountWriterClaimed('claude-code', 'account', 'attempt'),
+    ],
+    AccountWriterReleased::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Account::releaseWriter',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AccountWriterReleased('claude-code', 'account', 'attempt'),
+    ],
+    AccountCleanupReleased::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Account::releaseCleanup',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AccountCleanupReleased('claude-code', 'account'),
+    ],
+    AccountRemoved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Account::finishRemoval',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AccountRemoved('claude-code', 'account'),
+    ],
+    ActiveAccountSelected::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ActiveAccount::select',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ActiveAccountSelected('claude-code', 'account'),
+    ],
+    ActiveAccountCleared::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ActiveAccount::clear',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ActiveAccountCleared('claude-code'),
+    ],
+    SignInAttemptDisplaced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::displace',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptDisplaced('claude-code', 'attempt', 'account'),
+    ],
+    SignInAttemptFingerprinted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::keepFingerprint',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptFingerprinted('claude-code', 'attempt'),
+    ],
+    SignInAttemptEnded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::end',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptEnded('claude-code', 'attempt', SignInState::Complete),
+    ],
+    SignInAttemptWaitingForUser::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::waitForUser',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptWaitingForUser('claude-code', 'attempt'),
+    ],
+    SignInAttemptAnswerAccepted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::acceptAnswer',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptAnswerAccepted('claude-code', 'attempt'),
+    ],
+    SignInAttemptClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::claimOn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptClaimed('claude-code', 'attempt', 'host'),
+    ],
+    SignInAttemptGenerationSet::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::writeInGeneration',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptGenerationSet('claude-code', 'attempt', 1),
+    ],
+    SignInAttemptCleanupApplied::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::applyCleanup',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptCleanupApplied('claude-code', 'attempt', true),
     ],
 ];

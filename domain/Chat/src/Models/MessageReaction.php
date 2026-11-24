@@ -12,6 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Domain\Chat\Events\MessageReactionAdded;
+use Domain\Chat\Events\MessageReactionWithdrawn;
 use Domain\Chat\Models\Concerns\PlacedInConversation;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -98,5 +99,6 @@ final class MessageReaction extends Model implements EventSource, ReadableModel
     public function withdraw(): void
     {
         $this->delete();
+        $this->raise(new MessageReactionWithdrawn($this->inbox_id, $this->message_id, $this->owningActor()));
     }
 }

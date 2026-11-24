@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\PublicationState;
 use App\Events\SessionSkillsIntended;
+use App\Events\SkillPublicationClaimed;
 use App\Events\SkillPublicationMoved;
+use App\Events\SkillPublicationProgressed;
 use App\Events\SkillsChanged;
 use Tests\Architecture\Support\EventRole;
 
@@ -35,5 +37,19 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SkillsChanged('skill', 2),
+    ],
+    SkillPublicationClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SkillPublication::claim',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SkillPublicationClaimed('publication', 1),
+    ],
+    SkillPublicationProgressed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SkillPublication::recordProgress',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SkillPublicationProgressed('publication', 3),
     ],
 ];

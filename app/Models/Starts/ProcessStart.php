@@ -12,6 +12,11 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\AccountProcessRole;
 use App\Enums\ProcessStartState;
 use App\Enums\TransportProfileType;
+use App\Events\ProcessStartCancelled;
+use App\Events\ProcessStartClaimed;
+use App\Events\ProcessStartOutputAdvanced;
+use App\Events\ProcessStartRunning;
+use App\Events\ProcessStartStopped;
 use App\Events\StartRefused;
 use App\Exceptions\ProcessStartUnknown;
 use App\Models\Agents\AgentSession;
@@ -294,6 +299,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     {
         $this->output_generation++;
         $this->save();
+        $this->raise(new ProcessStartOutputAdvanced($this->id, $this->output_generation));
     }
 
     /**
@@ -309,6 +315,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         $this->state = ProcessStartState::Running;
         $this->execution_id = $executionId;
         $this->save();
+        $this->raise(new ProcessStartRunning($this->id, $executionId));
 
         return true;
     }
@@ -325,6 +332,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         $this->state = ProcessStartState::Stopped;
         $this->ended_at = CarbonImmutable::now();
         $this->save();
+        $this->raise(new ProcessStartStopped($this->id));
 
         return true;
     }
@@ -341,6 +349,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
 
         $this->state = ProcessStartState::Starting;
         $this->save();
+        $this->raise(new ProcessStartClaimed($this->id));
 
         return true;
     }
@@ -376,6 +385,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         $this->state = ProcessStartState::Cancelled;
         $this->ended_at = CarbonImmutable::now();
         $this->save();
+        $this->raise(new ProcessStartCancelled($this->id));
     }
 
     // ----------[ Accessors ]----------

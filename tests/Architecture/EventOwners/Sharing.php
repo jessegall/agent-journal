@@ -8,10 +8,14 @@ use App\Events\ShareCreated;
 use App\Events\ShareExpired;
 use App\Events\ShareFailed;
 use App\Events\ShareGatewayChanged;
+use App\Events\ShareGatewayMadeDefault;
+use App\Events\SharePruned;
 use App\Events\ShareRequested;
+use App\Events\ShareRetried;
 use App\Events\ShareRevoked;
 use App\Events\ShareScopeChanged;
 use App\Support\ShareFact;
+use Carbon\CarbonImmutable;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -76,5 +80,26 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ShareScopeChanged(new ShareFact('share', null, ShareState::Active, 1, new DateTimeImmutable('2026-01-01'))),
+    ],
+    ShareRetried::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Share::retryOpening',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareRetried(new ShareFact('share', 'configuration', ShareState::Pending, 1, new CarbonImmutable('2026-01-01'))),
+    ],
+    SharePruned::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Share::countPruned',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SharePruned('share', new CarbonImmutable('2026-01-01')),
+    ],
+    ShareGatewayMadeDefault::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ShareGatewayConfiguration::makeDefault',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareGatewayMadeDefault('configuration'),
     ],
 ];

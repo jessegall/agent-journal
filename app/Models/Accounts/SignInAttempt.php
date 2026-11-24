@@ -15,10 +15,18 @@ use App\Enums\CleanupProblem;
 use App\Enums\SignInMethod;
 use App\Enums\SignInState;
 use App\Enums\SignInType;
+use App\Events\SignInAttemptAnswerAccepted;
+use App\Events\SignInAttemptClaimed;
+use App\Events\SignInAttemptCleanupApplied;
 use App\Events\SignInAttemptCleanupRetried;
+use App\Events\SignInAttemptDisplaced;
+use App\Events\SignInAttemptEnded;
+use App\Events\SignInAttemptFingerprinted;
 use App\Events\SignInAttemptFinished;
+use App\Events\SignInAttemptGenerationSet;
 use App\Events\SignInAttemptReleased;
 use App\Events\SignInAttemptStarted;
+use App\Events\SignInAttemptWaitingForUser;
 use App\Exceptions\SignInAnswerRefused;
 use App\Exceptions\SignInAttemptMissing;
 use App\Models\Support\AccountOwnerScope;
@@ -380,6 +388,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->directory = (string) $account->directory;
         $this->cleanup_pending = true;
         $this->save();
+        $this->raise(new SignInAttemptDisplaced($this->account_protocol, $this->id, $account->id));
     }
 
     /**
@@ -389,6 +398,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $this->fingerprint = $fingerprint;
         $this->save();
+        $this->raise(new SignInAttemptFingerprinted($this->account_protocol, $this->id));
     }
 
     /**
@@ -399,6 +409,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->state = $state;
         $this->cleanup_pending = $state !== SignInState::Complete;
         $this->assertSaved($this->save());
+        $this->raise(new SignInAttemptEnded($this->account_protocol, $this->id, $state));
     }
 
     /**
@@ -412,6 +423,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
 
         $this->state = SignInState::Waiting;
         $this->save();
+        $this->raise(new SignInAttemptWaitingForUser($this->account_protocol, $this->id));
     }
 
     /**
@@ -423,6 +435,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->state = SignInState::Checking;
         $this->submission_key = $submissionKey;
         $this->save();
+        $this->raise(new SignInAttemptAnswerAccepted($this->account_protocol, $this->id));
     }
 
     /**
@@ -432,6 +445,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $this->process_reference = $hostId;
         $this->save();
+        $this->raise(new SignInAttemptClaimed($this->account_protocol, $this->id, $hostId));
     }
 
     /**
@@ -441,6 +455,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $this->generation = $generation;
         $this->save();
+        $this->raise(new SignInAttemptGenerationSet($this->account_protocol, $this->id, $generation));
     }
 
     /**
@@ -459,6 +474,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         }
 
         $this->save();
+        $this->raise(new SignInAttemptCleanupApplied($this->account_protocol, $this->id, ! $this->cleanup_pending));
 
         return ! $this->cleanup_pending;
     }

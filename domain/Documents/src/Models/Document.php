@@ -32,6 +32,7 @@ use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Events\DocumentCreated;
+use Domain\Documents\Events\DocumentFirstRevisionSet;
 use Domain\Documents\Events\DocumentPublished;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
@@ -147,6 +148,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     {
         $this->current_revision_id = $revision->id;
         $this->assertSaved($this->save());
+        $this->raise(new DocumentFirstRevisionSet($this->id, $revision->id));
         $this->setRelation('currentRevision', $revision);
     }
 

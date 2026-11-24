@@ -6,6 +6,7 @@ use App\Support\ActorContext;
 use Domain\Documents\Events\DocumentClosed;
 use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Events\DocumentDraftSaved;
+use Domain\Documents\Events\DocumentFirstRevisionSet;
 use Domain\Documents\Events\DocumentOpened;
 use Domain\Documents\Events\DocumentPublished;
 use Domain\Documents\Events\DraftKept;
@@ -74,5 +75,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ReportFiled('report', 1, ActorContext::forUser('user')),
+    ],
+    DocumentFirstRevisionSet::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Document::startWith',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DocumentFirstRevisionSet('document', 'revision'),
     ],
 ];

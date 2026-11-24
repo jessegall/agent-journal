@@ -11,6 +11,9 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Events\NotificationsChanged;
+use App\Events\NotificationsMarkAllAdvanced;
+use App\Events\NotificationsMarkAllBegun;
+use App\Events\NotificationsMarkAllFinished;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -165,6 +168,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
 
         $this->mark_all_through = $through;
         $this->assertSaved($this->save());
+        $this->raise(new NotificationsMarkAllBegun($this->id, $through));
     }
 
     /**
@@ -174,6 +178,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     {
         $this->mark_all_after = $sequence;
         $this->assertSaved($this->save());
+        $this->raise(new NotificationsMarkAllAdvanced($this->id, $sequence));
     }
 
     public function finishMarkAll(): void
@@ -181,6 +186,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
         $this->mark_all_through = null;
         $this->mark_all_after = 0;
         $this->assertSaved($this->save());
+        $this->raise(new NotificationsMarkAllFinished($this->id));
     }
 
     /**

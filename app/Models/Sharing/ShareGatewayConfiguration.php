@@ -11,6 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\ShareGatewayChanged;
+use App\Events\ShareGatewayMadeDefault;
 use App\Exceptions\ShareGatewayUnavailable;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewaySettings;
@@ -192,6 +193,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     {
         $this->is_default = true;
         $this->save();
+        $this->raise(new ShareGatewayMadeDefault($this->id));
     }
 
     // ----------[ Answers ]----------

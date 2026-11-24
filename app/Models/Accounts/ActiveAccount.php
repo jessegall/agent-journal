@@ -11,6 +11,8 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\StartUnavailableReason;
 use App\Events\AccountSwitched;
+use App\Events\ActiveAccountCleared;
+use App\Events\ActiveAccountSelected;
 use App\Exceptions\AccountSelectionChanged;
 use App\Exceptions\AccountUnavailable;
 use App\Models\Support\AccountOwnerScope;
@@ -160,6 +162,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
         $this->has_selected = true;
         $this->change_number++;
         $this->assertSaved($this->save());
+        $this->raise(new ActiveAccountSelected($this->account_protocol, $account->id));
 
         return true;
     }
@@ -176,6 +179,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
         $this->account_id = null;
         $this->change_number++;
         $this->save();
+        $this->raise(new ActiveAccountCleared($this->account_protocol));
     }
 
     // ----------[ Answers ]----------

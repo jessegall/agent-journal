@@ -10,10 +10,22 @@ use App\Events\AgentRuntimeReassigned;
 use App\Events\ChildCheckoutRequested;
 use App\Events\DriverFailed;
 use App\Events\DriverRequestRecovered;
+use App\Events\DriverSwitchCancelled;
+use App\Events\DriverSwitchConfirmed;
+use App\Events\DriverSwitchLaunchFailed;
+use App\Events\DriverSwitchPreflighted;
+use App\Events\DriverSwitchRefused;
+use App\Events\DriverSwitchStartBegun;
+use App\Events\DriverSwitchStopBegun;
 use App\Events\DriverSwitchStopped;
 use App\Events\LaunchCancelled;
 use App\Events\LaunchEnded;
 use App\Events\MergeOutcomeRecorded;
+use App\Events\ProcessStartCancelled;
+use App\Events\ProcessStartClaimed;
+use App\Events\ProcessStartOutputAdvanced;
+use App\Events\ProcessStartRunning;
+use App\Events\ProcessStartStopped;
 use App\Events\SessionClosed;
 use App\Events\SessionOpened;
 use App\Events\SessionStateChanged;
@@ -185,5 +197,89 @@ return [
         'producers' => [
             'app/CommandMiddleware/AnnounceUnavailableStart.php',
         ],
+    ],
+    DriverSwitchPreflighted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverSwitch::markPreflighted',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverSwitchPreflighted('switch'),
+    ],
+    DriverSwitchRefused::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverSwitch::refuse',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverSwitchRefused('switch', 'the build is missing'),
+    ],
+    DriverSwitchStopBegun::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverSwitch::beginStopping',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverSwitchStopBegun('switch'),
+    ],
+    DriverSwitchStartBegun::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverSwitch::beginStarting',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverSwitchStartBegun('switch', 'session'),
+    ],
+    DriverSwitchConfirmed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverSwitch::confirm',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverSwitchConfirmed('switch'),
+    ],
+    DriverSwitchLaunchFailed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverSwitch::failLaunch',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverSwitchLaunchFailed('switch', 'the start timed out'),
+    ],
+    DriverSwitchCancelled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverSwitch::cancel',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverSwitchCancelled('switch', null),
+    ],
+    ProcessStartOutputAdvanced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessStart::advanceOutputGeneration',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessStartOutputAdvanced('start', 2),
+    ],
+    ProcessStartRunning::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessStart::recordRunning',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessStartRunning('start', 'execution'),
+    ],
+    ProcessStartStopped::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessStart::stopWithProof',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessStartStopped('start'),
+    ],
+    ProcessStartClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessStart::claim',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessStartClaimed('start'),
+    ],
+    ProcessStartCancelled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessStart::cancelPending',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProcessStartCancelled('start'),
     ],
 ];

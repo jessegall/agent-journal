@@ -6,8 +6,11 @@ use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Chat\Events\ChatReconciled;
 use Domain\Chat\Events\ChatReconcileMarked;
+use Domain\Chat\Events\ConversationClosed;
+use Domain\Chat\Events\ConversationTransferred;
 use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Events\MessageReactionAdded;
+use Domain\Chat\Events\MessageReactionWithdrawn;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -43,5 +46,26 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new MessageReactionAdded('inbox', 'message', new ActorIdentity(ActorType::User, 'user')),
+    ],
+    ConversationClosed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Conversation::close',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ConversationClosed('conversation'),
+    ],
+    ConversationTransferred::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Conversation::transferTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ConversationTransferred('conversation', new ActorIdentity(ActorType::User, 'user')),
+    ],
+    MessageReactionWithdrawn::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MessageReaction::withdraw',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MessageReactionWithdrawn('inbox', 'message', new ActorIdentity(ActorType::User, 'user')),
     ],
 ];

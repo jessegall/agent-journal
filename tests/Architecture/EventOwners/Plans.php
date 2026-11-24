@@ -6,6 +6,7 @@ use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Events\PlanCancelled;
+use Domain\Plans\Events\PlanDescribed;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewDecided;
@@ -68,5 +69,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new PlanStarted('plan', ActorContext::forUser('user')),
+    ],
+    PlanDescribed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Plan::describe',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanDescribed('plan', 1),
     ],
 ];

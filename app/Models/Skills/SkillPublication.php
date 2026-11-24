@@ -10,7 +10,9 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\PublicationState;
+use App\Events\SkillPublicationClaimed;
 use App\Events\SkillPublicationMoved;
+use App\Events\SkillPublicationProgressed;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationMissing;
 use App\Exceptions\SkillPublicationStale;
@@ -284,6 +286,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         $this->lease_holder = $holder;
         $this->lease_until = $leaseUntil;
         $this->save();
+        $this->raise(new SkillPublicationClaimed($this->id, $this->fencing_version));
 
         return $this->fencing_version;
     }
@@ -296,6 +299,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         $this->assertHeldBy($fence);
         $this->progress = $filesStaged;
         $this->save();
+        $this->raise(new SkillPublicationProgressed($this->id, $filesStaged));
     }
 
     /**

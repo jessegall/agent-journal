@@ -18,7 +18,13 @@ use App\Enums\RunMode;
 use App\Enums\RunRequestIntent;
 use App\Enums\ShellDialect;
 use App\Enums\Tone;
+use App\Events\ProcessRunConsumed;
+use App\Events\ProcessRunLost;
+use App\Events\ProcessRunMarkedStale;
+use App\Events\ProcessRunOutcomeUserRevoked;
 use App\Events\ProcessRunOutlasted;
+use App\Events\ProcessRunStopped;
+use App\Events\ProcessRunUpdateCounted;
 use App\Exceptions\RetryRefused;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
@@ -202,6 +208,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     {
         $this->stale_reason = $reason;
         $this->save();
+        $this->raise(new ProcessRunMarkedStale($this->id, $reason));
     }
 
     /**
@@ -211,6 +218,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     {
         $this->update_sequence++;
         $this->save();
+        $this->raise(new ProcessRunUpdateCounted($this->id, $this->update_sequence));
 
         return $this->update_sequence;
     }
@@ -237,6 +245,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $this->lifecycle = LifecycleState::Running;
         $this->started_at = $this->consumed_at;
         $this->save();
+        $this->raise(new ProcessRunConsumed($this->id));
 
         return $eventKey;
     }
@@ -280,6 +289,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     {
         $this->lifecycle = LifecycleState::Lost;
         $this->save();
+        $this->raise(new ProcessRunLost($this->id));
     }
 
     public function markStopped(string $reason): void
@@ -287,6 +297,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $this->lifecycle = LifecycleState::Stopped;
         $this->stop_reason = $reason;
         $this->save();
+        $this->raise(new ProcessRunStopped($this->id, $reason));
     }
 
     /**
@@ -296,6 +307,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     {
         $this->outcome_user_id = null;
         $this->save();
+        $this->raise(new ProcessRunOutcomeUserRevoked($this->id));
     }
 
     // ----------[ Answers ]----------
