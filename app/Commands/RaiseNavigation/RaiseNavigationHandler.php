@@ -12,7 +12,7 @@ use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
-use App\Pipelines\NavigationAdmission;
+use App\Values\NavigationAdmission;
 use App\Pipelines\ResolveNavigationAdmissionPipeline;
 use App\Support\ActorIdentity;
 use App\Support\HostRuntimes;

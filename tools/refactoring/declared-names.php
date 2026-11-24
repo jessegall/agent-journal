@@ -52,6 +52,8 @@ function declaredNames(array $files): array
 {
     $parser = new ParserFactory()->createForNewestSupportedVersion();
     $names = [];
+    // The parents of the classes that use each trait: a trait's method overrides what those parents declare.
+    $traitUserParents = [];
 
     foreach ($files as $path) {
         $statements = new NodeTraverser(new NameResolver())->traverse(parsedOnce($parser, $path, (string) file_get_contents($path)));
@@ -64,8 +66,17 @@ function declaredNames(array $files): array
             $typeName = $type->name->toString();
             $owner = $type->namespacedName?->toString() ?? $typeName;
             $parents = parentsOf($type);
+
+            foreach (new NodeFinder()->findInstanceOf($type->stmts, Node\Stmt\TraitUse::class) as $use) {
+                foreach ($use->traits as $trait) {
+                    $traitUserParents[$trait->toString()] = [...$traitUserParents[$trait->toString()] ?? [], ...$parents];
+                }
+            }
+
+            // A class in an action folder acts only when it has a method to call; one with none is the value it carries.
+            $hasPublicMethod = array_any($type->getMethods(), fn ($method) => $method->isPublic() && $method->name->toString() !== '__construct');
             $isActionClass = preg_match(ACTION_FOLDERS, $path) === 1 && ! str_ends_with($typeName, 'Test')
-                && ! ($type instanceof Class_ && $type->isAbstract());
+                && ! ($type instanceof Class_ && $type->isAbstract()) && $hasPublicMethod;
             $typeRole = match (true) {
                 $isActionClass => 'action',
                 $type instanceof Class_ && array_any($parents, fn (string $parent) => str_ends_with($parent, 'Event')) => 'event',
@@ -90,7 +101,28 @@ function declaredNames(array $files): array
         array_push($names, ...localNamesOf($statements, $path));
     }
 
-    return $names;
+    return array_map(fn (DeclaredName $declared) => isTraitOverride($declared, $traitUserParents)
+        ? new DeclaredName($declared->declarationType, $declared->name, $declared->place, 'override', $declared->owner)
+        : $declared, $names);
+}
+
+/**
+ * Whether a method is a model's query scope, which names the rows it narrows to (turnsApplyingSince), not a command.
+ */
+function isQueryScope(Node\Stmt\ClassMethod $method): bool
+{
+    return array_any($method->attrGroups, fn ($group) => array_any($group->attrs, fn ($attribute) => $attribute->name->getLast() === 'Scope'));
+}
+
+/**
+ * Whether a trait's method keeps a name a vendor parent of a class using the trait declares.
+ *
+ * @param  array<string, list<string>>  $traitUserParents
+ */
+function isTraitOverride(DeclaredName $declared, array $traitUserParents): bool
+{
+    return $declared->declarationType === 'method' && isset($traitUserParents[$declared->owner])
+        && overridesVendor(rtrim(substr($declared->name, (int) strpos($declared->name, '::') + 2), '()'), $traitUserParents[$declared->owner]);
 }
 
 /**
@@ -173,7 +205,7 @@ function membersOf(Node $member): array
 {
     return match (true) {
         $member instanceof ClassMethod => [
-            ['method', $member->name->toString().'()', roleOfType($member->returnType, returns: true)],
+            ['method', $member->name->toString().'()', isQueryScope($member) ? 'thing' : roleOfType($member->returnType, returns: true)],
             ...promotedProperties($member),
         ],
         $member instanceof Property => array_map(

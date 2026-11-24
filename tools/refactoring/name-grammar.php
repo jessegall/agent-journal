@@ -99,13 +99,16 @@ function nameFaults(array $names, string $forbiddenWordsFile): array
     $commandVerbs = verbsOf($names, withActionClasses: false);
     $nouns = nounsOf($names);
     $sharedVerbs = sharedActionWordsOf($names);
+    $typeNames = array_fill_keys(array_map(fn (DeclaredName $declared) => $declared->name, array_filter($names, fn (DeclaredName $declared) => $declared->declarationType === 'class')), true);
     $faults = [];
 
     foreach ($names as $declared) {
         $reasons = array_filter([
             forbiddenWordFault($declared, $forbidden),
             betterVerbFault($declared, $betterVerbs),
-            purposeFault($declared, $verbs, $nouns),
+            // A test is named for its subject, which is judged itself: HandManagedSettingsToHostTest.
+            isset($typeNames[preg_replace('/Test$/', '', $declared->name)]) && $declared->name !== preg_replace('/Test$/', '', $declared->name)
+                ? null : purposeFault($declared, $verbs, $nouns),
             actionClassFault($declared, $commandVerbs, $nouns, $sharedVerbs),
             eventFault($declared),
             commandMoodFault($declared, $verbs),
@@ -144,9 +147,7 @@ function forbiddenWordFault(DeclaredName $declared, array $forbidden): ?string
 function betterVerbFault(DeclaredName $declared, array $betterVerbs): ?string
 {
     $first = firstWordOf($declared->name);
-    $isAction = $declared->role === 'action' || $declared->declarationType === 'function';
-
-    return $isAction && isset($betterVerbs[$first]) ? "its verb {$first}: {$betterVerbs[$first]}" : null;
+    return $declared->role === 'action' && isset($betterVerbs[$first]) ? "its verb {$first}: {$betterVerbs[$first]}" : null;
 }
 
 /**
@@ -176,8 +177,10 @@ function purposeFault(DeclaredName $declared, array $verbs, array $nouns): ?stri
         // or when no type is named for its verb: ReplyToMessageCall.
         $after = $words[$at + 1] ?? '';
         $isVerbPhrase = $at === 1 && isset($verbs[$before]) && (! isset($nouns[$before]) || isset($nouns[$after]));
+        // "from a to b" names a mapping between two things (fromRecordToType), not a purpose.
+        $isMapping = in_array('from', array_slice($words, 0, $at), true);
 
-        if ($word === 'to' && $at > 0 && ! $isState && ! $isInterrogative && ! $isVerbPhrase && isset($words[$at + 1], $verbs[$words[$at + 1]])) {
+        if ($word === 'to' && $at > 0 && ! $isState && ! $isInterrogative && ! $isVerbPhrase && ! $isMapping && isset($words[$at + 1], $verbs[$words[$at + 1]])) {
             return "named for what will be done with it ({$words[$at - 1]} to {$words[$at + 1]}): name what it is, "
                 .'a pending, active or waiting one, or its plain noun';
         }
@@ -219,7 +222,9 @@ function sharedActionWordsOf(array $names): array
     $counts = [];
 
     foreach ($names as $declared) {
-        if ($declared->declarationType === 'class' && $declared->role === 'action') {
+        $isInActionFolder = preg_match(ACTION_FOLDERS, $declared->place) === 1 && ! str_ends_with($declared->name, 'Test');
+
+        if ($declared->declarationType === 'class' && $isInActionFolder) {
             $first = firstWordOf($declared->name);
             $counts[$first] = ($counts[$first] ?? 0) + 1;
         }

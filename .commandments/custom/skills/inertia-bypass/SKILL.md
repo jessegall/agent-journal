@@ -1,6 +1,6 @@
 ---
 name: InertiaBypass
-description: Reaching the server from the frontend: an import of the JSON request client (jsonRequests, postJson, getJson, pollJson) or axios in a component or module. Read this before writing one, and when an inertia-bypass finding points here.
+description: Reaching the server from the frontend: an import of the JSON request client (jsonRequests, postJson, fetchJson, pollJson) or axios in a component or module. Read this before writing one, and when an inertia-bypass finding points here.
 summary: Every frontend request goes through Inertia: reads are a page's props, changes are its actions.
 tier: keep-in-mind
 languages: [typescript, vue]

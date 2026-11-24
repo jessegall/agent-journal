@@ -21,7 +21,7 @@ remove_untagged_images() {
 # Images a service of an earlier version left behind, which no container uses any more.
 remove_unused_project_images() {
     local project used_images image
-    project=$(project_name)
+    project=$(read_project_name)
     used_images=$(docker ps --all --format '{{.Image}}')
     for image in $(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep "^$project-"); do
         if ! printf '%s\n' "$used_images" | grep -qx -e "$image" -e "${image%:latest}"; then
@@ -30,7 +30,7 @@ remove_unused_project_images() {
     done
 }
 
-project_name() {
+read_project_name() {
     local configured
     configured="${COMPOSE_PROJECT_NAME:-$(sed -n 's/^COMPOSE_PROJECT_NAME=//p' .env 2>/dev/null | tail -n 1)}"
     echo "${configured:-$(basename "$PWD")}"

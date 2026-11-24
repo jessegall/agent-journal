@@ -9,4 +9,5 @@ namespace Tests\Fixtures\Architecture\Names\Pipes;
  */
 final class StepRunner
 {
+    public function handle(): void {}
 }

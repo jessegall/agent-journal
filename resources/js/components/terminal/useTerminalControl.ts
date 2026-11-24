@@ -1,5 +1,5 @@
 import type { TerminalControlData } from '@generated/types/core';
-import { getJson, JsonRequestFailed, postJson } from '@/framework/jsonRequests';
+import { fetchJson, JsonRequestFailed, postJson } from '@/framework/jsonRequests';
 import { newRequestId } from '@/kit/requestId';
 import {
     cancelPrivateEntry,
@@ -43,7 +43,7 @@ export function terminalControlClientFor(agentId: string): TerminalControlClient
             answered(postJson(submitPrivateInput.url(agentId), { grantId, submissionId, value, sequence })),
         cancelPrivate: (grantId) => answered(postJson(cancelPrivateEntry.url(agentId), { grantId })),
         receipt: (takeId, sequence) =>
-            getJson<TerminalControlData>(terminalControl.url(agentId, { query: { takeId, sequence } })),
+            fetchJson<TerminalControlData>(terminalControl.url(agentId, { query: { takeId, sequence } })),
     };
 }
 

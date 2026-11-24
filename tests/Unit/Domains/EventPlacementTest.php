@@ -9,7 +9,7 @@ use App\Support\Exports as ExportList;
 use App\Support\ExportValidator;
 use App\Support\Reflector;
 use Tests\Fixtures\ExportedEvents\Api\Events\DraftSaved;
-use Tests\Fixtures\ExportedEvents\Support\ReportReady;
+use Tests\Fixtures\ExportedEvents\Support\ReportPrepared;
 use Tests\TestCase;
 
 /**
@@ -23,12 +23,12 @@ final class EventPlacementTest extends TestCase
         $checked = ExportValidator::check(
             'Fixture',
             'Tests\\Fixtures\\ExportedEvents',
-            ExportList::make()->events(ReportReady::class)->build(),
+            ExportList::make()->events(ReportPrepared::class)->build(),
         );
 
-        $this->assertSame([ReportReady::class], $checked->events);
+        $this->assertSame([ReportPrepared::class], $checked->events);
         $this->assertNotContains(DraftSaved::class, $checked->events);
-        $this->assertTrue(Reflector::of(ReportReady::class)->is(Event::class));
+        $this->assertTrue(Reflector::of(ReportPrepared::class)->is(Event::class));
         $this->assertTrue(Reflector::of(DraftSaved::class)->is(Event::class));
     }
 }

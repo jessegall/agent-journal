@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\EventCalls\Plans\Listeners;
 
+use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\Events\TaskClosed;
 
-final class PassesOnEvent
+final class DispatchByClass
 {
     public function handle(TaskClosed $event): void
     {
-        event($event);
+        Event::dispatch(TaskClosed::class, [$event->taskId]);
     }
 }

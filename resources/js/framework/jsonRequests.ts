@@ -42,7 +42,7 @@ export class JsonRequestFailed extends Error {
 /**
  * Reads JSON from a route of the journal, with the session's cookies; an abort signal cancels it.
  */
-export async function getJson<Answer>(
+export async function fetchJson<Answer>(
   url: string,
   signal?: AbortSignal,
 ): Promise<Answer> {

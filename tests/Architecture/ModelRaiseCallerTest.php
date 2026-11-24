@@ -74,7 +74,7 @@ final class ModelRaiseCallerTest extends TestCase
         $this->assertSame([
             self::FIXTURES.'/Console/ShipCommand.php:19 ShipCommand::handle calls Shipment::ship, which raises a fact, '
                 .'from a console command; call it from a command handler or a transaction listener',
-            self::FIXTURES.'/Listeners/CertifiedShipper.php:19 CertifiedShipper::handle calls Shipment::ship, which '
+            self::FIXTURES.'/Listeners/ShipCertified.php:19 ShipCertified::handle calls Shipment::ship, which '
                 .'raises a fact, from a public listener; call it from a command handler or a transaction listener',
         ], $callers->violationsIn([base_path(self::FIXTURES)]));
     }

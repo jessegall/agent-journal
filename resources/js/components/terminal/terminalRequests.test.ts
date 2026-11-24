@@ -106,10 +106,10 @@ function scriptFiles(folder: string): string[] {
 }
 
 describe('the contract files', () => {
-    it('cover every route the frontend reaches with getJson or postJson', () => {
+    it('cover every route the frontend reaches with fetchJson or postJson', () => {
         const folders = ['resources/js', ...readdirSync('domain').map((name) => `domain/${name}/resources/js`)];
         const called = new Set(folders.filter(existsSync).flatMap(scriptFiles).flatMap((file) => [
-            ...readFileSync(file, 'utf8').matchAll(/\b(?:getJson|postJson)(?:<[^>]*>)?\(\s*([A-Za-z]+)\.url\(/g),
+            ...readFileSync(file, 'utf8').matchAll(/\b(?:fetchJson|postJson)(?:<[^>]*>)?\(\s*([A-Za-z]+)\.url\(/g),
         ].map((call) => call[1])));
         const recorded = readdirSync(CONTRACTS).map(
             (file) => (JSON.parse(readFileSync(join(CONTRACTS, file), 'utf8')) as SentRequest).url.split('?')[0],

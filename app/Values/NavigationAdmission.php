@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Pipelines;
+namespace App\Values;
 
 use App\Commands\RaiseNavigation\RaiseNavigationCommand;
 use App\Models\Agents\AgentRuntime;

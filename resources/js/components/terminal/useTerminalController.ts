@@ -1,5 +1,5 @@
 import type { TerminalFrameData, TerminalInterestData } from '@generated/types/core';
-import { getJson, JsonRequestFailed, postJson } from '@/framework/jsonRequests';
+import { fetchJson, JsonRequestFailed, postJson } from '@/framework/jsonRequests';
 import { seconds, timeOfDay } from '@kit/format';
 import { newRequestId } from '@/kit/requestId';
 import {
@@ -50,7 +50,7 @@ export function terminalClientFor(agentId: string): TerminalClient {
             await postJson(closeTerminalInterest.url(agentId), { interest });
         },
         frame: (held, signal) =>
-            getJson<TerminalFrameData>(terminalFrame.url(agentId, { query: held }), signal),
+            fetchJson<TerminalFrameData>(terminalFrame.url(agentId, { query: held }), signal),
     };
 }
 

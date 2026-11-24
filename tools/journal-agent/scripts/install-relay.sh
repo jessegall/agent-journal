@@ -9,7 +9,7 @@ main() {
     umask 077
     target=$(target_name "$downloads") || exit 1
     check_tools
-    root=$(project_root)
+    root=$(find_project_root)
     echo "journal: connecting the project folder $root"
     check_project_folder "$root"
     installation="$HOME/.journal-agent/releases/$version"
@@ -74,7 +74,7 @@ read_digest() {
 }
 
 # The top of the Git checkout this runs in, or the folder itself outside Git.
-project_root() {
+find_project_root() {
     git rev-parse --show-toplevel 2>/dev/null || pwd -P
 }
 

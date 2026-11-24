@@ -113,7 +113,7 @@ function openRow(event: MouseEvent): void {
 // so a state stands in the same column whether or not a meter stands before it.
 const TRAILING_COLUMNS = 2;
 
-function variantOf(row: LayoutRowData): 'single' | 'two' | 'grid' {
+function rowLayoutOf(row: LayoutRowData): 'single' | 'two' | 'grid' {
     if (row.hasColumns) {
         return 'grid';
     }
@@ -153,7 +153,7 @@ function destinationOf(row: LayoutRowData): string | null {
                         <ListRow
                             static
                             :opens="destinationOf(row) !== null"
-                            :variant="variantOf(row)"
+                            :variant="rowLayoutOf(row)"
                             :selected="row.isCurrent"
                             class="flex-1"
                             @click="openRow"

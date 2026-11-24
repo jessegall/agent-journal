@@ -89,7 +89,7 @@ final class TaskCheckTest extends TestCase
         $ownReceipt = strtolower((string) Str::ulid());
         $looseReceipt = strtolower((string) Str::ulid());
 
-        $this->receiptsAre([
+        $this->assertReceipts([
             $ownReceipt => self::passed($ownReceipt, $own),
             $looseReceipt => self::passed($looseReceipt, (string) Str::ulid()),
         ]);
@@ -157,7 +157,7 @@ final class TaskCheckTest extends TestCase
     /**
      * @param  array<string, PublishedResult>  $receipts
      */
-    private function receiptsAre(array $receipts): void
+    private function assertReceipts(array $receipts): void
     {
         $this->app->instance(ResultReceipts::class, new readonly class($receipts) implements ResultReceipts
         {

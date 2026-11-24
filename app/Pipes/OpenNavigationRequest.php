@@ -7,7 +7,7 @@ namespace App\Pipes;
 use App\Contracts\Bus\Pipe;
 use App\Enums\HoldReason;
 use App\Models\Drivers\NavigationRequest;
-use App\Pipelines\NavigationAdmission;
+use App\Values\NavigationAdmission;
 use App\Support\NavigationRaiseAnswer;
 use App\Values\ScriptProgress;
 use Carbon\CarbonImmutable;

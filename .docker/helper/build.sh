@@ -53,7 +53,7 @@ is_archived() {
 }
 
 # Runs a program in the image, with docker run options before the program's name.
-in_image() {
+run_in_image() {
     local options="" program
     while [ "${1#-}" != "$1" ]; do
         options="$options $1"
@@ -65,8 +65,8 @@ in_image() {
 }
 
 check_clients() {
-    in_image claude --version | grep -q "$claude_code"
-    in_image codex --version | grep -q "$codex"
+    run_in_image claude --version | grep -q "$claude_code"
+    run_in_image codex --version | grep -q "$codex"
 }
 
 check_agent_image() {
@@ -80,63 +80,63 @@ check_agent_image() {
 }
 
 check_users() {
-    in_image id -u | grep -qx 10001
-    in_image id journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
+    run_in_image id -u | grep -qx 10001
+    run_in_image id journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
 }
 
 # Root owns what a session must not change: the start programs, the relays and the shell bridge.
 check_protected_files() {
     local protected
-    in_image test -x /opt/journal/bin/journal-check
+    run_in_image test -x /opt/journal/bin/journal-check
     for protected in bin/journal-init bin/journal-exec bin/journal-shell bin/journal-hook bin/journal-mcp shell/bash; do
-        in_image stat -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
+        run_in_image stat -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
     done
 }
 
 # The tools user shares the workspace through its group, and a new history volume belongs to the account's user.
 check_folders() {
-    in_image stat -c '%u:%g %a' /workspace | grep -qx '10001:10010 2770'
-    in_image --mount=type=volume,target=/home/journal/.account/projects stat \
+    run_in_image stat -c '%u:%g %a' /workspace | grep -qx '10001:10010 2770'
+    run_in_image --mount=type=volume,target=/home/journal/.account/projects stat \
         -c '%u:%g %a' /home/journal/.account/projects | grep -qx '10001:10001 700'
 }
 
 check_hook_refusal() {
-    in_image -i --read-only --network=none /opt/journal/bin/journal-hook claude-code \
+    run_in_image -i --read-only --network=none /opt/journal/bin/journal-hook claude-code \
         < .docker/helper/checks/prompt-hook.json | grep -q '"decision":"block"'
 }
 
 # The MCP relay runs as the session's user on a read-only root and answers a frame it cannot pass on with a refusal.
 check_mcp_relay() {
-    in_image -i --read-only --network=none --env=JOURNAL_URL=http://journal.invalid --env=JOURNAL_START_TOKEN=check \
+    run_in_image -i --read-only --network=none --env=JOURNAL_URL=http://journal.invalid --env=JOURNAL_START_TOKEN=check \
         --env=JOURNAL_PROFILE=check --env=JOURNAL_PROFILE_REVISION=1 /opt/journal/bin/journal-mcp \
         < .docker/helper/checks/mcp-initialize.json | grep -q '"code":"unavailable"'
 }
 
 check_sandbox_tools() {
-    in_image bwrap --version >/dev/null
-    in_image socat -V >/dev/null
+    run_in_image bwrap --version >/dev/null
+    run_in_image socat -V >/dev/null
 }
 
 check_absent_programs() {
     local program
     for program in docker journal-agent; do
-        if in_image sh -c "command -v $program" >/dev/null 2>&1; then
+        if run_in_image sh -c "command -v $program" >/dev/null 2>&1; then
             echo "The agent image holds $program: it is refused." >&2
             exit 1
         fi
     done
-    if in_image sh -c "find / -name artisan -not -path '/proc/*' 2>/dev/null | grep -q ."; then
+    if run_in_image sh -c "find / -name artisan -not -path '/proc/*' 2>/dev/null | grep -q ."; then
         echo "The agent image holds the journal's console: it is refused." >&2
         exit 1
     fi
 }
 
 check_runner_image() {
-    in_image id -u | grep -qx 10001
-    in_image --workdir=/app php artisan list >/dev/null
-    in_image --workdir=/app php artisan accounts:run-sign-ins --help >/dev/null
-    in_image sh -c "journal-agent 2>&1 | grep -q 'usage: journal-agent'"
-    if in_image test -e /app/.env; then
+    run_in_image id -u | grep -qx 10001
+    run_in_image --workdir=/app php artisan list >/dev/null
+    run_in_image --workdir=/app php artisan accounts:run-sign-ins --help >/dev/null
+    run_in_image sh -c "journal-agent 2>&1 | grep -q 'usage: journal-agent'"
+    if run_in_image test -e /app/.env; then
         echo "The runner image holds a .env: it is refused." >&2
         exit 1
     fi

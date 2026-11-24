@@ -6,7 +6,7 @@ namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
 use App\Models\Drivers\MenuEntry;
-use App\Pipelines\NavigationAdmission;
+use App\Values\NavigationAdmission;
 use App\Support\NavigationRaiseAnswer;
 
 /**

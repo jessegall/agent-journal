@@ -61,7 +61,7 @@ final class DomainEventCallTest extends TestCase
     {
         $this->assertSame(
             ['13 passes the event it received, $event, on to a raise; only the owner of an event raises it'],
-            $this->violationLines('Plans/Listeners/PassesOnEvent.php'),
+            $this->violationLines('Plans/Listeners/PassOnEvent.php'),
         );
     }
 
@@ -69,7 +69,7 @@ final class DomainEventCallTest extends TestCase
     {
         $this->assertSame(
             ['14 raises Tests\\Fixtures\\Boundary\\EventCalls\\Tasks\\Events\\TaskClosed again, an event of Tasks; only its owner raises it'],
-            $this->violationLines('Plans/Listeners/DispatchesByClass.php'),
+            $this->violationLines('Plans/Listeners/DispatchByClass.php'),
         );
     }
 

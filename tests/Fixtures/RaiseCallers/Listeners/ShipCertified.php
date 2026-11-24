@@ -9,7 +9,7 @@ use Tests\Fixtures\RaiseCallers\Models\Shipment;
 /**
  * The shape of FinishCertifiedJob: a public listener that runs the transition after the commit, outside any unit.
  */
-final readonly class CertifiedShipper
+final readonly class ShipCertified
 {
     /**
      * @param  list<Shipment>  $open

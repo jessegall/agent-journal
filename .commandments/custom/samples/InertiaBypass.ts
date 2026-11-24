@@ -2,14 +2,14 @@
 // @sin InertiaBypassDetector
 import { postJson } from '@kit/jsonRequests';
 // @sin InertiaBypassDetector
-import { getJson } from '@/framework/jsonRequests';
+import { fetchJson } from '@/framework/jsonRequests';
 // @sin InertiaBypassDetector
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
 
 export function caught(url: string): void {
     void postJson(url, {});
-    void getJson(url);
+    void fetchJson(url);
     void axios.get(url);
     // @sin InertiaFetchDetector
     void fetch(url);
