@@ -180,7 +180,7 @@ final class FileWindowTest extends TestCase
     {
         $this->issueLine('the-ticket');
         $binding = (string) $this->redeemLine('the-ticket', self::NONCE)->assertCreated()->json('bindingId');
-        $this->reportClaudeCode(self::NONCE, $binding);
+        $this->notifyClaudeCode(self::NONCE, $binding);
     }
 
     private function readOf(string $path): ProjectRead

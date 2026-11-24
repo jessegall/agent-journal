@@ -32,7 +32,7 @@ final class HostDescriptorsReportTest extends TestCase
         $this->hostCall($host, self::CLAIM)->assertOk();
         $keys = ['claude-code', 'claude-code-headless', 'codex', 'codex-headless'];
 
-        $this->report($host, array_map(fn (string $key) => $this->descriptor($key), $keys))->assertNoContent();
+        $this->notify($host, array_map(fn (string $key) => $this->descriptor($key), $keys))->assertNoContent();
 
         $stored = Host::query()->findOrFail($host->hostId);
         $this->assertSame($keys, array_column($stored->descriptors, 'key'));
@@ -44,7 +44,7 @@ final class HostDescriptorsReportTest extends TestCase
         $host = $this->enrolledHost();
         $this->hostCall($host, self::CLAIM)->assertOk();
 
-        $this->report($host, [
+        $this->notify($host, [
             $this->descriptor('claude-code'),
             $this->descriptor('acme/reader'),
         ])->assertNoContent();
@@ -60,7 +60,7 @@ final class HostDescriptorsReportTest extends TestCase
         $host = $this->enrolledHost();
         $this->hostCall($host, self::CLAIM)->assertOk();
 
-        $this->report($host, [$this->descriptor('claude-code'), $this->descriptor('claude-code')])
+        $this->notify($host, [$this->descriptor('claude-code'), $this->descriptor('claude-code')])
             ->assertStatus(409);
 
         $this->assertSame([], Host::query()->findOrFail($host->hostId)->descriptors);
@@ -69,7 +69,7 @@ final class HostDescriptorsReportTest extends TestCase
     /**
      * @param  list<array<string, mixed>>  $descriptors
      */
-    private function report(EnrolledHost $host, array $descriptors): TestResponse
+    private function notify(EnrolledHost $host, array $descriptors): TestResponse
     {
         return $this->hostCall($host, '/host/reports/descriptors', ['descriptors' => $descriptors]);
     }

@@ -77,7 +77,7 @@ final readonly class StateEventDelivery
         try {
             $this->activity->delivering(fn () => $this->deliverToAudience($dispatch, $advance));
         } catch (Throwable $failure) {
-            $this->reportFailure($dispatch, $stage, $failure);
+            $this->notifyFailure($dispatch, $stage, $failure);
         }
     }
 
@@ -206,7 +206,7 @@ final readonly class StateEventDelivery
         return $effects;
     }
 
-    private function reportFailure(StateEventDispatch $dispatch, StateEventStage $stage, Throwable $failure): void
+    private function notifyFailure(StateEventDispatch $dispatch, StateEventStage $stage, Throwable $failure): void
     {
         $this->log->error('State event delivery failed.', [
             'dispatch' => $dispatch->id,

@@ -27,7 +27,7 @@ interface SignInHost
     /**
      * Records how a claimed sign-in ended, with the identity it signed in as and the reason when it was refused.
      */
-    public function report(
+    public function notify(
         ClaimedSignIn $claimed,
         SignInOutcome $outcome,
         SignInIdentity $identity,
@@ -47,7 +47,7 @@ interface SignInHost
     /**
      * Records the result of a claimed account check.
      */
-    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void;
+    public function notifyCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void;
 
     /**
      * Takes the next account folder cleanup waiting for the host; none when nothing waits.
@@ -64,7 +64,7 @@ interface SignInHost
     /**
      * Records how far a claimed cleanup got, so an unfinished one is tried again.
      */
-    public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void;
+    public function notifyCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void;
 
     /**
      * Whether the attempt is still live in the generation the host runs it in, with the code the user typed, once.

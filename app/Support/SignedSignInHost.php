@@ -54,7 +54,7 @@ final readonly class SignedSignInHost implements SignInHost
         );
     }
 
-    public function report(
+    public function notify(
         ClaimedSignIn $claimed,
         SignInOutcome $outcome,
         SignInIdentity $identity,
@@ -105,7 +105,7 @@ final readonly class SignedSignInHost implements SignInHost
         );
     }
 
-    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void
+    public function notifyCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void
     {
         $body = (string) json_encode(['generation' => $claimed->generation, 'result' => $accountCheck->value]);
         $this->send('profiles.account-host.check', ['account' => $claimed->accountId], $body);
@@ -140,7 +140,7 @@ final readonly class SignedSignInHost implements SignInHost
         );
     }
 
-    public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void
+    public function notifyCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void
     {
         $body = (string) json_encode([
             'generation' => $claimed->generation,

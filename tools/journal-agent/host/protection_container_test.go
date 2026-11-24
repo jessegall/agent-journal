@@ -135,7 +135,7 @@ func TestCodexStaysUnavailableInAContainer(t *testing.T) {
 
 type protectionReports []client.ProtectionReport
 
-func (reports *protectionReports) ReportProtection(_ context.Context, report client.ProtectionReport) error {
+func (reports *protectionReports) NotifyProtection(_ context.Context, report client.ProtectionReport) error {
 	*reports = append(*reports, report)
 
 	return nil
@@ -150,7 +150,7 @@ func TestAContainedHostReportsEachProgramAtTheBuildTheAgentImageHolds(t *testing
 	reports := protectionReports{}
 
 	evidence := NativeEvidence{Folder: t.TempDir()}
-	if err := ReportContainedProtection(context.Background(), daemon, "", evidence, &reports); err != nil {
+	if err := NotifyContainedProtection(context.Background(), daemon, "", evidence, &reports); err != nil {
 		t.Fatal(err)
 	}
 

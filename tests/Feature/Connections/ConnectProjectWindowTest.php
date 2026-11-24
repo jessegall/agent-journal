@@ -70,7 +70,7 @@ final class ConnectProjectWindowTest extends TestCase
     {
         $this->issueLine('the-ticket');
         $binding = (string) $this->redeemLine('the-ticket', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
-        $this->reportClaudeCode('nonce-aaaaaaaaaaaaaaaa', $binding);
+        $this->notifyClaudeCode('nonce-aaaaaaaaaaaaaaaa', $binding);
 
         $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (
             AssertableInertia $page,
@@ -90,7 +90,7 @@ final class ConnectProjectWindowTest extends TestCase
     {
         $this->issueLine('the-ticket');
         $binding = (string) $this->redeemLine('the-ticket', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
-        $this->reportClaudeCode('nonce-aaaaaaaaaaaaaaaa', $binding);
+        $this->notifyClaudeCode('nonce-aaaaaaaaaaaaaaaa', $binding);
         $runtime = '01JAAAAAAAAAAAAAAAAAAAAAAA';
         ProjectBinding::query()->findOrFail($binding)->holdLease($runtime, CarbonImmutable::now()->subMinute());
 

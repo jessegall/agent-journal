@@ -96,10 +96,10 @@ final class SignInHostTest extends TestCase
         $this->assertSame(SignInMethod::OAuth, $this->attempt($attemptId)->method);
         $this->signed($host, '/host/sign-ins/claim')->assertNoContent();
 
-        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
         $this->assertSame(SignInState::Waiting, $this->attempt($attemptId)->state);
         $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
-        $this->report($host, $attemptId, 'verified', $proof)->assertNoContent();
+        $this->notify($host, $attemptId, 'verified', $proof)->assertNoContent();
 
         $this->assertSame(SignInState::Complete, $this->attempt($attemptId)->state);
         $account = Account::query()->withoutGlobalScopes()->sole();
@@ -152,7 +152,7 @@ final class SignInHostTest extends TestCase
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim')->assertOk();
 
-        $this->report($host, $attemptId, 'failed', ['refusal' => 'Invalid API key · Fix external API key'])
+        $this->notify($host, $attemptId, 'failed', ['refusal' => 'Invalid API key · Fix external API key'])
             ->assertNoContent();
 
         $attempt = $this->attempt($attemptId);
@@ -170,7 +170,7 @@ final class SignInHostTest extends TestCase
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim')->assertOk();
 
-        $this->report($other, $attemptId, 'failed')->assertNotFound();
+        $this->notify($other, $attemptId, 'failed')->assertNotFound();
         $this->call('POST', '/host/sign-ins/claim')->assertUnauthorized();
 
         $this->assertSame(SignInState::Starting, $this->attempt($attemptId)->state);
@@ -187,7 +187,7 @@ final class SignInHostTest extends TestCase
         $attemptId = (string) $this->signed($host, '/host/sign-ins/claim')->json('attempt_id');
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?secret-state', 'code' => null];
         $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
-        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
 
         $page = $this->actingAs($owner)->get('/accounts?add=1')->assertOk();
         $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->assertOk();
@@ -231,7 +231,7 @@ final class SignInHostTest extends TestCase
         $host = $this->enrollHost();
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim');
-        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
 
         $this->app->make(SignInChallenges::class)
             ->typeCode($attemptId, 'answer-rolled-back', '1234', CarbonImmutable::now()->addMinutes(5));
@@ -249,11 +249,11 @@ final class SignInHostTest extends TestCase
         $host = $this->enrollHost();
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim');
-        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
         $this->actingAs($this->owner())->withHeader('Idempotency-Key', 'answer-1')
             ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => '1234'])->assertStatus(303);
 
-        $this->report($host, $attemptId, 'interrupted')->assertNoContent();
+        $this->notify($host, $attemptId, 'interrupted')->assertNoContent();
 
         $attempt = $this->attempt($attemptId);
         $this->assertSame(SignInState::Interrupted, $attempt->state);
@@ -281,7 +281,7 @@ final class SignInHostTest extends TestCase
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim')->assertOk();
 
-        $this->report($host, $attemptId, 'failed', ['refusal' => 'stack trace at /home/user/.claude/secret line 3'])
+        $this->notify($host, $attemptId, 'failed', ['refusal' => 'stack trace at /home/user/.claude/secret line 3'])
             ->assertNoContent();
 
         $this->assertSame(SignInRefusal::Unknown->text(), $this->attempt($attemptId)->refusal);
@@ -314,7 +314,7 @@ final class SignInHostTest extends TestCase
         $host = $this->enrollHost();
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim');
-        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
 
         $this->actingAs($owner)->withHeader('Idempotency-Key', 'answer-1')
             ->from('/accounts')
@@ -330,12 +330,12 @@ final class SignInHostTest extends TestCase
         $this->signed($host, '/host/sign-ins/claim');
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
         $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
-        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
         $this->travelTo($this->attempt($attemptId)->expires_at->addSecond());
 
         $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
-        $this->report($host, $attemptId, 'verified', $proof);
-        $this->report($host, $attemptId, 'failed', ['refusal' => 'Too late'])->assertNoContent();
+        $this->notify($host, $attemptId, 'verified', $proof);
+        $this->notify($host, $attemptId, 'failed', ['refusal' => 'Too late'])->assertNoContent();
 
         $attempt = $this->attempt($attemptId);
         $this->assertSame(SignInState::Expired, $attempt->state);
@@ -457,7 +457,7 @@ final class SignInHostTest extends TestCase
     /**
      * @param  array<string, string>  $identity
      */
-    private function report(
+    private function notify(
         EnrolledHost $host,
         string $attemptId,
         string $outcome,

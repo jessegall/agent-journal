@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\ReportDriverTurn\ReportDriverTurnCommand;
+use App\Commands\NotifyDriverTurn\NotifyDriverTurnCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\DriverTurnReportData;
 use App\Values\HostContext;
@@ -19,7 +19,7 @@ final readonly class TurnReportController
     public function __invoke(DriverTurnReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(
-            new ReportDriverTurnCommand(
+            new NotifyDriverTurnCommand(
                 $host->hostId,
                 $report->runtimeId,
                 $report->processGeneration,

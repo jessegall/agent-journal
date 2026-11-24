@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Commands\ReportSignIn\ReportSignInCommand;
+use App\Commands\NotifySignIn\NotifySignInCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SignInReportRequest;
 use App\Values\HostContext;
@@ -17,7 +17,7 @@ final readonly class ReportSignInController
 {
     public function __invoke(SignInReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportSignInCommand(
+        $commands->run(new NotifySignInCommand(
             $host->hostId,
             $request->attemptId(),
             $request->generation(),

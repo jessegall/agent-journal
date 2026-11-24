@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Scripts;
 
 use App\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
-use App\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
+use App\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Enums\ProfileRunState;
 use App\Enums\StepStatus;
 use App\Exceptions\ProfileRunRefused;
@@ -72,15 +72,15 @@ final class ProfileRunTest extends TestCase
         );
         $run->suspendOn(2, 'step-1');
 
-        $this->report($run, 'step-1', StepStatus::Completed);
-        $this->report($run, 'step-1', StepStatus::Failed);
+        $this->notify($run, 'step-1', StepStatus::Completed);
+        $this->notify($run, 'step-1', StepStatus::Failed);
 
         $run->refresh();
         $this->assertSame(ProfileRunState::Running, $run->state);
         $this->assertSame([StepStatus::Completed], $run->results()->get()->map(fn ($result) => $result->status)->all());
         $this->expectException(ProfileRunRefused::class);
 
-        $this->report($run, 'step-2', StepStatus::Completed);
+        $this->notify($run, 'step-2', StepStatus::Completed);
     }
 
     private function context(): ScriptContext
@@ -98,10 +98,10 @@ final class ProfileRunTest extends TestCase
 
     private function answer(bool $dirty): void
     {
-        $this->asSystem(new ReportWorkspaceReadCommand('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3, CommitObservation::notRecorded()));
+        $this->asSystem(new NotifyWorkspaceReadCommand('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3, CommitObservation::notRecorded()));
     }
 
-    private function report(ProfileRun $run, string $step, StepStatus $status): void
+    private function notify(ProfileRun $run, string $step, StepStatus $status): void
     {
         $this->asSystem(new RecordScriptStepResultCommand('host-1', $run->id, $step, $status, 'next', null));
     }

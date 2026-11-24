@@ -115,7 +115,7 @@ func (binder bindingRelay) run(parent context.Context) error {
 
 	idleEnds := func() time.Time { return time.Unix(0, lastWork.Load()).Add(binder.idle) }
 	for sequence := 1; ctx.Err() == nil && time.Now().Before(idleEnds()); sequence++ {
-		receipt, err := journal.ReportPresence(ctx, binder.binding.BindingID, client.PresenceReport{
+		receipt, err := journal.NotifyPresence(ctx, binder.binding.BindingID, client.PresenceReport{
 			BootID: bootID, Sequence: sequence, Release: binder.release,
 			Descriptors:  isolatedDescriptors(),
 			Provisioning: "succeeded", Takeover: sequence == 1,

@@ -23,7 +23,7 @@ type HeartbeatEvidence interface {
 
 // HeartbeatReporter is where a beat goes: the host's signed client, or the journal as the serving loop holds it.
 type HeartbeatReporter interface {
-	ReportHeartbeat(ctx context.Context, report client.LivenessReport) error
+	NotifyHeartbeat(ctx context.Context, report client.LivenessReport) error
 }
 
 // HeartbeatSender reports one runtime's liveness through the host's signed client: once at once, then every 30
@@ -45,7 +45,7 @@ func (sender HeartbeatSender) Run(ctx context.Context) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for sender.Evidence.IsCurrent() {
-		err := sender.Client.ReportHeartbeat(ctx, client.LivenessReport{
+		err := sender.Client.NotifyHeartbeat(ctx, client.LivenessReport{
 			RuntimeID:         sender.RuntimeID,
 			ProcessGeneration: sender.Evidence.ProcessGeneration(),
 			Evidence:          sender.Evidence.Description(),

@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Commands\CancelLaunch\CancelLaunchCommand;
 use App\Commands\CheckStartStatus\CheckStartStatusCommand;
 use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
-use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
+use App\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverOperation;
 use App\Enums\DriverType;
@@ -75,7 +75,7 @@ final class StartIdentityTest extends TestCase
         $this->assertSame([$wake->id], $this->claimedIds($host));
         $this->assertSame(StartReadiness::PreparingIdentity, $record->refresh()->readiness);
 
-        $this->reportApplied($host, $wake, self::CONVERSATION);
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
 
         $this->assertSame([$opened->firstRequestId], $this->claimedIds($host));
         $this->assertSame([], $this->claimedIds($host));
@@ -87,7 +87,7 @@ final class StartIdentityTest extends TestCase
         [$host, $opened, $wake] = $this->startWithMessage();
 
         $bootstrap = $this->claimed($host);
-        $this->reportApplied($host, $wake, self::CONVERSATION);
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
         $after = $this->claimed($host);
 
         $this->assertSame([[$wake->id, true, null]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->bootstrap, $request->message], $bootstrap));
@@ -100,7 +100,7 @@ final class StartIdentityTest extends TestCase
         $this->claimedIds($host);
         $wake->refresh();
 
-        $this->asSystem(new ReportRequestProgressCommand(
+        $this->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,
@@ -124,7 +124,7 @@ final class StartIdentityTest extends TestCase
         $record->markIdentityUncertain();
         $this->claimedIds($host);
 
-        $this->reportApplied($host, $wake, 'conversation-2');
+        $this->notifyApplied($host, $wake, 'conversation-2');
 
         $this->assertSame(
             [StartReadiness::Refused, HostRefusal::IdentityMismatch->value],
@@ -143,7 +143,7 @@ final class StartIdentityTest extends TestCase
         $this->claimedIds($host);
         $record->refuseFor(HostRefusal::IdentityMismatch);
 
-        $this->reportApplied($host, $wake, self::CONVERSATION);
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
 
         $this->assertSame([StartReadiness::Refused, null], [$record->refresh()->readiness, $record->native_id]);
         $this->assertSame([], $this->claimedIds($host));
@@ -157,7 +157,7 @@ final class StartIdentityTest extends TestCase
         $this->assertTrue($this->checkStatus($record));
         $this->assertTrue($this->checkStatus($record));
         $check = $this->claimed($host);
-        $this->reportApplied($host, $wake, self::CONVERSATION);
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
         $this->answerCheck($host, $check[0]->requestId, RequestProgress::Applied);
 
         $this->assertSame([DriverOperation::ResendReadiness->value], array_map(fn (ClaimedRequest $request) => $request->operation, $check));
@@ -170,7 +170,7 @@ final class StartIdentityTest extends TestCase
     {
         [$host, , $wake, $record] = $this->startWithMessage();
         $this->claimedIds($host);
-        $this->reportApplied($host, $wake, self::CONVERSATION);
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
         $readiness = $record->refresh()->readiness;
 
         $this->assertTrue($this->checkStatus($record));
@@ -224,7 +224,7 @@ final class StartIdentityTest extends TestCase
         RequestProgress $progress,
         HostWakeRefusal|null $refusal = null,
     ): void {
-        $this->asSystem(new ReportRequestProgressCommand(
+        $this->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $requestId,
             DriverRequest::query()->findOrFail($requestId)->attempt_version,
@@ -248,7 +248,7 @@ final class StartIdentityTest extends TestCase
             'cancel-1',
         ));
 
-        $this->reportApplied($host, $wake, self::CONVERSATION);
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
 
         $this->assertSame([StartReadiness::Cancelled, null], [$record->refresh()->readiness, $record->native_id]);
         $this->assertNotContains($opened->firstRequestId, $this->claimedIds($host));
@@ -296,10 +296,10 @@ final class StartIdentityTest extends TestCase
         return $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()))->requests;
     }
 
-    private function reportApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void
+    private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void
     {
         $wake->refresh();
-        $this->asSystem(new ReportRequestProgressCommand(
+        $this->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,
@@ -307,7 +307,7 @@ final class StartIdentityTest extends TestCase
             null,
             null,
         ));
-        $this->asSystem(new ReportRequestProgressCommand(
+        $this->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,

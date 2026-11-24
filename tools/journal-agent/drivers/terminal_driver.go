@@ -119,8 +119,8 @@ func (driver *TerminalDriver) Finished() <-chan contracts.TurnEnd {
 	return current.ended
 }
 
-// ReportProgressTo sends every step a key script confirms to the receiver.
-func (driver *TerminalDriver) ReportProgressTo(receiver func(keyscripts.Progress)) {
+// NotifyProgressTo sends every step a key script confirms to the receiver.
+func (driver *TerminalDriver) NotifyProgressTo(receiver func(keyscripts.Progress)) {
 	driver.runtime.Progress.SendTo(receiver)
 }
 

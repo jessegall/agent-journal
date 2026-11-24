@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipelines;
 
 use App\Contracts\Bus\PipelineDefinition;
-use App\Pipes\ReportAnswer;
+use App\Pipes\NotifyAnswer;
 use App\Pipes\SendCall;
 use App\Values\CallToSend;
 use App\Values\CommandReport;
@@ -25,7 +25,7 @@ final readonly class RunSignedCallPipeline implements PipelineDefinition
     {
         return [
             SendCall::class,
-            ReportAnswer::class,
+            NotifyAnswer::class,
         ];
     }
 }

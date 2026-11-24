@@ -69,7 +69,7 @@ func TestAScreenReportPostsTheFrameToTheScreenRoute(t *testing.T) {
 	journal, target, body := fakeJournal(t, `{"status":"accepted"}`)
 	frame := screen.Frame{Epoch: "epoch", Sequence: 7, Columns: 20, Rows: [][]screen.Run{{{Text: "hello"}}}}
 
-	if err := journal.ReportScreen(context.Background(), "runtime-1", frame); err != nil {
+	if err := journal.NotifyScreen(context.Background(), "runtime-1", frame); err != nil {
 		t.Fatal(err)
 	}
 
@@ -91,7 +91,7 @@ func TestAScreenReportPostsTheFrameToTheScreenRoute(t *testing.T) {
 func TestARefusedScreenReportIsToldApartFromAFailure(t *testing.T) {
 	journal, _, _ := fakeJournal(t, `{"status":"refused","reason":"nobody watches this runtime"}`)
 
-	err := journal.ReportScreen(context.Background(), "runtime-1", screen.Frame{})
+	err := journal.NotifyScreen(context.Background(), "runtime-1", screen.Frame{})
 
 	var refused ScreenRefused
 	if !errors.As(err, &refused) || refused.Reason != "nobody watches this runtime" {
@@ -138,7 +138,7 @@ func TestAProjectReadReportPostsTheAnswerToItsRead(t *testing.T) {
 	size := int64(13)
 
 	report := ProjectReadReport{Text: &text, Digest: strings.Repeat("a", 64), Size: &size}
-	if err := journal.ReportProjectRead(context.Background(), "read-1", report); err != nil {
+	if err := journal.NotifyProjectRead(context.Background(), "read-1", report); err != nil {
 		t.Fatal(err)
 	}
 

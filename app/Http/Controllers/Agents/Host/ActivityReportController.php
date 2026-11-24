@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\ReportRuntimeActivity\ReportRuntimeActivityCommand;
+use App\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RuntimeActivityReportData;
 use App\Values\HostContext;
@@ -19,7 +19,7 @@ final readonly class ActivityReportController
     public function __invoke(RuntimeActivityReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(
-            new ReportRuntimeActivityCommand(
+            new NotifyRuntimeActivityCommand(
                 $host->hostId,
                 $report->runtimeId,
                 $report->activity,

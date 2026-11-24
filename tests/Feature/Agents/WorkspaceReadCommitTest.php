@@ -49,9 +49,9 @@ final class WorkspaceReadCommitTest extends TestCase
         $host = $this->enrolledHost();
         $read = $this->retained('read-1');
 
-        $this->report($host, 'read-1', ['binding' => 'binding-1', 'checkout' => 'main', 'head' => self::HEAD])
+        $this->notify($host, 'read-1', ['binding' => 'binding-1', 'checkout' => 'main', 'head' => self::HEAD])
             ->assertNoContent();
-        $this->report($host, 'read-1', ['binding' => 'binding-1', 'checkout' => 'main', 'head' => str_repeat('b', 40)])
+        $this->notify($host, 'read-1', ['binding' => 'binding-1', 'checkout' => 'main', 'head' => str_repeat('b', 40)])
             ->assertNoContent();
 
         $commit = $this->commitOf($read);
@@ -65,9 +65,9 @@ final class WorkspaceReadCommitTest extends TestCase
         $unborn = $this->retained('read-unborn');
         $old = $this->retained('read-old');
 
-        $this->report($host, 'read-unborn', ['binding' => 'binding-1', 'checkout' => 'main', 'reason' => CommitObservation::UNBORN])
+        $this->notify($host, 'read-unborn', ['binding' => 'binding-1', 'checkout' => 'main', 'reason' => CommitObservation::UNBORN])
             ->assertNoContent();
-        $this->report($host, 'read-old', [])->assertNoContent();
+        $this->notify($host, 'read-old', [])->assertNoContent();
 
         $this->assertSame([true, CommitObservation::UNBORN], [$this->commitOf($unborn)->isRecorded(), $this->commitOf($unborn)->reason]);
         $this->assertFalse($this->commitOf($unborn)->authorizesCommitDispatch());
@@ -83,7 +83,7 @@ final class WorkspaceReadCommitTest extends TestCase
     /**
      * @param  array<string, mixed>  $commit
      */
-    private function report(EnrolledHost $host, string $reference, array $commit): TestResponse
+    private function notify(EnrolledHost $host, string $reference, array $commit): TestResponse
     {
         return $this->hostCall($host, "/host/workspace-reads/{$reference}", [
             'available' => true,

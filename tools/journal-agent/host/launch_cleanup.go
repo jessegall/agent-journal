@@ -240,7 +240,7 @@ func SweepOrphans(
 // CleanupJournal is the journal's side of launch cleanups: the ones this host still owes, and each pass's report.
 type CleanupJournal interface {
 	PendingCleanups(ctx context.Context, answer any) error
-	ReportCleanup(ctx context.Context, sessionID string, report any) error
+	NotifyCleanup(ctx context.Context, sessionID string, report any) error
 }
 
 // RunPending makes one pass over every cleanup the journal says this host owes and reports each; a pass that
@@ -253,7 +253,7 @@ func (cleanup LaunchCleanup) RunPending(ctx context.Context, journal CleanupJour
 		return err
 	}
 	for _, pending := range answer.Pending {
-		if err := journal.ReportCleanup(ctx, pending.SessionID, cleanup.CleanUp(ctx, pending)); err != nil {
+		if err := journal.NotifyCleanup(ctx, pending.SessionID, cleanup.CleanUp(ctx, pending)); err != nil {
 			return err
 		}
 	}

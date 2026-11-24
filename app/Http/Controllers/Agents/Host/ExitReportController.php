@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\ReportRuntimeExit\ReportRuntimeExitCommand;
+use App\Commands\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RuntimeLivenessReportData;
 use App\Values\HostContext;
@@ -19,7 +19,7 @@ final readonly class ExitReportController
     public function __invoke(RuntimeLivenessReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(
-            new ReportRuntimeExitCommand(
+            new NotifyRuntimeExitCommand(
                 $host->hostId,
                 $report->runtimeId,
                 $report->processGeneration,

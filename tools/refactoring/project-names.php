@@ -118,12 +118,13 @@ function goNames(array $files): array
 }
 
 /**
- * The block a Go line leaves open: a struct's fields, or a grouped const or var.
+ * The block a Go line leaves open: a struct's fields, an interface's methods, or a grouped const or var.
  */
 function goBlockAfter(string $line, ?string $block): ?string
 {
     return match (true) {
         preg_match('/^type \w+ struct \{$/', $line) === 1 => 'property',
+        preg_match('/^type \w+ interface \{$/', $line) === 1 => 'interface',
         preg_match('/^const \($/', $line) === 1 => 'constant',
         preg_match('/^var \($/', $line) === 1 => 'variable',
         $line === '}' || $line === ')' => null,
@@ -151,7 +152,13 @@ function goDeclaration(string $line, ?string $block, string $place): array
         return [new DeclaredName($match[1] === 'const' ? 'constant' : 'variable', $match[2], $place)];
     }
 
-    if ($block !== null && preg_match('/^\t(\w+)\s+\S/', $line, $match) === 1 && $match[1] !== 'return') {
+    if ($block === 'interface' && preg_match('/^\t(\w+)\(/', $line, $match, PREG_OFFSET_CAPTURE) === 1) {
+        $returns = goReturnsOf(substr($line, $match[0][1] + strlen($match[0][0]) - 1));
+
+        return [new DeclaredName('method', $match[1][0], $place, goRoleOf($returns), 'interface')];
+    }
+
+    if ($block !== null && $block !== 'interface' && preg_match('/^\t(\w+)\s+\S/', $line, $match) === 1 && $match[1] !== 'return') {
         return [new DeclaredName($block, $match[1], $place)];
     }
 

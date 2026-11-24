@@ -68,8 +68,8 @@ final class UsageReportTest extends TestCase
         $first = $this->claimedStart($this->account);
         $second = $this->claimedStart($other);
 
-        $this->report($first, 'result-1', ['type' => 'result_cost', 'usd' => '0.25'])->assertNoContent();
-        $this->report($second, 'window-1', [
+        $this->notify($first, 'result-1', ['type' => 'result_cost', 'usd' => '0.25'])->assertNoContent();
+        $this->notify($second, 'window-1', [
             'type' => 'window',
             'limit_id' => 'claude',
             'slot' => 'seven_day',
@@ -87,7 +87,7 @@ final class UsageReportTest extends TestCase
         $key = $this->claimedStart($this->account);
         $stranger = $this->enrolledHost();
 
-        $answer = $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '1'], $stranger);
+        $answer = $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '1'], $stranger);
 
         $answer->assertNotFound();
         $this->assertStringNotContainsString($this->account->id, (string) $answer->getContent());
@@ -98,11 +98,11 @@ final class UsageReportTest extends TestCase
     {
         $key = $this->claimedStart($this->account);
         Event::fake([AccountUsageChanged::class]);
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
+        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
         Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
 
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.6'])->assertConflict();
+        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
+        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.6'])->assertConflict();
 
         Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
         $this->assertSame(1, AccountUsageCost::query()->withoutGlobalScopes()->count());
@@ -113,8 +113,8 @@ final class UsageReportTest extends TestCase
         $key = $this->claimedStart($this->account);
         Event::fake([AccountsChanged::class]);
 
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
+        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
+        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
 
         Event::assertDispatchedTimes(AccountsChanged::class, 1);
         Event::assertDispatched(
@@ -128,8 +128,8 @@ final class UsageReportTest extends TestCase
         $key = $this->claimedStart($this->account, ProcessStartState::Stopped);
         DB::table('accounts')->where('id', $this->account->id)->increment('sign_in_generation');
 
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '2'])->assertNoContent();
-        $this->report($key, 'window-1', ['type' => 'window', 'limit_id' => 'claude', 'slot' => 'five_hour'])
+        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '2'])->assertNoContent();
+        $this->notify($key, 'window-1', ['type' => 'window', 'limit_id' => 'claude', 'slot' => 'five_hour'])
             ->assertNoContent();
 
         $cost = AccountUsageCost::query()->withoutGlobalScopes()->sole();
@@ -142,7 +142,7 @@ final class UsageReportTest extends TestCase
         $key = $this->claimedStart($this->account);
         DB::table('accounts')->where('id', $this->account->id)->update(['state' => 'removed']);
 
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '1'])->assertNotFound();
+        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '1'])->assertNotFound();
 
         $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
     }
@@ -151,11 +151,11 @@ final class UsageReportTest extends TestCase
     {
         $key = $this->claimedStart($this->account);
 
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.0000000000001'])->assertUnprocessable();
-        $this->report($key, 'result-2', ['type' => 'window', 'limit_id' => 'claude', 'slot' => 'week'])
+        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.0000000000001'])->assertUnprocessable();
+        $this->notify($key, 'result-2', ['type' => 'window', 'limit_id' => 'claude', 'slot' => 'week'])
             ->assertUnprocessable();
         $future = CarbonImmutable::now()->addHour()->toAtomString();
-        $this->report($key, 'result-3', ['type' => 'result_cost', 'usd' => '1'], observedAt: $future)
+        $this->notify($key, 'result-3', ['type' => 'result_cost', 'usd' => '1'], observedAt: $future)
             ->assertUnprocessable();
 
         $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
@@ -164,7 +164,7 @@ final class UsageReportTest extends TestCase
     /**
      * @param  array<string, mixed>  $measurement
      */
-    private function report(
+    private function notify(
         string $key,
         string $source,
         array $measurement,

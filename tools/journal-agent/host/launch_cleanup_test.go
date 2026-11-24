@@ -156,7 +156,7 @@ func (journal *cleanupJournal) PendingCleanups(_ context.Context, answer any) er
 	return json.Unmarshal(listed, answer)
 }
 
-func (journal *cleanupJournal) ReportCleanup(_ context.Context, sessionID string, report any) error {
+func (journal *cleanupJournal) NotifyCleanup(_ context.Context, sessionID string, report any) error {
 	journal.reports[sessionID] = report.(CleanupReport)
 	return nil
 }

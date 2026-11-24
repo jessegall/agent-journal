@@ -129,7 +129,7 @@ func holdContract(t *testing.T, name string, sent any) {
 // recordedReports keeps the protection reports a host would send the journal.
 type recordedReports struct{ reports []client.ProtectionReport }
 
-func (recorded *recordedReports) ReportProtection(_ context.Context, report client.ProtectionReport) error {
+func (recorded *recordedReports) NotifyProtection(_ context.Context, report client.ProtectionReport) error {
 	recorded.reports = append(recorded.reports, report)
 
 	return nil
@@ -141,7 +141,7 @@ func TestScenarioTheHostReportsTheProtectionOfTheAgentImage(t *testing.T) {
 	containers, _ := scenarioDaemon(t, "sha256:image")
 	sent := &recordedReports{}
 
-	err := host.ReportContainedProtection(context.Background(), containers, "", host.NativeEvidence{Folder: t.TempDir()}, sent)
+	err := host.NotifyContainedProtection(context.Background(), containers, "", host.NativeEvidence{Folder: t.TempDir()}, sent)
 
 	if err != nil {
 		t.Fatal(err)
@@ -342,27 +342,27 @@ type recordingJournal struct {
 	exits    chan client.LivenessReport
 }
 
-func (journal recordingJournal) ReportRequest(_ context.Context, report client.RequestReport) error {
+func (journal recordingJournal) NotifyRequest(_ context.Context, report client.RequestReport) error {
 	journal.requests <- report
 
 	return nil
 }
 
-func (journal recordingJournal) ReportActivity(context.Context, client.ActivityReport) error {
+func (journal recordingJournal) NotifyActivity(context.Context, client.ActivityReport) error {
 	return nil
 }
 
-func (journal recordingJournal) ReportExit(_ context.Context, report client.LivenessReport) error {
+func (journal recordingJournal) NotifyExit(_ context.Context, report client.LivenessReport) error {
 	journal.exits <- report
 
 	return nil
 }
 
-func (recordingJournal) ReportHeartbeat(context.Context, client.LivenessReport) error { return nil }
+func (recordingJournal) NotifyHeartbeat(context.Context, client.LivenessReport) error { return nil }
 
-func (recordingJournal) ReportReplayed(context.Context, string, string, string) error { return nil }
+func (recordingJournal) NotifyReplayed(context.Context, string, string, string) error { return nil }
 
-func (recordingJournal) ReportStale(context.Context, string, client.EntryStaleReport) error {
+func (recordingJournal) NotifyStale(context.Context, string, client.EntryStaleReport) error {
 	return nil
 }
 
@@ -467,14 +467,14 @@ func TestAClaimedRuntimeIsReportedRunningWhenItOpensAndStoppedWhenItEndsAndOneTh
 		t.Fatal("a runtime that did not open gave no error")
 	}
 	for _, runtimeID := range []string{"runtime-1", "runtime-2"} {
-		if err := journal.ReportExit(context.Background(), client.LivenessReport{RuntimeID: runtimeID}); err != nil {
+		if err := journal.NotifyExit(context.Background(), client.LivenessReport{RuntimeID: runtimeID}); err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	want := []host.StartReport{
-		{StartKey: "start-1", Kind: host.ReportRunning, Execution: "runtime-1:3"},
-		{StartKey: "start-1", Kind: host.ReportStopped},
+		{StartKey: "start-1", Kind: host.NotifyRunning, Execution: "runtime-1:3"},
+		{StartKey: "start-1", Kind: host.NotifyStopped},
 	}
 	if !slices.Equal(reported, want) {
 		t.Fatalf("the starts were reported %+v", reported)

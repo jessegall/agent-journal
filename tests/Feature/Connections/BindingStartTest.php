@@ -131,7 +131,7 @@ final class BindingStartTest extends TestCase
     {
         $binding = $this->connected('the-ticket', self::NONCE);
         $silent = $this->redeemed('other-ticket', 'nonce-bbbbbbbbbbbbbbbb');
-        $this->reportPresence('nonce-bbbbbbbbbbbbbbbb', $silent->id, []);
+        $this->notifyPresence('nonce-bbbbbbbbbbbbbbbb', $silent->id, []);
 
         $codex = $this->start($binding, ['driver' => 'codex'])->assertForbidden();
         $unreported = $this->signedStart('nonce-bbbbbbbbbbbbbbbb', $silent, [])->assertForbidden();
@@ -180,7 +180,7 @@ final class BindingStartTest extends TestCase
     private function connected(string $ticket, string $nonce): ProjectBinding
     {
         $binding = $this->redeemed($ticket, $nonce);
-        $this->reportClaudeCode($nonce, $binding->id);
+        $this->notifyClaudeCode($nonce, $binding->id);
 
         return $binding;
     }

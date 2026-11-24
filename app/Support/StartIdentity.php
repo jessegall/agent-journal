@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
+use App\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\HostRefusal;
 use App\Enums\RequestProgress;
 use App\Models\Agents\AgentRuntime;
@@ -18,7 +18,7 @@ use App\Models\Starts\StartRecord;
  */
 final readonly class StartIdentity
 {
-    public function settle(AgentRuntime $runtime, ReportRequestProgressCommand $report): void
+    public function settle(AgentRuntime $runtime, NotifyRequestProgressCommand $report): void
     {
         StartRecord::lockedLatestOf($runtime->agent_session_id)
             ->filter(fn (StartRecord $record) => $record->readiness->takesReadiness())
@@ -28,7 +28,7 @@ final readonly class StartIdentity
     private function settleRecord(
         StartRecord $record,
         AgentRuntime $runtime,
-        ReportRequestProgressCommand $report,
+        NotifyRequestProgressCommand $report,
     ): void {
         if ($report->progress === RequestProgress::DeliveryUncertain) {
             $record->markIdentityUncertain();

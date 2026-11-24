@@ -83,13 +83,13 @@ use App\Commands\ReleaseSignInAgain\ReleaseSignInAgainCommand;
 use App\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
 use App\Commands\ReplayAssessment\ReplayAssessmentCommand;
 use App\Commands\ReplyToAsk\ReplyToAskCommand;
-use App\Commands\ReportCleanup\ReportCleanupCommand;
-use App\Commands\ReportFailure\ReportFailureCommand;
-use App\Commands\ReportProjectRead\ReportProjectReadCommand;
-use App\Commands\ReportRunning\ReportRunningCommand;
-use App\Commands\ReportSignIn\ReportSignInCommand;
-use App\Commands\ReportStopped\ReportStoppedCommand;
-use App\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
+use App\Commands\NotifyCleanup\NotifyCleanupCommand;
+use App\Commands\NotifyFailure\NotifyFailureCommand;
+use App\Commands\NotifyProjectRead\NotifyProjectReadCommand;
+use App\Commands\NotifyRunning\NotifyRunningCommand;
+use App\Commands\NotifySignIn\NotifySignInCommand;
+use App\Commands\NotifyStopped\NotifyStoppedCommand;
+use App\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\RequestProjectRead\RequestProjectReadCommand;
 use App\Commands\ResolveMergeAttempt\ResolveMergeAttemptCommand;
 use App\Commands\RestoreCommandRule\RestoreCommandRuleCommand;
@@ -161,17 +161,17 @@ final class CoreCommandsTest extends CommandBusTestCase
             HoldAgentStackCommand::class,
             MergeReviewedWorkCommand::class,
             OfferNextAskCommand::class,
-            ReportRunningCommand::class,
-            ReportStoppedCommand::class,
+            NotifyRunningCommand::class,
+            NotifyStoppedCommand::class,
             RecordStopResultsCommand::class,
-            ReportFailureCommand::class,
+            NotifyFailureCommand::class,
             ReconcileStartsCommand::class,
             RecordHostProtectionCommand::class,
             RecordHostDescriptorsCommand::class,
-            ReportCleanupCommand::class,
-            ReportWorkspaceReadCommand::class,
+            NotifyCleanupCommand::class,
+            NotifyWorkspaceReadCommand::class,
             ClaimProjectReadsCommand::class,
-            ReportProjectReadCommand::class,
+            NotifyProjectReadCommand::class,
             RequestProjectReadCommand::class,
             RecordScriptStepResultCommand::class,
             PublishSignInChallengeCommand::class,
@@ -185,7 +185,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             ClaimAccountCheckCommand::class,
             CheckAccountCommand::class,
             ClaimSignInCommand::class,
-            ReportSignInCommand::class,
+            NotifySignInCommand::class,
             CompleteSignInCommand::class,
             ExpireSignInAttemptCommand::class,
             ReleaseAccountRemovalCommand::class,

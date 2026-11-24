@@ -142,9 +142,9 @@ func (owner *CodexOwner) initialize(ctx context.Context) error {
 	return nil
 }
 
-// ReportWindowsTo makes the usage of the latest start on the owner take the account's limit windows; the first
+// NotifyWindowsTo makes the usage of the latest start on the owner take the account's limit windows; the first
 // start on a ChatGPT owner also asks for them once.
-func (owner *CodexOwner) ReportWindowsTo(usage CodexUsage) {
+func (owner *CodexOwner) NotifyWindowsTo(usage CodexUsage) {
 	owner.mutex.Lock()
 	owner.windows = usage
 	asks := owner.hasLimits() && !owner.limitsAsked
@@ -181,7 +181,7 @@ func (owner *CodexOwner) readRateLimits() {
 	if stale {
 		return
 	}
-	owner.reportWindows(readCodexWindows(answer))
+	owner.notifyWindows(readCodexWindows(answer))
 }
 
 // retryRateLimits asks for the limits again once after a failed read, on the owner's normal activity.
@@ -282,13 +282,13 @@ func (owner *CodexOwner) route(notification CodexNotification) {
 		owner.mutex.Lock()
 		owner.limitUpdates++
 		owner.mutex.Unlock()
-		owner.reportWindows(readCodexWindows(notification.Params))
+		owner.notifyWindows(readCodexWindows(notification.Params))
 	case "thread/tokenUsage/updated":
-		owner.reportThreadCount(notification.Params)
+		owner.notifyThreadCount(notification.Params)
 	}
 }
 
-func (owner *CodexOwner) reportWindows(readings []WindowReading) {
+func (owner *CodexOwner) notifyWindows(readings []WindowReading) {
 	owner.mutex.Lock()
 	usage := owner.windows
 	owner.mutex.Unlock()
@@ -302,8 +302,8 @@ func (owner *CodexOwner) reportWindows(readings []WindowReading) {
 	})
 }
 
-// reportThreadCount hands on the token count of a thread the owner knows; any other thread's is dropped.
-func (owner *CodexOwner) reportThreadCount(params json.RawMessage) {
+// notifyThreadCount hands on the token count of a thread the owner knows; any other thread's is dropped.
+func (owner *CodexOwner) notifyThreadCount(params json.RawMessage) {
 	count, ok := readCodexThreadCount(params)
 	if !ok {
 		return

@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Commands\ClaimStart\ClaimStartCommand;
 use App\Commands\EnrollHost\EnrollHostCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\ReportStopped\ReportStoppedCommand;
+use App\Commands\NotifyStopped\NotifyStoppedCommand;
 use App\Commands\RetireAgent\RetireAgentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -105,7 +105,7 @@ final class AccountMaintenanceTest extends TestCase
         $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $pending->sessionId)));
         $this->assertRefusedWhileHeld($host);
 
-        $this->asSystem(new ReportStoppedCommand($host->hostId, (string) $key));
+        $this->asSystem(new NotifyStoppedCommand($host->hostId, (string) $key));
         $this->actAsOwner();
 
         $this->assertTrue($this->maintenance()->advance($this->account->id)->settled);

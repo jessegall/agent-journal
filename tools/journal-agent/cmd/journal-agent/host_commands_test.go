@@ -112,7 +112,7 @@ func TestAKeyScriptOfAServedTerminalRunsOnTheLiveScreenAndGate(t *testing.T) {
 	driver := terminalDriverOf(profiles.ClaudeCode{}, opened, client.RuntimeStart{ProcessGeneration: 3, Limits: journalLimits}, "conversation-1")
 	var mutex sync.Mutex
 	var steps []string
-	driver.ReportProgressTo(func(progress keyscripts.Progress) {
+	driver.NotifyProgressTo(func(progress keyscripts.Progress) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		steps = append(steps, progress.Name)

@@ -310,12 +310,12 @@ func TestATerminalTurnEndsWhenItsComposerIsEmptyAndStillAgain(t *testing.T) {
 
 func TestAKeyScriptStepGoesToTheReceiverTheLoopSet(t *testing.T) {
 	relay := &ProgressRelay{}
-	relay.Report(keyscripts.Progress{Step: 0, Name: "before anyone listens"})
+	relay.Notify(keyscripts.Progress{Step: 0, Name: "before anyone listens"})
 	var received []string
 	driver := NewTerminalDriver(TerminalRuntime{Limits: journalLimits, Progress: relay, ProcessGeneration: 2})
 
-	driver.ReportProgressTo(func(progress keyscripts.Progress) { received = append(received, progress.Name) })
-	relay.Report(keyscripts.Progress{Step: 1, Name: "type /model"})
+	driver.NotifyProgressTo(func(progress keyscripts.Progress) { received = append(received, progress.Name) })
+	relay.Notify(keyscripts.Progress{Step: 1, Name: "type /model"})
 
 	if len(received) != 1 || received[0] != "type /model" || driver.Generation() != 2 {
 		t.Fatalf("the receiver got %q in generation %d", received, driver.Generation())

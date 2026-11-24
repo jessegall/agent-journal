@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\ReportEntryReplayed\ReportEntryReplayedCommand;
+use App\Commands\NotifyEntryReplayed\NotifyEntryReplayedCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\EntryReplayedData;
 use App\Values\HostContext;
@@ -23,7 +23,7 @@ final readonly class ReplayedEntryController
         CommandBus $commands,
     ): Response {
         $commands->run(
-            new ReportEntryReplayedCommand($host->hostId, $entry, $replayed->runtimeId, $replayed->operationKey),
+            new NotifyEntryReplayedCommand($host->hostId, $entry, $replayed->runtimeId, $replayed->operationKey),
         );
 
         return new Response(status: Response::HTTP_NO_CONTENT);

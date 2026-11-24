@@ -47,8 +47,8 @@ func (client *Client) PendingStopAttempts(ctx context.Context) ([]PendingStopAtt
 	return answer.Attempts, client.read(ctx, "/host/stop-attempts", &answer)
 }
 
-// ReportStopResults submits every result of one attempt at once and answers the state they settled it in.
-func (client *Client) ReportStopResults(
+// NotifyStopResults submits every result of one attempt at once and answers the state they settled it in.
+func (client *Client) NotifyStopResults(
 	ctx context.Context,
 	attempt PendingStopAttempt,
 	results []StopConditionResult,

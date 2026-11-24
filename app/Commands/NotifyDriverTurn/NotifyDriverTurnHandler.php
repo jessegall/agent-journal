@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\NotifyDriverTurn;
+
+use App\Contracts\Bus\CommandHandler;
+use App\Enums\HoldReason;
+use App\Enums\RuntimeActivity;
+use App\Exceptions\HostReportRefused;
+use App\Models\Drivers\DriverTurn;
+use App\Support\HostRuntimes;
+use App\Support\WaitingBatches;
+use Carbon\CarbonImmutable;
+
+final readonly class NotifyDriverTurnHandler implements CommandHandler
+{
+    public function __construct(private HostRuntimes $runtimes, private WaitingBatches $batches) {}
+
+    /**
+     * A started turn sets the runtime Running; a finished one closes the turn and sets it Idle.
+     */
+    public function handle(NotifyDriverTurnCommand $command): void
+    {
+        $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
+        $now = CarbonImmutable::now();
+
+        $turn = DriverTurn::recordStart($runtime->id, $command->processGeneration, $command->nativePromptId, $now);
+        $this->batches->bindTo($runtime->agent_session_id, $command->processGeneration, $turn->id);
+
+        $activity = $command->finished ? RuntimeActivity::Idle : RuntimeActivity::Running;
+
+        if (! $runtime->recordObservation($activity, HoldReason::None, $command->processGeneration, $now)) {
+            throw HostReportRefused::staleGeneration(
+                $runtime->id,
+                $command->processGeneration,
+                $runtime->process_generation,
+            );
+        }
+
+        $runtime->observeSettings($command->model, $command->effort, $now);
+
+        if ($command->finished) {
+            $turn->finish((string) ($command->outcome ?? 'finished'), $now);
+        }
+    }
+}

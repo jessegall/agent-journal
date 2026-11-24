@@ -86,8 +86,8 @@ final class StopAttemptTest extends TestCase
     {
         $start = TestStart::start('writing-helper');
         $attempt = $this->open($start, 'stop-1', ['passed']);
-        $report = $this->report('passed', StopResultType::Passed);
-        $other = $this->report('other', StopResultType::Passed);
+        $report = $this->notify('passed', StopResultType::Passed);
+        $other = $this->notify('other', StopResultType::Passed);
 
         foreach ([
             new RecordStopResultsCommand('host-1', $attempt->id, self::DIGEST, 2, [$report]),
@@ -187,12 +187,12 @@ final class StopAttemptTest extends TestCase
     private function results(StopAttempt $attempt, array $statuses, array $renamed = []): RecordStopResultsCommand
     {
         return new RecordStopResultsCommand('host-1', $attempt->id, self::DIGEST, 1, array_map(
-            fn (StopResultType $status) => $this->report($renamed[$status->value] ?? $status->value, $status),
+            fn (StopResultType $status) => $this->notify($renamed[$status->value] ?? $status->value, $status),
             $statuses,
         ));
     }
 
-    private function report(string $conditionKey, StopResultType $status): StopResultReport
+    private function notify(string $conditionKey, StopResultType $status): StopResultReport
     {
         $exitCode = match ($status) {
             StopResultType::Passed => 0,

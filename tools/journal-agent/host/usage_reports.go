@@ -17,7 +17,7 @@ import (
 
 // UsageReporter sends usage reports to the journal.
 type UsageReporter interface {
-	ReportUsage(ctx context.Context, report client.UsageReport) error
+	NotifyUsage(ctx context.Context, report client.UsageReport) error
 }
 
 // UsageReports keeps the usage reports not yet acknowledged in their own owner-only file, apart from the start
@@ -95,7 +95,7 @@ func (reports *UsageReports) Send(ctx context.Context, reporter UsageReporter) e
 	var settled []string
 	var failure error
 	for _, waiting := range pending {
-		err := reporter.ReportUsage(ctx, waiting.Report)
+		err := reporter.NotifyUsage(ctx, waiting.Report)
 		if isRetried(err) {
 			failure = err
 			break

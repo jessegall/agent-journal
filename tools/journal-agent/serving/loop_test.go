@@ -60,14 +60,14 @@ type raiseReply struct {
 	err    error
 }
 
-func (journal *fakeJournal) ReportReplayed(_ context.Context, entryID, _, _ string) error {
+func (journal *fakeJournal) NotifyReplayed(_ context.Context, entryID, _, _ string) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.replayed = append(journal.replayed, entryID)
 	return nil
 }
 
-func (journal *fakeJournal) ReportStale(_ context.Context, entryID string, report client.EntryStaleReport) error {
+func (journal *fakeJournal) NotifyStale(_ context.Context, entryID string, report client.EntryStaleReport) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	if journal.stale == nil {
@@ -115,7 +115,7 @@ func (journal *fakeJournal) StartGrant(context.Context, string) (client.Grant, e
 	return client.Grant{Token: "token", Runtime: client.RuntimeStart{DriverBuild: "0.165.0"}}, nil
 }
 
-func (journal *fakeJournal) ReportRequest(_ context.Context, report client.RequestReport) error {
+func (journal *fakeJournal) NotifyRequest(_ context.Context, report client.RequestReport) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.reports = append(journal.reports, report)
@@ -123,7 +123,7 @@ func (journal *fakeJournal) ReportRequest(_ context.Context, report client.Reque
 	return nil
 }
 
-func (journal *fakeJournal) ReportActivity(_ context.Context, report client.ActivityReport) error {
+func (journal *fakeJournal) NotifyActivity(_ context.Context, report client.ActivityReport) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.activity = append(journal.activity, report.Activity)
@@ -132,7 +132,7 @@ func (journal *fakeJournal) ReportActivity(_ context.Context, report client.Acti
 	return nil
 }
 
-func (journal *fakeJournal) ReportHeartbeat(_ context.Context, report client.LivenessReport) error {
+func (journal *fakeJournal) NotifyHeartbeat(_ context.Context, report client.LivenessReport) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.beats = append(journal.beats, report.RuntimeID)
@@ -152,7 +152,7 @@ func (journal *fakeJournal) beatsOf(runtimeID string) int {
 	return count
 }
 
-func (journal *fakeJournal) ReportExit(context.Context, client.LivenessReport) error {
+func (journal *fakeJournal) NotifyExit(context.Context, client.LivenessReport) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.exits++

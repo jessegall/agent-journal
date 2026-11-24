@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\ReportCleanup\ReportCleanupCommand;
+use App\Commands\NotifyCleanup\NotifyCleanupCommand;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\CapacityResource;
 use App\Enums\CleanupState;
@@ -59,7 +59,7 @@ final class LaunchCleanupTest extends TestCase
         $this->assertSame(CleanupState::Pending, $this->cleanupOf($launch)->state);
         $this->assertSame(ReservationState::Reserved, $this->reservationOf($launch)->state);
 
-        $state = $this->report($launch, new CleanupReport(self::ALL_STEPS, null, null));
+        $state = $this->notify($launch, new CleanupReport(self::ALL_STEPS, null, null));
 
         $this->assertSame(CleanupState::Done, $state);
         $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
@@ -75,16 +75,16 @@ final class LaunchCleanupTest extends TestCase
             '/workspaces/helper-7',
             'removing the network failed: daemon busy',
         );
-        $this->assertSame(CleanupState::Pending, $this->report($launch, $failed));
+        $this->assertSame(CleanupState::Pending, $this->notify($launch, $failed));
         $this->assertSame(ReservationState::Reserved, $this->reservationOf($launch)->state);
         $pending = $this->cleanupOf($launch);
         $this->assertSame('/workspaces/helper-7', $pending->recovery_location);
         $this->assertSame([CleanupStep::Network, CleanupStep::Runtime], $pending->remainingSteps);
 
         $retried = new CleanupReport([CleanupStep::Network, CleanupStep::Runtime], null, null);
-        $this->report($launch, $retried);
+        $this->notify($launch, $retried);
         $again = new CleanupReport(self::ALL_STEPS, null, 'late failure');
-        $this->assertSame(CleanupState::Done, $this->report($launch, $again));
+        $this->assertSame(CleanupState::Done, $this->notify($launch, $again));
 
         $done = $this->cleanupOf($launch);
         $this->assertSame(1, $done->attempts);
@@ -129,11 +129,11 @@ final class LaunchCleanupTest extends TestCase
         $this->assertSame(CapacityResource::Cpu, CapacityReservation::shortageOf($budgets, $room));
         $this->assertSame(1, CapacityReservation::query()->count());
 
-        $this->report($launch, new CleanupReport(self::ALL_STEPS, null, null));
+        $this->notify($launch, new CleanupReport(self::ALL_STEPS, null, null));
         $this->assertNull(CapacityReservation::shortageOf($budgets, $room));
 
         CapacityReservation::reserve('start-other', $budgets, $room);
-        $this->assertSame(CleanupState::Done, $this->report($launch, new CleanupReport(self::ALL_STEPS, null, null)));
+        $this->assertSame(CleanupState::Done, $this->notify($launch, new CleanupReport(self::ALL_STEPS, null, null)));
         $this->assertTrue(CapacityReservation::isHeldFor('start-other'));
         $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
     }
@@ -212,9 +212,9 @@ final class LaunchCleanupTest extends TestCase
         CapacityReservation::reserve($launch->session->start_request_id, ExecutionBudgets::defaults(), $capacity);
     }
 
-    private function report(TestStart $launch, CleanupReport $report): CleanupState
+    private function notify(TestStart $launch, CleanupReport $report): CleanupState
     {
-        return $this->asSystem(new ReportCleanupCommand('host-1', $launch->session->id, $report));
+        return $this->asSystem(new NotifyCleanupCommand('host-1', $launch->session->id, $report));
     }
 
     private function cleanupOf(TestStart $launch): CleanupOperation

@@ -88,7 +88,7 @@ final class ProjectReadTest extends TestCase
     {
         $read = $this->read(ProjectReadType::Directory, '');
 
-        $this->report($read, ['entries' => [
+        $this->notify($read, ['entries' => [
             ['name' => 'src', 'is_folder' => true, 'size' => 0],
             ['name' => 'README.md', 'is_folder' => false, 'size' => 6],
         ]])->assertNoContent();
@@ -104,9 +104,9 @@ final class ProjectReadTest extends TestCase
 
         $this->hostCall($this->enrolledHost(), "/host/reports/project-reads/{$read->id}", $this->textAnswer())
             ->assertClientError();
-        $this->report($folder, ['entries' => [['name' => '../x', 'is_folder' => false, 'size' => 1]]])
+        $this->notify($folder, ['entries' => [['name' => '../x', 'is_folder' => false, 'size' => 1]]])
             ->assertClientError();
-        $this->report($read, [...$this->textAnswer(), 'digest' => 'not-a-digest'])->assertClientError();
+        $this->notify($read, [...$this->textAnswer(), 'digest' => 'not-a-digest'])->assertClientError();
 
         $this->assertSame(ProjectReadState::Pending, ProjectRead::query()->findOrFail($read->id)->state);
         $this->assertSame(ProjectReadState::Pending, ProjectRead::query()->findOrFail($folder->id)->state);
@@ -119,7 +119,7 @@ final class ProjectReadTest extends TestCase
     {
         $read = $this->read(ProjectReadType::File, 'missing.txt');
 
-        $this->report($read, ['failure' => ProjectReadFailure::Missing->value])->assertNoContent();
+        $this->notify($read, ['failure' => ProjectReadFailure::Missing->value])->assertNoContent();
 
         $this->assertSame(ProjectReadFailure::Missing, ProjectRead::query()->findOrFail($read->id)->failure);
     }
@@ -212,7 +212,7 @@ final class ProjectReadTest extends TestCase
 
     private function reportText(ProjectRead $read): TestResponse
     {
-        return $this->report($read, $this->textAnswer());
+        return $this->notify($read, $this->textAnswer());
     }
 
     /**
@@ -226,7 +226,7 @@ final class ProjectReadTest extends TestCase
     /**
      * @param  array<string, mixed>  $answer
      */
-    private function report(ProjectRead $read, array $answer): TestResponse
+    private function notify(ProjectRead $read, array $answer): TestResponse
     {
         return $this->hostCall($this->host, "/host/reports/project-reads/{$read->id}", $answer);
     }

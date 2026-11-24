@@ -68,7 +68,7 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->useArrangement(ArrangementType::Contained);
         $reason = "no native mechanism: Claude Code's sandbox does not start in the agent container: bwrap: no proc";
         $items = $this->items(['account-secrets', 'process-inspection'], $reason);
-        $this->report($this->containedHost(), 'claude-code', '2.1.323', $items)->assertNoContent();
+        $this->notify($this->containedHost(), 'claude-code', '2.1.323', $items)->assertNoContent();
 
         $this->assertThrows(
             fn () => $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable(),
@@ -87,8 +87,8 @@ final class ContainedProgramEvidenceTest extends TestCase
     {
         $this->useArrangement(ArrangementType::Contained);
         $host = $this->containedHost();
-        $this->report($host, 'claude-code', '2.1.323', $this->items(['keychain'], 'missing'))->assertNoContent();
-        $this->report($host, 'claude-code', '2.1.323', $this->items([], ''))->assertNoContent();
+        $this->notify($host, 'claude-code', '2.1.323', $this->items(['keychain'], 'missing'))->assertNoContent();
+        $this->notify($host, 'claude-code', '2.1.323', $this->items([], ''))->assertNoContent();
 
         $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
 
@@ -101,7 +101,7 @@ final class ContainedProgramEvidenceTest extends TestCase
         config(['agents.protected_account_trial' => 'claude-code']);
         $host = $this->containedHost();
         $reason = "no native mechanism: Claude Code's sandbox does not start in the agent container: bwrap: no proc";
-        $this->report($host, 'claude-code', '2.1.323', $this->items(self::ITEMS, $reason))->assertNoContent();
+        $this->notify($host, 'claude-code', '2.1.323', $this->items(self::ITEMS, $reason))->assertNoContent();
 
         $this->assertThrows(
             fn () => $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable(),
@@ -109,7 +109,7 @@ final class ContainedProgramEvidenceTest extends TestCase
             self::PROTECTED_SHORTFALL,
         );
 
-        $this->report($host, 'claude-code', '2.1.323', $this->items([], ''), 'linux-container-protected')
+        $this->notify($host, 'claude-code', '2.1.323', $this->items([], ''), 'linux-container-protected')
             ->assertNoContent();
 
         $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
@@ -135,7 +135,7 @@ final class ContainedProgramEvidenceTest extends TestCase
     /**
      * @param  list<array<string, mixed>>  $items
      */
-    private function report(
+    private function notify(
         EnrolledHost $host,
         string $driver,
         string $build,

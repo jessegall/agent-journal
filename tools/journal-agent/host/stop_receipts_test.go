@@ -13,7 +13,7 @@ type stopJournal struct {
 	taken     []string
 }
 
-func (journal *stopJournal) ReportRuntimeStopped(_ context.Context, _ string, runtimeID string) error {
+func (journal *stopJournal) NotifyRuntimeStopped(_ context.Context, _ string, runtimeID string) error {
 	if !journal.reachable {
 		return errors.New("the journal is out of reach")
 	}

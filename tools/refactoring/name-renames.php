@@ -58,10 +58,18 @@ function applyGoRenames(array $names, array $options): int
 {
     $status = 0;
     $gopls = trim((string) shell_exec('command -v gopls')) ?: getenv('HOME').'/go/bin/gopls';
+    // An interface's method goes first: gopls renames each implementation with it, never the other way round.
+    usort($names, fn (DeclaredName $first, DeclaredName $second) => ($second->owner === 'interface') <=> ($first->owner === 'interface'));
 
     foreach ($names as $declared) {
         [$file, $line] = explode(':', $declared->place);
         $column = strpos((string) (file($file, FILE_IGNORE_NEW_LINES)[(int) $line - 1] ?? ''), $declared->name);
+
+        // A rename before it already renamed this one, as an interface's method renames each implementation.
+        if ($column === false) {
+            continue;
+        }
+
         $module = 'tools/journal-agent';
         $position = substr($file, strlen($module) + 1).":{$line}:".((int) $column + 1);
         $renamed = replacedWord($declared->name, $options);

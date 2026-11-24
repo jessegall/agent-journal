@@ -18,12 +18,12 @@ import (
 
 // Journal is the part of the journal the loop reports to.
 type Journal interface {
-	ReportRequest(ctx context.Context, report client.RequestReport) error
-	ReportActivity(ctx context.Context, report client.ActivityReport) error
-	ReportExit(ctx context.Context, report client.LivenessReport) error
-	ReportHeartbeat(ctx context.Context, report client.LivenessReport) error
-	ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error
-	ReportStale(ctx context.Context, entryID string, report client.EntryStaleReport) error
+	NotifyRequest(ctx context.Context, report client.RequestReport) error
+	NotifyActivity(ctx context.Context, report client.ActivityReport) error
+	NotifyExit(ctx context.Context, report client.LivenessReport) error
+	NotifyHeartbeat(ctx context.Context, report client.LivenessReport) error
+	NotifyReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error
+	NotifyStale(ctx context.Context, entryID string, report client.EntryStaleReport) error
 	RaiseNavigation(ctx context.Context, runtimeID string, raise client.NavigationRaise) (client.NavigationAnswer, error)
 	InterruptNavigation(ctx context.Context, navigationID string) error
 }
@@ -58,7 +58,7 @@ type Preparer interface {
 type Loop struct {
 	journal Journal
 	// unsent keeps the reports the journal has not acknowledged, when the host gave the loop a folder for them.
-	unsent *host.RequestReports
+	unsent *host.Notify
 	// observations keeps the report that proved each runtime's start, for Check status, beside the unsent reports.
 	observations *host.ReadyObservations
 	prepare      Preparer
@@ -141,7 +141,7 @@ func (loop *Loop) advance(ctx context.Context, runtimeID string) {
 // run carries out one admission and answers whether the runtime may take more now.
 func (loop *Loop) run(ctx context.Context, runtime *liveRuntime, admission host.Admission) bool {
 	for _, superseded := range admission.Superseded {
-		loop.report(ctx, superseded, contracts.OperationResult{Progress: "superseded"})
+		loop.notify(ctx, superseded, contracts.OperationResult{Progress: "superseded"})
 	}
 	if admission.Control != nil {
 		return loop.control(ctx, runtime, *admission.Control)
@@ -184,14 +184,14 @@ func (loop *Loop) control(ctx context.Context, runtime *liveRuntime, request cli
 			runtime.interrupts = append(runtime.interrupts, request)
 			loop.mutex.Unlock()
 		}
-		loop.reportResult(ctx, request, result, err)
+		loop.notifyResult(ctx, request, result, err)
 		return true
 	case "resend_readiness":
 		loop.resendReadiness(ctx, request)
 		return true
 	case "stop":
 		result, err := runtime.driver.Stop(ctx, contracts.StopRequest{Request: identity})
-		loop.reportResult(ctx, request, result, err)
+		loop.notifyResult(ctx, request, result, err)
 		if err == nil && result.Progress == contracts.ProgressApplied {
 			loop.exited(ctx, runtime, "stopped on request")
 		}
@@ -201,7 +201,7 @@ func (loop *Loop) control(ctx context.Context, runtime *liveRuntime, request cli
 			loop.browserControl(ctx, runtime, request)
 			return true
 		}
-		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressUnavailable})
+		loop.notify(ctx, request, contracts.OperationResult{Progress: contracts.ProgressUnavailable})
 		return true
 	}
 }
@@ -212,7 +212,7 @@ func (loop *Loop) browserControl(ctx context.Context, runtime *liveRuntime, requ
 	controlled, carriesOut := runtime.driver.(contracts.BrowserControlled)
 	fields, err := request.BrowserControl()
 	if !carriesOut || err != nil {
-		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressUnavailable})
+		loop.notify(ctx, request, contracts.OperationResult{Progress: contracts.ProgressUnavailable})
 		return
 	}
 	result, err := controlled.ControlFromBrowser(ctx, contracts.BrowserControl{
@@ -234,7 +234,7 @@ func (loop *Loop) browserControl(ctx context.Context, runtime *liveRuntime, requ
 		SubmissionID:   fields.SubmissionID,
 		Value:          fields.Value,
 	})
-	loop.reportResult(ctx, request, result, err)
+	loop.notifyResult(ctx, request, result, err)
 }
 
 func (loop *Loop) setting(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
@@ -249,7 +249,7 @@ func (loop *Loop) setting(ctx context.Context, runtime *liveRuntime, request cli
 	if err == nil && result.Progress == contracts.ProgressStaged {
 		runtime.staged = append(runtime.staged, request)
 	}
-	loop.reportResult(ctx, request, result, err)
+	loop.notifyResult(ctx, request, result, err)
 }
 
 // bootstrap proves a start's conversation for each bootstrap wake when the driver can without a turn, and reports it
@@ -266,10 +266,10 @@ func (loop *Loop) bootstrap(
 	}
 	result, err := bootstrapper.Bootstrap(ctx, identityOf(*turn))
 	if err != nil {
-		loop.reportResult(ctx, *turn, result, err)
+		loop.notifyResult(ctx, *turn, result, err)
 		return nil
 	}
-	loop.observe(*turn, loop.report(ctx, *turn, result))
+	loop.observe(*turn, loop.notify(ctx, *turn, result))
 	return nil
 }
 
@@ -295,7 +295,7 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 	if err != nil || result.Progress != contracts.ProgressApplying {
 		loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 		for _, request := range requests {
-			loop.reportResult(ctx, request, result, err)
+			loop.notifyResult(ctx, request, result, err)
 		}
 		return
 	}
@@ -305,7 +305,7 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 	runtime.running = requests
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
 	for _, request := range requests {
-		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplying})
+		loop.notify(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplying})
 	}
 	loop.activity(ctx, runtime, "running")
 	go loop.awaitTurn(ctx, runtime, runtime.driver.Finished(), requests)
@@ -336,10 +336,10 @@ func (loop *Loop) awaitTurn(
 	loop.mutex.Unlock()
 
 	for _, request := range finished {
-		loop.observe(request, loop.report(ctx, request, result))
+		loop.observe(request, loop.notify(ctx, request, result))
 	}
 	for _, request := range interrupts {
-		loop.report(ctx, request, contracts.OperationResult{TurnEnd: &ended})
+		loop.notify(ctx, request, contracts.OperationResult{TurnEnd: &ended})
 	}
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 	loop.activity(ctx, runtime, "idle")
@@ -350,7 +350,7 @@ func (loop *Loop) awaitTurn(
 // own goroutine so the loop takes a stop or a wake meanwhile, and the runtime takes more work when it ends.
 func (loop *Loop) startScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
-	loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplying})
+	loop.notify(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplying})
 	loop.activity(ctx, runtime, "running")
 	go loop.runScript(ctx, runtime, request)
 }
@@ -370,7 +370,7 @@ func (loop *Loop) settleScript(ctx context.Context, runtime *liveRuntime, reques
 		newNavigation(loop, runtime, request, *result.Script.Uncertainty).raise(ctx)
 		return
 	}
-	loop.reportResult(ctx, request, result, err)
+	loop.notifyResult(ctx, request, result, err)
 }
 
 // scriptResult runs the script on a driver that runs key scripts, reporting each step it confirms, and reads how it
@@ -388,7 +388,7 @@ func (loop *Loop) scriptResult(
 		}, nil
 	}
 	if reporter, reportsSteps := runtime.driver.(stepReporter); reportsSteps {
-		reporter.ReportProgressTo(func(progress keyscripts.Progress) { loop.reportStep(ctx, runtime, request, progress) })
+		reporter.NotifyProgressTo(func(progress keyscripts.Progress) { loop.notifyStep(ctx, runtime, request, progress) })
 	}
 
 	result, err := runner.RunKeyScript(ctx, contracts.KeyScriptRequest{
@@ -421,26 +421,26 @@ func (loop *Loop) runNavigation(ctx context.Context, runtime *liveRuntime, reque
 	navigator, navigates := runtime.driver.(roundNavigator)
 	switch {
 	case !navigates || request.NavigationRound == nil:
-		loop.report(ctx, request, contracts.OperationResult{
+		loop.notify(ctx, request, contracts.OperationResult{
 			Progress: contracts.ProgressUnavailable,
 			Outcome:  contracts.OutcomeTerminalRequired,
 		})
 	default:
-		loop.reportRound(ctx, request, navigator.NavigateRound(roundOf(*request.NavigationRound)))
+		loop.notifyRound(ctx, request, navigator.NavigateRound(roundOf(*request.NavigationRound)))
 	}
 
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 	loop.advance(ctx, runtime.id)
 }
 
-// reportRound reports what a round left: the user's keys end it paused and the navigation request interrupted;
+// notifyRound reports what a round left: the user's keys end it paused and the navigation request interrupted;
 // otherwise the screen after it, its actions, its refusal and whether its proof showed.
-func (loop *Loop) reportRound(ctx context.Context, request client.ClaimedRequest, result keyscripts.RoundResult) {
+func (loop *Loop) notifyRound(ctx context.Context, request client.ClaimedRequest, result keyscripts.RoundResult) {
 	if result.Paused {
 		if err := loop.journal.InterruptNavigation(ctx, text(request.NavigationRequestID)); err != nil {
 			log.Printf("the interrupt of navigation %s could not be reported: %v", text(request.NavigationRequestID), err)
 		}
-		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressFailed})
+		loop.notify(ctx, request, contracts.OperationResult{Progress: contracts.ProgressFailed})
 		return
 	}
 
@@ -450,7 +450,7 @@ func (loop *Loop) reportRound(ctx context.Context, request client.ClaimedRequest
 		Progress:   string(contracts.ProgressApplied),
 		Navigation: navigationReportOf(result),
 	}
-	if err := loop.journal.ReportRequest(ctx, report); err != nil {
+	if err := loop.journal.NotifyRequest(ctx, report); err != nil {
 		log.Printf("round %s could not be reported: %v", request.RequestID, err)
 	}
 }
@@ -503,11 +503,11 @@ func navigationReportOf(result keyscripts.RoundResult) *client.NavigationReport 
 
 // stepReporter is a driver whose key scripts report each step they confirm.
 type stepReporter interface {
-	ReportProgressTo(receiver func(keyscripts.Progress))
+	NotifyProgressTo(receiver func(keyscripts.Progress))
 }
 
-// reportStep reports one confirmed step under the script's request: its number and what it saw, never a key.
-func (loop *Loop) reportStep(
+// notifyStep reports one confirmed step under the script's request: its number and what it saw, never a key.
+func (loop *Loop) notifyStep(
 	ctx context.Context,
 	runtime *liveRuntime,
 	request client.ClaimedRequest,
@@ -526,7 +526,7 @@ func (loop *Loop) reportStep(
 		Progress:  string(contracts.ProgressApplying),
 		Script:    &client.ScriptReport{Step: progress.Step, Generation: runtime.driver.Generation(), Evidence: evidence},
 	}
-	if err := loop.journal.ReportRequest(ctx, report); err != nil {
+	if err := loop.journal.NotifyRequest(ctx, report); err != nil {
 		log.Printf("step %d of request %s could not be reported: %v", progress.Step, request.RequestID, err)
 	}
 }
@@ -647,7 +647,7 @@ func (loop *Loop) exited(ctx context.Context, runtime *liveRuntime, evidence str
 		}
 	}
 	report := client.LivenessReport{RuntimeID: runtime.id, ProcessGeneration: runtime.driver.Generation(), Evidence: evidence}
-	if err := loop.journal.ReportExit(ctx, report); err != nil {
+	if err := loop.journal.NotifyExit(ctx, report); err != nil {
 		log.Printf("the exit of runtime %s could not be reported: %v", runtime.id, err)
 	}
 }
@@ -696,7 +696,7 @@ func (loop *Loop) activity(ctx context.Context, runtime *liveRuntime, activity s
 		ProcessGeneration: runtime.driver.Generation(),
 		Sequence:          loop.nextSequence(runtime.id),
 	}
-	if err := loop.journal.ReportActivity(ctx, report); err != nil {
+	if err := loop.journal.NotifyActivity(ctx, report); err != nil {
 		log.Printf("the activity of runtime %s could not be reported: %v", runtime.id, err)
 	}
 }
@@ -710,18 +710,18 @@ func (loop *Loop) failAll(ctx context.Context, admission host.Admission, progres
 		all = append(all, *admission.Control)
 	}
 	for _, request := range all {
-		loop.report(ctx, request, contracts.OperationResult{Progress: progress})
+		loop.notify(ctx, request, contracts.OperationResult{Progress: progress})
 	}
 }
 
-func (loop *Loop) reportResult(ctx context.Context, request client.ClaimedRequest, result contracts.OperationResult, err error) {
+func (loop *Loop) notifyResult(ctx context.Context, request client.ClaimedRequest, result contracts.OperationResult, err error) {
 	if err != nil {
 		log.Printf("%s request %s (attempt %d) of runtime %s failed: %v", request.Operation, request.RequestID, request.Attempt, request.RuntimeID, err)
-		loop.report(ctx, request, refusalOf(err))
+		loop.notify(ctx, request, refusalOf(err))
 
 		return
 	}
-	loop.report(ctx, request, result)
+	loop.notify(ctx, request, result)
 }
 
 // refusalOf is the report of a failed attempt: a generic refusal, which names its reason and that no process was made
@@ -736,9 +736,9 @@ func refusalOf(err error) contracts.OperationResult {
 	return failure
 }
 
-// report sends one request's progress with the attempt, session, supervised start and process generation it answers;
+// notify sends one request's progress with the attempt, session, supervised start and process generation it answers;
 // a confirmed outcome is the journal's default and is not named.
-func (loop *Loop) report(
+func (loop *Loop) notify(
 	ctx context.Context,
 	request client.ClaimedRequest,
 	result contracts.OperationResult,
@@ -791,7 +791,7 @@ func (loop *Loop) observe(request client.ClaimedRequest, report client.RequestRe
 func (loop *Loop) resendReadiness(ctx context.Context, request client.ClaimedRequest) {
 	observed, found := loop.observation(request)
 	if !found {
-		loop.report(ctx, request, contracts.OperationResult{
+		loop.notify(ctx, request, contracts.OperationResult{
 			Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused,
 			RefusalReason: contracts.RefusalNoObservation,
 		})
@@ -800,7 +800,7 @@ func (loop *Loop) resendReadiness(ctx context.Context, request client.ClaimedReq
 	if err := loop.sendReport(ctx, observed); err != nil {
 		log.Printf("the ready report of runtime %s could not be sent again yet: %v", request.RuntimeID, err)
 	}
-	loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplied})
+	loop.notify(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplied})
 }
 
 // observation is the kept ready report of the request's own session and process generation.
@@ -864,7 +864,7 @@ func sameRequests(first, second []client.ClaimedRequest) bool {
 // KeepUnsentReports keeps every request report the journal has not acknowledged in the folder and sends the ones a
 // restart left there, so no outcome is lost to an outage or a restart.
 func (loop *Loop) KeepUnsentReports(ctx context.Context, folder string) error {
-	loop.unsent = &host.RequestReports{Folder: folder}
+	loop.unsent = &host.Notify{Folder: folder}
 	loop.observations = &host.ReadyObservations{Folder: folder}
 	return loop.unsent.Replay(ctx, loop.journal)
 }
@@ -872,7 +872,7 @@ func (loop *Loop) KeepUnsentReports(ctx context.Context, folder string) error {
 // sendReport sends the report, through the kept reports when the loop keeps them.
 func (loop *Loop) sendReport(ctx context.Context, report client.RequestReport) error {
 	if loop.unsent == nil {
-		return loop.journal.ReportRequest(ctx, report)
+		return loop.journal.NotifyRequest(ctx, report)
 	}
-	return loop.unsent.Report(ctx, loop.journal, report)
+	return loop.unsent.Notify(ctx, loop.journal, report)
 }

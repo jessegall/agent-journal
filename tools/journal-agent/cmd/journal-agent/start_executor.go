@@ -82,8 +82,8 @@ func (executor *protectedExecutor) Start(ctx context.Context, request host.Start
 		accountID: prepared.Claim.AccountID,
 	}
 	executor.mutex.Unlock()
-	executor.report(ctx, host.StartReport{
-		StartKey: prepared.Claim.StartKey, Kind: host.ReportRunning, Execution: executionID,
+	executor.notify(ctx, host.StartReport{
+		StartKey: prepared.Claim.StartKey, Kind: host.NotifyRunning, Execution: executionID,
 	})
 	return host.StartReply{
 		StartID: request.StartID, Execution: executionID, ExecutionMode: request.ExecutionMode,
@@ -106,7 +106,7 @@ func (executor *protectedExecutor) Stop(ctx context.Context, request host.StopRe
 	executor.mutex.Lock()
 	delete(executor.executions, request.Execution)
 	executor.mutex.Unlock()
-	executor.report(ctx, host.StartReport{StartKey: running.startKey, Kind: host.ReportStopped})
+	executor.notify(ctx, host.StartReport{StartKey: running.startKey, Kind: host.NotifyStopped})
 	return host.StopReply{Execution: request.Execution, EndedAt: time.Now().UTC()}, nil
 }
 
@@ -187,8 +187,8 @@ func (executor *protectedExecutor) RemoveFolder(ctx context.Context, request hos
 	return host.AccountFolderReply{IsDone: true}, nil
 }
 
-// report queues the report and sends what is queued; what the journal does not acknowledge now is sent later.
-func (executor *protectedExecutor) report(ctx context.Context, report host.StartReport) {
+// notify queues the notify and sends what is queued; what the journal does not acknowledge now is sent later.
+func (executor *protectedExecutor) notify(ctx context.Context, report host.StartReport) {
 	if executor.reports.Queue(report) == nil {
 		_ = executor.reports.Send(ctx, executor.reporter)
 	}

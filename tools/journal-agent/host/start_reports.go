@@ -21,16 +21,16 @@ type StartReport struct {
 }
 
 const (
-	ReportRunning = "running"
-	ReportStopped = "stopped"
+	NotifyRunning = "running"
+	NotifyStopped = "stopped"
 	ReportFailed  = "failed"
 )
 
 // StartReporter sends start reports to the journal.
 type StartReporter interface {
-	ReportRunning(ctx context.Context, startKey, executionID string) error
-	ReportStopped(ctx context.Context, startKey string) error
-	ReportFailure(ctx context.Context, startKey, failure string) error
+	NotifyRunning(ctx context.Context, startKey, executionID string) error
+	NotifyStopped(ctx context.Context, startKey string) error
+	NotifyFailure(ctx context.Context, startKey, failure string) error
 }
 
 // StartReports keeps the start reports not yet acknowledged in one owner-only file, so an outage or a restart never
@@ -91,12 +91,12 @@ func isRetried(err error) bool {
 
 func send(ctx context.Context, reporter StartReporter, report StartReport) error {
 	switch report.Kind {
-	case ReportRunning:
-		return reporter.ReportRunning(ctx, report.StartKey, report.Execution)
-	case ReportStopped:
-		return reporter.ReportStopped(ctx, report.StartKey)
+	case NotifyRunning:
+		return reporter.NotifyRunning(ctx, report.StartKey, report.Execution)
+	case NotifyStopped:
+		return reporter.NotifyStopped(ctx, report.StartKey)
 	default:
-		return reporter.ReportFailure(ctx, report.StartKey, report.Failure)
+		return reporter.NotifyFailure(ctx, report.StartKey, report.Failure)
 	}
 }
 

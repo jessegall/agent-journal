@@ -19,7 +19,7 @@ type recordingUsage struct {
 	onDisk   []bool
 }
 
-func (usage *recordingUsage) ReportUsage(_ context.Context, report client.UsageReport) error {
+func (usage *recordingUsage) NotifyUsage(_ context.Context, report client.UsageReport) error {
 	content, _ := os.ReadFile(filepath.Join(usage.folder, pendingUsageName))
 	usage.onDisk = append(usage.onDisk, strings.Contains(string(content), report.SourceID))
 	if usage.failWith != nil {
@@ -116,7 +116,7 @@ func TestANewerWindowReplacesAWaitingOneWhileEveryCostWaits(t *testing.T) {
 
 type stuckUsage struct{}
 
-func (stuckUsage) ReportUsage(ctx context.Context, _ client.UsageReport) error {
+func (stuckUsage) NotifyUsage(ctx context.Context, _ client.UsageReport) error {
 	<-ctx.Done()
 	return errors.Join(client.ErrUncertain, ctx.Err())
 }
@@ -133,7 +133,7 @@ func TestAStuckUsageEndpointNeverDelaysAStartReport(t *testing.T) {
 	done := make(chan error, 1)
 
 	go func() {
-		if err := starts.Queue(StartReport{StartKey: "s1", Kind: ReportRunning, Execution: "e1"}); err != nil {
+		if err := starts.Queue(StartReport{StartKey: "s1", Kind: NotifyRunning, Execution: "e1"}); err != nil {
 			done <- err
 			return
 		}

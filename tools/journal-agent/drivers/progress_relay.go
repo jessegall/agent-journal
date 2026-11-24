@@ -21,8 +21,8 @@ func (relay *ProgressRelay) SendTo(receiver func(keyscripts.Progress)) {
 	relay.receiver = receiver
 }
 
-// Report hands one confirmed step to the receiver, if one is set.
-func (relay *ProgressRelay) Report(progress keyscripts.Progress) {
+// Notify hands one confirmed step to the receiver, if one is set.
+func (relay *ProgressRelay) Notify(progress keyscripts.Progress) {
 	relay.mutex.Lock()
 	receiver := relay.receiver
 	relay.mutex.Unlock()

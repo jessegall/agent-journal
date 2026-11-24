@@ -26,7 +26,7 @@ func TestAContainerRefusalReportsItsReasonAndThatNoProcessWasMade(t *testing.T) 
 	loop := NewLoop(journal, grantedPreparer{journal}, nil)
 	refusal := contracts.RefuseStart(contracts.RefusalContainerUnavailable, errors.New("docker create failed"))
 
-	loop.reportResult(context.Background(), boundWake(), contracts.OperationResult{}, fmt.Errorf("the wake failed: %w", refusal))
+	loop.notifyResult(context.Background(), boundWake(), contracts.OperationResult{}, fmt.Errorf("the wake failed: %w", refusal))
 
 	report := journal.reports[0]
 	if report.RefusalReason == nil || *report.RefusalReason != "container-unavailable" || !report.NoProcessCreated {
@@ -45,7 +45,7 @@ func TestAnOrdinaryDriverErrorStaysAGenericRefusal(t *testing.T) {
 	journal := &fakeJournal{}
 	loop := NewLoop(journal, grantedPreparer{journal}, nil)
 
-	loop.reportResult(context.Background(), boundWake(), contracts.OperationResult{}, errors.New("the program crashed"))
+	loop.notifyResult(context.Background(), boundWake(), contracts.OperationResult{}, errors.New("the program crashed"))
 
 	report := journal.reports[0]
 	if report.RefusalReason != nil || report.NoProcessCreated {

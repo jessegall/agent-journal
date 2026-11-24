@@ -10,7 +10,7 @@ import (
 
 // ProtectionReporter is where a contained host sends what it found of each program's protection.
 type ProtectionReporter interface {
-	ReportProtection(ctx context.Context, report client.ProtectionReport) error
+	NotifyProtection(ctx context.Context, report client.ProtectionReport) error
 }
 
 // containedPrograms are the programs a contained host reports on: the journal's name of each, and the name its
@@ -22,10 +22,10 @@ var containedPrograms = []struct{ journal, binary string }{
 
 var buildVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
 
-// ReportContainedProtection inspects each program's protection in the agent image at the build the image holds, under
+// NotifyContainedProtection inspects each program's protection in the agent image at the build the image holds, under
 // the standard and the protected-account launch profile, and sends both to the journal, which admits a contained
 // start only on the report of its profile with every item enforced.
-func ReportContainedProtection(
+func NotifyContainedProtection(
 	ctx context.Context,
 	containers Containers,
 	seccomp string,
@@ -50,7 +50,7 @@ func ReportContainedProtection(
 				return err
 			}
 
-			if err := reporter.ReportProtection(ctx, protectionReport(program.journal, capability)); err != nil {
+			if err := reporter.NotifyProtection(ctx, protectionReport(program.journal, capability)); err != nil {
 				return err
 			}
 		}

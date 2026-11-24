@@ -57,7 +57,7 @@ final class ScreenReportRouteTest extends TestCase
         $host = $this->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
 
-        $this->report($host, $runtime, 1)->assertOk()->assertExactJson(['status' => 'stored']);
+        $this->notify($host, $runtime, 1)->assertOk()->assertExactJson(['status' => 'stored']);
 
         $latest = $this->app->make(RuntimeScreen::class)->latest(ScreenRegistration::of($runtime));
         $this->assertSame(1, $latest?->frame->sequence);
@@ -68,7 +68,7 @@ final class ScreenReportRouteTest extends TestCase
         $host = $this->enrolledHost();
         $runtime = $this->watchedRuntimeOn($this->enrolledHost());
 
-        $this->assertRefused($this->report($host, $runtime, 1), 'not_your_runtime', $runtime);
+        $this->assertRefused($this->notify($host, $runtime, 1), 'not_your_runtime', $runtime);
     }
 
     public function test_a_runtime_nobody_watches_is_refused(): void
@@ -76,7 +76,7 @@ final class ScreenReportRouteTest extends TestCase
         $host = $this->enrolledHost();
         $runtime = $this->runtimeOn($host->hostId);
 
-        $this->assertRefused($this->report($host, $runtime, 1), 'not_watched', $runtime);
+        $this->assertRefused($this->notify($host, $runtime, 1), 'not_watched', $runtime);
     }
 
     public function test_a_frame_over_the_size_bound_is_refused(): void
@@ -84,7 +84,7 @@ final class ScreenReportRouteTest extends TestCase
         $host = $this->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
 
-        $this->assertRefused($this->report($host, $runtime, 1, str_repeat('x', 256 * 1024)), 'too_large', $runtime);
+        $this->assertRefused($this->notify($host, $runtime, 1, str_repeat('x', 256 * 1024)), 'too_large', $runtime);
     }
 
     public function test_frames_past_four_a_second_are_refused(): void
@@ -94,11 +94,11 @@ final class ScreenReportRouteTest extends TestCase
         $this->app->instance(ServerClock::class, new FakeServerClock(CarbonImmutable::parse('2026-11-19 12:00:00')));
 
         foreach (range(1, 4) as $sequence) {
-            $this->report($host, $runtime, $sequence)->assertExactJson(['status' => 'stored']);
+            $this->notify($host, $runtime, $sequence)->assertExactJson(['status' => 'stored']);
         }
 
-        $this->report($host, $runtime, 5)->assertExactJson(['status' => 'refused', 'reason' => 'too_fast']);
-        $this->report($host, $runtime, 6)->assertExactJson(['status' => 'refused', 'reason' => 'too_fast']);
+        $this->notify($host, $runtime, 5)->assertExactJson(['status' => 'refused', 'reason' => 'too_fast']);
+        $this->notify($host, $runtime, 6)->assertExactJson(['status' => 'refused', 'reason' => 'too_fast']);
         $latest = $this->app->make(RuntimeScreen::class)->latest(ScreenRegistration::of($runtime));
         $this->assertSame(4, $latest?->frame->sequence);
     }
@@ -107,10 +107,10 @@ final class ScreenReportRouteTest extends TestCase
     {
         $host = $this->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
-        $this->report($host, $runtime, 7, frame: ['epoch' => 'epoch-1', 'stream' => 'stream-1']);
-        $this->report($host, $runtime, 1, 'after restart', ['epoch' => 'epoch-2', 'stream' => 'stream-1']);
+        $this->notify($host, $runtime, 7, frame: ['epoch' => 'epoch-1', 'stream' => 'stream-1']);
+        $this->notify($host, $runtime, 1, 'after restart', ['epoch' => 'epoch-2', 'stream' => 'stream-1']);
 
-        $delayed = $this->report($host, $runtime, 8, 'before restart', ['epoch' => 'epoch-1', 'stream' => 'stream-1']);
+        $delayed = $this->notify($host, $runtime, 8, 'before restart', ['epoch' => 'epoch-1', 'stream' => 'stream-1']);
 
         $delayed->assertExactJson(['status' => 'refused', 'reason' => 'retired']);
         $this->assertSame(['after restart', 'after restart'], $this->textsSeenBy($runtime));
@@ -120,14 +120,14 @@ final class ScreenReportRouteTest extends TestCase
     {
         $host = $this->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
-        $this->report($host, $runtime, 2, 'secret', ['shielded' => true, 'rows' => [], 'privacy_revision' => 1]);
+        $this->notify($host, $runtime, 2, 'secret', ['shielded' => true, 'rows' => [], 'privacy_revision' => 1]);
 
-        $delayed = $this->report($host, $runtime, 1, 'before shield', ['privacy_revision' => 0]);
+        $delayed = $this->notify($host, $runtime, 1, 'before shield', ['privacy_revision' => 0]);
 
         $delayed->assertExactJson(['status' => 'refused', 'reason' => 'retired']);
         $this->assertSame([null, null], $this->textsSeenBy($runtime));
 
-        $newer = $this->report($host, $runtime, 3, 'public again', ['privacy_revision' => 1]);
+        $newer = $this->notify($host, $runtime, 3, 'public again', ['privacy_revision' => 1]);
 
         $newer->assertExactJson(['status' => 'stored']);
         $this->assertSame(['public again', 'public again'], $this->textsSeenBy($runtime));
@@ -176,7 +176,7 @@ final class ScreenReportRouteTest extends TestCase
     /**
      * @param  array<string, mixed>  $frame  the frame fields that differ from an ordinary public frame
      */
-    private function report(
+    private function notify(
         EnrolledHost $host,
         AgentRuntime $runtime,
         int $sequence,

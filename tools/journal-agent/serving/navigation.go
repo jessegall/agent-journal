@@ -80,7 +80,7 @@ func (nav navigation) answer(ctx context.Context, answer client.NavigationAnswer
 	case client.NavigationEntry:
 		nav.replayEntry(ctx, answer)
 	case client.NavigationOpened:
-		nav.reportStop(ctx, contracts.ProgressApplying, nil)
+		nav.notifyStop(ctx, contracts.ProgressApplying, nil)
 	case client.NavigationWait:
 		go nav.askAgainAfter(ctx, waitOf(answer))
 	default:
@@ -98,7 +98,7 @@ func (nav navigation) replayEntry(ctx context.Context, answer client.NavigationA
 
 	result, err := replayer.ReplayEntry(entry)
 	if err == nil && !answer.Guarded && isStale(result) {
-		nav.reportStale(ctx, entry, result)
+		nav.notifyStale(ctx, entry, result)
 		next := nav.declining(entry.ID)
 		next.uncertainty = staleUncertainty(nav.uncertainty, result, entry.ID)
 		next.sent = sentSteps(entry, result.Step)
@@ -116,7 +116,7 @@ func (nav navigation) replayEntry(ctx context.Context, answer client.NavigationA
 func (nav navigation) completeReplay(ctx context.Context, entryID string, result keyscripts.ReplayResult) {
 	request := nav.request
 	key := fmt.Sprintf("%s:%d:replay:%s", request.RequestID, request.Attempt, entryID)
-	if err := nav.loop.journal.ReportReplayed(ctx, entryID, nav.runtime.id, key); err != nil {
+	if err := nav.loop.journal.NotifyReplayed(ctx, entryID, nav.runtime.id, key); err != nil {
 		log.Printf("the replay of entry %s could not be reported: %v", entryID, err)
 	}
 	nav.loop.releaseRuntime(nav.runtime)
@@ -126,7 +126,7 @@ func (nav navigation) completeReplay(ctx context.Context, entryID string, result
 		return
 	}
 
-	nav.loop.report(ctx, request, contracts.OperationResult{
+	nav.loop.notify(ctx, request, contracts.OperationResult{
 		Progress: contracts.ProgressApplied,
 		Outcome:  contracts.OutcomeConfirmed,
 	})
@@ -146,9 +146,9 @@ func isStale(result keyscripts.ReplayResult) bool {
 	return result.Outcome == keyscripts.Stale && (result.Step > 0 || result.Reason == keyscripts.NoProof)
 }
 
-// reportStale marks the entry stale on the runtime's build, with the step and reason it failed at and the redacted
+// notifyStale marks the entry stale on the runtime's build, with the step and reason it failed at and the redacted
 // screen it failed on, under a key of the replay so a repeated report is the same one.
-func (nav navigation) reportStale(ctx context.Context, entry keyscripts.Entry, result keyscripts.ReplayResult) {
+func (nav navigation) notifyStale(ctx context.Context, entry keyscripts.Entry, result keyscripts.ReplayResult) {
 	request := nav.request
 	runtime := nav.runtime
 	report := client.EntryStaleReport{
@@ -162,7 +162,7 @@ func (nav navigation) reportStale(ctx context.Context, entry keyscripts.Entry, r
 	if result.Uncertainty != nil {
 		report.Rows = result.Uncertainty.Rows
 	}
-	if err := nav.loop.journal.ReportStale(ctx, entry.ID, report); err != nil {
+	if err := nav.loop.journal.NotifyStale(ctx, entry.ID, report); err != nil {
 		log.Printf("the stale replay of entry %s could not be reported: %v", entry.ID, err)
 	}
 }
@@ -269,12 +269,12 @@ func (nav navigation) raisePayload() client.NavigationRaise {
 
 func (nav navigation) end(ctx context.Context) {
 	outcome := string(contracts.OutcomeEntryUnavailable)
-	nav.reportStop(ctx, contracts.ProgressFailed, &outcome)
+	nav.notifyStop(ctx, contracts.ProgressFailed, &outcome)
 	nav.loop.holdRuntime(nav.runtime)
 }
 
-// reportStop shares only the stalled step and its reason.
-func (nav navigation) reportStop(ctx context.Context, progress contracts.Progress, outcome *string) {
+// notifyStop shares only the stalled step and its reason.
+func (nav navigation) notifyStop(ctx context.Context, progress contracts.Progress, outcome *string) {
 	report := client.RequestReport{
 		RequestID: nav.request.RequestID,
 		Attempt:   nav.request.Attempt,
@@ -286,7 +286,7 @@ func (nav navigation) reportStop(ctx context.Context, progress contracts.Progres
 			Evidence:   "navigation-needed: " + string(nav.uncertainty.Reason),
 		},
 	}
-	if err := nav.loop.journal.ReportRequest(ctx, report); err != nil {
+	if err := nav.loop.journal.NotifyRequest(ctx, report); err != nil {
 		log.Printf("the stop of request %s for navigation could not be reported: %v", nav.request.RequestID, err)
 	}
 }

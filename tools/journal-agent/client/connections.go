@@ -79,9 +79,9 @@ type PresenceReport struct {
 	Reconciled bool `json:"reconciled"`
 }
 
-// ReportRuntimeStopped gives the journal the device's receipt that the runtime's session stopped; sent again, it
+// NotifyRuntimeStopped gives the journal the device's receipt that the runtime's session stopped; sent again, it
 // changes nothing.
-func (client *Client) ReportRuntimeStopped(ctx context.Context, bindingID string, runtimeID string) error {
+func (client *Client) NotifyRuntimeStopped(ctx context.Context, bindingID string, runtimeID string) error {
 	return client.call(ctx, "/host/bindings/"+url.PathEscape(bindingID)+"/runtimes/"+url.PathEscape(runtimeID)+"/stopped",
 		nil, nil)
 }
@@ -113,8 +113,8 @@ func (client *Client) BindingStatus(ctx context.Context, bindingID string) (Bind
 	return answerOf[BindingStatus](ctx, client, "/host/bindings/"+url.PathEscape(bindingID)+"/status", nil)
 }
 
-// ReportPresence tells the journal the binding's relay is present, with no provider session needed.
-func (client *Client) ReportPresence(ctx context.Context, bindingID string, report PresenceReport) (PresenceReceipt, error) {
+// NotifyPresence tells the journal the binding's relay is present, with no provider session needed.
+func (client *Client) NotifyPresence(ctx context.Context, bindingID string, report PresenceReport) (PresenceReceipt, error) {
 	receipt := PresenceReceipt{}
 	err := client.call(ctx, "/host/bindings/"+url.PathEscape(bindingID)+"/presence", report, &receipt)
 

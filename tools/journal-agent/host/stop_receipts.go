@@ -14,7 +14,7 @@ const stopReceiptsName = "stop-receipts.json"
 
 // StopReporter gives the journal a runtime's stop receipt.
 type StopReporter interface {
-	ReportRuntimeStopped(ctx context.Context, bindingID string, runtimeID string) error
+	NotifyRuntimeStopped(ctx context.Context, bindingID string, runtimeID string) error
 }
 
 // QueueStopReceipt keeps the runtime's stop receipt before it is sent, so a device away from the journal sends it
@@ -57,7 +57,7 @@ func (state ConnectionState) SendStopReceipts(ctx context.Context, bindingID str
 	kept := []string{}
 	var failures []error
 	for _, runtimeID := range pending {
-		if err := reporter.ReportRuntimeStopped(ctx, bindingID, runtimeID); err != nil {
+		if err := reporter.NotifyRuntimeStopped(ctx, bindingID, runtimeID); err != nil {
 			kept = append(kept, runtimeID)
 			failures = append(failures, err)
 		}

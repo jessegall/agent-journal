@@ -133,9 +133,9 @@ trait ConnectsProjects
      * Reports the binding's relay present on a set-up folder, reconciled, and able to run Claude Code with isolated
      * hooks and a lease, as a relay that set its folder up does.
      */
-    private function reportClaudeCode(string $nonce, string $bindingId): void
+    private function notifyClaudeCode(string $nonce, string $bindingId): void
     {
-        $this->reportPresence($nonce, $bindingId, [[
+        $this->notifyPresence($nonce, $bindingId, [[
             'key' => 'claude-code', 'build' => '2.1.323',
             'arrangement' => 'local', 'placement' => 'protected_host',
         ]]);
@@ -146,7 +146,7 @@ trait ConnectsProjects
      *
      * @param  list<array<string, string|int>>  $descriptors
      */
-    private function reportPresence(string $nonce, string $bindingId, array $descriptors): void
+    private function notifyPresence(string $nonce, string $bindingId, array $descriptors): void
     {
         $this->signedRelayCall(
             $this->relayCredential($nonce),

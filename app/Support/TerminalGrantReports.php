@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
+use App\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\RequestProgress;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
@@ -16,7 +16,7 @@ use App\Models\Drivers\TerminalGrant;
  */
 final readonly class TerminalGrantReports
 {
-    public function settle(DriverRequest $request, ReportRequestProgressCommand $report): void
+    public function settle(DriverRequest $request, NotifyRequestProgressCommand $report): void
     {
         if (! $report->progress->isFinal()) {
             return;
@@ -44,7 +44,7 @@ final readonly class TerminalGrantReports
         $grant->refuse();
     }
 
-    private function settleRelease(TerminalGrant $grant, ReportRequestProgressCommand $report): void
+    private function settleRelease(TerminalGrant $grant, NotifyRequestProgressCommand $report): void
     {
         if ($report->progress !== RequestProgress::Applied) {
             return;

@@ -6,7 +6,7 @@ namespace App\Pipelines;
 
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Supervision\QueuePipedCommands;
-use App\Pipes\Supervision\ReportPipedCommandsRefused;
+use App\Pipes\Supervision\NotifyPipedCommandsRefused;
 use App\Pipes\Supervision\SpawnPart;
 use App\Support\Execution\PipedCommands;
 use App\Support\Execution\StepOutcome;
@@ -32,7 +32,7 @@ final readonly class RunPipedCommandsPipeline implements PipelineDefinition
             Step::repeated(SpawnPart::class, while: fn (PipedCommands $commands) => $commands->hasWaiting()),
             Step::chosen(
                 fn (PipedCommands $commands) => $commands->isRefused,
-                ReportPipedCommandsRefused::class,
+                NotifyPipedCommandsRefused::class,
                 FinishStartedCommandsPipeline::class,
             ),
         ];

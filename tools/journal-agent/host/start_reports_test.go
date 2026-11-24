@@ -15,15 +15,15 @@ type recordingReporter struct {
 	keys     []string
 }
 
-func (reporter *recordingReporter) ReportRunning(_ context.Context, startKey, executionID string) error {
+func (reporter *recordingReporter) NotifyRunning(_ context.Context, startKey, executionID string) error {
 	return reporter.record("running " + startKey + " " + executionID)
 }
 
-func (reporter *recordingReporter) ReportStopped(_ context.Context, startKey string) error {
+func (reporter *recordingReporter) NotifyStopped(_ context.Context, startKey string) error {
 	return reporter.record("stopped " + startKey)
 }
 
-func (reporter *recordingReporter) ReportFailure(_ context.Context, startKey, failure string) error {
+func (reporter *recordingReporter) NotifyFailure(_ context.Context, startKey, failure string) error {
 	return reporter.record("failed " + startKey + " " + failure)
 }
 
@@ -47,7 +47,7 @@ func (reporter *recordingReporter) record(report string) error {
 func TestAReportTheJournalCouldNotHearIsKeptAndSentLater(t *testing.T) {
 	reports := &StartReports{Folder: t.TempDir()}
 	reporter := &recordingReporter{failWith: errors.Join(client.ErrUncertain, errors.New("journal away"))}
-	if err := reports.Queue(StartReport{StartKey: "s1", Kind: ReportRunning, Execution: "e1"}); err != nil {
+	if err := reports.Queue(StartReport{StartKey: "s1", Kind: NotifyRunning, Execution: "e1"}); err != nil {
 		t.Fatal(err)
 	}
 

@@ -97,7 +97,7 @@ final class RecordingSignInHost implements SignInHost
         return $claimed;
     }
 
-    public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void
+    public function notifyCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void
     {
         $this->cleanups[] = $progress;
     }
@@ -109,7 +109,7 @@ final class RecordingSignInHost implements SignInHost
         return $claimed;
     }
 
-    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $result): void
+    public function notifyCheck(ClaimedAccountCheck $claimed, AccountCheckResult $result): void
     {
         $this->checks[] = $result;
     }
@@ -122,7 +122,7 @@ final class RecordingSignInHost implements SignInHost
         return new SignInPoll($this->pollCount < $this->livePolls, $answer);
     }
 
-    public function report(
+    public function notify(
         ClaimedSignIn $claimed,
         SignInOutcome $outcome,
         SignInIdentity $identity,

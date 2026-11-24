@@ -80,9 +80,9 @@ final class ProjectFileTest extends TestCase
 
     public function test_a_file_read_whole_is_kept_once_per_digest_and_a_cut_one_is_not(): void
     {
-        $this->reportWhole(self::SOURCE);
-        $this->reportWhole(self::SOURCE);
-        $this->report('cut text', true);
+        $this->notifyWhole(self::SOURCE);
+        $this->notifyWhole(self::SOURCE);
+        $this->notify('cut text', true);
 
         $file = ProjectFile::query()->where('path', self::PATH)->firstOrFail();
         $this->assertSame([hash('sha256', self::SOURCE)], $file->versions()->pluck('digest')->all());
@@ -91,7 +91,7 @@ final class ProjectFileTest extends TestCase
 
     public function test_a_comment_on_lines_of_a_version_is_checked_against_that_text(): void
     {
-        $this->reportWhole(self::SOURCE);
+        $this->notifyWhole(self::SOURCE);
         $this->actAsOwner();
         $target = $this->target();
         $digest = hash('sha256', self::SOURCE);
@@ -106,7 +106,7 @@ final class ProjectFileTest extends TestCase
 
     public function test_a_version_a_comment_names_is_kept_while_the_oldest_unnamed_ones_go(): void
     {
-        $this->reportWhole('first');
+        $this->notifyWhole('first');
         $this->actAsOwner();
         $this->bus()->run(new PostTextCommentCommand(
             $this->target(),
@@ -117,7 +117,7 @@ final class ProjectFileTest extends TestCase
 
         foreach (['second', 'third', 'fourth', 'fifth'] as $minutes => $text) {
             CarbonImmutable::setTestNow(CarbonImmutable::now()->addMinutes($minutes + 1));
-            $this->reportWhole($text);
+            $this->notifyWhole($text);
         }
 
         $this->app->make(ProjectReadRetentionService::class)->prune(CarbonImmutable::now());
@@ -129,7 +129,7 @@ final class ProjectFileTest extends TestCase
 
     public function test_someone_other_than_the_owner_may_not_read_a_file(): void
     {
-        $this->reportWhole(self::SOURCE);
+        $this->notifyWhole(self::SOURCE);
         $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(User::factory()->create()->id),
@@ -158,12 +158,12 @@ final class ProjectFileTest extends TestCase
         return $this->app->make(CommandBus::class);
     }
 
-    private function reportWhole(string $text): void
+    private function notifyWhole(string $text): void
     {
-        $this->report($text, false);
+        $this->notify($text, false);
     }
 
-    private function report(string $text, bool $isTruncated): void
+    private function notify(string $text, bool $isTruncated): void
     {
         $read = ProjectRead::create(
             $this->binding,

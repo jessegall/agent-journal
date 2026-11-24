@@ -145,7 +145,7 @@ func TestADisconnectWithAnUnacknowledgedReceiptAsksBeforeDiscardingIt(t *testing
 		t.Fatal(err)
 	}
 	reports := &host.StartReports{Folder: relay}
-	if err := reports.Queue(host.StartReport{StartKey: "start-1", Kind: host.ReportStopped}); err != nil {
+	if err := reports.Queue(host.StartReport{StartKey: "start-1", Kind: host.NotifyStopped}); err != nil {
 		t.Fatal(err)
 	}
 	disabled := []string{}

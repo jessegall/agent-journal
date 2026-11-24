@@ -167,9 +167,9 @@ func TestAChatgptOwnerSharedByTwoThreadsReadsItsLimitsOnceAndOnlyCodexs(t *testi
 		t.Fatal(err)
 	}
 	usage := newSeenUsage()
-	owner.ReportWindowsTo(usage)
+	owner.NotifyWindowsTo(usage)
 	primary, secondary := nextWindow(t, usage), nextWindow(t, usage)
-	owner.ReportWindowsTo(usage)
+	owner.NotifyWindowsTo(usage)
 
 	runTurn(t, owner, usage)
 	runTurn(t, owner, usage)
@@ -201,7 +201,7 @@ func TestALimitNotificationGivesANewWindow(t *testing.T) {
 		t.Fatal(err)
 	}
 	usage := newSeenUsage()
-	owner.ReportWindowsTo(usage)
+	owner.NotifyWindowsTo(usage)
 
 	runTurn(t, owner, usage)
 
@@ -217,7 +217,7 @@ func TestALimitReadThatTimesOutLeavesTheOwnerRunning(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	owner.ReportWindowsTo(newSeenUsage())
+	owner.NotifyWindowsTo(newSeenUsage())
 	time.Sleep(400 * time.Millisecond)
 
 	runTurn(t, owner, nil)
@@ -243,7 +243,7 @@ func TestAnApiKeyOwnerReadsNoLimitsAndReplacesAKnownThreadsCount(t *testing.T) {
 		t.Fatal(err)
 	}
 	usage := newSeenUsage()
-	owner.ReportWindowsTo(usage)
+	owner.NotifyWindowsTo(usage)
 
 	thread := runTurn(t, owner, usage)
 

@@ -143,13 +143,13 @@ use App\Commands\RepairDriverSettings\RepairDriverSettingsCommand;
 use App\Commands\ReplaceSeatOccupant\ReplaceSeatOccupantCommand;
 use App\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Commands\ReportDriverTurn\ReportDriverTurnCommand;
-use App\Commands\ReportEntryReplayed\ReportEntryReplayedCommand;
-use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
-use App\Commands\ReportRuntimeActivity\ReportRuntimeActivityCommand;
-use App\Commands\ReportRuntimeExit\ReportRuntimeExitCommand;
-use App\Commands\ReportRuntimeHeartbeat\ReportRuntimeHeartbeatCommand;
-use App\Commands\ReportRuntimeScreen\ReportRuntimeScreenCommand;
+use App\Commands\NotifyDriverTurn\NotifyDriverTurnCommand;
+use App\Commands\NotifyEntryReplayed\NotifyEntryReplayedCommand;
+use App\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
+use App\Commands\NotifyRuntimeExit\NotifyRuntimeExitCommand;
+use App\Commands\NotifyRuntimeHeartbeat\NotifyRuntimeHeartbeatCommand;
+use App\Commands\NotifyRuntimeScreen\NotifyRuntimeScreenCommand;
 use App\Commands\RequestShare\RequestShareCommand;
 use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Commands\ResetSetting\ResetSettingCommand;
@@ -2671,19 +2671,19 @@ final class CoreApi
                 ProveNavigationCommand::class,
                 RaiseNavigationCommand::class,
                 MarkMenuEntryStaleCommand::class,
-                ReportEntryReplayedCommand::class,
+                NotifyEntryReplayedCommand::class,
                 RetireMenuEntryCommand::class,
                 ResumeKeyScriptCommand::class,
                 CancelKeyScriptCommand::class,
                 ReassignAgentRuntimeCommand::class,
                 RecordRuntimeCommand::class,
                 ClaimDriverRequestsCommand::class,
-                ReportRuntimeActivityCommand::class,
-                ReportRequestProgressCommand::class,
-                ReportDriverTurnCommand::class,
-                ReportRuntimeHeartbeatCommand::class,
-                ReportRuntimeExitCommand::class,
-                ReportRuntimeScreenCommand::class,
+                NotifyRuntimeActivityCommand::class,
+                NotifyRequestProgressCommand::class,
+                NotifyDriverTurnCommand::class,
+                NotifyRuntimeHeartbeatCommand::class,
+                NotifyRuntimeExitCommand::class,
+                NotifyRuntimeScreenCommand::class,
                 OpenHostMainRuntimeCommand::class,
                 OpenBindingMainRuntimeCommand::class,
                 MarkSilentSessionsCommand::class,

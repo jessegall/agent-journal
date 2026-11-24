@@ -18,7 +18,7 @@ main() {
     connect_folder "$root" "$ticket" "$origin" "$installation"
     connected=$?
     place_command "$placement" "$installation/bin/journal" "$root"
-    report_connected "$connected" "$installation/bin/journal"
+    notify_connected "$connected" "$installation/bin/journal"
     exit "$connected"
 }
 
@@ -174,7 +174,7 @@ add_path_line() {
     printf 'startup\t%s\n' "$1" >> "$2"
 }
 
-report_connected() {
+notify_connected() {
     [ "$1" = 0 ] && echo "journal: connected."
     echo "journal: in this terminal run: \"$2\" status"
     echo "journal: in a new terminal run: journal status"

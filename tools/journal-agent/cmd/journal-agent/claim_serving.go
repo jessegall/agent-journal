@@ -41,7 +41,7 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	defer startListener.Close()
 	go startSocket.Serve(ctx, startListener)
 	starts := &claimedStarts{keys: map[string]string{}, report: func(report host.StartReport) {
-		claims.executor.report(ctx, report)
+		claims.executor.notify(ctx, report)
 	}}
 	loop := serving.NewLoop(endedStarts{Journal: claims.journal, starts: starts}, claims.preparation,
 		starts.opening(claims.open))
@@ -96,7 +96,7 @@ func (starts *claimedStarts) opening(open serving.Opener) serving.Opener {
 		starts.keys[runtimeID] = prepared.Claim.StartKey
 		starts.mutex.Unlock()
 		starts.report(host.StartReport{
-			StartKey: prepared.Claim.StartKey, Kind: host.ReportRunning, Execution: executionOf(runtimeID, runtime),
+			StartKey: prepared.Claim.StartKey, Kind: host.NotifyRunning, Execution: executionOf(runtimeID, runtime),
 		})
 
 		return runtime, nil
@@ -110,7 +110,7 @@ func (starts *claimedStarts) ended(runtimeID string) {
 	delete(starts.keys, runtimeID)
 	starts.mutex.Unlock()
 	if opened {
-		starts.report(host.StartReport{StartKey: key, Kind: host.ReportStopped})
+		starts.report(host.StartReport{StartKey: key, Kind: host.NotifyStopped})
 	}
 }
 
@@ -120,8 +120,8 @@ type endedStarts struct {
 	starts *claimedStarts
 }
 
-func (journal endedStarts) ReportExit(ctx context.Context, report client.LivenessReport) error {
-	err := journal.Journal.ReportExit(ctx, report)
+func (journal endedStarts) NotifyExit(ctx context.Context, report client.LivenessReport) error {
+	err := journal.Journal.NotifyExit(ctx, report)
 	journal.starts.ended(report.RuntimeID)
 
 	return err
@@ -135,7 +135,7 @@ func executionOf(runtimeID string, runtime serving.Runtime) string {
 // answerProjectRead reads what the journal asked for and reports it once; a report that fails is logged and left for
 // the journal to expire.
 func (claims claimServing) answerProjectRead(ctx context.Context, reader host.ProjectReader, read client.ProjectRead) {
-	if err := claims.journal.ReportProjectRead(ctx, read.ID, reader.Answer(read)); err != nil {
+	if err := claims.journal.NotifyProjectRead(ctx, read.ID, reader.Answer(read)); err != nil {
 		log.Printf("the answer to project read %s could not be sent: %v", read.ID, err)
 	}
 }

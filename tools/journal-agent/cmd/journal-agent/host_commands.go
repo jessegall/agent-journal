@@ -197,12 +197,12 @@ func serve(arguments []string) error {
 		go runCleanups(ctx, cleanup, journal)
 		evidence := host.NativeEvidence{Folder: *stateFolder}
 		// Without a report the journal refuses every contained start, so a failed report stops no other work.
-		if err := host.ReportContainedProtection(ctx, containers, *seccomp, evidence, journal); err != nil {
+		if err := host.NotifyContainedProtection(ctx, containers, *seccomp, evidence, journal); err != nil {
 			log.Printf("the protection of the agent image was not reported: %v", err)
 		}
 	}
 	// The journal refuses every call of a host of another protocol, so this report fails first when the versions differ.
-	if err := journal.ReportDescriptors(ctx, descriptorsOf(arrangement)); err != nil {
+	if err := journal.NotifyDescriptors(ctx, descriptorsOf(arrangement)); err != nil {
 		return fmt.Errorf("the journal did not take this host's drivers: %w", err)
 	}
 	outcomes, err := host.ReconcileOnBoot(ctx, journal, preparation.States, reports, sessions)
@@ -457,7 +457,7 @@ func (opener runtimeOpener) codexRuntime(
 	}
 	if opener.usage != nil {
 		usage := host.NewUsageSink(prepared, opener.usage)
-		owner.ReportWindowsTo(usage)
+		owner.NotifyWindowsTo(usage)
 		settings.Usage = usage
 	}
 	if runtime.Model != nil {
@@ -579,7 +579,7 @@ func terminalDriverOf(
 		Attachment:        opened.Attachment,
 		Generation:        opened.Reader.Generation,
 		Scripts:           scripts.Registered(),
-		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Report),
+		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Notify),
 		Clock:             clock,
 		ProcessGeneration: runtime.ProcessGeneration,
 		ConversationID:    conversationID,

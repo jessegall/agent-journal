@@ -13,21 +13,21 @@ import (
 
 // RequestReporter sends one request report to the journal.
 type RequestReporter interface {
-	ReportRequest(ctx context.Context, report client.RequestReport) error
+	NotifyRequest(ctx context.Context, report client.RequestReport) error
 }
 
-// RequestReports keeps the request reports the journal has not acknowledged in one owner-only file, so a report
+// Notify keeps the request reports the journal has not acknowledged in one owner-only file, so a report
 // made during an outage, or just before a restart, is sent again in its order once the journal answers.
-type RequestReports struct {
+type Notify struct {
 	Folder string
 	mutex  sync.Mutex
 }
 
 const pendingRequestReportsName = "pending-request-reports.json"
 
-// Report saves the report, then sends every saved report in order; those the journal did not acknowledge stay for
+// Notify saves the report, then sends every saved report in order; those the journal did not acknowledge stay for
 // the next round, while one it refused is dropped, since sending it again would be refused again.
-func (reports *RequestReports) Report(ctx context.Context, reporter RequestReporter, report client.RequestReport) error {
+func (reports *Notify) Notify(ctx context.Context, reporter RequestReporter, report client.RequestReport) error {
 	reports.mutex.Lock()
 	defer reports.mutex.Unlock()
 	pending, err := reports.pending()
@@ -38,7 +38,7 @@ func (reports *RequestReports) Report(ctx context.Context, reporter RequestRepor
 }
 
 // Replay sends the reports kept from before, such as those a restart left unsent.
-func (reports *RequestReports) Replay(ctx context.Context, reporter RequestReporter) error {
+func (reports *Notify) Replay(ctx context.Context, reporter RequestReporter) error {
 	reports.mutex.Lock()
 	defer reports.mutex.Unlock()
 	pending, err := reports.pending()
@@ -48,7 +48,7 @@ func (reports *RequestReports) Replay(ctx context.Context, reporter RequestRepor
 	return reports.sendAll(ctx, reporter, pending)
 }
 
-func (reports *RequestReports) sendAll(
+func (reports *Notify) sendAll(
 	ctx context.Context,
 	reporter RequestReporter,
 	pending []client.RequestReport,
@@ -56,7 +56,7 @@ func (reports *RequestReports) sendAll(
 	var kept []client.RequestReport
 	var failure error
 	for index, report := range pending {
-		if err := reporter.ReportRequest(ctx, report); isRetried(err) {
+		if err := reporter.NotifyRequest(ctx, report); isRetried(err) {
 			kept, failure = pending[index:], err
 			break
 		}
@@ -64,7 +64,7 @@ func (reports *RequestReports) sendAll(
 	return errors.Join(failure, reports.save(kept))
 }
 
-func (reports *RequestReports) pending() ([]client.RequestReport, error) {
+func (reports *Notify) pending() ([]client.RequestReport, error) {
 	content, err := os.ReadFile(filepath.Join(reports.Folder, pendingRequestReportsName))
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
@@ -76,6 +76,6 @@ func (reports *RequestReports) pending() ([]client.RequestReport, error) {
 	return pending, json.Unmarshal(content, &pending)
 }
 
-func (reports *RequestReports) save(pending []client.RequestReport) error {
+func (reports *Notify) save(pending []client.RequestReport) error {
 	return writePrivateJSON(filepath.Join(reports.Folder, pendingRequestReportsName), pending)
 }

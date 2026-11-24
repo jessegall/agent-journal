@@ -97,7 +97,7 @@ func TestUnresolvedStartsAreReadWithASignedGet(t *testing.T) {
 func TestReportsPostToTheirStartRoutes(t *testing.T) {
 	journal, target, body := fakeJournal(t, `{}`)
 
-	if err := journal.ReportFailure(context.Background(), "start-1", "rate_limit"); err != nil {
+	if err := journal.NotifyFailure(context.Background(), "start-1", "rate_limit"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -122,7 +122,7 @@ func TestAUsageReportIsPostedWithItsMeasurementAndNoMissingField(t *testing.T) {
 	report := UsageReport{StartKey: "start-1", Generation: 3, SourceID: "start-1:7", SourceOrder: 2,
 		ObservedAt:  "2026-11-21T10:00:00Z",
 		Measurement: UsageMeasurement{Type: UsageWindow, LimitID: "claude", Slot: WindowSevenDay, UsedPercent: &percent}}
-	if err := journal.ReportUsage(context.Background(), report); err != nil {
+	if err := journal.NotifyUsage(context.Background(), report); err != nil {
 		t.Fatal(err)
 	}
 

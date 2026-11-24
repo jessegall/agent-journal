@@ -57,7 +57,7 @@ final readonly class PrivateSignInProcesses
         }
 
         if (! $this->protocols->supports($claimed->driver, $claimed->method)) {
-            $this->host->report($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
+            $this->host->notify($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
 
             return true;
         }
@@ -65,14 +65,14 @@ final readonly class PrivateSignInProcesses
         $protocol = $this->protocols->for($claimed->driver, $claimed->method);
 
         if (! $this->owners->drain($claimed->directory, $claimed->accountId)) {
-            $this->host->report($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
+            $this->host->notify($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
 
             return true;
         }
 
         $this->makePrivateFolder($claimed->directory);
         $process = $protocol->begin($claimed->directory);
-        $this->host->report($claimed, SignInOutcome::Waiting, SignInIdentity::unproved());
+        $this->host->notify($claimed, SignInOutcome::Waiting, SignInIdentity::unproved());
 
         if (! $this->waitForEnd($protocol, $process, $claimed) || $this->isPastDeadline($claimed)) {
             $process->stop();
@@ -84,7 +84,7 @@ final readonly class PrivateSignInProcesses
         $process->stop();
         $this->settleFirstRun($protocol, $verification, $claimed->directory);
         $outcome = $verification->isSignedIn ? SignInOutcome::Verified : SignInOutcome::Failed;
-        $this->host->report($claimed, $outcome, $verification->identity, $verification->refusal);
+        $this->host->notify($claimed, $outcome, $verification->identity, $verification->refusal);
 
         return true;
     }
@@ -110,7 +110,7 @@ final readonly class PrivateSignInProcesses
         }
 
         if (! $this->protocols->supports($claimed->driver, $claimed->method)) {
-            $this->host->reportCheck($claimed, AccountCheckResult::Unknown);
+            $this->host->notifyCheck($claimed, AccountCheckResult::Unknown);
 
             return true;
         }
@@ -125,7 +125,7 @@ final readonly class PrivateSignInProcesses
             default => AccountCheckResult::SignedOut,
         };
 
-        $this->host->reportCheck($claimed, $accountCheck);
+        $this->host->notifyCheck($claimed, $accountCheck);
 
         return true;
     }
@@ -143,14 +143,14 @@ final readonly class PrivateSignInProcesses
         }
 
         if ($this->isStillBound($claimed)) {
-            $this->host->reportCleanup($claimed, CleanupProgress::stillBound());
+            $this->host->notifyCleanup($claimed, CleanupProgress::stillBound());
 
             return true;
         }
 
         $isStoreRemoved = $claimed->isStoreRemoved || $this->removeStore($claimed);
         $isDirectoryRemoved = $isStoreRemoved && $this->removeDirectory($claimed->directory);
-        $this->host->reportCleanup($claimed, new CleanupProgress($isStoreRemoved, $isDirectoryRemoved));
+        $this->host->notifyCleanup($claimed, new CleanupProgress($isStoreRemoved, $isDirectoryRemoved));
 
         return true;
     }
@@ -280,7 +280,7 @@ final readonly class PrivateSignInProcesses
      */
     private function interrupt(ClaimedSignIn $claimed, RuntimeException $failure): void
     {
-        $this->host->report($claimed, SignInOutcome::Interrupted, SignInIdentity::unproved(), $failure->getMessage());
+        $this->host->notify($claimed, SignInOutcome::Interrupted, SignInIdentity::unproved(), $failure->getMessage());
     }
 
     /**

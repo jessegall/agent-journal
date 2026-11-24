@@ -13,7 +13,7 @@ type flakyReporter struct {
 	sent []string
 }
 
-func (reporter *flakyReporter) ReportRequest(_ context.Context, report client.RequestReport) error {
+func (reporter *flakyReporter) NotifyRequest(_ context.Context, report client.RequestReport) error {
 	if reporter.down {
 		return errors.New("the journal cannot be reached")
 	}
@@ -24,12 +24,12 @@ func (reporter *flakyReporter) ReportRequest(_ context.Context, report client.Re
 func TestARequestReportMadeDuringAnOutageIsReplayedInOrderAfterARestart(t *testing.T) {
 	folder := t.TempDir()
 	reporter := &flakyReporter{down: true}
-	before := &RequestReports{Folder: folder}
-	_ = before.Report(context.Background(), reporter, client.RequestReport{RequestID: "first"})
-	_ = before.Report(context.Background(), reporter, client.RequestReport{RequestID: "second"})
+	before := &Notify{Folder: folder}
+	_ = before.Notify(context.Background(), reporter, client.RequestReport{RequestID: "first"})
+	_ = before.Notify(context.Background(), reporter, client.RequestReport{RequestID: "second"})
 
 	reporter.down = false
-	restarted := &RequestReports{Folder: folder}
+	restarted := &Notify{Folder: folder}
 	if err := restarted.Replay(context.Background(), reporter); err != nil {
 		t.Fatal(err)
 	}

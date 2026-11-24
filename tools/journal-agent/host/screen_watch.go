@@ -28,7 +28,7 @@ const failureLogInterval = time.Minute
 
 // ScreenReporter sends one frame of a runtime's screen to the journal.
 type ScreenReporter interface {
-	ReportScreen(ctx context.Context, runtimeID string, frame screen.Frame) error
+	NotifyScreen(ctx context.Context, runtimeID string, frame screen.Frame) error
 }
 
 // ScreenReaders finds the screen of a runtime's program, with the layout it is classified by, while the host runs it.
@@ -236,7 +236,7 @@ func (sender *screenSender) tick(ctx context.Context) bool {
 	frame.Sequence = sender.sequence + 1
 	sender.proof++
 	frame.Stream, frame.Proof, frame.ExpiresAt = sender.stream, sender.proof, frame.Captured.Add(proofLifetime)
-	err := sender.watcher.reporter.ReportScreen(ctx, sender.runtimeID, frame)
+	err := sender.watcher.reporter.NotifyScreen(ctx, sender.runtimeID, frame)
 	var refused client.ScreenRefused
 	if errors.As(err, &refused) {
 		sender.logFailure(now, err)

@@ -10,7 +10,7 @@ use App\Pipes\Supervision\BuiltinChecks\RefuseEchoEscapes;
 use App\Pipes\Supervision\BuiltinChecks\RefusePrintfConversions;
 use App\Pipes\Supervision\BuiltinChecks\RefusePrintfWithoutFormat;
 use App\Pipes\Supervision\FinishBackground;
-use App\Pipes\Supervision\ReportStop;
+use App\Pipes\Supervision\NotifyStop;
 use App\Pipes\Supervision\RunRootStep;
 use App\Pipes\Supervision\StartRun;
 use App\Support\Execution\RunToSupervise;
@@ -40,7 +40,7 @@ final readonly class SuperviseRunPipeline implements PipelineDefinition
             StartRun::class,
             RunRootStep::class,
             FinishBackground::class,
-            ReportStop::class,
+            NotifyStop::class,
         ];
     }
 }

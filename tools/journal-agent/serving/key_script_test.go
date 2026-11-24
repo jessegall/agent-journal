@@ -39,7 +39,7 @@ func newScriptRuntime() *scriptRuntime {
 	return &scriptRuntime{release: make(chan keyscripts.Result, 1)}
 }
 
-func (runtime *scriptRuntime) ReportProgressTo(receiver func(keyscripts.Progress)) {
+func (runtime *scriptRuntime) NotifyProgressTo(receiver func(keyscripts.Progress)) {
 	runtime.mutex.Lock()
 	defer runtime.mutex.Unlock()
 	runtime.receiver = receiver
@@ -522,9 +522,9 @@ func TestAStepRunByAnOlderBuildsScriptSaysWhichBuildItWas(t *testing.T) {
 	runtime := &liveRuntime{id: "runtime-1", driver: newScriptRuntime(), build: "0.166.0"}
 	progress := keyscripts.Progress{Step: 0, Name: "open", Profile: "codex@0.165.0"}
 
-	loop.reportStep(context.Background(), runtime, keyScriptClaim("script", nil), progress)
+	loop.notifyStep(context.Background(), runtime, keyScriptClaim("script", nil), progress)
 	progress.Profile = "codex@0.166.0"
-	loop.reportStep(context.Background(), runtime, keyScriptClaim("script", nil), progress)
+	loop.notifyStep(context.Background(), runtime, keyScriptClaim("script", nil), progress)
 
 	reports := journal.reportsOf("script")
 	if len(reports) != 2 || !strings.Contains(reports[0].Script.Evidence, "(script of codex@0.165.0)") ||

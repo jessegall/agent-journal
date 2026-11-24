@@ -34,7 +34,7 @@ final class BindingPresenceTest extends TestCase
     {
         $binding = $this->connected(self::NONCE);
 
-        $reply = $this->report(self::NONCE, $binding, 'boot-1', 1)->assertOk();
+        $reply = $this->notify(self::NONCE, $binding, 'boot-1', 1)->assertOk();
 
         $fresh = ProjectBinding::query()->findOrFail($binding);
         $this->assertSame(BindingReadiness::Ready, $fresh->readinessAt(CarbonImmutable::now()));
@@ -45,11 +45,11 @@ final class BindingPresenceTest extends TestCase
     public function test_a_report_of_an_older_setup_after_a_new_one_changes_nothing(): void
     {
         $binding = $this->connected(self::NONCE);
-        $this->report(self::NONCE, $binding, 'boot-1', 1, setupGeneration: 2)->assertOk();
+        $this->notify(self::NONCE, $binding, 'boot-1', 1, setupGeneration: 2)->assertOk();
         $before = ProjectBinding::query()->findOrFail($binding);
 
         $this->travel(10)->seconds();
-        $stale = $this->report(self::NONCE, $binding, 'boot-1', 2, setupGeneration: 1)->assertOk();
+        $stale = $this->notify(self::NONCE, $binding, 'boot-1', 2, setupGeneration: 1)->assertOk();
 
         $after = ProjectBinding::query()->findOrFail($binding);
         $this->assertSame(2, $stale->json('setupGeneration'));
@@ -61,11 +61,11 @@ final class BindingPresenceTest extends TestCase
     public function test_a_replayed_older_sequence_changes_nothing(): void
     {
         $binding = $this->connected(self::NONCE);
-        $this->report(self::NONCE, $binding, 'boot-1', 5)->assertOk();
+        $this->notify(self::NONCE, $binding, 'boot-1', 5)->assertOk();
         $before = ProjectBinding::query()->findOrFail($binding);
 
         $this->travel(10)->seconds();
-        $this->report(self::NONCE, $binding, 'boot-1', 3)->assertOk();
+        $this->notify(self::NONCE, $binding, 'boot-1', 3)->assertOk();
 
         $after = ProjectBinding::query()->findOrFail($binding);
         $this->assertSame(5, $after->report_sequence);
@@ -75,10 +75,10 @@ final class BindingPresenceTest extends TestCase
     public function test_a_new_boot_takes_over_a_live_one_only_when_it_asks(): void
     {
         $binding = $this->connected(self::NONCE);
-        $this->report(self::NONCE, $binding, 'boot-1', 1)->assertOk();
+        $this->notify(self::NONCE, $binding, 'boot-1', 1)->assertOk();
 
-        $this->report(self::NONCE, $binding, 'boot-2', 1)->assertConflict();
-        $taken = $this->report(self::NONCE, $binding, 'boot-2', 1, takeover: true)->assertOk();
+        $this->notify(self::NONCE, $binding, 'boot-2', 1)->assertConflict();
+        $taken = $this->notify(self::NONCE, $binding, 'boot-2', 1, takeover: true)->assertOk();
 
         $this->assertSame(2, $taken->json('generation'));
     }
@@ -88,7 +88,7 @@ final class BindingPresenceTest extends TestCase
         $binding = $this->connected(self::NONCE);
         $this->connected('nonce-bbbbbbbbbbbbbbbb');
 
-        $this->report('nonce-bbbbbbbbbbbbbbbb', $binding, 'boot-1', 1)->assertForbidden();
+        $this->notify('nonce-bbbbbbbbbbbbbbbb', $binding, 'boot-1', 1)->assertForbidden();
 
         $this->assertSame(BindingReadiness::Pending, ProjectBinding::query()->findOrFail($binding)->readiness);
     }
@@ -96,7 +96,7 @@ final class BindingPresenceTest extends TestCase
     public function test_the_binding_reads_offline_once_its_presence_expires_with_no_report(): void
     {
         $binding = $this->connected(self::NONCE);
-        $this->report(self::NONCE, $binding, 'boot-1', 1)->assertOk();
+        $this->notify(self::NONCE, $binding, 'boot-1', 1)->assertOk();
 
         $this->travel(ProjectBinding::PRESENCE_SECONDS + 1)->seconds();
 
@@ -107,7 +107,7 @@ final class BindingPresenceTest extends TestCase
     public function test_its_host_reads_the_bindings_readiness_and_last_contact_without_reporting(): void
     {
         $binding = $this->connected(self::NONCE);
-        $this->report(self::NONCE, $binding, 'boot-1', 1)->assertOk();
+        $this->notify(self::NONCE, $binding, 'boot-1', 1)->assertOk();
         $before = ProjectBinding::query()->findOrFail($binding);
 
         $status = $this->readStatus(self::NONCE, $binding)->assertOk();
@@ -145,7 +145,7 @@ final class BindingPresenceTest extends TestCase
         return (string) $this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId');
     }
 
-    private function report(
+    private function notify(
         string $nonce,
         string $binding,
         string $bootId,

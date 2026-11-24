@@ -129,7 +129,7 @@ func TestEachStageRecoversItsOwnWay(t *testing.T) {
 	recoveries := map[StartStage]Recovery{
 		GrantHeld: ContinuePreparing, ClaimRequested: ReconcileClaim, ClaimHeld: ContinuePreparing,
 		Prepared: ContinuePreparing, ReleasePending: ProveExecution, ExecutionKnown: ProveExecution,
-		ExitKnown: ReportExit, ReportAcknowledged: Forget,
+		ExitKnown: NotifyExit, ReportAcknowledged: Forget,
 	}
 	for stage, want := range recoveries {
 		if got := (StartRecord{Stage: stage}).Recovery(); got != want {

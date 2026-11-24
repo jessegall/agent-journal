@@ -37,6 +37,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\NodeVisitorAbstract;
+use PhpParser\Parser;
 use PhpParser\ParserFactory;
 
 ini_set('memory_limit', '4G');
@@ -164,10 +165,19 @@ if ($renames === []) {
 }
 
 $failed = 0;
+// The project is parsed and indexed once for the whole list, and each file is written once at the end: a list of
+// renames costs one parse, not one per line.
+$project = new ParsedProject($root);
+$editsByFile = [];
 
 foreach ($renames as $rename) {
     try {
-        $changes = renameMember($root, $rename, $with, $dry);
+        $changes = renameMember($project, $rename, $with);
+
+        foreach ($changes['edits'] as $file => $fileEdits) {
+            $editsByFile[$file] = [...$editsByFile[$file] ?? [], ...$fileEdits];
+        }
+
         printf(
             "%s %s: %d change(s) in %d file(s)\n",
             $dry ? 'Would rename' : 'Renamed',
@@ -191,12 +201,77 @@ foreach ($renames as $rename) {
         $failed++;
         fwrite(STDERR, 'Refused '.implode(' ', $rename).': '.$refusal->getMessage()."\n");
     }
+}
 
-    // the parsed files hold parent links in cycles, which only a collection frees before the next rename parses again
-    gc_collect_cycles();
+if (! $dry) {
+    foreach ($editsByFile as $file => $fileEdits) {
+        file_put_contents($root.'/'.$file, applied($project->codeOf($file), $fileEdits));
+    }
 }
 
 exit($failed > 0 ? 1 : 0);
+
+/**
+ * The project's PHP files parsed once, with the type index built from them once, for every rename of a list; a
+ * variable's own folder or file outside the searched folders is parsed when first asked for.
+ */
+final class ParsedProject
+{
+    /** @var array<string, array{code: string, statements: list<Node>}>|null */
+    private array|null $searched = null;
+
+    /** @var array<string, mixed>|null */
+    private array|null $index = null;
+
+    /** @var array<string, array{code: string, statements: list<Node>}> */
+    private array $others = [];
+
+    public function __construct(public readonly string $root) {}
+
+    /**
+     * @return array<string, array{code: string, statements: list<Node>}>
+     */
+    public function searched(): array
+    {
+        return $this->searched ??= parsedFiles($this->root, SEARCHED);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function index(): array
+    {
+        return $this->index ??= typeIndex($this->searched());
+    }
+
+    /**
+     * The parsed files under a folder or file, from the one parse when it lies in it.
+     *
+     * @return array<string, array{code: string, statements: list<Node>}>
+     */
+    public function under(string $path): array
+    {
+        $inSearched = array_filter(
+            $this->searched(),
+            static fn (string $file): bool => $file === $path || str_starts_with($file, rtrim($path, '/').'/'),
+            ARRAY_FILTER_USE_KEY,
+        );
+
+        if ($inSearched !== []) {
+            return $inSearched;
+        }
+
+        $parsed = parsedFiles($this->root, [$path]);
+        $this->others = [...$this->others, ...$parsed];
+
+        return $parsed;
+    }
+
+    public function codeOf(string $file): string
+    {
+        return ($this->searched()[$file] ?? $this->others[$file])['code'];
+    }
+}
 
 /**
  * @return list<list<string>>
@@ -212,15 +287,16 @@ function listedRenames(string $path): array
 }
 
 /**
- * Renames one member or variable and returns what it changed: the edits per file, and the strings and the calls of
+ * The renaming of one member or variable, worked out on the one parse: the edits per file, and the strings and the calls of
  * an unresolved receiver left to check.
  *
  * @param  list<string>  $rename  the member kind word, the class or folder, the old name and the new name
  * @param  list<string>  $with  other classes whose member of the same name is renamed as well
  * @return array{edits: array<string, list<array{int, int, string}>>, strings: list<string>, unresolved: list<string>}
  */
-function renameMember(string $root, array $rename, array $with, bool $dry): array
+function renameMember(ParsedProject $project, array $rename, array $with): array
 {
+    $root = $project->root;
     [$what, $owner, $old, $new] = array_pad($rename, 4, '');
 
     if (! in_array(
@@ -243,18 +319,31 @@ function renameMember(string $root, array $rename, array $with, bool $dry): arra
         }
     }
 
-    $files = parsedFiles($root, $what === 'variable' ? [$path] : SEARCHED);
+    $files = $what === 'variable' ? $project->under($path) : $project->searched();
     $changes = $what === 'variable'
         ? ['edits' => variableEdits($files, $old, $new, $line), 'unresolved' => []]
-        : memberEdits($files, $what, ltrim($owner, '\\'), $old, $new, $with);
-
-    if (! $dry) {
-        foreach ($changes['edits'] as $file => $fileEdits) {
-            file_put_contents($root.'/'.$file, applied($files[$file]['code'], $fileEdits));
-        }
-    }
+        : memberEdits($files, $project->index(), $what, ltrim($owner, '\\'), $old, $new, $with);
 
     return [...$changes, 'strings' => stringsSpelling($files, $old)];
+}
+
+/**
+ * The one funnel every parse goes through: it parses a file, and stops the run when the same file would be parsed a
+ * second time, since a list of renames must cost one parse of the project (user message 21146).
+ *
+ * @return list<Node>
+ */
+function parsedOnce(Parser $parser, string $file, string $code): array
+{
+    static $parsed = [];
+
+    if (isset($parsed[$file])) {
+        throw new LogicException("{$file} would be parsed a second time; every rename of a list works on the one parse.");
+    }
+
+    $parsed[$file] = true;
+
+    return $parser->parse($code) ?? [];
 }
 
 /**
@@ -290,7 +379,7 @@ function parsedFiles(string $root, array $folders): array
             }
 
             $code = (string) file_get_contents($name);
-            $statements = $parser->parse($code) ?? [];
+            $statements = parsedOnce($parser, $name, $code);
             $traverser = new NodeTraverser(new NameResolver(), new DeclaringTypeMarker(), new ParentConnectingVisitor());
             $files[substr($name, strlen($root) + 1)] = [
                 'code' => $code,
@@ -455,10 +544,8 @@ function descendantsOf(array $index, string $class): array
  * @param  list<string>  $with
  * @return array{edits: array<string, list<array{int, int, string}>>, unresolved: list<string>}
  */
-function memberEdits(array $files, string $what, string $class, string $old, string $new, array $with): array
+function memberEdits(array $files, array $index, string $what, string $class, string $old, string $new, array $with): array
 {
-    $index = typeIndex($files);
-
     if (! isset($index[$class])) {
         throw RenameRefused::undeclaredClass($class);
     }
@@ -653,9 +740,32 @@ function variableType(Node $at, string $name, array $index): string|null
         0 => $function instanceof Node\Expr\Closure || $function instanceof Node\Expr\ArrowFunction
             ? variableType($function, $name, $index)
             : null,
-        1 => receiverType($given[0]->expr, $index),
+        1 => assignedType($given[0], $index),
         default => null,
     };
+}
+
+/**
+ * The type a local's one assignment gives it; unknown when that assignment is already being read, as a local given
+ * a value made from itself ($permissions = $permissions->with(...)) would be read without end.
+ *
+ * @param  array<string, array{related: list<string>, propertyTypes: array<string, string|null>,
+ *     returns: array<string, string|null>}>  $index
+ */
+function assignedType(Node\Expr\Assign $assignment, array $index): string|null
+{
+    static $reading = [];
+    $key = spl_object_id($assignment);
+
+    if (isset($reading[$key])) {
+        return null;
+    }
+
+    $reading[$key] = true;
+    $type = receiverType($assignment->expr, $index);
+    unset($reading[$key]);
+
+    return $type;
 }
 
 /**
@@ -983,14 +1093,32 @@ function stringsSpelling(array $files, string $old): array
 }
 
 /**
+ * Whether parsing one file twice in a run is refused by the parse funnel.
+ */
+function isSecondParseStopped(): bool
+{
+    $parser = new ParserFactory()->createForNewestSupportedVersion();
+    parsedOnce($parser, 'second-parse-check.php', '<?php');
+
+    try {
+        parsedOnce($parser, 'second-parse-check.php', '<?php');
+    } catch (LogicException) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * Runs the renames on fixtures in a temporary project and compares every file with what it must become.
  */
 function selfTest(): int
 {
-    $root = sys_get_temp_dir().'/rename-member-'.getmypid();
     $failed = 0;
 
-    foreach (testCases() as [$why, $rename, $with, $before, $after, $refused, $unresolved]) {
+    foreach (testCases() as $case => [$why, $rename, $with, $before, $after, $refused, $unresolved]) {
+        // Each case gets a folder of its own, since a file is parsed once per run.
+        $root = sys_get_temp_dir().'/rename-member-'.getmypid()."-{$case}";
         exec('rm -rf '.escapeshellarg($root));
 
         foreach ($before as $file => $code) {
@@ -999,7 +1127,14 @@ function selfTest(): int
         }
 
         try {
-            $listed = renameMember($root, $rename, $with, false)['unresolved'];
+            $project = new ParsedProject($root);
+            $changes = renameMember($project, $rename, $with);
+
+            foreach ($changes['edits'] as $file => $fileEdits) {
+                file_put_contents($root.'/'.$file, applied($project->codeOf($file), $fileEdits));
+            }
+
+            $listed = $changes['unresolved'];
             $got = false;
         } catch (RuntimeException) {
             $listed = [];
@@ -1016,10 +1151,13 @@ function selfTest(): int
             $failed++;
         }
         printf("  %s  %s\n", $held ? 'ok  ' : 'FAIL', $why);
+        exec('rm -rf '.escapeshellarg($root));
     }
 
-    exec('rm -rf '.escapeshellarg($root));
-    printf("%d case(s), %d failed\n", count(testCases()), $failed);
+    $isSecondParseStopped = isSecondParseStopped();
+    $failed += $isSecondParseStopped ? 0 : 1;
+    printf("  %s  %s\n", $isSecondParseStopped ? 'ok  ' : 'FAIL', 'a file parsed a second time stops the run');
+    printf("%d case(s), %d failed\n", count(testCases()) + 1, $failed);
 
     return $failed > 0 ? 1 : 0;
 }

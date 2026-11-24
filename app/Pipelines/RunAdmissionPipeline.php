@@ -6,7 +6,7 @@ namespace App\Pipelines;
 
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Run\FetchAdmission;
-use App\Pipes\Run\ReportAlreadyStarted;
+use App\Pipes\Run\NotifyAlreadyStarted;
 use App\Support\Run\AdmissionToRun;
 use App\Support\Run\FetchedAdmission;
 use App\Support\Step;
@@ -29,7 +29,7 @@ final readonly class RunAdmissionPipeline implements PipelineDefinition
             FetchAdmission::class,
             Step::chosen(
                 fn (FetchedAdmission $admission) => $admission->alreadyStarted(),
-                then: ReportAlreadyStarted::class,
+                then: NotifyAlreadyStarted::class,
                 else: RunAdmittedLinePipeline::class,
             ),
         ];

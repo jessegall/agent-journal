@@ -29,7 +29,7 @@ type fakeJournal struct {
 	failing  error
 }
 
-func (journal *fakeJournal) ReportScreen(_ context.Context, runtimeID string, frame screen.Frame) error {
+func (journal *fakeJournal) NotifyScreen(_ context.Context, runtimeID string, frame screen.Frame) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.attempts++

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\ReportProjectRead\ReportProjectReadCommand;
+use App\Commands\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Enums\ProjectReadFailure;
 use App\Values\ProjectEntry;
 use App\Values\ProjectFileText;
@@ -37,9 +37,9 @@ final class ProjectReadReportRequest extends FormRequest
     /**
      * The host's answer to the read the route names, as the command that settles it.
      */
-    public function command(string $hostId): ReportProjectReadCommand
+    public function command(string $hostId): NotifyProjectReadCommand
     {
-        return new ReportProjectReadCommand(
+        return new NotifyProjectReadCommand(
             $hostId,
             (string) $this->route('read'),
             $this->entries(),

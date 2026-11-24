@@ -450,8 +450,8 @@ type ProjectReadReport struct {
 	Failure   string         `json:"failure,omitempty"`
 }
 
-// ReportProjectRead answers one project read the journal handed this host.
-func (client *Client) ReportProjectRead(ctx context.Context, readID string, report ProjectReadReport) error {
+// NotifyProjectRead answers one project read the journal handed this host.
+func (client *Client) NotifyProjectRead(ctx context.Context, readID string, report ProjectReadReport) error {
 	return client.call(ctx, "/host/reports/project-reads/"+url.PathEscape(readID), report, nil)
 }
 
@@ -484,8 +484,8 @@ func (refused ScreenRefused) Error() string {
 	return "the journal refused the screen report: " + refused.Reason
 }
 
-// ReportScreen sends one frame of the runtime's screen; a refusal comes back as ScreenRefused.
-func (client *Client) ReportScreen(ctx context.Context, runtimeID string, frame screen.Frame) error {
+// NotifyScreen sends one frame of the runtime's screen; a refusal comes back as ScreenRefused.
+func (client *Client) NotifyScreen(ctx context.Context, runtimeID string, frame screen.Frame) error {
 	var answer struct {
 		Status string `json:"status"`
 		Reason string `json:"reason"`
@@ -620,14 +620,14 @@ func (client *Client) RaiseNavigation(
 	return answerOf[NavigationAnswer](ctx, client, "/host/runtimes/"+runtimeID+"/navigation", raise)
 }
 
-// ReportReplayed reports that the replay of a library entry worked on the runtime, under the replay's key.
-func (client *Client) ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error {
+// NotifyReplayed reports that the replay of a library entry worked on the runtime, under the replay's key.
+func (client *Client) NotifyReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error {
 	body := map[string]string{"runtime_id": runtimeID, "operation_key": operationKey}
 	return client.call(ctx, "/host/menu-entries/"+entryID+"/replayed", body, nil)
 }
 
-// ReportStale reports that the replay of a library entry failed a check on the runtime's build, under the replay's key.
-func (client *Client) ReportStale(ctx context.Context, entryID string, report EntryStaleReport) error {
+// NotifyStale reports that the replay of a library entry failed a check on the runtime's build, under the replay's key.
+func (client *Client) NotifyStale(ctx context.Context, entryID string, report EntryStaleReport) error {
 	return client.call(ctx, "/host/menu-entries/"+entryID+"/stale", report, nil)
 }
 
@@ -636,26 +636,26 @@ func (client *Client) InterruptNavigation(ctx context.Context, navigationID stri
 	return client.call(ctx, "/host/navigation/"+navigationID+"/interrupt", nil, nil)
 }
 
-// ReportRequest, ReportActivity, ReportTurn, ReportHeartbeat and ReportExit send one typed report each.
-func (client *Client) ReportRequest(ctx context.Context, report RequestReport) error {
+// NotifyRequest, NotifyActivity, ReportTurn, NotifyHeartbeat and NotifyExit send one typed report each.
+func (client *Client) NotifyRequest(ctx context.Context, report RequestReport) error {
 	return client.call(ctx, "/host/reports/request", report, nil)
 }
 
-func (client *Client) ReportActivity(ctx context.Context, report ActivityReport) error {
+func (client *Client) NotifyActivity(ctx context.Context, report ActivityReport) error {
 	return client.call(ctx, "/host/reports/activity", report, nil)
 }
 
-func (client *Client) ReportTurn(ctx context.Context, report TurnReport) error {
+func (client *Client) NotifyTurn(ctx context.Context, report TurnReport) error {
 	return client.call(ctx, "/host/reports/turn", report, nil)
 }
 
-// ReportUsage sends one usage measurement of a start this host claimed; the journal acknowledges a repeated report
+// NotifyUsage sends one usage measurement of a start this host claimed; the journal acknowledges a repeated report
 // like the first, so a report whose acknowledgement was lost is sent again unchanged.
-func (client *Client) ReportUsage(ctx context.Context, report UsageReport) error {
+func (client *Client) NotifyUsage(ctx context.Context, report UsageReport) error {
 	return client.call(ctx, "/host/reports/usage", report, nil)
 }
 
-func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport) error {
+func (client *Client) NotifyHeartbeat(ctx context.Context, report LivenessReport) error {
 	return client.call(ctx, "/host/reports/heartbeat", report, nil)
 }
 
@@ -673,16 +673,16 @@ type HostDescriptors struct {
 	Descriptors []HostDescriptor `json:"descriptors"`
 }
 
-// ReportDescriptors tells the journal which drivers this host runs.
-func (client *Client) ReportDescriptors(ctx context.Context, descriptors []HostDescriptor) error {
+// NotifyDescriptors tells the journal which drivers this host runs.
+func (client *Client) NotifyDescriptors(ctx context.Context, descriptors []HostDescriptor) error {
 	return client.call(ctx, "/host/reports/descriptors", HostDescriptors{descriptors}, nil)
 }
 
-func (client *Client) ReportProtection(ctx context.Context, report ProtectionReport) error {
+func (client *Client) NotifyProtection(ctx context.Context, report ProtectionReport) error {
 	return client.call(ctx, "/host/reports/protection", report, nil)
 }
 
-func (client *Client) ReportExit(ctx context.Context, report LivenessReport) error {
+func (client *Client) NotifyExit(ctx context.Context, report LivenessReport) error {
 	return client.call(ctx, "/host/reports/exit", report, nil)
 }
 

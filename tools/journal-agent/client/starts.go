@@ -98,20 +98,20 @@ func (client *Client) ReconcileStarts(ctx context.Context, stopped []string) (in
 	return answer.AccountsChanged, client.call(ctx, "/host/starts/reconcile", body, &answer)
 }
 
-// ReportRunning reports that a claimed start's program runs, under the host's name for the execution.
-func (client *Client) ReportRunning(ctx context.Context, startKey, executionID string) error {
+// NotifyRunning reports that a claimed start's program runs, under the host's name for the execution.
+func (client *Client) NotifyRunning(ctx context.Context, startKey, executionID string) error {
 	body := map[string]string{"execution_id": executionID}
 	return client.call(ctx, "/host/starts/"+startKey+"/running", body, nil)
 }
 
-// ReportStopped reports that a start's program and every process it started have ended.
-func (client *Client) ReportStopped(ctx context.Context, startKey string) error {
+// NotifyStopped reports that a start's program and every process it started have ended.
+func (client *Client) NotifyStopped(ctx context.Context, startKey string) error {
 	return client.call(ctx, "/host/starts/"+startKey+"/stopped", nil, nil)
 }
 
-// ReportFailure reports that a start's program failed with one of the journal's named failures, such as
+// NotifyFailure reports that a start's program failed with one of the journal's named failures, such as
 // authentication_failed or rate_limit.
-func (client *Client) ReportFailure(ctx context.Context, startKey, failure string) error {
+func (client *Client) NotifyFailure(ctx context.Context, startKey, failure string) error {
 	body := map[string]string{"failure": failure}
 	return client.call(ctx, "/host/starts/"+startKey+"/failure", body, nil)
 }
@@ -121,7 +121,7 @@ func (client *Client) PendingCleanups(ctx context.Context, answer any) error {
 	return client.read(ctx, "/host/cleanups", answer)
 }
 
-// ReportCleanup reports one cleanup pass of a session's ended launch.
-func (client *Client) ReportCleanup(ctx context.Context, sessionID string, report any) error {
+// NotifyCleanup reports one cleanup pass of a session's ended launch.
+func (client *Client) NotifyCleanup(ctx context.Context, sessionID string, report any) error {
 	return client.call(ctx, "/host/cleanups/"+sessionID, report, nil)
 }

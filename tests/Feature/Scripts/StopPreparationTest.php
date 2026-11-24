@@ -6,7 +6,7 @@ namespace Tests\Feature\Scripts;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
-use App\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
+use App\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\StopPreparer;
@@ -180,7 +180,7 @@ final class StopPreparationTest extends TestCase
     private function answerReads(bool $dirty): void
     {
         foreach (WorkspaceRead::query()->whereNull('sampled_at')->limit(10)->get() as $read) {
-            $this->asSystem(new ReportWorkspaceReadCommand('host-1', $read->reference, true, $dirty, ! $dirty, 7, CommitObservation::notRecorded()));
+            $this->asSystem(new NotifyWorkspaceReadCommand('host-1', $read->reference, true, $dirty, ! $dirty, 7, CommitObservation::notRecorded()));
         }
     }
 

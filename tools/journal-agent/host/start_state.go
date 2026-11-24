@@ -67,8 +67,8 @@ const (
 	ReconcileClaim Recovery = "reconcile_claim"
 	// ProveExecution: the program may run; its process identity decides, never the absence of its process id.
 	ProveExecution Recovery = "prove_execution"
-	// ReportExit: the program ended and the journal has not acknowledged it yet.
-	ReportExit Recovery = "report_exit"
+	// NotifyExit: the program ended and the journal has not acknowledged it yet.
+	NotifyExit Recovery = "report_exit"
 	// Forget: the journal acknowledged the end; the record is done.
 	Forget Recovery = "forget"
 )
@@ -164,7 +164,7 @@ func (record StartRecord) Recovery() Recovery {
 	case ClaimRequested:
 		return ReconcileClaim
 	case ExitKnown:
-		return ReportExit
+		return NotifyExit
 	case ReportAcknowledged:
 		return Forget
 	default:
