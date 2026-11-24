@@ -9,7 +9,7 @@ use App\Events\ShareActivated;
 /**
  * A module listening to Core's exported sharing event without any change to Sharing.
  */
-final class CountActivatedShare
+final class CountShareActivated
 {
     public function handle(ShareActivated $event): void {}
 }

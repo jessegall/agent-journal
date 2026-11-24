@@ -8,7 +8,7 @@ use App\Contracts\Chat\InboxNotices;
 use App\Contracts\Events\Listener;
 use Domain\Documents\Events\DraftKept;
 
-final readonly class NoticeKeptDraft implements Listener
+final readonly class NoticeDraftKept implements Listener
 {
     public function __construct(private InboxNotices $notices) {}
 

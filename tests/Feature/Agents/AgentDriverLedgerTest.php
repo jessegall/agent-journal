@@ -1112,7 +1112,7 @@ final class AgentDriverLedgerTest extends TestCase
         $wake = $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'message-wake'));
         $claimed = $this->claimedScript($host, $wake->requestId);
 
-        $this->notifyRefusedWake($host, $claimed, 'container-unavailable', true);
+        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $this->assertSame(SessionStatus::Active, $session->status);
@@ -1130,8 +1130,8 @@ final class AgentDriverLedgerTest extends TestCase
         ));
         $claimed = $this->claimedScript($host, $wake->requestId);
 
-        $this->notifyRefusedWake($host, $claimed, 'container-unavailable', true);
-        $this->notifyRefusedWake($host, $claimed, 'container-unavailable', true);
+        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
+        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $start = ProcessStart::latestOfSession($opened->sessionId);
@@ -1149,7 +1149,7 @@ final class AgentDriverLedgerTest extends TestCase
         ));
         $claimed = $this->claimedScript($host, $wake->requestId);
 
-        $this->notifyRefusedWake($host, $claimed, null, false);
+        $this->notifyWakeRefused($host, $claimed, null, false);
 
         $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
         $this->assertNull(ProcessStart::latestOfSession($opened->sessionId)?->refusal);
@@ -1749,7 +1749,7 @@ final class AgentDriverLedgerTest extends TestCase
      *
      * @param  array<string, mixed>  $claimed
      */
-    private function notifyRefusedWake(
+    private function notifyWakeRefused(
         EnrolledHost $host,
         array $claimed,
         string|null $reason,

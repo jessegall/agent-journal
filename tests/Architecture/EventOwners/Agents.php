@@ -201,7 +201,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Listeners/AnnounceEndedLaunch.php',
+            'app/Listeners/AnnounceLaunchEnded.php',
         ],
     ],
     MergeOutcomeRecorded::class => [

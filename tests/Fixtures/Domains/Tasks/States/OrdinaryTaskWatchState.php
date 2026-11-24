@@ -8,7 +8,7 @@ use App\Support\Decisions\Decision;
 use App\Attributes\StateType;
 use App\Enums\SessionTransferType;
 use Domain\Tasks\Events\TaskCancelled;
-use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCancelledTaskCommand;
+use Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskCancelled\RecordTaskCancelledCommand;
 
 /**
  * Replaces the cancellation method with an ordinary override.
@@ -16,7 +16,7 @@ use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCance
 #[StateType('tasks.ordinary_task_watch', schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class OrdinaryTaskWatchState extends TaskWatchState
 {
-    public function onTaskCancelled(TaskCancelled $event): RecordCancelledTaskCommand|Decision
+    public function onTaskCancelled(TaskCancelled $event): RecordTaskCancelledCommand|Decision
     {
         return parent::onTaskCancelled($event);
     }

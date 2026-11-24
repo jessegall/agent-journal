@@ -30,6 +30,20 @@ const INTERROGATIVE_WORDS = ['how', 'what', 'when', 'where', 'which', 'whom'];
 /**
  * The endings of a past form, which an event's last word has: requested, written, sent, held, begun.
  */
+/**
+ * The verbs that tell someone of something: their object is a happening, named as an event is.
+ */
+const TELLING_VERBS = ['notify', 'announce', 'broadcast', 'tell', 'inform', 'alert', 'warn', 'signal', 'raise', 'emit', 'notice', 'publish'];
+
+const ROLE_SUFFIXES = ['command', 'handler', 'controller', 'request', 'job', 'listener', 'pipeline'];
+
+const IRREGULAR_PARTICIPLES = [
+    'withdrawn', 'drawn', 'shown', 'known', 'grown', 'thrown', 'blown', 'flown', 'taken', 'given', 'written', 'hidden',
+    'broken', 'chosen', 'frozen', 'spoken', 'stolen', 'forgotten', 'gotten', 'done', 'gone', 'seen', 'begun', 'run',
+    'held', 'kept', 'sent', 'lost', 'found', 'built', 'left', 'made', 'paid', 'read', 'said', 'sold', 'told', 'bought',
+    'brought', 'caught', 'taught', 'thought', 'spent', 'bound', 'won', 'shut', 'set', 'put', 'cut', 'hit', 'let', 'split',
+];
+
 const PAST_FORM = '/(ed|en|wn|ne|ung|un|ound|ought|aught|ent|ept|eft|eld|old|ost|ade|aid|ead|ut|et|it|uck|ook|ew|ame)$/';
 
 /**
@@ -99,6 +113,7 @@ function nameFaults(array $names, string $forbiddenWordsFile): array
     $commandVerbs = verbsOf($names, shouldIncludeActionClasses: false);
     $nouns = nounsOf($names);
     $sharedVerbs = sharedActionWordsOf($names);
+    $happenings = happeningsOf($names);
     $typeNames = array_fill_keys(array_map(fn (DeclaredName $declared) => $declared->name, array_filter($names, fn (DeclaredName $declared) => $declared->declarationType === 'class')), true);
     $faults = [];
 
@@ -111,6 +126,7 @@ function nameFaults(array $names, string $forbiddenWordsFile): array
                 ? null : purposeFault($declared, $verbs, $nouns),
             actionClassFault($declared, $commandVerbs, $nouns, $sharedVerbs),
             eventFault($declared),
+            participleOrderFault($declared, $verbs, $nouns, $happenings),
             commandMoodFault($declared, $verbs),
             questionFault($declared, $verbs),
             getterFault($declared),
@@ -263,6 +279,80 @@ function eventFault(DeclaredName $declared): ?string
     $saysWhatHappened = array_any(array_slice(wordsOf($declared->name), 1), fn (string $word) => preg_match(PAST_FORM, $word) === 1);
 
     return $isEvent && ! $saysWhatHappened ? 'an event says what happened, and no word of it is a past form' : null;
+}
+
+/**
+ * A name that holds a verb and something that happened names the happening as an event is named: the thing first,
+ * then its past participle (NotifyReceiptsWithdrawn), never the participle between the verb and the thing
+ * (NotifyWithdrawnReceipts). It holds for an acting name whose verb tells someone, or whose thing and participle are
+ * an event of the code; a participle that only says which thing (restart changed mounts) stays before it.
+ *
+ * @param  array<string, true>  $verbs
+ * @param  array<string, true>  $nouns
+ * @param  array<string, true>  $happenings  the events of the code, as their words joined by spaces
+ */
+function participleOrderFault(DeclaredName $declared, array $verbs, array $nouns, array $happenings): ?string
+{
+    $words = wordsOf($declared->name);
+    [$verb, $participle] = [$words[0] ?? '', $words[1] ?? ''];
+    // a role word at the end (NotifyStoppedHandler) belongs to the class, not to the happening
+    $happenedTo = array_slice($words, 2);
+
+    while ($happenedTo !== [] && in_array(array_last($happenedTo), ROLE_SUFFIXES, true)) {
+        array_pop($happenedTo);
+    }
+
+    // the happening already stands last (NotifyPipedCommandsRefused, BroadcastDockedSourceChange): the participle
+    // before it says which thing; a participle the code names a type for (run), and that no event ends with, is a noun
+    $last = (string) array_last($happenedTo);
+    $isHappeningLast = isParticiple($last, $verbs) || preg_match('/(tion|sion|ment|ance|ence|ure|change)$/', $last) === 1;
+
+    $endsAnEvent = array_any(array_keys($happenings), fn (string $event) => str_ends_with($event, " {$participle}"));
+
+    if ($happenedTo === [] || $isHappeningLast || (isset($nouns[$participle]) && ! $endsAnEvent)) {
+        return null;
+    }
+
+    // a participle before its thing says which thing (restart changed mounts) unless the name tells of a happening: its
+    // verb tells someone (notify, announce), or the thing with its participle is an event of the code (BookShelved)
+    $isAction = $declared->role === 'action' && preg_match('/(^|::)test/i', $declared->name) !== 1;
+    $isHappening = in_array($verb, TELLING_VERBS, true) || isset($happenings[implode(' ', [...$happenedTo, $participle])]);
+
+    if (! $isAction || ! isset($verbs[$verb]) || $happenedTo === [] || ! isParticiple($participle, $verbs) || ! $isHappening) {
+        return null;
+    }
+
+    $reordered = implode(' ', [$verb, ...$happenedTo, $participle]);
+
+    return "names what happened with the participle before its thing ({$verb} {$participle} ".implode(' ', $happenedTo)
+        ."): the thing comes first, then what happened to it ({$reordered})";
+}
+
+/**
+ * The events the code declares, each as its words joined by spaces (book shelved).
+ *
+ * @param  list<DeclaredName>  $names
+ * @return array<string, true>
+ */
+function happeningsOf(array $names): array
+{
+    $events = array_filter($names, fn (DeclaredName $declared) => $declared->role === 'event');
+
+    return array_fill_keys(array_map(fn (DeclaredName $declared) => implode(' ', wordsOf($declared->name)), $events), true);
+}
+
+/**
+ * Whether a word is a verb's past participle: a known verb with -ed (withdrawn and the like are listed), never a word
+ * that only ends that way (speed, need).
+ *
+ * @param  array<string, true>  $verbs
+ */
+function isParticiple(string $word, array $verbs): bool
+{
+    $stems = [substr($word, 0, -2), substr($word, 0, -1), substr($word, 0, -3), preg_replace('/ied$/', 'y', $word)];
+    $isRegular = str_ends_with($word, 'ed') && array_any($stems, fn (string $stem) => $stem !== '' && isset($verbs[$stem]));
+
+    return $isRegular || in_array($word, IRREGULAR_PARTICIPLES, true);
 }
 
 /**

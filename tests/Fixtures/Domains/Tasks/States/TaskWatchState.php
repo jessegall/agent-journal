@@ -12,8 +12,8 @@ use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
-use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCancelledTaskCommand;
-use Tests\Fixtures\Domains\Tasks\States\Commands\RecordFinishedTask\RecordFinishedTaskCommand;
+use Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskCancelled\RecordTaskCancelledCommand;
+use Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskFinished\RecordTaskFinishedCommand;
 use Tests\Support\TestText;
 
 /**
@@ -29,21 +29,21 @@ class TaskWatchState extends AgentState
         return new ContextLine(TestText::of("Watch {$this->runNumber} is active."));
     }
 
-    public function onTaskFinished(TaskFinished $event): RecordFinishedTaskCommand|Decision
+    public function onTaskFinished(TaskFinished $event): RecordTaskFinishedCommand|Decision
     {
         if ($event->taskId !== $this->taskId) {
             return Decision::delegate();
         }
 
-        return new RecordFinishedTaskCommand($event->taskId, $this->runNumber);
+        return new RecordTaskFinishedCommand($event->taskId, $this->runNumber);
     }
 
-    public function onTaskCancelled(TaskCancelled $event): RecordCancelledTaskCommand|Decision
+    public function onTaskCancelled(TaskCancelled $event): RecordTaskCancelledCommand|Decision
     {
         if ($event->taskId !== $this->taskId) {
             return Decision::delegate();
         }
 
-        return new RecordCancelledTaskCommand($event->taskId, $this->runNumber);
+        return new RecordTaskCancelledCommand($event->taskId, $this->runNumber);
     }
 }

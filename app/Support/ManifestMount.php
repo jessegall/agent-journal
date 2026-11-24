@@ -58,8 +58,8 @@ final readonly class ManifestMount
     /**
      * A folder under /srv/journal/ on the agent daemon.
      */
-    public static function daemonBind(string $source, string $target, bool $writable): self
+    public static function daemonBind(string $source, string $target, bool $isWritable): self
     {
-        return new self(MountType::DaemonBind, $source, $target, $writable);
+        return new self(MountType::DaemonBind, $source, $target, $isWritable);
     }
 }

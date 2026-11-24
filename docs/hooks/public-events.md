@@ -92,13 +92,13 @@ validate the declaration and its owner. Cached data names methods. The current s
 at delivery.
 
 ```php
-public function onTaskFinished(TaskFinished $event): RecordFinishedTask|null
+public function onTaskFinished(TaskFinished $event): RecordTaskFinished|null
 {
     if ($event->taskId !== $this->watch->id) {
         return null;
     }
 
-    return new RecordFinishedTask($event->taskId, $this->watch->runNumber);
+    return new RecordTaskFinished($event->taskId, $this->watch->runNumber);
 }
 ```
 

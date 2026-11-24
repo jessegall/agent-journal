@@ -14,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * Tells the owner of the work a session was started for that the session ended, so the owner can record the attempt;
  * a session no owner started is nobody's launch.
  */
-final readonly class AnnounceEndedLaunch implements Listener
+final readonly class AnnounceLaunchEnded implements Listener
 {
     public function __construct(private Dispatcher $events) {}
 

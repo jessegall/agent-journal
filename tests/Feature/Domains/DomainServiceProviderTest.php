@@ -21,8 +21,8 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\Domains\Plans\PlansDomain;
 use Tests\Fixtures\Domains\Shelves\Events\BookShelved;
-use Tests\Fixtures\Domains\Shelves\Listeners\CountActivatedShare;
-use Tests\Fixtures\Domains\Shelves\Listeners\CountShelvedBook;
+use Tests\Fixtures\Domains\Shelves\Listeners\CountShareActivated;
+use Tests\Fixtures\Domains\Shelves\Listeners\CountBookShelved;
 use Tests\Fixtures\Domains\Shelves\ShelvesDomain;
 use Tests\Fixtures\Domains\Tasks\TaskList;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
@@ -66,7 +66,7 @@ final class DomainServiceProviderTest extends TestCase
 
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
-        $this->assertSame([CountShelvedBook::class.'@handle'], $events[BookShelved::class]);
+        $this->assertSame([CountBookShelved::class.'@handle'], $events[BookShelved::class]);
     }
 
     public function test_a_domain_listens_to_an_exported_sharing_event(): void
@@ -76,7 +76,7 @@ final class DomainServiceProviderTest extends TestCase
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
         $this->assertEqualsCanonicalizing(
-            [CountActivatedShare::class.'@handle', BroadcastPageChange::class.'@handle'],
+            [CountShareActivated::class.'@handle', BroadcastPageChange::class.'@handle'],
             $events[ShareActivated::class],
         );
     }

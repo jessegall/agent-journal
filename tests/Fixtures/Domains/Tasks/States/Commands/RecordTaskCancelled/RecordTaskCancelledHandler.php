@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask;
+namespace Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskCancelled;
 
 use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCancelledTaskCommand;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchLog;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchOutcome;
 
-final readonly class RecordCancelledTaskHandler implements CommandHandler
+final readonly class RecordTaskCancelledHandler implements CommandHandler
 {
     public function __construct(private TaskWatchLog $log) {}
 
-    public function handle(RecordCancelledTaskCommand $command): void
+    public function handle(RecordTaskCancelledCommand $command): void
     {
         $this->log->record(TaskWatchOutcome::Cancelled, $command);
     }
