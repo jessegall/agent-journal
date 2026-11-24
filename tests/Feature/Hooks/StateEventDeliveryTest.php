@@ -113,6 +113,15 @@ final class StateEventDeliveryTest extends TestCase
         $this->assertSame(['heard'], $this->app->make(NoteEffects::class)->labels);
     }
 
+    public function test_a_listener_that_answers_with_a_state_puts_it_on_top_of_its_stack(): void
+    {
+        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+
+        $this->app->make(Dispatcher::class)->dispatch(new NoteWritten(asksForGuide: true));
+
+        $this->assertSame('guide', array_last($this->storedTypeKeys()));
+    }
+
     public function test_a_fact_no_state_listens_for_reaches_no_stack(): void
     {
         $this->pushState(new StateReference('notes.watching', NoSubject::None));

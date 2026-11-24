@@ -6,9 +6,11 @@ namespace Tests\Fixtures\Modules\Notes;
 
 use App\Attributes\StateType;
 use App\Contracts\Bus\Command;
+use App\Enums\NoSubject;
 use App\Enums\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
+use App\Support\References\StateReference;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
@@ -28,7 +30,7 @@ final class WritingNoteState extends AgentState
     }
 
     /**
-     * @return iterable<Command<mixed>>
+     * @return iterable<Command<mixed>|StateReference>
      */
     public function onNoteWritten(NoteWritten $event): iterable
     {
@@ -36,11 +38,11 @@ final class WritingNoteState extends AgentState
             throw NoteWorkFailed::whileListening();
         }
 
-        return $event->marked;
+        return $event->asksForGuide ? [...$event->marked, new StateReference('guide', NoSubject::None)] : $event->marked;
     }
 
     /**
-     * @return iterable<Command<mixed>>
+     * @return iterable<Command<mixed>|StateReference>
      */
     public function onNotePublished(NotePublished $event): iterable
     {

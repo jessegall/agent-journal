@@ -14,7 +14,9 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Events\TaskRunClaimed;
+use Domain\Tasks\Support\States\Support\LogDueStateReference;
 use Domain\Tasks\Support\States\WorkingOnTaskState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\HookInputs;
@@ -106,6 +108,26 @@ final class WorkingOnTaskTest extends TestCase
         $working->onTaskRunClaimed(new TaskRunClaimed('task-42', 1, $other, ['claim-3']));
 
         $this->assertSame(AnswerType::Delegate, $this->stop($working));
+    }
+
+    public function test_a_log_falls_due_after_the_tool_use_limit_and_a_log_on_its_task_starts_the_count_again(): void
+    {
+        $working = $this->working();
+        $finished = HookInputs::all()['tool finished'];
+
+        foreach (range(2, WorkingOnTaskState::LOG_DUE_AFTER) as $use) {
+            $working->onToolFinished($finished);
+        }
+
+        $working->onTaskLogged(new TaskLogged('task-42', 'entry-1'));
+        $afterLog = $working->onToolFinished($finished);
+
+        foreach (range(3, WorkingOnTaskState::LOG_DUE_AFTER) as $use) {
+            $working->onToolFinished($finished);
+        }
+
+        $this->assertEquals(Decision::delegate(), $afterLog);
+        $this->assertEquals(LogDueStateReference::forTask('task-42', 42), $working->onToolFinished($finished));
     }
 
     #[DataProvider('otherHooks')]

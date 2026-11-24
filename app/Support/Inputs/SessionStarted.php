@@ -14,6 +14,7 @@ use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\SessionStartDetails;
+use App\Support\References\StateReference;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -41,9 +42,9 @@ final readonly class SessionStarted implements HookInput
     }
 
     /**
-     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
      */
-    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|iterable
+    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|StateReference|iterable
     {
         return $state->onSessionStart($this);
     }

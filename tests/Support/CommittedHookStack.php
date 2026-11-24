@@ -11,6 +11,7 @@ use App\Enums\DriverVariant;
 use App\Enums\NoSubject;
 use App\Enums\RewriteSupport;
 use App\Enums\ShellDialect;
+use App\Enums\ToolOutcome;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
@@ -22,8 +23,11 @@ use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
+use App\Support\Inputs\ToolFinished;
+use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\StopDetails;
+use App\Support\Inputs\Values\ToolResult;
 use App\Support\OperationDeadline;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
@@ -154,6 +158,22 @@ trait CommittedHookStack
         )->stdout;
     }
 
+    protected function answerToolFinished(string $callId): void
+    {
+        $this->callAs($callId);
+        $finished = new ToolFinished(
+            $this->hookIdentity(),
+            new ToolResult('Bash', ToolOutcome::Succeeded, new DriverToolInput(['command' => 'ls'])),
+        );
+
+        $this->machine()->answer(
+            $finished,
+            $this->capabilities(),
+            new OperationDeadline(3000),
+            fn (HookAnswer $answer) => DriverReplies::allowTool($answer->shownContext()),
+        );
+    }
+
     protected function callAs(string $callId, string|null $inputDigest = null): void
     {
         $this->app->instance(
@@ -192,8 +212,8 @@ trait CommittedHookStack
     {
         return new DriverCapabilities(
             'Test driver',
-            'pre-tool and stop replies',
-            ['onShellCommand', 'onStop'],
+            'pre-tool, post-tool and stop replies',
+            ['onShellCommand', 'onToolFinished', 'onStop'],
             $rewrites,
         );
     }

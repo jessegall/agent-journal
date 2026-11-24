@@ -13,6 +13,7 @@ use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\HookIdentity;
+use App\Support\References\StateReference;
 use App\Values\ShellCommand;
 use Carbon\CarbonImmutable;
 use PhpOption\None;
@@ -49,9 +50,9 @@ final readonly class ShellCommandRequested implements HookInput
     }
 
     /**
-     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
      */
-    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|iterable
+    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|StateReference|iterable
     {
         return $state->onShellCommand($this);
     }

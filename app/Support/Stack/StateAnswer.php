@@ -12,16 +12,18 @@ use App\Support\Decisions\ContextLine;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
+use App\Support\References\StateReference;
 
 /**
- * What one state answered a hook: its decision, delegate unless it made one as its last part, the lines it added
- * and the commands and events it answered with.
+ * What one state answered a hook: its decision, delegate unless it made one as its last part, the lines it added,
+ * the commands and events it answered with and the states it asks to push onto its stack.
  */
 final readonly class StateAnswer
 {
     /**
      * @param  list<ContextLine|MessageLine>  $lines
      * @param  list<Command<mixed>|Event>  $effects
+     * @param  list<StateReference>  $pushes
      */
     private function __construct(
         public string $state,
@@ -29,18 +31,22 @@ final readonly class StateAnswer
         public Decision $decision,
         public array $lines = [],
         public array $effects = [],
+        public array $pushes = [],
     ) {}
 
     /**
      * The answer from what the state's method returned: one part, or several yielded with the decision last. A
      * delegate is the part that passes the hook on.
      *
-     * @param  AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>  $returned
+     * @param  AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>  $returned
      *
      * @throws HookAnswerRefused
      */
-    public static function of(AnswerPart|Command|Event|iterable $returned, string $state, string $hook): self
-    {
+    public static function of(
+        AnswerPart|Command|Event|StateReference|iterable $returned,
+        string $state,
+        string $hook,
+    ): self {
         $parts = is_iterable($returned) ? $returned : [$returned];
 
         $answer = new self($state, $hook, Decision::delegate());
@@ -86,6 +92,10 @@ final readonly class StateAnswer
 
         if ($part instanceof AnswerPart) {
             return $part->addTo($this);
+        }
+
+        if ($part instanceof StateReference) {
+            return clone ($this, ['pushes' => [...$this->pushes, $part]]);
         }
 
         if (! $part instanceof Command && ! $part instanceof Event) {

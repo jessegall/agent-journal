@@ -3975,6 +3975,8 @@ class	LockedCall
 class	LockedPackageData
 class	LockingNumberAllocator
 class	LogCommand
+class	LogDueState
+class	LogDueStateReference
 class	LogTaskRunCommand
 class	LogTaskRunHandler
 class	LogTaskTool
@@ -7801,6 +7803,8 @@ constant	LimitMcpMessage::BYTE_LIMIT
 constant	LimitMcpMessage::MAX_DEPTH
 constant	LimitUsageReport::MOST_BYTES
 constant	ListenerOwnership::CORE
+constant	LogDueState::TOOL_USE_LIMIT
+constant	LogDueStateReference::TYPE_KEY
 constant	LoggedMcpCall::OUTCOME_OK
 constant	LoginPage::COMPONENT
 constant	MarkHelperJobUnfinishedHandler::ENDED_REFERENCE
@@ -8530,6 +8534,7 @@ constant	WorkBudget::CANDIDATE_LIMIT
 constant	WorkBudget::POLICY_CHECK_LIMIT
 constant	WorkBudget::RELATIONSHIP_LIMIT
 constant	WorkingOnPlanStateReference::TYPE_KEY
+constant	WorkingOnTaskState::LOG_DUE_AFTER
 constant	WorkingOnTaskStateReference::TYPE_KEY
 constant	WorkspaceReadController::PENDING_LIMIT
 enum	AccessRuleType
@@ -17157,6 +17162,18 @@ method	LogCommand::__construct()
 method	LogCommand::audit()
 method	LogCommand::handle()
 method	LogCommand::write()
+method	LogDueState::__construct()
+method	LogDueState::frameReuse()
+method	LogDueState::instruction()
+method	LogDueState::isFinished()
+method	LogDueState::isSpent()
+method	LogDueState::onFileEdit()
+method	LogDueState::onShellCommand()
+method	LogDueState::onTaskLogged()
+method	LogDueState::onToolFinished()
+method	LogDueState::onToolRequested()
+method	LogDueState::reason()
+method	LogDueStateReference::forTask()
 method	LogTaskRunCommand::__construct()
 method	LogTaskRunCommand::subject()
 method	LogTaskRunHandler::handle()
@@ -27973,7 +27990,9 @@ method	WorkingOnTaskState::onStop()
 method	WorkingOnTaskState::onTaskBlocked()
 method	WorkingOnTaskState::onTaskCancelled()
 method	WorkingOnTaskState::onTaskFinished()
+method	WorkingOnTaskState::onTaskLogged()
 method	WorkingOnTaskState::onTaskRunClaimed()
+method	WorkingOnTaskState::onToolFinished()
 method	WorkingOnTaskState::workRecordType()
 method	WorkingOnTaskStateReference::forTask()
 method	WorkspaceClone::__construct()
@@ -30246,6 +30265,7 @@ parameter	$purposeReference
 parameter	$purposeText
 parameter	$purposes
 parameter	$pushed
+parameter	$pushes
 parameter	$qualifiedKey
 parameter	$queriesByCategory
 parameter	$queriesByConnection
@@ -35860,6 +35880,10 @@ property	LogCommand::$key
 property	LogCommand::$log
 property	LogCommand::$meter
 property	LogCommand::$registry
+property	LogDueState::$isLogged
+property	LogDueState::$number
+property	LogDueState::$taskId
+property	LogDueState::$toolUses
 property	LogTaskRunCommand::$runNumber
 property	LogTaskRunCommand::$taskId
 property	LogTaskRunCommand::$text
@@ -41160,6 +41184,7 @@ property	StateAnswer::$decision
 property	StateAnswer::$effects
 property	StateAnswer::$hook
 property	StateAnswer::$lines
+property	StateAnswer::$pushes
 property	StateAnswer::$state
 property	StateArguments::$constructorValues
 property	StateArguments::$propertyValues
@@ -41219,6 +41244,7 @@ property	StateEventPayload::$key
 property	StateEventResult::$effects
 property	StateEventResult::$frame
 property	StateEventResult::$method
+property	StateEventResult::$pushes
 property	StateEventResults::$listenerResults
 property	StateEventResults::$target
 property	StateEventScope::$actors
@@ -42581,6 +42607,7 @@ property	WorkingOnTaskState::$isWorking
 property	WorkingOnTaskState::$number
 property	WorkingOnTaskState::$runNumber
 property	WorkingOnTaskState::$taskId
+property	WorkingOnTaskState::$toolUsesSinceLog
 property	WorkspaceClone::$deployKeySecret
 property	WorkspaceClone::$repository
 property	WorkspaceClone::$revision
@@ -44131,6 +44158,7 @@ variable	$pump
 variable	$purpose
 variable	$purposeConversations
 variable	$purposeEnd
+variable	$push
 variable	$queries
 variable	$query
 variable	$question
@@ -44279,6 +44307,7 @@ variable	$result	app/Declarations/Page.php
 variable	$result	app/Models/Profiles/ProfileRun.php
 variable	$result	app/Models/Profiles/ProfileStepResult.php
 variable	$result	app/Resolvers/MergeAskNotificationTarget.php
+variable	$result	app/Support/Delivery/StateEventDelivery.php
 variable	$result	app/Support/EventUnit.php
 variable	$result	app/Support/EventUnitLifecycle.php
 variable	$result	app/Support/Readers/AskRecords.php

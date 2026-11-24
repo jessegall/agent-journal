@@ -10,13 +10,17 @@ use App\Enums\SessionTransferType;
 use App\Events\AssignmentsEnded;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
+use App\Support\Inputs\ToolFinished;
+use App\Support\References\StateReference;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Events\TaskRunClaimed;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\States\Support\LogDueStateReference;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -29,7 +33,14 @@ use PhpOption\Some;
 #[StateType(WorkingOnTaskStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class WorkingOnTaskState extends AgentState
 {
+    /**
+     * The tool uses after which a log on the task is due.
+     */
+    public const int LOG_DUE_AFTER = 30;
+
     private bool $isWorking = true;
+
+    private int $toolUsesSinceLog = 0;
 
     private bool $isHeld = true;
 
@@ -92,6 +103,19 @@ final class WorkingOnTaskState extends AgentState
         return Decision::deny(AgentText::of('tasks.unfinished', ['task' => $this->number]));
     }
 
+    public function onToolFinished(ToolFinished $input): Decision|StateReference
+    {
+        $this->toolUsesSinceLog++;
+
+        if ($this->toolUsesSinceLog < self::LOG_DUE_AFTER) {
+            return Decision::delegate();
+        }
+
+        $this->toolUsesSinceLog = 0;
+
+        return LogDueStateReference::forTask($this->taskId, $this->number);
+    }
+
     // ----------[ Events ]----------
 
     public function onTaskFinished(TaskFinished $event): void
@@ -112,6 +136,13 @@ final class WorkingOnTaskState extends AgentState
     {
         if ($event->taskId === $this->taskId) {
             $this->isWorking = false;
+        }
+    }
+
+    public function onTaskLogged(TaskLogged $event): void
+    {
+        if ($event->taskId === $this->taskId) {
+            $this->toolUsesSinceLog = 0;
         }
     }
 

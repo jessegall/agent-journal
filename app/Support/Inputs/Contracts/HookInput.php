@@ -12,6 +12,7 @@ use App\Enums\AnswerType;
 use App\Enums\ContextStartType;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Values\HookIdentity;
+use App\Support\References\StateReference;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
 
@@ -32,9 +33,9 @@ interface HookInput
     /**
      * Asks the state for its answer to this hook, by the one method of the state that belongs to it.
      *
-     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
      */
-    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|iterable;
+    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|StateReference|iterable;
 
     /**
      * Whether an answer of that type leaves the agent idle, so the reply's context reaches nobody: only an allowed stop

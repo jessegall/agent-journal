@@ -65,6 +65,7 @@ final readonly class AgentStack
         $context = [];
         $messages = [];
         $effects = [];
+        $stack = $this;
         $highest = null;
 
         foreach ($selected as $handler) {
@@ -77,6 +78,10 @@ final readonly class AgentStack
             $decision = $answered->decision;
             $steps[] = $handler->walkStep($decision, count($answered->lines));
             $effects = [...$effects, ...$answered->effects];
+
+            foreach ($answered->pushes as $push) {
+                $stack = $stack->withStateOnTop($push);
+            }
 
             foreach ($answered->lines as $line) {
                 $context[] = $line->text->text;
@@ -95,13 +100,13 @@ final readonly class AgentStack
             }
 
             if ($decision->answerType() === AnswerType::Deny) {
-                return new HookAnswer($decision, $context, $steps, $this, $messages, $effects);
+                return new HookAnswer($decision, $context, $steps, $stack, $messages, $effects);
             }
 
             $highest ??= $decision;
         }
 
-        return new HookAnswer($highest ?? Decision::allow(), $context, $steps, $this, $messages, $effects);
+        return new HookAnswer($highest ?? Decision::allow(), $context, $steps, $stack, $messages, $effects);
     }
 
     /**

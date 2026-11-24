@@ -19,6 +19,7 @@ use App\Exceptions\StateEventCommandRefused;
 use App\Support\CommandRegistry;
 use App\Support\Decisions\Decision;
 use App\Support\EngineStacks;
+use App\Support\References\StateReference;
 use App\Support\Stack\SelectedStateMethod;
 use App\Support\Stack\StateMethodSelector;
 use App\Support\StackTransaction;
@@ -117,11 +118,18 @@ final readonly class StateEventDelivery
 
         $listenerResults = [];
 
-        foreach ($this->selector->forEvent($stack->get(), $dispatch->event) as $selection) {
-            $listenerResults[] = $this->invoke($dispatch, $target, $selection);
+        $stackAfter = $stack->get();
+
+        foreach ($this->selector->forEvent($stackAfter, $dispatch->event) as $selection) {
+            $result = $this->invoke($dispatch, $target, $selection);
+            $listenerResults[] = $result;
+
+            foreach ($result->pushes as $push) {
+                $stackAfter = $stackAfter->withStateOnTop($push);
+            }
         }
 
-        $this->engineStacks->keepValues($target, $stack->get());
+        $this->engineStacks->keepValues($target, $stackAfter);
 
         return new StateEventResults($target, $listenerResults);
     }
@@ -149,9 +157,10 @@ final readonly class StateEventDelivery
             'target' => $target->description(),
         ]);
 
-        $effects = $this->effectsOf($selection->answerEvent($event), $method);
+        $answered = $this->effectsOf($selection->answerEvent($event), $method);
+        $result = StateEventResult::fromSelection($selection, $answered);
 
-        foreach (array_filter($effects, fn (Command|Event $effect) => $effect instanceof Command) as $command) {
+        foreach (array_filter($result->effects, fn (Command|Event $effect) => $effect instanceof Command) as $command) {
             if (! $this->commands->has($command::class)) {
                 throw CommandNotRegistered::for($command::class);
             }
@@ -161,14 +170,14 @@ final readonly class StateEventDelivery
             }
         }
 
-        return StateEventResult::fromSelection($selection, $effects);
+        return $result;
     }
 
     /**
-     * What a listener returned, as the commands and events it asks for: nothing (void, or a delegate decision), one of
-     * them, or several from a generator, at most EFFECT_LIMIT; anything else is refused.
+     * What a listener returned, as the commands, events and states to push it asks for: nothing (void, or a delegate
+     * decision), one of them, or several from a generator, at most EFFECT_LIMIT; anything else is refused.
      *
-     * @return list<Command<mixed>|Event>
+     * @return list<Command<mixed>|Event|StateReference>
      *
      * @throws StateAnswerRefused
      */
@@ -178,13 +187,13 @@ final readonly class StateEventDelivery
 
         $effects = match (true) {
             $answer === null, self::isDelegated($answer) => [],
-            $answer instanceof Command, $answer instanceof Event => [$answer],
+            $answer instanceof Command, $answer instanceof Event, $answer instanceof StateReference => [$answer],
             is_iterable($answer) => iterator_to_array($answer, false),
             default => throw StateAnswerRefused::notAnEffect($listener, get_debug_type($answer)),
         };
 
         foreach ($effects as $effect) {
-            if (! $effect instanceof Command && ! $effect instanceof Event) {
+            if (! $effect instanceof Command && ! $effect instanceof Event && ! $effect instanceof StateReference) {
                 throw StateAnswerRefused::notAnEffect($listener, get_debug_type($effect));
             }
         }

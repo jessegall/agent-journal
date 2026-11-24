@@ -8,6 +8,7 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\StopRequested;
+use App\Support\References\StateReference;
 use App\Support\States\AgentState;
 
 /**
@@ -18,12 +19,12 @@ final class StopAnswerState extends AgentState
     /**
      * @param  AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>  $answer
      */
-    public function __construct(private readonly AnswerPart|Command|Event|iterable $answer) {}
+    public function __construct(private readonly AnswerPart|Command|Event|StateReference|iterable $answer) {}
 
     /**
-     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
      */
-    public function onStop(StopRequested $input): AnswerPart|Command|Event|iterable
+    public function onStop(StopRequested $input): AnswerPart|Command|Event|StateReference|iterable
     {
         return $this->answer;
     }

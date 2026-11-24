@@ -9,6 +9,7 @@ use App\Contracts\Events\Event;
 use App\Declarations\StateMethods;
 use App\Exceptions\InvalidStateMethod;
 use App\Support\Decisions\Decision;
+use App\Support\References\StateReference;
 use App\Support\States\AgentState;
 use App\Support\States\Exceptions\InvalidStateClass;
 use Domain\Tasks\Events\TaskStarted;
@@ -88,6 +89,19 @@ final class StateMethodsTest extends TestCase
         $state = new class extends AgentState
         {
             public function onTaskStarted(TaskStarted $event): UnlinkRecordsCommand|Decision
+            {
+                return Decision::delegate();
+            }
+        };
+
+        $this->assertArrayHasKey(TaskStarted::class, new StateMethods()->eventsOf($state::class));
+    }
+
+    public function test_an_event_method_may_answer_with_a_state_to_push(): void
+    {
+        $state = new class extends AgentState
+        {
+            public function onTaskStarted(TaskStarted $event): StateReference|Decision
             {
                 return Decision::delegate();
             }

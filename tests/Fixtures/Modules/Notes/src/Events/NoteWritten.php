@@ -20,5 +20,6 @@ final readonly class NoteWritten implements Event
         public bool $listenerFails = false,
         public array $ordinary = [],
         public array $marked = [],
+        public bool $asksForGuide = false,
     ) {}
 }

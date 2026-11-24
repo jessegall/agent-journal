@@ -12,6 +12,7 @@ use App\Exceptions\InvalidStateMethod;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\DeclaredType;
 use App\Support\Inputs\Contracts\HookAnswerer;
+use App\Support\References\StateReference;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use App\Support\States\AgentState;
@@ -28,7 +29,7 @@ final class StateMethods
     /**
      * The types a hook method returns, and so the only ones an event method may return besides void.
      */
-    private const array HOOK_ANSWER_TYPES = [AnswerPart::class, Command::class, Event::class];
+    private const array HOOK_ANSWER_TYPES = [AnswerPart::class, Command::class, Event::class, StateReference::class];
 
     /**
      * @var array<class-string<AgentState>, array{
@@ -123,15 +124,15 @@ final class StateMethods
 
         if (! $this->answersAsHooksDo($method)) {
             throw InvalidStateMethod::for($method, 'must return void or what a hook returns: an AnswerPart, a Command, '
-                .'an Event or an iterable of them, never null or an array.');
+                .'an Event, a StateReference to push or an iterable of them, never null or an array.');
         }
 
         return $event->name();
     }
 
     /**
-     * Whether the method declares void or never, or only the types a hook method returns: AnswerPart, Command, Event
-     * and iterable.
+     * Whether the method declares void or never, or only the types a hook method returns: AnswerPart, Command, Event,
+     * StateReference and iterable.
      */
     private function answersAsHooksDo(ReflectedMethod $method): bool
     {

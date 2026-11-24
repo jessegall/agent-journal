@@ -16,10 +16,13 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\States\Support\LogDueStateReference;
+use Domain\Tasks\Support\States\WorkingOnTaskState;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -79,6 +82,36 @@ final class TaskStateContributionTest extends TestCase
         $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);
         $this->assertSame('{}', $allowed);
         $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
+    }
+
+    public function test_an_overdue_log_puts_the_log_due_state_on_top_and_logging_finishes_it(): void
+    {
+        $task = Task::factory()->create(['title' => 'Write the walk']);
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
+
+        foreach (range(1, WorkingOnTaskState::LOG_DUE_AFTER) as $call) {
+            $this->answerToolFinished("call-{$call}");
+        }
+
+        $due = $this->openLogDueFrames();
+        $this->app->make(CommandBus::class)->run(new LogTaskRunCommand($task->id, 1, 'The walk reads the stack.'));
+
+        $this->assertSame([$task->id], $due);
+        $this->assertSame([], $this->openLogDueFrames());
+    }
+
+    /**
+     * @return list<string> the task of each log-due frame that is not yet logged
+     */
+    private function openLogDueFrames(): array
+    {
+        $frames = array_filter(
+            AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(),
+            fn (FrameRecord $frame) => $frame->reference->typeKey === LogDueStateReference::TYPE_KEY
+                && ($frame->values['isLogged'] ?? false) === false,
+        );
+
+        return array_values(array_map(fn (FrameRecord $frame) => $frame->reference->subject->id, $frames));
     }
 
     public function test_a_frame_stops_holding_its_agent_once_its_run_claim_is_gone(): void

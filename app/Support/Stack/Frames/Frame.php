@@ -107,9 +107,9 @@ final readonly class Frame
     /**
      * What the state's method for the hook returns, which its one caller reads.
      *
-     * @return AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
      */
-    public function answer(HookInput $input): AnswerPart|Command|Event|iterable
+    public function answer(HookInput $input): AnswerPart|Command|Event|StateReference|iterable
     {
         return $input->answerBy($this->state);
     }

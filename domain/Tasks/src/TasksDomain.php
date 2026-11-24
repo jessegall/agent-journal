@@ -93,6 +93,7 @@ use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\TaskAssigner;
 use Domain\Tasks\Support\Mcp\HeldTasksOverview;
 use Domain\Tasks\Support\Skills\TasksSkill;
+use Domain\Tasks\Support\States\LogDueState;
 use Domain\Tasks\Support\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskDraftProducer;
 use Domain\Tasks\Support\TaskLogSearchAccess;
@@ -279,7 +280,7 @@ final class TasksDomain extends Domain implements
 
     public function states(): array
     {
-        return [WorkingOnTaskState::class];
+        return [WorkingOnTaskState::class, LogDueState::class];
     }
 
     public function assignables(): array

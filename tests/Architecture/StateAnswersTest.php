@@ -9,6 +9,7 @@ use App\Contracts\Events\Event;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\DeclaredType;
 use App\Support\Inputs\Contracts\HookAnswerer;
+use App\Support\References\StateReference;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use App\Support\States\AgentState;
@@ -24,7 +25,14 @@ use Traversable;
 final class StateAnswersTest extends TestCase
 {
     /** What a hook method may answer, as PHP names the parts of the declared type: iterable is Traversable or array. */
-    private const array ANSWERS = [Command::class, Event::class, AnswerPart::class, Traversable::class, 'array'];
+    private const array ANSWERS = [
+        Command::class,
+        Event::class,
+        AnswerPart::class,
+        StateReference::class,
+        Traversable::class,
+        'array',
+    ];
 
     public function test_every_hook_method_of_the_contract_and_of_the_base_state_declares_exactly_what_a_state_may_answer(): void
     {
