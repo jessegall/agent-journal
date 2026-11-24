@@ -28,7 +28,7 @@ final class ListCommentsRequest extends RecordTargetRequest
     public function page(): IdListPage
     {
         return new IdListPage(
-            $this->filled('after') ? $this->string('after')->toString() : null,
+            $this->filled('after') ? $this->string('after')->lower()->toString() : null,
             PageSize::from($this->filled('per_page') ? $this->integer('per_page') : null)->rows,
         );
     }

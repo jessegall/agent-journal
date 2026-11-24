@@ -97,6 +97,7 @@ final readonly class HistoryPageResolver implements PageResolver
                         'method' => ActionMethod::Post,
                         'href' => route('chat.cancel', [], false),
                         'fixed' => ['messageId' => $message->id],
+                        'isKeyed' => true,
                     ],
                 ),
                 'inline',
