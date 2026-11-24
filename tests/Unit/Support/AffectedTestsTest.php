@@ -4,82 +4,54 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support;
 
-use App\Support\DomainRegistry;
 use Tests\Support\AffectedTests;
+use Tests\Support\AffectedTestSelection;
 use Tests\TestCase;
 
 /**
- * Picking the tests a change can break from the domain boundaries.
+ * Picking the tests a change can break from the code's syntax trees, on a small tree of classes and tests.
  */
 final class AffectedTestsTest extends TestCase
 {
-    public function test_a_private_change_inside_one_domain_runs_only_that_domain(): void
+    private const string TREE = 'tests/Fixtures/AffectedTests';
+
+    public function test_a_changed_class_reaches_the_tests_of_its_users_and_of_its_interface_but_no_other(): void
     {
+        $selection = $this->affectedBy('app/Widget.php');
+
         $this->assertSame(
-            ['tests/Architecture', 'domain/Tasks/tests'],
-            $this->affectedBy('domain/Tasks/src/Support/TaskTitles.php'),
+            ['tests/ShapeDrawerTest.php' => 1, 'tests/WidgetBoxTest.php' => 1, 'tests/WidgetTest.php' => 2],
+            $selection->testMethodsByFile,
         );
+        $this->assertFalse($selection->isRefused());
     }
 
-    public function test_a_change_to_an_export_also_runs_every_domain_that_requires_it(): void
+    public function test_a_bound_class_reaches_the_tests_of_its_binding_and_a_listener_those_of_its_event(): void
     {
-        $this->assertSame(
-            ['tests/Architecture', 'domain/Plans/tests', 'domain/Tasks/tests'],
-            $this->affectedBy('domain/Tasks/src/Contracts/TaskResolver.php'),
-        );
-    }
-
-    public function test_a_change_to_a_domains_own_tests_runs_only_those(): void
-    {
-        $this->assertSame(
-            ['tests/Architecture', 'domain/Rules/tests'],
-            $this->affectedBy('domain/Rules/tests/Feature/ReviewRuleTest.php'),
-        );
-    }
-
-    public function test_a_change_to_an_area_everything_stands_on_or_the_test_support_runs_everything(): void
-    {
-        $this->assertSame(
-            AffectedTests::EVERYTHING,
-            $this->affectedBy(
-                'domain/Rules/src/Commands/ApproveRule/ApproveRuleHandler.php',
-                'app/Support/CommandRegistry.php',
-            ),
-        );
-        $this->assertSame(AffectedTests::EVERYTHING, $this->affectedBy('tests/Support/CommitsHookRows.php'));
-        $this->assertSame(AffectedTests::EVERYTHING, $this->affectedBy('config/accounts.php'));
-    }
-
-    public function test_a_change_to_a_core_area_runs_its_tests_and_the_tests_that_name_the_class(): void
-    {
-        $affected = $this->affectedBy('app/Support/ClaudeKeySignIn.php');
-
-        $this->assertNotSame(AffectedTests::EVERYTHING, $affected);
-        $this->assertContains('tests/Feature/Profiles', $affected);
-        $this->assertContains('tests/Architecture', $affected);
-        $this->assertNotContains('tests/Feature/Bus', $affected);
+        $this->assertSame(['tests/PrinterTest.php'], $this->affectedBy('app/InkPrinter.php')->testFiles());
+        $this->assertSame(['tests/PaperJamTest.php'], $this->affectedBy('app/ClearJam.php')->testFiles());
     }
 
     public function test_a_changed_test_file_runs_itself(): void
     {
-        $affected = $this->affectedBy('tests/Feature/Profiles/SignInSecretTest.php');
-
-        $this->assertSame(['tests/Architecture', 'tests/Feature/Profiles/SignInSecretTest.php'], $affected);
+        $this->assertSame(['tests/WidgetBoxTest.php'], $this->affectedBy('tests/WidgetBoxTest.php')->testFiles());
     }
 
-    public function test_a_test_file_inside_a_selected_folder_is_not_listed_again(): void
+    public function test_a_change_that_reaches_more_than_the_most_test_methods_is_refused(): void
     {
-        $affected = $this->affectedBy('app/Models/Notifications/NotificationReceipt.php');
+        $selection = $this->affectedBy('app/Crowded.php');
 
-        $this->assertContains('tests/Feature/Communication', $affected);
-        $this->assertNotContains('tests/Feature/Communication/NotificationFeedTest.php', $affected);
+        $this->assertSame(['tests/CrowdedTest.php' => 101], $selection->testMethodsByFile);
+        $this->assertTrue($selection->isRefused());
     }
 
-    /**
-     * @return list<string>
-     */
-    private function affectedBy(string ...$files): array
+    public function test_a_change_no_class_names_reaches_no_test(): void
     {
-        return new AffectedTests($this->app->make(DomainRegistry::class), base_path())->for(array_values($files));
+        $this->assertSame([], $this->affectedBy('config/journal.php')->testMethodsByFile);
+    }
+
+    private function affectedBy(string $file): AffectedTestSelection
+    {
+        return new AffectedTests(base_path(self::TREE))->for([$file]);
     }
 }

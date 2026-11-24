@@ -4,222 +4,205 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Support\DomainEntry;
-use App\Support\DomainRegistry;
-use Tests\Architecture\Support\FormerPaths;
+use Tests\Architecture\Support\DomainFiles;
+use Tests\Support\ScanCache\ScanCache;
 
 /**
- * The tests a set of changed files can break, read from the domain boundaries and Core's areas: a change inside one
- * domain that touches none of its exports runs that domain's tests; a change to an export also runs every domain that
- * requires it, however far up; a change to a Core area in app/<Area> runs that area's own test folders and every test
- * or domain that names one of the changed classes; a changed test file runs itself. A change to an area everything
- * stands on, the shared test support or the configuration runs every test.
+ * Picks the tests a change can break from the code's syntax trees: the classes the changed files declare, then the
+ * files that name them, step by step outwards, and the test files among those. A class also reaches the users of what
+ * it serves (its interfaces, the command or event it handles) and of the classes a call names with it (the interface
+ * a container binds it to, the event it listens to). It goes as many steps out as stays within the most test methods
+ * an affected run takes.
+ *
+ * @phpstan-type CodeIndex array{
+ *     users: array<string, list<string>>,
+ *     links: array<string, list<string>>,
+ *     tests: array<string, int>,
+ * }
  */
 final readonly class AffectedTests
 {
+    public const int MOST_TEST_METHODS = 100;
+
     /**
-     * Every test, for a change no single domain holds.
+     * The most steps out from the changed classes the reach goes: their users, the users of those, and one more.
      */
-    public const array EVERYTHING = [];
+    private const int FARTHEST_REACH = 3;
 
     /**
-     * The architecture tests judge every domain's shape, so any domain change runs them too.
+     * The folders whose PHP files are read for the classes they declare and name.
      */
-    private const string ARCHITECTURE = 'tests/Architecture';
+    private const array CODE_FOLDERS = ['app', 'database', 'domain', 'tests'];
+
+    private const string TEST_FILE_ENDING = 'Test.php';
+
+    public function __construct(private string $root) {}
 
     /**
-     * The Core areas every other area and domain stands on, so a change to one runs every test.
-     */
-    private const array GLOBAL_AREAS = ['Bus', 'Domains', 'Actors', 'Records', 'Providers', 'Contracts', 'Support'];
-
-    /**
-     * The test folders that mirror Core's areas, tests/<Kind>/<Area>.
-     */
-    private const array TEST_KINDS = ['Feature', 'Unit'];
-
-    public function __construct(private DomainRegistry $registry, private string $root) {}
-
-    /**
-     * The test folders to run for the changed files, relative to the project root; EVERYTHING when every test must run.
+     * The tests the changed files reach, from the nearest step out as far as the selection stays within the most test
+     * methods; the nearest step alone when even that holds more, which the run then refuses.
      *
      * @param  list<string>  $changedFiles  paths relative to the project root
-     * @return list<string>
      */
-    public function for(array $changedFiles): array
+    public function for(array $changedFiles): AffectedTestSelection
     {
-        $affected = [];
-        $paths = [];
+        $findings = $this->findingsByFile();
+        $index = $this->indexOf($findings);
+        $reached = array_values(array_filter(
+            array_map(fn (string $file) => "{$this->root}/{$file}", $changedFiles),
+            fn (string $path) => isset($findings[$path]),
+        ));
+        $classes = $this->classesOf($changedFiles, $reached, $findings, $index);
+        $selection = new AffectedTestSelection($this->testsAmong($reached, $index['tests']), 0);
 
-        foreach ($changedFiles as $file) {
-            $owner = $this->ownerOf($file);
+        for ($step = 1; $step <= self::FARTHEST_REACH; $step++) {
+            $users = array_values(array_unique(array_merge([], ...array_map(
+                fn (string $class) => $index['users'][$class] ?? [],
+                $classes,
+            ))));
+            $reached = array_values(array_unique([...$reached, ...$users]));
+            $next = new AffectedTestSelection($this->testsAmong($reached, $index['tests']), $step);
 
-            if ($owner !== null) {
-                $affected[$owner->name] = $owner;
-
-                if ($this->isExport($owner, $file)) {
-                    foreach ($this->dependentsOf($owner) as $dependent) {
-                        $affected[$dependent->name] = $dependent;
-                    }
-                }
-
-                continue;
+            if ($next->isRefused()) {
+                return $step === 1 ? $next : $selection;
             }
 
-            $corePaths = $this->corePathsFor($file);
-
-            if ($corePaths === null) {
-                return self::EVERYTHING;
-            }
-
-            foreach ($corePaths['paths'] as $path) {
-                $paths[$path] = $path;
-            }
-
-            foreach ($corePaths['domains'] as $domain) {
-                $affected[$domain->name] = $domain;
-            }
+            $selection = $next;
+            $classes = $this->classesDeclaredIn($users, $findings, $index['links']);
         }
 
-        $folders = array_map(fn (DomainEntry $entry) => $this->testFolderOf($entry), $affected);
-        $selected = array_values(array_unique(array_filter(
-            [...$folders, ...array_values($paths)],
-            fn (string $path) => file_exists("{$this->root}/{$path}"),
-        )));
-        sort($selected);
-        $outermost = array_filter($selected, fn (string $path) => ! self::liesInAnyOf($path, $selected));
-
-        return [self::ARCHITECTURE, ...array_values(array_diff($outermost, [self::ARCHITECTURE]))];
+        return $selection;
     }
 
     /**
-     * Whether a test path lies inside another of the selected folders, which runs it already; PHPUnit refuses a file
-     * added to its suite twice.
+     * Each PHP file of the code folders with what its syntax tree says, read again only when the file changed.
      *
-     * @param  list<string>  $selected
+     * @return array<string, list<string>>
      */
-    private static function liesInAnyOf(string $path, array $selected): bool
+    private function findingsByFile(): array
     {
-        return array_any($selected, fn (string $folder) => str_starts_with($path, "{$folder}/"));
-    }
-
-    /**
-     * What a change outside every domain runs: a changed test file itself, or a Core area's test folders with every
-     * test and domain that names one of the changed class; null when the change reaches everything.
-     *
-     * @return array{paths: list<string>, domains: list<DomainEntry>}|null
-     */
-    private function corePathsFor(string $file): array|null
-    {
-        $isTestFile = preg_match('#^tests/(Feature|Unit|Architecture)/.+Test\.php$#', $file) === 1;
-
-        if ($isTestFile) {
-            return ['paths' => [$file], 'domains' => []];
-        }
-
-        // A Core file's area is the folder it had before the move to Laravel's layout, which the test folders mirror.
-        if (preg_match('#^app/([A-Z][A-Za-z]+)/.+$#', FormerPaths::of($file), $area) !== 1
-            || in_array($area[1], self::GLOBAL_AREAS, true)) {
-            return null;
-        }
-
-        $paths = array_map(fn (string $kind) => "tests/{$kind}/{$area[1]}", self::TEST_KINDS);
-
-        if (! str_ends_with($file, '.php')) {
-            return ['paths' => $paths, 'domains' => []];
-        }
-
-        $class = 'App\\'.str_replace('/', '\\', substr($file, 4, -4));
-        [$tests, $domains] = $this->namersOf($class);
-
-        return ['paths' => [...$paths, ...$tests], 'domains' => $domains];
-    }
-
-    /**
-     * The test files and the domains whose code name the class.
-     *
-     * @return array{list<string>, list<DomainEntry>}
-     */
-    private function namersOf(string $class): array
-    {
-        $tests = [];
-        $domains = [];
-        $domainFolders = array_map(fn (DomainEntry $entry) => $entry->folder, $this->registry->all());
-        $folders = implode(' ', array_map(escapeshellarg(...), [$this->root.'/tests', ...$domainFolders]));
-        exec('grep -rlF '.escapeshellarg($class).' '.$folders, $found);
-
-        foreach ($found as $path) {
-            $relative = substr($path, strlen($this->root) + 1);
-            $owner = $this->ownerOf($relative);
-
-            if ($owner !== null) {
-                $domains[$owner->name] = $owner;
-            } elseif (str_ends_with($relative, 'Test.php')) {
-                $tests[] = $relative;
-            }
-        }
-
-        return [$tests, array_values($domains)];
-    }
-
-    /**
-     * The domain whose package holds the file, its code or its tests, or null for a file outside every domain.
-     */
-    private function ownerOf(string $file): DomainEntry|null
-    {
-        return array_find(
-            $this->registry->all(),
-            fn (DomainEntry $entry) => str_starts_with("{$this->root}/{$file}", $this->packageOf($entry).'/'),
+        return ScanCache::findingsByFile(
+            new CodeReferenceScan(),
+            DomainFiles::in(array_map(fn (string $folder) => "{$this->root}/{$folder}", self::CODE_FOLDERS)),
         );
     }
 
-    private function isExport(DomainEntry $owner, string $file): bool
-    {
-        $code = $owner->folder.'/';
-        $path = "{$this->root}/{$file}";
-
-        if (! str_starts_with($path, $code) || ! str_ends_with($path, '.php')) {
-            return false;
-        }
-
-        return $owner->exportsName($owner->namespace.'\\'.str_replace('/', '\\', substr($path, strlen($code), -4)));
-    }
-
     /**
-     * Every domain that requires the owner, directly or through another domain that does.
+     * The files that name each class, the classes a call names with each class, and the test methods each test file
+     * holds.
      *
-     * @return list<DomainEntry>
+     * @param  array<string, list<string>>  $findings
+     * @return CodeIndex
      */
-    private function dependentsOf(DomainEntry $owner): array
+    private function indexOf(array $findings): array
     {
-        $found = [];
-        $waiting = [$owner];
+        $users = [];
+        $links = [];
+        $tests = [];
 
-        while ($waiting !== []) {
-            $current = array_pop($waiting);
-
-            foreach ($this->registry->all() as $entry) {
-                if (isset($found[$entry->name]) || ! $entry->requiresDomain($current)) {
-                    continue;
+        foreach ($findings as $path => $found) {
+            foreach ($found as $finding) {
+                if (str_starts_with($finding, CodeReferenceScan::NAMES)) {
+                    $users[substr($finding, strlen(CodeReferenceScan::NAMES))][] = $path;
                 }
 
-                $found[$entry->name] = $entry;
-                $waiting[] = $entry;
+                if (str_starts_with($finding, CodeReferenceScan::LINKS)) {
+                    $linked = explode(' ', substr($finding, strlen(CodeReferenceScan::LINKS)));
+
+                    foreach ($linked as $class) {
+                        $links[$class] = [...$links[$class] ?? [], ...array_diff($linked, [$class])];
+                    }
+                }
+            }
+
+            if (str_ends_with($path, self::TEST_FILE_ENDING)) {
+                $tests[$path] = count(array_filter(
+                    $found,
+                    fn (string $finding) => str_starts_with($finding, CodeReferenceScan::TEST),
+                ));
             }
         }
 
-        return array_values($found);
+        return ['users' => $users, 'links' => array_map(fn (array $linked) => array_values(array_unique($linked)), $links), 'tests' => $tests];
     }
 
     /**
-     * The domain's package folder, domain/<Name>, which holds its src and its tests.
+     * The classes the changed files declare and implement; a removed file stands for every named class of its name.
+     *
+     * @param  list<string>  $changedFiles
+     * @param  list<string>  $existing  the changed files that are still there, as full paths
+     * @param  array<string, list<string>>  $findings
+     * @param  CodeIndex  $index
+     * @return list<string>
      */
-    private function packageOf(DomainEntry $entry): string
+    private function classesOf(array $changedFiles, array $existing, array $findings, array $index): array
     {
-        return dirname($entry->folder);
+        $removedNames = array_map(
+            fn (string $file) => '\\'.basename($file, '.php'),
+            array_filter(
+                $changedFiles,
+                fn (string $file) => str_ends_with($file, '.php') && ! is_file("{$this->root}/{$file}"),
+            ),
+        );
+        $removed = array_filter(
+            array_keys($index['users']),
+            fn (string $class) => array_any($removedNames, fn (string $name) => str_ends_with('\\'.$class, $name)),
+        );
+
+        return array_values(array_unique([
+            ...$this->classesDeclaredIn($existing, $findings, $index['links']),
+            ...$removed,
+        ]));
     }
 
-    private function testFolderOf(DomainEntry $entry): string
+    /**
+     * The classes the files declare, with what they serve and the classes a call names with them, whose users a change
+     * of the files reaches.
+     *
+     * @param  list<string>  $paths
+     * @param  array<string, list<string>>  $findings
+     * @param  array<string, list<string>>  $links
+     * @return list<string>
+     */
+    private function classesDeclaredIn(array $paths, array $findings, array $links): array
     {
-        return substr($this->packageOf($entry), strlen($this->root) + 1).'/tests';
+        $classes = [];
+
+        foreach ($paths as $path) {
+            foreach ($findings[$path] ?? [] as $finding) {
+                if (str_starts_with($finding, CodeReferenceScan::DECLARES)) {
+                    $declared = substr($finding, strlen(CodeReferenceScan::DECLARES));
+                    array_push($classes, $declared, ...($links[$declared] ?? []));
+                }
+
+                if (str_starts_with($finding, CodeReferenceScan::SERVES)) {
+                    $classes[] = substr($finding, strlen(CodeReferenceScan::SERVES));
+                }
+            }
+        }
+
+        return array_values(array_unique($classes));
+    }
+
+    /**
+     * The test files among the reached files with their test methods, relative to the project root.
+     *
+     * @param  list<string>  $reached
+     * @param  array<string, int>  $tests
+     * @return array<string, int>
+     */
+    private function testsAmong(array $reached, array $tests): array
+    {
+        $selected = [];
+
+        foreach ($reached as $path) {
+            if (($tests[$path] ?? 0) > 0) {
+                $selected[substr($path, strlen($this->root) + 1)] = $tests[$path];
+            }
+        }
+
+        ksort($selected);
+
+        return $selected;
     }
 }

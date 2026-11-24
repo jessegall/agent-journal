@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use Tests\Support\AffectedTests;
-
 require_once __DIR__.'/worktree-databases.php';
 
 // The workers a run starts when its --processes names none: room is left for the containers beside it.
@@ -42,7 +40,7 @@ function configurationFor(string $root, array $paths): string
 {
     $configuration = (string) file_get_contents("{$root}/phpunit.xml");
 
-    if ($paths !== AffectedTests::EVERYTHING) {
+    if ($paths !== []) {
         $directories = implode(
             '',
             array_map(fn (string $path) => is_file("{$root}/{$path}")
@@ -202,7 +200,7 @@ function processesFor(string $root, array $options, array $paths): int
         }
     }
 
-    if ($paths === [] || $paths === AffectedTests::EVERYTHING) {
+    if ($paths === []) {
         return DEFAULT_PROCESSES;
     }
 
