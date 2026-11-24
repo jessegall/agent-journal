@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Support;
 
+use App\Values\AgentText;
 use Domain\Rules\Models\Rule;
 
 /**
@@ -12,11 +13,14 @@ use Domain\Rules\Models\Rule;
 final readonly class ActiveRules
 {
     /**
-     * @return list<string>
+     * @return list<AgentText>
      */
     public function reminders(): array
     {
-        return array_map(fn (Rule $rule) => "Rule {$rule->number}: {$rule->text}", $this->all());
+        return array_map(
+            fn (Rule $rule) => AgentText::of('rules.reminder', ['number' => $rule->number, 'text' => $rule->text]),
+            $this->all(),
+        );
     }
 
     /**

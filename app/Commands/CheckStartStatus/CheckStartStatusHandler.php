@@ -7,7 +7,6 @@ namespace App\Commands\CheckStartStatus;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Starts\StartRecord;
 use App\Support\DriverRequests;
 use App\Values\DriverRequestPayload;
 
@@ -16,15 +15,12 @@ final readonly class CheckStartStatusHandler implements CommandHandler
     public function __construct(private DriverRequests $requests) {}
 
     /**
-     * Answers whether the host was asked: only an unverified start of a session with a runtime has something to check,
+     * Answers whether the host was asked: a session with a runtime has a host to ask, which answers with its report,
      * and a check still open is the one answered, so a second ask adds no request.
      */
     public function handle(CheckStartStatusCommand $command): bool
     {
-        $unverified = StartRecord::lockedLatestOf($command->sessionId)
-            ->filter(fn (StartRecord $start) => $start->readiness->isUnverified());
-
-        if ($unverified->isEmpty() || ! AgentRuntime::existsForSession($command->sessionId)) {
+        if (! AgentRuntime::existsForSession($command->sessionId)) {
             return false;
         }
 

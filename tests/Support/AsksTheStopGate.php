@@ -38,6 +38,6 @@ trait AsksTheStopGate
      */
     private function messagesOf(StateAnswer $answer): array
     {
-        return array_map(fn (ContextLine|MessageLine $line) => $line->text, $answer->lines);
+        return array_map(fn (ContextLine|MessageLine $line) => $line->text->text, $answer->lines);
     }
 }

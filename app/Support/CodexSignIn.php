@@ -9,6 +9,7 @@ use App\Data\Accounts\CodexAccountReadData;
 use App\Data\Accounts\CodexLoginCompletedData;
 use App\Data\Accounts\CodexLoginStartData;
 use App\Data\Accounts\CodexMessageData;
+use App\Exceptions\SignInChallengeUnreadable;
 use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
@@ -153,16 +154,21 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * The driver's answer to the login start, none until it answered with a device code.
+     * The driver's answer to the login start, none until it answered; an answer that holds no readable device code
+     * fails, since waiting longer never makes it one.
      */
     private static function loginStartIn(string $output): CodexLoginStartData|null
     {
         $answer = self::answerIn($output, self::LOGIN_REQUEST);
 
-        try {
-            return $answer === null ? null : CodexLoginStartData::from($answer->result);
-        } catch (CannotCreateData|TypeError) {
+        if ($answer === null) {
             return null;
+        }
+
+        try {
+            return CodexLoginStartData::from($answer->result);
+        } catch (CannotCreateData|TypeError $unreadable) {
+            throw SignInChallengeUnreadable::fromLoginStart($unreadable);
         }
     }
 

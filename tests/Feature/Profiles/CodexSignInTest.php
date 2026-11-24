@@ -4,11 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Contracts\Files\Files;
+use App\Enums\SignInMethod;
+use App\Enums\SignInOutcome;
+use App\Exceptions\SignInChallengeUnreadable;
 use App\Support\CodexSignIn;
+use App\Support\LocalAccountFolders;
+use App\Support\PrivateSignInProcesses;
 use App\Support\SignInProtocols;
+use App\Values\ClaimedSignIn;
 use App\Values\SignInVerification;
+use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
+use TypeError;
 
 /**
  * Codex's own device-code sign-in run against a stand-in app-server: the account folder keeps its sign-in in its own
@@ -71,6 +80,38 @@ final class CodexSignInTest extends TestCase
 
         $this->assertFalse($protocol->hasFinished($process));
         $process->stop();
+    }
+
+    public function test_an_answer_without_a_device_code_fails_by_name_instead_of_waiting(): void
+    {
+        touch($this->directory.'/unreadable-login-start');
+        $protocol = $this->app->make(CodexSignIn::class);
+        $process = $protocol->begin($this->directory);
+        $this->waitUntil(fn () => str_contains($process->output(), 'login-1'));
+
+        try {
+            $this->expectException(SignInChallengeUnreadable::class);
+            $protocol->deviceCodeFrom($process);
+        } finally {
+            $process->stop();
+        }
+    }
+
+    public function test_the_runner_ends_a_sign_in_without_a_device_code_at_once_with_its_reason(): void
+    {
+        touch($this->directory.'/unreadable-login-start');
+        $deadline = '2099-01-01T00:00:00+00:00';
+        $claimed = new ClaimedSignIn('attempt-1', 'codex', SignInMethod::OAuth, $this->directory, 0, $deadline, null);
+        $host = new RecordingSignInHost($claimed);
+        $files = $this->app->make(Files::class);
+        $protocols = $this->app->make(SignInProtocols::class);
+        $pause = static fn () => usleep(10_000);
+
+        new PrivateSignInProcesses($host, $protocols, $pause, $files, new LocalAccountFolders($files))->runNext();
+
+        $this->assertSame(SignInOutcome::Interrupted, end($host->outcomes));
+        $reason = SignInChallengeUnreadable::fromLoginStart(new TypeError())->getMessage();
+        $this->assertSame($reason, end($host->refusals));
     }
 
     public function test_its_own_successful_login_and_a_chatgpt_account_prove_the_sign_in(): void

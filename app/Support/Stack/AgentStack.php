@@ -17,6 +17,7 @@ use App\Support\References\StateReference;
 use App\Support\Stack\Contracts\StateFactory;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Storage\FrameRecords;
+use App\Values\AgentText;
 use App\Values\StackTarget;
 use App\Values\StackVerdict;
 use PhpOption\None;
@@ -78,10 +79,10 @@ final readonly class AgentStack
             $effects = [...$effects, ...$answered->effects];
 
             foreach ($answered->lines as $line) {
-                $context[] = $line->text;
+                $context[] = $line->text->text;
 
                 if ($line instanceof MessageLine) {
-                    $messages[] = $line->text;
+                    $messages[] = $line->text->text;
                 }
             }
 
@@ -106,7 +107,7 @@ final readonly class AgentStack
     /**
      * The instruction of the top live state that has one.
      *
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {

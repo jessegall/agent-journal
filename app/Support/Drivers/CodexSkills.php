@@ -7,7 +7,6 @@ namespace App\Support\Drivers;
 use App\Contracts\Skills\DriverSkills;
 use App\Enums\SkillReload;
 use App\Support\DefaultDrivers;
-use App\Values\PublishedSkill;
 use App\Values\SkillDelivery;
 use App\Values\SkillKey;
 
@@ -38,11 +37,6 @@ final readonly class CodexSkills implements DriverSkills
     public function delivery(): SkillDelivery
     {
         return new SkillDelivery(self::FOLDER, []);
-    }
-
-    public function instruction(PublishedSkill $skill): string
-    {
-        return "Read the skill {$skill->key->key} at {$skill->path} before work it covers.";
     }
 
     public function reloadMode(): SkillReload

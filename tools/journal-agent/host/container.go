@@ -35,10 +35,13 @@ const (
 const daemonBindRoot = "/srv/journal/"
 
 // containedTargets are the folders a contained container may have mounted, each at most once.
-var containedTargets = []string{"/workspace", "/home/journal/.account", "/home/journal/.account/projects"}
+var containedTargets = []string{
+	"/workspace", "/home/journal/.account", "/home/journal/.account/projects", SessionFilesTarget,
+}
 
-// maxContainedMounts is the most mounts a contained container has: its workspace, its account and its projects.
-const maxContainedMounts = 3
+// maxContainedMounts is the most mounts a contained container has: its workspace, its account, its projects and its
+// session's handed files.
+const maxContainedMounts = 4
 
 // ContainerMount mirrors App\Agents\Support\ManifestMount: one folder a container sees, and where it comes from.
 type ContainerMount struct {
@@ -301,7 +304,7 @@ func (rules ContainerRules) permitsImage(image string) bool {
 }
 
 // permit is whether the mounts fit the arrangement: a local helper has exactly one folder of this machine; a
-// contained one has one to three mounts of the agent daemon, each on its own allowed folder.
+// contained one has one to four mounts of the agent daemon, each on its own allowed folder.
 func (rules ContainerRules) permit(mounts []ContainerMount) bool {
 	if !rules.Arrangement.IsContained() {
 		return len(mounts) == 1 && mounts[0].Type == MountBind

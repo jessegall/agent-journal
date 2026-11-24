@@ -12,6 +12,7 @@ use App\Events\AskClosed;
 use App\Events\AskHopAssigned;
 use App\Support\Decisions\Decision;
 use App\Support\States\Support\AnsweringAskStateReference;
+use App\Values\AgentText;
 use PhpOption\Option;
 use PhpOption\Some;
 
@@ -40,11 +41,11 @@ final class AnsweringAskState extends AgentState
     }
 
     /**
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {
-        return new Some('An ask waits for your answer: answer it before other work.');
+        return new Some(AgentText::of('core.asks.waiting'));
     }
 
     // ----------[ Events ]----------

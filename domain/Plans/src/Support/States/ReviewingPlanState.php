@@ -13,6 +13,7 @@ use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\RecordIdentity;
 use App\Support\States\AgentState;
+use App\Values\AgentText;
 use Domain\Plans\Data\ReviewersOutData;
 use Domain\Plans\Events\PlanReviewDecided;
 use Domain\Plans\Events\PlanReviewWithdrawn;
@@ -51,7 +52,7 @@ final class ReviewingPlanState extends AgentState
     }
 
     /**
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {
@@ -109,8 +110,8 @@ final class ReviewingPlanState extends AgentState
         return $subject->type === Plan::LINK_TYPE && $subject->id === $this->planId;
     }
 
-    private function reviewText(): string
+    private function reviewText(): AgentText
     {
-        return "Plan {$this->number} waits for your review. Read it, then approve it or ask for changes.";
+        return AgentText::of('plans.review', ['plan' => $this->number]);
     }
 }

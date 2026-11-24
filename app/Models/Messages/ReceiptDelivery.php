@@ -82,14 +82,14 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The delivery of the receipt that is still open, being tried or waiting for its recipient to start, locked; none
-     * when it was settled or never scheduled.
+     * The delivery of the receipt that has not reached its recipient, locked: being tried, waiting for its recipient
+     * to start, or given up; none when it was accepted, dismissed or never scheduled.
      */
-    public static function openFor(string $receiptId): self|null
+    public static function undeliveredFor(string $receiptId): self|null
     {
         return self::query()
             ->where('receipt_id', $receiptId)
-            ->whereIn('state', [ReceiptDeliveryState::Pending, ReceiptDeliveryState::Waiting])
+            ->whereIn('state', ReceiptDeliveryState::undelivered())
             ->lockForUpdate()
             ->first();
     }

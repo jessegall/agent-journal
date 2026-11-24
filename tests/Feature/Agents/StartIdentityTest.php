@@ -166,14 +166,20 @@ final class StartIdentityTest extends TestCase
         $this->assertSame([], $this->claimedIds($host));
     }
 
-    public function test_a_ready_start_has_nothing_to_check(): void
+    public function test_check_status_asks_the_host_of_a_ready_start_and_a_refusal_keeps_its_proof(): void
     {
         [$host, , $wake, $record] = $this->startWithMessage();
         $this->claimedIds($host);
         $this->reportApplied($host, $wake, self::CONVERSATION);
+        $readiness = $record->refresh()->readiness;
 
-        $this->assertFalse($this->checkStatus($record));
-        $this->assertNotContains(DriverOperation::ResendReadiness->value, array_map(fn (ClaimedRequest $request) => $request->operation, $this->claimed($host)));
+        $this->assertTrue($this->checkStatus($record));
+        $check = $this->claimed($host)[0];
+        $this->assertSame(DriverOperation::ResendReadiness->value, $check->operation);
+
+        $this->answerCheck($host, $check->requestId, RequestProgress::Failed, HostWakeRefusal::NoObservation);
+
+        $this->assertSame($readiness, $record->refresh()->readiness);
     }
 
     public function test_a_host_with_no_ready_report_leaves_the_start_uncertain_and_its_message_held(): void

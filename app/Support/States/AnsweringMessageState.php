@@ -21,6 +21,7 @@ use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Support\States\Support\AnsweringMessageStateReference;
+use App\Values\AgentText;
 use App\Values\AnswerBudget;
 use App\Values\RecoveryCall;
 use App\Values\StackVerdict;
@@ -80,7 +81,7 @@ final class AnsweringMessageState extends AgentState
     }
 
     /**
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {
@@ -244,30 +245,34 @@ final class AnsweringMessageState extends AgentState
         return ! $this->isAnswered() && $this->budget->leftAfter($this->toolUses) === 0;
     }
 
-    private function waitingText(): string
+    private function waitingText(): AgentText
     {
-        $left = $this->budget->leftAfter($this->toolUses);
-
-        return "{$this->countText()} in the chat. You have {$left} tool uses left before you must answer. "
-            .$this->howToAnswerText();
+        return AgentText::of('core.messages.waiting', [
+            'count' => $this->countText(),
+            'left' => $this->budget->leftAfter($this->toolUses),
+            'how' => $this->howToAnswerText(),
+        ]);
     }
 
-    private function answerNowText(): string
+    private function answerNowText(): AgentText
     {
-        return "{$this->countText()} in the chat and your tool uses are used up. Answer now, then go on. "
-            .$this->howToAnswerText();
+        return AgentText::of('core.messages.answer_now', [
+            'count' => $this->countText(),
+            'how' => $this->howToAnswerText(),
+        ]);
     }
 
     private function howToAnswerText(): string
     {
-        return "Reply with messages_reply, message_id {$this->oldestId()}; when no words are needed, a reaction to it "
-            .'in the chat answers too.';
+        return AgentText::of('core.messages.how_to_answer', ['message' => $this->oldestId()])->text;
     }
 
     private function countText(): string
     {
         $waiting = count($this->waitingIds);
 
-        return $waiting === 1 ? '1 message waits for your answer' : "{$waiting} messages wait for your answer";
+        return $waiting === 1
+            ? AgentText::of('core.messages.one_waiting')->text
+            : AgentText::of('core.messages.several_waiting', ['count' => $waiting])->text;
     }
 }

@@ -486,7 +486,12 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame($image, $manifest->image);
         $this->assertSame("acme-{$opened->sessionId}", $manifest->network);
         $this->assertSame(
-            ['/srv/journal/workspaces/main', '/srv/journal/accounts/01plain', "acme-history-{$opened->sessionId}"],
+            [
+                '/srv/journal/workspaces/main',
+                '/srv/journal/accounts/01plain',
+                "acme-history-{$opened->sessionId}",
+                "/srv/journal/sessions/{$opened->sessionId}",
+            ],
             array_map(fn ($mount) => $mount->source, $manifest->mounts),
         );
         $this->assertTrue($manifest->mounts[0]->writable);

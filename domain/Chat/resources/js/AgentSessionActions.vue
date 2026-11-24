@@ -19,6 +19,7 @@ import { keyedPost } from "@kit/keyedPost";
 import { sendPageAction } from "@kit/pageActions";
 import { readPage } from "@kit/pageReads";
 import { useOpenSessionDialog } from "./composables/useChosenAgent";
+import { useStatusCheck } from "./composables/useStatusCheck";
 import { useSwitchOperation } from "./composables/useSwitchOperation";
 import { openTerminalBesideChat } from "./composables/useTerminalDock";
 import SessionAction from "./SessionAction.vue";
@@ -62,6 +63,10 @@ let opener: HTMLElement | null = null;
 const notice = ref<string | null>(null);
 const pendingType = ref<string | null>(null);
 const switching = useSwitchOperation(() => props.agent);
+const statusCheck = useStatusCheck(
+  () => props.agent.status,
+  (done) => router.reload({ onFinish: done }),
+);
 
 watch([formMode, isStopAsked], ([mode, isAsked]) =>
   emit("dialog", mode !== null || isAsked),
@@ -150,24 +155,29 @@ function cancelStart(): void {
 }
 
 /**
- * Checks a start whose session is not verified: the host is asked once, under a new request id, to send its ready report
- * again, and the page is read again for the answer. Any other Check status only reads the page again.
+ * Asks the session's host one real question, once under a new request id, and waits for its answer on the page; it
+ * ends with the host's answer, or after a bounded wait with why there was none. With no session it reads the page.
  */
 function checkStatus(): void {
   pendingType.value = "check-status";
+  notice.value = null;
 
-  const state = props.agent.status.sessionState;
-
-  if (props.agent.sessionId === null || (state !== "verifying" && state !== "unverified")) {
+  if (props.agent.sessionId === null) {
     readAgain();
 
     return;
   }
 
+  const askedAt = Date.now();
+  const end = (silence: string | null) => {
+    pendingType.value = null;
+    notice.value = silence;
+  };
+
   sendPageAction(
     checkStart({ agent: props.agent.id, session: props.agent.sessionId }),
     { requestId: newRequestId() },
-    { only: [], onFinish: readAgain },
+    { only: [], onFinish: () => statusCheck.follow(askedAt, end) },
   );
 }
 

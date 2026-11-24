@@ -20,6 +20,7 @@ use App\Support\Stack\HookAnswer;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Actors\FixedCurrentAuthorizer;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -31,6 +32,7 @@ use Tests\TestCase;
 final class McpInstructionsTest extends TestCase
 {
     use CommittedHookStack;
+    use InstallsBuiltInProfiles;
 
     private const string MCP_ADVICE = 'Use the journal MCP tools';
 
@@ -55,7 +57,7 @@ final class McpInstructionsTest extends TestCase
 
     public function test_a_reviewer_hears_only_its_own_journeys(): void
     {
-        $instructions = new McpInstructions(new FixedCurrentAuthorizer())->forCaller();
+        $instructions = new McpInstructions(new FixedCurrentAuthorizer())->forCaller()->text;
 
         $this->assertStringContainsString(self::SEQUENCE_JOURNEY, $instructions);
         $this->assertStringNotContainsString(self::HELPER_DISPATCH, $instructions);
@@ -65,7 +67,7 @@ final class McpInstructionsTest extends TestCase
     public function test_the_instructions_stay_short_and_name_no_token_or_path(): void
     {
         foreach ([[], [AccessType::Delegate]] as $granted) {
-            $instructions = new McpInstructions(new FixedCurrentAuthorizer($granted))->forCaller();
+            $instructions = new McpInstructions(new FixedCurrentAuthorizer($granted))->forCaller()->text;
 
             $this->assertLessThan(1500, mb_strlen($instructions));
             $this->assertStringNotContainsString(

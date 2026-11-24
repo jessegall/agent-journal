@@ -14,18 +14,13 @@ use App\Exceptions\InvalidShellAnswer;
 use App\Exceptions\InvalidStopAnswer;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Stack\HookAnswer;
+use App\Values\AgentText;
 
 /**
  * The reply shapes Claude Code and Codex share for a pre-tool call and a stop. Shapes only: the walk already decided.
  */
 final class DriverReplies
 {
-    public const string PROTECTED_REASON = 'Saved driver accounts, their sign-ins and other sessions\' history '
-        .'are private: only this session\'s own saved outputs can be read.';
-
-    public const string REWRITE_REFUSAL = 'This driver cannot take a rewritten command without a native approval. '
-        .'Run the command through its alias with journal run instead.';
-
     /**
      * The reply to a tool call the journal admitted: the driver runs it without asking a user.
      *
@@ -53,7 +48,7 @@ final class DriverReplies
      */
     public static function denyProtected(): DriverReply
     {
-        return self::denyTool(self::PROTECTED_REASON, []);
+        return self::denyTool(AgentText::of('core.drivers.protected')->text, []);
     }
 
     /**
@@ -109,7 +104,10 @@ final class DriverReplies
                 $original->withCommand($answer->decision->replacementLine()),
                 $answer->shownContext(),
             ),
-            RewriteSupport::NeedsApproval => self::denyTool(self::REWRITE_REFUSAL, $answer->shownContext()),
+            RewriteSupport::NeedsApproval => self::denyTool(
+                AgentText::of('core.drivers.rewrite_refused')->text,
+                $answer->shownContext(),
+            ),
         };
     }
 

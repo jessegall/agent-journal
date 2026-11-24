@@ -23,6 +23,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\ChecksProgramAdapter;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class ClaudeCodeTest extends TestCase
@@ -119,7 +120,8 @@ final class ClaudeCodeTest extends TestCase
 
     public function test_a_denied_shell_command_carries_its_reason(): void
     {
-        $reply = json_decode($this->render('shell command', Decision::deny('Save it first.'))->stdout, true);
+        $rendered = $this->render('shell command', Decision::deny(TestText::of('Save it first.')));
+        $reply = json_decode($rendered->stdout, true);
 
         $this->assertSame(
             [
@@ -146,7 +148,7 @@ final class ClaudeCodeTest extends TestCase
     {
         $this->assertSame(
             json_encode(['decision' => 'block', 'reason' => self::PROMPT_REASON]),
-            $this->render('prompt', Decision::deny(self::PROMPT_REASON))->stdout,
+            $this->render('prompt', Decision::deny(TestText::of(self::PROMPT_REASON)))->stdout,
         );
     }
 
@@ -168,7 +170,7 @@ final class ClaudeCodeTest extends TestCase
     {
         $this->assertSame(
             json_encode(['decision' => 'block', 'reason' => self::STOP_REASON]),
-            $this->render('stop', Decision::deny(self::STOP_REASON))->stdout,
+            $this->render('stop', Decision::deny(TestText::of(self::STOP_REASON)))->stdout,
         );
         $this->assertSame('{}', $this->render('stop', Decision::allow())->stdout);
     }
@@ -179,7 +181,7 @@ final class ClaudeCodeTest extends TestCase
 
         $this->assertSame(
             json_encode(['decision' => 'block', 'reason' => self::STOP_REASON."\n".self::CONTEXT_LINE]),
-            $this->render('stop', Decision::deny(self::STOP_REASON), $context)->stdout,
+            $this->render('stop', Decision::deny(TestText::of(self::STOP_REASON)), $context)->stdout,
         );
     }
 

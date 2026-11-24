@@ -129,6 +129,8 @@ func TestTheHostTypesIntoASessionsTerminalReadsItAndSizesItThroughTheDaemon(t *t
 
 func TestAStopIsProvenAndRemovesTheContainerAndItsNetworkButKeepsTheVolumes(t *testing.T) {
 	container, daemon := sessionOn(t)
+	// A session's id is plain, as the journal makes it, so its handed files can be removed by it.
+	container.Labels.Session = "session7"
 	if err := container.Open(context.Background(), attachableManifest(), ContainerProcess{Command: []string{"claude"}}); err != nil {
 		t.Fatal(err)
 	}

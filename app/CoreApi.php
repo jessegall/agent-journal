@@ -1283,6 +1283,7 @@ use App\Values\AccessRequirement;
 use App\Values\AccountUse;
 use App\Values\ActivatedProfile;
 use App\Values\AdmittedConstraints;
+use App\Values\AgentText;
 use App\Values\AllowedNames;
 use App\Values\AnswerBudget;
 use App\Values\ArgumentGrammar;
@@ -2109,6 +2110,7 @@ final class CoreApi
                 CommentType::class,
                 MessageView::class,
                 ReplyOriginal::class,
+                AgentText::class,
                 MessagePage::class,
                 MessageReader::class,
                 MessageClaimHolder::class,

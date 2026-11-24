@@ -16,10 +16,10 @@ use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Support\States\FollowingSequenceState;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\TestCase;
 
 final class FollowingSequenceTest extends TestCase
 {
@@ -41,23 +41,23 @@ final class FollowingSequenceTest extends TestCase
         $decision = $state->onStop($this->stop());
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertSame($state->instruction()->get(), $decision->refusalReason());
+        $this->assertSame($state->instruction()->get()->text, $decision->refusalReason());
     }
 
     public function test_its_current_step_is_its_foreground_instruction_and_reading_it_advances_nothing(): void
     {
         $state = $this->following();
 
-        $this->assertSame($state->instruction()->get(), $state->instruction()->get());
+        $this->assertSame($state->instruction()->get()->text, $state->instruction()->get()->text);
     }
 
     public function test_hearing_the_next_step_moves_it_on_and_hearing_the_end_finishes_it(): void
     {
         $state = $this->following();
-        $before = $state->instruction()->get();
+        $before = $state->instruction()->get()->text;
 
         $state->onSequenceStepReached(new SequenceStepReached('run-8', TestActors::agentIdentity(1), 2));
-        $this->assertNotSame($before, $state->instruction()->get());
+        $this->assertNotSame($before, $state->instruction()->get()->text);
 
         $state->onSequenceEnded(new SequenceEnded('run-8', TestActors::agentIdentity(1), SequenceRunState::Finished));
         $this->assertTrue($state->isFinished());

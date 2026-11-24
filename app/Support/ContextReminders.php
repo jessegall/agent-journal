@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Work\ReminderContribution;
+use App\Values\AgentText;
 
 /**
  * The reminders the owning domains give an agent when its context starts again: every required one first, then the
@@ -25,15 +26,15 @@ final class ContextReminders implements ReminderContribution
 
     public function __construct(private readonly ContextBudget $budget) {}
 
-    public function add(string $reminder, bool $required): void
+    public function add(AgentText $reminder, bool $required): void
     {
         if ($required) {
-            $this->required[] = $reminder;
+            $this->required[] = $reminder->text;
 
             return;
         }
 
-        $this->others[] = $reminder;
+        $this->others[] = $reminder->text;
     }
 
     /**
@@ -58,7 +59,7 @@ final class ContextReminders implements ReminderContribution
 
         return $omitted === 0 ? $given : [
             ...$given,
-            "{$omitted} more reminders did not fit this context; read your memories with journal memory list.",
+            AgentText::of('core.reminders.more', ['count' => $omitted])->text,
         ];
     }
 }

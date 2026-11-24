@@ -9,6 +9,7 @@ use App\Contracts\Events\Event;
 use App\Enums\AnswerType;
 use App\Support\Decisions\Decision;
 use App\Support\Storage\WalkStep;
+use App\Values\AgentText;
 use PhpOption\Option;
 
 /**
@@ -74,7 +75,7 @@ final readonly class HookAnswer
     /**
      * The instruction the stack this walk left shows.
      *
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {

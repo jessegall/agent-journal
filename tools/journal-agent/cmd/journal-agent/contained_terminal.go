@@ -71,6 +71,11 @@ func (opener runtimeOpener) containedTerminalRuntime(
 		return nil, err
 	}
 
+	grant := prepared.Grant
+	if err := opener.containers.WriteSessionFiles(ctx, grant.Runtime.SessionID, grant.Folders); err != nil {
+		return nil, err
+	}
+
 	if err := container.Open(ctx, manifest, process); err != nil {
 		return nil, err
 	}
@@ -188,7 +193,13 @@ func (turns containedTurns) TurnProgram(start contracts.Start, generation int) (
 		return nil, err
 	}
 
-	return turns.container.Turn(context.Background(), turns.manifest, process)
+	ctx := context.Background()
+	grant := turns.prepared.Grant
+	if err := turns.container.Containers.WriteSessionFiles(ctx, grant.Runtime.SessionID, grant.Folders); err != nil {
+		return nil, err
+	}
+
+	return turns.container.Turn(ctx, turns.manifest, process)
 }
 
 // containedProcessOf is the program's own process for its session container, for the start given (its mode,
@@ -223,6 +234,10 @@ func containedProcessOf(
 	}
 
 	grant := prepared.Grant
+	for _, folder := range grant.Folders {
+		arguments = append(arguments, folder.ArgumentsAt(host.SessionFilesTarget+"/"+folder.Name)...)
+	}
+
 	environment := profile.Environment(containedRecipeEnvironment(prepared.Claim), start)
 	environment = append(environment,
 		"JOURNAL_URL="+journalURL, "JOURNAL_START_TOKEN="+grant.Token,

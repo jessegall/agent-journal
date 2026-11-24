@@ -12,7 +12,7 @@ use App\Models\Starts\ProcessStart;
 use App\Models\Starts\SessionPolicy;
 use App\Models\Starts\StopAttempt;
 use App\Support\RecordIdentity;
-use App\Support\StopAttemptGate;
+use App\Values\AgentText;
 use App\Values\SelectedAccount;
 use App\Values\StartPolicy;
 use App\Values\StopCondition;
@@ -52,7 +52,7 @@ final class StopConditionRunnerTest extends TestCase
 
         $attempt = StopAttempt::query()->withoutGlobalScopes()->sole();
         $this->assertSame(AnswerType::Allow, $this->typeOf($decision));
-        $this->assertSame([StopAttemptGate::CHECKS_RUNNING], $this->messagesOf($decision));
+        $this->assertSame([AgentText::of('core.stop.checks_running')->text], $this->messagesOf($decision));
         $this->assertSame(AnswerType::Allow, $this->typeOf($again));
         $this->assertSame(
             StopConditions::make([StopCondition::cleanWorktree()])->definitionHashes(),

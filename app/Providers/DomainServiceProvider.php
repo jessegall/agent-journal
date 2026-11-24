@@ -120,6 +120,9 @@ class DomainServiceProvider extends ServiceProvider
             foreach ($entry->policies() as $policy) {
                 $policies->register($entry->name, $policy);
             }
+
+            // A domain's texts for agents sit in its own lang folder, under its name in snake case.
+            $this->loadTranslationsFrom(dirname($entry->folder).'/lang', Str::snake($entry->name));
         }
 
         $this->app->booted(function (): void {

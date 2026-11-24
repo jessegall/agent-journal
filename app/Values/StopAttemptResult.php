@@ -28,7 +28,7 @@ final readonly class StopAttemptResult
      */
     public function failureSummary(): string
     {
-        $lines = ['A stop condition refused the stop:'];
+        $lines = [];
 
         foreach ($this->statuses as $key => $status) {
             if ($status->refusesStop()) {

@@ -20,6 +20,7 @@ use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Support\States\Contracts\StopConditionGate;
+use App\Values\AgentText;
 use App\Values\Operation;
 
 /**
@@ -103,7 +104,7 @@ class ReadyState extends AgentState
             $decision = $this->policy->assess($operation);
 
             if (! $decision->allowed) {
-                return Decision::deny($decision->reason);
+                return Decision::deny(AgentText::of('core.access.refused', ['reason' => $decision->reason]));
             }
         }
 

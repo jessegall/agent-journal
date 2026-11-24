@@ -8,6 +8,7 @@ use App\Contracts\Actors\ActorGuidance;
 use App\Contracts\Bus\CommandHandler;
 use App\Models\Profiles\ProfileRun;
 use App\Models\Profiles\ProfileStepResult;
+use App\Values\AgentText;
 use App\Values\StepOutcome;
 
 /**
@@ -15,8 +16,6 @@ use App\Values\StepOutcome;
  */
 final readonly class RecordScriptStepResultHandler implements CommandHandler
 {
-    public const string RECORDED = 'The host finished a step of your profile\'s script; stop again to go on.';
-
     public function __construct(private ActorGuidance $guidance) {}
 
     public function handle(RecordScriptStepResultCommand $command): void
@@ -33,6 +32,6 @@ final readonly class RecordScriptStepResultHandler implements CommandHandler
             );
         }
 
-        $this->guidance->retain($run->actor(), self::RECORDED, $command->stepReference);
+        $this->guidance->retain($run->actor(), AgentText::of('core.scripts.step_finished'), $command->stepReference);
     }
 }

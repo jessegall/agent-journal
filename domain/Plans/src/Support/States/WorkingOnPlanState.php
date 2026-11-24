@@ -8,6 +8,7 @@ use App\Attributes\StateType;
 use App\Enums\FrameReuse;
 use App\Enums\SessionTransferType;
 use App\Support\States\AgentState;
+use App\Values\AgentText;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Models\Plan;
@@ -49,15 +50,17 @@ final class WorkingOnPlanState extends AgentState
     }
 
     /**
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {
         $card = $this->plans->cardOf(Plan::query()->whereKey($this->planId)->readExactly(1)->sole());
 
-        return new Some(
-            "Continue plan {$card->number}. {$card->progress->finished} of {$card->progress->total} tasks are finished.",
-        );
+        return new Some(AgentText::of('plans.working_on', [
+            'plan' => $card->number,
+            'finished' => $card->progress->finished,
+            'total' => $card->progress->total,
+        ]));
     }
 
     // ----------[ Events ]----------

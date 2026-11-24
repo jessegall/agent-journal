@@ -29,8 +29,10 @@ use App\Support\States\AwaitingSkillsState;
 use App\Support\States\ReadyState;
 use App\Support\Storage\WalkStep;
 use App\Values\AccessDecision;
+use App\Values\AgentText;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
+use Closure;
 use Domain\Sequences\Support\States\FollowingSequenceState;
 use Domain\Tasks\Enums\TaskState;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -51,6 +53,7 @@ use Tests\Fixtures\Hooks\Stacks\SingleState;
 use Tests\Fixtures\Hooks\StopAnswerState;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\TestActors;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class AgentStackTest extends TestCase
@@ -157,7 +160,10 @@ final class AgentStackTest extends TestCase
 
         $answer = $stack->answer(HookInputs::all()['tool requested']);
 
-        $this->assertSame($refusal->reason, $answer->decision->refusalReason());
+        $this->assertSame(
+            AgentText::of('core.access.refused', ['reason' => $refusal->reason])->text,
+            $answer->decision->refusalReason(),
+        );
         $this->assertSame(['guide delegate', 'ready deny'], $this->stepsOf($answer));
     }
 
@@ -180,7 +186,7 @@ final class AgentStackTest extends TestCase
         $stack = $this->stack(
             $this->ready(),
             $this->frame('below', $below),
-            $this->frame('top', new ScriptedState(Decision::deny('Not now.'))),
+            $this->frame('top', new ScriptedState(Decision::deny(TestText::of('Not now.')))),
         );
 
         $answer = $stack->answer(HookInputs::all()['prompt']);
@@ -191,8 +197,8 @@ final class AgentStackTest extends TestCase
 
     public function test_lines_are_collected_from_the_top_down_and_messages_among_them_are_kept(): void
     {
-        $middle = new ContextLine('From the middle.');
-        $top = new MessageLine('From the top.');
+        $middle = new ContextLine(TestText::of('From the middle.'));
+        $top = new MessageLine(TestText::of('From the top.'));
         $stack = $this->stack(
             $this->ready(),
             $this->frame('middle', new StopAnswerState($middle)),
@@ -201,16 +207,16 @@ final class AgentStackTest extends TestCase
 
         $answer = $stack->answer($this->stop());
 
-        $this->assertSame([$top->text, $middle->text], $answer->context);
-        $this->assertSame([$top->text], $answer->messages);
+        $this->assertSame([$top->text->text, $middle->text->text], $answer->context);
+        $this->assertSame([$top->text->text], $answer->messages);
         $this->assertSame([1, 1, 0], array_column($answer->steps, 'contextCount'));
     }
 
     public function test_the_first_denial_answers_with_the_lines_yielded_above_and_before_it(): void
     {
-        $above = new ContextLine('Above.');
-        $before = new MessageLine('Before the denial.');
-        $denial = Decision::deny('First denial.');
+        $above = new ContextLine(TestText::of('Above.'));
+        $before = new MessageLine(TestText::of('Before the denial.'));
+        $denial = Decision::deny(TestText::of('First denial.'));
         $below = ScriptedState::passing();
         $stack = $this->stack(
             $this->ready(),
@@ -222,8 +228,8 @@ final class AgentStackTest extends TestCase
         $answer = $stack->answer($this->stop());
 
         $this->assertSame($denial, $answer->decision);
-        $this->assertSame([$above->text, $before->text], $answer->context);
-        $this->assertSame([$before->text], $answer->messages);
+        $this->assertSame([$above->text->text, $before->text->text], $answer->context);
+        $this->assertSame([$before->text->text], $answer->messages);
         $this->assertSame(['top delegate', 'denier deny'], $this->stepsOf($answer));
         $this->assertSame([null, $denial->refusalReason()], array_column($answer->steps, 'denialReason'));
         $this->assertSame(0, $below->askedCount);
@@ -263,21 +269,25 @@ final class AgentStackTest extends TestCase
     }
 
     /**
-     * @return array<string, array{mixed}>
+     * Each answer is made when its test runs, once the texts it holds can be rendered.
+     *
+     * @return array<string, array{Closure(): mixed}>
      */
     public static function refusedAnswers(): array
     {
         return [
-            'an allow' => [Decision::allow()],
-            'a yield after the decision' => [[Decision::deny('Held.'), new ContextLine('Too late.')]],
-            'a yielded thing that is no answer' => [[3]],
+            'an allow' => [fn () => Decision::allow()],
+            'a yield after the decision' => [
+                fn () => [Decision::deny(TestText::of('Held.')), new ContextLine(TestText::of('Too late.'))],
+            ],
+            'a yielded thing that is no answer' => [fn () => [3]],
         ];
     }
 
     #[DataProvider('refusedAnswers')]
-    public function test_an_answer_a_state_may_not_give_is_refused(Decision|array $answer): void
+    public function test_an_answer_a_state_may_not_give_is_refused(Closure $answer): void
     {
-        $stack = $this->stack($this->ready(), $this->frame('top', new StopAnswerState($answer)));
+        $stack = $this->stack($this->ready(), $this->frame('top', new StopAnswerState($answer())));
 
         $this->expectException(HookAnswerRefused::class);
 
@@ -287,7 +297,7 @@ final class AgentStackTest extends TestCase
     public function test_a_generator_that_yields_something_that_is_no_answer_is_refused_at_that_step(): void
     {
         $steps = (function () {
-            yield new ContextLine('First.');
+            yield new ContextLine(TestText::of('First.'));
 
             yield 'not an answer';
         })();
@@ -351,7 +361,8 @@ final class AgentStackTest extends TestCase
     #[DataProvider('hooksThatOnlyReport')]
     public function test_a_hook_that_only_reports_what_happened_refuses_a_deny(string $hook): void
     {
-        $stack = $this->stack($this->ready(), $this->frame('top', new ScriptedState(Decision::deny('Not now.'))));
+        $refusing = new ScriptedState(Decision::deny(TestText::of('Not now.')));
+        $stack = $this->stack($this->ready(), $this->frame('top', $refusing));
 
         $this->expectException(InvalidHookAnswer::class);
 
@@ -410,7 +421,7 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->stack(
             $this->ready(),
-            $this->frame('below', new ScriptedState(Decision::deny('Not now.'))),
+            $this->frame('below', new ScriptedState(Decision::deny(TestText::of('Not now.')))),
             $this->frame('top', new ScriptedState(Decision::delegate())),
         );
 
@@ -487,7 +498,7 @@ final class AgentStackTest extends TestCase
             $this->frame('guide', ScriptedState::passing()),
         );
 
-        $this->assertSame($task->instruction()->get(), $stack->instruction()->get());
+        $this->assertSame($task->instruction()->get()->text, $stack->instruction()->get()->text);
         $this->assertTrue($this->stack($this->ready())->instruction()->isEmpty());
     }
 

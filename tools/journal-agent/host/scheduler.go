@@ -52,7 +52,7 @@ func (admission Admission) ShouldStartTurn() bool {
 }
 
 // RuntimeQueue keeps one runtime's claimed requests in their accepted order and decides what may run next
-//.
+// .
 type RuntimeQueue struct {
 	pending []client.ClaimedRequest
 	busy    bool

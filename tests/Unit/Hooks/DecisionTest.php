@@ -10,7 +10,8 @@ use App\Exceptions\NoRefusalReason;
 use App\Exceptions\NoReplacementLine;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\Denied;
-use PHPUnit\Framework\TestCase;
+use Tests\Support\TestText;
+use Tests\TestCase;
 
 final class DecisionTest extends TestCase
 {
@@ -20,13 +21,13 @@ final class DecisionTest extends TestCase
     {
         $this->assertSame(AnswerType::Allow, Decision::allow()->answerType());
         $this->assertSame(AnswerType::Delegate, Decision::delegate()->answerType());
-        $this->assertSame(AnswerType::Deny, Decision::deny(self::REASON)->answerType());
+        $this->assertSame(AnswerType::Deny, Decision::deny(TestText::of(self::REASON))->answerType());
         $this->assertSame(AnswerType::Rewrite, Decision::rewrite('journal run tests')->answerType());
     }
 
     public function test_a_denial_carries_its_reason(): void
     {
-        $denied = Decision::deny(self::REASON)->answer;
+        $denied = Decision::deny(TestText::of(self::REASON))->answer;
 
         $this->assertInstanceOf(Denied::class, $denied);
         $this->assertSame(self::REASON, $denied->reason()->text);
@@ -36,7 +37,7 @@ final class DecisionTest extends TestCase
     {
         $this->expectException(EmptyReason::class);
 
-        Decision::deny('   ');
+        Decision::deny(TestText::of('   '));
     }
 
     public function test_a_rewrite_has_no_refusal_reason(): void
@@ -50,6 +51,6 @@ final class DecisionTest extends TestCase
     {
         $this->expectException(NoReplacementLine::class);
 
-        Decision::deny(self::REASON)->replacementLine();
+        Decision::deny(TestText::of(self::REASON))->replacementLine();
     }
 }

@@ -14,6 +14,7 @@ use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
+use App\Values\AgentText;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperJobFinished;
@@ -257,31 +258,31 @@ final class HelperJob extends Model implements Assignable, ReadableModel
     /**
      * What the helper working this job must be told when its context starts: who it is, the purpose, the whole brief,
      * the steering so far and the records it was given.
+     *
+     * @return list<AgentText>
      */
-    public function contextFor(HelperIdentity $identity, string $purposeLabel): string
+    public function contextFor(HelperIdentity $identity, string $purposeLabel): array
     {
         $lines = [
-            sprintf(
-                'You are helper %s (profile %s, revision %d), on job %s for: %s',
-                $identity->id,
-                $identity->profile_key,
-                $this->profile_revision,
-                $this->id,
-                $purposeLabel,
-            ),
-            'Your brief:',
-            $this->brief,
+            AgentText::of('helpers.identity', [
+                'helper' => $identity->id,
+                'profile' => $identity->profile_key,
+                'revision' => $this->profile_revision,
+                'job' => $this->id,
+                'purpose' => $purposeLabel,
+            ]),
+            AgentText::of('helpers.brief', ['brief' => $this->brief]),
         ];
 
         foreach ($this->steering as $steering) {
-            $lines[] = "Steering from your parent: {$steering}";
+            $lines[] = AgentText::of('helpers.steering', ['steering' => $steering]);
         }
 
         foreach ($this->sourceSubjects() as $subject) {
-            $lines[] = "Given as your source: {$subject}";
+            $lines[] = AgentText::of('helpers.source', ['subject' => $subject]);
         }
 
-        return implode(PHP_EOL, $lines);
+        return $lines;
     }
 
     public function wasDispatchedAs(string $payloadDigest): bool

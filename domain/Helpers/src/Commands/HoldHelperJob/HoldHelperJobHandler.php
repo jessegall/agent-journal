@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\HoldHelperJob;
 
+use App\Values\AgentText;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperNotice;
@@ -16,11 +17,10 @@ final readonly class HoldHelperJobHandler extends HelperCommandHandler
         JobStopEvidence::openJob($command->jobId)->forAll(function (HelperJob $job) use ($command): void {
             $job->hold($command->reference);
 
-            HelperNotice::create($job, sprintf(
-                'Helper %s failed its final checks on job %s three times the same way; the job is held for repair.',
-                $job->helper_identity_id,
-                $job->id,
-            ));
+            HelperNotice::create($job, AgentText::of('helpers.held', [
+                'helper' => $job->helper_identity_id,
+                'job' => $job->id,
+            ]));
         });
     }
 }

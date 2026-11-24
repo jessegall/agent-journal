@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
+use App\Values\AgentText;
 use Domain\Tasks\Enums\TaskState;
 
 /**
@@ -36,8 +37,8 @@ final readonly class TaskWork
         return $this->isCurrentRun && $this->isHeld && $this->state === TaskState::Started;
     }
 
-    public function unfinishedReason(): string
+    public function unfinishedReason(): AgentText
     {
-        return "Task {$this->number} still needs work: finish it or record why it is blocked.";
+        return AgentText::of('tasks.unfinished', ['task' => $this->number]);
     }
 }

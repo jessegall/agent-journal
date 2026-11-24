@@ -12,6 +12,7 @@ use App\Support\ActorIdentity;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
+use App\Values\AgentText;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
@@ -60,11 +61,11 @@ final class WorkingOnTaskState extends AgentState
     }
 
     /**
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {
-        return new Some("Work on task {$this->number}, run {$this->runNumber}.");
+        return new Some(AgentText::of('tasks.working_on', ['task' => $this->number, 'run' => $this->runNumber]));
     }
 
     // ----------[ Hooks ]----------
@@ -115,9 +116,10 @@ final class WorkingOnTaskState extends AgentState
         $work = $this->tasks->get($this->taskId)->workFor($this->runNumber);
         $run = TaskRun::ofPairs([[$this->taskId, $this->runNumber]])->first();
 
-        $isHeld = $run !== null && $this->claims->holderOf($run->assignmentIdentity())->filter(
-            fn (ActorIdentity $holder) => $holder->isAgent() && $holder->id === $agentId,
-        )->isDefined();
+        $isHeld = $run !== null
+            && $this->claims->holderOf($run->assignmentIdentity())
+                ->filter(fn (ActorIdentity $holder) => $holder->isAgent() && $holder->id === $agentId)
+                ->isDefined();
 
         return $isHeld ? $work : $work->unheld();
     }

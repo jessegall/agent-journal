@@ -23,6 +23,7 @@ use App\Support\Inputs\Contracts\HookInput;
 use App\Support\NativeTurns;
 use App\Support\OperationDeadline;
 use App\Support\StackAccess;
+use App\Values\AgentText;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\JsonResponse;
@@ -35,8 +36,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final readonly class HookController
 {
-    private const string NATIVE_CHILD_REFUSAL = "A driver's own subagents never run here (rule 36): start a journal helper or worker instead.";
-
     public function __construct(
         private DriverAdapters $adapters,
         private OperationDeadline $deadline,
@@ -60,7 +59,7 @@ final readonly class HookController
             $hookInput = $request->payload();
 
             if ($hookInput->isFromNativeChild() || $hookInput->callsAnyOf($adapter->nativeChildTools())) {
-                $refusal = DriverReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []);
+                $refusal = DriverReplies::denyTool(AgentText::of('core.drivers.own_subagents')->text, []);
 
                 return new JsonResponse(HookResponse::fromDriverReply($refusal)->toArray());
             }

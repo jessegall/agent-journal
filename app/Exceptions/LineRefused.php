@@ -25,7 +25,7 @@ final class LineRefused extends RuntimeException implements CodedRefusal
 
     public static function for(AdmissionRefusal $refusal): self
     {
-        return new self($refusal->message(), $refusal);
+        return new self($refusal->message()->text, $refusal);
     }
 
     public function refusalCode(): RefusalCode

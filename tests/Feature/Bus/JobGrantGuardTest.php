@@ -34,6 +34,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestActors;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class JobGrantGuardTest extends TestCase
@@ -92,7 +93,7 @@ final class JobGrantGuardTest extends TestCase
         $recipient = TestStart::start();
         $task = Task::factory()->create();
         $this->mock(StackPermission::class)->shouldReceive('allows')->twice()->andReturn(
-            StackVerdict::refuse('A reply is due.', new RecoveryCall('messages_read', ['message_id' => 'pending'])),
+            StackVerdict::refuse(TestText::of('A reply is due.'), new RecoveryCall('messages_read', ['message_id' => 'pending'])),
         );
 
         for ($attempt = 0; $attempt < 2; $attempt++) {

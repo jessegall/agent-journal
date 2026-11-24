@@ -1881,6 +1881,9 @@ class	AgentStatus
 class	AgentStatusData
 class	AgentStatusRules
 class	AgentTerminalControlPolicy
+class	AgentText
+class	AgentTextUnknown
+class	AgentTextValuesMismatch
 class	AgentVisibility
 class	AgentWakes
 class	AgentWorkStack
@@ -3187,6 +3190,7 @@ class	DriverRuntimeStops
 class	DriverSettings
 class	DriverSkillAdapters
 class	DriverSkillsUnsupported
+class	DriverStateNames
 class	DriverSwitch
 class	DriverSwitchReceipt
 class	DriverSwitchStageController
@@ -5348,6 +5352,7 @@ class	ReleaseTargetData
 class	ReleaseTerminalControlCommand
 class	ReleaseTerminalControlController
 class	ReleaseTerminalControlHandler
+class	RemindAgentInstructions
 class	RemindRequiredSkills
 class	Reminder
 class	ReminderCard
@@ -6329,6 +6334,7 @@ class	SignInChallenge
 class	SignInChallengeController
 class	SignInChallengeRefused
 class	SignInChallengeRequest
+class	SignInChallengeUnreadable
 class	SignInChallenges
 class	SignInCode
 class	SignInCodeInvalid
@@ -7327,7 +7333,6 @@ constant	ActorCategoryScan::REMOVED_CALLS
 constant	ActorCategoryScan::REMOVED_NAMES
 constant	AddPhaseTasksCommand::MAX_TASKS
 constant	AdmissionRefusal::EXCERPT_LENGTH
-constant	AdmissionRefusal::NOTICE
 constant	AdmissionRefused::CODE
 constant	AdvanceAskCommand::MAINTENANCE_SCOPE
 constant	AdvanceDueAsksOnTick::PASS_LIMIT
@@ -7342,6 +7347,7 @@ constant	AgentReferences::AGENT_TYPES
 constant	AgentRuntime::FRESH_SECONDS
 constant	AgentSessions::START_RESERVATION_LOCKS
 constant	AgentStack::DEPTH_LIMIT
+constant	AgentText::PLACEHOLDER
 constant	AgentWorkStack::RUNNING_SESSIONS_READ
 constant	AgentsServiceProvider::OWNER
 constant	AllOf::TYPE
@@ -7538,8 +7544,6 @@ constant	DeclaredSearch::TOOL
 constant	DefaultDrivers::CLAUDE_CODE
 constant	DefaultDrivers::CODEX
 constant	DeliverReportReadyNotification::REPORT_TARGET
-constant	DeliveredSkillsAccess::DELIVERED_SKILL
-constant	DeliveredSkillsAccess::OTHER_RUNTIME
 constant	DeliveredSkillsAccess::RUNTIME_FOLDER
 constant	DeliveredSkillsAccess::SKILL_FILE
 constant	Depth::LEVEL_LIMIT
@@ -7604,9 +7608,8 @@ constant	DriverCapability::NO_NATIVE_BINARY
 constant	DriverConversationResolver::MOST_CONVERSATIONS
 constant	DriverKey::CHARACTER_LIMIT
 constant	DriverKey::PATTERN
-constant	DriverReplies::PROTECTED_REASON
-constant	DriverReplies::REWRITE_REFUSAL
 constant	DriverSettings::EFFORTS
+constant	DriverStateNames::NAME
 constant	Drivers::TYPE
 constant	Drivers::VERSION
 constant	ElapsedTime::NANOSECONDS_PER_MILLISECOND
@@ -7700,10 +7703,8 @@ constant	HelperNotice::DELIVERED_LIMIT
 constant	HelperNotices::NOTICE_LIMIT
 constant	HideReceiptsOfLostSeats::TRUSTED_ENTRY
 constant	HideUnseatedNotificationsCommand::BATCH
-constant	HookController::NATIVE_CHILD_REFUSAL
 constant	HookRelay::ATTEMPTS
 constant	HookRelay::READ_TOOL
-constant	HookShellAdmission::RUNNER_UNAVAILABLE
 constant	HostCapacityLock::LOCK_KEY
 constant	HostDescriptorEnrollment::BUILD_UNAPPROVED
 constant	HostDescriptorEnrollment::REGISTRATION_UNAPPROVED
@@ -7779,8 +7780,6 @@ constant	MarkdownText::BODY_BYTES
 constant	MarkdownText::COMMENT_BYTES
 constant	MarkdownText::MARKED_BLOCKS
 constant	McpCatalogue::SNAKE_CASE
-constant	McpInstructions::TOOLS
-constant	McpInstructions::USER_ONLY
 constant	McpServiceProvider::CALLS_PER_MINUTE
 constant	MeasureReads::SECRET_PATH
 constant	Memory::HEAVIEST
@@ -7851,6 +7850,8 @@ constant	MountRules::DAEMON_ROOT
 constant	MountRules::MOST_CONTAINED_MOUNTS
 constant	MountRules::PROJECTS_TARGET
 constant	MountRules::PROTECTED_SOURCES
+constant	MountRules::SESSIONS_ROOT
+constant	MountRules::SESSION_TARGET
 constant	Named::TYPE
 constant	NamedTaskPoolFactory::KEY
 constant	NavigationAnswer::LABEL_CHARACTER_LIMIT
@@ -7895,9 +7896,6 @@ constant	OperationsResolver::OUTCOMES_PER_PAGE
 constant	OperationsResolver::TOOL
 constant	OperationsResolver::UNKNOWN
 constant	OrderedRecordIds::LARGEST
-constant	OutageReply::OUTAGE_REASON
-constant	OutageReply::PREPARATION_PENDING_REASON
-constant	OutageReply::PROTECTED_REASON
 constant	OutcomeUnknown::CODE
 constant	OutputAssessment::UPDATED_AT
 constant	OutputDocking::DOCK_TYPE
@@ -8056,7 +8054,6 @@ constant	RecordLocation::LABEL_CHARACTER_LIMIT
 constant	RecordNotFound::CODE
 constant	RecordProviders::MOST_LINKS_SHOWN
 constant	RecordRule::PLACEHOLDERS
-constant	RecordScriptStepResultHandler::RECORDED
 constant	RecordSettlement::LINK_TYPE
 constant	RecordedAnswer::CURRENT_VERSION
 constant	RecordedHostCapabilities::UNRECORDED_EVIDENCE
@@ -8095,7 +8092,6 @@ constant	ReportRuntimeScreenHandler::BYTE_LIMIT
 constant	ReportRuntimeScreenHandler::FRAMES_PER_SECOND_LIMIT
 constant	ReportSearchProvider::SNIPPET_CONTEXT_CHARACTERS
 constant	ReportShareProvider::CARD_COLUMNS
-constant	ReportWorkspaceReadHandler::ANSWERED
 constant	RequestKey::FORM
 constant	RequestKey::LONGEST
 constant	RequestProjectReadCommand::PATH_COUNT_LIMIT
@@ -8154,10 +8150,7 @@ constant	ScriptGraph::EXECUTION_BUDGET
 constant	ScriptParser::NESTING_LIMIT
 constant	ScriptParser::TEXT_LIMIT
 constant	ScriptSource::BYTE_LIMIT
-constant	ScriptStopPreparation::DEFINITIONS_CHANGED
 constant	ScriptStopPreparation::ENTRY_READ
-constant	ScriptStopPreparation::PREPARING
-constant	ScriptStopPreparation::RETURNS_HELD
 constant	ScriptStopPreparation::TRIGGER
 constant	ScriptStopPreparation::UNCHANGED_RETURNS_TO_HOLD
 constant	SearchCoordinator::BATCHES_PER_SOURCE
@@ -8345,12 +8338,9 @@ constant	StaticFactoryScan::NOT_FACTORIES
 constant	StaticFactoryScan::REPEATED
 constant	StopAgentController::STOP_REQUEST
 constant	StopAttempt::FIRST_GENERATION
-constant	StopAttemptGate::CHECKS_RUNNING
-constant	StopAttemptGate::CHECKS_UNRESOLVED
 constant	StopAttemptGate::NO_CONDITIONS_SUBMISSION
 constant	StopAttemptGate::OWN_WORK
 constant	StopAttemptGate::PREPARATION_HELD_SUBMISSION
-constant	StopAttemptGate::STOP_HELD
 constant	StopAttemptGate::UNCHANGED_FAILURES_TO_HOLD
 constant	StopCondition::CLEAN_WORKTREE
 constant	StopCondition::DEFAULT_SECONDS
@@ -10131,6 +10121,7 @@ method	AgentRuntime::requestEffort()
 method	AgentRuntime::requestModel()
 method	AgentRuntime::requests()
 method	AgentRuntime::runningHelpersOf()
+method	AgentRuntime::runsForSession()
 method	AgentRuntime::secondsSince()
 method	AgentRuntime::session()
 method	AgentRuntime::sessionOfHostRuntime()
@@ -10278,6 +10269,11 @@ method	AgentStatusRules::unknown()
 method	AgentStatusRules::verification()
 method	AgentStatusRules::withoutSession()
 method	AgentTerminalControlPolicy::model()
+method	AgentText::__construct()
+method	AgentText::of()
+method	AgentText::translationKeyOf()
+method	AgentTextUnknown::forKey()
+method	AgentTextValuesMismatch::forKey()
 method	AgentVisibility::canReadAcrossOwners()
 method	AgentVisibility::ownRead()
 method	AgentVisibility::ownRows()
@@ -12128,7 +12124,6 @@ method	ClaudeCodeAdapter::renderStop()
 method	ClaudeCodeAdapter::startCall()
 method	ClaudeCodeAdapter::toolCall()
 method	ClaudeCodeSkills::delivery()
-method	ClaudeCodeSkills::instruction()
 method	ClaudeCodeSkills::reloadMode()
 method	ClaudeCodeSkills::skillFile()
 method	ClaudeCodeSkills::skillProtocol()
@@ -12392,7 +12387,6 @@ method	CodexSignIn::signInHosts()
 method	CodexSignIn::signOut()
 method	CodexSignIn::verify()
 method	CodexSkills::delivery()
-method	CodexSkills::instruction()
 method	CodexSkills::reloadMode()
 method	CodexSkills::skillFile()
 method	CodexSkills::skillProtocol()
@@ -14637,13 +14631,13 @@ method	DriverSkillAdapters::__construct()
 method	DriverSkillAdapters::for()
 method	DriverSkillAdapters::supports()
 method	DriverSkills::delivery()
-method	DriverSkills::instruction()
 method	DriverSkills::reloadMode()
 method	DriverSkills::skillFile()
 method	DriverSkills::skillProtocol()
 method	DriverSkills::supportFiles()
 method	DriverSkillsUnsupported::for()
 method	DriverSkillsUnsupported::refusalCode()
+method	DriverStateNames::in()
 method	DriverSwitch::beginStarting()
 method	DriverSwitch::beginStopping()
 method	DriverSwitch::cancel()
@@ -17540,7 +17534,6 @@ method	MessageBatchService::confirmRange()
 method	MessageBatchService::confirmation()
 method	MessageBatchService::contextOf()
 method	MessageBatchService::countFailure()
-method	MessageBatchService::introduction()
 method	MessageBatchService::isOwnSession()
 method	MessageBatchService::itemOf()
 method	MessageBatchService::itemText()
@@ -19489,6 +19482,7 @@ method	PrivateSignInProcesses::__construct()
 method	PrivateSignInProcesses::checkNext()
 method	PrivateSignInProcesses::cleanNext()
 method	PrivateSignInProcesses::deliver()
+method	PrivateSignInProcesses::interrupt()
 method	PrivateSignInProcesses::isGone()
 method	PrivateSignInProcesses::isPastDeadline()
 method	PrivateSignInProcesses::isStillBound()
@@ -19832,6 +19826,7 @@ method	ProfileRuleRecords::of()
 method	ProfileRules::of()
 method	ProfileRun::casts()
 method	ProfileRun::finish()
+method	ProfileRun::followsHeldRun()
 method	ProfileRun::forTrigger()
 method	ProfileRun::hasRecordedStep()
 method	ProfileRun::lockedForStep()
@@ -20895,16 +20890,17 @@ method	ReceiptDelivery::dueAt()
 method	ReceiptDelivery::exhaust()
 method	ReceiptDelivery::fail()
 method	ReceiptDelivery::isLastTry()
-method	ReceiptDelivery::openFor()
 method	ReceiptDelivery::pendingForInterval()
 method	ReceiptDelivery::receipt()
 method	ReceiptDelivery::recordChange()
 method	ReceiptDelivery::reopen()
 method	ReceiptDelivery::settleShown()
+method	ReceiptDelivery::undeliveredFor()
 method	ReceiptDelivery::unwokenFor()
 method	ReceiptDelivery::wakeStatus()
 method	ReceiptDeliveryChanged::__construct()
 method	ReceiptDeliveryState::isPending()
+method	ReceiptDeliveryState::undelivered()
 method	ReceiptDeliveryState::wakeState()
 method	ReceiptProgress::advanceTo()
 method	ReceiptProgress::casts()
@@ -21688,6 +21684,8 @@ method	ReleaseTerminalControlCommand::__construct()
 method	ReleaseTerminalControlController::__invoke()
 method	ReleaseTerminalControlHandler::__construct()
 method	ReleaseTerminalControlHandler::handle()
+method	RemindAgentInstructions::__construct()
+method	RemindAgentInstructions::handle()
 method	RemindRequiredSkills::__construct()
 method	RemindRequiredSkills::handle()
 method	Reminder::casts()
@@ -24624,6 +24622,7 @@ method	SignInChallengeRequest::address()
 method	SignInChallengeRequest::attemptId()
 method	SignInChallengeRequest::code()
 method	SignInChallengeRequest::rules()
+method	SignInChallengeUnreadable::fromLoginStart()
 method	SignInChallenges::__construct()
 method	SignInChallenges::challengeKey()
 method	SignInChallenges::challengeOf()
@@ -29046,6 +29045,7 @@ parameter	$generation
 parameter	$generationId
 parameter	$generationStartedAt
 parameter	$git
+parameter	$given
 parameter	$goal
 parameter	$gone
 parameter	$graceSeconds
@@ -31112,6 +31112,7 @@ parameter	$values	app/Support/StateLoading/StateArguments.php
 parameter	$values	app/Support/StateLoading/StateBuilder.php
 parameter	$values	app/Support/Storage/FrameRecord.php
 parameter	$values	app/Support/Storage/StoredFrame.php
+parameter	$values	app/Values/AgentText.php
 parameter	$variable
 parameter	$variableText
 parameter	$variables
@@ -31784,6 +31785,8 @@ property	AgentStatusData::$operation
 property	AgentStatusData::$reason
 property	AgentStatusData::$remedy
 property	AgentStatusData::$sessionState
+property	AgentText::$key
+property	AgentText::$text
 property	AgentWakes::$requests
 property	AgentWorkStack::$session
 property	AliasLookup::$arguments
@@ -38619,6 +38622,8 @@ property	ReleaseTargetData::$prerequisites
 property	ReleaseTerminalControlCommand::$agentId
 property	ReleaseTerminalControlCommand::$grantId
 property	ReleaseTerminalControlHandler::$controls
+property	RemindAgentInstructions::$contexts
+property	RemindAgentInstructions::$tools
 property	RemindRequiredSkills::$contexts
 property	ReminderCard::$dueAt
 property	ReminderCard::$id
@@ -42872,7 +42877,6 @@ variable	$configured
 variable	$configuredField
 variable	$confined
 variable	$confirm
-variable	$confirmTool
 variable	$confirmed
 variable	$conflict
 variable	$conflictingAttributes
@@ -43375,7 +43379,6 @@ variable	$isDone
 variable	$isExample
 variable	$isFacade
 variable	$isField
-variable	$isFirst
 variable	$isFirstLine
 variable	$isFolderTrusted
 variable	$isForeignUndeclared
@@ -44076,6 +44079,7 @@ variable	$repair
 variable	$repeated
 variable	$replaced
 variable	$replacement
+variable	$replacements
 variable	$replay
 variable	$replayed
 variable	$replies
@@ -44511,7 +44515,6 @@ variable	$unsettled
 variable	$unsharedToken
 variable	$unsupported
 variable	$until
-variable	$unverified
 variable	$up
 variable	$upload
 variable	$upper
@@ -44542,9 +44545,11 @@ variable	$value	app/Support/Wire/Fields/InstantField.php
 variable	$value	app/Support/Wire/Fields/LinesField.php
 variable	$value	app/Support/Wire/Fields/NumberField.php
 variable	$value	app/Support/Wire/Fields/TextField.php
+variable	$value	app/Values/AgentText.php
 variable	$value	app/Values/SourcePosition.php
 variable	$values
 variable	$values	app/Support/StateLoading/StateValues.php
+variable	$values	app/Values/AdmissionRefusal.php
 variable	$variable
 variable	$variables
 variable	$variant

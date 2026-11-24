@@ -8,6 +8,7 @@ use App\Contracts\Actors\ActorGuidance;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
 use App\Models\Projects\WorkspaceRead;
+use App\Values\AgentText;
 use App\Values\WorkspaceFacts;
 
 /**
@@ -15,8 +16,6 @@ use App\Values\WorkspaceFacts;
  */
 final readonly class ReportWorkspaceReadHandler implements CommandHandler
 {
-    public const string ANSWERED = 'The host read your workspace for your profile\'s script; stop again to go on.';
-
     public function __construct(private ServerClock $clock, private ActorGuidance $guidance) {}
 
     public function handle(ReportWorkspaceReadCommand $command): void
@@ -32,6 +31,6 @@ final readonly class ReportWorkspaceReadHandler implements CommandHandler
             $command->commit,
         ));
 
-        $this->guidance->retain($read->actor(), self::ANSWERED, $read->read_reference);
+        $this->guidance->retain($read->actor(), AgentText::of('core.scripts.workspace_read'), $read->read_reference);
     }
 }

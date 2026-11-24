@@ -75,7 +75,7 @@ final class HookCompactionTest extends TestCase
             array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))),
         );
         $this->assertContains(
-            new FollowingSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get(),
+            new FollowingSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get()->text,
             $context,
         );
     }

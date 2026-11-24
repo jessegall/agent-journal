@@ -34,7 +34,7 @@ final class ReviewingPlanStateTest extends TestCase
         $decision = $state->onStop($this->stop());
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertSame($state->instruction()->get(), $decision->refusalReason());
+        $this->assertSame($state->instruction()->get()->text, $decision->refusalReason());
         $this->assertFalse($state->isFinished());
     }
 

@@ -118,7 +118,8 @@ final class SequenceStateContributionTest extends TestCase
         return $this->app->make(StateBuilder::class)
             ->build(RegisteredStateType::of(FollowingSequenceState::class), $values)
             ->instruction()
-            ->get();
+            ->get()
+            ->text;
     }
 
     /**

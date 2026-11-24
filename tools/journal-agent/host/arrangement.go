@@ -8,7 +8,7 @@ import (
 )
 
 // Arrangement is where this host runs agents: on the machine itself, or each in a container of the agent daemon
-//. The journal refuses a claim from a host whose arrangement is not the one it enrolled with.
+// . The journal refuses a claim from a host whose arrangement is not the one it enrolled with.
 type Arrangement string
 
 const (

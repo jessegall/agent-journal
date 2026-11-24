@@ -11,6 +11,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 use App\Resolvers\Support\SkillContextResolver;
+use App\Values\AgentText;
 
 /**
  * At every boundary, asks the agent to read each required skill of its profile whose delivered text it has not read
@@ -44,14 +45,7 @@ final readonly class RemindRequiredSkills implements Listener
                 continue;
             }
 
-            $event->reminders->add(
-                sprintf(
-                    'Read the required skill %s whole before work it covers: php artisan skill:show %s, or the skills_show tool.',
-                    $key,
-                    $key,
-                ),
-                true,
-            );
+            $event->reminders->add(AgentText::of('core.skills.read_required', ['skill' => $key]), true);
         }
     }
 }

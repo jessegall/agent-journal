@@ -17,8 +17,8 @@ final readonly class StackVerdict
         return new self(true, '', null);
     }
 
-    public static function refuse(string $reason, RecoveryCall $recovery): self
+    public static function refuse(AgentText $reason, RecoveryCall $recovery): self
     {
-        return new self(false, $reason, $recovery);
+        return new self(false, $reason->text, $recovery);
     }
 }

@@ -11,6 +11,7 @@ use App\Exceptions\NoReplacementLine;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Enums\SimpleAnswer;
 use App\Support\Stack\StateAnswer;
+use App\Values\AgentText;
 
 /**
  * A state's decision on one hook: a deny, a rewrite, or a delegate that hands the hook to the state below. The allow
@@ -37,9 +38,9 @@ final readonly class Decision implements AnswerPart
         return new self(SimpleAnswer::Delegate);
     }
 
-    public static function deny(string $reason): self
+    public static function deny(AgentText $reason): self
     {
-        return new self(new Denied(new Reason($reason)));
+        return new self(new Denied(new Reason($reason->text)));
     }
 
     public static function rewrite(string $line): self

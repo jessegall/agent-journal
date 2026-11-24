@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Memory\Support;
 
 use App\Support\ActorIdentity;
+use App\Values\AgentText;
 use Domain\Memory\Models\Memory;
 
 /**
@@ -13,7 +14,7 @@ use Domain\Memory\Models\Memory;
 final readonly class AgentMemories
 {
     /**
-     * @return list<string>
+     * @return list<AgentText>
      */
     public function remindersFor(ActorIdentity $actor): array
     {
@@ -25,6 +26,9 @@ final readonly class AgentMemories
             ->pluck('text')
             ->all();
 
-        return array_values(array_map(fn (string $text) => "Memory: {$text}", $texts));
+        return array_values(array_map(
+            fn (string $text) => AgentText::of('memory.reminder', ['text' => $text]),
+            $texts,
+        ));
     }
 }

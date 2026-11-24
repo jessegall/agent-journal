@@ -8,6 +8,7 @@ use App\Contracts\Actors\ActorGuidance;
 use App\Models\Projects\WorkspaceRead;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
+use App\Values\AgentText;
 use App\Values\CommitObservation;
 use App\Values\WorkReference;
 use App\Values\WorkspaceReadReference;
@@ -39,7 +40,7 @@ final class WorkspaceReadCommitTest extends TestCase
         // The actor's wake is not what this test is about; the read's stored sample is.
         $this->app->instance(ActorGuidance::class, new class implements ActorGuidance
         {
-            public function retain(ActorIdentity $actor, string $guidance, string $key): void {}
+            public function retain(ActorIdentity $actor, AgentText $guidance, string $key): void {}
         });
     }
 

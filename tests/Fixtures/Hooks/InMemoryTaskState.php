@@ -8,8 +8,10 @@ use App\Enums\FrameReuse;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
+use App\Values\AgentText;
 use PhpOption\Option;
 use PhpOption\Some;
+use Tests\Support\TestText;
 
 /**
  * A pretend task state for hook tests: it works on one task of the in-memory tasks and is finished once that task is
@@ -30,17 +32,19 @@ final class InMemoryTaskState extends AgentState
     }
 
     /**
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {
-        return new Some("Work on task {$this->number}, run {$this->runNumber}.");
+        return new Some(TestText::of("Work on task {$this->number}, run {$this->runNumber}."));
     }
 
     // ----------[ Hooks ]----------
 
     public function onStop(StopRequested $input): Decision
     {
-        return Decision::deny("Task {$this->number} still needs work: finish it or record why it is blocked.");
+        $text = "Task {$this->number} still needs work: finish it or record why it is blocked.";
+
+        return Decision::deny(TestText::of($text));
     }
 }

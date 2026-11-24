@@ -8,6 +8,7 @@ use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Values\AccessRequirement;
+use App\Values\AgentText;
 
 /**
  * What a started agent is told about the journal's MCP tools at every context start, by what its profile grants: how
@@ -15,23 +16,19 @@ use App\Values\AccessRequirement;
  */
 final readonly class McpInstructions
 {
-    private const string TOOLS = "Use the journal MCP tools for journal work: call overview_read first and follow its next_action; send each write with a request_key and keep it; when a write's outcome is unknown, call operations_read with that key before trying again.";
-
-    private const string USER_ONLY = 'Every decision only the user makes stays theirs: ask with journal question ask.';
-
     public function __construct(private CurrentAuthorizer $authorizer) {}
 
     /**
      * The guidance for the calling agent: the journeys outside MCP its own profile lets it take.
      */
-    public function forCaller(): string
+    public function forCaller(): AgentText
     {
         $journeys = array_keys(array_filter(
             $this->journeys(),
             fn (array $requirements) => $this->grantsAll($requirements),
         ));
 
-        return self::TOOLS.' These stay on the CLI or the web: '.implode('; ', $journeys).'. '.self::USER_ONLY;
+        return AgentText::of('core.mcp.instructions', ['journeys' => implode('; ', $journeys)]);
     }
 
     /**

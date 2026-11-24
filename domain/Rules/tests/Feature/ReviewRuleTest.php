@@ -62,7 +62,7 @@ final class ReviewRuleTest extends TestCase
 
         $this->assertSame(
             ["Rule {$this->proposed->number}: No phase waits on the user."],
-            $this->app->make(ActiveRules::class)->reminders(),
+            array_map(fn ($reminder) => $reminder->text, $this->app->make(ActiveRules::class)->reminders()),
         );
 
         Event::assertDispatched(

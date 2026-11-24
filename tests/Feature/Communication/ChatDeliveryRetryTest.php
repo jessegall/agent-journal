@@ -166,6 +166,58 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         $this->assertTrue($delivery->refresh()->lease_expires_at->greaterThan($firstLease));
     }
 
+    public function test_a_message_to_an_agent_whose_session_ended_waits_for_its_next_start_without_failing(): void
+    {
+        $inboxId = $this->chatWithTheBuilder();
+        $this->builder->endAt(CarbonImmutable::now());
+
+        $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'ada-plan'));
+
+        $delivery = ReceiptDelivery::query()
+            ->where('receipt_id', $this->receiptOf($messageId, $this->builder->agent_id)->id)
+            ->sole();
+        $this->assertSame([ReceiptDeliveryState::Waiting, 0, null], [
+            $delivery->state,
+            $delivery->attempts,
+            $delivery->last_failure,
+        ]);
+    }
+
+    public function test_a_given_up_delivery_shown_later_settles_and_a_dismissed_one_stays_dismissed(): void
+    {
+        $inboxId = $this->chatWithTheBuilder();
+        $givenUp = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'ada-plan'));
+        $dismissed = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Again?', 'ada-again'));
+        $givenUpReceipt = $this->receiptOf($givenUp, $this->builder->agent_id)->id;
+        $dismissedReceipt = $this->receiptOf($dismissed, $this->builder->agent_id)->id;
+        ReceiptDelivery::query()->where('receipt_id', $givenUpReceipt)->sole()->exhaust('No confirmation in time.');
+        ReceiptDelivery::query()->where('receipt_id', $dismissedReceipt)->sole()->cancel();
+
+        ReceiptDelivery::undeliveredFor($givenUpReceipt)?->settleShown();
+
+        $this->assertSame(
+            ReceiptDeliveryState::Accepted,
+            ReceiptDelivery::query()->where('receipt_id', $givenUpReceipt)->sole()->state,
+        );
+        $this->assertNull(ReceiptDelivery::undeliveredFor($dismissedReceipt));
+    }
+
+    private function chatWithTheBuilder(): string
+    {
+        $this->app->make(AgentChatAccess::class)->allow(
+            $this->builder->agent_id,
+            null,
+            [$this->owner->id],
+            ActorIdentity::system(),
+            CarbonImmutable::now(),
+        );
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', []));
+        $this->runOnBus(new AddChatParticipantCommand($inboxId, "agent:{$this->builder->agent_id}"));
+
+        return $inboxId;
+    }
+
     private function receiptOf(string $messageId, string $agentId): MessageReceipt
     {
         return MessageReceipt::query()

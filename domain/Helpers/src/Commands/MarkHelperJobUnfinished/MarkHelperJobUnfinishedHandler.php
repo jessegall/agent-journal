@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\MarkHelperJobUnfinished;
 
+use App\Values\AgentText;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperNotice;
@@ -24,12 +25,11 @@ final readonly class MarkHelperJobUnfinishedHandler extends HelperCommandHandler
         JobStopEvidence::openJob($command->jobId)->forAll(function (HelperJob $job): void {
             $job->markUnfinished(self::ENDED_REFERENCE);
 
-            HelperNotice::create($job, sprintf(
-                'Helper %s stopped before job %s was finished. Continue it with: %s',
-                $job->helper_identity_id,
-                $job->id,
-                $this->starts->continueCommand($job),
-            ));
+            HelperNotice::create($job, AgentText::of('helpers.unfinished', [
+                'helper' => $job->helper_identity_id,
+                'job' => $job->id,
+                'command' => $this->starts->continueCommand($job),
+            ]));
         });
     }
 }

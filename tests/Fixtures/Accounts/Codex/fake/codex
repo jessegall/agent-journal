@@ -39,11 +39,16 @@ case "$1" in
     app-server)
         # Answers the device-code start, announces another login's completion first, then signs the folder in and
         # announces its own, answers account/read, and serves until stdin closes. Files in CODEX_HOME change it:
-        # login-fails fails the login, only-other-login completes another login only, account-type names the
-        # account/read type and no-account-read ends without answering account/read.
+        # login-fails fails the login, only-other-login completes another login only, unreadable-login-start
+        # answers with no device code, account-type names the account/read type and no-account-read ends without
+        # answering account/read.
         while read -r line; do
             case "$line" in
                 *account/login/start*)
+                    if [ -f "$CODEX_HOME/unreadable-login-start" ]; then
+                        echo '{"id":1,"result":{"type":"chatgptDeviceCode","loginId":"login-1"}}'
+                        continue
+                    fi
                     echo '{"id":1,"result":{"type":"chatgptDeviceCode","loginId":"login-1","userCode":"ABCD-1234","verificationUrl":"https://auth.openai.com/codex/device"}}'
                     echo '{"method":"account/login/completed","params":{"success":true,"loginId":"login-0"}}'
                     if [ -f "$CODEX_HOME/only-other-login" ]; then continue; fi

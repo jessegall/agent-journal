@@ -10,7 +10,6 @@ use App\Support\Drivers\ClaudeCodeSkills;
 use App\Support\Drivers\CodexSkills;
 use App\Support\Drivers\DriverSkillAdapters;
 use App\Values\DriverKey;
-use App\Values\PublishedSkill;
 use App\Values\SkillKey;
 use Tests\TestCase;
 
@@ -21,13 +20,9 @@ use Tests\TestCase;
  */
 final class ProgramSkillAdaptersTest extends TestCase
 {
-    private const string READ_INSTRUCTION = 'Read the skill journal-plans with the Read tool at %s '
-        .'before work it covers.';
-
-    public function test_claude_code_gets_a_plugin_folder_and_is_sent_to_the_file_while_skill_is_denied(): void
+    public function test_claude_code_gets_a_plugin_folder_for_its_skills(): void
     {
         $claude = $this->adapters()->for(DriverKey::from('claude-code'));
-        $target = '/host/runtimes/01jd8x0g9m3qz6v4k2t7r5w1cf/journal-skills';
         $delivery = $claude->delivery();
 
         $this->assertInstanceOf(ClaudeCodeSkills::class, $claude);
@@ -36,18 +31,12 @@ final class ProgramSkillAdaptersTest extends TestCase
         $this->assertSame('skills/journal-plans/SKILL.md', $claude->skillFile(SkillKey::from('journal-plans')));
         $plugin = json_decode($claude->supportFiles()['.claude-plugin/plugin.json'], true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('journal-session-skills', $plugin['name']);
-        $file = "{$target}/skills/journal-plans/SKILL.md";
-        $this->assertSame(
-            sprintf(self::READ_INSTRUCTION, $file),
-            $claude->instruction($this->published($file)),
-        );
         $this->assertSame(SkillReload::NewSession, $claude->reloadMode());
     }
 
-    public function test_codex_gets_its_codex_home_skills_folder_linked_to_the_target_and_the_absolute_path(): void
+    public function test_codex_gets_its_codex_home_skills_folder(): void
     {
         $codex = $this->adapters()->for(DriverKey::from('codex'));
-        $target = '/host/runtimes/01jd8x0g9m3qz6v4k2t7r5w1cf/skills';
         $delivery = $codex->delivery();
 
         $this->assertInstanceOf(CodexSkills::class, $codex);
@@ -55,10 +44,6 @@ final class ProgramSkillAdaptersTest extends TestCase
         $this->assertSame([], $delivery->folderArguments);
         $this->assertSame('journal-plans/SKILL.md', $codex->skillFile(SkillKey::from('journal-plans')));
         $this->assertSame([], $codex->supportFiles());
-        $this->assertStringContainsString(
-            "{$target}/journal-plans/SKILL.md",
-            $codex->instruction($this->published("{$target}/journal-plans/SKILL.md")),
-        );
         $this->assertStringNotContainsString('.codex', $delivery->folder);
         $this->assertSame(SkillReload::NewSession, $codex->reloadMode());
     }
@@ -70,11 +55,6 @@ final class ProgramSkillAdaptersTest extends TestCase
         $this->expectExceptionMessage('gemini-cli');
 
         $this->adapters()->for(DriverKey::from('gemini-cli'));
-    }
-
-    private function published(string $path): PublishedSkill
-    {
-        return new PublishedSkill(SkillKey::from('journal-plans'), str_repeat('a', 64), $path);
     }
 
     private function adapters(): DriverSkillAdapters

@@ -20,6 +20,7 @@ use App\Support\Relay\RelaySettings;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
 use App\Support\StartStacks;
+use App\Values\AgentText;
 use App\Values\FilePath;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
@@ -174,7 +175,7 @@ final class HookRelayTest extends TestCase
 
         $reply = $this->relay(self::SHELL, passesOutages: false);
 
-        $this->assertStringContainsString(OutageReply::OUTAGE_REASON, $reply->stdout);
+        $this->assertStringContainsString(AgentText::of('core.drivers.outage')->text, $reply->stdout);
         $this->assertFileDoesNotExist($this->bypassLog);
     }
 

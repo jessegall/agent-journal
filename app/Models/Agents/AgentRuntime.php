@@ -127,6 +127,17 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
+     * Whether the session has a runtime and may still act: a runtime of an ended session takes no more work.
+     */
+    public static function runsForSession(string $sessionId): bool
+    {
+        return self::query()
+            ->where('agent_session_id', $sessionId)
+            ->whereHas('session', fn (Builder $session) => $session->running())
+            ->exists();
+    }
+
+    /**
      * The host the session's runtime ran on, or none when it never opened one.
      *
      * @return Option<string>

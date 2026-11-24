@@ -2,7 +2,6 @@
 import Icon from "@kit/Icon";
 import QuoteLine from "@kit/QuoteLine";
 import type { ReplyTargetData } from "@generated/types/chat";
-import type { ReplyOriginal } from "@generated/types/core";
 
 /**
  * A reply's line above its text: who it answers and one line of the original, which pressing shows. An original the
@@ -14,7 +13,7 @@ const props = defineProps<{
   viewer: string;
 }>();
 
-function speakerOf(original: ReplyOriginal): string {
+function speakerOf(original: NonNullable<ReplyTargetData["original"]>): string {
   return original.actor === props.viewer ? "You" : original.label;
 }
 

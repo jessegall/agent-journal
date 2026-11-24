@@ -11,7 +11,6 @@ use App\Exceptions\UnsupportedHook;
 use App\Support\Decisions\Decision;
 use App\Support\Drivers\Adapters\CodexAdapter;
 use App\Support\Drivers\Adapters\JudgedCall;
-use App\Support\Drivers\DriverReplies;
 use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
@@ -20,6 +19,7 @@ use App\Support\References\StateReference;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\HookAnswer;
+use App\Values\AgentText;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -27,6 +27,7 @@ use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\ChecksProgramAdapter;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class CodexTest extends TestCase
@@ -108,7 +109,7 @@ final class CodexTest extends TestCase
 
     public function test_a_denial_carries_its_reason(): void
     {
-        $reply = json_decode($this->render('shell command', Decision::deny(self::DENIAL_REASON))->stdout, true);
+        $reply = json_decode($this->render('shell command', Decision::deny(TestText::of(self::DENIAL_REASON)))->stdout, true);
 
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
         $this->assertSame(self::DENIAL_REASON, $reply['hookSpecificOutput']['permissionDecisionReason']);
@@ -118,7 +119,7 @@ final class CodexTest extends TestCase
     {
         $this->assertSame(
             json_encode(['decision' => 'block', 'reason' => self::STOP_REASON]),
-            $this->render('stop', Decision::deny(self::STOP_REASON))->stdout,
+            $this->render('stop', Decision::deny(TestText::of(self::STOP_REASON)))->stdout,
         );
     }
 
@@ -145,7 +146,7 @@ final class CodexTest extends TestCase
 
         $this->assertSame([], $settled->stack->frameIds());
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(DriverReplies::REWRITE_REFUSAL, $reply['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertSame(AgentText::of('core.drivers.rewrite_refused')->text, $reply['hookSpecificOutput']['permissionDecisionReason']);
         $this->assertArrayNotHasKey('updatedInput', $reply['hookSpecificOutput']);
     }
 

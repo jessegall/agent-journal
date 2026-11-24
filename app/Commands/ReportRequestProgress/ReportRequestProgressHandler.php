@@ -87,11 +87,12 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             $this->initialWakes->settle($request, $runtime, $command);
         }
 
-        // A host that could not send its ready report again leaves the start without proof: it stays held, uncertain.
+        // A host that could not send its ready report again leaves an unverified start without proof: it stays held,
+        // uncertain. A start already verified keeps its proof; the answer only showed the host is there.
         if ($request->operation === DriverOperation::ResendReadiness && $request->progress->isRefused()) {
-            StartRecord::lockedLatestOf($runtime->agent_session_id)->forAll(
-                fn (StartRecord $start) => $start->markReadinessUnseen(),
-            );
+            StartRecord::lockedLatestOf($runtime->agent_session_id)
+                ->filter(fn (StartRecord $start) => $start->readiness->isUnverified())
+                ->forAll(fn (StartRecord $start) => $start->markReadinessUnseen());
         }
 
         if ($request->isInitialWakeOf($runtime->agent_session_id)) {

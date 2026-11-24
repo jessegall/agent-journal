@@ -6,6 +6,7 @@ namespace App\Support\Decisions;
 
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Stack\StateAnswer;
+use App\Values\AgentText;
 
 /**
  * A line a state adds to the agent's context that also wakes the agent when the hook leaves it idle, and is kept for
@@ -13,7 +14,7 @@ use App\Support\Stack\StateAnswer;
  */
 final readonly class MessageLine implements AnswerPart
 {
-    public function __construct(public string $text) {}
+    public function __construct(public AgentText $text) {}
 
     public function addTo(StateAnswer $answer): StateAnswer
     {

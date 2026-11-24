@@ -9,7 +9,7 @@ use App\Enums\RequestState;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
-use App\Values\AdmissionRefusal;
+use App\Values\AgentText;
 use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
@@ -35,7 +35,7 @@ final class CommandTypeRoutesTest extends TestCase
     {
         $reply = $this->signed($this->start, '/agent/processes/explain', ['line' => 'acme verify'])->assertOk();
 
-        $this->assertSame(AdmissionRefusal::NOTICE, $reply->json('notice'));
+        $this->assertSame(AgentText::of('core.shell.nothing_started')->text, $reply->json('notice'));
         $this->assertSame('acme', $reply->json('held.0.operation'));
         $this->assertSame(RequestState::CollectingDeclaration->value, $reply->json('held.0.requestState'));
         $this->assertStringStartsWith(self::PROPOSE_STEP, (string) $reply->json('held.0.next'));

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Authorization;
 
 use App\Enums\FileAccess;
+use App\Values\AgentText;
 use PhpOption\Option;
 
 /**
@@ -15,7 +16,7 @@ interface FileAccessPolicy
     /**
      * The refusal the agent reads when this session may not touch the file; it names no other session or path.
      *
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function refusalFor(string $sessionId, FileAccess $access, string $path): Option;
 }

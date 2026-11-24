@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes;
 
 use App\Attributes\StateType;
-use App\Enums\SessionTransferType;
 use App\Contracts\Bus\Command;
+use App\Enums\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
+use App\Values\AgentText;
 use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
 use Tests\Fixtures\Modules\Notes\Events\NotePublished;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
@@ -23,7 +24,7 @@ final class WritingNoteState extends AgentState
 {
     public function onStop(StopRequested $input): Decision
     {
-        return Decision::deny('Finish the note first.');
+        return Decision::deny(AgentText::of('tests.said', ['text' => 'Finish the note first.']));
     }
 
     /**

@@ -164,6 +164,10 @@ func TestScenarioAProtectedHeadlessClaudeStartRunsItsTurnInItsContainer(t *testi
 	var claim client.ClaimedStart
 	readContract(t, "grant.json", &grant)
 	readContract(t, "claim.json", &claim)
+	skill := client.StartFile{Path: "skills/journal/SKILL.md", Content: "# Journal\n"}
+	grant.Folders = []client.StartFolder{
+		{Name: "journal-skills", Arguments: []string{"--plugin-dir"}, Files: []client.StartFile{skill}},
+	}
 	prepared := host.PreparedStart{Grant: grant, Claim: claim}
 	manifest, named, err := prepared.ContainerManifest()
 	if err != nil || !named {
@@ -216,8 +220,18 @@ func TestScenarioAProtectedHeadlessClaudeStartRunsItsTurnInItsContainer(t *testi
 	mounted := func(target string) bool {
 		return slices.ContainsFunc(hostConfig.Mounts, func(mount mount.Mount) bool { return mount.Target == target })
 	}
-	if !mounted("/home/journal/.account") || !mounted("/workspace") {
-		t.Errorf("the turn's container lacks its account or its workspace: %+v", hostConfig.Mounts)
+	if !mounted("/home/journal/.account") || !mounted("/workspace") || !mounted(host.SessionFilesTarget) {
+		t.Errorf("the turn's container lacks its account, its workspace or its session files: %+v", hostConfig.Mounts)
+	}
+	plugin := slices.Index(config.Cmd, "--plugin-dir")
+	if plugin < 0 || config.Cmd[plugin+1] != host.SessionFilesTarget+"/journal-skills" {
+		t.Errorf("the turn is not pointed at its skills in the session files: %v", config.Cmd)
+	}
+	writer := slices.IndexFunc(daemon.Created(), func(created *dockerstandin.Container) bool {
+		return created.Name == "" && strings.Contains(strings.Join(created.Config.Cmd, " "), "skills/journal/SKILL.md")
+	})
+	if writer < 0 {
+		t.Errorf("no container wrote the session's skills before the turn: %v", daemon.Requests())
 	}
 	model := slices.Index(config.Cmd, "--model")
 	if model < 0 || config.Cmd[model+1] != *grant.Runtime.Model || !slices.Contains(config.Cmd, "--print") ||

@@ -9,6 +9,7 @@ use App\Exceptions\UnsupportedHook;
 use App\Support\Decisions\Decision;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\HookAnswer;
+use App\Values\AgentText;
 
 /**
  * What the journal's contract with one driver covers: the reply schema it was written against, the hooks it maps and
@@ -40,7 +41,7 @@ final readonly class DriverCapabilities
             return $answer;
         }
 
-        return $answer->replacedBy(Decision::deny(DriverReplies::REWRITE_REFUSAL), $stackBefore);
+        return $answer->replacedBy(Decision::deny(AgentText::of('core.drivers.rewrite_refused')), $stackBefore);
     }
 
     public function supports(string $hookMethod): bool

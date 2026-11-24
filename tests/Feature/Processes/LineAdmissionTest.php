@@ -12,6 +12,7 @@ use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\ProcessRun;
 use App\Values\Admission;
 use App\Values\AdmissionRefusal;
+use App\Values\AgentText;
 use App\Values\ExecutionContext;
 use App\Values\TimingVerdict;
 use Illuminate\Support\Facades\Schema;
@@ -116,7 +117,7 @@ final class LineAdmissionTest extends TestCase
         $refusal = $this->refusalOf($this->admit('TOKEN=hunter2 acme verify', 'key-1'));
 
         $this->assertStringNotContainsString('hunter2', $refusal->excerpt);
-        $this->assertSame(self::NOTICE, AdmissionRefusal::NOTICE);
+        $this->assertSame(self::NOTICE, AgentText::of('core.shell.nothing_started')->text);
     }
 
     private function admit(string $line, string $key): Admission

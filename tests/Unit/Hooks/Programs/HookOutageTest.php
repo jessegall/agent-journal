@@ -6,6 +6,7 @@ namespace Tests\Unit\Hooks\Drivers;
 
 use App\Enums\CallFailure;
 use App\Support\Drivers\OutageReply;
+use App\Values\AgentText;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -37,7 +38,7 @@ final class HookOutageTest extends TestCase
         $prompt = json_decode(OutageReply::for(CallFailure::Unreachable, false, 'UserPromptSubmit')->stdout, true);
 
         $this->assertSame('deny', $tool['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(OutageReply::OUTAGE_REASON, $tool['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertSame(AgentText::of('core.drivers.outage')->text, $tool['hookSpecificOutput']['permissionDecisionReason']);
         $this->assertSame('block', $prompt['decision']);
     }
 

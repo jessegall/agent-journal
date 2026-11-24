@@ -7,6 +7,7 @@ namespace Domain\Helpers\Support;
 use App\Contracts\Actors\ActorGuidance;
 use App\Contracts\Work\WorkRepair;
 use App\Enums\WorkRepairOutcome;
+use App\Values\AgentText;
 use App\Values\WorkRepairRequest;
 use Domain\Helpers\Models\HelperJob;
 
@@ -29,10 +30,10 @@ final readonly class HelperWorkRepair implements WorkRepair
         }
 
         $findings = $request->targetRef === null
-            ? "Repair your work: {$request->findings}"
-            : "Repair your work onto {$request->targetRef}: {$request->findings}";
+            ? AgentText::of('helpers.repair', ['findings' => $request->findings])
+            : AgentText::of('helpers.repair_onto', ['target' => $request->targetRef, 'findings' => $request->findings]);
 
-        $job->reopenForRepair($findings);
+        $job->reopenForRepair($findings->text);
         $this->guidance->retain($request->worker, $findings, "repair:{$request->source}");
 
         return WorkRepairOutcome::Reopened;

@@ -13,6 +13,7 @@ use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\States\Support\AwaitingSkillsStateReference;
+use App\Values\AgentText;
 use App\Values\RecoveryCall;
 use App\Values\StackVerdict;
 use PhpOption\Option;
@@ -45,7 +46,7 @@ final class AwaitingSkillsState extends AgentState
     }
 
     /**
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {
@@ -79,12 +80,8 @@ final class AwaitingSkillsState extends AgentState
 
     // ----------[ Internals ]----------
 
-    private function reason(): string
+    private function reason(): AgentText
     {
-        return sprintf(
-            'Your journal skill set is %s, not delivered yet, so file changes wait. Reading still works: '
-            .'php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
-            $this->publication->value,
-        );
+        return AgentText::of('core.skills.not_delivered', ['state' => $this->publication->value]);
     }
 }

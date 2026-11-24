@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Contracts\Skills;
 
 use App\Enums\SkillReload;
-use App\Values\PublishedSkill;
 use App\Values\SkillDelivery;
 use App\Values\SkillKey;
 
@@ -33,8 +32,6 @@ interface DriverSkills
     public function supportFiles(): array;
 
     public function delivery(): SkillDelivery;
-
-    public function instruction(PublishedSkill $skill): string;
 
     public function reloadMode(): SkillReload;
 }

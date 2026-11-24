@@ -16,6 +16,7 @@ use App\Support\Stack\AgentStack;
 use App\Support\Stack\HookAnswer;
 use App\Support\StackAccess;
 use App\Values\AdmissionRefusal;
+use App\Values\AgentText;
 use App\Values\ExecutionContext;
 
 /**
@@ -29,8 +30,6 @@ use App\Values\ExecutionContext;
  */
 final readonly class HookShellAdmission
 {
-    private const string RUNNER_UNAVAILABLE = "The journal's supervised runner cannot run this line, so nothing started.";
-
     public function __construct(
         private ShellAdmission $admission,
         private RuntimeResolver $runtimes,
@@ -51,7 +50,7 @@ final readonly class HookShellAdmission
         $isContained = $this->runsInItsOwnContainer();
 
         if (! $isContained && ! $capabilities->rewrites->canRewrite()) {
-            $limit = 'This driver cannot take a rewritten command line without asking first.';
+            $limit = AgentText::of('core.shell.needs_approval');
 
             return $answer->replacedBy($this->runnerUnavailable($limit), $stackBefore);
         }
@@ -59,7 +58,7 @@ final readonly class HookShellAdmission
         try {
             $folder = $this->runtimes->folderOf($this->access->target()->sessionId);
         } catch (StackTargetRefused) {
-            $limit = 'This session has no runtime to run it in.';
+            $limit = AgentText::of('core.shell.no_runtime');
 
             return $answer->replacedBy($this->runnerUnavailable($limit), $stackBefore);
         }
@@ -119,8 +118,14 @@ final readonly class HookShellAdmission
         return $answer->replacedBy(Decision::rewrite($runnerLine), $answer->stack);
     }
 
-    private function runnerUnavailable(string $limit): Decision
+    /**
+     * The refusal of a line no runner can take here, with the limit that says why.
+     */
+    private function runnerUnavailable(AgentText $limit): Decision
     {
-        return Decision::deny(AdmissionRefusalCode::RunnerUnavailable->value.': '.self::RUNNER_UNAVAILABLE.' '.$limit);
+        return Decision::deny(AgentText::of('core.shell.runner_unavailable', [
+            'code' => AdmissionRefusalCode::RunnerUnavailable->value,
+            'limit' => $limit->text,
+        ]));
     }
 }

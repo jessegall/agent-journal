@@ -9,6 +9,7 @@ use App\Enums\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
+use App\Values\AgentText;
 use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;
@@ -41,7 +42,7 @@ final class FollowingSequenceState extends AgentState
     }
 
     /**
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {
@@ -73,10 +74,12 @@ final class FollowingSequenceState extends AgentState
 
     // ----------[ Internals ]----------
 
-    private function stepText(): string
+    private function stepText(): AgentText
     {
-        $instruction = $this->steps[$this->currentStep - 1];
-
-        return "Sequence run {$this->runNumber} is on step {$this->currentStep}: {$instruction}";
+        return AgentText::of('sequences.step', [
+            'run' => $this->runNumber,
+            'step' => $this->currentStep,
+            'instruction' => $this->steps[$this->currentStep - 1],
+        ]);
     }
 }

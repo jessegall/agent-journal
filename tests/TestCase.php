@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithCachedConfig;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Translation\Translator;
 use Laravel\Fortify\Features;
 use PDO;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
@@ -43,6 +44,7 @@ abstract class TestCase extends BaseTestCase
         Http::preventStrayRequests();
         $this->withoutVite();
         $this->app->make(OuterTransactionOwner::class)->register();
+        $this->app->make(Translator::class)->addNamespace('tests', base_path('tests/Fixtures/AgentTexts/lang'));
         $this->beforeApplicationDestroyed(fn () => $this->closeConnections());
     }
 

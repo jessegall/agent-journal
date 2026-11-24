@@ -9,6 +9,7 @@ use App\Enums\FileAccess;
 use App\Support\Drivers\Contracts\DriverCall;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\Values\HookIdentity;
+use App\Values\AgentText;
 use App\Values\CommandPart;
 use App\Values\ShellCommand;
 use Closure;
@@ -30,7 +31,7 @@ final readonly class GuardedFiles
     public function callUnlessRefused(HookIdentity $hook, FileAccess $access, array $paths, Closure $call): DriverCall
     {
         return $this->firstRefusal($hook, $access, $paths)
-            ->map(fn (string $refusal): DriverCall => new UnjudgedCall(DriverReplies::denyTool($refusal, [])))
+            ->map(fn (AgentText $refusal): DriverCall => new UnjudgedCall(DriverReplies::denyTool($refusal->text, [])))
             ->getOrCall($call);
     }
 
@@ -50,7 +51,7 @@ final readonly class GuardedFiles
             $refusal = $this->firstRefusal($hook, $this->accessOf($part), $part->arguments);
 
             if ($refusal->isDefined()) {
-                return new UnjudgedCall(DriverReplies::denyTool($refusal->get(), []));
+                return new UnjudgedCall(DriverReplies::denyTool($refusal->get()->text, []));
             }
         }
 
@@ -59,7 +60,7 @@ final readonly class GuardedFiles
 
     /**
      * @param  list<string>  $paths
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     private function firstRefusal(HookIdentity $hook, FileAccess $access, array $paths): Option
     {

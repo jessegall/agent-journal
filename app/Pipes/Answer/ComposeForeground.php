@@ -30,6 +30,6 @@ final readonly class ComposeForeground implements Pipe
             return $settled;
         }
 
-        return $settled->withAnswer($settled->answer->withContextAdded($line->get()));
+        return $settled->withAnswer($settled->answer->withContextAdded($line->get()->text));
     }
 }

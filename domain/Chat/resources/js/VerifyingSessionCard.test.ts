@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AgentOptionData } from "@generated/types/chat";
 import type { SessionState } from "@kit/CoreTypes";
+import { CHECK_READ_MILLISECONDS } from "./composables/useStatusCheck";
 
 const reload = vi.fn();
 const sendPageAction = vi.fn();
@@ -62,12 +63,15 @@ describe("VerifyingSessionCard", () => {
     expect(card.find("[data-verifying-session]").exists()).toBe(false);
   });
 
-  it("asks the host to check the start, then reads the page again", async () => {
+  it("asks the host to check the start, then reads the page again while it waits for the answer", async () => {
+    vi.useFakeTimers();
     const card = mount(VerifyingSessionCard, { props: { agent: agentIn("verifying") } });
 
     await card.findAll("button")[0].trigger("click");
     const [route, , options] = sendPageAction.mock.calls[0];
     options.onFinish();
+    vi.advanceTimersByTime(CHECK_READ_MILLISECONDS);
+    vi.useRealTimers();
 
     expect(route.url).toContain("/agents/agent-1/sessions/session-1/check-start");
     expect(reload).toHaveBeenCalledOnce();

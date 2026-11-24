@@ -103,8 +103,8 @@ func (container SessionContainer) RemoveCheckout(ctx context.Context, manifest C
 	return container.Containers.RemoveCheckout(ctx, container.Labels.Session, source)
 }
 
-// Stop stops the container with proof and removes it and its network; the session's volumes stay. A container
-// already gone, which the daemon no longer finds, needs no stop.
+// Stop stops the container with proof and removes it, its network and the files the session was handed; the
+// session's volumes stay. A container already gone, which the daemon no longer finds, needs no stop.
 func (container SessionContainer) Stop(ctx context.Context, network string) error {
 	running, err := container.Containers.IsRunning(ctx, container.Name)
 	if err == nil && running {
@@ -113,7 +113,11 @@ func (container SessionContainer) Stop(ctx context.Context, network string) erro
 		}
 	}
 
-	return container.remove(ctx, network)
+	if err := container.remove(ctx, network); err != nil {
+		return err
+	}
+
+	return container.Containers.RemoveSessionFiles(ctx, container.Labels.Session)
 }
 
 // remove takes the stopped container and its network away; either already gone counts as removed.

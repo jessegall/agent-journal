@@ -23,6 +23,7 @@ use App\Support\SkillSelection;
 use App\Support\SkillTargets;
 use App\Support\StartDriver;
 use App\Support\States\Support\AwaitingSkillsStateReference;
+use App\Values\AgentText;
 use App\Values\DriverKey;
 use App\Values\SelectedSkills;
 
@@ -58,7 +59,8 @@ final readonly class RefreshSessionSkills implements Listener
         try {
             $selected = $this->select($session);
         } catch (SkillSelectionConflict $conflict) {
-            $event->reminders->add($conflict->getMessage(), true);
+            $notice = AgentText::of('core.skills.not_chosen', ['problem' => $conflict->getMessage()]);
+            $event->reminders->add($notice, true);
 
             return;
         }
@@ -105,14 +107,10 @@ final readonly class RefreshSessionSkills implements Listener
         );
     }
 
-    private function newSessionNotice(DriverKey $driver, SelectedSkills $selected): string
+    private function newSessionNotice(DriverKey $driver, SelectedSkills $selected): AgentText
     {
         $keys = $selected->selectedKeys() === [] ? 'none' : implode(', ', $selected->selectedKeys());
 
-        return sprintf(
-            'Your journal skills changed; they are now: %s. %s loads skills only when a session starts, so start a new session to use the new set; until then read a skill with php artisan skill:show <key>.',
-            $keys,
-            $driver->key,
-        );
+        return AgentText::of('core.skills.changed', ['skills' => $keys, 'driver' => $driver->key]);
     }
 }

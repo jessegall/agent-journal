@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support;
 
 use App\Support\ActorIdentity;
+use App\Values\AgentText;
 use Domain\Helpers\Exceptions\ContextUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -18,7 +19,7 @@ use Domain\Helpers\Models\HelperPurpose;
 final readonly class JobContext
 {
     /**
-     * @return list<string>
+     * @return list<AgentText>
      *
      * @throws ContextUnavailable
      */
@@ -45,6 +46,6 @@ final readonly class JobContext
             fn () => throw ContextUnavailable::forJob($job->id),
         );
 
-        return [$job->contextFor($identity, $purpose->label)];
+        return $job->contextFor($identity, $purpose->label);
     }
 }

@@ -19,7 +19,7 @@ use App\Models\Profiles\ProfileRun;
 use App\Models\Projects\WorkspaceRead;
 use App\Support\ActorIdentity;
 use App\Support\ProfileProposal;
-use App\Support\ScriptStopPreparation;
+use App\Values\AgentText;
 use App\Values\CommitObservation;
 use App\Values\CompiledScript;
 use App\Values\DraftExpectations;
@@ -86,7 +86,7 @@ final class StopPreparationTest extends TestCase
         $outcome = $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
 
         $this->assertSame(StopPreparationState::ReturnToActor, $outcome->state);
-        $this->assertSame(self::GUIDANCE, $outcome->message);
+        $this->assertEquals(AgentText::of('core.stop.script_returned', ['evidence' => self::GUIDANCE]), $outcome->message);
         $this->assertGreaterThan(0, PendingAgentMessage::countFor($this->writer));
     }
 
@@ -95,7 +95,7 @@ final class StopPreparationTest extends TestCase
         $outcome = $this->stopDirty(StepStatus::Failed, 'failure', self::FAILED_TESTS);
 
         $this->assertSame(StopPreparationState::ReturnToActor, $outcome->state);
-        $this->assertSame(self::FAILED_TESTS, $outcome->message);
+        $this->assertEquals(AgentText::of('core.stop.script_returned', ['evidence' => self::FAILED_TESTS]), $outcome->message);
     }
 
     public function test_three_returns_on_an_unchanged_workspace_hold_the_work_and_tell_the_owner_once(): void
@@ -108,7 +108,9 @@ final class StopPreparationTest extends TestCase
         $stillHeld = $this->stopAgain();
 
         $this->assertSame([StopPreparationState::Held, true], [$held->state, $held->tellsOwner]);
-        $this->assertStringStartsWith(ScriptStopPreparation::RETURNS_HELD, $held->message);
+        $reason = AgentText::of('core.stop.unchanged_returns', ['evidence' => self::GUIDANCE])->text;
+        $this->assertSame(AgentText::of('core.stop.script_held', ['reason' => $reason])->key, $held->message->key);
+        $this->assertStringContainsString($reason, $held->message->text);
         $this->assertSame([StopPreparationState::Held, false], [$stillHeld->state, $stillHeld->tellsOwner]);
     }
 
@@ -136,7 +138,8 @@ final class StopPreparationTest extends TestCase
         $stillHeld = $this->stopAgain();
 
         $this->assertSame([StopPreparationState::Held, true], [$held->state, $held->tellsOwner]);
-        $this->assertSame(ScriptStopPreparation::DEFINITIONS_CHANGED, $held->message);
+        $reason = AgentText::of('core.stop.definitions_changed')->text;
+        $this->assertSame(AgentText::of('core.stop.script_held', ['reason' => $reason])->text, $held->message->text);
         $this->assertFalse($stillHeld->tellsOwner);
         $this->assertSame(0, WorkspaceRead::query()->count());
     }

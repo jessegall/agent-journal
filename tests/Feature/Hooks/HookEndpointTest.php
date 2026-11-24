@@ -16,7 +16,7 @@ use App\Support\AgentContext;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
 use App\Support\StartStacks;
-use App\Values\AdmissionRefusal;
+use App\Values\AgentText;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
@@ -104,7 +104,7 @@ final class HookEndpointTest extends TestCase
 
         $this->assertSame('deny', $refused['hookSpecificOutput']['permissionDecision']);
         $this->assertStringContainsString(
-            AdmissionRefusal::NOTICE,
+            AgentText::of('core.shell.nothing_started')->text,
             $refused['hookSpecificOutput']['permissionDecisionReason'],
         );
         $runnerLine = $admitted['hookSpecificOutput']['updatedInput']['command'];

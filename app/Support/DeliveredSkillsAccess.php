@@ -7,6 +7,7 @@ namespace App\Support;
 use App\Contracts\Authorization\FileAccessPolicy;
 use App\Enums\FileAccess;
 use App\Models\Agents\AgentRuntime;
+use App\Values\AgentText;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -22,12 +23,6 @@ final readonly class DeliveredSkillsAccess implements FileAccessPolicy
 
     private const string SKILL_FILE = 'SKILL.md';
 
-    public const string OTHER_RUNTIME = 'That file belongs to another agent\'s start: only that agent may read or '
-        .'change it.';
-
-    public const string DELIVERED_SKILL = 'Your delivered skills are read-only: the journal writes them. Ask for a '
-        .'change to the skill through the journal instead.';
-
     public function refusalFor(string $sessionId, FileAccess $access, string $path): Option
     {
         if (preg_match(self::RUNTIME_FOLDER, $path, $folder) !== 1) {
@@ -35,11 +30,11 @@ final readonly class DeliveredSkillsAccess implements FileAccessPolicy
         }
 
         if (strtolower($folder[1]) !== AgentRuntime::ofSession($sessionId)?->id) {
-            return Some::create(self::OTHER_RUNTIME);
+            return Some::create(AgentText::of('core.drivers.other_runtime'));
         }
 
         if ($access === FileAccess::Write && basename($path) === self::SKILL_FILE) {
-            return Some::create(self::DELIVERED_SKILL);
+            return Some::create(AgentText::of('core.drivers.delivered_skill'));
         }
 
         return None::create();

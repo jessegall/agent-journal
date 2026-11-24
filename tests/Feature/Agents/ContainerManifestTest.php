@@ -156,6 +156,7 @@ final class ContainerManifestTest extends TestCase
                 ManifestMount::volume('acme-workspace-main', '/workspace', false),
                 ManifestMount::daemonBind('/srv/journal/accounts/01b2', '/home/journal/.account', true),
                 ManifestMount::volume('acme-history-helper-1', '/home/journal/.account/projects', true),
+                ManifestMount::daemonBind('/srv/journal/sessions/helper-1', '/tmp/journal-session', false),
             ],
             $manifest->mounts,
         );
@@ -189,7 +190,7 @@ final class ContainerManifestTest extends TestCase
             $workspace,
         );
         $this->assertSame(
-            ['/workspace', '/home/journal/.account/projects'],
+            ['/workspace', '/home/journal/.account/projects', '/tmp/journal-session'],
             array_map(fn (ManifestMount $mount) => $mount->target, $manifest->mounts),
         );
         $this->assertSame(
@@ -468,6 +469,7 @@ final class ContainerManifestTest extends TestCase
                 ManifestMount::daemonBind('/srv/journal/workspaces/main', '/workspace', true),
                 ManifestMount::daemonBind('/srv/journal/accounts/01a1', '/home/journal/.account', true),
                 ManifestMount::volume('acme-history-session-1', '/home/journal/.account/projects', true),
+                ManifestMount::daemonBind('/srv/journal/sessions/session-1', '/tmp/journal-session', false),
             ],
             $manifestOf($accountA)->mounts,
         );
@@ -508,12 +510,18 @@ final class ContainerManifestTest extends TestCase
 
         $this->assertSame([], MountRules::local()->sessionMounts('s1', null));
         $this->assertEquals(
-            [ManifestMount::volume('acme-history-s1', '/home/journal/.account/projects', true)],
+            [
+                ManifestMount::volume('acme-history-s1', '/home/journal/.account/projects', true),
+                ManifestMount::daemonBind('/srv/journal/sessions/s1', '/tmp/journal-session', false),
+            ],
             $contained->sessionMounts('s1', null),
         );
         $this->assertNotEquals($contained->sessionMounts('s1', null), $contained->sessionMounts('s2', null));
         $this->assertEquals(
-            [ManifestMount::existingVolume('acme-history-s1', '/home/journal/.account/projects', true)],
+            [
+                ManifestMount::existingVolume('acme-history-s1', '/home/journal/.account/projects', true),
+                ManifestMount::daemonBind('/srv/journal/sessions/s2', '/tmp/journal-session', false),
+            ],
             $contained->sessionMounts('s2', 's1'),
         );
     }

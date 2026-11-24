@@ -10,6 +10,7 @@ use App\Contracts\Scripts\ScriptChecks;
 use App\Enums\ProfileRunState;
 use App\Models\Profiles\ProfileRun;
 use App\Models\Profiles\ProfileStepResult;
+use App\Values\AgentText;
 use App\Values\CompiledScript;
 use App\Values\Instruction;
 use App\Values\ProfileKey;
@@ -35,15 +36,6 @@ use PhpOption\Some;
  */
 final readonly class ScriptStopPreparation implements StopPreparer
 {
-    public const string PREPARING = 'The STOP script waits for the host; the job stays open until it reports, and you '
-        .'are woken to stop again.';
-
-    public const string DEFINITIONS_CHANGED = 'The STOP script uses a definition that changed or is no longer '
-        .'available since the profile was activated, so the job is held and your parent is told.';
-
-    public const string RETURNS_HELD = 'The STOP script sent the stop back three times with no change in the '
-        .'workspace, so the job is held for repair and your parent is told.';
-
     /**
      * How many returns in a row on an unchanged workspace hold the work.
      */
@@ -87,7 +79,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         $driver = $this->currentDriver($script);
 
         if ($driver->isEmpty()) {
-            return $this->hold($run, self::DEFINITIONS_CHANGED, $run->unchanged_returns);
+            return $this->hold($run, AgentText::of('core.stop.definitions_changed'), $run->unchanged_returns);
         }
 
         return $this->go($run, $driver->get(), $request);
@@ -170,7 +162,9 @@ final readonly class ScriptStopPreparation implements StopPreparer
             ->getOrElse(1);
 
         if ($unchangedReturns >= self::UNCHANGED_RETURNS_TO_HOLD) {
-            return $this->hold($run, self::RETURNS_HELD.PHP_EOL.$evidence, $unchangedReturns);
+            $reason = AgentText::of('core.stop.unchanged_returns', ['evidence' => $evidence]);
+
+            return $this->hold($run, $reason, $unchangedReturns);
         }
 
         $run->finish(ProfileRunState::Returned, $evidence, $unchangedReturns);
@@ -201,19 +195,16 @@ final readonly class ScriptStopPreparation implements StopPreparer
     {
         $run->suspendOn($line, (string) $outcome->evidence);
 
-        return StopPreparation::preparing(self::PREPARING);
+        return StopPreparation::preparing();
     }
 
     /**
      * Holds the work; the owner is told only when it becomes held, not again while it stays held.
      */
-    private function hold(ProfileRun $run, string $message, int $unchangedReturns): StopPreparation
+    private function hold(ProfileRun $run, AgentText $reason, int $unchangedReturns): StopPreparation
     {
-        $wasHeld = $run->previous()
-            ->filter(fn (ProfileRun $previous) => $previous->state === ProfileRunState::Held)
-            ->isDefined();
-
-        $run->finish(ProfileRunState::Held, $message, $unchangedReturns);
+        $wasHeld = $run->followsHeldRun();
+        $run->finish(ProfileRunState::Held, $reason->text, $unchangedReturns);
 
         return $this->answer($run, tellsOwner: ! $wasHeld);
     }
@@ -221,7 +212,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
     private function answer(ProfileRun $run, bool $tellsOwner): StopPreparation
     {
         return match ($run->state) {
-            ProfileRunState::Running, ProfileRunState::Suspended => StopPreparation::preparing(self::PREPARING),
+            ProfileRunState::Running, ProfileRunState::Suspended => StopPreparation::preparing(),
             ProfileRunState::FinalChecks => StopPreparation::finalChecks(),
             ProfileRunState::Returned => StopPreparation::returnToActor((string) $run->message),
             ProfileRunState::Held => StopPreparation::held((string) $run->message, $tellsOwner),

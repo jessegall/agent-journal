@@ -49,10 +49,10 @@ final class HelperContextTest extends TestCase
         $compacted = $this->remindersOn($this->helperAgentOf($receipt), ContextStartType::Compact);
 
         foreach ([$started, $compacted] as $reminders) {
-            $this->assertCount(1, $reminders);
-            $this->assertStringContainsString(self::PHASE_BRIEF, $reminders[0]);
-            $this->assertStringContainsString(sprintf(self::STEERING_REMINDER, self::STEERING), $reminders[0]);
-            $this->assertStringContainsString(self::REVIEW_TITLE, $reminders[0]);
+            $context = implode("\n", $reminders);
+            $this->assertSame(1, substr_count($context, self::PHASE_BRIEF));
+            $this->assertStringContainsString(sprintf(self::STEERING_REMINDER, self::STEERING), $context);
+            $this->assertStringContainsString(self::REVIEW_TITLE, $context);
         }
     }
 

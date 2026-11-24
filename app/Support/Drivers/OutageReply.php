@@ -7,6 +7,7 @@ namespace App\Support\Drivers;
 use App\Enums\CallFailure;
 use App\Enums\DriverStopDecision;
 use App\Enums\HookEvent;
+use App\Values\AgentText;
 
 /**
  * The reply the host gives a driver when a hook call to the journal fails. During an outage a start granted the
@@ -17,24 +18,17 @@ use App\Enums\HookEvent;
  */
 final class OutageReply
 {
-    public const string OUTAGE_REASON = 'The journal is unreachable, so this helper cannot act until it is back.';
-
-    public const string PREPARATION_PENDING_REASON = 'preparation-pending: the journal has not prepared this '
-        .'context yet, so tools wait until its context and state reach the driver.';
-
-    public const string PROTECTED_REASON = 'The journal is unreachable, so saved driver accounts and saved outputs '
-        .'stay closed until it is back.';
-
     public static function for(CallFailure $failure, bool $passesOutages, string $nativeEvent): DriverReply
     {
         if ($failure->isOutage() && $passesOutages) {
             return self::neutral($nativeEvent);
         }
 
-        return self::refusal(
-            $nativeEvent,
-            $failure->isOutage() ? self::OUTAGE_REASON : "The journal refused this call ({$failure->value}).",
-        );
+        $reason = $failure->isOutage()
+            ? AgentText::of('core.drivers.outage')
+            : AgentText::of('core.drivers.call_refused', ['failure' => $failure->value]);
+
+        return self::refusal($nativeEvent, $reason->text);
     }
 
     /**
@@ -43,7 +37,7 @@ final class OutageReply
      */
     public static function preparationPending(string $nativeEvent): DriverReply
     {
-        return self::refusal($nativeEvent, self::PREPARATION_PENDING_REASON);
+        return self::refusal($nativeEvent, AgentText::of('core.drivers.preparation_pending')->text);
     }
 
     /**
@@ -52,7 +46,7 @@ final class OutageReply
      */
     public static function protectedRefusal(string $nativeEvent): DriverReply
     {
-        return self::refusal($nativeEvent, self::PROTECTED_REASON);
+        return self::refusal($nativeEvent, AgentText::of('core.drivers.outage_protected')->text);
     }
 
     private static function neutral(string $nativeEvent): DriverReply

@@ -168,7 +168,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
      */
     public function currentRuntime(): Option
     {
-        if ($this->current_session_id === null || ! AgentRuntime::existsForSession($this->current_session_id)) {
+        if ($this->current_session_id === null || ! AgentRuntime::runsForSession($this->current_session_id)) {
             return None::create();
         }
 

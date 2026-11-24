@@ -12,7 +12,7 @@ use App\Values\WorkspacePreparation;
 
 /**
  * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at
- * /workspace; contained, one to three mounts of the agent daemon on their own folders, volumes of this installation
+ * /workspace; contained, one to four mounts of the agent daemon on their own folders, volumes of this installation
  * and folders under /srv/journal/, an account folder only the session's own.
  */
 final readonly class MountRules
@@ -21,13 +21,26 @@ final readonly class MountRules
 
     private const string ACCOUNTS_ROOT = '/srv/journal/accounts';
 
-    private const int MOST_CONTAINED_MOUNTS = 3;
+    private const int MOST_CONTAINED_MOUNTS = 4;
 
     private const string ACCOUNT_TARGET = '/home/journal/.account';
 
     private const string PROJECTS_TARGET = self::ACCOUNT_TARGET.'/projects';
 
-    private const array CONTAINED_TARGETS = ['/workspace', self::ACCOUNT_TARGET, self::PROJECTS_TARGET];
+    private const string SESSIONS_ROOT = '/srv/journal/sessions';
+
+    /**
+     * Where a contained session finds the files the journal hands its start, such as its skills, read-only; under
+     * /tmp, the one folder outside the workspace its driver's file tools may read.
+     */
+    private const string SESSION_TARGET = '/tmp/journal-session';
+
+    private const array CONTAINED_TARGETS = [
+        '/workspace',
+        self::ACCOUNT_TARGET,
+        self::PROJECTS_TARGET,
+        self::SESSION_TARGET,
+    ];
 
     /**
      * Host folders that hold accounts, credentials or host control; no local mount may name them.
@@ -128,9 +141,9 @@ final readonly class MountRules
 
     /**
      * The mounts a contained session has beside its workspace: its own history volume over the account's projects
-     * folder, so sessions on one account never read each other's conversations. A session that
-     * resumes a conversation mounts the history of the session that held it, which must still exist. A local session
-     * has none; its sandbox profile hides the other sessions' history.
+     * folder, so sessions on one account never read each other's conversations, and its own files from the host, such
+     * as its skills, read-only. A session that resumes a conversation mounts the history of the session that held it,
+     * which must still exist. A local session has none; its sandbox profile hides the other sessions' history.
      *
      * @return list<ManifestMount>
      */
@@ -140,13 +153,17 @@ final readonly class MountRules
             return [];
         }
 
+        $files = ManifestMount::daemonBind(self::SESSIONS_ROOT.'/'.$sessionId, self::SESSION_TARGET, false);
+
         if ($resumedSessionId !== null) {
             $history = "{$this->installationName}-history-{$resumedSessionId}";
 
-            return [ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true)];
+            return [ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true), $files];
         }
 
-        return [ManifestMount::volume("{$this->installationName}-history-{$sessionId}", self::PROJECTS_TARGET, true)];
+        $history = ManifestMount::volume("{$this->installationName}-history-{$sessionId}", self::PROJECTS_TARGET, true);
+
+        return [$history, $files];
     }
 
     /**
@@ -163,13 +180,15 @@ final readonly class MountRules
         }
 
         if ($mounts === [] || count($mounts) > self::MOST_CONTAINED_MOUNTS) {
-            throw ManifestRefused::because('a contained helper has one to three mounts');
+            throw ManifestRefused::because('a contained helper has one to four mounts');
         }
 
         $targets = array_map(static fn (ManifestMount $mount) => $mount->target, $mounts);
 
         if (array_diff($targets, self::CONTAINED_TARGETS) !== [] || count(array_unique($targets)) !== count($targets)) {
-            throw ManifestRefused::because('a contained helper mounts only its workspace, account and projects, once each');
+            throw ManifestRefused::because(
+                'a contained helper mounts only its workspace, account, projects and session files, once each',
+            );
         }
 
         array_map($this->assertContainedSource(...), $mounts);

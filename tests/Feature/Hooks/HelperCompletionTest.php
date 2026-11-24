@@ -35,7 +35,7 @@ use App\Support\EngineAccess;
 use App\Support\EngineActor;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
-use App\Support\StopAttemptGate;
+use App\Values\AgentText;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;
@@ -146,7 +146,7 @@ final class HelperCompletionTest extends TestCase
         $this->settle('stop-1', StopResultType::Failed, 'NOTE is not committed');
         $refused = $this->stop($start, 'stop-1');
 
-        $this->assertSame([StopAttemptGate::CHECKS_RUNNING], $this->messagesOf($running));
+        $this->assertSame([AgentText::of('core.stop.checks_running')->text], $this->messagesOf($running));
         $this->assertSame(AnswerType::Deny, $this->typeOf($refused));
         Event::assertNotDispatched(HelperCompletionCertified::class);
     }

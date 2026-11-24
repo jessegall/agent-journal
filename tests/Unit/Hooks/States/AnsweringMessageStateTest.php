@@ -69,7 +69,7 @@ final class AnsweringMessageStateTest extends TestCase
         $state->onMessageOffered(new ChatMessageOffered(self::CHAT, self::SECOND, $this->agent()));
 
         $this->assertSame([self::FIRST, self::SECOND], $this->valuesOf($state)['waitingIds']);
-        $this->assertStringContainsString(self::FIRST, $state->instruction()->get());
+        $this->assertStringContainsString(self::FIRST, $state->instruction()->get()->text);
     }
 
     public function test_each_tool_use_is_one_off_the_budget_and_after_it_every_call_is_refused(): void
@@ -164,7 +164,7 @@ final class AnsweringMessageStateTest extends TestCase
         );
 
         $this->assertSame(StateValues::of($state), StateValues::of($restored));
-        $this->assertSame($state->instruction()->get(), $restored->instruction()->get());
+        $this->assertSame($state->instruction()->get()->text, $restored->instruction()->get()->text);
     }
 
     public function test_a_message_it_takes_up_in_its_chat_joins_the_list(): void

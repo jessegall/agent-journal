@@ -16,6 +16,7 @@ use App\Support\Stack\AgentStack;
 use App\Support\Stack\HookAnswer;
 use App\Values\StackTarget;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class ProgramRepliesTest extends TestCase
@@ -43,7 +44,7 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_a_denial_carries_its_reason(): void
     {
-        $reply = $this->shell(Decision::deny('Save this test as a named command.'));
+        $reply = $this->shell(Decision::deny(TestText::of('Save this test as a named command.')));
 
         $this->assertSame(['hookSpecificOutput' => [
             'hookEventName' => 'PreToolUse',
@@ -90,7 +91,7 @@ final class ProgramRepliesTest extends TestCase
     public function test_a_held_stop_blocks_with_one_reason_followed_by_the_context(): void
     {
         $reply = DriverReplies::stop(
-            $this->answer(Decision::deny('Task 42 still needs work.'), ['Run the phase tests.']),
+            $this->answer(Decision::deny(TestText::of('Task 42 still needs work.')), ['Run the phase tests.']),
         );
 
         $this->assertSame(
@@ -138,10 +139,10 @@ final class ProgramRepliesTest extends TestCase
             ),
         ];
         $others = [
-            $this->shell(Decision::deny('No.')),
+            $this->shell(Decision::deny(TestText::of('No.'))),
             DriverReplies::undecidedTool(),
             DriverReplies::stop($this->answer(Decision::allow())),
-            DriverReplies::stop($this->answer(Decision::deny('Wait.'))),
+            DriverReplies::stop($this->answer(Decision::deny(TestText::of('Wait.')))),
         ];
 
         foreach ($admitted as $reply) {

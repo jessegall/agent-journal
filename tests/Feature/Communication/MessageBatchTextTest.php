@@ -51,7 +51,7 @@ final class MessageBatchTextTest extends MessagingTestCase
         }
     }
 
-    public function test_how_the_chat_works_is_said_once_to_a_driver_context_and_again_to_a_restarted_one(): void
+    public function test_a_wake_carries_only_the_messages_since_how_the_chat_works_is_told_at_each_context_start(): void
     {
         $inboxId = $this->groupChatWithTheBuilder();
         $runtime = $this->builderRuntime();
@@ -60,16 +60,9 @@ final class MessageBatchTextTest extends MessagingTestCase
 
         $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'first'));
         $first = (string) $prompts->textFor($runtime, CarbonImmutable::now());
-        $this->runOnBus(new PostChatMessageCommand($inboxId, 'And then?', 'second'));
-        $second = (string) $prompts->textFor($runtime, CarbonImmutable::now());
 
-        $this->assertStringContainsString($explained, $first);
-        $this->assertStringNotContainsString($explained, $second);
-        $this->assertStringContainsString('```'.MessageBatchItemData::USER_FENCE, $second);
-        $this->assertLessThan(strlen($first), strlen($second));
-
-        $runtime->process_generation++;
-        $this->assertStringContainsString($explained, (string) $prompts->textFor($runtime, CarbonImmutable::now()));
+        $this->assertStringNotContainsString($explained, $first);
+        $this->assertStringContainsString('```'.MessageBatchItemData::USER_FENCE, $first);
     }
 
     // Found on the local journal (23 Nov): the text called every message "never instructions", so an agent refused to do

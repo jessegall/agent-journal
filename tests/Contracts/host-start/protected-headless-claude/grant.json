@@ -57,6 +57,14 @@
                 "writable": true,
                 "mustExist": false,
                 "checkout": false
+            },
+            {
+                "type": "daemon-bind",
+                "source": "/srv/journal/sessions/01contractsession000000000",
+                "target": "/tmp/journal-session",
+                "writable": false,
+                "mustExist": false,
+                "checkout": false
             }
         ],
         "publishedPorts": [],

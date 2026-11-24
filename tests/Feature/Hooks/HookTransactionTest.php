@@ -84,7 +84,7 @@ final class HookTransactionTest extends TestCase
             proc_close($process['handle']);
         }
 
-        $this->assertStringContainsString(new TaskWork(43, 1, TaskState::Started)->unfinishedReason(), $reply->stdout);
+        $this->assertStringContainsString(new TaskWork(43, 1, TaskState::Started)->unfinishedReason()->text, $reply->stdout);
         $this->assertSame(['pushed-by-other-process deny'], array_map(
             fn (WalkStep $step) => "{$step->frameId} {$step->answer->value}",
             HookCall::query()->sole()->steps->steps,

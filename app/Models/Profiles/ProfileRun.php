@@ -201,6 +201,16 @@ final class ProfileRun extends Model implements ReadableModel
     }
 
     /**
+     * Whether the actor's last run on this work before this one ended held, so the owner was told already.
+     */
+    public function followsHeldRun(): bool
+    {
+        return $this->previous()
+            ->filter(fn (self $previous) => $previous->state === ProfileRunState::Held)
+            ->isDefined();
+    }
+
+    /**
      * The outcome recorded for one of the run's steps.
      *
      * @return Option<StepOutcome>

@@ -16,6 +16,16 @@ enum ReceiptDeliveryState: string
     case Exhausted = 'exhausted';
     case Cancelled = 'cancelled';
 
+    /**
+     * The states of a delivery whose message has not reached its recipient; a cancelled one was dismissed and stays so.
+     *
+     * @return list<self>
+     */
+    public static function undelivered(): array
+    {
+        return [self::Pending, self::Waiting, self::Exhausted];
+    }
+
     public function isPending(): bool
     {
         return $this === self::Pending;

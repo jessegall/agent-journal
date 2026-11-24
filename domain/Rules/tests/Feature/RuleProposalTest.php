@@ -59,7 +59,8 @@ final class RuleProposalTest extends TestCase
             ],
         );
 
-        $this->assertSame(["Rule {$old->number}: Old rule."], $this->app->make(ActiveRules::class)->reminders());
+        $reminders = array_map(fn ($reminder) => $reminder->text, $this->app->make(ActiveRules::class)->reminders());
+        $this->assertSame(["Rule {$old->number}: Old rule."], $reminders);
         $this->assertSame(1, $this->app->make(RuleDetailsResolver::class)->activeCount());
     }
 

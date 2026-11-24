@@ -7,6 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\ActorGuidance;
 use App\Models\Agents\PendingAgentMessage;
+use App\Values\AgentText;
 
 /**
  * Keeps guidance as a message for the actor's next hook and asks for its attention, so a sleeping actor wakes to it.
@@ -15,10 +16,10 @@ final readonly class HookGuidance implements ActorGuidance
 {
     public function __construct(private ActorAttention $attention) {}
 
-    public function retain(ActorIdentity $actor, string $guidance, string $key): void
+    public function retain(ActorIdentity $actor, AgentText $guidance, string $key): void
     {
         $origin = AttentionOrigin::guidance($key);
-        PendingAgentMessage::create($actor, $origin, [$guidance], requestsAttention: true);
+        PendingAgentMessage::create($actor, $origin, [$guidance->text], requestsAttention: true);
         $this->attention->request($actor, $origin);
     }
 }

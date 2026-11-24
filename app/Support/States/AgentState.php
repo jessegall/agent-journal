@@ -19,6 +19,7 @@ use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
+use App\Values\AgentText;
 use App\Values\StackVerdict;
 use PhpOption\None;
 use PhpOption\Option;
@@ -59,7 +60,7 @@ abstract class AgentState implements HookAnswerer
     /**
      * The instruction the agent is shown while this is the top live state that has one; none by default.
      *
-     * @return Option<string>
+     * @return Option<AgentText>
      */
     public function instruction(): Option
     {

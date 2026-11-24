@@ -21,10 +21,10 @@ use App\Support\States\ReadyState;
 use App\Values\CommandPart;
 use App\Values\ShellCommand;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Support\TestActors;
+use Tests\TestCase;
 
 /**
  * The one ready bottom state: it leaves every shell line to Core's admission, answers every hook, and lets a file

@@ -14,27 +14,41 @@ final readonly class StopPreparation
 {
     private function __construct(
         public StopPreparationState $state,
-        public string $message,
+        public AgentText $message,
         public bool $tellsOwner,
     ) {}
 
-    public static function preparing(string $message): self
+    public static function preparing(): self
     {
-        return new self(StopPreparationState::Preparing, $message, false);
+        return new self(StopPreparationState::Preparing, AgentText::of('core.stop.script_waits'), false);
     }
 
     public static function finalChecks(): self
     {
-        return new self(StopPreparationState::FinalChecks, '', false);
+        return new self(StopPreparationState::FinalChecks, AgentText::of('core.stop.checks_running'), false);
     }
 
-    public static function returnToActor(string $message): self
+    /**
+     * The script sent the agent back with the evidence of its last step.
+     */
+    public static function returnToActor(string $evidence): self
     {
-        return new self(StopPreparationState::ReturnToActor, $message, false);
+        return new self(
+            StopPreparationState::ReturnToActor,
+            AgentText::of('core.stop.script_returned', ['evidence' => $evidence]),
+            false,
+        );
     }
 
-    public static function held(string $message, bool $tellsOwner): self
+    /**
+     * The work is held for repair for the reason given.
+     */
+    public static function held(string $reason, bool $tellsOwner): self
     {
-        return new self(StopPreparationState::Held, $message, $tellsOwner);
+        return new self(
+            StopPreparationState::Held,
+            AgentText::of('core.stop.script_held', ['reason' => $reason]),
+            $tellsOwner,
+        );
     }
 }

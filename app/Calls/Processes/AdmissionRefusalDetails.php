@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Processes;
 
 use App\Values\AdmissionRefusal;
+use App\Values\AgentText;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
@@ -36,7 +37,7 @@ final class AdmissionRefusalDetails extends Data
             'correction' => $refusal->correction,
             'requestId' => $refusal->requestId,
             'next' => $refusal->next,
-            'notice' => AdmissionRefusal::NOTICE,
+            'notice' => AgentText::of('core.shell.nothing_started')->text,
         ]);
     }
 }

@@ -6,6 +6,7 @@ namespace Domain\Helpers\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Events\ContextStarted;
+use App\Values\AgentText;
 use Domain\Helpers\Models\HelperNotice;
 use Domain\Helpers\Support\JobContext;
 
@@ -27,7 +28,7 @@ final readonly class SupplyHelperContext implements Listener
         }
 
         foreach (HelperNotice::undeliveredFor($actor) as $notice) {
-            $event->reminders->add($notice->text, true);
+            $event->reminders->add(AgentText::of('helpers.notice', ['notice' => $notice->text]), true);
             $notice->markDelivered();
         }
     }

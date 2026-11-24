@@ -15,6 +15,7 @@ use App\Enums\ArrangementType;
 use App\Enums\Place;
 use App\Enums\SignInOutcome;
 use App\Exceptions\SignInAnswerUndelivered;
+use App\Exceptions\SignInChallengeUnreadable;
 use App\Exceptions\SignInSecretUnwritable;
 use App\Values\ClaimedCleanup;
 use App\Values\ClaimedSignIn;
@@ -23,6 +24,7 @@ use App\Values\SignInIdentity;
 use App\Values\SignInVerification;
 use Carbon\CarbonImmutable;
 use Closure;
+use RuntimeException;
 
 /**
  * The host's sign-in runner: takes one sign-in, makes its private folder, runs the driver's own sign-in until it
@@ -220,19 +222,25 @@ final readonly class PrivateSignInProcesses
         $deadline = CarbonImmutable::parse($claimed->expiresAt);
         $isPublished = false;
 
-        while (! $protocol->hasFinished($process) && CarbonImmutable::now()->lessThan($deadline)) {
-            $isPublished = $isPublished || $this->publishChallenge($protocol, $process, $claimed);
-            $poll = $this->host->poll($claimed);
+        try {
+            while (! $protocol->hasFinished($process) && CarbonImmutable::now()->lessThan($deadline)) {
+                $isPublished = $isPublished || $this->publishChallenge($protocol, $process, $claimed);
+                $poll = $this->host->poll($claimed);
 
-            if (! $poll->isLive) {
-                return false;
+                if (! $poll->isLive) {
+                    return false;
+                }
+
+                if ($poll->code !== null && ! $this->deliver($protocol, $process, $claimed, $poll->code)) {
+                    return false;
+                }
+
+                ($this->pause)();
             }
+        } catch (SignInChallengeUnreadable $unreadable) {
+            $this->interrupt($claimed, $unreadable);
 
-            if ($poll->code !== null && ! $this->deliver($protocol, $process, $claimed, $poll->code)) {
-                return false;
-            }
-
-            ($this->pause)();
+            return false;
         }
 
         return true;
@@ -259,17 +267,20 @@ final readonly class PrivateSignInProcesses
         try {
             $protocol->acceptCode($process, $answer);
         } catch (SignInAnswerUndelivered|SignInSecretUnwritable $broken) {
-            $this->host->report(
-                $claimed,
-                SignInOutcome::Interrupted,
-                SignInIdentity::unproved(),
-                $broken->getMessage(),
-            );
+            $this->interrupt($claimed, $broken);
 
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Ends the attempt interrupted, with the reason the failure gives, so the user learns why it stopped.
+     */
+    private function interrupt(ClaimedSignIn $claimed, RuntimeException $failure): void
+    {
+        $this->host->report($claimed, SignInOutcome::Interrupted, SignInIdentity::unproved(), $failure->getMessage());
     }
 
     /**

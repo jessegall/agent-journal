@@ -20,6 +20,7 @@ use Domain\Rules\Models\Rule;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\HoldingRules;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -30,6 +31,7 @@ use Tests\TestCase;
 final class SessionContextTest extends TestCase
 {
     use CommittedHookStack;
+    use InstallsBuiltInProfiles;
 
     private const string RULE_TEXT = 'No phase waits on the user.';
 

@@ -22,7 +22,6 @@ use App\Support\States\ReadyState;
 use App\Support\Storage\WalkStep;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
@@ -30,6 +29,8 @@ use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Fixtures\Hooks\RewritingState;
 use Tests\Fixtures\Hooks\ShellAnswerState;
 use Tests\Support\TestActors;
+use Tests\Support\TestText;
+use Tests\TestCase;
 
 final class HookRewriteTest extends TestCase
 {
@@ -96,7 +97,7 @@ final class HookRewriteTest extends TestCase
     public function test_a_lower_denial_keeps_the_original_input_and_stops_rewrite_parsing(): void
     {
         $rewriter = new RewritingState(['composer test' => 'git status']);
-        $guard = new ShellAnswerState(fn (ShellCommandRequested $input) => Decision::deny($input->command->source));
+        $guard = new ShellAnswerState(fn (ShellCommandRequested $input) => Decision::deny(TestText::of($input->command->source)));
         $parser = $this->createMock(ShellCommandParser::class);
         $parser->expects($this->never())->method('parse');
 
@@ -109,8 +110,8 @@ final class HookRewriteTest extends TestCase
     public function test_an_accepted_rewrite_keeps_both_walks_context_and_messages(): void
     {
         $rewriter = new ShellAnswerState(fn (ShellCommandRequested $input) => match ($input->command->source) {
-            'composer test' => [new MessageLine(self::ORIGINAL), Decision::rewrite('git status')],
-            default => new MessageLine(self::ACCEPTED),
+            'composer test' => [new MessageLine(TestText::of(self::ORIGINAL)), Decision::rewrite('git status')],
+            default => new MessageLine(TestText::of(self::ACCEPTED)),
         });
 
         $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
@@ -139,8 +140,8 @@ final class HookRewriteTest extends TestCase
     private function refusingStack(RewritingState $rewriter): AgentStack
     {
         $guard = new ShellAnswerState(fn (ShellCommandRequested $input) => match ($input->command->source) {
-            'composer test' => [new MessageLine(self::ORIGINAL), Decision::rewrite('journal run tests --write')],
-            default => [new MessageLine(self::REFUSAL_CONTEXT), Decision::deny(self::REFUSAL)],
+            'composer test' => [new MessageLine(TestText::of(self::ORIGINAL)), Decision::rewrite('journal run tests --write')],
+            default => [new MessageLine(TestText::of(self::REFUSAL_CONTEXT)), Decision::deny(TestText::of(self::REFUSAL))],
         });
 
         return $this->stack($rewriter, $guard);

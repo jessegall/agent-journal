@@ -17,6 +17,7 @@ use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\States\Contracts\StopConditionGate;
+use App\Values\AgentText;
 use App\Values\StackTarget;
 use App\Values\StartPolicy;
 use App\Values\StopPreparation;
@@ -32,13 +33,6 @@ use App\Values\WorkReference;
  */
 final readonly class StopAttemptGate implements StopConditionGate
 {
-    public const string CHECKS_RUNNING = 'Final checks are running: the job stays open until the host reports them.';
-
-    public const string CHECKS_UNRESOLVED = 'The final checks proved neither a pass nor a failure; request the stop again.';
-
-    public const string STOP_HELD = 'The final checks failed three times in a row with the same failures, so the job '
-        .'is held for repair and your parent is told.';
-
     /**
      * How many failed attempts in a row, with the same failures and no change between them, hold the work.
      */
@@ -129,10 +123,10 @@ final readonly class StopAttemptGate implements StopConditionGate
         $stopOutcome = $this->evidence->result($attempt->reference());
 
         return match ($stopOutcome->state) {
-            StopAttemptState::Pending => new MessageLine(self::CHECKS_RUNNING),
+            StopAttemptState::Pending => new MessageLine(AgentText::of('core.stop.checks_running')),
             StopAttemptState::Passed => $this->certifyCompletion($attempt),
             StopAttemptState::Failed => $this->refuseOrHold($attempt, $stop, $stopOutcome->failureSummary()),
-            StopAttemptState::Unresolved => Decision::deny(self::CHECKS_UNRESOLVED),
+            StopAttemptState::Unresolved => Decision::deny(AgentText::of('core.stop.checks_unresolved')),
         };
     }
 
@@ -174,14 +168,14 @@ final readonly class StopAttemptGate implements StopConditionGate
         $unchangedFailures = $this->unchangedFailureCount($stop->sessionId, $attempt, $failureSummary);
 
         if ($unchangedFailures < self::UNCHANGED_FAILURES_TO_HOLD) {
-            return Decision::deny($failureSummary);
+            return Decision::deny(AgentText::of('core.stop.refused', ['conditions' => $failureSummary]));
         }
 
         if ($unchangedFailures === self::UNCHANGED_FAILURES_TO_HOLD) {
             $this->tellOwnerHeld($attempt);
         }
 
-        return new MessageLine(self::STOP_HELD.PHP_EOL.$failureSummary);
+        return new MessageLine(AgentText::of('core.stop.held', ['conditions' => $failureSummary]));
     }
 
     private function tellOwnerHeld(StopAttempt $attempt): void

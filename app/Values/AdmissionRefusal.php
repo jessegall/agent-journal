@@ -12,8 +12,6 @@ use App\Enums\AdmissionRefusalCode;
  */
 final readonly class AdmissionRefusal
 {
-    public const string NOTICE = 'Nothing in this request started.';
-
     private const int EXCERPT_LENGTH = 200;
 
     private function __construct(
@@ -42,15 +40,22 @@ final readonly class AdmissionRefusal
      * The refusal as an agent reads it: what was refused and why, how to correct it, and the request that holds the
      * work with its next step.
      */
-    public function message(): string
+    public function message(): AgentText
     {
-        $message = "{$this->code->value}: {$this->reason} ".self::NOTICE." Correction: {$this->correction}";
+        $values = [
+            'code' => $this->code->value,
+            'reason' => $this->reason,
+            'notice' => AgentText::of('core.shell.nothing_started')->text,
+            'correction' => $this->correction,
+        ];
 
         if ($this->requestId === '') {
-            return $message;
+            return AgentText::of('core.shell.refused', $values);
         }
 
-        return "{$message} Request {$this->requestId}. Next: {$this->next}";
+        $held = [...$values, 'request' => $this->requestId, 'next' => $this->next];
+
+        return AgentText::of('core.shell.refused_held', $held);
     }
 
     public function heldIn(string $requestId, string $next): self
