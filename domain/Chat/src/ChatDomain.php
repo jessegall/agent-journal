@@ -26,6 +26,8 @@ use App\Support\FolderClasses;
 use App\Support\MessageSearchAccess;
 use App\Support\Searchable;
 use App\Values\PolicyDefinition;
+use Domain\Chat\Events\ChatReconciled;
+use Domain\Chat\Events\ChatReconcileMarked;
 use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Http\Controllers\CancelMessageController;
 use Domain\Chat\Http\Controllers\ChatEventsController;
@@ -83,7 +85,7 @@ final class ChatDomain extends Domain implements
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(DockChanged::class)
+            ->events(DockChanged::class, ChatReconcileMarked::class, ChatReconciled::class)
             ->build();
     }
 

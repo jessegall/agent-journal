@@ -24,6 +24,10 @@ final readonly class AttentionOrigin
 
     public const string GUIDANCE = 'guidance';
 
+    public const string MESSAGE_BATCH = 'message_batch';
+
+    public const string PROCESS_START = 'process_start';
+
     public function __construct(
         public string $type,
         public string $id,
@@ -60,6 +64,24 @@ final readonly class AttentionOrigin
     public static function askReply(string $askId): self
     {
         return new self(self::ASK_REPLY, $askId, $askId);
+    }
+
+    /**
+     * A message batch the agent confirmed while its chats still hold text it was not shown: a confirmation retried
+     * for the same batch asks for the same wake.
+     */
+    public static function confirmedBatch(string $batchId): self
+    {
+        return new self(self::MESSAGE_BATCH, $batchId, $batchId);
+    }
+
+    /**
+     * A runtime's new process that came up idle while the agent's chats hold text it was not shown: the same report
+     * sent twice asks for the same wake.
+     */
+    public static function processStart(string $runtimeId, int $generation): self
+    {
+        return new self(self::PROCESS_START, "{$runtimeId}:{$generation}", $runtimeId);
     }
 
     /**

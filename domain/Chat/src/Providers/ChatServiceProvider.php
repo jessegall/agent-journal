@@ -54,6 +54,7 @@ final class ChatServiceProvider extends ServiceProvider
         $members->allow(ConversationPolicy::class);
         $members->allow(MessagePinPolicy::class);
         $inboxes->register(Conversation::CHAT_INBOX_PROVIDER, ChatInboxProvider::class, ChatInboxAccess::class);
+
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));

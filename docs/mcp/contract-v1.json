@@ -330,6 +330,29 @@
                 },
                 "title": "Capabilities Read Tool"
             },
+            "chat_retry_delivery": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "range_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "range_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "chat_retry_delivery",
+                "outputSchema": null,
+                "title": "Retry Delivery Tool"
+            },
             "dock_add": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -4125,6 +4148,29 @@
                     "type": "object"
                 },
                 "title": "Capabilities Read Tool"
+            },
+            "chat_retry_delivery": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "range_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "range_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "chat_retry_delivery",
+                "outputSchema": null,
+                "title": "Retry Delivery Tool"
             },
             "dock_add": {
                 "inputSchema": {

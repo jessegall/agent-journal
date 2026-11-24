@@ -6,12 +6,16 @@ namespace Domain\Chat\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ConversationState;
+use Domain\Chat\Events\ChatReconciled;
+use Domain\Chat\Events\ChatReconcileMarked;
 use Domain\Chat\Exceptions\ConversationUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -34,17 +38,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $owner_id
  * @property string|null $environment_id
  * @property ConversationState $state
+ * @property bool $reconcile_pending
  * @property CarbonImmutable|null $closed_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read ActorIdentity|null $owner
  */
 #[Fillable(['inbox_id', 'provider_id', 'title', 'owner_type', 'owner_id', 'environment_id', 'state'])]
-final class Conversation extends Model implements ReadableModel
+final class Conversation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string CHAT_INBOX_PROVIDER = ChatInboxes::PROVIDER_KEY;
 
@@ -57,6 +63,7 @@ final class Conversation extends Model implements ReadableModel
     {
         return [
             'state' => ConversationState::class,
+            'reconcile_pending' => 'boolean',
             'closed_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
@@ -153,11 +160,36 @@ final class Conversation extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * Marks the chat as owing a reconcile: a change to its members could not finish in the transaction that made it.
+     */
+    public function markReconcilePending(): void
+    {
+        $this->reconcile_pending = true;
+        $this->save();
+        $this->raise(new ChatReconcileMarked($this->id));
+    }
+
+    /**
+     * The chat's owed reconcile is done.
+     */
+    public function clearReconcilePending(): void
+    {
+        $this->reconcile_pending = false;
+        $this->save();
+        $this->raise(new ChatReconciled($this->id));
+    }
+
     // ----------[ Answers ]----------
 
     public function isOpen(): bool
     {
         return $this->state->isOpen();
+    }
+
+    public function isReconcilePending(): bool
+    {
+        return $this->reconcile_pending;
     }
 
     public function isOwnedBy(ActorIdentity $actor): bool
@@ -210,6 +242,15 @@ final class Conversation extends Model implements ReadableModel
     }
 
     // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function awaitingReconcile(Builder $query): void
+    {
+        $query->where('reconcile_pending', true)->where('state', ConversationState::Open);
+    }
 
     /**
      * @param  Builder<self>  $query

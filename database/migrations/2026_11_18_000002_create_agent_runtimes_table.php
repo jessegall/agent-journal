@@ -34,8 +34,6 @@ return new class extends Migration
             $table->timestampTz('settings_observed_at')->nullable();
             $table->text('start_grant')->nullable();
             $table->unsignedInteger('process_generation')->default(0);
-            // Raised under the runtime row lock by every arrival of work, so finishing a wake can tell it missed one.
-            $table->unsignedBigInteger('pending_work_generation')->default(0);
             $table->timestampTz('generation_started_at')->nullable();
             $table->timestampTz('last_observed_at')->nullable();
             // How many observations the host has reported, so a later one is told from a delayed earlier one.

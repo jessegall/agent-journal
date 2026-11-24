@@ -7,11 +7,14 @@ namespace Tests\Feature\Communication;
 use App\Commands\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Contracts\Actors\ActorAttention;
 use App\Models\Messages\MessageReceipt;
 use App\Support\ActorIdentity;
+use App\Support\AttentionOrigin;
 use App\Support\MessageBatchService;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Models\Conversation;
+use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;
 
@@ -62,6 +65,30 @@ final class MessageBatchAcknowledgementTest extends MessagingTestCase
         $this->runOnBus(new AcknowledgeMessageBatchCommand($rest->batchId, [$rest->items[0]->handle], 'thread-1'));
 
         $this->assertTrue($this->receipt()->isPresented());
+    }
+
+    public function test_a_confirmed_batch_that_leaves_text_unshown_asks_for_one_wake_and_the_last_asks_for_none(): void
+    {
+        $attention = new RecordedAttention();
+        $this->app->instance(ActorAttention::class, $attention);
+        $batches = $this->app->make(MessageBatchService::class);
+        $agent = $this->actorOf($this->builder);
+
+        $first = $batches->next($agent, $this->builder->id, 1, 'thread-1', CarbonImmutable::now());
+        $confirmFirst = new AcknowledgeMessageBatchCommand($first->batchId, [$first->items[0]->handle], 'thread-1');
+        $this->runOnBus($confirmFirst);
+        $this->runOnBus($confirmFirst);
+
+        $this->assertCount(1, $attention->wakes);
+
+        $rest = $batches->next($agent, $this->builder->id, 1, 'thread-1', CarbonImmutable::now());
+        $this->runOnBus(new AcknowledgeMessageBatchCommand($rest->batchId, [$rest->items[0]->handle], 'thread-1'));
+
+        $this->assertCount(1, $attention->wakes);
+        $this->assertSame(
+            AttentionOrigin::confirmedBatch($first->batchId)->keyFor($agent),
+            $attention->wakes[0][1],
+        );
     }
 
     private function receipt(): MessageReceipt

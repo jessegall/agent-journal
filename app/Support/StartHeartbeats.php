@@ -30,6 +30,16 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
      */
     private const int UNCLAIMED_ENDED_PER_SWEEP = 50;
 
+    /**
+     * How long a session may stay silent while its host is still present before the journal ends it as unserved.
+     */
+    private const int UNSERVED_SECONDS = 600;
+
+    /**
+     * How many unserved sessions one sweep ends; the next sweep takes the rest.
+     */
+    private const int UNSERVED_ENDED_PER_SWEEP = 50;
+
     public function __construct(
         private StartTransaction $transaction,
         private StartTokens $credentials,
@@ -50,6 +60,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
 
         $this->markSilentSince($cutoff, $now);
         $this->endUnclaimedSince($cutoff, $now);
+        $this->endUnservedSince($now->subSeconds(self::UNSERVED_SECONDS), $cutoff);
     }
 
     /**
@@ -72,8 +83,17 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
      */
     public function markExited(AgentSession $session, string $evidence): void
     {
+        $this->endSession($session, "host reported exit: {$evidence}");
+    }
+
+    /**
+     * Ends the session with its evidence: its credentials are revoked, its runtime closes and the agent can start
+     * again.
+     */
+    private function endSession(AgentSession $session, string $evidence): void
+    {
         $this->transaction->runForSession($session->id, function () use ($session, $evidence): void {
-            $session->endWithEvidenceAt(CarbonImmutable::now(), "host reported exit: {$evidence}");
+            $session->endWithEvidenceAt(CarbonImmutable::now(), $evidence);
             $this->credentials->revoke($session);
 
             AgentRuntime::query()
@@ -104,6 +124,30 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
             ->limit(self::UNCLAIMED_ENDED_PER_SWEEP)
             ->get()
             ->each(fn (ProcessStart $start) => $this->endUnclaimed($start->session_id, $now));
+    }
+
+    /**
+     * Ends each session silent since the cutoff whose host still beats for another session within the presence
+     * window: the host is there but no longer serves this one, so it never comes back by itself.
+     */
+    private function endUnservedSince(CarbonImmutable $cutoff, CarbonImmutable $presenceCutoff): void
+    {
+        $liveHosts = AgentRuntime::query()
+            ->whereIn('agent_session_id', AgentSession::query()
+                ->where('last_heartbeat_at', '>', $presenceCutoff)
+                ->select('id'))
+            ->select('host_id');
+
+        AgentSession::query()
+            ->where('status', SessionStatus::Silent->value)
+            ->where('silent_since', '<=', $cutoff)
+            ->whereIn('id', AgentRuntime::query()->whereIn('host_id', $liveHosts)->select('agent_session_id'))
+            ->limit(self::UNSERVED_ENDED_PER_SWEEP)
+            ->get()
+            ->each(fn (AgentSession $session) => $this->endSession(
+                $session,
+                'its host is present but sent no heartbeat for it, so nothing serves it any more',
+            ));
     }
 
     private function endUnclaimed(string $sessionId, CarbonImmutable $now): void

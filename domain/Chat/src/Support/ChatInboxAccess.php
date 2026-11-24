@@ -23,10 +23,24 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class ChatInboxAccess implements InboxAccess
 {
-    public function __construct(private ChatInboxes $chats, private ChatEligibility $eligibility) {}
+    public function __construct(
+        private ChatInboxes $chats,
+        private ChatEligibility $eligibility,
+        private ChatRevocation $revocation,
+    ) {}
 
+    /**
+     * A chat that owes a reconcile is locked exclusively and settled first, since a shared lock cannot be raised
+     * later; an exclusive lock serves the shared use as well.
+     */
     public function lockShared(Inbox $inbox): void
     {
+        if ($this->owesReconcile($inbox)) {
+            $this->lockExclusive($inbox);
+
+            return;
+        }
+
         $this->chats->lockShared($inbox);
         $this->assertOpen($inbox);
     }
@@ -35,6 +49,11 @@ final readonly class ChatInboxAccess implements InboxAccess
     {
         $this->chats->lockExclusive($inbox);
         $this->assertOpen($inbox);
+        $conversation = Conversation::forInbox($inbox->inboxId());
+
+        if ($conversation->isReconcilePending()) {
+            $this->revocation->reconcile($conversation);
+        }
     }
 
     /**
@@ -66,6 +85,11 @@ final readonly class ChatInboxAccess implements InboxAccess
     public function memberInboxIds(ActorIdentity $actor): Builder
     {
         return $this->chats->memberInboxIds($actor);
+    }
+
+    private function owesReconcile(Inbox $inbox): bool
+    {
+        return Conversation::query()->where('inbox_id', $inbox->inboxId())->awaitingReconcile()->exists();
     }
 
     /**

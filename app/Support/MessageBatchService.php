@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Sessions\CurrentSession;
@@ -65,6 +66,7 @@ final readonly class MessageBatchService
         private McpCatalogue $tools,
         private CurrentSession $session,
         private ConnectionInterface $database,
+        private ActorAttention $attention,
     ) {}
 
     /**
@@ -199,6 +201,14 @@ final readonly class MessageBatchService
         }
 
         return [$receipt, Message::query()->acrossInboxes()->findOrFail($parentId)];
+    }
+
+    /**
+     * Whether a chat the agent is in still holds text it was not shown, without making a batch for it.
+     */
+    public function hasUnshownText(ActorIdentity $agent): bool
+    {
+        return $this->nextInterval($agent) !== null;
     }
 
     /**
@@ -396,6 +406,11 @@ final readonly class MessageBatchService
 
         foreach (array_unique($receiptIds) as $receiptId) {
             $this->presentWhenWhole($receiptId, $contextKey, $at);
+        }
+
+        // A confirmed batch that leaves text unshown asks for the next wake, which the host claims once the turn ends.
+        if ($changed > 0 && $this->hasUnshownText($agent)) {
+            $this->attention->request($agent, AttentionOrigin::confirmedBatch($locked->id));
         }
 
         return $changed;

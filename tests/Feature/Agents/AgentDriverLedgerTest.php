@@ -13,6 +13,7 @@ use App\Commands\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Commands\InterruptAgent\InterruptAgentCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Commands\RecordRuntime\RecordRuntimeCommand;
 use App\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Commands\RepairDriverSettings\RepairDriverSettingsCommand;
@@ -59,6 +60,7 @@ use App\Exceptions\StaleProcessGeneration;
 use App\Exceptions\StopOutdated;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
@@ -68,6 +70,7 @@ use App\Models\Projects\Host;
 use App\Models\Starts\ProcessStart;
 use App\Models\Starts\SessionPolicy;
 use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentStatus;
 use App\Support\ArrangementSetting;
 use App\Support\ClaimedRequests;
@@ -79,7 +82,9 @@ use App\Support\LaunchProfiles;
 use App\Support\NativeTurns;
 use App\Support\OpenedRuntime;
 use App\Support\PendingWorkSources;
+use App\Support\RequestKey;
 use App\Support\StartGrant;
+use App\Support\StartHeartbeats;
 use App\Values\AccountLabel;
 use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
@@ -93,6 +98,8 @@ use App\Values\ScriptProgress;
 use App\Values\StartPolicy;
 use App\Values\StopConditions;
 use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Optional;
@@ -100,9 +107,11 @@ use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\Agents\HostContract;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\OpensPairChats;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\Support\TestStartAuthority;
+use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -116,8 +125,10 @@ final class AgentDriverLedgerTest extends TestCase
 
     use CommitsHookRows;
     use OpensLedgerRuntimes;
+    use OpensPairChats;
     use RunsTrustedCommands;
     use SendsHostCalls;
+    use WritesInboxMessages;
 
     private const string NO_CONTAINER = 'The host cannot provide a container.';
 
@@ -637,6 +648,66 @@ final class AgentDriverLedgerTest extends TestCase
         $this->expectException(HostReportRefused::class);
 
         $this->asSystem(new ClaimStartGrantCommand($other->hostId, $opened->runtimeId));
+    }
+
+    public function test_a_new_process_that_comes_up_idle_with_unshown_chat_text_asks_for_one_wake(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $agent = ActorIdentity::of(AgentSession::query()->with('agent')->findOrFail($opened->sessionId)->agent);
+        $user = User::factory()->create();
+        $chat = $this->pairChat(ActorIdentity::of($user), $agent);
+        $this->app->instance(AccessSettings::class, new AccessSettings($user->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($user->id), new OwnerAuthority('test'));
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
+        $this->app->make(CommandBus::class)->run(new PostChatMessageCommand($chat->inbox_id, 'Plan?', 'plan-1'));
+        $this->app->make(RequestKey::class)->forget();
+        $asked = $this->wakesAskedOf($opened);
+        $restart = new ReportRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 2);
+
+        $this->asSystem($restart);
+        $this->asSystem($restart);
+
+        $this->assertSame($asked + 1, $this->wakesAskedOf($opened));
+    }
+
+    public function test_a_new_process_with_nothing_unshown_asks_for_no_wake(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $asked = $this->wakesAskedOf($opened);
+
+        $this->asSystem(
+            new ReportRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 2),
+        );
+
+        $this->assertSame($asked, $this->wakesAskedOf($opened));
+    }
+
+    public function test_a_session_long_silent_while_its_host_beats_for_another_is_ended_as_unserved(): void
+    {
+        [$host, $served] = $this->openRuntime();
+        $unserved = $this->secondRuntimeOn($host);
+        AgentSession::query()->whereKey($served->sessionId)->update(['last_heartbeat_at' => CarbonImmutable::now()]);
+        $this->silenceSince($unserved, CarbonImmutable::now()->subMinutes(11));
+
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+
+        $this->assertSame(
+            [true, false],
+            [
+                AgentSession::query()->findOrFail($served->sessionId)->isActive(),
+                AgentSession::query()->findOrFail($unserved->sessionId)->isActive(),
+            ],
+        );
+    }
+
+    public function test_a_silent_session_whose_host_beats_for_nothing_stays_silent(): void
+    {
+        [, $opened] = $this->openRuntime();
+        $this->silenceSince($opened, CarbonImmutable::now()->subMinutes(11));
+
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+
+        $this->assertSame(SessionStatus::Silent, AgentSession::query()->findOrFail($opened->sessionId)->status);
     }
 
     public function test_a_report_of_an_older_generation_is_refused_and_leaves_newer_facts(): void
@@ -1648,6 +1719,40 @@ final class AgentDriverLedgerTest extends TestCase
                 }
             }
         };
+    }
+
+    /**
+     * How many times the runtime's wakes were asked for, over all its wake requests.
+     */
+    private function wakesAskedOf(OpenedRuntime $opened): int
+    {
+        return (int) DriverRequest::query()
+            ->where('agent_runtime_id', $opened->runtimeId)
+            ->where('operation', DriverOperation::Wake)
+            ->sum('wake_requested');
+    }
+
+    private function secondRuntimeOn(EnrolledHost $host): OpenedRuntime
+    {
+        return $this->asOwner(new OpenAgentRuntimeCommand(
+            Agent::create('Second agent', 'main-agent')->id,
+            $host->hostId,
+            self::FOLDER,
+            'claude-code',
+            '2.1.323',
+            'claude',
+            DriverVariant::Headless,
+            'claude-opus-5-5',
+        ));
+    }
+
+    private function silenceSince(OpenedRuntime $opened, CarbonImmutable $since): void
+    {
+        AgentSession::query()->whereKey($opened->sessionId)->update([
+            'status' => SessionStatus::Silent->value,
+            'silent_since' => $since,
+            'last_heartbeat_at' => $since->subMinutes(5),
+        ]);
     }
 
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt

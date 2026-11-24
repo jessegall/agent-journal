@@ -6,6 +6,7 @@ namespace Domain\Chat\Calls;
 
 use App\Contracts\Domains\CallSender;
 use App\Support\CallKey;
+use App\Values\CallAccepted;
 use Domain\Chat\Data\DockAnswerData;
 use Domain\Chat\Data\DockListData;
 use Domain\Chat\Support\DockProjection;
@@ -49,6 +50,16 @@ final readonly class ChatCalls
         return $this->sender->send(DockRemoveCall::from([
             'placement' => $placement,
             'chat' => $chat,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function retryDelivery(
+        string $range,
+        CallKey $requestKey = new CallKey(),
+    ): CallAccepted {
+        return $this->sender->send(RetryDeliveryCall::from([
+            'range' => $range,
             'requestKey' => $requestKey,
         ]));
     }

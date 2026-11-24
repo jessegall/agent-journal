@@ -6,6 +6,7 @@
     "assignments_unassign",
     "attachments_read",
     "capabilities_read",
+    "chat_retry_delivery",
     "dock_add",
     "dock_list",
     "dock_remove",

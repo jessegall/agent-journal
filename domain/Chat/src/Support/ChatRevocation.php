@@ -7,6 +7,7 @@ namespace Domain\Chat\Support;
 use App\Contracts\Chat\ChatDepartures;
 use App\Contracts\Chat\ChatEligibility;
 use App\Contracts\Chat\ChatParticipationEnding;
+use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxResolver;
 use App\Enums\ChatPermission;
 use App\Enums\LeaveReason;
@@ -26,12 +27,19 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class ChatRevocation implements ChatParticipationEnding
 {
+    /**
+     * The most chats one revocation ends in its own transaction, so a user in many chats does not hold every chat's
+     * lock for the whole pass.
+     */
+    public const int INLINE_CHAT_LIMIT = 100;
+
     public function __construct(
         private ChatInboxes $chats,
         private InboxResolver $inboxes,
         private InboxIntervals $intervals,
         private ChatDepartures $departures,
         private ChatEligibility $eligibility,
+        private int $inlineChatLimit = self::INLINE_CHAT_LIMIT,
     ) {}
 
     public function endInEnvironment(ActorIdentity $user, string|null $environmentId): void
@@ -55,12 +63,50 @@ final readonly class ChatRevocation implements ChatParticipationEnding
     }
 
     /**
+     * Ends the user's chats in inbox order, at most the inline limit of them in this transaction; the rest are marked
+     * as owing a reconcile and left as they are. The user is refused in those at once: chat access admits only users
+     * who may still take part.
+     *
      * @param  Builder<Conversation>  $chats
      */
     private function endIn(ActorIdentity $user, Builder $chats, LeaveReason $reason = LeaveReason::Revoked): void
     {
-        foreach ($chats->orderBy('inbox_id')->get() as $conversation) {
+        [$inline, $later] = $chats->orderBy('inbox_id')->get()->partition(
+            fn (Conversation $conversation, int $position) => $position < $this->inlineChatLimit,
+        );
+
+        foreach ($inline as $conversation) {
             $this->endOne($user, $conversation, $reason);
+        }
+
+        foreach ($later as $conversation) {
+            $conversation->markReconcilePending();
+        }
+    }
+
+    /**
+     * Settles a chat marked as owing a reconcile, under the exclusive lock its caller holds: every user no longer
+     * admitted to it leaves as a revocation makes it leave, and the mark is cleared first, so the departures it
+     * causes do not settle it again.
+     */
+    public function reconcile(Conversation $conversation): void
+    {
+        $conversation->clearReconcilePending();
+        $inbox = $this->inboxes->resolve($conversation->inbox_id);
+
+        $revoked = array_filter(
+            $this->chats->activeIntervals($inbox),
+            fn (ChatInterval $interval) => $interval->actor->isUser()
+                && ! $this->eligibility->isAdmitted($interval->actor, $conversation->environment_id),
+        );
+
+        foreach ($revoked as $interval) {
+            $this->endLocked($interval->actor, $conversation, $inbox, LeaveReason::Revoked);
+
+            // A chat that closed with its owner's departure took every other membership with it.
+            if (! $conversation->isOpen()) {
+                return;
+            }
         }
     }
 
@@ -68,6 +114,11 @@ final readonly class ChatRevocation implements ChatParticipationEnding
     {
         $inbox = $this->inboxes->resolve($conversation->inbox_id);
         $this->inboxes->accessFor($inbox)->lockExclusive($inbox);
+        $this->endLocked($user, $conversation, $inbox, $reason);
+    }
+
+    private function endLocked(ActorIdentity $user, Conversation $conversation, Inbox $inbox, LeaveReason $reason): void
+    {
         $interval = $this->chats->activeInterval($inbox, $user);
 
         if (! $conversation->isOwnedBy($user)) {

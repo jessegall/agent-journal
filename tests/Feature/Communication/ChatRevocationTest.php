@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Contracts\Chat\ChatParticipationEnding;
+use App\Contracts\Chat\InboxResolver;
 use App\Enums\ChatPermission;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
@@ -17,6 +19,7 @@ use Domain\Access\Models\User;
 use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;
+use Domain\Chat\Support\ChatRevocation;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -59,6 +62,87 @@ final class ChatRevocationTest extends MessagingTestCase
         $this->runOnBus(new DisableUserCommand($bea->id));
 
         $this->assertFalse(Conversation::forInbox($inboxId)->isOpen());
+    }
+
+    public function test_a_revocation_past_the_inline_limit_marks_the_remaining_chats_and_refuses_the_user_there(): void
+    {
+        $this->app->bind(
+            ChatParticipationEnding::class,
+            fn () => $this->app->make(ChatRevocation::class, ['inlineChatLimit' => 2]),
+        );
+        $cy = $this->grantedUser('Cy', [ChatPermission::ReceiveInvitations]);
+        $this->startUserRequestAs($this->owner->id);
+        $inboxIds = [];
+
+        foreach (['Design', 'Build', 'Ship'] as $title) {
+            $inboxIds[] = $this->runOnBus(new CreateGroupChatCommand($title, [$cy->id]));
+        }
+
+        sort($inboxIds);
+        $this->runOnBus(new RevokeEnvironmentAccessCommand($cy->id, null));
+
+        $members = fn (string $inboxId) => array_map(
+            fn ($member) => $member->actor->id,
+            $this->app->make(ChatInboxes::class)->activeIntervals(new ChatInbox($inboxId, 'Chat')),
+        );
+        $this->assertSame(
+            [false, false, true],
+            array_map(fn (string $inboxId) => in_array($cy->id, $members($inboxId), true), $inboxIds),
+        );
+        $this->assertSame(
+            [false, false, true],
+            array_map(fn (string $inboxId) => Conversation::forInbox($inboxId)->isReconcilePending(), $inboxIds),
+        );
+
+        $inboxes = $this->app->make(InboxResolver::class);
+        $marked = $inboxes->resolve($inboxIds[2]);
+        $this->expectException(InboxUnavailable::class);
+        $inboxes->accessFor($marked)->membership($marked, $cy);
+    }
+
+    public function test_a_post_into_a_marked_chat_settles_it_first_and_leaves_an_untouched_one_marked(): void
+    {
+        $this->app->bind(
+            ChatParticipationEnding::class,
+            fn () => $this->app->make(ChatRevocation::class, ['inlineChatLimit' => 0]),
+        );
+        $cy = $this->grantedUser('Cy', [ChatPermission::ReceiveInvitations]);
+        $this->startUserRequestAs($this->owner->id);
+        $posted = $this->runOnBus(new CreateGroupChatCommand('Design', [$cy->id]));
+        $swept = $this->runOnBus(new CreateGroupChatCommand('Build', [$cy->id]));
+        $this->runOnBus(new RevokeEnvironmentAccessCommand($cy->id, null));
+        $isMember = fn (string $inboxId) => in_array($cy->id, array_map(
+            fn ($member) => $member->actor->id,
+            $this->app->make(ChatInboxes::class)->activeIntervals(new ChatInbox($inboxId, 'Chat')),
+        ), true);
+
+        $this->assertSame([true, true], [$isMember($posted), $isMember($swept)]);
+
+        $this->runOnBus(new PostChatMessageCommand($posted, 'Plan?', 'plan-1'));
+
+        $this->assertSame([false, true], [$isMember($posted), $isMember($swept)]);
+        $this->assertSame(
+            [false, true],
+            [Conversation::forInbox($posted)->isReconcilePending(), Conversation::forInbox($swept)->isReconcilePending()],
+        );
+    }
+
+    public function test_a_marked_chat_is_found_until_it_is_cleared_and_a_closed_chat_never_is(): void
+    {
+        $dee = $this->grantedUser('Dee', [ChatPermission::ReceiveInvitations]);
+        $this->startUserRequestAs($this->owner->id);
+        $open = Conversation::forInbox($this->runOnBus(new CreateGroupChatCommand('Open', [$dee->id])));
+        $closed = Conversation::forInbox($this->runOnBus(new CreateGroupChatCommand('Closed', [$dee->id])));
+
+        $open->markReconcilePending();
+        $closed->markReconcilePending();
+        $closed->close(CarbonImmutable::now());
+        $found = Conversation::query()->awaitingReconcile()->readUpTo(10)->pluck('id')->all();
+
+        $this->assertSame([$open->id], $found);
+        $open->clearReconcilePending();
+        $this->assertFalse($open->refresh()->isReconcilePending());
+        $this->assertSame([], Conversation::query()->awaitingReconcile()->readUpTo(10)->pluck('id')->all());
     }
 
     /**
