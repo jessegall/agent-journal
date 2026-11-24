@@ -50,8 +50,6 @@ final class ReaderProof extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -59,6 +57,13 @@ final class ReaderProof extends Model implements ReadableModel
     {
         return ['proven_branches' => StoredValuesCast::class.':'.ProvenBranch::class];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(fn (self $proof) => throw RevisionImmutable::proof($proof->id));
+    }
+
+    // ----------[ Constructors ]----------
 
     /**
      * @param  list<ProvenBranch>  $branches
@@ -78,11 +83,6 @@ final class ReaderProof extends Model implements ReadableModel
             'actor_type' => $prover->type->value,
             'actor_id' => $prover->id,
         ]);
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(fn (self $proof) => throw RevisionImmutable::proof($proof->id));
     }
 
     // ----------[ Scopes ]----------

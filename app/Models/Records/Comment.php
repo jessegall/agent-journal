@@ -67,8 +67,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -83,6 +81,13 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
             'end_offset' => 'integer',
         ];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(fn (self $comment) => $comment->assertUnedited());
+    }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A comment about the whole record, or, with an anchor, about an exact place in one version of its text.
@@ -114,13 +119,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         $comment->raise(new CommentPosted($comment->id, $comment->target));
 
         return $comment;
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(function (self $comment): void {
-            throw CommentImmutable::for($comment->id);
-        });
     }
 
     // ----------[ Queries ]----------
@@ -163,11 +161,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
             return WholeRecord::Record;
         }
 
-        try {
-            return $this->anchor();
-        } catch (IncompleteTextAnchor $broken) {
-            throw CommentAnchorCorrupt::for($this->id, $broken);
-        }
+        return $this->anchor();
     }
 
     // ----------[ Accessors ]----------
@@ -212,6 +206,48 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         return Attribute::get(fn () => CommentDetailsFactory::details($this))->withoutObjectCaching();
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a comment stays as it was written.
+     *
+     * @throws CommentImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw CommentImmutable::for($this->id);
+    }
+
+    /**
+     * Refuses an anchor with no known type or a column its type needs left empty, as a corrupt comment.
+     *
+     * @phpstan-assert TextAnchorType $type
+     *
+     * @throws CommentAnchorCorrupt
+     */
+    private function assertAnchorComplete(TextAnchorType|null $type): void
+    {
+        if ($type === null) {
+            throw CommentAnchorCorrupt::for($this->id, IncompleteTextAnchor::withoutType());
+        }
+
+        $columns = ['versionId' => 'version_id', 'versionLabel' => 'version_label', 'firstLine' => 'first_line', 'lastLine' => 'last_line'];
+
+        if ($type === TextAnchorType::Section) {
+            $columns['sectionNumber'] = 'section_number';
+        }
+
+        if ($type === TextAnchorType::Quote) {
+            $columns = [...$columns, 'quote' => 'quote', 'startOffset' => 'start_offset', 'endOffset' => 'end_offset'];
+        }
+
+        foreach ($columns as $field => $name) {
+            if ($this->getAttribute($name) === null) {
+                throw CommentAnchorCorrupt::for($this->id, IncompleteTextAnchor::missing($type->value, $field));
+            }
+        }
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -222,14 +258,9 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
     private function anchor(): TextAnchor
     {
         $type = $this->anchor_type === null ? null : TextAnchorType::tryFrom($this->anchor_type);
+        $this->assertAnchorComplete($type);
 
-        if ($type === null) {
-            throw IncompleteTextAnchor::withoutType();
-        }
-
-        $column = fn (string $field, string $name): string|int => $this->getAttribute($name)
-            ?? throw IncompleteTextAnchor::missing($type->value, $field);
-
+        $column = fn (string $field, string $name): string|int => $this->getAttribute($name);
         $isQuote = $type === TextAnchorType::Quote;
 
         return TextAnchor::restored(

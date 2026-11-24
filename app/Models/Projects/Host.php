@@ -66,8 +66,6 @@ final class Host extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -89,6 +87,8 @@ final class Host extends Model implements EventSource, ReadableModel
             'reported_failures' => 'array',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A host enrolled under its installation name, holding only the hash of its secret, its start roots and the

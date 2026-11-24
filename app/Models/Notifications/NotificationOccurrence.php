@@ -40,8 +40,6 @@ final class NotificationOccurrence extends Model implements ReadableModel
 
     public const ?string UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -51,6 +49,8 @@ final class NotificationOccurrence extends Model implements ReadableModel
             'source_type' => NotificationSourceType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The occurrence of this key, inserted unless the key is already taken; isNew() tells a replay apart.

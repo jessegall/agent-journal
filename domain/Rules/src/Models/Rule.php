@@ -75,8 +75,6 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
      */
     protected $attributes = ['state' => 'active'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -84,6 +82,8 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     {
         return ['state' => RuleState::class, 'proposer_type' => ActorType::class];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A rule proposed with its reason, the rule it would replace if any, and who proposed it; it holds only once the

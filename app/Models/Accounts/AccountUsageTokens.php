@@ -50,8 +50,6 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
     use RaisesEvents;
     use RemovedWithAccount;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -69,6 +67,8 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
             'source_order' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new count of the thread on the account in the generation.

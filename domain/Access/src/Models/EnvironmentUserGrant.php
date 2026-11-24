@@ -55,8 +55,6 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
 
     public const string LOCAL_ENVIRONMENT = '';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -70,6 +68,8 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
             'revoked_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Admits the user to the environment with the given permissions; the grant it replaces is revoked by the caller.

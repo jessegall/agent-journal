@@ -33,12 +33,12 @@ final class ProfileDraft extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.profile-draft';
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return ['revision' => 'integer'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The profile's draft, or an empty one at revision 0 when nobody saved one yet.

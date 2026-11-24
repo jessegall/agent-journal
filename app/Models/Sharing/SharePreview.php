@@ -68,8 +68,6 @@ final class SharePreview extends Model implements EventSource, ReadableModel
 
     public const int MINUTES_VALID = 10;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -82,6 +80,8 @@ final class SharePreview extends Model implements EventSource, ReadableModel
             'consumed_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The owner's preview of a root with the selected linked records, valid for ten minutes from now.

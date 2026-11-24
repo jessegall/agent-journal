@@ -37,8 +37,6 @@ final class SkillRequest extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -48,6 +46,8 @@ final class SkillRequest extends Model implements ReadableModel
             'actor_type' => ActorType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(
         ActorIdentity $actor,

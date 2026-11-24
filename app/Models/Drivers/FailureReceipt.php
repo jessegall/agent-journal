@@ -35,8 +35,6 @@ final class FailureReceipt extends Model implements ReadableModel
     use InsertsAbsentRows;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

@@ -131,8 +131,6 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      */
     protected $attributes = ['lifecycle' => 'queued', 'capture_state' => 'recording'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -152,6 +150,8 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
             'request_intent' => RunRequestIntent::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A run admitted for the actor, queued with its plan and nothing started yet.

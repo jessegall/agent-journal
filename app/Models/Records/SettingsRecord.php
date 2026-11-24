@@ -41,8 +41,6 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -53,6 +51,8 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
             'document' => SettingsDocumentCast::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Makes the owner's empty record at revision 0 in one insert that does nothing when it exists, so the unique owner

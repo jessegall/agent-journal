@@ -74,8 +74,6 @@ final class RuleRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -90,6 +88,13 @@ final class RuleRevision extends Model implements ReadableModel
             'approved_at' => 'datetime',
         ];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(fn (self $revision) => $revision->assertUnedited());
+    }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Writes the approved revision of a proposal's revision as the rule's next revision in its scope.
@@ -127,11 +132,6 @@ final class RuleRevision extends Model implements ReadableModel
             'approver_type' => $approver->type->value,
             'approver_id' => $approver->id,
         ]);
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(fn (self $revision) => $revision->assertUnedited());
     }
 
     // ----------[ Answers ]----------

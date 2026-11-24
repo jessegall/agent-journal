@@ -42,8 +42,6 @@ final class NotificationChange extends Model implements ReadableModel
      */
     public const int RETAINED_HOURS = 24;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -55,6 +53,8 @@ final class NotificationChange extends Model implements ReadableModel
             'sequence' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The change the scope's latest mutation made to the receipt, under the scope's lock.

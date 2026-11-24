@@ -41,8 +41,6 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
 
     public const ?string UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -53,6 +51,8 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
             'verified_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Ties the report to the job unless it is already tied; only the call that tied it raises the fact.

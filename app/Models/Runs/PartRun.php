@@ -82,8 +82,6 @@ final class PartRun extends Model implements EventSource, ReadableModel
         'stream_offsets' => '{}',
     ];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -103,6 +101,8 @@ final class PartRun extends Model implements EventSource, ReadableModel
             'stream_offsets' => 'array',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The run of one part of a process run, queued and not yet started.

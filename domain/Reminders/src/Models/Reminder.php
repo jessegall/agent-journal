@@ -55,8 +55,6 @@ final class Reminder extends Model implements EventSource, ReadableModel
      */
     public const int TITLE_CHARACTER_LIMIT = 255;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -67,6 +65,8 @@ final class Reminder extends Model implements EventSource, ReadableModel
             'status' => ReminderStatus::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new open reminder for its owner, due at that moment.

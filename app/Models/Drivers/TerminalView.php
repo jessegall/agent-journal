@@ -80,8 +80,6 @@ final class TerminalView extends Model implements EventSource, ReadableModel
      */
     public const int READ_INTEREST_LENGTH = 40;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -94,6 +92,8 @@ final class TerminalView extends Model implements EventSource, ReadableModel
             'closed_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Opens the viewer's lease on the runtime as it runs now, live for one lease from now.

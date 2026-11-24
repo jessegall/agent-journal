@@ -48,8 +48,6 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     use NamedByRuleScope;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

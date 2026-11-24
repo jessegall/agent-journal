@@ -37,12 +37,12 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
 
     public const string LINK_TYPE = 'core.supervisor-link';
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return ['routes' => SupervisorRoutesCast::class, 'versions' => 'array'];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function ofActor(ActorIdentity $actor, SupervisorRoutes $inherited): self
     {

@@ -90,8 +90,6 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public const int FRESH_SECONDS = 60;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -108,6 +106,8 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
             'generation_started_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(AgentSession $session, RuntimeIntent $intent, PinnedDriver $pin): self
     {

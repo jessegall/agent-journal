@@ -52,8 +52,6 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -65,6 +63,8 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
             'bound_at' => 'datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The check of the task run the caller asked for, bound to the process run it opened.

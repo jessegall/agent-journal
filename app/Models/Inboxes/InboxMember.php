@@ -42,8 +42,6 @@ final class InboxMember extends Model implements EventSource
 
     public $timestamps = false;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -51,6 +49,8 @@ final class InboxMember extends Model implements EventSource
     {
         return ['joined_at' => 'immutable_datetime', 'left_at' => 'immutable_datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Detaches the actor from the inbox; an actor not attached leaves nothing.

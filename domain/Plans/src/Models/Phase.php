@@ -73,8 +73,6 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         'started_tasks' => 0,
     ];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -90,6 +88,8 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
             'started_tasks' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The plan's next phase, numbered within it.

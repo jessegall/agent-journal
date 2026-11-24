@@ -73,8 +73,6 @@ class User extends Authenticatable implements
     use PasskeyAuthenticatable;
     use TwoFactorAuthenticatable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * Get the attributes that should be cast.
      *
@@ -89,6 +87,8 @@ class User extends Authenticatable implements
             'disabled_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new user with a name, an email and a password the hashed cast hashes.

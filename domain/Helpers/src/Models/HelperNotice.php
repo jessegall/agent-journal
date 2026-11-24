@@ -45,8 +45,6 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
      */
     public const int DELIVERED_LIMIT = 20;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -54,6 +52,8 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
     {
         return ['job_state' => JobState::class, 'delivered_at' => 'immutable_datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(HelperJob $job, string $text): self
     {

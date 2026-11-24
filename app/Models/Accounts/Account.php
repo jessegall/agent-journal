@@ -99,8 +99,6 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     protected $hidden = ['directory', 'live_writer_attempt_id', 'operation_id'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -122,6 +120,8 @@ final class Account extends Model implements EventSource, ReadableModel
             'expires_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new account a completed sign-in made, signed in, in the folder that sign-in wrote; it starts the account's

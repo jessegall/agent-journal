@@ -46,8 +46,6 @@ final class WorktreeDelivery extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -59,6 +57,8 @@ final class WorktreeDelivery extends Model implements ReadableModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
     /**
      * Records the submission once under its delivery id; an identical retry answers the same row and another tip
      * under the same id is refused.
@@ -69,9 +69,7 @@ final class WorktreeDelivery extends Model implements ReadableModel
     {
         $earlier = self::query()->where('delivery_id', $submission->deliveryId)->lockForUpdate()->first();
 
-        if ($earlier instanceof self && $earlier->delivered_tip !== $submission->deliveredTip) {
-            throw DeliveryRefused::otherCommit($submission->deliveryId);
-        }
+        self::assertSameCommit($earlier, $submission);
 
         if ($earlier instanceof self) {
             return $earlier;
@@ -103,5 +101,19 @@ final class WorktreeDelivery extends Model implements ReadableModel
         return Attribute::get(
             fn () => new DeliveryReceipt($this->delivery_id, $this->delivered_tip, $this->outcome->value),
         )->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a delivery id used again for another commit.
+     *
+     * @throws DeliveryRefused
+     */
+    private static function assertSameCommit(self|null $earlier, DeliverySubmission $submission): void
+    {
+        if ($earlier instanceof self && $earlier->delivered_tip !== $submission->deliveredTip) {
+            throw DeliveryRefused::otherCommit($submission->deliveryId);
+        }
     }
 }

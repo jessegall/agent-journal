@@ -31,8 +31,6 @@ final class EngineFrameTime extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

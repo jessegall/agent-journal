@@ -56,8 +56,6 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
      */
     public const int FIRST_GENERATION = 0;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

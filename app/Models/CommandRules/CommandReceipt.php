@@ -91,8 +91,6 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
      */
     public const int CONTRACT_MAJOR = 1;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -117,6 +115,8 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             )->current()->limitReadable($query),
         );
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Takes the key for a command that is about to run.

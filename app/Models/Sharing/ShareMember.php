@@ -46,8 +46,6 @@ final class ShareMember extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.share-member';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -58,6 +56,8 @@ final class ShareMember extends Model implements ReadableModel
             'invalidated_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Approves the selected target, linked from the source, at the share's current scope version.

@@ -97,8 +97,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
 
     protected $attributes = ['attention' => 'active'];
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -106,6 +104,8 @@ final class Document extends Model implements Commentable, Dockable, EventSource
             'attention' => AttentionState::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new document by its author, numbered and announced; its first revision is added next and made current.

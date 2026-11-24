@@ -57,8 +57,6 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public const int LIFETIME_MINUTES = 10;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -71,6 +69,8 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
             'spent_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The attempt's line, kept by the digest of its ticket and expiring LIFETIME_MINUTES from now: for a new project,

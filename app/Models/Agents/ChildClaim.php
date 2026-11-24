@@ -48,8 +48,6 @@ final class ChildClaim extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -57,6 +55,8 @@ final class ChildClaim extends Model implements ReadableModel
     {
         return ['parent_generation' => 'integer', 'role' => ChildRole::class, 'parent_was_dirty' => 'boolean'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A child of a main runtime, starting from the commit the parent's fresh commit read verified; a dirty parent

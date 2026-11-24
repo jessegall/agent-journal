@@ -49,8 +49,6 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
 
     public const string LINK_TYPE = 'tasks.run';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -58,6 +56,8 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     {
         return ['run_number' => 'integer', 'state' => TaskRunState::class];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new run started by the starter, answering to the inbox the starter replies at, fixed from now on.

@@ -98,9 +98,7 @@ final class WorkerReservation extends Model implements EventSource, ReadableMode
      */
     public function occupy(RecordIdentity $root): void
     {
-        if ($this->root_id !== null && ! ($this->root_type === $root->type && $this->root_id === $root->id)) {
-            throw WorkerAlreadyAssigned::holding((string) $this->root_type);
-        }
+        $this->assertFreeFor($root);
 
         $this->root_type = $root->type;
         $this->root_id = $root->id;
@@ -132,5 +130,19 @@ final class WorkerReservation extends Model implements EventSource, ReadableMode
         $this->root_id = null;
         $this->assertSaved($this->save());
         $this->raise(new WorkerReservationEmptied($this->id));
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a reservation that already holds another root.
+     *
+     * @throws WorkerAlreadyAssigned
+     */
+    private function assertFreeFor(RecordIdentity $root): void
+    {
+        if ($this->root_id !== null && ! ($this->root_type === $root->type && $this->root_id === $root->id)) {
+            throw WorkerAlreadyAssigned::holding((string) $this->root_type);
+        }
     }
 }

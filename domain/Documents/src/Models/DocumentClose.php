@@ -59,8 +59,6 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
 
     public const string LINK_TYPE = 'documents.close';
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -73,6 +71,15 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
             'closed_at' => 'immutable_datetime',
         ];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(function (self $close): void {
+            throw RecordImmutable::for('draft close');
+        });
+    }
+
+    // ----------[ Constructors ]----------
 
     public static function create(
         Document $document,
@@ -102,13 +109,6 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
         $close->raise(new DocumentClosed($document->id, $document->number, $resultNumber));
 
         return $close;
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(function (self $close): void {
-            throw RecordImmutable::for('draft close');
-        });
     }
 
     // ----------[ Accessors ]----------

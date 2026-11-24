@@ -46,8 +46,6 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
 
     public const string LINK_TYPE = 'core.active-account';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

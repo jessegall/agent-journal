@@ -43,8 +43,6 @@ final class Profile extends Model implements EventSource, ReadableModel
 
     public const string LINK_TYPE = 'core.profile';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

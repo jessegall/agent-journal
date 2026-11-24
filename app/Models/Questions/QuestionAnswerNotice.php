@@ -31,8 +31,6 @@ final class QuestionAnswerNotice extends Model implements EventSource
     use HasUlids;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

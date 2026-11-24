@@ -41,8 +41,6 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -54,6 +52,8 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
             'resolved_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new open notice of the driver and reason, counted once.

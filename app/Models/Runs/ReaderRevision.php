@@ -55,8 +55,6 @@ final class ReaderRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -64,6 +62,13 @@ final class ReaderRevision extends Model implements ReadableModel
     {
         return ['definition' => 'array', 'declaration_revision' => 'integer'];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(fn (self $revision) => throw RevisionImmutable::reader($revision->id));
+    }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A draft reader for the request's operation, written for one declaration revision and its output contract.
@@ -87,11 +92,6 @@ final class ReaderRevision extends Model implements ReadableModel
         ]);
     }
 
-    protected static function booted(): void
-    {
-        self::updating(fn (self $revision) => throw RevisionImmutable::reader($revision->id));
-    }
-
     public function isProven(): bool
     {
         return $this->proofs()->exists();
@@ -107,10 +107,6 @@ final class ReaderRevision extends Model implements ReadableModel
         return ReaderDefinition::fromArray($this->definition);
     }
 
-    // ----------[ Accessors ]----------
-
-    // ----------[ Relations ]----------
-
     /**
      * @return HasMany<ReaderProof, $this>
      */
@@ -118,6 +114,8 @@ final class ReaderRevision extends Model implements ReadableModel
     {
         return $this->hasMany(ReaderProof::class);
     }
+
+    // ----------[ Relations ]----------
 
     /**
      * @return BelongsTo<CommandRequest, $this>

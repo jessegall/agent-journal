@@ -36,8 +36,6 @@ final class ClaimAuthorization extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -47,7 +45,6 @@ final class ClaimAuthorization extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
-
 
     /**
      * A task run claimed through the claimant's membership of the inbox that holds the task.

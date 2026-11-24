@@ -42,8 +42,6 @@ final class PhaseCheck extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

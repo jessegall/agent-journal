@@ -35,8 +35,6 @@ final class ProcessEvent extends Model implements ReadableModel
 
     public const string OPERATIONAL_ERROR = 'operational_error';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -44,6 +42,8 @@ final class ProcessEvent extends Model implements ReadableModel
     {
         return ['sequence' => 'integer', 'payload' => 'array'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * @param  array<string, mixed>  $fields

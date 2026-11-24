@@ -78,8 +78,6 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -94,6 +92,8 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
             'state' => ProfileRunState::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The run a trigger is answered by: the run it started, else the actor's unfinished run on this work, which

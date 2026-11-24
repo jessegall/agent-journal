@@ -41,8 +41,6 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -54,6 +52,8 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
             'version' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The attempt's first result, unless it already has one; only the call that recorded it raises the fact.

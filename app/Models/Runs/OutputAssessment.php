@@ -61,8 +61,6 @@ final class OutputAssessment extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -76,6 +74,13 @@ final class OutputAssessment extends Model implements ReadableModel
             'final_offsets' => 'array',
         ];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(fn (self $assessment) => throw RevisionImmutable::assessment($assessment->id));
+    }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The next assessment of a part: what the approved reader made of it and what the validator found, linked to the
@@ -103,11 +108,6 @@ final class OutputAssessment extends Model implements ReadableModel
             'final_offsets' => $replayed->consumed->offsets,
             'replaces_assessment_id' => $previous?->id,
         ]);
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(fn (self $assessment) => throw RevisionImmutable::assessment($assessment->id));
     }
 
     // ----------[ Queries ]----------

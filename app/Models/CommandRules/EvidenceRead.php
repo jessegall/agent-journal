@@ -55,8 +55,6 @@ final class EvidenceRead extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -69,6 +67,8 @@ final class EvidenceRead extends Model implements ReadableModel
             'read_at' => 'datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(ProcessRun $run, ActorIdentity $reader, EvidenceRange $range): self
     {

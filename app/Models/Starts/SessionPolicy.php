@@ -53,8 +53,6 @@ final class SessionPolicy extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -72,6 +70,8 @@ final class SessionPolicy extends Model implements ReadableModel
     {
         self::updating(fn (self $policy) => throw SessionPolicyFrozen::forSession($policy->session_id));
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Freezes the start's policy with the session it started.

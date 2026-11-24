@@ -34,8 +34,6 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -43,6 +41,8 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
     {
         return ['build_pins' => 'array'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The driver's approval, or a new one not yet saved when the owner never approved it.

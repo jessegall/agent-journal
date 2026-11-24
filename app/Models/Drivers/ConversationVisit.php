@@ -33,8 +33,6 @@ final class ConversationVisit extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -42,6 +40,8 @@ final class ConversationVisit extends Model implements ReadableModel
     {
         return ['sequence_number' => 'integer', 'observed_at' => 'immutable_datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Appends the next visit of the session to the conversation, once per event: the same event id finds the visit

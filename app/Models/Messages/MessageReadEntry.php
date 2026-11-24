@@ -39,8 +39,6 @@ final class MessageReadEntry extends Model implements EventSource
 
     protected $table = 'message_reads';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -48,6 +46,8 @@ final class MessageReadEntry extends Model implements EventSource
     {
         return ['read_at' => 'immutable_datetime', 'last_read_at' => 'immutable_datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function record(Message $message, MessageSender&MessageReceiver $reader, CarbonImmutable $at): void
     {

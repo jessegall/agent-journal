@@ -123,8 +123,6 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -145,6 +143,8 @@ final class StartRecord extends Model implements EventSource, ReadableModel
             'refused_at' => 'datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The record of this request: the one already kept under its id when the contents match, else a new accepted one

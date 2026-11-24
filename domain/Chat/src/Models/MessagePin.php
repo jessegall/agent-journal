@@ -36,8 +36,6 @@ final class MessagePin extends Model implements ReadableModel
 
     public const int LARGEST_LIMIT = 100;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -45,6 +43,8 @@ final class MessagePin extends Model implements ReadableModel
     {
         return ['pinned_at' => 'immutable_datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Pins the message in the conversation for the owner; pinning it again keeps the one pin.

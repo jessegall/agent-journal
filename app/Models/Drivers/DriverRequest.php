@@ -116,8 +116,6 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -139,6 +137,8 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
             'hold_reason' => HoldReason::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The next request of the runtime, for the operation and its payload, not accepted yet.

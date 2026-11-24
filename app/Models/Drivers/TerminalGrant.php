@@ -65,8 +65,6 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
      */
     public const int LIFETIME_SECONDS = 30;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -79,6 +77,8 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
             'expires_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The viewer's take of the runtime's input through their read interest, waiting for the host.

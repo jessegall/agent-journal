@@ -98,8 +98,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     protected $hidden = ['directory', 'process_reference', 'login_reference', 'submission_key'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -118,6 +116,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             'expires_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new attempt, started by an actor, to sign in by a method into its own new staging folder: a new account of a

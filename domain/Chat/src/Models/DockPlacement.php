@@ -54,8 +54,6 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
 
     public const int LARGEST_LIMIT = 100;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -63,6 +61,8 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
     {
         return ['assigned_at' => 'immutable_datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Docks the source in the locked chat; its caller has found no placement of it there.

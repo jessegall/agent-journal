@@ -43,8 +43,6 @@ final class RetainedPage extends Model implements ReadableModel
 
     protected $table = 'core_mcp_retained_pages';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -60,6 +58,8 @@ final class RetainedPage extends Model implements ReadableModel
             static fn (): AgentContext => Container::getInstance()->make(AgentContext::class),
         ));
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Keeps the page's references for the calling session until they expire.

@@ -36,8 +36,6 @@ final class Layout extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -45,6 +43,8 @@ final class Layout extends Model implements EventSource, ReadableModel
     {
         return ['shape' => 'array'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A layout a user saves under a name.

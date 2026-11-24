@@ -76,8 +76,6 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -92,6 +90,8 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
             'manifest' => 'array',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A pending intent to deliver the generation's selection to the session's target, the target's one open intent.

@@ -89,8 +89,6 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      */
     public const int PATH_CHARACTER_LIMIT = 1024;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -108,6 +106,8 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
             'expires_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new read of a folder or a file of the binding's project, waiting for its host.

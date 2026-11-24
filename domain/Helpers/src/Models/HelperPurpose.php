@@ -45,8 +45,6 @@ final class HelperPurpose extends Model implements ReadableModel
     use InsertsAbsentRows;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

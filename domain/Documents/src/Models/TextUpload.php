@@ -53,8 +53,6 @@ final class TextUpload extends Model implements EventSource, ReadableModel
 
     protected $attributes = ['received_bytes' => 0, 'next_index' => 0];
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -63,6 +61,8 @@ final class TextUpload extends Model implements EventSource, ReadableModel
             'consumed_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(UploadType $type, int $bytes, string $digest): self
     {

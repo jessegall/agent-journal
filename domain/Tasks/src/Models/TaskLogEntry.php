@@ -48,8 +48,6 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -61,6 +59,8 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             'sequence' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Writes the line against the run after the task's last line and tells it; the caller holds the task's row, so

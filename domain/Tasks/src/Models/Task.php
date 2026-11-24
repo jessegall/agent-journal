@@ -135,8 +135,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     protected $attributes = ['state' => 'open', 'run_number' => 0, 'revision' => 1];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -149,6 +147,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             'run_number' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new open task an actor files, with its title and brief, in the environment of the connected binding it was

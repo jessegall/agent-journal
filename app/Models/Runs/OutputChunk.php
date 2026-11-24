@@ -37,8 +37,6 @@ final class OutputChunk extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -51,6 +49,8 @@ final class OutputChunk extends Model implements ReadableModel
             'captured_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The record of a captured chunk written to the spool at its offset in its stream.

@@ -52,8 +52,6 @@ final class SessionOutputGrant extends Model implements ReadableModel
      */
     protected $hidden = ['transcript_path', 'output_directory'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -61,6 +59,8 @@ final class SessionOutputGrant extends Model implements ReadableModel
     {
         return ['mapping_generation' => 'integer'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The grant of one conversation's output paths to the start's session, not yet written, for createAll.

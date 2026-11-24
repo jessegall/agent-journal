@@ -50,8 +50,6 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
      */
     protected $attributes = ['last_number' => 0];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -59,6 +57,8 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
     {
         return ['last_number' => 'integer', 'retired_at' => 'datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Opens the numbering of one record type for one holder.
@@ -75,9 +75,7 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
      */
     public function takeNumber(): int
     {
-        if ($this->last_number >= self::LAST_NUMBER_LIMIT) {
-            throw NumberLimitReached::for($this);
-        }
+        $this->assertNumberLeft();
 
         $this->last_number++;
         $this->assertSaved($this->save());
@@ -94,6 +92,20 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
         $this->retired_at = Carbon::now();
         $this->assertSaved($this->save());
         $this->raise(new NumberGroupRetired($this->id));
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a number past the group's limit.
+     *
+     * @throws NumberLimitReached
+     */
+    private function assertNumberLeft(): void
+    {
+        if ($this->last_number >= self::LAST_NUMBER_LIMIT) {
+            throw NumberLimitReached::for($this);
+        }
     }
 
     // ----------[ Scopes ]----------

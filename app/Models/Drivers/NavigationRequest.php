@@ -103,8 +103,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
      */
     protected $attributes = ['row_version' => 1];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -121,6 +119,8 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
             'expires_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The request the host raised for a stalled key script, open for the main agent; the same raise sent again by

@@ -48,8 +48,6 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
 
     public const string LINK_TYPE = 'core.share-gateway-configuration';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -62,6 +60,8 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
             'disabled_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The gateway's next settings revision, numbered after every earlier one and not yet the default; earlier

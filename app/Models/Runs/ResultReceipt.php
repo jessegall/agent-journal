@@ -64,8 +64,6 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -73,6 +71,8 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
     {
         return ['attempt' => 'integer', 'outcome' => AssessmentOutcome::class, 'published_at' => 'datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The receipt of a verified output, bound to its run, part, revisions, manifest and assessment.

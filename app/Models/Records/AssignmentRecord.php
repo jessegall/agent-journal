@@ -56,6 +56,16 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      */
     protected $guarded = ['*'];
 
+    protected static function booted(): void
+    {
+        self::addGlobalScope(
+            new SignedInScope(
+                static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
+                static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
+            ),
+        );
+    }
+
     // ----------[ Constructors ]----------
 
     /**
@@ -83,16 +93,6 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             'holder_type' => $holder->type,
             'holder_id' => $holder->id,
         ]);
-    }
-
-    protected static function booted(): void
-    {
-        self::addGlobalScope(
-            new SignedInScope(
-                static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
-                static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
-            ),
-        );
     }
 
     // ----------[ Queries ]----------

@@ -44,8 +44,6 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
 
     public const string LINK_TYPE = 'core.skill-generation';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -65,6 +63,8 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
             }
         });
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The generation one refresh made: Ready with the catalogue's digest and its definitions, or Failed with the

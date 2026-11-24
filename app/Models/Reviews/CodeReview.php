@@ -81,8 +81,6 @@ final class CodeReview extends Model implements EventSource, ReadableModel
      */
     public const int IMPORT_ATTEMPT_LIMIT = 5;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -122,11 +120,13 @@ final class CodeReview extends Model implements EventSource, ReadableModel
      */
     public static function openFor(AskReference $ask): self
     {
-        return self::query()
+        $row = self::query()
             ->where('ask_id', $ask->id)
             ->where('state', CodeReviewState::Open->value)
-            ->lockForUpdate()
-            ->firstOr(fn () => throw CodeReviewRefused::notOpen($ask->id));
+            ->lockForUpdate()->first();
+        self::assertOpenFound($row, $ask);
+
+        return $row;
     }
 
     /**
@@ -208,5 +208,21 @@ final class CodeReview extends Model implements EventSource, ReadableModel
     public function decision(): HasOne
     {
         return $this->hasOne(ReviewDecision::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an ask with no open review.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws CodeReviewRefused
+     */
+    private static function assertOpenFound(self|null $row, AskReference $ask): void
+    {
+        if ($row === null) {
+            throw CodeReviewRefused::notOpen($ask->id);
+        }
     }
 }

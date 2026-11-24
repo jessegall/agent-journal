@@ -91,8 +91,6 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public const int PAGE_LIMIT = 25;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -110,6 +108,8 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             'revoked_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Joins the folder to the project's environment through the host, pending until its relay first reports, in

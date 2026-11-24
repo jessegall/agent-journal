@@ -58,8 +58,6 @@ final class ReviewDecision extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -67,6 +65,8 @@ final class ReviewDecision extends Model implements EventSource, ReadableModel
     {
         return ['decision' => ReviewDecisionType::class, 'repaired_at' => 'datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Records the reviewer's decision on the exact base and head the review was opened on.

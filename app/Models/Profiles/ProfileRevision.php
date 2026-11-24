@@ -97,8 +97,6 @@ final class ProfileRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -120,6 +118,8 @@ final class ProfileRevision extends Model implements ReadableModel
             'author_type' => ActorType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Appends the definition as the profile's next revision, numbered after every earlier one; the caller holds the

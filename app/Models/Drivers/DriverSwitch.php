@@ -80,8 +80,6 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -95,6 +93,8 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
             'stage' => DriverSwitchStage::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A requested switch of the agent away from the session and process generation it runs now.

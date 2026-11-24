@@ -61,8 +61,6 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
 
     protected $table = 'agent_stacks';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -77,6 +75,8 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
             'held_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Inserts the stack of the target unless one exists, and answers whether this insert won; a racing insert is

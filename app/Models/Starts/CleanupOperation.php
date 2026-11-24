@@ -61,8 +61,6 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
      */
     public const int ATTEMPT_LIMIT = 5;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

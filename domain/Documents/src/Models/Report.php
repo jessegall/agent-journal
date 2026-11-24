@@ -81,8 +81,6 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
 
     protected $attributes = ['attention' => 'active'];
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -91,6 +89,17 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
             'filed_at' => 'immutable_datetime',
         ];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(function (self $report): void {
+            if (array_diff(array_keys($report->getDirty()), ['attention', 'updated_at']) !== []) {
+                throw RecordImmutable::for('report');
+            }
+        });
+    }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new report, filed now with the given text.
@@ -110,15 +119,6 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         $report->raise(new ReportFiled($report->id, $report->number, ActorContext::of($author)));
 
         return $report;
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(function (self $report): void {
-            if (array_diff(array_keys($report->getDirty()), ['attention', 'updated_at']) !== []) {
-                throw RecordImmutable::for('report');
-            }
-        });
     }
 
     // ----------[ Queries ]----------

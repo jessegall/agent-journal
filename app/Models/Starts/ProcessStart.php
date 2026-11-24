@@ -74,8 +74,6 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
      */
     protected $hidden = ['directory', 'start_key'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -90,6 +88,8 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
             'ended_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new start of the session's start on the selected account, waiting for its host.

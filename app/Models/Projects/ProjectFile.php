@@ -46,14 +46,14 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
 
     public const string LINK_TYPE = 'projects.file';
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
             'number' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A file of the connected folder its host read whole for the first time.

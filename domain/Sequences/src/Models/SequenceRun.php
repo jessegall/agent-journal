@@ -88,8 +88,6 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
      */
     protected $attributes = ['current_step' => 1, 'state' => 'running'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -101,6 +99,8 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
             'state' => SequenceRunState::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The actor the run was started for, or the system actor for a run nobody follows.

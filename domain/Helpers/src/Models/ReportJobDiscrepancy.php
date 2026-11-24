@@ -37,8 +37,6 @@ final class ReportJobDiscrepancy extends Model implements ReadableModel
 
     public const ?string UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -48,6 +46,8 @@ final class ReportJobDiscrepancy extends Model implements ReadableModel
             'reason' => ReportJobDiscrepancyReason::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(
         string $reportId,

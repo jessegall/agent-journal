@@ -56,8 +56,6 @@ final class StopResult extends Model implements ReadableModel
     use InsertsRowSets;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -71,6 +69,8 @@ final class StopResult extends Model implements ReadableModel
             'truncated' => 'boolean',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(StopAttempt $attempt, StopResultReport $report): self
     {

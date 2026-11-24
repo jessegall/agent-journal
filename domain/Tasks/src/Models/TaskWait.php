@@ -45,8 +45,6 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -58,6 +56,8 @@ final class TaskWait extends Model implements EventSource, ReadableModel
             'waived_by_type' => ActorType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The dependent now waits on the prerequisite, added by the actor.

@@ -58,8 +58,6 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
         'helper_actor_id',
     ];
 
-    // ----------[ Constructors ]----------
-
     protected static function booted(): void
     {
         self::updating(function (self $identity): void {
@@ -68,6 +66,8 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
             }
         });
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Declares the parent's helper for the agent actor it represents; Agents offers it only while that actor is an

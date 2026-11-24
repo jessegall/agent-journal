@@ -53,8 +53,6 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      */
     private const int HEALTHY_SECONDS = 45;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -66,6 +64,8 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
             'last_health_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new endpoint version of the configuration, opening under the run on the configuration's public origin.

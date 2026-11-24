@@ -73,8 +73,6 @@ final class CommandRequest extends Model implements ReadableModel
 
     public const int EXCERPT_LENGTH = 200;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -82,6 +80,8 @@ final class CommandRequest extends Model implements ReadableModel
     {
         return ['hold_reason' => RequestHoldReason::class, 'state' => RequestState::class];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new request holding the actor's command line in the project, collecting its declaration first.

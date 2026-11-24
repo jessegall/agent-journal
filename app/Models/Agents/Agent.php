@@ -62,8 +62,6 @@ final class Agent extends Model implements
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -71,6 +69,8 @@ final class Agent extends Model implements
     {
         return ['retired_at' => 'datetime', 'driver_type_preference' => DriverType::class];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new agent that starts with the profile of this key unless a start names another.

@@ -45,8 +45,6 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
 
     public const string DRAFT_SCOPE = 'private_draft';
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return ['author_type' => ActorType::class];
@@ -56,6 +54,8 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
     {
         self::updating(fn () => throw RecordImmutable::for('retained draft'));
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(DocumentDraft $draft, string $reason, ActorContext|null $parent): self
     {

@@ -45,8 +45,6 @@ final class ConnectionAudit extends Model implements ReadableModel
      */
     public const int SUPPORT_RECORD_LIMIT = 10;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -57,6 +55,8 @@ final class ConnectionAudit extends Model implements ReadableModel
             'actor_type' => ConnectionAuditActor::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A step the owner took on an install line.

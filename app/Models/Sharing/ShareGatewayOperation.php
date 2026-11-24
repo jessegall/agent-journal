@@ -59,8 +59,6 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
 
     private const int LEASE_TOKEN_BYTES = 32;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -74,6 +72,8 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
             'endpoint_version' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * An unclaimed request to open or close the endpoint of the configuration at its current version.

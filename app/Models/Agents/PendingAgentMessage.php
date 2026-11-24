@@ -43,12 +43,12 @@ final class PendingAgentMessage extends Model implements ReadableModel
      */
     public const int DELIVERY_LIMIT = 50;
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return ['lines' => 'array', 'requests_attention' => 'boolean'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * @param  list<string>  $lines

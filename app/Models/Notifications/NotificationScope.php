@@ -50,8 +50,6 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -66,6 +64,8 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
             'fenced_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The recipient's empty scope, inserted unless it already has one; read it with lockedFor afterwards.

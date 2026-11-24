@@ -53,8 +53,6 @@ final class ShareAudit extends Model implements ReadableModel
      */
     private const int LIFECYCLE_DAYS = 365;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -65,6 +63,8 @@ final class ShareAudit extends Model implements ReadableModel
             'actor_type' => ActorType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Appends a fact about one share, or, with no share, about the installation's sharing as a whole, such as a

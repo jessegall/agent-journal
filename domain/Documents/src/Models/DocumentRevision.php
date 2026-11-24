@@ -52,8 +52,6 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
 
     public const string LINK_TYPE = 'documents.revision';
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -61,6 +59,15 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
             'closed_at' => 'immutable_datetime',
         ];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(function (self $revision): void {
+            throw RecordImmutable::for('revision');
+        });
+    }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The document's next closed revision, numbered within it.
@@ -87,13 +94,6 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
         $revision->save();
 
         return $revision;
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(function (self $revision): void {
-            throw RecordImmutable::for('revision');
-        });
     }
 
     /**

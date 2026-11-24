@@ -73,11 +73,13 @@ final class CertifiedWork extends Model implements ReadableModel
      */
     public static function of(RecordIdentity $work, string $certificate): self
     {
-        return self::query()
+        $row = self::query()
             ->where('work_type', $work->type)
             ->where('work_id', $work->id)
-            ->where('certificate', $certificate)
-            ->firstOr(fn () => throw HelperWorkUncertified::for($work, $certificate));
+            ->where('certificate', $certificate)->first();
+        self::assertCertified($row, $work, $certificate);
+
+        return $row;
     }
 
     // ----------[ Accessors ]----------
@@ -90,5 +92,21 @@ final class CertifiedWork extends Model implements ReadableModel
     protected function importRef(): Attribute
     {
         return Attribute::get(fn () => "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}");
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses work the certificate does not certify.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws HelperWorkUncertified
+     */
+    private static function assertCertified(self|null $row, RecordIdentity $work, string $certificate): void
+    {
+        if ($row === null) {
+            throw HelperWorkUncertified::for($work, $certificate);
+        }
     }
 }

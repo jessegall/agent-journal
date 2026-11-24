@@ -33,8 +33,6 @@ final class SkillContextEpoch extends Model implements EventSource, ReadableMode
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

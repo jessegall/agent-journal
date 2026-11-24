@@ -73,8 +73,6 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
 
     public const string LINK_TYPE = 'helpers.job';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -90,6 +88,8 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             'conversation_mode' => ConversationModeType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * @param  array{subjects: list<string>}  $sourceSnapshot

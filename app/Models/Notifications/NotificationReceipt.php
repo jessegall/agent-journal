@@ -46,8 +46,6 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
 
     public const ?string UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -59,6 +57,8 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
             'hidden_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The scope's receipt of the occurrence at the scope's next sequence, inserted unless the scope already holds

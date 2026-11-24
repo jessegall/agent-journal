@@ -40,8 +40,6 @@ final class RecordSettlement extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'documents.settlement';
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -50,6 +48,15 @@ final class RecordSettlement extends Model implements ReadableModel
             'settled_at' => 'immutable_datetime',
         ];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(function (self $settlement): void {
+            throw RecordImmutable::for('settlement');
+        });
+    }
+
+    // ----------[ Constructors ]----------
 
     public static function create(
         string $parentType,
@@ -67,13 +74,6 @@ final class RecordSettlement extends Model implements ReadableModel
             'revision_number' => $revisionNumber,
             'settled_at' => CarbonImmutable::now(),
         ]);
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(function (self $settlement): void {
-            throw RecordImmutable::for('settlement');
-        });
     }
 
     // ----------[ Accessors ]----------

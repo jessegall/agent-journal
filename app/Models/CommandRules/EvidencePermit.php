@@ -72,8 +72,6 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -88,6 +86,8 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
             'candidate_rules' => StoredValuesCast::class.':'.CommandRule::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The permit to run one exact line once under the runner's actor, within the limits: the owner's own, or, for a

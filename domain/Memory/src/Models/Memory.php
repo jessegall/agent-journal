@@ -57,8 +57,6 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
 
     public const int HEAVIEST = 10;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -69,6 +67,8 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
             'revision' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Keeps a new memory for its owner.
@@ -86,14 +86,14 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
 
     // ----------[ Queries ]----------
 
-    // ----------[ Mutations ]----------
-
     public function saveFor(ActorIdentity $actor): void
     {
         $this->belongTo($actor);
         $this->assertSaved($this->save());
         $this->raise(new MemorySaved($this->id));
     }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Rewrites the text, the weight or both as one change, one revision later; a value left out stays as it is.

@@ -50,8 +50,6 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -65,6 +63,8 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
             'exit_code' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Keeps the run's intent before its process starts: the request id, the operation's fingerprint and its worker.

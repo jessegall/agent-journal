@@ -34,8 +34,6 @@ final class RunResultConflict extends Model implements ReadableModel
 
     public const ?string UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, mixed>
      */
@@ -46,6 +44,8 @@ final class RunResultConflict extends Model implements ReadableModel
             'offered_result' => RunLogicalResult::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(RunOutcome $kept, RunLogicalResult $offered): self
     {

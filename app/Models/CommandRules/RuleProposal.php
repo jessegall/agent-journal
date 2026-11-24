@@ -70,8 +70,6 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -84,6 +82,8 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
             'current_revision' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The proposal this author's request id opened in the project: the same one again when the payload is the same,

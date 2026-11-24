@@ -69,8 +69,6 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
 
     protected $attributes = ['version' => 1];
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -80,6 +78,8 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
             'opened_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Opens the draft of a locked document for this editor, starting from its current revision.

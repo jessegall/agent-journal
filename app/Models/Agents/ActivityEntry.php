@@ -71,8 +71,6 @@ final class ActivityEntry extends Model implements ReadableModel
      */
     public const int FOUND_CHARACTER_LIMIT = 120;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -85,6 +83,8 @@ final class ActivityEntry extends Model implements ReadableModel
             'occurred_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * What an agent just did, at its type's level, its subject and what it found cut to their limits.

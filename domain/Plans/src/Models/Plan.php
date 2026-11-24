@@ -132,8 +132,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         'started_tasks' => 0,
     ];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -151,6 +149,8 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             'started_tasks' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new plan an actor drafts, with its title, brief and type.

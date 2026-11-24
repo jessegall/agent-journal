@@ -47,8 +47,6 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
      */
     private const int RUN_LEASE_SECONDS = 90;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -58,6 +56,8 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
             'run_lease_ends_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The installation row, locked until the transaction ends. It is made by an insert that does nothing when it

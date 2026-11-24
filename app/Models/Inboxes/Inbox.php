@@ -61,8 +61,6 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
 
     public const string MAIN = 'main';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -70,6 +68,8 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     {
         return ['forwards_members' => 'boolean', 'last_message_number' => 'integer'];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function open(
         string $providerKey,

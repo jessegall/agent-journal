@@ -73,8 +73,6 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
      */
     public const int LIFETIME_HOURS = 48;
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -84,6 +82,8 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
             'type_key' => AskTypeKeyCast::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function newReference(): AskReference
     {

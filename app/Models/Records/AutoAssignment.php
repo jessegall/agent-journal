@@ -56,8 +56,6 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -72,6 +70,8 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
             'last_served_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Enables the actor's first auto-assignment of the type at revision 1 with one insert that does nothing when a row
@@ -175,10 +175,6 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
             $this->last_served_at,
         );
     }
-
-    // ----------[ Accessors ]----------
-
-    // ----------[ Internals ]----------
 
     /**
      * @param  ReadBuilder<self>  $query

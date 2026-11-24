@@ -55,12 +55,12 @@ final class AskHop extends Model implements EventSource, ReadableModel
      */
     private const string URGENT_FIRST = 'case when ask_hops.type_key in (?, ?) then 0 else 1 end';
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return ['accepted_at' => 'immutable_datetime', 'version' => 'integer', 'route_version' => 'integer'];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The ask's new hop to its holder, at the ask's version and the routing configuration's version, kept apart.

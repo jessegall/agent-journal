@@ -77,8 +77,6 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
 
     public const array SCOPES = ['commands'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -92,6 +90,8 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
             'last_polled_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A terminal sign-in's grant for the binding, pending the owner's approval: a nonsecret reference, the next

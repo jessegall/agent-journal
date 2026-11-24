@@ -47,8 +47,6 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -59,6 +57,8 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
             'finished_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The turn of this native prompt in this process generation, recorded the first time it is seen; a repeated

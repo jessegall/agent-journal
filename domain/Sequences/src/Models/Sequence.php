@@ -46,8 +46,6 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     protected $attributes = ['version' => 1, 'summary' => ''];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -58,6 +56,8 @@ final class Sequence extends Model implements EventSource, ReadableModel
             'version' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new sequence of these steps.

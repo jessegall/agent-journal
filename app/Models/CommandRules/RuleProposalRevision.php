@@ -46,8 +46,6 @@ final class RuleProposalRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -59,6 +57,13 @@ final class RuleProposalRevision extends Model implements ReadableModel
             'examples' => StoredValuesCast::class.':'.RuleExample::class,
         ];
     }
+
+    protected static function booted(): void
+    {
+        self::updating(fn (self $revision) => $revision->assertUnedited());
+    }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The proposal's next revision of the proposed rule, by its author.
@@ -74,11 +79,6 @@ final class RuleProposalRevision extends Model implements ReadableModel
             'author_type' => $author->type->value,
             'author_id' => $author->id,
         ]);
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(fn (self $revision) => $revision->assertUnedited());
     }
 
     // ----------[ Accessors ]----------

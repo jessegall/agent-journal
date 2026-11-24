@@ -26,12 +26,12 @@ final class SupervisorChange extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     protected static function booted(): void
     {
         self::updating(fn (self $change) => $change->assertHistoryKept());
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(
         SupervisorLink $link,

@@ -58,8 +58,6 @@ final class TaskHistoryEntry extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -73,6 +71,8 @@ final class TaskHistoryEntry extends Model implements ReadableModel
             'sequence' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Appends the task's change under the id its fact names, after the task's last entry; the caller holds the task's

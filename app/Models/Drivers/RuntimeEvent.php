@@ -39,8 +39,6 @@ final class RuntimeEvent extends Model implements ReadableModel
     use InsertsAbsentRows;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
@@ -49,6 +47,8 @@ final class RuntimeEvent extends Model implements ReadableModel
             'event_type' => RuntimeEventType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Keeps the report under its sequence unless that sequence is kept already, and says whether reports of its

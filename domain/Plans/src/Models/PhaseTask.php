@@ -42,8 +42,6 @@ final class PhaseTask extends Pivot implements ReadableModel
      */
     protected $guarded = ['*'];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */

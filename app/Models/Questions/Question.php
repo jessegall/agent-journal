@@ -45,8 +45,6 @@ final class Question extends Model implements AuthoredModel, EventSource
 
     public const string LINK_TYPE = 'core.question';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -58,6 +56,8 @@ final class Question extends Model implements AuthoredModel, EventSource
             'answered_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * @param  list<string>  $options

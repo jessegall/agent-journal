@@ -49,8 +49,6 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
     use RaisesEvents;
     use RemovedWithAccount;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -66,6 +64,8 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
             'source_order' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new window of the account in the generation, holding its first reading.

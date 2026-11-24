@@ -49,8 +49,6 @@ final class TaskWaitHistory extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -61,6 +59,8 @@ final class TaskWaitHistory extends Model implements ReadableModel
             'actor_type' => ActorType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Keeps the change of the wait, made by the actor, with its reason when it has one.

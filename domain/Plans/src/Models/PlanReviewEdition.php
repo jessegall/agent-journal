@@ -56,8 +56,6 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -73,6 +71,8 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
             'is_historical' => 'boolean',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The plan's next review, asked for by the actor, at the plan's revision as it is now.

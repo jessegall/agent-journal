@@ -45,8 +45,6 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
     use RaisesEvents;
     use RemovedWithAccount;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -59,6 +57,8 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
             'observations' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Keeps the cost of a result once, in any generation of the account, so a late cost of an earlier sign-in still

@@ -38,8 +38,6 @@ final class CommandAlias extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return ['argument_grammar' => 'array', 'revision' => 'integer'];

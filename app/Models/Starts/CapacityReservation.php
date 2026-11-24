@@ -36,8 +36,6 @@ final class CapacityReservation extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -50,6 +48,8 @@ final class CapacityReservation extends Model implements ReadableModel
             'state' => ReservationState::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Reserves the start's budgets when the host has room for them beside every reservation still held; a repeat of

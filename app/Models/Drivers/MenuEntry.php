@@ -88,8 +88,6 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
      */
     protected $attributes = ['uses' => 0];
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -104,6 +102,8 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
             'last_used_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The entry a navigation request proved on a build: its steps from the first step's screen to the goal, what

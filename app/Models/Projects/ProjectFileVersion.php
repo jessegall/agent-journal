@@ -40,14 +40,14 @@ final class ProjectFileVersion extends Model implements ReadableModel
      */
     public const int KEPT_UNNAMED_VERSION_LIMIT = 3;
 
-    // ----------[ Constructors ]----------
-
     protected function casts(): array
     {
         return [
             'line_count' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(ProjectFile $file, string $digest, string $text): self
     {

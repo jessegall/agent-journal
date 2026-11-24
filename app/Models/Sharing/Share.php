@@ -122,8 +122,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public const int PROPOSAL_DAYS = 7;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -143,6 +141,8 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             'last_pruned_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A share of the root until its expiry. From an agent's request it is a proposal with no token and no gateway,

@@ -74,8 +74,6 @@ final class SkillRevision extends Model implements ReadableModel
      */
     public const int CONDITION_VERSION = 1;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -94,6 +92,8 @@ final class SkillRevision extends Model implements ReadableModel
     {
         self::updating(fn (self $revision) => throw SkillRevisionImmutable::for($revision->id));
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Appends the draft as the skill's next revision, numbered after every earlier one; the caller holds the skill's

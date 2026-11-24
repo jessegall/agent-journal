@@ -54,8 +54,6 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
 
     public const string LINK_TYPE = 'core.skill';
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -67,6 +65,8 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
             'retired_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * A new stored skill under its key, owned by the actor that creates it; it has no revision yet.

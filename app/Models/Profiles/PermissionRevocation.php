@@ -43,8 +43,6 @@ final class PermissionRevocation extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -52,6 +50,8 @@ final class PermissionRevocation extends Model implements ReadableModel
     {
         return ['revoked_classes' => 'array', 'revoked_patterns' => 'array', 'revoked_at' => 'immutable_datetime'];
     }
+
+    // ----------[ Constructors ]----------
 
     public static function create(
         string $source,

@@ -77,8 +77,6 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public const int PAGE_LIMIT = 25;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -90,6 +88,8 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
             'version' => 'integer',
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * The owner's attempt under this key, opened now when there is none: two first submissions of one key make one
