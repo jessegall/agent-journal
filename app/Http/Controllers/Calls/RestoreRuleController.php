@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\ProposalReceived;
 use App\Calls\Processes\RestoreRuleCall;
-use App\Commands\RestoreCommandRule\RestoreCommandRuleCommand;
+use App\Commands\CommandRules\RestoreCommandRule\RestoreCommandRuleCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

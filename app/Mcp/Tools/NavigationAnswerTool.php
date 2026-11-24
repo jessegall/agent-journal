@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Commands\AnswerNavigation\AnswerNavigationCommand;
+use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;

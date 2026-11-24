@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Rules\Tests\Feature\Http;
 
 use App\Contracts\Bus\CommandBus;
-use App\Events\PageChanged;
+use App\Events\Web\PageChanged;
 use App\Support\ActorContext;
 use App\Support\UserChannel;
 use Domain\Access\Support\AccessSettings;

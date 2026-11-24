@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\ReconcileAccounts\ReconcileAccountsCommand as ReconcileAccounts;
+use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand as ReconcileAccounts;
 use App\Enums\CommandEntry;
 use App\Support\EntryDispatchers;
 use Illuminate\Console\Command;

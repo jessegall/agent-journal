@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Commands\ApproveShareRequest\ApproveShareRequestCommand;
-use App\Commands\CreateShare\CreateShareCommand;
-use App\Commands\RequestShare\RequestShareCommand;
-use App\Commands\SaveSharePreview\SaveSharePreviewCommand;
+use App\Commands\Sharing\ApproveShareRequest\ApproveShareRequestCommand;
+use App\Commands\Sharing\CreateShare\CreateShareCommand;
+use App\Commands\Sharing\RequestShare\RequestShareCommand;
+use App\Commands\Sharing\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ActorType;
 use App\Enums\GatewayOperationType;
 use App\Enums\ShareAuditType;
 use App\Enums\ShareState;
-use App\Events\ShareCreated;
-use App\Events\ShareRequested;
+use App\Events\Sharing\ShareCreated;
+use App\Events\Sharing\ShareRequested;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\ShareQuotaReached;
 use App\Models\Sharing\Share;

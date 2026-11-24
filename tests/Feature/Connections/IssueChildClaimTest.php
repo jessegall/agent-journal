@@ -6,7 +6,7 @@ namespace Tests\Feature\Connections;
 
 use App\Enums\ArrangementType;
 use App\Enums\ChildRole;
-use App\Events\ChildCheckoutRequested;
+use App\Events\Sessions\ChildCheckoutRequested;
 use App\Listeners\IssueChildClaim;
 use App\Models\Agents\Agent;
 use App\Models\Agents\ChildClaim;

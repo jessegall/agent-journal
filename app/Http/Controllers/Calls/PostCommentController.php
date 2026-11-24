@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Comments\CommentPosted;
 use App\Calls\Comments\PostCommentCall;
-use App\Commands\PostComment\PostCommentCommand;
-use App\Commands\PostTextComment\PostTextCommentCommand;
+use App\Commands\Comments\PostComment\PostCommentCommand;
+use App\Commands\Comments\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommentPlaceUnclear;

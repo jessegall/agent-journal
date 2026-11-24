@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\SharePreviewConsumed;
+use App\Events\Sharing\SharePreviewConsumed;
 use App\Exceptions\SharePreviewRefused;
 use App\Models\Support\BelongsToOneRoot;
 use App\Support\RecordIdentity;

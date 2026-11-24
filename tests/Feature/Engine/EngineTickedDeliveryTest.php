@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use App\Exceptions\EngineAccessRefused;
 use App\Support\EngineAccess;
 use App\Support\EngineListenerSet;

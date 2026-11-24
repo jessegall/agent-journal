@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\UsageWindowSlot;
-use App\Events\AccountUsageChanged;
+use App\Events\Accounts\AccountUsageChanged;
 use App\Models\Concerns\KeepsNewestReading;
 use App\Models\Concerns\RemovedWithAccount;
 use App\Models\Support\AccountOwnerScope;

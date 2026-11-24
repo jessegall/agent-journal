@@ -8,7 +8,7 @@ use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\DriverEvidence;
 use App\Enums\SignInMethod;
 use App\Enums\TransportProfileType;
-use App\Events\AccountSettingsRequested;
+use App\Events\Sessions\AccountSettingsRequested;
 use App\Models\Accounts\Account;
 use App\Support\AccountStartRecipe;
 use App\Support\AccountStartSettings;

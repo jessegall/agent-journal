@@ -47,8 +47,6 @@ final class RuntimeEvent extends Model implements ReadableModel
             'generation' => 'integer',
             'sequence' => 'integer',
             'event_type' => RuntimeEventType::class,
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

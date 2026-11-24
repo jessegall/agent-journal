@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\ImportHelperCommits\ImportHelperCommitsCommand;
-use App\Commands\ImportHelperCommits\ImportHelperCommitsHandler;
+use App\Commands\Agents\ImportHelperCommits\ImportHelperCommitsCommand;
+use App\Commands\Agents\ImportHelperCommits\ImportHelperCommitsHandler;
 use App\Exceptions\HelperWorkUncertified;
 use App\Support\RecordIdentity;
 use App\Values\HelperImportReceipt;

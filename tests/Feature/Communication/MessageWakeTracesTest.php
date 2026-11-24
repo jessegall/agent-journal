@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AskMessage\AskMessageCommand;
-use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
+use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Contracts\Chat\ConversationResolver;
 use App\Enums\DriverOperation;
 use App\Enums\RequestProgress;

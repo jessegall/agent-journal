@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\HandOffCodeReview\HandOffCodeReviewCommand;
+use App\Commands\Reviews\HandOffCodeReview\HandOffCodeReviewCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use App\Models\Reviews\WorkReservation;
 use Throwable;
 

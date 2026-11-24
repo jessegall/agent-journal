@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Commands\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
+use App\Commands\Messages\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
 use App\Contracts\Bus\Command;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;

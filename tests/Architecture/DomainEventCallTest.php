@@ -76,7 +76,7 @@ final class DomainEventCallTest extends TestCase
     public function test_a_domain_raising_a_core_event_fails(): void
     {
         $this->assertSame(
-            ['14 raises App\Events\StateTypesRequested again, an event of Core; only its owner raises it'],
+            ['14 raises App\Events\Hooks\StateTypesRequested again, an event of Core; only its owner raises it'],
             $this->violationLines('Plans/Listeners/RaisesCoreRequest.php'),
         );
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\RenameAccount\RenameAccountCommand;
+use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\RenameAccountRequest;
 use Illuminate\Http\RedirectResponse;

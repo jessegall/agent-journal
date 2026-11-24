@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Events\MergeOutcomeRecorded;
+use App\Events\Sessions\MergeOutcomeRecorded;
 use App\Models\Reviews\MergeAttempt;
 use App\Support\MergeSettlement;
 

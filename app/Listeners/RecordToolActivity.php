@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Activity\ActivityLog;
 use App\Contracts\Events\Listener;
-use App\Events\ToolCallFinished;
+use App\Events\Hooks\ToolCallFinished;
 use App\Values\ToolActivity;
 
 /**

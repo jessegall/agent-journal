@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\ContinueStart\ContinueStartCommand;
-use App\Commands\StartAgent\StartAgentCommand;
+use App\Commands\Agents\ContinueStart\ContinueStartCommand;
+use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverType;

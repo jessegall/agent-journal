@@ -49,7 +49,6 @@ final class NotificationOccurrence extends Model implements ReadableModel
     {
         return [
             'source_type' => NotificationSourceType::class,
-            'created_at' => 'immutable_datetime',
         ];
     }
 

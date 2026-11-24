@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Commands\ReadPartLive\ReadPartLiveCommand;
+use App\Commands\Runs\ReadPartLive\ReadPartLiveCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\Listener;
-use App\Events\OutputChunkCommitted;
+use App\Events\Processes\OutputChunkCommitted;
 use App\Models\Runs\PartRun;
 use App\Support\PartAssessments;
 

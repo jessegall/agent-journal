@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Commands\ExpireSignInAttempt\ExpireSignInAttemptCommand;
+use App\Commands\Accounts\ExpireSignInAttempt\ExpireSignInAttemptCommand;
 use App\Enums\CommandEntry;
 use App\Support\EntryDispatchers;
 use Illuminate\Bus\Queueable;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Events\PageChanged;
+use App\Events\Web\PageChanged;
 use App\Models\Accounts\Account;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;

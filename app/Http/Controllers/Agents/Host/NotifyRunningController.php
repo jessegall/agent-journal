@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\NotifyRunning\NotifyRunningCommand;
+use App\Commands\Agents\NotifyRunning\NotifyRunningCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
 use App\Values\HostContext;

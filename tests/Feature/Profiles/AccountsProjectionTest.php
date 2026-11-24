@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\RecordAccountNotice\RecordAccountNoticeCommand;
-use App\Commands\RenameAccount\RenameAccountCommand;
-use App\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Commands\Accounts\RecordAccountNotice\RecordAccountNoticeCommand;
+use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
+use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\AccountNoticeReason;
 use App\Enums\CommandEntry;
 use App\Enums\DriverFailure;
-use App\Events\AccountsChanged;
-use App\Events\DriverFailed;
+use App\Events\Accounts\AccountsChanged;
+use App\Events\Sessions\DriverFailed;
 use App\Exceptions\CommittedFactListenerFailed;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Commands\AssignRecord\AssignRecordCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Authorization\OperationResolver;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ReceiptState;

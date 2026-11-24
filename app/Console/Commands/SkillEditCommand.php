@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\ReviseSkill\ReviseSkillCommand;
+use App\Commands\Skills\ReviseSkill\ReviseSkillCommand;
 use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Console\Concerns\ReadsAudienceOptions;

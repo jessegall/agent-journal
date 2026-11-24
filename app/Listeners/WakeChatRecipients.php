@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Events\ReceiptDeliveriesScheduled;
+use App\Events\Messages\ReceiptDeliveriesScheduled;
 use App\Support\ReceiptDeliveryService;
 use Carbon\CarbonImmutable;
 

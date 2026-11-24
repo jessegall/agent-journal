@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Unit\States;
 
 use App\Enums\AnswerType;
-use App\Events\AssignmentsEnded;
+use App\Events\Assignments\AssignmentsEnded;
 use App\Support\ActorIdentity;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookInput;

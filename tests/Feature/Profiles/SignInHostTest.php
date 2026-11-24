@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\BeginSignIn\BeginSignInCommand;
-use App\Commands\EnrollHost\EnrollHostCommand;
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;
 use App\Data\Accounts\SignInAttemptData;

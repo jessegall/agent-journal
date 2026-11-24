@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
-use App\Commands\ExpireShares\ExpireSharesCommand;
-use App\Commands\PruneShareAudit\PruneShareAuditCommand;
-use App\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
-use App\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
-use App\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
+use App\Commands\Sharing\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Commands\Sharing\ExpireShares\ExpireSharesCommand;
+use App\Commands\Sharing\PruneShareAudit\PruneShareAuditCommand;
+use App\Commands\Sharing\RecordGatewayHealth\RecordGatewayHealthCommand;
+use App\Commands\Sharing\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use App\Commands\Sharing\ReopenSharedGateways\ReopenSharedGatewaysCommand;
 use App\Contracts\Bus\Command;
 use App\Contracts\Sharing\ShareGateway;
 use App\Enums\CommandEntry;

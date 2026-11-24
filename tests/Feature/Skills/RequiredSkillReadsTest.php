@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ContextStartType;
 use App\Enums\SessionStatus;
-use App\Events\ContextStarted;
-use App\Events\SessionOpened;
+use App\Events\Hooks\ContextStarted;
+use App\Events\Sessions\SessionOpened;
 use App\Listeners\AdmitStartSkills;
 use App\Listeners\RefreshSessionSkills;
 use App\Listeners\RemindRequiredSkills;

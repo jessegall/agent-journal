@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\EndTerminalViews\EndTerminalViewsCommand;
+use App\Commands\Terminals\EndTerminalViews\EndTerminalViewsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 
 /**
  * Ends lapsed terminal views and those of stopped runtimes on every engine pass; each end is one bounded update, so

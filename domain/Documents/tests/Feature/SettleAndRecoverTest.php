@@ -7,7 +7,7 @@ namespace Domain\Documents\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ListenerLane;
-use App\Events\SessionClosed;
+use App\Events\Sessions\SessionClosed;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\CommandInputInvalid;

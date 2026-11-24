@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Commands\CreateSkill\CreateSkillCommand;
-use App\Commands\RefreshSkills\RefreshSkillsCommand;
+use App\Commands\Skills\CreateSkill\CreateSkillCommand;
+use App\Commands\Skills\RefreshSkills\RefreshSkillsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\GenerationState;
 use App\Enums\PublicationState;

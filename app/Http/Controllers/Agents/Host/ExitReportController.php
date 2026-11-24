@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\NotifyRuntimeExit\NotifyRuntimeExitCommand;
+use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RuntimeLivenessReportData;
 use App\Values\HostContext;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Events\LaunchEnded;
+use App\Events\Sessions\LaunchEnded;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Starts\StartRecord;
 use App\Support\Capabilities\CodexHeadlessCapabilities;

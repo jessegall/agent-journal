@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Commands\RaiseNavigation\RaiseNavigationCommand;
+use App\Commands\Navigation\RaiseNavigation\RaiseNavigationCommand;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Support\ActorIdentity;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Data\ReadShownInput;
 use Domain\Chat\Http\Requests\ConversationRequest;

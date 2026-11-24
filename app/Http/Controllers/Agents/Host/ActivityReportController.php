@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
+use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RuntimeActivityReportData;
 use App\Values\HostContext;

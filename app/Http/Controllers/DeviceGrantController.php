@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\PollDeviceGrant\PollDeviceGrantCommand;
-use App\Commands\StartDeviceGrant\StartDeviceGrantCommand;
+use App\Commands\Projects\PollDeviceGrant\PollDeviceGrantCommand;
+use App\Commands\Projects\StartDeviceGrant\StartDeviceGrantCommand;
 use App\Contracts\Hosts\HostCalls;
 use App\Enums\CommandEntry;
 use App\Enums\RefusalCode;

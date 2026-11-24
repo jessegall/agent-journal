@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\CancelKeyScript\CancelKeyScriptCommand;
+use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
 use App\Enums\HoldReason;
 use App\Enums\NavigationState;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Support\DriverRequestEndings;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Enums\NoSubject;
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\InvalidBottomState;
 use App\Exceptions\StackAlreadyClosed;
 use App\Exceptions\StackLockTimedOut;

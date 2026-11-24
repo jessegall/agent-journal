@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\AcknowledgeMessageBatchCall;
 use App\Calls\Communication\MessageBatchAcknowledged;
-use App\Commands\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
+use App\Commands\Messages\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

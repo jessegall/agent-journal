@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Commands\ClaimCleanup\ClaimCleanupCommand;
+use App\Commands\Accounts\ClaimCleanup\ClaimCleanupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;

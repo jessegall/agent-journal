@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\AbandonNavigation\AbandonNavigationCommand;
-use App\Commands\AnswerNavigation\AnswerNavigationCommand;
-use App\Commands\ProveNavigation\ProveNavigationCommand;
+use App\Commands\Navigation\AbandonNavigation\AbandonNavigationCommand;
+use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
+use App\Commands\Navigation\ProveNavigation\ProveNavigationCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\Command;

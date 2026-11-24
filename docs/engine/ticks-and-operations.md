@@ -68,7 +68,7 @@ since the last success.
 
 The engine is authorized like any actor: its authorizer allows a command only while it holds a grant, the frame it is
 ticking or a maintenance capability (`App\Support\EngineAccess`). Outside one it may run nothing. Its own
-maintenance commands, such as `App\Commands\MarkSilentSessions\MarkSilentSessionsCommand`, name the `EngineMaintenance` entry.
+maintenance commands, such as `App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand`, name the `EngineMaintenance` entry.
 
 Every command a tick answers runs with the frame's work as its origin (`App\Hooks\Values\WorkOccurrence`, for
 example run 3 of task 41). Inside the command's transaction and before its handler, `GuardTickOrigin` takes the
@@ -150,7 +150,7 @@ final readonly class MarkSilentSessionsOnTick implements EngineListener
 
 Add it to `App\Support\EngineListenerSet` from a Core provider. Each pass builds the listener fresh and grants
 it only its own maintenance scope. Its commands check that scope with `EngineAccess::checkMaintenance()`. A listener
-that throws is logged and the next one still runs. `App\Events\EngineTicked` (`now` and `sincePrevious`) is also
+that throws is logged and the next one still runs. `App\Events\Engine\EngineTicked` (`now` and `sincePrevious`) is also
 dispatched on the event dispatcher for plain observers that run no commands. Listeners must do small, bounded reads.
 
 ## Configuration: `config/engine.php`

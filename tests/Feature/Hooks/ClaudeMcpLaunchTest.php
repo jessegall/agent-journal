@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Events\StartSettingsRequested;
+use App\Events\Sessions\StartSettingsRequested;
 use App\Listeners\SupplyHookSettings;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;

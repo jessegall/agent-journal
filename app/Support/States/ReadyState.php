@@ -8,7 +8,7 @@ use App\Attributes\StateType;
 use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\FrameReuse;
 use App\Enums\SessionTransferType;
-use App\Events\StopAttemptSettled;
+use App\Events\Sessions\StopAttemptSettled;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Inputs\ContextCompacted;

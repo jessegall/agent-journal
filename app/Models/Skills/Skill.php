@@ -12,7 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
-use App\Events\SkillsChanged;
+use App\Events\Skills\SkillsChanged;
 use App\Exceptions\SkillOwnerRequired;
 use App\Exceptions\SkillRetired;
 use App\Exceptions\SkillRevisionConflict;

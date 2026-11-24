@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Enums\MessageState;
-use App\Events\MessageAnswered;
+use App\Events\Messages\MessageAnswered;
 use App\Exceptions\MessageStateConflict;
 use App\Models\Messages\Message;
 use Illuminate\Support\Facades\Event;

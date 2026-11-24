@@ -5,39 +5,39 @@ declare(strict_types=1);
 use App\Enums\ActorType;
 use App\Enums\CaptureState;
 use App\Enums\RunLogicalResult;
-use App\Events\BundleActivated;
-use App\Events\ClassificationRuleRetired;
-use App\Events\EvidenceFoundInvalid;
-use App\Events\EvidencePermitConsumed;
-use App\Events\EvidencePermitExpired;
-use App\Events\OutputChunkCommitted;
-use App\Events\PartRunCaptured;
-use App\Events\PartRunCaptureMarked;
-use App\Events\PartRunDrained;
-use App\Events\PartRunLost;
-use App\Events\PartRunProcessFinished;
-use App\Events\PartRunSkipped;
-use App\Events\PartRunSpawnFailed;
-use App\Events\PartRunStarted;
-use App\Events\PartRunStopped;
-use App\Events\ProcessRunConsumed;
-use App\Events\ProcessRunLost;
-use App\Events\ProcessRunMarkedStale;
-use App\Events\ProcessRunOutcomeUserRevoked;
-use App\Events\ProcessRunOutlasted;
-use App\Events\ProcessRunStopped;
-use App\Events\ProcessRunUpdateCounted;
-use App\Events\ReaderPositionAdvanced;
-use App\Events\ReaderPositionFailed;
-use App\Events\ReaderPositionRewound;
-use App\Events\ResultReceiptSuperseded;
-use App\Events\RuleActivated;
-use App\Events\RuleProposalAdopted;
-use App\Events\RuleProposalWithdrawn;
-use App\Events\RuleRejected;
-use App\Events\RuleRetired;
-use App\Events\RunChanged;
-use App\Events\RunOutcomeRecorded;
+use App\Events\Processes\BundleActivated;
+use App\Events\Processes\ClassificationRuleRetired;
+use App\Events\Processes\EvidenceFoundInvalid;
+use App\Events\Processes\EvidencePermitConsumed;
+use App\Events\Processes\EvidencePermitExpired;
+use App\Events\Processes\OutputChunkCommitted;
+use App\Events\Processes\PartRunCaptured;
+use App\Events\Processes\PartRunCaptureMarked;
+use App\Events\Processes\PartRunDrained;
+use App\Events\Processes\PartRunLost;
+use App\Events\Processes\PartRunProcessFinished;
+use App\Events\Processes\PartRunSkipped;
+use App\Events\Processes\PartRunSpawnFailed;
+use App\Events\Processes\PartRunStarted;
+use App\Events\Processes\PartRunStopped;
+use App\Events\Processes\ProcessRunConsumed;
+use App\Events\Processes\ProcessRunLost;
+use App\Events\Processes\ProcessRunMarkedStale;
+use App\Events\Processes\ProcessRunOutcomeUserRevoked;
+use App\Events\Processes\ProcessRunOutlasted;
+use App\Events\Processes\ProcessRunStopped;
+use App\Events\Processes\ProcessRunUpdateCounted;
+use App\Events\Processes\ReaderPositionAdvanced;
+use App\Events\Processes\ReaderPositionFailed;
+use App\Events\Processes\ReaderPositionRewound;
+use App\Events\Processes\ResultReceiptSuperseded;
+use App\Events\Processes\RuleActivated;
+use App\Events\Processes\RuleProposalAdopted;
+use App\Events\Processes\RuleProposalWithdrawn;
+use App\Events\Processes\RuleRejected;
+use App\Events\Processes\RuleRetired;
+use App\Events\Processes\RunChanged;
+use App\Events\Processes\RunOutcomeRecorded;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
@@ -58,7 +58,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/ApproveRuleBundle/ApproveRuleBundleHandler.php',
+            'app/Commands/CommandRules/ApproveRuleBundle/ApproveRuleBundleHandler.php',
         ],
     ],
     EvidenceFoundInvalid::class => [
@@ -86,14 +86,14 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/RejectRuleProposal/RejectRuleProposalHandler.php',
+            'app/Commands/CommandRules/RejectRuleProposal/RejectRuleProposalHandler.php',
         ],
     ],
     RuleRetired::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/RetireCommandRule/RetireCommandRuleHandler.php',
+            'app/Commands/CommandRules/RetireCommandRule/RetireCommandRuleHandler.php',
         ],
     ],
     RunChanged::class => [

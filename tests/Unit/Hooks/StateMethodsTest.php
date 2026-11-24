@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
+use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Contracts\Events\Event;
 use App\Declarations\StateMethods;
 use App\Exceptions\InvalidStateMethod;

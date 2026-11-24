@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Commands\AssignRecord\AssignRecordCommand;
-use App\Commands\RetireAgent\RetireAgentCommand;
-use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ActorType;
 use App\Exceptions\CommandRefused;

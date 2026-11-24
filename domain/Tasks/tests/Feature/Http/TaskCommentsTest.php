@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature\Http;
 
-use App\Commands\PostComment\PostCommentCommand;
+use App\Commands\Comments\PostComment\PostCommentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Support\RecordIdentity;

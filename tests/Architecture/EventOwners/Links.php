@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Events\LinkRemoved;
-use App\Events\LinksRemoved;
+use App\Events\Links\LinkRemoved;
+use App\Events\Links\LinksRemoved;
 use Tests\Architecture\Support\EventRole;
 
 /**

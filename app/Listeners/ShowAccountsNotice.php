@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\RecordAccountNotice\RecordAccountNoticeCommand;
+use App\Commands\Accounts\RecordAccountNotice\RecordAccountNoticeCommand;
 use App\Contracts\Accounts\AccountNoticeCause;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;

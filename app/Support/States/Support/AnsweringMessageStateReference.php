@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\States\Support;
 
-use App\Events\ChatMessageOffered;
+use App\Events\Messages\ChatMessageOffered;
 use App\Models\Messages\Message;
 use App\Support\AssigneeIdentity;
 use App\Support\Decisions\StateReferenceFactory;

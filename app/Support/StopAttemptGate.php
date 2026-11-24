@@ -10,7 +10,7 @@ use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Enums\StopAttemptState;
 use App\Enums\StopPreparationState;
-use App\Events\HelperStopHeld;
+use App\Events\Hooks\HelperStopHeld;
 use App\Models\Starts\StartRecord;
 use App\Models\Starts\StopAttempt;
 use App\Support\Decisions\Decision;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Events\MessageSent;
-use App\Events\PageChanged;
+use App\Events\Messages\MessageSent;
+use App\Events\Web\PageChanged;
 use App\Support\PageChangeBroadcastLog;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Log\Events\MessageLogged;

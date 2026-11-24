@@ -35,9 +35,10 @@ enum FolderType: string
     case ArtisanCommands = 'ArtisanCommands';
 
     /**
-     * The type a file's place asks for. A command and its handler share a folder named for them under Commands, so
-     * Commands/CreateTask holds CreateTaskCommand and CreateTaskHandler and nothing else at its root; a file loose in
-     * Commands itself belongs to no pair. A Commands folder under Console holds Artisan adapters.
+     * The type a file's place asks for. A command and its handler share a folder named for them under Commands, or
+     * under a subject folder of Commands as core keeps them, so Commands/Messages/SendMessage holds SendMessageCommand
+     * and SendMessageHandler and nothing else at its root; a file loose in Commands itself belongs to no pair. A
+     * Commands folder under Console holds Artisan adapters.
      */
     public static function ofFile(string $file): self|null
     {
@@ -56,7 +57,9 @@ enum FolderType: string
             return self::CommandPair;
         }
 
-        if (basename(dirname($folder)) === 'Commands' && ! in_array(basename($folder), ['Support', 'Concerns'], true)) {
+        $isUnderCommands = basename(dirname($folder)) === 'Commands' || basename(dirname($folder, 2)) === 'Commands';
+
+        if ($isUnderCommands && ! in_array(basename($folder), ['Support', 'Concerns'], true)) {
             return match ($name) {
                 basename($folder).'Command' => self::Commands,
                 basename($folder).'Handler' => self::Handlers,

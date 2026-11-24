@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\RetryProcessRun\RetryProcessRunCommand;
-use App\Commands\StopLeftoverProcesses\StopLeftoverProcessesCommand;
+use App\Commands\Runs\RetryProcessRun\RetryProcessRunCommand;
+use App\Commands\Runs\StopLeftoverProcesses\StopLeftoverProcessesCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Bus\CommandBus;

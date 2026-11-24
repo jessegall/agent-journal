@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\SelectMessageCall;
-use App\Commands\SelectMessage\SelectMessageCommand;
+use App\Commands\Messages\SelectMessage\SelectMessageCommand;
 use App\Contracts\Bus\CommandBus;
 
 final readonly class SelectMessageController

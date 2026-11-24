@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Contracts\Work\AgentStack;
-use App\Events\ChatMessageOffered;
+use App\Events\Messages\ChatMessageOffered;
 use App\Support\States\Support\AnsweringMessageStateReference;
 
 /**

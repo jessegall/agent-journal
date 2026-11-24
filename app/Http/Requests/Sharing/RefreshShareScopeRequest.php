@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sharing;
 
-use App\Commands\RefreshShareScope\RefreshShareScopeCommand;
+use App\Commands\Sharing\RefreshShareScope\RefreshShareScopeCommand;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Sharing\Concerns\ReadsConfirmedPreview;
 use App\Http\Requests\Sharing\Concerns\ReadsShareId;

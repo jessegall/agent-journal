@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\HoldAgentStack\HoldAgentStackCommand as HoldAgentStack;
+use App\Commands\Agents\HoldAgentStack\HoldAgentStackCommand as HoldAgentStack;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Support\ConsoleOwner;

@@ -10,10 +10,10 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
-use App\Events\NotificationsChanged;
-use App\Events\NotificationsMarkAllAdvanced;
-use App\Events\NotificationsMarkAllFinished;
-use App\Events\NotificationsMarkAllStarted;
+use App\Events\Messages\NotificationsChanged;
+use App\Events\Messages\NotificationsMarkAllAdvanced;
+use App\Events\Messages\NotificationsMarkAllFinished;
+use App\Events\Messages\NotificationsMarkAllStarted;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -64,8 +64,6 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
             'mark_all_through' => 'integer',
             'mark_all_after' => 'integer',
             'fenced_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

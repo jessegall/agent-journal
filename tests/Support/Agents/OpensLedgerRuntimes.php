@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Commands\EnrollHost\EnrollHostCommand;
-use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\RunKeyScript\RunKeyScriptCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;

@@ -10,7 +10,7 @@ use App\Contracts\Sessions\StartTransaction;
 use App\Contracts\Time\ServerClock;
 use App\Enums\ProcessStartState;
 use App\Enums\SessionStatus;
-use App\Events\SessionClosed;
+use App\Events\Sessions\SessionClosed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;

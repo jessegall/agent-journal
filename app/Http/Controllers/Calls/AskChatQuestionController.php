@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\AskChatQuestionCall;
 use App\Calls\Communication\MessageNamed;
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

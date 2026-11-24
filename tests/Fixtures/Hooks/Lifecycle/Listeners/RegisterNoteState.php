@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Lifecycle\Listeners;
 
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Support\StateLoading\RegisteredStateType;
 use Tests\Fixtures\Hooks\Lifecycle\ReadingNoteState;
 

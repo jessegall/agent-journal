@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandFacts;
-use App\Events\RuleActivated;
+use App\Events\Processes\RuleActivated;
 use App\Exceptions\ApprovalRefused;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Exceptions\CommandRuleConflict;

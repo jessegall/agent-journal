@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
 use App\Enums\CommandEntry;
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\ActiveActorsResolver;

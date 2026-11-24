@@ -22,6 +22,7 @@ use PhpParser\ParserFactory;
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
 require_once __DIR__.'/sections.php';
+require_once __DIR__.'/php-parse.php';
 
 const SECTIONS = ['Constructors', 'Queries', 'Mutations', 'Answers', 'Accessors', 'Relations', 'Internals', 'Scopes'];
 
@@ -207,7 +208,7 @@ function runModelSections(array $arguments): int
         foreach (phpFiles($path) as $file) {
             $source = (string) file_get_contents($file);
             $models = array_filter(
-                new NodeFinder()->findInstanceOf($parser->parse($source) ?? [], Class_::class),
+                new NodeFinder()->findInstanceOf(parsedOnce($parser, $file, $source), Class_::class),
                 isModel(...),
             );
 

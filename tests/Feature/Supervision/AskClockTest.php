@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Supervision;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\AdvanceAsk\AdvanceAskCommand;
-use App\Commands\ChangeSupervisor\ChangeSupervisorCommand;
-use App\Commands\ReplyToAsk\ReplyToAskCommand;
-use App\Commands\RouteAsk\RouteAskCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Asks\AdvanceAsk\AdvanceAskCommand;
+use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
+use App\Commands\Asks\RouteAsk\RouteAskCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\ServerClock;

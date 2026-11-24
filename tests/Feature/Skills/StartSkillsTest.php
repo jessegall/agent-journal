@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\ClaimStartGrant\ClaimStartGrantCommand;
-use App\Commands\EnrollHost\EnrollHostCommand;
-use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Skills\SkillPublisher;
 use App\Enums\DriverType;
 use App\Enums\PublicationState;
 use App\Enums\SessionStatus;
-use App\Events\SessionOpened;
+use App\Events\Sessions\SessionOpened;
 use App\Exceptions\SkillSelectionConflict;
 use App\Exceptions\StartRefused;
 use App\Listeners\AdmitStartSkills;

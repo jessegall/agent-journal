@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Listeners;
 
 use App\Contracts\Files\Files;
-use App\Events\StartGrantRequested;
+use App\Events\Sessions\StartGrantRequested;
 use App\Listeners\HandManagedSettingsToHost;
 use App\Support\ArrangementSetting;
 use App\Support\StartAdditions;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\InterruptNavigation\InterruptNavigationCommand;
+use App\Commands\Navigation\InterruptNavigation\InterruptNavigationCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
 use Illuminate\Http\Response;

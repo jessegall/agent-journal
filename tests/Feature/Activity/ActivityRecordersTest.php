@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Activity;
 
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Enums\ActivityLevel;
 use App\Enums\ActivityType;
 use App\Enums\ToolOutcome;
-use App\Events\ActivityRecorded;
-use App\Events\ChatMessageAccepted;
-use App\Events\HelperReportedOnRecord;
-use App\Events\StartAccepted;
-use App\Events\ToolCallFinished;
+use App\Events\Sessions\ActivityRecorded;
+use App\Events\Messages\ChatMessageAccepted;
+use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Sessions\StartAccepted;
+use App\Events\Hooks\ToolCallFinished;
 use App\Models\Agents\ActivityEntry;
 use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\DriverToolInput;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Commands\BeginSignIn\BeginSignInCommand;
-use App\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

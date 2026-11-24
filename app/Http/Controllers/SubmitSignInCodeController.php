@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
+use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SubmitSignInCodeRequest;
 use Illuminate\Http\RedirectResponse;

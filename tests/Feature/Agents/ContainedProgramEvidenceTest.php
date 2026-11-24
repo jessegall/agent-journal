@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\EnrollHost\EnrollHostCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\ArrangementType;
 use App\Support\ArrangementSetting;

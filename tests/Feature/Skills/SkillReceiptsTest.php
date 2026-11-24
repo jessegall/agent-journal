@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Enums\ContextStartType;
 use App\Enums\ReadEvidence;
-use App\Events\ContextStarted;
+use App\Events\Hooks\ContextStarted;
 use App\Listeners\AdvanceSkillContext;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;

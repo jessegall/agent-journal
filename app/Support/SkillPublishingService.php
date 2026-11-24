@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ActivateSkillPublication\ActivateSkillPublicationCommand;
-use App\Commands\FailSkillPublication\FailSkillPublicationCommand;
-use App\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
-use App\Commands\PruneSkillPublications\PruneSkillPublicationsCommand;
-use App\Commands\PublishSkills\PublishSkillsCommand;
-use App\Commands\RefreshSkills\RefreshSkillsCommand;
-use App\Commands\RetrySkillPublication\RetrySkillPublicationCommand;
+use App\Commands\Skills\ActivateSkillPublication\ActivateSkillPublicationCommand;
+use App\Commands\Skills\FailSkillPublication\FailSkillPublicationCommand;
+use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
+use App\Commands\Skills\PruneSkillPublications\PruneSkillPublicationsCommand;
+use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
+use App\Commands\Skills\RefreshSkills\RefreshSkillsCommand;
+use App\Commands\Skills\RetrySkillPublication\RetrySkillPublicationCommand;
 use App\Contracts\Bus\Command;
 use App\Enums\CommandEntry;
 use App\Enums\PublicationState;

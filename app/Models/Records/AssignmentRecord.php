@@ -59,14 +59,6 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [];
-    }
-
-    /**
      * Gives an unheld record to the holder in one insert that does nothing when the record already has a holder, so
      * the unique record key decides between two writers without aborting the transaction.
      */

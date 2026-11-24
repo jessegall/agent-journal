@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\ExplainCommandCall;
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Processes\ExplanationData;
 use App\Data\Processes\HeldPartData;

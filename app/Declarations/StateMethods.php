@@ -7,7 +7,7 @@ namespace App\Declarations;
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\TickableState;
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\InvalidStateMethod;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\DeclaredType;

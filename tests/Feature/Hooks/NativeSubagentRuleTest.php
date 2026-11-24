@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverType;
-use App\Events\StartSettingsRequested;
+use App\Events\Sessions\StartSettingsRequested;
 use App\Models\Drivers\HookCall;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;

@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\AskMessageCall;
 use App\Calls\Communication\MessageNamed;
-use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

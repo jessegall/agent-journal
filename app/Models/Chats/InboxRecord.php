@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\InboxSequenceTaken;
+use App\Events\Messages\InboxSequenceTaken;
 use App\Exceptions\InboxUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\RenameAccount\RenameAccountCommand;
-use App\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
+use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Events\AccountsChanged;
+use App\Events\Accounts\AccountsChanged;
 use App\Exceptions\AccountLabelInvalid;
 use App\Exceptions\AccountLabelTaken;
 use App\Exceptions\AccountMissing;

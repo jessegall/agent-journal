@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\CreateDesk\CreateDeskCommand;
-use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\Desks\CreateDesk\CreateDeskCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\StackLockTimedOut;

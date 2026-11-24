@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Assignments\DisableAutoAssignmentCall;
-use App\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
+use App\Commands\Assignments\DisableAutoAssignment\DisableAutoAssignmentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AutoAssignmentChangeData;
 

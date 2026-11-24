@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\ProfileRetired;
+use App\Events\Accounts\ProfileRetired;
 use App\Exceptions\ProfileMissing;
 use App\Values\ProfileKey;
 use Carbon\CarbonImmutable;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Settings\SwitchSettingsGroupRequest;
 use App\Http\Responses\PageActionAnswers;

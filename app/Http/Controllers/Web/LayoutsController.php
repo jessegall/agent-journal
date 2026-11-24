@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Commands\ChangeLayout\ChangeLayoutCommand;
-use App\Commands\DeleteLayout\DeleteLayoutCommand;
-use App\Commands\SaveLayout\SaveLayoutCommand;
+use App\Commands\Layouts\ChangeLayout\ChangeLayoutCommand;
+use App\Commands\Layouts\DeleteLayout\DeleteLayoutCommand;
+use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Web\LayoutRequest;
 use App\Models\Records\Layout;

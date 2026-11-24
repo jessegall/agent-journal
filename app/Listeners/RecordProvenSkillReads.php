@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Events\ToolCallFinished;
+use App\Events\Hooks\ToolCallFinished;
 use App\Support\SkillReads;
 use App\Values\ProvenSkillRead;
 

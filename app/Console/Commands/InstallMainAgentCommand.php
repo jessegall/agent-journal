@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\InstallMainAgent\InstallMainAgentCommand as InstallMainAgent;
+use App\Commands\Agents\InstallMainAgent\InstallMainAgentCommand as InstallMainAgent;
 use App\Enums\CommandEntry;
 use App\Models\Agents\MainAgentDesignation;
 use App\Support\EntryDispatchers;

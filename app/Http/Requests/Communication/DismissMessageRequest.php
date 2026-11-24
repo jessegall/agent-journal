@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Commands\DismissMessage\DismissMessageCommand;
+use App\Commands\Messages\DismissMessage\DismissMessageCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class DismissMessageRequest extends FormRequest

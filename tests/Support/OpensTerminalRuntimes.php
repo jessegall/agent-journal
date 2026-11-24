@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Commands\OpenTerminalView\OpenTerminalViewCommand;
-use App\Commands\RenewTerminalView\RenewTerminalViewCommand;
+use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
+use App\Commands\Terminals\RenewTerminalView\RenewTerminalViewCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;

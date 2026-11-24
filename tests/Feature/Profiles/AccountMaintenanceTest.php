@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\ClaimStart\ClaimStartCommand;
-use App\Commands\EnrollHost\EnrollHostCommand;
-use App\Commands\NotifyStopped\NotifyStoppedCommand;
-use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Commands\Agents\ClaimStart\ClaimStartCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
+use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;

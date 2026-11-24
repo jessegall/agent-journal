@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\MarkSilentSessions\MarkSilentSessionsCommand;
+use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\SessionStatus;
 use App\Enums\StackStatus;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use App\Exceptions\EngineAccessRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\SettleFrameTimes\SettleFrameTimesCommand;
+use App\Commands\Agents\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;

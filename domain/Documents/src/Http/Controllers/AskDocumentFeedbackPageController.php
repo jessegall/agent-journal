@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Enums\ActorType;

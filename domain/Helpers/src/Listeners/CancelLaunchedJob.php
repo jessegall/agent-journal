@@ -7,7 +7,7 @@ namespace Domain\Helpers\Listeners;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
-use App\Events\LaunchCancelled;
+use App\Events\Sessions\LaunchCancelled;
 use Domain\Helpers\Commands\CancelLaunchedHelperJob\CancelLaunchedHelperJobCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;

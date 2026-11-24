@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\WithdrawCommandRequest\WithdrawCommandRequestCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\WithdrawCommandRequest\WithdrawCommandRequestCommand;
 use App\Enums\RequestHoldReason;
 use App\Enums\RequestState;
 use App\Exceptions\RequestTransitionRefused;

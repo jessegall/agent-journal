@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\MarkSilentSessions\MarkSilentSessionsCommand;
+use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 
 /**
  * Sweeps for silent sessions on every engine pass; the sweep is one bounded update, so it needs no throttle.

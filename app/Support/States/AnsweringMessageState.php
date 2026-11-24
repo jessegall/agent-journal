@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\StateType;
-use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use App\Contracts\Chat\ChatAnswer;
 use App\Contracts\Chat\MessageOffered;
 use App\Enums\FrameReuse;
 use App\Enums\SessionTransferType;
-use App\Events\MessageAnswered;
-use App\Events\MessageClaimReleased;
-use App\Events\MessageDismissed;
+use App\Events\Messages\MessageAnswered;
+use App\Events\Messages\MessageClaimReleased;
+use App\Events\Messages\MessageDismissed;
 use App\Support\ActorIdentity;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;

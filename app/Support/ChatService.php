@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\DeclineChatQuestion\DeclineChatQuestionCommand;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Commands\Messages\AnswerChatQuestion\AnswerChatQuestionCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\DeclineChatQuestion\DeclineChatQuestionCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Sessions\CurrentSession;

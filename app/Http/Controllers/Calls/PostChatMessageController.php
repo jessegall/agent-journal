@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\PostChatMessageCall;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

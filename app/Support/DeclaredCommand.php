@@ -17,7 +17,7 @@ use App\Exceptions\CommandDeclarationInvalid;
 
 /**
  * One command an owner lists, with the handler of its name, and what its attributes declare: an application
- * command declares one Authorize and no Entry, a trusted command one non-application Entry and no Authorize.
+ * command declares at most one Authorize and no Entry, a trusted command one non-application Entry and no Authorize.
  */
 final readonly class DeclaredCommand
 {
@@ -57,7 +57,6 @@ final readonly class DeclaredCommand
             count($authorizations) > 1 || count($entries) > 1 => 'it declares Authorize or Entry twice',
             count($authorizations) > 0 && count($entries) > 0 => 'it declares both Authorize and Entry',
             count($entries) > 0 && $entry === CommandEntry::Application => 'an application command needs no Entry',
-            $authorizations->count() + $entries->count() === 0 => 'it declares neither Authorize nor a trusted Entry',
             default => null,
         };
 

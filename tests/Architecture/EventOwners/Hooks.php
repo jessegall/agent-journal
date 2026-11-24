@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Events\ContextStarted;
-use App\Events\HelperCompletionCertified;
-use App\Events\HelperReportedOnRecord;
-use App\Events\HelperSentOnRecord;
-use App\Events\HelperStopHeld;
-use App\Events\HookCallRecorded;
-use App\Events\StateCommandAnswered;
-use App\Events\StateTypesRequested;
-use App\Events\ToolCallFinished;
+use App\Events\Hooks\ContextStarted;
+use App\Events\Hooks\HelperCompletionCertified;
+use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperSentOnRecord;
+use App\Events\Hooks\HelperStopHeld;
+use App\Events\Hooks\HookCallRecorded;
+use App\Events\Hooks\StateCommandAnswered;
+use App\Events\Hooks\StateTypesRequested;
+use App\Events\Hooks\ToolCallFinished;
 use Tests\Architecture\Support\EventRole;
 
 /**

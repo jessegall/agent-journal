@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
+use App\Commands\Profiles\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
 use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\CommandEntry;

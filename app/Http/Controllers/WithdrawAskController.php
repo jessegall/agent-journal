@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Calls\Supervision\WithdrawAskCall;
-use App\Commands\WithdrawAsk\WithdrawAskCommand;
+use App\Commands\Asks\WithdrawAsk\WithdrawAskCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\AskReader;
 use App\Data\Asks\AskCard;

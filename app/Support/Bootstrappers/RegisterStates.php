@@ -7,7 +7,7 @@ namespace App\Support\Bootstrappers;
 use App\Contracts\Domains\DomainAvailability;
 use App\Contracts\Domains\DomainBootstrapper;
 use App\CoreApi;
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\InvalidListener;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
-use App\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
-use App\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use App\Commands\Sharing\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Commands\Sharing\RecordGatewayHealth\RecordGatewayHealthCommand;
+use App\Commands\Sharing\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use App\Enums\GatewayEndpointState;
 use App\Enums\GatewayOperationType;
 use App\Enums\GatewayOutcome;

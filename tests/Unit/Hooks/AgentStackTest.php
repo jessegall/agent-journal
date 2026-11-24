@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
+use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\AccessRuleType;
 use App\Enums\AnswerType;

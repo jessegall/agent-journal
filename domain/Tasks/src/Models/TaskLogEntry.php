@@ -59,7 +59,6 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             'run_number' => 'integer',
             'actor_type' => ActorType::class,
             'sequence' => 'integer',
-            'created_at' => 'datetime',
         ];
     }
 

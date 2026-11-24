@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
-use App\Commands\ProveReader\ProveReaderCommand;
-use App\Commands\RejectRuleProposal\RejectRuleProposalCommand;
-use App\Commands\RestoreCommandRule\RestoreCommandRuleCommand;
-use App\Commands\RetireCommandRule\RetireCommandRuleCommand;
-use App\Commands\SaveCommandRule\SaveCommandRuleCommand;
+use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
+use App\Commands\CommandRules\RejectRuleProposal\RejectRuleProposalCommand;
+use App\Commands\CommandRules\RestoreCommandRule\RestoreCommandRuleCommand;
+use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
+use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Enums\ClassificationState;
 use App\Enums\CommandClass;
 use App\Enums\ProposalState;
 use App\Enums\RequestState;
-use App\Events\RuleActivated;
-use App\Events\RuleRejected;
+use App\Events\Processes\RuleActivated;
+use App\Events\Processes\RuleRejected;
 use App\Exceptions\ApprovalRefused;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Exceptions\CommandAdmissionRefused;

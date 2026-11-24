@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Commands\AssignRecord\AssignRecordCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\BindingReadiness;

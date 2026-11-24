@@ -118,7 +118,6 @@ final class ProfileRevision extends Model implements ReadableModel
             'script_source' => ScriptSourceCast::class,
             'compiled_script' => 'array',
             'author_type' => ActorType::class,
-            'created_at' => 'immutable_datetime',
         ];
     }
 

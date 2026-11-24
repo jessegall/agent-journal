@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\InstallNumbers\InstallNumbersCommand as InstallNumbers;
+use App\Commands\Records\InstallNumbers\InstallNumbersCommand as InstallNumbers;
 use App\Enums\CommandEntry;
 use App\Support\EntryDispatchers;
 use Illuminate\Console\Command;

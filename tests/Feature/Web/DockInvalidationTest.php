@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Events\ProtectedViewInvalidated;
-use App\Events\ShareRevoked;
+use App\Events\Web\ProtectedViewInvalidated;
+use App\Events\Sharing\ShareRevoked;
 use App\Listeners\BroadcastPageChange;
 use App\Listeners\BroadcastProtectedViewInvalidation;
 use App\Providers\DomainEventServiceProvider;

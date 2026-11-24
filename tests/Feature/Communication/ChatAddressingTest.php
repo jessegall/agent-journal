@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use App\Data\Messages\ReplyOriginal;
 use App\Enums\ChatPermission;
 use App\Exceptions\RespondentRequired;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Commands\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\EnabledSettingsGroup;
 use App\Contracts\Settings\SettingsResolver;
 use App\Enums\SettingsOutcome;
 use App\Enums\SettingTarget;
-use App\Events\SettingsChanged;
+use App\Events\Settings\SettingsChanged;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\SettingDisabled;
 use App\Exceptions\SettingsAccessDenied;

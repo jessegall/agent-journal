@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Commands\SetStringSetting\SetStringSettingCommand;
+use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsResolver;
 use App\Declarations\ToggleGroup;

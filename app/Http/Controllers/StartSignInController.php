@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\StartSignInRequest;
 use Illuminate\Http\RedirectResponse;

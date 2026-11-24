@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Events\CommentPosted;
+use App\Events\Comments\CommentPosted;
 use App\Support\RecordIdentity;
 use Tests\Architecture\Support\EventRole;
 

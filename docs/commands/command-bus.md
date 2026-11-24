@@ -71,8 +71,8 @@ final readonly class ProposeRuleHandler implements CommandHandler
 ```
 
 A handler that runs another handler directly, without the bus, binds that command to its own dispatcher with
-`withDispatcher($command->dispatchedBy())`, as `App\Commands\OpenHostMainRuntime\OpenHostMainRuntimeHandler`,
-`App\Support\DriverHeartbeatSource` and `App\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesHandler` do. Every other
+`withDispatcher($command->dispatchedBy())`, as `App\Commands\Agents\OpenHostMainRuntime\OpenHostMainRuntimeHandler`,
+`App\Support\DriverHeartbeatSource` and `App\Commands\Profiles\InstallBuiltInProfiles\InstallBuiltInProfilesHandler` do. Every other
 command goes through the bus.
 
 A command carries whole numbers, text, yes or no, decimals, backed enums, their nullable forms, final readonly values the
@@ -94,7 +94,7 @@ docs/domains/authorization.md shows how a module declares its policies.
 
 One attribute changes how a command runs:
 
-- `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Commands\AssignRecord\AssignRecordCommand` does.
+- `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Commands\Assignments\AssignRecord\AssignRecordCommand` does.
 
 The owner lists its commands on its Domain class through `App\Contracts\Bus\CommandProvider`, and exports the ones other
 owners may run. Callers take `App\Contracts\Bus\CommandBus` as a method parameter and call `run`:

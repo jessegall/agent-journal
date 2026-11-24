@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Events\StartGrantRequested;
+use App\Events\Sessions\StartGrantRequested;
 use App\Models\Agents\AgentSession;
 use App\Values\ProfileKey;
 

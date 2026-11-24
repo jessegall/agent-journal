@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ClaimSpeech\ClaimSpeechCommand;
+use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Sessions\CurrentSession;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Enums\ShareState;
-use App\Events\ShareExpired;
-use App\Events\ShareRevoked;
+use App\Events\Sharing\ShareExpired;
+use App\Events\Sharing\ShareRevoked;
 use App\Exceptions\ShareEndInvalid;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;

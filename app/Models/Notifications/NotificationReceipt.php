@@ -9,9 +9,9 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\NotificationReceiptHidden;
-use App\Events\NotificationReceiptRead;
-use App\Events\NotificationReceiptRevealed;
+use App\Events\Messages\NotificationReceiptHidden;
+use App\Events\Messages\NotificationReceiptRead;
+use App\Events\Messages\NotificationReceiptRevealed;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -57,7 +57,6 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
             'sequence' => 'integer',
             'read_at' => 'immutable_datetime',
             'hidden_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
         ];
     }
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Support;
 
-use App\Commands\CreateDesk\CreateDeskCommand;
-use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\Desks\CreateDesk\CreateDeskCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\ActorType;
 use App\Models\Desks\DeskRecord;

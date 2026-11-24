@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
-use App\Commands\ReassignRecord\ReassignRecordCommand;
-use App\Commands\UnassignRecord\UnassignRecordCommand;
+use App\Commands\Assignments\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
+use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
+use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandEntry;

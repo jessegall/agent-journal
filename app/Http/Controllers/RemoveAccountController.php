@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\RemoveAccount\RemoveAccountCommand;
+use App\Commands\Accounts\RemoveAccount\RemoveAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

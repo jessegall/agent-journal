@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Runtimes;
 
-use App\Commands\RetryDriverRequest\RetryDriverRequestCommand;
+use App\Commands\Drivers\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Http\Requests\Web\RequestRecoveryRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Support\ConsoleOwner;

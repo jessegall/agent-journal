@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\ApproveSample\ApproveSampleCommand;
+use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
 use App\Http\Requests\Processes\ApproveSampleRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

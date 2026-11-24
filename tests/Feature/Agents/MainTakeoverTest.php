@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\InstallDesks\InstallDesksCommand;
+use App\Commands\Desks\InstallDesks\InstallDesksCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\CommandEntry;

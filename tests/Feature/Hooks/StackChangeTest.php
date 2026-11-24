@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Work\CurrentState;
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\StackMissing;
 use App\Exceptions\StackTooDeep;
 use App\Models\Agents\AgentStackRow;

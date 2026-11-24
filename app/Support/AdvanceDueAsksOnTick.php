@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\AdvanceAsk\AdvanceAskCommand;
+use App\Commands\Asks\AdvanceAsk\AdvanceAskCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
 use App\Contracts\Time\ServerClock;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use Throwable;
 
 /**

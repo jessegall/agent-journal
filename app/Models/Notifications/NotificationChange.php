@@ -53,7 +53,6 @@ final class NotificationChange extends Model implements ReadableModel
             'version' => 'integer',
             'mutation_type' => NotificationMutationType::class,
             'sequence' => 'integer',
-            'created_at' => 'immutable_datetime',
         ];
     }
 

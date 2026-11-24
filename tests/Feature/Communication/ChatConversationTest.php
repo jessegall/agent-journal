@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use App\Enums\ReceiptDeliveryState;
-use App\Events\PageChanged;
-use App\Events\StateCommandAnswered;
+use App\Events\Web\PageChanged;
+use App\Events\Hooks\StateCommandAnswered;
 use App\Listeners\RunStateCommand;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Messages\Message;

@@ -87,7 +87,6 @@ final class SkillRevision extends Model implements ReadableModel
             'condition' => 'array',
             'condition_version' => 'integer',
             'author_type' => ActorType::class,
-            'created_at' => 'immutable_datetime',
         ];
     }
 

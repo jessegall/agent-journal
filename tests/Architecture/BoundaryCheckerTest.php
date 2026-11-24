@@ -106,7 +106,7 @@ final class BoundaryCheckerTest extends TestCase
             new NameUse(
                 $this->fixtureFolder().'/Plans/Listeners/HearsStateTypes.php',
                 4,
-                'App\Events\StateTypesRequested',
+                'App\Events\Hooks\StateTypesRequested',
                 NameType::Type,
             ),
         ];
@@ -129,7 +129,7 @@ final class BoundaryCheckerTest extends TestCase
         $use = new NameUse(
             $this->fixtureFolder().'/Plans/UsesAllowed.php',
             4,
-            'App\Events\StateTypesRequested',
+            'App\Events\Hooks\StateTypesRequested',
             NameType::Type,
         );
 

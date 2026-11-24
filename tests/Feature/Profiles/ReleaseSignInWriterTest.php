@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\BeginSignIn\BeginSignInCommand;
-use App\Commands\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\CancelSignIn\CancelSignInCommand;
-use App\Commands\ExpireSignInAttempt\ExpireSignInAttemptCommand;
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
+use App\Commands\Accounts\ExpireSignInAttempt\ExpireSignInAttemptCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\AccountState;
 use App\Enums\CommandEntry;
 use App\Enums\SignInMethod;
 use App\Enums\SignInState;
-use App\Events\SignInAttemptFinished;
+use App\Events\Accounts\SignInAttemptFinished;
 use App\Jobs\SignInDeadline;
 use App\Listeners\ReleaseSignInWriter;
 use App\Models\Accounts\Account;

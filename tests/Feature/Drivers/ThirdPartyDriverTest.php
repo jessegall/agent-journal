@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Commands\ApproveDriver\ApproveDriverCommand;
+use App\Commands\Drivers\ApproveDriver\ApproveDriverCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;

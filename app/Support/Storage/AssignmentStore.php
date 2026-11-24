@@ -7,7 +7,7 @@ namespace App\Support\Storage;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Bus\CommandFacts;
 use App\Enums\AssignmentOutcomeType;
-use App\Events\AssignmentsEnded;
+use App\Events\Assignments\AssignmentsEnded;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentTransactionRequired;
 use App\Models\Records\AssignmentRecord;

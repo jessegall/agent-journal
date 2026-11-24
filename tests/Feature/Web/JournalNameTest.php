@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Commands\SetStringSetting\SetStringSettingCommand;
+use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Values\SettingReference;

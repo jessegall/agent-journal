@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Commands\CleanAccount\CleanAccountCommand;
+use App\Commands\Accounts\CleanAccount\CleanAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\CleanupReportRequest;
 use App\Values\HostContext;

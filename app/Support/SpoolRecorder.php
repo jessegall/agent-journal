@@ -9,7 +9,7 @@ use App\Contracts\Files\Files;
 use App\Contracts\Reads\OutputRecorder;
 use App\Enums\Permissions;
 use App\Enums\Place;
-use App\Events\OutputChunkCommitted;
+use App\Events\Processes\OutputChunkCommitted;
 use App\Exceptions\FileExists;
 use App\Exceptions\FileUnwritable;
 use App\Exceptions\OutputStorageFailed;

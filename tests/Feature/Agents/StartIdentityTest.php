@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\CancelLaunch\CancelLaunchCommand;
-use App\Commands\CheckStartStatus\CheckStartStatusCommand;
-use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
-use App\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Commands\Agents\CancelLaunch\CancelLaunchCommand;
+use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
+use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverOperation;
 use App\Enums\DriverType;

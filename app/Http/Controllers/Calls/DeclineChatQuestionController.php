@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\DeclineChatQuestionCall;
 use App\Calls\Communication\MessageNamed;
-use App\Commands\DeclineChatQuestion\DeclineChatQuestionCommand;
+use App\Commands\Messages\DeclineChatQuestion\DeclineChatQuestionCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

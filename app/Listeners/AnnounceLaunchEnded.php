@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Events\LaunchEnded;
-use App\Events\SessionClosed;
+use App\Events\Sessions\LaunchEnded;
+use App\Events\Sessions\SessionClosed;
 use App\Models\Starts\StartRecord;
 use Illuminate\Contracts\Events\Dispatcher;
 

@@ -6,8 +6,8 @@ namespace Tests\Feature\Skills;
 
 use App\Enums\ContextStartType;
 use App\Enums\ToolOutcome;
-use App\Events\ContextStarted;
-use App\Events\ToolCallFinished;
+use App\Events\Hooks\ContextStarted;
+use App\Events\Hooks\ToolCallFinished;
 use App\Listeners\RecordProvenSkillReads;
 use App\Listeners\RefreshSessionSkills;
 use App\Models\Agents\AgentSession;

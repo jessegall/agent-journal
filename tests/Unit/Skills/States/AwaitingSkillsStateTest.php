@@ -11,7 +11,7 @@ use App\Enums\FileOperation;
 use App\Enums\ParseOutcome;
 use App\Enums\PublicationState;
 use App\Enums\ShellDialect;
-use App\Events\SkillPublicationMoved;
+use App\Events\Skills\SkillPublicationMoved;
 use App\Support\Decisions\Denied;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;

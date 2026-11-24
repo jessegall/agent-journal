@@ -89,8 +89,6 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
             'creator_type' => ActorType::class,
             'attention' => AttentionState::class,
             'filed_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

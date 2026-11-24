@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Attributes\Authorize;
-use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Bus\PipelineRunner;
 use App\CoreCommands;

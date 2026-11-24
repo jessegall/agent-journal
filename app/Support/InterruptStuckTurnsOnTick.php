@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\InterruptStuckTurns\InterruptStuckTurnsCommand;
+use App\Commands\Drivers\InterruptStuckTurns\InterruptStuckTurnsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 
 /**
  * Interrupts the turns that ran past the journal's limit on every engine pass; the sweep is one bounded batch.

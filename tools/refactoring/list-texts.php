@@ -23,6 +23,7 @@ use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
+require_once __DIR__.'/php-parse.php';
 
 /**
  * One text a user reads, and where it is written.
@@ -189,7 +190,7 @@ function scriptTexts(string $path): array
  */
 function phpTexts(string $path): array
 {
-    $statements = new ParserFactory()->createForHostVersion()->parse((string) file_get_contents($path)) ?? [];
+    $statements = parsedOnce(new ParserFactory()->createForHostVersion(), $path, (string) file_get_contents($path));
     $finder = new NodeFinder();
     $texts = [];
 

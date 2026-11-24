@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Events\SettingsChanged;
-use App\Events\SettingsRevised;
+use App\Events\Settings\SettingsChanged;
+use App\Events\Settings\SettingsRevised;
 use Tests\Architecture\Support\EventRole;
 
 /**

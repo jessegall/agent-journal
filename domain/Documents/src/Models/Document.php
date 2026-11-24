@@ -104,8 +104,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         return [
             'creator_type' => ActorType::class,
             'attention' => AttentionState::class,
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

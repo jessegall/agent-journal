@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Unit\States;
 
-use App\Events\HelperReportedOnRecord;
-use App\Events\HelperSentOnRecord;
+use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperSentOnRecord;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\Denied;
 use App\Support\Inputs\StopRequested;

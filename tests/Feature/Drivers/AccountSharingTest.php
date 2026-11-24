@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverType;
 use App\Exceptions\AccountWriterTaken;

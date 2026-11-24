@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Enums\ContextStartType;
-use App\Events\ContextStarted;
+use App\Events\Hooks\ContextStarted;
 use App\Models\Skills\SkillContextEpoch;
 
 /**

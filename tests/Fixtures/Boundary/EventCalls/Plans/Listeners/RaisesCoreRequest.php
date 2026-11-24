@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\EventCalls\Plans\Listeners;
 
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use Illuminate\Support\Facades\Event;
 
 final class RaisesCoreRequest

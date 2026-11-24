@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\EnvironmentOpened;
+use App\Events\Connections\EnvironmentOpened;
 use App\Exceptions\InvitationUnusable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -50,14 +50,6 @@ final class Environment extends Model implements EventSource, ReadableModel
     protected $table = 'project_environments';
 
     // ----------[ Constructors ]----------
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['created_at' => 'immutable_datetime'];
-    }
 
     /**
      * The environment a new project starts with.

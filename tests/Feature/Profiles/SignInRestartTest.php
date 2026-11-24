@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\BeginSignIn\BeginSignInCommand;
-use App\Commands\ReconcileSignIns\ReconcileSignInsCommand;
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;
 use App\Enums\CommandEntry;

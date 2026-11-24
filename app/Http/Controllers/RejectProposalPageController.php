@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\RejectRuleProposal\RejectRuleProposalCommand;
+use App\Commands\CommandRules\RejectRuleProposal\RejectRuleProposalCommand;
 use App\Http\Requests\Processes\ReviewRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

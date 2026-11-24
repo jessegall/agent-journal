@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\StartProfileMain\StartProfileMainCommand;
-use App\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
+use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -19,7 +19,7 @@ use App\Enums\DriverType;
 use App\Enums\ModelTier;
 use App\Enums\ResumeRefusal;
 use App\Enums\StartPreflightRefusal;
-use App\Events\DriverSwitchStopped;
+use App\Events\Sessions\DriverSwitchStopped;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverSwitchStale;
 use App\Exceptions\ProfileCannotCoordinate;

@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Events\Event;
-use App\Events\StateCommandAnswered;
+use App\Events\Hooks\StateCommandAnswered;
 use App\Values\StackTarget;
 
 /**

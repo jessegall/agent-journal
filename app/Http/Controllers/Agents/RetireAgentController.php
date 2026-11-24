@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AssignmentResultData;
 use App\Http\Requests\Agents\RetireAgentRequest;

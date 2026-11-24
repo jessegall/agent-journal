@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Commands\DeliverAgent\DeliverAgentCommand;
-use App\Commands\InterruptAgent\InterruptAgentCommand;
-use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\StopAgent\StopAgentCommand;
+use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
+use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Agents\StopAgent\StopAgentCommand;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverType;
 use App\Enums\HoldReason;

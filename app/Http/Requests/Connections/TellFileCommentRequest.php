@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Connections;
 
-use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Models\Projects\ProjectRead;
 use Illuminate\Foundation\Http\FormRequest;
 

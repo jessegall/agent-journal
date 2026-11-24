@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\ProveReader\ProveReaderCommand;
+use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
 use App\Enums\RequestState;
 use App\Exceptions\ReaderProofFailed;
 use App\Exceptions\RevisionImmutable;

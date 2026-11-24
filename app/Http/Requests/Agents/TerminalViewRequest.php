@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\CloseTerminalView\CloseTerminalViewCommand;
-use App\Commands\OpenTerminalView\OpenTerminalViewCommand;
-use App\Commands\RenewTerminalView\RenewTerminalViewCommand;
+use App\Commands\Terminals\CloseTerminalView\CloseTerminalViewCommand;
+use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
+use App\Commands\Terminals\RenewTerminalView\RenewTerminalViewCommand;
 use App\Models\Drivers\TerminalView;
 use Illuminate\Foundation\Http\FormRequest;
 

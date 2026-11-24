@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\ImportRuleProposals\ImportRuleProposalsCommand;
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Commands\ReviseRuleProposal\ReviseRuleProposalCommand;
-use App\Commands\WithdrawRuleProposal\WithdrawRuleProposalCommand;
+use App\Commands\CommandRules\ImportRuleProposals\ImportRuleProposalsCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Commands\CommandRules\ReviseRuleProposal\ReviseRuleProposalCommand;
+use App\Commands\CommandRules\WithdrawRuleProposal\WithdrawRuleProposalCommand;
 use App\Enums\CommandClass;
 use App\Enums\CommandType;
 use App\Enums\ProposalState;

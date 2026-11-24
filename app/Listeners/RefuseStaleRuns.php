@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\MarkRunsStale\MarkRunsStaleCommand;
+use App\Commands\Runs\MarkRunsStale\MarkRunsStaleCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\ActiveRuleChange;
 use App\Contracts\Events\Listener;

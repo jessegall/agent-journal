@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Enums\MessageState;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\MessageMissing;

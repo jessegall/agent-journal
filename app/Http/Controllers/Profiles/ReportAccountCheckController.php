@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Commands\CheckAccount\CheckAccountCommand;
+use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\AccountCheckRequest;
 use App\Values\HostContext;

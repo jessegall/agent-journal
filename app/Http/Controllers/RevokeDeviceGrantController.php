@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\RevokeDeviceGrant\RevokeDeviceGrantCommand;
+use App\Commands\Projects\RevokeDeviceGrant\RevokeDeviceGrantCommand;
 use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

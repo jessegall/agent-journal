@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand as InstallCommand;
+use App\Commands\Profiles\InstallBuiltInProfiles\InstallBuiltInProfilesCommand as InstallCommand;
 use App\Enums\CommandEntry;
 use App\Support\ActorStore;
 use App\Support\EntryDispatchers;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\CheckAccount\CheckAccountCommand;
+use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;
 use App\Enums\AccountCheckResult;
@@ -13,7 +13,7 @@ use App\Enums\AccountState;
 use App\Enums\CommandEntry;
 use App\Enums\DriverFailure;
 use App\Enums\SignInMethod;
-use App\Events\DriverFailed;
+use App\Events\Sessions\DriverFailed;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Accounts\ActiveAccount;

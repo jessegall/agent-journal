@@ -12,9 +12,9 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\IntervalRole;
 use App\Enums\LeaveReason;
-use App\Events\ChatMemberJoined;
-use App\Events\ChatMemberLeft;
-use App\Events\ChatRoleChanged;
+use App\Events\Messages\ChatMemberJoined;
+use App\Events\Messages\ChatMemberLeft;
+use App\Events\Messages\ChatRoleChanged;
 use App\Exceptions\ChatStateConflict;
 use App\Support\ActorIdentity;
 use App\Support\ChatInterval;
@@ -67,8 +67,6 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
             'joined_sequence' => 'integer',
             'joined_at' => 'immutable_datetime',
             'left_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

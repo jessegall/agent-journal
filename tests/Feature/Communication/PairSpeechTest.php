@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\ClaimSpeech\ClaimSpeechCommand;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\AnswerChatQuestion\AnswerChatQuestionCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Enums\MessageState;
 use App\Enums\SpeechOpportunityState;
 use App\Exceptions\SpeechRefused;

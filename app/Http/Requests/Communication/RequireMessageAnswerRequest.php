@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class RequireMessageAnswerRequest extends FormRequest

@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Enums\IntervalRole;
 use App\Enums\MessageBatchState;
 use App\Enums\OutstandingMessageRangeState;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use App\Models\Chats\InboxInterval;
 use App\Models\Chats\InboxRecord;
 use App\Models\CommandRules\CommandReceipt;

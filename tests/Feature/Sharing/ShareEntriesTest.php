@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Commands\ApproveShareRequest\ApproveShareRequestCommand;
-use App\Commands\CreateShare\CreateShareCommand;
-use App\Commands\ExpireShares\ExpireSharesCommand;
-use App\Commands\ReadShare\ReadShareCommand;
-use App\Commands\RefreshShareScope\RefreshShareScopeCommand;
-use App\Commands\RequestShare\RequestShareCommand;
-use App\Commands\RetryShare\RetryShareCommand;
-use App\Commands\RevokeShare\RevokeShareCommand;
-use App\Commands\SaveSharePreview\SaveSharePreviewCommand;
+use App\Commands\Sharing\ApproveShareRequest\ApproveShareRequestCommand;
+use App\Commands\Sharing\CreateShare\CreateShareCommand;
+use App\Commands\Sharing\ExpireShares\ExpireSharesCommand;
+use App\Commands\Sharing\ReadShare\ReadShareCommand;
+use App\Commands\Sharing\RefreshShareScope\RefreshShareScopeCommand;
+use App\Commands\Sharing\RequestShare\RequestShareCommand;
+use App\Commands\Sharing\RetryShare\RetryShareCommand;
+use App\Commands\Sharing\RevokeShare\RevokeShareCommand;
+use App\Commands\Sharing\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ShareState;

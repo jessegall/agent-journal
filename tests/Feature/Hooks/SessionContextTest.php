@@ -8,7 +8,7 @@ use App\Contracts\Actors\AgentTexts;
 use App\Enums\ContextStartType;
 use App\Enums\HookEvent;
 use App\Enums\RewriteSupport;
-use App\Events\ContextStarted;
+use App\Events\Hooks\ContextStarted;
 use App\Support\ContextBudget;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;

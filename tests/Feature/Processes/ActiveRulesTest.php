@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\ApproveRuleBundle\ApproveRuleBundleCommand;
-use App\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
-use App\Commands\SaveCommandRule\SaveCommandRuleCommand;
+use App\Commands\CommandRules\ApproveRuleBundle\ApproveRuleBundleCommand;
+use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandClass;
 use App\Enums\ShellDialect;

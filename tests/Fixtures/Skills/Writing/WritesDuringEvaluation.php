@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Skills\Writing;
 
 use App\Enums\CommandEntry;
 use App\Support\EntryDispatchers;
-use App\Commands\InstallNumbers\InstallNumbersCommand;
+use App\Commands\Records\InstallNumbers\InstallNumbersCommand;
 use App\Contracts\Skills\SkillConditionEvaluator;
 use App\Values\ConditionResult;
 use App\Values\SkillContext;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\CancelAccountUses\CancelAccountUsesCommand;
-use App\Commands\HoldAccountUses\HoldAccountUsesCommand;
-use App\Commands\SettleAccountUses\SettleAccountUsesCommand;
+use App\Commands\Accounts\CancelAccountUses\CancelAccountUsesCommand;
+use App\Commands\Accounts\HoldAccountUses\HoldAccountUsesCommand;
+use App\Commands\Accounts\SettleAccountUses\SettleAccountUsesCommand;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -15,7 +15,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandTransaction;
 use App\Enums\AccountProcessRole;
 use App\Enums\StartUnavailableReason;
-use App\Events\AccountUseChanged;
+use App\Events\Sessions\AccountUseChanged;
 use App\Exceptions\AccountInUse;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\AccountUseMissing;

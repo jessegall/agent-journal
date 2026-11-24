@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\RequireMessageAnswerCall;
-use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

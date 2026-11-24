@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\CreateSkill\CreateSkillCommand;
+use App\Commands\Skills\CreateSkill\CreateSkillCommand;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Console\Concerns\ReadsAudienceOptions;
 use App\Contracts\Bus\CommandBus;

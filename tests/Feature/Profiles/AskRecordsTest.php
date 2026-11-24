@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\AskSupervisor\AskSupervisorCommand;
-use App\Commands\AssignRecord\AssignRecordCommand;
-use App\Commands\ChangeSupervisor\ChangeSupervisorCommand;
-use App\Commands\ReassignRecord\ReassignRecordCommand;
-use App\Commands\ReplyToAsk\ReplyToAskCommand;
-use App\Commands\RetireAgent\RetireAgentCommand;
-use App\Commands\RouteAsk\RouteAskCommand;
-use App\Commands\WithdrawAsk\WithdrawAskCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
+use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
+use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Commands\Asks\RouteAsk\RouteAskCommand;
+use App\Commands\Asks\WithdrawAsk\WithdrawAskCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\AskReader;

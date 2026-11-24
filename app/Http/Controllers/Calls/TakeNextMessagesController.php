@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\MessagesRead;
 use App\Calls\Communication\TakeNextMessagesCall;
-use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Commands\Messages\TakeNextMessages\TakeNextMessagesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Messages\MessageReadResult;
 

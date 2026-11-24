@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Chat\AgentMessageReader;
 use App\Enums\ReadView;
 use App\Support\ActorIdentity;

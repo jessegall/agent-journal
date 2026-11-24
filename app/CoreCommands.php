@@ -9,9 +9,9 @@ use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\CommandMiddleware\GuardTickOrigin;
 use App\CommandMiddleware\KeepStartReceipt;
 use App\CommandMiddleware\RefuseWritesDuringEvaluation;
-use App\Commands\ContinueStart\ContinueStartCommand;
-use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\StartAgent\StartAgentCommand;
+use App\Commands\Agents\ContinueStart\ContinueStartCommand;
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\Command;
 use App\Support\CommandOwner;
 use App\Support\CommandScope;
@@ -28,7 +28,7 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
+        return FolderClasses::in(__DIR__.'/Commands/*/*', Command::class);
     }
 
     /**

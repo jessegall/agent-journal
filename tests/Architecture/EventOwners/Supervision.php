@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 use App\Enums\ActorType;
-use App\Events\AskAccepted;
-use App\Events\AskAnsweredLate;
-use App\Events\AskClosed;
-use App\Events\AskEscalated;
-use App\Events\AskHopAnswered;
-use App\Events\AskHopAssigned;
-use App\Events\AskHopAttentionRecorded;
-use App\Events\AskHopWakeRecorded;
-use App\Events\SupervisorLinkChanged;
+use App\Events\Asks\AskAccepted;
+use App\Events\Asks\AskAnsweredLate;
+use App\Events\Asks\AskClosed;
+use App\Events\Asks\AskEscalated;
+use App\Events\Asks\AskHopAnswered;
+use App\Events\Asks\AskHopAssigned;
+use App\Events\Asks\AskHopAttentionRecorded;
+use App\Events\Asks\AskHopWakeRecorded;
+use App\Events\Asks\SupervisorLinkChanged;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 

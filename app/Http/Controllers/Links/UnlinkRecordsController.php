@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Links;
 
-use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
+use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Http\Requests\Links\LinkRecordsRequest;

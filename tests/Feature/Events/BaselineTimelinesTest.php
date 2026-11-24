@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Events;
 
-use App\Commands\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\ReconcileSignIns\ReconcileSignInsCommand;
+use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandEntry;
-use App\Events\AccountsChanged;
-use App\Events\AssignmentsChanged;
+use App\Events\Accounts\AccountsChanged;
+use App\Events\Assignments\AssignmentsChanged;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;

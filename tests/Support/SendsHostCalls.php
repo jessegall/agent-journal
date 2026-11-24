@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Commands\EnrollHost\EnrollHostCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Bus\Command;
 use App\Support\EnrolledHost;
 use App\Support\SignedCall;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\RecordHostProtection\RecordHostProtectionCommand;
+use App\Commands\Projects\RecordHostProtection\RecordHostProtectionCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Profiles\ProtectionReportData;
 use App\Values\HostContext;

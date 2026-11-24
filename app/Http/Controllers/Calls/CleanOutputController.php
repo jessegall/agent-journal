@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\CleanOutputCall;
 use App\Calls\Processes\OutputCleaned;
-use App\Commands\CleanProcessOutput\CleanProcessOutputCommand;
+use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

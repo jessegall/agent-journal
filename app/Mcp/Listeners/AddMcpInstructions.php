@@ -6,7 +6,7 @@ namespace App\Mcp\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Enums\TransportProfileType;
-use App\Events\ContextStarted;
+use App\Events\Hooks\ContextStarted;
 use App\Mcp\Support\McpInstructions;
 use App\Models\Starts\ProcessStart;
 

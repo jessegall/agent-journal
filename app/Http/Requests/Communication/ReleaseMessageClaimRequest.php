@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
+use App\Commands\Messages\ReleaseMessageClaim\ReleaseMessageClaimCommand;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use Illuminate\Foundation\Http\FormRequest;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\ReconcileLostRuns\ReconcileLostRunsCommand;
+use App\Commands\Runs\ReconcileLostRuns\ReconcileLostRunsCommand;
 use App\Enums\CommandEntry;
 use App\Support\EntryDispatchers;
 use Illuminate\Console\Command;

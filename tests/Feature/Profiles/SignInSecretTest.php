@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\CompleteSignIn\CompleteSignInCommand;
-use App\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
+use App\Commands\Accounts\CompleteSignIn\CompleteSignInCommand;
+use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandEntry;

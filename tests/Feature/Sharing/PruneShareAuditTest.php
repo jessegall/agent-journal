@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Commands\PruneShareAudit\PruneShareAuditCommand;
+use App\Commands\Sharing\PruneShareAudit\PruneShareAuditCommand;
 use App\Enums\ShareAuditType;
 use App\Enums\ShareState;
 use App\Models\Sharing\Share;

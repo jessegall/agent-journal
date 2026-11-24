@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
-use App\Commands\ApproveSample\ApproveSampleCommand;
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Commands\ProposeReader\ProposeReaderCommand;
-use App\Commands\ProveReader\ProveReaderCommand;
-use App\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
-use App\Commands\SettleSample\SettleSampleCommand;
-use App\Commands\StartSample\StartSampleCommand;
+use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Commands\CommandRules\ProposeReader\ProposeReaderCommand;
+use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
+use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
+use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
+use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Declarations\VerificationContract;

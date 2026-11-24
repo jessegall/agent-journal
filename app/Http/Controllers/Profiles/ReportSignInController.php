@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Commands\NotifySignIn\NotifySignInCommand;
+use App\Commands\Accounts\NotifySignIn\NotifySignInCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SignInReportRequest;
 use App\Values\HostContext;

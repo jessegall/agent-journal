@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Connections\CancelProjectCommandCall;
-use App\Commands\CancelProjectCommandRun\CancelProjectCommandRunCommand;
+use App\Commands\Projects\CancelProjectCommandRun\CancelProjectCommandRunCommand;
 use App\Enums\CommandEntry;
 use App\Support\AgentContext;
 use App\Support\EntryDispatchers;

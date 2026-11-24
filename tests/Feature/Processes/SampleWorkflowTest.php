@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\ApproveSample\ApproveSampleCommand;
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Commands\SettleSample\SettleSampleCommand;
-use App\Commands\StartSample\StartSampleCommand;
+use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
+use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Enums\OutputStream;
 use App\Enums\RequestHoldReason;
 use App\Enums\RequestState;

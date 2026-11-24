@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AskMessage\AskMessageCommand;
-use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Chat\ConversationResolver;
 use App\Data\Messages\MessageView;
 use Illuminate\Support\Facades\DB;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
+use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverType;
 use App\Values\ChosenAccount;

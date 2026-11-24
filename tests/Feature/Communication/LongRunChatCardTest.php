@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\RecordRunEvents\RecordRunEventsCommand;
+use App\Commands\Runs\RecordRunEvents\RecordRunEventsCommand;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Chat\ChatLines;
 use App\Enums\ShellDialect;

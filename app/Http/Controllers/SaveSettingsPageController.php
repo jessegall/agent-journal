@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Commands\SetIntegerSetting\SetIntegerSettingCommand;
-use App\Commands\SetStringChoice\SetStringChoiceCommand;
-use App\Commands\SetStringSetting\SetStringSettingCommand;
+use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Commands\Settings\SetStringChoice\SetStringChoiceCommand;
+use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsCatalogue;

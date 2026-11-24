@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAccessService;

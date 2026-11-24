@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\ResetSetting\ResetSettingCommand;
+use App\Commands\Settings\ResetSetting\ResetSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsCatalogue;
 use App\Data\Settings\SettingData;

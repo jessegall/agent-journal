@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Records\LinkRecordProvider;
 use App\Contracts\Records\StateProvider;
 use App\CoreCommands;

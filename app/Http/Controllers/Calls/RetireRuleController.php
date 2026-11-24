@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\RetireRuleCall;
 use App\Calls\Processes\RuleRetired;
-use App\Commands\RetireCommandRule\RetireCommandRuleCommand;
+use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

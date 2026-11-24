@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\InstallDesks\InstallDesksCommand as InstallDesks;
+use App\Commands\Desks\InstallDesks\InstallDesksCommand as InstallDesks;
 use App\Enums\CommandEntry;
 use App\Support\EntryDispatchers;
 use Illuminate\Console\Command;

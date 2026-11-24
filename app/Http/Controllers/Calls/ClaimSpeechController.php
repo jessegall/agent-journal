@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\ClaimSpeechCall;
 use App\Calls\Communication\SpeechClaim;
-use App\Commands\ClaimSpeech\ClaimSpeechCommand;
+use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

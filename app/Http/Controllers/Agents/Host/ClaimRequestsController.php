@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
-use App\Commands\ClaimProjectReads\ClaimProjectReadsCommand;
+use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
+use App\Commands\Projects\ClaimProjectReads\ClaimProjectReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ArrangementType;
 use App\Models\Projects\Host;

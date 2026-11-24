@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\ReconcileStarts\ReconcileStartsCommand;
+use App\Commands\Agents\ReconcileStarts\ReconcileStartsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
 use App\Models\Starts\ProcessStart;

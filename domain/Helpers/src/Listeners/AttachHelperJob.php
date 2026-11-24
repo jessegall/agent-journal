@@ -7,7 +7,7 @@ namespace Domain\Helpers\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Contracts\Work\AgentStack;
-use App\Events\StartSessionOpened;
+use App\Events\Sessions\StartSessionOpened;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;

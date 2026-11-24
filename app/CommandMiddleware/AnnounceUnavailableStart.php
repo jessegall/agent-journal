@@ -6,7 +6,7 @@ namespace App\CommandMiddleware;
 
 use App\Contracts\Bus\AgentStartCommand;
 use App\Contracts\Bus\CommandMiddleware;
-use App\Events\StartRefusedWithoutAccount;
+use App\Events\Sessions\StartRefusedWithoutAccount;
 use App\Exceptions\AccountUnavailable;
 use App\Support\CommandCall;
 use Closure;

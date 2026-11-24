@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Events\SessionOpened;
+use App\Events\Sessions\SessionOpened;
 use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
 

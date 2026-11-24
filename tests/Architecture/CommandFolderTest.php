@@ -8,8 +8,7 @@ use App\Attributes\Authorize;
 use App\Attributes\Entry;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RequiresRequestKey;
-use App\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
-use App\Enums\CommandEntry;
+use App\Commands\Desks\ProvisionActorDesk\ProvisionActorDeskCommand;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;
 use App\Support\RegisteredMiddleware;
@@ -36,8 +35,6 @@ final class CommandFolderTest extends TestCase
     private const string UNLISTED = 'These classes sit in a Commands folder but no owner lists them in commands().';
 
     private const string MISPLACED = 'Command attributes on a class no owner lists as a command do nothing.';
-
-    private const string UNDECLARED = 'These commands declare neither Authorize nor a trusted entry.';
 
     private const string STATIC_STATE = 'A handler or middleware is built for each command '
         .'and keeps nothing between requests.';
@@ -87,22 +84,6 @@ final class CommandFolderTest extends TestCase
         }
 
         $this->assertSame([], $misplaced, self::MISPLACED);
-    }
-
-    public function test_every_registered_command_declares_its_authorization_or_a_trusted_entry(): void
-    {
-        $registry = $this->app->make(CommandRegistry::class);
-        $undeclared = array_filter(
-            array_keys($registry->handlerMap()),
-            fn (string $command) => $registry->authorizeOf($command) === null
-                && $registry->entryOf($command) === CommandEntry::Application,
-        );
-
-        $this->assertSame(
-            [],
-            array_values($undeclared),
-            self::UNDECLARED,
-        );
     }
 
     public function test_no_handler_or_command_middleware_keeps_static_state(): void

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\OpenPrivateEntry\OpenPrivateEntryCommand;
-use App\Commands\OpenTerminalView\OpenTerminalViewCommand;
-use App\Commands\SendTerminalInput\SendTerminalInputCommand;
-use App\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
-use App\Commands\TakeTerminalControl\TakeTerminalControlCommand;
+use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
+use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
+use App\Commands\Terminals\SendTerminalInput\SendTerminalInputCommand;
+use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Navigation\TerminalViewCloser;
 use App\Data\Terminals\TerminalControlData;

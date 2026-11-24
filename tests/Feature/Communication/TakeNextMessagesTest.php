@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\CreateDesk\CreateDeskCommand;
-use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Commands\Desks\CreateDesk\CreateDeskCommand;
+use App\Commands\Messages\TakeNextMessages\TakeNextMessagesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Data\Messages\MessageReadBatch;
 use App\Models\Desks\DeskRecord;

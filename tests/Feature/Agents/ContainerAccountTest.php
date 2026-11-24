@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\ClaimStart\ClaimStartCommand;
-use App\Commands\EnrollHost\EnrollHostCommand;
-use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\ReconcileStarts\ReconcileStartsCommand;
-use App\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Commands\Agents\ClaimStart\ClaimStartCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Agents\ReconcileStarts\ReconcileStartsCommand;
+use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;

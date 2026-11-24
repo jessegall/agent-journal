@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Events\MessageSent;
+use App\Events\Messages\MessageSent;
 use Tests\Support\Exceptions\SimulatedFailure;
 
 /**

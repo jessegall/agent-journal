@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Calls\Scripts\SaveProfileDraftCall;
-use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Profiles\ProfileDraftData;
 use App\Support\Readers\ProfileDraftReader;

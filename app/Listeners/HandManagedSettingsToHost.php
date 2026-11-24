@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Events\Listener;
 use App\Contracts\Files\Files;
 use App\Enums\Place;
-use App\Events\StartGrantRequested;
+use App\Events\Sessions\StartGrantRequested;
 use App\Support\ArrangementSetting;
 use App\Support\MountRules;
 use App\Support\StartFile;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\ClaimStartGrant\ClaimStartGrantCommand;
+use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;

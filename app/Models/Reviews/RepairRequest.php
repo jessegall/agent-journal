@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\RepairRequestState;
-use App\Events\RepairRequestSettled;
+use App\Events\Reviews\RepairRequestSettled;
 use App\Models\Support\HasWorkColumns;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

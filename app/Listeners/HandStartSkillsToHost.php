@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Enums\PublicationState;
-use App\Events\StartGrantRequested;
+use App\Events\Sessions\StartGrantRequested;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;

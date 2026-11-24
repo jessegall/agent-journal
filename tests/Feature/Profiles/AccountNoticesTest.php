@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\DismissAccountNotice\DismissAccountNoticeCommand;
-use App\Commands\StartAgent\StartAgentCommand;
-use App\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Commands\Accounts\DismissAccountNotice\DismissAccountNoticeCommand;
+use App\Commands\Agents\StartAgent\StartAgentCommand;
+use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Accounts\AccountNoticesData;
@@ -16,7 +16,7 @@ use App\Enums\ConversationModeType;
 use App\Enums\DriverFailure;
 use App\Enums\DriverType;
 use App\Enums\StartOriginType;
-use App\Events\DriverFailed;
+use App\Events\Sessions\DriverFailed;
 use App\Exceptions\AccountUnavailable;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
 use App\Models\Accounts\Account;

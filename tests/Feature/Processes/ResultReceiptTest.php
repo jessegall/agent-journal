@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\AssessPartOutput\AssessPartOutputCommand;
+use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
 use App\Contracts\Bus\ResultReceipts;
 use App\Enums\AssessmentOutcome;
 use App\Enums\ProblemCode;
 use App\Enums\RunMode;
-use App\Events\EvidenceFoundInvalid;
+use App\Events\Processes\EvidenceFoundInvalid;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ResultReceipt;

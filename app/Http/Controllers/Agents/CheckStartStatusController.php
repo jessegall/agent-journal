@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Commands\CheckStartStatus\CheckStartStatusCommand;
+use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\CheckStartStatusRequest;
 use App\Http\Responses\PageActionAnswers;

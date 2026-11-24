@@ -9,7 +9,7 @@ use App\Contracts\Chat\Notifications;
 use App\Contracts\Events\Listener;
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationSourceType;
-use App\Events\RunOutcomeRecorded;
+use App\Events\Processes\RunOutcomeRecorded;
 use App\Models\Runs\ProcessRun;
 use App\Resolvers\RunNotificationTarget;
 

@@ -26,6 +26,7 @@ use PhpParser\ParserFactory;
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
 require_once __DIR__.'/model-sections.php';
+require_once __DIR__.'/php-parse.php';
 
 /** What an accessor's closure, or an answer that may become one, must never do. */
 const SIDE_EFFECTS = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore)\(|'
@@ -58,7 +59,7 @@ function answersAContract(string $class, string $method): bool
  *
  * @param  list<string>  $followed  the methods of the model already followed, so a loop of calls ends
  */
-function readsRows(string $source, string $class, ClassMethod $method, array $followed): bool
+function readsRows(string $source, string $class, Class_ $model, ClassMethod $method, array $followed): bool
 {
     $body = substr($source, $method->getStartFilePos(), $method->getEndFilePos() + 1 - $method->getStartFilePos());
 
@@ -76,19 +77,19 @@ function readsRows(string $source, string $class, ClassMethod $method, array $fo
         }
     }
 
-    $model = Reflector::of($class);
+    $type = Reflector::of($class);
 
     foreach ($finder->findInstanceOf($method, Node\Expr\MethodCall::class) as $call) {
         $name = $call->name instanceof Node\Identifier ? $call->name->toString() : '';
         $isOwn = $call->var instanceof Node\Expr\Variable && $call->var->name === 'this';
 
-        if (! $isOwn || in_array($name, $followed, true) || ! $model->hasMethod($name)) {
+        if (! $isOwn || in_array($name, $followed, true) || ! $type->hasMethod($name)) {
             continue;
         }
 
-        $own = ownMethodNamed($source, $name);
+        $own = $model->getMethod($name);
 
-        if ($own !== null && readsRows($source, $class, $own, [...$followed, $method->name->toString()])) {
+        if ($own !== null && readsRows($source, $class, $model, $own, [...$followed, $method->name->toString()])) {
             return true;
         }
     }
@@ -112,16 +113,6 @@ function importedName(string $source, string $name): string
     return $namespace[1].'\\'.$name;
 }
 
-/**
- * The method of the source's model with this name, none when a trait or a parent declares it.
- */
-function ownMethodNamed(string $source, string $name): ClassMethod|null
-{
-    $parsed = new ParserFactory()->createForNewestSupportedVersion()->parse($source) ?? [];
-    $methods = new NodeFinder()->find($parsed, fn (Node $node) => $node instanceof ClassMethod && $node->name->toString() === $name);
-
-    return $methods[0] ?? null;
-}
 
 /**
  * Whether the method types the column of its own name, which an accessor of that name would hide; a cast types it.
@@ -137,7 +128,7 @@ function readsItsOwnColumn(ClassMethod $method, string $body): bool
  * Whether a model method takes nothing, changes nothing and answers with more than yes or no, so it is an accessor;
  * one that names what it throws keeps it in a method's contract, which a property read cannot carry.
  */
-function belongsInAccessor(string $source, string $class, ClassMethod $method): bool
+function belongsInAccessor(string $source, string $class, Class_ $model, ClassMethod $method): bool
 {
     $returns = $method->returnType;
     $returned = $returns instanceof Node\Identifier || $returns instanceof Node\Name ? $returns->toString() : '';
@@ -151,7 +142,7 @@ function belongsInAccessor(string $source, string $class, ClassMethod $method): 
         && ! str_starts_with($method->name->toString(), '__')
         && sectionOf($method, $body) === 'Answers'
         && preg_match(SIDE_EFFECTS, $body) !== 1
-        && ! readsRows($source, $class, $method, [])
+        && ! readsRows($source, $class, $model, $method, [])
         && ! str_contains((string) $method->getDocComment()?->getText(), '@throws')
         && ! readsItsOwnColumn($method, $body)
         && ! answersAContract($class, $method->name->toString());
@@ -174,11 +165,11 @@ function accessorFaultsOf(string $source, string $class, Class_ $model): array
             $faults[] = "{$method->getStartLine()}\taccessor {$name} writes, dispatches or runs something";
         }
 
-        if (isAccessor($method) && readsRows($source, $class, $method, [])) {
+        if (isAccessor($method) && readsRows($source, $class, $model, $method, [])) {
             $faults[] = "{$method->getStartLine()}\taccessor {$name} reads rows";
         }
 
-        if (belongsInAccessor($source, $class, $method)) {
+        if (belongsInAccessor($source, $class, $model, $method)) {
             $faults[] = "{$method->getStartLine()}\tanswer {$name} takes nothing and returns no bool, so it is an accessor";
         }
     }
@@ -278,7 +269,7 @@ function withAccessors(string $source, string $class, Class_ $model, array $kept
 {
     $methods = array_reverse(array_filter(
         $model->getMethods(),
-        fn (ClassMethod $method) => belongsInAccessor($source, $class, $method)
+        fn (ClassMethod $method) => belongsInAccessor($source, $class, $model, $method)
             && ! in_array("{$class}::{$method->name->toString()}", $kept, true),
     ));
 
@@ -310,7 +301,7 @@ foreach (array_values(array_diff(array_slice($argv, 1), ['--fix', ...$keptOption
     foreach (phpFiles($path) as $file) {
         $source = (string) file_get_contents($file);
         $models = array_filter(
-            new NodeFinder()->findInstanceOf($parser->parse($source) ?? [], Class_::class),
+            new NodeFinder()->findInstanceOf(parsedOnce($parser, $file, $source), Class_::class),
             isModel(...),
         );
 

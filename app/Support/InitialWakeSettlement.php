@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Contracts\Sessions\StartTransaction;
 use App\Enums\HostWakeRefusal;
 use App\Models\Agents\AgentRuntime;

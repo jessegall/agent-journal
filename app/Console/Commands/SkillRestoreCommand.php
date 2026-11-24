@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\RestoreSkill\RestoreSkillCommand;
+use App\Commands\Skills\RestoreSkill\RestoreSkillCommand;
 use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Contracts\Bus\CommandBus;

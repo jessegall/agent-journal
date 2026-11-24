@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Chat\ChatLines;
 use App\Contracts\Events\Listener;
-use App\Events\ProcessRunOutlasted;
+use App\Events\Processes\ProcessRunOutlasted;
 use App\Models\Runs\ProcessRun;
 use App\Support\Cards\DockIdentity;
 

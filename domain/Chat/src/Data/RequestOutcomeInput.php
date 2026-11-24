@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use Domain\Chat\Enums\SentOperation;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\RequiredIf;

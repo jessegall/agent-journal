@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\DismissMessageCall;
 use App\Calls\Communication\MessageNamed;
-use App\Commands\DismissMessage\DismissMessageCommand;
+use App\Commands\Messages\DismissMessage\DismissMessageCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

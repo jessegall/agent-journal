@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Commands\AbandonNavigation\AbandonNavigationCommand;
+use App\Commands\Navigation\AbandonNavigation\AbandonNavigationCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;

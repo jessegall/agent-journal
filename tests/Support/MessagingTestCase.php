@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Commands\AskMessage\AskMessageCommand;
-use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Enums\ActorType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Events\HelperCompletionCertified;
-use App\Events\HelperStopHeld;
-use App\Events\LaunchCancelled;
+use App\Events\Hooks\HelperCompletionCertified;
+use App\Events\Hooks\HelperStopHeld;
+use App\Events\Sessions\LaunchCancelled;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;

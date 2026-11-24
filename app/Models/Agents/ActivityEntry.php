@@ -83,8 +83,6 @@ final class ActivityEntry extends Model implements ReadableModel
             'type' => ActivityType::class,
             'found' => 'array',
             'occurred_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

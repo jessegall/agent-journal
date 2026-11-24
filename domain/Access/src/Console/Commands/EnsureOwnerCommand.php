@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Console\Commands;
 
-use App\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Commands\Desks\ProvisionActorDesk\ProvisionActorDeskCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\CommandEntry;
 use App\Support\ActorIdentity;

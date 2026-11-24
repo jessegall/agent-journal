@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Events\ToolCallFinished;
+use App\Events\Hooks\ToolCallFinished;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\ToolFinished;
 use App\Values\StackTarget;

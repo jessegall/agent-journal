@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sharing;
 
-use App\Commands\CreateShare\CreateShareCommand;
+use App\Commands\Sharing\CreateShare\CreateShareCommand;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Sharing\Concerns\ReadsConfirmedPreview;
 use App\Support\ShareDuration;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\CancelSignIn\CancelSignInCommand;
-use App\Commands\CheckAccount\CheckAccountCommand;
-use App\Commands\CompleteSignIn\CompleteSignInCommand;
-use App\Commands\RecheckAccount\RecheckAccountCommand;
-use App\Commands\ReconcileAccounts\ReconcileAccountsCommand;
-use App\Commands\RemoveAccount\RemoveAccountCommand;
+use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
+use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
+use App\Commands\Accounts\CompleteSignIn\CompleteSignInCommand;
+use App\Commands\Accounts\RecheckAccount\RecheckAccountCommand;
+use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
+use App\Commands\Accounts\RemoveAccount\RemoveAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\AccountCheckResult;

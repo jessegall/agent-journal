@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\CleanProcessOutput\CleanProcessOutputCommand;
-use App\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
+use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
+use App\Commands\Runs\VerifyRestoredOutput\VerifyRestoredOutputCommand;
 use App\Contracts\Admission\ShellAdmission;
 use App\Enums\AdmissionRefusalCode;
 use App\Enums\CaptureState;

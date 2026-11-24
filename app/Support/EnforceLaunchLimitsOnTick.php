@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\EnforceLaunchLimits\EnforceLaunchLimitsCommand;
+use App\Commands\Agents\EnforceLaunchLimits\EnforceLaunchLimitsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 
 /**
  * Enforces the launch limits on every engine pass; each pass stops a bounded number of launches.

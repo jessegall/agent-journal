@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Events\ChatAccessEnded;
-use App\Events\DeskPreferenceSwitched;
-use App\Events\DeskRenamed;
-use App\Events\DeskSeatingAdvanced;
-use App\Events\LayoutRemoved;
-use App\Events\LayoutSaved;
-use App\Events\NotificationsInvalidated;
-use App\Events\PageChanged;
-use App\Events\ProtectedViewInvalidated;
+use App\Events\Web\ChatAccessEnded;
+use App\Events\Web\DeskPreferenceSwitched;
+use App\Events\Web\DeskRenamed;
+use App\Events\Web\DeskSeatingAdvanced;
+use App\Events\Web\LayoutRemoved;
+use App\Events\Web\LayoutSaved;
+use App\Events\Web\NotificationsInvalidated;
+use App\Events\Web\PageChanged;
+use App\Events\Web\ProtectedViewInvalidated;
 use Tests\Architecture\Support\EventRole;
 
 /**

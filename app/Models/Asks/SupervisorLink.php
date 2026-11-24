@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\SupervisorLinkChanged;
+use App\Events\Asks\SupervisorLinkChanged;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Values\AskTypeKey;

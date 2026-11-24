@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Commands\OfferNextAsk\OfferNextAskCommand;
-use App\Events\AskClosed;
+use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
+use App\Events\Asks\AskClosed;
 use App\Support\Decisions\Decision;
 use App\Support\States\AnsweringAskState;
 use PHPUnit\Framework\TestCase;

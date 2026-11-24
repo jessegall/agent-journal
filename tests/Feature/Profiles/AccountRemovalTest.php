@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\BeginSignIn\BeginSignInCommand;
-use App\Commands\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\CancelSignIn\CancelSignInCommand;
-use App\Commands\ClaimCleanup\ClaimCleanupCommand;
-use App\Commands\CleanAccount\CleanAccountCommand;
-use App\Commands\CleanSignInAttempt\CleanSignInAttemptCommand;
-use App\Commands\ReconcileAccounts\ReconcileAccountsCommand;
-use App\Commands\RemoveAccount\RemoveAccountCommand;
-use App\Commands\RetryAccountCleanup\RetryAccountCleanupCommand;
-use App\Commands\RetryAttemptCleanup\RetryAttemptCleanupCommand;
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
+use App\Commands\Accounts\ClaimCleanup\ClaimCleanupCommand;
+use App\Commands\Accounts\CleanAccount\CleanAccountCommand;
+use App\Commands\Accounts\CleanSignInAttempt\CleanSignInAttemptCommand;
+use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
+use App\Commands\Accounts\RemoveAccount\RemoveAccountCommand;
+use App\Commands\Accounts\RetryAccountCleanup\RetryAccountCleanupCommand;
+use App\Commands\Accounts\RetryAttemptCleanup\RetryAttemptCleanupCommand;
 use App\Contracts\Accounts\AccountOwnerDrain;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;

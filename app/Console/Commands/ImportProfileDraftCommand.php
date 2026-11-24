@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Attributes\DecodesAnyJson;
-use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Files\Files;
 use App\Exceptions\FileMissing;

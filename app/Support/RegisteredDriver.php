@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\StartAgent\StartAgentCommand;
+use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCapabilities;

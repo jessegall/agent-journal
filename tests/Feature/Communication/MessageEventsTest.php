@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\SendMessage\SendMessageCommand;
-use App\Events\MessageEvent;
-use App\Events\MessageSent;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Events\Messages\MessageEvent;
+use App\Events\Messages\MessageSent;
 use App\Exceptions\CommittedFactListenerFailed;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;

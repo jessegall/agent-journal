@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Chat\ChatParticipationEnding;
 use App\Contracts\Chat\InboxResolver;
 use App\Enums\ChatPermission;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;

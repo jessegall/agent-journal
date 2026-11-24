@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Supervision;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\ApproveCodeReview\ApproveCodeReviewCommand;
-use App\Commands\HandOffCodeReview\HandOffCodeReviewCommand;
-use App\Commands\ReplyToAsk\ReplyToAskCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Reviews\ApproveCodeReview\ApproveCodeReviewCommand;
+use App\Commands\Reviews\HandOffCodeReview\HandOffCodeReviewCommand;
+use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\AskReader;

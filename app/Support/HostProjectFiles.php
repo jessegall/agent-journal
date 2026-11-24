@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\RequestProjectRead\RequestProjectReadCommand;
+use App\Commands\Projects\RequestProjectRead\RequestProjectReadCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\ProjectFiles;
 use App\Enums\ProjectReadType;

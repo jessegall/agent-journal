@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Events\PageChanged;
+use App\Events\Web\PageChanged;
 use Carbon\CarbonImmutable;
 use Illuminate\Queue\Events\JobProcessing;
 use Psr\Log\LoggerInterface;

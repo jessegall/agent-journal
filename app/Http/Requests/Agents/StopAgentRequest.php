@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\StopAgent\StopAgentCommand;
+use App\Commands\Agents\StopAgent\StopAgentCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

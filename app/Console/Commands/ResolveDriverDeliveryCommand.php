@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\ResolveDriverDelivery\ResolveDriverDeliveryCommand as ResolveDriverDelivery;
+use App\Commands\Drivers\ResolveDriverDelivery\ResolveDriverDeliveryCommand as ResolveDriverDelivery;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Support\ConsoleOwner;

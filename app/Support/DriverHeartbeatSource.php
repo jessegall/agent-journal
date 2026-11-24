@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Commands\RecordHeartbeat\RecordHeartbeatHandler;
+use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatHandler;
 use App\Exceptions\CredentialRejected;
 use App\Exceptions\HostReportRefused;
 use App\Models\Agents\AgentRuntime;

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
-use App\Commands\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
 use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail\SetIntegerSettingThenFailCommand;
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 

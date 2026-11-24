@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Agents\RecordHeartbeatCall;
-use App\Commands\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Support\AgentContext;
 use App\Values\CallAccepted;

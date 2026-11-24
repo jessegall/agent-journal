@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AcknowledgeChatMessages\AcknowledgeChatMessagesCommand;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\AcknowledgeChatMessages\AcknowledgeChatMessagesCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Chat\ConversationResolver;
 use App\Exceptions\ChatInboxRefused;
 use App\Support\ActorIdentity;

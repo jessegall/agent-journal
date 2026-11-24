@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Events\HelperRecordFacts;
-use App\Events\HelperReportedOnRecord;
-use App\Events\HelperSentOnRecord;
+use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperSentOnRecord;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

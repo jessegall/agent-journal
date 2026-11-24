@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Sessions\SessionPolicyReader;
-use App\Events\HelperCompletionCertified;
+use App\Events\Hooks\HelperCompletionCertified;
 use App\Models\Reviews\CertifiedWork;
 use App\Models\Reviews\WorkReservation;
 use App\Models\Starts\StartRecord;

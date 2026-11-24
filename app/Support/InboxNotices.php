@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Admission\JournalAdmission;

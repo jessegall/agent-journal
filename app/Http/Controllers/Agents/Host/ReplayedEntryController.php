@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\NotifyEntryReplayed\NotifyEntryReplayedCommand;
+use App\Commands\Drivers\NotifyEntryReplayed\NotifyEntryReplayedCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\EntryReplayedData;
 use App\Values\HostContext;

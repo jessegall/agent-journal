@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Events\HelperReportedOnRecord;
+use App\Events\Hooks\HelperReportedOnRecord;
 use App\Support\HelperActivity;
 
 /**

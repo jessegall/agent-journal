@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Processes\Watchdog;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\Sleeper;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use App\Support\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Container\Container;

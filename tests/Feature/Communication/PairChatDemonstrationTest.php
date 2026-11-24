@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\AnswerChatQuestion\AnswerChatQuestionCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Enums\MessageState;
-use App\Events\PageChanged;
+use App\Events\Web\PageChanged;
 use App\Exceptions\SpeechRefused;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageReceipt;

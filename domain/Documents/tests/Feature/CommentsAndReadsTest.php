@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Commands\PostComment\PostCommentCommand;
-use App\Commands\PostTextComment\PostTextCommentCommand;
+use App\Commands\Comments\PostComment\PostCommentCommand;
+use App\Commands\Comments\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\CommentResolver;

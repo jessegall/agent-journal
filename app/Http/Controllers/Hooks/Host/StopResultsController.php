@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks\Host;
 
-use App\Commands\RecordStopResults\RecordStopResultsCommand;
+use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Hooks\StopResultsRequest;
 use App\Values\HostContext;

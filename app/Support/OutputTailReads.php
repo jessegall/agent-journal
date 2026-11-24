@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Calls\Processes\OutputTail;
-use App\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
+use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\EvidenceSource;
 use App\Enums\OutputStream;

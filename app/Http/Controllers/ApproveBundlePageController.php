@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\ApproveRuleBundle\ApproveRuleBundleCommand;
+use App\Commands\CommandRules\ApproveRuleBundle\ApproveRuleBundleCommand;
 use App\Http\Requests\Processes\ApproveBundleRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

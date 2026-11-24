@@ -10,8 +10,8 @@ use Domain\Chat\Events\ConversationClosed;
 use Domain\Chat\Events\ConversationTransferred;
 use Domain\Chat\Events\DirectChatRemoved;
 use Domain\Chat\Events\DockChanged;
-use Domain\Chat\Events\MessageReactionAdded;
-use Domain\Chat\Events\MessageReactionWithdrawn;
+use App\Events\Messages\MessageReactionAdded;
+use App\Events\Messages\MessageReactionWithdrawn;
 use Tests\Architecture\Support\EventRole;
 
 /**

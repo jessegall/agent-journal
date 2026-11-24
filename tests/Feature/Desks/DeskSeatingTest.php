@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Desks;
 
-use App\Commands\SeatActor\SeatActorCommand;
+use App\Commands\Desks\SeatActor\SeatActorCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\SeatCapacityReached;

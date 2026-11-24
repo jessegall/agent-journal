@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\AskQuestionCall;
 use App\Calls\Communication\MessageNamed;
-use App\Commands\AskQuestion\AskQuestionCommand;
+use App\Commands\Messages\AskQuestion\AskQuestionCommand;
 use App\Contracts\Bus\CommandBus;
 
 final readonly class AskQuestionController

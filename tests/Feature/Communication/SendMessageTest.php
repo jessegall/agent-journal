@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Enums\MessageState;
-use App\Events\MessageSent;
+use App\Events\Messages\MessageSent;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agents\Agent;

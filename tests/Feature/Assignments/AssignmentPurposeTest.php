@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Commands\AssignRecord\AssignRecordCommand;
-use App\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
+use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Bus\CommandBus;

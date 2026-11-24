@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\CreateShare\CreateShareCommand;
+use App\Commands\Sharing\CreateShare\CreateShareCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Sharing\SharePreview;
 use App\Support\ConsoleOwner;

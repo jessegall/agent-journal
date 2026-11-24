@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Commands\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CallSignatureInvalid;

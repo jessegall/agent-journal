@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\RetireMenuEntry\RetireMenuEntryCommand;
+use App\Commands\Navigation\RetireMenuEntry\RetireMenuEntryCommand;
 use App\Enums\ActorType;
 use App\Enums\MenuEntryState;
 use App\Enums\NavigationCompletion;

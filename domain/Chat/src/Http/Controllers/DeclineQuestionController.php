@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Commands\DeclineChatQuestion\DeclineChatQuestionCommand;
+use App\Commands\Messages\DeclineChatQuestion\DeclineChatQuestionCommand;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Data\DeclineInput;
 use Illuminate\Http\RedirectResponse;

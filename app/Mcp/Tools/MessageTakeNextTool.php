@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Commands\Messages\TakeNextMessages\TakeNextMessagesCommand;
 use App\Contracts\Bus\Command;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;

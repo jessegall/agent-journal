@@ -6,7 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\NoSubject;
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\InvalidBottomState;
 use App\Exceptions\StateSchemaUnknown;
 use App\Exceptions\StateTypeUnknown;

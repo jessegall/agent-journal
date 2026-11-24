@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Commands\DismissMessage\DismissMessageCommand;
+use App\Commands\Messages\DismissMessage\DismissMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Data\CancelInput;
 use Illuminate\Http\RedirectResponse;

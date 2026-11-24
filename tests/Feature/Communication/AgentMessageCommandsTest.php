@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AnswerMessage\AnswerMessageCommand;
-use App\Commands\DismissMessage\DismissMessageCommand;
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Commands\SelectMessage\SelectMessageCommand;
+use App\Commands\Messages\AnswerMessage\AnswerMessageCommand;
+use App\Commands\Messages\DismissMessage\DismissMessageCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\SelectMessage\SelectMessageCommand;
 use App\Contracts\Chat\InboxResolver;
 use App\Enums\MessageState;
-use App\Events\MessageAnswered;
+use App\Events\Messages\MessageAnswered;
 use App\Exceptions\MessageMissing;
 use App\Models\Agents\AgentSession;
 use App\Models\CommandRules\CommandReceipt;

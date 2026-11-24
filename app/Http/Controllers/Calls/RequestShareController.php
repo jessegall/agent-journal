@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Sharing\RequestShareCall;
-use App\Commands\RequestShare\RequestShareCommand;
+use App\Commands\Sharing\RequestShare\RequestShareCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Data\Sharing\ShareProposalStatusData;

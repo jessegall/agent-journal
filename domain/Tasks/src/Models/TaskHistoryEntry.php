@@ -71,7 +71,6 @@ final class TaskHistoryEntry extends Model implements ReadableModel
             'from_state' => TaskState::class,
             'to_state' => TaskState::class,
             'sequence' => 'integer',
-            'created_at' => 'datetime',
         ];
     }
 

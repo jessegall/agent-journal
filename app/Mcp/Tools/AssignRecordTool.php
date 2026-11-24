@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Commands\AssignRecord\AssignRecordCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

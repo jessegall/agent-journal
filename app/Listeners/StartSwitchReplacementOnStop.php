@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\FailDriverSwitchLaunch\FailDriverSwitchLaunchCommand;
-use App\Commands\StartSwitchReplacement\StartSwitchReplacementCommand;
+use App\Commands\Drivers\FailDriverSwitchLaunch\FailDriverSwitchLaunchCommand;
+use App\Commands\Agents\StartSwitchReplacement\StartSwitchReplacementCommand;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
-use App\Events\DriverSwitchStopped;
+use App\Events\Sessions\DriverSwitchStopped;
 
 /**
  * Once a switch's old session is proven stopped and that has committed, starts its replacement; a refused start is

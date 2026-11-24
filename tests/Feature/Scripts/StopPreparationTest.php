@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Scripts;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
-use App\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
-use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
+use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
+use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Scripts\ScriptChecks;

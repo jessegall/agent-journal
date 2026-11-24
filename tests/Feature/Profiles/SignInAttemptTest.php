@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\BeginSignIn\BeginSignInCommand;
-use App\Commands\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\CancelSignIn\CancelSignInCommand;
-use App\Commands\CompleteSignIn\CompleteSignInCommand;
-use App\Commands\ReconcileAccounts\ReconcileAccountsCommand;
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
+use App\Commands\Accounts\CompleteSignIn\CompleteSignInCommand;
+use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Accounts\SignInAttemptData;
@@ -16,7 +16,7 @@ use App\Enums\AccountState;
 use App\Enums\CommandEntry;
 use App\Enums\SignInMethod;
 use App\Enums\SignInState;
-use App\Events\AccountsChanged;
+use App\Events\Accounts\AccountsChanged;
 use App\Exceptions\SignInAttemptStale;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;

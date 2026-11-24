@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Events\Listener;
 use App\Data\Messages\MessageBatchItemData;
-use App\Events\ContextStarted;
+use App\Events\Hooks\ContextStarted;
 use App\Mcp\Support\McpCatalogue;
 use App\Models\Agents\AgentSession;
 use App\Resolvers\Support\SkillContextResolver;

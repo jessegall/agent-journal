@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Enums\ChildRole;
-use App\Events\ChildCheckoutRequested;
+use App\Events\Sessions\ChildCheckoutRequested;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\ChildClaim;

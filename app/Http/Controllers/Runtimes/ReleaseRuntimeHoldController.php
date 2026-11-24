@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Runtimes;
 
-use App\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
+use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Http\Requests\Web\HoldReleaseRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

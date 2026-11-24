@@ -7,103 +7,103 @@ use App\Enums\DriverType;
 use App\Enums\HoldReason;
 use App\Enums\RuntimeActivity;
 use App\Enums\StopAttemptState;
-use App\Events\AccountSettingsRequested;
-use App\Events\AccountUseChanged;
-use App\Events\ActivityRecorded;
-use App\Events\AgentDriverTypePreferred;
-use App\Events\AgentFocusCleared;
-use App\Events\AgentFocusMoved;
-use App\Events\AgentHoldReleased;
-use App\Events\AgentRetired;
-use App\Events\AgentRuntimeAdopted;
-use App\Events\AgentRuntimeClosed;
-use App\Events\AgentRuntimeConfirmedAlive;
-use App\Events\AgentRuntimeHeld;
-use App\Events\AgentRuntimeHostChanged;
-use App\Events\AgentRuntimeObserved;
-use App\Events\AgentRuntimeReassigned;
-use App\Events\AgentRuntimeRequestedSettingsRecomputed;
-use App\Events\AgentRuntimeSettingsObserved;
-use App\Events\AgentRuntimesFenced;
-use App\Events\AgentRuntimeStarted;
-use App\Events\AgentRuntimeStartGrantClaimed;
-use App\Events\AgentRuntimeStartGrantHeld;
-use App\Events\AgentRuntimeStopRequested;
-use App\Events\AgentSessionConversationEntered;
-use App\Events\AgentSessionDriverLabelKept;
-use App\Events\AgentSessionEnded;
-use App\Events\AgentSessionHeartbeatRecorded;
-use App\Events\AgentSessionSelectionUsed;
-use App\Events\AgentSessionSkillsGenerated;
-use App\Events\ChildCheckoutRequested;
-use App\Events\CleanupPassRecorded;
-use App\Events\DriverBuildsApproved;
-use App\Events\DriverFailed;
-use App\Events\DriverRequestAccepted;
-use App\Events\DriverRequestApplied;
-use App\Events\DriverRequestAttemptStarted;
-use App\Events\DriverRequestGivenBack;
-use App\Events\DriverRequestHeld;
-use App\Events\DriverRequestRecovered;
-use App\Events\DriverRequestRetried;
-use App\Events\DriverRequestScriptProgressed;
-use App\Events\DriverRequestStaged;
-use App\Events\DriverRequestSuspectedDuplicate;
-use App\Events\DriverRequestWakeAcknowledged;
-use App\Events\DriverRequestWakeClaimed;
-use App\Events\DriverSwitchCancelled;
-use App\Events\DriverSwitchConfirmed;
-use App\Events\DriverSwitchLaunchFailed;
-use App\Events\DriverSwitchPreflighted;
-use App\Events\DriverSwitchRefused;
-use App\Events\DriverSwitchStartRequested;
-use App\Events\DriverSwitchStopped;
-use App\Events\DriverSwitchStopRequested;
-use App\Events\DriverTurnFinished;
-use App\Events\LaunchCancelled;
-use App\Events\LaunchEnded;
-use App\Events\MenuEntryMarkedStale;
-use App\Events\MenuEntryProven;
-use App\Events\MenuEntryRetired;
-use App\Events\MenuEntrySuperseded;
-use App\Events\MenuEntryUsed;
-use App\Events\MergeOutcomeRecorded;
-use App\Events\ProcessStartCancelled;
-use App\Events\ProcessStartClaimed;
-use App\Events\ProcessStartOutputAdvanced;
-use App\Events\ProcessStartSeenRunning;
-use App\Events\ProcessStartStopped;
-use App\Events\RevisionFenceReconciled;
-use App\Events\SessionClosed;
-use App\Events\SessionOpened;
-use App\Events\SessionStateChanged;
-use App\Events\StartAccepted;
-use App\Events\StartGrantRequested;
-use App\Events\StartIdentityBecameUncertain;
-use App\Events\StartIdentityBound;
-use App\Events\StartIdentityPrepared;
-use App\Events\StartIntentForgotten;
-use App\Events\StartRecordRefused;
-use App\Events\StartRefused;
-use App\Events\StartRefusedWithoutAccount;
-use App\Events\StartSessionOpened;
-use App\Events\StartSettingsRequested;
-use App\Events\StartTokenIssued;
-use App\Events\StartTokenRevoked;
-use App\Events\StartTokenRotated;
-use App\Events\StartVerificationCancelled;
-use App\Events\StopAttemptCertified;
-use App\Events\StopAttemptSettled;
-use App\Events\TerminalGrantGivenBack;
-use App\Events\TerminalGrantIssued;
-use App\Events\TerminalGrantRefused;
-use App\Events\TerminalGrantReleased;
-use App\Events\TerminalGrantRenewed;
-use App\Events\TerminalGrantRetired;
-use App\Events\TerminalGrantSequenceTaken;
-use App\Events\TerminalTakeSent;
-use App\Events\TerminalViewClosed;
-use App\Events\TerminalViewFollowed;
+use App\Events\Sessions\AccountSettingsRequested;
+use App\Events\Sessions\AccountUseChanged;
+use App\Events\Sessions\ActivityRecorded;
+use App\Events\Sessions\AgentDriverTypePreferred;
+use App\Events\Sessions\AgentFocusCleared;
+use App\Events\Sessions\AgentFocusMoved;
+use App\Events\Sessions\AgentHoldReleased;
+use App\Events\Sessions\AgentRetired;
+use App\Events\Sessions\AgentRuntimeAdopted;
+use App\Events\Sessions\AgentRuntimeClosed;
+use App\Events\Sessions\AgentRuntimeConfirmedAlive;
+use App\Events\Sessions\AgentRuntimeHeld;
+use App\Events\Sessions\AgentRuntimeHostChanged;
+use App\Events\Sessions\AgentRuntimeObserved;
+use App\Events\Sessions\AgentRuntimeReassigned;
+use App\Events\Sessions\AgentRuntimeRequestedSettingsRecomputed;
+use App\Events\Sessions\AgentRuntimeSettingsObserved;
+use App\Events\Sessions\AgentRuntimesFenced;
+use App\Events\Sessions\AgentRuntimeStarted;
+use App\Events\Sessions\AgentRuntimeStartGrantClaimed;
+use App\Events\Sessions\AgentRuntimeStartGrantHeld;
+use App\Events\Sessions\AgentRuntimeStopRequested;
+use App\Events\Sessions\AgentSessionConversationEntered;
+use App\Events\Sessions\AgentSessionDriverLabelKept;
+use App\Events\Sessions\AgentSessionEnded;
+use App\Events\Sessions\AgentSessionHeartbeatRecorded;
+use App\Events\Sessions\AgentSessionSelectionUsed;
+use App\Events\Sessions\AgentSessionSkillsGenerated;
+use App\Events\Sessions\ChildCheckoutRequested;
+use App\Events\Sessions\CleanupPassRecorded;
+use App\Events\Sessions\DriverBuildsApproved;
+use App\Events\Sessions\DriverFailed;
+use App\Events\Sessions\DriverRequestAccepted;
+use App\Events\Sessions\DriverRequestApplied;
+use App\Events\Sessions\DriverRequestAttemptStarted;
+use App\Events\Sessions\DriverRequestGivenBack;
+use App\Events\Sessions\DriverRequestHeld;
+use App\Events\Sessions\DriverRequestRecovered;
+use App\Events\Sessions\DriverRequestRetried;
+use App\Events\Sessions\DriverRequestScriptProgressed;
+use App\Events\Sessions\DriverRequestStaged;
+use App\Events\Sessions\DriverRequestSuspectedDuplicate;
+use App\Events\Sessions\DriverRequestWakeAcknowledged;
+use App\Events\Sessions\DriverRequestWakeClaimed;
+use App\Events\Sessions\DriverSwitchCancelled;
+use App\Events\Sessions\DriverSwitchConfirmed;
+use App\Events\Sessions\DriverSwitchLaunchFailed;
+use App\Events\Sessions\DriverSwitchPreflighted;
+use App\Events\Sessions\DriverSwitchRefused;
+use App\Events\Sessions\DriverSwitchStartRequested;
+use App\Events\Sessions\DriverSwitchStopped;
+use App\Events\Sessions\DriverSwitchStopRequested;
+use App\Events\Sessions\DriverTurnFinished;
+use App\Events\Sessions\LaunchCancelled;
+use App\Events\Sessions\LaunchEnded;
+use App\Events\Sessions\MenuEntryMarkedStale;
+use App\Events\Sessions\MenuEntryProven;
+use App\Events\Sessions\MenuEntryRetired;
+use App\Events\Sessions\MenuEntrySuperseded;
+use App\Events\Sessions\MenuEntryUsed;
+use App\Events\Sessions\MergeOutcomeRecorded;
+use App\Events\Sessions\ProcessStartCancelled;
+use App\Events\Sessions\ProcessStartClaimed;
+use App\Events\Sessions\ProcessStartOutputAdvanced;
+use App\Events\Sessions\ProcessStartSeenRunning;
+use App\Events\Sessions\ProcessStartStopped;
+use App\Events\Sessions\RevisionFenceReconciled;
+use App\Events\Sessions\SessionClosed;
+use App\Events\Sessions\SessionOpened;
+use App\Events\Sessions\SessionStateChanged;
+use App\Events\Sessions\StartAccepted;
+use App\Events\Sessions\StartGrantRequested;
+use App\Events\Sessions\StartIdentityBecameUncertain;
+use App\Events\Sessions\StartIdentityBound;
+use App\Events\Sessions\StartIdentityPrepared;
+use App\Events\Sessions\StartIntentForgotten;
+use App\Events\Sessions\StartRecordRefused;
+use App\Events\Sessions\StartRefused;
+use App\Events\Sessions\StartRefusedWithoutAccount;
+use App\Events\Sessions\StartSessionOpened;
+use App\Events\Sessions\StartSettingsRequested;
+use App\Events\Sessions\StartTokenIssued;
+use App\Events\Sessions\StartTokenRevoked;
+use App\Events\Sessions\StartTokenRotated;
+use App\Events\Sessions\StartVerificationCancelled;
+use App\Events\Sessions\StopAttemptCertified;
+use App\Events\Sessions\StopAttemptSettled;
+use App\Events\Sessions\TerminalGrantGivenBack;
+use App\Events\Sessions\TerminalGrantIssued;
+use App\Events\Sessions\TerminalGrantRefused;
+use App\Events\Sessions\TerminalGrantReleased;
+use App\Events\Sessions\TerminalGrantRenewed;
+use App\Events\Sessions\TerminalGrantRetired;
+use App\Events\Sessions\TerminalGrantSequenceTaken;
+use App\Events\Sessions\TerminalTakeSent;
+use App\Events\Sessions\TerminalViewClosed;
+use App\Events\Sessions\TerminalViewFollowed;
 use App\Support\RecordIdentity;
 use Illuminate\Support\Str;
 use Tests\Architecture\Support\EventRole;
@@ -139,13 +139,13 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Commands/ReconcileStarts/ReconcileStartsHandler.php',
-            'app/Commands/NotifyRequestProgress/NotifyRequestProgressHandler.php',
-            'app/Commands/NotifyRunning/NotifyRunningHandler.php',
-            'app/Commands/NotifyRuntimeActivity/NotifyRuntimeActivityHandler.php',
-            'app/Commands/NotifyRuntimeExit/NotifyRuntimeExitHandler.php',
-            'app/Commands/NotifyRuntimeHeartbeat/NotifyRuntimeHeartbeatHandler.php',
-            'app/Commands/NotifyStopped/NotifyStoppedHandler.php',
+            'app/Commands/Agents/ReconcileStarts/ReconcileStartsHandler.php',
+            'app/Commands/Drivers/NotifyRequestProgress/NotifyRequestProgressHandler.php',
+            'app/Commands/Agents/NotifyRunning/NotifyRunningHandler.php',
+            'app/Commands/Drivers/NotifyRuntimeActivity/NotifyRuntimeActivityHandler.php',
+            'app/Commands/Agents/NotifyRuntimeExit/NotifyRuntimeExitHandler.php',
+            'app/Commands/Agents/NotifyRuntimeHeartbeat/NotifyRuntimeHeartbeatHandler.php',
+            'app/Commands/Drivers/NotifyStopped/NotifyStoppedHandler.php',
         ],
     ],
     AccountUseChanged::class => [
@@ -153,27 +153,27 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Support/RegisterPendingStart.php',
-            'app/Commands/CancelAccountUses/CancelAccountUsesHandler.php',
-            'app/Commands/HoldAccountUses/HoldAccountUsesHandler.php',
-            'app/Commands/ReconcileStarts/ReconcileStartsHandler.php',
-            'app/Commands/NotifyFailure/NotifyFailureHandler.php',
-            'app/Commands/NotifyStopped/NotifyStoppedHandler.php',
-            'app/Commands/RetireAgent/RetireAgentHandler.php',
-            'app/Commands/SettleAccountUses/SettleAccountUsesHandler.php',
+            'app/Commands/Accounts/CancelAccountUses/CancelAccountUsesHandler.php',
+            'app/Commands/Accounts/HoldAccountUses/HoldAccountUsesHandler.php',
+            'app/Commands/Agents/ReconcileStarts/ReconcileStartsHandler.php',
+            'app/Commands/Agents/NotifyFailure/NotifyFailureHandler.php',
+            'app/Commands/Drivers/NotifyStopped/NotifyStoppedHandler.php',
+            'app/Commands/Agents/RetireAgent/RetireAgentHandler.php',
+            'app/Commands/Accounts/SettleAccountUses/SettleAccountUsesHandler.php',
         ],
     ],
     AgentHoldReleased::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/ReleaseAgentHold/ReleaseAgentHoldHandler.php',
+            'app/Commands/Sessions/ReleaseAgentHold/ReleaseAgentHoldHandler.php',
         ],
     ],
     AgentRuntimeReassigned::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/ReassignAgentRuntime/ReassignAgentRuntimeHandler.php',
+            'app/Commands/Agents/ReassignAgentRuntime/ReassignAgentRuntimeHandler.php',
         ],
     ],
     DriverRequestRecovered::class => [
@@ -187,7 +187,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/CancelLaunch/CancelLaunchHandler.php',
+            'app/Commands/Agents/CancelLaunch/CancelLaunchHandler.php',
         ],
     ],
     DriverSwitchStopped::class => [
@@ -208,15 +208,15 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/InspectMergeAttempts/InspectMergeAttemptsHandler.php',
-            'app/Commands/MergeReviewedWork/MergeReviewedWorkHandler.php',
+            'app/Commands/Reviews/InspectMergeAttempts/InspectMergeAttemptsHandler.php',
+            'app/Commands/Reviews/MergeReviewedWork/MergeReviewedWorkHandler.php',
         ],
     ],
     DriverFailed::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/NotifyFailure/NotifyFailureHandler.php',
+            'app/Commands/Agents/NotifyFailure/NotifyFailureHandler.php',
             'app/Support/RecordDriverFailure.php',
         ],
     ],
@@ -239,7 +239,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/StartAgent/StartAgentHandler.php',
+            'app/Commands/Agents/StartAgent/StartAgentHandler.php',
         ],
     ],
     StartGrantRequested::class => [

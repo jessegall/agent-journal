@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\MessagesRead;
 use App\Calls\Communication\ReadMessagesCall;
-use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Messages\MessageReadResult;
 

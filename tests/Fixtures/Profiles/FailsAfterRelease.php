@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Events\SignInAttemptFinished;
+use App\Events\Accounts\SignInAttemptFinished;
 use RuntimeException;
 
 /**

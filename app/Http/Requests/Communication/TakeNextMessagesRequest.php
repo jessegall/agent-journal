@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Commands\Messages\TakeNextMessages\TakeNextMessagesCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class TakeNextMessagesRequest extends FormRequest

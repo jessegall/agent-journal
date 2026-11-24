@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;

@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\ReleaseSpeechCall;
-use App\Commands\ReleaseSpeech\ReleaseSpeechCommand;
+use App\Commands\Messages\ReleaseSpeech\ReleaseSpeechCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

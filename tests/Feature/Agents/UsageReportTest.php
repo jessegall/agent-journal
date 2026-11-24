@@ -6,8 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Enums\AccountProcessRole;
 use App\Enums\ProcessStartState;
-use App\Events\AccountsChanged;
-use App\Events\AccountUsageChanged;
+use App\Events\Accounts\AccountsChanged;
+use App\Events\Accounts\AccountUsageChanged;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
 use App\Models\Accounts\AccountUsageWindow;

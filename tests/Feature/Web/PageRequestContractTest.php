@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Enums\ChatPermission;
 use App\Enums\SignInMethod;
 use App\Models\Accounts\Account;

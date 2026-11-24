@@ -67,8 +67,6 @@ final class Conversation extends Model implements EventSource, ReadableModel
             'state' => ConversationState::class,
             'reconcile_pending' => 'boolean',
             'closed_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

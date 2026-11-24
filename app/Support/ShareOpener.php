@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ApproveShareRequest\ApproveShareRequestCommand;
-use App\Commands\CreateShare\CreateShareCommand;
-use App\Commands\RefreshShareScope\RefreshShareScopeCommand;
+use App\Commands\Sharing\ApproveShareRequest\ApproveShareRequestCommand;
+use App\Commands\Sharing\CreateShare\CreateShareCommand;
+use App\Commands\Sharing\RefreshShareScope\RefreshShareScopeCommand;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\RedirectResponse;

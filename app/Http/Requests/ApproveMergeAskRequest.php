@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Commands\MergeReviewedWork\MergeReviewedWorkCommand;
+use App\Commands\Reviews\MergeReviewedWork\MergeReviewedWorkCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

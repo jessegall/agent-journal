@@ -7,7 +7,7 @@ namespace Domain\Tasks\Support\States;
 use App\Attributes\StateType;
 use App\Enums\FrameReuse;
 use App\Enums\SessionTransferType;
-use App\Events\AssignmentsEnded;
+use App\Events\Assignments\AssignmentsEnded;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;

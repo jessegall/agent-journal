@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Events\Listener;
-use App\Events\AccountSettingsRequested;
+use App\Events\Sessions\AccountSettingsRequested;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 

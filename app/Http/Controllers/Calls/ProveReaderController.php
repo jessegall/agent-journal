@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\ProveReaderCall;
 use App\Calls\Processes\ReaderProofStarted;
-use App\Commands\ProveReader\ProveReaderCommand;
+use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

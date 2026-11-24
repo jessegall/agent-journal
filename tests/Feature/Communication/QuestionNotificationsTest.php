@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AskMessage\AskMessageCommand;
-use App\Commands\CreateDesk\CreateDeskCommand;
-use App\Commands\ReleaseSeat\ReleaseSeatCommand;
-use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
-use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
+use App\Commands\Desks\CreateDesk\CreateDeskCommand;
+use App\Commands\Desks\ReleaseSeat\ReleaseSeatCommand;
+use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\Desks\DeskRecord;
 use App\Models\Notifications\NotificationOccurrence;

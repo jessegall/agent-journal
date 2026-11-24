@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
-use App\Events\DriverFailed;
+use App\Events\Sessions\DriverFailed;
 use App\Models\Drivers\FailureReceipt;
 use App\Models\Starts\ProcessStart;
 use App\Support\Inputs\FailureDetails;

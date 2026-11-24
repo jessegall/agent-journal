@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Domains\DomainAvailability;
 use App\Exceptions\DomainNotFound;

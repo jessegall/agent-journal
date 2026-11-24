@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\HookCallRecorded;
+use App\Events\Hooks\HookCallRecorded;
 use App\Models\Support\AgentSessionScope;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Storage\RecordedAnswer;

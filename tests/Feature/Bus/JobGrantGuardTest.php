@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Commands\AssignRecord\AssignRecordCommand;
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Admission\ReadAdmission;
 use App\Enums\AccessRuleType;
 use App\Enums\CommandEffectType;

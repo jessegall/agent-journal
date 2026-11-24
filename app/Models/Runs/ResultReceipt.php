@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\AssessmentOutcome;
-use App\Events\ResultReceiptSuperseded;
+use App\Events\Processes\ResultReceiptSuperseded;
 use App\Values\PublishedResult;
 use App\Values\VerifiedOutput;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

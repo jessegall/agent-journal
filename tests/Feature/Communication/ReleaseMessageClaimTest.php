@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\ReleaseMessageClaim\ReleaseMessageClaimCommand;
 use App\Enums\MessageState;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\CommandAdmissionRefused;

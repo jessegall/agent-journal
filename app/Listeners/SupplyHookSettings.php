@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Events\Listener;
-use App\Events\StartSettingsRequested;
+use App\Events\Sessions\StartSettingsRequested;
 use App\Support\Drivers\Contracts\DriverAdapters;
 
 /**

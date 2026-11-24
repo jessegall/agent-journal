@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp\Tools;
 
-use App\Commands\AnswerMessage\AnswerMessageCommand;
+use App\Commands\Messages\AnswerMessage\AnswerMessageCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;

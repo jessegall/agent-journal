@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Events\NotificationsChanged;
-use App\Events\NotificationsInvalidated;
+use App\Events\Messages\NotificationsChanged;
+use App\Events\Web\NotificationsInvalidated;
 use App\Models\Notifications\NotificationScope;
 use Illuminate\Contracts\Events\Dispatcher;
 

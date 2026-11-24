@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Events\AssignmentsChanged;
-use App\Events\AssignmentsEnded;
-use App\Events\AutoAssignmentConfigured;
+use App\Events\Assignments\AssignmentsChanged;
+use App\Events\Assignments\AssignmentsEnded;
+use App\Events\Assignments\AutoAssignmentConfigured;
 use Tests\Architecture\Support\EventRole;
 
 /**

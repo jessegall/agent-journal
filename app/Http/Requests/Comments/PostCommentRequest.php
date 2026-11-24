@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Comments;
 
-use App\Commands\PostComment\PostCommentCommand;
-use App\Commands\PostTextComment\PostTextCommentCommand;
+use App\Commands\Comments\PostComment\PostCommentCommand;
+use App\Commands\Comments\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Records\RecordResolver;
 use App\Enums\TextAnchorType;
 use App\Http\Requests\RecordTargetRequest;

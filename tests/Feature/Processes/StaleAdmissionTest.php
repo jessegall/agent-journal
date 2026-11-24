@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\RetireCommandRule\RetireCommandRuleCommand;
-use App\Commands\SaveCommandRule\SaveCommandRuleCommand;
+use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
+use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\ActorType;
 use App\Enums\CommandClass;

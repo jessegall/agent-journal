@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\ProposalStateChanged;
 use App\Calls\Processes\WithdrawProposalCall;
-use App\Commands\WithdrawRuleProposal\WithdrawRuleProposalCommand;
+use App\Commands\CommandRules\WithdrawRuleProposal\WithdrawRuleProposalCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

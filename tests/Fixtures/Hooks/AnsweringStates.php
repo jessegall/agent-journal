@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Events\ChatMessageOffered;
+use App\Events\Messages\ChatMessageOffered;
 use App\Support\States\AnsweringMessageState;
 use App\Values\AnswerBudget;
 use Tests\Support\TestActors;

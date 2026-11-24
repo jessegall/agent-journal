@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Shelves\Listeners;
 
-use App\Events\ShareActivated;
+use App\Events\Sharing\ShareActivated;
 
 /**
  * A module listening to Core's exported sharing event without any change to Sharing.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Commands\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
-use App\Commands\ClaimSpeech\ClaimSpeechCommand;
+use App\Commands\Messages\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
+use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Sessions\CurrentSession;
 use App\Data\Messages\MessageBatchItemData;
 use App\Enums\ActorType;

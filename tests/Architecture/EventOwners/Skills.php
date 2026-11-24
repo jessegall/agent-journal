@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use App\Enums\PublicationState;
-use App\Events\SessionSkillsIntended;
-use App\Events\SkillContextEpochAdvanced;
-use App\Events\SkillGenerationRetired;
-use App\Events\SkillPublicationClaimed;
-use App\Events\SkillPublicationMoved;
-use App\Events\SkillPublicationProgressed;
-use App\Events\SkillsChanged;
+use App\Events\Skills\SessionSkillsIntended;
+use App\Events\Skills\SkillContextEpochAdvanced;
+use App\Events\Skills\SkillGenerationRetired;
+use App\Events\Skills\SkillPublicationClaimed;
+use App\Events\Skills\SkillPublicationMoved;
+use App\Events\Skills\SkillPublicationProgressed;
+use App\Events\Skills\SkillsChanged;
 use Tests\Architecture\Support\EventRole;
 
 /**

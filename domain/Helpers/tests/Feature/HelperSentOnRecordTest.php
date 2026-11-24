@@ -6,7 +6,7 @@ namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordVisibility;
-use App\Events\HelperSentOnRecord;
+use App\Events\Hooks\HelperSentOnRecord;
 use App\Support\RecordIdentity;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Models\HelperIdentity;

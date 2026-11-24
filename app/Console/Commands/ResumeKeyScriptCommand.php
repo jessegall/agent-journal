@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\ResumeKeyScript\ResumeKeyScriptCommand as ResumeKeyScript;
+use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand as ResumeKeyScript;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Support\ConsoleOwner;

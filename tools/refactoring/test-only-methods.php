@@ -26,6 +26,7 @@ $root = dirname(__DIR__, 2);
 
 require $root.'/vendor/autoload.php';
 require __DIR__.'/models.php';
+require_once __DIR__.'/php-parse.php';
 
 const APPLICATION = ['app', 'routes', 'config', 'resources', 'bootstrap', 'database'];
 
@@ -78,7 +79,7 @@ $found = 0;
 
 foreach (['app', ...$domainCode] as $folder) {
     foreach (phpFiles("{$root}/{$folder}") as $file) {
-        $statements = $parser->parse((string) file_get_contents($file)) ?? [];
+        $statements = parsedOnce($parser, $file, (string) file_get_contents($file));
 
         foreach (new NodeFinder()->findInstanceOf($statements, Class_::class) as $class) {
             if (! isModel($class)) {

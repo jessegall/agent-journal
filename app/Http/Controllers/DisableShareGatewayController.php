@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\DisableShareGateway\DisableShareGatewayCommand;
+use App\Commands\Sharing\DisableShareGateway\DisableShareGatewayCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Sharing\GatewayActionRequest;
 use Illuminate\Http\RedirectResponse;

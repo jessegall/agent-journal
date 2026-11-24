@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
-use App\Events\AccountUsageChanged;
+use App\Events\Accounts\AccountUsageChanged;
 use App\Models\Accounts\Account;
 use App\Values\UsageSource;
 use Carbon\CarbonImmutable;

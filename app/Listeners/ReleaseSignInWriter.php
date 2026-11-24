@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Events\SignInAttemptFinished;
+use App\Events\Accounts\SignInAttemptFinished;
 use App\Models\Accounts\Account;
 
 /**

@@ -12,7 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\LineCardPlacement;
 use App\Enums\TimelineEventType;
-use App\Events\ChatLinePosted;
+use App\Events\Messages\ChatLinePosted;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
 use App\Values\ChatLine;
@@ -78,7 +78,6 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
             'type' => TimelineEventType::class,
             'line_card_placement' => LineCardPlacement::class,
             'sequence' => 'integer',
-            'created_at' => 'immutable_datetime',
         ];
     }
 

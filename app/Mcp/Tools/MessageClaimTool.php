@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Commands\ClaimSpeech\ClaimSpeechCommand;
+use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Bus\Command;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;

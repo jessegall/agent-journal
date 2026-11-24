@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Chat\ConversationResolver;
 use App\Data\Messages\MessageClaimHolder;
 use App\Data\Messages\MessageReader;

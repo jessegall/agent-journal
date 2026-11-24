@@ -19,17 +19,17 @@ use App\Enums\HostWakeRefusal;
 use App\Enums\MessagePartType;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
-use App\Events\DriverRequestAccepted;
-use App\Events\DriverRequestApplied;
-use App\Events\DriverRequestAttemptStarted;
-use App\Events\DriverRequestGivenBack;
-use App\Events\DriverRequestHeld;
-use App\Events\DriverRequestRetried;
-use App\Events\DriverRequestScriptProgressed;
-use App\Events\DriverRequestStaged;
-use App\Events\DriverRequestSuspectedDuplicate;
-use App\Events\DriverRequestWakeAcknowledged;
-use App\Events\DriverRequestWakeClaimed;
+use App\Events\Sessions\DriverRequestAccepted;
+use App\Events\Sessions\DriverRequestApplied;
+use App\Events\Sessions\DriverRequestAttemptStarted;
+use App\Events\Sessions\DriverRequestGivenBack;
+use App\Events\Sessions\DriverRequestHeld;
+use App\Events\Sessions\DriverRequestRetried;
+use App\Events\Sessions\DriverRequestScriptProgressed;
+use App\Events\Sessions\DriverRequestStaged;
+use App\Events\Sessions\DriverRequestSuspectedDuplicate;
+use App\Events\Sessions\DriverRequestWakeAcknowledged;
+use App\Events\Sessions\DriverRequestWakeClaimed;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Support\InitialWakeSettlement;
@@ -136,7 +136,6 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
             'expected_observed_at' => 'immutable_datetime',
             'staged_at' => 'immutable_datetime',
             'offer_after' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
             'hold_reason' => HoldReason::class,
         ];
     }

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\CancelPrivateEntry\CancelPrivateEntryCommand;
-use App\Commands\CancelTerminalTake\CancelTerminalTakeCommand;
-use App\Commands\CheckTerminalScreen\CheckTerminalScreenCommand;
-use App\Commands\ChooseTerminalDraft\ChooseTerminalDraftCommand;
-use App\Commands\OpenPrivateEntry\OpenPrivateEntryCommand;
-use App\Commands\ReleaseTerminalControl\ReleaseTerminalControlCommand;
-use App\Commands\RenewTerminalControl\RenewTerminalControlCommand;
-use App\Commands\SendTerminalInput\SendTerminalInputCommand;
-use App\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
-use App\Commands\TakeTerminalControl\TakeTerminalControlCommand;
+use App\Commands\Terminals\CancelPrivateEntry\CancelPrivateEntryCommand;
+use App\Commands\Terminals\CancelTerminalTake\CancelTerminalTakeCommand;
+use App\Commands\Terminals\CheckTerminalScreen\CheckTerminalScreenCommand;
+use App\Commands\Terminals\ChooseTerminalDraft\ChooseTerminalDraftCommand;
+use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
+use App\Commands\Terminals\ReleaseTerminalControl\ReleaseTerminalControlCommand;
+use App\Commands\Terminals\RenewTerminalControl\RenewTerminalControlCommand;
+use App\Commands\Terminals\SendTerminalInput\SendTerminalInputCommand;
+use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Enums\TerminalDraftChoice;
 use App\Enums\TerminalInputType;
 use App\Enums\TerminalNamedKey;

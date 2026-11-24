@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Connections;
 
-use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Projects\InstallAttempt;

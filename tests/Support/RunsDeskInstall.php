@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Commands\InstallDesks\InstallDesksCommand;
+use App\Commands\Desks\InstallDesks\InstallDesksCommand;
 use App\Enums\CommandEntry;
 use App\Support\EntryDispatchers;
 

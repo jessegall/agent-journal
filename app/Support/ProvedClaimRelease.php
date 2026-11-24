@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Assignments\ClaimRelease;
 use App\Contracts\Bus\CommandFacts;
-use App\Events\AssignmentsEnded;
+use App\Events\Assignments\AssignmentsEnded;
 use App\Models\Records\AssignmentRecord;
 
 /**

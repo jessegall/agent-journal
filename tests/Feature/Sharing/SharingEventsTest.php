@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
-use App\Commands\DisableShareGateway\DisableShareGatewayCommand;
-use App\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
-use App\Commands\RevokeShare\RevokeShareCommand;
+use App\Commands\Sharing\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Commands\Sharing\DisableShareGateway\DisableShareGatewayCommand;
+use App\Commands\Sharing\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use App\Commands\Sharing\RevokeShare\RevokeShareCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\GatewayOperationType;
 use App\Enums\GatewayOutcome;
 use App\Enums\ShareState;
-use App\Events\ShareActivated;
-use App\Events\ShareRevoked;
+use App\Events\Sharing\ShareActivated;
+use App\Events\Sharing\ShareRevoked;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Models\Sharing\ShareGatewayOperation;

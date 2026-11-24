@@ -55,7 +55,6 @@ final class ConnectionAudit extends Model implements ReadableModel
         return [
             'type' => ConnectionAuditType::class,
             'actor_type' => ConnectionAuditActor::class,
-            'created_at' => 'immutable_datetime',
         ];
     }
 

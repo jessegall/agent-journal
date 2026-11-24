@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\RunKeyScript\RunKeyScriptCommand as RunKeyScript;
+use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand as RunKeyScript;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Agents\AgentSession;
 use App\Support\ConsoleOwner;

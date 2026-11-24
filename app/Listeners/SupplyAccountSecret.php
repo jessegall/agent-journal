@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Enums\SignInMethod;
-use App\Events\AccountSettingsRequested;
+use App\Events\Sessions\AccountSettingsRequested;
 use App\Models\Accounts\Account;
 use App\Support\ClaudeTokenSignIn;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Commands\CreateAgent\CreateAgentCommand;
-use App\Commands\StartOwnedAgent\StartOwnedAgentCommand;
+use App\Commands\Agents\CreateAgent\CreateAgentCommand;
+use App\Commands\Agents\StartOwnedAgent\StartOwnedAgentCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Assignments\ResponsibilityWriter;

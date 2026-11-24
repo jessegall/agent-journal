@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\AskMessage\AskMessageCommand;
-use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Bus\CommandFacts;
@@ -15,7 +15,7 @@ use App\Contracts\Sessions\AgentDirectory;
 use App\Contracts\Sessions\CurrentSession;
 use App\Data\Messages\MessageReadBatch;
 use App\Data\Messages\MessageReadResult;
-use App\Events\MessageClaimed;
+use App\Events\Messages\MessageClaimed;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\ChatInboxRefused;
 use App\Exceptions\InboxUnavailable;

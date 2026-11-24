@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
+use App\Commands\Assignments\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\MaintenanceAdmission;
 use App\Contracts\Assignments\AssigneeLocks;

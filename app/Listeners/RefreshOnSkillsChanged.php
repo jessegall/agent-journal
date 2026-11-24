@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\RefreshSkills\RefreshSkillsCommand;
+use App\Commands\Skills\RefreshSkills\RefreshSkillsCommand;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
-use App\Events\SkillsChanged;
+use App\Events\Skills\SkillsChanged;
 use App\Support\EntryDispatchers;
 
 /**

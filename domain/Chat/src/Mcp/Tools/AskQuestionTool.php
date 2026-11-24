@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp\Tools;
 
-use App\Commands\AskQuestion\AskQuestionCommand;
+use App\Commands\Messages\AskQuestion\AskQuestionCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;

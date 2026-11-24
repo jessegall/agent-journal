@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\ChatReceiptPresented;
+use App\Events\Messages\ChatReceiptPresented;
 use App\Models\Chats\InboxInterval;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -51,8 +51,6 @@ final class MessageReceipt extends Model implements EventSource, ReadableModel
     {
         return [
             'presented_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use App\Models\Drivers\TerminalView;
 use App\Support\DriverRequestEndings;
 use App\Support\EndTerminalViewsOnTick;

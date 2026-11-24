@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\RecordStopResults\RecordStopResultsCommand;
+use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\ExecutionModeType;
 use App\Enums\StopResultType;

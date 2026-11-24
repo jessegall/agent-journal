@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\AssessPartOutput\AssessPartOutputCommand;
-use App\Commands\ReplayAssessment\ReplayAssessmentCommand;
+use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
+use App\Commands\Runs\ReplayAssessment\ReplayAssessmentCommand;
 use App\Enums\InterpretationState;
 use App\Enums\PositionPurpose;
 use App\Enums\RunMode;

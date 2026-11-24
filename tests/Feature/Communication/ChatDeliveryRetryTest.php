@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\RetryDelivery\RetryDeliveryCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\RetryDelivery\RetryDeliveryCommand;
 use App\Enums\ChatPermission;
 use App\Enums\OutstandingMessageRangeState;
 use App\Enums\ReceiptDeliveryState;

@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Chat\Desk;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\DeskPreferenceSwitched;
+use App\Events\Web\DeskPreferenceSwitched;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -46,14 +46,6 @@ final class DeskPreference extends MorphPivot implements EventSource, ReadableMo
     protected $guarded = ['*'];
 
     // ----------[ Constructors ]----------
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [];
-    }
 
     /**
      * Makes the desk the actor's preferred desk, replacing an earlier preference.

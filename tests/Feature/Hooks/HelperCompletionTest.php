@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Commands\CancelLaunch\CancelLaunchCommand;
-use App\Commands\CertifyPassedStops\CertifyPassedStopsCommand;
-use App\Commands\RecordStopResults\RecordStopResultsCommand;
+use App\Commands\Agents\CancelLaunch\CancelLaunchCommand;
+use App\Commands\Starts\CertifyPassedStops\CertifyPassedStopsCommand;
+use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -19,9 +19,9 @@ use App\Enums\DriverOperation;
 use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Enums\StopResultType;
-use App\Events\HelperCompletionCertified;
-use App\Events\HelperStopHeld;
-use App\Events\LaunchCancelled;
+use App\Events\Hooks\HelperCompletionCertified;
+use App\Events\Hooks\HelperStopHeld;
+use App\Events\Sessions\LaunchCancelled;
 use App\Exceptions\AgentReservedForReview;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;

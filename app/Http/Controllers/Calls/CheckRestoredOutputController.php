@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\CheckRestoredOutputCall;
 use App\Calls\Processes\RestoreChecked;
-use App\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
+use App\Commands\Runs\VerifyRestoredOutput\VerifyRestoredOutputCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentDirectory;
 use Domain\Chat\Data\MessageInput;

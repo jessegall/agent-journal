@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
+use App\Commands\Sharing\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ShareAuditType;
 use App\Exceptions\GatewayNotSetUp;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\CancelAccountUses\CancelAccountUsesCommand;
-use App\Commands\HoldAccountUses\HoldAccountUsesCommand;
-use App\Commands\MaintainAccount\MaintainAccountCommand;
-use App\Commands\SettleAccountUses\SettleAccountUsesCommand;
+use App\Commands\Accounts\CancelAccountUses\CancelAccountUsesCommand;
+use App\Commands\Accounts\HoldAccountUses\HoldAccountUsesCommand;
+use App\Commands\Accounts\MaintainAccount\MaintainAccountCommand;
+use App\Commands\Accounts\SettleAccountUses\SettleAccountUsesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\AccountInUse;
 use App\Models\Accounts\Account;

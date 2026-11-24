@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp\Tools;
 
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;

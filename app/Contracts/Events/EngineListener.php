@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Events;
 
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 
 /**
  * Periodic work on each engine pass: small bounded reads and its own engine maintenance commands, inside the one

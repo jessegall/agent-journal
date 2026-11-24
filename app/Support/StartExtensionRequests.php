@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Events\AccountSettingsRequested;
-use App\Events\ChildCheckoutRequested;
-use App\Events\StartGrantRequested;
+use App\Events\Sessions\AccountSettingsRequested;
+use App\Events\Sessions\ChildCheckoutRequested;
+use App\Events\Sessions\StartGrantRequested;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

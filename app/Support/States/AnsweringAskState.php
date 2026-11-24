@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\StateType;
-use App\Commands\OfferNextAsk\OfferNextAskCommand;
+use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
 use App\Enums\FrameReuse;
 use App\Enums\SessionTransferType;
-use App\Events\AskClosed;
-use App\Events\AskHopAssigned;
+use App\Events\Asks\AskClosed;
+use App\Events\Asks\AskHopAssigned;
 use App\Support\Decisions\Decision;
 use App\Support\States\Support\AnsweringAskStateReference;
 use App\Values\AgentText;

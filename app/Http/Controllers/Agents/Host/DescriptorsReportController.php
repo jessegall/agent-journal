@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\RecordHostDescriptors\RecordHostDescriptorsCommand;
+use App\Commands\Projects\RecordHostDescriptors\RecordHostDescriptorsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Hosts\HostDescriptorsData;
 use App\Values\HostContext;

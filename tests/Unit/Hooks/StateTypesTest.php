@@ -6,7 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Contracts\Authorization\OperationPolicy;
 use App\Contracts\Time\ServerClock;
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\StateTypeRepeated;
 use App\Exceptions\StateTypesFrozen;
 use App\Exceptions\StateTypeUnknown;

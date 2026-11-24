@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\ActivateAccountRequest;
 use Illuminate\Http\RedirectResponse;

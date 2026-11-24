@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Commands\AssertBindingStart\AssertBindingStartCommand;
-use App\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
+use App\Commands\Projects\AssertBindingStart\AssertBindingStartCommand;
+use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use Spatie\LaravelData\Data;
 
 /**

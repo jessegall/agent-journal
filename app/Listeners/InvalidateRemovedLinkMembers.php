@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Events\LinksRemoved;
+use App\Events\Links\LinksRemoved;
 use App\Models\Records\Link;
 use App\Models\Sharing\ShareMember;
 use Carbon\CarbonImmutable;

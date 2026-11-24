@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Assignments\AssignRecordCall;
-use App\Commands\AssignRecord\AssignRecordCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AssignmentResultData;

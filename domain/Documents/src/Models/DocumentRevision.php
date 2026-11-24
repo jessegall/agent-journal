@@ -59,8 +59,6 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
         return [
             'author_type' => ActorType::class,
             'closed_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

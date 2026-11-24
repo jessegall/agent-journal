@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Support;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;

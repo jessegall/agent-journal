@@ -46,7 +46,6 @@ final class ReportJobDiscrepancy extends Model implements ReadableModel
     {
         return [
             'reason' => ReportJobDiscrepancyReason::class,
-            'created_at' => 'immutable_datetime',
         ];
     }
 

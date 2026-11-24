@@ -14,7 +14,7 @@ use App\Data\Comments\CommentDetails;
 use App\Enums\ActorType;
 use App\Enums\TextAnchorType;
 use App\Enums\WholeRecord;
-use App\Events\CommentPosted;
+use App\Events\Comments\CommentPosted;
 use App\Exceptions\CommentAnchorCorrupt;
 use App\Exceptions\CommentImmutable;
 use App\Exceptions\IncompleteTextAnchor;
@@ -81,7 +81,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
             'last_line' => 'integer',
             'start_offset' => 'integer',
             'end_offset' => 'integer',
-            'created_at' => 'immutable_datetime',
         ];
     }
 

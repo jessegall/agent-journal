@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
-use App\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
-use App\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
+use App\Commands\Assignments\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
+use App\Commands\Assignments\DisableAutoAssignment\DisableAutoAssignmentCommand;
+use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Commands\TakeSignInCode\TakeSignInCodeCommand;
+use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;

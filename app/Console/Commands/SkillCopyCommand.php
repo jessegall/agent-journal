@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\CopySkill\CopySkillCommand;
+use App\Commands\Skills\CopySkill\CopySkillCommand;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Contracts\Bus\CommandBus;
 use App\Support\SkillAuthoringService;

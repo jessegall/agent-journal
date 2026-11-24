@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Activity\ActivityLog;
 use App\Contracts\Events\Listener;
 use App\Enums\ActivityType;
-use App\Events\ChatMessageAccepted;
+use App\Events\Messages\ChatMessageAccepted;
 use App\Models\Chats\InboxInterval;
 use App\Models\Messages\Message;
 use App\Models\Scopes\MessageVisibility;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Work\CurrentState;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Messages\Message;

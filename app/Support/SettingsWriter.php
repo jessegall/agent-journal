@@ -10,7 +10,7 @@ use App\Contracts\Settings\Setting;
 use App\Declarations\ToggleGroup;
 use App\Enums\SettingsOutcome;
 use App\Enums\SettingTarget;
-use App\Events\SettingsChanged;
+use App\Events\Settings\SettingsChanged;
 use App\Exceptions\CommandTransactionMissing;
 use App\Exceptions\SettingDisabled;
 use App\Exceptions\SettingsConflict;

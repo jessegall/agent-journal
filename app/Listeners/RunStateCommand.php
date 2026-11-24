@@ -10,7 +10,7 @@ use App\Contracts\Bus\GuardedCommandBus;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
 use App\Enums\CommandOriginStatus;
-use App\Events\StateCommandAnswered;
+use App\Events\Hooks\StateCommandAnswered;
 use App\Exceptions\StateAnswerRefused;
 use App\Models\Agents\AgentStackRow;
 use App\Support\CommandRegistry;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Commands\CancelLaunch\CancelLaunchCommand;
+use App\Commands\Agents\CancelLaunch\CancelLaunchCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\CancelLaunchRequest;
 use App\Http\Responses\PageActionAnswers;

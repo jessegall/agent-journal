@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ReviewDecisionType;
-use App\Events\ReviewDecisionMergeLinked;
+use App\Events\Reviews\ReviewDecisionMergeLinked;
 use App\Models\Asks\Ask;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

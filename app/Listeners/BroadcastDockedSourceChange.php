@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Events\Listener;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Events\PageChanged;
+use App\Events\Web\PageChanged;
 use App\Support\Cards\DockIdentity;
 use App\Support\ChatInboxes;
 use App\Support\Sources\Contracts\DockedSources;

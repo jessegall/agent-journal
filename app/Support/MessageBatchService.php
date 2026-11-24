@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\AgentTexts;

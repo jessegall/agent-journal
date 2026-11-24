@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Events\ShareActivated;
+use App\Events\Sharing\ShareActivated;
 use App\Exceptions\NotADomain;
 use App\Exceptions\RequiredDomainMissing;
 use App\Listeners\BroadcastPageChange;

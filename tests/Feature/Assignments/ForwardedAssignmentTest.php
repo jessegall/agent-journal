@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Commands\AssignRecord\AssignRecordCommand;
-use App\Commands\UnassignRecord\UnassignRecordCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
+use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\ActorDesks;

@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\BindingStartRecorded;
+use App\Events\Connections\BindingStartRecorded;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -37,14 +37,6 @@ final class BindingStart extends Model implements EventSource, ReadableModel
     public const ?string UPDATED_AT = null;
 
     // ----------[ Constructors ]----------
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['created_at' => 'immutable_datetime'];
-    }
 
     /**
      * Records the start under its id with the runtime it opened.

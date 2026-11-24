@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Commands\CreateSkill\CreateSkillCommand;
-use App\Commands\RestoreSkill\RestoreSkillCommand;
-use App\Commands\ReviseSkill\ReviseSkillCommand;
+use App\Commands\Skills\CreateSkill\CreateSkillCommand;
+use App\Commands\Skills\RestoreSkill\RestoreSkillCommand;
+use App\Commands\Skills\ReviseSkill\ReviseSkillCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Events\SkillsChanged;
+use App\Events\Skills\SkillsChanged;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\SkillConditionInvalid;
 use App\Exceptions\SkillDeclarationInvalid;

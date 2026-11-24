@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Activity\ActivityLog;
 use App\Contracts\Hosts\ServedEnvironment;
 use App\Enums\ActivityType;
-use App\Events\ActivityRecorded;
+use App\Events\Sessions\ActivityRecorded;
 use App\Models\Agents\ActivityEntry;
 use Illuminate\Contracts\Events\Dispatcher;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Commands\ReconcileSignIns\ReconcileSignInsCommand;
+use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SignInReconcileRequest;
 use App\Values\HostContext;

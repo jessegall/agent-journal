@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
-use App\Commands\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
+use App\Commands\Assignments\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
+use App\Commands\Assignments\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignedWorkResolver;
 use App\Contracts\Assignments\AssignmentProviders;

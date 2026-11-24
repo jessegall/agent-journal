@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\SampleStarted;
 use App\Calls\Processes\StartSampleCall;
-use App\Commands\StartSample\StartSampleCommand;
+use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

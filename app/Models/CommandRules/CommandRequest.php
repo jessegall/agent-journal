@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\CommandRules;
 
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;

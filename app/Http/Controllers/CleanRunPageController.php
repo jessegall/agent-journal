@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\CleanProcessOutput\CleanProcessOutputCommand;
+use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

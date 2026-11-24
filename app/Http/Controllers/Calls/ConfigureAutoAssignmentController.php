@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Assignments\ConfigureAutoAssignmentCall;
-use App\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
+use App\Commands\Assignments\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Data\Assignments\AutoAssignmentChangeData;

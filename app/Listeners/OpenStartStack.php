@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Events\SessionOpened;
+use App\Events\Sessions\SessionOpened;
 use App\Support\StartStacks;
 use App\Values\StackTarget;
 

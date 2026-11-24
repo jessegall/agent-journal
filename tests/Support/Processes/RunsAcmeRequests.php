@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
-use App\Commands\ApproveSample\ApproveSampleCommand;
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Commands\ProposeReader\ProposeReaderCommand;
-use App\Commands\ProveReader\ProveReaderCommand;
-use App\Commands\SettleSample\SettleSampleCommand;
-use App\Commands\StartSample\StartSampleCommand;
+use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Commands\CommandRules\ProposeReader\ProposeReaderCommand;
+use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
+use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
+use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Enums\ActorType;
 use App\Enums\OutputStream;
 use App\Enums\RecordRole;

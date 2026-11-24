@@ -6,10 +6,10 @@ namespace Tests\Feature\Communication;
 
 use App\Enums\ChatPermission;
 use App\Enums\LeaveReason;
-use App\Events\ChatAccessEnded;
-use App\Events\ChatMemberLeft;
-use App\Events\ChatMessageAccepted;
-use App\Events\PageChanged;
+use App\Events\Web\ChatAccessEnded;
+use App\Events\Messages\ChatMemberLeft;
+use App\Events\Messages\ChatMessageAccepted;
+use App\Events\Web\PageChanged;
 use App\Listeners\BroadcastPageChange;
 use App\Support\ActorIdentity;
 use App\Support\UserChannel;

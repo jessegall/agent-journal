@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;

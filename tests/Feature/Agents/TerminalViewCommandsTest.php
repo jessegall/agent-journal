@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\CloseTerminalView\CloseTerminalViewCommand;
-use App\Commands\OpenTerminalView\OpenTerminalViewCommand;
-use App\Commands\RenewTerminalView\RenewTerminalViewCommand;
+use App\Commands\Terminals\CloseTerminalView\CloseTerminalViewCommand;
+use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
+use App\Commands\Terminals\RenewTerminalView\RenewTerminalViewCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\ServerClock;

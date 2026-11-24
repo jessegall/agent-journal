@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\NotifyCleanup\NotifyCleanupCommand;
+use App\Commands\Starts\NotifyCleanup\NotifyCleanupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CleanupStep;
 use App\Http\Requests\Agents\CleanupReportRequest;

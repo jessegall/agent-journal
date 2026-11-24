@@ -51,7 +51,6 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
         return [
             'report_number' => 'integer',
             'verified_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
         ];
     }
 

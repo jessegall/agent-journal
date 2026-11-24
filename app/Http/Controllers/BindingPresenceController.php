@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\RecordBindingPresence\RecordBindingPresenceCommand;
+use App\Commands\Projects\RecordBindingPresence\RecordBindingPresenceCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Connections\PresenceReportData;
 use App\Values\HostContext;

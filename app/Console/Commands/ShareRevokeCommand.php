@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\RevokeShare\RevokeShareCommand;
+use App\Commands\Sharing\RevokeShare\RevokeShareCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ConsoleOwner;
 use Illuminate\Console\Command;

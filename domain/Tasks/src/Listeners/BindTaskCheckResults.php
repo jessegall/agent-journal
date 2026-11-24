@@ -8,7 +8,7 @@ use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Bus\ResultReceipts;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
-use App\Events\RunChanged;
+use App\Events\Processes\RunChanged;
 use App\Values\PartProjection;
 use Domain\Tasks\Commands\BindTaskCheck\BindTaskCheckCommand;
 use Domain\Tasks\Models\TaskCheck;

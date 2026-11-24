@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Commands\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
-use App\Commands\RecordHostCallFailure\RecordHostCallFailureCommand;
+use App\Commands\Projects\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
+use App\Commands\Projects\RecordHostCallFailure\RecordHostCallFailureCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\HostCalls;
 use App\Contracts\Hosts\LocalProjectHosts;

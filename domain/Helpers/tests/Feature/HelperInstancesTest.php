@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ProfileProposalRefused;
 use App\Support\ProfileProposal;

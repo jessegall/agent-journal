@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Commands\CopySkill\CopySkillCommand;
-use App\Commands\CreateSkill\CreateSkillCommand;
-use App\Commands\RetireSkill\RetireSkillCommand;
+use App\Commands\Skills\CopySkill\CopySkillCommand;
+use App\Commands\Skills\CreateSkill\CreateSkillCommand;
+use App\Commands\Skills\RetireSkill\RetireSkillCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;

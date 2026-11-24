@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\InspectMergeAttempts\InspectMergeAttemptsCommand;
+use App\Commands\Reviews\InspectMergeAttempts\InspectMergeAttemptsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 
 /**
  * Inspects interrupted merge attempts on every engine pass; the sweep is bounded.

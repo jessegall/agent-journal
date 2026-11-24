@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus as Runner;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
-use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
+use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Support\RecordIdentity;
 
 /**

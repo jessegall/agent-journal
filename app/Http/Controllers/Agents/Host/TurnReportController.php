@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\NotifyDriverTurn\NotifyDriverTurnCommand;
+use App\Commands\Drivers\NotifyDriverTurn\NotifyDriverTurnCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\DriverTurnReportData;
 use App\Values\HostContext;

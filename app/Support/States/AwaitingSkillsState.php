@@ -8,7 +8,7 @@ use App\Attributes\StateType;
 use App\Enums\FrameReuse;
 use App\Enums\PublicationState;
 use App\Enums\SessionTransferType;
-use App\Events\SkillPublicationMoved;
+use App\Events\Skills\SkillPublicationMoved;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;

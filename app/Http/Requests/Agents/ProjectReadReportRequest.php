@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\NotifyProjectRead\NotifyProjectReadCommand;
+use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Enums\ProjectReadFailure;
 use App\Values\ProjectEntry;
 use App\Values\ProjectFileText;

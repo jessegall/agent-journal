@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\ReplyInChatCall;
-use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use App\Contracts\Bus\CommandBus;
 
 /**

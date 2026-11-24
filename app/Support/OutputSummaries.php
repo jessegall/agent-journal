@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Calls\Processes\OutputSummary;
 use App\Calls\Processes\PartSummary;
-use App\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
+use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\ResultReceipts;
 use App\Models\Runs\OutputAssessment;

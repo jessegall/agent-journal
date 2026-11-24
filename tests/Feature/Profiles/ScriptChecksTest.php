@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Domains\DomainAvailability;
 use App\Contracts\Scripts\ScriptChecks;

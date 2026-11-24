@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Sessions\StartTransaction;
-use App\Events\SessionClosed;
-use App\Events\SessionOpened;
-use App\Events\StartSettingsRequested;
+use App\Events\Sessions\SessionClosed;
+use App\Events\Sessions\SessionOpened;
+use App\Events\Sessions\StartSettingsRequested;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;

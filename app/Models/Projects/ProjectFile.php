@@ -52,8 +52,6 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
     {
         return [
             'number' => 'integer',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

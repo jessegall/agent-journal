@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Enums\ActorType;
 use App\Enums\OutputStream;
 use App\Enums\RequestHoldReason;

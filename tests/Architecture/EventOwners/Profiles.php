@@ -4,44 +4,44 @@ declare(strict_types=1);
 
 use App\Enums\ProfileRunState;
 use App\Enums\SignInState;
-use App\Events\AccountCheckRequested;
-use App\Events\AccountCleaned;
-use App\Events\AccountCleanupReleased;
-use App\Events\AccountCleanupRetried;
-use App\Events\AccountHeldForMaintenance;
-use App\Events\AccountNoticeRecorded;
-use App\Events\AccountNoticeResolved;
-use App\Events\AccountRecheckRequested;
-use App\Events\AccountRemovalStarted;
-use App\Events\AccountRemoved;
-use App\Events\AccountRenamed;
-use App\Events\AccountsChanged;
-use App\Events\AccountSignedIn;
-use App\Events\AccountSignedOut;
-use App\Events\AccountSwitched;
-use App\Events\AccountUsageChanged;
-use App\Events\AccountWriterClaimed;
-use App\Events\AccountWriterReleased;
-use App\Events\ActiveAccountCleared;
-use App\Events\ActiveAccountSelected;
-use App\Events\ProfileRetired;
-use App\Events\ProfileRevisionRevoked;
-use App\Events\ProfileRunFinished;
-use App\Events\ProfileRunResumed;
-use App\Events\ProfileRunStarted;
-use App\Events\ProfileRunSuspended;
-use App\Events\SignInAttemptAnswerAccepted;
-use App\Events\SignInAttemptClaimed;
-use App\Events\SignInAttemptCleanupApplied;
-use App\Events\SignInAttemptCleanupRetried;
-use App\Events\SignInAttemptDisplaced;
-use App\Events\SignInAttemptEnded;
-use App\Events\SignInAttemptFingerprinted;
-use App\Events\SignInAttemptFinished;
-use App\Events\SignInAttemptGenerationSet;
-use App\Events\SignInAttemptHandedToUser;
-use App\Events\SignInAttemptReleased;
-use App\Events\SignInAttemptStarted;
+use App\Events\Accounts\AccountCheckRequested;
+use App\Events\Accounts\AccountCleaned;
+use App\Events\Accounts\AccountCleanupReleased;
+use App\Events\Accounts\AccountCleanupRetried;
+use App\Events\Accounts\AccountHeldForMaintenance;
+use App\Events\Accounts\AccountNoticeRecorded;
+use App\Events\Accounts\AccountNoticeResolved;
+use App\Events\Accounts\AccountRecheckRequested;
+use App\Events\Accounts\AccountRemovalStarted;
+use App\Events\Accounts\AccountRemoved;
+use App\Events\Accounts\AccountRenamed;
+use App\Events\Accounts\AccountsChanged;
+use App\Events\Accounts\AccountSignedIn;
+use App\Events\Accounts\AccountSignedOut;
+use App\Events\Accounts\AccountSwitched;
+use App\Events\Accounts\AccountUsageChanged;
+use App\Events\Accounts\AccountWriterClaimed;
+use App\Events\Accounts\AccountWriterReleased;
+use App\Events\Accounts\ActiveAccountCleared;
+use App\Events\Accounts\ActiveAccountSelected;
+use App\Events\Accounts\ProfileRetired;
+use App\Events\Accounts\ProfileRevisionRevoked;
+use App\Events\Accounts\ProfileRunFinished;
+use App\Events\Accounts\ProfileRunResumed;
+use App\Events\Accounts\ProfileRunStarted;
+use App\Events\Accounts\ProfileRunSuspended;
+use App\Events\Accounts\SignInAttemptAnswerAccepted;
+use App\Events\Accounts\SignInAttemptClaimed;
+use App\Events\Accounts\SignInAttemptCleanupApplied;
+use App\Events\Accounts\SignInAttemptCleanupRetried;
+use App\Events\Accounts\SignInAttemptDisplaced;
+use App\Events\Accounts\SignInAttemptEnded;
+use App\Events\Accounts\SignInAttemptFingerprinted;
+use App\Events\Accounts\SignInAttemptFinished;
+use App\Events\Accounts\SignInAttemptGenerationSet;
+use App\Events\Accounts\SignInAttemptHandedToUser;
+use App\Events\Accounts\SignInAttemptReleased;
+use App\Events\Accounts\SignInAttemptStarted;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -55,7 +55,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Commands/PublishSignInChallenge/PublishSignInChallengeHandler.php',
+            'app/Commands/Accounts/PublishSignInChallenge/PublishSignInChallengeHandler.php',
             'app/Listeners/NotifyAccountsPage.php',
         ],
     ],
@@ -145,7 +145,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/RevokeProfiles/RevokeProfilesHandler.php',
+            'app/Commands/Profiles/RevokeProfiles/RevokeProfilesHandler.php',
         ],
     ],
     SignInAttemptCleanupRetried::class => [

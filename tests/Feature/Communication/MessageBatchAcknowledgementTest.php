@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Models\Messages\MessageReceipt;
 use App\Support\ActorIdentity;

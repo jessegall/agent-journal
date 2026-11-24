@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\RunLogicalResult;
 use App\Enums\RunResultSource;
-use App\Events\RunOutcomeRecorded;
+use App\Events\Processes\RunOutcomeRecorded;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -52,8 +52,6 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
             'result' => RunLogicalResult::class,
             'source' => RunResultSource::class,
             'version' => 'integer',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

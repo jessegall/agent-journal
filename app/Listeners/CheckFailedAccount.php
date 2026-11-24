@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\RecordAccountFailure\RecordAccountFailureCommand;
+use App\Commands\Accounts\RecordAccountFailure\RecordAccountFailureCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
-use App\Events\DriverFailed;
+use App\Events\Sessions\DriverFailed;
 use App\Models\Accounts\Account;
 
 /**

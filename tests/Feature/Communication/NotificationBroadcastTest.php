@@ -6,8 +6,8 @@ namespace Tests\Feature\Communication;
 
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationSourceType;
-use App\Events\NotificationsChanged;
-use App\Events\NotificationsInvalidated;
+use App\Events\Messages\NotificationsChanged;
+use App\Events\Web\NotificationsInvalidated;
 use App\Listeners\BroadcastNotificationChanges;
 use App\Models\Notifications\NotificationScope;
 use App\Support\NotificationDelivery;

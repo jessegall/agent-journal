@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\RecoverProjectBinding\RecoverProjectBindingCommand;
+use App\Commands\Projects\RecoverProjectBinding\RecoverProjectBindingCommand;
 use App\Contracts\Hosts\HostCalls;
 use App\Enums\CommandEntry;
 use App\Exceptions\BindingUnrecoverable;

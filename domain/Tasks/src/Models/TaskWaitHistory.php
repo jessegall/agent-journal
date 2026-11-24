@@ -59,7 +59,6 @@ final class TaskWaitHistory extends Model implements ReadableModel
         return [
             'change' => TaskWaitChange::class,
             'actor_type' => ActorType::class,
-            'created_at' => 'datetime',
         ];
     }
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Desks;
 
-use App\Commands\CreateAgent\CreateAgentCommand;
-use App\Commands\RestoreActorDesk\RestoreActorDeskCommand;
-use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Commands\Agents\CreateAgent\CreateAgentCommand;
+use App\Commands\Desks\RestoreActorDesk\RestoreActorDeskCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\ActorDesks;

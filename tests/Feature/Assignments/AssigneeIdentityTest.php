@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Commands\AssignRecord\AssignRecordCommand;
-use App\Commands\ReassignRecord\ReassignRecordCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
+use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Bus\CommandBus;

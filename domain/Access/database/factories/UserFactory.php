@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Database\Factories;
 
-use App\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Commands\Desks\ProvisionActorDesk\ProvisionActorDeskCommand;
 use App\Enums\CommandEntry;
 use App\Support\ActorIdentity;
 use App\Support\EntryDispatchers;

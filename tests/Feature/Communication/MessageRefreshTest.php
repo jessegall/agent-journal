@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\CreateDesk\CreateDeskCommand;
+use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\ConversationResolver;
-use App\Events\PageChanged;
+use App\Events\Web\PageChanged;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
 use App\Support\DeskSeatService;

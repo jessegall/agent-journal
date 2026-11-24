@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Calls\Supervision\ReplyToAskCall;
-use App\Commands\ReplyToAsk\ReplyToAskCommand;
+use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\AskReader;
 use App\Data\Asks\AskCard;

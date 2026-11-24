@@ -9,48 +9,48 @@ use App\Enums\LeaveReason;
 use App\Enums\MessageBatchState;
 use App\Enums\SpeechOpportunityState;
 use App\Enums\WakeState;
-use App\Events\AgentChatPermissionWithdrawn;
-use App\Events\ChatLinePosted;
-use App\Events\ChatMemberJoined;
-use App\Events\ChatMemberLeft;
-use App\Events\ChatMessageAccepted;
-use App\Events\ChatMessageOffered;
-use App\Events\ChatReceiptPresented;
-use App\Events\ChatRoleChanged;
-use App\Events\InboxSequenceTaken;
-use App\Events\MessageAnswered;
-use App\Events\MessageAnswerRequired;
-use App\Events\MessageBatchClaimsGranted;
-use App\Events\MessageBatchProgressed;
-use App\Events\MessageBatchSettled;
-use App\Events\MessageBatchTurnBound;
-use App\Events\MessageClaimed;
-use App\Events\MessageClaimReleased;
-use App\Events\MessageDismissed;
-use App\Events\MessageRangeConfirmed;
-use App\Events\MessageRead;
-use App\Events\MessageSent;
-use App\Events\NotificationReceiptHidden;
-use App\Events\NotificationReceiptRead;
-use App\Events\NotificationReceiptRevealed;
-use App\Events\NotificationsChanged;
-use App\Events\NotificationsMarkAllAdvanced;
-use App\Events\NotificationsMarkAllFinished;
-use App\Events\NotificationsMarkAllStarted;
-use App\Events\NotificationsWithdrawn;
-use App\Events\OutstandingMessageRangeConfirmed;
-use App\Events\OutstandingMessageRangeExhausted;
-use App\Events\OutstandingMessageRangeFailed;
-use App\Events\OutstandingMessageRangeReopened;
-use App\Events\ReceiptDeliveriesScheduled;
-use App\Events\ReceiptDeliveryChanged;
-use App\Events\ReceiptDeliveryWakeTaken;
-use App\Events\ReceiptProgressAdvanced;
-use App\Events\SpeechOpportunityClaimed;
-use App\Events\SpeechOpportunityReleased;
-use App\Events\SpeechOpportunityReserved;
-use App\Events\SpeechOpportunitySettled;
-use App\Events\UserPresenceConfirmed;
+use App\Events\Messages\AgentChatPermissionWithdrawn;
+use App\Events\Messages\ChatLinePosted;
+use App\Events\Messages\ChatMemberJoined;
+use App\Events\Messages\ChatMemberLeft;
+use App\Events\Messages\ChatMessageAccepted;
+use App\Events\Messages\ChatMessageOffered;
+use App\Events\Messages\ChatReceiptPresented;
+use App\Events\Messages\ChatRoleChanged;
+use App\Events\Messages\InboxSequenceTaken;
+use App\Events\Messages\MessageAnswered;
+use App\Events\Messages\MessageAnswerRequired;
+use App\Events\Messages\MessageBatchClaimsGranted;
+use App\Events\Messages\MessageBatchProgressed;
+use App\Events\Messages\MessageBatchSettled;
+use App\Events\Messages\MessageBatchTurnBound;
+use App\Events\Messages\MessageClaimed;
+use App\Events\Messages\MessageClaimReleased;
+use App\Events\Messages\MessageDismissed;
+use App\Events\Messages\MessageRangeConfirmed;
+use App\Events\Messages\MessageRead;
+use App\Events\Messages\MessageSent;
+use App\Events\Messages\NotificationReceiptHidden;
+use App\Events\Messages\NotificationReceiptRead;
+use App\Events\Messages\NotificationReceiptRevealed;
+use App\Events\Messages\NotificationsChanged;
+use App\Events\Messages\NotificationsMarkAllAdvanced;
+use App\Events\Messages\NotificationsMarkAllFinished;
+use App\Events\Messages\NotificationsMarkAllStarted;
+use App\Events\Messages\NotificationsWithdrawn;
+use App\Events\Messages\OutstandingMessageRangeConfirmed;
+use App\Events\Messages\OutstandingMessageRangeExhausted;
+use App\Events\Messages\OutstandingMessageRangeFailed;
+use App\Events\Messages\OutstandingMessageRangeReopened;
+use App\Events\Messages\ReceiptDeliveriesScheduled;
+use App\Events\Messages\ReceiptDeliveryChanged;
+use App\Events\Messages\ReceiptDeliveryWakeTaken;
+use App\Events\Messages\ReceiptProgressAdvanced;
+use App\Events\Messages\SpeechOpportunityClaimed;
+use App\Events\Messages\SpeechOpportunityReleased;
+use App\Events\Messages\SpeechOpportunityReserved;
+use App\Events\Messages\SpeechOpportunitySettled;
+use App\Events\Messages\UserPresenceConfirmed;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
@@ -175,7 +175,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/ReleaseMessageClaim/ReleaseMessageClaimHandler.php',
+            'app/Commands/Messages/ReleaseMessageClaim/ReleaseMessageClaimHandler.php',
         ],
     ],
     MessageDismissed::class => [
@@ -222,7 +222,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/HideUnseatedNotifications/HideUnseatedNotificationsHandler.php',
+            'app/Commands/Notifications/HideUnseatedNotifications/HideUnseatedNotificationsHandler.php',
             'app/Support/RecipientNotifications.php',
         ],
     ],

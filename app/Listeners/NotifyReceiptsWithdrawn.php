@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Events\NotificationsWithdrawn;
-use App\Events\ProtectedViewInvalidated;
+use App\Events\Messages\NotificationsWithdrawn;
+use App\Events\Web\ProtectedViewInvalidated;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

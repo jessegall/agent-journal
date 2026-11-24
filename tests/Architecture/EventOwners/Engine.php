@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 use App\Enums\RefusalCode;
-use App\Events\AgentStackClosed;
-use App\Events\AgentStackFramesSaved;
-use App\Events\AgentStackHeldForInvestigation;
-use App\Events\AgentStackStarted;
-use App\Events\CommandReceiptCompleted;
-use App\Events\CommandReceiptRefused;
-use App\Events\EngineTicked;
-use App\Events\NumberGroupRetired;
-use App\Events\NumberTaken;
+use App\Events\Engine\AgentStackClosed;
+use App\Events\Engine\AgentStackFramesSaved;
+use App\Events\Engine\AgentStackHeldForInvestigation;
+use App\Events\Engine\AgentStackStarted;
+use App\Events\Engine\CommandReceiptCompleted;
+use App\Events\Engine\CommandReceiptRefused;
+use App\Events\Engine\EngineTicked;
+use App\Events\Engine\NumberGroupRetired;
+use App\Events\Engine\NumberTaken;
 use Tests\Architecture\Support\EventRole;
 
 /**

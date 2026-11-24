@@ -7,7 +7,7 @@ namespace Domain\Helpers\Listeners;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
-use App\Events\HelperStopHeld;
+use App\Events\Hooks\HelperStopHeld;
 use Domain\Helpers\Commands\HoldHelperJob\HoldHelperJobCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;

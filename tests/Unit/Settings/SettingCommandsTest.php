@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Commands\ResetSetting\ResetSettingCommand;
-use App\Commands\ResetSettingGroup\ResetSettingGroupCommand;
-use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Commands\SetDecimalSetting\SetDecimalSettingCommand;
-use App\Commands\SetIntegerChoice\SetIntegerChoiceCommand;
-use App\Commands\SetIntegerSetting\SetIntegerSettingCommand;
-use App\Commands\SetStringChoice\SetStringChoiceCommand;
-use App\Commands\SetStringSetting\SetStringSettingCommand;
+use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Commands\Settings\ResetSetting\ResetSettingCommand;
+use App\Commands\Settings\ResetSettingGroup\ResetSettingGroupCommand;
+use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Commands\Settings\SetDecimalSetting\SetDecimalSettingCommand;
+use App\Commands\Settings\SetIntegerChoice\SetIntegerChoiceCommand;
+use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Commands\Settings\SetStringChoice\SetStringChoiceCommand;
+use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
 use App\Contracts\Settings\SettingCommands;
 use App\Declarations\IntegerSetting;
 use App\Exceptions\SettingHandleUnknown;

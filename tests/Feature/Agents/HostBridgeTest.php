@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\StartAgent\StartAgentCommand;
+use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\HostCapabilities;

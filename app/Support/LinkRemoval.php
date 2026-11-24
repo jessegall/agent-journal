@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
-use App\Events\LinksRemoved;
+use App\Events\Links\LinksRemoved;
 use App\Models\Records\Link;
 use Illuminate\Database\Eloquent\Model;
 

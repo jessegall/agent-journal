@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\RecordHostCallFailure\RecordHostCallFailureCommand;
-use App\Commands\RetireAgent\RetireAgentCommand;
-use App\Commands\StartAgent\StartAgentCommand;
+use App\Commands\Projects\RecordHostCallFailure\RecordHostCallFailureCommand;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartHeartbeats;
@@ -19,7 +19,7 @@ use App\Enums\SessionStatus;
 use App\Enums\StartDisposition;
 use App\Enums\StartOriginType;
 use App\Enums\StartUnavailableReason;
-use App\Events\StartAccepted;
+use App\Events\Sessions\StartAccepted;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\AgentBusy;
 use App\Exceptions\HostUnavailable;

@@ -62,7 +62,6 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
         return [
             'run_number' => 'integer',
             'caller_type' => ActorType::class,
-            'created_at' => 'datetime',
             'bound_at' => 'datetime',
         ];
     }

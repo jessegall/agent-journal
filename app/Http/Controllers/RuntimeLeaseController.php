@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\RenewRuntimeLease\RenewRuntimeLeaseCommand;
+use App\Commands\Agents\RenewRuntimeLease\RenewRuntimeLeaseCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;

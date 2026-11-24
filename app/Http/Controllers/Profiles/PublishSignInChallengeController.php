@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Commands\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SignInChallengeRequest;
 use App\Values\HostContext;

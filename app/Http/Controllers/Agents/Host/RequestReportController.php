@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RequestProgressReportData;
 use App\Values\HostContext;

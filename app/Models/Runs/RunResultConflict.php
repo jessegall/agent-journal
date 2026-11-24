@@ -44,7 +44,6 @@ final class RunResultConflict extends Model implements ReadableModel
         return [
             'kept_result' => RunLogicalResult::class,
             'offered_result' => RunLogicalResult::class,
-            'created_at' => 'immutable_datetime',
         ];
     }
 

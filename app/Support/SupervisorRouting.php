@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
 use App\Contracts\Chat\AskType;
 use App\Contracts\Processes\SupervisorDefinitions;
 use App\Contracts\Sessions\ProfileResolver;

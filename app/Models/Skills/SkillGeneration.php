@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\GenerationState;
-use App\Events\SkillGenerationRetired;
+use App\Events\Skills\SkillGenerationRetired;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Values\GenerationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

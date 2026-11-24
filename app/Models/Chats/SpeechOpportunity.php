@@ -11,11 +11,11 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\SpeechOpportunityState;
-use App\Events\ChatMessageOffered;
-use App\Events\SpeechOpportunityClaimed;
-use App\Events\SpeechOpportunityReleased;
-use App\Events\SpeechOpportunityReserved;
-use App\Events\SpeechOpportunitySettled;
+use App\Events\Messages\ChatMessageOffered;
+use App\Events\Messages\SpeechOpportunityClaimed;
+use App\Events\Messages\SpeechOpportunityReleased;
+use App\Events\Messages\SpeechOpportunityReserved;
+use App\Events\Messages\SpeechOpportunitySettled;
 use App\Exceptions\ChatStateConflict;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
@@ -68,8 +68,6 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
             'state' => SpeechOpportunityState::class,
             'lease_version' => 'integer',
             'lease_expires_at' => 'immutable_datetime',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

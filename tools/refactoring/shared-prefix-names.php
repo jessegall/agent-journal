@@ -25,6 +25,7 @@ use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
+require_once __DIR__.'/php-parse.php';
 
 /**
  * Short names too bare to stand alone: the leading word is what says whose they are.
@@ -151,7 +152,7 @@ $fix = in_array('--fix', $argv, true);
 foreach (array_values(array_diff(array_slice($argv, 1), ['--fix'])) as $path) {
     foreach (phpFiles($path) as $file) {
         $source = (string) file_get_contents($file);
-        $tree = $parser->parse($source) ?? [];
+        $tree = parsedOnce($parser, $file, $source);
         $replacements = [];
 
         foreach (new NodeFinder()->findInstanceOf($tree, ClassLike::class) as $class) {

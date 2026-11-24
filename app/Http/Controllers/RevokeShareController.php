@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\RevokeShare\RevokeShareCommand;
+use App\Commands\Sharing\RevokeShare\RevokeShareCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Sharing\ShareActionRequest;
 use Illuminate\Http\RedirectResponse;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\SettleDispatchedBatches\SettleDispatchedBatchesCommand;
+use App\Commands\Messages\SettleDispatchedBatches\SettleDispatchedBatchesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
-use App\Events\EngineTicked;
+use App\Events\Engine\EngineTicked;
 
 /**
  * Settles dispatched message batches on every engine pass; the sweep is bounded, so it needs no throttle.

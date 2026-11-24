@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Domains\Reviews\Messaging;
 use App\Contracts\Actors\CurrentActor;
 use App\Support\AssigneeIdentity;
 use App\Contracts\Bus\CommandBus;
-use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Chat\ConversationResolver;
 use App\Contracts\Chat\InboxDestinationResolver;

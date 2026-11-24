@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Work\UnitOfWork;
-use App\Events\ReceiptDeliveriesScheduled;
+use App\Events\Messages\ReceiptDeliveriesScheduled;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageAttention;
 use App\Models\Messages\MessageReceipt;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\CoreApi;
-use App\Events\MessageSent;
+use App\Events\Messages\MessageSent;
 use App\Support\RequestKey;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;

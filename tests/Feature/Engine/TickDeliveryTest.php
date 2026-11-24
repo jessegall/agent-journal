@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Commands\MarkSilentSessions\MarkSilentSessionsCommand;
-use App\Commands\SettleFrameTimes\SettleFrameTimesCommand;
+use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
+use App\Commands\Agents\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\EngineFrameTime;
 use App\Support\EnginePass;
 use App\Support\FrameBaselines;

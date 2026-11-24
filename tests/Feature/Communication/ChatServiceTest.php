@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use App\Enums\MessageType;
 use App\Exceptions\MessageRequestConflict;
 use App\Models\Chats\TimelineEvent;

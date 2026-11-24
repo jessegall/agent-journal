@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Accounts\ShownOnAccounts;
 use App\Contracts\Events\Listener;
-use App\Events\AccountsChanged;
+use App\Events\Accounts\AccountsChanged;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

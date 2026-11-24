@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Calls\Connections\RunProjectCommandCall;
-use App\Commands\FinishProjectCommandRun\FinishProjectCommandRunCommand;
-use App\Commands\RecordProjectCommandProcess\RecordProjectCommandProcessCommand;
-use App\Commands\StartProjectCommandRun\StartProjectCommandRunCommand;
+use App\Commands\Projects\FinishProjectCommandRun\FinishProjectCommandRunCommand;
+use App\Commands\Projects\RecordProjectCommandProcess\RecordProjectCommandProcessCommand;
+use App\Commands\Projects\StartProjectCommandRun\StartProjectCommandRunCommand;
 use App\Enums\CommandEntry;
 use App\Enums\CommandRunState;
 use App\Exceptions\VerbNotServed;

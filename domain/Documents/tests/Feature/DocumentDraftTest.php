@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Events\SessionClosed;
+use App\Events\Sessions\SessionClosed;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Models\Starts\SessionPolicy;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AskMessage\AskMessageCommand;
-use App\Commands\CreateDesk\CreateDeskCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
+use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Agents\Agent;

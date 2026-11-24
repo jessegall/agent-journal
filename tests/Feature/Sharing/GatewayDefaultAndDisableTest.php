@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
-use App\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
-use App\Commands\CreateShare\CreateShareCommand;
-use App\Commands\DisableShareGateway\DisableShareGatewayCommand;
-use App\Commands\SaveSharePreview\SaveSharePreviewCommand;
+use App\Commands\Sharing\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Commands\Sharing\ConfigureShareGateway\ConfigureShareGatewayCommand;
+use App\Commands\Sharing\CreateShare\CreateShareCommand;
+use App\Commands\Sharing\DisableShareGateway\DisableShareGatewayCommand;
+use App\Commands\Sharing\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\GatewayEndpointState;

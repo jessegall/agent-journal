@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
-use App\Commands\StartAgent\StartAgentCommand;
+use App\Commands\Starts\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
+use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;

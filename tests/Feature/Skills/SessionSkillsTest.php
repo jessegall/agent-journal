@@ -7,7 +7,7 @@ namespace Tests\Feature\Skills;
 use App\Contracts\Work\AgentStack;
 use App\Enums\ContextStartType;
 use App\Enums\Place;
-use App\Events\ContextStarted;
+use App\Events\Hooks\ContextStarted;
 use App\Listeners\RefreshSessionSkills;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;

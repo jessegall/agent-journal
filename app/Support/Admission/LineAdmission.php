@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Admission;
 
-use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Bus\CommandBus;

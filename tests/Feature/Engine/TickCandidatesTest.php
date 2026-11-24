@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
 use App\Support\EnginePass;
 use App\Support\Stack\StateTypes;

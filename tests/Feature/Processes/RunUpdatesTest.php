@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Events\RunChanged;
+use App\Events\Processes\RunChanged;
 use App\Resolvers\Support\RunSnapshotResolver;
 use App\Support\RunUpdates;
 use Illuminate\Support\Facades\Event;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
-use App\Commands\SendMessage\SendMessageCommand;
-use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Commands\Messages\TakeNextMessages\TakeNextMessagesCommand;
 use App\Enums\MessageState;
 use App\Exceptions\ChatInboxRefused;
 use App\Exceptions\ChatMessageRefused;

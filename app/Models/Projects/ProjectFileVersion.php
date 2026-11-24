@@ -46,8 +46,6 @@ final class ProjectFileVersion extends Model implements ReadableModel
     {
         return [
             'line_count' => 'integer',
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
         ];
     }
 

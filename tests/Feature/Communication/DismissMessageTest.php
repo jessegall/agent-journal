@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\AskMessage\AskMessageCommand;
-use App\Commands\DismissMessage\DismissMessageCommand;
-use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
+use App\Commands\Messages\DismissMessage\DismissMessageCommand;
+use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Enums\DismissalType;
 use App\Enums\MessageState;
 use App\Exceptions\MessageMissing;

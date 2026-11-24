@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Events\StateTypesRequested;
+use App\Events\Hooks\StateTypesRequested;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\States\AgentState;
 use Closure;

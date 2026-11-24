@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Actors;
 
-use App\Commands\RecordUserHeartbeat\RecordUserHeartbeatCommand;
+use App\Commands\Sessions\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\Response;
 

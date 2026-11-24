@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CleanupState;
 use App\Enums\CleanupStep;
-use App\Events\CleanupPassRecorded;
+use App\Events\Sessions\CleanupPassRecorded;
 use App\Models\Agents\AgentSession;
 use App\Values\CleanupReport;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

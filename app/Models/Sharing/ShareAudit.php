@@ -63,7 +63,6 @@ final class ShareAudit extends Model implements ReadableModel
         return [
             'type' => ShareAuditType::class,
             'actor_type' => ActorType::class,
-            'created_at' => 'immutable_datetime',
         ];
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand as ConfigureShareGateway;
+use App\Commands\Sharing\ConfigureShareGateway\ConfigureShareGatewayCommand as ConfigureShareGateway;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ConsoleOwner;
 use App\Support\Gateways\Support\GatewaySecrets;
