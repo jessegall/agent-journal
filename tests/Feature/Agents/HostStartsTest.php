@@ -168,7 +168,7 @@ final class HostStartsTest extends TestCase
 
     public function test_a_launch_that_saves_its_driver_type_keeps_it_for_the_agent_only_once_it_runs(): void
     {
-        [$host, $opened] = $this->openRuntime(saveDriverType: true);
+        [$host, $opened] = $this->openRuntime(shouldSaveDriverType: true);
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
         $this->assertNull($agent->driver_type_preference);
 
@@ -184,7 +184,7 @@ final class HostStartsTest extends TestCase
 
     public function test_a_running_report_that_comes_after_the_start_ended_keeps_no_mode(): void
     {
-        [$host, $opened] = $this->openRuntime(saveDriverType: true);
+        [$host, $opened] = $this->openRuntime(shouldSaveDriverType: true);
         $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
             ->json('start_key');
 

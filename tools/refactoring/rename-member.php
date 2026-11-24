@@ -316,7 +316,7 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
 
     if (! in_array(
         $what,
-        ['method', 'property', 'constant', 'variable'],
+        ['method', 'property', 'constant', 'variable', 'argument'],
         true,
     ) || $owner === '' || $old === '' || $new === '') {
         throw RenameRefused::malformed();
@@ -329,9 +329,16 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
     if (isset($scope[1])) {
         $line = (int) $scope[1];
 
-        if ($what !== 'variable' || ! ctype_digit($scope[1]) || $line < 1 || ! is_file($root.'/'.$path)) {
+        if (! in_array($what, ['variable', 'argument'], true) || ! ctype_digit($scope[1]) || $line < 1 || ! is_file($root.'/'.$path)) {
             throw RenameRefused::malformed();
         }
+    }
+
+    if ($what === 'argument') {
+        // the parameter already carries the new name: only the calls that pass it by its old name are left
+        [$function] = parameterScope($project->under($path)[$path]['statements'], $path, $line, $new);
+
+        return ['edits' => namedArgumentEdits($project, $function, $old, $new), 'unresolved' => [], 'strings' => []];
     }
 
     $files = $what === 'variable' ? $project->under($path) : $project->searched();
@@ -339,6 +346,14 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
     $changes = $what === 'variable'
         ? ['edits' => variableEdits($files, $old, $new, $line), 'unresolved' => []]
         : memberEdits($files, $named, $project->index(), $what, ltrim($owner, '\\'), $old, $new, $with);
+
+    if ($what === 'variable' && $line > 0) {
+        [$function] = parameterScope($files[$path]['statements'], $path, $line, $old);
+
+        foreach (namedArgumentEdits($project, $function, $old, $new) as $file => $sites) {
+            $changes['edits'][$file] = [...$changes['edits'][$file] ?? [], ...$sites];
+        }
+    }
 
     return [...$changes, 'strings' => stringsSpelling($named, $old)];
 }
@@ -785,6 +800,18 @@ function classTypeName(Node\Name|Node\Identifier $type): string|null
 /**
  * The full name of the class, interface or trait the node is written in; null outside one.
  */
+/**
+ * Whether the node stands inside a class of the family.
+ *
+ * @param  array<string, true>  $family
+ */
+function isInsideFamily(Node $node, array $family): bool
+{
+    $class = enclosingClass($node);
+
+    return $class !== null && isset($family[$class]);
+}
+
 function enclosingClass(Node $node): string|null
 {
     return enclosing($node, Node\Stmt\ClassLike::class)?->namespacedName?->toString();
@@ -827,11 +854,12 @@ function memberSites(
     bool $isStatic = false,
 ): array {
     $sites = [];
-    $inFamily = static fn (Node|null $class): bool => $class instanceof Node\Name && (isset($family[$class->toString()]) || in_array(
+    // self, static and parent name the class the code stands in, so they belong to the family only inside one of it
+    $inFamily = static fn (Node|null $class): bool => $class instanceof Node\Name && (isset($family[$class->toString()]) || (in_array(
         $class->toLowerString(),
         ['self', 'static', 'parent'],
         true,
-    ));
+    ) && isInsideFamily($node, $family)));
 
     if ($what === 'method' && $isStatic) {
         $named = match (true) {
@@ -1094,6 +1122,44 @@ function stringsSpelling(array $named, string $old): array
 }
 
 /**
+ * The named arguments that pass the function's parameter by its old name, at every call that names the function: a
+ * call of a method by its name, a call of the function, or a new of the class for its constructor.
+ *
+ * @return array<string, list<array{int, int, string}>>
+ */
+function namedArgumentEdits(ParsedProject $project, Node\FunctionLike $function, string $old, string $new): array
+{
+    $isConstructor = $function instanceof Node\Stmt\ClassMethod && $function->name->toLowerString() === '__construct';
+    $functionName = $function instanceof Node\Stmt\ClassMethod || $function instanceof Node\Stmt\Function_ ? $function->name->toString() : null;
+    $classOf = static fn (Node\Expr\New_ $node): string|null => match (true) {
+        ! $node->class instanceof Node\Name => null,
+        in_array($node->class->toLowerString(), ['self', 'static'], true) => enclosingClass($node),
+        default => $node->class->toString(),
+    };
+    $callsFunction = static fn (Node $node): bool => match (true) {
+        $functionName === null => false,
+        $isConstructor => $node instanceof Node\Expr\New_ && $classOf($node) === declaringType($function),
+        $node instanceof Node\Expr\MethodCall, $node instanceof Node\Expr\NullsafeMethodCall, $node instanceof Node\Expr\StaticCall
+            => $node->name instanceof Node\Identifier && $node->name->toString() === $functionName,
+        $node instanceof Node\Expr\FuncCall => $node->name instanceof Node\Name && $node->name->getLast() === $functionName,
+        default => false,
+    };
+    $edits = [];
+
+    foreach ($project->nodesNamed($old) as $path => $nodes) {
+        foreach (array_filter($nodes, $callsFunction) as $call) {
+            foreach ($call->args as $argument) {
+                if ($argument instanceof Node\Arg && $argument->name?->toString() === $old) {
+                    $edits[$path][] = [$argument->name->getStartFilePos(), $argument->name->getEndFilePos(), $new];
+                }
+            }
+        }
+    }
+
+    return $edits;
+}
+
+/**
  * Every node of the files by the name it carries, in one walk: a member's name, a named argument's, a parameter's or a
  * string's value.
  *
@@ -1123,16 +1189,19 @@ function namesCarriedBy(Node $node): array
 {
     $name = property_exists($node, 'name') ? $node->name : null;
 
-    return match (true) {
+    $argumentNames = $node instanceof Node\Expr\CallLike && ! $node->isFirstClassCallable() ? array_filter(array_map(
+        static fn ($argument) => $argument instanceof Node\Arg ? $argument->name?->toString() : null,
+        $node->args,
+    )) : [];
+    $ownNames = match (true) {
         $node instanceof Node\Scalar\String_ => [$node->value],
         $node instanceof Node\Param && $node->var instanceof Node\Expr\Variable && is_string($node->var->name) => [$node->var->name],
-        $node instanceof Node\Expr\New_ => array_values(array_unique(array_filter(array_map(
-            static fn ($argument) => $argument instanceof Node\Arg ? $argument->name?->toString() : null,
-            $node->args,
-        )))),
         $name instanceof Node\Identifier || $name instanceof Node\VarLikeIdentifier => [$name->toString()],
+        $name instanceof Node\Name => [$name->getLast()],
         default => [],
     };
+
+    return array_values(array_unique([...$ownNames, ...$argumentNames]));
 }
 
 /**
@@ -1258,6 +1327,19 @@ function testCases(): array
             public function close(bool $ready): bool { return ! $ready; }
         }
         PHP;
+    $door = <<<'PHP'
+        <?php
+        final class Door {
+            public function __construct(public bool $ready) {}
+            public static function shut(): self { return new self(ready: false); }
+        }
+        PHP;
+    $caller = <<<'PHP'
+        <?php
+        $gate = new Gate(ready: true);
+        $gate->open(ready: true);
+        $gate->close(ready: false);
+        PHP;
     $renamedMethods = str_replace('open(bool $ready): bool { return $ready; }', 'open(bool $isReady): bool { return $isReady; }', $methods);
 
     return [
@@ -1309,13 +1391,33 @@ function testCases(): array
             'copyCount',
         ], [],
             ['app/Use/one.php' => $closures], ['app/Use/one.php' => $renamedClosure], false, []],
+        ['new self in another class with the same property keeps its named argument', [
+            'property',
+            'Gate',
+            'ready',
+            'isReady',
+        ], [],
+            ['app/Use/methods.php' => $methods, 'app/Use/door.php' => $door],
+            [
+                'app/Use/methods.php' => str_replace('public bool $ready', 'public bool $isReady', $methods),
+                'app/Use/door.php' => $door,
+            ], false, []],
         ['a method parameter by its line renames it in that method only', [
             'variable',
             'app/Use/methods.php:4',
             'ready',
             'isReady',
         ], [],
-            ['app/Use/methods.php' => $methods], ['app/Use/methods.php' => $renamedMethods], false, []],
+            ['app/Use/methods.php' => $methods, 'app/Use/caller.php' => $caller],
+            ['app/Use/methods.php' => $renamedMethods, 'app/Use/caller.php' => str_replace('open(ready:', 'open(isReady:', $caller)], false, []],
+        ['a parameter already renamed has its named arguments follow', [
+            'argument',
+            'app/Use/methods.php:4',
+            'ready',
+            'isReady',
+        ], [],
+            ['app/Use/methods.php' => $renamedMethods, 'app/Use/caller.php' => $caller],
+            ['app/Use/methods.php' => $renamedMethods, 'app/Use/caller.php' => str_replace('open(ready:', 'open(isReady:', $caller)], false, []],
         ['a promoted parameter by its line is refused, as its property is renamed instead', [
             'variable',
             'app/Use/methods.php:3',

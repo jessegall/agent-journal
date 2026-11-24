@@ -95,8 +95,8 @@ function nameFaults(array $names, string $forbiddenWordsFile): array
 {
     $forbidden = forbiddenWords($forbiddenWordsFile);
     $betterVerbs = betterVerbs($forbiddenWordsFile);
-    $verbs = verbsOf($names, withActionClasses: true);
-    $commandVerbs = verbsOf($names, withActionClasses: false);
+    $verbs = verbsOf($names, shouldIncludeActionClasses: true);
+    $commandVerbs = verbsOf($names, shouldIncludeActionClasses: false);
     $nouns = nounsOf($names);
     $sharedVerbs = sharedActionWordsOf($names);
     $typeNames = array_fill_keys(array_map(fn (DeclaredName $declared) => $declared->name, array_filter($names, fn (DeclaredName $declared) => $declared->declarationType === 'class')), true);

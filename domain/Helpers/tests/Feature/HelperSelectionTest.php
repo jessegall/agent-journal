@@ -102,7 +102,7 @@ final class HelperSelectionTest extends TestCase
 
         $fresh = $this->declareHelper('read-only-helper');
 
-        $candidates = $this->candidates(DefaultDrivers::CODEX, self::LUNA, independent: true);
+        $candidates = $this->candidates(DefaultDrivers::CODEX, self::LUNA, isIndependent: true);
 
         $this->assertSame([$fresh->id], $this->identityIds($candidates));
         $this->assertFalse($candidates[0]->resumesConversation);

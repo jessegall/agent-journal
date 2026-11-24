@@ -129,7 +129,7 @@ final class AgentStatusTest extends TestCase
                 ['sign-in'],
             ],
             'first-run setup with a terminal' => [
-                self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired), terminal: true),
+                self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired), isTerminal: true),
                 SessionState::Idle,
                 'Finish setup',
                 ['open-terminal'],

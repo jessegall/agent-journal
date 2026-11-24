@@ -105,7 +105,7 @@ final class StopPreparationTest extends TestCase
         $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
         $held = $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
         $this->stopAgain();
-        $this->answerReads(dirty: true);
+        $this->answerReads(isDirty: true);
         $stillHeld = $this->stopAgain();
 
         $this->assertSame([StopPreparationState::Held, true], [$held->state, $held->tellsOwner]);
@@ -118,9 +118,9 @@ final class StopPreparationTest extends TestCase
     public function test_a_clean_workspace_goes_straight_to_the_final_checks(): void
     {
         $this->assertSame(StopPreparationState::Preparing, $this->stopAgain()->state);
-        $this->answerReads(dirty: false);
+        $this->answerReads(isDirty: false);
         $this->assertSame(StopPreparationState::Preparing, $this->stopAgain()->state);
-        $this->answerReads(dirty: false);
+        $this->answerReads(isDirty: false);
 
         $this->assertSame(StopPreparationState::FinalChecks, $this->stopAgain()->state);
     }
@@ -151,9 +151,9 @@ final class StopPreparationTest extends TestCase
     private function stopDirty(StepStatus $tests, string $port, string $evidence): StopPreparation
     {
         $this->stopAgain();
-        $this->answerReads(dirty: true);
+        $this->answerReads(isDirty: true);
         $this->stopAgain();
-        $this->answerReads(dirty: true);
+        $this->answerReads(isDirty: true);
         $this->stopAgain();
         $run = ProfileRun::query()->acrossActors()->orderByDesc('sequence')->firstOrFail();
         $step = (string) $run->awaited_step;

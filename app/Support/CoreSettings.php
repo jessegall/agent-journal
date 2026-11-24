@@ -31,7 +31,7 @@ final class CoreSettings implements SettingsDefinition
         $this->displayName = StringSetting::make(
             key: 'display_name',
             label: 'Journal name',
-            default: 'Journal',
+            isDefault: 'Journal',
             minimumLength: 1,
             maximumLength: 200,
             description: 'Shown at the top of every page and in the browser tab.',
@@ -47,7 +47,7 @@ final class CoreSettings implements SettingsDefinition
         $this->remoteProjects = BooleanSetting::make(
             key: 'remote_projects',
             label: 'Connect projects on other machines',
-            default: false,
+            isDefault: false,
         );
 
         $this->connectedProjects = SettingGroup::make(

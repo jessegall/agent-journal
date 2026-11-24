@@ -45,8 +45,8 @@ final class ProfileRunTest extends TestCase
         $this->assertSame(StepStatus::Pending, $pending->unread?->status);
         $this->assertSame('read-1', $pending->unread->evidence);
 
-        $this->answer(dirty: true);
-        $this->answer(dirty: false);
+        $this->answer(isDirty: true);
+        $this->answer(isDirty: false);
 
         $this->assertTrue($reader->read('workspace', 'dirty', $context)->value);
         $this->assertFalse($reader->read('workspace', 'clean', $context)->value);

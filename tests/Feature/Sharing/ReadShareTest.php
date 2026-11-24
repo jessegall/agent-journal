@@ -117,7 +117,7 @@ final class ReadShareTest extends TestCase
     {
         $token = $this->activeShare($this->document->shareIdentity(), CarbonImmutable::now()->addDay());
 
-        $this->assertSame('', $this->read($token, head: true)->body);
+        $this->assertSame('', $this->read($token, isHead: true)->body);
     }
 
     public function test_an_expired_share_and_a_lapsed_grant_are_denied_and_audited(): void

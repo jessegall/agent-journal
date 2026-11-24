@@ -38,7 +38,7 @@ final class ReaderProofTest extends TestCase
 
     public function test_a_reader_proven_on_a_passing_sample_alone_lists_the_other_branch_as_unproven(): void
     {
-        $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
+        $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: true);
 
         $refusal = $this->failedProof($this->reader(), [$passed]);
 
@@ -49,8 +49,8 @@ final class ReaderProofTest extends TestCase
 
     public function test_a_reader_that_leaves_an_error_line_unaccounted_fails_naming_its_offsets(): void
     {
-        $passed = $this->sample(0, "error: disk full\n".self::PASSED_OUTPUT, read: true);
-        $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
+        $passed = $this->sample(0, "error: disk full\n".self::PASSED_OUTPUT, isRead: true);
+        $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
 
         $refusal = $this->failedProof($this->reader(), [$passed, $findings]);
 
@@ -60,8 +60,8 @@ final class ReaderProofTest extends TestCase
 
     public function test_a_sample_its_author_never_read_proves_nothing(): void
     {
-        $passed = $this->sample(0, self::PASSED_OUTPUT, read: false);
-        $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
+        $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: false);
+        $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
 
         $refusal = $this->failedProof($this->reader(), [$passed, $findings]);
 
@@ -70,8 +70,8 @@ final class ReaderProofTest extends TestCase
 
     public function test_samples_for_every_branch_prove_the_reader_and_the_request_awaits_approval(): void
     {
-        $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
-        $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
+        $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: true);
+        $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
         $reader = $this->reader();
 
         $proofId = $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]));
@@ -87,8 +87,8 @@ final class ReaderProofTest extends TestCase
 
     public function test_a_changed_reader_is_a_new_draft_without_a_proof(): void
     {
-        $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
-        $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
+        $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: true);
+        $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
         $this->runAsAgent(new ProveReaderCommand($this->requestId, $this->reader(), [$passed, $findings]));
 
         $changed = ReaderRevision::query()->findOrFail($this->reader());

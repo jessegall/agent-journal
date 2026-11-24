@@ -126,8 +126,8 @@ trait RunsAcmeRequests
 
     private function approvePair(): void
     {
-        $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
-        $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
+        $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: true);
+        $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
         $reader = $this->reader();
         $proof = $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]));
         $approval = new OwnerApproval(1, 0, [new ReaderApproval($reader, $proof)], 'proven');

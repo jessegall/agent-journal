@@ -20,7 +20,7 @@ final readonly class PlanProgress
 
     public static function none(): self
     {
-        return new self(hasFinished: 0, cancelled: 0, blocked: 0, started: 0, total: 0);
+        return new self(finished: 0, cancelled: 0, blocked: 0, started: 0, total: 0);
     }
 
     public function plus(self $other): self

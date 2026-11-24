@@ -52,7 +52,7 @@ final readonly class DeclaredSearch
             within: $arguments->optionalText('within'),
             limit: $arguments->optionalPositiveInteger('limit'),
             continuation: $continuation,
-            discover: $arguments->flag('discover'),
+            shouldDiscover: $arguments->flag('discover'),
             prefix: $arguments->textOr('prefix', ''),
         );
 

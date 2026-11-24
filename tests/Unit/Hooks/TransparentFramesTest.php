@@ -46,7 +46,7 @@ final class TransparentFramesTest extends TestCase
 {
     public function test_a_finished_top_is_passed_over_and_the_plan_below_is_the_top(): void
     {
-        $stack = $this->stack($this->ready(), $this->plan(), $this->task(finished: true));
+        $stack = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true));
 
         $answer = $stack->answer($this->input('stop'), TestText::renderer());
 
@@ -57,7 +57,7 @@ final class TransparentFramesTest extends TestCase
 
     public function test_a_message_above_a_finished_task_with_its_tool_uses_spent_denies_an_edit_and_a_read(): void
     {
-        $stack = $this->stack($this->ready(), $this->plan(), $this->task(finished: true), $this->message());
+        $stack = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true), $this->message());
 
         $edit = $stack->answer($this->input('file edit'), TestText::renderer());
         $read = $stack->answer($this->readOnlyShellLine(), TestText::renderer());
@@ -70,7 +70,7 @@ final class TransparentFramesTest extends TestCase
 
     public function test_a_finished_message_between_a_live_task_and_the_plan_is_skipped(): void
     {
-        $stack = $this->stack($this->ready(), $this->plan(), $this->message(answered: true), $this->task());
+        $stack = $this->stack($this->ready(), $this->plan(), $this->message(isAnswered: true), $this->task());
 
         $stop = $stack->answer($this->input('stop'), TestText::renderer());
         $edit = $stack->answer($this->input('file edit'), TestText::renderer());
@@ -84,9 +84,9 @@ final class TransparentFramesTest extends TestCase
     {
         $stack = $this->stack(
             $this->ready(),
-            $this->plan(cancelled: true),
-            $this->task(finished: true),
-            $this->message(answered: true),
+            $this->plan(isCancelled: true),
+            $this->task(hasFinished: true),
+            $this->message(isAnswered: true),
         );
 
         $this->assertSame(['ready'], $this->visited($stack->answer($this->input('stop'), TestText::renderer())->steps));
@@ -95,7 +95,7 @@ final class TransparentFramesTest extends TestCase
 
     public function test_a_message_pop_takes_the_exposed_finished_task_and_resumes_the_plan(): void
     {
-        $before = $this->stack($this->ready(), $this->plan(), $this->task(finished: true), $this->message());
+        $before = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true), $this->message());
 
         $after = $before->poppedOf($before->frames()[3]);
 
@@ -108,7 +108,7 @@ final class TransparentFramesTest extends TestCase
 
     public function test_a_push_by_the_plan_takes_the_exposed_finished_task_and_resumes_nothing(): void
     {
-        $before = $this->stack($this->ready(), $this->plan(), $this->task(finished: true));
+        $before = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true));
 
         $after = $before->withoutExposedInactive()->withStateOnTop($this->reference('tasks.working', '42'));
 
@@ -119,7 +119,7 @@ final class TransparentFramesTest extends TestCase
 
     public function test_the_explicit_top_pop_removes_the_finished_suffix_without_a_resume(): void
     {
-        $before = $this->stack($this->ready(), $this->plan(), $this->task(finished: true));
+        $before = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true));
 
         $after = $before->withoutExposedInactive();
 
@@ -129,7 +129,7 @@ final class TransparentFramesTest extends TestCase
 
     public function test_a_push_over_a_live_message_keeps_the_buried_finished_task(): void
     {
-        $before = $this->stack($this->ready(), $this->plan(), $this->task(finished: true), $this->message());
+        $before = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true), $this->message());
 
         $after = $before->withoutExposedInactive()->withStateOnTop($this->reference('tasks.working', '42'));
 
@@ -138,7 +138,7 @@ final class TransparentFramesTest extends TestCase
 
     public function test_a_plan_popping_itself_under_a_live_message_resumes_nothing(): void
     {
-        $before = $this->stack($this->ready(), $this->plan(), $this->task(finished: true), $this->message());
+        $before = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true), $this->message());
 
         $after = $before->poppedOf($before->frames()[1]);
 

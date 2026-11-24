@@ -15,7 +15,7 @@ final class ContainerRecordingListener
 
     public function __construct(RunningCommand $running)
     {
-        self::$isRunning = $running;
+        self::$running = $running;
     }
 
     public function handle(): void {}

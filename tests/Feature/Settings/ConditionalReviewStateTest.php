@@ -101,12 +101,12 @@ final class ConditionalReviewStateTest extends TestCase
     public function test_while_the_group_is_off_a_push_is_declined_and_a_stored_frame_is_removed_for_good(): void
     {
         $this->pushReview();
-        $this->switchReview(off: true, expectedRevision: 0);
+        $this->switchReview(isOff: true, expectedRevision: 0);
 
         $this->pushReview();
         $this->assertSame(['core.ready'], $this->storedTypeKeys());
 
-        $this->switchReview(off: false, expectedRevision: 1);
+        $this->switchReview(isOff: false, expectedRevision: 1);
 
         $this->assertSame(
             ['core.ready'],

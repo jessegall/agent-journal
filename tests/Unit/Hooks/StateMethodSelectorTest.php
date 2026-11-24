@@ -49,7 +49,7 @@ final class StateMethodSelectorTest extends TestCase
         $stack = new AgentStack([
             $this->frame('ordinary', $ordinary),
             $this->frame('inherited', $inherited),
-            $this->frame('disabled', new InheritingState(), enabled: false),
+            $this->frame('disabled', new InheritingState(), isEnabled: false),
             $this->frame('finished', $finished),
             $this->frame('first', new InheritingState()),
             $this->frame('default', $default),

@@ -165,8 +165,8 @@ final class RuleApprovalTest extends TestCase
      */
     private function provenReader(): array
     {
-        $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
-        $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
+        $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: true);
+        $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
         $reader = $this->reader();
 
         return [$reader, $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]))];

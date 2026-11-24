@@ -142,13 +142,13 @@ final class SearchRequestTest extends TestCase
 
     public function test_discovery_takes_a_prefix_and_no_words(): void
     {
-        $request = SearchRequest::parse(discover: true, prefix: ' ta ');
+        $request = SearchRequest::parse(shouldDiscover: true, prefix: ' ta ');
 
         $this->assertTrue($request->isDiscovery());
         $this->assertSame('ta', $request->prefix);
 
         $this->expectException(SearchRequestInvalid::class);
-        SearchRequest::parse(query: 'driver', discover: true);
+        SearchRequest::parse(query: 'driver', shouldDiscover: true);
     }
 
     private function scopeOf(SearchRequest $request): ScopeResolution

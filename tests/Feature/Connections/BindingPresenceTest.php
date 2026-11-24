@@ -78,7 +78,7 @@ final class BindingPresenceTest extends TestCase
         $this->notify(self::NONCE, $binding, 'boot-1', 1)->assertOk();
 
         $this->notify(self::NONCE, $binding, 'boot-2', 1)->assertConflict();
-        $taken = $this->notify(self::NONCE, $binding, 'boot-2', 1, takeover: true)->assertOk();
+        $taken = $this->notify(self::NONCE, $binding, 'boot-2', 1, isTakeover: true)->assertOk();
 
         $this->assertSame(2, $taken->json('generation'));
     }

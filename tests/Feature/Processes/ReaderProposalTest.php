@@ -64,7 +64,7 @@ final class ReaderProposalTest extends TestCase
 
     public function test_a_proposed_reader_is_a_draft_that_unlocks_nothing(): void
     {
-        $reply = $this->proposeReader($this->definition(withSummary: true))->assertOk();
+        $reply = $this->proposeReader($this->definition(hasSummary: true))->assertOk();
 
         $revision = ReaderRevision::query()->findOrFail($reply->json('reader_revision_id'));
         $this->assertFalse($revision->isProven());
@@ -76,7 +76,7 @@ final class ReaderProposalTest extends TestCase
 
     public function test_a_definition_without_the_summary_rule_the_contract_requires_is_refused(): void
     {
-        $reply = $this->proposeReader($this->definition(withSummary: false))->assertStatus(422);
+        $reply = $this->proposeReader($this->definition(hasSummary: false))->assertStatus(422);
 
         $this->assertStringContainsString(self::SUMMARY_RULE, (string) $reply->json('message'));
         $this->assertSame(0, ReaderRevision::query()->count());
@@ -86,7 +86,7 @@ final class ReaderProposalTest extends TestCase
     {
         $this->signed($this->start, "/agent/processes/requests/{$this->request->id}/readers", [
             'declaration_revision' => 2,
-            'definition' => $this->definition(withSummary: true),
+            'definition' => $this->definition(hasSummary: true),
         ])->assertStatus(409);
     }
 

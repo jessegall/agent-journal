@@ -96,7 +96,7 @@ final class NavigationRoundTest extends TestCase
         [$host, $navigation] = $this->stalled();
         $round = $this->append($navigation, NavigationRound::choose($navigation->id, 1, 7, 'GPT-6'));
 
-        $this->notify($host, $round, proofSeen: false)->assertNoContent();
+        $this->notify($host, $round, isProofSeen: false)->assertNoContent();
 
         $this->assertSame(['Model: GPT-6'], $navigation->fresh()?->screen->rows);
     }
@@ -108,7 +108,7 @@ final class NavigationRoundTest extends TestCase
         $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6');
         $round = $this->append($navigation, $this->proofRound($navigation, NavigationCompletion::Goal, null));
 
-        $this->notify($host, $round, proofSeen: true)->assertNoContent();
+        $this->notify($host, $round, isProofSeen: true)->assertNoContent();
 
         $this->assertSame(NavigationState::Proven, $navigation->fresh()?->state);
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
@@ -125,7 +125,7 @@ final class NavigationRoundTest extends TestCase
         $navigation->prove(NavigationCompletion::Step, 4, 'GPT-6');
         $round = $this->append($navigation, $this->proofRound($navigation, NavigationCompletion::Step, 4));
 
-        $this->notify($host, $round, proofSeen: true)->assertNoContent();
+        $this->notify($host, $round, isProofSeen: true)->assertNoContent();
 
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
         $this->assertSame([4, $attempt + 1, RequestProgress::Accepted], [
@@ -142,7 +142,7 @@ final class NavigationRoundTest extends TestCase
         $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6');
         $round = $this->append($navigation, $this->proofRound($navigation, NavigationCompletion::Goal, null));
 
-        $this->notify($host, $round, proofSeen: false)->assertNoContent();
+        $this->notify($host, $round, isProofSeen: false)->assertNoContent();
 
         $this->assertSame(NavigationState::Answering, $navigation->fresh()?->state);
     }
@@ -157,7 +157,7 @@ final class NavigationRoundTest extends TestCase
         $this->app->make(DriverRequestEndings::class)->cancelNavigation($navigation);
 
         $this->assertSame(RequestProgress::Cancelled, $queued->fresh()?->progress);
-        $this->assertGreaterThanOrEqual(400, $this->notify($host, $reported, proofSeen: false)->status());
+        $this->assertGreaterThanOrEqual(400, $this->notify($host, $reported, isProofSeen: false)->status());
     }
 
     public function test_a_proven_path_is_saved_once_as_a_menu_entry_and_named_in_the_evidence(): void
@@ -165,7 +165,7 @@ final class NavigationRoundTest extends TestCase
         [$host, $navigation] = $this->stalled();
         $round = $this->proved($navigation);
 
-        $this->notify($host, $round, proofSeen: true, steps: [$this->step()])->assertNoContent();
+        $this->notify($host, $round, isProofSeen: true, steps: [$this->step()])->assertNoContent();
 
         $entry = MenuEntry::query()->acrossActors()->sole();
         $this->assertSame($entry->id, $navigation->fresh()?->library_entry_id);
@@ -177,7 +177,7 @@ final class NavigationRoundTest extends TestCase
         $this->assertSame(sprintf(self::SAVED_EVIDENCE, $entry->id), $stalled->script_evidence);
 
         [$otherHost, $other] = $this->stalled('2.1.400');
-        $this->notify($otherHost, $this->proved($other), proofSeen: true, steps: [$this->step()])->assertNoContent();
+        $this->notify($otherHost, $this->proved($other), isProofSeen: true, steps: [$this->step()])->assertNoContent();
         $this->assertSame(1, MenuEntry::query()->acrossActors()->count());
         $this->assertSame(false, MenuEntry::query()->acrossActors()->sole()->buildOn('2.1.400')?->stale);
     }
@@ -192,7 +192,7 @@ final class NavigationRoundTest extends TestCase
 
         foreach ($invalid as $name => $steps) {
             [$host, $navigation] = $this->stalled();
-            $response = $this->notify($host, $this->proved($navigation), proofSeen: true, steps: $steps);
+            $response = $this->notify($host, $this->proved($navigation), isProofSeen: true, steps: $steps);
 
             $this->assertGreaterThanOrEqual(400, $response->status(), $name);
         }

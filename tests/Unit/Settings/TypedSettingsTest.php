@@ -117,7 +117,7 @@ final class TypedSettingsTest extends TestCase
     {
         $this->expectException(TypeError::class);
 
-        BooleanSetting::make('x', 'X', default: 0); // @phpstan-ignore argument.type
+        BooleanSetting::make('x', 'X', isDefault: 0); // @phpstan-ignore argument.type
     }
 
     public function test_string_choices_compare_exactly(): void
