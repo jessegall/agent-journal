@@ -603,6 +603,7 @@ use App\Enums\ConditionOutcome;
 use App\Enums\ConsoleStream;
 use App\Enums\ContextStartType;
 use App\Enums\ConversationModeType;
+use App\Enums\CoreToolName;
 use App\Enums\DisclosureState;
 use App\Enums\DismissalType;
 use App\Enums\DriverCapability;
@@ -1953,6 +1954,7 @@ final class CoreApi
                 CallAccepted::class,
                 CallAnswer::class,
                 RefusalCode::class,
+                CoreToolName::class,
                 ReceiptState::class,
                 Operation::class,
                 McpToolResult::class,

@@ -29,7 +29,7 @@ final class BeginUploadTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'type' => $schema->string()->enum(array_column(UploadType::cases(), 'value'))->required(),
+            'type' => $this->caseArgument($schema, UploadType::class)->required(),
             'bytes' => $schema->integer()->min(1)->max(BeginUploadCommand::MAX_BYTES)->required(),
             'digest' => $schema->string()->min(64)->max(64)->required(),
         ];

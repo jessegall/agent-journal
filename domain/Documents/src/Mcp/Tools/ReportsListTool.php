@@ -24,7 +24,7 @@ final class ReportsListTool extends PublicationReadTool
     {
         return [
             'search' => $schema->string()->max(200),
-            'state' => $schema->string()->enum(array_column(AttentionFilter::cases(), 'value')),
+            'state' => $this->caseArgument($schema, AttentionFilter::class),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];

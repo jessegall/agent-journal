@@ -24,7 +24,7 @@ final class ReadDocumentTool extends PublicationReadTool
     {
         return [
             'doc_id' => $this->referenceSchema($schema),
-            'view' => $schema->string()->enum(array_column(PublicationView::cases(), 'value')),
+            'view' => $this->caseArgument($schema, PublicationView::class),
             'revision' => $schema->integer()->min(1),
             ...$this->rangeSchema($schema),
         ];

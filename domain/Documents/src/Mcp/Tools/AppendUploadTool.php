@@ -28,7 +28,7 @@ final class AppendUploadTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'upload_id' => $schema->string()->max(26)->required(),
+            'upload_id' => $this->recordIdArgument($schema),
             'index' => $schema->integer()->min(0)->required(),
             'text' => $schema->string()->min(1)->max(AppendUploadCommand::MAX_BYTES)->required(),
             'digest' => $schema->string()->min(64)->max(64)->required(),

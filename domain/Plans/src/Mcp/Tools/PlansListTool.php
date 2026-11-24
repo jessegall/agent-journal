@@ -35,7 +35,7 @@ final class PlansListTool extends JournalReadTool
     {
         return [
             'search' => $schema->string()->max(240),
-            'states' => $schema->array()->items($schema->string()->enum(array_column(PlanState::cases(), 'value'))),
+            'states' => $schema->array()->items($this->caseArgument($schema, PlanState::class)),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];

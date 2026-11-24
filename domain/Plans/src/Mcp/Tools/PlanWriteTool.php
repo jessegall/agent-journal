@@ -31,6 +31,6 @@ abstract class PlanWriteTool extends JournalWriteTool
      */
     final protected function typeSchema(JsonSchema $schema): StringType
     {
-        return $schema->string()->enum(array_column(PlanType::cases(), 'value'));
+        return $this->caseArgument($schema, PlanType::class);
     }
 }

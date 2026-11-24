@@ -41,7 +41,7 @@ final class MenuListTool extends JournalReadTool
     {
         return [
             'driver' => $schema->string()->max(80),
-            'state' => $schema->string()->enum(array_column(MenuEntryState::cases(), 'value')),
+            'state' => $this->caseArgument($schema, MenuEntryState::class),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];

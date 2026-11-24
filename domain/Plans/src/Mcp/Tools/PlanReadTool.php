@@ -26,7 +26,7 @@ final class PlanReadTool extends JournalReadTool
     {
         return [
             'plan_id' => $schema->string()->max(26)->required(),
-            'view' => $schema->string()->enum(array_column(ReadView::cases(), 'value')),
+            'view' => $this->caseArgument($schema, ReadView::class),
             'continuation' => $schema->string(),
         ];
     }

@@ -6,6 +6,7 @@ namespace App\Pipes\Run;
 
 use App\Calls\Processes\ProcessCalls;
 use App\Contracts\Bus\Pipe;
+use App\Mcp\Tools\OutputsReadTool;
 use App\Support\Run\PartResult;
 use App\Support\Run\SupervisedRun;
 use App\Values\CommandReport;
@@ -15,12 +16,14 @@ use App\Values\CommandReport;
  */
 final readonly class ReportPartResults implements Pipe
 {
+    private const string READ_IT = 'Output %1$s: read it with the %2$s tool, run %1$s.';
+
     public function __construct(private ProcessCalls $processes) {}
 
     public function handle(SupervisedRun $run): CommandReport
     {
         $summary = $this->processes->readOutputSummary($run->runId);
-        $report = $run->report->line('')->line("Output {$run->runId}: read it with journal output read {$run->runId}");
+        $report = $run->report->line('')->line(sprintf(self::READ_IT, $run->runId, OutputsReadTool::NAME));
 
         foreach ($summary->parts as $part) {
             $report = $report->line("{$part->operation}: ".PartResult::fromAnswer($part->partSummary)->describe());

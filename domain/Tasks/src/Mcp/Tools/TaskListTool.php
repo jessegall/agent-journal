@@ -32,7 +32,7 @@ abstract class TaskListTool extends JournalReadTool
     {
         return [
             'search' => $schema->string()->max(240),
-            'states' => $schema->array()->items($schema->string()->enum(array_column(TaskState::cases(), 'value'))),
+            'states' => $schema->array()->items($this->caseArgument($schema, TaskState::class)),
             'page' => $schema->integer()->min(1),
             'per_page' => $schema->integer()->min(1)->max(NumberedPage::LARGEST_SIZE),
             'continuation' => $schema->string(),

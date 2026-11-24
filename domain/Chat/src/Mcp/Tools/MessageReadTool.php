@@ -20,7 +20,7 @@ final class MessageReadTool extends MessageDetailsTool
     {
         return [
             ...parent::schema($schema),
-            'view' => $schema->string()->enum(array_column(ReadView::cases(), 'value')),
+            'view' => $this->caseArgument($schema, ReadView::class),
         ];
     }
 }

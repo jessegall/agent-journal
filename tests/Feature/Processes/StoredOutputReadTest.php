@@ -6,6 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Enums\ActorType;
 use App\Enums\OutputStream;
+use App\Mcp\Tools\OutputsReadTool;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
@@ -17,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
@@ -28,6 +30,7 @@ use Tests\TestCase;
 final class StoredOutputReadTest extends TestCase
 {
     use RefreshHookDatabase;
+    use SendsMcpFrames;
     use SendsSignedCalls;
 
     private const string TAIL_TEXT = "line 100\n\\x00\\xFF end";
@@ -72,6 +75,27 @@ final class StoredOutputReadTest extends TestCase
         $this->assertSame(self::TAIL_TEXT, $reply->json('text'));
         $this->assertGreaterThan(0, $reply->json('before'));
         $this->assertSame(self::LABEL, $reply->json('label'));
+    }
+
+    public function test_the_outputs_tool_reads_the_same_tail(): void
+    {
+        $tail = $this->callMcpTool($this->start, OutputsReadTool::NAME, [
+            'run' => $this->run->id,
+            'part' => 1,
+            'stream' => 'stdout',
+            'lines' => 2,
+        ])->assertJsonPath('result.isError', false)->json('result.structuredContent');
+
+        $this->assertSame([self::TAIL_TEXT, self::LABEL], [$tail['text'], $tail['label']]);
+    }
+
+    public function test_another_agents_outputs_tool_finds_no_run(): void
+    {
+        $this->callMcpTool(TestStart::start(), OutputsReadTool::NAME, [
+            'run' => $this->run->id,
+            'part' => 1,
+            'stream' => 'stdout',
+        ])->assertJsonPath('result.isError', true);
     }
 
     public function test_a_search_lists_offsets_and_the_summary_keeps_the_own_exit(): void

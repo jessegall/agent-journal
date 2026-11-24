@@ -353,6 +353,117 @@
                 "outputSchema": null,
                 "title": "Retry Delivery Tool"
             },
+            "command_requests_prove": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reader_revision": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "runs": {
+                            "items": {
+                                "maxLength": 26,
+                                "type": "string"
+                            },
+                            "maxItems": 20,
+                            "minItems": 1,
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "reader_revision",
+                        "runs",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_requests_prove",
+                "outputSchema": null,
+                "title": "Command Request Prove Tool"
+            },
+            "command_requests_sample": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "permit": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "permit",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_requests_sample",
+                "outputSchema": null,
+                "title": "Command Request Sample Tool"
+            },
+            "command_requests_show": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_requests_show",
+                "outputSchema": null,
+                "title": "Command Request Show Tool"
+            },
+            "command_types_propose": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "declaration_file": {
+                            "type": "string"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "declaration_file",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_types_propose",
+                "outputSchema": null,
+                "title": "Command Type Propose Tool"
+            },
             "dock_add": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -1687,6 +1798,43 @@
                     "type": "object"
                 },
                 "title": "Operations Read Tool"
+            },
+            "outputs_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "lines": {
+                            "maximum": 10000,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "part": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "run": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "stream": {
+                            "enum": [
+                                "stdout",
+                                "stderr",
+                                "merged"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "run",
+                        "part",
+                        "stream"
+                    ],
+                    "type": "object"
+                },
+                "name": "outputs_read",
+                "outputSchema": null,
+                "title": "Outputs Read Tool"
             },
             "overview_read": {
                 "inputSchema": {
@@ -3240,6 +3388,24 @@
                 },
                 "title": "Capabilities Read Tool"
             },
+            "command_requests_show": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_requests_show",
+                "outputSchema": null,
+                "title": "Command Request Show Tool"
+            },
             "docs_list": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -3547,6 +3713,43 @@
                     "type": "object"
                 },
                 "title": "Operations Read Tool"
+            },
+            "outputs_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "lines": {
+                            "maximum": 10000,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "part": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "run": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "stream": {
+                            "enum": [
+                                "stdout",
+                                "stderr",
+                                "merged"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "run",
+                        "part",
+                        "stream"
+                    ],
+                    "type": "object"
+                },
+                "name": "outputs_read",
+                "outputSchema": null,
+                "title": "Outputs Read Tool"
             },
             "overview_read": {
                 "inputSchema": {
@@ -4171,6 +4374,117 @@
                 "name": "chat_retry_delivery",
                 "outputSchema": null,
                 "title": "Retry Delivery Tool"
+            },
+            "command_requests_prove": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reader_revision": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "runs": {
+                            "items": {
+                                "maxLength": 26,
+                                "type": "string"
+                            },
+                            "maxItems": 20,
+                            "minItems": 1,
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "reader_revision",
+                        "runs",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_requests_prove",
+                "outputSchema": null,
+                "title": "Command Request Prove Tool"
+            },
+            "command_requests_sample": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "permit": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "permit",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_requests_sample",
+                "outputSchema": null,
+                "title": "Command Request Sample Tool"
+            },
+            "command_requests_show": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_requests_show",
+                "outputSchema": null,
+                "title": "Command Request Show Tool"
+            },
+            "command_types_propose": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "declaration_file": {
+                            "type": "string"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "declaration_file",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "command_types_propose",
+                "outputSchema": null,
+                "title": "Command Type Propose Tool"
             },
             "dock_add": {
                 "inputSchema": {
@@ -5048,6 +5362,43 @@
                     "type": "object"
                 },
                 "title": "Operations Read Tool"
+            },
+            "outputs_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "lines": {
+                            "maximum": 10000,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "part": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "run": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "stream": {
+                            "enum": [
+                                "stdout",
+                                "stderr",
+                                "merged"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "run",
+                        "part",
+                        "stream"
+                    ],
+                    "type": "object"
+                },
+                "name": "outputs_read",
+                "outputSchema": null,
+                "title": "Outputs Read Tool"
             },
             "overview_read": {
                 "inputSchema": {

@@ -37,6 +37,8 @@ final readonly class RuleDeclarations
 {
     private const string RULE_ID = 'regex:/^[a-z0-9-]+(\.[a-z0-9-]+)+$/';
 
+    private const string NOT_ONE = 'a proposal sends exactly one declaration';
+
     public function __construct(private Factory $validators) {}
 
     /**
@@ -67,6 +69,22 @@ final readonly class RuleDeclarations
     public function readOne(array $declaration): DeclaredProposal
     {
         return $this->readFile(['declarations' => [$declaration]])[0];
+    }
+
+    /**
+     * The one declaration of a declaration file sent as its JSON text for a held command request.
+     *
+     * @throws DeclarationInvalid
+     */
+    public function readSentFile(string $text): DeclaredProposal
+    {
+        $declared = $this->read($text);
+
+        if (count($declared) !== 1) {
+            throw DeclarationInvalid::fields([self::NOT_ONE]);
+        }
+
+        return $declared[0];
     }
 
     /**

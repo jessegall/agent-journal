@@ -34,7 +34,7 @@ final class MenuRetireTool extends JournalWriteTool
     {
         return [
             'entry' => $schema->string()->max(64)->required(),
-            'expected_state' => $schema->string()->enum(array_column(MenuEntryState::cases(), 'value'))->required(),
+            'expected_state' => $this->caseArgument($schema, MenuEntryState::class)->required(),
         ];
     }
 

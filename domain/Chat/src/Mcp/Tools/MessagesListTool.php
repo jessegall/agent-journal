@@ -27,7 +27,7 @@ final class MessagesListTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'state' => $schema->string()->enum(array_column(AgentInboxState::cases(), 'value')),
+            'state' => $this->caseArgument($schema, AgentInboxState::class),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];

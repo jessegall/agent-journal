@@ -11,7 +11,10 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Support\ToolArguments;
 use App\Support\Reflector;
+use BackedEnum;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+use Illuminate\JsonSchema\Types\StringType;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Tool;
 use PhpOption\Option;
@@ -21,6 +24,24 @@ use PhpOption\Option;
  */
 abstract class JournalTool extends Tool
 {
+    /**
+     * The argument that names one record by its ULID, which every call must send.
+     */
+    final protected function recordIdArgument(JsonSchema $schema): StringType
+    {
+        return $schema->string()->max(26)->required();
+    }
+
+    /**
+     * The argument that names one case of an enum by its value.
+     *
+     * @param  class-string<BackedEnum>  $enum
+     */
+    final protected function caseArgument(JsonSchema $schema, string $enum): StringType
+    {
+        return $schema->string()->enum(array_column($enum::cases(), 'value'));
+    }
+
     /**
      * Whether the server offers the tool to the current agent, as its job allows.
      */

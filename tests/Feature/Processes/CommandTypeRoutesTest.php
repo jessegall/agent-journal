@@ -6,6 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Declarations\RuleDeclaration;
 use App\Enums\RequestState;
+use App\Mcp\Tools\CommandRequestShowTool;
+use App\Mcp\Tools\CommandTypeProposeTool;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
@@ -13,6 +15,7 @@ use App\Values\AgentText;
 use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsTestAgent;
 use Tests\Support\TestText;
@@ -25,12 +28,13 @@ use Tests\TestCase;
 final class CommandTypeRoutesTest extends TestCase
 {
     use RefreshHookDatabase;
+    use SendsMcpFrames;
     use SendsSignedCalls;
     use StartsTestAgent;
 
-    private const string PROPOSE_STEP = 'journal command-type propose --request ';
+    private const string PROPOSE_STEP = 'the command_types_propose tool with request ';
 
-    private const string APPROVE_STEP = 'waiting for the owner: journal reader sample-approve %s';
+    private const string APPROVE_STEP = "waiting for the owner to approve request %s's sample";
 
     public function test_explaining_an_unknown_line_opens_its_request_and_names_the_propose_step(): void
     {
@@ -49,6 +53,27 @@ final class CommandTypeRoutesTest extends TestCase
             ->assertOk();
 
         $this->assertContains('reader_required', array_column((array) $reply->json('held'), 'code'));
+    }
+
+    public function test_a_proposal_through_the_tool_moves_the_request_on_and_the_show_tool_reads_it_back(): void
+    {
+        $requestId = $this->explainAcme();
+
+        $proposal = $this->callMcpTool($this->start, CommandTypeProposeTool::NAME, [
+            'request' => $requestId,
+            'declaration_file' => json_encode(
+                ['declarations' => [[...$this->declaration()->toArray(), 'request_id' => 'propose-tool-1']]],
+                JSON_THROW_ON_ERROR,
+            ),
+            'request_key' => 'propose-tool-1',
+        ])->assertJsonPath('result.isError', false)->json('result.structuredContent');
+
+        $this->app->forgetScopedInstances();
+        $shown = $this->callMcpTool($this->start, CommandRequestShowTool::NAME, ['request' => $requestId])
+            ->assertJsonPath('result.isError', false)
+            ->json('result.structuredContent');
+        $this->assertSame(RequestState::AwaitingSampleApproval->value, $shown['state']);
+        $this->assertSame($proposal['proposal_id'], $shown['proposals'][0]['proposal_id']);
     }
 
     public function test_a_proposal_through_the_route_moves_the_request_on_and_show_reads_it_back(): void

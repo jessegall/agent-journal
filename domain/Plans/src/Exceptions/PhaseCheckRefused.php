@@ -7,6 +7,7 @@ namespace Domain\Plans\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
+use App\Enums\CoreToolName;
 use App\Enums\RefusalCode;
 use RuntimeException;
 
@@ -21,8 +22,10 @@ final class PhaseCheckRefused extends RuntimeException implements CodedRefusal, 
     {
         return new self(
             sprintf(
-                'Receipt %s is not a current validated result: rerun the check after the phase, or read its run with journal output read and recover by an approved replay.',
+                'Receipt %s is not a current validated result: rerun the check after the phase, or read its run with the %s '
+                .'tool and recover by an approved replay.',
                 $receiptId,
+                CoreToolName::OutputsRead->value,
             ),
         );
     }

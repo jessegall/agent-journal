@@ -48,6 +48,7 @@ use App\Commands\OfferNextAsk\OfferNextAskCommand;
 use App\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
 use App\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Commands\ProposeReader\ProposeReaderCommand;
+use App\Commands\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
 use App\Commands\ProveReader\ProveReaderCommand;
 use App\Commands\PruneShareAudit\PruneShareAuditCommand;
 use App\Commands\PruneSkillPublications\PruneSkillPublicationsCommand;
@@ -230,6 +231,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             ApproveSampleCommand::class,
             StartSampleCommand::class,
             SettleSampleCommand::class,
+            ProposeRuleDeclarationCommand::class,
             ProveReaderCommand::class,
             ApproveRuleProposalCommand::class,
             SaveCommandRuleCommand::class,

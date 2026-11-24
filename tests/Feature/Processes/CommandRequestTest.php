@@ -22,9 +22,9 @@ final class CommandRequestTest extends TestCase
     use ActsAsActors;
     use RefreshHookDatabase;
 
-    private const string PROPOSE_STEP = 'journal command-type propose --request %s';
+    private const string PROPOSE_STEP = 'the command_types_propose tool with request %s';
 
-    private const string APPROVE_STEP = 'waiting for the owner: journal reader sample-approve %s';
+    private const string APPROVE_STEP = "waiting for the owner to approve request %s's sample";
 
     public function test_opening_twice_returns_the_same_request_with_its_propose_step(): void
     {

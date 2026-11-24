@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Contracts\Domains\JournalToolNames;
+use App\Mcp\Tools\CommandRequestProveTool;
+use App\Mcp\Tools\CommandRequestSampleTool;
+use App\Mcp\Tools\CommandRequestShowTool;
+use App\Mcp\Tools\CommandTypeProposeTool;
+use App\Mcp\Tools\OutputsReadTool;
 use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
 use Domain\Helpers\Mcp\Tools\SendHelperTool;
 use Tests\Architecture\Support\DomainFiles;
@@ -12,8 +17,7 @@ use Tests\TestCase;
 
 /**
  * Agents use the journal through its tools, and the command line is for the user at a terminal: no text in app, a
- * domain or the agent texts names a journal command line, except the files that write for the user's terminal and
- * the texts whose action has no tool yet.
+ * domain or the agent texts names a journal command line, except the files that write for the user's terminal.
  */
 final class AgentTextToolNamesTest extends TestCase
 {
@@ -28,20 +32,10 @@ final class AgentTextToolNamesTest extends TestCase
         'app/Calls/Connections/RunProjectCommandCall.php',
     ];
 
-    /**
-     * Texts whose action no tool offers yet: reading a run's output, and the steps of a held command request.
-     */
-    private const array WAITING_FOR_A_TOOL = [
-        'app/Enums/RequestState.php',
-        'app/Pipes/Run/ReportPartResults.php',
-        'app/Values/HiddenOutput.php',
-        'domain/Plans/src/Exceptions/PhaseCheckRefused.php',
-    ];
-
     public function test_no_agent_text_names_a_journal_command_line(): void
     {
         $files = DomainFiles::in([app_path(), base_path('lang'), ...glob(base_path('domain/*/src')) ?: []]);
-        $allowed = [...self::FOR_THE_USER, ...self::WAITING_FOR_A_TOOL];
+        $allowed = self::FOR_THE_USER;
         $found = [];
 
         foreach ($files as $file) {
@@ -61,14 +55,19 @@ final class AgentTextToolNamesTest extends TestCase
         $this->assertSame([], $found);
     }
 
-    public function test_the_helper_tools_the_texts_name_are_in_the_catalogue(): void
+    public function test_the_tools_the_texts_name_are_in_the_catalogue(): void
     {
-        $names = $this->app->make(JournalToolNames::class)->toolNames();
+        $named = [
+            ContinueHelperTool::NAME,
+            SendHelperTool::NAME,
+            OutputsReadTool::NAME,
+            CommandTypeProposeTool::NAME,
+            CommandRequestShowTool::NAME,
+            CommandRequestSampleTool::NAME,
+            CommandRequestProveTool::NAME,
+        ];
 
-        $this->assertSame(
-            [ContinueHelperTool::NAME, SendHelperTool::NAME],
-            array_values(array_intersect([ContinueHelperTool::NAME, SendHelperTool::NAME], $names)),
-        );
+        $this->assertSame($named, array_values(array_intersect($named, $this->app->make(JournalToolNames::class)->toolNames())));
     }
 
     /**

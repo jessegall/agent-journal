@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Mcp\Tools\CommandRequestProveTool;
+use App\Mcp\Tools\CommandRequestSampleTool;
+use App\Mcp\Tools\CommandRequestShowTool;
+use App\Mcp\Tools\CommandTypeProposeTool;
 use App\Values\NextStep;
 
 /**
@@ -94,15 +98,28 @@ enum RequestState: string
     {
         return match ($this) {
             self::CollectingDeclaration => sprintf(
-                "journal command-type propose --request %s --operation '%s'",
+                "the %s tool with request %s and a declaration file for '%s'",
+                CommandTypeProposeTool::NAME,
                 $requestId,
                 $operation,
             ),
-            self::AwaitingSampleApproval => "waiting for the owner: journal reader sample-approve {$requestId}",
-            self::ReadyForSample => "journal reader sample-run {$requestId}",
-            self::CapturingSample => "waiting for the sample run: journal command-request show {$requestId}",
-            self::AwaitingProof => "journal reader prove {$requestId}",
-            self::AwaitingApproval => "waiting for the owner: journal command-type approve {$requestId}",
+            self::AwaitingSampleApproval => "waiting for the owner to approve request {$requestId}'s sample",
+            self::ReadyForSample => sprintf(
+                'the %s tool with request %s and the permit its approval gave',
+                CommandRequestSampleTool::NAME,
+                $requestId,
+            ),
+            self::CapturingSample => sprintf(
+                'waiting for the sample run; the %s tool with request %s shows when it ends',
+                CommandRequestShowTool::NAME,
+                $requestId,
+            ),
+            self::AwaitingProof => sprintf(
+                'the %s tool with request %s, its reader revision and its sample runs',
+                CommandRequestProveTool::NAME,
+                $requestId,
+            ),
+            self::AwaitingApproval => "waiting for the owner to approve request {$requestId}'s declaration and proof",
             self::Active => 'none: the command is approved and runs',
             self::Rejected, self::Withdrawn => 'none: the request is closed; a new attempt opens a new request',
         };

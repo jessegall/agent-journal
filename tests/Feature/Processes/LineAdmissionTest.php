@@ -29,7 +29,7 @@ final class LineAdmissionTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const string PROPOSE_COMMAND = 'journal command-type propose';
+    private const string PROPOSE_COMMAND = 'the command_types_propose tool';
 
     private const string BLOCKING_TASKS = 'task 447, task 448';
 
