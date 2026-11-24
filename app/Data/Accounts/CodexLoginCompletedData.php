@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 
 /**
@@ -13,6 +14,7 @@ final class CodexLoginCompletedData extends Data
 {
     public function __construct(
         public readonly string|null $loginId = null,
-        public readonly bool $success = false,
+        #[MapInputName('success')]
+        public readonly bool $hasSucceeded = false,
     ) {}
 }

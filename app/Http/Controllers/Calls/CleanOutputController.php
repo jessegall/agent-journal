@@ -16,13 +16,13 @@ final readonly class CleanOutputController
 {
     public function __invoke(CleanOutputCall $call, CommandBus $commands): OutputCleaned
     {
-        $preview = $commands->run(new CleanProcessOutputCommand($call->runs, $call->preview));
+        $preview = $commands->run(new CleanProcessOutputCommand($call->runs, $call->isPreview));
 
         return OutputCleaned::from([
             'runs' => $preview->runIds,
             'parts' => $preview->partRunIds,
             'bytes' => $preview->bytes,
-            'removed' => $preview->removed,
+            'isRemoved' => $preview->removed,
         ]);
     }
 }

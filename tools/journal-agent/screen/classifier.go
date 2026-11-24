@@ -174,7 +174,7 @@ func (classifier *Classifier) composerIsEmptyWithCursor(snapshot contracts.Snaps
 
 	return found &&
 		snapshot.Buffer == classifier.layout.Buffer &&
-		cursor.Visible &&
+		cursor.IsVisible &&
 		cursor.Row >= rows.First && cursor.Row < rows.Last &&
 		cursor.Column == classifier.layout.EmptyCursorColumn
 }

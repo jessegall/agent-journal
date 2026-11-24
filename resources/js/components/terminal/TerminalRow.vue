@@ -18,11 +18,11 @@ function styleOf(
     const background = style.bg ?? 'var(--terminal-bg)';
 
     return {
-        color: style.inverse ? background : foreground,
-        backgroundColor: style.inverse ? foreground : background,
-        fontWeight: style.bold ? 'bold' : 'normal',
-        fontStyle: style.italic ? 'italic' : 'normal',
-        textDecoration: style.underline ? 'underline' : 'none',
+        color: style.isInverse ? background : foreground,
+        backgroundColor: style.isInverse ? foreground : background,
+        fontWeight: style.isBold ? 'bold' : 'normal',
+        fontStyle: style.isItalic ? 'italic' : 'normal',
+        textDecoration: style.isUnderlined ? 'underline' : 'none',
     };
 }
 </script>

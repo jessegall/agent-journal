@@ -239,7 +239,7 @@ final class NavigationRaiseRouteTest extends TestCase
         );
 
         $this->assertSame($entry->id, $saved->id);
-        $this->assertSame(false, $saved->buildOn('2.1.323')?->stale);
+        $this->assertSame(false, $saved->buildOn('2.1.323')?->isStale);
         $this->assertSame(21, MenuEntry::query()->acrossActors()->count());
     }
 
@@ -282,8 +282,8 @@ final class NavigationRaiseRouteTest extends TestCase
         $report('no-proof')->assertNoContent();
 
         $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
-        $this->assertSame(true, $entry->buildOn('2.1.323')?->stale);
-        $this->assertSame(false, $entry->buildOn('2.1.400')?->stale);
+        $this->assertSame(true, $entry->buildOn('2.1.323')?->isStale);
+        $this->assertSame(false, $entry->buildOn('2.1.400')?->isStale);
         $this->assertSame(self::STALE_REASON, $entry->buildOn('2.1.323')?->staleReason);
         $this->assertSame(['Model: <redacted>'], $entry->buildOn('2.1.323')?->staleScreen);
     }
@@ -321,7 +321,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
         $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
         $this->assertSame(1, $entry->uses);
-        $this->assertSame(false, $entry->buildOn('2.1.323')?->stale);
+        $this->assertSame(false, $entry->buildOn('2.1.323')?->isStale);
     }
 
     /**

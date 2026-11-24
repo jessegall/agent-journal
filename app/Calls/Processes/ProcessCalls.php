@@ -96,7 +96,7 @@ final readonly class ProcessCalls
     ): OutputCleaned {
         return $this->sender->send(CleanOutputCall::from([
             'runs' => $runs,
-            'preview' => $isPreview,
+            'isPreview' => $isPreview,
             'requestKey' => $requestKey,
         ]));
     }

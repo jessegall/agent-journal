@@ -72,7 +72,7 @@ final class ContinueStartTest extends TestCase
 
         $this->assertNotSame($first, $successor->sessionId);
         $this->assertSame($successor->sessionId, $again->sessionId);
-        $this->assertSame([true, false], [$successor->newSession, $again->newSession]);
+        $this->assertSame([true, false], [$successor->isNewSession, $again->isNewSession]);
         $this->assertTrue(AgentSession::query()->findOrFail($successor->sessionId)->isLinkedTo($newAccount));
         $this->assertTrue($session->isLinkedTo($oldAccount));
         $this->assertFalse($session->isLinkedTo($newAccount));

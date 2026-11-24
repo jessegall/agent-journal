@@ -107,7 +107,7 @@ final class DraftsTest extends TestCase
         $this->assertStringContainsString(self::STEPS_TEXT, $this->documents()->show(1)->body);
 
         $this->assertSame(self::BODY, $this->documents()->revision(1, 1)->body);
-        $this->assertTrue($this->documents()->revision(1, 1)->historical);
+        $this->assertTrue($this->documents()->revision(1, 1)->isHistorical);
         $this->assertCount(2, $this->documents()->revisions(1, 1));
         $this->assertSame(0, DocumentDraft::query()->count());
     }

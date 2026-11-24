@@ -18,7 +18,7 @@ final class ReplyTargetData extends Data
 {
     public function __construct(
         public readonly string|null $id,
-        public readonly bool $visible,
+        public readonly bool $isVisible,
         // Who wrote the original and one line of it, when the viewer may see it.
         public readonly ReplyOriginal|Optional $original = new Optional(),
     ) {}

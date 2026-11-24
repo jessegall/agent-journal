@@ -60,7 +60,7 @@ type DrainRequest struct {
 
 // DrainReply answers whether nothing of the account runs any more.
 type DrainReply struct {
-	Drained bool   `json:"drained"`
+	IsDrained bool   `json:"isDrained"`
 	Reason  string `json:"reason,omitempty"`
 }
 
@@ -72,7 +72,7 @@ type FolderUseRequest struct {
 
 // FolderUseReply answers whether the folder is still bound; a daemon that cannot be asked answers bound, with why.
 type FolderUseReply struct {
-	Bound  bool   `json:"bound"`
+	IsBound  bool   `json:"isBound"`
 	Reason string `json:"reason,omitempty"`
 }
 

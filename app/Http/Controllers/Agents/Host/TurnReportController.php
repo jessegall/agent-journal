@@ -24,7 +24,7 @@ final readonly class TurnReportController
                 $report->runtimeId,
                 $report->processGeneration,
                 $report->nativePromptId,
-                $report->finished,
+                $report->hasFinished,
                 $report->model,
                 $report->effort,
                 $report->outcome,

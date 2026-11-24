@@ -34,11 +34,11 @@ final class GroupChatTest extends MessagingTestCase
 
         $members = $this->app->make(ChatInboxes::class)->activeIntervals(new ChatInbox($inboxId, 'Design'));
         $this->assertCount(3, $members);
-        $this->assertTrue($this->pageOf($inboxId)->capabilities->add);
+        $this->assertTrue($this->pageOf($inboxId)->capabilities->canAdd);
 
         $this->startUserRequestAs($bea->id);
         $postId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Draft is up.', 'bea-post'));
-        $this->assertFalse($this->pageOf($inboxId)->capabilities->add);
+        $this->assertFalse($this->pageOf($inboxId)->capabilities->canAdd);
 
         $this->startUserRequestAs($cy->id);
         $replyId = $this->runOnBus(new ReplyInChatCommand($postId, 'Looks good.', 'cy-reply'));

@@ -24,7 +24,7 @@ final class ScriptKeywordData extends Data
         public readonly string $form,
         public readonly string $documentation,
         public readonly array $ports,
-        public readonly bool $available,
+        public readonly bool $isAvailable,
     ) {}
 
     /**

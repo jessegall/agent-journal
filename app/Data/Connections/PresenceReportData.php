@@ -35,10 +35,10 @@ final class PresenceReportData extends Data
         public readonly array $descriptors,
         #[In(['succeeded', 'failed'])]
         public readonly string $provisioning,
-        public readonly bool $takeover = false,
+        public readonly bool $isTakeover = false,
         #[Min(0)]
         public readonly int $setupGeneration = 0,
-        public readonly bool $reconciled = false,
+        public readonly bool $isReconciled = false,
     ) {}
 
     public function report(): PresenceReport
@@ -48,10 +48,10 @@ final class PresenceReportData extends Data
             $this->sequence,
             $this->release,
             $this->provisioning === 'succeeded',
-            $this->takeover,
+            $this->isTakeover,
             $this->setupGeneration,
             array_map(fn (HostDescriptorData $descriptor) => $descriptor->descriptor(), $this->descriptors),
-            $this->reconciled,
+            $this->isReconciled,
         );
     }
 }

@@ -35,7 +35,7 @@ const linkName = computed(() =>
         `${name.value.charAt(0).toUpperCase()}${name.value.slice(1)}: ${props.card.title}`,
         state.value.label,
         props.card.holder ? `held by ${props.card.holder.name}` : '',
-        props.card.focused ? 'Focused plan' : '',
+        props.card.isFocused ? 'Focused plan' : '',
         props.selected ? 'Selected plan' : '',
     ]
         .filter((part) => part !== '')
@@ -81,7 +81,7 @@ const linkName = computed(() =>
             </template>
             <span class="flex flex-wrap items-center gap-1.5">
                 <StateBadge v-bind="state" outlined />
-                <template v-if="card.focused">
+                <template v-if="card.isFocused">
                     <span
                         class="inline-flex items-center gap-1 text-small font-medium text-text-2"
                     >

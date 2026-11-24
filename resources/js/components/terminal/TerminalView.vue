@@ -88,7 +88,7 @@ const alert = computed(() => {
 const cursorStyle = computed(() => {
     const cursor = drawn.value?.cursor;
 
-    return cursor === undefined || !cursor.visible
+    return cursor === undefined || !cursor.isVisible
         ? { display: 'none' }
         : { left: `${cursor.column}ch`, top: `${cursor.row}lh` };
 });
@@ -136,7 +136,7 @@ const cursorStyle = computed(() => {
                     :style="{ width: `${drawn.columns}ch` }"
                     aria-label="Agent terminal, read only"
                 ><template v-for="(row, index) in drawn.rows" :key="index"
-                    ><TerminalRow :runs="row.runs" :plain="drawn.plain" /></template
+                    ><TerminalRow :runs="row.runs" :plain="drawn.isPlain" /></template
                 ><span class="cursor absolute h-[1lh] w-[1ch]" :style="cursorStyle" /></pre>
             </div>
         </template>

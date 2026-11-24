@@ -59,7 +59,7 @@ final class TerminalViewCommandsTest extends TestCase
             $receipt->runtimeId,
             $receipt->intervalMs,
             $receipt->expiresInSeconds,
-            $receipt->live,
+            $receipt->isLive,
         ]);
         $this->assertTrue($view->isLive());
         $this->assertNotSame(0, $watched->version('host-1'));
@@ -178,7 +178,7 @@ final class TerminalViewCommandsTest extends TestCase
         $this->assertSame($first->readInterestId, $retried->readInterestId);
         $this->assertSame(
             [$first->readInterestId, false],
-            [$retriedAfterClose->readInterestId, $retriedAfterClose->live],
+            [$retriedAfterClose->readInterestId, $retriedAfterClose->isLive],
         );
         $this->assertNotSame($first->readInterestId, $fresh->readInterestId);
         $this->assertSame(2, TerminalView::query()->ownedBy($this->owner())->count());

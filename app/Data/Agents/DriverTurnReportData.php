@@ -18,7 +18,7 @@ final class DriverTurnReportData extends Data
         public readonly string $runtimeId,
         public readonly int $processGeneration,
         public readonly string $nativePromptId,
-        public readonly bool $finished,
+        public readonly bool $hasFinished,
         public readonly string|null $model,
         public readonly string|null $effort,
         public readonly string|null $outcome,

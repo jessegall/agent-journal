@@ -22,11 +22,11 @@ final class StoredSourceProgress extends Data
     public function __construct(
         public readonly string $source,
         public readonly array|null $position,
-        public readonly bool $exhausted,
+        public readonly bool $isExhausted,
         #[DataCollectionOf(StoredSearchHit::class)]
         public readonly array $buffer,
         public readonly int $stalls,
-        public readonly bool $failed,
+        public readonly bool $hasFailed,
     ) {}
 
     public static function fromSourceProgress(SourceProgress $progress): self
@@ -34,10 +34,10 @@ final class StoredSourceProgress extends Data
         return self::from([
             'source' => $progress->sourceKey,
             'position' => $progress->position?->fields,
-            'exhausted' => $progress->isExhausted,
+            'isExhausted' => $progress->isExhausted,
             'buffer' => $progress->buffer,
             'stalls' => $progress->stalls,
-            'failed' => $progress->hasFailed,
+            'hasFailed' => $progress->hasFailed,
         ]);
     }
 
@@ -46,10 +46,10 @@ final class StoredSourceProgress extends Data
         return new SourceProgress(
             $this->source,
             $this->position === null ? null : SourcePosition::of($this->position),
-            $this->exhausted,
+            $this->isExhausted,
             array_map(fn (StoredSearchHit $hit): BufferedHit => $hit->toBufferedHit(), $this->buffer),
             $this->stalls,
-            $this->failed,
+            $this->hasFailed,
         );
     }
 }

@@ -17,7 +17,7 @@ final class SkillAgentSelection extends Data
     public function __construct(
         public readonly string $key,
         public readonly string $agent,
-        public readonly bool $selected,
+        public readonly bool $isSelected,
         public readonly string $reason,
         public readonly array $selection,
         public readonly string $digest,
@@ -28,7 +28,7 @@ final class SkillAgentSelection extends Data
      */
     public function summary(): string
     {
-        $outcome = $this->selected ? 'selected' : "not selected ({$this->reason})";
+        $outcome = $this->isSelected ? 'selected' : "not selected ({$this->reason})";
         $selection = $this->selection === [] ? 'none' : implode(', ', $this->selection);
 
         return "Skill {$this->key} for agent {$this->agent}: {$outcome}\nSelected for this agent: {$selection}";

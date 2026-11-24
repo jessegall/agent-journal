@@ -11,5 +11,5 @@ use Spatie\LaravelData\Data;
  */
 final class DrainReplyData extends Data
 {
-    public function __construct(public readonly bool $drained = false) {}
+    public function __construct(public readonly bool $isDrained = false) {}
 }

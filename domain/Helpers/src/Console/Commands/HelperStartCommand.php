@@ -44,7 +44,7 @@ final class HelperStartCommand extends Command
             'purposeText' => $this->textOption('purpose-text'),
             'brief' => (string) $this->option('brief'),
             'sourceSubjects' => array_values(array_map(strval(...), (array) $this->option('source'))),
-            'independent' => $this->option('independent') === true,
+            'isIndependent' => $this->option('independent') === true,
             'requestKey' => CallKey::fromOption($this->textOption('key')),
             'driverType' => $this->namedDriverType(),
         ]);

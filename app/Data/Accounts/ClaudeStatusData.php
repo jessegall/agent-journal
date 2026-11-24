@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 
 /**
@@ -12,7 +13,8 @@ use Spatie\LaravelData\Data;
 final class ClaudeStatusData extends Data
 {
     public function __construct(
-        public readonly bool $loggedIn = false,
+        #[MapInputName('loggedIn')]
+        public readonly bool $isLoggedIn = false,
         public readonly string|null $authMethod = null,
         public readonly string|null $configDirectory = null,
         public readonly string|null $email = null,

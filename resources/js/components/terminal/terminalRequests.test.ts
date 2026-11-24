@@ -25,7 +25,7 @@ const interest: TerminalInterestData = {
     runtimeId: 'runtime-1',
     intervalMs: 500,
     expiresInSeconds: 30,
-    live: true,
+    isLive: true,
 };
 
 const liveFrame = {

@@ -173,9 +173,9 @@ final class TerminalJsonReadTest extends TestCase
             'rows' => [[['text' => 'hello']]],
             'cursor' => ['row' => 0, 'column' => 5, 'visible' => true],
             'buffer' => 'normal',
-            'plain' => false,
+            'isPlain' => false,
             'too_large' => false,
-            'unreadable' => false,
+            'isUnreadable' => false,
             'no_terminal' => false,
             ...$fields,
         ]);

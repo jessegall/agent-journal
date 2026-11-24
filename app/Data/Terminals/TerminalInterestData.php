@@ -21,6 +21,6 @@ final class TerminalInterestData extends Data
         public readonly string $runtimeId,
         public readonly int $intervalMs,
         public readonly int $expiresInSeconds,
-        public readonly bool $live,
+        public readonly bool $isLive,
     ) {}
 }

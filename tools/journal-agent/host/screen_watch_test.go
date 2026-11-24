@@ -262,7 +262,7 @@ func TestARuntimeWithoutATerminalAndARelaunchedOne(t *testing.T) {
 
 	watcher.Set(watch("runtime-1"))
 	waitUntil(t, "the no-terminal marker", func() bool { return len(journal.frames("runtime-1")) == 1 })
-	if frame := journal.frames("runtime-1")[0]; !frame.NoTerminal || len(frame.Rows) != 0 {
+	if frame := journal.frames("runtime-1")[0]; !frame.HasNoTerminal || len(frame.Rows) != 0 {
 		t.Fatalf("marker %+v", frame)
 	}
 	time.Sleep(50 * time.Millisecond)
@@ -279,7 +279,7 @@ func TestARuntimeWithoutATerminalAndARelaunchedOne(t *testing.T) {
 	waitUntil(t, "a frame of the relaunch", func() bool { return len(journal.frames("runtime-1")) == 4 })
 
 	frames := journal.frames("runtime-1")
-	if !frames[2].NoTerminal || rowText(frames[3]) != "second launch" || frames[3].NoTerminal {
+	if !frames[2].HasNoTerminal || rowText(frames[3]) != "second launch" || frames[3].HasNoTerminal {
 		t.Fatalf("frames %+v", frames)
 	}
 }
@@ -294,13 +294,13 @@ func TestAnUnreadableScreenSendsTheMarkerUntilAGoodFeed(t *testing.T) {
 		t.Fatal("a chunk over the limit was read")
 	}
 	waitUntil(t, "the unreadable marker", func() bool { return len(journal.frames("runtime-1")) == 2 })
-	if frame := journal.frames("runtime-1")[1]; !frame.Unreadable || len(frame.Rows) != 0 {
+	if frame := journal.frames("runtime-1")[1]; !frame.IsUnreadable || len(frame.Rows) != 0 {
 		t.Fatalf("marker %+v", frame)
 	}
 
 	reader.Feed([]byte(" world"))
 	waitUntil(t, "a readable frame", func() bool { return len(journal.frames("runtime-1")) == 3 })
-	if frame := journal.frames("runtime-1")[2]; frame.Unreadable || rowText(frame) != "hello world" {
+	if frame := journal.frames("runtime-1")[2]; frame.IsUnreadable || rowText(frame) != "hello world" {
 		t.Fatalf("frame after a good feed %+v", frame)
 	}
 }
@@ -316,7 +316,7 @@ func TestARefusedResizeSendsTheMarkerUntilAGoodResize(t *testing.T) {
 	}
 	reader.Feed([]byte(" more"))
 	waitUntil(t, "the unreadable marker", func() bool { return len(journal.frames("runtime-1")) == 2 })
-	if frame := journal.frames("runtime-1")[1]; !frame.Unreadable {
+	if frame := journal.frames("runtime-1")[1]; !frame.IsUnreadable {
 		t.Fatalf("after a refused resize and a good feed %+v", frame)
 	}
 
@@ -324,7 +324,7 @@ func TestARefusedResizeSendsTheMarkerUntilAGoodResize(t *testing.T) {
 		t.Fatal(err)
 	}
 	waitUntil(t, "a readable frame", func() bool { return len(journal.frames("runtime-1")) == 3 })
-	if frame := journal.frames("runtime-1")[2]; frame.Unreadable || frame.Columns != 30 {
+	if frame := journal.frames("runtime-1")[2]; frame.IsUnreadable || frame.Columns != 30 {
 		t.Fatalf("frame after a good resize %+v", frame)
 	}
 }
@@ -337,7 +337,7 @@ func TestAScreenThatAsksForAPasswordSendsAShieldWithNoText(t *testing.T) {
 
 	waitUntil(t, "a shield frame", func() bool { return len(journal.frames("runtime-1")) == 1 })
 	frame := journal.frames("runtime-1")[0]
-	if !frame.Shielded || len(frame.Rows) != 0 || frame.Cursor != (contracts.Cursor{}) {
+	if !frame.IsShielded || len(frame.Rows) != 0 || frame.Cursor != (contracts.Cursor{}) {
 		t.Fatalf("the password screen left the host: %+v", frame)
 	}
 	if frame.PrivacyRevision != 1 {
@@ -353,7 +353,7 @@ func TestAnOrdinaryPromptStillSendsItsRows(t *testing.T) {
 
 	waitUntil(t, "a frame", func() bool { return len(journal.frames("runtime-1")) == 1 })
 	frame := journal.frames("runtime-1")[0]
-	if frame.Shielded || rowText(frame) != "> ready" || frame.PrivacyRevision != 0 {
+	if frame.IsShielded || rowText(frame) != "> ready" || frame.PrivacyRevision != 0 {
 		t.Fatalf("the ordinary prompt was not sent as it is: %+v", frame)
 	}
 }

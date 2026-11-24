@@ -15,7 +15,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class TunlerStatusData extends Data
 {
     public function __construct(
-        public readonly bool $loggedIn = false,
+        #[MapInputName('logged_in')]
+        public readonly bool $isLoggedIn = false,
         #[MapInputName('auth_ok')]
         public readonly bool $isAuthenticated = false,
         public readonly string|null $host = null,

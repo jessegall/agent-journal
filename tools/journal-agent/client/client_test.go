@@ -52,7 +52,7 @@ func TestAClaimSendsTheWatchedVersionAndReadsTheWatchedList(t *testing.T) {
 }
 
 func TestAClaimReadsWhetherARequestIsTheStartsBootstrap(t *testing.T) {
-	journal, _, _ := fakeJournal(t, `{"requests":[{"runtimeId":"runtime-1","requestId":"request-1","bootstrap":true},`+
+	journal, _, _ := fakeJournal(t, `{"requests":[{"runtimeId":"runtime-1","requestId":"request-1","shouldBootstrap":true},`+
 		`{"runtimeId":"runtime-1","requestId":"request-2"}],"watched":[],"watched_version":1}`)
 
 	claim, err := journal.Claim(context.Background(), 10, 5, 0)
@@ -60,7 +60,7 @@ func TestAClaimReadsWhetherARequestIsTheStartsBootstrap(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(claim.Requests) != 2 || !claim.Requests[0].Bootstrap || claim.Requests[1].Bootstrap {
+	if len(claim.Requests) != 2 || !claim.Requests[0].ShouldBootstrap || claim.Requests[1].ShouldBootstrap {
 		t.Fatalf("requests %+v", claim.Requests)
 	}
 }

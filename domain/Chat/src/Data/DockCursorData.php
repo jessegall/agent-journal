@@ -17,7 +17,7 @@ final class DockCursorData extends Data
         public readonly string $conversation,
         public readonly string|null $assignedAt,
         public readonly string|null $placementId,
-        public readonly bool $ended,
+        public readonly bool $hasEnded,
         public readonly int $expires,
     ) {}
 }

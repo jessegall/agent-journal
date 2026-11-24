@@ -22,6 +22,6 @@ final class RevisionView extends Data
         public readonly string $authorType,
         public readonly string $authorId,
         public readonly string $closedAt,
-        public readonly bool $historical,
+        public readonly bool $isHistorical,
     ) {}
 }

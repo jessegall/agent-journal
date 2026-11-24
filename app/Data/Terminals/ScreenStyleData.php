@@ -16,9 +16,9 @@ final class ScreenStyleData extends Data
     public function __construct(
         public readonly string|null $fg = null,
         public readonly string|null $bg = null,
-        public readonly bool $bold = false,
-        public readonly bool $italic = false,
-        public readonly bool $underline = false,
-        public readonly bool $inverse = false,
+        public readonly bool $isBold = false,
+        public readonly bool $isItalic = false,
+        public readonly bool $isUnderlined = false,
+        public readonly bool $isInverse = false,
     ) {}
 }

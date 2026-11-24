@@ -45,7 +45,7 @@ function changeText(entry: TaskStreamEntryData): string {
                     : ''
             }}
         </p>
-        <template v-if="props.logs?.selectedGone === true">
+        <template v-if="props.logs?.isSelectedGone === true">
             <p role="status" class="text-small text-text-3">
                 That log line is no longer available.
             </p>

@@ -24,7 +24,7 @@
             "sessionId": "01contractsession000000000",
             "processStartId": "01contractstart00000000000",
             "processGeneration": 1,
-            "bootstrap": false
+            "shouldBootstrap": false
         }
     ],
     "project_reads": [],

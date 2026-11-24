@@ -35,51 +35,51 @@
         "image": "journal-agent@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "user": "0:0",
         "workdir": "/workspace",
-        "readOnlyRoot": true,
+        "isReadOnlyRoot": true,
         "capabilities": [
             "SETUID",
             "SETGID",
             "SETPCAP"
         ],
-        "noNewPrivileges": true,
+        "blocksNewPrivileges": true,
         "securityOptions": {
             "seccomp": null,
             "apparmor": null
         },
-        "privileged": false,
+        "isPrivileged": false,
         "network": "acme-01contractsession000000000",
         "mounts": [
             {
                 "type": "daemon-bind",
                 "source": "/srv/journal/workspaces/main",
                 "target": "/workspace",
-                "writable": true,
+                "isWritable": true,
                 "mustExist": false,
-                "checkout": false
+                "isCheckout": false
             },
             {
                 "type": "daemon-bind",
                 "source": "/srv/journal/accounts/01plain",
                 "target": "/home/journal/.account",
-                "writable": true,
+                "isWritable": true,
                 "mustExist": false,
-                "checkout": false
+                "isCheckout": false
             },
             {
                 "type": "volume",
                 "source": "acme-history-01contractsession000000000",
                 "target": "/home/journal/.account/projects",
-                "writable": true,
+                "isWritable": true,
                 "mustExist": false,
-                "checkout": false
+                "isCheckout": false
             },
             {
                 "type": "daemon-bind",
                 "source": "/srv/journal/sessions/01contractsession000000000",
                 "target": "/tmp/journal-session",
-                "writable": false,
+                "isWritable": false,
                 "mustExist": false,
-                "checkout": false
+                "isCheckout": false
             }
         ],
         "publishedPorts": [],
@@ -94,7 +94,7 @@
             "workspaceBytes": 21474836480,
             "wallSeconds": 43200
         },
-        "attachable": false,
+        "isAttachable": false,
         "workspacePreparation": {
             "clone": null,
             "folder": "main"

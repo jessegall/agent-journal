@@ -25,7 +25,7 @@ func sessionOn(t *testing.T) (SessionContainer, *dockerstandin.Daemon) {
 func attachableManifest() ContainerManifest {
 	attachable := containedManifest()
 	attachable.Network = "journal-session-7"
-	attachable.Attachable = true
+	attachable.IsAttachable = true
 
 	return attachable
 }
@@ -303,7 +303,7 @@ func TestAWritersCheckoutIsMountedReadWriteInsteadOfTheMainsWorkspace(t *testing
 	container, daemon := sessionOn(t)
 	daemon.AddVolume("journal-checkout-session-7", nil)
 	writer := headlessManifest()
-	writer.Mounts[0] = ContainerMount{Type: MountVolume, Source: "journal-workspace-main", Target: "/workspace", Writable: true, Checkout: true}
+	writer.Mounts[0] = ContainerMount{Type: MountVolume, Source: "journal-workspace-main", Target: "/workspace", IsWritable: true, IsCheckout: true}
 
 	if _, err := container.Turn(context.Background(), writer, ContainerProcess{Command: []string{"claude"}}); err != nil {
 		t.Fatal(err)
@@ -322,7 +322,7 @@ func TestAWritersCheckoutIsMountedReadWriteInsteadOfTheMainsWorkspace(t *testing
 func TestACheckoutOfAnotherInstallationIsRefusedBeforeAnyClone(t *testing.T) {
 	container, daemon := sessionOn(t)
 	writer := headlessManifest()
-	writer.Mounts[0] = ContainerMount{Type: MountVolume, Source: "other-workspace-main", Target: "/workspace", Writable: true, Checkout: true}
+	writer.Mounts[0] = ContainerMount{Type: MountVolume, Source: "other-workspace-main", Target: "/workspace", IsWritable: true, IsCheckout: true}
 
 	if _, err := container.Turn(context.Background(), writer, ContainerProcess{Command: []string{"claude"}}); !errors.Is(err, ErrManifestUnsafe) {
 		t.Fatalf("a checkout of another installation's workspace gave %v", err)

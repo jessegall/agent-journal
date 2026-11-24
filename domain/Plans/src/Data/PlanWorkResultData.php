@@ -18,7 +18,7 @@ use Spatie\LaravelData\Data;
 final class PlanWorkResultData extends Data
 {
     public function __construct(
-        public readonly bool $cascade,
+        public readonly bool $isCascade,
         public readonly RecordHolderData $root,
         public readonly int $changed,
         public readonly int $unchanged,

@@ -11,5 +11,5 @@ use Spatie\LaravelData\Data;
  */
 final class FolderUseReplyData extends Data
 {
-    public function __construct(public readonly bool $bound = true) {}
+    public function __construct(public readonly bool $isBound = true) {}
 }

@@ -24,7 +24,7 @@ final class MenuEntryBuild extends Data implements StoredValue
      */
     public function __construct(
         public readonly string $build,
-        public readonly bool $stale,
+        public readonly bool $isStale,
         public readonly string|null $staleReason,
         public readonly array $staleScreen,
         public readonly CarbonImmutable $provenAt,

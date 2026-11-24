@@ -19,7 +19,7 @@ final readonly class ContinueStartController
 
         return new JsonResponse([
             'sessionId' => $receipt->sessionId,
-            'newSession' => $receipt->newSession,
+            'newSession' => $receipt->isNewSession,
             'conversation' => 'new',
         ]);
     }

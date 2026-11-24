@@ -46,6 +46,6 @@ final class SendHelperCall extends Data implements JournalCall
         public CallKey $requestKey,
         #[PresentList]
         public array $sourceSubjects = [],
-        public bool $independent = false,
+        public bool $isIndependent = false,
     ) {}
 }

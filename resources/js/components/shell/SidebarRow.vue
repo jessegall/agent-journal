@@ -19,7 +19,7 @@ const props = defineProps<{
 
 const isCurrent = computed(() => props.item.key === props.currentKey);
 const count = computed(() => props.counts[props.item.key]);
-const hasCount = computed(() => props.item.counted && count.value !== undefined);
+const hasCount = computed(() => props.item.isCounted && count.value !== undefined);
 const rowClass = computed(() => [
     props.isMini ? 'justify-center py-[7px]' : 'px-2 py-1.5',
     props.depth > 0 && !props.isMini ? 'pl-7' : '',

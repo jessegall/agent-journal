@@ -63,7 +63,7 @@ func protectionReport(program string, capability ProtectionCapability) client.Pr
 	report := client.ProtectionReport{Driver: program, Build: capability.Build, Platform: capability.Platform}
 	for _, item := range capability.Items {
 		report.Items = append(report.Items, client.ProtectionItem{
-			Item: string(item.Item), Enforced: item.Enforced, Evidence: item.Evidence, Reason: item.Reason,
+			Item: string(item.Item), IsEnforced: item.IsEnforced, Evidence: item.Evidence, Reason: item.Reason,
 		})
 	}
 

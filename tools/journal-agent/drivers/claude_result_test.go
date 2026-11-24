@@ -14,13 +14,13 @@ import (
 // The host judges nothing of a result: it tells the last result's subtype and error flag, or that none came.
 func TestTheLastResultIsToldAsItWasWritten(t *testing.T) {
 	outputs := map[string]contracts.TurnEnd{
-		`{"type":"system"}` + "\n" + `{"type":"result","subtype":"success","is_error":false}`: {ResultRead: true, ResultSubtype: "success"},
-		`{"type":"result","subtype":"success","is_error":true,"result":"Not logged in"}`:      {ResultRead: true, ResultSubtype: "success", ResultIsError: true},
-		`{"type":"result","subtype":"error_during_execution","is_error":false}`:               {ResultRead: true, ResultSubtype: "error_during_execution"},
+		`{"type":"system"}` + "\n" + `{"type":"result","subtype":"success","is_error":false}`: {IsResultRead: true, ResultSubtype: "success"},
+		`{"type":"result","subtype":"success","is_error":true,"result":"Not logged in"}`:      {IsResultRead: true, ResultSubtype: "success", IsResultError: true},
+		`{"type":"result","subtype":"error_during_execution","is_error":false}`:               {IsResultRead: true, ResultSubtype: "error_during_execution"},
 		`{"type":"assistant"}`: {},
 	}
 	outputs[`{"type":"system","subtype":"init","model":"claude-opus-4-5"}`+"\n"+`{"type":"result","subtype":"success"}`] =
-		contracts.TurnEnd{ResultRead: true, ResultSubtype: "success", Model: "claude-opus-4-5"}
+		contracts.TurnEnd{IsResultRead: true, ResultSubtype: "success", Model: "claude-opus-4-5"}
 	for output, told := range outputs {
 		if end := readClaudeResult(strings.NewReader(output), ignoredUsage{}, 1); end != told {
 			t.Fatalf("output %s: told %+v", output, end)
@@ -105,7 +105,7 @@ func TestBothWindowsOfARateLimitEventAreReadAsPercentsWithTheirResets(t *testing
 		`{"type":"rate_limit_event","rate_limit_info":{"unifiedWindows":{"five_hour":{"utilization":1.5},`+
 			`"seven_day":{"utilization":0.5}}}}`,
 		successResult)
-	if end.ResultIsError || end.Problem != "" {
+	if end.IsResultError || end.Problem != "" {
 		t.Fatalf("the result was told as %+v", end)
 	}
 
@@ -133,7 +133,7 @@ func TestEachResultGivesItsOwnCostAndTheCumulativeTotalIsNeverRead(t *testing.T)
 		`{"type":"result","subtype":"success","model_usage_since_last_result":{}}`,
 		`{"type":"result","subtype":"success","model_usage_since_last_result":{"opus":{"costUSD":-1}}}`,
 		successResult)
-	if end.ResultIsError || end.Problem != "" {
+	if end.IsResultError || end.Problem != "" {
 		t.Fatalf("the result was told as %+v", end)
 	}
 
@@ -149,7 +149,7 @@ func TestAnErrorResultIsToldAndStillGivesItsCost(t *testing.T) {
 	usage, end := readUsage(t, `{"type":"result","subtype":"error_during_execution","is_error":true,`+
 		`"model_usage_since_last_result":{"opus":{"costUSD":0.0128}}}`)
 
-	if !end.ResultIsError || end.ResultSubtype != "error_during_execution" {
+	if !end.IsResultError || end.ResultSubtype != "error_during_execution" {
 		t.Fatalf("the error result was told as %+v", end)
 	}
 	if len(usage.costs) != 1 || usage.costs[0] != "0.012800000000" {

@@ -22,7 +22,7 @@ final class MessageBatchData extends Data
         public readonly string $inboxLabel,
         #[DataCollectionOf(MessageBatchItemData::class)]
         public readonly array $items,
-        public readonly bool $more,
+        public readonly bool $hasMore,
         // The single grant an actionable batch carries for claiming a turn in this very turn; none for a batch with
         // nothing to answer.
         public readonly string|null $claimGrant = null,

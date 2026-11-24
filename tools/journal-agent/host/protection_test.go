@@ -21,7 +21,7 @@ func TestAnItemWithoutRecordedEvidenceIsNotEnforced(t *testing.T) {
 		t.Fatalf("the report names %d items, want %d", len(capability.Items), len(BoundaryItems))
 	}
 	for _, item := range capability.Items {
-		if item.Enforced || item.Reason == "" {
+		if item.IsEnforced || item.Reason == "" {
 			t.Fatalf("item %s is enforced or gives no reason: %+v", item.Item, item)
 		}
 	}
@@ -41,10 +41,10 @@ func TestRecordedEvidenceEnforcesOnlyAnItemWithANativeMechanism(t *testing.T) {
 	}
 
 	for _, item := range capability.Items {
-		if item.Mechanism.Native == "" && item.Enforced {
+		if item.Mechanism.Native == "" && item.IsEnforced {
 			t.Fatalf("item %s is enforced without a native mechanism", item.Item)
 		}
-		if item.Mechanism.Native != "" && (!item.Enforced || item.Evidence != "run-1") {
+		if item.Mechanism.Native != "" && (!item.IsEnforced || item.Evidence != "run-1") {
 			t.Fatalf("item %s has a mechanism and evidence but is not enforced: %+v", item.Item, item)
 		}
 	}
@@ -65,7 +65,7 @@ func TestEvidenceOfAnotherBuildDoesNotCount(t *testing.T) {
 	}
 
 	for _, item := range capability.Items {
-		if item.Enforced {
+		if item.IsEnforced {
 			t.Fatalf("item %s counted evidence of another build", item.Item)
 		}
 	}

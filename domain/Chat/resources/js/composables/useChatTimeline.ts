@@ -187,7 +187,7 @@ export function useChatTimeline(
       return;
     }
 
-    if (snapshot.accessEnded) {
+    if (snapshot.hasAccessEnded) {
       end();
 
       return;
@@ -253,7 +253,7 @@ export function useChatTimeline(
         return;
       }
 
-      if (page.accessEnded) {
+      if (page.hasAccessEnded) {
         end();
 
         return;
@@ -390,7 +390,7 @@ export function useChatTimeline(
     messages.value
       .filter(
         (row) =>
-          row.speaker.actor !== conversation.value?.viewer && !row.readByMe,
+          row.speaker.actor !== conversation.value?.viewer && !row.isReadByMe,
       )
       .map((row) => row.id),
   );

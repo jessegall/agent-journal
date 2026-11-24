@@ -37,7 +37,7 @@ type BoundaryResult struct {
 	Item      BoundaryItem      `json:"item"`
 	Mechanism BoundaryMechanism `json:"mechanism"`
 	Evidence  string            `json:"evidence,omitempty"`
-	Enforced  bool              `json:"enforced"`
+	IsEnforced  bool              `json:"isEnforced"`
 	Reason    string            `json:"reason,omitempty"`
 }
 
@@ -55,7 +55,7 @@ type ProtectionCapability struct {
 // that shows each hold: the state a protected-account trial starts in, to make that run.
 func (capability ProtectionCapability) AwaitsEvidenceOnly() bool {
 	for _, item := range capability.Items {
-		if !item.Enforced && item.Mechanism.Native == "" {
+		if !item.IsEnforced && item.Mechanism.Native == "" {
 			return false
 		}
 	}
@@ -66,7 +66,7 @@ func (capability ProtectionCapability) AwaitsEvidenceOnly() bool {
 func (capability ProtectionCapability) Shortfalls() []string {
 	var shortfalls []string
 	for _, item := range capability.Items {
-		if !item.Enforced {
+		if !item.IsEnforced {
 			shortfalls = append(shortfalls, string(item.Item)+": "+item.Reason)
 		}
 	}
@@ -138,7 +138,7 @@ func InspectProtection(
 			return ProtectionCapability{}, err
 		}
 		capability.Items = append(capability.Items, result)
-		capability.Available = capability.Available && result.Enforced
+		capability.Available = capability.Available && result.IsEnforced
 	}
 	return capability, nil
 }
@@ -163,7 +163,7 @@ func judgeItem(
 		return result, nil
 	}
 	result.Evidence = shown
-	result.Enforced = true
+	result.IsEnforced = true
 	return result, nil
 }
 

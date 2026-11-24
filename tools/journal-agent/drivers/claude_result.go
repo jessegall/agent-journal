@@ -160,7 +160,7 @@ func readClaudeResult(output io.Reader, usage UsageObserver, process int) contra
 		end.Problem = err.Error()
 	}
 	if last != nil {
-		end.ResultRead, end.ResultSubtype, end.ResultIsError = true, last.Subtype, last.IsError
+		end.IsResultRead, end.ResultSubtype, end.IsResultError = true, last.Subtype, last.IsError
 	}
 	return end
 }

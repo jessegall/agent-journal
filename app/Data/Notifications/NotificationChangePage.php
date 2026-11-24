@@ -22,7 +22,7 @@ final class NotificationChangePage extends Data
      * @param  list<NotificationChangeItem>  $changes
      */
     public function __construct(
-        public readonly bool $reset,
+        public readonly bool $isReset,
         public readonly string $version,
         public readonly int $unread,
         public readonly string|null $nextCursor,

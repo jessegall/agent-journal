@@ -19,6 +19,6 @@ final class DockListData extends Data
         public readonly string $conversationId,
         #[DataCollectionOf(DockedSourceData::class)]
         public readonly array $placements,
-        public readonly bool $more,
+        public readonly bool $hasMore,
     ) {}
 }

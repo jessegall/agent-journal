@@ -24,10 +24,10 @@ final class RuntimeScreenTest extends TestCase
 
         $this->assertSame('epoch-1', $frame->epoch);
         $this->assertSame(ScreenBuffer::Alternate, $frame->buffer);
-        $this->assertTrue($frame->tooLarge === false && $frame->noTerminal === false);
+        $this->assertTrue($frame->isTooLarge === false && $frame->hasNoTerminal === false);
         $this->assertSame('red', $frame->rows[0]->runs[1]->text);
         $this->assertSame('#cd0000', $frame->rows[0]->runs[1]->style->fg);
-        $this->assertTrue($frame->rows[0]->runs[1]->style->bold);
+        $this->assertTrue($frame->rows[0]->runs[1]->style->isBold);
         $this->assertNull($frame->rows[0]->runs[0]->style->bg);
         $this->assertSame([], $frame->rows[1]->runs);
         $this->assertSame(['row' => 1, 'column' => 4, 'visible' => false], $frame->cursor->toArray());
@@ -40,13 +40,13 @@ final class RuntimeScreenTest extends TestCase
         $shield = ScreenFrameData::from([
             ...$this->payload('epoch-1', 3),
             'rows' => [],
-            'shielded' => true,
+            'isShielded' => true,
             'privacy_revision' => 2,
         ]);
         $older = $this->frame('epoch-1', 3);
 
-        $this->assertSame([true, 2, []], [$shield->shielded, $shield->privacyRevision, $shield->rows]);
-        $this->assertSame([false, 0], [$older->shielded, $older->privacyRevision]);
+        $this->assertSame([true, 2, []], [$shield->isShielded, $shield->privacyRevision, $shield->rows]);
+        $this->assertSame([false, 0], [$older->isShielded, $older->privacyRevision]);
     }
 
     public function test_a_frame_hydrates_its_stream_and_liveness_proof(): void
@@ -140,15 +140,15 @@ final class RuntimeScreenTest extends TestCase
             "captured": "2026-11-19T12:00:00.123456789Z",
             "columns": 20,
             "rows": [
-                [{"text": "plain ", "style": {}}, {"text": "red", "style": {"fg": "#cd0000", "bold": true}}],
+                [{"text": "plain ", "style": {}}, {"text": "red", "style": {"fg": "#cd0000", "isBold": true}}],
                 []
             ],
-            "cursor": {"row": 1, "column": 4, "visible": false},
+            "cursor": {"row": 1, "column": 4, "isVisible": false},
             "buffer": "alternate",
-            "plain": false,
-            "too_large": false,
-            "unreadable": false,
-            "no_terminal": false
+            "is_plain": false,
+            "is_too_large": false,
+            "is_unreadable": false,
+            "has_no_terminal": false
         }
         JSON;
         $payload = json_decode(str_replace('EPOCH', $epoch, $json), true, flags: JSON_THROW_ON_ERROR);

@@ -15,7 +15,7 @@ final class ProtectedItemData extends Data
 {
     public function __construct(
         public readonly string $item,
-        public readonly bool $enforced,
+        public readonly bool $isEnforced,
         #[Present]
         public readonly string $evidence,
         #[Present]

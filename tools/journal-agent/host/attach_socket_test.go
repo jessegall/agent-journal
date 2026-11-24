@@ -269,7 +269,7 @@ func TestAClosedCaptureBarrierStopsTheLocalMirrorAndTheWatcherShieldsTheScreen(t
 	}
 	runtimeScreen, _ := socket.ScreenFor("runtime-1")
 	sender := &screenSender{watcher: &ScreenWatcher{epoch: "epoch"}, runtimeID: "runtime-1"}
-	if frame := sender.export(runtimeScreen, time.Now()); !frame.Shielded || len(frame.Rows) != 0 {
+	if frame := sender.export(runtimeScreen, time.Now()); !frame.IsShielded || len(frame.Rows) != 0 {
 		t.Fatalf("the watcher exported %+v while the barrier was closed", frame)
 	}
 }
@@ -369,7 +369,7 @@ func TestALostContainedAttachmentWhoseContainerRunsIsALostConnectionNotAnEnd(t *
 		t.Fatal("a lost attachment with its container running did not count as a lost connection")
 	}
 	sender := &screenSender{watcher: &ScreenWatcher{epoch: "epoch", readers: socket}, runtimeID: "runtime-1"}
-	if marker, _ := sender.read(time.Now()); !marker.ConnectionLost || marker.NoTerminal {
+	if marker, _ := sender.read(time.Now()); !marker.IsConnectionLost || marker.HasNoTerminal {
 		t.Fatalf("the watcher reported %+v for a lost connection", marker)
 	}
 	running = false

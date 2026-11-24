@@ -13,7 +13,7 @@ use Spatie\LaravelData\Data;
 final class AutoAssignmentChangeData extends Data
 {
     public function __construct(
-        public readonly bool $changed,
+        public readonly bool $hasChanged,
         public readonly int $revision,
     ) {}
 

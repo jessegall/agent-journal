@@ -180,7 +180,7 @@ const idle: AgentOptionData = {
   id: "main",
   name: "Main agent",
   profileKey: "journal-main",
-  retired: false,
+  isRetired: false,
   presence: "idle",
   presenceLabel: "Idle",
   sessionId: null,

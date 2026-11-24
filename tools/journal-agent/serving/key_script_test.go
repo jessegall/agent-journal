@@ -366,7 +366,7 @@ func entryAnswer(guarded bool) raiseReply {
 	entry := `{"id":"entry-1","driver":"codex","goal":{"script":"ChangeModel","version":2,"parameters":[]},` +
 		`"steps":[{"fingerprint":"fp1:a","choose":"GPT-6","key":null,"proof":null}],"completes":"goal",` +
 		`"nextStep":null,"proof":"GPT-6"}`
-	answer := client.NavigationAnswer{Answer: client.NavigationEntry, Entry: []byte(entry), Guarded: guarded}
+	answer := client.NavigationAnswer{Answer: client.NavigationEntry, Entry: []byte(entry), IsGuarded: guarded}
 	return raiseReply{answer: answer}
 }
 
@@ -483,7 +483,7 @@ func TestAReplayThatFailsAtItsFirstStepDeclinesTheEntryAndReportsNothingStale(t 
 // guardedEntryAnswer is the two-step entry answered as proven on another build only.
 func guardedEntryAnswer() raiseReply {
 	reply := twoStepEntryAnswer()
-	reply.answer.Guarded = true
+	reply.answer.IsGuarded = true
 	return reply
 }
 

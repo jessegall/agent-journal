@@ -31,10 +31,10 @@ const host = ref<HTMLElement | null>(null);
 const editor = shallowRef<EditorView | null>(null);
 
 const vocabulary = computed<ScriptVocabulary>(() => ({
-    keywords: props.data.language.keywords.filter((keyword) => keyword.available).map((keyword) => keyword.token),
+    keywords: props.data.language.keywords.filter((keyword) => keyword.isAvailable).map((keyword) => keyword.token),
     members: Object.fromEntries(
         props.data.language.objects
-            .filter((object) => object.available)
+            .filter((object) => object.isAvailable)
             .map((object) => [object.key, Object.keys(object.members)]),
     ),
     commands: Object.keys(draft.value.commands),

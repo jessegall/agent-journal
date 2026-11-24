@@ -28,7 +28,7 @@ final readonly class RequestReportController
             $report->scriptProgress(),
             $report->navigationReport(),
             $report->refusal(),
-            $report->noProcessCreated,
+            $report->hasCreatedNoProcess,
             $report->binding(),
             $report->sequence,
             $report->turnEnd(),

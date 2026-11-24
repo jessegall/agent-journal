@@ -13,6 +13,6 @@ final class DraftClosed extends Data
 {
     public function __construct(
         public int $revisionNumber,
-        public bool $published,
+        public bool $isPublished,
     ) {}
 }

@@ -261,7 +261,7 @@ func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
 	if !readable {
 		return frame, false
 	}
-	frame.PrivacyRevision = sender.watcher.privacyRevision(sender.runtimeID, frame.Shielded)
+	frame.PrivacyRevision = sender.watcher.privacyRevision(sender.runtimeID, frame.IsShielded)
 
 	return frame, true
 }
@@ -272,8 +272,8 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 	if !found {
 		sender.lastCapture = nil
 		marker := sender.marker(now)
-		marker.ConnectionLost = sender.watcher.readers.LostConnection(sender.runtimeID)
-		marker.NoTerminal = !marker.ConnectionLost
+		marker.IsConnectionLost = sender.watcher.readers.LostConnection(sender.runtimeID)
+		marker.HasNoTerminal = !marker.IsConnectionLost
 		return marker, true
 	}
 
@@ -282,7 +282,7 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 	if reader.Unreadable() {
 		sender.lastCapture = nil
 		marker := sender.marker(now)
-		marker.Unreadable = true
+		marker.IsUnreadable = true
 		return marker, true
 	}
 
@@ -297,7 +297,7 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 	frame := sender.export(runtimeScreen, now)
 	frame.Attachment, frame.ContainerInstance = runtimeScreen.Attachment, runtimeScreen.ContainerInstance
 	grant := runtimeScreen.Gate.GrantState()
-	frame.InputOwner, frame.TakePending = string(grant.Owner), grant.PendingTake != ""
+	frame.InputOwner, frame.IsTakePending = string(grant.Owner), grant.PendingTake != ""
 	frame.PromptRevision = grant.PromptRevision
 
 	return frame.Bounded(screen.FrameLimit), true

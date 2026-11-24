@@ -33,7 +33,7 @@ final readonly class SendMessageController
             $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId, $input->expectedGeneration);
         }
 
-        $messageId = $input->question
+        $messageId = $input->isQuestion
             ? $commands->run(new AskChatQuestionCommand(
                 $input->inboxId,
                 $input->body,

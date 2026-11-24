@@ -96,10 +96,10 @@ function noticesOf(screen: TerminalScreen): string[] {
     const frame = screen.frame;
     const lastUpdate = clockTime(screen.receivedAt);
     const markers: [boolean, string][] = [
-        [frame !== null && frame.noTerminal, "The agent's terminal is not running on its host"],
-        [frame !== null && frame.tooLarge, `Screen too large to show; last screen from ${lastUpdate}`],
-        [frame !== null && frame.unreadable, `The screen cannot be read; last screen from ${lastUpdate}`],
-        [frame !== null && frame.plain, 'Shown without colours'],
+        [frame !== null && frame.hasNoTerminal, "The agent's terminal is not running on its host"],
+        [frame !== null && frame.isTooLarge, `Screen too large to show; last screen from ${lastUpdate}`],
+        [frame !== null && frame.isUnreadable, `The screen cannot be read; last screen from ${lastUpdate}`],
+        [frame !== null && frame.isPlain, 'Shown without colours'],
     ];
 
     return markers.filter(([shown]) => shown).map(([, text]) => text);

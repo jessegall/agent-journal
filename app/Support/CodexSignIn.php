@@ -94,7 +94,7 @@ final readonly class CodexSignIn implements SignInProtocol
     {
         $completion = self::completionIn($process->output());
 
-        if ($completion === null || ! $completion->success) {
+        if ($completion === null || ! $completion->hasSucceeded) {
             return new SignInVerification(false, SignInIdentity::unproved());
         }
 

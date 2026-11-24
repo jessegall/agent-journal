@@ -11,5 +11,5 @@ use Spatie\LaravelData\Data;
  */
 final class CallAccepted extends Data
 {
-    public function __construct(public readonly bool $accepted = true) {}
+    public function __construct(public readonly bool $isAccepted = true) {}
 }

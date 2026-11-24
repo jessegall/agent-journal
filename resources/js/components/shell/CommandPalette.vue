@@ -58,9 +58,9 @@ const pages = computed<Entry[]>(() =>
         return [
             {
                 id: `page-${item.key}`,
-                group: item.inSidebar ? ('Pages' as const) : ('Commands' as const),
-                label: item.inSidebar ? item.label : `Open ${item.label}`,
-                icon: item.inSidebar || item.icon === undefined ? ('arrow' as const) : item.icon,
+                group: item.isInSidebar ? ('Pages' as const) : ('Commands' as const),
+                label: item.isInSidebar ? item.label : `Open ${item.label}`,
+                icon: item.isInSidebar || item.icon === undefined ? ('arrow' as const) : item.icon,
                 run: () => router.visit(url),
             },
         ];

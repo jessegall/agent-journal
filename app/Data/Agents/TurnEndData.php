@@ -17,9 +17,9 @@ final class TurnEndData extends Data
 {
     public function __construct(
         public readonly int|null $exitCode = null,
-        public readonly bool $resultRead = false,
+        public readonly bool $isResultRead = false,
         public readonly string|null $resultSubtype = null,
-        public readonly bool $resultIsError = false,
+        public readonly bool $isResultError = false,
         public readonly string|null $model = null,
         public readonly string|null $codexStatus = null,
         public readonly bool|null $composerLeft = null,
@@ -30,9 +30,9 @@ final class TurnEndData extends Data
     {
         return new TurnEnd(
             $this->exitCode,
-            $this->resultRead,
+            $this->isResultRead,
             $this->resultSubtype,
-            $this->resultIsError,
+            $this->isResultError,
             $this->model,
             $this->codexStatus,
             $this->composerLeft,

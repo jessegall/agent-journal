@@ -17,7 +17,7 @@ function row(sequence: number): ChatMessageData {
     id: `m${sequence}`,
     sequence,
     speaker: { actor: "user:ada", label: "Ada", driver: null },
-    readByMe: false,
+    isReadByMe: false,
     stateVersion: 1,
   } as ChatMessageData;
 }
@@ -47,7 +47,7 @@ function heldClient() {
   const client: ChatTimelineClient = {
     events: () =>
       answer<ChatEventsPageData>({
-        accessEnded: false,
+        hasAccessEnded: false,
         events: [],
         cursor: "cursor-1",
         watermark: 12,
@@ -128,7 +128,7 @@ describe("useChatTimeline", () => {
     let rowReads = 0;
     const client: ChatTimelineClient = {
       events: async () => ({
-        accessEnded: false,
+        hasAccessEnded: false,
         events: [
           { sequence: 13, type: "line", actor: "agent:a1", messageId: null },
         ],

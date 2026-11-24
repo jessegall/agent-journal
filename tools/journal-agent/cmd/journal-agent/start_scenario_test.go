@@ -258,10 +258,10 @@ func TestScenarioAContainedSessionsTerminalIsHeldThroughTheDaemonFromStartToStop
 	var claim client.ClaimedStart
 	readContract(t, "grant.json", &grant)
 	readContract(t, "claim.json", &claim)
-	grant.Container = json.RawMessage(strings.Replace(string(grant.Container), `"attachable": false`, `"attachable": true`, 1))
+	grant.Container = json.RawMessage(strings.Replace(string(grant.Container), `"isAttachable": false`, `"isAttachable": true`, 1))
 	prepared := host.PreparedStart{Grant: grant, Claim: claim}
 	manifest, _, err := prepared.ContainerManifest()
-	if err != nil || !manifest.Attachable {
+	if err != nil || !manifest.IsAttachable {
 		t.Fatalf("the scenario's container was not made attachable: %v", err)
 	}
 	containers, daemon := scenarioDaemon(t, manifest.Image)
@@ -490,10 +490,10 @@ func TestScenarioAStartTheHostCannotCarryOutIsReportedRefusedWithItsReason(t *te
 	readContract(t, "grant.json", &grant)
 	readContract(t, "claim.json", &claim)
 	readContract(t, "requests.json", &claimed)
-	grant.Container = json.RawMessage(strings.Replace(string(grant.Container), `"attachable": false`, `"attachable": true`, 1))
+	grant.Container = json.RawMessage(strings.Replace(string(grant.Container), `"isAttachable": false`, `"isAttachable": true`, 1))
 	prepared := host.PreparedStart{Grant: grant, Claim: claim}
 	manifest, _, err := prepared.ContainerManifest()
-	if err != nil || !manifest.Attachable {
+	if err != nil || !manifest.IsAttachable {
 		t.Fatalf("the scenario's container was not made attachable: %v", err)
 	}
 	containers, _ := scenarioDaemon(t, manifest.Image)
@@ -519,8 +519,8 @@ func TestScenarioAStartTheHostCannotCarryOutIsReportedRefusedWithItsReason(t *te
 			if report.RefusalReason == nil {
 				continue
 			}
-			if *report.RefusalReason != string(contracts.RefusalContainerUnavailable) || !report.NoProcessCreated {
-				t.Fatalf("the refusal was reported as %q, no process made: %t", *report.RefusalReason, report.NoProcessCreated)
+			if *report.RefusalReason != string(contracts.RefusalContainerUnavailable) || !report.HasCreatedNoProcess {
+				t.Fatalf("the refusal was reported as %q, no process made: %t", *report.RefusalReason, report.HasCreatedNoProcess)
 			}
 
 			return

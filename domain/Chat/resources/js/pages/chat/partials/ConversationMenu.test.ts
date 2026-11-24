@@ -19,7 +19,7 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
     id,
     name,
     profileKey: "journal-main",
-    retired,
+    isRetired: retired,
     presence: retired ? "retired" : "idle",
     presenceLabel: retired ? "Retired" : "Idle",
     sessionId: null,

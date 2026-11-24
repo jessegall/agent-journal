@@ -22,7 +22,7 @@ final class StoredExecutionPolicy extends Data
         public readonly string $worktree,
         public readonly StoredExecutionBudgets $budgets,
         public readonly array $network,
-        public readonly bool $attachable = false,
+        public readonly bool $isAttachable = false,
     ) {}
 
     public static function fromExecutionPolicy(ExecutionPolicy $execution): self
@@ -33,7 +33,7 @@ final class StoredExecutionPolicy extends Data
             'worktree' => $execution->worktree,
             'budgets' => StoredExecutionBudgets::fromExecutionBudgets($execution->budgets),
             'network' => $execution->networkCapabilities,
-            'attachable' => $execution->isAttachable,
+            'isAttachable' => $execution->isAttachable,
         ]);
     }
 
@@ -45,7 +45,7 @@ final class StoredExecutionPolicy extends Data
             $this->worktree,
             $this->budgets->toExecutionBudgets(),
             $this->network,
-            $this->attachable,
+            $this->isAttachable,
         );
     }
 }

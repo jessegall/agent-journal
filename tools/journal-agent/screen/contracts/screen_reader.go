@@ -16,7 +16,7 @@ const (
 type Cursor struct {
 	Row     int  `json:"row"`
 	Column  int  `json:"column"`
-	Visible bool `json:"visible"`
+	IsVisible bool `json:"isVisible"`
 }
 
 // Snapshot is one read of the screen: every row as text, the cursor, the buffer shown and its size.
@@ -31,7 +31,7 @@ type Snapshot struct {
 // Status describes the cursor and the buffer in one line, as "cursor 3,4 visible true, normal buffer".
 func (snapshot Snapshot) Status() string {
 	return fmt.Sprintf("cursor %d,%d visible %v, %s buffer",
-		snapshot.Cursor.Row, snapshot.Cursor.Column, snapshot.Cursor.Visible, snapshot.Buffer)
+		snapshot.Cursor.Row, snapshot.Cursor.Column, snapshot.Cursor.IsVisible, snapshot.Buffer)
 }
 
 // ScreenReader turns a program's raw terminal output into the screen a user would see. Feeding bytes in any

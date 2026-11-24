@@ -8,11 +8,11 @@ defineProps<{ data: AskInbox }>();
 const isInWindow = useIsInWindow();
 
 function statusOf(card: AskInbox['cards'][number]): string {
-    if (card.obligation) {
+    if (card.isObligation) {
         return 'Needs your reply';
     }
 
-    return card.open ? 'Open' : 'Closed';
+    return card.isOpen ? 'Open' : 'Closed';
 }
 </script>
 

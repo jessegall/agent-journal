@@ -71,12 +71,12 @@ type PresenceReport struct {
 	Release      string           `json:"release"`
 	Descriptors  []HostDescriptor `json:"descriptors"`
 	Provisioning string           `json:"provisioning"`
-	Takeover     bool             `json:"takeover"`
+	IsTakeover     bool             `json:"isTakeover"`
 	// SetupGeneration is the folder's setup generation, which rises on every setup or resume of it.
 	SetupGeneration int `json:"setupGeneration"`
-	// Reconciled is whether this boot already reported what became of its earlier sessions: until it did, the
+	// IsReconciled is whether this boot already reported what became of its earlier sessions: until it did, the
 	// journal starts nothing and runs no command for the binding.
-	Reconciled bool `json:"reconciled"`
+	IsReconciled bool `json:"isReconciled"`
 }
 
 // NotifyRuntimeStopped gives the journal the device's receipt that the runtime's session stopped; sent again, it

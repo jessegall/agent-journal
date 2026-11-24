@@ -21,7 +21,7 @@ const form = useForm({
     selected:
         props.data.savedPreview?.selectedIds ??
         props.data.candidates
-            .filter((candidate) => candidate.shared)
+            .filter((candidate) => candidate.isShared)
             .map((candidate) => candidate.id),
 });
 
@@ -83,7 +83,7 @@ function confirmTo(url: string): void {
                     />
                     <span>{{ candidate.title }}</span>
                     <span class="text-muted-foreground">Linked</span>
-                    <template v-if="!candidate.shared">
+                    <template v-if="!candidate.isShared">
                         <span class="text-muted-foreground">Not shared yet</span>
                     </template>
                 </label>

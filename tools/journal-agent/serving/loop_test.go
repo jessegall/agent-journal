@@ -349,7 +349,7 @@ func TestATurnsEndIsReportedAsTheHostSawIt(t *testing.T) {
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("work", 1, "deliver", "hello")})
 
 	failed := 1
-	runtime.finished <- contracts.TurnEnd{ExitCode: &failed, ResultRead: true, ResultSubtype: "error_during_execution"}
+	runtime.finished <- contracts.TurnEnd{ExitCode: &failed, IsResultRead: true, ResultSubtype: "error_during_execution"}
 
 	waitFor(t, func() bool { return len(journal.progressOf("work")) == 2 })
 	end := journal.turnEndOf("work")
@@ -466,7 +466,7 @@ func TestABootstrapWakeIsAppliedWithItsBindingAndStartsNoTurn(t *testing.T) {
 	runtime := &bootstrappingRuntime{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	bootstrap := claimed("a", 1, "wake", "")
-	bootstrap.Bootstrap = true
+	bootstrap.ShouldBootstrap = true
 
 	loop.Take(context.Background(), []client.ClaimedRequest{bootstrap})
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("b", 2, "deliver", "hello")})
@@ -515,7 +515,7 @@ func TestCheckStatusSendsTheKeptReadyReportAgainExactly(t *testing.T) {
 	journal := &fakeJournal{}
 	loop := bootstrapped(t, folder, journal)
 	bootstrap := claimed("a", 1, "wake", "")
-	bootstrap.Bootstrap = true
+	bootstrap.ShouldBootstrap = true
 	loop.Take(context.Background(), []client.ClaimedRequest{bootstrap})
 
 	restarted := bootstrapped(t, folder, journal)
@@ -539,7 +539,7 @@ func TestCheckStatusWithoutAReadyReportOfThatGenerationAnswersNoObservation(t *t
 	journal := &fakeJournal{}
 	loop := bootstrapped(t, t.TempDir(), journal)
 	bootstrap := claimed("a", 1, "wake", "")
-	bootstrap.Bootstrap = true
+	bootstrap.ShouldBootstrap = true
 	loop.Take(context.Background(), []client.ClaimedRequest{bootstrap})
 
 	loop.Take(context.Background(), []client.ClaimedRequest{checkStatus(7)})

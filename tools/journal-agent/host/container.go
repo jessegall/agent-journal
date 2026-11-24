@@ -48,12 +48,12 @@ type ContainerMount struct {
 	Type     MountType `json:"type"`
 	Source   string    `json:"source"`
 	Target   string    `json:"target"`
-	Writable bool      `json:"writable"`
+	IsWritable bool      `json:"isWritable"`
 	// MustExist is a volume the host finds and never makes, such as the history of a resumed conversation.
 	MustExist bool `json:"mustExist"`
-	// Checkout is a writer's workspace: the host clones the source into the session's own checkout volume and mounts
+	// IsCheckout is a writer's workspace: the host clones the source into the session's own checkout volume and mounts
 	// that, read-write, at the target instead.
-	Checkout bool `json:"checkout"`
+	IsCheckout bool `json:"isCheckout"`
 }
 
 // ContainerBudgets mirrors App\Agents\Support\ExecutionBudgets: the bounds a container runs under.
@@ -82,18 +82,18 @@ type ContainerManifest struct {
 	Image           string           `json:"image"`
 	User            string           `json:"user"`
 	Workdir         string           `json:"workdir"`
-	ReadOnlyRoot    bool             `json:"readOnlyRoot"`
+	IsReadOnlyRoot    bool             `json:"isReadOnlyRoot"`
 	Capabilities    []string         `json:"capabilities"`
-	NoNewPrivileges bool             `json:"noNewPrivileges"`
-	Privileged      bool             `json:"privileged"`
+	BlocksNewPrivileges bool             `json:"blocksNewPrivileges"`
+	IsPrivileged      bool             `json:"isPrivileged"`
 	Network         string           `json:"network"`
 	Mounts          []ContainerMount `json:"mounts"`
 	PublishedPorts  []int            `json:"publishedPorts"`
 	Budgets         ContainerBudgets `json:"budgets"`
 	SecurityOptions SecurityOptions  `json:"securityOptions"`
-	// Attachable is a session's own terminal process, such as the main agent's program: it gets a tty and an open
+	// IsAttachable is a session's own terminal process, such as the main agent's program: it gets a tty and an open
 	// stdin, and the host attaches to it, again after a restart. Helpers are not attachable.
-	Attachable bool `json:"attachable"`
+	IsAttachable bool `json:"isAttachable"`
 	// WorkspacePreparation is what the host fills or checks before the container mounts the workspace; nil locally.
 	WorkspacePreparation *WorkspacePreparation `json:"workspacePreparation"`
 	// LaunchProfile is how the container starts: standard, or protected-account, whose init starts as root to hand the
@@ -139,7 +139,7 @@ func (manifest ContainerManifest) startsAsProfile() bool {
 	}
 
 	return manifest.User == protectedUser && slices.Equal(manifest.Capabilities, protectedCapabilities) &&
-		manifest.ReadOnlyRoot && manifest.NoNewPrivileges && manifest.AccountFolder() != ""
+		manifest.IsReadOnlyRoot && manifest.BlocksNewPrivileges && manifest.AccountFolder() != ""
 }
 
 // imageIDPattern is an image named by its id, the config digest a loaded image keeps.
@@ -240,7 +240,7 @@ func (manifest ContainerManifest) bindsOnlyAccount(accountID string) bool {
 	mount := accountMounts[0]
 
 	return len(accountMounts) == 1 && plainAccountID.MatchString(accountID) && mount.Type == MountDaemonBind &&
-		mount.Target == accountTarget && mount.Writable && mount.Source == accountsRoot+"/"+accountID
+		mount.Target == accountTarget && mount.IsWritable && mount.Source == accountsRoot+"/"+accountID
 }
 
 // AccountFolder is the plain id of the account folder the manifest binds at the account home, which the container's
@@ -259,7 +259,7 @@ func (manifest ContainerManifest) AccountFolder() string {
 // user and capabilities its launch profile allows, an exact image digest, security profiles that are one value each,
 // and only the mounts the rules allow.
 func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
-	isConfined := !manifest.Privileged && len(manifest.PublishedPorts) == 0 && manifest.Entrypoint == "" &&
+	isConfined := !manifest.IsPrivileged && len(manifest.PublishedPorts) == 0 && manifest.Entrypoint == "" &&
 		manifest.hasKnownProfile() && manifest.startsAsProfile()
 	isPinned := IsPinnedReference(manifest.Image)
 
@@ -291,7 +291,7 @@ func (manifest ContainerManifest) CreateOptions(name string, labels LaunchLabels
 	hostConfig := &container.HostConfig{
 		CapDrop:        []string{"ALL"},
 		NetworkMode:    container.NetworkMode(manifest.Network),
-		ReadonlyRootfs: manifest.ReadOnlyRoot,
+		ReadonlyRootfs: manifest.IsReadOnlyRoot,
 		SecurityOpt:    security,
 		Tmpfs:          manifest.Budgets.tmpfs(),
 		Resources: container.Resources{
@@ -308,11 +308,11 @@ func (manifest ContainerManifest) CreateOptions(name string, labels LaunchLabels
 		hostConfig.Tmpfs[executorFolder] = executorFolderOptions
 	}
 
-	if manifest.NoNewPrivileges {
+	if manifest.BlocksNewPrivileges {
 		hostConfig.SecurityOpt = append([]string{"no-new-privileges"}, hostConfig.SecurityOpt...)
 	}
 
-	if manifest.Attachable {
+	if manifest.IsAttachable {
 		config.Tty, config.OpenStdin = true, true
 		config.AttachStdin, config.AttachStdout, config.AttachStderr = true, true, true
 		hostConfig.RestartPolicy = container.RestartPolicy{Name: container.RestartPolicyUnlessStopped}
@@ -375,10 +375,10 @@ func (rules ContainerRules) permitsSource(mount ContainerMount) bool {
 // daemonMount is the mount as the daemon takes it, read-only unless it is writable.
 func (mounted ContainerMount) daemonMount() mount.Mount {
 	if mounted.Type == MountVolume {
-		return volumeMount(mounted.Source, mounted.Target, mounted.Writable)
+		return volumeMount(mounted.Source, mounted.Target, mounted.IsWritable)
 	}
 
-	return bindMount(mounted.Source, mounted.Target, mounted.Writable)
+	return bindMount(mounted.Source, mounted.Target, mounted.IsWritable)
 }
 
 // readOnlyAt is the mount as the daemon takes it read-only at another target, as a check or a clone reads the

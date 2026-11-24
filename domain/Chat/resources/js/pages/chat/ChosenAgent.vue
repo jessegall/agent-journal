@@ -143,7 +143,7 @@ const subline = computed(() => {
         secondary
       />
     </template>
-    <template v-if="data.setupRequired">
+    <template v-if="data.isSetupRequired">
       <span class="text-small text-text-3"
         >No main agent yet: run <code>php artisan agents:install</code>.</span
       >

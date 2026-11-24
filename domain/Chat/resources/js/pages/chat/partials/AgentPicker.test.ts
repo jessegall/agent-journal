@@ -20,7 +20,7 @@ function agent(
     id,
     name,
     profileKey: "journal-main",
-    retired: false,
+    isRetired: false,
     presence: presenceLabel === "Working" ? "working" : "idle",
     presenceLabel,
     sessionId: null,

@@ -19,6 +19,6 @@ final class TaskLogsData extends Data
         public readonly TaskStreamPageData $newest,
         public readonly TaskStreamPageData|Optional $older = new Optional(),
         public readonly TaskStreamEntryData|Optional $selected = new Optional(),
-        public readonly bool $selectedGone = false,
+        public readonly bool $isSelectedGone = false,
     ) {}
 }

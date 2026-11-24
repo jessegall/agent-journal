@@ -56,7 +56,7 @@ func (containers Containers) CheckFolder(ctx context.Context, name string) (Cont
 	}
 
 	return ContainerMount{Type: MountDaemonBind, Source: OperatorWorkspacesRoot + "/" + name, Target: workspaceTarget,
-		Writable: true}, nil
+		IsWritable: true}, nil
 }
 
 // folderCheckScript prints the one word of the first check the folder fails and exits 1, or exits 0.

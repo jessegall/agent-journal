@@ -43,7 +43,7 @@ final readonly class DockListing
         return DockListData::from([
             'conversationId' => $conversation->id,
             'placements' => array_values($listed->all()),
-            'more' => $placements->count() > $limit,
+            'hasMore' => $placements->count() > $limit,
         ]);
     }
 

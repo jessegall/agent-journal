@@ -19,6 +19,6 @@ final class OutputCleaned extends Data
         public array $runs,
         public array $parts,
         public int $bytes,
-        public bool $removed,
+        public bool $isRemoved,
     ) {}
 }

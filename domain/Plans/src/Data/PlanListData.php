@@ -25,7 +25,7 @@ final class PlanListData extends Data
         public readonly array $rows,
         public readonly PlanFiltersData $filters,
         public readonly PaginationData $pagination,
-        public readonly bool $selectionMissing,
+        public readonly bool $isSelectionMissing,
         public readonly PlanReaderData|Optional $selected = new Optional(),
     ) {}
 }

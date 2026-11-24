@@ -26,7 +26,7 @@ final class ProcessCleanCommand extends Command
     {
         return $this->runCall(CleanOutputCall::from([
             'runs' => array_values(array_map(strval(...), (array) $this->argument('run'))),
-            'preview' => (bool) $this->option('preview'),
+            'isPreview' => (bool) $this->option('preview'),
             'requestKey' => $this->requestKey(),
         ]));
     }

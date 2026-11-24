@@ -55,6 +55,6 @@ final readonly class HostAccountDrain implements AccountOwnerDrain
 
         $reply = $this->socket->ask(['folderUse' => ['folder' => basename($directory)]], FolderUseReplyData::class);
 
-        return $reply instanceof FolderUseReplyData && ! $reply->bound;
+        return $reply instanceof FolderUseReplyData && ! $reply->isBound;
     }
 }

@@ -15,9 +15,9 @@ const emit = defineEmits<{ react: [emoji: string]; reply: []; decline: [] }>();
 <template>
   <ReactionChoice :speaker="speaker.label" @choose="(emoji) => emit('react', emoji)" />
   <MessageAction icon="reply" @click="emit('reply')">
-    {{ actions.answer ? "Answer" : "Reply" }}
+    {{ actions.canAnswer ? "Answer" : "Reply" }}
   </MessageAction>
-  <template v-if="actions.decline">
+  <template v-if="actions.canDecline">
     <MessageAction @click="emit('decline')">Decline</MessageAction>
   </template>
 </template>

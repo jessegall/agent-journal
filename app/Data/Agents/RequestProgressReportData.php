@@ -33,7 +33,7 @@ final class RequestProgressReportData extends Data
         public readonly ScriptProgressData|Optional $script = new Optional(),
         public readonly NavigationRoundReportData|Optional $navigation = new Optional(),
         public readonly string|null $refusalReason = null,
-        public readonly bool $noProcessCreated = false,
+        public readonly bool $hasCreatedNoProcess = false,
         public readonly string|null $sessionId = null,
         public readonly string|null $processStartId = null,
         public readonly int|null $processGeneration = null,

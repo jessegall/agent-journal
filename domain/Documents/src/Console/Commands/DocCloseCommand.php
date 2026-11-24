@@ -38,7 +38,7 @@ final class DocCloseCommand extends Command
             $closed = $documents->closeDocument((string) $number, $held['token'], version: $held['version']);
             $drafts->forget($number);
 
-            return CommandReport::ending(self::SUCCESS)->line($closed->published
+            return CommandReport::ending(self::SUCCESS)->line($closed->isPublished
                 ? "Closed doc {$number} as revision {$closed->revisionNumber}."
                 : "Closed doc {$number} with no change; it stays at revision {$closed->revisionNumber}.");
         });

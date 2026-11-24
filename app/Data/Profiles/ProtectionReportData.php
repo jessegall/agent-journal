@@ -34,7 +34,7 @@ final class ProtectionReportData extends Data
             array_map(
                 fn (ProtectedItemData $item) => new ProtectedItem(
                     $item->item,
-                    $item->enforced,
+                    $item->isEnforced,
                     $item->evidence,
                     $item->reason,
                 ),

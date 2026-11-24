@@ -19,7 +19,7 @@ final class ClassificationSummaryData extends Data
      * @param  list<PartSummaryData>  $parts
      */
     public function __construct(
-        public readonly bool $known,
+        public readonly bool $isKnown,
         public readonly array $classes,
         #[DataCollectionOf(PartSummaryData::class)]
         public readonly array $parts,

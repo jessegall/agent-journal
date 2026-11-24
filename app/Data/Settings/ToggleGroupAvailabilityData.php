@@ -17,6 +17,6 @@ final class ToggleGroupAvailabilityData extends Data
 {
     public function __construct(
         public readonly GroupAvailability $state,
-        public readonly bool $defaultEnabled,
+        public readonly bool $isDefaultEnabled,
     ) {}
 }

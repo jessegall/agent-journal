@@ -44,7 +44,7 @@ final class HelperSendCommand extends Command
             'purposeText' => $this->textOption('purpose-text'),
             'brief' => (string) $this->argument('brief'),
             'sourceSubjects' => array_values(array_map(strval(...), (array) $this->option('source'))),
-            'independent' => $this->option('independent') === true,
+            'isIndependent' => $this->option('independent') === true,
             'requestKey' => CallKey::fromOption($this->textOption('key')),
         ]);
 

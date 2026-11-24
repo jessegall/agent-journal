@@ -11,7 +11,7 @@ const props = defineProps<{ page: LoginPage }>();
 
 const email = ref(props.page.input.email);
 const password = ref(props.page.input.password);
-const remember = ref(props.page.input.remember);
+const remember = ref(props.page.input.shouldRemember);
 </script>
 
 <template>

@@ -15,10 +15,10 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class ChatCapabilitiesData extends Data
 {
     public function __construct(
-        public readonly bool $add,
-        public readonly bool $remove,
-        public readonly bool $transfer,
-        public readonly bool $leave,
-        public readonly bool $close,
+        public readonly bool $canAdd,
+        public readonly bool $canRemove,
+        public readonly bool $canTransfer,
+        public readonly bool $canLeave,
+        public readonly bool $canClose,
     ) {}
 }

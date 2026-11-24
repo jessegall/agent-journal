@@ -704,7 +704,7 @@ final class AgentDriverLedgerTest extends TestCase
         $manifest = $grant->container;
 
         $this->assertNotNull($manifest);
-        $this->assertTrue($manifest->attachable);
+        $this->assertTrue($manifest->isAttachable);
         $this->assertSame($image, $manifest->image);
         $this->assertSame("acme-{$opened->sessionId}", $manifest->network);
         $this->assertSame(

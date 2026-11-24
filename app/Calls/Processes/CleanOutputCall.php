@@ -33,7 +33,7 @@ final class CleanOutputCall extends Data implements JournalCall
     public function __construct(
         #[Min(1), Max(100)]
         public array $runs,
-        public bool $preview,
+        public bool $isPreview,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,

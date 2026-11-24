@@ -28,7 +28,7 @@ final readonly class StartAgentController
 
         return new JsonResponse([
             'sessionId' => $receipt->sessionId,
-            'newSession' => $receipt->newSession,
+            'newSession' => $receipt->isNewSession,
             'driver' => $selection->driver,
             'requestedModel' => $selection->requested->model,
             'resolvedModel' => $selection->model,

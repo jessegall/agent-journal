@@ -370,7 +370,7 @@ export class TerminalControl {
 
         this.grantId = current.grantId;
         this.nextSequence = current.nextSequence;
-        this.publish({ privateEntry: current.privateEntry });
+        this.publish({ privateEntry: current.isPrivateEntry });
         this.publish({ state: this.current.unsentLine === '' ? 'controlling' : 'choosing', notice: '' });
     }
 

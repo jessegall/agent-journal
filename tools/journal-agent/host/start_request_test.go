@@ -30,7 +30,7 @@ func (executor *recordingExecutor) Stop(_ context.Context, request StopRequest) 
 }
 
 func (executor *recordingExecutor) Drain(_ context.Context, request DrainRequest) (DrainReply, error) {
-	return DrainReply{Drained: request.Account == "/accounts/a"}, nil
+	return DrainReply{IsDrained: request.Account == "/accounts/a"}, nil
 }
 
 type connection struct {
@@ -43,7 +43,7 @@ func (connection *connection) Write(content []byte) (int, error) {
 }
 
 func (executor *recordingExecutor) FolderUse(_ context.Context, request FolderUseRequest) (FolderUseReply, error) {
-	return FolderUseReply{Bound: request.Folder == "bound7"}, nil
+	return FolderUseReply{IsBound: request.Folder == "bound7"}, nil
 }
 
 func (executor *recordingExecutor) MakeFolder(_ context.Context, request AccountFolderRequest) (AccountFolderReply, error) {
@@ -56,8 +56,8 @@ func (executor *recordingExecutor) RemoveFolder(_ context.Context, request Accou
 
 func TestAFolderUseRequestNeedsAPlainIdAndReachesTheExecutor(t *testing.T) {
 	for line, want := range map[string]string{
-		`{"folderUse":{"folder":"bound7"}}`: `{"bound":true}`,
-		`{"folderUse":{"folder":"free7"}}`:  `{"bound":false}`,
+		`{"folderUse":{"folder":"bound7"}}`: `{"isBound":true}`,
+		`{"folderUse":{"folder":"free7"}}`:  `{"isBound":false}`,
 	} {
 		pipe := &connection{Reader: strings.NewReader(line + "\n")}
 		if err := AnswerHostRequest(context.Background(), pipe, &recordingExecutor{}); err != nil || strings.TrimSpace(pipe.written.String()) != want {
@@ -153,7 +153,7 @@ func TestADrainAnswersWhetherNothingOfTheAccountRuns(t *testing.T) {
 	}
 
 	var reply DrainReply
-	if err := json.Unmarshal(pipe.written.Bytes(), &reply); err != nil || !reply.Drained {
+	if err := json.Unmarshal(pipe.written.Bytes(), &reply); err != nil || !reply.IsDrained {
 		t.Fatalf("reply %+v %v", reply, err)
 	}
 }

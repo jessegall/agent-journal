@@ -30,7 +30,7 @@ final class DocRevisionCommand extends Command
                 (int) $this->argument('revision'),
             );
 
-            $historicalLabel = $revision->historical ? ' (historical)' : '';
+            $historicalLabel = $revision->isHistorical ? ' (historical)' : '';
             $heading = "doc {$revision->documentNumber}, revision {$revision->number}{$historicalLabel}";
 
             return CommandReport::ending(self::SUCCESS)

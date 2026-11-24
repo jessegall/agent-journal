@@ -29,7 +29,7 @@ func TestAContainerRefusalReportsItsReasonAndThatNoProcessWasMade(t *testing.T) 
 	loop.notifyResult(context.Background(), boundWake(), contracts.OperationResult{}, fmt.Errorf("the wake failed: %w", refusal))
 
 	report := journal.reports[0]
-	if report.RefusalReason == nil || *report.RefusalReason != "container-unavailable" || !report.NoProcessCreated {
+	if report.RefusalReason == nil || *report.RefusalReason != "container-unavailable" || !report.HasCreatedNoProcess {
 		t.Fatalf("the refusal was reported as %+v", report)
 	}
 	if report.Progress != "failed" || report.Outcome == nil || *report.Outcome != "refused" {
@@ -48,7 +48,7 @@ func TestAnOrdinaryDriverErrorStaysAGenericRefusal(t *testing.T) {
 	loop.notifyResult(context.Background(), boundWake(), contracts.OperationResult{}, errors.New("the program crashed"))
 
 	report := journal.reports[0]
-	if report.RefusalReason != nil || report.NoProcessCreated {
+	if report.RefusalReason != nil || report.HasCreatedNoProcess {
 		t.Fatalf("an ordinary error named a reason: %+v", report)
 	}
 	if report.Progress != "failed" || report.Outcome == nil || *report.Outcome != "refused" {

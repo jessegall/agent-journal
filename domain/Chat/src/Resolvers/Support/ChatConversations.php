@@ -81,7 +81,7 @@ final readonly class ChatConversations
                 'driver' => $drivers[self::keyOf($interval->actor)] ?? null,
                 'role' => $interval->role,
             ]), $intervals),
-            'canManageParticipants' => $capabilities->add || $capabilities->remove,
+            'canManageParticipants' => $capabilities->canAdd || $capabilities->canRemove,
             'capabilities' => $capabilities,
             'latestSequence' => $rows === [] ? 0 : $rows[array_key_last($rows)]->sequence,
             'unreadCount' => $this->messages->counts($inboxId)->unread,
@@ -179,11 +179,11 @@ final readonly class ChatConversations
         $hasOthers = count($intervals) > 1;
 
         return ChatCapabilitiesData::from([
-            'add' => $manages,
-            'remove' => $manages && $hasOthers,
-            'transfer' => $isOwner && $hasOthers,
-            'leave' => $conversation->isOpen() && (! $isOwner || ! $hasOthers),
-            'close' => $isOwner,
+            'canAdd' => $manages,
+            'canRemove' => $manages && $hasOthers,
+            'canTransfer' => $isOwner && $hasOthers,
+            'canLeave' => $conversation->isOpen() && (! $isOwner || ! $hasOthers),
+            'canClose' => $isOwner,
         ]);
     }
 
@@ -280,7 +280,7 @@ final readonly class ChatConversations
                 'decline' => $settles,
                 'retryDelivery' => array_any($deliveries, fn (DeliveryData $delivery) => $delivery->rangeId !== null),
             ],
-            'readByMe' => $message->shownToViewer,
+            'isReadByMe' => $message->isShownToViewer,
             'sentAt' => $message->sentAt,
             'requestKey' => $message->requestKey,
             'deliveries' => $deliveries,
@@ -317,13 +317,13 @@ final readonly class ChatConversations
 
     private static function replyTargetOf(MessageView $message): ReplyTargetData|Optional
     {
-        if ($message->replyToId === null && ! $message->replyUnavailable) {
+        if ($message->replyToId === null && ! $message->isReplyUnavailable) {
             return Optional::create();
         }
 
         return ReplyTargetData::from([
             'id' => $message->replyToId,
-            'visible' => ! $message->replyUnavailable,
+            'isVisible' => ! $message->isReplyUnavailable,
             'original' => $message->replyOriginal,
         ]);
     }

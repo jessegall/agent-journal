@@ -21,7 +21,7 @@ final class ScriptObjectData extends Data
     public function __construct(
         public readonly string $key,
         public readonly array $members,
-        public readonly bool $available,
+        public readonly bool $isAvailable,
     ) {}
 
     public static function fromDefinition(ObjectDefinition $object, bool $available): self

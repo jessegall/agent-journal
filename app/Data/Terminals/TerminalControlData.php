@@ -24,7 +24,7 @@ final class TerminalControlData extends Data
         public readonly int $expiresInSeconds,
         public readonly int $nextSequence,
         // Whether the host offers private entry for this terminal; without it no private field is offered.
-        public readonly bool $privateEntry,
+        public readonly bool $isPrivateEntry,
         public readonly TerminalReceiptData|Optional $receipt = new Optional(),
     ) {}
 }

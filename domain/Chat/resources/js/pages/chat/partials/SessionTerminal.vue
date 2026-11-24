@@ -111,7 +111,7 @@ useTerminalResize(area, control);
         </template>
         <template
           v-if="
-            presentation.screen.frame?.noTerminal || state === 'connection_lost'
+            presentation.screen.frame?.hasNoTerminal || state === 'connection_lost'
           "
         >
           <Button variant="bordered" size="sm" @click="emit('backToChat')"

@@ -5,10 +5,10 @@ package contracts
 type TurnEnd struct {
 	// ExitCode is the exit code of a headless turn's process; nil when no process of the turn ended.
 	ExitCode *int `json:"exit_code,omitempty"`
-	// ResultRead is whether the turn's output held a result line; ResultSubtype and ResultIsError are its fields.
-	ResultRead    bool   `json:"result_read,omitempty"`
+	// IsResultRead is whether the turn's output held a result line; ResultSubtype and ResultIsError are its fields.
+	IsResultRead    bool   `json:"is_result_read,omitempty"`
 	ResultSubtype string `json:"result_subtype,omitempty"`
-	ResultIsError bool   `json:"result_is_error,omitempty"`
+	IsResultError bool   `json:"is_result_error,omitempty"`
 	// Model is the model the turn's own output says it ran on; empty when its output names none.
 	Model string `json:"model,omitempty"`
 	// CodexStatus is the status the Codex owner ended the turn with.

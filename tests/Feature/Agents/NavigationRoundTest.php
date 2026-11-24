@@ -179,7 +179,7 @@ final class NavigationRoundTest extends TestCase
         [$otherHost, $other] = $this->stalled('2.1.400');
         $this->notify($otherHost, $this->proved($other), isProofSeen: true, steps: [$this->step()])->assertNoContent();
         $this->assertSame(1, MenuEntry::query()->acrossActors()->count());
-        $this->assertSame(false, MenuEntry::query()->acrossActors()->sole()->buildOn('2.1.400')?->stale);
+        $this->assertSame(false, MenuEntry::query()->acrossActors()->sole()->buildOn('2.1.400')?->isStale);
     }
 
     public function test_steps_that_could_carry_screen_text_are_refused_and_save_nothing(): void

@@ -50,7 +50,7 @@ final readonly class AskRecords implements AskReader
             $result,
             $result->label(),
             $decisionId,
-            $ask->open && $card->obligation && $decisionId !== null,
+            $ask->open && $card->isObligation && $decisionId !== null,
         );
     }
 
@@ -97,8 +97,8 @@ final readonly class AskRecords implements AskReader
                 'id' => $ask->id,
                 'type' => $ask->type_key->key,
                 'body' => $ask->body,
-                'open' => $ask->open,
-                'obligation' => $current?->isSameAs($holder) === true,
+                'isOpen' => $ask->open,
+                'isObligation' => $current?->isSameAs($holder) === true,
                 'reply' => $replies[$ask->id] ?? null,
                 'holderType' => $current?->type,
                 'holderId' => $current?->id,

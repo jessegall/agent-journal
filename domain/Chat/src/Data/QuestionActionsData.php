@@ -15,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class QuestionActionsData extends Data
 {
     public function __construct(
-        public readonly bool $answer,
-        public readonly bool $decline,
-        public readonly bool $retryDelivery = false,
+        public readonly bool $canAnswer,
+        public readonly bool $canDecline,
+        public readonly bool $canRetryDelivery = false,
     ) {}
 }

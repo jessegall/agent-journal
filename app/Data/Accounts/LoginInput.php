@@ -16,12 +16,12 @@ final class LoginInput extends Data
     public function __construct(
         public readonly string $email,
         public readonly string $password,
-        public readonly bool $remember,
+        public readonly bool $shouldRemember,
     ) {}
 
     public static function blank(): self
     {
-        return new self(email: '', password: '', remember: false);
+        return new self(email: '', password: '', shouldRemember: false);
     }
 
     /**
@@ -29,6 +29,6 @@ final class LoginInput extends Data
      */
     public static function filledWith(string $email, string $password): self
     {
-        return new self(email: $email, password: $password, remember: false);
+        return new self(email: $email, password: $password, shouldRemember: false);
     }
 }

@@ -167,7 +167,7 @@ func (runner StopConditionRunner) ended(
 	result.Status = status
 	result.EndedAt = &ended
 	result.Output = &text
-	result.Truncated = output.truncated
+	result.IsTruncated = output.truncated
 	result.Summary = summaryOf(reason, output.kept.String())
 	return result
 }

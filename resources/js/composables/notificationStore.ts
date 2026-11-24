@@ -242,7 +242,7 @@ export function notificationStore(
                     return [];
                 }
 
-                if (page.reset) {
+                if (page.isReset) {
                     await refresh();
 
                     return [];

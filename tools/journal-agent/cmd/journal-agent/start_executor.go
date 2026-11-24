@@ -134,7 +134,7 @@ func (executor *protectedExecutor) Drain(ctx context.Context, request host.Drain
 	if !executor.codexOwners.Drain(request.Account, drainBound) {
 		return host.DrainReply{Reason: "the account's Codex app-server could not be proven ended"}, nil
 	}
-	return host.DrainReply{Drained: true}, nil
+	return host.DrainReply{IsDrained: true}, nil
 }
 
 // FolderUse answers whether a container still binds the account folder, so a displaced folder is deleted only once
@@ -146,10 +146,10 @@ func (executor *protectedExecutor) FolderUse(ctx context.Context, request host.F
 
 	bound, err := executor.bindsAccount(ctx, request.Folder)
 	if err != nil {
-		return host.FolderUseReply{Bound: true, Reason: "the agent daemon could not be asked: " + err.Error()}, nil
+		return host.FolderUseReply{IsBound: true, Reason: "the agent daemon could not be asked: " + err.Error()}, nil
 	}
 
-	return host.FolderUseReply{Bound: bound}, nil
+	return host.FolderUseReply{IsBound: bound}, nil
 }
 
 // accountFolders is the agent daemon's side of an account folder: made and removed by root.

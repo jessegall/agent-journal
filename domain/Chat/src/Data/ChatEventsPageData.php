@@ -21,7 +21,7 @@ final class ChatEventsPageData extends Data
      * @param  list<ChatEventData>  $events
      */
     public function __construct(
-        public readonly bool $accessEnded,
+        public readonly bool $hasAccessEnded,
         #[DataCollectionOf(ChatEventData::class)]
         public readonly array $events,
         public readonly string|null $cursor,

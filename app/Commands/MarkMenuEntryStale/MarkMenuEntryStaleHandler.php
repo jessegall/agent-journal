@@ -45,7 +45,7 @@ final readonly class MarkMenuEntryStaleHandler implements CommandHandler
             ->lockForUpdate()
             ->firstOr(fn () => throw NavigationRaiseRefused::unknownEntry($command->entryId));
 
-        if ($entry->buildOn($command->build)?->stale === true) {
+        if ($entry->buildOn($command->build)?->isStale === true) {
             return;
         }
 

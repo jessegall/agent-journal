@@ -59,7 +59,7 @@ final class MenuEntryTest extends TestCase
 
         $this->assertSame($entry->id, $found->id);
         $this->assertEquals($this->steps(), $found->steps);
-        $this->assertSame(false, $found->buildOn('2.1.323')?->stale);
+        $this->assertSame(false, $found->buildOn('2.1.323')?->isStale);
         $this->assertTrue($found->wasProvenElsewhere('2.2.0'));
     }
 
@@ -71,8 +71,8 @@ final class MenuEntryTest extends TestCase
         $entry->markStaleOn('2.1.323', 'label-missing', ['Model: <redacted>']);
 
         $entry->refresh();
-        $this->assertSame(true, $entry->buildOn('2.1.323')?->stale);
-        $this->assertSame(false, $entry->buildOn('2.2.0')?->stale);
+        $this->assertSame(true, $entry->buildOn('2.1.323')?->isStale);
+        $this->assertSame(false, $entry->buildOn('2.2.0')?->isStale);
         $this->assertSame(['Model: <redacted>'], $entry->buildOn('2.1.323')?->staleScreen);
         $this->assertSame(MenuEntryState::Current, $entry->state);
     }

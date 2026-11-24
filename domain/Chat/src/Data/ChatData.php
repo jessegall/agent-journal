@@ -27,7 +27,7 @@ final class ChatData extends Data
     public function __construct(
         #[DataCollectionOf(AgentOptionData::class)]
         public readonly array $agents,
-        public readonly bool $setupRequired,
+        public readonly bool $isSetupRequired,
         public readonly string|Optional $mainAgentId = new Optional(),
         public readonly string|Optional $selectedAgentId = new Optional(),
         #[DataCollectionOf(SlotSectionData::class)]

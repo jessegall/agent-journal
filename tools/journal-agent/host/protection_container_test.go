@@ -80,7 +80,7 @@ func TestASandboxThatDoesNotStartInTheContainerNamesItsCause(t *testing.T) {
 	}
 
 	for _, item := range capability.Items {
-		if item.Enforced || !strings.Contains(item.Reason, "Can't mount proc on /newroot/proc") {
+		if item.IsEnforced || !strings.Contains(item.Reason, "Can't mount proc on /newroot/proc") {
 			t.Fatalf("item %s does not name why the sandbox cannot start: %+v", item.Item, item)
 		}
 	}
@@ -166,7 +166,7 @@ func TestAContainedHostReportsEachProgramAtTheBuildTheAgentImageHolds(t *testing
 	}
 
 	for _, item := range claude.Items {
-		if item.Enforced || !strings.Contains(item.Reason, "Can't mount proc") {
+		if item.IsEnforced || !strings.Contains(item.Reason, "Can't mount proc") {
 			t.Fatalf("item %s is enforced or does not name why the sandbox cannot start: %+v", item.Item, item)
 		}
 	}

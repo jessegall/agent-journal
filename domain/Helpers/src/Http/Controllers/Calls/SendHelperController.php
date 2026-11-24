@@ -29,7 +29,7 @@ final readonly class SendHelperController
                 $call->purposeText,
                 $call->brief,
                 $call->sourceSubjects,
-                $call->independent,
+                $call->isIndependent,
             ),
         )));
     }

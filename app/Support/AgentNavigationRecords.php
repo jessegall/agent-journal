@@ -45,7 +45,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
             'builds' => array_map(
-                fn (MenuEntryBuild $build) => ['build' => $build->build, 'stale' => $build->stale],
+                fn (MenuEntryBuild $build) => ['build' => $build->build, 'stale' => $build->isStale],
                 $entry->builds,
             ),
             'uses' => $entry->uses,
@@ -78,7 +78,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
             'superseded_by' => $entry->superseded_by_id,
             'builds' => array_map(fn (MenuEntryBuild $build) => [
                 'build' => $build->build,
-                'stale' => $build->stale,
+                'stale' => $build->isStale,
                 'stale_reason' => $build->staleReason,
                 'stale_screen' => $build->staleScreen,
             ], $entry->builds),

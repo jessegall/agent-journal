@@ -33,7 +33,7 @@ const { default: AppSidebar } = await import('./AppSidebar.vue');
 function item(
     fields: Partial<NavigationItemData> & Pick<NavigationItemData, 'key' | 'label'>,
 ): NavigationItemData {
-    return { children: [], atBottom: false, counted: false, inSidebar: true, ...fields };
+    return { children: [], isAtBottom: false, isCounted: false, isInSidebar: true, ...fields };
 }
 
 describe('the sidebar', () => {
@@ -47,13 +47,13 @@ describe('the sidebar', () => {
                     url: '/plans',
                     group: 'web.work',
                     children: [
-                        item({ key: 'plans.open', label: 'Open', url: '/plans?state=open', counted: true }),
-                        item({ key: 'plans.waiting', label: 'Waiting', url: '/plans?state=waiting', counted: true }),
+                        item({ key: 'plans.open', label: 'Open', url: '/plans?state=open', isCounted: true }),
+                        item({ key: 'plans.waiting', label: 'Waiting', url: '/plans?state=waiting', isCounted: true }),
                     ],
                 }),
                 item({ key: 'rules.list', label: 'Rules', url: '/rules', group: 'web.agents' }),
                 item({ key: 'other.list', label: 'Rules', url: '/other', group: 'other.agents' }),
-                item({ key: 'help.page', label: 'Help', url: '/help', atBottom: true }),
+                item({ key: 'help.page', label: 'Help', url: '/help', isAtBottom: true }),
             ],
             groups: [
                 { key: 'web.work', label: 'Work' },
@@ -79,7 +79,7 @@ describe('the sidebar', () => {
         page.props.navigation = {
             items: [
                 item({ key: 'web.home', label: 'Home', url: '/', icon: 'home' }),
-                item({ key: 'rules.list', label: 'Rules', url: '/rules', inSidebar: false }),
+                item({ key: 'rules.list', label: 'Rules', url: '/rules', isInSidebar: false }),
             ],
             groups: [],
             current: ['web.home'],

@@ -73,7 +73,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         $this->assertCount(1, $given);
         $this->assertSame("agent:{$this->builder->agent_id}", $given[0]->recipient);
         $this->assertSame(8000, $given[0]->pendingFrom);
-        $this->assertTrue($row->actions->retryDelivery);
+        $this->assertTrue($row->actions->canRetryDelivery);
 
         $this->runOnBus(new RetryDeliveryCommand($range->id));
 
@@ -86,7 +86,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
             ->state);
 
         $this->startChatMemberRequestAs($bea->id);
-        $this->assertFalse($this->rowOf($inboxId, $messageId)->actions->retryDelivery);
+        $this->assertFalse($this->rowOf($inboxId, $messageId)->actions->canRetryDelivery);
         $this->assertThrows(fn () => $this->runOnBus(new RetryDeliveryCommand($range->id)), Throwable::class);
     }
 

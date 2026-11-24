@@ -18,7 +18,7 @@ final class PlanReaderData extends Data
 {
     public function __construct(
         public readonly PlanCardData $card,
-        public readonly bool $insideResults,
+        public readonly bool $isInsideResults,
         public readonly string $brief,
         public readonly PlanOutlineData $outline,
         public readonly PlanReviewData|Optional $review = new Optional(),
@@ -35,7 +35,7 @@ final class PlanReaderData extends Data
     ): self {
         return self::from([
             'card' => PlanCardData::fromPlanCard($card),
-            'insideResults' => true,
+            'isInsideResults' => true,
             'brief' => $brief,
             'outline' => $outline,
             'review' => $review,

@@ -94,7 +94,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         ) : GroupAvailability::Always;
 
         $availability = $group instanceof ToggleGroup
-            ? ToggleGroupAvailabilityData::from(['state' => $state, 'defaultEnabled' => $group->isDefaultEnabled])
+            ? ToggleGroupAvailabilityData::from(['state' => $state, 'isDefaultEnabled' => $group->isDefaultEnabled])
             : PlainGroupAvailabilityData::from([]);
 
         return SettingGroupData::from([

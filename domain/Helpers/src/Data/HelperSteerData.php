@@ -16,7 +16,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class HelperSteerData extends Data
 {
     public function __construct(
-        public bool $reachedLiveJob,
+        public bool $hasReachedLiveJob,
         public string|null $jobId,
         public string|null $messageId,
         public string|null $suggestedCommand,
@@ -25,7 +25,7 @@ final class HelperSteerData extends Data
     public static function fromSteerReceipt(SteerReceipt $receipt): self
     {
         return self::from([
-            'reachedLiveJob' => $receipt->jobId !== null,
+            'hasReachedLiveJob' => $receipt->jobId !== null,
             'jobId' => $receipt->jobId,
             'messageId' => $receipt->messageId,
             'suggestedCommand' => $receipt->suggestedCommand,

@@ -25,7 +25,7 @@ function card(changes: Partial<PlanCardData> = {}): PlanCardData {
         title: longTitle,
         type: 'build',
         state: 'planned',
-        focused: false,
+        isFocused: false,
         finishedTasks: 3,
         totalTasks: 8,
         ...changes,
@@ -65,7 +65,7 @@ describe('PlanCard', () => {
     });
 
     it('names the focused plan and gives the selected plan its own surface and current link', () => {
-        const focused = row({ focused: true });
+        const focused = row({ isFocused: true });
         const selected = row({}, true);
 
         expect(focused.text()).toContain('Focused plan');

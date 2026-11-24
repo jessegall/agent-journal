@@ -49,7 +49,7 @@ func TestTheHostWritesASessionsFilesReadableAndRefusesAPathOutsideItsFolder(t *t
 
 func TestAContainedManifestMayMountTheSessionsFilesReadOnly(t *testing.T) {
 	mounts := []ContainerMount{
-		{Type: MountVolume, Source: "journal-workspace-s1", Target: "/workspace", Writable: true},
+		{Type: MountVolume, Source: "journal-workspace-s1", Target: "/workspace", IsWritable: true},
 		{Type: MountDaemonBind, Source: "/srv/journal/sessions/s1", Target: SessionFilesTarget},
 	}
 
@@ -60,7 +60,7 @@ func TestAContainedManifestMayMountTheSessionsFilesReadOnly(t *testing.T) {
 
 func TestAContainedManifestMayMountTheHandedManagedSettingsReadOnly(t *testing.T) {
 	mounts := []ContainerMount{
-		{Type: MountVolume, Source: "journal-workspace-s1", Target: "/workspace", Writable: true},
+		{Type: MountVolume, Source: "journal-workspace-s1", Target: "/workspace", IsWritable: true},
 		{Type: MountDaemonBind, Source: "/srv/journal/sessions/s1", Target: SessionFilesTarget},
 		{Type: MountDaemonBind, Source: "/srv/journal/sessions/s1/managed/managed-settings.json", Target: ManagedSettingsTarget},
 	}

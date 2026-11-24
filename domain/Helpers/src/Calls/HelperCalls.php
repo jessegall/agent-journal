@@ -78,7 +78,7 @@ final readonly class HelperCalls
             'brief' => $brief,
             'requestKey' => $requestKey,
             'sourceSubjects' => $sourceSubjects,
-            'independent' => $isIndependent,
+            'isIndependent' => $isIndependent,
         ]));
     }
 
@@ -108,7 +108,7 @@ final readonly class HelperCalls
             'brief' => $brief,
             'requestKey' => $requestKey,
             'sourceSubjects' => $sourceSubjects,
-            'independent' => $independent,
+            'isIndependent' => $independent,
             'driverType' => $driverType,
         ]));
     }

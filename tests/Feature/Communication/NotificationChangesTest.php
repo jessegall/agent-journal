@@ -75,7 +75,7 @@ final class NotificationChangesTest extends MessagingTestCase
         $this->notifyOwner(2);
         NotificationChange::query()->where('version', 1)->delete();
 
-        $this->assertTrue($this->changes()->since($this->owner(), $start)->reset);
+        $this->assertTrue($this->changes()->since($this->owner(), $start)->isReset);
     }
 
     public function test_the_purge_deletes_changes_older_than_a_day(): void

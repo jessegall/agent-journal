@@ -41,7 +41,7 @@ const actions = computed(() => props.message.actions);
 
 /** A question someone asked you that waits for your answer: drawn as a card with its Answer button. */
 const isQuestionToMe = computed(
-  () => !props.isOwn && props.message.state === "waiting_for_answer" && actions.value.answer,
+  () => !props.isOwn && props.message.state === "waiting_for_answer" && actions.value.canAnswer,
 );
 
 const state = computed(() => {
@@ -49,7 +49,7 @@ const state = computed(() => {
     return props.isOwn ? "Waiting for an answer" : "Waiting for your answer";
   }
 
-  return props.isOwn || props.message.readByMe ? null : "Unread";
+  return props.isOwn || props.message.isReadByMe ? null : "Unread";
 });
 
 </script>
@@ -121,7 +121,7 @@ const state = computed(() => {
           @click="emit('reply')"
           >Answer</Button
         >
-        <template v-if="actions.decline">
+        <template v-if="actions.canDecline">
           <Button
             size="small"
             variant="ghost"

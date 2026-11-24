@@ -23,11 +23,11 @@ type Frame struct {
 	Rows       [][]Run          `json:"rows"`
 	Cursor     contracts.Cursor `json:"cursor"`
 	Buffer     contracts.Buffer `json:"buffer"`
-	Plain      bool             `json:"plain"`
-	TooLarge   bool             `json:"too_large"`
-	Unreadable bool             `json:"unreadable"`
-	NoTerminal bool             `json:"no_terminal"`
-	Shielded   bool             `json:"shielded"`
+	IsPlain      bool             `json:"is_plain"`
+	IsTooLarge   bool             `json:"is_too_large"`
+	IsUnreadable bool             `json:"is_unreadable"`
+	HasNoTerminal bool             `json:"has_no_terminal"`
+	IsShielded   bool             `json:"is_shielded"`
 	// PrivacyRevision is the runtime's privacy revision this frame was captured under.
 	PrivacyRevision uint64 `json:"privacy_revision"`
 	// Stream names the sender that sent the frame: a sender started over is a new stream, its sequence from one.
@@ -39,13 +39,13 @@ type Frame struct {
 	// InputOwner is who holds the program's input as every viewer sees it, with a take still being settled and the
 	// prompt revision a browser writer's input names; the grant's own id never leaves for viewers.
 	InputOwner     string `json:"input_owner"`
-	TakePending    bool   `json:"take_pending"`
+	IsTakePending    bool   `json:"is_take_pending"`
 	PromptRevision uint64 `json:"prompt_revision"`
 	// Attachment and ContainerInstance name the attachment the screen was read through and its verified container;
 	// ConnectionLost is a marker of a contained attachment that ended while its container runs.
 	Attachment        string `json:"attachment"`
 	ContainerInstance string `json:"container_instance"`
-	ConnectionLost    bool   `json:"connection_lost"`
+	IsConnectionLost    bool   `json:"is_connection_lost"`
 	// Menu is the recognized menu on a public screen, with its labels and highlight, for a choice made by name.
 	Menu *FrameMenu `json:"menu,omitempty"`
 }
@@ -63,10 +63,10 @@ type Run struct {
 type Style struct {
 	Foreground string `json:"fg,omitempty"`
 	Background string `json:"bg,omitempty"`
-	Bold       bool   `json:"bold,omitempty"`
-	Italic     bool   `json:"italic,omitempty"`
-	Underline  bool   `json:"underline,omitempty"`
-	Inverse    bool   `json:"inverse,omitempty"`
+	IsBold       bool   `json:"isBold,omitempty"`
+	IsItalic     bool   `json:"isItalic,omitempty"`
+	IsUnderlined  bool   `json:"isUnderlined,omitempty"`
+	IsInverse    bool   `json:"isInverse,omitempty"`
 }
 
 // Frame reads the grid with its styles under the reader's lock; the epoch names the host process, so a restart is
@@ -115,7 +115,7 @@ func (reader *EmulatorReader) shieldFrame(epoch string, sequence uint64, now tim
 		Columns:  reader.terminal.Width(),
 		Rows:     [][]Run{},
 		Buffer:   reader.buffer(),
-		Shielded: true,
+		IsShielded: true,
 	}
 }
 
@@ -135,7 +135,7 @@ func (reader *EmulatorReader) frame(epoch string, sequence uint64, now time.Time
 		Captured: now,
 		Columns:  columns,
 		Rows:     rows,
-		Cursor:   contracts.Cursor{Row: cursor.Y, Column: cursor.X, Visible: reader.cursorVisible},
+		Cursor:   contracts.Cursor{Row: cursor.Y, Column: cursor.X, IsVisible: reader.cursorVisible},
 		Buffer:   reader.buffer(),
 	}
 }
@@ -148,7 +148,7 @@ func (frame Frame) Bounded(limit int) Frame {
 	}
 
 	plain := frame
-	plain.Plain = true
+	plain.IsPlain = true
 	plain.Rows = make([][]Run, len(frame.Rows))
 	for row, runs := range frame.Rows {
 		plain.Rows[row] = plainRow(runs)
@@ -158,7 +158,7 @@ func (frame Frame) Bounded(limit int) Frame {
 	}
 
 	marker := frame
-	marker.TooLarge = true
+	marker.IsTooLarge = true
 	marker.Rows = [][]Run{}
 
 	return marker
@@ -243,10 +243,10 @@ func styleOf(style uv.Style) Style {
 	return Style{
 		Foreground: hexOf(style.Fg),
 		Background: hexOf(style.Bg),
-		Bold:       style.Attrs&uv.AttrBold != 0,
-		Italic:     style.Attrs&uv.AttrItalic != 0,
-		Underline:  style.Underline != uv.UnderlineNone,
-		Inverse:    style.Attrs&uv.AttrReverse != 0,
+		IsBold:       style.Attrs&uv.AttrBold != 0,
+		IsItalic:     style.Attrs&uv.AttrItalic != 0,
+		IsUnderlined:  style.Underline != uv.UnderlineNone,
+		IsInverse:    style.Attrs&uv.AttrReverse != 0,
 	}
 }
 

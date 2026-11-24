@@ -44,7 +44,7 @@ final class SettingsCatalogueDataTest extends TestCase
                     'identity' => $this->identity('review'),
                     'label' => 'Review',
                     'availability' => ToggleGroupAvailabilityData::from(
-                        ['state' => GroupAvailability::Disabled, 'defaultEnabled' => true],
+                        ['state' => GroupAvailability::Disabled, 'isDefaultEnabled' => true],
                     ),
                     'settings' => [
                         [

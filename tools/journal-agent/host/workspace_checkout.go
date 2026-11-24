@@ -123,7 +123,7 @@ func (containers Containers) ensureCheckout(ctx context.Context, session string,
 func (containers Containers) withCheckout(ctx context.Context, manifest ContainerManifest, session string) (ContainerManifest, error) {
 	mounts := slices.Clone(manifest.Mounts)
 	for index, mount := range mounts {
-		if !mount.Checkout {
+		if !mount.IsCheckout {
 			continue
 		}
 
@@ -132,7 +132,7 @@ func (containers Containers) withCheckout(ctx context.Context, manifest Containe
 			return ContainerManifest{}, err
 		}
 
-		mounts[index] = ContainerMount{Type: MountVolume, Source: volume, Target: mount.Target, Writable: true}
+		mounts[index] = ContainerMount{Type: MountVolume, Source: volume, Target: mount.Target, IsWritable: true}
 	}
 
 	manifest.Mounts = mounts
@@ -142,7 +142,7 @@ func (containers Containers) withCheckout(ctx context.Context, manifest Containe
 
 // CheckoutSource is the workspace mount a writer's checkout was cloned from, and whether the manifest has one.
 func (manifest ContainerManifest) CheckoutSource() (ContainerMount, bool) {
-	index := slices.IndexFunc(manifest.Mounts, func(mount ContainerMount) bool { return mount.Checkout })
+	index := slices.IndexFunc(manifest.Mounts, func(mount ContainerMount) bool { return mount.IsCheckout })
 	if index < 0 {
 		return ContainerMount{}, false
 	}

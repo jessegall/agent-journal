@@ -74,10 +74,10 @@ final class ChatAddressingTest extends MessagingTestCase
         );
 
         $this->startUserRequestAs($this->bea->id);
-        $this->assertTrue($this->rowAs($questionId)->actions->answer);
+        $this->assertTrue($this->rowAs($questionId)->actions->canAnswer);
 
         $this->startUserRequestAs($this->cy->id);
-        $this->assertFalse($this->rowAs($questionId)->actions->answer);
+        $this->assertFalse($this->rowAs($questionId)->actions->canAnswer);
     }
 
     public function test_a_reply_shows_an_original_from_before_a_member_joined_as_unavailable(): void

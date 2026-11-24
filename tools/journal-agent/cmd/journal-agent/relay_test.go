@@ -66,7 +66,7 @@ func TestTheRelayReportsAndRefreshesPresenceWithOneBootUntilItsIdleWindowEnds(t 
 		t.Fatalf("the relay reported %d times, want a refresh", len(journal.reports))
 	}
 	first, second := journal.reports[0], journal.reports[1]
-	if first.BootID != second.BootID || first.Sequence != 1 || second.Sequence != 2 || !first.Takeover || second.Takeover {
+	if first.BootID != second.BootID || first.Sequence != 1 || second.Sequence != 2 || !first.IsTakeover || second.IsTakeover {
 		t.Fatalf("reports %+v then %+v", first, second)
 	}
 	if journal.paths[0] != "/host/bindings/binding-1/presence" || first.Provisioning != "succeeded" {

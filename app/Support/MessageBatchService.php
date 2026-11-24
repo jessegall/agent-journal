@@ -169,7 +169,7 @@ final readonly class MessageBatchService
             'inboxId' => $locked->inbox_id,
             'inboxLabel' => $this->inboxes->resolve($locked->inbox_id)->inboxLabel(),
             'items' => $items,
-            'more' => $pending->count() > $shown,
+            'hasMore' => $pending->count() > $shown,
         ]);
     }
 
@@ -304,7 +304,7 @@ final readonly class MessageBatchService
     private function render(MessageBatchData $batch, string $contextKey): string
     {
         $items = implode("\n\n", array_map(fn (MessageBatchItemData $item) => $this->itemText($item), $batch->items));
-        $more = $batch->more ? "\n".$this->texts->render(AgentText::of('core.chat.more')) : '';
+        $more = $batch->hasMore ? "\n".$this->texts->render(AgentText::of('core.chat.more')) : '';
         $new = $this->texts->render(AgentText::of('core.chat.new', ['inbox' => $batch->inboxLabel, 'items' => $items]));
 
         return $new.$more.$this->confirmation($batch, $contextKey);

@@ -76,7 +76,7 @@ const containedStream = `{"type":"rate_limit_event","rate_limit_info":{"unifiedW
 func TestAContainedClaudeTurnReportsItsUsageAndEndsWithItsResultAndExit(t *testing.T) {
 	usage, end := containedTurn(t, printingContainer{output: containedStream})
 
-	if !end.ResultIsError || end.ResultSubtype != "error_during_execution" || end.ExitCode == nil || *end.ExitCode != 0 {
+	if !end.IsResultError || end.ResultSubtype != "error_during_execution" || end.ExitCode == nil || *end.ExitCode != 0 {
 		t.Fatalf("the contained turn ended as %+v", end)
 	}
 	if len(usage.windows) != 1 || *usage.windows[0].UsedPercent != 42 {

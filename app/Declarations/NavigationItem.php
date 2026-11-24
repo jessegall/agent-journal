@@ -148,7 +148,7 @@ final class NavigationItem
     private function withChildren(array $children, string|null $resolver): self
     {
         foreach ($children as $child) {
-            if ($child->group !== null || $child->atBottom) {
+            if ($child->group !== null || $child->isAtBottom) {
                 throw InvalidNavigationDeclaration::rootOnlyOnChild($this->key, $child->key);
             }
         }

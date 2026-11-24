@@ -118,7 +118,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $switch->account_id = $target->account->accountId;
         $switch->account_revision = $target->account->reviewedSignIn;
         $switch->conversation_id = $target->conversationId;
-        $switch->remember = $target->shouldSaveDriverType;
+        $switch->shouldRemember = $target->shouldSaveDriverType;
         $switch->requested_by = $requestedBy;
         $switch->stage = DriverSwitchStage::Requested;
         $switch->save();
@@ -285,7 +285,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
             $this->driver_type,
             new ChosenAccount($this->account_id, $this->account_revision),
             $this->conversation_id,
-            $this->remember,
+            $this->shouldRemember,
         ))->withoutObjectCaching();
     }
 

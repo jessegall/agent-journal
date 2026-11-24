@@ -64,7 +64,7 @@ const paragraphs = computed(() =>
                     >
                 </template>
             </div>
-            <template v-if="!reader.insideResults">
+            <template v-if="!reader.isInsideResults">
                 <p class="mt-4 text-small text-text-3">
                     This plan is not among the current results; it stays open
                     until you choose another.
@@ -105,7 +105,7 @@ const paragraphs = computed(() =>
                         {{ card.phase }}
                         <span class="block text-text-4">{{ currentPhaseRule }}</span>
                     </p>
-                    <template v-if="card.readyToFinish">
+                    <template v-if="card.isReadyToFinish">
                         <p class="text-small font-medium text-text-2">
                             Ready to finish
                         </p>

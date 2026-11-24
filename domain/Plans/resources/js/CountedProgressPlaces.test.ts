@@ -28,8 +28,8 @@ const card = {
     title: 'Build the release page',
     type: 'build',
     state: 'started',
-    focused: false,
-    readyToFinish: true,
+    isFocused: false,
+    isReadyToFinish: true,
     phase: '1',
     ...counts,
 } as PlanCardData;
@@ -58,7 +58,7 @@ describe('counted progress', () => {
         const places = [
             mount(PlanCard, { props: { card, href: '/plans?plan=12' } }),
             mount(PlanReader, {
-                props: { reader: { card, insideResults: true, brief: '', outline: { phases: [], phasesAfter: '0' } } as PlanReaderData, selectionMissing: false },
+                props: { reader: { card, isInsideResults: true, brief: '', outline: { phases: [], phasesAfter: '0' } } as PlanReaderData, selectionMissing: false },
             }),
             mount(PhaseWindow, { props: { data: phase } }),
         ];
@@ -85,7 +85,7 @@ describe('counted progress', () => {
 
     it('names a started plan with nothing unfinished as ready to finish', () => {
         const reader = mount(PlanReader, {
-            props: { reader: { card, insideResults: true, brief: '', outline: { phases: [], phasesAfter: '0' } } as PlanReaderData, selectionMissing: false },
+            props: { reader: { card, isInsideResults: true, brief: '', outline: { phases: [], phasesAfter: '0' } } as PlanReaderData, selectionMissing: false },
         });
 
         expect(reader.text()).toContain('Ready to finish');

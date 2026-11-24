@@ -5,37 +5,37 @@
     "items": [
         {
             "item": "account-secrets",
-            "enforced": false,
+            "isEnforced": false,
             "evidence": "",
             "reason": "native evidence missing: no recorded run showed it hold on this host"
         },
         {
             "item": "foreign-history",
-            "enforced": false,
+            "isEnforced": false,
             "evidence": "",
             "reason": "native evidence missing: no recorded run showed it hold on this host"
         },
         {
             "item": "keychain",
-            "enforced": false,
+            "isEnforced": false,
             "evidence": "",
             "reason": "native evidence missing: no recorded run showed it hold on this host"
         },
         {
             "item": "control-sockets",
-            "enforced": false,
+            "isEnforced": false,
             "evidence": "",
             "reason": "native evidence missing: no recorded run showed it hold on this host"
         },
         {
             "item": "process-inspection",
-            "enforced": false,
+            "isEnforced": false,
             "evidence": "",
             "reason": "native evidence missing: no recorded run showed it hold on this host"
         },
         {
             "item": "install-writes",
-            "enforced": false,
+            "isEnforced": false,
             "evidence": "",
             "reason": "native evidence missing: no recorded run showed it hold on this host"
         }

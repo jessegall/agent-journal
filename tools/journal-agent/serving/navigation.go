@@ -97,7 +97,7 @@ func (nav navigation) replayEntry(ctx context.Context, answer client.NavigationA
 	}
 
 	result, err := replayer.ReplayEntry(entry)
-	if err == nil && !answer.Guarded && isStale(result) {
+	if err == nil && !answer.IsGuarded && isStale(result) {
 		nav.notifyStale(ctx, entry, result)
 		next := nav.declining(entry.ID)
 		next.uncertainty = staleUncertainty(nav.uncertainty, result, entry.ID)

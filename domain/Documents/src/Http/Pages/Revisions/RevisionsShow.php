@@ -27,7 +27,7 @@ final readonly class RevisionsShow extends RevisionsPage
             LayoutPartData::time('saved', 'Saved', $revision->closedAt),
         ];
 
-        if ($revision->historical) {
+        if ($revision->isHistorical) {
             $metadata[] = LayoutPartData::badge('historical', 'Historical', 'warn');
             $current = LayoutActionData::to("/documents/docs/{$revision->documentNumber}");
             $metadata[] = LayoutPartData::action('current', 'Current text', $current);

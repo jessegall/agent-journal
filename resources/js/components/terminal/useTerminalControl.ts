@@ -175,9 +175,9 @@ export function useTerminalControl(
                 screen.value.state === 'live' &&
                 !screen.value.reconnecting &&
                 frame !== null &&
-                !frame.tooLarge &&
-                !frame.unreadable &&
-                !frame.noTerminal
+                !frame.isTooLarge &&
+                !frame.isUnreadable &&
+                !frame.hasNoTerminal
             );
         },
     };

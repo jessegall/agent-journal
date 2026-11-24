@@ -27,7 +27,7 @@ func TestAContainedDrainWithoutAnAccountIdIsRefused(t *testing.T) {
 	executor := &protectedExecutor{arrangement: host.Contained, codexOwners: &host.CodexOwners{}}
 
 	reply, err := executor.Drain(context.Background(), host.DrainRequest{Account: "/accounts/7"})
-	if err != nil || reply.Drained || reply.Reason == "" {
+	if err != nil || reply.IsDrained || reply.Reason == "" {
 		t.Fatalf("a drain without an id gave %+v, %v", reply, err)
 	}
 }

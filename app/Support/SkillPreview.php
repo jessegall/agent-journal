@@ -82,7 +82,7 @@ final readonly class SkillPreview
         return SkillAgentSelection::from([
             'key' => $skill->key->key,
             'agent' => $agent->id,
-            'selected' => in_array($skill->key->key, $selected->selectedKeys(), true),
+            'isSelected' => in_array($skill->key->key, $selected->selectedKeys(), true),
             'reason' => $excluded[$skill->key->key] ?? 'selected',
             'selection' => $selected->selectedKeys(),
             'digest' => $selected->digest,

@@ -185,7 +185,7 @@ final readonly class TerminalViews implements TerminalViewCloser
         $liveForMs = $received->liveForMs($now);
         $proof = $liveForMs === null ? [] : ['liveForMs' => $liveForMs];
 
-        if ($received->frame->connectionLost) {
+        if ($received->frame->isConnectionLost) {
             return TerminalFrameData::from([
                 'state' => TerminalFrameState::ConnectionLost,
                 'identity' => $identity,
@@ -193,7 +193,7 @@ final readonly class TerminalViews implements TerminalViewCloser
             ]);
         }
 
-        if ($received->frame->shielded) {
+        if ($received->frame->isShielded) {
             return TerminalFrameData::from([
                 'state' => TerminalFrameState::PreviewUnavailable,
                 'identity' => $identity,
@@ -297,7 +297,7 @@ final readonly class TerminalViews implements TerminalViewCloser
             'runtimeId' => $view->agent_runtime_id,
             'intervalMs' => $view->interval_ms,
             'expiresInSeconds' => max(0, (int) ceil($now->diffInSeconds($view->expires_at, false))),
-            'live' => ! $view->hasEndedAt($now),
+            'isLive' => ! $view->hasEndedAt($now),
         ]);
     }
 }

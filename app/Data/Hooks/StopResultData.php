@@ -27,7 +27,7 @@ final class StopResultData extends Data
         public string|null $signal,
         public string $summary,
         public string|null $output,
-        public bool $truncated,
+        public bool $isTruncated,
     ) {}
 
     public function report(): StopResultReport
@@ -42,7 +42,7 @@ final class StopResultData extends Data
             $this->signal,
             $this->summary,
             $this->output,
-            $this->truncated,
+            $this->isTruncated,
         );
     }
 }

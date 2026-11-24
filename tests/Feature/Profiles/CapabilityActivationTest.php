@@ -64,7 +64,7 @@ final class CapabilityActivationTest extends TestCase
         $profile = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from(self::PROFILE));
         $policy = $profile->start->freeze((string) $profile->key, $profile->revision);
         $first = $commands->run($this->start($policy));
-        $this->assertTrue($first->newSession);
+        $this->assertTrue($first->isNewSession);
 
         $this->recordCapabilities(CapabilityStatusType::Supported, CapabilityStatusType::Unverified);
         $this->assertThrows(fn () => $commands->run($this->start($policy)), AccountContainerUnsupported::class);

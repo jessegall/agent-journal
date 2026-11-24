@@ -26,9 +26,9 @@ var containedRules = ContainerRules{Arrangement: Contained, InstallationName: "j
 
 func manifest() ContainerManifest {
 	return ContainerManifest{
-		Image: "journal/helper@sha256:abc", User: "10001:10001", Workdir: "/workspace", ReadOnlyRoot: true,
-		NoNewPrivileges: true, Network: "none",
-		Mounts:  []ContainerMount{{Type: MountBind, Source: "/workspaces/helper-7", Target: "/workspace", Writable: false}},
+		Image: "journal/helper@sha256:abc", User: "10001:10001", Workdir: "/workspace", IsReadOnlyRoot: true,
+		BlocksNewPrivileges: true, Network: "none",
+		Mounts:  []ContainerMount{{Type: MountBind, Source: "/workspaces/helper-7", Target: "/workspace", IsWritable: false}},
 		Budgets: ContainerBudgets{CPUCores: 2, MemoryBytes: 1 << 30, MemorySwapBytes: 1 << 30, Processes: 256, OpenFiles: 1024},
 	}
 }
@@ -122,7 +122,7 @@ func TestAManifestBecomesABoundedUnprivilegedContainer(t *testing.T) {
 
 func TestAManifestAskingForMoreThanAHelperMayHaveIsRefused(t *testing.T) {
 	unsafe := []func(*ContainerManifest){
-		func(m *ContainerManifest) { m.Privileged = true },
+		func(m *ContainerManifest) { m.IsPrivileged = true },
 		func(m *ContainerManifest) { m.Capabilities = []string{"SYS_ADMIN"} },
 		func(m *ContainerManifest) { m.Image = "journal/helper:latest" },
 		func(m *ContainerManifest) {
@@ -150,8 +150,8 @@ func containedManifest() ContainerManifest {
 	contained := manifest()
 	contained.Mounts = []ContainerMount{
 		{Type: MountVolume, Source: "journal-session-7-workspace", Target: "/workspace"},
-		{Type: MountDaemonBind, Source: "/srv/journal/accounts/7", Target: "/home/journal/.account", Writable: true},
-		{Type: MountVolume, Source: "journal-account-7-projects", Target: "/home/journal/.account/projects", Writable: true},
+		{Type: MountDaemonBind, Source: "/srv/journal/accounts/7", Target: "/home/journal/.account", IsWritable: true},
+		{Type: MountVolume, Source: "journal-account-7-projects", Target: "/home/journal/.account/projects", IsWritable: true},
 	}
 	contained.SecurityOptions = SecurityOptions{Seccomp: seccompFile(), AppArmor: "journal-agent"}
 	contained.Budgets.TmpBytes = 128 << 20
@@ -227,7 +227,7 @@ func TestAContainerOnAnAccountCarriesItsLabelAndBindsOnlyThatAccountsFolder(t *t
 			return accountLabels("A-7")
 		},
 		"a read-only account": func(changed *ContainerManifest) LaunchLabels {
-			changed.Mounts[1].Writable = false
+			changed.Mounts[1].IsWritable = false
 			return accountLabels("7")
 		},
 		"an account mount with no account named": func(*ContainerManifest) LaunchLabels {
@@ -436,7 +436,7 @@ func TestAContainedStartIsProvenByItsContainer(t *testing.T) {
 func TestAnAttachableManifestGetsATerminalAndHelpersDoNot(t *testing.T) {
 	helper, _ := manifest().CreateOptions("helper-7", labels(), localRules)
 	main := containedManifest()
-	main.Attachable = true
+	main.IsAttachable = true
 	session, _ := main.CreateOptions("journal-session-7", accountLabels("7"), containedRules)
 
 	if helper.Config.Tty || helper.Config.OpenStdin || !session.Config.Tty || !session.Config.OpenStdin {
@@ -466,7 +466,7 @@ func TestASessionsHistoryVolumeIsMadeAndAResumedOneMustExist(t *testing.T) {
 	daemon.AddVolume("journal-session-7-workspace", nil)
 	labels := LaunchLabels{Installation: "journal", Launch: "launch-1", Session: "s1"}
 	session := containedManifest()
-	session.Mounts[2] = ContainerMount{Type: MountVolume, Source: "journal-history-s1", Target: "/home/journal/.account/projects", Writable: true}
+	session.Mounts[2] = ContainerMount{Type: MountVolume, Source: "journal-history-s1", Target: "/home/journal/.account/projects", IsWritable: true}
 
 	if err := containers.EnsureVolumes(context.Background(), session, labels); err != nil {
 		t.Fatal(err)
@@ -496,7 +496,7 @@ func TestASessionsHistoryVolumeIsMadeAndAResumedOneMustExist(t *testing.T) {
 
 func TestATerminalContainerRestartsByItselfAndResumesOnceItsTranscriptExists(t *testing.T) {
 	manifest := containedManifest()
-	manifest.Attachable = true
+	manifest.IsAttachable = true
 	options, err := manifest.CreateOptions("journal-session-7", accountLabels("7"), containedRules)
 	if err != nil {
 		t.Fatal(err)
@@ -578,7 +578,7 @@ func TestAProtectedAccountManifestAskingForMoreIsRefusedBeforeAnythingIsCreated(
 			return labels()
 		},
 		"a writable root": func(changed *ContainerManifest) LaunchLabels {
-			changed.ReadOnlyRoot = false
+			changed.IsReadOnlyRoot = false
 			return accountLabels("7")
 		},
 		"an unknown profile": func(changed *ContainerManifest) LaunchLabels {

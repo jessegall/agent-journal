@@ -156,7 +156,7 @@ func (reader *EmulatorReader) snapshot() contracts.Snapshot {
 
 	return contracts.Snapshot{
 		Rows:    rows,
-		Cursor:  contracts.Cursor{Row: cursor.Y, Column: cursor.X, Visible: reader.cursorVisible},
+		Cursor:  contracts.Cursor{Row: cursor.Y, Column: cursor.X, IsVisible: reader.cursorVisible},
 		Buffer:  reader.buffer(),
 		Columns: columns,
 		Height:  height,

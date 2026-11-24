@@ -32,7 +32,7 @@ func (container SessionContainer) Open(
 	manifest ContainerManifest,
 	process ContainerProcess,
 ) error {
-	if !manifest.Attachable {
+	if !manifest.IsAttachable {
 		return ErrSessionContainerUnattachable
 	}
 
@@ -70,7 +70,7 @@ func (container SessionContainer) Turn(
 	manifest ContainerManifest,
 	process ContainerProcess,
 ) (*ContainerTurn, error) {
-	if manifest.Attachable {
+	if manifest.IsAttachable {
 		return nil, contracts.RefuseStart(contracts.RefusalContainerUnavailable, ErrSessionContainerAttachable)
 	}
 

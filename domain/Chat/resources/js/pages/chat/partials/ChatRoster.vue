@@ -105,7 +105,7 @@ function findCandidates(): void {
           </template>
           <template
             v-if="
-              participant.actor !== conversation.viewer && capabilities.remove
+              participant.actor !== conversation.viewer && capabilities.canRemove
             "
           >
             <TextLink
@@ -117,7 +117,7 @@ function findCandidates(): void {
           </template>
           <template
             v-if="
-              participant.actor !== conversation.viewer && capabilities.transfer
+              participant.actor !== conversation.viewer && capabilities.canTransfer
             "
           >
             <TextLink
@@ -129,7 +129,7 @@ function findCandidates(): void {
         </ParticipantRow>
       </template>
     </ul>
-    <template v-if="capabilities.add">
+    <template v-if="capabilities.canAdd">
       <div class="flex flex-col gap-1">
         <Button
           type="button"
@@ -160,7 +160,7 @@ function findCandidates(): void {
       </div>
     </template>
     <div class="flex gap-2">
-      <template v-if="capabilities.leave">
+      <template v-if="capabilities.canLeave">
         <Button
           type="button"
           size="small"
@@ -174,7 +174,7 @@ function findCandidates(): void {
           Make another member the owner before you leave, or close the chat.
         </p>
       </template>
-      <template v-if="capabilities.close">
+      <template v-if="capabilities.canClose">
         <Button
           type="button"
           size="small"

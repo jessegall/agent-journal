@@ -18,7 +18,7 @@ use Spatie\LaravelData\Optional;
 final class AutoAssignmentStatusData extends Data
 {
     public function __construct(
-        public readonly bool $enabled,
+        public readonly bool $isEnabled,
         public readonly string $state,
         public readonly string $stateLabel,
         public readonly int $revision,
@@ -32,7 +32,7 @@ final class AutoAssignmentStatusData extends Data
     public static function of(AutoAssignmentStatus $status): self
     {
         return self::from([
-            'enabled' => $status->isEnabled,
+            'isEnabled' => $status->isEnabled,
             'state' => $status->state->value,
             'stateLabel' => $status->state->label(),
             'revision' => $status->revision,

@@ -61,7 +61,7 @@ final readonly class RecordViews
             'authorType' => $revision->author_type->value,
             'authorId' => $revision->author_id,
             'closedAt' => (string) $revision->closed_at?->toIso8601String(),
-            'historical' => $document->currentRevisionOrFail->number !== $revision->number,
+            'isHistorical' => $document->currentRevisionOrFail->number !== $revision->number,
         ]);
     }
 
@@ -90,7 +90,7 @@ final readonly class RecordViews
             'reason' => $close->reason,
             'baseRevision' => (string) $close->base_revision_number,
             'resultRevision' => (string) $close->result_revision_number,
-            'published' => $close->published,
+            'isPublished' => $close->published,
             'closedAt' => (string) $close->closed_at?->toIso8601String(),
         ]);
     }

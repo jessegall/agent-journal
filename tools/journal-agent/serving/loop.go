@@ -261,7 +261,7 @@ func (loop *Loop) bootstrap(
 	turn *client.ClaimedRequest,
 ) *client.ClaimedRequest {
 	bootstrapper, ok := runtime.driver.(contracts.Bootstrapper)
-	if !ok || turn == nil || !turn.Bootstrap {
+	if !ok || turn == nil || !turn.ShouldBootstrap {
 		return turn
 	}
 	result, err := bootstrapper.Bootstrap(ctx, identityOf(*turn))
@@ -750,7 +750,7 @@ func (loop *Loop) notify(
 		SessionID:         request.SessionID,
 		ProcessStartID:    request.ProcessStartID,
 		ProcessGeneration: request.ProcessGeneration,
-		NoProcessCreated:  result.NoProcessCreated,
+		HasCreatedNoProcess:  result.NoProcessCreated,
 		Sequence:          loop.nextSequence(request.RuntimeID),
 	}
 	if result.RefusalReason != "" {
@@ -774,7 +774,7 @@ func (loop *Loop) notify(
 
 // observe keeps the report that proved a start's conversation: a bootstrap's applied report with its binding.
 func (loop *Loop) observe(request client.ClaimedRequest, report client.RequestReport) {
-	if loop.observations == nil || !request.Bootstrap || report.ActualBinding == nil {
+	if loop.observations == nil || !request.ShouldBootstrap || report.ActualBinding == nil {
 		return
 	}
 	if report.Progress != string(contracts.ProgressApplied) && report.TurnEnd == nil {

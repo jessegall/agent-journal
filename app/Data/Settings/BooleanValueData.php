@@ -18,7 +18,7 @@ final class BooleanValueData extends Data implements CatalogueValue
 {
     public function __construct(
         #[MapName('value')]
-        public readonly bool $enabled,
+        public readonly bool $isEnabled,
         #[LiteralTypeScriptType("'boolean'")]
         public readonly string $type = 'boolean',
     ) {}

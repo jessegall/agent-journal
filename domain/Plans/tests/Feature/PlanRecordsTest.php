@@ -102,7 +102,7 @@ final class PlanRecordsTest extends TestCase
 
         $this->assertSame(
             [$this->build->id, 'Planner', true],
-            [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->focused],
+            [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->isFocused],
         );
 
         $this->assertTrue($cards[0]->holder->get()->holder()->isSameAs(AssigneeIdentity::of($agent)));

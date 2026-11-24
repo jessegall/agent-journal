@@ -45,7 +45,7 @@ class FakeClient implements TerminalClient {
 }
 
 function interestOf(id: string): TerminalInterestData {
-    return { viewId: id, readInterestId: id, runtimeId: 'runtime', intervalMs: 500, expiresInSeconds: 30, live: true };
+    return { viewId: id, readInterestId: id, runtimeId: 'runtime', intervalMs: 500, expiresInSeconds: 30, isLive: true };
 }
 
 function identityOf(changes: Partial<TerminalScreenIdentityData> = {}): TerminalScreenIdentityData {
@@ -68,13 +68,13 @@ function frameOf(sequence: number, changes: Partial<ScreenFrameData> = {}): Scre
         captured: '2026-11-19T12:00:00Z',
         columns: 20,
         rows: [{ runs: [{ text: 'hello', style: {} }] }],
-        cursor: { row: 0, column: 5, visible: true },
+        cursor: { row: 0, column: 5, isVisible: true },
         buffer: 'normal',
-        plain: false,
-        tooLarge: false,
-        unreadable: false,
-        noTerminal: false,
-        shielded: false,
+        isPlain: false,
+        isTooLarge: false,
+        isUnreadable: false,
+        hasNoTerminal: false,
+        isShielded: false,
         privacyRevision: 0,
         stream: 'stream',
         proof: sequence,

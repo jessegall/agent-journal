@@ -121,7 +121,7 @@ func TestOutputPastTheLimitIsCutWithAMarker(t *testing.T) {
 
 	result := runAttempt(t, attemptOf(10, condition))[0]
 
-	if !result.Truncated || !strings.HasSuffix(*result.Output, TruncatedMarker) ||
+	if !result.IsTruncated || !strings.HasSuffix(*result.Output, TruncatedMarker) ||
 		len(*result.Output) != 100+len(TruncatedMarker) {
 		t.Fatalf("%+v", result)
 	}

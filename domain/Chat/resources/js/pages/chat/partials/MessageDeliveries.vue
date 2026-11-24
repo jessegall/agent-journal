@@ -78,7 +78,7 @@ function retry(delivery: DeliveryData): void {
           <span class="text-border-3">·</span>
           <span class="text-text-3">{{ delivery.reason }}</span>
         </template>
-        <template v-if="message.actions.retryDelivery && delivery.rangeId !== null">
+        <template v-if="message.actions.canRetryDelivery && delivery.rangeId !== null">
           <span class="text-border-3">·</span>
           <TextLink variant="quiet" @click="retry(delivery)">Retry</TextLink>
         </template>

@@ -27,7 +27,7 @@ final class HelperReceiptData extends Data
         public string $state,
         public string $conversationMode,
         public string $conversationReason,
-        public bool $independent,
+        public bool $isIndependent,
         public string $launchReference,
         public string $driver,
         public string $requestedModelType,
@@ -35,7 +35,7 @@ final class HelperReceiptData extends Data
         public string $resolvedModel,
         public string $actualModel,
         public string $executionMode,
-        public bool $newSession,
+        public bool $isNewSession,
     ) {}
 
     public static function fromHelperReceipt(HelperReceipt $receipt): self
@@ -55,7 +55,7 @@ final class HelperReceiptData extends Data
             'state' => $receipt->state->value,
             'conversationMode' => $launch->conversationMode->value,
             'conversationReason' => $launch->conversationReason,
-            'independent' => $launch->isIndependent,
+            'isIndependent' => $launch->isIndependent,
             'launchReference' => $start->launchReference,
             'driver' => $selection->driver,
             'requestedModelType' => $requested->type->value,
@@ -63,7 +63,7 @@ final class HelperReceiptData extends Data
             'resolvedModel' => $selection->model,
             'actualModel' => $start->actualModel,
             'executionMode' => $start->executionMode->value,
-            'newSession' => $start->isNewSession,
+            'isNewSession' => $start->isNewSession,
         ]);
     }
 }

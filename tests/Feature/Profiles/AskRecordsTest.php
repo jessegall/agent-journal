@@ -201,13 +201,13 @@ final class AskRecordsTest extends TestCase
 
         $this->startRequestAs($recipient->id, TestIds::of(92));
         $inbox = $this->app->make(AskReader::class);
-        $this->assertTrue($inbox->card($first)->obligation);
+        $this->assertTrue($inbox->card($first)->isObligation);
         $commands->run(new ReplyToAskCommand($first, 'Check the input file.'));
 
         $this->startRequestAs($requester->id, TestIds::of(91));
         $commands->run(new WithdrawAskCommand($second));
         $this->assertSame(self::INPUT_ADVICE, $inbox->card($first)->reply);
-        $this->assertFalse($inbox->card($second)->open);
+        $this->assertFalse($inbox->card($second)->isOpen);
         $this->assertSame(3, Ask::openSubmissions(ActorIdentity::of($requester)));
         $this->assertSame(3, AssignmentRecord::query()->count());
         $this->assertSame(
@@ -324,7 +324,7 @@ final class AskRecordsTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $card = $this->app->make(AskReader::class)->card($ask);
 
-        $this->assertTrue($card->obligation);
+        $this->assertTrue($card->isObligation);
         $this->assertSame($owner->id, $card->holderId);
     }
 

@@ -62,15 +62,15 @@ func TestColourBoldAndInverseBecomeRunsOfTheirStyle(t *testing.T) {
 	if first[0].Text != "plain " || first[0].Style != (Style{}) {
 		t.Fatalf("plain run %+v", first[0])
 	}
-	if first[1].Text != "red bold" || !first[1].Style.Bold || first[1].Style.Foreground == "" {
+	if first[1].Text != "red bold" || !first[1].Style.IsBold || first[1].Style.Foreground == "" {
 		t.Fatalf("red bold run %+v", first[1])
 	}
-	if first[3].Text != "inverse" || !first[3].Style.Inverse {
+	if first[3].Text != "inverse" || !first[3].Style.IsInverse {
 		t.Fatalf("inverse run %+v", first[3])
 	}
 
 	second := frame.Rows[1]
-	if second[0].Text != "slanted" || !second[0].Style.Italic || !second[0].Style.Underline {
+	if second[0].Text != "slanted" || !second[0].Style.IsItalic || !second[0].Style.IsUnderlined {
 		t.Fatalf("italic underlined run %+v", second)
 	}
 	if len(second) != 2 || second[1].Text != "  " || second[1].Style.Background == "" {
@@ -104,7 +104,7 @@ func TestAFrameCarriesCursorBufferSizeAndItsNumbering(t *testing.T) {
 	if frame.Columns != 25 || len(frame.Rows) != 4 {
 		t.Fatalf("size %dx%d", frame.Columns, len(frame.Rows))
 	}
-	if frame.Cursor != (contracts.Cursor{Row: 0, Column: 3, Visible: false}) {
+	if frame.Cursor != (contracts.Cursor{Row: 0, Column: 3, IsVisible: false}) {
 		t.Fatalf("cursor %+v", frame.Cursor)
 	}
 	if frame.Buffer != contracts.NormalBuffer {
@@ -123,7 +123,7 @@ func TestAFrameUnderTheLimitComesBackUnchanged(t *testing.T) {
 	frame := reader.Frame("epoch", 1, time.Now())
 
 	bounded := frame.Bounded(FrameLimit)
-	if bounded.Plain || bounded.TooLarge || bounded.Rows[0][0].Style.Foreground == "" {
+	if bounded.IsPlain || bounded.IsTooLarge || bounded.Rows[0][0].Style.Foreground == "" {
 		t.Fatalf("a small frame was changed: %+v", bounded)
 	}
 }
@@ -143,8 +143,8 @@ func TestAFrameOverTheLimitComesBackPlainWithTheSameText(t *testing.T) {
 	limit := len(styled) / 4
 
 	bounded := frame.Bounded(limit)
-	if !bounded.Plain || bounded.TooLarge || bounded.Sequence != 9 {
-		t.Fatalf("plain %v, too large %v, sequence %d", bounded.Plain, bounded.TooLarge, bounded.Sequence)
+	if !bounded.IsPlain || bounded.IsTooLarge || bounded.Sequence != 9 {
+		t.Fatalf("plain %v, too large %v, sequence %d", bounded.IsPlain, bounded.IsTooLarge, bounded.Sequence)
 	}
 	if plain, _ := json.Marshal(bounded); len(plain) > limit {
 		t.Fatalf("the plain frame takes %d bytes, over the limit of %d", len(plain), limit)
@@ -164,7 +164,7 @@ func TestAFrameOverTheLimitEvenPlainComesBackAsTheMarker(t *testing.T) {
 	frame := reader.Frame("epoch", 3, time.Now())
 
 	marker := frame.Bounded(300)
-	if !marker.TooLarge || len(marker.Rows) != 0 || marker.Columns != 40 || marker.Sequence != 3 {
+	if !marker.IsTooLarge || len(marker.Rows) != 0 || marker.Columns != 40 || marker.Sequence != 3 {
 		t.Fatalf("marker %+v", marker)
 	}
 }
@@ -178,13 +178,13 @@ func TestExportFrameShieldsASecretScreenAndExportsAnOrdinaryOne(t *testing.T) {
 
 	reader.Feed([]byte("> ready"))
 	ordinary := reader.ExportFrame(layout, "epoch", 1, time.Now())
-	if ordinary.Shielded || textOf(ordinary.Rows[0]) != "> ready" {
+	if ordinary.IsShielded || textOf(ordinary.Rows[0]) != "> ready" {
 		t.Fatalf("the ordinary screen was not exported: %+v", ordinary)
 	}
 
 	reader.Feed([]byte("\r\nPaste your API key:"))
 	shield := reader.ExportFrame(layout, "epoch", 2, time.Now())
-	if !shield.Shielded || len(shield.Rows) != 0 || shield.Cursor != (contracts.Cursor{}) {
+	if !shield.IsShielded || len(shield.Rows) != 0 || shield.Cursor != (contracts.Cursor{}) {
 		t.Fatalf("the secret screen left the reader: %+v", shield)
 	}
 }

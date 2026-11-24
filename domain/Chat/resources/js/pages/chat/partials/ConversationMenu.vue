@@ -32,7 +32,7 @@ defineSlots<{ trigger(): unknown }>();
 
 const menu = useTemplateRef<InstanceType<typeof Menu>>("menu");
 const conversations = computed(() =>
-  props.agents.filter((agent) => !agent.retired),
+  props.agents.filter((agent) => !agent.isRetired),
 );
 // The chosen agent's own terminal, offered while it runs in one.
 const terminalAgent = computed(() =>

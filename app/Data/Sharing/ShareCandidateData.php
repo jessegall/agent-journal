@@ -20,7 +20,7 @@ final class ShareCandidateData extends Data
         public readonly string $id,
         public readonly string $title,
         public readonly string $publicationVersion,
-        public readonly bool $shared,
+        public readonly bool $isShared,
     ) {}
 
     /**

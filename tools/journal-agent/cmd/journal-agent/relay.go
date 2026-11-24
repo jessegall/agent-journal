@@ -118,9 +118,9 @@ func (binder bindingRelay) run(parent context.Context) error {
 		receipt, err := journal.NotifyPresence(ctx, binder.binding.BindingID, client.PresenceReport{
 			BootID: bootID, Sequence: sequence, Release: binder.release,
 			Descriptors:  isolatedDescriptors(),
-			Provisioning: "succeeded", Takeover: sequence == 1,
+			Provisioning: "succeeded", IsTakeover: sequence == 1,
 			SetupGeneration: project.Folder{Root: binder.binding.CanonicalRoot}.SetupGeneration(),
-			Reconciled:      reconciliation.reportNow(),
+			IsReconciled:      reconciliation.reportNow(),
 		})
 		if err == nil {
 			leases.authority.Store(int64(receipt.AuthorityGeneration))

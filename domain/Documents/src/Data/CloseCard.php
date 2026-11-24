@@ -19,7 +19,7 @@ final class CloseCard extends Data
         public readonly string|null $reason,
         public readonly string $baseRevision,
         public readonly string $resultRevision,
-        public readonly bool $published,
+        public readonly bool $isPublished,
         public readonly string $closedAt,
     ) {}
 }
