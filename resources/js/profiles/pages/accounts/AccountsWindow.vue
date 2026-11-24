@@ -26,7 +26,7 @@ import {
     isChosen,
     newestSelections,
 } from '../../accountSelections';
-import { attemptToRejoin, isLive, signInMethodOf } from '../../signIn';
+import { rejoinableAttempt, isLive, signInMethodOf } from '../../signIn';
 import type { WizardRequest } from '../../signIn';
 import { useUsageClock } from '../../usageClock';
 
@@ -139,7 +139,7 @@ function setUpWithAgent(): void {
 }
 
 function resumeOrAgain(row: AccountRowData): void {
-    const running = attemptToRejoin(data.attempts, row.driver, row.id);
+    const running = rejoinableAttempt(data.attempts, row.driver, row.id);
 
     request.value =
         running === undefined
@@ -226,7 +226,7 @@ function resumeOrAgain(row: AccountRowData): void {
                     >
                         <template
                             v-if="
-                                attemptToRejoin(
+                                rejoinableAttempt(
                                     data.attempts,
                                     row.driver,
                                     row.id,

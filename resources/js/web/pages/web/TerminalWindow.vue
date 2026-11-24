@@ -19,7 +19,7 @@ const props = defineProps<{ data: TerminalWindowData }>();
 const { presentation, retry, control } = useTerminalController(toRef(() => props.data.agentId), ref(true));
 const ownerLabel = ref('Watching');
 
-const backToChat = {
+const backAction = {
     key: 'back',
     label: 'Back to agent chat',
     run: () => router.visit(home.url({ query: { agent: props.data.agentId } })),
@@ -35,7 +35,7 @@ const backToChat = {
             :owner="ownerLabel"
             :location="presentation.screen.identity?.containerInstance ? 'Contained session' : ''"
             placement="Own page"
-            :main="backToChat"
+            :main="backAction"
             :secondary="[]"
         />
         <AgentTerminal :presentation="presentation">

@@ -18,7 +18,7 @@ import NameAccountStep from './NameAccountStep.vue';
 import SignInOutcome from './SignInOutcome.vue';
 import SignInTask from './SignInTask.vue';
 import { driverName } from '../../../accountLooks';
-import { attemptToRejoin, isLive, secretSubmitLabel } from '../../../signIn';
+import { rejoinableAttempt, isLive, secretSubmitLabel } from '../../../signIn';
 import type { WizardRequest } from '../../../signIn';
 import { signInActions } from '../../../signInActions';
 
@@ -95,7 +95,7 @@ const accountIdentity = computed(() => resultRow.value?.identity ?? null);
  * sign-in has no email to name it by.
  */
 const namedAccountId = ref<string | null>(null);
-const accountToName = computed(() => {
+const unnamedAccount = computed(() => {
     if (
         followed.value?.state !== 'complete' ||
         followed.value.type !== 'new_account' ||
@@ -155,7 +155,7 @@ watch(
             return;
         }
 
-        const started = attemptToRejoin(
+        const started = rejoinableAttempt(
             attempts,
             awaited.value.driver,
             awaited.value.accountId,
@@ -444,12 +444,12 @@ function cancelAndClose(): void {
                 />
             </template>
             <template
-                v-else-if="accountToName !== undefined && shownMethod !== undefined"
+                v-else-if="unnamedAccount !== undefined && shownMethod !== undefined"
             >
                 <NameAccountStep
                     :driver="shownDriver"
                     :method="shownMethod"
-                    :account="accountToName"
+                    :account="unnamedAccount"
                     :suggested-name="request?.kind === 'drafted' ? request.name : undefined"
                     :form-id="formId"
                     @named="markNamed"
@@ -545,7 +545,7 @@ function cancelAndClose(): void {
                 <span class="flex-1" />
                 <Button @click="close">Close</Button>
             </template>
-            <template v-else-if="accountToName !== undefined">
+            <template v-else-if="unnamedAccount !== undefined">
                 <span class="flex-1" />
                 <Button type="submit" :form="formId" variant="primary"
                     >Save</Button

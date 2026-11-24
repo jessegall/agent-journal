@@ -11,7 +11,7 @@ const path = require('node:path');
 const ts = require('typescript');
 const vue = require('@vue/language-core');
 const { createLanguage } = require('@volar/language-core');
-const { createLanguageServiceHost, createProxyLanguageService } = require('@volar/typescript');
+const { createLanguageServiceHost } = require('@volar/typescript');
 
 const root = path.resolve(__dirname, '..', '..');
 const options = process.argv.slice(2);
@@ -23,15 +23,18 @@ if (listFile === undefined) {
     process.exit(2);
 }
 
-const { service, textOf } = languageService();
+const { service, textOf, sourceStartOf, generatedPositionOf } = languageService();
 const editsByFile = new Map();
 let refused = 0;
 
 for (const [place, oldName, newName] of listedRenames(listFile)) {
     const [file, line] = place.split(':');
     const fileName = path.resolve(root, file);
-    const position = positionOf(textOf(fileName), Number(line), oldName);
-    const locations = position === null ? undefined : service.findRenameLocations(fileName, position, false, false, {});
+    const sourcePosition = positionOf(textOf(fileName), Number(line), oldName);
+    const position = sourcePosition === null ? null : generatedPositionOf(fileName, sourcePosition);
+    const locations = position === null ? undefined : service.findRenameLocations(fileName, position, false, false, {
+        providePrefixAndSuffixTextForRename: true,
+    });
 
     if (locations === undefined || locations.length === 0) {
         refused++;
@@ -39,13 +42,24 @@ for (const [place, oldName, newName] of listedRenames(listFile)) {
         continue;
     }
 
+    const places = new Set();
+
     for (const location of locations) {
+        const start = sourceStartOf(location);
+
+        // Only a place whose source text is the old name is renamed; Vue's generated code that maps nowhere is left.
+        if (start === null || textOf(location.fileName).slice(start, start + oldName.length) !== oldName) {
+            continue;
+        }
+
         const edits = editsByFile.get(location.fileName) ?? [];
-        edits.push({ start: location.textSpan.start, length: location.textSpan.length, text: newName });
+        // A shorthand property keeps its key: { grab } becomes { grab: grabbing } when the local is renamed.
+        edits.push({ start, length: oldName.length, text: `${location.prefixText ?? ''}${newName}${location.suffixText ?? ''}` });
         editsByFile.set(location.fileName, edits);
+        places.add(`${location.fileName}:${start}`);
     }
 
-    console.log(`${isDryRun ? 'Would rename' : 'Renamed'} ${place} ${oldName} ${newName}: ${locations.length} place(s)`);
+    console.log(`${isDryRun ? 'Would rename' : 'Renamed'} ${place} ${oldName} ${newName}: ${places.size} place(s)`);
 }
 
 if (!isDryRun) {
@@ -111,10 +125,34 @@ function languageService() {
         getProjectReferences: () => config.projectReferences,
         getProjectVersion: () => '1',
     });
-    const { initialize, proxy } = createProxyLanguageService(ts.createLanguageService(languageServiceHost));
-    initialize(language);
+    const service = ts.createLanguageService(languageServiceHost);
+    // TypeScript reads a .vue file as the code Vue generates for it; its source map takes an offset either way, and an
+    // offset in generated code that maps nowhere is no place in the source.
+    const mapOf = (fileName) => {
+        const sourceScript = language.scripts.get(fileName);
+        const serviceScript = sourceScript.generated.languagePlugin.typescript.getServiceScript(sourceScript.generated.root);
 
-    return { service: proxy, textOf };
+        return language.maps.get(serviceScript.code, sourceScript);
+    };
+    const sourceStartOf = (location) => {
+        if (!location.fileName.endsWith('.vue')) {
+            return location.textSpan.start;
+        }
+
+        const [first] = mapOf(location.fileName).toSourceLocation(location.textSpan.start);
+
+        return first === undefined ? null : first[0];
+    };
+    const generatedPositionOf = (fileName, sourceOffset) => {
+        if (!fileName.endsWith('.vue')) {
+            return sourceOffset;
+        }
+
+        const [first] = mapOf(fileName).toGeneratedLocation(sourceOffset);
+
+        return first === undefined ? null : first[0];
+    };
+    return { service, textOf, sourceStartOf, generatedPositionOf };
 }
 
 /**

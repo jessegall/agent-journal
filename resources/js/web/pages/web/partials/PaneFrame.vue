@@ -32,8 +32,8 @@ import type { DropZone, MenuEntry, Pane, SplitSide } from '@/components/panes/pa
 const props = defineProps<{ pane: Pane }>();
 
 const store = usePaneLayout();
-const { grab, grabToAdd } = useWindowDrag();
-const grabbedToAdd = grabToAdd(add);
+const { grab, grabNewWindow } = useWindowDrag();
+const grabbedToAdd = grabNewWindow(add);
 const isAdding = ref(false);
 const addButton = ref<{ $el: HTMLElement } | null>(null);
 const addAnchor = computed(() => addButton.value?.$el ?? null);

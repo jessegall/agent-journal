@@ -62,7 +62,7 @@ export function isLive(attempt: SignInAttemptData): boolean {
 /**
  * The running sign-in a reopened form rejoins: a new account's for the driver, or the given account's.
  */
-export function attemptToRejoin(
+export function rejoinableAttempt(
     attempts: SignInAttemptData[],
     driver: string,
     accountId: string | null,

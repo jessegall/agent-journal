@@ -19,8 +19,8 @@ import type { LayoutData } from '@/types/generated';
 defineProps<{ layouts: LayoutData[] }>();
 
 const store = usePaneLayout();
-const { grabToAdd } = useWindowDrag();
-const grabbedToAdd = grabToAdd(add);
+const { grabNewWindow } = useWindowDrag();
+const grabbedToAdd = grabNewWindow(add);
 const isHidden = ref(false);
 const isLayoutMenuOpen = ref(false);
 const isAdding = ref(false);

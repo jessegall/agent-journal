@@ -7,7 +7,7 @@ vi.mock('@generated/routes/accounts', () => ({
 }));
 vi.mock('@kit/xsrfToken', () => ({ xsrfToken: () => 'token' }));
 
-const { attemptToRejoin, codeDirection, isLive } = await import('./signIn');
+const { rejoinableAttempt, codeDirection, isLive } = await import('./signIn');
 
 function attempt(fields: Record<string, unknown>) {
     return {
@@ -29,7 +29,7 @@ describe('codeDirection', () => {
     });
 });
 
-describe('attemptToRejoin', () => {
+describe('rejoinableAttempt', () => {
     it('rejoins the running sign-in of the same driver and account only', () => {
         const attempts = [
             attempt({ id: 'ended', state: 'failed' }),
@@ -37,13 +37,13 @@ describe('attemptToRejoin', () => {
             attempt({ id: 'running' }),
         ];
 
-        expect(attemptToRejoin(attempts, 'claude-code', null)?.id).toBe(
+        expect(rejoinableAttempt(attempts, 'claude-code', null)?.id).toBe(
             'running',
         );
-        expect(attemptToRejoin(attempts, 'claude-code', 'acc-1')?.id).toBe(
+        expect(rejoinableAttempt(attempts, 'claude-code', 'acc-1')?.id).toBe(
             'other-account',
         );
-        expect(attemptToRejoin(attempts, 'codex', null)).toBeUndefined();
+        expect(rejoinableAttempt(attempts, 'codex', null)).toBeUndefined();
         expect(isLive(attempt({ state: 'complete' }))).toBe(false);
     });
 });
