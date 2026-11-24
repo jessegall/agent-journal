@@ -37,6 +37,12 @@ final readonly class StateEventOriginGuard
             return CommandOriginStatus::TargetUnavailable;
         }
 
+        if ($origin->listenerResult->answersAMoment()) {
+            return in_array($origin->frameId(), $stack->get()->frameIds(), true)
+                ? CommandOriginStatus::Eligible
+                : CommandOriginStatus::Stale;
+        }
+
         foreach ($this->selector->forEvent($stack->get(), $origin->dispatch->event) as $selection) {
             if ($origin->listenerResult->matches($selection)) {
                 return CommandOriginStatus::Eligible;

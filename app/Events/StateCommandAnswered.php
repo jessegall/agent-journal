@@ -10,10 +10,10 @@ use App\Support\ActorContext;
 use App\Values\StackTarget;
 
 /**
- * A state answered a hook with a command, which runs under the hook's actor and authority once the hook commits, so a
- * rolled-back hook leaves nothing to run.
+ * A state answered a hook or a moment of its frame's life with a command, which runs under the actor and authority
+ * of the change once it commits, so a rolled-back change leaves nothing to run.
  */
-final readonly class HookCommandAnswered extends HookEvent
+final readonly class StateCommandAnswered extends HookEvent
 {
     /**
      * @param  Command<mixed>  $command

@@ -32441,10 +32441,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1ab5aafb9eefc5688398795d17d687edec22e43e",
-        "old_path": "app/Events/HookCommandAnswered.php",
-        "old_class": "App\\Events\\HookCommandAnswered",
-        "final_path": "app/Events/HookCommandAnswered.php",
-        "final_class": "App\\Events\\HookCommandAnswered",
+        "old_path": "app/Events/StateCommandAnswered.php",
+        "old_class": "App\\Events\\StateCommandAnswered",
+        "final_path": "app/Events/StateCommandAnswered.php",
+        "final_class": "App\\Events\\StateCommandAnswered",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -44679,10 +44679,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "eca2a49c0d3501fbfe2482257f24346d9c6e80e6",
-        "old_path": "app/Hooks/Listeners/RunHookCommand.php",
-        "old_class": "App\\Hooks\\Listeners\\RunHookCommand",
-        "final_path": "app/Listeners/RunHookCommand.php",
-        "final_class": "App\\Listeners\\RunHookCommand",
+        "old_path": "app/Hooks/Listeners/RunStateCommand.php",
+        "old_class": "App\\Hooks\\Listeners\\RunStateCommand",
+        "final_path": "app/Listeners/RunStateCommand.php",
+        "final_class": "App\\Listeners\\RunStateCommand",
         "status": "move",
         "kind": "class",
         "generator": {

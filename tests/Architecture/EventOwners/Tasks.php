@@ -10,10 +10,12 @@ use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskCheckRecorded;
 use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskFocused;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Events\TaskRunClaimed;
 use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Events\TaskUnfocused;
 use Domain\Tasks\Events\TaskWaitChanged;
 use Tests\Architecture\Support\EventRole;
 
@@ -37,6 +39,20 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new TaskBlocked('task', TaskState::Started, 'entry'),
+    ],
+    TaskFocused::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Task::focusFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskFocused('task', 'agent'),
+    ],
+    TaskUnfocused::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Task::unfocus',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskUnfocused('task', 'agent'),
     ],
     TaskCancelled::class => [
         'role' => EventRole::RowFact,

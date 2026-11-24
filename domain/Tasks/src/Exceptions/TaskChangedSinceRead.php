@@ -37,6 +37,11 @@ final class TaskChangedSinceRead extends RuntimeException implements CodedRefusa
         return new self("Task {$number} is {$state->value}; only a started run can be blocked.");
     }
 
+    public static function notFocusable(int $number, TaskState $state): self
+    {
+        return new self("Task {$number} is {$state->value}; only a started task can be in focus.");
+    }
+
     public function refusalCode(): RefusalCode
     {
         return RefusalCode::Conflict;

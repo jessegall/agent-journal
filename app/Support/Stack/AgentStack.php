@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Stack;
 
 use App\Contracts\Actors\AgentTexts;
+use App\Contracts\Bus\Command;
 use App\Declarations\StateMethods;
 use App\Enums\AnswerType;
 use App\Exceptions\BottomStateCannotFinish;
@@ -62,6 +63,7 @@ final readonly class AgentStack
             throw MissingBottomState::for($input->methodName());
         }
 
+        $before = $this->snapshot();
         $steps = [];
         $context = [];
         $messages = [];
@@ -102,13 +104,19 @@ final readonly class AgentStack
             }
 
             if ($decision->answerType() === AnswerType::Deny) {
-                return new HookAnswer($decision, $context, $steps, $stack, $messages, $effects);
+                return new HookAnswer($decision, $context, $steps, $stack, $messages, [
+                    ...$effects,
+                    ...$stack->lifecycleCommandsSince($before),
+                ]);
             }
 
             $highest ??= $decision;
         }
 
-        return new HookAnswer($highest ?? Decision::allow(), $context, $steps, $stack, $messages, $effects);
+        return new HookAnswer($highest ?? Decision::allow(), $context, $steps, $stack, $messages, [
+            ...$effects,
+            ...$stack->lifecycleCommandsSince($before),
+        ]);
     }
 
     /**
@@ -158,6 +166,24 @@ final readonly class AgentStack
         }
 
         return false;
+    }
+
+    /**
+     * The stack with the live frame of the reference moved to the top with its own values, so its work is the work in
+     * hand again; a stack without such a frame, or whose live top it already is, is left as it is.
+     */
+    public function withLiveFrameLifted(StateReference $reference): self
+    {
+        $lifted = array_find(
+            $this->frames,
+            fn (Frame $frame) => ! $frame->isBottom() && $frame->isLive() && $frame->isFor($reference),
+        );
+
+        if ($lifted === null || $lifted->id === $this->top()->id) {
+            return $this;
+        }
+
+        return clone ($this, ['frames' => [...$this->withoutFrame($lifted)->frames, $lifted]]);
     }
 
     /**
@@ -236,6 +262,35 @@ final readonly class AgentStack
     public function poppedOf(Frame $frame): self
     {
         return $this->withoutFrame($frame)->withoutExposedInactive();
+    }
+
+    /**
+     * The commands the states answer the moments of the change since the snapshot with: exits, entries, then the
+     * resume.
+     *
+     * @return list<Command<mixed>>
+     */
+    public function lifecycleCommandsSince(StackSnapshot $before): array
+    {
+        $commands = array_map(fn (FrameMoment $moment) => $moment->commands(), $before->momentsOf($this));
+
+        return array_merge([], ...$commands);
+    }
+
+    /**
+     * Which frames the stack holds and which are live now, to read the lifecycle moments of a change against.
+     */
+    public function snapshot(): StackSnapshot
+    {
+        $live = [];
+
+        foreach ($this->frames as $frame) {
+            if ($frame->isLive()) {
+                $live[$frame->id] = $frame;
+            }
+        }
+
+        return new StackSnapshot($this->frameIds(), $live, $this->top()->id);
     }
 
     /**

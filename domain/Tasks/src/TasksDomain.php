@@ -63,9 +63,11 @@ use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskCheckRecorded;
 use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskFocused;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Events\TaskUnfocused;
 use Domain\Tasks\Events\TaskWaitChanged;
 use Domain\Tasks\Exceptions\TaskGraphChanged;
 use Domain\Tasks\Exceptions\TaskMissing;
@@ -214,6 +216,8 @@ final class TasksDomain extends Domain implements
                 TaskLogged::class,
                 TaskCheckRecorded::class,
                 TaskWaitChanged::class,
+                TaskFocused::class,
+                TaskUnfocused::class,
             )
             ->contracts(
                 TaskStateEvent::class,

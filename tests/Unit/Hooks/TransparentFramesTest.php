@@ -10,11 +10,13 @@ use App\Enums\NoSubject;
 use App\Enums\ParseOutcome;
 use App\Enums\PartJoin;
 use App\Enums\ShellDialect;
+use App\Enums\StackMoment;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use App\Support\Stack\AgentStack;
+use App\Support\Stack\FrameMoment;
 use App\Support\Stack\Frames\Frame;
 use App\Support\States\AgentState;
 use App\Support\States\ReadyState;
@@ -142,6 +144,35 @@ final class TransparentFramesTest extends TestCase
 
         $this->assertSame(['ready', 'task', 'message'], $after->frameIds());
         $this->assertNull($after->topResumedSince($before));
+    }
+
+    public function test_a_lift_brings_a_live_frame_on_top_with_its_values_and_leaves_a_stack_without_it_alone(): void
+    {
+        $stack = $this->stack($this->ready(), $this->task(), $this->plan());
+
+        $lifted = $stack->withLiveFrameLifted($this->reference('tasks.working', '41'));
+        $unchanged = $stack->withLiveFrameLifted($this->reference('tasks.working', '99'));
+
+        $this->assertSame(['ready', 'plan', 'task'], $lifted->frameIds());
+        $this->assertSame($stack->frames()[1], $lifted->top());
+        $this->assertSame(['ready', 'task', 'plan'], $unchanged->frameIds());
+    }
+
+    public function test_a_change_reads_its_exits_entries_and_resumed_top_against_the_snapshot_before_it(): void
+    {
+        $before = $this->stack($this->ready(), $this->plan(), $this->task(), $this->message());
+        $snapshot = $before->snapshot();
+        $after = $before->poppedOf($before->frames()[3])->withoutFrame($before->frames()[2]);
+
+        $moments = array_map(
+            fn (FrameMoment $moment) => [$moment->frame->id, $moment->moment],
+            $snapshot->momentsOf($after),
+        );
+
+        $this->assertSame(
+            [['task', StackMoment::Exit], ['message', StackMoment::Exit], ['plan', StackMoment::Resume]],
+            $moments,
+        );
     }
 
     private function stack(Frame ...$frames): AgentStack

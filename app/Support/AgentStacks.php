@@ -43,4 +43,12 @@ final readonly class AgentStacks implements AgentStack
             throw ActivationDeclined::for($state, $target);
         }
     }
+
+    public function lift(StackTarget $target, StateReference $state): void
+    {
+        $this->transaction->assertOpen($target);
+        $this->access->assertTargetGranted($target);
+
+        $this->statePush->lift($target, AgentStackRow::lockFor($target), $state);
+    }
 }

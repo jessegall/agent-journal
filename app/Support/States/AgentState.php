@@ -79,6 +79,42 @@ abstract class AgentState implements HookAnswerer
         return None::create();
     }
 
+    // ----------[ Lifecycle ]----------
+
+    /**
+     * The commands to run once the state's frame first went live on its stack; none by default.
+     *
+     * @return list<Command<mixed>>
+     */
+    public function onEnter(): array
+    {
+        return [];
+    }
+
+    /**
+     * The commands to run once the state's frame is the top live frame again after the frames above it went; none by
+     * default.
+     *
+     * @return list<Command<mixed>>
+     */
+    public function onResume(): array
+    {
+        return [];
+    }
+
+    /**
+     * The commands to run once the state's frame stopped being live: its work finished, it was popped or its type was
+     * switched off; none by default.
+     *
+     * @return list<Command<mixed>>
+     */
+    public function onExit(): array
+    {
+        return [];
+    }
+
+    // ----------[ Hooks ]----------
+
     /**
      * The agent's session started.
      *

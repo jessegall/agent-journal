@@ -12,7 +12,7 @@ pass, one part, or yields several:
 | nothing (`null`) | passes: the state below is asked |
 | `ContextLine` | adds its text to the agent's context |
 | `MessageLine` | adds its text to the context and wakes the agent when the hook leaves it idle |
-| a `Command` | runs it once the hook commits, under the hook's actor and authority (`HookCommandAnswered`) |
+| a `Command` | runs it once the hook commits, under the hook's actor and authority (`StateCommandAnswered`) |
 | an `Event` | dispatches it once the hook commits |
 | `Decision::deny` or `Decision::rewrite` | the state's decision; at most one, and it is the last part |
 

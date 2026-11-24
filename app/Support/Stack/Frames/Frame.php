@@ -7,9 +7,12 @@ namespace App\Support\Stack\Frames;
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\ConditionalState;
+use App\Declarations\StateMethod;
+use App\Enums\StackMoment;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
+use App\Support\Reflector;
 use App\Support\StateLoading\StateValues;
 use App\Support\States\AgentState;
 use App\Support\Storage\FrameRecord;
@@ -112,6 +115,28 @@ final readonly class Frame
     public function answer(HookInput $input): AnswerPart|Command|Event|StateReference|iterable
     {
         return $input->answerBy($this->state);
+    }
+
+    /**
+     * The state's method that answers a moment of its frame's life.
+     */
+    public function momentMethod(StackMoment $moment): StateMethod
+    {
+        return StateMethod::fromMethod($this->state::class, Reflector::of($this->state)->method($moment->value));
+    }
+
+    /**
+     * The commands the state answers a moment of its frame's life with.
+     *
+     * @return list<Command<mixed>>
+     */
+    public function answerMoment(StackMoment $moment): array
+    {
+        return match ($moment) {
+            StackMoment::Enter => $this->state->onEnter(),
+            StackMoment::Resume => $this->state->onResume(),
+            StackMoment::Exit => $this->state->onExit(),
+        };
     }
 
     /**

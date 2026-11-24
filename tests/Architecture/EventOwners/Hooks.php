@@ -7,7 +7,7 @@ use App\Events\HelperCompletionCertified;
 use App\Events\HelperReportedOnRecord;
 use App\Events\HelperSentOnRecord;
 use App\Events\HelperStopHeld;
-use App\Events\HookCommandAnswered;
+use App\Events\StateCommandAnswered;
 use App\Events\StateTypesRequested;
 use App\Events\ToolCallFinished;
 use Tests\Architecture\Support\EventRole;
@@ -53,11 +53,11 @@ return [
             'app/Support/StopAttemptGate.php',
         ],
     ],
-    HookCommandAnswered::class => [
+    StateCommandAnswered::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Pipes/Answer/PublishHookEffects.php',
+            'app/Support/Stack/StateCommandPublisher.php',
         ],
     ],
     StateTypesRequested::class => [

@@ -40,7 +40,7 @@
     "App\\Events\\HelperCompletionCertified => Domain\\Helpers\\Listeners\\FinishCertifiedJob@handle",
     "App\\Events\\HelperStopHeld => App\\Listeners\\OpenStuckAsk@handle",
     "App\\Events\\HelperStopHeld => Domain\\Helpers\\Listeners\\HoldFailingJob@handle",
-    "App\\Events\\HookCommandAnswered => App\\Listeners\\RunHookCommand@handle",
+    "App\\Events\\StateCommandAnswered => App\\Listeners\\RunStateCommand@handle",
     "App\\Events\\LaunchCancelled => Domain\\Helpers\\Listeners\\CancelLaunchedJob@handle",
     "App\\Events\\LaunchEnded => Domain\\Helpers\\Listeners\\RecordAttemptEnded@handle",
     "App\\Events\\LinksRemoved => App\\Listeners\\InvalidateRemovedLinkMembers@handle",

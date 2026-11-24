@@ -119,6 +119,7 @@ final readonly class StateEventDelivery
         $listenerResults = [];
 
         $stackAfter = $stack->get();
+        $before = $stackAfter->snapshot();
 
         foreach ($this->selector->forEvent($stackAfter, $dispatch->event) as $selection) {
             $result = $this->invoke($dispatch, $target, $selection);
@@ -130,6 +131,10 @@ final readonly class StateEventDelivery
         }
 
         $this->engineStacks->keepValues($target, $stackAfter);
+
+        foreach ($before->momentsOf($stackAfter) as $moment) {
+            $listenerResults[] = StateEventResult::fromMoment($moment);
+        }
 
         return new StateEventResults($target, $listenerResults);
     }

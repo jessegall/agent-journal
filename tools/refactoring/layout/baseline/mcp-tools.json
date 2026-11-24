@@ -98,6 +98,7 @@
     "tasks_create",
     "tasks_edit",
     "tasks_finish",
+    "tasks_focus",
     "tasks_list",
     "tasks_log",
     "tasks_log_read",

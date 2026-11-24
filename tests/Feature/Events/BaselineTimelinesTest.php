@@ -166,6 +166,8 @@ final class BaselineTimelinesTest extends TestCase
             'PlanProgressChanged',
             'saved AgentStackRow',
             'commit',
+            'saved Task',
+            'commit',
         ], $this->timeline);
     }
 
@@ -189,6 +191,8 @@ final class BaselineTimelinesTest extends TestCase
             'TaskStarted',
             'PlanProgressChanged',
             'saved AgentStackRow',
+            'commit',
+            'saved Task',
             'commit',
         ], $this->timeline);
     }
@@ -230,6 +234,8 @@ final class BaselineTimelinesTest extends TestCase
                 'saved AgentStackRow',
                 'commit',
                 'TaskStarted',
+                'saved Task',
+                'commit',
             ],
             $this->timeline,
         );
@@ -256,6 +262,8 @@ final class BaselineTimelinesTest extends TestCase
             'commit',
             'TaskFinished',
             'saved AgentStackRow',
+            'commit',
+            'saved Task',
             'commit',
             'PlanProgressChanged',
             'saved AgentStackRow',
@@ -284,6 +292,8 @@ final class BaselineTimelinesTest extends TestCase
                 'commit',
                 'TaskFinished',
                 'saved AgentStackRow',
+                'commit',
+                'saved Task',
                 'commit',
             ],
             $this->timeline,

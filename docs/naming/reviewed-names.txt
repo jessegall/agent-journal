@@ -1261,6 +1261,9 @@ case	SpeechOpportunityState::Claimed
 case	SpeechOpportunityState::Declined
 case	SpeechOpportunityState::Offered
 case	SpeechOpportunityState::Spent
+case	StackMoment::Enter
+case	StackMoment::Exit
+case	StackMoment::Resume
 case	StackStatus::Active
 case	StackStatus::Closed
 case	StartDisposition::Accepted
@@ -3470,6 +3473,9 @@ class	FlowEdgeData
 class	FlowGraphData
 class	FlowNodeData
 class	FlowShape
+class	FocusTaskCommand
+class	FocusTaskHandler
+class	FocusTaskTool
 class	FocusedQuestionData
 class	FolderClasses
 class	FolderClosed
@@ -3490,6 +3496,8 @@ class	Frame
 class	FrameBaselineMissing
 class	FrameBaselines
 class	FrameGrant
+class	FrameMoment
+class	FrameNotHeld
 class	FrameProgress
 class	FrameRecord
 class	FrameRecords
@@ -3644,7 +3652,6 @@ class	HookAnswer
 class	HookAnswerRefused
 class	HookCall
 class	HookCallStage
-class	HookCommandAnswered
 class	HookController
 class	HookDeadlineExpired
 class	HookDigestChanged
@@ -5854,7 +5861,6 @@ class	RunDocking
 class	RunEvent
 class	RunEventBatch
 class	RunEventsAccepted
-class	RunHookCommand
 class	RunInTransaction
 class	RunKeyScriptCommand
 class	RunKeyScriptHandler
@@ -5888,6 +5894,7 @@ class	RunSnapshotData
 class	RunSnapshotResolver
 class	RunStart
 class	RunState
+class	RunStateCommand
 class	RunTaskCheckCommand
 class	RunTaskCheckHandler
 class	RunTaskCheckTool
@@ -6597,6 +6604,7 @@ class	StackInspectionQuery
 class	StackLockTimedOut
 class	StackMissing
 class	StackRestorer
+class	StackSnapshot
 class	StackTarget
 class	StackTargetRefused
 class	StackTooDeep
@@ -6718,6 +6726,8 @@ class	StateBlocked
 class	StateBridgeFactStaging
 class	StateBuilder
 class	StateClassMismatch
+class	StateCommandAnswered
+class	StateCommandPublisher
 class	StateEffectScan
 class	StateEventActivity
 class	StateEventAfterCommitFailed
@@ -7004,6 +7014,7 @@ class	TaskExecutions
 class	TaskFilters
 class	TaskFiltersData
 class	TaskFinished
+class	TaskFocused
 class	TaskGraph
 class	TaskGraphChanged
 class	TaskGraphDestinations
@@ -7077,6 +7088,7 @@ class	TaskSummary
 class	TaskText
 class	TaskTransition
 class	TaskType
+class	TaskUnfocused
 class	TaskWait
 class	TaskWaitActionsData
 class	TaskWaitChanged
@@ -7274,6 +7286,8 @@ class	UndockController
 class	UndockInput
 class	UndockSourceCommand
 class	UndockSourceHandler
+class	UnfocusTaskCommand
+class	UnfocusTaskHandler
 class	UnjudgedCall
 class	UnknownAccessType
 class	UnknownLinkType
@@ -8239,7 +8253,7 @@ constant	RoutePath::SEGMENT
 constant	Rule::LINK_TYPE
 constant	Rule::REASON_CHARACTER_LIMIT
 constant	Rule::TEXT_CHARACTER_LIMIT
-constant	RuleDeclarations::NOT_AN_OBJECT
+constant	RuleDeclarations::NOT_ONE
 constant	RuleDeclarations::RULE_ID
 constant	RuleFilters::PAGE_SIZE
 constant	RuleProposalRevision::UPDATED_AT
@@ -8914,6 +8928,7 @@ enum	SkillOrigin
 enum	SkillReload
 enum	SlotContextType
 enum	SpeechOpportunityState
+enum	StackMoment
 enum	StackStatus
 enum	StartDisposition
 enum	StartOriginType
@@ -9969,6 +9984,7 @@ method	ActorVisibilityProvider::ownRows()
 method	ActorVisibilityProvider::readAcrossOwners()
 method	ActorWorkStacks::current()
 method	ActorWorkStacks::currentRecord()
+method	ActorWorkStacks::lift()
 method	ActorWorkStacks::offerFor()
 method	ActorWorkStacks::push()
 method	ActorWorkStacks::pushFor()
@@ -10355,12 +10371,16 @@ method	AgentStack::frames()
 method	AgentStack::framesMissingFrom()
 method	AgentStack::holdsLive()
 method	AgentStack::instruction()
+method	AgentStack::lifecycleCommandsSince()
+method	AgentStack::lift()
 method	AgentStack::permission()
 method	AgentStack::poppedOf()
 method	AgentStack::push()
 method	AgentStack::records()
+method	AgentStack::snapshot()
 method	AgentStack::top()
 method	AgentStack::topResumedSince()
+method	AgentStack::withLiveFrameLifted()
 method	AgentStack::withStateOnTop()
 method	AgentStack::withoutExposedInactive()
 method	AgentStack::withoutFrame()
@@ -10391,14 +10411,18 @@ method	AgentStackRow::targetsHolding()
 method	AgentStackRow::tickingOpen()
 method	AgentStacks::__construct()
 method	AgentStacks::activate()
+method	AgentStacks::lift()
 method	AgentStacks::push()
 method	AgentStartCommand::startedAgentId()
 method	AgentState::frameReuse()
 method	AgentState::instruction()
 method	AgentState::isFinished()
 method	AgentState::onCompaction()
+method	AgentState::onEnter()
+method	AgentState::onExit()
 method	AgentState::onFileEdit()
 method	AgentState::onPrompt()
+method	AgentState::onResume()
 method	AgentState::onSessionEnd()
 method	AgentState::onSessionStart()
 method	AgentState::onShellCommand()
@@ -15636,6 +15660,13 @@ method	FlowNodeData::placedAt()
 method	FlowShape::__construct()
 method	FlowShape::action()
 method	FlowShape::branch()
+method	FocusTaskCommand::__construct()
+method	FocusTaskCommand::subject()
+method	FocusTaskHandler::__construct()
+method	FocusTaskHandler::handle()
+method	FocusTaskTool::command()
+method	FocusTaskTool::present()
+method	FocusTaskTool::writeSchema()
 method	FocusedQuestionData::__construct()
 method	FolderClasses::in()
 method	FolderClasses::read()
@@ -15692,6 +15723,7 @@ method	FormerPaths::wasIn()
 method	Frame::__construct()
 method	Frame::answer()
 method	Frame::answerEvent()
+method	Frame::answerMoment()
 method	Frame::canStartAt()
 method	Frame::cancelledId()
 method	Frame::deadline()
@@ -15707,6 +15739,7 @@ method	Frame::keepsOneFrameFor()
 method	Frame::mcpHeaders()
 method	Frame::method()
 method	Frame::mirroredHeaders()
+method	Frame::momentMethod()
 method	Frame::params()
 method	Frame::protocolVersion()
 method	Frame::record()
@@ -15721,6 +15754,11 @@ method	FrameGrant::__construct()
 method	FrameGrant::allowsTarget()
 method	FrameGrant::description()
 method	FrameLiveness::of()
+method	FrameMoment::__construct()
+method	FrameMoment::commands()
+method	FrameNotHeld::for()
+method	FrameNotHeld::refusalCode()
+method	FrameNotHeld::status()
 method	FrameProgress::enteredAt()
 method	FrameRecord::__construct()
 method	FrameRecord::description()
@@ -16176,7 +16214,6 @@ method	HookCall::prunableBefore()
 method	HookCall::recordFor()
 method	HookCallStage::__construct()
 method	HookCallStage::locked()
-method	HookCommandAnswered::__construct()
 method	HookController::__construct()
 method	HookController::__invoke()
 method	HookController::failure()
@@ -22774,8 +22811,7 @@ method	RuleDeclarations::fieldErrors()
 method	RuleDeclarations::read()
 method	RuleDeclarations::readFile()
 method	RuleDeclarations::readOne()
-method	RuleDeclarations::readSent()
-method	RuleDeclarations::readSentText()
+method	RuleDeclarations::readSentFile()
 method	RuleDeclarations::ruleFields()
 method	RuleDeclarations::rules()
 method	RuleDeclarations::scopeFields()
@@ -22980,8 +23016,6 @@ method	RunEvents::started()
 method	RunEvents::startedInside()
 method	RunEvents::stopped()
 method	RunEventsAccepted::__construct()
-method	RunHookCommand::__construct()
-method	RunHookCommand::handle()
 method	RunInTransaction::__construct()
 method	RunInTransaction::attempt()
 method	RunInTransaction::handle()
@@ -23067,6 +23101,8 @@ method	RunState::__construct()
 method	RunState::nextAttempt()
 method	RunState::takeBackground()
 method	RunState::track()
+method	RunStateCommand::__construct()
+method	RunStateCommand::handle()
 method	RunTaskCheckCommand::__construct()
 method	RunTaskCheckCommand::subject()
 method	RunTaskCheckHandler::__construct()
@@ -25561,6 +25597,8 @@ method	StackMissing::forTarget()
 method	StackPermission::allows()
 method	StackRestorer::__construct()
 method	StackRestorer::restore()
+method	StackSnapshot::__construct()
+method	StackSnapshot::momentsOf()
 method	StackTarget::__construct()
 method	StackTarget::actorIdentity()
 method	StackTarget::description()
@@ -25917,6 +25955,10 @@ method	StateBridgeFactStaging::stage()
 method	StateBuilder::__construct()
 method	StateBuilder::build()
 method	StateClassMismatch::for()
+method	StateCommandAnswered::__construct()
+method	StateCommandPublisher::__construct()
+method	StateCommandPublisher::publish()
+method	StateCommandPublisher::publishMoments()
 method	StateEffectScan::callOf()
 method	StateEffectScan::findingsIn()
 method	StateEffectScan::identifier()
@@ -25987,7 +26029,9 @@ method	StateEventReentry::depth()
 method	StateEventReentry::duringEvaluation()
 method	StateEventReentry::outsideDelivery()
 method	StateEventResult::__construct()
+method	StateEventResult::answersAMoment()
 method	StateEventResult::frameId()
+method	StateEventResult::fromMoment()
 method	StateEventResult::fromSelection()
 method	StateEventResult::matches()
 method	StateEventResults::__construct()
@@ -26038,6 +26082,7 @@ method	StateMethods::isPublicInstanceMethod()
 method	StateMethods::methodFor()
 method	StateProvider::states()
 method	StatePush::__construct()
+method	StatePush::lift()
 method	StatePush::push()
 method	StatePush::save()
 method	StateReference::__construct()
@@ -26700,6 +26745,8 @@ method	Task::details()
 method	Task::detailsWithText()
 method	Task::executionBy()
 method	Task::finish()
+method	Task::focusFor()
+method	Task::focusedBy()
 method	Task::inEnvironments()
 method	Task::inListedOrder()
 method	Task::isCurrentRun()
@@ -26716,6 +26763,7 @@ method	Task::stateText()
 method	Task::summary()
 method	Task::summaryOf()
 method	Task::unfinished()
+method	Task::unfocus()
 method	TaskActionRequest::expectedRevision()
 method	TaskActionRequest::expectedRunNumber()
 method	TaskActionRequest::reason()
@@ -26761,6 +26809,7 @@ method	TaskCancelled::enteredState()
 method	TaskCard::__construct()
 method	TaskChangedSinceRead::notBlockable()
 method	TaskChangedSinceRead::notCancellable()
+method	TaskChangedSinceRead::notFocusable()
 method	TaskChangedSinceRead::now()
 method	TaskChangedSinceRead::refusalCode()
 method	TaskChangedSinceRead::status()
@@ -26810,6 +26859,7 @@ method	TaskFinished::__construct()
 method	TaskFinished::dockId()
 method	TaskFinished::dockType()
 method	TaskFinished::enteredState()
+method	TaskFocused::__construct()
 method	TaskGraph::__construct()
 method	TaskGraphChanged::refusalCode()
 method	TaskGraphChanged::since()
@@ -27043,6 +27093,7 @@ method	TaskStreamPageData::__construct()
 method	TaskSummary::__construct()
 method	TaskText::__construct()
 method	TaskTransition::__construct()
+method	TaskUnfocused::__construct()
 method	TaskWait::between()
 method	TaskWait::casts()
 method	TaskWait::create()
@@ -27821,6 +27872,8 @@ method	UndockInput::__construct()
 method	UndockSourceCommand::__construct()
 method	UndockSourceHandler::__construct()
 method	UndockSourceHandler::handle()
+method	UnfocusTaskCommand::__construct()
+method	UnfocusTaskHandler::handle()
 method	UnitOfWork::run()
 method	UnitOfWork::within()
 method	UnjudgedCall::__construct()
@@ -28181,6 +28234,7 @@ method	WorkStackProvider::sessionsToAdmit()
 method	WorkStackPushes::__construct()
 method	WorkStackPushes::current()
 method	WorkStackPushes::currentRecord()
+method	WorkStackPushes::lift()
 method	WorkStackPushes::offerFor()
 method	WorkStackPushes::push()
 method	WorkStackPushes::pushFor()
@@ -28209,6 +28263,9 @@ method	WorkingOnTaskState::frameReuse()
 method	WorkingOnTaskState::instruction()
 method	WorkingOnTaskState::isFinished()
 method	WorkingOnTaskState::onAssignmentsEnded()
+method	WorkingOnTaskState::onEnter()
+method	WorkingOnTaskState::onExit()
+method	WorkingOnTaskState::onResume()
 method	WorkingOnTaskState::onStop()
 method	WorkingOnTaskState::onTaskBlocked()
 method	WorkingOnTaskState::onTaskCancelled()
@@ -28950,6 +29007,7 @@ parameter	$decision
 parameter	$decisionId
 parameter	$decisions
 parameter	$declaration
+parameter	$declarationFile
 parameter	$declarationRevision
 parameter	$declarations
 parameter	$declarationsByOwner
@@ -29360,6 +29418,7 @@ parameter	$found
 parameter	$foundIn
 parameter	$frame
 parameter	$frameId
+parameter	$frameIds
 parameter	$frames
 parameter	$framing
 parameter	$free
@@ -29834,6 +29893,7 @@ parameter	$listingOperation
 parameter	$literal
 parameter	$live
 parameter	$liveForMs
+parameter	$liveFrames
 parameter	$liveHolders
 parameter	$liveShare
 parameter	$liveness
@@ -31119,6 +31179,7 @@ parameter	$startsOn
 parameter	$startup
 parameter	$state
 parameter	$stateClass
+parameter	$stateCommands
 parameter	$stateLabel
 parameter	$statePush
 parameter	$stateText
@@ -31315,6 +31376,7 @@ parameter	$toolResponse
 parameter	$toolResult
 parameter	$toolUses
 parameter	$tools
+parameter	$topId
 parameter	$total
 parameter	$totalField
 parameter	$totalTasks
@@ -34852,6 +34914,7 @@ property	EngineSettings::$passBudgetMilliseconds
 property	EngineSettings::$watchdogSeconds
 property	EngineStacks::$access
 property	EngineStacks::$restorer
+property	EngineStacks::$stateCommands
 property	EngineStacks::$statePush
 property	EngineStacks::$transaction
 property	EngineStacks::$types
@@ -35197,6 +35260,8 @@ property	FlowNodeData::$order
 property	FlowNodeData::$rank
 property	FlowNodeData::$type
 property	FlowShape::$ports
+property	FocusTaskCommand::$taskId
+property	FocusTaskHandler::$workStacks
 property	FocusedQuestionData::$answer
 property	FocusedQuestionData::$question
 property	FolderEntries::$entries
@@ -35227,6 +35292,8 @@ property	Frame::$typeEnabled
 property	FrameBaselines::$settledAt
 property	FrameGrant::$frameId
 property	FrameGrant::$target
+property	FrameMoment::$frame
+property	FrameMoment::$moment
 property	FrameRecord::$enteredAt
 property	FrameRecord::$id
 property	FrameRecord::$isBottom
@@ -35516,10 +35583,6 @@ property	HookCallStage::$identity
 property	HookCallStage::$input
 property	HookCallStage::$render
 property	HookCallStage::$target
-property	HookCommandAnswered::$actor
-property	HookCommandAnswered::$authority
-property	HookCommandAnswered::$command
-property	HookCommandAnswered::$target
 property	HookController::$adapters
 property	HookController::$deadline
 property	HookController::$texts
@@ -38099,8 +38162,7 @@ property	ProposeRuleCommand::$reason
 property	ProposeRuleCommand::$replacesRuleId
 property	ProposeRuleCommand::$text
 property	ProposeRuleDeclarationCommand::$commandRequestId
-property	ProposeRuleDeclarationCommand::$declaration
-property	ProposeRuleDeclarationCommand::$requestKey
+property	ProposeRuleDeclarationCommand::$declarationFile
 property	ProposeRuleDeclarationHandler::$commands
 property	ProposeRuleDeclarationHandler::$declarations
 property	ProposedOperationData::$name
@@ -38290,8 +38352,8 @@ property	PublicationStatus::$target
 property	PublicationTab::$key
 property	PublicationTab::$label
 property	PublicationTab::$read
-property	PublishHookEffects::$actors
 property	PublishHookEffects::$facts
+property	PublishHookEffects::$stateCommands
 property	PublishSessionSkills::$publishing
 property	PublishSignInChallengeCommand::$address
 property	PublishSignInChallengeCommand::$attemptId
@@ -39883,12 +39945,6 @@ property	RunEvent::$sequence
 property	RunEvent::$type
 property	RunEventBatch::$events
 property	RunEventsAccepted::$accepted
-property	RunHookCommand::$actors
-property	RunHookCommand::$admission
-property	RunHookCommand::$bus
-property	RunHookCommand::$commands
-property	RunHookCommand::$deadline
-property	RunHookCommand::$log
 property	RunInTransaction::$database
 property	RunInTransaction::$deadline
 property	RunInTransaction::$lifecycle
@@ -39964,6 +40020,12 @@ property	RunState::$attempts
 property	RunState::$background
 property	RunState::$events
 property	RunState::$stop
+property	RunStateCommand::$actors
+property	RunStateCommand::$admission
+property	RunStateCommand::$bus
+property	RunStateCommand::$commands
+property	RunStateCommand::$deadline
+property	RunStateCommand::$log
 property	RunTaskCheckCommand::$operation
 property	RunTaskCheckCommand::$processRunId
 property	RunTaskCheckCommand::$runNumber
@@ -41320,6 +41382,9 @@ property	StackRestorer::$builder
 property	StackRestorer::$factory
 property	StackRestorer::$selector
 property	StackRestorer::$types
+property	StackSnapshot::$frameIds
+property	StackSnapshot::$liveFrames
+property	StackSnapshot::$topId
 property	StackTarget::$agentId
 property	StackTarget::$sessionId
 property	StackTransaction::$admission
@@ -41582,6 +41647,12 @@ property	StateArguments::$values
 property	StateBridgeFactStaging::$container
 property	StateBridgeFactStaging::$scope
 property	StateBuilder::$pipelines
+property	StateCommandAnswered::$actor
+property	StateCommandAnswered::$authority
+property	StateCommandAnswered::$command
+property	StateCommandAnswered::$target
+property	StateCommandPublisher::$actors
+property	StateCommandPublisher::$facts
 property	StateEventActivity::$deliveries
 property	StateEventActivity::$evaluating
 property	StateEventAudience::$actor
@@ -41653,6 +41724,7 @@ property	StateMethod::$stateClass
 property	StateMethodSelector::$methods
 property	StateMethods::$byClass
 property	StatePush::$restorer
+property	StatePush::$stateCommands
 property	StatePush::$types
 property	StateReference::$subject
 property	StateReference::$typeKey
@@ -42228,6 +42300,8 @@ property	TaskFiltersData::$task
 property	TaskFinished::$historyEntryId
 property	TaskFinished::$previousState
 property	TaskFinished::$taskId
+property	TaskFocused::$agentId
+property	TaskFocused::$taskId
 property	TaskGraph::$destinations
 property	TaskGraph::$edges
 property	TaskGraph::$nodes
@@ -42413,6 +42487,8 @@ property	TaskTransition::$runNumber
 property	TaskTransition::$sequence
 property	TaskTransition::$text
 property	TaskTransition::$toState
+property	TaskUnfocused::$agentId
+property	TaskUnfocused::$taskId
 property	TaskWaitActionsData::$choices
 property	TaskWaitActionsData::$mayEdit
 property	TaskWaitActionsData::$mayWaive
@@ -42807,6 +42883,7 @@ property	UndockSourceCommand::$id
 property	UndockSourceCommand::$placementId
 property	UndockSourceCommand::$type
 property	UndockSourceHandler::$requests
+property	UnfocusTaskCommand::$taskId
 property	UnjudgedCall::$reply
 property	UnlinkRecordsCommand::$source
 property	UnlinkRecordsCommand::$target
@@ -44120,6 +44197,7 @@ variable	$length
 variable	$letters
 variable	$level
 variable	$lexed
+variable	$lifted
 variable	$limit
 variable	$limits
 variable	$line
@@ -44154,6 +44232,7 @@ variable	$literal
 variable	$literalArguments
 variable	$literals
 variable	$live
+variable	$liveAfter
 variable	$liveForMs
 variable	$liveHolders
 variable	$liveHosts
@@ -44251,6 +44330,7 @@ variable	$modelOwner
 variable	$models
 variable	$modulePath
 variable	$moment
+variable	$moments
 variable	$monolog
 variable	$monthStart
 variable	$more

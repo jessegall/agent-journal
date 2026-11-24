@@ -7,7 +7,9 @@ namespace App\Support\StateEvents;
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Declarations\StateMethod;
+use App\Enums\StackMoment;
 use App\Support\References\StateReference;
+use App\Support\Stack\FrameMoment;
 use App\Support\Stack\SelectedStateMethod;
 use App\Support\Storage\FrameRecord;
 
@@ -46,6 +48,26 @@ final readonly class StateEventResult
         }
 
         return new self($selection->frame->record(), $selection->method, $effects, $pushes);
+    }
+
+    /**
+     * The commands a state answered a moment of its frame's life with, which run as the frame's own answer.
+     */
+    public static function fromMoment(FrameMoment $moment): self
+    {
+        return new self(
+            $moment->frame->record(),
+            $moment->frame->momentMethod($moment->moment),
+            $moment->commands(),
+        );
+    }
+
+    /**
+     * Whether the commands answer a moment of the frame's life rather than the fact itself.
+     */
+    public function answersAMoment(): bool
+    {
+        return StackMoment::tryFrom($this->method->name) instanceof StackMoment;
     }
 
     public function frameId(): string

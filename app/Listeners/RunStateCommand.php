@@ -10,7 +10,7 @@ use App\Contracts\Bus\GuardedCommandBus;
 use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
 use App\Enums\CommandOriginStatus;
-use App\Events\HookCommandAnswered;
+use App\Events\StateCommandAnswered;
 use App\Exceptions\StateAnswerRefused;
 use App\Models\Agents\AgentStackRow;
 use App\Support\CommandRegistry;
@@ -18,10 +18,10 @@ use App\Support\OperationDeadline;
 use Psr\Log\LoggerInterface;
 
 /**
- * Runs a command a state answered a hook with, once the hook committed, while the agent's stack is still open; a
- * command that is refused or finds the stack closed is logged and not retried.
+ * Runs a command a state answered a hook or a moment of its frame's life with, once the change committed, while the
+ * agent's stack is still open; a command that is refused or finds the stack closed is logged and not retried.
  */
-final readonly class RunHookCommand implements Listener
+final readonly class RunStateCommand implements Listener
 {
     public function __construct(
         private GuardedCommandBus $bus,
@@ -32,7 +32,7 @@ final readonly class RunHookCommand implements Listener
         private LoggerInterface $log,
     ) {}
 
-    public function handle(HookCommandAnswered $answered): void
+    public function handle(StateCommandAnswered $answered): void
     {
         $command = $answered->command;
 
@@ -49,7 +49,7 @@ final readonly class RunHookCommand implements Listener
         ));
 
         if ($status !== CommandOriginStatus::Eligible) {
-            $this->log->info('A command a state answered a hook with was skipped.', [
+            $this->log->info('A command a state answered with was skipped.', [
                 'command' => $command::class,
                 'target' => $answered->target->description(),
                 'outcome' => $status->value,

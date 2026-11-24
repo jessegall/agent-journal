@@ -860,6 +860,7 @@ use App\Exceptions\FileUnreadable;
 use App\Exceptions\FileUnwritable;
 use App\Exceptions\FolderClosed;
 use App\Exceptions\FolderMissing;
+use App\Exceptions\FrameNotHeld;
 use App\Exceptions\GrantNotRegistered;
 use App\Exceptions\GrantNotWithheld;
 use App\Exceptions\GrantShapeInvalid;
@@ -2767,6 +2768,7 @@ final class CoreApi
                 ClassMissing::class,
                 LayoutRefused::class,
                 ActivationDeclined::class,
+                FrameNotHeld::class,
                 DockCardInvalid::class,
                 DockDefinitionInvalid::class,
                 DockSourceUnavailable::class,

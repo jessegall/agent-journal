@@ -35,6 +35,13 @@ final readonly class WorkStackPushes implements ActorWorkStacks
         }
     }
 
+    public function lift(StateReference $state): void
+    {
+        foreach ($this->targets() as $target) {
+            $this->stacks->lift($target, $state);
+        }
+    }
+
     public function pushFor(ActorIdentity $actor, StateReference $state): void
     {
         foreach ($this->stackTargetsOf($actor) as $target) {

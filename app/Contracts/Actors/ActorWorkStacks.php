@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Actors;
 
+use App\Exceptions\FrameNotHeld;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
@@ -31,6 +32,13 @@ interface ActorWorkStacks
      * offered to an actor that is busy is left for later.
      */
     public function offerFor(ActorIdentity $actor, StateReference $state): void;
+
+    /**
+     * Brings the state's live frame back on top of the stacks the acting actor works on now, with its own values.
+     *
+     * @throws FrameNotHeld when a stack the actor works on holds no live frame for the state
+     */
+    public function lift(StateReference $state): void;
 
     /**
      * The live frame of the type on the acting actor's work stack; none for an actor that works on no stack.

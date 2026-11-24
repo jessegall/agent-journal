@@ -3039,6 +3039,29 @@
                 "outputSchema": null,
                 "title": "Finish Task Tool"
             },
+            "tasks_focus": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_focus",
+                "outputSchema": null,
+                "title": "Focus Task Tool"
+            },
             "tasks_list": {
                 "inputSchema": {
                     "additionalProperties": false,

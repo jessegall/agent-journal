@@ -35,8 +35,11 @@ use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskFocused;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Events\TaskUnfocused;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
+use Domain\Tasks\Exceptions\TaskChangedSinceRead;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Policies\TaskRunPolicy;
@@ -80,6 +83,8 @@ use PhpOption\Some;
  * @property string|null $block_reason
  * @property string|null $cancel_reason
  * @property string|null $environment_id
+ * @property string|null $focused_by_id
+ * @property CarbonImmutable|null $focused_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -145,6 +150,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             'creator_type' => ActorType::class,
             'revision' => 'integer',
             'run_number' => 'integer',
+            'focused_at' => 'immutable_datetime',
         ];
     }
 
@@ -348,6 +354,44 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         $this->raise(new TaskCancelled($this->id, $previousState, (string) Str::ulid()));
     }
 
+    /**
+     * Puts the started task in the agent's focus; a task already in its focus is left as it is.
+     *
+     * @throws TaskChangedSinceRead when the task is not started
+     */
+    public function focusFor(string $agentId): void
+    {
+        if ($this->state !== TaskState::Started) {
+            throw TaskChangedSinceRead::notFocusable($this->number, $this->state);
+        }
+
+        if ($this->focused_by_id === $agentId) {
+            return;
+        }
+
+        $this->focused_by_id = $agentId;
+        $this->focused_at = CarbonImmutable::now();
+        $this->assertSaved($this->save());
+        $this->raise(new TaskFocused($this->id, $agentId));
+    }
+
+    /**
+     * Takes the task out of its agent's focus; a task in nobody's focus is left as it is.
+     */
+    public function unfocus(): void
+    {
+        $agentId = $this->focused_by_id;
+
+        if ($agentId === null) {
+            return;
+        }
+
+        $this->focused_by_id = null;
+        $this->focused_at = null;
+        $this->assertSaved($this->save());
+        $this->raise(new TaskUnfocused($this->id, $agentId));
+    }
+
     // ----------[ Answers ]----------
 
     public function isOpenForAssignment(): bool
@@ -455,6 +499,17 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     }
 
     // ----------[ Scopes ]----------
+
+    /**
+     * The tasks in the agent's focus, the one it works on now: none or one.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function focusedBy(Builder $query, string $agentId): void
+    {
+        $query->where('focused_by_id', $agentId);
+    }
 
     /**
      * Tasks whose brief matches the LIKE pattern without regard to case, served by the brief trigram index.

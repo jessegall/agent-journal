@@ -12,6 +12,7 @@ use App\Support\Mutations\StatePush;
 use App\Support\References\StateReference;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\StackRestorer;
+use App\Support\Stack\StateCommandPublisher;
 use App\Support\Stack\StateTypes;
 use App\Values\StackTarget;
 
@@ -27,6 +28,7 @@ final readonly class EngineStacks
         private StatePush $statePush,
         private StackRestorer $restorer,
         private StateTypes $types,
+        private StateCommandPublisher $stateCommands,
     ) {}
 
     public function push(StackTarget $target, StateReference $reference): void
@@ -63,6 +65,7 @@ final readonly class EngineStacks
         }
 
         $row->saveFrames($after->records(), $this->types->ticking());
+        $this->stateCommands->publishMoments($target, $before->snapshot(), $after);
     }
 
     /**

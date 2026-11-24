@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Work;
 
+use App\Exceptions\FrameNotHeld;
 use App\Support\References\Exceptions\ActivationDeclined;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;
@@ -26,4 +27,11 @@ interface AgentStack
      * @throws ActivationDeclined
      */
     public function activate(StackTarget $target, StateReference $state): void;
+
+    /**
+     * Brings the live frame of the state back on top of the agent's stack for the target, with its own values.
+     *
+     * @throws FrameNotHeld when the stack holds no live frame for the state
+     */
+    public function lift(StackTarget $target, StateReference $state): void;
 }

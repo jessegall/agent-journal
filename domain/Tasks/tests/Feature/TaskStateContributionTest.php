@@ -16,6 +16,7 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
 use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
@@ -189,6 +190,47 @@ final class TaskStateContributionTest extends TestCase
 
         $this->assertSame(["tasks.working {$blocked->id} 1", "tasks.working {$cancelled->id} 1"], $this->taskFrames());
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
+    }
+
+    #[TimeLimit(seconds: 3, reason: 'It runs three task commands through the bus, each with its stack transaction.')]
+    public function test_focusing_the_older_of_two_tasks_brings_its_work_back_on_top(): void
+    {
+        $first = Task::factory()->create(['title' => 'Write the walk']);
+        $second = Task::factory()->create(['title' => 'Fix the hook']);
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($first->id));
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($second->id));
+
+        $this->assertSame([$second->id], $this->focusedTaskIds());
+
+        $this->app->make(CommandBus::class)->run(new FocusTaskCommand($first->id));
+
+        $this->assertSame([$first->id], $this->focusedTaskIds());
+        $this->assertSame(["tasks.working {$second->id} 1", "tasks.working {$first->id} 1"], $this->taskFrames());
+
+        $this->assertSame(
+            $first->number,
+            $this->app->make(AssignedTaskResolver::class)->currentForCaller()->get()->number,
+        );
+    }
+
+    public function test_finishing_the_only_task_leaves_no_task_in_focus(): void
+    {
+        $task = Task::factory()->create(['title' => 'Write the walk']);
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
+
+        $this->assertSame([$task->id], $this->focusedTaskIds());
+
+        $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 1, 'Written.'));
+
+        $this->assertSame([], $this->focusedTaskIds());
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function focusedTaskIds(): array
+    {
+        return array_values(Task::query()->focusedBy($this->target->agentId)->pluck('id')->all());
     }
 
     public function test_an_agent_finishing_a_task_it_never_started_is_refused_and_leaves_the_stack_alone(): void

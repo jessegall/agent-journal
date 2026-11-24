@@ -14,6 +14,8 @@ use App\Support\Inputs\ToolFinished;
 use App\Support\References\StateReference;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
+use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
+use Domain\Tasks\Commands\UnfocusTask\UnfocusTaskCommand;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
@@ -29,6 +31,7 @@ use PhpOption\Some;
  * An agent working on one run of a task. The run stays open until the state hears the task finished, blocked or
  * cancelled, a newer run of it claimed, or the claim it holds ended; it keeps the claim it heard as its own, so a late
  * end of an earlier claim never closes a resumed run. A stop is held back while the run is open and held by this agent.
+ * The task is in the agent's focus while its frame is the live top, and leaves it once the frame stops being live.
  */
 #[StateType(WorkingOnTaskStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class WorkingOnTaskState extends AgentState
@@ -86,6 +89,32 @@ final class WorkingOnTaskState extends AgentState
     public function instruction(): Option
     {
         return new Some(AgentText::of('tasks.working_on', ['task' => $this->number, 'run' => $this->runNumber]));
+    }
+
+    // ----------[ Lifecycle ]----------
+
+    /**
+     * @return list<FocusTaskCommand>
+     */
+    public function onEnter(): array
+    {
+        return [new FocusTaskCommand($this->taskId)];
+    }
+
+    /**
+     * @return list<FocusTaskCommand>
+     */
+    public function onResume(): array
+    {
+        return [new FocusTaskCommand($this->taskId)];
+    }
+
+    /**
+     * @return list<UnfocusTaskCommand>
+     */
+    public function onExit(): array
+    {
+        return [new UnfocusTaskCommand($this->taskId)];
     }
 
     // ----------[ Hooks ]----------

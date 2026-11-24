@@ -18,6 +18,11 @@ final class RecordingStack implements AgentStack
      */
     public array $pushed = [];
 
+    /**
+     * @var list<StateReference>
+     */
+    public array $lifted = [];
+
     public function push(StackTarget $target, StateReference $state): void
     {
         $this->pushed[] = $state;
@@ -26,5 +31,10 @@ final class RecordingStack implements AgentStack
     public function activate(StackTarget $target, StateReference $state): void
     {
         $this->pushed[] = $state;
+    }
+
+    public function lift(StackTarget $target, StateReference $state): void
+    {
+        $this->lifted[] = $state;
     }
 }

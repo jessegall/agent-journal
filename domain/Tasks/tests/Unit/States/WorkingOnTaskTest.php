@@ -10,6 +10,8 @@ use App\Support\ActorIdentity;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
+use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
+use Domain\Tasks\Commands\UnfocusTask\UnfocusTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
@@ -128,6 +130,15 @@ final class WorkingOnTaskTest extends TestCase
 
         $this->assertEquals(Decision::delegate(), $afterLog);
         $this->assertEquals(LogDueStateReference::forTask('task-42', 42), $working->onToolFinished($finished));
+    }
+
+    public function test_entering_or_resuming_focuses_its_task_and_exiting_takes_the_focus_away(): void
+    {
+        $working = $this->working();
+
+        $this->assertEquals([new FocusTaskCommand('task-42')], $working->onEnter());
+        $this->assertEquals([new FocusTaskCommand('task-42')], $working->onResume());
+        $this->assertEquals([new UnfocusTaskCommand('task-42')], $working->onExit());
     }
 
     #[DataProvider('otherHooks')]
