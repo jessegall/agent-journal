@@ -93,11 +93,11 @@ use App\Http\Controllers\ApproveSamplePageController;
 use App\Http\Controllers\CleanRunPageController;
 use App\Http\Controllers\RejectProposalPageController;
 use App\Http\Controllers\StopRunPageController;
-use App\Resolvers\RequestListResolver;
-use App\Resolvers\RequestWindowResolver;
-use App\Resolvers\RunListResolver;
-use App\Resolvers\RunOutcomeWindowResolver;
-use App\Resolvers\RunWindowResolver;
+use App\Http\Pages\Resolvers\RequestListResolver;
+use App\Http\Pages\Resolvers\RequestWindowResolver;
+use App\Http\Pages\Resolvers\RunListResolver;
+use App\Http\Pages\Resolvers\RunOutcomeWindowResolver;
+use App\Http\Pages\Resolvers\RunWindowResolver;
 
 /**
  * The project owner's review of command classification: the requests by

@@ -17,7 +17,7 @@ use Domain\Tasks\Data\TaskText;
  * A task of a plan opened inside the plan's own place: the plans column stays beside it, and the reader leads with Back
  * to the plan, which carries the plan's tab, page and node so the way back finds them again.
  */
-final readonly class PlansTasksShow
+final readonly class PlansTasksShow extends PlansPage
 {
     public function __construct(private PlansIndex $index) {}
 

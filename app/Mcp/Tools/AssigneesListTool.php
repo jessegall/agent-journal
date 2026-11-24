@@ -14,7 +14,7 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\Continuations;
 use App\Mcp\Support\ToolArguments;
 use App\Support\AssigneeName;
-use App\Support\Page;
+use App\Support\IdListPage;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -43,7 +43,7 @@ final class AssigneesListTool extends JournalReadTool
                 array_map(fn (ActorType $type): string => $type->value, ActorType::requestTypes()),
             )->required(),
             'after_id' => $schema->string()->max(26),
-            'limit' => $schema->integer()->min(1)->max(Page::LARGEST_LIMIT),
+            'limit' => $schema->integer()->min(1)->max(IdListPage::LARGEST_LIMIT),
             'continuation' => $schema->string(),
         ];
     }
@@ -56,11 +56,14 @@ final class AssigneesListTool extends JournalReadTool
         $filters = $cursor === null
             ? [
                 'after_id' => $arguments->optionalText('after_id'),
-                'limit' => $arguments->positiveIntegerOr('limit', self::DEFAULT_LIMIT, Page::LARGEST_LIMIT),
+                'limit' => $arguments->positiveIntegerOr('limit', self::DEFAULT_LIMIT, IdListPage::LARGEST_LIMIT),
             ]
             : $this->continuations->open($cursor, $this->name(), $type->value)->filters;
 
-        $assigneePage = $this->assignees->eligible($type->value, new Page($filters['after_id'], $filters['limit']));
+        $assigneePage = $this->assignees->eligible(
+            $type->value,
+            new IdListPage($filters['after_id'], $filters['limit']),
+        );
 
         $nextActions = $assigneePage->nextAfterId === null ? [] : [new NextAction($this->name(), [
             'type' => $type->value,

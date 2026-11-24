@@ -13,7 +13,7 @@ use App\Data\Comments\RecordCommentView;
 use App\Data\Comments\TextCommentView;
 use App\Exceptions\TargetNotCommentable;
 use App\Models\Records\Comment;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
 use App\Values\PageSize;
@@ -86,7 +86,7 @@ final class TextOwnerCommentTest extends TestCase
             new PostTextCommentCommand($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
         );
         $this->bus()->run(new PostCommentCommand($page, 'About the page.', (string) Str::uuid()));
-        $items = $this->app->make(CommentResolver::class)->list($page, new Page())->comments;
+        $items = $this->app->make(CommentResolver::class)->list($page, new IdListPage())->comments;
 
         $this->assertInstanceOf(TextCommentView::class, $items[0]);
         $this->assertInstanceOf(RecordCommentView::class, $items[1]);

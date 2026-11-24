@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature;
 
 use App\Declarations\SlotContext;
+use Domain\Plans\Http\Pages\Resolvers\TaskPlanSection;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Resolvers\TaskPlanSection;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;

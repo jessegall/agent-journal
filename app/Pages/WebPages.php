@@ -64,12 +64,12 @@ use App\Http\Controllers\Terminal\SubmitPrivateInputController;
 use App\Http\Controllers\Terminal\TakeTerminalControlController;
 use App\Http\Controllers\Terminal\TerminalControlReceiptController;
 use App\Http\Controllers\Terminal\TerminalFrameController;
-use App\Resolvers\ActivityWindowResolver;
-use App\Resolvers\AskDetailResolver;
-use App\Resolvers\AskInboxResolver;
-use App\Resolvers\HomeWindowResolver;
-use App\Resolvers\RuntimeStatusResolver;
-use App\Resolvers\TerminalWindowResolver;
+use App\Http\Pages\Resolvers\ActivityWindowResolver;
+use App\Http\Pages\Resolvers\AskDetailResolver;
+use App\Http\Pages\Resolvers\AskInboxResolver;
+use App\Http\Pages\Resolvers\HomeWindowResolver;
+use App\Http\Pages\Resolvers\RuntimeStatusResolver;
+use App\Http\Pages\Resolvers\TerminalWindowResolver;
 use App\Support\ActivityOwnerCheck;
 
 /**

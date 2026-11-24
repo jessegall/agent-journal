@@ -1702,6 +1702,7 @@ class	AccountUseMissing
 class	AccountWriterTaken
 class	AccountsChanged
 class	AccountsIndex
+class	AccountsPage
 class	AccountsPageRequest
 class	AccountsWindowResolver
 class	AcknowledgeChatMessagesCommand
@@ -2835,6 +2836,7 @@ class	CreateTaskRequest
 class	CreateTaskTool
 class	CreateUserCommand
 class	CreatedRecord
+class	CreationDialog
 class	CredentialLookup
 class	CredentialRejected
 class	CrossOwnerReadRefused
@@ -3095,6 +3097,7 @@ class	DocumentWindowResolver
 class	DocumentsDomain
 class	DocumentsIndex
 class	DocumentsListTool
+class	DocumentsPage
 class	DocumentsServiceProvider
 class	DocumentsShow
 class	Domain
@@ -3659,6 +3662,7 @@ class	HostStartReplyData
 class	HostStartSocket
 class	HostStopReplyData
 class	HostUnavailable
+class	IdListPage
 class	ImageUnverified
 class	ImportHelperCommitsCommand
 class	ImportHelperCommitsHandler
@@ -4618,6 +4622,7 @@ class	PlanWriteTool
 class	PlansDomain
 class	PlansIndex
 class	PlansListTool
+class	PlansPage
 class	PlansRequest
 class	PlansServiceProvider
 class	PlansShow
@@ -4697,6 +4702,7 @@ class	ProcessRestoreCheckCommand
 class	ProcessRules
 class	ProcessRun
 class	ProcessRunOutlasted
+class	ProcessRunsPage
 class	ProcessRunsShow
 class	ProcessShowCommand
 class	ProcessStart
@@ -4777,6 +4783,7 @@ class	ProfileStepResult
 class	ProfileWindowResolver
 class	Profiles
 class	ProfilesIndex
+class	ProfilesPage
 class	ProfilesPages
 class	ProfilesServiceProvider
 class	ProfilesShow
@@ -5519,6 +5526,7 @@ class	ReportWorkspaceReadCommand
 class	ReportWorkspaceReadHandler
 class	ReportedStart
 class	ReportsListTool
+class	ReportsPage
 class	ReportsShow
 class	RequestEditor
 class	RequestKey
@@ -5687,6 +5695,7 @@ class	RevisionList
 class	RevisionPageRequest
 class	RevisionView
 class	RevisionWindowResolver
+class	RevisionsPage
 class	RevisionsShow
 class	RevokeCommandPermissionsCommand
 class	RevokeCommandPermissionsHandler
@@ -6030,6 +6039,7 @@ class	SequenceRunPage
 class	SequenceRunRequest
 class	SequenceRunWindowResolver
 class	SequenceRunsIndex
+class	SequenceRunsPage
 class	SequenceRunsRequest
 class	SequenceRunsResolver
 class	SequenceRunsShow
@@ -6041,6 +6051,7 @@ class	SequenceStepReached
 class	SequenceWindowResolver
 class	SequencesDomain
 class	SequencesIndex
+class	SequencesPage
 class	SequencesServiceProvider
 class	SequencesShow
 class	SequencesSkill
@@ -6269,6 +6280,7 @@ class	SharingCalls
 class	SharingHealthCommand
 class	SharingNotAllowed
 class	SharingOwnerCheck
+class	SharingPage
 class	SharingPages
 class	SharingPolicy
 class	SharingServiceProvider
@@ -7002,6 +7014,7 @@ class	TaskWriteTool
 class	TasksDomain
 class	TasksIndex
 class	TasksListTool
+class	TasksPage
 class	TasksRequest
 class	TasksServiceProvider
 class	TasksShow
@@ -7732,6 +7745,7 @@ constant	HostSkillPublisher::GENERATIONS
 constant	HostSkillPublisher::STAGED_LEVEL_LIMIT
 constant	HostStartExecutor::REPLY_SECONDS
 constant	HostStartSocket::REPLY_SECONDS
+constant	IdListPage::LARGEST_LIMIT
 constant	InboxMembers::LIMIT
 constant	InboxNotices::SYSTEM_ENTRY
 constant	InboxNotices::SYSTEM_INBOX
@@ -7921,7 +7935,6 @@ constant	OutputVerdict::CODE
 constant	OwnReminders::PER_PAGE
 constant	PackageScripts::HARMLESS_CALLBACKS
 constant	PackageScripts::PACKAGE_FILES
-constant	Page::LARGEST_LIMIT
 constant	PageActionAnswers::NOTICE
 constant	PageChanged::NAME
 constant	PageReadProps::QUERY
@@ -13308,6 +13321,8 @@ method	CreatedRecord::__construct()
 method	CreatedRecord::label()
 method	CreatedWithAttention::inAttention()
 method	CreatedWithAttention::ownedBy()
+method	CreationDialog::__construct()
+method	CreationDialog::ways()
 method	CredentialLookup::sessionFor()
 method	CredentialRejected::agentRetired()
 method	CredentialRejected::fenced()
@@ -16201,6 +16216,7 @@ method	HostUnavailable::forStart()
 method	HostUnavailable::withoutStartFolder()
 method	HostWakeRefusal::fromReport()
 method	HostWakeRefusal::startReason()
+method	IdListPage::__construct()
 method	IdentityLinks::among()
 method	IdentityLinks::link()
 method	IdentityLinks::linkedOfType()
@@ -18665,11 +18681,13 @@ method	PackageScripts::scriptOf()
 method	Page::__construct()
 method	Page::actions()
 method	Page::at()
+method	Page::creationDialog()
 method	Page::floating()
 method	Page::inInspector()
 method	Page::layout()
 method	Page::loadingAs()
 method	Page::make()
+method	Page::nothingMatches()
 method	Page::onHome()
 method	Page::options()
 method	Page::placedAs()
@@ -28490,6 +28508,8 @@ parameter	$claude
 parameter	$claudeCode
 parameter	$cleanup
 parameter	$cleanupProblem
+parameter	$clearLabel
+parameter	$cleared
 parameter	$clears
 parameter	$client
 parameter	$clock
@@ -28899,8 +28919,8 @@ parameter	$entries	app/Commands/RefreshSkills/RefreshSkillsHandler.php
 parameter	$entries	app/Commands/ReportProjectRead/ReportProjectReadCommand.php
 parameter	$entries	app/Commands/ReportProjectRead/ReportProjectReadHandler.php
 parameter	$entries	app/Data/Connections/ProjectWindowData.php
+parameter	$entries	app/Http/Pages/Resolvers/ProjectWindowResolver.php
 parameter	$entries	app/Models/Projects/ProjectRead.php
-parameter	$entries	app/Resolvers/ProjectWindowResolver.php
 parameter	$entries	app/Resolvers/Support/SkillStatusResolver.php
 parameter	$entries	app/Support/Attributes.php
 parameter	$entries	app/Support/ShareAuditPage.php
@@ -29148,6 +29168,7 @@ parameter	$guarded
 parameter	$guidance
 parameter	$guided
 parameter	$guidedNoun
+parameter	$guidedWay
 parameter	$halt
 parameter	$handle
 parameter	$handleDigest
@@ -30054,6 +30075,7 @@ parameter	$placement
 parameter	$placementId
 parameter	$placements
 parameter	$plain
+parameter	$plainWay
 parameter	$plan
 parameter	$planId
 parameter	$planIds
@@ -30686,6 +30708,7 @@ parameter	$selector
 parameter	$selectorName
 parameter	$selfMeasured
 parameter	$send
+parameter	$sendLabel
 parameter	$sender
 parameter	$senderIntervalId
 parameter	$senderSessionId
@@ -31247,6 +31270,7 @@ parameter	$watched
 parameter	$watchers
 parameter	$watermark
 parameter	$ways
+parameter	$waysInHeader
 parameter	$weight
 parameter	$what
 parameter	$whenFalse
@@ -33612,6 +33636,14 @@ property	CreatedRecord::$id
 property	CreatedRecord::$number
 property	CreatedRecord::$revision
 property	CreatedRecord::$type
+property	CreationDialog::$confirmation
+property	CreationDialog::$guidedNoun
+property	CreationDialog::$guidedWay
+property	CreationDialog::$key
+property	CreationDialog::$plainWay
+property	CreationDialog::$sendLabel
+property	CreationDialog::$title
+property	CreationDialog::$waysInHeader
 property	CurrentActorAuthorizer::$actors
 property	CurrentActorAuthorizer::$authorizers
 property	CurrentAgentRuntimes::$actors
@@ -35261,6 +35293,8 @@ property	HostStartReplyData::$startedAt
 property	HostStartSocket::$path
 property	HostStopReplyData::$endedAt
 property	HostStopReplyData::$exitCode
+property	IdListPage::$afterId
+property	IdListPage::$limit
 property	ImportHelperCommitsCommand::$certificate
 property	ImportHelperCommitsCommand::$work
 property	ImportHelperCommitsHandler::$import
@@ -36703,7 +36737,6 @@ property	OwnerStartRequest::$selection
 property	OwnerStartRequest::$work
 property	PackageFileData::$scripts
 property	Page::$actions
-property	Page::$afterId
 property	Page::$component
 property	Page::$dataClass
 property	Page::$floatSize
@@ -36711,7 +36744,6 @@ property	Page::$homePosition
 property	Page::$icon
 property	Page::$isDeclared
 property	Page::$key
-property	Page::$limit
 property	Page::$opensIn
 property	Page::$options
 property	Page::$path
@@ -42944,7 +42976,6 @@ variable	$classification
 variable	$claude
 variable	$cleaned
 variable	$cleanup
-variable	$clear
 variable	$close
 variable	$closed
 variable	$closes
@@ -43510,7 +43541,6 @@ variable	$isForm
 variable	$isFull
 variable	$isFunction
 variable	$isGiven
-variable	$isGuided
 variable	$isHeldByThisAgent
 variable	$isHeldForCheck
 variable	$isInside
@@ -43664,7 +43694,7 @@ variable	$linkType
 variable	$linked
 variable	$links
 variable	$list
-variable	$list	app/Resolvers/RunListResolver.php
+variable	$list	app/Http/Pages/Resolvers/RunListResolver.php
 variable	$listed
 variable	$listedClasses
 variable	$listener

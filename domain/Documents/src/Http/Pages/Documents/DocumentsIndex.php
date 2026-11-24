@@ -7,15 +7,14 @@ namespace Domain\Documents\Http\Pages\Documents;
 use App\Contracts\Navigation\DraftProducers;
 use App\Contracts\Navigation\RecordMenus;
 use App\Enums\ActionMethod;
+use App\Http\Pages\CreationDialog;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
-use App\Support\Layout\LayoutDialogData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
@@ -33,7 +32,7 @@ use Spatie\LaravelData\Optional;
  * a document or a report. A library with nothing to show says whether the search or a fresh journal is why, and offers
  * to clear the search or to file the first document.
  */
-final readonly class DocumentsIndex
+final readonly class DocumentsIndex extends DocumentsPage
 {
     public function __construct(private RecordMenus $menus, private DraftProducers $producers) {}
 
@@ -88,17 +87,10 @@ final readonly class DocumentsIndex
     private function emptyFor(DocumentFilters $filters): ListEmpty
     {
         if ($filters->searches() || $filters->attention !== AttentionFilter::Active) {
-            return ListEmpty::offering(
+            return $this->nothingMatches(
                 $filters->searches() ? "Nothing matches \"{$filters->query}\"." : 'Nothing matches this filter.',
-                LayoutPartData::action(
-                    'clear',
-                    'Clear search',
-                    LayoutActionData::changing([
-                        'query' => '',
-                        'attention' => AttentionFilter::Active->value,
-                        'after' => '',
-                    ]),
-                ),
+                'Clear search',
+                ['query' => '', 'attention' => AttentionFilter::Active->value, 'after' => ''],
             );
         }
 
@@ -123,16 +115,17 @@ final readonly class DocumentsIndex
         $route = $type === 'doc' ? 'documents.create-document' : 'documents.create-report';
         $guidedNoun = $this->guidedNounOf($type);
 
-        return LayoutPartData::dialog(
+        $creation = new CreationDialog(
             "{$key}-{$type}",
-            LayoutDialogData::from([
-                'title' => $label,
-                'confirmation' => $type === 'doc' ? 'Document filed' : 'Report filed',
-                'guidedNoun' => $guidedNoun,
-                'ways' => is_string($guidedNoun)
-                    ? new LayoutWaysData('Write it yourself', 'Write it with an agent', $key === 'create')
-                    : Optional::create(),
-            ]),
+            $label,
+            $type === 'doc' ? 'Document filed' : 'Report filed',
+            $type === 'doc' ? 'Create document' : 'Create report',
+            $guidedNoun,
+            waysInHeader: $key === 'create',
+        );
+
+        return $this->creationDialog(
+            $creation,
             LayoutPartData::action('open', $label, LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(['method' => ActionMethod::Post, 'href' => route($route, [], false)]),
             [
@@ -144,14 +137,6 @@ final readonly class DocumentsIndex
                     'text',
                 ),
                 LayoutPartData::field('body', 'Text', LayoutFieldData::from(['name' => 'body']), 'area'),
-            ],
-            [
-                LayoutPartData::action(
-                    'send',
-                    $type === 'doc' ? 'Create document' : 'Create report',
-                    LayoutActionData::submitting(),
-                    'primary',
-                ),
             ],
         );
     }

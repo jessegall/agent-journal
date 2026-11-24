@@ -22,7 +22,7 @@ use Domain\Sequences\Values\SequenceRunPage;
  * The runs list: one actor's runs, newest first and numbered by page, with the actors to choose from above them and
  * the chosen run's reader beside them.
  */
-final readonly class SequenceRunsIndex
+final readonly class SequenceRunsIndex extends SequenceRunsPage
 {
     private const string EMPTY_TEXT = 'No sequence runs for this actor.';
 

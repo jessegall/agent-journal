@@ -9,7 +9,7 @@ use App\Enums\ActorType;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
 use App\Support\AssigneeName;
-use App\Support\Page;
+use App\Support\IdListPage;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
@@ -104,7 +104,7 @@ final class AssignmentReadToolsTest extends TestCase
             ->withArgs(
                 fn (
                     string $type,
-                    Page $page,
+                    IdListPage $page,
                 ): bool => $type === ActorType::Agent->value && $page->afterId === $afterId && $page->limit === 20,
             )
             ->andReturn(
@@ -117,7 +117,7 @@ final class AssignmentReadToolsTest extends TestCase
             ->withArgs(
                 fn (
                     string $type,
-                    Page $page,
+                    IdListPage $page,
                 ): bool => $type === ActorType::Agent->value && $page->afterId === $nextAfterId && $page->limit === 20,
             )
             ->andReturn(new AssigneeList([], null));

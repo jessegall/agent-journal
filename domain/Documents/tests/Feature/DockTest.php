@@ -18,7 +18,7 @@ use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Data\DockData;
-use Domain\Documents\Resolvers\DocumentDockResolver;
+use Domain\Documents\Http\Pages\Resolvers\DocumentDockResolver;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestSelections;

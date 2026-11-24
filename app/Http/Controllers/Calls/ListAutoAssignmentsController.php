@@ -10,7 +10,7 @@ use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Data\Assignments\AutoAssignmentPageData;
 use App\Support\ActorIdentity;
-use App\Support\Page;
+use App\Support\IdListPage;
 
 /**
  * Lists an actor's auto-assignments to whoever may read them.
@@ -25,7 +25,7 @@ final readonly class ListAutoAssignmentsController
     ): AutoAssignmentPageData {
         $actor = new ActorIdentity($call->actorType, strtolower($call->actorId));
         $access->assertMayRead($actors->actor(), $actor);
-        $page = new Page($call->after === null ? null : strtolower($call->after));
+        $page = new IdListPage($call->after === null ? null : strtolower($call->after));
 
         return AutoAssignmentPageData::of($assignments->listFor($actor, $page));
     }

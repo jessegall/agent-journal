@@ -14,7 +14,7 @@ use App\Support\Assignment;
 use App\Support\AssignmentHolder;
 use App\Support\AssignmentHolders;
 use App\Support\AssignmentSet;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 
 /**
@@ -47,7 +47,7 @@ final readonly class AssigneeRecords implements AssigneeResolver
         return $names;
     }
 
-    public function eligible(string $type, Page $page): AssigneeList
+    public function eligible(string $type, IdListPage $page): AssigneeList
     {
         return $this->providers->assigneeProvider($type)->eligible($page);
     }

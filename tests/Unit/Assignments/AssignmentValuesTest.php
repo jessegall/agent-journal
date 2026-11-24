@@ -16,7 +16,7 @@ use App\Support\AssignmentOutcome;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;
 use App\Support\AssignmentSet;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -100,7 +100,7 @@ final class AssignmentValuesTest extends TestCase
     {
         $this->expectException(InvalidAssignmentPage::class);
 
-        new Page($afterId, $limit);
+        new IdListPage($afterId, $limit);
     }
 
     public function test_a_set_finds_a_records_assignment_or_answers_none(): void

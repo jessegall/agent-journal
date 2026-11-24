@@ -9,7 +9,7 @@ use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
 use App\Support\AssigneeName;
 use App\Support\AssignmentGroup;
-use App\Support\Page;
+use App\Support\IdListPage;
 use Domain\Plans\Data\PlanReviewData;
 use Domain\Plans\Data\PlanReviewReceiptData;
 use Domain\Plans\Data\PlanWorkPreviewData;
@@ -78,7 +78,7 @@ final readonly class PlanReviewView
             'isOverLimit' => 1 + $phaseCount + $progress->total > AssignmentGroup::LARGEST,
             'recipients' => array_map(
                 fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
-                $this->assignees->eligible('agent', new Page(null, self::RECIPIENTS_SHOWN))->assignees,
+                $this->assignees->eligible('agent', new IdListPage(null, self::RECIPIENTS_SHOWN))->assignees,
             ),
         ]);
     }

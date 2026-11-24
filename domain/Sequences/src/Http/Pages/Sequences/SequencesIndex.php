@@ -6,15 +6,14 @@ namespace Domain\Sequences\Http\Pages\Sequences;
 
 use App\Contracts\Navigation\DraftProducers;
 use App\Enums\ActionMethod;
+use App\Http\Pages\CreationDialog;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
-use App\Support\Layout\LayoutDialogData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use Domain\Sequences\Models\Sequence;
@@ -23,7 +22,7 @@ use Domain\Sequences\Models\Sequence;
  * The Sequences page as the design draws it: the stored sequences, newest first, each a two-line row of its name and
  * its step count with what it is about, beside the reader of the one chosen.
  */
-final readonly class SequencesIndex
+final readonly class SequencesIndex extends SequencesPage
 {
     private const int LIST_LIMIT = 200;
 
@@ -94,14 +93,19 @@ final readonly class SequencesIndex
             return $plain;
         }
 
-        return LayoutPartData::dialog(
+        $creation = new CreationDialog(
             'creation',
-            LayoutDialogData::from([
-                'title' => 'New sequence',
-                'confirmation' => 'Draft opened in the editor',
-                'guidedNoun' => 'sequence',
-                'ways' => new LayoutWaysData('Write the steps yourself', 'Build it with an agent', true),
-            ]),
+            'New sequence',
+            'Draft opened in the editor',
+            'Open in the editor',
+            'sequence',
+            'Write the steps yourself',
+            'Build it with an agent',
+            true,
+        );
+
+        return $this->creationDialog(
+            $creation,
             $plain,
             LayoutFormData::from(['method' => ActionMethod::Get, 'href' => route('sequences.new', [], false)]),
             [
@@ -120,7 +124,6 @@ final readonly class SequencesIndex
                     'text',
                 ),
             ],
-            [LayoutPartData::action('send', 'Open in the editor', LayoutActionData::submitting(), 'primary')],
         );
     }
 }

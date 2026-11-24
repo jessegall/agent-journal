@@ -31,7 +31,7 @@ use Domain\Documents\Enums\AttentionState;
  * body, the public-comment notice and its comments; Links its linked records; Details its attention, settlements,
  * Settle and Share.
  */
-final readonly class ReportsShow
+final readonly class ReportsShow extends ReportsPage
 {
     /**
      * Each closure reads what one tab shows, only when that tab is chosen.

@@ -7,7 +7,7 @@ namespace App\Contracts\Records;
 use App\Data\Comments\CommentList;
 use App\Data\Comments\RecordCommentLocation;
 use App\Data\Comments\TextCommentLocation;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
 
@@ -16,7 +16,7 @@ use App\Support\TextSelection;
  */
 interface CommentResolver
 {
-    public function list(RecordIdentity $target, Page $page): CommentList;
+    public function list(RecordIdentity $target, IdListPage $page): CommentList;
 
     public function location(
         RecordIdentity $target,

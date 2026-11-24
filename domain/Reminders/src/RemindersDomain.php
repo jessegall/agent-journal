@@ -17,8 +17,8 @@ use App\Support\Exports;
 use App\Values\PolicyDefinition;
 use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
 use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
+use Domain\Reminders\Http\Pages\Resolvers\RemindersWindowResolver;
 use Domain\Reminders\Policies\ReminderPolicy;
-use Domain\Reminders\Resolvers\RemindersWindowResolver;
 use Domain\Reminders\Support\Skills\RemindersSkill;
 
 final class RemindersDomain extends Domain implements

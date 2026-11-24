@@ -15,7 +15,7 @@ use App\Data\Comments\RecordCommentView;
 use App\Exceptions\TargetHasNoText;
 use App\Models\Agents\Agent;
 use App\Models\Records\Comment;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Values\TextRange;
 use Domain\Access\Models\User;
@@ -83,7 +83,7 @@ final class WholeRecordCommentTest extends TestCase
             new PostCommentCommand($this->target(), self::QUESTION, (string) Str::uuid()),
         );
 
-        $items = $this->app->make(CommentResolver::class)->list($this->target(), new Page())->comments;
+        $items = $this->app->make(CommentResolver::class)->list($this->target(), new IdListPage())->comments;
         $location = $this->app->make(CommentResolver::class)->location($this->target(), $commentId);
 
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);

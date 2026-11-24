@@ -24,7 +24,7 @@ use Closure;
  * controls (reveal, retry and revoke, native so its address stays in the browser alone) and its gateway's runtime;
  * then the Share tab with its facts and members, or the Audit tab, read only when chosen, a page at a time.
  */
-final readonly class SharesShow
+final readonly class SharesShow extends SharingPage
 {
     /**
      * @param  Closure(): ShareAuditData  $audit  reads one page of the share's audit, only when its tab is chosen

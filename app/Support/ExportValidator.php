@@ -24,6 +24,8 @@ final class ExportValidator
      */
     private const array CORE_SUPPORT = [
         'App\Support\Domain',
+        'App\Http\Pages\Page',
+        'App\Http\Pages\CreationDialog',
         'App\Concerns\HasAssignables',
         'App\Concerns\HasLinkRecords',
         'App\Concerns\HasStates',

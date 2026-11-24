@@ -18,7 +18,7 @@ use App\Enums\WholeRecord;
 use App\Exceptions\AnchorMismatch;
 use App\Models\Agents\Agent;
 use App\Support\ActorContext;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use App\Support\TextSelection;
@@ -95,7 +95,7 @@ final class CommentsAndReadsTest extends TestCase
         $this->comment('Looks right.', WholeRecord::Record);
         $this->comment('Which editor?', TextRange::quote('1', 2, 2, 'the editor', 5, 15));
 
-        $items = $this->comments()->list($this->document(), new Page())->comments;
+        $items = $this->comments()->list($this->document(), new IdListPage())->comments;
 
         $this->assertSame(['Looks right.', 'Which editor?'], array_map(fn ($item) => $item->comment->body, $items));
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);
@@ -178,7 +178,7 @@ final class CommentsAndReadsTest extends TestCase
         try {
             $this->comment('Hm.', TextRange::quote('1', 2, 2, 'the plan', 5, 13));
         } finally {
-            $this->assertSame([], $this->comments()->list($this->document(), new Page())->comments);
+            $this->assertSame([], $this->comments()->list($this->document(), new IdListPage())->comments);
         }
     }
 
@@ -194,7 +194,7 @@ final class CommentsAndReadsTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $comment = $this->comments()->list($this->document(), new Page())->comments[0]->comment;
+        $comment = $this->comments()->list($this->document(), new IdListPage())->comments[0]->comment;
         $this->assertSame([ActorType::Agent, $agent->id], [$comment->authorType, $comment->authorId]);
     }
 
@@ -204,7 +204,7 @@ final class CommentsAndReadsTest extends TestCase
 
         $this->assertStringNotContainsString(
             '<script>',
-            $this->comments()->list($this->document(), new Page())->comments[0]->comment->bodyHtml,
+            $this->comments()->list($this->document(), new IdListPage())->comments[0]->comment->bodyHtml,
         );
     }
 

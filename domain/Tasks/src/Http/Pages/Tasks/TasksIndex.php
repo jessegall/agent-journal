@@ -6,15 +6,14 @@ namespace Domain\Tasks\Http\Pages\Tasks;
 
 use App\Contracts\Navigation\DraftProducers;
 use App\Enums\ActionMethod;
+use App\Http\Pages\CreationDialog;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
-use App\Support\Layout\LayoutDialogData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
@@ -30,7 +29,7 @@ use Spatie\LaravelData\Optional;
  * choices and All, the rows with the number first and the state last, numbered paging and the empty states; a task
  * opened beside it fills the reader and Back leads to the list as it was, with its state, search and page.
  */
-final readonly class TasksIndex
+final readonly class TasksIndex extends TasksPage
 {
     public function __construct(
         private TaskListResolver $tasks,
@@ -110,13 +109,10 @@ final readonly class TasksIndex
     private function emptyFor(TaskFiltersData $filters): ListEmpty
     {
         if ($filters->state instanceof TaskStateGroup || $filters->search !== '') {
-            return ListEmpty::offering(
+            return $this->nothingMatches(
                 'No task matches these filters.',
-                LayoutPartData::action(
-                    'clear',
-                    'Show all tasks',
-                    LayoutActionData::changing(['state' => '', 'q' => '', 'page' => '']),
-                ),
+                'Show all tasks',
+                ['state' => '', 'q' => '', 'page' => ''],
             );
         }
 
@@ -134,22 +130,18 @@ final readonly class TasksIndex
      */
     private function creation(string $key = 'creation', string $openerStyle = 'bordered'): LayoutPartData
     {
-        $isGuided = $this->producers->offersGuided('task');
-
-        $dialog = LayoutDialogData::from(
-            [
-                'title' => 'New task',
-                'confirmation' => 'Task created',
-                'guidedNoun' => $isGuided ? 'task' : Optional::create(),
-                'ways' => $isGuided
-                    ? new LayoutWaysData('Write it yourself', 'Plan it with an agent', $key === 'creation')
-                    : Optional::create(),
-            ],
+        $creation = new CreationDialog(
+            $key,
+            'New task',
+            'Task created',
+            'Create task',
+            $this->producers->offersGuided('task') ? 'task' : Optional::create(),
+            guidedWay: 'Plan it with an agent',
+            waysInHeader: $key === 'creation',
         );
 
-        return LayoutPartData::dialog(
-            $key,
-            $dialog,
+        return $this->creationDialog(
+            $creation,
             LayoutPartData::action('open', 'New task', LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(
                 ['method' => ActionMethod::Post, 'href' => route('tasks.create-task', [], false), 'isKeyed' => true],
@@ -158,7 +150,6 @@ final readonly class TasksIndex
                 LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),
                 LayoutPartData::field('brief', 'Done when', new LayoutFieldData('brief'), 'area'),
             ],
-            [LayoutPartData::action('send', 'Create task', LayoutActionData::submitting(), 'primary')],
         );
     }
 

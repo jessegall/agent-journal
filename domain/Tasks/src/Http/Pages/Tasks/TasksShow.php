@@ -28,7 +28,7 @@ use Spatie\LaravelData\Optional;
  * cancel it allows as forms, its facts, and its Waits, Logs and Proofs as tabs of native parts, of which only
  * the one the reader opened was read.
  */
-final readonly class TasksShow
+final readonly class TasksShow extends TasksPage
 {
     public const int PASSAGE_CHARACTERS = 2000;
 

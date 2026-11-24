@@ -18,7 +18,7 @@ use Spatie\LaravelData\Optional;
  * beneath, its reader beside it, and an informational empty state when there are none. Only the key, label and
  * description are read for the list.
  */
-final readonly class ProfilesIndex
+final readonly class ProfilesIndex extends ProfilesPage
 {
     private const int ROWS = 100;
 

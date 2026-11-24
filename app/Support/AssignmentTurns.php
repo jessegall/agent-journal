@@ -51,7 +51,10 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
 
     private function takeTurns(AutoAssignmentBudget $budget, StopTime $stop): AutoAssignmentRun
     {
-        $page = $this->assignments->enabled(new Page($budget->afterId, min($budget->factLimit, self::FACT_LIMIT)));
+        $page = $this->assignments->enabled(new IdListPage(
+            $budget->afterId,
+            min($budget->factLimit, self::FACT_LIMIT),
+        ));
 
         if ($page->facts === []) {
             return new AutoAssignmentRun(0, 0, 0, 0, null);

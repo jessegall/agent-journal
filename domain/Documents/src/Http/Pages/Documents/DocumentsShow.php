@@ -42,7 +42,7 @@ use Spatie\LaravelData\Optional;
  * chose. Text is the numbered lines to comment on, the public-comment notice and the record's comments; History its revisions, each
  * linking to its own page; Links its linked records; Details its editing and attention, settlements, Settle and Share.
  */
-final readonly class DocumentsShow
+final readonly class DocumentsShow extends DocumentsPage
 {
     public function __construct(private RecordMenus $menus) {}
 

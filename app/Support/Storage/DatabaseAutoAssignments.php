@@ -21,7 +21,7 @@ use App\Support\AutoAssignmentOutcome;
 use App\Support\AutoAssignmentPage;
 use App\Support\AutoAssignmentStatus;
 use App\Support\AutoAssignmentStatuses;
-use App\Support\Page;
+use App\Support\IdListPage;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;
@@ -60,12 +60,12 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
         return $this->statuses->of($row);
     }
 
-    public function enabled(Page $page): AutoAssignmentPage
+    public function enabled(IdListPage $page): AutoAssignmentPage
     {
         return AutoAssignment::enabledPage($page);
     }
 
-    public function listFor(ActorIdentity $actor, Page $page): AutoAssignmentPage
+    public function listFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage
     {
         return AutoAssignment::pageFor($actor, $page);
     }

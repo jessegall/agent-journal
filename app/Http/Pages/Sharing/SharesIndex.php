@@ -8,7 +8,6 @@ use App\Data\Sharing\ShareFiltersData;
 use App\Data\Sharing\ShareRowData;
 use App\Enums\ShareState;
 use App\Support\Layout\DeclaredLayoutData;
-use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutPartData;
@@ -24,7 +23,7 @@ use Spatie\LaravelData\Optional;
  * writing the window's query and starting the list again, the rows opening their own share, an empty state that says
  * whether a filter narrowed it and offers to clear it, and Show more while there are older ones.
  */
-final readonly class SharesIndex
+final readonly class SharesIndex extends SharingPage
 {
     /**
      * @param  list<ShareRowData>  $shown
@@ -125,17 +124,10 @@ final readonly class SharesIndex
             return ListEmpty::informing('No shares yet.');
         }
 
-        $clear = LayoutActionData::changing([
-            'state' => '',
-            'rootType' => '',
-            'gateway' => '',
-            'expiresBefore' => '',
-            'after' => '',
-        ]);
-
-        return ListEmpty::offering(
+        return $this->nothingMatches(
             'No share matches these filters.',
-            LayoutPartData::action('clear', 'Show all shares', $clear),
+            'Show all shares',
+            ['state' => '', 'rootType' => '', 'gateway' => '', 'expiresBefore' => '', 'after' => ''],
         );
     }
 

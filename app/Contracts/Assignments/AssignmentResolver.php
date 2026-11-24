@@ -6,7 +6,7 @@ namespace App\Contracts\Assignments;
 
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentSet;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\RecordIds;
 
@@ -18,7 +18,7 @@ interface AssignmentResolver
     /**
      * One page of the ids of records of one type the holder holds and the caller may see.
      */
-    public function recordIdsFor(string $type, AssigneeIdentity $holder, Page $page): RecordIds;
+    public function recordIdsFor(string $type, AssigneeIdentity $holder, IdListPage $page): RecordIds;
 
     /**
      * Every id of the records of one type the holder holds and the caller may see, page after page.

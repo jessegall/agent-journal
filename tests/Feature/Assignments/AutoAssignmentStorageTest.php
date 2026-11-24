@@ -20,7 +20,7 @@ use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
 use App\Support\AutoAssignmentOutcome;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\PoolReference;
 use App\Support\Storage\DatabaseAutoAssignments;
 use Carbon\CarbonImmutable;
@@ -167,8 +167,8 @@ final class AutoAssignmentStorageTest extends TestCase
         $off = new AutoAssignmentKey(TestActors::agentIdentity(2), 'tasks.task');
         $this->write(fn (DatabaseAutoAssignments $writer) => $writer->disable($off, 1));
 
-        $first = $this->resolver()->enabled(new Page(null, 1));
-        $second = $this->resolver()->enabled(new Page($first->nextAfterId, 1));
+        $first = $this->resolver()->enabled(new IdListPage(null, 1));
+        $second = $this->resolver()->enabled(new IdListPage($first->nextAfterId, 1));
 
         $this->assertCount(1, $first->facts);
         $this->assertNotNull($first->nextAfterId);
@@ -178,7 +178,7 @@ final class AutoAssignmentStorageTest extends TestCase
             [TestIds::of(1), TestIds::of(3)],
             self::sorted([$first->facts[0]->key->actor->id, $second->facts[0]->key->actor->id]),
         );
-        $this->assertCount(1, $this->resolver()->listFor($off->actor, new Page())->facts);
+        $this->assertCount(1, $this->resolver()->listFor($off->actor, new IdListPage())->facts);
     }
 
     public function test_a_size_outside_one_to_a_hundred_is_refused(): void

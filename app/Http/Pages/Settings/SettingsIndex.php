@@ -18,7 +18,7 @@ use App\Enums\GroupAvailability;
 use App\Enums\SettingSource;
 use App\Enums\SettingType;
 use App\Exceptions\ServerOriginInvalid;
-use App\Resolvers\ConnectProjectWindowResolver;
+use App\Http\Pages\Resolvers\ConnectProjectWindowResolver;
 use App\Support\ConnectionsOwnerCheck;
 use App\Support\CoreSettings;
 use App\Support\Layout\DeclaredLayoutData;
@@ -27,7 +27,7 @@ use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\SettingsGroup;
-use App\Support\Layout\SettingsPage;
+use App\Support\Layout\SettingsPage as SettingsLayout;
 use App\Support\Layout\SettingsRow;
 use App\Support\SettingRegistry;
 use App\Support\SettingsValues;
@@ -41,7 +41,7 @@ use App\Support\SettingsValues;
  * revision the group was read at, so a group changed meanwhile is refused, never overwritten. Other kinds are shown
  * read-only.
  */
-final readonly class SettingsIndex
+final readonly class SettingsIndex extends SettingsPage
 {
     private const array ORDER = [
         'general', 'connected_projects', 'tasks', 'plans', 'documents', 'sequences', 'memory', 'reminders', 'helpers',
@@ -69,7 +69,7 @@ final readonly class SettingsIndex
 
         usort($sections, fn (array $first, array $second) => $first[0] <=> $second[0]);
 
-        return SettingsPage::make(...array_map(fn (array $ranked) => $ranked[1], $sections))->layout();
+        return SettingsLayout::make(...array_map(fn (array $ranked) => $ranked[1], $sections))->layout();
     }
 
     /**

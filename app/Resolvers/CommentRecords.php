@@ -19,8 +19,8 @@ use App\Exceptions\CommentUnavailable;
 use App\Exceptions\TargetHasNoText;
 use App\Exceptions\TargetNotCommentable;
 use App\Models\Records\Comment;
+use App\Support\IdListPage;
 use App\Support\MarkdownText;
-use App\Support\Page;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
@@ -35,7 +35,7 @@ final readonly class CommentRecords implements CommentResolver
 {
     public function __construct(private RecordResolver $records) {}
 
-    public function list(RecordIdentity $target, Page $page): CommentList
+    public function list(RecordIdentity $target, IdListPage $page): CommentList
     {
         $record = $this->commentable($target);
         $card = $this->records->card($target);

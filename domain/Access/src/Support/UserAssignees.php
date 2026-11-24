@@ -14,7 +14,7 @@ use App\Exceptions\AssigneeUnavailable;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
 use App\Support\AssigneeName;
-use App\Support\Page;
+use App\Support\IdListPage;
 use Domain\Access\Models\User;
 
 /**
@@ -72,7 +72,7 @@ final readonly class UserAssignees implements AssigneeProvider
             ->all());
     }
 
-    public function eligible(Page $page): AssigneeList
+    public function eligible(IdListPage $page): AssigneeList
     {
         $this->actors->actor();
 

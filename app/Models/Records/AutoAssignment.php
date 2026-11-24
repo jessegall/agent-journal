@@ -16,7 +16,7 @@ use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
 use App\Support\AutoAssignmentPage;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\PoolReference;
 use App\Support\ReadBuilder;
 use Carbon\CarbonImmutable;
@@ -108,7 +108,7 @@ final class AutoAssignment extends Model implements ReadableModel
     /**
      * One page of the auto-assignments that are on, by id, for the engine to consider.
      */
-    public static function enabledPage(Page $page): AutoAssignmentPage
+    public static function enabledPage(IdListPage $page): AutoAssignmentPage
     {
         return self::pageOf(self::query()->where('enabled', true), $page);
     }
@@ -116,7 +116,7 @@ final class AutoAssignment extends Model implements ReadableModel
     /**
      * One page of the actor's auto-assignments, on or off, by id.
      */
-    public static function pageFor(ActorIdentity $actor, Page $page): AutoAssignmentPage
+    public static function pageFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage
     {
         return self::pageOf(self::query()->ofActor($actor), $page);
     }
@@ -172,7 +172,7 @@ final class AutoAssignment extends Model implements ReadableModel
     /**
      * @param  ReadBuilder<self>  $query
      */
-    private static function pageOf(ReadBuilder $query, Page $page): AutoAssignmentPage
+    private static function pageOf(ReadBuilder $query, IdListPage $page): AutoAssignmentPage
     {
         $rows = $query
             ->when($page->afterId !== null, fn (Builder $after) => $after->where('id', '>', $page->afterId))

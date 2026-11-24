@@ -55,7 +55,7 @@ final readonly class DeskAssignees implements AssigneeProvider
             ->all());
     }
 
-    public function eligible(Page $page): AssigneeList
+    public function eligible(IdListPage $page): AssigneeList
     {
         $this->actors->actor();
 

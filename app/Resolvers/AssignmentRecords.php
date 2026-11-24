@@ -13,7 +13,7 @@ use App\Exceptions\InvalidAssignmentPage;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentSet;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\RecordIds;
 use Illuminate\Database\Eloquent\Builder;
@@ -70,7 +70,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
         return new AssignmentSet(array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all()));
     }
 
-    public function recordIdsFor(string $type, AssigneeIdentity $holder, Page $page): RecordIds
+    public function recordIdsFor(string $type, AssigneeIdentity $holder, IdListPage $page): RecordIds
     {
         $this->actors->actor();
         $ids = [];
@@ -127,7 +127,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
         $afterId = null;
 
         do {
-            $page = $this->recordIdsFor($type, $holder, new Page($afterId, Page::LARGEST_LIMIT));
+            $page = $this->recordIdsFor($type, $holder, new IdListPage($afterId, IdListPage::LARGEST_LIMIT));
             array_push($ids, ...$page->ids);
             $afterId = $page->nextAfterId;
         } while ($afterId !== null);

@@ -15,7 +15,7 @@ use App\Support\Layout\LayoutPartData;
  * One run's page on the shared reader recipe, drawn by its native run view; a run that is not there is the removed
  * notice with Back to the runs.
  */
-final readonly class ProcessRunsShow
+final readonly class ProcessRunsShow extends ProcessRunsPage
 {
     public function of(RunWindowData $detail): DeclaredLayoutData
     {

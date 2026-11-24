@@ -9,7 +9,7 @@ use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Time\VerificationTiming;
 use App\Contracts\Work\WorkStacks;
 use App\Support\AssigneeIdentity;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Values\TimingVerdict;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\PhaseTask;
@@ -48,7 +48,7 @@ final readonly class PhaseTiming implements VerificationTiming
             $page = $this->assignments->recordIdsFor(
                 Plan::LINK_TYPE,
                 $holder,
-                new Page($afterId, Page::LARGEST_LIMIT),
+                new IdListPage($afterId, IdListPage::LARGEST_LIMIT),
             );
 
             $started = Plan::query()->amongIds($page->ids)->inStates([PlanState::Started])

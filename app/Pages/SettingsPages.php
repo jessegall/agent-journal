@@ -41,7 +41,7 @@ use App\Enums\SettingType;
 use App\Http\Controllers\ResetSettingsPageController;
 use App\Http\Controllers\SaveSettingsPageController;
 use App\Http\Controllers\SwitchSettingsGroupPageController;
-use App\Resolvers\SettingsWindowResolver;
+use App\Http\Pages\Resolvers\SettingsWindowResolver;
 use App\Support\SettingsOwnerCheck;
 
 /**

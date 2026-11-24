@@ -8,8 +8,8 @@ use App\Contracts\Records\CommentResolver;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
+use App\Support\IdListPage;
 use App\Support\MarkdownText;
-use App\Support\Page;
 use App\Support\RecordIdentity;
 use App\Support\TextPreview;
 use Domain\Documents\Values\DocumentReadCard;
@@ -70,7 +70,7 @@ final readonly class PublicationPages
         string $key,
         DocumentReadCard|ReportReadCard $card,
     ): ToolResult {
-        $page = $this->comments->list($record, new Page($position->filters['after_comment'] ?? null, 1));
+        $page = $this->comments->list($record, new IdListPage($position->filters['after_comment'] ?? null, 1));
         $entry = $page->comments[0] ?? null;
 
         if ($entry === null) {

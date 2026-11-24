@@ -999,6 +999,8 @@ use App\Exceptions\UnknownLinkType;
 use App\Exceptions\UserActorRequired;
 use App\Exceptions\VerificationContractInvalid;
 use App\Exceptions\WorkBudgetSpent;
+use App\Http\Pages\CreationDialog;
+use App\Http\Pages\Page;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Web\Concerns\ReadsCommentsPage;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
@@ -1136,6 +1138,7 @@ use App\Support\GatewaySetupCheck;
 use App\Support\HeldAccountUses;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
+use App\Support\IdListPage;
 use App\Support\InboxIntervals;
 use App\Support\InboxMembers;
 use App\Support\InboxMembership;
@@ -1205,7 +1208,6 @@ use App\Support\OperationRule;
 use App\Support\OrderedRecordIds;
 use App\Support\OwnerStartReceipt;
 use App\Support\OwnerStartRequest;
-use App\Support\Page;
 use App\Support\PolicyOverride;
 use App\Support\PoolDefinition;
 use App\Support\PoolDescription;
@@ -2308,7 +2310,7 @@ final class CoreApi
                 AssignmentResult::class,
                 AssignmentOutcome::class,
                 AssignmentChange::class,
-                Page::class,
+                IdListPage::class,
                 RecordIds::class,
                 OrderedRecordIds::class,
                 PoolReference::class,
@@ -3005,6 +3007,8 @@ final class CoreApi
                 SkillOwnerRequired::class,
             )
             ->support(
+                Page::class,
+                CreationDialog::class,
                 Domain::class,
                 HasAssignables::class,
                 HasLinkRecords::class,

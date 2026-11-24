@@ -7,7 +7,7 @@ namespace App\Contracts\Assignments;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
 use App\Support\AssigneeName;
-use App\Support\Page;
+use App\Support\IdListPage;
 
 /**
  * What the owner of one type of actor answers for assignments: whether an actor may receive work, the names actors are
@@ -31,5 +31,5 @@ interface AssigneeProvider
      */
     public function names(array $assignees): array;
 
-    public function eligible(Page $page): AssigneeList;
+    public function eligible(IdListPage $page): AssigneeList;
 }

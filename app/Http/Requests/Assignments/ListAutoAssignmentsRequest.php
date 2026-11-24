@@ -6,7 +6,7 @@ namespace App\Http\Requests\Assignments;
 
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
-use App\Support\Page;
+use App\Support\IdListPage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -35,8 +35,8 @@ final class ListAutoAssignmentsRequest extends FormRequest
         );
     }
 
-    public function page(): Page
+    public function page(): IdListPage
     {
-        return new Page($this->filled('after') ? $this->string('after')->lower()->toString() : null);
+        return new IdListPage($this->filled('after') ? $this->string('after')->lower()->toString() : null);
     }
 }

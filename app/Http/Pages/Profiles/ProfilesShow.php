@@ -24,7 +24,7 @@ use App\Values\SupervisorRoutes;
  * no read supplies is left out, and the rules, which nothing reads for a profile yet, say they are not available
  * instead of looking empty.
  */
-final readonly class ProfilesShow
+final readonly class ProfilesShow extends ProfilesPage
 {
     private const string MODELS_HELP = 'Others can be chosen when it starts.';
 

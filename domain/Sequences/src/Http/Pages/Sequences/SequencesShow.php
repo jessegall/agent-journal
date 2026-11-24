@@ -14,10 +14,9 @@ use Domain\Sequences\Models\Sequence;
 
 /**
  * The Sequences page with one sequence chosen, as the design's reader draws it: its name, what it is about and its
- * numbered steps, each with when it runs and when it is done. Its runs are not here: a running sequence is a window on
- * Home.
+ * numbered steps, each with when it runs and when it is done.
  */
-final readonly class SequencesShow
+final readonly class SequencesShow extends SequencesPage
 {
     public function __construct(private SequencesIndex $index) {}
 

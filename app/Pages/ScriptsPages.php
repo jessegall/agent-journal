@@ -29,7 +29,7 @@ use App\Enums\StepStatus;
 use App\Enums\SyntaxForm;
 use App\Http\Controllers\Pages\CheckDraftPageController;
 use App\Http\Controllers\Pages\SaveDraftPageController;
-use App\Resolvers\ProfileScriptWindowResolver;
+use App\Http\Pages\Resolvers\ProfileScriptWindowResolver;
 use App\Support\AccountOwnerCheck;
 
 /**

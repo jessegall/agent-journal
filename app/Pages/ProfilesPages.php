@@ -66,11 +66,11 @@ use App\Http\Controllers\SignInChallengeController;
 use App\Http\Controllers\SignInReceiptController;
 use App\Http\Controllers\StartSignInController;
 use App\Http\Controllers\SubmitSignInCodeController;
-use App\Resolvers\AccountNoticesSection;
-use App\Resolvers\AccountsWindowResolver;
-use App\Resolvers\ProfilesWindowResolver;
-use App\Resolvers\ProfileWindowResolver;
-use App\Resolvers\StartAccountWindowResolver;
+use App\Http\Pages\Resolvers\AccountNoticesSection;
+use App\Http\Pages\Resolvers\AccountsWindowResolver;
+use App\Http\Pages\Resolvers\ProfilesWindowResolver;
+use App\Http\Pages\Resolvers\ProfileWindowResolver;
+use App\Http\Pages\Resolvers\StartAccountWindowResolver;
 use App\Support\AccountOwnerCheck;
 
 /**

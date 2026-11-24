@@ -8,7 +8,7 @@ use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Comments\CommentList;
 use App\Enums\CallEffect;
-use App\Support\Page;
+use App\Support\IdListPage;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -28,7 +28,7 @@ final class ListCommentsCall extends Data implements JournalCall
         public readonly string $target,
         #[Ulid]
         public readonly string|null $after = null,
-        #[MapName('per_page'), Min(1), Max(Page::LARGEST_LIMIT)]
+        #[MapName('per_page'), Min(1), Max(IdListPage::LARGEST_LIMIT)]
         public readonly int|null $perPage = null,
     ) {}
 }

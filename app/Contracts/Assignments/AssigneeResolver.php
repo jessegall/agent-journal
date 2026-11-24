@@ -9,7 +9,7 @@ use App\Support\AssigneeList;
 use App\Support\AssigneeName;
 use App\Support\AssignmentHolders;
 use App\Support\AssignmentSet;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 
 /**
@@ -23,7 +23,7 @@ interface AssigneeResolver
      */
     public function names(array $actors): array;
 
-    public function eligible(string $type, Page $page): AssigneeList;
+    public function eligible(string $type, IdListPage $page): AssigneeList;
 
     /**
      * The holders of a set of assignments with their names, read with one call per actor type.

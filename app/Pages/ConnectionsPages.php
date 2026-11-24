@@ -42,10 +42,10 @@ use App\Enums\InstallAttemptState;
 use App\Enums\InvitationMode;
 use App\Enums\ProjectWindowState;
 use App\Enums\WindowPlace;
-use App\Resolvers\ConnectProjectWindowResolver;
-use App\Resolvers\DeviceApprovalWindowResolver;
-use App\Resolvers\FileWindowResolver;
-use App\Resolvers\ProjectWindowResolver;
+use App\Http\Pages\Resolvers\ConnectProjectWindowResolver;
+use App\Http\Pages\Resolvers\DeviceApprovalWindowResolver;
+use App\Http\Pages\Resolvers\FileWindowResolver;
+use App\Http\Pages\Resolvers\ProjectWindowResolver;
 use App\Support\ConnectionsOwnerCheck;
 
 /**

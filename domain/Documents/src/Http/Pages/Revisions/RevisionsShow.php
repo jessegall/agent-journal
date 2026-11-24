@@ -16,7 +16,7 @@ use Domain\Documents\Data\RevisionView;
  * historical with a way to the current text when a later one exists, when it was saved, its abstract and its text
  * once; an empty text says so.
  */
-final readonly class RevisionsShow
+final readonly class RevisionsShow extends RevisionsPage
 {
     private const string NO_TEXT = '_This revision has no text._';
 

@@ -26,7 +26,7 @@ use App\Support\AutoAssignmentPage;
 use App\Support\AutoAssignmentRun;
 use App\Support\EngineAccess;
 use App\Support\EngineActor;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\PoolReference;
 use App\Values\TrustedEntryAuthority;
 use Carbon\CarbonImmutable;
@@ -62,13 +62,13 @@ final class AutoAssignmentTriggerTest extends TestCase
     {
         $assignments = $this->mock(AutoAssignmentResolver::class);
         $assignments->shouldReceive('enabled')->once()->withArgs(
-            fn (Page $page): bool => $page->limit === 20 && $page->afterId === null,
+            fn (IdListPage $page): bool => $page->limit === 20 && $page->afterId === null,
         )->andReturn(new AutoAssignmentPage(array_map($this->fact(...), range(1, 20)), TestIds::of(20)));
         $assignments->shouldReceive('enabled')->once()->withArgs(
-            fn (Page $page): bool => $page->limit === 20 && $page->afterId === TestIds::of(20),
+            fn (IdListPage $page): bool => $page->limit === 20 && $page->afterId === TestIds::of(20),
         )->andReturn(new AutoAssignmentPage(array_map($this->fact(...), range(21, 25)), null));
         $assignments->shouldReceive('enabled')->once()->withArgs(
-            fn (Page $page): bool => $page->afterId === TestIds::of(25),
+            fn (IdListPage $page): bool => $page->afterId === TestIds::of(25),
         )->andReturn(new AutoAssignmentPage([], null));
         $this->mock(AssignedWorkResolver::class)->shouldReceive('count')->andReturn(0);
         $this->mock(CommandBus::class)->shouldReceive('run')->times(9)->andReturn(AutoAssignmentOutcome::noCandidate());

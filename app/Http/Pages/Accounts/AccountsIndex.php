@@ -33,7 +33,7 @@ use Carbon\CarbonImmutable;
  * as measured readings with their reset times. Add account opens the native sign-in flow in the reader, since its
  * challenge steps are not declared.
  */
-final readonly class AccountsIndex
+final readonly class AccountsIndex extends AccountsPage
 {
     public const string WEEK_LABEL = 'This week';
 

@@ -43,10 +43,10 @@ use App\Http\Controllers\RetryShareController;
 use App\Http\Controllers\RevealShareLinkController;
 use App\Http\Controllers\RevokeShareController;
 use App\Http\Controllers\SharePreviewController;
-use App\Resolvers\GatewaySettingsResolver;
-use App\Resolvers\ShareDetailResolver;
-use App\Resolvers\ShareListResolver;
-use App\Resolvers\SharePreviewResolver;
+use App\Http\Pages\Resolvers\GatewaySettingsResolver;
+use App\Http\Pages\Resolvers\ShareDetailResolver;
+use App\Http\Pages\Resolvers\ShareListResolver;
+use App\Http\Pages\Resolvers\SharePreviewResolver;
 use App\Support\SharingOwnerCheck;
 
 /**

@@ -21,7 +21,7 @@ use Domain\Tasks\Data\TaskGraph;
  * One plan's record page: the plans column with the plan in its reader, its label, state and facts, its Tasks tab the
  * paged outline with the plan's start and review, its Graph tab its tasks and their waits; only the opened tab is drawn.
  */
-final readonly class PlansShow
+final readonly class PlansShow extends PlansPage
 {
     public function __construct(private PlansIndex $index) {}
 

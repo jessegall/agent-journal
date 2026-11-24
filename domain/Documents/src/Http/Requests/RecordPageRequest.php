@@ -6,7 +6,6 @@ namespace Domain\Documents\Http\Requests;
 
 use App\Http\Requests\Web\Concerns\ReadsCommentsPage;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
-use App\Support\Page;
 use App\Values\PageSize;
 use Illuminate\Foundation\Http\FormRequest;
 

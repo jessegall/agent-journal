@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Comments;
 
 use App\Http\Requests\RecordTargetRequest;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Values\PageSize;
 
 /**
@@ -21,13 +21,13 @@ final class ListCommentsRequest extends RecordTargetRequest
         return [
             ...$this->targetRules(),
             'after' => ['nullable', 'ulid'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:'.Page::LARGEST_LIMIT],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:'.IdListPage::LARGEST_LIMIT],
         ];
     }
 
-    public function page(): Page
+    public function page(): IdListPage
     {
-        return new Page(
+        return new IdListPage(
             $this->filled('after') ? $this->string('after')->toString() : null,
             PageSize::from($this->filled('per_page') ? $this->integer('per_page') : null)->rows,
         );

@@ -7,15 +7,14 @@ namespace Domain\Plans\Http\Pages\Plans;
 use App\Contracts\Navigation\DraftProducers;
 use App\Enums\ActionMethod;
 use App\Enums\ReaderWidth;
+use App\Http\Pages\CreationDialog;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
-use App\Support\Layout\LayoutDialogData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\LayoutWaysData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
@@ -32,7 +31,7 @@ use Spatie\LaravelData\Optional;
  * the rows with each plan's counted progress and its cancelled state apart from the counts, numbered paging and the
  * empty states; a plan or a task opened beside it fills the reader, and Back leads to the list as it was.
  */
-final readonly class PlansIndex
+final readonly class PlansIndex extends PlansPage
 {
     public function __construct(
         private PlanResolver $plans,
@@ -85,13 +84,10 @@ final readonly class PlansIndex
     private function emptyFor(PlanFiltersData $filters): ListEmpty
     {
         if ($filters->state instanceof PlanStateGroup || $filters->search !== '') {
-            return ListEmpty::offering(
+            return $this->nothingMatches(
                 'No plan matches these filters.',
-                LayoutPartData::action(
-                    'clear',
-                    'Show all plans',
-                    LayoutActionData::changing(['state' => '', 'q' => '', 'page' => '']),
-                ),
+                'Show all plans',
+                ['state' => '', 'q' => '', 'page' => ''],
             );
         }
 
@@ -117,20 +113,18 @@ final readonly class PlansIndex
      */
     private function creation(string $key = 'creation', string $openerStyle = 'bordered'): LayoutPartData
     {
-        $isGuided = $this->producers->offersGuided('plan');
-
-        return LayoutPartData::dialog(
+        $creation = new CreationDialog(
             $key,
-            LayoutDialogData::from(
-                [
-                    'title' => 'New plan',
-                    'confirmation' => 'Plan created',
-                    'guidedNoun' => $isGuided ? 'plan' : Optional::create(),
-                    'ways' => $isGuided
-                        ? new LayoutWaysData('Write it yourself', 'Plan it with an agent', $key === 'creation')
-                        : Optional::create(),
-                ],
-            ),
+            'New plan',
+            'Plan created',
+            'Create plan',
+            $this->producers->offersGuided('plan') ? 'plan' : Optional::create(),
+            guidedWay: 'Plan it with an agent',
+            waysInHeader: $key === 'creation',
+        );
+
+        return $this->creationDialog(
+            $creation,
             LayoutPartData::action('open', 'New plan', LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(
                 ['method' => ActionMethod::Post, 'href' => route('plans.create-plan', [], false), 'isKeyed' => true],
@@ -145,7 +139,6 @@ final readonly class PlansIndex
                     'choice',
                 ),
             ],
-            [LayoutPartData::action('send', 'Create plan', LayoutActionData::submitting(), 'primary')],
         );
     }
 }

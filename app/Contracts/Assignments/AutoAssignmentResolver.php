@@ -11,7 +11,7 @@ use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentKey;
 use App\Support\AutoAssignmentPage;
 use App\Support\AutoAssignmentStatus;
-use App\Support\Page;
+use App\Support\IdListPage;
 use PhpOption\Option;
 
 /**
@@ -38,10 +38,10 @@ interface AutoAssignmentResolver
     /**
      * One page of the auto-assignments that are on, by id, for the engine's maintenance only.
      */
-    public function enabled(Page $page): AutoAssignmentPage;
+    public function enabled(IdListPage $page): AutoAssignmentPage;
 
     /**
      * One page of the actor's auto-assignments, on or off, by id.
      */
-    public function listFor(ActorIdentity $actor, Page $page): AutoAssignmentPage;
+    public function listFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage;
 }

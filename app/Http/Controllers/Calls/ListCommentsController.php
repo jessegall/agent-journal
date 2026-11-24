@@ -8,7 +8,7 @@ use App\Calls\Comments\ListCommentsCall;
 use App\Contracts\Records\CommentResolver;
 use App\Contracts\Records\RecordResolver;
 use App\Data\Comments\CommentList;
-use App\Support\Page;
+use App\Support\IdListPage;
 use App\Support\RecordReference;
 use App\Values\PageSize;
 
@@ -21,6 +21,6 @@ final readonly class ListCommentsController
     {
         $target = $records->identify(RecordReference::parse($call->target));
 
-        return $comments->list($target, new Page($call->after, PageSize::from($call->perPage)->rows));
+        return $comments->list($target, new IdListPage($call->after, PageSize::from($call->perPage)->rows));
     }
 }

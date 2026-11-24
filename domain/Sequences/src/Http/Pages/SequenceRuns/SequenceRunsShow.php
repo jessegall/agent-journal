@@ -16,7 +16,7 @@ use Domain\Sequences\Models\SequenceRun;
  * current step is marked and the steps before it are done; a finished or cancelled run shows its steps with its
  * terminal state and no current step.
  */
-final readonly class SequenceRunsShow
+final readonly class SequenceRunsShow extends SequenceRunsPage
 {
     public function of(SequenceRun $run): DeclaredLayoutData
     {

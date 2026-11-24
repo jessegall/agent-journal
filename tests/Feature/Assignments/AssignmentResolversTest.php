@@ -12,7 +12,7 @@ use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidAssignmentPage;
 use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
-use App\Support\Page;
+use App\Support\IdListPage;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
@@ -82,9 +82,9 @@ final class AssignmentResolversTest extends TestCase
         Task::query()->whereKey($tasks[1]->id)->delete();
         $resolver = $this->app->make(AssignmentResolver::class);
 
-        $first = $resolver->recordIdsFor('tasks.task', $this->helper, new Page(null, 2));
-        $second = $resolver->recordIdsFor('tasks.task', $this->helper, new Page($first->nextAfterId, 2));
-        $last = $resolver->recordIdsFor('tasks.task', $this->helper, new Page($second->nextAfterId, 2));
+        $first = $resolver->recordIdsFor('tasks.task', $this->helper, new IdListPage(null, 2));
+        $second = $resolver->recordIdsFor('tasks.task', $this->helper, new IdListPage($first->nextAfterId, 2));
+        $last = $resolver->recordIdsFor('tasks.task', $this->helper, new IdListPage($second->nextAfterId, 2));
 
         $this->assertSame([$tasks[0]->id, $tasks[2]->id], $first->ids);
         $this->assertSame([$tasks[3]->id, $tasks[4]->id], $second->ids);
@@ -111,7 +111,7 @@ final class AssignmentResolversTest extends TestCase
     public function test_names_come_from_each_actor_types_owner(): void
     {
         $names = $this->app->make(AssigneeResolver::class)->names([$this->helper, AssigneeIdentity::of($this->owner)]);
-        $users = $this->app->make(AssigneeResolver::class)->eligible(ActorType::User->value, new Page());
+        $users = $this->app->make(AssigneeResolver::class)->eligible(ActorType::User->value, new IdListPage());
 
         $this->assertEqualsCanonicalizing(['Helper', 'Jesse'], array_map(fn ($name) => $name->name, $names));
         $this->assertSame(['Jesse'], array_map(fn ($name) => $name->name, $users->assignees));

@@ -9,8 +9,8 @@ use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AssigneeUnavailable;
 use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
+use App\Support\IdListPage;
 use App\Support\Lifecycle\AgentLifecycle;
-use App\Support\Page;
 use App\Support\Registry\AssignmentRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -102,14 +102,14 @@ final class AssigneesTest extends TestCase
         $retired = Agent::create('Gone', 'read-only-helper');
         $retired->retireAt(CarbonImmutable::now());
 
-        $firstPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new Page(null, 1));
+        $firstPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new IdListPage(null, 1));
         $secondPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(
-            new Page($firstPage->nextAfterId, 1),
+            new IdListPage($firstPage->nextAfterId, 1),
         );
         $names = $registry->assigneeProvider(ActorType::Agent->value)->names(
             [AssigneeIdentity::of($retired), AssigneeIdentity::of($this->builder)],
         );
-        $users = $registry->assigneeProvider(ActorType::User->value)->eligible(new Page());
+        $users = $registry->assigneeProvider(ActorType::User->value)->eligible(new IdListPage());
 
         $this->assertSame(['Builder'], array_map(fn ($name) => $name->name, $firstPage->assignees));
         $this->assertSame(['Reviewer'], array_map(fn ($name) => $name->name, $secondPage->assignees));
