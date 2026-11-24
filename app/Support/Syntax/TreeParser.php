@@ -40,7 +40,7 @@ final readonly class TreeParser
                 $stopped->outcome,
                 [0 => $root],
                 0,
-                new TreeDiagnostic($stopped->position, $stopped->getMessage()),
+                new TreeDiagnostic($stopped->position, $stopped->reason),
             );
         }
     }

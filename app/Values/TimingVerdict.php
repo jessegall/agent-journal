@@ -33,15 +33,13 @@ final readonly class TimingVerdict
         return $this->unfinishedTasks === [];
     }
 
-    public function reason(): string
+    public function reason(): AgentText
     {
         $tasks = implode(', ', array_map(fn (int $task): string => "task {$task}", $this->unfinishedTasks));
 
-        return sprintf(
-            'phase-timing: plan %s phase %s still has %s; tests and checks run at the end of the phase.',
-            $this->plan,
-            $this->phase,
-            $tasks,
+        return AgentText::of(
+            'core.shell.phase_timing',
+            ['plan' => $this->plan, 'phase' => $this->phase, 'tasks' => $tasks],
         );
     }
 }

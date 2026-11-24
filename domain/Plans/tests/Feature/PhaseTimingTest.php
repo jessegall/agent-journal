@@ -71,7 +71,7 @@ final class PhaseTimingTest extends TestCase
 
         $this->assertFalse($verdict->isAllowed());
         $this->assertSame([$this->tasks[0]->number, $this->tasks[1]->number], $verdict->unfinishedTasks);
-        $this->assertStringStartsWith('phase-timing:', $verdict->reason());
+        $this->assertSame('core.shell.phase_timing', $verdict->reason()->key);
     }
 
     public function test_once_the_phase_tasks_ended_the_agent_may_run_its_checks(): void

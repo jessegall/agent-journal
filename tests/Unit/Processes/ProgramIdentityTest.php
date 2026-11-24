@@ -21,7 +21,7 @@ use App\Values\ProgramSpellings;
 use App\Values\UnresolvedFact;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 /**
  * Program names drop their path prefix and map only declared spellings, while the executable they resolve to is

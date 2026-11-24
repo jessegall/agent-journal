@@ -9,6 +9,7 @@ use App\Enums\NodeType;
 use App\Enums\ParseOutcome;
 use App\Enums\ShellDialect;
 use App\Exceptions\ShellGrammarStopped;
+use App\Values\AgentText;
 use App\Values\Redirect;
 use App\Values\ShellTree;
 use App\Values\SourceRange;
@@ -31,7 +32,7 @@ final class TreeDraft
 
     private int $executableParts = 0;
 
-    private string|null $unsupportedReason = null;
+    private AgentText|null $unsupportedReason = null;
 
     private int $unsupportedAt = 0;
 
@@ -102,7 +103,7 @@ final class TreeDraft
      * Turns a simple command the grammar does not support, such as set or shopt, into an Unsupported node that stays
      * in the tree and does not count as an executable part.
      */
-    public function markStatementUnsupported(int $node, string $reason): void
+    public function markStatementUnsupported(int $node, AgentText $reason): void
     {
         $this->nodes[$node]->type = NodeType::Unsupported;
         $this->executableParts--;
@@ -127,7 +128,7 @@ final class TreeDraft
     /**
      * Names the tree's outcome Unsupported by the first construct the grammar does not support.
      */
-    public function markUnsupported(string $reason, int $position): void
+    public function markUnsupported(AgentText $reason, int $position): void
     {
         if ($this->unsupportedReason === null) {
             $this->unsupportedReason = $reason;

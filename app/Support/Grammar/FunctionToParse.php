@@ -6,6 +6,7 @@ namespace App\Support\Grammar;
 
 use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
+use App\Values\AgentText;
 
 /**
  * A function definition with its header stepped past and its body at the cursor; the definition becomes one
@@ -32,7 +33,7 @@ final readonly class FunctionToParse
         $cursor->skip(TokenType::Newline);
 
         if (! CompoundToParse::opensAt($cursor)) {
-            throw ShellGrammarStopped::invalid('A function definition has no body.', $start);
+            throw ShellGrammarStopped::invalid(AgentText::of('core.shell.function_without_body'), $start);
         }
 
         return new self($command, $start);

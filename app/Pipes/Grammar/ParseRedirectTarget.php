@@ -12,6 +12,7 @@ use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\RedirectParts;
 use App\Support\Grammar\RedirectToParse;
 use App\Support\Syntax\TokenCursor;
+use App\Values\AgentText;
 use App\Values\Redirect;
 use App\Values\SourceRange;
 use App\Values\Word;
@@ -57,11 +58,13 @@ final readonly class ParseRedirectTarget implements Pipe
      */
     private function target(TokenCursor $cursor, int $start): Word
     {
+        $noTarget = AgentText::of('core.shell.redirect_without_target');
+
         if (! $cursor->is(TokenType::Word)) {
-            throw ShellGrammarStopped::invalid('A redirect has no target.', $start);
+            throw ShellGrammarStopped::invalid($noTarget, $start);
         }
 
-        $target = $cursor->word('A redirect has no target.');
+        $target = $cursor->word($noTarget);
         $cursor->advance();
 
         return $target;
@@ -76,14 +79,15 @@ final readonly class ParseRedirectTarget implements Pipe
     {
         $cursor = $toParse->cursor();
         $offset = $cursor->offset();
+        $noBody = AgentText::of('core.shell.heredoc_without_body');
 
         $body = $cursor->takeHereDocumentBody()
-            ?? throw ShellGrammarStopped::invalid('A here-document has no body.', $range->start);
+            ?? throw ShellGrammarStopped::invalid($noBody, $range->start);
 
         $node = $toParse->draft()->add(NodeType::HereDocument, $body->range->shiftedBy($offset), $toParse->owner);
 
         $hereDocument = $body->hereDocument
-            ?? throw ShellGrammarStopped::invalid('A here-document has no body.', $range->start);
+            ?? throw ShellGrammarStopped::invalid($noBody, $range->start);
 
         $redirect = new Redirect($descriptor, RedirectType::HereDocument, $hereDocument, $range);
 

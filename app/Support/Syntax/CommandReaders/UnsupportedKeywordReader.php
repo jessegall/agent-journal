@@ -12,6 +12,7 @@ use App\Support\Grammar\CommandToParse;
 use App\Support\Grammar\NodeRead;
 use App\Support\Syntax\TokenCursor;
 use App\Support\Syntax\UnsupportedConstructs;
+use App\Values\AgentText;
 
 /**
  * if, for, while, case and the like: a construct that is not supported, skipped up to its closing keyword as one
@@ -32,7 +33,7 @@ final readonly class UnsupportedKeywordReader implements CommandReader, Pipe
     public function handle(CommandToParse $toParse): NodeRead
     {
         $keyword = UnsupportedKeyword::at($toParse->cursor());
-        $reason = "The shell construct '{$keyword->value}' is not supported.";
+        $reason = AgentText::of('core.shell.construct_unsupported', ['construct' => $keyword->value]);
 
         return new NodeRead($this->unsupported->skip($toParse->context, $reason, $keyword->closingKeyword()));
     }

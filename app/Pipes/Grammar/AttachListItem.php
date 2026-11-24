@@ -12,6 +12,7 @@ use App\Support\Grammar\ListItem;
 use App\Support\Grammar\ListItems;
 use App\Support\Grammar\ListToParse;
 use App\Support\Syntax\TokenCursor;
+use App\Values\AgentText;
 
 /**
  * Places a read item in its list, in the background when a & follows it; only a command's end may follow it, and only
@@ -38,7 +39,10 @@ final readonly class AttachListItem implements Pipe
         if (! $this->endsCommand($cursor)) {
             $unexpected = $cursor->currentType()->value;
 
-            throw ShellGrammarStopped::invalid("Unexpected {$unexpected} after a command.", $cursor->position());
+            throw ShellGrammarStopped::invalid(
+                AgentText::of('core.shell.unexpected_after_command', ['token' => $unexpected]),
+                $cursor->position(),
+            );
         }
 
         return new ListItems($toParse, true);

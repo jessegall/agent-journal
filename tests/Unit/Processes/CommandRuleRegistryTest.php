@@ -25,7 +25,7 @@ use App\Values\RuleScope;
 use App\Values\UnresolvedFact;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 /**
  * Command rules are matched by their declared words, never by order or priority, and conflicting declarations stop
@@ -33,8 +33,6 @@ use PHPUnit\Framework\TestCase;
  */
 final class CommandRuleRegistryTest extends TestCase
 {
-    private const string REQUIRED_OPTION_REASON = 'The option -D is required here.';
-
     public function test_the_list_and_delete_forms_of_git_branch_each_match_their_own_rule(): void
     {
         $registry = CommandRuleRegistry::from([$this->branchDelete(), $this->branchList()]);
@@ -59,7 +57,7 @@ final class CommandRuleRegistryTest extends TestCase
         $registry = CommandRuleRegistry::from([$this->branchList(), $this->branchDelete()]);
 
         $this->assertSame(UnresolvedType::UnknownOption, $this->refusal($registry, 'git branch --force')->type);
-        $this->assertSame(self::REQUIRED_OPTION_REASON, $this->refusal($registry, 'git branch new-name')->reason);
+        $this->assertSame('core.shell.option_required', $this->refusal($registry, 'git branch new-name')->reason->key);
         $this->assertSame(UnresolvedType::UnknownSubcommand, $this->refusal($registry, 'git frobnicate')->type);
         $this->assertSame(UnresolvedType::UnknownProgram, $this->refusal($registry, 'frob it')->type);
     }

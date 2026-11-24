@@ -19,6 +19,7 @@ use App\Support\ProgramClassifiers;
 use App\Support\ProgramNames;
 use App\Support\Rules\WrapperRules;
 use App\Support\Syntax\TreeParser;
+use App\Values\AgentText;
 use App\Values\AliasLookup;
 use App\Values\AliasOrigin;
 use App\Values\ClassFact;
@@ -110,7 +111,7 @@ final readonly class TreeClassifier implements CommandClassifier
     private function classifyTree(ShellTree $tree, int $depth, ExecutionContext $context): Classification
     {
         if ($tree->outcome->isUnreadable()) {
-            $reason = $tree->diagnostic->reason ?? 'The line could not be read.';
+            $reason = $tree->diagnostic->reason ?? AgentText::of('core.shell.unreadable');
 
             return new Classification(
                 $tree,
@@ -159,7 +160,7 @@ final readonly class TreeClassifier implements CommandClassifier
                         new UnresolvedFact(
                             UnresolvedType::UnsupportedSyntax,
                             $node->id,
-                            'This construct is not supported, so what it runs is unknown.',
+                            AgentText::of('core.shell.construct_unknown_effect'),
                         ),
                         ...$unresolvedRedirects,
                     ],
@@ -226,7 +227,7 @@ final readonly class TreeClassifier implements CommandClassifier
                     new UnresolvedFact(
                         UnresolvedType::UnsupportedSyntax,
                         $node,
-                        'Wrappers and nested shells go deeper than the analysis allows.',
+                        AgentText::of('core.shell.too_deep'),
                     ),
                 ],
                 CommandType::Unknown,
@@ -265,7 +266,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 $node,
                 $program,
                 UnresolvedType::InterpretedSource,
-                "{$program->family} runs source this analysis cannot see.",
+                AgentText::of('core.shell.source_unseen', ['program' => $program->family]),
             ),
             array_key_exists($program->family, self::SHELL_DIALECTS) => $this->shellPart(
                 $program,
@@ -330,7 +331,7 @@ final readonly class TreeClassifier implements CommandClassifier
                     $node,
                     $program,
                     UnresolvedType::UnknownOption,
-                    "The git option {$option} changes configuration, the executable or the pager, or is not declared.",
+                    AgentText::of('core.shell.git_option', ['option' => $option]),
                 );
             }
         }
@@ -364,7 +365,10 @@ final readonly class TreeClassifier implements CommandClassifier
                     $node,
                     $program,
                     UnresolvedType::UnknownProgram,
-                    "The Composer callback {$line} in {$script->binding->reference()} is not declared.",
+                    AgentText::of(
+                        'core.shell.composer_callback',
+                        ['callback' => $line, 'binding' => $script->binding->reference()],
+                    ),
                 );
 
                 continue;
@@ -443,7 +447,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 $node,
                 $program,
                 UnresolvedType::UnsupportedSyntax,
-                "The saved aliases {$loop} run each other in a loop.",
+                AgentText::of('core.shell.alias_loop', ['aliases' => $loop]),
             );
         }
 
@@ -455,10 +459,11 @@ final readonly class TreeClassifier implements CommandClassifier
                 $node,
                 $program,
                 UnresolvedType::UnsupportedSyntax,
-                "The saved alias {$alias->name} takes ".count($alias->arguments).' plain arguments ('.implode(
-                    ', ',
-                    $alias->arguments,
-                ).').',
+                AgentText::of('core.shell.alias_arguments', [
+                    'alias' => $alias->name,
+                    'count' => count($alias->arguments),
+                    'arguments' => implode(', ', $alias->arguments),
+                ]),
             );
         }
 
@@ -573,7 +578,7 @@ final readonly class TreeClassifier implements CommandClassifier
                     $node,
                     $program,
                     UnresolvedType::UnknownWrapperOption,
-                    "{$wrapper->family} has no declared option {$text}.",
+                    AgentText::of('core.shell.wrapper_option', ['wrapper' => $wrapper->family, 'option' => $text]),
                 );
             }
 
@@ -591,7 +596,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 $node,
                 $program,
                 UnresolvedType::InterpretedSource,
-                'xargs inserts its input into the shell source, which is not known here.',
+                AgentText::of('core.shell.xargs_source'),
             );
         }
 
@@ -659,7 +664,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 $node,
                 $program,
                 UnresolvedType::InterpretedSource,
-                "{$program->family} runs a script, a here-document or its input, which are not read here.",
+                AgentText::of('core.shell.script_unread', ['program' => $program->family]),
             );
         }
 
@@ -670,7 +675,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 $node,
                 $program,
                 UnresolvedType::DynamicWord,
-                "The source given to {$program->family} -c is only known when it runs.",
+                AgentText::of('core.shell.inline_source_dynamic', ['program' => $program->family]),
             );
         }
 
@@ -719,7 +724,7 @@ final readonly class TreeClassifier implements CommandClassifier
                         $node,
                         $program,
                         UnresolvedType::UnknownWrapperOption,
-                        "find {$text} has no command ended by ; or +.",
+                        AgentText::of('core.shell.find_without_end', ['option' => $text]),
                     );
                 }
 
@@ -775,7 +780,7 @@ final readonly class TreeClassifier implements CommandClassifier
         int $node,
         ProgramIdentity $program,
         UnresolvedType $type,
-        string $reason,
+        AgentText $reason,
     ): PartClassification {
         return new PartClassification(
             $node,
@@ -838,7 +843,7 @@ final readonly class TreeClassifier implements CommandClassifier
             new UnresolvedFact(
                 UnresolvedType::UnresolvedExecutable,
                 $node,
-                "Setting {$name} changes which program runs or how it starts.",
+                AgentText::of('core.shell.setting_changes_program', ['name' => $name]),
             ),
         ];
     }

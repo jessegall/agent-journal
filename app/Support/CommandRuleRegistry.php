@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Enums\UnresolvedType;
 use App\Exceptions\CommandRuleConflict;
+use App\Values\AgentText;
 use App\Values\CommandRule;
 use App\Values\ProgramIdentity;
 use App\Values\ProgramSpellings;
@@ -133,12 +134,12 @@ final readonly class CommandRuleRegistry
         $rules = $this->active[$program->family] ?? [];
 
         if ($rules === []) {
-            $problem = "No rule declares the program {$program->family}.";
+            $problem = AgentText::of('core.shell.no_rule_for_program', ['program' => $program->family]);
 
             return new UnresolvedFact(UnresolvedType::UnknownProgram, $node, $problem);
         }
 
-        $problem = "No rule of {$program->family} accepts these words.";
+        $problem = AgentText::of('core.shell.no_rule_accepts', ['program' => $program->family]);
         $closest = new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem);
         $closestLength = -1;
 

@@ -19,6 +19,7 @@ use App\Support\Stack\Contracts\StackPermission;
 use App\Support\Stack\Contracts\StateFactory;
 use App\Support\Stack\Frames\Frame;
 use App\Values\AccessDecision;
+use App\Values\AgentText;
 use App\Values\ReadRequest;
 use App\Values\RecoveryCall;
 use App\Values\StackTarget;
@@ -126,7 +127,7 @@ final class JobGrantGuardTest extends TestCase
     public function test_a_read_the_admission_refuses_is_refused_even_when_it_is_an_orientation_read(): void
     {
         $admission = $this->createStub(ReadAdmission::class);
-        $admission->method('assess')->willReturn(AccessDecision::refused(AccessRuleType::NotGranted, 'Refused.'));
+        $admission->method('assess')->willReturn(AccessDecision::refused(AccessRuleType::NotGranted, AgentText::of('core.access.profile_does_not_grant_pair')));
         $this->app->instance(ReadAdmission::class, $admission);
         $reads = $this->app->make(ReadGrant::class);
 

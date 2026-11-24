@@ -17,7 +17,7 @@ use App\Support\Syntax\LexerScan;
 use App\Support\Syntax\ShellLexer;
 use App\Support\Syntax\Token;
 use Illuminate\Container\Container;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 /**
  * The shell lexer keeps quoting, comments and here-documents, and never runs anything.

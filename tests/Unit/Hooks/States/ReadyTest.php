@@ -13,10 +13,10 @@ use App\Support\Reflector;
 use App\Support\States\AgentState;
 use App\Support\States\ReadyState;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
+use Tests\TestCase;
 
 final class ReadyTest extends TestCase
 {

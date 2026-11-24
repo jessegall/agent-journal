@@ -7786,8 +7786,6 @@ constant	LibraryReuse::SKIPPED
 constant	LimitMcpMessage::BYTE_LIMIT
 constant	LimitMcpMessage::MAX_DEPTH
 constant	LimitUsageReport::MOST_BYTES
-constant	LineAdmission::EXPLAIN
-constant	LineAdmission::NEEDS_RUNNER
 constant	ListenerOwnership::CORE
 constant	LoggedMcpCall::OUTCOME_OK
 constant	LoginPage::COMPONENT
@@ -12140,6 +12138,7 @@ method	ClassificationRuleRefused::status()
 method	ClassificationRuleRowData::__construct()
 method	ClassificationRuleRowData::fromRule()
 method	ClassificationSummaryData::__construct()
+method	ClassificationUnavailable::__construct()
 method	ClassificationUnavailable::conflicting()
 method	ClassificationUnavailable::refusalCode()
 method	ClassificationUnavailable::status()
@@ -12693,6 +12692,7 @@ method	CommandRule::replacing()
 method	CommandRule::subcommandLength()
 method	CommandRule::toArray()
 method	CommandRule::usualBinding()
+method	CommandRuleConflict::__construct()
 method	CommandRuleConflict::overlapping()
 method	CommandRuleConflict::sameId()
 method	CommandRuleInvalid::contractMissing()
@@ -15150,6 +15150,7 @@ method	ExecutionContext::withWorkingFolder()
 method	ExecutionPlan::__construct()
 method	ExecutionPlan::startsOnlyInBackground()
 method	ExecutionPlan::steps()
+method	ExecutionPlanRefused::__construct()
 method	ExecutionPlanRefused::dynamicWord()
 method	ExecutionPlanRefused::incomplete()
 method	ExecutionPlanRefused::unknown()
@@ -16880,11 +16881,13 @@ method	LineAdmission::__construct()
 method	LineAdmission::admit()
 method	LineAdmission::admitted()
 method	LineAdmission::deniedOrMistimed()
+method	LineAdmission::explain()
 method	LineAdmission::failed()
 method	LineAdmission::firstRefusal()
 method	LineAdmission::hasApprovedReader()
 method	LineAdmission::held()
 method	LineAdmission::judge()
+method	LineAdmission::newKey()
 method	LineAdmission::partRefusal()
 method	LineAdmission::permissionRefusal()
 method	LineAdmission::refusal()
@@ -27414,6 +27417,7 @@ method	TreeClassifier::unknown()
 method	TreeClassifier::withCandidate()
 method	TreeClassifier::wrapperPart()
 method	TreeDiagnostic::__construct()
+method	TreeDiagnostic::text()
 method	TreeDraft::__construct()
 method	TreeDraft::add()
 method	TreeDraft::adopt()
@@ -33025,6 +33029,7 @@ property	ClassificationRuleRowData::$state
 property	ClassificationSummaryData::$classes
 property	ClassificationSummaryData::$known
 property	ClassificationSummaryData::$parts
+property	ClassificationUnavailable::$reason
 property	ClaudeAnswerData::$isError
 property	ClaudeAnswerData::$result
 property	ClaudeCodeAdapter::$failures
@@ -33234,6 +33239,7 @@ property	CommandRule::$replaces
 property	CommandRule::$revision
 property	CommandRule::$scope
 property	CommandRule::$subcommands
+property	CommandRuleConflict::$reason
 property	CommandRuleRegistry::$active
 property	CommandRuleRegistry::$held
 property	CommandRunStart::$isNew
@@ -34666,6 +34672,7 @@ property	ExecutionContext::$projectRoot
 property	ExecutionContext::$workingFolder
 property	ExecutionPlan::$root
 property	ExecutionPlan::$treeDigest
+property	ExecutionPlanRefused::$reason
 property	ExecutionPlanner::$syntax
 property	ExecutionPolicy::$attachable
 property	ExecutionPolicy::$budgets
@@ -40512,11 +40519,13 @@ property	ShellCommandRequested::$command
 property	ShellCommandRequested::$hook
 property	ShellGrammarStopped::$outcome
 property	ShellGrammarStopped::$position
+property	ShellGrammarStopped::$reason
 property	ShellLexer::$scan
 property	ShellLine::$dialect
 property	ShellLine::$line
 property	ShellLineUnreadable::$isLimit
 property	ShellLineUnreadable::$position
+property	ShellLineUnreadable::$reason
 property	ShellNode::$children
 property	ShellNode::$id
 property	ShellNode::$isRoot
@@ -43174,6 +43183,7 @@ variable	$encodedToggle
 variable	$end
 variable	$ended
 variable	$endedAt
+variable	$endedIds
 variable	$endedLongAgo
 variable	$endpoint
 variable	$ends
@@ -43812,7 +43822,9 @@ variable	$nextRound
 variable	$nextStep
 variable	$nextTaskOffset
 variable	$nextTier
+variable	$noBody
 variable	$noEmitOperands
+variable	$noTarget
 variable	$noTerminal
 variable	$node
 variable	$nodes
@@ -44263,6 +44275,7 @@ variable	$revisionId
 variable	$revisions
 variable	$revocation
 variable	$revoked
+variable	$rewrite
 variable	$rewritten
 variable	$right
 variable	$role

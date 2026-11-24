@@ -8,6 +8,7 @@ use App\Enums\NodeType;
 use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\GrammarContext;
+use App\Values\AgentText;
 use App\Values\SourceRange;
 
 /**
@@ -21,7 +22,7 @@ final readonly class UnsupportedConstructs
      *
      * @throws ShellGrammarStopped
      */
-    public function skip(GrammarContext $context, string $reason, string|null $terminator): int
+    public function skip(GrammarContext $context, AgentText $reason, string|null $terminator): int
     {
         $cursor = $context->cursor;
         $start = $cursor->position();
@@ -43,7 +44,10 @@ final readonly class UnsupportedConstructs
         }
 
         if ($construct->needsClosing()) {
-            throw ShellGrammarStopped::invalid("The '{$opener}' opened here is not closed by '{$terminator}'.", $start);
+            throw ShellGrammarStopped::invalid(
+                AgentText::of('core.shell.not_closed_by', ['opener' => $opener, 'terminator' => $terminator]),
+                $start,
+            );
         }
 
         $context->draft->markUnsupported($reason, $start);

@@ -8,6 +8,7 @@ use App\Enums\CommandClass;
 use App\Enums\CommandType;
 use App\Enums\OutputRequirement;
 use App\Enums\UnresolvedType;
+use App\Values\AgentText;
 use App\Values\ClassFact;
 use App\Values\Classification;
 use App\Values\CommandClassSet;
@@ -15,8 +16,8 @@ use App\Values\PartClassification;
 use App\Values\RuleOrigin;
 use App\Values\SyntaxOrigin;
 use App\Values\UnresolvedFact;
-use PHPUnit\Framework\TestCase;
 use Tests\Support\Processes\ParsesBashLines;
+use Tests\TestCase;
 
 /**
  * A classification unions the facts of its parts and redirects, keeps where each came from, and stays unknown while
@@ -63,10 +64,11 @@ final class ClassificationTest extends TestCase
     {
         $tree = $this->parse('frobnicate --all');
         $node = $tree->executableParts()[0]->id;
+        $reason = AgentText::of('core.shell.no_rule_for_program', ['program' => 'frobnicate']);
         $unknown = new PartClassification(
             $node,
             [],
-            [new UnresolvedFact(UnresolvedType::UnknownProgram, $node, 'no rule names frobnicate')],
+            [new UnresolvedFact(UnresolvedType::UnknownProgram, $node, $reason)],
             CommandType::Unknown,
         );
         $classification = new Classification($tree, [$unknown], []);

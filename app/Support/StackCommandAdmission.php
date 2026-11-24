@@ -33,7 +33,7 @@ final readonly class StackCommandAdmission implements CommandAdmission
             $decision = $this->admissions->admitsDeclared($command->command::class, $authorize);
 
             if (! $decision->allowed) {
-                return CommandDecision::refuse(RefusalCode::Forbidden, $decision->reason);
+                return CommandDecision::refuse(RefusalCode::Forbidden, $decision->reason->text);
             }
         }
 

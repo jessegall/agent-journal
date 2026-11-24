@@ -43,7 +43,7 @@ final readonly class RetryProcessRunHandler implements CommandHandler
         $refusal = $admission->decision;
 
         if ($refusal instanceof AdmissionRefusal) {
-            throw RetryRefused::refused($refusal->code->value, $refusal->reason);
+            throw RetryRefused::refused($refusal->code->value, $refusal->reason->text);
         }
 
         return $admission->runId;

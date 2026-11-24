@@ -46,7 +46,7 @@ final readonly class SupervisorCoverageReader
             $type->key(),
             $decision->allowed ? SupervisorCoverageType::Supported : SupervisorCoverageType::Unsupported,
             $command,
-            $decision->reason,
+            $decision->reason->text,
         );
     }
 }

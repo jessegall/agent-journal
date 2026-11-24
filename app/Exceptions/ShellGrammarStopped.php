@@ -7,6 +7,7 @@ namespace App\Exceptions;
 use App\Enums\AnalysisLimit;
 use App\Enums\ParseOutcome;
 use App\Support\Syntax\LexedLine;
+use App\Values\AgentText;
 use App\Values\TreeDiagnostic;
 use RuntimeException;
 
@@ -15,12 +16,15 @@ use RuntimeException;
  */
 final class ShellGrammarStopped extends RuntimeException
 {
-    private function __construct(string $reason, public readonly int $position, public readonly ParseOutcome $outcome)
-    {
-        parent::__construct($reason);
+    private function __construct(
+        public readonly AgentText $reason,
+        public readonly int $position,
+        public readonly ParseOutcome $outcome,
+    ) {
+        parent::__construct($reason->text);
     }
 
-    public static function invalid(string $reason, int $position): self
+    public static function invalid(AgentText $reason, int $position): self
     {
         return new self($reason, $position, ParseOutcome::Invalid);
     }
@@ -31,7 +35,7 @@ final class ShellGrammarStopped extends RuntimeException
      */
     public static function fromLexedLine(LexedLine $lexed, int $offset): self
     {
-        $diagnostic = $lexed->diagnostic ?? new TreeDiagnostic(0, 'The line cannot be read.');
+        $diagnostic = $lexed->diagnostic ?? new TreeDiagnostic(0, AgentText::of('core.shell.unreadable'));
 
         return new self($diagnostic->reason, $offset + $diagnostic->position, $lexed->outcome);
     }
@@ -39,7 +43,7 @@ final class ShellGrammarStopped extends RuntimeException
     public static function pastLimit(AnalysisLimit $limit, int $position): self
     {
         return new self(
-            "The line is past the analysis limit of {$limit->label()}.",
+            AgentText::of('core.shell.past_limit', ['limit' => $limit->label()]),
             $position,
             ParseOutcome::LimitExceeded,
         );

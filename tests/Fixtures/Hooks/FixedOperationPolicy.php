@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Enums\AccessRuleType;
-use App\Values\AccessDecision;
-use App\Values\Operation;
 use App\Contracts\Authorization\OperationPolicy;
+use App\Enums\AccessRuleType;
 use App\Enums\AccessType;
+use App\Values\AccessDecision;
+use App\Values\AgentText;
+use App\Values\Operation;
 
 /**
  * An operation policy fixed for a test: it allows every operation, or every one that changes no files.
  */
 final readonly class FixedOperationPolicy implements OperationPolicy
 {
-    public const string NO_CHANGES_REASON = 'Your profile grants no changes to workspace files';
-
     public function __construct(private bool $changesFiles = true) {}
-
 
     public function assess(Operation $operation): AccessDecision
     {
@@ -27,14 +25,14 @@ final readonly class FixedOperationPolicy implements OperationPolicy
         if ($changesFiles && ! $this->changesFiles) {
             return AccessDecision::refused(
                 AccessRuleType::NotGranted,
-                sprintf(
-                    self::NO_CHANGES_REASON.', so %s of %s is refused.',
-                    $operation->name,
-                    implode(', ', $operation->arguments),
-                ),
+                AgentText::of('core.access.scope_missing', [
+                    'operation' => $operation->name,
+                    'access' => 'changes',
+                    'target' => implode(', ', $operation->arguments),
+                ]),
             );
         }
 
-        return AccessDecision::allowed(AccessRuleType::ScopeGrant, 'The test policy allows it.');
+        return AccessDecision::allowed(AccessRuleType::ScopeGrant, AgentText::of('core.access.no_profile'));
     }
 }

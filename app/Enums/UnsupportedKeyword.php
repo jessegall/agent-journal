@@ -6,6 +6,7 @@ namespace App\Enums;
 
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Syntax\TokenCursor;
+use App\Values\AgentText;
 
 /**
  * A shell keyword that opens a construct the grammar does not support, with the word that closes it.
@@ -41,7 +42,7 @@ enum UnsupportedKeyword: string
             }
         }
 
-        throw ShellGrammarStopped::invalid('An unsupported keyword is missing here.', $cursor->position());
+        throw ShellGrammarStopped::invalid(AgentText::of('core.shell.keyword_missing'), $cursor->position());
     }
 
     /**

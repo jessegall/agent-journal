@@ -7,6 +7,7 @@ namespace App\Pipes\Grammar;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\CompoundParts;
+use App\Values\AgentText;
 use App\Values\SourceRange;
 
 /**
@@ -24,7 +25,10 @@ final readonly class SkipCompoundClosingToken implements Pipe
         $start = $parts->range->start + $cursor->offset();
 
         if (! $cursor->is($reading->closing)) {
-            throw ShellGrammarStopped::invalid("The {$reading->name()} opened here is not closed.", $start);
+            throw ShellGrammarStopped::invalid(
+                AgentText::of('core.shell.not_closed', ['construct' => $reading->name()]),
+                $start,
+            );
         }
 
         $end = $cursor->currentEnd();

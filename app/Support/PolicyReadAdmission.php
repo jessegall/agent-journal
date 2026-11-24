@@ -13,6 +13,7 @@ use App\Enums\CommandEffectType;
 use App\Enums\ReadEntitlementType;
 use App\Support\Stack\Contracts\StackPermission;
 use App\Values\AccessDecision;
+use App\Values\AgentText;
 use App\Values\AllowedNames;
 use App\Values\ProfileAuthorization;
 use App\Values\ReadRequest;
@@ -37,13 +38,19 @@ final readonly class PolicyReadAdmission implements ReadAdmission
         $authority = $this->actors->hasActor() ? $this->actors->authority() : null;
 
         if (! $authority instanceof StartProfileAuthority) {
-            return AccessDecision::allowed(AccessRuleType::ScopeGrant, 'No start profile limits this read.');
+            return AccessDecision::allowed(
+                AccessRuleType::ScopeGrant,
+                AgentText::of('core.access.no_profile_limits_read'),
+            );
         }
 
         $profile = $authority->profile;
 
         if ($profile->deniesOperation($request->name)) {
-            return AccessDecision::refused(AccessRuleType::ExplicitDenial, "The profile denies {$request->name}.");
+            return AccessDecision::refused(
+                AccessRuleType::ExplicitDenial,
+                AgentText::of('core.access.profile_denies', ['name' => $request->name]),
+            );
         }
 
         $entitlement = $this->reads->of($request->name);
@@ -51,10 +58,10 @@ final readonly class PolicyReadAdmission implements ReadAdmission
         return match ($entitlement->type) {
             ReadEntitlementType::Resolver => AccessDecision::allowed(
                 AccessRuleType::ScopeGrant,
-                "{$request->name} checks every record it shows.",
+                AgentText::of('core.access.resolver_checks_records', ['name' => $request->name]),
             ),
             ReadEntitlementType::Grant => $entitlement->isGrantedBy($profile->authorization->grants(...))
-                ? AccessDecision::allowed(AccessRuleType::ScopeGrant, 'The profile grants the read.')
+                ? AccessDecision::allowed(AccessRuleType::ScopeGrant, AgentText::of('core.access.profile_grants_read'))
                 : $this->scoped($request, $profile->authorization),
             ReadEntitlementType::Named => $this->named($request, $profile->authorization->holdsRead(
                 $request->name,
@@ -99,8 +106,14 @@ final readonly class PolicyReadAdmission implements ReadAdmission
     private function scoped(ReadRequest $request, ProfileAuthorization $authorization): AccessDecision
     {
         return self::holds($authorization->readTargets($request->name), $request)
-            ? AccessDecision::allowed(AccessRuleType::OperationGrant, "The profile holds {$request->name} for it.")
-            : AccessDecision::refused(AccessRuleType::NotGranted, "The profile does not grant {$request->name}.");
+            ? AccessDecision::allowed(
+                AccessRuleType::OperationGrant,
+                AgentText::of('core.access.profile_holds_for_it', ['name' => $request->name]),
+            )
+            : AccessDecision::refused(
+                AccessRuleType::NotGranted,
+                AgentText::of('core.access.profile_does_not_grant', ['name' => $request->name]),
+            );
     }
 
     private static function holds(AllowedNames $targets, ReadRequest $request): bool
@@ -119,7 +132,10 @@ final readonly class PolicyReadAdmission implements ReadAdmission
     private function named(ReadRequest $request, bool $held): AccessDecision
     {
         if ($held) {
-            return AccessDecision::allowed(AccessRuleType::OperationGrant, "The profile holds {$request->name}.");
+            return AccessDecision::allowed(
+                AccessRuleType::OperationGrant,
+                AgentText::of('core.access.profile_holds', ['name' => $request->name]),
+            );
         }
 
         if ($this->session->hasSession()) {
@@ -127,10 +143,16 @@ final readonly class PolicyReadAdmission implements ReadAdmission
             $recovery = $this->stack->allows($target, CommandEffectType::StateChange)->recovery;
 
             if ($recovery !== null && $request->matchesRecovery($recovery)) {
-                return AccessDecision::allowed(AccessRuleType::OperationGrant, 'The open state asks for this read.');
+                return AccessDecision::allowed(
+                    AccessRuleType::OperationGrant,
+                    AgentText::of('core.access.open_state_asks'),
+                );
             }
         }
 
-        return AccessDecision::refused(AccessRuleType::NotGranted, "The profile does not hold {$request->name}.");
+        return AccessDecision::refused(
+            AccessRuleType::NotGranted,
+            AgentText::of('core.access.profile_does_not_hold', ['name' => $request->name]),
+        );
     }
 }

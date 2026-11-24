@@ -55,7 +55,7 @@ final readonly class Explanations
 
         return ExplanationData::from([
             'outcome' => $tree->outcome->value,
-            'diagnostic' => $tree->diagnostic?->reason,
+            'diagnostic' => $tree->diagnostic?->text(),
             'diagnosticPosition' => $tree->diagnostic?->position,
             'executableParts' => count($tree->executableParts()),
             'nodes' => $nodes,
@@ -128,7 +128,7 @@ final readonly class Explanations
             $program === null ? '' : self::safe($program->original),
             array_values(array_unique(array_map(fn (ClassFact $fact): string => $fact->class->value, $facts))),
             array_map(fn (ClassFact $fact): string => $fact->class->value.' from '.$fact->origin->reference(), $facts),
-            array_map(fn (UnresolvedFact $fact): string => "{$fact->type->value}: {$fact->reason}", $unresolved),
+            array_map(fn (UnresolvedFact $fact) => "{$fact->type->value}: {$fact->reason->text}", $unresolved),
             $parts === [] ? '' : $parts[0]->purpose->label(),
             array_merge(...array_map(
                 fn (VerificationContract $contract): array => $contract->description(),

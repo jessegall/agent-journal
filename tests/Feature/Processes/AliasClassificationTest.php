@@ -57,7 +57,7 @@ final class AliasClassificationTest extends TestCase
         $this->assertFalse($classification->isKnown());
         $this->assertStringContainsString(
             implode(', ', [$first->id, $second->id, $first->id]),
-            $classification->unresolved()[0]->reason,
+            $classification->unresolved()[0]->reason->text,
         );
     }
 

@@ -45,13 +45,16 @@ final readonly class AccessPolicy
     public function decide(Operation $operation): AccessDecision
     {
         if (in_array($operation->name, $this->denials, true)) {
-            return AccessDecision::refused(AccessRuleType::ExplicitDenial, "The policy denies {$operation->name}.");
+            return AccessDecision::refused(
+                AccessRuleType::ExplicitDenial,
+                AgentText::of('core.access.policy_denies', ['operation' => $operation->name]),
+            );
         }
 
         if (array_any($operation->resources, self::isProtected(...))) {
             return AccessDecision::refused(
                 AccessRuleType::ProtectedPath,
-                "{$operation->name} reaches a protected path, which no policy grants.",
+                AgentText::of('core.access.protected_path', ['operation' => $operation->name]),
             );
         }
 
@@ -61,12 +64,15 @@ final readonly class AccessPolicy
         )) {
             return AccessDecision::refused(
                 AccessRuleType::Unclassified,
-                "{$operation->name} declares no access or an operand that cannot be judged, so it cannot be granted.",
+                AgentText::of('core.access.unclassified', ['operation' => $operation->name]),
             );
         }
 
         if (array_any($this->operationGrants, fn (OperationGrant $grant): bool => $grant->covers($operation))) {
-            return AccessDecision::allowed(AccessRuleType::OperationGrant, "{$operation->name} is granted by name.");
+            return AccessDecision::allowed(
+                AccessRuleType::OperationGrant,
+                AgentText::of('core.access.granted_by_name', ['operation' => $operation->name]),
+            );
         }
 
         foreach ($operation->resources as $resource) {
@@ -76,8 +82,11 @@ final readonly class AccessPolicy
                 if ($scope === null || ! $scope->permits($access)) {
                     return AccessDecision::refused(
                         AccessRuleType::NotGranted,
-                        "{$operation->name} needs {$access->value} on {$resource->target}, "
-                        .'which this policy does not grant.',
+                        AgentText::of('core.access.scope_missing', [
+                            'operation' => $operation->name,
+                            'access' => $access->value,
+                            'target' => $resource->target,
+                        ]),
                     );
                 }
             }
@@ -85,7 +94,7 @@ final readonly class AccessPolicy
 
         return AccessDecision::allowed(
             AccessRuleType::ScopeGrant,
-            "Every access {$operation->name} needs is granted where it acts.",
+            AgentText::of('core.access.granted_where_it_acts', ['operation' => $operation->name]),
         );
     }
 

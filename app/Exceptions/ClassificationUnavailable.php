@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Values\AgentText;
 use RuntimeException;
 use Throwable;
 
@@ -19,16 +20,19 @@ final class ClassificationUnavailable extends RuntimeException implements CodedR
 {
     use RendersRefusal;
 
-    public static function storeFailed(Throwable $failure): self
+    private function __construct(public readonly AgentText $reason, Throwable $previous)
     {
-        return new self('classification-unavailable: the project rules could not be read.', previous: $failure);
+        parent::__construct("classification-unavailable: {$reason->text}", previous: $previous);
     }
 
-    public static function conflicting(Throwable $conflict): self
+    public static function storeFailed(Throwable $failure): self
     {
-        $message = "classification-unavailable: the active rules conflict. {$conflict->getMessage()}";
+        return new self(AgentText::of('core.shell.rules_unreadable'), $failure);
+    }
 
-        return new self($message, previous: $conflict);
+    public static function conflicting(CommandRuleConflict $conflict): self
+    {
+        return new self(AgentText::of('core.shell.rules_conflict', ['conflict' => $conflict->reason->text]), $conflict);
     }
 
     protected function status(): int

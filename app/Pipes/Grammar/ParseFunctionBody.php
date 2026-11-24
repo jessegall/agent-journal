@@ -10,6 +10,7 @@ use App\Support\Grammar\CompoundToParse;
 use App\Support\Grammar\FunctionToParse;
 use App\Support\Grammar\NodeRead;
 use App\Support\PipelineAdapter;
+use App\Values\AgentText;
 use App\Values\SourceRange;
 
 /**
@@ -41,7 +42,7 @@ final readonly class ParseFunctionBody extends PipelineAdapter
         $range = new SourceRange($input->start, $draft->range($parsedBody->node)->end);
         $definition = $draft->add(NodeType::Unsupported, $range, null);
         $draft->adopt($definition, $parsedBody->node);
-        $draft->markUnsupported('A function definition is not supported.', $input->start);
+        $draft->markUnsupported(AgentText::of('core.shell.function_unsupported'), $input->start);
 
         return new NodeRead($definition);
     }

@@ -9,6 +9,7 @@ use App\Contracts\Bus\Pipe;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\CommandToParse;
 use App\Support\Syntax\TokenCursor;
+use App\Values\AgentText;
 
 /**
  * A reserved word such as then or done where a command should start makes the line invalid.
@@ -28,7 +29,7 @@ final readonly class ReservedWordReader implements CommandReader, Pipe
     public function handle(CommandToParse $toParse): never
     {
         $cursor = $toParse->cursor();
-        $reason = "The reserved word '{$cursor->currentLiteral()}' stands where a command should.";
+        $reason = AgentText::of('core.shell.reserved_word', ['word' => $cursor->currentLiteral()]);
 
         throw ShellGrammarStopped::invalid($reason, $cursor->position());
     }

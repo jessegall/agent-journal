@@ -9,6 +9,7 @@ use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\ListItems;
 use App\Support\Syntax\TokenCursor;
+use App\Values\AgentText;
 
 /**
  * Steps past the ; that ends a list item and the newlines and comments after it; a ;; or a ; where a command should be
@@ -38,11 +39,14 @@ final readonly class SkipListSeparator implements Pipe
     private function stepPastSemicolon(TokenCursor $cursor, bool $mayTakeSemicolon): void
     {
         if ($cursor->peekIs(1, TokenType::Semicolon)) {
-            throw ShellGrammarStopped::invalid('A case terminator ;; stands outside a case.', $cursor->position());
+            throw ShellGrammarStopped::invalid(
+                AgentText::of('core.shell.case_terminator_outside'),
+                $cursor->position(),
+            );
         }
 
         if (! $mayTakeSemicolon) {
-            throw ShellGrammarStopped::invalid('A ; stands where a command should be.', $cursor->position());
+            throw ShellGrammarStopped::invalid(AgentText::of('core.shell.separator_misplaced'), $cursor->position());
         }
 
         $cursor->advance();

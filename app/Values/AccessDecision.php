@@ -14,15 +14,15 @@ final readonly class AccessDecision
     private function __construct(
         public bool $allowed,
         public AccessRuleType $rule,
-        public string $reason,
+        public AgentText $reason,
     ) {}
 
-    public static function allowed(AccessRuleType $rule, string $reason): self
+    public static function allowed(AccessRuleType $rule, AgentText $reason): self
     {
         return new self(true, $rule, $reason);
     }
 
-    public static function refused(AccessRuleType $rule, string $reason): self
+    public static function refused(AccessRuleType $rule, AgentText $reason): self
     {
         return new self(false, $rule, $reason);
     }

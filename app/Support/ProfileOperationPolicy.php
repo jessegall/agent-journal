@@ -8,6 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\AccessRuleType;
 use App\Values\AccessDecision;
+use App\Values\AgentText;
 use App\Values\Operation;
 use App\Values\StartProfileAuthority;
 
@@ -26,7 +27,7 @@ final readonly class ProfileOperationPolicy implements OperationPolicy
         if (! $authority instanceof StartProfileAuthority) {
             return AccessDecision::allowed(
                 AccessRuleType::ScopeGrant,
-                'An actor without a profile is not held to one.',
+                AgentText::of('core.access.no_profile'),
             );
         }
 

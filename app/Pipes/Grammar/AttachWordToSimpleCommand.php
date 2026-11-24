@@ -8,6 +8,7 @@ use App\Pipelines\ReadWordPipeline;
 use App\Support\Grammar\SimpleCommandDraft;
 use App\Support\Grammar\WordToParse;
 use App\Support\PipelineAdapter;
+use App\Values\AgentText;
 
 /**
  * Reads a word of a simple command through the word pipeline; a word that starts an array assignment turns the
@@ -29,7 +30,7 @@ final readonly class AttachWordToSimpleCommand extends PipelineAdapter
 
     protected function into(object $input): WordToParse
     {
-        $word = $input->toParse->cursor()->word('A word is missing.');
+        $word = $input->toParse->cursor()->word(AgentText::of('core.shell.word_missing'));
 
         return $input->toParse->word($word, $input->parts->node, ! $input->parts->hasArguments());
     }

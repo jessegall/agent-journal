@@ -9,6 +9,7 @@ use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\CommandToParse;
 use App\Support\Syntax\TokenCursor;
+use App\Values\AgentText;
 
 /**
  * Checks the time budget before a command, refuses a missing one, and steps past 'time' before a subshell or group.
@@ -24,7 +25,7 @@ final readonly class CheckCommandStart implements Pipe
         $toParse->draft()->assertWithinBudget($cursor->position());
 
         if ($cursor->atEnd()) {
-            throw ShellGrammarStopped::invalid('A command is missing at the end of the line.', $cursor->position());
+            throw ShellGrammarStopped::invalid(AgentText::of('core.shell.command_missing_at_end'), $cursor->position());
         }
 
         if ($this->timesCompound($cursor)) {

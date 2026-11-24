@@ -29,8 +29,8 @@ use App\Values\ProgramSpellings;
 use App\Values\UnresolvedFact;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
-use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Processes\NoAliases;
+use Tests\TestCase;
 
 /**
  * The tree classifier gives every part its declared classes, every redirect and background job its own fact, and
@@ -92,7 +92,7 @@ final class TreeClassifierTest extends TestCase
 
         $this->assertFalse($classification->isKnown());
         $this->assertSame(UnresolvedType::UnknownProgram, $unknown->type);
-        $this->assertStringContainsString('acme', $unknown->reason);
+        $this->assertStringContainsString('acme', $unknown->reason->text);
     }
 
     public function test_background_jobs_path_changes_shells_and_unreadable_lines(): void

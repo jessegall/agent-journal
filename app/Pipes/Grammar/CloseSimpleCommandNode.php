@@ -9,6 +9,7 @@ use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\NodeRead;
 use App\Support\Grammar\SimpleCommandDraft;
 use App\Support\Syntax\UnsupportedConstructs;
+use App\Values\AgentText;
 
 /**
  * Finishes a simple command's node with its range, arguments and redirects; a command turned into an array assignment
@@ -30,11 +31,15 @@ final readonly class CloseSimpleCommandNode implements Pipe
             $context->draft->undoExecutablePartCount();
             $context->draft->remove($parts->node);
 
-            return new NodeRead($this->unsupported->skip($context, 'An array assignment is not supported.', null));
+            return new NodeRead($this->unsupported->skip(
+                $context,
+                AgentText::of('core.shell.array_assignment_unsupported'),
+                null,
+            ));
         }
 
         if ($parts->isEmpty() && ! $context->draft->hasChildren($parts->node)) {
-            throw ShellGrammarStopped::invalid('A command is missing here.', $parts->start);
+            throw ShellGrammarStopped::invalid(AgentText::of('core.shell.command_missing'), $parts->start);
         }
 
         $context->draft->finish($parts->node, $parts->range(), $parts->arguments, $parts->redirects);

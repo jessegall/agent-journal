@@ -7,6 +7,7 @@ namespace App\Support\Classification;
 use App\Enums\CommandClass;
 use App\Enums\RedirectType;
 use App\Enums\UnresolvedType;
+use App\Values\AgentText;
 use App\Values\ClassFact;
 use App\Values\HereDocument;
 use App\Values\Redirect;
@@ -47,13 +48,13 @@ final readonly class RedirectFacts
                 $unresolved[] = new UnresolvedFact(
                     UnresolvedType::DynamicWord,
                     $node->id,
-                    'A redirect target is only known when the command runs.',
+                    AgentText::of('core.shell.redirect_target_dynamic'),
                 );
             } elseif ($endpoint !== null && $this->isUnknownDevice($endpoint)) {
                 $unresolved[] = new UnresolvedFact(
                     UnresolvedType::UnsupportedSyntax,
                     $node->id,
-                    "The redirect endpoint {$endpoint} is a special file with unknown effects.",
+                    AgentText::of('core.shell.special_file', ['endpoint' => $endpoint]),
                 );
             }
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Values\AgentText;
 use RuntimeException;
 
 /**
@@ -12,23 +13,28 @@ use RuntimeException;
  */
 final class ExecutionPlanRefused extends RuntimeException
 {
+    private function __construct(public readonly AgentText $reason)
+    {
+        parent::__construct($reason->text);
+    }
+
     public static function incomplete(): self
     {
-        return new self('Only a completely read command line can be planned.');
+        return new self(AgentText::of('core.shell.plan_incomplete'));
     }
 
     public static function unknown(): self
     {
-        return new self('A command line with an unknown part cannot be planned.');
+        return new self(AgentText::of('core.shell.plan_unknown_part'));
     }
 
     public static function unsupportedNode(string $type, int $node): self
     {
-        return new self("The {$type} node {$node} cannot be planned.");
+        return new self(AgentText::of('core.shell.plan_unsupported_node', ['type' => $type, 'node' => $node]));
     }
 
     public static function dynamicWord(int $node): self
     {
-        return new self("A word of node {$node} is only known when it runs.");
+        return new self(AgentText::of('core.shell.plan_dynamic_word', ['node' => $node]));
     }
 }

@@ -24,7 +24,7 @@ final readonly class ReadGrant implements ReadGrantContract
         $decision = $this->admission->assess($request);
 
         if (! $decision->allowed) {
-            throw ReadGrantRefused::because($decision->reason);
+            throw ReadGrantRefused::because($decision->reason->text);
         }
     }
 

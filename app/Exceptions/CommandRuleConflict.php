@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Values\AgentText;
 use App\Values\CommandRule;
 use LogicException;
 
@@ -13,27 +14,28 @@ use LogicException;
  */
 final class CommandRuleConflict extends LogicException
 {
+    private function __construct(public readonly AgentText $reason)
+    {
+        parent::__construct($reason->text);
+    }
+
     public static function sameId(CommandRule $first, CommandRule $second): self
     {
-        return new self(
-            "The command rule {$first->id} is declared by {$first->scope->name()} and by {$second->scope->name()}.",
-        );
+        return new self(AgentText::of('core.shell.rule_declared_twice', [
+            'rule' => $first->id,
+            'first' => $first->scope->name(),
+            'second' => $second->scope->name(),
+        ]));
     }
 
     public static function overlapping(CommandRule $first, CommandRule $second): self
     {
-        return new self(
-            sprintf(
-                'The command rules %s (%s) and %s (%s) both match %s ',
-                $first->id,
-                $first->scope->name(),
-                $second->id,
-                $second->scope->name(),
-                $first->program->family,
-            ).implode(
-                ' ',
-                $first->subcommands,
-            ).' with words that overlap; make their grammars disjoint or replace one exactly.',
-        );
+        return new self(AgentText::of('core.shell.rules_overlap', [
+            'first' => $first->id,
+            'first_scope' => $first->scope->name(),
+            'second' => $second->id,
+            'second_scope' => $second->scope->name(),
+            'words' => implode(' ', [$first->program->family, ...$first->subcommands]),
+        ]));
     }
 }

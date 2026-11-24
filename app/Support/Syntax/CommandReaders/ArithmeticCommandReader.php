@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Syntax\CommandReaders;
 
 use App\Support\Syntax\TokenCursor;
+use App\Values\AgentText;
 
 /**
  * (( expression )): an arithmetic command is not supported.
@@ -18,8 +19,8 @@ final readonly class ArithmeticCommandReader extends UnsupportedCommandReader
         return $literal !== null && str_starts_with($literal, '((');
     }
 
-    protected function reason(): string
+    protected function reason(): AgentText
     {
-        return 'An arithmetic command (( )) is not supported.';
+        return AgentText::of('core.shell.arithmetic_unsupported');
     }
 }

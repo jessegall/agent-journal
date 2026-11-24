@@ -6,6 +6,7 @@ namespace App\Support\Syntax;
 
 use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
+use App\Values\AgentText;
 use App\Values\Word;
 
 /**
@@ -115,7 +116,7 @@ final class TokenCursor
      *
      * @throws ShellGrammarStopped
      */
-    public function word(string $missing): Word
+    public function word(AgentText $missing): Word
     {
         $word = $this->current()->word;
 

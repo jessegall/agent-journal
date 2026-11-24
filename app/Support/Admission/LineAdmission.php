@@ -33,6 +33,7 @@ use App\Support\Syntax\TreeParser;
 use App\Values\Admission;
 use App\Values\AdmissionRefusal;
 use App\Values\AdmittedRun;
+use App\Values\AgentText;
 use App\Values\ClassFact;
 use App\Values\Classification;
 use App\Values\CommandPermissions;
@@ -42,7 +43,6 @@ use App\Values\PartClassification;
 use App\Values\RunAdmission;
 use App\Values\ShellTree;
 use Illuminate\Contracts\Container\Container;
-use Throwable;
 
 /**
  * The one admission of a shell line: syntax, classification with the
@@ -53,10 +53,6 @@ use Throwable;
  */
 final readonly class LineAdmission implements ShellAdmission
 {
-    private const string EXPLAIN = 'Explain the line and propose its declaration.';
-
-    private const string NEEDS_RUNNER = 'Run it from a session on a host with its runner on.';
-
     public function __construct(
         private TreeParser $syntax,
         private Container $container,
@@ -88,9 +84,10 @@ final readonly class LineAdmission implements ShellAdmission
         }
 
         if ($tree->outcome !== ParseOutcome::Complete) {
-            $reason = $tree->diagnostic === null ? 'The line could not be read completely.' : $tree->diagnostic->reason;
+            $reason = $tree->diagnostic === null ? AgentText::of('core.shell.unreadable') : $tree->diagnostic->reason;
+            $rewrite = AgentText::of('core.shell.rewrite');
 
-            return $this->refused(AdmissionRefusalCode::ofSyntax($tree->outcome), $tree, $reason, 'Rewrite the line.');
+            return $this->refused(AdmissionRefusalCode::ofSyntax($tree->outcome), $tree, $reason, $rewrite);
         }
 
         try {
@@ -111,9 +108,9 @@ final readonly class LineAdmission implements ShellAdmission
         try {
             return $this->admitted($tree, $classification, $context, $actor, $requestKey);
         } catch (ExecutionPlanRefused $refused) {
-            $correction = 'Write the line without words that are only known when it runs.';
+            $correction = AgentText::of('core.shell.dynamic_words');
 
-            return $this->refused(AdmissionRefusalCode::SyntaxUnsupported, $tree, $refused->getMessage(), $correction);
+            return $this->refused(AdmissionRefusalCode::SyntaxUnsupported, $tree, $refused->reason, $correction);
         }
     }
 
@@ -123,9 +120,10 @@ final readonly class LineAdmission implements ShellAdmission
         $tree = $this->syntax->parse($line, $dialect);
 
         if ($tree->outcome !== ParseOutcome::Complete) {
-            $reason = $tree->diagnostic === null ? 'The line could not be read completely.' : $tree->diagnostic->reason;
+            $reason = $tree->diagnostic === null ? AgentText::of('core.shell.unreadable') : $tree->diagnostic->reason;
+            $rewrite = AgentText::of('core.shell.rewrite');
 
-            return $this->refusal(AdmissionRefusalCode::ofSyntax($tree->outcome), $tree, $reason, 'Rewrite the line.');
+            return $this->refusal(AdmissionRefusalCode::ofSyntax($tree->outcome), $tree, $reason, $rewrite);
         }
 
         try {
@@ -146,9 +144,9 @@ final readonly class LineAdmission implements ShellAdmission
         foreach ($classification->parts as $part) {
             if ($part->outputRequirement() === OutputRequirement::Full) {
                 $code = AdmissionRefusalCode::RunnerUnavailable;
-                $reason = 'Its output must be kept by the supervised runner, which does not run here.';
+                $reason = AgentText::of('core.shell.needs_runner_output');
 
-                return $this->partRefusal($code, $tree, $part, $reason, self::NEEDS_RUNNER);
+                return $this->partRefusal($code, $tree, $part, $reason, AgentText::of('core.shell.run_on_runner'));
             }
         }
 
@@ -171,13 +169,11 @@ final readonly class LineAdmission implements ShellAdmission
         }
 
         if (! $this->outputs->check($classification)->isAllowed()) {
-            $correction = 'Run it unpiped and read its stored output.';
-
             return $this->refusal(
                 AdmissionRefusalCode::OutputHidden,
                 $tree,
-                'Required output would be hidden.',
-                $correction,
+                AgentText::of('core.shell.output_hidden'),
+                AgentText::of('core.shell.run_unpiped'),
             );
         }
 
@@ -189,32 +185,29 @@ final readonly class LineAdmission implements ShellAdmission
 
         foreach ($classification->parts as $part) {
             if ($part->outputRequirement() === OutputRequirement::Full && ! $this->hasApprovedReader($part)) {
-                $reason = 'No proven reader is approved.';
-                $refusal = $this->partRefusal(AdmissionRefusalCode::ReaderRequired, $tree, $part, $reason);
+                $reason = AgentText::of('core.shell.no_reader');
+                $code = AdmissionRefusalCode::ReaderRequired;
+                $refusal = $this->partRefusal($code, $tree, $part, $reason, $this->explain());
 
                 return $this->held($refusal, $part, $tree, $context, RequestHoldReason::ReaderRequired);
             }
         }
 
         if (! $this->capacity->hasRoom()) {
-            $correction = 'Free space on the output disk, then run it again.';
-
             return $this->refusal(
                 AdmissionRefusalCode::RunnerUnavailable,
                 $tree,
-                'The output disk is full.',
-                $correction,
+                AgentText::of('core.shell.disk_full'),
+                AgentText::of('core.shell.free_disk'),
             );
         }
 
         if (! $this->runner->isOn()) {
-            $correction = 'Use a host with its runner on.';
-
             return $this->refusal(
                 AdmissionRefusalCode::RunnerUnavailable,
                 $tree,
-                'This host does not run lines.',
-                $correction,
+                AgentText::of('core.shell.host_runs_nothing'),
+                AgentText::of('core.shell.use_runner_host'),
             );
         }
 
@@ -262,7 +255,7 @@ final readonly class LineAdmission implements ShellAdmission
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : null;
 
         if ($timing !== null && ! $timing->isAllowed()) {
-            $correction = 'Run it at the end of the phase.';
+            $correction = AgentText::of('core.shell.run_at_phase_end');
 
             return $this->refusal(AdmissionRefusalCode::PhaseTiming, $tree, $timing->reason(), $correction);
         }
@@ -273,12 +266,16 @@ final readonly class LineAdmission implements ShellAdmission
     private function unknown(ShellTree $tree, PartClassification $part): AdmissionRefusal
     {
         if ($part->unresolved === []) {
-            return $this->partRefusal(AdmissionRefusalCode::CommandUnknown, $tree, $part, 'The part is not known.');
+            $reason = AgentText::of('core.shell.part_unknown');
+
+            return $this->partRefusal(AdmissionRefusalCode::CommandUnknown, $tree, $part, $reason, $this->explain());
         }
 
         $first = $part->unresolved[0];
 
-        return $this->partRefusal(AdmissionRefusalCode::ofUnresolved($first->type), $tree, $part, $first->reason);
+        $code = AdmissionRefusalCode::ofUnresolved($first->type);
+
+        return $this->partRefusal($code, $tree, $part, $first->reason, $this->explain());
     }
 
     private function permissionRefusal(
@@ -300,9 +297,9 @@ final readonly class LineAdmission implements ShellAdmission
 
         $classes = implode(', ', $classes->toArray());
 
-        $reason = "Your permissions do not admit {$classes}.";
+        $reason = AgentText::of('core.shell.not_permitted', ['classes' => $classes]);
 
-        return $this->partRefusal($code, $tree, $part, $reason, 'Ask the project owner, or leave the part out.');
+        return $this->partRefusal($code, $tree, $part, $reason, AgentText::of('core.shell.ask_owner'));
     }
 
     private function hasApprovedReader(PartClassification $part): bool
@@ -372,17 +369,17 @@ final readonly class LineAdmission implements ShellAdmission
         ActorIdentity $actor,
     ): Admission {
         if (! hash_equals($earlier->source_digest, hash('sha256', $line))) {
-            $reason = 'The key was used for another line.';
+            $reason = AgentText::of('core.shell.key_reused');
 
-            return $this->refused(AdmissionRefusalCode::RuleRevisionChanged, $tree, $reason, 'Use a new key.');
+            return $this->refused(AdmissionRefusalCode::RuleRevisionChanged, $tree, $reason, $this->newKey());
         }
 
         if ($earlier->isStale()) {
             return $this->refused(
                 AdmissionRefusalCode::RuleRevisionChanged,
                 $tree,
-                $earlier->stale_reason,
-                'Use a new key.',
+                AgentText::of('core.shell.run_stale', ['reason' => $earlier->stale_reason]),
+                $this->newKey(),
             );
         }
 
@@ -419,8 +416,8 @@ final readonly class LineAdmission implements ShellAdmission
     private function refusal(
         AdmissionRefusalCode $code,
         ShellTree $tree,
-        string $reason,
-        string $correction,
+        AgentText $reason,
+        AgentText $correction,
     ): AdmissionRefusal {
         return AdmissionRefusal::of($code, $tree->root, $tree->source, $reason, $correction);
     }
@@ -429,26 +426,46 @@ final readonly class LineAdmission implements ShellAdmission
         AdmissionRefusalCode $code,
         ShellTree $tree,
         PartClassification $part,
-        string $reason,
-        string $correction = self::EXPLAIN,
+        AgentText $reason,
+        AgentText $correction,
     ): AdmissionRefusal {
         $source = $tree->textOf($part->nodeIn($tree)->range);
 
         return AdmissionRefusal::of($code, $part->node, $source, $reason, $correction);
     }
 
-    private function refused(AdmissionRefusalCode $code, ShellTree $tree, string $reason, string $correction): Admission
-    {
+    private function refused(
+        AdmissionRefusalCode $code,
+        ShellTree $tree,
+        AgentText $reason,
+        AgentText $correction,
+    ): Admission {
         return Admission::refused($this->refusal($code, $tree, $reason, $correction));
     }
 
-    private function failed(AdmissionRefusalCode $code, ShellTree $tree, Throwable $failure): Admission
-    {
+    private function failed(
+        AdmissionRefusalCode $code,
+        ShellTree $tree,
+        ClassificationUnavailable|CommandRuleConflict $failure,
+    ): Admission {
         return Admission::refused($this->unreadable($code, $tree, $failure));
     }
 
-    private function unreadable(AdmissionRefusalCode $code, ShellTree $tree, Throwable $failure): AdmissionRefusal
+    private function unreadable(
+        AdmissionRefusalCode $code,
+        ShellTree $tree,
+        ClassificationUnavailable|CommandRuleConflict $failure,
+    ): AdmissionRefusal {
+        return $this->refusal($code, $tree, $failure->reason, AgentText::of('core.shell.retry_when_readable'));
+    }
+
+    private function newKey(): AgentText
     {
-        return $this->refusal($code, $tree, $failure->getMessage(), 'Try again once the rules can be read.');
+        return AgentText::of('core.shell.new_key');
+    }
+
+    private function explain(): AgentText
+    {
+        return AgentText::of('core.shell.explain');
     }
 }

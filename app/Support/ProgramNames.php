@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\UnresolvedType;
+use App\Values\AgentText;
 use App\Values\ProgramIdentity;
 use App\Values\ProgramSpellings;
 use App\Values\UnresolvedFact;
@@ -28,7 +29,7 @@ final readonly class ProgramNames
             return new UnresolvedFact(
                 UnresolvedType::UnresolvedExecutable,
                 $node,
-                'The program name is only known when the command runs.',
+                AgentText::of('core.shell.program_dynamic'),
             );
         }
 

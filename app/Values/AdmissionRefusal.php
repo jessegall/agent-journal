@@ -18,8 +18,8 @@ final readonly class AdmissionRefusal
         public AdmissionRefusalCode $code,
         public int $node,
         public string $excerpt,
-        public string $reason,
-        public string $correction,
+        public AgentText $reason,
+        public AgentText $correction,
         public string $requestId,
         public string $next,
     ) {}
@@ -28,8 +28,8 @@ final readonly class AdmissionRefusal
         AdmissionRefusalCode $code,
         int $node,
         string $source,
-        string $reason,
-        string $correction,
+        AgentText $reason,
+        AgentText $correction,
     ): self {
         return new self($code, $node, self::redacted($source), $reason, $correction, '', '');
     }
@@ -44,9 +44,9 @@ final readonly class AdmissionRefusal
     {
         $values = [
             'code' => $this->code->value,
-            'reason' => $this->reason,
+            'reason' => $this->reason->text,
             'notice' => AgentText::of('core.shell.nothing_started')->text,
-            'correction' => $this->correction,
+            'correction' => $this->correction->text,
         ];
 
         if ($this->requestId === '') {

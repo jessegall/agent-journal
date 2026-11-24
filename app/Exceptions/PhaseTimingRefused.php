@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Values\AgentText;
 use App\Values\TimingVerdict;
 use RuntimeException;
 
@@ -20,7 +21,7 @@ final class PhaseTimingRefused extends RuntimeException implements CodedRefusal,
 
     public static function by(TimingVerdict $verdict): self
     {
-        return new self($verdict->reason().' Nothing in this request started.');
+        return new self("phase-timing: {$verdict->reason()->text} ".AgentText::of('core.shell.nothing_started')->text);
     }
 
     protected function status(): int

@@ -13,6 +13,7 @@ use App\Support\Grammar\PendingSegment;
 use App\Support\Grammar\SubstitutionQueue;
 use App\Support\Lines\ShellSource;
 use App\Support\Syntax\ShellLexer;
+use App\Values\AgentText;
 use App\Values\WordSegment;
 
 /**
@@ -148,7 +149,7 @@ final readonly class FindNextSubstitution implements Pipe
         }
 
         if ($isBacktick && str_contains($segment->text, '\\`')) {
-            $reason = 'A backtick substitution nested inside another is not supported.';
+            $reason = AgentText::of('core.shell.nested_backtick');
             $draft->markUnsupported($reason, $segment->range->start);
         }
 

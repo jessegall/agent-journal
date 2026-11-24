@@ -148,7 +148,7 @@ final readonly class ArgumentGrammar
                 $options = $this->optionsIn((string) $text);
 
                 if ($options === []) {
-                    $problem = "The option {$text} is not declared.";
+                    $problem = AgentText::of('core.shell.option_undeclared', ['option' => $text]);
 
                     return [new UnresolvedFact(UnresolvedType::UnknownOption, $node, $problem)];
                 }
@@ -161,7 +161,9 @@ final readonly class ArgumentGrammar
             }
 
             if ($operandCount >= count($this->operands) && ! $this->hasRepeatingOperand()) {
-                $problem = 'The word '.($text ?? 'with an expansion').' is not an accepted operand.';
+                $problem = $text === null
+                    ? AgentText::of('core.shell.operand_with_expansion')
+                    : AgentText::of('core.shell.operand_refused', ['word' => $text]);
 
                 return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem)];
             }
@@ -170,7 +172,7 @@ final readonly class ArgumentGrammar
         }
 
         if ($operandCount < $this->minimumOperands) {
-            $problem = "{$this->minimumOperands} operands are required here.";
+            $problem = AgentText::of('core.shell.operands_required', ['count' => $this->minimumOperands]);
 
             return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem)];
         }
@@ -303,7 +305,7 @@ final readonly class ArgumentGrammar
             fn (OptionGrammar $option) => new UnresolvedFact(
                 UnresolvedType::UnknownOption,
                 $node,
-                "The option {$option->names[0]} is required here.",
+                AgentText::of('core.shell.option_required', ['option' => $option->names[0]]),
             ),
             $missing,
         ));

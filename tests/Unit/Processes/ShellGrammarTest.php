@@ -9,8 +9,8 @@ use App\Enums\NodeType;
 use App\Enums\ParseOutcome;
 use App\Values\ShellNode;
 use App\Values\ShellTree;
-use PHPUnit\Framework\TestCase;
 use Tests\Support\Processes\ParsesBashLines;
+use Tests\TestCase;
 
 /**
  * The shell grammar builds the lossless tree and stops at its limits with a diagnostic only.
@@ -132,8 +132,8 @@ final class ShellGrammarTest extends TestCase
 
         $this->assertNotNull($tooMany->diagnostic);
         $this->assertNotNull($tooDeep->diagnostic);
-        $this->assertStringContainsString('1024', $tooMany->diagnostic->reason);
-        $this->assertStringContainsString('depth', $tooDeep->diagnostic->reason);
+        $this->assertStringContainsString('1024', $tooMany->diagnostic->reason->text);
+        $this->assertStringContainsString('depth', $tooDeep->diagnostic->reason->text);
     }
 
     /**

@@ -27,7 +27,7 @@ final readonly class ShellLexer
             return new LexedLine(
                 ParseOutcome::LimitExceeded,
                 [],
-                new TreeDiagnostic($tooLong->position, $tooLong->getMessage()),
+                new TreeDiagnostic($tooLong->position, $tooLong->reason),
             );
         }
 
@@ -37,7 +37,7 @@ final readonly class ShellLexer
             return new LexedLine(
                 $unreadable->isLimit ? ParseOutcome::LimitExceeded : ParseOutcome::Invalid,
                 [],
-                new TreeDiagnostic($unreadable->position, $unreadable->getMessage()),
+                new TreeDiagnostic($unreadable->position, $unreadable->reason),
             );
         }
     }

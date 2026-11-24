@@ -6,6 +6,7 @@ namespace App\Support\Syntax\CommandReaders;
 
 use App\Enums\TokenType;
 use App\Support\Syntax\TokenCursor;
+use App\Values\AgentText;
 
 /**
  * name=( ... ): an array assignment is not supported.
@@ -16,11 +17,11 @@ final readonly class ArrayAssignmentReader extends UnsupportedCommandReader
     {
         return $cursor->is(TokenType::Word)
             && $cursor->peekIs(1, TokenType::OpenParen)
-            && $cursor->word('A word is missing.')->isArrayName();
+            && $cursor->word(AgentText::of('core.shell.word_missing'))->isArrayName();
     }
 
-    protected function reason(): string
+    protected function reason(): AgentText
     {
-        return 'An array assignment is not supported.';
+        return AgentText::of('core.shell.array_assignment_unsupported');
     }
 }

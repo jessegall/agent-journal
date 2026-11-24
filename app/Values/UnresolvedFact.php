@@ -14,6 +14,6 @@ final readonly class UnresolvedFact
     public function __construct(
         public UnresolvedType $type,
         public int $node,
-        public string $reason,
+        public AgentText $reason,
     ) {}
 }

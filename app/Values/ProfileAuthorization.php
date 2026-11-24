@@ -77,12 +77,18 @@ final readonly class ProfileAuthorization
     public function admits(string $command, Authorize $authorization): AccessDecision
     {
         if (in_array($command, $this->deniedCommands, true)) {
-            return AccessDecision::refused(AccessRuleType::ExplicitDenial, "The profile denies {$command}.");
+            return AccessDecision::refused(
+                AccessRuleType::ExplicitDenial,
+                AgentText::of('core.access.profile_denies', ['name' => $command]),
+            );
         }
 
         return $this->grants($authorization->policy, $authorization->access)
-            ? AccessDecision::allowed(AccessRuleType::ScopeGrant, 'The profile grants the pair.')
-            : AccessDecision::refused(AccessRuleType::NotGranted, 'The profile does not grant the pair.');
+            ? AccessDecision::allowed(AccessRuleType::ScopeGrant, AgentText::of('core.access.profile_grants_pair'))
+            : AccessDecision::refused(
+                AccessRuleType::NotGranted,
+                AgentText::of('core.access.profile_does_not_grant_pair'),
+            );
     }
 
     /**

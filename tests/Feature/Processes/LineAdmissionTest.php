@@ -86,7 +86,7 @@ final class LineAdmissionTest extends TestCase
         $refusal = $this->refusalOf($this->admit('vendor/bin/phpstan analyse', 'key-1'));
 
         $this->assertSame(AdmissionRefusalCode::PhaseTiming, $refusal->code);
-        $this->assertStringContainsString(self::BLOCKING_TASKS, $refusal->reason);
+        $this->assertStringContainsString(self::BLOCKING_TASKS, $refusal->reason->text);
     }
 
     public function test_a_read_only_helper_writing_a_file_is_refused_by_its_ceiling(): void

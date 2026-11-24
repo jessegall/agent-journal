@@ -11,6 +11,7 @@ use App\Enums\CommandType;
 use App\Enums\PlaceExemption;
 use App\Enums\UnresolvedType;
 use App\Support\JournalRoutes;
+use App\Values\AgentText;
 use App\Values\ClassFact;
 use App\Values\ExecutionContext;
 use App\Values\PartClassification;
@@ -47,7 +48,7 @@ final readonly class JournalClassifier implements ProgramClassifier
                 $node,
                 $program,
                 UnresolvedType::UnresolvedExecutable,
-                "{$program->original} is not this installation's journal.",
+                AgentText::of('core.shell.not_this_journal', ['program' => $program->original]),
             );
         }
 
@@ -63,7 +64,7 @@ final readonly class JournalClassifier implements ProgramClassifier
                 $node,
                 $program,
                 UnresolvedType::UnknownSubcommand,
-                "journal has no route {$name}; the registered routes are listed by journal --help.",
+                AgentText::of('core.shell.no_journal_route', ['route' => $name]),
             );
         }
 
@@ -101,7 +102,7 @@ final readonly class JournalClassifier implements ProgramClassifier
         int $node,
         ProgramIdentity $program,
         UnresolvedType $type,
-        string $reason,
+        AgentText $reason,
     ): PartClassification {
         return new PartClassification(
             $node,

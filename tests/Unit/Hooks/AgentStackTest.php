@@ -146,7 +146,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_tool_handler_that_passes_cannot_hide_the_operation_policy(): void
     {
-        $refusal = AccessDecision::refused(AccessRuleType::NotGranted, 'Tool refused.');
+        $refusal = AccessDecision::refused(AccessRuleType::NotGranted, AgentText::of('core.access.profile_does_not_grant_pair'));
         $policy = $this->createStub(OperationPolicy::class);
         $policy->method('assess')->willReturn($refusal);
         $ready = new Frame(
@@ -161,7 +161,7 @@ final class AgentStackTest extends TestCase
         $answer = $stack->answer(HookInputs::all()['tool requested']);
 
         $this->assertSame(
-            AgentText::of('core.access.refused', ['reason' => $refusal->reason])->text,
+            AgentText::of('core.access.refused', ['reason' => $refusal->reason->text])->text,
             $answer->decision->refusalReason(),
         );
         $this->assertSame(['guide delegate', 'ready deny'], $this->stepsOf($answer));
