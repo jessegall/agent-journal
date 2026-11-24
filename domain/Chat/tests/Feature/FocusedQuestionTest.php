@@ -14,7 +14,7 @@ use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Resolvers\QuestionNotificationTarget;
 use App\Support\ActorIdentity;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;
@@ -87,7 +87,7 @@ final class FocusedQuestionTest extends TestCase
 
         foreach ([ActorIdentity::of($this->owner), $this->builderIdentity()] as $actor) {
             $this->app->make(AssignmentTransaction::class)->run(
-                fn () => $this->app->make(DeskSeating::class)->seat($this->team->id, $actor),
+                fn () => $this->app->make(DeskSeatService::class)->seat($this->team->id, $actor),
             );
         }
 

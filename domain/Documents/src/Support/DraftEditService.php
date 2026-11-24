@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Support\RecordReference;
 use Domain\Documents\Concerns\RefusesOtherDrafts;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftMissing;
@@ -17,7 +16,7 @@ use Domain\Documents\Values\DraftTarget;
  * The one flow every draft edit follows: lock the document, find this editor's draft by its token, check the
  * version, change the text and save it as the next version.
  */
-final readonly class DraftEditing
+final readonly class DraftEditService
 {
     use RefusesOtherDrafts;
 
@@ -32,7 +31,7 @@ final readonly class DraftEditing
             throw DraftConflict::withoutVersion();
         }
 
-        $document = Document::lockedForEditing(RecordReference::idOrNumber($target->documentNumber));
+        $document = Document::lockedForEditing($target->documentKey());
 
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->firstOr(
             fn () => throw DraftMissing::forDocument($document->number),

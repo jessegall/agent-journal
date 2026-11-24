@@ -41,8 +41,8 @@ final readonly class ChatService
     public function __construct(
         private InboxResolver $inboxes,
         private AcceptedReceipt $accepted,
-        private ReceiptDeliveries $deliveries,
-        private SpeechAllowance $speech,
+        private ReceiptDeliveryService $deliveries,
+        private SpeechService $speech,
         private MessageBatchService $shown,
         private CurrentSession $session,
     ) {}

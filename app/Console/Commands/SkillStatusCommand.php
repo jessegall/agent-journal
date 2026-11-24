@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Exceptions\SkillSessionHidden;
 use App\Resolvers\Support\SkillStatusResolver;
-use App\Support\SkillAuthoring;
+use App\Support\SkillAuthoringService;
 use App\Values\GenerationStatus;
 use App\Values\PublicationStatus;
 use App\Values\SessionSkillStatus;
@@ -26,7 +26,7 @@ final class SkillStatusCommand extends Command
 
     protected $description = 'Show the skill generation and each session\'s publication';
 
-    public function handle(SkillAuthoring $authoring, SkillStatusResolver $statuses): int
+    public function handle(SkillAuthoringService $authoring, SkillStatusResolver $statuses): int
     {
         try {
             $authoring->actAsOwner();

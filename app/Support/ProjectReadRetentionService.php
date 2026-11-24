@@ -14,7 +14,7 @@ use Carbon\CarbonImmutable;
  * Expires the project reads no host answered in time, deletes the settled ones once nobody reuses them, and keeps of
  * each project file only the versions a comment names and the newest few of the rest.
  */
-final readonly class ProjectReadPruning
+final readonly class ProjectReadRetentionService
 {
     public function prune(CarbonImmutable $now): void
     {

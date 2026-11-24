@@ -12,8 +12,8 @@ use App\Enums\CoreAskType;
 use App\Exceptions\HelperImportFailed;
 use App\Models\Reviews\CodeReview;
 use App\Models\Reviews\WorkReservation;
-use App\Support\AskOpening;
 use App\Support\AskRouter;
+use App\Support\AskService;
 use App\Support\AskTypeRegistry;
 
 /**
@@ -26,7 +26,7 @@ final readonly class HandOffCodeReviewHandler implements CommandHandler
         private MaintenanceAdmission $access,
         private HelperCommitImport $import,
         private AskTypeRegistry $types,
-        private AskOpening $opening,
+        private AskService $opening,
         private AskRouter $router,
     ) {}
 

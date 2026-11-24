@@ -11,7 +11,7 @@ use App\Enums\TimelineEventType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Chats\TimelineEvent;
 use App\Support\ActorIdentity;
-use App\Support\AgentChatAccess;
+use App\Support\AgentChatAccessService;
 use App\Support\ChatInboxes;
 use App\Support\InboxIntervals;
 use Carbon\CarbonImmutable;
@@ -90,7 +90,7 @@ final class ChatMembershipTest extends MessagingTestCase
 
     public function test_the_owner_adds_both_agents_beside_a_user_and_an_agent_keeps_its_other_chat(): void
     {
-        $access = $this->app->make(AgentChatAccess::class);
+        $access = $this->app->make(AgentChatAccessService::class);
 
         foreach ([$this->builder, $this->reviewer] as $agent) {
             $access->allow($agent->agent_id, null, [$this->owner->id], ActorIdentity::system(), CarbonImmutable::now());

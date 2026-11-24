@@ -19,7 +19,7 @@ use App\Support\Sources\DockDefinition;
  * A record whose owner composes no card of its own, docked as its link card shows it: its title, its abstract when it
  * has one, and Open only when its page is a declared page the viewer may open.
  */
-final readonly class LegacyDockable implements Dockable
+final readonly class LinkCardDockable implements Dockable
 {
     public function __construct(private RecordCard $record, private DockDestination|null $page) {}
 

@@ -20,7 +20,7 @@ use Domain\Tasks\Values\TaskWaitPair;
  * Suggest, Apply and Undo on a plan's graph: a suggestion is asked for and kept, applied as one version-checked change
  * of the waits, and undone by the inverse change at the version the apply left.
  */
-final readonly class PlanGraphEditing
+final readonly class PlanGraphService
 {
     public function __construct(
         private TaskGraphResolver $graphs,

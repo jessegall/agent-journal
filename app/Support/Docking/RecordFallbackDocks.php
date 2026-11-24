@@ -27,6 +27,6 @@ final readonly class RecordFallbackDocks implements FallbackDocks
             throw DockDefinitionInvalid::unknown($type);
         }
 
-        return new DockDefinition($type, LegacyDockable::class, LegacyDockableProvider::class);
+        return new DockDefinition($type, LinkCardDockable::class, LinkCardDockableProvider::class);
     }
 }

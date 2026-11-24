@@ -99,7 +99,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/ReceiptDeliveries.php',
+            'app/Support/ReceiptDeliveryService.php',
         ],
     ],
     ReceiptDeliveryChanged::class => [

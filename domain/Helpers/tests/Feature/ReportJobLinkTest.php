@@ -19,7 +19,7 @@ use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
 use Domain\Helpers\Models\ReportJobDiscrepancy;
 use Domain\Helpers\Models\ReportJobLink;
-use Domain\Helpers\Support\ReportJobLinking;
+use Domain\Helpers\Support\ReportJobLinkService;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\FiledReport;
 use Illuminate\Support\Str;
@@ -134,8 +134,8 @@ final class ReportJobLinkTest extends TestCase
         );
     }
 
-    private function linking(): ReportJobLinking
+    private function linking(): ReportJobLinkService
     {
-        return $this->app->make(ReportJobLinking::class);
+        return $this->app->make(ReportJobLinkService::class);
     }
 }

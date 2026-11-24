@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 use Illuminate\Console\Command;
 
 /**
@@ -17,7 +17,7 @@ final class SkillPruneCommand extends Command
 
     protected $description = 'Remove unused staged skill folders and retire old publications';
 
-    public function handle(SkillPublishing $publishing): int
+    public function handle(SkillPublishingService $publishing): int
     {
         $pruned = $publishing->prune();
         $this->line("Retired {$pruned->retired} publications.");

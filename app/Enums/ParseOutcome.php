@@ -15,7 +15,7 @@ enum ParseOutcome: string
     case LimitExceeded = 'limit_exceeded';
 
     /**
-     * The old parser's outcome for a line whose expansion it could not follow; it stays until the cutover to the tree.
+     * A line with a word that is only known when it runs, such as a variable or a command substitution.
      */
     case DynamicExpansion = 'dynamic_expansion';
     case Unparsed = 'unparsed';

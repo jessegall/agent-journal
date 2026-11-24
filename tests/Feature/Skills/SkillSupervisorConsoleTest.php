@@ -11,7 +11,7 @@ use App\Models\Skills\SkillPublication;
 use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\HostSkillPublisher;
 use App\Support\PublicationFiles;
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 use App\Support\SkillTables;
 use App\Support\SkillTargets;
 use Carbon\CarbonImmutable;
@@ -163,8 +163,8 @@ final class SkillSupervisorConsoleTest extends TestCase
         )->stagingFolder;
     }
 
-    private function publishing(): SkillPublishing
+    private function publishing(): SkillPublishingService
     {
-        return $this->app->make(SkillPublishing::class);
+        return $this->app->make(SkillPublishingService::class);
     }
 }

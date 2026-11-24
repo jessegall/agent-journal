@@ -77,6 +77,7 @@ use App\Support\ClaimedRequests;
 use App\Support\DefaultDrivers;
 use App\Support\DriverBudgets;
 use App\Support\EnrolledHost;
+use App\Support\HeartbeatService;
 use App\Support\InitialWakeSettlement;
 use App\Support\LaunchProfiles;
 use App\Support\NativeTurns;
@@ -84,7 +85,6 @@ use App\Support\OpenedRuntime;
 use App\Support\PendingWorkSources;
 use App\Support\RequestKey;
 use App\Support\StartGrant;
-use App\Support\StartHeartbeats;
 use App\Values\AccountLabel;
 use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
@@ -689,7 +689,7 @@ final class AgentDriverLedgerTest extends TestCase
         AgentSession::query()->whereKey($served->sessionId)->update(['last_heartbeat_at' => CarbonImmutable::now()]);
         $this->silenceSince($unserved, CarbonImmutable::now()->subMinutes(11));
 
-        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+        $this->app->make(HeartbeatService::class)->markSilentStarts();
 
         $this->assertSame(
             [true, false],
@@ -705,7 +705,7 @@ final class AgentDriverLedgerTest extends TestCase
         [, $opened] = $this->openRuntime();
         $this->silenceSince($opened, CarbonImmutable::now()->subMinutes(11));
 
-        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+        $this->app->make(HeartbeatService::class)->markSilentStarts();
 
         $this->assertSame(SessionStatus::Silent, AgentSession::query()->findOrFail($opened->sessionId)->status);
     }

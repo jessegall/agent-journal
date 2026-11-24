@@ -9,8 +9,8 @@ use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
-use App\Support\DeskOpening;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
+use App\Support\DeskService;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Models\Plan;
@@ -45,14 +45,14 @@ final class DeskWorkTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 2, false);
+        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 2, false);
         $first = Agent::create('First', 'read-only-helper');
         $second = Agent::create('Second', 'read-only-helper');
         $outsider = Agent::create('Outsider', 'read-only-helper');
 
         foreach ([$first, $second] as $agent) {
             $this->app->make(AssignmentTransaction::class)->run(
-                fn () => $this->app->make(DeskSeating::class)->seat($desk->id, ActorIdentity::of($agent)),
+                fn () => $this->app->make(DeskSeatService::class)->seat($desk->id, ActorIdentity::of($agent)),
             );
         }
 

@@ -14,7 +14,7 @@ use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
-use App\Support\DeskOpening;
+use App\Support\DeskService;
 use App\Support\InboxMembership;
 use App\Support\MessageBody;
 use App\Support\MessageEnvelope;
@@ -128,8 +128,8 @@ final class InboxMessageSchemaTest extends TestCase
             ReceiptRetention::standard(),
         );
         $envelope = MessageEnvelope::ask(
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'From'),
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'To'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'From'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'To'),
             $this->author,
             MessageBody::from('Can you look?'),
         );

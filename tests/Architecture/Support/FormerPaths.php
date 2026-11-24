@@ -10,7 +10,7 @@ namespace Tests\Architecture\Support;
  */
 final class FormerPaths
 {
-    public const string MAP = 'tests/Architecture/Legacy/former-paths.json';
+    public const string MAP = 'tests/Architecture/FormerPaths/former-paths.json';
 
     /**
      * @var array<string, string>|null

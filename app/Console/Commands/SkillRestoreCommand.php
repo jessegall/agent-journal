@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Commands\RestoreSkill\RestoreSkillCommand;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Contracts\Bus\CommandBus;
-use App\Support\SkillAuthoring;
+use App\Support\SkillAuthoringService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -22,7 +22,7 @@ final class SkillRestoreCommand extends Command
 
     protected $description = 'Restore an earlier revision of a stored skill';
 
-    public function handle(SkillAuthoring $console, CommandBus $commands): int
+    public function handle(SkillAuthoringService $console, CommandBus $commands): int
     {
         $requestId = (string) ($this->option('request-id') ?? Str::ulid());
         $this->line("Request id: {$requestId}");

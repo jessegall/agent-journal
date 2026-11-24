@@ -19,7 +19,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Models\Starts\SessionPolicy;
-use App\Support\AccountSharing;
+use App\Support\AccountSharingService;
 use App\Support\AgentSessions;
 use App\Support\ArrangementSetting;
 use App\Support\ContainerAdmission;
@@ -44,7 +44,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         private ContainerAdmission $containers,
         private DriverCatalogue $drivers,
         private ProfileSelections $profiles,
-        private AccountSharing $accountSharing,
+        private AccountSharingService $accountSharing,
     ) {}
 
     public function handle(OpenAgentRuntimeCommand $command): OpenedRuntime

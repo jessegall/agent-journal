@@ -18,7 +18,7 @@ use App\Models\Agents\AgentSession;
  */
 final readonly class DriverHeartbeatSource
 {
-    public function __construct(private RecordHeartbeatHandler $beats, private StartHeartbeats $heartbeats) {}
+    public function __construct(private RecordHeartbeatHandler $beats, private HeartbeatService $heartbeats) {}
 
     public function record(AgentSession $session, HeartbeatEvidence $evidence, ActorContext $actor): void
     {

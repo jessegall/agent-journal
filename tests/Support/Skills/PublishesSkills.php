@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 
 /**
  * The shipped skills published into a temporary folder before each test.
@@ -16,6 +16,6 @@ trait PublishesSkills
     protected function setUpPublishesSkills(): void
     {
         $this->setUpHasSkillTargets();
-        $this->app->make(SkillPublishing::class)->refresh();
+        $this->app->make(SkillPublishingService::class)->refresh();
     }
 }

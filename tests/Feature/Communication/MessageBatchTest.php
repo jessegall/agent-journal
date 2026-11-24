@@ -15,7 +15,7 @@ use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;
-use App\Support\DeskOpening;
+use App\Support\DeskService;
 use App\Support\MessageBatchService;
 use App\Support\MessageBody;
 use App\Support\MessageEnvelope;
@@ -105,8 +105,8 @@ final class MessageBatchTest extends TestCase
             ReceiptRetention::standard(),
         );
         $envelope = MessageEnvelope::send(
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'From'),
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'To'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'From'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'To'),
             TestActors::agentIdentity(8),
             MessageBody::from($body),
         );

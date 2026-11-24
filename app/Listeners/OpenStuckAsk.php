@@ -11,7 +11,7 @@ use App\Enums\AskOriginType;
 use App\Enums\CoreAskType;
 use App\Events\HelperStopHeld;
 use App\Models\Starts\StopAttempt;
-use App\Support\AskOpening;
+use App\Support\AskService;
 use App\Support\AskTypeRegistry;
 
 /**
@@ -23,7 +23,7 @@ final readonly class OpenStuckAsk implements Listener
 
     public function __construct(
         private AskTypeRegistry $types,
-        private AskOpening $opening,
+        private AskService $opening,
         private CommandBus $commands,
     ) {}
 

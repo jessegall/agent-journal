@@ -6,7 +6,6 @@ namespace Domain\Documents\Support;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Sessions\SessionProvenance;
-use App\Support\RecordReference;
 use Domain\Documents\Concerns\RefusesOtherDrafts;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftMarkdownInvalid;
@@ -24,7 +23,7 @@ use Domain\Documents\Values\DraftTarget;
  * answers with its outcome, otherwise the draft at the expected version closes into a revision when it changed. The
  * close record takes the final revision number from here, and each row raises its own fact.
  */
-final readonly class DraftClosing
+final readonly class DraftCloseService
 {
     use RefusesOtherDrafts;
 
@@ -82,7 +81,7 @@ final readonly class DraftClosing
         Actor|null $closer,
         string|null $reason,
     ): CloseResult {
-        $document = Document::lockedForEditing(RecordReference::idOrNumber($target->documentNumber));
+        $document = Document::lockedForEditing($target->documentKey());
         $closed = $document->closeOf($target->token);
 
         if ($closed !== null) {

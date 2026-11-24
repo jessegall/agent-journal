@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Models\Skills\SkillRevision;
-use App\Support\SkillAuthoring;
+use App\Support\SkillAuthoringService;
 use App\Values\SkillSection;
 use Illuminate\Console\Command;
 
@@ -21,7 +21,7 @@ final class SkillRevisionCommand extends Command
 
     protected $description = 'Show one revision of a stored skill';
 
-    public function handle(SkillAuthoring $console): int
+    public function handle(SkillAuthoringService $console): int
     {
         return $this->printRefusals(function () use ($console) {
             $console->actAsOwner();

@@ -15,7 +15,7 @@ use App\Resolvers\QuestionNotificationTarget;
 use App\Resolvers\Support\NotificationChanges;
 use App\Support\ActorIdentity;
 use App\Support\NotificationChangeCursor;
-use App\Support\NotificationChangePruning;
+use App\Support\NotificationChangeRetentionService;
 use App\Support\NotificationDelivery;
 use App\Support\NotificationReceipts;
 use App\Support\NotificationScopes;
@@ -83,7 +83,7 @@ final class NotificationChangesTest extends MessagingTestCase
         $this->notifyOwner(3);
         NotificationChange::query()->update(['created_at' => CarbonImmutable::now()->subHours(25)]);
 
-        $this->assertSame(3, $this->app->make(NotificationChangePruning::class)->prune(CarbonImmutable::now()));
+        $this->assertSame(3, $this->app->make(NotificationChangeRetentionService::class)->prune(CarbonImmutable::now()));
         $this->assertSame(0, NotificationChange::query()->count());
     }
 

@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 /**
  * Opens desks: each desk gets its inbox and its seats, three kinds of row made together.
  */
-final readonly class DeskOpening
+final readonly class DeskService
 {
     /**
      * A named desk with its seats, from one to a hundred.
@@ -22,7 +22,7 @@ final readonly class DeskOpening
      */
     public function openNamed(string $name, string $label, int $seatCount, bool $forwardsOccupants): DeskRecord
     {
-        return $this->open($name, $label, self::checkedSeatCount($seatCount), $forwardsOccupants);
+        return $this->openWithSeats($name, $label, $seatCount, $forwardsOccupants);
     }
 
     /**
@@ -52,7 +52,7 @@ final readonly class DeskOpening
      */
     public function openShared(string $label, int $seatCount, bool $forwardsOccupants): DeskRecord
     {
-        return $this->open(null, $label, self::checkedSeatCount($seatCount), $forwardsOccupants);
+        return $this->openWithSeats(null, $label, $seatCount, $forwardsOccupants);
     }
 
     /**
@@ -85,14 +85,20 @@ final readonly class DeskOpening
     }
 
     /**
+     * A desk with the seat count someone asked for, which must be at least one and at most the largest.
+     *
      * @throws DeskSeatCountInvalid
      */
-    private static function checkedSeatCount(int $count): int
-    {
-        if ($count < 1 || $count > DeskRecord::LARGEST_SEAT_COUNT) {
-            throw DeskSeatCountInvalid::for($count);
+    private function openWithSeats(
+        string|null $name,
+        string $label,
+        int $seatCount,
+        bool $forwardsOccupants,
+    ): DeskRecord {
+        if ($seatCount < 1 || $seatCount > DeskRecord::LARGEST_SEAT_COUNT) {
+            throw DeskSeatCountInvalid::for($seatCount);
         }
 
-        return $count;
+        return $this->open($name, $label, $seatCount, $forwardsOccupants);
     }
 }

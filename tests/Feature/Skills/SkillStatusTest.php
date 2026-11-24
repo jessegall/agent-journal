@@ -19,7 +19,7 @@ use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\ActorContext;
 use App\Support\HostSkillPublisher;
 use App\Support\SkillPublications;
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 use App\Support\SkillTargets;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
@@ -156,7 +156,7 @@ final class SkillStatusTest extends TestCase
             hash('sha256', $text),
             ['journal'],
         );
-        $state = $this->app->make(SkillPublishing::class)->publish($publication->id, 'worker-1');
+        $state = $this->app->make(SkillPublishingService::class)->publish($publication->id, 'worker-1');
         $this->assertContains($state, [PublicationState::Delivered, PublicationState::Failed]);
 
         return $publication->refresh();

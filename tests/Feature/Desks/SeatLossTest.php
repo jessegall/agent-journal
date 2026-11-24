@@ -12,8 +12,8 @@ use App\Models\Records\ClaimAuthorization;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
-use App\Support\DeskOpening;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
+use App\Support\DeskService;
 use App\Support\SeatChange;
 use App\Support\SeatChangeResult;
 use Tests\Support\CommitsHookRows;
@@ -43,7 +43,7 @@ final class SeatLossTest extends TestCase
 
     public function test_replacing_a_seat_ends_its_claims_and_keeps_the_others(): void
     {
-        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 2, false);
+        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 2, false);
         $leaving = ActorIdentity::of(Agent::create('Leaving', 'read-only-helper'));
         $staying = ActorIdentity::of(Agent::create('Staying', 'read-only-helper'));
         $arriving = ActorIdentity::of(Agent::create('Arriving', 'read-only-helper'));
@@ -52,7 +52,7 @@ final class SeatLossTest extends TestCase
         $lostClaims = array_map(fn (int $number) => $this->claim($number, $leaving, $leavingSeat), [1, 2, 3]);
         $keptClaim = $this->claim(4, $staying, $stayingSeat);
 
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
             new SeatChange($desk->id, $leavingSeat->seatId, $leavingSeat->reference, $arriving),
         ));
 
@@ -71,7 +71,7 @@ final class SeatLossTest extends TestCase
     private function seat(DeskRecord $desk, ActorIdentity $actor): SeatChangeResult
     {
         return $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat($desk->id, $actor),
+            fn () => $this->app->make(DeskSeatService::class)->seat($desk->id, $actor),
         );
     }
 

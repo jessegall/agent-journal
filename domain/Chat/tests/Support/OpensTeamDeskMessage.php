@@ -11,7 +11,7 @@ use App\Enums\ActorType;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
 use App\Support\ActorIdentity;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\SeatChange;
 use App\Support\Storage\AssignmentStore;
 use Domain\Access\Models\User;
@@ -63,7 +63,7 @@ trait OpensTeamDeskMessage
     private function seat(string $agentId): void
     {
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)
+            fn () => $this->app->make(DeskSeatService::class)
                 ->seat($this->desk->id, new ActorIdentity(ActorType::Agent, $agentId)),
         );
     }
@@ -78,7 +78,7 @@ trait OpensTeamDeskMessage
             $current = $this->app->make(AssignmentStore::class)->lockCurrent($seat->assignmentIdentity())->get();
             $successor = new ActorIdentity(ActorType::Agent, $agentId);
 
-            $this->app->make(DeskSeating::class)
+            $this->app->make(DeskSeatService::class)
                 ->replace(new SeatChange($this->desk->id, $seat->id, $current->reference, $successor));
         });
     }

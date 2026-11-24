@@ -13,8 +13,8 @@ use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use App\Support\DeskOpening;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
+use App\Support\DeskService;
 use App\Support\RequestKey;
 use App\Support\SeatChange;
 use App\Support\StartSessions;
@@ -63,7 +63,7 @@ final class ResumeTaskRunTest extends TestCase
 
     public function test_a_new_occupant_resumes_the_run_and_the_former_one_is_refused(): void
     {
-        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 1, false);
+        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 1, false);
         $leaving = $this->started('First');
         $arriving = $this->started('Second');
         $task = Task::factory()->create();
@@ -71,7 +71,7 @@ final class ResumeTaskRunTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
 
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat(
+            fn () => $this->app->make(DeskSeatService::class)->seat(
                 $desk->id,
                 ActorIdentity::of($leaving->agent()->firstOrFail()),
             ),
@@ -81,7 +81,7 @@ final class ResumeTaskRunTest extends TestCase
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
         $this->startUserRequestAs($this->owner->id);
 
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
             new SeatChange(
                 $desk->id,
                 $seat->seatId,

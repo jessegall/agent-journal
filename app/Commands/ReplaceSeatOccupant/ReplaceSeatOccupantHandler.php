@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Commands\ReplaceSeatOccupant;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\SeatChange;
 use App\Support\SeatChangeResult;
 
 final readonly class ReplaceSeatOccupantHandler implements CommandHandler
 {
-    public function __construct(private DeskSeating $seating) {}
+    public function __construct(private DeskSeatService $seating) {}
 
     public function handle(ReplaceSeatOccupantCommand $command): SeatChangeResult
     {

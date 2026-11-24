@@ -16,7 +16,7 @@ use App\Listeners\RemindRequiredSkills;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ContextReminders;
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 use App\Values\ProfileBase;
 use App\Values\StackTarget;
 use Tests\Fixtures\Agents\TestSelections;
@@ -69,7 +69,7 @@ final class RequiredSkillReadsTest extends TestCase
         $this->finished($session, 'mcp__journal__skills_show', ['key' => 'user-guide']);
         $this->assertNotReminded($this->boundary($session));
 
-        $this->app->make(SkillPublishing::class)->refresh();
+        $this->app->make(SkillPublishingService::class)->refresh();
         $this->assertNotReminded($this->boundary($session));
 
         $this->artisan('skill:edit', [

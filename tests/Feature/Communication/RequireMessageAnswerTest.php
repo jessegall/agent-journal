@@ -9,7 +9,7 @@ use App\Enums\MessageState;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\MessageMissing;
 use App\Models\Messages\Message;
-use App\Support\DeskOpening;
+use App\Support\DeskService;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -43,7 +43,7 @@ final class RequireMessageAnswerTest extends MessagingTestCase
 
     public function test_an_inbox_nobody_is_seated_at_cannot_answer(): void
     {
-        $nobody = $this->app->make(DeskOpening::class)->openSourceDesk('nobody', 'Nobody');
+        $nobody = $this->app->make(DeskService::class)->openSourceDesk('nobody', 'Nobody');
         $noteId = $this->ownerSends($nobody->inboxId(), 'Anyone?');
 
         $this->expectException(AnswerImpossible::class);

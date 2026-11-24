@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\PrintsPublicationOutcomes;
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 use Illuminate\Console\Command;
 
 /**
@@ -20,7 +20,7 @@ final class SkillResumeCommand extends Command
 
     protected $description = 'Publish the skill sets that wait for a worker';
 
-    public function handle(SkillPublishing $publishing): int
+    public function handle(SkillPublishingService $publishing): int
     {
         return $this->printOutcomes($publishing->publishOpen($this->holder()));
     }

@@ -13,7 +13,7 @@ use App\Exceptions\AskRefused;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskRequester;
 use App\Support\ActorIdentity;
-use App\Support\AskOpening;
+use App\Support\AskService;
 use App\Support\AskTypeRegistry;
 use App\Values\AskReference;
 
@@ -24,7 +24,7 @@ final readonly class AskSupervisorHandler implements CommandHandler
     public function __construct(
         private ActorWorkStacks $stacks,
         private AskTypeRegistry $types,
-        private AskOpening $opening,
+        private AskService $opening,
         private CommandBus $commands,
     ) {}
 

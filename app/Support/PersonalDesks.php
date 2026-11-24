@@ -17,7 +17,7 @@ final readonly class PersonalDesks implements ActorDesks
     public function __construct(
         private ResponsibilityWriter $responsibilities,
         private DeskPreferences $preferences,
-        private DeskOpening $desks,
+        private DeskService $desks,
     ) {}
 
     public function provision(ActorIdentity $actor, string $label): SeatChangeResult

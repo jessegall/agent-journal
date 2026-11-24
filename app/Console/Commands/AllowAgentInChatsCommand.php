@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Support\ActorIdentity;
-use App\Support\AgentChatAccess;
+use App\Support\AgentChatAccessService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -19,7 +19,7 @@ final class AllowAgentInChatsCommand extends Command
 
     protected $description = 'Allow an agent into chats of an environment for the users named, or withdraw it';
 
-    public function handle(AgentChatAccess $access): int
+    public function handle(AgentChatAccessService $access): int
     {
         $agentId = (string) $this->argument('agent');
         $environmentId = $this->option('environment');

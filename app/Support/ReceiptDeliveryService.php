@@ -21,7 +21,7 @@ use RuntimeException;
  * by the minute's pass, retried later after a failure and given up after five. A user's receipt is shown by the
  * window and needs no delivery; a receipt already shown or a member who left is never woken.
  */
-final readonly class ReceiptDeliveries
+final readonly class ReceiptDeliveryService
 {
     public const int ALLOWED_TRIES = 5;
 
@@ -52,7 +52,7 @@ final readonly class ReceiptDeliveries
         $deliveryIds = [];
 
         foreach ($receipts as $receipt) {
-            if ($receipt->isPresented() || ! $receipt->interval->actor->type->isAgent()) {
+            if ($receipt->isPresented() || ! $receipt->interval->isHeldByAnAgent()) {
                 continue;
             }
 
@@ -88,11 +88,11 @@ final readonly class ReceiptDeliveries
      * Tries each delivery that is still due, each in its own transaction with its own event unit, since no command
      * runs around a pass; one another worker holds is left to it.
      *
-     * @param  list<string>  $deliveryIds
+     * @param  list<string>  $ids
      */
-    public function deliver(array $deliveryIds, CarbonImmutable $at): void
+    public function deliver(array $ids, CarbonImmutable $at): void
     {
-        foreach ($deliveryIds as $deliveryId) {
+        foreach ($ids as $deliveryId) {
             $this->database->beginTransaction();
 
             $this->unitOfWork->run(

@@ -14,8 +14,8 @@ use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AgentContext;
-use App\Support\DeskOpening;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
+use App\Support\DeskService;
 use App\Support\NumberedPage;
 use App\Support\SignedCall;
 use App\Support\StartSessions;
@@ -73,7 +73,7 @@ final class TaskDetailsResolverTest extends TestCase
 
     public function test_a_task_held_by_a_desk_and_run_by_its_occupant_shows_both_separately(): void
     {
-        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 1, false);
+        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 1, false);
         $runner = $this->start('Runner');
         $task = Task::factory()->create(['title' => 'Split work', 'brief' => self::BRIEF]);
         $this->asUser();
@@ -83,7 +83,7 @@ final class TaskDetailsResolverTest extends TestCase
             $desk->assigneeIdentity(),
         );
 
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->seat(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->seat(
             $desk->id,
             new ActorIdentity(ActorType::Agent, $runner->agent_id),
         ));

@@ -13,8 +13,8 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;
 use App\Support\DatabaseClock;
+use App\Support\HeartbeatService;
 use App\Support\StartedAgent;
-use App\Support\StartHeartbeats;
 use App\Support\StartSessions;
 use App\Support\StartTokens;
 use Carbon\CarbonImmutable;
@@ -53,7 +53,7 @@ final class RecordHeartbeatTest extends TestCase
     {
         $started = $this->start();
         $this->startedSecondsAgo($started->session, 121);
-        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+        $this->app->make(HeartbeatService::class)->markSilentStarts();
         $this->assertSame(SessionStatus::Silent, $started->session->refresh()->status);
 
         $this->beat($started->session);
@@ -65,7 +65,7 @@ final class RecordHeartbeatTest extends TestCase
     public function test_a_beat_of_an_ended_session_is_refused_and_writes_nothing(): void
     {
         $started = $this->start();
-        $this->app->make(StartHeartbeats::class)->markExited($started->session, 'exit code 0');
+        $this->app->make(HeartbeatService::class)->markExited($started->session, 'exit code 0');
 
         $this->assertRefused($started->session, CredentialRejected::revoked()->getMessage());
     }

@@ -10,13 +10,13 @@ use InvalidArgumentException;
 
 /**
  * Inertia's page check, answered from the same declarations the UI manifest is built from: a declared page's component
- * by its <domain>/<path> name, and today's pages under resources/js/pages through the usual finder until they move.
+ * by its <domain>/<path> name, and the shell's own pages under resources/js/pages through Laravel's view finder.
  */
 final readonly class UiComponentFinder
 {
     public function __construct(
         private UiDeclarations $declarations,
-        private FileViewFinder $legacyPages,
+        private FileViewFinder $shellPages,
         private string $root,
     ) {}
 
@@ -41,6 +41,6 @@ final readonly class UiComponentFinder
             }
         }
 
-        return $this->legacyPages->find($component);
+        return $this->shellPages->find($component);
     }
 }

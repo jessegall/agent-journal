@@ -24,7 +24,7 @@ use App\Models\Records\Comment;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
-use App\Support\ProjectReadPruning;
+use App\Support\ProjectReadRetentionService;
 use App\Support\RecordIdentity;
 use App\Values\BindingFolder;
 use App\Values\ChatMemberAuthority;
@@ -120,7 +120,7 @@ final class ProjectFileTest extends TestCase
             $this->reportWhole($text);
         }
 
-        $this->app->make(ProjectReadPruning::class)->prune(CarbonImmutable::now());
+        $this->app->make(ProjectReadRetentionService::class)->prune(CarbonImmutable::now());
 
         $kept = ProjectFileVersion::query()->pluck('text')->all();
         sort($kept);

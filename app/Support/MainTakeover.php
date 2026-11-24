@@ -18,7 +18,7 @@ use App\Models\Desks\DeskSeat;
 final readonly class MainTakeover implements MainSeatTakeover
 {
     public function __construct(
-        private DeskSeating $seating,
+        private DeskSeatService $seating,
         private AssignmentStorage $store,
     ) {}
 

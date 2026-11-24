@@ -7,13 +7,13 @@ namespace Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Support\DocumentBody;
-use Domain\Documents\Support\DraftEditing;
+use Domain\Documents\Support\DraftEditService;
 use Domain\Documents\Support\DraftText;
 use Domain\Documents\Values\DraftReference;
 
 final readonly class EditDocumentHandler extends DocumentCommandHandler
 {
-    public function __construct(private DraftEditing $drafts, private DocumentBody $bodies) {}
+    public function __construct(private DraftEditService $drafts, private DocumentBody $bodies) {}
 
     public function handle(EditDocumentCommand $command): DraftReference
     {

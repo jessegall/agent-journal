@@ -10,7 +10,7 @@ use App\Contracts\Sessions\StartRecordResolver;
 use App\Support\ActorIdentity;
 use App\Support\StartRecordDetails;
 use Domain\Documents\Events\ReportFiled;
-use Domain\Helpers\Support\ReportJobLinking;
+use Domain\Helpers\Support\ReportJobLinkService;
 use Domain\Helpers\Values\FiledReport;
 
 /**
@@ -22,7 +22,7 @@ final readonly class LinkReportToJob implements Listener
 {
     public function __construct(
         private StartRecordResolver $starts,
-        private ReportJobLinking $linking,
+        private ReportJobLinkService $linking,
     ) {}
 
     public function handle(ReportFiled $fact): void

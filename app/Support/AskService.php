@@ -13,7 +13,7 @@ use App\Values\ProfileKey;
  * Opens an ask on the requester's route for its type, under the supervisor graph lock; the same submission key
  * finds the ask it opened before. Routing it is the caller's next step.
  */
-final readonly class AskOpening
+final readonly class AskService
 {
     public function __construct(
         private SupervisorRouting $routes,

@@ -18,7 +18,7 @@ use Domain\Helpers\Values\FiledReport;
  * from the helper's latest job: a late filing of job A after job B started still answers A. A claim the job does not
  * bear out is refused and kept as a discrepancy; a session no helper job started files a plain report.
  */
-final readonly class ReportJobLinking
+final readonly class ReportJobLinkService
 {
     public function link(FiledReport $report, ActorIdentity $filer, StartRecordDetails $start): void
     {

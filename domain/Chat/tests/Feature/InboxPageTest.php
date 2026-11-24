@@ -10,7 +10,7 @@ use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\Desks\DeskRecord;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;
@@ -54,7 +54,7 @@ final class InboxPageTest extends TestCase
         $team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 2, false)));
 
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat($team->id, ActorIdentity::of($owner)),
+            fn () => $this->app->make(DeskSeatService::class)->seat($team->id, ActorIdentity::of($owner)),
         );
 
         $questionId = $this->runOnBus(new AskMessageCommand($own->inboxId(), $team->inboxId(), 'Who takes this?'));

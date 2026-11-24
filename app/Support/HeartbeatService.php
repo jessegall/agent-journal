@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
  * means absent: silence never times a session out. The host's verified report that the driver exited ends it, and
  * a session no host took up, that never beat and whose start nobody claimed within a presence window, ends too.
  */
-final readonly class StartHeartbeats implements StartHeartbeatsContract
+final readonly class HeartbeatService implements StartHeartbeatsContract
 {
     /**
      * How many never-started sessions one sweep ends; the next sweep takes the rest.

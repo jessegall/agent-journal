@@ -11,7 +11,7 @@ use App\Models\Messages\Message;
 use App\Models\Records\GlobalGroup;
 use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
-use App\Support\DeskOpening;
+use App\Support\DeskService;
 use App\Support\MessageBody;
 use App\Support\MessageEnvelope;
 use App\Support\ReceiptCaller;
@@ -41,7 +41,7 @@ final class ChatSchemaTest extends TestCase
 
     public function test_a_request_key_is_used_once_per_inbox_and_author_and_rows_without_one_are_free(): void
     {
-        $destination = $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'To');
+        $destination = $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'To');
         $first = $this->message($destination);
         $second = $this->message($destination);
         $third = $this->message($destination);
@@ -83,7 +83,7 @@ final class ChatSchemaTest extends TestCase
             ReceiptRetention::standard(),
         );
         $envelope = MessageEnvelope::send(
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'From'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'From'),
             $destination,
             TestActors::agentIdentity(7),
             MessageBody::from('Hello.'),

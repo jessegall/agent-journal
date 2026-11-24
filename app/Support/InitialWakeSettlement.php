@@ -23,7 +23,7 @@ final readonly class InitialWakeSettlement
 {
     public function __construct(
         private StartTransaction $transaction,
-        private StartHeartbeats $heartbeats,
+        private HeartbeatService $heartbeats,
     ) {}
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Commands\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Sessions\CurrentSession;
@@ -20,7 +21,7 @@ use Carbon\CarbonImmutable;
  * Who may speak in a chat: a user's message gives each agent member one turn, kept for a question the user put to
  * it; an agent claims its turn for two minutes under an opaque token and writes once with it. Users need no claim.
  */
-final readonly class SpeechAllowance
+final readonly class SpeechService
 {
     public const int LEASE_SECONDS = 120;
 
@@ -38,7 +39,7 @@ final readonly class SpeechAllowance
     {
         $agents = array_values(array_filter(
             $intervals,
-            fn (InboxInterval $interval) => $interval->actor->type->isAgent()
+            fn (InboxInterval $interval) => $interval->isHeldByAnAgent()
                 && $this->isOfferedTo($userMessage, $interval),
         ));
 
@@ -65,7 +66,7 @@ final readonly class SpeechAllowance
 
         $addressee = array_find(
             $intervals,
-            fn (InboxInterval $interval) => $interval->actor->type->isAgent()
+            fn (InboxInterval $interval) => $interval->isHeldByAnAgent()
                 && $interval->actor_type === $agentPost->addressee_type
                 && $interval->actor_id === $agentPost->addressee_id,
         );
@@ -119,16 +120,10 @@ final readonly class SpeechAllowance
      * @throws InboxUnavailable
      * @throws SpeechRefused
      */
-    public function claim(
-        string $inboxId,
-        ActorContext $actor,
-        string $rootId,
-        string $batchId,
-        string $grant,
-        CarbonImmutable $at,
-    ): string {
-        $opportunity = $this->lockedTurn($inboxId, $actor, $rootId);
-        $this->assertGrant($opportunity, $rootId, $batchId, $grant, $at);
+    public function claim(ClaimSpeechCommand $claim, CarbonImmutable $at): string
+    {
+        $opportunity = $this->lockedTurn($claim->inboxId, $claim->dispatchedBy(), $claim->rootId);
+        $this->assertGrant($opportunity, $claim, $at);
         $token = bin2hex(random_bytes(self::TOKEN_BYTES));
         $opportunity->claim(self::digestOf($token), $at->addSeconds(self::LEASE_SECONDS));
 
@@ -167,21 +162,16 @@ final readonly class SpeechAllowance
      *
      * @throws SpeechRefused
      */
-    private function assertGrant(
-        SpeechOpportunity $opportunity,
-        string $rootId,
-        string $batchId,
-        string $grant,
-        CarbonImmutable $at,
-    ): void {
-        $batch = MessageBatch::query()->whereKey($batchId)->lockForUpdate()->first();
+    private function assertGrant(SpeechOpportunity $opportunity, ClaimSpeechCommand $claim, CarbonImmutable $at): void
+    {
+        $batch = MessageBatch::query()->whereKey($claim->batchId)->lockForUpdate()->first();
 
         $isOwnTurn = $batch !== null
             && $batch->interval_id === $opportunity->interval_id
             && $this->session->hasSession()
             && $batch->agent_session_id === $this->session->sessionId()
-            && $batch->admitsClaim(hash('sha256', $grant), $at)
-            && $batch->carriesRoot($rootId);
+            && $batch->admitsClaim(hash('sha256', $claim->grant), $at)
+            && $batch->carriesRoot($claim->rootId);
 
         if (! $isOwnTurn) {
             throw SpeechRefused::notThisTurn();

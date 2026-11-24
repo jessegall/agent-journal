@@ -9,7 +9,7 @@ namespace App\Support;
  */
 final readonly class BuiltInDesks
 {
-    public function __construct(private DeskOpening $desks) {}
+    public function __construct(private DeskService $desks) {}
 
     public const string MAIN = 'main';
 

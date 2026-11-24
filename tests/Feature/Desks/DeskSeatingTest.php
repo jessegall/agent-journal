@@ -12,8 +12,8 @@ use App\Exceptions\SeatConflict;
 use App\Exceptions\SecondForwardingSeat;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
-use App\Support\DeskOpening;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
+use App\Support\DeskService;
 use App\Support\RequestKey;
 use App\Support\SeatChange;
 use App\Support\SeatRelease;
@@ -60,8 +60,8 @@ final class DeskSeatingTest extends TestCase
 
     public function test_an_actor_is_seated_replaced_and_released_and_each_change_advances_the_revision(): void
     {
-        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 2, true);
-        $seating = $this->app->make(DeskSeating::class);
+        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 2, true);
+        $seating = $this->app->make(DeskSeatService::class);
 
         $seated = $this->inTransaction(fn () => $seating->seat($desk->id, $this->builder));
         $again = $this->inTransaction(fn () => $seating->seat($desk->id, $this->builder));
@@ -90,9 +90,9 @@ final class DeskSeatingTest extends TestCase
 
     public function test_an_actor_at_main_is_refused_a_second_forwarding_seat_and_a_full_desk_refuses(): void
     {
-        $main = $this->app->make(DeskOpening::class)->openNamed('main', 'Main', 1, true);
-        $other = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 2, true);
-        $seating = $this->app->make(DeskSeating::class);
+        $main = $this->app->make(DeskService::class)->openNamed('main', 'Main', 1, true);
+        $other = $this->app->make(DeskService::class)->openNamed('team', 'Team', 2, true);
+        $seating = $this->app->make(DeskSeatService::class);
         $this->inTransaction(fn () => $seating->seat($main->id, $this->builder));
 
         $this->assertThrows(
@@ -107,7 +107,7 @@ final class DeskSeatingTest extends TestCase
 
     public function test_the_seat_command_seats_an_actor(): void
     {
-        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 2, false);
+        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 2, false);
         $this->app->make(RequestKey::class)->set('seat-the-builder');
 
         $result = $this->app->make(CommandBus::class)->run(new SeatActorCommand($desk->id, $this->builder));

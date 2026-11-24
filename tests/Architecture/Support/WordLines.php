@@ -57,7 +57,7 @@ final readonly class WordLines
     private const array NOT_PROJECT = [
         '/vendor/', '/node_modules/', '/bootstrap/cache/', '/docs/naming/', '/docs/agents/version-5/',
         '/tools/journal-agent/testdata/', '/tests/Fixtures/UserWords/', '/tests/Architecture/UserWordTest.php',
-        '/tests/Architecture/Support/WordLines.php', '/tests/Architecture/Legacy/',
+        '/tests/Architecture/Support/WordLines.php', '/tests/Architecture/FormerPaths/',
     ];
 
     /**

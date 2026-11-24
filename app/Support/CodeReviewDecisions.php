@@ -29,9 +29,9 @@ final readonly class CodeReviewDecisions
         private JournalAssignmentWriter $assignments,
         private AskAttention $attention,
         private AskTypeRegistry $types,
-        private AskOpening $opening,
+        private AskService $opening,
         private AskRouter $router,
-        private RepairRouting $repairs,
+        private RepairService $repairs,
     ) {}
 
     public function decide(

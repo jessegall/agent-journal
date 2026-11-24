@@ -11,7 +11,7 @@ use App\Enums\PublicationState;
 use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use App\Support\HostSkillPublisher;
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
@@ -109,8 +109,8 @@ final class SkillPublishingTest extends TestCase
         $this->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
     }
 
-    private function publishing(): SkillPublishing
+    private function publishing(): SkillPublishingService
     {
-        return $this->app->make(SkillPublishing::class);
+        return $this->app->make(SkillPublishingService::class);
     }
 }

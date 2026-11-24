@@ -16,7 +16,7 @@ use Illuminate\Database\ConnectionInterface;
  * withdrawing that, which ends its part in every chat there in the same transaction. Its other chats and desk mail
  * stay as they are.
  */
-final readonly class AgentChatAccess
+final readonly class AgentChatAccessService
 {
     public function __construct(
         private ConnectionInterface $database,

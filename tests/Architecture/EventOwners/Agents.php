@@ -140,7 +140,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/StartHeartbeats.php',
+            'app/Support/HeartbeatService.php',
             'app/Support/StartSessions.php',
         ],
     ],

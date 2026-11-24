@@ -27,7 +27,7 @@ use Illuminate\Support\Str;
  * the command line, finding a stored skill by number or key,
  * turning a Markdown body and audience flags into a draft, and the plain lines a save prints.
  */
-final readonly class SkillAuthoring
+final readonly class SkillAuthoringService
 {
     public function __construct(
         private ConsoleOwner $console,

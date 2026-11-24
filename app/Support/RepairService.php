@@ -21,7 +21,7 @@ use App\Values\WorkRepairRequest;
  * work becomes one stuck ask on the decider's route instead of a fourth. A copy that fails, or a repair no domain
  * can reopen, keeps the request pending and visible.
  */
-final readonly class RepairRouting
+final readonly class RepairService
 {
     /**
      * How many repair rounds of one work go back to its worker before it becomes a stuck ask.
@@ -32,7 +32,7 @@ final readonly class RepairRouting
         private WorkRepair $repair,
         private HelperCommitImport $transfer,
         private AskTypeRegistry $types,
-        private AskOpening $opening,
+        private AskService $opening,
         private AskRouter $router,
     ) {}
 

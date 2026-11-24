@@ -16,7 +16,7 @@ use App\Exceptions\SkillMissing;
 use App\Exceptions\SkillSelectionConflict;
 use App\Exceptions\SkillSourceInvalid;
 use App\Models\Agents\Agent;
-use App\Support\SkillAuthoring;
+use App\Support\SkillAuthoringService;
 use App\Support\SkillPreview;
 use App\Values\SkillKey;
 use Illuminate\Console\Command;
@@ -31,7 +31,7 @@ final class SkillPreviewCommand extends Command
 
     protected $description = 'Show which agents a skill reaches and why';
 
-    public function handle(SkillResolver $skills, SkillAuthoring $authoring, SkillPreview $preview): int
+    public function handle(SkillResolver $skills, SkillAuthoringService $authoring, SkillPreview $preview): int
     {
         $authoring->actAsOwner();
 

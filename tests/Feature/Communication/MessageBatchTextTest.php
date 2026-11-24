@@ -14,7 +14,7 @@ use App\Mcp\Tools\MessageClaimTool;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Messages\MessageBatch;
 use App\Support\ActorIdentity;
-use App\Support\AgentChatAccess;
+use App\Support\AgentChatAccessService;
 use App\Support\MessageBatchService;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
@@ -89,7 +89,7 @@ final class MessageBatchTextTest extends MessagingTestCase
 
     private function groupChatWithTheBuilder(): string
     {
-        $this->app->make(AgentChatAccess::class)->allow(
+        $this->app->make(AgentChatAccessService::class)->allow(
             $this->builder->agent_id,
             null,
             [$this->owner->id],

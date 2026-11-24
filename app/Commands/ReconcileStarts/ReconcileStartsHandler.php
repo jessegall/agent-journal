@@ -10,8 +10,8 @@ use App\Events\AccountUseChanged;
 use App\Events\SessionStateChanged;
 use App\Models\Agents\AgentSession;
 use App\Models\Starts\ProcessStart;
+use App\Support\HeartbeatService;
 use App\Support\RecordIdentity;
-use App\Support\StartHeartbeats;
 
 /**
  * Ends the reported starts, with the sessions they ran, and tells each account's page once its count changed and
@@ -19,7 +19,7 @@ use App\Support\StartHeartbeats;
  */
 final readonly class ReconcileStartsHandler implements CommandHandler
 {
-    public function __construct(private CommandFacts $facts, private StartHeartbeats $heartbeats) {}
+    public function __construct(private CommandFacts $facts, private HeartbeatService $heartbeats) {}
 
     public function handle(ReconcileStartsCommand $command): int
     {

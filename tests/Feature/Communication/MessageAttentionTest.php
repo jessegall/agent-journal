@@ -12,7 +12,7 @@ use App\Models\Agents\Agent;
 use App\Models\Desks\DeskRecord;
 use App\Models\Messages\MessageAttention;
 use App\Support\ActorIdentity;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\RequestKey;
 use App\Support\StartSessions;
 use Domain\Access\Models\User;
@@ -67,7 +67,7 @@ final class MessageAttentionTest extends TestCase
 
         foreach ([...$running, $idle] as $agent) {
             $this->app->make(AssignmentTransaction::class)->run(
-                fn () => $this->app->make(DeskSeating::class)->seat($desk->id, ActorIdentity::of($agent)),
+                fn () => $this->app->make(DeskSeatService::class)->seat($desk->id, ActorIdentity::of($agent)),
             );
         }
 

@@ -24,7 +24,7 @@ use App\Support\JournalRoutes;
 use App\Support\Links\ProjectFileLinkRecords;
 use App\Support\LinkTypeRegistry;
 use App\Support\ProjectCommands;
-use App\Support\ProjectReadPruning;
+use App\Support\ProjectReadRetentionService;
 use App\Values\PolicyDefinition;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Scheduling\Schedule;
@@ -77,7 +77,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule
-                ->call(fn (ProjectReadPruning $pruning) => $pruning->prune(CarbonImmutable::now()))
+                ->call(fn (ProjectReadRetentionService $pruning) => $pruning->prune(CarbonImmutable::now()))
                 ->everyMinute(),
         );
     }

@@ -48,7 +48,7 @@ final class JournalReferenceTest extends TestCase
             explode("\n", $listed),
             fn (string $path) => $path !== ''
                 && ! str_starts_with($path, 'tests/Fixtures/JournalReferences/')
-                && ! str_starts_with($path, 'tests/Architecture/Legacy/')
+                && ! str_starts_with($path, 'tests/Architecture/FormerPaths/')
                 && ! str_contains($path, '/testdata/')
                 && array_any(self::SOURCE_ENDINGS, fn (string $ending) => str_ends_with($path, $ending)),
         ));

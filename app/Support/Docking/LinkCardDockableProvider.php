@@ -19,7 +19,7 @@ use App\Support\Sources\DockDefinition;
  * Reads records with no card of their own through their record provider: one the actor may read for docking, and the
  * visible ones of a batch, each docked as its link card.
  */
-final readonly class LegacyDockableProvider implements DockableProvider
+final readonly class LinkCardDockableProvider implements DockableProvider
 {
     public function __construct(private RecordResolver $records, private DeclaredPageRoutes $pages) {}
 
@@ -50,8 +50,8 @@ final readonly class LegacyDockableProvider implements DockableProvider
         return $cards;
     }
 
-    private function dockableOf(RecordCard $record): LegacyDockable
+    private function dockableOf(RecordCard $record): LinkCardDockable
     {
-        return new LegacyDockable($record, $this->pages->destinationOf($record->route)->getOrElse(null));
+        return new LinkCardDockable($record, $this->pages->destinationOf($record->route)->getOrElse(null));
     }
 }

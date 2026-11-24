@@ -21,8 +21,8 @@ use App\Models\Starts\RevisionFence;
 use App\Models\Starts\SessionPolicy;
 use App\Models\Starts\StartRecord;
 use App\Support\ActorIdentity;
+use App\Support\HeartbeatService;
 use App\Support\LaunchLimits;
-use App\Support\StartHeartbeats;
 use App\Values\CleanupReport;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
@@ -97,7 +97,7 @@ final class LaunchCleanupTest extends TestCase
         $launch->openStack($this->app);
         $this->reserve($launch);
 
-        $this->app->make(StartHeartbeats::class)->markExited($launch->session, 'exit 1');
+        $this->app->make(HeartbeatService::class)->markExited($launch->session, 'exit 1');
 
         $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
         $this->assertSame(0, CleanupOperation::query()->count());
@@ -161,7 +161,7 @@ final class LaunchCleanupTest extends TestCase
         $this->assertFalse(AgentRuntime::isRunningForSession($launch->session->id));
         $this->assertTrue(RevisionFence::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
 
-        $this->app->make(StartHeartbeats::class)->markExited($launch->session, 'exit 0');
+        $this->app->make(HeartbeatService::class)->markExited($launch->session, 'exit 0');
         $limits->enforceFences();
 
         $this->assertFalse(RevisionFence::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
@@ -174,7 +174,7 @@ final class LaunchCleanupTest extends TestCase
         $launch->openStack($this->app);
         $this->reserve($launch);
 
-        $this->app->make(StartHeartbeats::class)->markExited($launch->session, 'exit 0');
+        $this->app->make(HeartbeatService::class)->markExited($launch->session, 'exit 0');
 
         return $launch;
     }

@@ -14,8 +14,8 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Starts\StartRecord;
 use App\Support\ActorIdentity;
-use App\Support\DeskOpening;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
+use App\Support\DeskService;
 use App\Support\SeatChange;
 use App\Support\StartSessions;
 use App\Values\StartPolicy;
@@ -79,13 +79,13 @@ final class DispatchReplyInboxTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $main = $this->app->make(DeskOpening::class)->openNamed('main', 'Main inbox', 1, true);
+        $main = $this->app->make(DeskService::class)->openNamed('main', 'Main inbox', 1, true);
         $first = $this->started('First');
         $second = $this->started('Second');
         $task = Task::factory()->create();
         $this->startUserRequestAs($owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat(
+            fn () => $this->app->make(DeskSeatService::class)->seat(
                 $main->id,
                 ActorIdentity::of($first->agent()->firstOrFail()),
             ),
@@ -97,7 +97,7 @@ final class DispatchReplyInboxTest extends TestCase
         $this->assertSame($main->inbox_id, $run->replyInboxId()->get());
 
         $this->startUserRequestAs($owner->id);
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
             new SeatChange(
                 $main->id,
                 $seat->seatId,
@@ -114,13 +114,13 @@ final class DispatchReplyInboxTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $main = $this->app->make(DeskOpening::class)->openNamed('main', 'Main inbox', 1, true);
+        $main = $this->app->make(DeskService::class)->openNamed('main', 'Main inbox', 1, true);
         $first = $this->started('First');
         $second = $this->started('Second');
         $helper = Agent::create('Researcher', 'read-only-helper');
         $this->startUserRequestAs($owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat(
+            fn () => $this->app->make(DeskSeatService::class)->seat(
                 $main->id,
                 ActorIdentity::of($first->agent()->firstOrFail()),
             ),
@@ -144,7 +144,7 @@ final class DispatchReplyInboxTest extends TestCase
         $this->assertSame($main->inbox_id, $record->replyInboxId()->get());
 
         $this->startUserRequestAs($owner->id);
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
             new SeatChange(
                 $main->id,
                 $seat->seatId,

@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\RetireAgent\RetireAgentCommand;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
-use App\Support\AgentChatAccess;
+use App\Support\AgentChatAccessService;
 use App\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
@@ -30,7 +30,7 @@ final class AgentChatAdmissionTest extends MessagingTestCase
     {
         parent::setUp();
 
-        $this->app->make(AgentChatAccess::class)->allow(
+        $this->app->make(AgentChatAccessService::class)->allow(
             $this->builder->agent_id,
             null,
             [$this->owner->id],
@@ -59,11 +59,11 @@ final class AgentChatAdmissionTest extends MessagingTestCase
     public function test_withdrawing_or_retiring_the_agent_takes_it_out_of_the_chat(): void
     {
         $this->runOnBus(new AddChatParticipantCommand($this->inboxId, "agent:{$this->builder->agent_id}"));
-        $this->app->make(AgentChatAccess::class)->withdraw($this->builder->agent_id, null, CarbonImmutable::now());
+        $this->app->make(AgentChatAccessService::class)->withdraw($this->builder->agent_id, null, CarbonImmutable::now());
 
         $this->assertFalse($this->isMember($this->builder->agent_id));
 
-        $this->app->make(AgentChatAccess::class)->allow(
+        $this->app->make(AgentChatAccessService::class)->allow(
             $this->builder->agent_id,
             null,
             [$this->owner->id],

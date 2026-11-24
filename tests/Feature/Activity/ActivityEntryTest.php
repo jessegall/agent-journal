@@ -8,7 +8,7 @@ use App\Enums\ActivityLevel;
 use App\Enums\ActivityType;
 use App\Enums\ActorType;
 use App\Models\Agents\ActivityEntry;
-use App\Support\ActivityEntryPruning;
+use App\Support\ActivityRetentionService;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
@@ -81,7 +81,7 @@ final class ActivityEntryTest extends TestCase
 
         ActivityEntry::create($this->agent(), ActivityType::Read, 'kept', 'environment-two');
 
-        $this->app->make(ActivityEntryPruning::class)->prune();
+        $this->app->make(ActivityRetentionService::class)->prune();
 
         $this->assertSame(ActivityEntry::KEPT_ENTRY_LIMIT, ActivityEntry::query()->where('environment_id', self::ENVIRONMENT)->count());
         $this->assertFalse(ActivityEntry::query()->where('subject', 'file 0')->exists());

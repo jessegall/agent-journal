@@ -9,11 +9,11 @@ use Domain\Documents\Exceptions\SettlementDenied;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\RecordChanges;
-use Domain\Documents\Support\RecordSettling;
+use Domain\Documents\Support\RecordSettlementService;
 
 final readonly class SettleDocumentHandler extends DocumentCommandHandler
 {
-    public function __construct(private RecordChanges $changes, private RecordSettling $settling) {}
+    public function __construct(private RecordChanges $changes, private RecordSettlementService $settling) {}
 
     public function handle(SettleDocumentCommand $command): void
     {

@@ -10,7 +10,7 @@ use App\Contracts\Chat\ConversationResolver;
 use App\Events\PageChanged;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\SeatChange;
 use App\Support\Storage\AssignmentStore;
 use App\Support\UserChannel;
@@ -40,7 +40,7 @@ final class MessageRefreshTest extends MessagingTestCase
     public function test_an_occupant_removed_from_an_inbox_reads_nothing_of_it_on_the_next_refresh(): void
     {
         $desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 1, false)));
-        $seating = $this->app->make(DeskSeating::class);
+        $seating = $this->app->make(DeskSeatService::class);
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $seating->seat($desk->id, $this->actorOf($this->builder)),
         );

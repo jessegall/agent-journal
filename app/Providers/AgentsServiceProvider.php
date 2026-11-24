@@ -85,7 +85,7 @@ use App\Resolvers\Support\PendingStartSecrets;
 use App\Resolvers\UnconfiguredAccounts;
 use App\Support\ActiveActorCounterRegistry;
 use App\Support\ActivityDefinition;
-use App\Support\ActivityEntryPruning;
+use App\Support\ActivityRetentionService;
 use App\Support\AgentActivity;
 use App\Support\AgentActors;
 use App\Support\AgentAssignees;
@@ -107,6 +107,7 @@ use App\Support\DriverRuntimeStops;
 use App\Support\EnvironmentCredentialSource;
 use App\Support\FrozenSessionPolicies;
 use App\Support\GrantedSessionOutputs;
+use App\Support\HeartbeatService;
 use App\Support\HelperCommitImport;
 use App\Support\HostStartExecutor;
 use App\Support\HostStartPreflight;
@@ -131,7 +132,6 @@ use App\Support\SessionToolDiscovery;
 use App\Support\SignedCallSender;
 use App\Support\SignedHostCalls;
 use App\Support\StartEnvironment;
-use App\Support\StartHeartbeats;
 use App\Support\SystemEntryPolicies;
 use App\Support\TerminalViews;
 use App\Support\UnavailableAttachments;
@@ -202,7 +202,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(SessionResolver::class, SessionRecords::class);
         $this->app->bind(AgentDirectory::class, AgentRecords::class);
         $this->app->bind(AgentRequestClientContract::class, AgentRequestClient::class);
-        $this->app->bind(StartHeartbeatsContract::class, StartHeartbeats::class);
+        $this->app->bind(StartHeartbeatsContract::class, HeartbeatService::class);
         $this->app->bind(NavigationExpiryContract::class, NavigationExpiry::class);
         $this->app->scoped(CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
@@ -334,7 +334,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule
-                ->call(fn (ActivityEntryPruning $pruning) => $pruning->prune())
+                ->call(fn (ActivityRetentionService $pruning) => $pruning->prune())
                 ->hourly(),
         );
 

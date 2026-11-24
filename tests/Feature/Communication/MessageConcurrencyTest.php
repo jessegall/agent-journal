@@ -13,7 +13,7 @@ use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
 use App\Models\Messages\Message;
 use App\Support\AssignmentReference;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\OperationDeadline;
 use App\Support\SeatChange;
 use App\Support\Storage\AssignmentStore;
@@ -41,7 +41,7 @@ final class MessageConcurrencyTest extends MessagingTestCase
         $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
         $this->desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 1, false)));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat($this->desk->id, $this->actorOf($this->builder)),
+            fn () => $this->app->make(DeskSeatService::class)->seat($this->desk->id, $this->actorOf($this->builder)),
         );
     }
 
@@ -91,7 +91,7 @@ final class MessageConcurrencyTest extends MessagingTestCase
             $this->actorOf($this->reviewer),
         );
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->replace($change),
+            fn () => $this->app->make(DeskSeatService::class)->replace($change),
         );
 
         $this->assertSame([], $this->claimsOn($questionId));

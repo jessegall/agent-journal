@@ -11,7 +11,7 @@ use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Resolvers\RetainedDrafts;
-use Domain\Documents\Support\DraftEditing;
+use Domain\Documents\Support\DraftEditService;
 use Domain\Documents\Values\DraftReference;
 use Domain\Documents\Values\DraftTarget;
 
@@ -19,7 +19,7 @@ final readonly class RecoverDraftHandler extends DocumentCommandHandler
 {
     public function __construct(
         private RetainedDrafts $drafts,
-        private DraftEditing $edits,
+        private DraftEditService $edits,
         private CommandBus $commands,
     ) {}
 

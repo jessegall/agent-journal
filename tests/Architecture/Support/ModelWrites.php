@@ -18,7 +18,7 @@ use Tests\Support\ScanCache\ScanCache;
  */
 final readonly class ModelWrites
 {
-    public const string FROZEN_LISTS = 'tests/Architecture/Legacy/ModelWrites';
+    public const string FROZEN_LISTS = 'tests/Architecture/FormerPaths/ModelWrites';
 
     /**
      * @param  list<ModelWrite>  $writes

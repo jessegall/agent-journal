@@ -16,7 +16,7 @@ use App\Support\ActorIdentity;
 use App\Support\AttentionOrigin;
 use App\Support\AttentionOutcome;
 use App\Support\PendingInboxWork;
-use App\Support\ReceiptDeliveries;
+use App\Support\ReceiptDeliveryService;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Illuminate\Support\Facades\Event;
@@ -86,7 +86,7 @@ final class PairChatDemonstrationTest extends MessagingTestCase
         );
 
         $this->showAll($agent, $this->builder->id);
-        $this->app->make(ReceiptDeliveries::class)->deliverDue(CarbonImmutable::now()->addDay());
+        $this->app->make(ReceiptDeliveryService::class)->deliverDue(CarbonImmutable::now()->addDay());
 
         $question = Message::query()->acrossInboxes()->findOrFail($questionId);
         $this->assertSame([MessageState::Answered, $answerId], [$question->state, $question->answer_message_id]);

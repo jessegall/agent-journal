@@ -18,7 +18,7 @@ use App\Values\SelectedAccount;
  * Keeps a driver that refreshes its own sign-in alone on its account: it starts only on an account nothing else uses,
  * and nothing else starts on an account it uses, so one sign-in never has two writers.
  */
-final readonly class AccountSharing
+final readonly class AccountSharingService
 {
     public function __construct(private DriverCatalogue $drivers) {}
 

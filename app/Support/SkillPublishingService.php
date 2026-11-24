@@ -25,7 +25,7 @@ use App\Values\RefreshResult;
  * steps as separate bus commands, so no step publishes uncommitted intent. A failed step is recorded in a new command
  * after it rolled back; a worker that lost its fence stops and reports superseded.
  */
-final readonly class SkillPublishing
+final readonly class SkillPublishingService
 {
     private const int MOST_PUBLICATIONS = 100;
 

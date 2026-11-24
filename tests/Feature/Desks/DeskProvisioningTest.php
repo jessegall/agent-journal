@@ -17,7 +17,7 @@ use App\Models\Chats\InboxRecord;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
 use App\Support\ActorIdentity;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\RequestKey;
 use App\Support\SeatChange;
 use App\Support\SeatChangeResult;
@@ -86,7 +86,7 @@ final class DeskProvisioningTest extends TestCase
         $first = $this->provision($builder);
         $this->provision($reviewer);
 
-        $this->inTransaction(fn () => $this->app->make(DeskSeating::class)->replace(
+        $this->inTransaction(fn () => $this->app->make(DeskSeatService::class)->replace(
             new SeatChange($first->deskId, $first->seatId, $first->reference, $reviewer),
         ));
 
@@ -106,7 +106,7 @@ final class DeskProvisioningTest extends TestCase
         $reviewer = ActorIdentity::of(Agent::create('Reviewer', 'read-only-helper'));
         $old = $this->provision($builder);
         $this->app->make(CommandBus::class)->run(new RetireAgentCommand($builder->id));
-        $this->inTransaction(fn () => $this->app->make(DeskSeating::class)->seat($old->deskId, $reviewer));
+        $this->inTransaction(fn () => $this->app->make(DeskSeatService::class)->seat($old->deskId, $reviewer));
         $this->app->make(RequestKey::class)->set('restore-the-builder');
 
         $restored = $this->app->make(CommandBus::class)->run(new RestoreActorDeskCommand($builder));

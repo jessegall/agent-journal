@@ -47,7 +47,7 @@ final readonly class MessageService
         private AssignmentStorage $store,
         private ResponsibilityWriter $responsibilities,
         private CommandFacts $facts,
-        private SpeechAllowance $speech,
+        private SpeechService $speech,
         private MessageClaims $claims,
     ) {}
 

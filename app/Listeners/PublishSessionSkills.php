@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Events\SessionSkillsIntended;
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 
 /**
  * Publishes a session's skill set right after the transaction that asked for it committed, as the journal itself; a
@@ -17,7 +17,7 @@ final readonly class PublishSessionSkills implements Listener
     private const string HOLDER = 'start';
 
     public function __construct(
-        private SkillPublishing $publishing,
+        private SkillPublishingService $publishing,
     ) {}
 
     public function handle(SessionSkillsIntended $event): void

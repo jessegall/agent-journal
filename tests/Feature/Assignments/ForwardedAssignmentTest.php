@@ -14,7 +14,7 @@ use App\Models\Agents\Agent;
 use App\Models\Desks\DeskRecord;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
@@ -50,7 +50,7 @@ final class ForwardedAssignmentTest extends TestCase
         $main = DeskRecord::query()->named('main')->sole();
         $agent = $this->withDesk(Agent::create('Main', 'main-agent'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
+            fn () => $this->app->make(DeskSeatService::class)->seat($main->id, ActorIdentity::of($agent)),
         );
         $task = Task::factory()->create()->assignmentIdentity();
 

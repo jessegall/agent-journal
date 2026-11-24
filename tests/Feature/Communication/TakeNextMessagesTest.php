@@ -9,7 +9,7 @@ use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Data\Messages\MessageReadBatch;
 use App\Models\Desks\DeskRecord;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -24,7 +24,7 @@ final class TakeNextMessagesTest extends MessagingTestCase
 
         foreach ([$this->builder, $this->reviewer] as $session) {
             $this->app->make(AssignmentTransaction::class)->run(
-                fn () => $this->app->make(DeskSeating::class)->seat($desk->id, $this->actorOf($session)),
+                fn () => $this->app->make(DeskSeatService::class)->seat($desk->id, $this->actorOf($session)),
             );
         }
 

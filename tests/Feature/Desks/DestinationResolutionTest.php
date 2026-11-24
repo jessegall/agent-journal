@@ -13,7 +13,7 @@ use App\Models\Agents\Agent;
 use App\Models\Desks\DeskRecord;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsDesks;
 use Tests\Support\StartsOwnerRequest;
@@ -45,7 +45,7 @@ final class DestinationResolutionTest extends TestCase
         $agent = Agent::create('Main', 'main-agent');
         $this->provision($agent);
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
+            fn () => $this->app->make(DeskSeatService::class)->seat($main->id, ActorIdentity::of($agent)),
         );
 
         $this->assertSame($main->id, $this->holderId($agent->assigneeIdentity()));

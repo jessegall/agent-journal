@@ -20,7 +20,7 @@ use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectRead;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
-use App\Support\ProjectReadPruning;
+use App\Support\ProjectReadRetentionService;
 use App\Values\BindingFolder;
 use App\Values\ChatMemberAuthority;
 use Carbon\CarbonImmutable;
@@ -127,12 +127,12 @@ final class ProjectReadTest extends TestCase
     public function test_a_late_answer_to_an_expired_read_changes_nothing_and_pruning_removes_it_later(): void
     {
         $read = $this->read(ProjectReadType::File, 'src/main.go');
-        $this->app->make(ProjectReadPruning::class)->prune(CarbonImmutable::now()->addSeconds(ProjectRead::PENDING_SECONDS_LIMIT + 1));
+        $this->app->make(ProjectReadRetentionService::class)->prune(CarbonImmutable::now()->addSeconds(ProjectRead::PENDING_SECONDS_LIMIT + 1));
 
         $this->reportText($read)->assertNoContent();
         $this->assertSame(ProjectReadState::Expired, ProjectRead::query()->findOrFail($read->id)->state);
 
-        $this->app->make(ProjectReadPruning::class)->prune(CarbonImmutable::now()->addMinutes(ProjectRead::KEEP_MINUTES_LIMIT + 1));
+        $this->app->make(ProjectReadRetentionService::class)->prune(CarbonImmutable::now()->addMinutes(ProjectRead::KEEP_MINUTES_LIMIT + 1));
         $this->assertFalse(ProjectRead::query()->whereKey($read->id)->exists());
     }
 

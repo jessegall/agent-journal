@@ -11,7 +11,7 @@ use App\Models\Messages\Message;
 use App\Models\Starts\SessionPolicy;
 use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
-use App\Support\DeskOpening;
+use App\Support\DeskService;
 use App\Support\StackTransaction;
 use App\Values\AccessPolicy;
 use App\Values\OperationGrant;
@@ -62,7 +62,7 @@ final class DocumentDraftTest extends TestCase
             $parent->session,
         );
 
-        $this->app->make(DeskOpening::class)->installSourceDesk('system', 'System');
+        $this->app->make(DeskService::class)->installSourceDesk('system', 'System');
         $inbox = $this->inboxOf(ActorIdentity::of($parent->agent));
 
         $this->startRequestAs($child->id, $session->id);

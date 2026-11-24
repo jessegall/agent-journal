@@ -8,14 +8,14 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Chat\ActorDesks;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\SeatChangeResult;
 use App\Support\SeatLossRepair;
 
 final readonly class RestoreActorDeskHandler implements CommandHandler
 {
     public function __construct(
-        private DeskSeating $seating,
+        private DeskSeatService $seating,
         private ActorDesks $desks,
     ) {}
 

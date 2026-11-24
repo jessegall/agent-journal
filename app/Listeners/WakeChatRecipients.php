@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Events\ReceiptDeliveriesScheduled;
-use App\Support\ReceiptDeliveries;
+use App\Support\ReceiptDeliveryService;
 use Carbon\CarbonImmutable;
 
 /**
@@ -14,7 +14,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class WakeChatRecipients implements Listener
 {
-    public function __construct(private ReceiptDeliveries $deliveries) {}
+    public function __construct(private ReceiptDeliveryService $deliveries) {}
 
     public function handle(ReceiptDeliveriesScheduled $event): void
     {

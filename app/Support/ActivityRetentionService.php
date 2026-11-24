@@ -9,7 +9,7 @@ use App\Models\Agents\ActivityEntry;
 /**
  * Keeps of each environment's activity only its newest entries, up to the kept limit.
  */
-final readonly class ActivityEntryPruning
+final readonly class ActivityRetentionService
 {
     public function prune(): void
     {

@@ -133,6 +133,14 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
         return $this->left_at === null;
     }
 
+    /**
+     * Whether an agent holds this place in the inbox.
+     */
+    public function isHeldByAnAgent(): bool
+    {
+        return $this->actor->type->isAgent();
+    }
+
     public function isHeldBy(ActorIdentity $actor): bool
     {
         return $this->actor->isSameAs($actor);

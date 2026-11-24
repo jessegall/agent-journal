@@ -13,7 +13,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\ContextReminders;
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 use App\Support\SkillTargets;
 use App\Support\States\Support\AwaitingSkillsStateReference;
 use App\Values\StackTarget;
@@ -66,7 +66,7 @@ final class SessionSkillsTest extends TestCase
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->stack = new RecordingStack();
         $this->app->instance(AgentStack::class, $this->stack);
-        $this->app->make(SkillPublishing::class)->refresh();
+        $this->app->make(SkillPublishingService::class)->refresh();
     }
 
     public function test_a_skill_that_starts_to_apply_joins_and_a_retargeted_one_leaves_at_the_next_boundary(): void

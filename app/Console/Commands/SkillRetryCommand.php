@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Console\Concerns\PrintsPublicationOutcomes;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationMissing;
-use App\Support\SkillPublishing;
+use App\Support\SkillPublishingService;
 use Illuminate\Console\Command;
 
 /**
@@ -21,7 +21,7 @@ final class SkillRetryCommand extends Command
 
     protected $description = 'Publish a failed skill set again';
 
-    public function handle(SkillPublishing $publishing): int
+    public function handle(SkillPublishingService $publishing): int
     {
         $publicationId = (string) $this->argument('publication');
 

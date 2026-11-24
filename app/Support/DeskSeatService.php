@@ -15,7 +15,7 @@ use App\Enums\AssignmentReason;
  * revision with every change, ending the claims a lost seat proved, and giving an actor that lost its last seat a
  * new personal desk. Occupant attention joins here as its own constructor-injected contract.
  */
-final readonly class DeskSeating
+final readonly class DeskSeatService
 {
     public function __construct(
         private DeskSeatAdmission $admission,

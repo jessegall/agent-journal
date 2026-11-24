@@ -11,14 +11,14 @@ use App\Events\MessageClaimReleased;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\MessageMissing;
 use App\Models\Messages\Message;
-use App\Support\SpeechAllowance;
+use App\Support\SpeechService;
 
 final readonly class ReleaseMessageClaimHandler implements CommandHandler
 {
     public function __construct(
         private ResponsibilityWriter $responsibilities,
         private CommandFacts $facts,
-        private SpeechAllowance $speech,
+        private SpeechService $speech,
     ) {}
 
     /**

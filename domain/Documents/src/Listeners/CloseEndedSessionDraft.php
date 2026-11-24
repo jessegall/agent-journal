@@ -9,7 +9,7 @@ use App\Contracts\Events\Listener;
 use App\Contracts\Sessions\SessionProvenance;
 use App\Events\SessionClosed;
 use Domain\Documents\Models\DocumentDraft;
-use Domain\Documents\Support\DraftClosing;
+use Domain\Documents\Support\DraftCloseService;
 
 /**
  * Closes the draft an agent held in a session that ended (an author holds one draft at a time), inside the transaction
@@ -19,7 +19,7 @@ use Domain\Documents\Support\DraftClosing;
 #[InCommandTransaction]
 final readonly class CloseEndedSessionDraft implements Listener
 {
-    public function __construct(private DraftClosing $drafts, private SessionProvenance $provenance) {}
+    public function __construct(private DraftCloseService $drafts, private SessionProvenance $provenance) {}
 
     public function handle(SessionClosed $event): void
     {

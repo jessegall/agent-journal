@@ -11,7 +11,7 @@ use Carbon\CarbonImmutable;
  * Deletes changes older than a day, two hundred at a time by creation time, so a prune never holds a long lock; a
  * cursor older than what is left takes a fresh snapshot.
  */
-final readonly class NotificationChangePruning
+final readonly class NotificationChangeRetentionService
 {
     public const int BATCH = 200;
 

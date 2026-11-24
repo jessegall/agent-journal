@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Domain\Documents\Commands\ChangeDocumentDetails;
 
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
-use Domain\Documents\Support\DraftEditing;
+use Domain\Documents\Support\DraftEditService;
 use Domain\Documents\Support\DraftText;
 use Domain\Documents\Values\DraftReference;
 
 final readonly class ChangeDocumentDetailsHandler extends DocumentCommandHandler
 {
-    public function __construct(private DraftEditing $drafts) {}
+    public function __construct(private DraftEditService $drafts) {}
 
     public function handle(ChangeDocumentDetailsCommand $command): DraftReference
     {

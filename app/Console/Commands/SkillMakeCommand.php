@@ -8,7 +8,7 @@ use App\Commands\CreateSkill\CreateSkillCommand;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Console\Concerns\ReadsAudienceOptions;
 use App\Contracts\Bus\CommandBus;
-use App\Support\SkillAuthoring;
+use App\Support\SkillAuthoringService;
 use App\Values\SkillDraft;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
@@ -26,7 +26,7 @@ final class SkillMakeCommand extends Command
 
     protected $description = 'Store a new skill';
 
-    public function handle(SkillAuthoring $console, CommandBus $commands): int
+    public function handle(SkillAuthoringService $console, CommandBus $commands): int
     {
         $requestId = (string) ($this->option('request-id') ?? Str::ulid());
         $this->line("Request id: {$requestId}");

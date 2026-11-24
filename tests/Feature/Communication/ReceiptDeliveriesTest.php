@@ -19,11 +19,11 @@ use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AttentionOrigin;
 use App\Support\AttentionOutcome;
-use App\Support\DeskOpening;
+use App\Support\DeskService;
 use App\Support\MessageBody;
 use App\Support\MessageEnvelope;
 use App\Support\ReceiptCaller;
-use App\Support\ReceiptDeliveries;
+use App\Support\ReceiptDeliveryService;
 use App\Support\ReceiptRetention;
 use Carbon\CarbonImmutable;
 use RuntimeException;
@@ -113,7 +113,7 @@ final class ReceiptDeliveriesTest extends TestCase
 
         $this->postToTheChat();
 
-        $deliveries = $this->app->make(ReceiptDeliveries::class);
+        $deliveries = $this->app->make(ReceiptDeliveryService::class);
 
         foreach (range(1, 4) as $pass) {
             $deliveries->deliverDue(CarbonImmutable::now()->addDays($pass));
@@ -132,7 +132,7 @@ final class ReceiptDeliveriesTest extends TestCase
 
         MessageReceipt::query()->whereKey(ReceiptDelivery::query()->sole()->receipt_id)->sole()
             ->present(CarbonImmutable::now());
-        $this->app->make(ReceiptDeliveries::class)->deliverDue(CarbonImmutable::now()->addDay());
+        $this->app->make(ReceiptDeliveryService::class)->deliverDue(CarbonImmutable::now()->addDay());
 
         $this->assertSame(1, $this->requests);
         $this->assertSame(ReceiptDeliveryState::Accepted, ReceiptDelivery::query()->sole()->state);
@@ -148,7 +148,7 @@ final class ReceiptDeliveriesTest extends TestCase
         $message = $this->message();
 
         $receipts = MessageReceipt::forAudience($message, [$sender, $member], $sender->id);
-        $this->app->make(ReceiptDeliveries::class)->schedule($receipts);
+        $this->app->make(ReceiptDeliveryService::class)->schedule($receipts);
     }
 
     private function message(): Message
@@ -160,8 +160,8 @@ final class ReceiptDeliveriesTest extends TestCase
             ReceiptRetention::standard(),
         );
         $envelope = MessageEnvelope::send(
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'From'),
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'To'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'From'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'To'),
             $this->user,
             MessageBody::from('Hello.'),
         );

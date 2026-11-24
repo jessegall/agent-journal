@@ -15,9 +15,9 @@ use App\Models\Messages\MessageReceipt;
 use App\Models\Messages\OutstandingMessageRange;
 use App\Models\Messages\ReceiptDelivery;
 use App\Support\ActorIdentity;
-use App\Support\AgentChatAccess;
+use App\Support\AgentChatAccessService;
 use App\Support\OutsideCommandAllowance;
-use App\Support\ReceiptDeliveries;
+use App\Support\ReceiptDeliveryService;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
@@ -46,7 +46,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
             CarbonImmutable::now(),
         );
         $this->inboxOf(ActorIdentity::of($bea));
-        $access = $this->app->make(AgentChatAccess::class);
+        $access = $this->app->make(AgentChatAccessService::class);
 
         foreach ([$this->builder, $this->reviewer] as $agent) {
             $access->allow($agent->agent_id, null, [$this->owner->id], ActorIdentity::system(), CarbonImmutable::now());
@@ -92,7 +92,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
 
     public function test_a_delivery_accepted_after_an_earlier_try_gave_up_shows_as_delivered(): void
     {
-        $this->app->make(AgentChatAccess::class)
+        $this->app->make(AgentChatAccessService::class)
             ->allow($this->builder->agent_id, null, [$this->owner->id], ActorIdentity::system(), CarbonImmutable::now());
         $this->asOwner();
         $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', []));
@@ -114,7 +114,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
      */
     public function test_a_post_tries_its_agent_delivery_where_no_write_outside_a_command_is_allowed(): void
     {
-        $this->app->make(AgentChatAccess::class)->allow(
+        $this->app->make(AgentChatAccessService::class)->allow(
             $this->builder->agent_id,
             null,
             [$this->owner->id],
@@ -143,7 +143,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
 
     public function test_a_delivery_tried_again_after_its_lease_keeps_one_record_of_the_ask(): void
     {
-        $this->app->make(AgentChatAccess::class)->allow(
+        $this->app->make(AgentChatAccessService::class)->allow(
             $this->builder->agent_id,
             null,
             [$this->owner->id],
@@ -160,7 +160,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         $firstLease = $delivery->lease_expires_at;
         $this->assertNotNull($firstLease);
 
-        $this->app->make(ReceiptDeliveries::class)->deliverDue($firstLease->addSecond());
+        $this->app->make(ReceiptDeliveryService::class)->deliverDue($firstLease->addSecond());
 
         $this->assertSame(1, MessageAttention::query()->where('origin_id', $messageId)->count());
         $this->assertTrue($delivery->refresh()->lease_expires_at->greaterThan($firstLease));
@@ -204,7 +204,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
 
     private function chatWithTheBuilder(): string
     {
-        $this->app->make(AgentChatAccess::class)->allow(
+        $this->app->make(AgentChatAccessService::class)->allow(
             $this->builder->agent_id,
             null,
             [$this->owner->id],

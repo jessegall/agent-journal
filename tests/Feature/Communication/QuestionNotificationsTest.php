@@ -15,7 +15,7 @@ use App\Models\Notifications\NotificationOccurrence;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Support\ActorIdentity;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
 use App\Support\SeatChangeResult;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -66,7 +66,7 @@ final class QuestionNotificationsTest extends MessagingTestCase
 
         foreach ($seated as $actor) {
             $this->seats[$actor->id] = $this->app->make(AssignmentTransaction::class)->run(
-                fn () => $this->app->make(DeskSeating::class)->seat($this->team->id, $actor),
+                fn () => $this->app->make(DeskSeatService::class)->seat($this->team->id, $actor),
             );
         }
     }

@@ -26,7 +26,7 @@ use App\Models\Projects\Host;
 use App\Models\Starts\SessionPolicy;
 use App\Models\Starts\StartRecord;
 use App\Resolvers\Support\PendingStartSecrets;
-use App\Support\AccountSharing;
+use App\Support\AccountSharingService;
 use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
 use App\Support\AgentWakes;
@@ -62,7 +62,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private PinnedBuilds $builds,
         private DriverCatalogue $drivers,
         private DriverAdapters $adapters,
-        private AccountSharing $accountSharing,
+        private AccountSharingService $accountSharing,
     ) {}
 
     /**

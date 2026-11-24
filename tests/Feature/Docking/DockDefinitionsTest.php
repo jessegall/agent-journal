@@ -10,8 +10,8 @@ use App\Exceptions\DockDefinitionInvalid;
 use App\Models\Messages\Message;
 use App\Support\ActorContext;
 use App\Support\DockDefinitions;
-use App\Support\Docking\LegacyDockable;
-use App\Support\Docking\LegacyDockableProvider;
+use App\Support\Docking\LinkCardDockable;
+use App\Support\Docking\LinkCardDockableProvider;
 use App\Support\Sources\Contracts\DockRegistration;
 use Tests\Fixtures\Docking\FixtureDockable;
 use Tests\Fixtures\Docking\FixtureDockableProvider;
@@ -34,7 +34,7 @@ final class DockDefinitionsTest extends TestCase
         }
 
         $this->assertContains(Message::LINK_TYPE, $types);
-        $this->assertSame(LegacyDockable::class, $this->definitions()->definition(Message::LINK_TYPE)->class);
+        $this->assertSame(LinkCardDockable::class, $this->definitions()->definition(Message::LINK_TYPE)->class);
     }
 
     public function test_an_owner_registration_wins_over_the_fallback_before_and_after_it_was_read(): void
@@ -44,7 +44,7 @@ final class DockDefinitionsTest extends TestCase
 
         $definitions->register(Message::LINK_TYPE, FixtureDockable::class, FixtureDockableProvider::class);
 
-        $this->assertSame(LegacyDockableProvider::class, $before->provider);
+        $this->assertSame(LinkCardDockableProvider::class, $before->provider);
         $this->assertSame(FixtureDockable::class, $definitions->definition(Message::LINK_TYPE)->class);
         $this->assertFalse($definitions->offersDock(Message::LINK_TYPE));
     }
@@ -74,7 +74,7 @@ final class DockDefinitionsTest extends TestCase
         ]);
         $context = new OpenGate()->contextFor(ActorContext::forUser(TestIds::of(1)));
 
-        $card = new LegacyDockable($record, null)->composeDockCard($context);
+        $card = new LinkCardDockable($record, null)->composeDockCard($context);
 
         $this->assertSame(['title'], array_map(fn ($part) => $part->key(), $card->root->children()));
         $this->assertNull($card->open);

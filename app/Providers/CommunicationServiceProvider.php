@@ -42,11 +42,11 @@ use App\Support\LinkTypeRegistry;
 use App\Support\MessageAnswerActivation;
 use App\Support\MessageBatchService;
 use App\Support\MessageClaimProvider;
-use App\Support\NotificationChangePruning;
+use App\Support\NotificationChangeRetentionService;
 use App\Support\NotificationTargetRegistry;
 use App\Support\PendingInboxWork;
 use App\Support\PendingWorkSources;
-use App\Support\ReceiptDeliveries;
+use App\Support\ReceiptDeliveryService;
 use App\Support\RecipientNotifications;
 use App\Support\RegisteredInboxes;
 use App\Support\SelectedMessages;
@@ -131,14 +131,14 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule
-                ->call(fn (NotificationChangePruning $pruning) => $pruning->prune(CarbonImmutable::now()))
+                ->call(fn (NotificationChangeRetentionService $pruning) => $pruning->prune(CarbonImmutable::now()))
                 ->hourly(),
         );
 
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule
-                ->call(fn (ReceiptDeliveries $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
+                ->call(fn (ReceiptDeliveryService $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
                 ->everyMinute(),
         );
 

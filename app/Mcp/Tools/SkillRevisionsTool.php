@@ -8,7 +8,7 @@ use App\Data\Skills\SkillRevisionRow;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use App\Support\SkillAuthoring;
+use App\Support\SkillAuthoringService;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -26,7 +26,7 @@ final class SkillRevisionsTool extends JournalReadTool
     private const int ROWS = 100;
 
     public function __construct(
-        private readonly SkillAuthoring $authoring,
+        private readonly SkillAuthoringService $authoring,
     ) {}
 
     public function schema(JsonSchema $schema): array

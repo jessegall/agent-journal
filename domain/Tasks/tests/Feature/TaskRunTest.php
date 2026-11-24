@@ -13,8 +13,8 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
-use App\Support\DeskOpening;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
+use App\Support\DeskService;
 use App\Support\SeatChange;
 use App\Support\StartSessions;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
@@ -102,7 +102,7 @@ final class TaskRunTest extends TestCase
 
     public function test_an_actor_that_lost_its_desk_seat_cannot_finish_the_desk_run(): void
     {
-        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 1, false);
+        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 1, false);
         $leaving = $this->started('First');
         $arriving = $this->started('Second');
         $task = Task::factory()->create();
@@ -110,7 +110,7 @@ final class TaskRunTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
 
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat(
+            fn () => $this->app->make(DeskSeatService::class)->seat(
                 $desk->id,
                 ActorIdentity::of($leaving->agent()->firstOrFail()),
             ),
@@ -121,7 +121,7 @@ final class TaskRunTest extends TestCase
 
         $this->startUserRequestAs($this->owner->id);
 
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
             new SeatChange(
                 $desk->id,
                 $seat->seatId,

@@ -21,7 +21,7 @@ final readonly class MergeSettlement
     public function __construct(
         private JournalAssignmentWriter $assignments,
         private AskAttention $attention,
-        private RepairRouting $repairs,
+        private RepairService $repairs,
         private WorkChainEnd $chains,
     ) {}
 

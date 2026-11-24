@@ -34,8 +34,8 @@ use App\Support\DeskInboxProvider;
 use App\Support\DeskReplyInboxes;
 use App\Support\DeskRunClaims;
 use App\Support\DeskSeatAdmission;
-use App\Support\DeskSeating;
 use App\Support\DeskSeatProvider;
+use App\Support\DeskSeatService;
 use App\Support\DestinationRegistry;
 use App\Support\LinkTypeRegistry;
 use App\Support\MainDeskNavigation;
@@ -60,7 +60,7 @@ final class DesksServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(DeskSeatAdmission::class);
-        $this->app->scoped(DeskSeating::class);
+        $this->app->scoped(DeskSeatService::class);
         $this->app->scoped(ActorDesks::class, PersonalDesks::class);
         $this->app->scoped(ActorProvisioning::class, PersonalDeskProvisioning::class);
         $this->app->scoped(RunClaims::class, DeskRunClaims::class);

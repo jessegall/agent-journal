@@ -22,7 +22,7 @@ use App\Models\Records\GlobalGroup;
 use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
-use App\Support\DeskOpening;
+use App\Support\DeskService;
 use App\Support\MessageBody;
 use App\Support\MessageEnvelope;
 use App\Support\ReceiptCaller;
@@ -156,8 +156,8 @@ final class ChatCoreModelsTest extends TestCase
             ReceiptRetention::standard(),
         );
         $envelope = MessageEnvelope::send(
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'From'),
-            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'To'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'From'),
+            $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'To'),
             $this->agent,
             MessageBody::from('Hello.'),
         );

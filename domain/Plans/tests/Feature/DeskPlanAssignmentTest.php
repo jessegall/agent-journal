@@ -9,8 +9,8 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
-use App\Support\DeskOpening;
-use App\Support\DeskSeating;
+use App\Support\DeskSeatService;
+use App\Support\DeskService;
 use App\Support\RequestKey;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -53,11 +53,11 @@ final class DeskPlanAssignmentTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $main = $this->app->make(DeskOpening::class)->openNamed('main', 'Main inbox', 1, true);
+        $main = $this->app->make(DeskService::class)->openNamed('main', 'Main inbox', 1, true);
         $agent = Agent::create('Main', 'main-agent');
 
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
+            fn () => $this->app->make(DeskSeatService::class)->seat($main->id, ActorIdentity::of($agent)),
         );
 
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
