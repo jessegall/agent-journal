@@ -281,7 +281,8 @@ function commandMoodFault(DeclaredName $declared, array $verbs): ?string
 
 /**
  * A yes-or-no answer reads as a question: is, has, can and the like first, or a verb in its third person (allows,
- * contains), which a first word ending in a single s is taken to be.
+ * contains), which a first word ending in a single s is taken to be. A method that starts with a verb is a command
+ * that answers whether it did its work.
  *
  * @param  array<string, true>  $verbs
  */
@@ -290,8 +291,12 @@ function questionFault(DeclaredName $declared, array $verbs): ?string
     $first = firstWordOf($declared->name);
 
     $isThirdPerson = stemOfThirdPerson($first, $verbs) !== null || preg_match('/[^s]s$/', $first) === 1;
+    // A method that starts with a verb acts and answers whether it did (claim, insertIfMissing): a command, not a question.
+    $isCommand = in_array($declared->declarationType, ['method', 'function'], true) && isset($verbs[$first]);
+    // boolean() reads a value as a boolean, as string() and integer() read theirs: a typed accessor.
+    $isTypedAccessor = $declared->declarationType === 'method' && wordsOf($declared->name) === ['boolean'];
 
-    if ($declared->role !== 'question' || in_array($first, QUESTION_WORDS, true) || $isThirdPerson) {
+    if ($declared->role !== 'question' || in_array($first, QUESTION_WORDS, true) || $isThirdPerson || $isCommand || $isTypedAccessor) {
         return null;
     }
 
