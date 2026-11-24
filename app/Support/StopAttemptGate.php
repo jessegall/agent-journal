@@ -172,11 +172,11 @@ final readonly class StopAttemptGate implements StopConditionGate
     ): Decision|MessageLine {
         $unchangedFailures = $settled->unchangedBefore($attempt->id, $attempt->outcomeOf($failureSummary)) + 1;
 
-        if ($unchangedFailures < self::UNCHANGED_FAILURES_TO_HOLD) {
+        if ($unchangedFailures < self::UNCHANGED_FAILURE_LIMIT) {
             return Decision::deny(AgentText::of('core.stop.refused', ['conditions' => $failureSummary]));
         }
 
-        if ($unchangedFailures === self::UNCHANGED_FAILURES_TO_HOLD) {
+        if ($unchangedFailures === self::UNCHANGED_FAILURE_LIMIT) {
             $this->tellOwnerHeld($attempt);
         }
 

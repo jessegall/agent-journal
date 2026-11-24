@@ -7,7 +7,7 @@ namespace App\Pipes;
 use App\Contracts\Bus\Pipe;
 use App\Enums\NodeType;
 use App\Support\Grammar\GrammarContext;
-use App\Support\Grammar\ListToParse;
+use App\Support\Grammar\UnparsedList;
 use App\Support\Lines\ScannedSource;
 use App\Support\Syntax\TokenCursor;
 use App\Values\SourceRange;
@@ -17,13 +17,13 @@ use App\Values\SourceRange;
  */
 final readonly class AddSequenceNode implements Pipe
 {
-    public function handle(ScannedSource $scanned): ListToParse
+    public function handle(ScannedSource $scanned): UnparsedList
     {
         $source = $scanned->source;
         $cursor = new TokenCursor($scanned->tokens, $source->offset);
         $range = new SourceRange($source->offset, $source->offset + strlen($source->text));
         $sequence = $source->draft->add(NodeType::Sequence, $range, $source->parent);
 
-        return new ListToParse(new GrammarContext($source, $cursor), $sequence, $source->depth, null);
+        return new UnparsedList(new GrammarContext($source, $cursor), $sequence, $source->depth, null);
     }
 }

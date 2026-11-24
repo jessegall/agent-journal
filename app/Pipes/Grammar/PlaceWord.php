@@ -7,7 +7,7 @@ namespace App\Pipes\Grammar;
 use App\Contracts\Bus\Pipe;
 use App\Enums\NodeType;
 use App\Enums\WordPlace;
-use App\Support\Grammar\WordToParse;
+use App\Support\Grammar\UnparsedWord;
 
 /**
  * A word before the first argument that starts as NAME= becomes an Assignment node of the command; any other word is
@@ -15,7 +15,7 @@ use App\Support\Grammar\WordToParse;
  */
 final readonly class PlaceWord implements Pipe
 {
-    public function handle(WordToParse $toParse): WordToParse
+    public function handle(UnparsedWord $toParse): UnparsedWord
     {
         if ($toParse->place !== WordPlace::Unread) {
             return $toParse;

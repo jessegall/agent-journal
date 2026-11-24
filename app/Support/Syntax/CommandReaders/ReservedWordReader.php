@@ -7,7 +7,7 @@ namespace App\Support\Syntax\CommandReaders;
 use App\Contracts\Bus\CommandReader;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\ShellGrammarStopped;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Syntax\TokenCursor;
 use App\Values\AgentText;
 
@@ -26,7 +26,7 @@ final readonly class ReservedWordReader implements CommandReader, Pipe
     /**
      * @throws ShellGrammarStopped always: the word cannot start a command
      */
-    public function handle(CommandToParse $toParse): never
+    public function handle(UnparsedCommand $toParse): never
     {
         $cursor = $toParse->cursor();
         $reason = AgentText::of('core.shell.reserved_word', ['word' => $cursor->currentLiteral()]);

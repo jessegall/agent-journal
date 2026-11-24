@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
-use App\Support\Execution\PartToSpawn;
+use App\Support\Execution\SpawnablePart;
 use App\Support\Execution\SpawnedPart;
 use App\Support\Execution\SpawnedProcess;
 
@@ -16,9 +16,9 @@ use App\Support\Execution\SpawnedProcess;
  */
 final readonly class SpawnPart implements Pipe
 {
-    public function handle(PartToSpawn $toSpawn): object
+    public function handle(SpawnablePart $toSpawn): object
     {
-        $queued = $toSpawn->nextToSpawn();
+        $queued = $toSpawn->nextSpawnable();
         $events = $queued->state->events;
 
         if ($queued->isStale()) {

@@ -9,18 +9,18 @@ use App\Contracts\Bus\PipelineDefinition;
 use App\Enums\TokenType;
 use App\Pipes\Grammar\ParseFunctionBody;
 use App\Pipes\Grammar\SkipNamedFunctionHeader;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
 use App\Support\Syntax\TokenCursor;
 
 /**
  * name () body: a function definition, not supported.
  *
- * @implements PipelineDefinition<CommandToParse, NodeRead>
+ * @implements PipelineDefinition<UnparsedCommand, NodeRead>
  */
 final readonly class ReadNamedFunctionPipeline implements CommandReader, PipelineDefinition
 {
-    public string $input = CommandToParse::class;
+    public string $input = UnparsedCommand::class;
 
     public string $output = NodeRead::class;
 

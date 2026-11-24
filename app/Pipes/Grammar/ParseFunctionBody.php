@@ -6,8 +6,8 @@ namespace App\Pipes\Grammar;
 
 use App\Enums\NodeType;
 use App\Pipelines\ReadCompoundPipeline;
-use App\Support\Grammar\CompoundToParse;
-use App\Support\Grammar\FunctionToParse;
+use App\Support\Grammar\UnparsedCompound;
+use App\Support\Grammar\UnparsedFunction;
 use App\Support\Grammar\NodeRead;
 use App\Support\PipelineAdapter;
 use App\Values\AgentText;
@@ -17,7 +17,7 @@ use App\Values\SourceRange;
  * A function definition is not supported, but its body must still be a complete group or subshell: the body is read
  * through the compound pipeline to check it, and the definition becomes one Unsupported node over it.
  *
- * @extends PipelineAdapter<FunctionToParse, NodeRead>
+ * @extends PipelineAdapter<UnparsedFunction, NodeRead>
  */
 final readonly class ParseFunctionBody extends PipelineAdapter
 {
@@ -31,7 +31,7 @@ final readonly class ParseFunctionBody extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): CompoundToParse
+    protected function into(object $input): UnparsedCompound
     {
         return $input->toParse->compound();
     }

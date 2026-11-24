@@ -17,7 +17,7 @@ final readonly class CompoundParts
      * @param  list<Redirect>  $redirects
      */
     public function __construct(
-        public CompoundToParse $toParse,
+        public UnparsedCompound $toParse,
         public int $node,
         public SourceRange $range,
         public array $redirects,

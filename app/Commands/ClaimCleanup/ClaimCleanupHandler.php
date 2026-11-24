@@ -14,7 +14,7 @@ final readonly class ClaimCleanupHandler implements CommandHandler
 {
     public function handle(ClaimCleanupCommand $command): ClaimedCleanup|null
     {
-        $account = Account::nextToClean();
+        $account = Account::nextDueForCleanup();
 
         if ($account !== null) {
             return new ClaimedCleanup(
@@ -29,7 +29,7 @@ final readonly class ClaimCleanupHandler implements CommandHandler
             );
         }
 
-        $attempt = SignInAttempt::nextToClean();
+        $attempt = SignInAttempt::nextDueForCleanup();
 
         return $attempt === null ? null : new ClaimedCleanup(
             CleanupTarget::SignInAttempt,

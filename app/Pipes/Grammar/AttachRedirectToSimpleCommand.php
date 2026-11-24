@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Pipelines\ReadRedirectPipeline;
-use App\Support\Grammar\RedirectToParse;
+use App\Support\Grammar\UnparsedRedirect;
 use App\Support\Grammar\SimpleCommandDraft;
 use App\Support\PipelineAdapter;
 use App\Values\Redirect;
@@ -27,7 +27,7 @@ final readonly class AttachRedirectToSimpleCommand extends PipelineAdapter
         return Redirect::class;
     }
 
-    protected function into(object $input): RedirectToParse
+    protected function into(object $input): UnparsedRedirect
     {
         return $input->toParse->redirect($input->parts->node);
     }

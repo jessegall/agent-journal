@@ -7,7 +7,7 @@ namespace App\Support\Syntax\CommandReaders;
 use App\Contracts\Bus\CommandReader;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\ShellGrammarStopped;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
 use App\Support\Syntax\UnsupportedConstructs;
 use App\Values\AgentText;
@@ -26,7 +26,7 @@ abstract readonly class UnsupportedCommandReader implements CommandReader, Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(CommandToParse $toParse): NodeRead
+    public function handle(UnparsedCommand $toParse): NodeRead
     {
         return new NodeRead($this->unsupported->skip($toParse->context, $this->reason(), null));
     }

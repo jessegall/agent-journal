@@ -39,7 +39,7 @@ final class ScriptGraph
             throw ScriptSyntaxError::at(DiagnosticCode::InvalidForm, $instruction->source, 'Invalid flow ports.');
         }
 
-        $times = array_map($this->secondsToFinish(...), array_values($instruction->successors));
+        $times = array_map($this->remainingSeconds(...), array_values($instruction->successors));
         $seconds = $instruction->seconds() + max([0, ...$times]);
 
         if ($seconds > self::EXECUTION_BUDGET) {
@@ -82,7 +82,7 @@ final class ScriptGraph
         ], $digest);
     }
 
-    private function secondsToFinish(string $successor): int
+    private function remainingSeconds(string $successor): int
     {
         return $this->seconds[$successor];
     }

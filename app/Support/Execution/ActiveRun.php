@@ -10,13 +10,13 @@ use App\Values\PlanStep;
 /**
  * A supervised run before its root step ran: the root step, the context it starts in and the run's state.
  */
-final readonly class RunUnderway
+final readonly class ActiveRun
 {
     public function __construct(public PlanStep $root, public ExecutionContext $context, public RunState $state) {}
 
-    public function rootStep(): StepToRun
+    public function rootStep(): PendingStep
     {
-        return new StepToRun($this->root, $this->context, $this->state);
+        return new PendingStep($this->root, $this->context, $this->state);
     }
 
     public function ended(StepOutcome $outcome): RunEnded

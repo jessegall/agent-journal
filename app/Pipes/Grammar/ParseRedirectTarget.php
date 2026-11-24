@@ -10,7 +10,7 @@ use App\Enums\RedirectType;
 use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\RedirectParts;
-use App\Support\Grammar\RedirectToParse;
+use App\Support\Grammar\UnparsedRedirect;
 use App\Support\Syntax\TokenCursor;
 use App\Values\AgentText;
 use App\Values\Redirect;
@@ -26,7 +26,7 @@ final readonly class ParseRedirectTarget implements Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(RedirectToParse $toParse): RedirectParts
+    public function handle(UnparsedRedirect $toParse): RedirectParts
     {
         $cursor = $toParse->cursor();
         $operator = $cursor->current();
@@ -75,7 +75,7 @@ final readonly class ParseRedirectTarget implements Pipe
      *
      * @throws ShellGrammarStopped
      */
-    private function hereDocument(RedirectToParse $toParse, int $descriptor, SourceRange $range): RedirectParts
+    private function hereDocument(UnparsedRedirect $toParse, int $descriptor, SourceRange $range): RedirectParts
     {
         $cursor = $toParse->cursor();
         $offset = $cursor->offset();

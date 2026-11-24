@@ -7,7 +7,7 @@ namespace App\Pipes\Run;
 use App\Calls\Processes\ProcessCalls;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\EvidencePermitRequired;
-use App\Support\Run\AdmissionToRun;
+use App\Support\Run\PendingAdmission;
 use App\Support\Run\FetchedAdmission;
 
 /**
@@ -20,7 +20,7 @@ final readonly class FetchAdmission implements Pipe
     /**
      * @throws EvidencePermitRequired
      */
-    public function handle(AdmissionToRun $admission): FetchedAdmission
+    public function handle(PendingAdmission $admission): FetchedAdmission
     {
         if (! $admission->isNamed()) {
             throw EvidencePermitRequired::forRun();

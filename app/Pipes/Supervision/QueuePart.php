@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
-use App\Support\Execution\PartToRun;
+use App\Support\Execution\PendingPart;
 use App\Support\Execution\QueuedPart;
 
 /**
@@ -13,7 +13,7 @@ use App\Support\Execution\QueuedPart;
  */
 final readonly class QueuePart implements Pipe
 {
-    public function handle(PartToRun $toRun): QueuedPart
+    public function handle(PendingPart $toRun): QueuedPart
     {
         return new QueuedPart(
             $toRun->step,

@@ -11,18 +11,18 @@ use App\Pipes\Grammar\OpenCompoundNode;
 use App\Pipes\Grammar\ParseCompoundList;
 use App\Pipes\Grammar\SkipCompoundClosingToken;
 use App\Support\Grammar\CompoundParts;
-use App\Support\Grammar\CompoundToParse;
+use App\Support\Grammar\UnparsedCompound;
 use App\Support\Grammar\NodeRead;
 use App\Support\Step;
 
 /**
  * ( list ) redirects | { list } redirects: the list inside runs through the list pipeline again, one level deeper.
  *
- * @implements PipelineDefinition<CompoundToParse, NodeRead>
+ * @implements PipelineDefinition<UnparsedCompound, NodeRead>
  */
 final readonly class ReadCompoundPipeline implements PipelineDefinition
 {
-    public string $input = CompoundToParse::class;
+    public string $input = UnparsedCompound::class;
 
     public string $output = NodeRead::class;
 

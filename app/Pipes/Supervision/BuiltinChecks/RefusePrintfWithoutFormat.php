@@ -7,14 +7,14 @@ namespace App\Pipes\Supervision\BuiltinChecks;
 use App\Contracts\Bus\Pipe;
 use App\Enums\BuiltinCommand;
 use App\Exceptions\SupervisorRefused;
-use App\Support\Execution\RunToSupervise;
+use App\Support\Execution\PlannedRun;
 
 /**
  * Refuses a printf without a format before anything runs.
  */
 final readonly class RefusePrintfWithoutFormat implements Pipe
 {
-    public function handle(RunToSupervise $run): RunToSupervise
+    public function handle(PlannedRun $run): PlannedRun
     {
         foreach ($run->callsOf(BuiltinCommand::Printf) as $words) {
             if (count($words) < 2) {

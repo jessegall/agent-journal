@@ -6,7 +6,7 @@ namespace App\Pipes\Grammar;
 
 use App\Contracts\Bus\Pipe;
 use App\Enums\NodeType;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\SimpleCommandDraft;
 use App\Support\Grammar\SimpleCommandParts;
 use App\Values\SourceRange;
@@ -16,7 +16,7 @@ use App\Values\SourceRange;
  */
 final readonly class OpenSimpleCommandNode implements Pipe
 {
-    public function handle(CommandToParse $toParse): SimpleCommandDraft
+    public function handle(UnparsedCommand $toParse): SimpleCommandDraft
     {
         $draft = $toParse->draft();
         $start = $toParse->cursor()->position();

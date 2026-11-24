@@ -14,7 +14,7 @@ interface ActorStackSessions
     /**
      * @return list<string> session ids, sorted, so every operation admits them in one order
      */
-    public function sessionsToAdmit(): array;
+    public function admittableSessions(): array;
 
     /**
      * The sessions an actor runs now, so work addressed to it reaches its stacks; none for an actor with no stack.

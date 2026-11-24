@@ -7,17 +7,17 @@ namespace App\Pipelines;
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Grammar\ParseRedirectSubstitutions;
 use App\Pipes\Grammar\ParseRedirectTarget;
-use App\Support\Grammar\RedirectToParse;
+use App\Support\Grammar\UnparsedRedirect;
 use App\Values\Redirect;
 
 /**
  * A redirect operator with its target word or here-document; the substitutions in either are read as children.
  *
- * @implements PipelineDefinition<RedirectToParse, Redirect>
+ * @implements PipelineDefinition<UnparsedRedirect, Redirect>
  */
 final readonly class ReadRedirectPipeline implements PipelineDefinition
 {
-    public string $input = RedirectToParse::class;
+    public string $input = UnparsedRedirect::class;
 
     public string $output = Redirect::class;
 

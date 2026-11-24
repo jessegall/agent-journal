@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\AgentRequests;
 
 use App\Calls\Processes\AdmissionAlreadyStarted;
-use App\Calls\Processes\AdmissionToStart;
+use App\Calls\Processes\StartableAdmission;
 use App\Calls\Processes\ProcessCalls;
 use App\Calls\Processes\RunChunk;
 use App\Calls\Processes\RunPart;
@@ -99,8 +99,8 @@ final class CallRecoveryTest extends TestCase
         $again = $processes->fetchAdmission($runId, new CallKey('fetch-1'));
         $other = $processes->fetchAdmission($runId, new CallKey('fetch-2'));
 
-        $this->assertInstanceOf(AdmissionToStart::class, $first);
-        $this->assertInstanceOf(AdmissionToStart::class, $again);
+        $this->assertInstanceOf(StartableAdmission::class, $first);
+        $this->assertInstanceOf(StartableAdmission::class, $again);
         $this->assertSame($first->eventKey, $again->eventKey);
         $this->assertInstanceOf(AdmissionAlreadyStarted::class, $other);
     }
@@ -110,7 +110,7 @@ final class CallRecoveryTest extends TestCase
         $processes = $this->app->make(ProcessCalls::class);
         $runId = $this->admitted('printf piece');
         $admission = $processes->fetchAdmission($runId, new CallKey('fetch-piece'));
-        $this->assertInstanceOf(AdmissionToStart::class, $admission);
+        $this->assertInstanceOf(StartableAdmission::class, $admission);
         $part = new RunPart(1, 1, 'printf');
         $queued = new RunEvent(1, RunEventType::PartQueued, $part);
         $processes->recordRunEvents($runId, $admission->eventKey, [$queued]);

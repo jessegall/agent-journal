@@ -26,7 +26,7 @@ final readonly class CallerStackTargets
 
         return array_map(
             fn (string $sessionId) => new StackTarget($actorId, $sessionId),
-            $this->sessions->sessionsToAdmit(),
+            $this->sessions->admittableSessions(),
         );
     }
 

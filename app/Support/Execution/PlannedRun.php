@@ -16,7 +16,7 @@ use App\Values\ExecutionPlan;
  * An execution plan handed to the supervisor: where its events go, the plan, the shell context it starts in and the
  * signal that may stop it.
  */
-final readonly class RunToSupervise
+final readonly class PlannedRun
 {
     public function __construct(
         public RunEvents $events,
@@ -45,8 +45,8 @@ final readonly class RunToSupervise
         return $calls;
     }
 
-    public function underway(): RunUnderway
+    public function start(): ActiveRun
     {
-        return new RunUnderway($this->plan->root, $this->context, new RunState($this->events, $this->stop));
+        return new ActiveRun($this->plan->root, $this->context, new RunState($this->events, $this->stop));
     }
 }

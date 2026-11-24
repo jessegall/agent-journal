@@ -40,7 +40,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
     /**
      * How many returns in a row on an unchanged workspace hold the work.
      */
-    public const int UNCHANGED_RETURNS_TO_HOLD = 3;
+    public const int UNCHANGED_RETURN_LIMIT = 3;
 
     private const string TRIGGER = 'STOP';
 
@@ -163,7 +163,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
             ->map(fn (ProfileRun $previous) => $previous->unchanged_returns + 1)
             ->getOrElse(1);
 
-        if ($unchangedReturns >= self::UNCHANGED_RETURNS_TO_HOLD) {
+        if ($unchangedReturns >= self::UNCHANGED_RETURN_LIMIT) {
             $reason = AgentText::of('core.stop.unchanged_returns', ['evidence' => $evidence]);
 
             return $this->hold($run, $reason, $unchangedReturns);

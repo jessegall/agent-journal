@@ -6,7 +6,7 @@ namespace App\Enums;
 
 use App\Calls\Processes\AdmissionAlreadyStarted;
 use App\Calls\Processes\AdmissionFetched;
-use App\Calls\Processes\AdmissionToStart;
+use App\Calls\Processes\StartableAdmission;
 
 /**
  * What a fetch of an admitted run found: a run to start now, or one that started before and runs nothing again.
@@ -24,7 +24,7 @@ enum AdmissionState: string
     public function answerClass(): string
     {
         return match ($this) {
-            self::ToRun => AdmissionToStart::class,
+            self::ToRun => StartableAdmission::class,
             self::AlreadyStarted => AdmissionAlreadyStarted::class,
         };
     }

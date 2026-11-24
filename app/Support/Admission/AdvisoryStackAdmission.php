@@ -67,7 +67,7 @@ final class AdvisoryStackAdmission implements StackAdmission
      */
     public function admitCaller(OperationDeadline $deadline, Closure $work): mixed
     {
-        $sessions = $this->stackSessions->sessionsToAdmit();
+        $sessions = $this->stackSessions->admittableSessions();
         $admitted = fn () => $this->withEventTargets($sessions, $work);
 
         foreach (array_reverse($sessions) as $sessionId) {

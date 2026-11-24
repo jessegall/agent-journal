@@ -222,7 +222,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<string>
      */
-    public static function configurationsToReopen(): array
+    public static function reopenableConfigurations(): array
     {
         return array_values(
             array_unique(

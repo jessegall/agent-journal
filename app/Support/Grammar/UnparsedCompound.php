@@ -12,7 +12,7 @@ use App\Support\Syntax\TokenCursor;
 /**
  * A subshell or group to read: its list up to the closing token, then its trailing redirects.
  */
-final readonly class CompoundToParse
+final readonly class UnparsedCompound
 {
     use UsesGrammarContext;
 
@@ -43,14 +43,14 @@ final readonly class CompoundToParse
     /**
      * The list inside, one level deeper, read into the compound node.
      */
-    public function list(int $compound): ListToParse
+    public function list(int $compound): UnparsedList
     {
-        return new ListToParse($this->context, $compound, $this->depth + 1, $this->closing);
+        return new UnparsedList($this->context, $compound, $this->depth + 1, $this->closing);
     }
 
-    public function redirect(int $compound): RedirectToParse
+    public function redirect(int $compound): UnparsedRedirect
     {
-        return new RedirectToParse($this->context, $compound, $this->depth);
+        return new UnparsedRedirect($this->context, $compound, $this->depth);
     }
 
     public function name(): string

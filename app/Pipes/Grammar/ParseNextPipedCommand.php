@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Pipelines\ReadCommandPipeline;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
 use App\Support\Grammar\PipedCommands;
 use App\Support\PipelineAdapter;
@@ -27,7 +27,7 @@ final readonly class ParseNextPipedCommand extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): CommandToParse
+    protected function into(object $input): UnparsedCommand
     {
         return $input->command();
     }

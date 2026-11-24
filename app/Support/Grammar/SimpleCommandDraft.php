@@ -13,7 +13,7 @@ use App\Values\Redirect;
 final readonly class SimpleCommandDraft
 {
     public function __construct(
-        public CommandToParse $toParse,
+        public UnparsedCommand $toParse,
         public SimpleCommandParts $parts,
         public bool $isArrayAssignment,
     ) {}
@@ -46,7 +46,7 @@ final readonly class SimpleCommandDraft
         return new self($this->toParse, $this->parts->withRedirect($redirect), false);
     }
 
-    public function withWord(WordToParse $word): self
+    public function withWord(UnparsedWord $word): self
     {
         return new self($this->toParse, $this->parts->withWord($word), false);
     }

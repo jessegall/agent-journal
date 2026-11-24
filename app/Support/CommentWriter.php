@@ -42,7 +42,7 @@ final readonly class CommentWriter
 
         $body = MarkdownText::comment($text);
         $author = ActorIdentity::of($actor);
-        $sessionId = $this->stackSessions->sessionsToAdmit()[0] ?? null;
+        $sessionId = $this->stackSessions->admittableSessions()[0] ?? null;
         $hash = self::hashOf($targetIdentity, $subject, $body);
         $earlier = Comment::query()->submittedAs($author, $sessionId, $submissionKey)->first();
 

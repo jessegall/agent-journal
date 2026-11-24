@@ -37,7 +37,7 @@ final readonly class PhaseTiming implements VerificationTiming
     public function forCaller(): TimingVerdict
     {
         // An actor that works in no session, such as the owner, runs its checks whenever it asks.
-        if ($this->stackSessions->sessionsToAdmit() === []) {
+        if ($this->stackSessions->admittableSessions() === []) {
             return TimingVerdict::allowed();
         }
 

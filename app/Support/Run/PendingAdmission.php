@@ -10,7 +10,7 @@ use App\Support\CallKey;
  * The admitted run to fetch and start, the request key that takes it, and the environment its child inherits; an
  * empty id names no run.
  */
-final readonly class AdmissionToRun
+final readonly class PendingAdmission
 {
     /**
      * @param  array<string, string>  $environment

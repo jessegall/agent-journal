@@ -16,7 +16,7 @@ use App\Values\PlanWord;
  * A part of a run that is queued and not yet run: its step, its key, the context it runs in, the outputs of its
  * substitutions and where its standard input comes from; it knows the words, files and variables it starts with.
  */
-final readonly class QueuedPart implements PartToSpawn
+final readonly class QueuedPart implements SpawnablePart
 {
     /**
      * Variables a part never inherits: the journal's start token and the run's event key.
@@ -38,7 +38,7 @@ final readonly class QueuedPart implements PartToSpawn
         public array $input,
     ) {}
 
-    public function nextToSpawn(): self
+    public function nextSpawnable(): self
     {
         return $this;
     }

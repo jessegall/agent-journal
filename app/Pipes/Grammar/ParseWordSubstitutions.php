@@ -6,14 +6,14 @@ namespace App\Pipes\Grammar;
 
 use App\Pipelines\ReadSubstitutionsPipeline;
 use App\Support\Grammar\SubstitutionsRead;
-use App\Support\Grammar\SubstitutionsToParse;
-use App\Support\Grammar\WordToParse;
+use App\Support\Grammar\UnparsedSubstitutions;
+use App\Support\Grammar\UnparsedWord;
 use App\Support\PipelineAdapter;
 
 /**
  * The substitutions of an argument or assignment are read as children of its command.
  *
- * @extends PipelineAdapter<WordToParse, SubstitutionsRead>
+ * @extends PipelineAdapter<UnparsedWord, SubstitutionsRead>
  */
 final readonly class ParseWordSubstitutions extends PipelineAdapter
 {
@@ -27,12 +27,12 @@ final readonly class ParseWordSubstitutions extends PipelineAdapter
         return SubstitutionsRead::class;
     }
 
-    protected function into(object $input): SubstitutionsToParse
+    protected function into(object $input): UnparsedSubstitutions
     {
         return $input->substitutions();
     }
 
-    protected function back(object $parsedWord, object $input): WordToParse
+    protected function back(object $parsedWord, object $input): UnparsedWord
     {
         return $input;
     }

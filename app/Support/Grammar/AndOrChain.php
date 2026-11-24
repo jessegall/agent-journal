@@ -12,7 +12,7 @@ use App\Enums\TokenType;
  */
 final readonly class AndOrChain
 {
-    public function __construct(public NodeToParse $toParse, public int $node) {}
+    public function __construct(public UnparsedNode $toParse, public int $node) {}
 
     public function isAtAndOr(): bool
     {

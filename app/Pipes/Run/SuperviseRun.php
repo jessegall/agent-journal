@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Run;
 
 use App\Pipelines\SuperviseRunPipeline;
-use App\Support\Execution\RunToSupervise;
+use App\Support\Execution\PlannedRun;
 use App\Support\Execution\StepOutcome;
 use App\Support\PipelineAdapter;
 use App\Support\Run\ChannelRunEnded;
@@ -28,7 +28,7 @@ final readonly class SuperviseRun extends PipelineAdapter
         return StepOutcome::class;
     }
 
-    protected function into(object $input): RunToSupervise
+    protected function into(object $input): PlannedRun
     {
         return $input->toSupervise();
     }

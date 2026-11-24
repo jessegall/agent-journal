@@ -7,14 +7,14 @@ namespace App\Pipes\Supervision;
 use App\Contracts\Bus\Pipe;
 use App\Enums\ExitStatus;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\StepToRun;
+use App\Support\Execution\PendingStep;
 
 /**
  * A step reached after a stop was asked for does not run: each of its parts is recorded as skipped.
  */
 final readonly class SkipStoppedStep implements Pipe
 {
-    public function handle(StepToRun $toRun): StepOutcome
+    public function handle(PendingStep $toRun): StepOutcome
     {
         $toRun->state->skipEveryPart($toRun->step, 'the run was stopped: '.$toRun->state->stop->reason());
 

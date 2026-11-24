@@ -16,7 +16,7 @@ final readonly class PipedCommands
     /**
      * @param  non-empty-list<int>  $commands
      */
-    public function __construct(public PipedCommandsToParse $start, public array $commands) {}
+    public function __construct(public UnparsedPipedCommands $start, public array $commands) {}
 
     public function with(int $command): self
     {
@@ -36,7 +36,7 @@ final readonly class PipedCommands
     /**
      * The next command of the pipeline, at the cursor.
      */
-    public function command(): CommandToParse
+    public function command(): UnparsedCommand
     {
         return $this->start->toParse->command();
     }

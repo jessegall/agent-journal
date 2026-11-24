@@ -7,7 +7,7 @@ namespace App\Pipes\Grammar;
 use App\Pipelines\ReadSubstitutionsPipeline;
 use App\Support\Grammar\RedirectParts;
 use App\Support\Grammar\SubstitutionsRead;
-use App\Support\Grammar\SubstitutionsToParse;
+use App\Support\Grammar\UnparsedSubstitutions;
 use App\Support\PipelineAdapter;
 use App\Values\Redirect;
 
@@ -28,7 +28,7 @@ final readonly class ParseRedirectSubstitutions extends PipelineAdapter
         return SubstitutionsRead::class;
     }
 
-    protected function into(object $input): SubstitutionsToParse
+    protected function into(object $input): UnparsedSubstitutions
     {
         return $input->substitutions;
     }

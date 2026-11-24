@@ -7,7 +7,7 @@ namespace App\Pipes\Grammar;
 use App\Pipelines\ReadListPipeline;
 use App\Support\Grammar\CompoundParts;
 use App\Support\Grammar\ListRead;
-use App\Support\Grammar\ListToParse;
+use App\Support\Grammar\UnparsedList;
 use App\Support\PipelineAdapter;
 
 /**
@@ -27,7 +27,7 @@ final readonly class ParseCompoundList extends PipelineAdapter
         return ListRead::class;
     }
 
-    protected function into(object $input): ListToParse
+    protected function into(object $input): UnparsedList
     {
         return $input->toParse->list($input->node);
     }

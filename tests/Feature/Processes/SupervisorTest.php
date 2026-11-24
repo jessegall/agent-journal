@@ -15,7 +15,7 @@ use App\Support\Execution\RecordedRunEvents;
 use App\Support\Execution\SpawnedProcess;
 use App\Support\Execution\StepOutcome;
 use App\Pipelines\SuperviseRunPipeline;
-use App\Support\Execution\RunToSupervise;
+use App\Support\Execution\PlannedRun;
 use App\Support\PipelineRunner;
 use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;
@@ -142,7 +142,7 @@ final class SupervisorTest extends TestCase
 
         return $this->app->make(PipelineRunner::class)->run(
             SuperviseRunPipeline::class,
-            new RunToSupervise(new RecordedRunEvents($this->processRun, $this->output), $plan, $context),
+            new PlannedRun(new RecordedRunEvents($this->processRun, $this->output), $plan, $context),
             StepOutcome::class,
         );
     }

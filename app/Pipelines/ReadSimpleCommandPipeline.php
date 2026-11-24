@@ -10,7 +10,7 @@ use App\Pipes\Grammar\AttachRedirectToSimpleCommand;
 use App\Pipes\Grammar\AttachWordToSimpleCommand;
 use App\Pipes\Grammar\CloseSimpleCommandNode;
 use App\Pipes\Grammar\OpenSimpleCommandNode;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
 use App\Support\Grammar\SimpleCommandDraft;
 use App\Support\Step;
@@ -21,11 +21,11 @@ use App\Support\Syntax\TokenCursor;
  * redirect pipeline. A line of only redirects is still a command, with no program. Any command no other reader takes
  * is a simple command.
  *
- * @implements PipelineDefinition<CommandToParse, NodeRead>
+ * @implements PipelineDefinition<UnparsedCommand, NodeRead>
  */
 final readonly class ReadSimpleCommandPipeline implements CommandReader, PipelineDefinition
 {
-    public string $input = CommandToParse::class;
+    public string $input = UnparsedCommand::class;
 
     public string $output = NodeRead::class;
 

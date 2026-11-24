@@ -125,7 +125,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
      */
     private function parentSessionFor(OpenAgentRuntimeCommand $command): AgentSession|null
     {
-        $sessionId = $this->stackSessions->sessionsToAdmit()[0] ?? null;
+        $sessionId = $this->stackSessions->admittableSessions()[0] ?? null;
 
         if ($sessionId === null) {
             return null;

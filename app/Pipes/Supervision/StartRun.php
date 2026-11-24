@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
-use App\Support\Execution\RunToSupervise;
-use App\Support\Execution\RunUnderway;
+use App\Support\Execution\PlannedRun;
+use App\Support\Execution\ActiveRun;
 
 /**
  * Opens the run's state: where its events go, the stop signal, its attempts and its background parts.
  */
 final readonly class StartRun implements Pipe
 {
-    public function handle(RunToSupervise $run): RunUnderway
+    public function handle(PlannedRun $run): ActiveRun
     {
-        return $run->underway();
+        return $run->start();
     }
 }

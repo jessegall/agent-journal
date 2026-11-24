@@ -12,7 +12,7 @@ use App\Exceptions\CommandStopped;
 use App\Pipelines\RunSignedCallPipeline;
 use App\Support\CallKey;
 use App\Support\PipelineRunner;
-use App\Values\CallToSend;
+use App\Values\PendingCall;
 use App\Values\CommandReport;
 use Closure;
 use Illuminate\Container\Container;
@@ -84,7 +84,7 @@ trait RunsCallPipelines
     {
         $oneLine = $this->input->hasOption('json') && $this->input->getOption('json') === true;
 
-        return $this->runCalls(RunSignedCallPipeline::class, new CallToSend($call, $oneLine));
+        return $this->runCalls(RunSignedCallPipeline::class, new PendingCall($call, $oneLine));
     }
 
     /**

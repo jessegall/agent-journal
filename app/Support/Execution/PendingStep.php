@@ -23,7 +23,7 @@ use App\Values\PlanStep;
 /**
  * One step of a plan about to run, in the shell context it runs in, with the run's state.
  */
-final readonly class StepToRun
+final readonly class PendingStep
 {
     public function __construct(public PlanStep $step, public ExecutionContext $context, public RunState $state) {}
 
@@ -86,8 +86,8 @@ final readonly class StepToRun
         );
     }
 
-    public function part(): PartToRun
+    public function part(): PendingPart
     {
-        return new PartToRun($this->step, $this->context, $this->state, $this->step->children, []);
+        return new PendingPart($this->step, $this->context, $this->state, $this->step->children, []);
     }
 }

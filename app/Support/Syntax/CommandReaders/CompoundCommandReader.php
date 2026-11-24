@@ -6,8 +6,8 @@ namespace App\Support\Syntax\CommandReaders;
 
 use App\Contracts\Bus\CommandReader;
 use App\Pipelines\ReadCompoundPipeline;
-use App\Support\Grammar\CommandToParse;
-use App\Support\Grammar\CompoundToParse;
+use App\Support\Grammar\UnparsedCommand;
+use App\Support\Grammar\UnparsedCompound;
 use App\Support\Grammar\NodeRead;
 use App\Support\PipelineAdapter;
 use App\Support\Syntax\TokenCursor;
@@ -15,13 +15,13 @@ use App\Support\Syntax\TokenCursor;
 /**
  * ( list ) or { list }: read through the compound pipeline.
  *
- * @extends PipelineAdapter<CommandToParse, NodeRead>
+ * @extends PipelineAdapter<UnparsedCommand, NodeRead>
  */
 final readonly class CompoundCommandReader extends PipelineAdapter implements CommandReader
 {
     public static function reads(TokenCursor $cursor): bool
     {
-        return CompoundToParse::opensAt($cursor);
+        return UnparsedCompound::opensAt($cursor);
     }
 
     protected function definition(): string
@@ -34,7 +34,7 @@ final readonly class CompoundCommandReader extends PipelineAdapter implements Co
         return NodeRead::class;
     }
 
-    protected function into(object $input): CompoundToParse
+    protected function into(object $input): UnparsedCompound
     {
         return $input->compound();
     }

@@ -9,5 +9,5 @@ namespace App\Support\Grammar;
  */
 final readonly class ListItems
 {
-    public function __construct(public ListToParse $toParse, public bool $mayTakeSemicolon) {}
+    public function __construct(public UnparsedList $toParse, public bool $mayTakeSemicolon) {}
 }

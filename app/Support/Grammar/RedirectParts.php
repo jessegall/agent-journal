@@ -11,5 +11,5 @@ use App\Values\Redirect;
  */
 final readonly class RedirectParts
 {
-    public function __construct(public Redirect $redirect, public SubstitutionsToParse $substitutions) {}
+    public function __construct(public Redirect $redirect, public UnparsedSubstitutions $substitutions) {}
 }

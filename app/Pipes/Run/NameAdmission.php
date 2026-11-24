@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Run;
 
 use App\Contracts\Bus\Pipe;
-use App\Support\Run\AdmissionToRun;
+use App\Support\Run\PendingAdmission;
 use App\Support\Run\RunStart;
 
 /**
@@ -13,7 +13,7 @@ use App\Support\Run\RunStart;
  */
 final readonly class NameAdmission implements Pipe
 {
-    public function handle(RunStart $start): AdmissionToRun
+    public function handle(RunStart $start): PendingAdmission
     {
         return $start->admission($start->admissionId);
     }

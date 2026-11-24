@@ -12,7 +12,7 @@ final readonly class ClaimAccountCheckHandler implements CommandHandler
 {
     public function handle(ClaimAccountCheckCommand $command): ClaimedAccountCheck|null
     {
-        $account = Account::nextToCheck();
+        $account = Account::nextDueForCheck();
 
         if ($account === null || $account->directory === null) {
             return null;

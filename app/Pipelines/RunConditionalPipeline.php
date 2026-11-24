@@ -11,18 +11,18 @@ use App\Pipes\Supervision\RunNextConditional;
 use App\Pipes\Supervision\SkipNextConditional;
 use App\Support\Execution\ConditionalSteps;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\StepToRun;
+use App\Support\Execution\PendingStep;
 use App\Support\Step;
 
 /**
  * Runs an && or || list: a && b runs b only when a succeeded, a || b only when it failed; a step that does not run is
  * recorded as skipped.
  *
- * @implements PipelineDefinition<StepToRun, StepOutcome>
+ * @implements PipelineDefinition<PendingStep, StepOutcome>
  */
 final readonly class RunConditionalPipeline implements PipelineDefinition
 {
-    public string $input = StepToRun::class;
+    public string $input = PendingStep::class;
 
     public string $output = StepOutcome::class;
 

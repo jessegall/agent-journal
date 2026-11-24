@@ -325,7 +325,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * The ended attempt whose staging folder a host has still to clean, for a new account or a reconnect alike; a
      * reconnect never touched the account's saved folder, so only its own staging folder is cleaned.
      */
-    public static function nextToClean(): self|null
+    public static function nextDueForCleanup(): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)

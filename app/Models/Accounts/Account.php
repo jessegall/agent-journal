@@ -294,7 +294,7 @@ final class Account extends Model implements EventSource, ReadableModel
      * The next account whose check a host runs, for the journal's host transport whoever acts; none when none waits.
      * A held account whose last check could not tell waits for the owner's recheck.
      */
-    public static function nextToCheck(): self|null
+    public static function nextDueForCheck(): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -336,7 +336,7 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * The removed accounts whose processes are all gone and whose sign-in or folder a host has still to clean.
      */
-    public static function nextToClean(): self|null
+    public static function nextDueForCleanup(): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)

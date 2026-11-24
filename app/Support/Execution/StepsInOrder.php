@@ -21,9 +21,9 @@ final readonly class StepsInOrder
         return $this->remaining !== [];
     }
 
-    public function next(): StepToRun
+    public function next(): PendingStep
     {
-        return new StepToRun($this->remaining[0], $this->outcome->context, $this->state);
+        return new PendingStep($this->remaining[0], $this->outcome->context, $this->state);
     }
 
     public function after(StepOutcome $next): self

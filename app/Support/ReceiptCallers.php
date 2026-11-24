@@ -33,7 +33,7 @@ final readonly class ReceiptCallers
      */
     public function of(ActorContext $actor): ReceiptCaller
     {
-        $sessions = $this->stackSessions->sessionsToAdmit();
+        $sessions = $this->stackSessions->admittableSessions();
 
         return $sessions === [] ? ReceiptCaller::withoutSession($actor) : ReceiptCaller::inSession(
             $actor,

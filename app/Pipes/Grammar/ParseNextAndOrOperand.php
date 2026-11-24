@@ -8,7 +8,7 @@ use App\Pipelines\ReadPipedCommandsPipeline;
 use App\Support\Grammar\AndOrChain;
 use App\Support\Grammar\AndOrLink;
 use App\Support\Grammar\NodeRead;
-use App\Support\Grammar\NodeToParse;
+use App\Support\Grammar\UnparsedNode;
 use App\Support\PipelineAdapter;
 
 /**
@@ -28,7 +28,7 @@ final readonly class ParseNextAndOrOperand extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): NodeToParse
+    protected function into(object $input): UnparsedNode
     {
         return $input->chain->toParse;
     }

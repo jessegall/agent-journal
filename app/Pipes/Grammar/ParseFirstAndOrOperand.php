@@ -7,13 +7,13 @@ namespace App\Pipes\Grammar;
 use App\Pipelines\ReadPipedCommandsPipeline;
 use App\Support\Grammar\AndOrChain;
 use App\Support\Grammar\NodeRead;
-use App\Support\Grammar\NodeToParse;
+use App\Support\Grammar\UnparsedNode;
 use App\Support\PipelineAdapter;
 
 /**
  * Reads the first pipeline of an and-or chain.
  *
- * @extends PipelineAdapter<NodeToParse, NodeRead>
+ * @extends PipelineAdapter<UnparsedNode, NodeRead>
  */
 final readonly class ParseFirstAndOrOperand extends PipelineAdapter
 {
@@ -27,7 +27,7 @@ final readonly class ParseFirstAndOrOperand extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): NodeToParse
+    protected function into(object $input): UnparsedNode
     {
         return $input;
     }

@@ -8,9 +8,9 @@ namespace App\Support\Execution;
  * What SpawnPart starts the next part of: one queued part, or the commands of a pipeline in turn. It names the part to
  * start and what the run holds once that part started or was refused.
  */
-interface PartToSpawn
+interface SpawnablePart
 {
-    public function nextToSpawn(): QueuedPart;
+    public function nextSpawnable(): QueuedPart;
 
     public function spawned(SpawnedPart $part): object;
 

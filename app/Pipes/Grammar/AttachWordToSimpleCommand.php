@@ -6,7 +6,7 @@ namespace App\Pipes\Grammar;
 
 use App\Pipelines\ReadWordPipeline;
 use App\Support\Grammar\SimpleCommandDraft;
-use App\Support\Grammar\WordToParse;
+use App\Support\Grammar\UnparsedWord;
 use App\Support\PipelineAdapter;
 use App\Values\AgentText;
 
@@ -14,7 +14,7 @@ use App\Values\AgentText;
  * Reads a word of a simple command through the word pipeline; a word that starts an array assignment turns the
  * whole command into one, and is left at the cursor.
  *
- * @extends PipelineAdapter<SimpleCommandDraft, WordToParse>
+ * @extends PipelineAdapter<SimpleCommandDraft, UnparsedWord>
  */
 final readonly class AttachWordToSimpleCommand extends PipelineAdapter
 {
@@ -25,10 +25,10 @@ final readonly class AttachWordToSimpleCommand extends PipelineAdapter
 
     protected function produces(): string
     {
-        return WordToParse::class;
+        return UnparsedWord::class;
     }
 
-    protected function into(object $input): WordToParse
+    protected function into(object $input): UnparsedWord
     {
         $word = $input->toParse->cursor()->word(AgentText::of('core.shell.word_missing'));
 

@@ -11,7 +11,7 @@ use App\Values\Word;
 /**
  * A redirect operator at the cursor, with the node that owns it.
  */
-final readonly class RedirectToParse
+final readonly class UnparsedRedirect
 {
     use UsesGrammarContext;
 
@@ -21,15 +21,15 @@ final readonly class RedirectToParse
         public int $depth,
     ) {}
 
-    public function substitutions(Word $word, int $owner): SubstitutionsToParse
+    public function substitutions(Word $word, int $owner): UnparsedSubstitutions
     {
-        return new SubstitutionsToParse($this->context, $word, $owner, $this->depth);
+        return new UnparsedSubstitutions($this->context, $word, $owner, $this->depth);
     }
 
     /**
      * No word to read substitutions from: a close has no target, and a quoted here-document body is only text.
      */
-    public function nothingToRead(SourceRange $range): SubstitutionsToParse
+    public function nothingToRead(SourceRange $range): UnparsedSubstitutions
     {
         return $this->substitutions(new Word([], $range), $this->owner);
     }

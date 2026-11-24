@@ -8,7 +8,7 @@ use App\Pipelines\ReadAndOrPipeline;
 use App\Support\Grammar\ListItem;
 use App\Support\Grammar\ListItems;
 use App\Support\Grammar\NodeRead;
-use App\Support\Grammar\NodeToParse;
+use App\Support\Grammar\UnparsedNode;
 use App\Support\PipelineAdapter;
 
 /**
@@ -28,7 +28,7 @@ final readonly class ParseListItem extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): NodeToParse
+    protected function into(object $input): UnparsedNode
     {
         return $input->toParse->andOr();
     }

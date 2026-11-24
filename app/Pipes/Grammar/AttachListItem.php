@@ -10,7 +10,7 @@ use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\ListItem;
 use App\Support\Grammar\ListItems;
-use App\Support\Grammar\ListToParse;
+use App\Support\Grammar\UnparsedList;
 use App\Support\Syntax\TokenCursor;
 use App\Values\AgentText;
 
@@ -48,7 +48,7 @@ final readonly class AttachListItem implements Pipe
         return new ListItems($toParse, true);
     }
 
-    private function runInBackground(ListToParse $toParse, int $parsedCommand): void
+    private function runInBackground(UnparsedList $toParse, int $parsedCommand): void
     {
         $draft = $toParse->draft();
         $cursor = $toParse->cursor();

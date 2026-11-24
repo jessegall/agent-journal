@@ -170,14 +170,14 @@ final class ActorProviderRegistry implements
      * nothing.
      *
      * @param  Builder<covariant Model>  $query
-     * @param  Closure(Builder<covariant Model>): void  $narrowToOwnRows
+     * @param  Closure(Builder<covariant Model>): void  $ownRowsScope
      */
-    public function ownRows(Builder $query, Closure $narrowToOwnRows): void
+    public function ownRows(Builder $query, Closure $ownRowsScope): void
     {
         $actors = Container::getInstance()->make(CurrentActor::class);
 
         if (! $actors->hasActor()) {
-            $narrowToOwnRows($query);
+            $ownRowsScope($query);
 
             return;
         }
@@ -190,7 +190,7 @@ final class ActorProviderRegistry implements
             return;
         }
 
-        Container::getInstance()->make($this->visibilityProviders->get($type))->ownRows($query, $narrowToOwnRows);
+        Container::getInstance()->make($this->visibilityProviders->get($type))->ownRows($query, $ownRowsScope);
     }
 
     /**
@@ -206,7 +206,7 @@ final class ActorProviderRegistry implements
      *
      * @return list<string>
      */
-    public function sessionsToAdmit(): array
+    public function admittableSessions(): array
     {
         $actors = Container::getInstance()->make(CurrentActor::class);
 
@@ -215,7 +215,7 @@ final class ActorProviderRegistry implements
         }
 
         $sessions = $this->stackSessionsOf($actors->actor()->actorType()->value)
-            ->map(fn (ActorStackSessionProvider $provider) => $provider->sessionsToAdmit())
+            ->map(fn (ActorStackSessionProvider $provider) => $provider->admittableSessions())
             ->getOrElse([]);
 
         sort($sessions);

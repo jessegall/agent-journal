@@ -7,13 +7,13 @@ namespace App\Pipes\Supervision;
 use App\Pipelines\ExecuteStepPipeline;
 use App\Support\Execution\ConditionalSteps;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\StepToRun;
+use App\Support\Execution\PendingStep;
 use App\Support\PipelineAdapter;
 
 /**
  * Runs the first step of an && or || list, which always runs, and lines up the steps after it.
  *
- * @extends PipelineAdapter<StepToRun, StepOutcome>
+ * @extends PipelineAdapter<PendingStep, StepOutcome>
  */
 final readonly class RunFirstConditional extends PipelineAdapter
 {
@@ -27,7 +27,7 @@ final readonly class RunFirstConditional extends PipelineAdapter
         return StepOutcome::class;
     }
 
-    protected function into(object $input): StepToRun
+    protected function into(object $input): PendingStep
     {
         return $input->firstChild();
     }

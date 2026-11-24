@@ -7,17 +7,17 @@ namespace App\Pipelines;
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\NotifyAnswer;
 use App\Pipes\SendCall;
-use App\Values\CallToSend;
+use App\Values\PendingCall;
 use App\Values\CommandReport;
 
 /**
  * Runs one signed call for a console command: sends it and reports its answer.
  *
- * @implements PipelineDefinition<CallToSend, CommandReport>
+ * @implements PipelineDefinition<PendingCall, CommandReport>
  */
 final readonly class RunSignedCallPipeline implements PipelineDefinition
 {
-    public string $input = CallToSend::class;
+    public string $input = PendingCall::class;
 
     public string $output = CommandReport::class;
 

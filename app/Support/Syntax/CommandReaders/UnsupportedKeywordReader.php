@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandReader;
 use App\Contracts\Bus\Pipe;
 use App\Enums\UnsupportedKeyword;
 use App\Exceptions\ShellGrammarStopped;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
 use App\Support\Syntax\TokenCursor;
 use App\Support\Syntax\UnsupportedConstructs;
@@ -30,7 +30,7 @@ final readonly class UnsupportedKeywordReader implements CommandReader, Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(CommandToParse $toParse): NodeRead
+    public function handle(UnparsedCommand $toParse): NodeRead
     {
         $keyword = UnsupportedKeyword::at($toParse->cursor());
         $reason = AgentText::of('core.shell.construct_unsupported', ['construct' => $keyword->value]);

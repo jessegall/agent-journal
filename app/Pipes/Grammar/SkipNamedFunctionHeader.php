@@ -6,8 +6,8 @@ namespace App\Pipes\Grammar;
 
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\ShellGrammarStopped;
-use App\Support\Grammar\CommandToParse;
-use App\Support\Grammar\FunctionToParse;
+use App\Support\Grammar\UnparsedCommand;
+use App\Support\Grammar\UnparsedFunction;
 
 /**
  * Steps past name () before a function body.
@@ -17,8 +17,8 @@ final readonly class SkipNamedFunctionHeader implements Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(CommandToParse $toParse): FunctionToParse
+    public function handle(UnparsedCommand $toParse): UnparsedFunction
     {
-        return FunctionToParse::afterHeader($toParse, 3);
+        return UnparsedFunction::afterHeader($toParse, 3);
     }
 }

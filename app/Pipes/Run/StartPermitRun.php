@@ -6,7 +6,7 @@ namespace App\Pipes\Run;
 
 use App\Calls\Processes\ProcessCalls;
 use App\Contracts\Bus\Pipe;
-use App\Support\Run\AdmissionToRun;
+use App\Support\Run\PendingAdmission;
 use App\Support\Run\RunStart;
 
 /**
@@ -16,7 +16,7 @@ final readonly class StartPermitRun implements Pipe
 {
     public function __construct(private ProcessCalls $processes) {}
 
-    public function handle(RunStart $start): AdmissionToRun
+    public function handle(RunStart $start): PendingAdmission
     {
         $started = $this->processes->startEvidenceRun((string) $start->permit, $start->requestKey);
 

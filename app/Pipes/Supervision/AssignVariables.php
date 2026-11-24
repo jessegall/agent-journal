@@ -6,7 +6,7 @@ namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
 use App\Enums\ExitStatus;
-use App\Support\Execution\PartToRun;
+use App\Support\Execution\PendingPart;
 use App\Support\Execution\StepOutcome;
 
 /**
@@ -14,7 +14,7 @@ use App\Support\Execution\StepOutcome;
  */
 final readonly class AssignVariables implements Pipe
 {
-    public function handle(PartToRun $toRun): StepOutcome
+    public function handle(PendingPart $toRun): StepOutcome
     {
         return new StepOutcome(
             ExitStatus::Success->status(),

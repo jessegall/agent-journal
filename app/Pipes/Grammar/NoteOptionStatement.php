@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Contracts\Bus\Pipe;
-use App\Support\Grammar\CommandToParse;
-use App\Support\Grammar\OptionStatementToParse;
+use App\Support\Grammar\UnparsedCommand;
+use App\Support\Grammar\UnparsedOptionStatement;
 use App\Values\AgentText;
 
 /**
@@ -14,13 +14,13 @@ use App\Values\AgentText;
  */
 final readonly class NoteOptionStatement implements Pipe
 {
-    public function handle(CommandToParse $toParse): OptionStatementToParse
+    public function handle(UnparsedCommand $toParse): UnparsedOptionStatement
     {
         $reason = AgentText::of(
             'core.shell.option_statement_unsupported',
             ['statement' => $toParse->cursor()->currentLiteral()],
         );
 
-        return new OptionStatementToParse($toParse, $reason);
+        return new UnparsedOptionStatement($toParse, $reason);
     }
 }

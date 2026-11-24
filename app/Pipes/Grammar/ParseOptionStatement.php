@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Pipelines\ReadSimpleCommandPipeline;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Grammar\NodeRead;
-use App\Support\Grammar\OptionStatementToParse;
+use App\Support\Grammar\UnparsedOptionStatement;
 use App\Support\PipelineAdapter;
 
 /**
  * Reads a shell option statement as a simple command, then marks it not supported.
  *
- * @extends PipelineAdapter<OptionStatementToParse, NodeRead>
+ * @extends PipelineAdapter<UnparsedOptionStatement, NodeRead>
  */
 final readonly class ParseOptionStatement extends PipelineAdapter
 {
@@ -27,7 +27,7 @@ final readonly class ParseOptionStatement extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): CommandToParse
+    protected function into(object $input): UnparsedCommand
     {
         return $input->toParse;
     }

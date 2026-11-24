@@ -21,7 +21,7 @@ final readonly class AgentStackSessions implements ActorStackSessionProvider
     /**
      * @return list<string>
      */
-    public function sessionsToAdmit(): array
+    public function admittableSessions(): array
     {
         return $this->session->hasSession() ? [$this->session->sessionId()] : [];
     }

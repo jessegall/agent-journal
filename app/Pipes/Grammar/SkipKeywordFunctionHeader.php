@@ -7,8 +7,8 @@ namespace App\Pipes\Grammar;
 use App\Contracts\Bus\Pipe;
 use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
-use App\Support\Grammar\CommandToParse;
-use App\Support\Grammar\FunctionToParse;
+use App\Support\Grammar\UnparsedCommand;
+use App\Support\Grammar\UnparsedFunction;
 use App\Values\AgentText;
 
 /**
@@ -20,7 +20,7 @@ final readonly class SkipKeywordFunctionHeader implements Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(CommandToParse $toParse): FunctionToParse
+    public function handle(UnparsedCommand $toParse): UnparsedFunction
     {
         $cursor = $toParse->cursor();
         $hasParentheses = $cursor->peekIs(2, TokenType::OpenParen);
@@ -30,6 +30,6 @@ final readonly class SkipKeywordFunctionHeader implements Pipe
             throw ShellGrammarStopped::invalid(AgentText::of('core.shell.function_arguments'), $cursor->position());
         }
 
-        return FunctionToParse::afterHeader($toParse, $hasParentheses ? 4 : 2);
+        return UnparsedFunction::afterHeader($toParse, $hasParentheses ? 4 : 2);
     }
 }

@@ -11,18 +11,18 @@ use App\Pipes\Grammar\ParseFirstPipedCommand;
 use App\Pipes\Grammar\ParseNextPipedCommand;
 use App\Pipes\Grammar\SkipPipeSymbol;
 use App\Support\Grammar\NodeRead;
-use App\Support\Grammar\NodeToParse;
+use App\Support\Grammar\UnparsedNode;
 use App\Support\Grammar\PipedCommands;
 use App\Support\Step;
 
 /**
  * pipeline := [!] command ((| | |&) command)*.
  *
- * @implements PipelineDefinition<NodeToParse, NodeRead>
+ * @implements PipelineDefinition<UnparsedNode, NodeRead>
  */
 final readonly class ReadPipedCommandsPipeline implements PipelineDefinition
 {
-    public string $input = NodeToParse::class;
+    public string $input = UnparsedNode::class;
 
     public string $output = NodeRead::class;
 

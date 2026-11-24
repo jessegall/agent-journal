@@ -129,7 +129,7 @@ class ReadyState extends AgentState
         // One more than the run that holds the work, so a failure past it is never counted as the run's last.
         $this->settledAttempts = array_slice(
             $this->settledAttempts,
-            -(StopConditionGate::UNCHANGED_FAILURES_TO_HOLD + 1),
+            -(StopConditionGate::UNCHANGED_FAILURE_LIMIT + 1),
             preserve_keys: true,
         );
     }
@@ -147,7 +147,7 @@ class ReadyState extends AgentState
 
         $this->openAttempts = array_slice(
             [...$this->openAttempts, $attemptId],
-            -StopConditionGate::UNCHANGED_FAILURES_TO_HOLD,
+            -StopConditionGate::UNCHANGED_FAILURE_LIMIT,
         );
     }
 

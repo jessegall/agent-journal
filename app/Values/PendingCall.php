@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 /**
  * One call a console command sends, and whether its answer is printed on one line.
  */
-final readonly class CallToSend
+final readonly class PendingCall
 {
     /**
      * @param  JournalCall<Data>  $call

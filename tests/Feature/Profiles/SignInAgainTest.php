@@ -141,7 +141,7 @@ final class SignInAgainTest extends TestCase
         $this->assertSame(SignInState::Complete, $attempt->state);
         $this->assertSame($saved, $attempt->directory);
         $this->assertTrue($attempt->cleanup_pending);
-        $this->assertSame($attemptId, SignInAttempt::nextToClean()?->id);
+        $this->assertSame($attemptId, SignInAttempt::nextDueForCleanup()?->id);
     }
 
     public function test_another_principal_ends_as_a_different_account_and_none_cannot_verify_and_both_replace_nothing(): void
@@ -206,7 +206,7 @@ final class SignInAgainTest extends TestCase
         $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
         $this->account->forceFill(['directory' => $attempt->directory])->save();
 
-        $this->assertNull(SignInAttempt::nextToClean());
+        $this->assertNull(SignInAttempt::nextDueForCleanup());
     }
 
     /**
@@ -241,7 +241,7 @@ final class SignInAgainTest extends TestCase
         $this->assertSame($saved, $this->account->refresh()->directory);
         $pending = array_map(fn (SignInAttempt $attempt) => $attempt->id, SignInAttempt::pendingCleanups());
         $this->assertSame([$attemptId], $pending);
-        $this->assertSame($attemptId, SignInAttempt::nextToClean()?->id);
+        $this->assertSame($attemptId, SignInAttempt::nextDueForCleanup()?->id);
     }
 
     public function test_a_cancelled_sign_in_of_a_valid_account_survives_its_certain_check(): void
@@ -269,14 +269,14 @@ final class SignInAgainTest extends TestCase
         $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::Unknown));
 
         $this->assertTrue($this->account->refresh()->isCheckInconclusive());
-        $this->assertNull(Account::nextToCheck());
+        $this->assertNull(Account::nextDueForCheck());
 
         $this->actAsOwner();
         $this->app->make(CommandBus::class)->run(new RecheckAccountCommand($this->account->id));
 
         $this->assertFalse($this->account->refresh()->isCheckInconclusive());
         $this->assertTrue($this->account->isHeldForCheck());
-        $this->assertSame($this->account->id, Account::nextToCheck()?->id);
+        $this->assertSame($this->account->id, Account::nextDueForCheck()?->id);
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new RecheckAccountCommand($this->account->id)),
             AccountRecheckRefused::class,

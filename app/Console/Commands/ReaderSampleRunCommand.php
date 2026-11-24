@@ -10,7 +10,7 @@ use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\JournalRouteType;
 use App\Pipelines\RunAdmissionPipeline;
 use App\Support\PipelineRunner;
-use App\Support\Run\AdmissionToRun;
+use App\Support\Run\PendingAdmission;
 use App\Support\Run\ChildEnvironment;
 use App\Values\CommandReport;
 use Illuminate\Console\Command;
@@ -35,7 +35,7 @@ final class ReaderSampleRunCommand extends Command
 
         return $this->runReport(function () use ($processes, $pipelines, $commandRequest, $key): CommandReport {
             $started = $processes->startSample($commandRequest, (string) $this->option('permit'), $key);
-            $admission = new AdmissionToRun($started->runId, $key, ChildEnvironment::ofThisProcess());
+            $admission = new PendingAdmission($started->runId, $key, ChildEnvironment::ofThisProcess());
             $report = $pipelines->run(RunAdmissionPipeline::class, $admission, CommandReport::class);
             $settled = $processes->settleSample($commandRequest, $key);
             $layout = $this->option('json') === true ? 0 : JSON_PRETTY_PRINT;

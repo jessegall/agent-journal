@@ -17,7 +17,7 @@ use App\Values\PlanWord;
  * One builtin or external part: its command substitutions run first, each output kept under its syntax node to stand
  * in the part's words, then the part itself.
  */
-final readonly class PartToRun
+final readonly class PendingPart
 {
     /**
      * @param  list<PlanStep>  $substitutions  the substitutions still to run
@@ -36,9 +36,9 @@ final readonly class PartToRun
         return $this->substitutions !== [];
     }
 
-    public function nextSubstitution(): StepToRun
+    public function nextSubstitution(): PendingStep
     {
-        return new StepToRun($this->substitutions[0], $this->context, $this->state);
+        return new PendingStep($this->substitutions[0], $this->context, $this->state);
     }
 
     public function withSubstitutionOutput(StepOutcome $outcome): self

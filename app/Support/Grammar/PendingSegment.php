@@ -11,12 +11,12 @@ use App\Values\WordSegment;
  */
 final readonly class PendingSegment
 {
-    public function __construct(public SubstitutionsToParse $toParse, public WordSegment $segment) {}
+    public function __construct(public UnparsedSubstitutions $toParse, public WordSegment $segment) {}
 
     /**
      * @return list<self>
      */
-    public static function allOf(SubstitutionsToParse $toParse): array
+    public static function allOf(UnparsedSubstitutions $toParse): array
     {
         return array_map(fn (WordSegment $segment): self => new self($toParse, $segment), $toParse->word->segments);
     }

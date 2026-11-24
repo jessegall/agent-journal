@@ -43,8 +43,8 @@ final readonly class RunStart
         };
     }
 
-    public function admission(string $admissionId): AdmissionToRun
+    public function admission(string $admissionId): PendingAdmission
     {
-        return new AdmissionToRun($admissionId, $this->requestKey, $this->environment);
+        return new PendingAdmission($admissionId, $this->requestKey, $this->environment);
     }
 }

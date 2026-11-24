@@ -7,7 +7,7 @@ namespace App\Pipes\Grammar;
 use App\Contracts\Bus\Pipe;
 use App\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
-use App\Support\Grammar\CommandToParse;
+use App\Support\Grammar\UnparsedCommand;
 use App\Support\Syntax\TokenCursor;
 use App\Values\AgentText;
 
@@ -19,7 +19,7 @@ final readonly class CheckCommandStart implements Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(CommandToParse $toParse): CommandToParse
+    public function handle(UnparsedCommand $toParse): UnparsedCommand
     {
         $cursor = $toParse->cursor();
         $toParse->draft()->assertWithinBudget($cursor->position());

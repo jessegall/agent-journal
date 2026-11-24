@@ -17,7 +17,7 @@ use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Support\Execution\RecordedRunEvents;
 use App\Pipelines\SuperviseRunPipeline;
-use App\Support\Execution\RunToSupervise;
+use App\Support\Execution\PlannedRun;
 use App\Support\Execution\StepOutcome;
 use App\Support\PipelineRunner;
 use App\Support\ExecutionPlanner;
@@ -87,7 +87,7 @@ final class StaleAdmissionTest extends TestCase
 
         $this->app->make(PipelineRunner::class)->run(
             SuperviseRunPipeline::class,
-            new RunToSupervise($events, $plan, $context),
+            new PlannedRun($events, $plan, $context),
             StepOutcome::class,
         );
 

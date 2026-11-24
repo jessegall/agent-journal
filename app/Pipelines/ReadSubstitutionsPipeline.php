@@ -11,17 +11,17 @@ use App\Pipes\Grammar\ParseFoundSubstitution;
 use App\Pipes\Grammar\QueueWordSegments;
 use App\Support\Grammar\SubstitutionQueue;
 use App\Support\Grammar\SubstitutionsRead;
-use App\Support\Grammar\SubstitutionsToParse;
+use App\Support\Grammar\UnparsedSubstitutions;
 use App\Support\Step;
 
 /**
  * Reads every command and process substitution of a word as a line of its own, into children of the owner node.
  *
- * @implements PipelineDefinition<SubstitutionsToParse, SubstitutionsRead>
+ * @implements PipelineDefinition<UnparsedSubstitutions, SubstitutionsRead>
  */
 final readonly class ReadSubstitutionsPipeline implements PipelineDefinition
 {
-    public string $input = SubstitutionsToParse::class;
+    public string $input = UnparsedSubstitutions::class;
 
     public string $output = SubstitutionsRead::class;
 

@@ -6,13 +6,13 @@ namespace App\Pipes\Supervision;
 
 use App\Pipelines\RunInOrderPipeline;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\StepToRun;
+use App\Support\Execution\PendingStep;
 use App\Support\PipelineAdapter;
 
 /**
  * Runs a subshell's steps in order; what they change in the shell context stays inside it.
  *
- * @extends PipelineAdapter<StepToRun, StepOutcome>
+ * @extends PipelineAdapter<PendingStep, StepOutcome>
  */
 final readonly class RunSubshell extends PipelineAdapter
 {
@@ -26,7 +26,7 @@ final readonly class RunSubshell extends PipelineAdapter
         return StepOutcome::class;
     }
 
-    protected function into(object $input): StepToRun
+    protected function into(object $input): PendingStep
     {
         return $input;
     }

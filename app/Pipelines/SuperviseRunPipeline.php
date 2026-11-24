@@ -13,7 +13,7 @@ use App\Pipes\Supervision\FinishBackground;
 use App\Pipes\Supervision\NotifyStop;
 use App\Pipes\Supervision\RunRootStep;
 use App\Pipes\Supervision\StartRun;
-use App\Support\Execution\RunToSupervise;
+use App\Support\Execution\PlannedRun;
 use App\Support\Execution\StepOutcome;
 
 /**
@@ -22,11 +22,11 @@ use App\Support\Execution\StepOutcome;
  * parts are waited for before the run ends. A part that does not run because of an earlier result, or whose admission
  * went stale, is recorded as skipped, never left out.
  *
- * @implements PipelineDefinition<RunToSupervise, StepOutcome>
+ * @implements PipelineDefinition<PlannedRun, StepOutcome>
  */
 final readonly class SuperviseRunPipeline implements PipelineDefinition
 {
-    public string $input = RunToSupervise::class;
+    public string $input = PlannedRun::class;
 
     public string $output = StepOutcome::class;
 

@@ -11,17 +11,17 @@ use App\Pipes\Grammar\ParseNextAndOrOperand;
 use App\Pipes\Grammar\SkipAndOrOperator;
 use App\Support\Grammar\AndOrChain;
 use App\Support\Grammar\NodeRead;
-use App\Support\Grammar\NodeToParse;
+use App\Support\Grammar\UnparsedNode;
 use App\Support\Step;
 
 /**
  * and_or := pipeline ((&& | ||) pipeline)*, joined from the left.
  *
- * @implements PipelineDefinition<NodeToParse, NodeRead>
+ * @implements PipelineDefinition<UnparsedNode, NodeRead>
  */
 final readonly class ReadAndOrPipeline implements PipelineDefinition
 {
-    public string $input = NodeToParse::class;
+    public string $input = UnparsedNode::class;
 
     public string $output = NodeRead::class;
 

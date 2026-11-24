@@ -1316,7 +1316,7 @@ use App\Values\BoundTarget;
 use App\Values\BrowserInputCapabilities;
 use App\Values\CallAccepted;
 use App\Values\CallAnswer;
-use App\Values\CallToSend;
+use App\Values\PendingCall;
 use App\Values\ChatLine;
 use App\Values\ChatMemberAuthority;
 use App\Values\Choice;
@@ -1955,7 +1955,7 @@ final class CoreApi
                 CommandReport::class,
                 ReportLine::class,
                 ReportLineType::class,
-                CallToSend::class,
+                PendingCall::class,
                 CallAccepted::class,
                 CallAnswer::class,
                 RefusalCode::class,

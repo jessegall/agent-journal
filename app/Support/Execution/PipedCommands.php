@@ -8,14 +8,14 @@ namespace App\Support\Execution;
  * The commands of a shell pipeline, started one after another with each reading the one before it: those still to
  * start, those started, and whether one could not start, which ends the pipeline as not found.
  */
-final readonly class PipedCommands implements PartToSpawn
+final readonly class PipedCommands implements SpawnablePart
 {
     /**
      * @param  list<QueuedPart>  $waiting
      * @param  list<SpawnedPart>  $started
      */
     public function __construct(
-        public StepToRun $toRun,
+        public PendingStep $toRun,
         public array $waiting,
         public array $started = [],
         public bool $isRefused = false,
@@ -26,7 +26,7 @@ final readonly class PipedCommands implements PartToSpawn
         return $this->waiting !== [] && ! $this->isRefused;
     }
 
-    public function nextToSpawn(): QueuedPart
+    public function nextSpawnable(): QueuedPart
     {
         return $this->waiting[0];
     }

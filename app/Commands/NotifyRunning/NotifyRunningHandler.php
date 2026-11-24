@@ -30,7 +30,7 @@ final readonly class NotifyRunningHandler implements CommandHandler
 
         $this->facts->publishAfterCommit(new SessionStateChanged($start->session_id));
         DriverSwitch::startingOf($start->session_id)?->confirm();
-        $saved = $this->driverTypeToKeep($start->session_id);
+        $saved = $this->keptDriverType($start->session_id);
 
         if ($saved !== null) {
             AgentSession::query()->with('agent')->findOrFail($start->session_id)->agent->preferDriverType($saved);
@@ -41,7 +41,7 @@ final readonly class NotifyRunningHandler implements CommandHandler
      * The driver type the start of this session asked to keep for its agent: its runtime's when it opened one, else its
      * start record's; none when it asked nothing.
      */
-    private function driverTypeToKeep(string $sessionId): DriverType|null
+    private function keptDriverType(string $sessionId): DriverType|null
     {
         $runtime = AgentRuntime::ofSession($sessionId);
 

@@ -6,7 +6,7 @@ namespace App\Support\Run;
 
 use App\Calls\Processes\AdmissionAlreadyStarted;
 use App\Calls\Processes\AdmissionFetched;
-use App\Calls\Processes\AdmissionToStart;
+use App\Calls\Processes\StartableAdmission;
 use App\Enums\Place;
 use App\Enums\ShellDialect;
 use App\Exceptions\AdmissionAnswerUnknown;
@@ -40,7 +40,7 @@ final readonly class FetchedAdmission
      */
     public static function fromAnswer(AdmissionFetched $answer, array $environment): self
     {
-        if (! $answer instanceof AdmissionToStart) {
+        if (! $answer instanceof StartableAdmission) {
             return new self(self::runOf($answer), true, null, '', '', null, '', $environment);
         }
 
