@@ -160,7 +160,7 @@ func TestContentBehindARepairedSettingWaitsUntilItIsReconciled(t *testing.T) {
 		t.Fatalf("content ran before the repaired setting was reconciled: %+v", first)
 	}
 
-	queue.SettingsReconciled()
+	queue.EndReconciliation()
 	second := queue.Next()
 	if !equal(turnOf(second), []int{2}) {
 		t.Fatalf("got %+v", second)

@@ -269,8 +269,8 @@ func (container *Container) resize(query url.Values) {
 	container.rows, container.columns = uint(rows), uint(columns)
 }
 
-// logs writes what the program printed, only its last lines when the client asks for a tail.
-func (container *Container) logs(writer http.ResponseWriter, tail string) {
+// writeLogs writes what the program printed, only its last lines when the client asks for a tail.
+func (container *Container) writeLogs(writer http.ResponseWriter, tail string) {
 	printed := container.Printed()
 	if count, err := strconv.Atoi(tail); err == nil {
 		lines := strings.SplitAfter(printed, "\n")

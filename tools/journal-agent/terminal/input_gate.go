@@ -154,7 +154,7 @@ func (gate *InputGate) mayEnter(line *TypedLine, enterRetries int) bool {
 // Keys sends a driver's keys, such as a menu move or a key script's step, unless someone else holds the input: a
 // user's key since the last driver write pauses the driver until a user's Enter or explicit choice hands the input
 // back, and a browser writer's grant holds it until the grant ends.
-func (gate *InputGate) Keys(keys string) error {
+func (gate *InputGate) TypeKeys(keys string) error {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 

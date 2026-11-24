@@ -122,7 +122,7 @@ func (runner *Runner) pressKeys(keys []string, values map[string]string) RoundRe
 			bytes = named
 		}
 		record := runner.record(ActionRecord{Kind: "key", Key: name})
-		if err := runner.gate.Keys(bytes); err != nil {
+		if err := runner.gate.TypeKeys(bytes); err != nil {
 			return runner.stoppedRound(result, err)
 		}
 		result.Actions = append(result.Actions, record)
@@ -149,7 +149,7 @@ func (runner *Runner) confirm(label string) RoundResult {
 		return RoundResult{Refusal: string(HighlightWrong)}
 	}
 	record := runner.record(ActionRecord{Kind: "choose", Label: entries.HighlightedLabel()})
-	if err := runner.gate.Keys(enterKey); err != nil {
+	if err := runner.gate.TypeKeys(enterKey); err != nil {
 		return runner.stoppedRound(RoundResult{}, err)
 	}
 

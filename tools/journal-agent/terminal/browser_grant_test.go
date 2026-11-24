@@ -33,7 +33,7 @@ func TestATakeHoldsTheInputAcrossPromptsAndRefusesTheDriverAndKeyScripts(t *test
 	if _, err := gate.Type("request-1", 1, "run the tests", 0); !errors.Is(err, ErrComposerHeld) {
 		t.Fatalf("a driver line went in under a browser grant: %v", err)
 	}
-	if err := gate.Keys("\x1b[B"); !errors.Is(err, ErrComposerHeld) {
+	if err := gate.TypeKeys("\x1b[B"); !errors.Is(err, ErrComposerHeld) {
 		t.Fatalf("a key script step went in under a browser grant: %v", err)
 	}
 	if _, err := gate.Choose(SendDraft, ""); !errors.Is(err, ErrComposerHeld) {
@@ -55,7 +55,7 @@ func TestReleasingWithAnEmptyComposerLetsTheJournalTypeAgain(t *testing.T) {
 	if gate.Owner() != NobodyOwns {
 		t.Fatalf("after release the input is %s", gate.Owner())
 	}
-	if err := gate.Keys("\x1b[B"); err != nil {
+	if err := gate.TypeKeys("\x1b[B"); err != nil {
 		t.Fatalf("a key script stayed held after release: %v", err)
 	}
 }

@@ -102,7 +102,7 @@ func (group OwnedGroup) Stop(stages StopStages) StopOutcome {
 	if group.Members() == NoMembers {
 		return StopProven
 	}
-	if group.leaderReused() {
+	if group.isFirstProcessReused() {
 		return StopNotOwned
 	}
 	_ = syscall.Kill(-group.Pid, syscall.SIGTERM)
@@ -114,9 +114,9 @@ func (group OwnedGroup) Stop(stages StopStages) StopOutcome {
 	return group.emptiesWithin(stages.Force, stages.Poll)
 }
 
-// leaderReused answers whether the group's process id runs a program the host did not start: alive, with another
+// isFirstProcessReused answers whether the group's process id runs a program the host did not start: alive, with another
 // start identity.
-func (group OwnedGroup) leaderReused() bool {
+func (group OwnedGroup) isFirstProcessReused() bool {
 	identity, err := startIdentityOf(group.Pid)
 	return err == nil && identity != group.StartIdentity
 }

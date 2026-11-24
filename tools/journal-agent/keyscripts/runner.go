@@ -90,7 +90,7 @@ type Runner struct {
 // Gate is the input gate a run sends its keys through: it counts the user's inputs and says who holds the
 // composer, so a run stops for a user who types.
 type Gate interface {
-	Keys(keys string) error
+	TypeKeys(keys string) error
 	UserInputs() uint64
 	Owner() terminal.Owner
 }
@@ -342,7 +342,7 @@ func (runner *Runner) selectEntry(step KeyStep, values map[string]string) error 
 
 	for distance != 0 {
 		move, key := towards(entries, distance)
-		if err := runner.gate.Keys(key); err != nil {
+		if err := runner.gate.TypeKeys(key); err != nil {
 			return err
 		}
 		moved, found := runner.highlightMoves(entries.HighlightedLabel(), step.Deadline)
@@ -417,14 +417,14 @@ func (runner *Runner) highlightMoves(before string, deadline time.Duration) (scr
 func (runner *Runner) act(step KeyStep, values map[string]string) error {
 	switch step.Action {
 	case PressKey, Scroll:
-		return runner.gate.Keys(step.Keys)
+		return runner.gate.TypeKeys(step.Keys)
 	case TypeText:
 		value, err := step.parameterValue(values)
 		if err != nil {
 			return err
 		}
 
-		return runner.gate.Keys(value)
+		return runner.gate.TypeKeys(value)
 	case SelectEntry:
 		return runner.selectEntry(step, values)
 	case ChooseEntry:
@@ -432,7 +432,7 @@ func (runner *Runner) act(step KeyStep, values map[string]string) error {
 			return err
 		}
 
-		return runner.gate.Keys(enterKey)
+		return runner.gate.TypeKeys(enterKey)
 	case WaitForScreen, WaitForUser:
 		return nil
 	default:

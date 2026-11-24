@@ -174,7 +174,7 @@ func (driver *TerminalDriver) Interrupt(
 	if interrupt.Turn == 0 || interrupt.Turn != driver.turns || driver.turnEnd.seen {
 		return alreadyIdle(interrupt.Request), nil
 	}
-	if err := driver.runtime.Gate.Keys(interruptKey); err != nil {
+	if err := driver.runtime.Gate.TypeKeys(interruptKey); err != nil {
 		return failed(interrupt.Request), err
 	}
 
@@ -340,7 +340,7 @@ func (driver *TerminalDriver) tookLine(entered uint64) bool {
 		if driver.waitUntil(driver.runtime.Limits.UnsentLook(), changed) {
 			return true
 		}
-		if err := driver.runtime.Gate.Keys(enterKey); err != nil {
+		if err := driver.runtime.Gate.TypeKeys(enterKey); err != nil {
 			return false
 		}
 	}

@@ -325,12 +325,12 @@ func (relay *Relay) answer(answered frame, answer Answer) {
 		relay.refuse(answered, invalidInput, "The journal refused the message as too large or malformed.", nil)
 	default:
 		relay.refuse(answered, unavailable,
-			"The journal answered "+strconv.Itoa(answer.Status)+" and no MCP reply: "+saidIn(answer.Body), nil)
+			"The journal answered "+strconv.Itoa(answer.Status)+" and no MCP reply: "+messageOf(answer.Body), nil)
 	}
 }
 
-// saidIn is what a refusal's body says in its own words: its message when it names one, else its first bytes.
-func saidIn(body []byte) string {
+// messageOf is what a refusal's body says in its own words: its message when it names one, else its first bytes.
+func messageOf(body []byte) string {
 	var refusal struct {
 		Message string `json:"message"`
 	}

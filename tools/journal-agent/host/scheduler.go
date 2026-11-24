@@ -75,8 +75,8 @@ func (queue *RuntimeQueue) TurnFinished() { queue.busy = false }
 func (queue *RuntimeQueue) Hold()         { queue.held = true }
 func (queue *RuntimeQueue) Release()      { queue.held = false }
 
-// SettingsReconciled records the program's evidence that a repaired setting took effect, so content may run again.
-func (queue *RuntimeQueue) SettingsReconciled() { queue.reconciling = false }
+// EndReconciliation records the program's evidence that a repaired setting took effect, so content may run again.
+func (queue *RuntimeQueue) EndReconciliation() { queue.reconciling = false }
 
 // Next takes what may run now out of the queue. A stop or an interrupt goes first, past everything; after an interrupt
 // the journal offers no work until it releases its hold. A runtime held for a navigation round admits nothing else. A

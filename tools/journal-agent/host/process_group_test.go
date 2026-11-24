@@ -64,7 +64,7 @@ func TestAReusedProcessIDWithAnotherStartIsNeverSignalled(t *testing.T) {
 	}
 }
 
-func TestAToolChildThatOutlivesItsLeaderKeepsTheStopUnproven(t *testing.T) {
+func TestAToolChildThatOutlivesItsFirstProcessKeepsTheStopUnproven(t *testing.T) {
 	group := startGroup(t, `(trap "" TERM; while true; do sleep 1; done) & exit 0`)
 	if group.Members() != MembersRemain {
 		t.Fatal("the tool child is not in the group")

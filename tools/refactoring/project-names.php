@@ -17,6 +17,11 @@ const PROJECT_FOLDERS = [
 ];
 
 /**
+ * What goReturnsOf answers for a function whose parameters run over several lines.
+ */
+const GO_RETURNS_UNREAD = '(unread)';
+
+/**
  * What holds no name of the project's own: installed, generated, built or recorded files, and the fixture that holds
  * every naming fault on purpose for the test that proves the scan finds them.
  */
@@ -194,7 +199,8 @@ function goReturnsOf(string $fromParameters): string
         }
     }
 
-    return '';
+    // The parameters go on past this line, so what it returns is not on it.
+    return GO_RETURNS_UNREAD;
 }
 
 /**
@@ -203,6 +209,7 @@ function goReturnsOf(string $fromParameters): string
 function goRoleOf(string $returns): string
 {
     return match ($returns) {
+        GO_RETURNS_UNREAD => 'thing',
         '', 'error' => 'action',
         'bool' => 'question',
         default => 'thing',

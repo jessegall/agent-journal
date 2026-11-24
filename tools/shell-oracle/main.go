@@ -68,14 +68,14 @@ func read(line input) output {
 		result.Outcome = "limit_exceeded"
 		return result
 	}
-	variant := syntax.LangBash
+	dialect := syntax.LangBash
 	switch line.Dialect {
 	case "sh":
-		variant = syntax.LangPOSIX
+		dialect = syntax.LangPOSIX
 	case "zsh":
-		variant = syntax.LangZsh
+		dialect = syntax.LangZsh
 	}
-	file, err := syntax.NewParser(syntax.Variant(variant), syntax.KeepComments(true)).Parse(strings.NewReader(line.Source), "")
+	file, err := syntax.NewParser(syntax.Variant(dialect), syntax.KeepComments(true)).Parse(strings.NewReader(line.Source), "")
 	if err != nil {
 		result.Outcome = "invalid"
 		return result

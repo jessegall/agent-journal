@@ -50,7 +50,7 @@ func (holds *Holds) Observe(reading screen.Classification, requestID string, age
 		family := holds.family(reading.Menu)
 		report.Menu = family.Name
 		if family.LaterKeys != "" {
-			return report, holds.gate.Keys(family.LaterKeys)
+			return report, holds.gate.TypeKeys(family.LaterKeys)
 		}
 		report.Reason = family.Hold
 	case screen.Unknown:

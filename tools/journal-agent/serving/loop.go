@@ -614,8 +614,8 @@ func (served servedRuntime) Description() string { return "the host serves the r
 // awaitEnd ends a runtime whose program ended on its own: it leaves the runtimes the loop serves, so no turn is
 // tried on it again, and its exit is reported with how it ended.
 func (loop *Loop) awaitEnd(ctx context.Context, runtime *liveRuntime, ended <-chan string) {
-	evidence, said := <-ended
-	if !said || !loop.isLive(runtime) {
+	evidence, hasEvidence := <-ended
+	if !hasEvidence || !loop.isLive(runtime) {
 		return
 	}
 	loop.exited(ctx, runtime, evidence)
