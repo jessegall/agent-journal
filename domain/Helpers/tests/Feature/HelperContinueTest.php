@@ -40,9 +40,9 @@ final class HelperContinueTest extends TestCase
 
     private const string BRIEF = 'Review it.';
 
-    private const string SEND_COMMAND = "journal helper send '%s'";
+    private const string SEND_CALL = "helpers_send with identity_id '%s'";
 
-    private const string CONTINUE_COMMAND = 'journal helper continue';
+    private const string CONTINUE_CALL = 'helpers_continue with';
 
     /**
      * A driver that reopens an earlier conversation; Codex headless cannot yet.
@@ -62,7 +62,7 @@ final class HelperContinueTest extends TestCase
         $this->assertSame(JobState::Unfinished, $job->state);
 
         $this->assertStringContainsString(
-            sprintf("journal helper continue '%s' --job '%s' --model '", $receipt->identityId, $receipt->jobId),
+            sprintf("helpers_continue with identity_id '%s', job_id '%s' and model '", $receipt->identityId, $receipt->jobId),
             $notice->text,
         );
     }
@@ -110,7 +110,7 @@ final class HelperContinueTest extends TestCase
         $this->assertThrows(
             fn () => $this->continueJob($receipt, (string) Str::ulid()),
             HelperJobAlreadyEnded::class,
-            sprintf(self::SEND_COMMAND, $receipt->identityId),
+            sprintf(self::SEND_CALL, $receipt->identityId),
         );
     }
 
@@ -125,7 +125,7 @@ final class HelperContinueTest extends TestCase
         $this->assertSame($receipt->jobId, $steered->jobId);
         $this->assertSame(['Look at the tests too'], HelperJob::query()->findOrFail($receipt->jobId)->steering);
         $this->assertSame($kept->messageId, HelperMessage::query()->sole()->id);
-        $this->assertStringContainsString(self::CONTINUE_COMMAND, (string) $kept->suggestedCommand);
+        $this->assertStringContainsString(self::CONTINUE_CALL, (string) $kept->suggestedCommand);
     }
 
     public function test_a_cancel_marks_an_unfinished_job_cancelled(): void

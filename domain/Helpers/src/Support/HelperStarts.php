@@ -8,6 +8,8 @@ use App\Contracts\Sessions\StartRecordResolver;
 use App\Support\OwnerStartRequest;
 use App\Support\StartRecordDetails;
 use Domain\Helpers\Exceptions\HelperUnavailable;
+use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
+use Domain\Helpers\Mcp\Tools\SendHelperTool;
 use Domain\Helpers\Models\HelperJob;
 
 /**
@@ -31,24 +33,34 @@ final readonly class HelperStarts
         return array_any($this->of($job), fn (StartRecordDetails $start) => $start->requestId === $requestId);
     }
 
-    public function continueCommand(HelperJob $job): string
+    /**
+     * The tool call that continues the job in its conversation, with every input it needs.
+     */
+    public function continueCall(HelperJob $job): string
     {
         return sprintf(
-            'journal helper continue %s --job %s --model %s',
-            escapeshellarg($job->helper_identity_id),
-            escapeshellarg($job->id),
-            escapeshellarg($this->lastModel($job)),
+            "%s with identity_id '%s', job_id '%s' and model '%s'",
+            ContinueHelperTool::NAME,
+            $job->helper_identity_id,
+            $job->id,
+            $this->lastModel($job),
         );
     }
 
-    public function sendCommand(HelperJob $job): string
+    /**
+     * The tool call that gives the job's helper new work, with the inputs it is known by and a brief left to write.
+     */
+    public function sendCall(HelperJob $job): string
     {
-        return sprintf(
-            'journal helper send %s --model %s --brief %s',
-            escapeshellarg($job->helper_identity_id),
-            escapeshellarg($this->lastModel($job)),
-            escapeshellarg('<the new work>'),
-        );
+        return self::sendCallFor($job->helper_identity_id, "model '{$this->lastModel($job)}' and a brief of the new work");
+    }
+
+    /**
+     * The tool call that gives a helper new work, naming the helper and what else the call takes.
+     */
+    public static function sendCallFor(string $identityId, string $rest): string
+    {
+        return sprintf("%s with identity_id '%s', its profile_key, %s", SendHelperTool::NAME, $identityId, $rest);
     }
 
     /**

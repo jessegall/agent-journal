@@ -18,13 +18,15 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 
+#[Name(self::NAME)]
 #[IsDestructive(false)]
-#[Name('helpers_send')]
 #[Dispatches(SendHelperCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Give a kept helper its next job, with its memory of the last.')]
 final class SendHelperTool extends JournalWriteTool
 {
+    public const string NAME = 'helpers_send';
+
     use HelperWorkArguments {
         writeSchema as workSchema;
     }

@@ -28,7 +28,7 @@ final readonly class MarkHelperJobUnfinishedHandler extends HelperCommandHandler
             HelperNotice::create($job, AgentText::of('helpers.unfinished', [
                 'helper' => $job->helper_identity_id,
                 'job' => $job->id,
-                'command' => $this->starts->continueCommand($job),
+                'command' => $this->starts->continueCall($job),
             ]));
         });
     }

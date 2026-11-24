@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Domains\DomainBootstrapper;
+use App\Contracts\Events\EngineListenerProvider;
 use App\Contracts\Navigation\DraftProducerProvider;
 use App\Contracts\Scripts\ScriptKeywordProvider;
 use App\Contracts\Scripts\ScriptObjectProvider;
@@ -12,6 +13,7 @@ use App\Mcp\Support\McpToolDirectory;
 use App\Mcp\Tools\JournalTool;
 use App\Support\Bootstrappers\LoadMigrations;
 use App\Support\Bootstrappers\RegisterDraftProducers;
+use App\Support\Bootstrappers\RegisterEngineListeners;
 use App\Support\Bootstrappers\RegisterScriptDefinitions;
 
 /**
@@ -105,12 +107,14 @@ abstract class Domain
             : [];
 
         $drafts = $this instanceof DraftProducerProvider ? [RegisterDraftProducers::class] : [];
+        $engine = $this instanceof EngineListenerProvider ? [RegisterEngineListeners::class] : [];
 
         return array_values(array_unique([
             LoadMigrations::class,
             ...$fromTraits,
             ...$scripts,
             ...$drafts,
+            ...$engine,
             ...$this->bootstrappers(),
         ]));
     }

@@ -8,9 +8,13 @@ use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Chat\ChatParticipationEnding;
 use App\Contracts\Chat\InboxResolver;
 use App\Enums\ChatPermission;
+use App\Events\EngineTicked;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;
+use App\Support\EngineListenerSet;
+use App\Support\EngineTickedDelivery;
+use App\Support\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 use Domain\Access\Commands\DisableUser\DisableUserCommand;
 use Domain\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
@@ -20,6 +24,8 @@ use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;
 use Domain\Chat\Support\ChatRevocation;
+use Domain\Chat\Support\SettleMarkedChatsOnTick;
+use Tests\Support\Engine\RunsEnginePasses;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -28,6 +34,8 @@ use Tests\Support\MessagingTestCase;
  */
 final class ChatRevocationTest extends MessagingTestCase
 {
+    use RunsEnginePasses;
+
     public function test_revoking_the_owner_hands_the_chat_to_a_manager_and_the_revoked_user_can_no_longer_post(): void
     {
         $bea = $this->grantedUser('Bea', [ChatPermission::CreateChats, ChatPermission::ManageMembers]);
@@ -124,6 +132,34 @@ final class ChatRevocationTest extends MessagingTestCase
         $this->assertSame(
             [false, true],
             [Conversation::forInbox($posted)->isReconcilePending(), Conversation::forInbox($swept)->isReconcilePending()],
+        );
+    }
+
+    public function test_a_marked_chat_nobody_opens_is_settled_by_one_engine_pass(): void
+    {
+        $this->app->bind(
+            ChatParticipationEnding::class,
+            fn () => $this->app->make(ChatRevocation::class, ['inlineChatLimit' => 0]),
+        );
+        $cy = $this->grantedUser('Cy', [ChatPermission::ReceiveInvitations]);
+        $this->startUserRequestAs($this->owner->id);
+        $marked = $this->runOnBus(new CreateGroupChatCommand('Design', [$cy->id]));
+        $this->runOnBus(new RevokeEnvironmentAccessCommand($cy->id, null));
+
+        $this->assertTrue($this->app->make(EngineListenerSet::class)->has(SettleMarkedChatsOnTick::class));
+        $this->assertTrue(Conversation::forInbox($marked)->isReconcilePending());
+
+        $this->pass(fn () => $this->app->make(EngineTickedDelivery::class)->deliver(
+            new EngineTicked(CarbonImmutable::now(), ElapsedTime::between(0, 1_000_000_000)),
+        ));
+
+        $members = array_map(
+            fn ($member) => $member->actor->id,
+            $this->app->make(ChatInboxes::class)->activeIntervals(new ChatInbox($marked, 'Chat')),
+        );
+        $this->assertSame(
+            [false, false],
+            [Conversation::forInbox($marked)->isReconcilePending(), in_array($cy->id, $members, true)],
         );
     }
 

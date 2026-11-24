@@ -8,6 +8,7 @@ use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Events\EngineListenerProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Navigation\SectionProvider;
 use App\Contracts\Search\MessageSearch;
@@ -58,10 +59,12 @@ use Domain\Chat\Resolvers\ChosenAgentSection;
 use Domain\Chat\Resolvers\HistoryPageResolver;
 use Domain\Chat\Resolvers\InboxPageResolver;
 use Domain\Chat\Support\Mcp\PendingMessagesOverview;
+use Domain\Chat\Support\SettleMarkedChatsOnTick;
 use Domain\Chat\Support\Skills\ChatSkill;
 
 final class ChatDomain extends Domain implements
     CommandProvider,
+    EngineListenerProvider,
     McpToolProvider,
     NativePartProvider,
     PageProvider,
@@ -87,6 +90,11 @@ final class ChatDomain extends Domain implements
         return Exports::make()
             ->events(DockChanged::class, ChatReconcileMarked::class, ChatReconciled::class)
             ->build();
+    }
+
+    public function engineListeners(): array
+    {
+        return [SettleMarkedChatsOnTick::class];
     }
 
     public function commands(): array

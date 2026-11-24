@@ -38,7 +38,7 @@ final class HelperContextTest extends TestCase
 
     private const string REVIEW_TITLE = 'Review plan 7';
 
-    private const string CONTINUE_COMMAND = "journal helper continue '%s'";
+    private const string CONTINUE_CALL = "helpers_continue with identity_id '%s'";
 
     public function test_a_helper_gets_its_brief_and_steering_again_after_a_compaction(): void
     {
@@ -66,7 +66,7 @@ final class HelperContextTest extends TestCase
         $again = $this->remindersOn($this->parent->agent->id, ContextStartType::Resume);
 
         $this->assertCount(1, $first);
-        $this->assertStringContainsString(sprintf(self::CONTINUE_COMMAND, $receipt->identityId), $first[0]);
+        $this->assertStringContainsString(sprintf(self::CONTINUE_CALL, $receipt->identityId), $first[0]);
         $this->assertSame([], $again);
     }
 

@@ -42,7 +42,7 @@ final class SessionContextTest extends TestCase
     private const string MEMORY_REMINDER = 'Memory: %s';
 
     private const string OMITTED_NOTICE = '1 more reminders did not fit this context; '
-        .'read your memories with journal memory list.';
+        .'read your memories with memories_list.';
 
     private Rule $rule;
 

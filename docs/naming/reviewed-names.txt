@@ -5284,6 +5284,7 @@ class	RefuseWritesDuringEvaluation
 class	RegisterAssignables
 class	RegisterCommands
 class	RegisterDraftProducers
+class	RegisterEngineListeners
 class	RegisterIncomingWork
 class	RegisterLinkRecords
 class	RegisterPendingStart
@@ -6135,6 +6136,9 @@ class	SettleDocumentHandler
 class	SettleDocumentPageController
 class	SettleFrameTimesCommand
 class	SettleFrameTimesHandler
+class	SettleMarkedChatsCommand
+class	SettleMarkedChatsHandler
+class	SettleMarkedChatsOnTick
 class	SettleMergeOutcome
 class	SettleMergeOutcomesCommand
 class	SettleMergeOutcomesHandler
@@ -7531,6 +7535,7 @@ constant	ContainerManifest::USER
 constant	ContainerManifest::WORKDIR
 constant	Continuations::LIFETIME_MINUTES
 constant	Continuations::PURPOSE
+constant	ContinueHelperTool::NAME
 constant	ContractSnapshot::JSON_FLAGS
 constant	ContractSnapshot::PATH
 constant	Conversation::CHAT_INBOX_PROVIDER
@@ -8202,6 +8207,7 @@ constant	SearchablesRegistry::QUALIFIED_KEY_PATTERN
 constant	SeatLossRepair::PERSONAL_LABEL
 constant	SecureShareResponse::HEADERS
 constant	SendDriverRequestAgainHandler::KEY_PREFIX
+constant	SendHelperTool::NAME
 constant	SentMessageAnswer::REQUEST_KEY
 constant	SentMessageAnswer::SENT_MESSAGE
 constant	SeparateTransactionListeners::DEFERRING_INTERFACES
@@ -8228,6 +8234,8 @@ constant	SettingsDocument::MOST_BYTES
 constant	SettingsIndex::DOMAIN_SWITCH
 constant	SettingsIndex::ORDER
 constant	SettleFrameTimesCommand::MAINTENANCE_SCOPE
+constant	SettleMarkedChatsCommand::BATCH_LIMIT
+constant	SettleMarkedChatsCommand::MAINTENANCE_SCOPE
 constant	SettleMergeOutcomesCommand::MAINTENANCE_SCOPE
 constant	SettleMergeOutcomesHandler::PASS_LIMIT
 constant	Share::FIRST_SCOPE_VERSION
@@ -9025,6 +9033,7 @@ interface	DriverSkills
 interface	EnabledSettingsGroup
 interface	EngineGrant
 interface	EngineListener
+interface	EngineListenerProvider
 interface	EngineTargetAccess
 interface	EnvironmentTasks
 interface	Event
@@ -11699,6 +11708,7 @@ method	ChatDepartures::closeChat()
 method	ChatDepartures::depart()
 method	ChatDomain::commands()
 method	ChatDomain::description()
+method	ChatDomain::engineListeners()
 method	ChatDomain::exports()
 method	ChatDomain::mcpResources()
 method	ChatDomain::nativeParts()
@@ -13136,6 +13146,7 @@ method	Conversation::isReconcilePending()
 method	Conversation::lockedById()
 method	Conversation::lockedForInbox()
 method	Conversation::markReconcilePending()
+method	Conversation::markedBatch()
 method	Conversation::ownedBy()
 method	Conversation::owner()
 method	Conversation::placements()
@@ -14866,6 +14877,7 @@ method	EngineGrant::allowsTarget()
 method	EngineGrant::description()
 method	EngineListener::__invoke()
 method	EngineListener::maintenanceScope()
+method	EngineListenerProvider::engineListeners()
 method	EngineListenerSet::add()
 method	EngineListenerSet::all()
 method	EngineListenerSet::has()
@@ -15857,11 +15869,12 @@ method	HelperSentOnRecord::__construct()
 method	HelperStartCommand::handle()
 method	HelperStartCommand::namedMode()
 method	HelperStarts::__construct()
-method	HelperStarts::continueCommand()
+method	HelperStarts::continueCall()
 method	HelperStarts::hasRequest()
 method	HelperStarts::lastModel()
 method	HelperStarts::of()
-method	HelperStarts::sendCommand()
+method	HelperStarts::sendCall()
+method	HelperStarts::sendCallFor()
 method	HelperSteerCommand::handle()
 method	HelperSteerData::__construct()
 method	HelperSteerData::fromSteerReceipt()
@@ -21504,6 +21517,8 @@ method	RegisterCommands::handle()
 method	RegisterCommands::middlewareFor()
 method	RegisterDraftProducers::__construct()
 method	RegisterDraftProducers::__invoke()
+method	RegisterEngineListeners::__construct()
+method	RegisterEngineListeners::__invoke()
 method	RegisterIncomingWork::__construct()
 method	RegisterIncomingWork::__invoke()
 method	RegisterLinkRecords::__construct()
@@ -23931,6 +23946,11 @@ method	SettleFrameTimesCommand::__construct()
 method	SettleFrameTimesHandler::__construct()
 method	SettleFrameTimesHandler::handle()
 method	SettleFrameTimesHandler::recordMany()
+method	SettleMarkedChatsHandler::__construct()
+method	SettleMarkedChatsHandler::handle()
+method	SettleMarkedChatsOnTick::__construct()
+method	SettleMarkedChatsOnTick::__invoke()
+method	SettleMarkedChatsOnTick::maintenanceScope()
 method	SettleMergeOutcome::__construct()
 method	SettleMergeOutcome::handle()
 method	SettleMergeOutcomesHandler::__construct()
@@ -30431,6 +30451,7 @@ parameter	$response
 parameter	$responseFields
 parameter	$responses
 parameter	$responsibilities
+parameter	$rest
 parameter	$restored
 parameter	$restorer
 parameter	$restricted
@@ -38492,6 +38513,7 @@ property	RefuseWritesDuringEvaluation::$guard
 property	RegisterAssignables::$assignments
 property	RegisterCommands::$propertyRules
 property	RegisterDraftProducers::$producers
+property	RegisterEngineListeners::$listeners
 property	RegisterIncomingWork::$incoming
 property	RegisterLinkRecords::$providers
 property	RegisterPendingStart::$config
@@ -40226,6 +40248,10 @@ property	SettleDocumentHandler::$changes
 property	SettleDocumentHandler::$settling
 property	SettleFrameTimesCommand::$settlements
 property	SettleFrameTimesHandler::$access
+property	SettleMarkedChatsHandler::$access
+property	SettleMarkedChatsHandler::$admission
+property	SettleMarkedChatsHandler::$inboxes
+property	SettleMarkedChatsOnTick::$commands
 property	SettleMergeOutcome::$settlement
 property	SettleMergeOutcomesHandler::$access
 property	SettleMergeOutcomesHandler::$settlement
@@ -43135,6 +43161,7 @@ variable	$endedAt
 variable	$endedLongAgo
 variable	$endpoint
 variable	$ends
+variable	$engine
 variable	$enroll
 variable	$enrolled
 variable	$entered

@@ -36,11 +36,11 @@ final class McpInstructionsTest extends TestCase
 
     private const string MCP_ADVICE = 'Use the journal MCP tools';
 
-    private const string HELPER_JOURNEY = 'helper dispatch (journal helper)';
+    private const string ACCOUNT_JOURNEY = 'account work (the Accounts page)';
 
     private const string SEQUENCE_JOURNEY = 'sequences (journal sequence)';
 
-    private const string HELPER_DISPATCH = 'helper dispatch';
+    private const string ACCOUNT_WORK = 'account work';
 
     public function test_a_main_agents_start_context_holds_the_instructions_once(): void
     {
@@ -52,7 +52,7 @@ final class McpInstructionsTest extends TestCase
                 array_filter($context, fn (string $line): bool => str_starts_with($line, self::MCP_ADVICE)),
             ),
         );
-        $this->assertStringContainsString(self::HELPER_JOURNEY, implode("\n", $context));
+        $this->assertStringContainsString(self::ACCOUNT_JOURNEY, implode("\n", $context));
     }
 
     public function test_a_reviewer_hears_only_its_own_journeys(): void
@@ -60,8 +60,7 @@ final class McpInstructionsTest extends TestCase
         $instructions = new McpInstructions(new FixedCurrentAuthorizer())->forCaller()->text;
 
         $this->assertStringContainsString(self::SEQUENCE_JOURNEY, $instructions);
-        $this->assertStringNotContainsString(self::HELPER_DISPATCH, $instructions);
-        $this->assertStringNotContainsString('reminders', $instructions);
+        $this->assertStringNotContainsString(self::ACCOUNT_WORK, $instructions);
     }
 
     public function test_the_instructions_stay_short_and_name_no_token_or_path(): void

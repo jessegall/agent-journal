@@ -43,7 +43,7 @@ final readonly class ContinueHelperHandler extends HelperCommandHandler
             throw HelperJobAlreadyEnded::withSendCommand(
                 $job->id,
                 $job->state->value,
-                $this->starts->sendCommand($job),
+                $this->starts->sendCall($job),
             );
         }
 

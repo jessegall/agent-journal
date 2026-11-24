@@ -97,6 +97,18 @@ final class Conversation extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The inbox ids of up to the limit of open chats that owe a reconcile, in inbox order.
+     *
+     * @return list<string>
+     */
+    public static function markedBatch(int $limit): array
+    {
+        return array_values(
+            self::query()->awaitingReconcile()->orderBy('inbox_id')->limit($limit)->pluck('inbox_id')->all(),
+        );
+    }
+
+    /**
      * @throws ConversationUnavailable
      */
     public static function forInbox(string $inboxId): self

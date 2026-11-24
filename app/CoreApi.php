@@ -7,6 +7,7 @@ namespace App;
 use App\Attributes\Authorize;
 use App\Attributes\Effect;
 use App\Attributes\Endpoint;
+use App\Attributes\Entry;
 use App\Attributes\InCommandTransaction;
 use App\Attributes\InPath;
 use App\Attributes\JournalRoute;
@@ -241,6 +242,7 @@ use App\Contracts\Actors\CurrentUserResolver;
 use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Actors\MembershipEvidence;
 use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Admission\MaintenanceAdmission;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Assignments\AssignableContributor;
 use App\Contracts\Assignments\AssignableProvider;
@@ -346,6 +348,8 @@ use App\Contracts\Drivers\MessagePart;
 use App\Contracts\Drivers\NativePartProvider;
 use App\Contracts\Drivers\NativeTurnRecords;
 use App\Contracts\Drivers\ToolDiscovery;
+use App\Contracts\Events\EngineListener;
+use App\Contracts\Events\EngineListenerProvider;
 use App\Contracts\Events\Event;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Events\FactOrigin;
@@ -1554,6 +1558,9 @@ final class CoreApi
                 DraftProducers::class,
                 DraftProducer::class,
                 DraftProducerProvider::class,
+                EngineListener::class,
+                EngineListenerProvider::class,
+                MaintenanceAdmission::class,
                 ChatDepartures::class,
                 ChatTimeline::class,
                 ChatParticipationEnding::class,
@@ -2331,6 +2338,7 @@ final class CoreApi
                 CommandScope::class,
                 MiddlewareDeclaration::class,
                 Authorize::class,
+                Entry::class,
                 Effect::class,
                 InCommandTransaction::class,
                 TransactionListenerConsent::class,

@@ -17,13 +17,15 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 
+#[Name(self::NAME)]
 #[IsDestructive(false)]
-#[Name('helpers_continue')]
 #[Dispatches(ContinueHelperCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Continue a helper job whose launch ended before it finished, in the same conversation.')]
 final class ContinueHelperTool extends JournalWriteTool
 {
+    public const string NAME = 'helpers_continue';
+
     protected function writeSchema(JsonSchema $schema): array
     {
         return [

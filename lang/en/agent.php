@@ -25,7 +25,7 @@ return [
         'no_runtime' => 'This session has no runtime to run it in.',
     ],
     'skills' => [
-        'not_delivered' => 'Your journal skill set is {state}, not delivered yet, so file changes wait. Reading still '
+        'not_delivered' => 'The skills the journal gives you are {state}, not delivered yet, so file changes wait. Reading still '
             .'works: php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
         'read_required' => 'Read the required skill {skill} whole before work it covers: php artisan skill:show '
             .'{skill}, or the skills_show tool',
@@ -34,13 +34,13 @@ return [
         'not_chosen' => 'Your skills could not be chosen for this start: {problem}',
     ],
     'reminders' => [
-        'more' => '{count} more reminders did not fit this context; read your memories with journal memory list.',
+        'more' => '{count} more reminders did not fit this context; read your memories with memories_list.',
     ],
     'mcp' => [
         'instructions' => 'Use the journal MCP tools for journal work: call overview_read first and follow its '
             ."next_action. Send each write with a request_key and keep it; when a write's outcome is unknown, call "
             .'operations_read with that key before trying again. These stay on the CLI or the web: {journeys}. '
-            .'Every decision only the user makes stays theirs: ask with journal question ask',
+            .'Every decision only the user makes stays theirs: ask with messages_question',
     ],
     'scripts' => [
         'step_finished' => "The host finished a step of your profile's script: stop again to go on",
@@ -79,7 +79,7 @@ return [
             .'own saved outputs can be read',
         'rewrite_refused' => 'This driver cannot run a rewritten command without asking first: run it through its '
             .'alias with journal run',
-        'own_subagents' => "Your driver's own subagents never run here (rule 36): start a journal helper or worker instead",
+        'own_subagents' => "Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead",
         'other_runtime' => "That file belongs to another agent's start: only that agent may read or change it",
         'delivered_skill' => 'Your skills are read-only, the journal writes them: ask for a change through the journal',
         'outage' => 'The journal is unreachable: this helper cannot act until it is back',
