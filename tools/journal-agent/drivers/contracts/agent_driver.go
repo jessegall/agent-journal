@@ -96,6 +96,13 @@ type BrowserControlled interface {
 	ControlFromBrowser(ctx context.Context, control BrowserControl) (OperationResult, error)
 }
 
+// Recorded keeps an operator's recording of the program's screen output, started and stopped on request; a driver
+// without a terminal does not.
+type Recorded interface {
+	StartRecording(ctx context.Context, request RequestIdentity) (OperationResult, error)
+	StopRecording(ctx context.Context, request RequestIdentity) (OperationResult, error)
+}
+
 // Bootstrapper proves a start's conversation without a turn: it binds the program's own conversation, sends no text,
 // and answers the binding it holds. A driver without it proves its conversation with its first turn.
 type Bootstrapper interface {

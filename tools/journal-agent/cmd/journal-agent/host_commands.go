@@ -584,6 +584,8 @@ func terminalDriverOf(
 		ProcessGeneration: runtime.ProcessGeneration,
 		ConversationID:    conversationID,
 		Progress:          relay,
+		StartRecording:    opened.StartRecording,
+		StopRecording:     opened.StopRecording,
 	})
 }
 

@@ -1,6 +1,7 @@
 package host
 
 import (
+	"errors"
 	"io"
 	"net"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/creack/pty"
 
+	"journal-agent/recording"
 	"journal-agent/screen"
 	inputs "journal-agent/terminal"
 )
@@ -375,5 +377,58 @@ func TestALostContainedAttachmentWhoseContainerRunsIsALostConnectionNotAnEnd(t *
 	running = false
 	if socket.LostConnection("runtime-1") {
 		t.Fatal("a stopped container still counted as a lost connection")
+	}
+}
+
+func TestARecordingKeepsThePublicOutputBetweenItsStartAndStopAndNothingOfAPrivateEntry(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	connection, err := net.Dial("unix", socket.Path())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { connection.Close() })
+	state := t.TempDir()
+	if err := WriteAttachRequest(connection, AttachRequest{RuntimeID: "runtime-1", Rows: 24, Columns: 80, Folder: state}); err != nil {
+		t.Fatal(err)
+	}
+	terminal := terminalOf(t, socket, "runtime-1")
+	program := <-programs
+	waitForSize(t, socket, "runtime-1", 24, 80)
+	program.Write([]byte("before the recording"))
+	time.Sleep(50 * time.Millisecond)
+
+	terminal.startRecording()
+	program.Write([]byte("a recorded line"))
+	time.Sleep(50 * time.Millisecond)
+	if !terminal.enterPrivate() {
+		t.Fatal("private entry did not close every sink")
+	}
+	program.Write([]byte("Password: "))
+	time.Sleep(50 * time.Millisecond)
+	terminal.confirmPrivateEnd()
+	program.Write([]byte(publicRedraw))
+	waitForBarrier(t, terminal, false)
+	folder, err := terminal.stopRecording()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fixture, err := recording.Load(folder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recorded := ""
+	for _, chunk := range fixture.Output {
+		recorded += string(chunk.Bytes)
+	}
+	if !strings.Contains(recorded, "a recorded line") || strings.Contains(recorded, "before the recording") ||
+		strings.Contains(recorded, "Password") {
+		t.Fatalf("the recording kept %q", recorded)
+	}
+	if fixture.Geometry.Rows != 24 || fixture.Geometry.Columns != 80 || !strings.HasPrefix(folder, state) {
+		t.Fatalf("the recording was saved in %s at %+v", folder, fixture.Geometry)
+	}
+	if _, err := terminal.stopRecording(); !errors.Is(err, ErrNoRecording) {
+		t.Fatalf("a second stop answered %v", err)
 	}
 }

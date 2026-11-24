@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"journal-agent/recording"
 	"journal-agent/screen"
 	inputs "journal-agent/terminal"
 )
@@ -94,6 +95,10 @@ type hostTerminal struct {
 	// container it attaches to; a grant is scoped to both.
 	attachment        string
 	containerInstance string
+	// recording is the operator's recording of the program's public output while one runs; request names the runtime
+	// and the state folder it is saved under.
+	recording *RuntimeRecording
+	request   AttachRequest
 }
 
 // privateNotice is what a local terminal is told when its keys, resize or attach meet private entry; it carries no
@@ -216,6 +221,7 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 		barrier:           barrier,
 		attachment:        attachment,
 		containerInstance: request.ContainerInstance,
+		request:           request,
 	}
 	delete(socket.lost, request.RuntimeID)
 	gate.ResizeWith(terminal.resizeForBrowser)
@@ -322,6 +328,10 @@ type Terminal struct {
 	ConfirmPrivateEnd func()
 	// Attachment names this attachment, which a browser grant is scoped to.
 	Attachment string
+	// StartRecording records the program's public output from now on, for an operator's investigation; StopRecording
+	// saves it and answers the folder it was saved in.
+	StartRecording func()
+	StopRecording  func() (string, error)
 }
 
 // Open starts the runtime's program on a terminal the host holds, or finds the one it already runs under the runtime's id,
@@ -339,6 +349,8 @@ func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
 		Hangup:            terminal.stream.Close,
 		EnterPrivate:      terminal.enterPrivate,
 		ConfirmPrivateEnd: terminal.confirmPrivateEnd,
+		StartRecording:    terminal.startRecording,
+		StopRecording:     terminal.stopRecording,
 	}, nil
 }
 
@@ -363,6 +375,35 @@ func (terminal *hostTerminal) detach(identity uint64) {
 	terminal.attached, terminal.connection = nil, 0
 }
 
+// startRecording begins a recording of the program's public output, unless one runs; output read during private
+// entry goes to the private parser and never reaches it.
+func (terminal *hostTerminal) startRecording() {
+	terminal.mutex.Lock()
+	defer terminal.mutex.Unlock()
+	if terminal.recording != nil {
+		return
+	}
+	base := recording.Fixture{
+		Driver:   terminal.request.Driver,
+		Mode:     recording.TerminalMode,
+		Geometry: recording.Geometry{Rows: terminal.request.Rows, Columns: terminal.request.Columns},
+	}
+	terminal.recording = StartRecording(terminal.request.Folder, terminal.request.RuntimeID, base, DefaultRecordingBounds, time.Now)
+}
+
+// stopRecording saves the running recording and answers its folder.
+func (terminal *hostTerminal) stopRecording() (string, error) {
+	terminal.mutex.Lock()
+	running := terminal.recording
+	terminal.recording = nil
+	terminal.mutex.Unlock()
+	if running == nil {
+		return "", ErrNoRecording
+	}
+
+	return running.Stop(0)
+}
+
 // isActive is whether the connection with this identity is the one attached now.
 func (terminal *hostTerminal) isActive(identity uint64) bool {
 	terminal.mutex.Lock()
@@ -384,6 +425,9 @@ func (terminal *hostTerminal) copyOut() {
 			_ = terminal.reader.Feed(buffer[:count])
 			terminal.closeOnSecretEcho()
 			terminal.mutex.Lock()
+			if terminal.recording != nil {
+				terminal.recording.Output("stdout", buffer[:count])
+			}
 			if terminal.attached != nil && !terminal.mirrorSilenced {
 				writeFrame(terminal.attached, frameData, buffer[:count])
 			}

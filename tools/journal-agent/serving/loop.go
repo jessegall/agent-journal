@@ -189,6 +189,9 @@ func (loop *Loop) control(ctx context.Context, runtime *liveRuntime, request cli
 	case "resend_readiness":
 		loop.resendReadiness(ctx, request)
 		return true
+	case "start_recording", "stop_recording":
+		loop.record(ctx, runtime, request)
+		return true
 	case "stop":
 		result, err := runtime.driver.Stop(ctx, contracts.StopRequest{Request: identity})
 		loop.notifyResult(ctx, request, result, err)
@@ -204,6 +207,23 @@ func (loop *Loop) control(ctx context.Context, runtime *liveRuntime, request cli
 		loop.notify(ctx, request, contracts.OperationResult{Progress: contracts.ProgressUnavailable})
 		return true
 	}
+}
+
+// record starts or stops the operator's recording on a driver that keeps one; any other driver answers unavailable.
+func (loop *Loop) record(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	recorded, keepsRecordings := runtime.driver.(contracts.Recorded)
+	if !keepsRecordings {
+		loop.notify(ctx, request, contracts.OperationResult{Progress: contracts.ProgressUnavailable})
+		return
+	}
+	var result contracts.OperationResult
+	var err error
+	if request.Operation == "start_recording" {
+		result, err = recorded.StartRecording(ctx, identityOf(request))
+	} else {
+		result, err = recorded.StopRecording(ctx, identityOf(request))
+	}
+	loop.notifyResult(ctx, request, result, err)
 }
 
 // browserControl hands a browser writer's operation to a driver that carries them out; any other driver answers

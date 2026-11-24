@@ -54,6 +54,10 @@ type TerminalRuntime struct {
 	Progress          *ProgressRelay
 	// Limits are the waits the journal sent with the start; the driver waits no longer than they say.
 	Limits contracts.Limits
+	// StartRecording and StopRecording record the program's public output for an operator; nil where the host holds
+	// no terminal of the program.
+	StartRecording func()
+	StopRecording  func() (string, error)
 }
 
 // TerminalDriver carries out the six operations on one persistent program in one process generation: every delivered
@@ -204,6 +208,28 @@ func (driver *TerminalDriver) stopFromComposer(stop contracts.StopRequest) (cont
 	}
 
 	return contracts.OperationResult{Request: stop.Request, Progress: contracts.ProgressApplying}, nil
+}
+
+// StartRecording begins the operator's recording of the program's screen output.
+func (driver *TerminalDriver) StartRecording(_ context.Context, request contracts.RequestIdentity) (contracts.OperationResult, error) {
+	if driver.runtime.StartRecording == nil {
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressUnavailable}, nil
+	}
+	driver.runtime.StartRecording()
+
+	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplied}, nil
+}
+
+// StopRecording saves the operator's recording under the host's state folder.
+func (driver *TerminalDriver) StopRecording(_ context.Context, request contracts.RequestIdentity) (contracts.OperationResult, error) {
+	if driver.runtime.StopRecording == nil {
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressUnavailable}, nil
+	}
+	if _, err := driver.runtime.StopRecording(); err != nil {
+		return failed(request), err
+	}
+
+	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplied}, nil
 }
 
 // RunKeyScript runs a registered maintenance script of the program build through the gate.

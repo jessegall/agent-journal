@@ -1,6 +1,7 @@
 package host
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,6 +10,9 @@ import (
 
 	"journal-agent/recording"
 )
+
+// ErrNoRecording is returned when a recording is stopped while none runs.
+var ErrNoRecording = errors.New("no recording runs for this runtime")
 
 // RecordingBounds caps one on-demand recording: its output bytes and its length. A recording that reaches either is
 // cut, says so, and is saved.
