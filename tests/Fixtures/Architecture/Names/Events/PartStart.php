@@ -7,6 +7,6 @@ namespace Tests\Fixtures\Architecture\Names\Events;
 /**
  * An event that does not say what happened.
  */
-final class PartStart
+final class PartStart implements PartEvent
 {
 }

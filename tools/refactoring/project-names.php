@@ -30,11 +30,15 @@ const NOT_PROJECT_NAMES = '#(^|/)(vendor|node_modules|\.build|testdata)/|resourc
 function projectNames(array $paths): array
 {
     $files = projectFiles($paths);
+    $listed = array_filter([...frontendNames($paths), ...shellNames($paths)], fn (DeclaredName $declared) => in_array(
+        (string) preg_replace('/:\d+$/', '', $declared->place),
+        $files,
+        true,
+    ));
 
     return [
         ...declaredNames(array_values(array_filter($files, fn (string $file) => str_ends_with($file, '.php')))),
-        ...frontendNames($paths),
-        ...shellNames($paths),
+        ...$listed,
         ...goNames(array_values(array_filter($files, fn (string $file) => str_ends_with($file, '.go')))),
         ...fileNames($files),
     ];

@@ -24,11 +24,13 @@ use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/promoted-parameters.php';
+require_once __DIR__.'/php-parse.php';
 require_once __DIR__.'/name-grammar.php';
 
 /**
  * One name the code declares: what type of declaration it is, the name, where it is declared, and whether it names an
- * action (a method that returns nothing, a step, command, listener or job), a question (a yes or no) or a thing.
+ * action (a method that returns nothing, a step, command, listener or job), a question (a yes or no), an event (a
+ * class of an event contract), a name a vendor type gives (an override) or a thing.
  */
 final readonly class DeclaredName
 {
@@ -52,7 +54,7 @@ function declaredNames(array $files): array
     $names = [];
 
     foreach ($files as $path) {
-        $statements = new NodeTraverser(new NameResolver())->traverse($parser->parse((string) file_get_contents($path)) ?? []);
+        $statements = new NodeTraverser(new NameResolver())->traverse(parsedOnce($parser, $path, (string) file_get_contents($path)));
 
         foreach (new NodeFinder()->findInstanceOf($statements, ClassLike::class) as $type) {
             if ($type->name === null) {
@@ -61,8 +63,12 @@ function declaredNames(array $files): array
 
             $typeName = $type->name->toString();
             $owner = $type->namespacedName?->toString() ?? $typeName;
-            $typeRole = preg_match(ACTION_FOLDERS, $path) === 1 ? 'action' : 'thing';
             $parents = parentsOf($type);
+            $typeRole = match (true) {
+                preg_match(ACTION_FOLDERS, $path) === 1 => 'action',
+                $type instanceof Class_ && array_any($parents, fn (string $parent) => str_ends_with($parent, 'Event')) => 'event',
+                default => 'thing',
+            };
             $names[] = new DeclaredName(declarationTypeOf($type), $typeName, "{$path}:{$type->getStartLine()}", $typeRole, $owner);
 
             foreach ($type->stmts as $member) {

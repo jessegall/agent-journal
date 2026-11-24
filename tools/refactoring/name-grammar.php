@@ -23,6 +23,11 @@ const ACTION_FOLDERS = '#/(Pipes|Pipelines|(?<!Console/)Commands|Listeners|Jobs)
 const QUESTION_WORDS = ['is', 'has', 'have', 'can', 'should', 'must', 'may', 'does', 'was', 'were', 'will', 'needs'];
 
 /**
+ * The words that make "to" and a verb a noun phrase of their own: how to fix, what to answer.
+ */
+const INTERROGATIVE_WORDS = ['how', 'what', 'when', 'where', 'which', 'whom'];
+
+/**
  * The endings of a past form, which an event's last word has: requested, written, sent, held, begun.
  */
 const PAST_FORM = '/(ed|en|wn|ne|ung|un|ound|ought|aught|ent|ept|eft|eld|old|ost|ade|aid|ead|ut|et|it|uck|ook|ew|ame)$/';
@@ -99,7 +104,7 @@ function nameFaults(array $names, string $forbiddenWordsFile): array
         $reasons = array_filter([
             forbiddenWordFault($declared, $forbidden),
             betterVerbFault($declared, $betterVerbs),
-            purposeFault($declared, $verbs),
+            purposeFault($declared, $verbs, $nouns),
             actionClassFault($declared, $commandVerbs, $nouns),
             eventFault($declared),
             commandMoodFault($declared, $verbs),
@@ -145,12 +150,14 @@ function betterVerbFault(DeclaredName $declared, array $betterVerbs): ?string
 
 /**
  * A thing named for what will be done with it ("step to run") instead of for what it is. An action or a question may
- * hold "to" and a verb, so may a function that starts with its own verb, and a participle before "to" names a state
- * (failed to start).
+ * hold "to" and a verb, so may a function that starts with its own verb, a participle before "to" names a state
+ * (failed to start), an interrogative a noun phrase (how to fix), and a verb no type is named for a verb phrase
+ * (reply to message).
  *
  * @param  array<string, true>  $verbs
+ * @param  array<string, true>  $nouns
  */
-function purposeFault(DeclaredName $declared, array $verbs): ?string
+function purposeFault(DeclaredName $declared, array $verbs, array $nouns): ?string
 {
     $words = wordsOf($declared->name);
     $first = $words[0] ?? '';
@@ -161,9 +168,13 @@ function purposeFault(DeclaredName $declared, array $verbs): ?string
     }
 
     foreach ($words as $at => $word) {
-        $isState = $at > 0 && preg_match('/(ed|ing)$/', $words[$at - 1]) === 1;
+        $before = $words[$at - 1] ?? '';
+        $isState = preg_match('/(ed|ing)$/', $before) === 1;
+        $isInterrogative = in_array($before, INTERROGATIVE_WORDS, true);
+        // A name that opens with a verb the code never names a type for says what it does: ReplyToMessageCall.
+        $isVerbPhrase = $at === 1 && isset($verbs[$before]) && ! isset($nouns[$before]);
 
-        if ($word === 'to' && $at > 0 && ! $isState && isset($words[$at + 1], $verbs[$words[$at + 1]])) {
+        if ($word === 'to' && $at > 0 && ! $isState && ! $isInterrogative && ! $isVerbPhrase && isset($words[$at + 1], $verbs[$words[$at + 1]])) {
             return "named for what will be done with it ({$words[$at - 1]} to {$words[$at + 1]}): name what it is, "
                 .'a pending, active or waiting one, or its plain noun';
         }
@@ -212,11 +223,12 @@ function nounsOf(array $names): array
 }
 
 /**
- * An event says what happened: a word after its subject is a past form (StopRequested, AccountHeldForMaintenance).
+ * An event (a class of an event contract) says what happened: a word after its subject is a past form
+ * (StopRequested, AccountHeldForMaintenance).
  */
 function eventFault(DeclaredName $declared): ?string
 {
-    $isEvent = $declared->declarationType === 'class' && preg_match('#^(app|domain/\w+/src)/(.*/)?Events/#', $declared->place) === 1;
+    $isEvent = $declared->role === 'event';
     $saysWhatHappened = array_any(array_slice(wordsOf($declared->name), 1), fn (string $word) => preg_match(PAST_FORM, $word) === 1);
 
     return $isEvent && ! $saysWhatHappened ? 'an event says what happened, and no word of it is a past form' : null;

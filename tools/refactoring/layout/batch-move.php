@@ -34,6 +34,7 @@ use PhpParser\Parser;
 use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 3).'/vendor/autoload.php';
+require_once dirname(__DIR__).'/php-parse.php';
 
 // The whole codebase is held as trees at once, which needs more than PHP's default memory.
 ini_set('memory_limit', '-1');
@@ -69,11 +70,11 @@ final class FileTree extends NodeVisitorAbstract
 
     private int $importDepth = 0;
 
-    public static function of(Parser $parser, string $source): self
+    public static function of(Parser $parser, string $file, string $source): self
     {
         $tree = new self();
         $traverser = new NodeTraverser(new NameResolver(null, ['replaceNodes' => false]), $tree);
-        $traverser->traverse($parser->parse($source) ?? []);
+        $traverser->traverse(parsedOnce($parser, $file, $source));
 
         return $tree;
     }
@@ -167,7 +168,7 @@ foreach ($listed as $file) {
     $source = (string) file_get_contents("{$root}/{$file}");
 
     try {
-        $trees[$file] = [$source, FileTree::of($parser, $source)];
+        $trees[$file] = [$source, FileTree::of($parser, $file, $source)];
     } catch (Throwable) {
         $unparsed[] = $file;
     }
@@ -185,7 +186,7 @@ foreach ($trees as $file => [$source, $tree]) {
     }
 
     try {
-        $after = FileTree::of($parser, $result);
+        $after = FileTree::of($parser, "{$file} (rewritten)", $result);
     } catch (Throwable $error) {
         $failures[] = "{$file} would not parse after the rewrite: {$error->getMessage()}";
 

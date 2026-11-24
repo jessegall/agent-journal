@@ -10,8 +10,8 @@ declare(strict_types=1);
  *   php tools/refactoring/name-faults.php            every name of the project
  *   php tools/refactoring/name-faults.php <paths>    only the names under the paths
  *   php tools/refactoring/name-faults.php rename report notify --type=class --namespace=App\\Pipes [--path=app] [--apply]
- *       lists every PHP name holding the word with its new name, and with --apply renames each from the syntax tree
- *       (name-renames.php). Frontend, Go and shell names are renamed by hand.
+ *       lists every name holding the word with its new name, and with --apply renames each from the syntax tree of
+ *       its language, PHP, Go, TypeScript and Vue, each loaded once (name-renames.php). Shell names are renamed by hand.
  */
 
 require_once __DIR__.'/project-names.php';

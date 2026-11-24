@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 /**
- * Renames every PHP and Go name that holds one word to hold another, narrowed to a kind of name, a namespace or a
- * folder, through the syntax tree renamers: move.php for PHP types (each reference and its file), rename-member.php
- * for PHP members, parameters and variables, and gopls for Go. Without --apply it only prints the renames, so they can
- * be read first.
+ * Renames every name that holds one word to hold another, narrowed to a kind of name, a namespace or a folder, through
+ * the syntax tree renamers, each loading its language once for the whole list: move.php for PHP types (each reference
+ * and its file), rename-member.php for PHP members, parameters and variables, rename-go.php (gopls) for Go, and
+ * rename-frontend.cjs (the TypeScript service with Vue's plugin) for .ts and .vue. Shell names are renamed by hand.
+ * Without --apply it only prints the renames, so they can be read first.
  */
 
 require_once __DIR__.'/project-names.php';
@@ -22,11 +23,19 @@ function renameNames(array $arguments): int
     $goFiles = array_values(array_filter($files, fn (string $file) => str_ends_with($file, '.go')));
     $chosen = array_filter(declaredNames($phpFiles), fn (DeclaredName $declared) => isChosen($declared, $options));
     $goChosen = array_values(array_filter(goNames($goFiles), fn (DeclaredName $declared) => isChosen($declared, $options)));
+    $frontendChosen = array_values(array_filter(
+        frontendNames($options['paths']),
+        fn (DeclaredName $declared) => in_array(preg_replace('/:\d+$/', '', $declared->place), $files, true) && isChosen($declared, $options),
+    ));
     $typeLines = [];
     $memberLines = [];
 
     foreach ($goChosen as $declared) {
         echo "go {$declared->place} {$declared->name} ".replacedWord($declared->name, $options)."\n";
+    }
+
+    foreach ($frontendChosen as $declared) {
+        echo 'frontend '.frontendRenameLine($declared, $options)."\n";
     }
 
     foreach ($chosen as $declared) {
@@ -45,39 +54,37 @@ function renameNames(array $arguments): int
     return max(
         applyRenames(array_values(array_unique($typeLines)), array_values(array_unique($memberLines))),
         applyGoRenames($goChosen, $options),
+        applyFrontendRenames($frontendChosen, $options),
     );
 }
 
 /**
- * Renames each Go name with gopls at its declaration, which follows every reference in the module.
+ * Hands every Go rename to rename-go.php at once, which asks gopls for them all on one load of the module.
  *
  * @param  list<DeclaredName>  $names
  * @param  array{word: string, replacement: string, verb: bool}  $options
  */
 function applyGoRenames(array $names, array $options): int
 {
-    $status = 0;
-    $gopls = trim((string) shell_exec('command -v gopls')) ?: getenv('HOME').'/go/bin/gopls';
-    // An interface's method goes first: gopls renames each implementation with it, never the other way round.
-    usort($names, fn (DeclaredName $first, DeclaredName $second) => ($second->owner === 'interface') <=> ($first->owner === 'interface'));
+    if ($names === []) {
+        return 0;
+    }
+
+    $module = 'tools/journal-agent/';
+    $lines = [];
 
     foreach ($names as $declared) {
         [$file, $line] = explode(':', $declared->place);
         $column = strpos((string) (file($file, FILE_IGNORE_NEW_LINES)[(int) $line - 1] ?? ''), $declared->name);
-
-        // A rename before it already renamed this one, as an interface's method renames each implementation.
-        if ($column === false) {
-            continue;
-        }
-
-        $module = 'tools/journal-agent';
-        $position = substr($file, strlen($module) + 1).":{$line}:".((int) $column + 1);
-        $renamed = replacedWord($declared->name, $options);
-        passthru('cd '.escapeshellarg($module).' && '.escapeshellarg($gopls).' rename -w '.escapeshellarg($position).' '.escapeshellarg($renamed), $code);
-        $status = max($status, $code);
+        $lines[] = substr($file, strlen($module)).":{$line}:".((int) $column + 1).' '.replacedWord($declared->name, $options);
     }
 
-    return $status;
+    $list = (string) tempnam(sys_get_temp_dir(), 'go-renames');
+    file_put_contents($list, implode("\n", $lines)."\n");
+    passthru(escapeshellarg(PHP_BINARY).' '.escapeshellarg(__DIR__.'/rename-go.php').' --list='.escapeshellarg($list), $code);
+    unlink($list);
+
+    return $code;
 }
 
 /**
@@ -193,4 +200,36 @@ function applyRenames(array $typeLines, array $memberLines): int
     }
 
     return $status;
+}
+
+/**
+ * The frontend renamer's line for one name: "<file>:<line> old new", the name without the component it is in.
+ *
+ * @param  array{word: string, replacement: string, verb: bool}  $options
+ */
+function frontendRenameLine(DeclaredName $declared, array $options): string
+{
+    $own = (string) preg_replace('/^.*::/', '', $declared->name);
+
+    return "{$declared->place} {$own} ".replacedWord($own, $options);
+}
+
+/**
+ * Hands every frontend rename to rename-frontend.cjs at once, which renames them on one load of the language service.
+ *
+ * @param  list<DeclaredName>  $names
+ * @param  array{word: string, replacement: string, verb: bool}  $options
+ */
+function applyFrontendRenames(array $names, array $options): int
+{
+    if ($names === []) {
+        return 0;
+    }
+
+    $list = (string) tempnam(sys_get_temp_dir(), 'frontend-renames');
+    file_put_contents($list, implode("\n", array_map(fn (DeclaredName $declared) => frontendRenameLine($declared, $options), $names))."\n");
+    passthru('node '.escapeshellarg(__DIR__.'/rename-frontend.cjs').' --list='.escapeshellarg($list), $code);
+    unlink($list);
+
+    return $code;
 }

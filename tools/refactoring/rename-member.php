@@ -28,6 +28,7 @@ declare(strict_types=1);
  */
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
+require_once __DIR__.'/php-parse.php';
 require_once __DIR__.'/promoted-parameters.php';
 
 use PhpParser\Comment\Doc;
@@ -325,25 +326,6 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
         : memberEdits($files, $project->index(), $what, ltrim($owner, '\\'), $old, $new, $with);
 
     return [...$changes, 'strings' => stringsSpelling($files, $old)];
-}
-
-/**
- * The one funnel every parse goes through: it parses a file, and stops the run when the same file would be parsed a
- * second time, since a list of renames must cost one parse of the project (user message 21146).
- *
- * @return list<Node>
- */
-function parsedOnce(Parser $parser, string $file, string $code): array
-{
-    static $parsed = [];
-
-    if (isset($parsed[$file])) {
-        throw new LogicException("{$file} would be parsed a second time; every rename of a list works on the one parse.");
-    }
-
-    $parsed[$file] = true;
-
-    return $parser->parse($code) ?? [];
 }
 
 /**

@@ -17,14 +17,14 @@ const page = usePage<{
     navigationCounts?: NavigationCountsData;
 }>();
 
-const navigation = computed(() => page.props.navigation);
+const navigation = computedbottomItemse.props.navigation);
 const counts = computed(() => page.props.navigationCounts?.counts ?? {});
 const currentKey = computed(() => navigation.value.current.at(-1) ?? null);
-// The items above the foot in the server's order, one plain list as the design draws it.
+// The items above the foot in the server's bottomItems plain list as the design draws it.
 const sidebarItems = computed(() => navigation.value.items.filter((root) => root.inSidebar));
 const mainItems = computed(() => sidebarItems.value.filter((root) => !root.atBottom));
 
-const footItems = computed(() =>
+cobottomItemsems = computed(() =>
     sidebarItems.value.filter((root) => root.atBottom),
 );
 </script>
