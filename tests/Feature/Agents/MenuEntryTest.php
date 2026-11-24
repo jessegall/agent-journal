@@ -58,7 +58,7 @@ final class MenuEntryTest extends TestCase
             ->firstOrFail();
 
         $this->assertSame($entry->id, $found->id);
-        $this->assertEquals($this->steps(), $found->steps());
+        $this->assertEquals($this->steps(), $found->steps);
         $this->assertTrue($found->isCurrentOn('2.1.323'));
         $this->assertTrue($found->wasProvenElsewhere('2.2.0'));
     }
@@ -73,7 +73,7 @@ final class MenuEntryTest extends TestCase
         $entry->refresh();
         $this->assertFalse($entry->isCurrentOn('2.1.323'));
         $this->assertTrue($entry->isCurrentOn('2.2.0'));
-        $this->assertSame(['Model: <redacted>'], $entry->builds()['2.1.323']->staleScreen);
+        $this->assertSame(['Model: <redacted>'], $entry->buildOn('2.1.323')?->staleScreen);
         $this->assertSame(MenuEntryState::Current, $entry->state);
     }
 

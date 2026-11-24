@@ -18,6 +18,7 @@ use App\Models\Drivers\NavigationRequest;
 use App\Support\DriverRequestEndings;
 use App\Support\EnrolledHost;
 use App\Support\NavigationRounds;
+use App\Values\MenuStep;
 use App\Values\NavigationRound;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
@@ -168,7 +169,10 @@ final class NavigationRoundTest extends TestCase
 
         $entry = MenuEntry::query()->acrossActors()->sole();
         $this->assertSame($entry->id, $navigation->fresh()?->library_entry_id);
-        $this->assertSame([[...$this->step(), 'key' => null, 'proof' => null]], $entry->steps);
+        $this->assertSame(
+            [[...$this->step(), 'key' => null, 'proof' => null]],
+            array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps),
+        );
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
         $this->assertSame(sprintf(self::SAVED_EVIDENCE, $entry->id), $stalled->script_evidence);
 

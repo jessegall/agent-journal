@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\Settings\StoredValue;
 use App\Enums\NavigationKey;
 use App\Exceptions\MenuStepRefused;
+use App\Support\Stored\StoredMenuStep;
 
 /**
  * One step of a menu library entry: the fingerprint of the screen it expects, and what it does there, a label to
  * choose when the main agent confirmed a menu entry or else a named key, with the text that proves it when it has
  * one. Arrow presses and screen text are never stored.
  */
-final readonly class MenuStep
+final readonly class MenuStep implements StoredValue
 {
     private const string FINGERPRINT = '/^fp1:[0-9a-f]{64}$/';
 
@@ -77,20 +79,23 @@ final readonly class MenuStep
         return $stepText;
     }
 
-    /**
-     * The step as the entry's steps column keeps it.
-     *
-     * @param  array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}  $stored
-     */
-    public static function fromStored(array $stored): self
+    public static function fromJson(string $json): self
     {
-        return new self($stored['fingerprint'], $stored['choose'], $stored['key'], $stored['proof']);
+        return StoredMenuStep::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->step();
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            fn (StoredMenuStep $stored) => $stored->step(),
+            StoredMenuStep::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 
     /**
      * @return array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}
      */
-    public function toStored(): array
+    public function toArray(): array
     {
         return [
             'fingerprint' => $this->fingerprint,

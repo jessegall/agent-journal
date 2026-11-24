@@ -44,10 +44,10 @@ final readonly class AgentNavigationRecords implements NavigationReader
             'driver' => $entry->family,
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
-            'builds' => array_values(array_map(
+            'builds' => array_map(
                 fn (MenuEntryBuild $build) => ['build' => $build->build, 'stale' => $build->stale],
-                $entry->builds(),
-            )),
+                $entry->builds,
+            ),
             'uses' => $entry->uses,
             'last_used_at' => $entry->last_used_at?->toIso8601String(),
             'state' => $entry->state->value,
@@ -70,18 +70,18 @@ final readonly class AgentNavigationRecords implements NavigationReader
             'driver' => $entry->family,
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
-            'steps' => array_map(fn (MenuStep $step) => $step->toStored(), $entry->steps()),
+            'steps' => array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps),
             'completes' => $entry->completes->value,
             'next_step' => $entry->next_step,
             'proof' => $entry->proof,
             'state' => $entry->state->value,
             'superseded_by' => $entry->superseded_by_id,
-            'builds' => array_values(array_map(fn (MenuEntryBuild $build) => [
+            'builds' => array_map(fn (MenuEntryBuild $build) => [
                 'build' => $build->build,
                 'stale' => $build->stale,
                 'stale_reason' => $build->staleReason,
                 'stale_screen' => $build->staleScreen,
-            ], $entry->builds())),
+            ], $entry->builds),
         ];
     }
 
@@ -121,7 +121,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
             'rounds' => $rounds->map(fn (DriverRequest $round) => [
                 'id' => $round->id,
                 'progress' => $round->progress->value,
-                'round' => $round->navigationRound()?->toStored(),
+                'round' => $round->navigation_round?->toArray(),
             ])->all(),
             'round_count' => $roundCount,
             'next_round' => $nextRound <= $roundCount ? $nextRound : null,
@@ -146,7 +146,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
 
         $entry = MenuEntry::query()->acrossActors()->findOrFail($navigation->stale_entry_id);
 
-        return ['id' => $entry->id, 'steps' => array_map(fn (MenuStep $step) => $step->toStored(), $entry->steps())];
+        return ['id' => $entry->id, 'steps' => array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps)];
     }
 
     /**

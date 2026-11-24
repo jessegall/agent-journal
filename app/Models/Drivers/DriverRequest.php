@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use App\Casts\OptionalStoredValueCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Drivers\MessagePart;
@@ -73,9 +74,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $script_generation
  * @property string|null $script_evidence
  * @property string|null $navigation_request_id
- * @property array{request: string, row_version: int, generation: int, keys: list<string>, choose: string|null,
- *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null,
- *     type_parameter: string|null}|null $navigation_round
+ * @property NavigationRound|null $navigation_round
  * @property HoldReason $hold_reason
  * @property int $row_version
  */
@@ -112,7 +111,7 @@ final class DriverRequest extends Model implements ReadableModel
         return [
             'parts' => 'array',
             'script_parameters' => 'array',
-            'navigation_round' => 'array',
+            'navigation_round' => OptionalStoredValueCast::class.':'.NavigationRound::class,
             'operation' => DriverOperation::class,
             'progress' => RequestProgress::class,
             'outcome' => RequestOutcome::class,
@@ -460,7 +459,7 @@ final class DriverRequest extends Model implements ReadableModel
             ScriptParameter::listOf($this->script_parameters),
             $this->script_step,
             $this->navigation_request_id,
-            $this->navigationRound(),
+            $this->navigation_round,
             $runtime->agent_session_id,
             $processStartId,
             $runtime->process_generation,
@@ -495,19 +494,7 @@ final class DriverRequest extends Model implements ReadableModel
         $this->script_version = $envelope->scriptVersion;
         $this->script_parameters = $envelope->scriptParameters;
         $this->navigation_request_id = $envelope->navigationRound?->navigationRequestId;
-        $this->navigation_round = $envelope->navigationRound?->toStored();
-    }
-
-    /**
-     * The main agent's round this request carries; none for any other operation.
-     */
-    public function navigationRound(): NavigationRound|null
-    {
-        if ($this->navigation_round === null) {
-            return null;
-        }
-
-        return NavigationRound::fromStored($this->navigation_round);
+        $this->navigation_round = $envelope->navigationRound;
     }
 
     /**

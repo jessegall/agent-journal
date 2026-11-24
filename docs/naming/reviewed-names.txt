@@ -2014,6 +2014,7 @@ class	AskSubject
 class	AskSupervisorCommand
 class	AskSupervisorHandler
 class	AskTypeKey
+class	AskTypeKeyCast
 class	AskTypeRegistry
 class	AssertBindingStartCommand
 class	AssertBindingStartHandler
@@ -4374,6 +4375,7 @@ class	OperationsResolver
 class	OptionChanges
 class	OptionGrammar
 class	OptionStatementToParse
+class	OptionalStoredValueCast
 class	OrderedAssigneeLocks
 class	OrderedRecordIds
 class	OutageReply
@@ -5931,6 +5933,7 @@ class	ScriptProgress
 class	ScriptProgressData
 class	ScriptRange
 class	ScriptSource
+class	ScriptSourceCast
 class	ScriptStopPreparation
 class	ScriptSyntaxError
 class	ScriptsPages
@@ -6745,17 +6748,21 @@ class	StoredFrames
 class	StoredGatewaySettings
 class	StoredHostAccess
 class	StoredJson
+class	StoredMenuStep
+class	StoredNavigationRound
 class	StoredNavigationScreen
 class	StoredOperationGrant
 class	StoredOutput
 class	StoredOutputContract
 class	StoredOutputProblem
+class	StoredOutputRecord
 class	StoredPolicyGrant
 class	StoredPoolData
 class	StoredProcessGrants
 class	StoredProgressPolicy
 class	StoredProvenBranch
 class	StoredReaderApproval
+class	StoredReaderCheckpoint
 class	StoredResource
 class	StoredRuleExample
 class	StoredRuleReference
@@ -8185,6 +8192,7 @@ constant	ScriptGraph::EXECUTION_BUDGET
 constant	ScriptParser::NESTING_LIMIT
 constant	ScriptParser::TEXT_LIMIT
 constant	ScriptSource::BYTE_LIMIT
+constant	ScriptSourceCast::COMMANDS_COLUMN
 constant	ScriptStopPreparation::ENTRY_READ
 constant	ScriptStopPreparation::TRIGGER
 constant	ScriptStopPreparation::UNCHANGED_RETURNS_TO_HOLD
@@ -10577,7 +10585,6 @@ method	Ask::replay()
 method	Ask::requirePending()
 method	Ask::submission()
 method	Ask::submit()
-method	Ask::typeKey()
 method	Ask::visibleToParticipant()
 method	Ask::workReference()
 method	AskAdmission::requireCurrent()
@@ -10714,6 +10721,8 @@ method	AskType::subject()
 method	AskTypeKey::__construct()
 method	AskTypeKey::from()
 method	AskTypeKey::routeOf()
+method	AskTypeKeyCast::get()
+method	AskTypeKeyCast::set()
 method	AskTypeRegistry::__construct()
 method	AskTypeRegistry::all()
 method	AskTypeRegistry::get()
@@ -14611,7 +14620,6 @@ method	DriverRequest::markPossibleDuplicateOf()
 method	DriverRequest::markUnavailable()
 method	DriverRequest::markUncertain()
 method	DriverRequest::moveTo()
-method	DriverRequest::navigationRound()
 method	DriverRequest::partList()
 method	DriverRequest::receipt()
 method	DriverRequest::recordRefusal()
@@ -17444,7 +17452,7 @@ method	MemoryWriteTool::present()
 method	Menu::__construct()
 method	Menu::general()
 method	Menu::record()
-method	MenuEntry::builds()
+method	MenuEntry::buildOn()
 method	MenuEntry::casts()
 method	MenuEntry::create()
 method	MenuEntry::current()
@@ -17460,13 +17468,14 @@ method	MenuEntry::recentFirst()
 method	MenuEntry::recordReplay()
 method	MenuEntry::replayFor()
 method	MenuEntry::retire()
-method	MenuEntry::steps()
-method	MenuEntry::storeBuilds()
+method	MenuEntry::storeBuild()
 method	MenuEntry::storedSteps()
 method	MenuEntry::supersededBy()
 method	MenuEntry::used()
 method	MenuEntry::wasProvenElsewhere()
 method	MenuEntryBuild::__construct()
+method	MenuEntryBuild::fromJson()
+method	MenuEntryBuild::listFromJson()
 method	MenuEntryBuild::markedStale()
 method	MenuEntryBuild::proven()
 method	MenuEntryRefused::changedSinceRead()
@@ -17493,9 +17502,10 @@ method	MenuShowTool::read()
 method	MenuShowTool::schema()
 method	MenuStep::__construct()
 method	MenuStep::fromHost()
-method	MenuStep::fromStored()
+method	MenuStep::fromJson()
+method	MenuStep::listFromJson()
 method	MenuStep::text()
-method	MenuStep::toStored()
+method	MenuStep::toArray()
 method	MenuStepRefused::fingerprintMalformed()
 method	MenuStepRefused::keyNotAllowed()
 method	MenuStepRefused::notOneAction()
@@ -18155,10 +18165,12 @@ method	NavigationRound::__construct()
 method	NavigationRound::answering()
 method	NavigationRound::choose()
 method	NavigationRound::confirm()
-method	NavigationRound::fromStored()
+method	NavigationRound::fromJson()
 method	NavigationRound::keys()
+method	NavigationRound::listFromJson()
 method	NavigationRound::proof()
-method	NavigationRound::toStored()
+method	NavigationRound::restored()
+method	NavigationRound::toArray()
 method	NavigationRoundReport::__construct()
 method	NavigationRoundReport::screen()
 method	NavigationRoundReportData::__construct()
@@ -18522,6 +18534,9 @@ method	OptionGrammar::valued()
 method	OptionSetting::accepts()
 method	OptionStatementToParse::__construct()
 method	OptionalOrMissing::optionalOrMissing()
+method	OptionalStoredValueCast::__construct()
+method	OptionalStoredValueCast::get()
+method	OptionalStoredValueCast::set()
 method	OrderedAssigneeLocks::__construct()
 method	OrderedAssigneeLocks::lockExclusive()
 method	OrderedAssigneeLocks::lockShared()
@@ -19901,7 +19916,6 @@ method	ProfileRevision::currentSupervisorProfiles()
 method	ProfileRevision::numbered()
 method	ProfileRevision::ofProfile()
 method	ProfileRevision::script()
-method	ProfileRevision::scriptSource()
 method	ProfileRevision::snapshot()
 method	ProfileRevisionImmutable::for()
 method	ProfileRevisionReference::__construct()
@@ -20766,7 +20780,8 @@ method	ReaderAssessment::__construct()
 method	ReaderAssessment::has()
 method	ReaderAssessment::isClean()
 method	ReaderCheckpoint::__construct()
-method	ReaderCheckpoint::fromArray()
+method	ReaderCheckpoint::fromJson()
+method	ReaderCheckpoint::listFromJson()
 method	ReaderCheckpoint::offsetOf()
 method	ReaderCheckpoint::pendingOf()
 method	ReaderCheckpoint::recordsOf()
@@ -20787,7 +20802,6 @@ method	ReaderDefinitionInvalid::status()
 method	ReaderDefinitionInvalid::summaryMissing()
 method	ReaderPosition::advance()
 method	ReaderPosition::casts()
-method	ReaderPosition::checkpoint()
 method	ReaderPosition::hasFailed()
 method	ReaderPosition::madeFor()
 method	ReaderPosition::markFailed()
@@ -23176,6 +23190,8 @@ method	ScriptSource::empty()
 method	ScriptSource::fromDefinitions()
 method	ScriptSource::hash()
 method	ScriptSource::isEmpty()
+method	ScriptSourceCast::get()
+method	ScriptSourceCast::set()
 method	ScriptStatement::compile()
 method	ScriptStatement::execute()
 method	ScriptStatement::flow()
@@ -25539,7 +25555,6 @@ method	StartRecord::ownerWork()
 method	StartRecord::prepareIdentity()
 method	StartRecord::refuse()
 method	StartRecord::refuseFor()
-method	StartRecord::replyInboxId()
 method	StartRecord::requestedBy()
 method	StartRecord::requiresConversation()
 method	StartRecord::resumesConversation()
@@ -26055,6 +26070,9 @@ method	StoredHostAccess::__construct()
 method	StoredHostAccess::fromHostAccess()
 method	StoredHostAccess::toHostAccess()
 method	StoredJson::read()
+method	StoredMenuStep::__construct()
+method	StoredMenuStep::step()
+method	StoredNavigationRound::__construct()
 method	StoredNavigationScreen::__construct()
 method	StoredNavigationScreen::screen()
 method	StoredOperationGrant::__construct()
@@ -26071,6 +26089,8 @@ method	StoredOutputContract::fromOutputContract()
 method	StoredOutputContract::toOutputContract()
 method	StoredOutputProblem::__construct()
 method	StoredOutputProblem::problem()
+method	StoredOutputRecord::__construct()
+method	StoredOutputRecord::record()
 method	StoredPolicyGrant::__construct()
 method	StoredPolicyGrant::fromArray()
 method	StoredPoolData::__construct()
@@ -26085,6 +26105,8 @@ method	StoredProvenBranch::__construct()
 method	StoredProvenBranch::branch()
 method	StoredReaderApproval::__construct()
 method	StoredReaderApproval::approval()
+method	StoredReaderCheckpoint::__construct()
+method	StoredReaderCheckpoint::checkpoint()
 method	StoredResource::__construct()
 method	StoredResource::fromResourceRequest()
 method	StoredResource::toResourceRequest()
@@ -26750,7 +26772,6 @@ method	TaskRun::finish()
 method	TaskRun::isFinished()
 method	TaskRun::ofPairs()
 method	TaskRun::ofTask()
-method	TaskRun::replyInboxId()
 method	TaskRun::starter()
 method	TaskRunAssignments::finishedRecords()
 method	TaskRunAssignments::requireAssignable()
@@ -31177,15 +31198,18 @@ parameter	$validation
 parameter	$validator
 parameter	$validators
 parameter	$value
+parameter	$value	app/Casts/AskTypeKeyCast.php
 parameter	$value	app/Casts/CallKeyCast.php
 parameter	$value	app/Casts/CommentViewsCast.php
 parameter	$value	app/Casts/GatewaySettingsCast.php
 parameter	$value	app/Casts/NavigationScreenCast.php
+parameter	$value	app/Casts/OptionalStoredValueCast.php
 parameter	$value	app/Casts/PoolReferenceCast.php
 parameter	$value	app/Casts/ProfileAuthorizationCast.php
 parameter	$value	app/Casts/ProfileBaseCast.php
 parameter	$value	app/Casts/ProfileStartPolicyCast.php
 parameter	$value	app/Casts/RuleScopeCast.php
+parameter	$value	app/Casts/ScriptSourceCast.php
 parameter	$value	app/Casts/SelectedTargetsCast.php
 parameter	$value	app/Casts/SettingsDocumentCast.php
 parameter	$value	app/Casts/SkillSectionsCast.php
@@ -36630,6 +36654,7 @@ property	OptionGrammar::$names
 property	OptionGrammar::$operandTypes
 property	OptionStatementToParse::$reason
 property	OptionStatementToParse::$toParse
+property	OptionalStoredValueCast::$present
 property	OrderedAssigneeLocks::$providers
 property	OrderedRecordIds::$ids
 property	OuterTransactionOwner::$registered
@@ -41444,6 +41469,20 @@ property	StoredGatewaySettings::$secretReferences
 property	StoredHostAccess::$access
 property	StoredHostAccess::$scope
 property	StoredHostAccess::$type
+property	StoredMenuStep::$choose
+property	StoredMenuStep::$fingerprint
+property	StoredMenuStep::$key
+property	StoredMenuStep::$proof
+property	StoredNavigationRound::$choose
+property	StoredNavigationRound::$completes
+property	StoredNavigationRound::$confirm
+property	StoredNavigationRound::$generation
+property	StoredNavigationRound::$keys
+property	StoredNavigationRound::$nextStep
+property	StoredNavigationRound::$proof
+property	StoredNavigationRound::$request
+property	StoredNavigationRound::$rowVersion
+property	StoredNavigationRound::$typeParameter
 property	StoredNavigationScreen::$generation
 property	StoredNavigationScreen::$highlight
 property	StoredNavigationScreen::$rows
@@ -41463,6 +41502,11 @@ property	StoredOutputProblem::$explanation
 property	StoredOutputProblem::$reader
 property	StoredOutputProblem::$start
 property	StoredOutputProblem::$stream
+property	StoredOutputRecord::$captures
+property	StoredOutputRecord::$end
+property	StoredOutputRecord::$role
+property	StoredOutputRecord::$start
+property	StoredOutputRecord::$stream
 property	StoredPolicyGrant::$grant
 property	StoredPoolData::$recordIds
 property	StoredPoolData::$target
@@ -41482,6 +41526,10 @@ property	StoredProvenBranch::$processRunId
 property	StoredProvenBranch::$status
 property	StoredReaderApproval::$proofId
 property	StoredReaderApproval::$readerRevisionId
+property	StoredReaderCheckpoint::$offsets
+property	StoredReaderCheckpoint::$pending
+property	StoredReaderCheckpoint::$problems
+property	StoredReaderCheckpoint::$records
 property	StoredResource::$target
 property	StoredResource::$type
 property	StoredRuleExample::$classes
@@ -43568,6 +43616,7 @@ variable	$isKnown
 variable	$isLater
 variable	$isLive
 variable	$isMeasured
+variable	$isMerge
 variable	$isMethodCall
 variable	$isMigratedFact
 variable	$isModel

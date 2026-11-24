@@ -91,7 +91,7 @@ final class AnswerNavigationTest extends TestCase
         $this->assertSame(1, $this->roundCount($navigation));
         $sent = DriverRequest::query()->findOrFail($first->requestId);
         $this->assertSame(DriverOperation::Navigate, $sent->operation);
-        $this->assertSame(['down', 'down'], $sent->navigationRound()?->toStored()['keys']);
+        $this->assertSame(['down', 'down'], $sent->navigation_round?->toArray()['keys']);
         $this->assertSame(NavigationState::Answering, $navigation->fresh()?->state);
     }
 
@@ -150,7 +150,7 @@ final class AnswerNavigationTest extends TestCase
             $navigation->completes,
             $navigation->next_step,
         ]);
-        $round = DriverRequest::query()->findOrFail($receipt->requestId)->navigationRound();
+        $round = DriverRequest::query()->findOrFail($receipt->requestId)->navigation_round;
         $this->assertSame(['Set model', 3], [$round?->proof, $round?->nextStep]);
     }
 

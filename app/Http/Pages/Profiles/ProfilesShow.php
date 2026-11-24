@@ -48,7 +48,7 @@ final readonly class ProfilesShow extends ProfilesPage
 
         $snapshot = $this->profiles->snapshotFor($key);
         $models = $snapshot->start->allowedModels;
-        $script = ProfileRevision::currentOf($profile)->scriptSource();
+        $script = ProfileRevision::currentOf($profile)->script_source;
 
         $rows = [
             SettingsRow::value('type', 'Type', $snapshot->base->label, 'The kind of agent it is.'),

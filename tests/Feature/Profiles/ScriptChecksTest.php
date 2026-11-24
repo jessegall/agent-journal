@@ -115,7 +115,7 @@ SCRIPT, ['tests' => [
         $commands->run(new ActivateProfilesCommand($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
 
         $revision = ProfileRevision::currentOf(Profile::byKey($profile));
-        $this->assertEquals($source, $revision->scriptSource());
+        $this->assertEquals($source, $revision->script_source);
         $this->assertSame('line-2', $revision->getAttribute('compiled_script')['handlers']['STOP']['entry']);
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/D', $revision->getAttribute('script_definition_digest'));
     }

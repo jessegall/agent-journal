@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Storage;
+namespace App\Casts;
 
 use App\Values\AskTypeKey;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;

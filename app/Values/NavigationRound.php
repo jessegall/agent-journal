@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\Settings\StoredValue;
 use App\Enums\NavigationCompletion;
 use App\Enums\NavigationKey;
+use App\Support\Stored\StoredNavigationRound;
 
 /**
  * One round the main agent sends to a stalled runtime: the navigation request, row version and screen generation it
  * answers, and exactly one of named keys, a label to choose, the label it saw highlighted to confirm, or a proof with
  * what it completes.
  */
-final readonly class NavigationRound
+final readonly class NavigationRound implements StoredValue
 {
     /**
      * @param  list<NavigationKey>  $keys
@@ -86,27 +88,17 @@ final readonly class NavigationRound
         );
     }
 
-    /**
-     * The round as a driver request's navigation_round column keeps it.
-     *
-     * @param  array{request: string, row_version: int, generation: int, keys: list<string>, choose: string|null,
-     *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null,
-     *     type_parameter: string|null}  $stored
-     */
-    public static function fromStored(array $stored): self
+    public static function fromJson(string $json): self
     {
-        return new self(
-            $stored['request'],
-            $stored['row_version'],
-            $stored['generation'],
-            array_map(fn (string $key) => NavigationKey::from($key), $stored['keys']),
-            $stored['choose'],
-            $stored['confirm'],
-            $stored['proof'],
-            $stored['completes'] === null ? null : NavigationCompletion::from($stored['completes']),
-            $stored['next_step'],
-            $stored['type_parameter'],
-        );
+        return self::restored(StoredNavigationRound::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR)));
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            self::restored(...),
+            StoredNavigationRound::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 
     /**
@@ -114,7 +106,7 @@ final readonly class NavigationRound
      *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null,
      *     type_parameter: string|null}
      */
-    public function toStored(): array
+    public function toArray(): array
     {
         return [
             'request' => $this->navigationRequestId,
@@ -128,5 +120,21 @@ final readonly class NavigationRound
             'next_step' => $this->nextStep,
             'type_parameter' => $this->typeParameter,
         ];
+    }
+
+    private static function restored(StoredNavigationRound $stored): self
+    {
+        return new self(
+            $stored->request,
+            $stored->rowVersion,
+            $stored->generation,
+            array_map(fn (string $key) => NavigationKey::from($key), $stored->keys),
+            $stored->choose,
+            $stored->confirm,
+            $stored->proof,
+            $stored->completes,
+            $stored->nextStep,
+            $stored->typeParameter,
+        );
     }
 }

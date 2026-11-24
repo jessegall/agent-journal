@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -37,12 +38,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $goal_version
  * @property array<string, string> $goal_parameters
  * @property string $goal_key
- * @property list<array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}> $steps
+ * @property list<MenuStep> $steps
  * @property NavigationCompletion $completes
  * @property int|null $next_step
  * @property string $proof
  * @property MenuEntryState $state
- * @property list<array<string, mixed>> $builds
+ * @property list<MenuEntryBuild> $builds
  * @property int $uses
  * @property CarbonImmutable|null $last_used_at
  * @property string|null $last_replay_key
@@ -88,10 +89,10 @@ final class MenuEntry extends Model implements ReadableModel
     {
         return [
             'goal_parameters' => 'array',
-            'steps' => 'array',
+            'steps' => StoredValuesCast::class.':'.MenuStep::class,
             'completes' => NavigationCompletion::class,
             'state' => MenuEntryState::class,
-            'builds' => 'array',
+            'builds' => StoredValuesCast::class.':'.MenuEntryBuild::class,
             'last_used_at' => 'immutable_datetime',
         ];
     }
@@ -117,12 +118,12 @@ final class MenuEntry extends Model implements ReadableModel
         $entry->goal_version = $goal->version;
         $entry->goal_parameters = $goal->sortedParameters();
         $entry->goal_key = $goal->key();
-        $entry->steps = self::storedSteps($steps);
+        $entry->steps = $steps;
         $entry->completes = $completes;
         $entry->next_step = $source->next_step;
         $entry->proof = $proof;
         $entry->state = MenuEntryState::Current;
-        $entry->builds = [MenuEntryBuild::proven($source->build, CarbonImmutable::now())->toArray()];
+        $entry->builds = [MenuEntryBuild::proven($source->build, CarbonImmutable::now())];
         $entry->source_request_id = $source->id;
         $entry->belongTo($owner);
         $entry->save();
@@ -196,21 +197,11 @@ final class MenuEntry extends Model implements ReadableModel
     }
 
     /**
-     * @return list<MenuStep>
+     * The entry's proof on the build, none when it was never proven there.
      */
-    public function steps(): array
+    public function buildOn(string $build): MenuEntryBuild|null
     {
-        return array_map(fn (array $step) => MenuStep::fromStored($step), $this->steps);
-    }
-
-    /**
-     * The builds the entry was proven on, by build.
-     *
-     * @return array<string, MenuEntryBuild>
-     */
-    public function builds(): array
-    {
-        return array_column(MenuEntryBuild::collect($this->builds), null, 'build');
+        return array_find($this->builds, fn (MenuEntryBuild $proven) => $proven->build === $build);
     }
 
     /**
@@ -218,7 +209,7 @@ final class MenuEntry extends Model implements ReadableModel
      */
     public function isCurrentOn(string $build): bool
     {
-        $proven = $this->builds()[$build] ?? null;
+        $proven = $this->buildOn($build);
 
         return $this->state->isUsable() && $proven !== null && ! $proven->stale;
     }
@@ -228,7 +219,7 @@ final class MenuEntry extends Model implements ReadableModel
      */
     public function wasProvenElsewhere(string $build): bool
     {
-        return $this->state->isUsable() && ! array_key_exists($build, $this->builds());
+        return $this->state->isUsable() && $this->buildOn($build) === null;
     }
 
     /**
@@ -251,9 +242,7 @@ final class MenuEntry extends Model implements ReadableModel
      */
     public function provenOn(string $build): void
     {
-        $builds = $this->builds();
-        $builds[$build] = MenuEntryBuild::proven($build, CarbonImmutable::now());
-        $this->storeBuilds($builds);
+        $this->storeBuild(MenuEntryBuild::proven($build, CarbonImmutable::now()));
     }
 
     /**
@@ -263,12 +252,9 @@ final class MenuEntry extends Model implements ReadableModel
      */
     public function markStaleOn(string $build, string $reason, array $screen): void
     {
-        $builds = $this->builds();
+        $proven = $this->buildOn($build) ?? MenuEntryBuild::proven($build, CarbonImmutable::now());
 
-        $builds[$build] = ($builds[$build] ?? MenuEntryBuild::proven($build, CarbonImmutable::now()))
-            ->markedStale($reason, $screen);
-
-        $this->storeBuilds($builds);
+        $this->storeBuild($proven->markedStale($reason, $screen));
     }
 
     // ----------[ Accessors ]----------
@@ -294,7 +280,7 @@ final class MenuEntry extends Model implements ReadableModel
             $this->id,
             $this->family,
             EntryGoalAnswer::of($this->goal),
-            $this->steps(),
+            $this->steps,
             $this->completes->value,
             $this->next_step,
             $this->proof,
@@ -309,15 +295,17 @@ final class MenuEntry extends Model implements ReadableModel
      */
     private static function storedSteps(array $steps): array
     {
-        return array_map(fn (MenuStep $step) => $step->toStored(), $steps);
+        return array_map(fn (MenuStep $step) => $step->toArray(), $steps);
     }
 
     /**
-     * @param  array<string, MenuEntryBuild>  $builds
+     * Saves the build's proof in place of the entry's earlier proof on that build, or after the others.
      */
-    private function storeBuilds(array $builds): void
+    private function storeBuild(MenuEntryBuild $build): void
     {
-        $this->builds = array_values(array_map(fn (MenuEntryBuild $build) => $build->toArray(), $builds));
+        $builds = array_column($this->builds, null, 'build');
+        $builds[$build->build] = $build;
+        $this->builds = array_values($builds);
         $this->save();
     }
 

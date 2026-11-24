@@ -7,6 +7,7 @@ namespace App\Models\Profiles;
 use App\Casts\ProfileAuthorizationCast;
 use App\Casts\ProfileBaseCast;
 use App\Casts\ProfileStartPolicyCast;
+use App\Casts\ScriptSourceCast;
 use App\Casts\SupervisorRoutesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -57,7 +58,7 @@ use PhpOption\Some;
  * @property ProfileAuthorization $authorization
  * @property SupervisorRoutes $supervisor
  * @property InstancePolicy $instances
- * @property string $script_source
+ * @property ScriptSource $script_source
  * @property array<string, mixed> $script_commands
  * @property array<string, mixed>|null $compiled_script
  * @property string|null $script_definition_digest
@@ -112,6 +113,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'supervisor' => SupervisorRoutesCast::class,
             'instances' => InstancePolicy::class,
             'script_commands' => 'array',
+            'script_source' => ScriptSourceCast::class,
             'compiled_script' => 'array',
             'author_type' => ActorType::class,
             'created_at' => 'immutable_datetime',
@@ -143,8 +145,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'authorization' => $definition->authorization,
             'supervisor' => $definition->supervisor,
             'instances' => $definition->instances,
-            'script_source' => $source->text,
-            'script_commands' => $source->definitions(),
+            'script_source' => $source,
             'compiled_script' => $compiled?->graph,
             'script_definition_digest' => $compiled?->definitionDigest,
             'author_type' => $author->type,
@@ -194,7 +195,7 @@ final class ProfileRevision extends Model implements ReadableModel
             ->readExactly(count($keys))
             ->get()
             ->mapWithKeys(fn (self $revision) => [
-                (string) $revision->getAttribute('profile_key') => $revision->scriptSource(),
+                (string) $revision->getAttribute('profile_key') => $revision->script_source,
             ])->all();
     }
 
@@ -225,11 +226,6 @@ final class ProfileRevision extends Model implements ReadableModel
 
     // ----------[ Answers ]----------
 
-    public function scriptSource(): ScriptSource
-    {
-        return ScriptSource::fromDefinitions($this->script_source, $this->script_commands);
-    }
-
     public function snapshot(ProfileKey $key): ProfileSnapshot
     {
         return ProfileSnapshots::of($this, $key);
@@ -250,7 +246,7 @@ final class ProfileRevision extends Model implements ReadableModel
             }
 
             return new Some(new ProfileScript(
-                $this->scriptSource(),
+                $this->script_source,
                 new CompiledScript($this->compiled_script, $this->script_definition_digest),
             ));
         })->withoutObjectCaching();

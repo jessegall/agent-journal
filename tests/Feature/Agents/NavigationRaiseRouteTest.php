@@ -235,7 +235,7 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->addPaths($navigation);
 
         $saved = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(NavigationLibrary::class)->save($navigation, $entry->steps()),
+            fn () => $this->app->make(NavigationLibrary::class)->save($navigation, $entry->steps),
         );
 
         $this->assertSame($entry->id, $saved->id);
@@ -284,8 +284,8 @@ final class NavigationRaiseRouteTest extends TestCase
         $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
         $this->assertFalse($entry->isCurrentOn('2.1.323'));
         $this->assertTrue($entry->isCurrentOn('2.1.400'));
-        $this->assertSame(self::STALE_REASON, $entry->builds()['2.1.323']->staleReason);
-        $this->assertSame(['Model: <redacted>'], $entry->builds()['2.1.323']->staleScreen);
+        $this->assertSame(self::STALE_REASON, $entry->buildOn('2.1.323')?->staleReason);
+        $this->assertSame(['Model: <redacted>'], $entry->buildOn('2.1.323')?->staleScreen);
     }
 
     public function test_a_stale_entry_raise_keeps_its_hint_and_the_proven_path_supersedes_it(): void

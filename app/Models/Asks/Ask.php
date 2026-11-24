@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
+use App\Casts\AskTypeKeyCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -18,7 +19,6 @@ use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
-use App\Support\Storage\AskTypeKeyCast;
 use App\Values\AskReference;
 use App\Values\AskSubject;
 use App\Values\AskTypeKey;

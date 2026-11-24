@@ -97,7 +97,7 @@ final readonly class DriverRequestPayload
             $this->scriptId,
             $this->scriptVersion,
             $this->scriptParameters,
-            $this->navigationRound?->toStored(),
+            $this->navigationRound?->toArray(),
         ];
 
         return hash('sha256', $operation."\n".json_encode($content, JSON_THROW_ON_ERROR));

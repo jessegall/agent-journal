@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\Settings\StoredValue;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
@@ -12,9 +13,11 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 /**
  * One driver build a menu entry was proven on, and whether its replay went stale there: why, and the redacted
  * screen it failed on.
+ *
+ * @method static array<int, static> collect(mixed $items) read only from decoded JSON, so always an array
  */
 #[MapName(SnakeCaseMapper::class)]
-final class MenuEntryBuild extends Data
+final class MenuEntryBuild extends Data implements StoredValue
 {
     /**
      * @param  list<string>  $staleScreen
@@ -38,5 +41,15 @@ final class MenuEntryBuild extends Data
     public function markedStale(string $reason, array $screen): self
     {
         return new self($this->build, true, $reason, $screen, $this->provenAt);
+    }
+
+    public static function fromJson(string $json): static
+    {
+        return MenuEntryBuild::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR));
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(MenuEntryBuild::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)));
     }
 }

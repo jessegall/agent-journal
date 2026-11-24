@@ -42,7 +42,7 @@ final readonly class NavigationRoundReports
 
         $navigation->showScreen($report->screen());
 
-        if ($round->navigationRound()?->proof !== null) {
+        if ($round->navigation_round?->proof !== null) {
             $this->settleProof($navigation, $report);
         }
 
