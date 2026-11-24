@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
@@ -104,7 +104,7 @@ final class RuntimeLeaseTest extends TestCase
             'claude-code',
             '1.0.0',
             'default',
-            DriverVariant::Terminal,
+            DriverType::Terminal,
             null,
             null,
             null,

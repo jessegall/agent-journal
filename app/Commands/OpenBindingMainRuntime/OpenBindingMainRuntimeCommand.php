@@ -7,7 +7,7 @@ namespace App\Commands\OpenBindingMainRuntime;
 use App\Attributes\Entry;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Enums\CommandEntry;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Support\Command;
 use App\Support\OpenedRuntime;
 
@@ -32,9 +32,9 @@ final readonly class OpenBindingMainRuntimeCommand extends Command
     ) {}
 
     /**
-     * The same opening as an OpenAgentRuntimeCommand on the host, in the variant the main agent resolved.
+     * The same opening as an OpenAgentRuntimeCommand on the host, in the driver type the main agent resolved.
      */
-    public function asAgentRuntime(DriverVariant $variant): OpenAgentRuntimeCommand
+    public function asAgentRuntime(DriverType $driverType): OpenAgentRuntimeCommand
     {
         return new OpenAgentRuntimeCommand(
             $this->agentId,
@@ -43,7 +43,7 @@ final readonly class OpenBindingMainRuntimeCommand extends Command
             $this->driver,
             $this->driverBuild,
             $this->profile,
-            $variant,
+            $driverType,
             $this->model,
         );
     }

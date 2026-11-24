@@ -6,7 +6,7 @@ namespace App\Commands\StartProfileMain;
 
 use App\Attributes\Authorize;
 use App\Enums\AccessType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Policies\ProfileAdministrationPolicy;
 use App\Support\Command;
 use App\Support\StartReceipt;
@@ -17,8 +17,8 @@ use App\Values\ProfileKey;
 
 /**
  * A user starts a main agent from a main_agent profile, with an explicit model or the profile's default and,
- * when the profile does not pin one, a driver of their choosing; optionally a variant, kept for the agent when
- * saveVariant, and an account they chose in place of the default.
+ * when the profile does not pin one, a driver of their choosing; optionally a driver type, kept for the agent when
+ * saveDriverType, and an account they chose in place of the default.
  *
  * @extends Command<StartReceipt>
  */
@@ -31,8 +31,8 @@ final readonly class StartProfileMainCommand extends Command
         public ProfileKey $profile,
         public ModelSelection $requested,
         public string|null $driverKey,
-        public DriverVariant|null $variant = null,
-        public bool $saveVariant = false,
+        public DriverType|null $driverType = null,
+        public bool $saveDriverType = false,
         public ChosenAccount|null $chosenAccount = null,
         public string|null $conversationId = null,
         public int|null $previewRevision = null,
@@ -53,8 +53,8 @@ final readonly class StartProfileMainCommand extends Command
             $profile,
             ModelSelection::fromInput('default'),
             $target->driver,
-            $target->variant,
-            $target->saveVariant,
+            $target->driverType,
+            $target->saveDriverType,
             $target->account,
             $target->conversationId,
         );

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\InstancePolicy;
 use App\Support\Compatibility\DriverCompatibility;
 
@@ -25,13 +25,9 @@ final readonly class ProfileSelection
     ) {}
 
     /**
-     * The policy a start from this selection freezes: the revision's access, stop conditions and execution, with the
-     * profile key, revision and configuration they came from.
+     * The start this selection proposes in the driver type, on the driver's pinned build and the policy's placement.
      */
-    /**
-     * The start this selection proposes in the variant, on the driver's pinned build and the policy's placement.
-     */
-    public function proposal(DriverVariant $variant, string|null $model): StartProposal
+    public function proposal(DriverType $driverType, string|null $model): StartProposal
     {
         $driver = $this->selection->driver;
 
@@ -39,12 +35,16 @@ final readonly class ProfileSelection
             $this->defaults,
             $driver,
             DriverCompatibility::pinned($driver)->version,
-            $variant,
+            $driverType,
             $this->startPolicy()->execution->mode,
             $model,
         );
     }
 
+    /**
+     * The policy a start from this selection freezes: the revision's access, stop conditions and execution, with the
+     * profile key, revision and configuration they came from.
+     */
     public function startPolicy(): StartPolicy
     {
         $source = $this->selection->source;

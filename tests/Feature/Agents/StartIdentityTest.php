@@ -10,7 +10,7 @@ use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverOperation;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\HostRefusal;
 use App\Enums\HostWakeRefusal;
 use App\Enums\RequestProgress;
@@ -268,7 +268,7 @@ final class StartIdentityTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
         $record = StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
         $record->startedAs($session);

@@ -41,7 +41,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
         $this->assertCurrent($agent, $command);
         $session = AgentSession::query()->findOrFail($command->expectedSessionId);
         // A target its driver cannot run, such as the Codex terminal, is refused with its reason before a switch exists.
-        $pin = $this->drivers->pinned($command->target->driver, $command->target->variant);
+        $pin = $this->drivers->pinned($command->target->driver, $command->target->driverType);
 
         $switch = DriverSwitch::create(
             $command->requestId,
@@ -54,7 +54,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
 
         $target = $command->target;
         $selection = $this->profiles->select($command->profile, $command->requested, $target->driver, null);
-        $refusals = $this->preflight->refusals($selection->proposal($target->variant, $command->requested->model));
+        $refusals = $this->preflight->refusals($selection->proposal($target->driverType, $command->requested->model));
 
         if ($refusals === []) {
             $switch->markPreflighted();

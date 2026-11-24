@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 
 /**
- * A start as proposed before it is admitted: the profile's decisions, the driver, build, variant and model asked
+ * A start as proposed before it is admitted: the profile's decisions, the driver, build, driver type and model asked
  * for, and the placement its launch policy gives.
  */
 final readonly class StartProposal
@@ -17,7 +17,7 @@ final readonly class StartProposal
         public ProfileDefaults $profile,
         public string $driver,
         public string $build,
-        public DriverVariant $variant,
+        public DriverType $driverType,
         public ExecutionModeType $placement,
         public string|null $model,
     ) {}

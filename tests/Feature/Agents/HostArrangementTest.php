@@ -9,7 +9,7 @@ use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ArrangementType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Exceptions\ArrangementUnknown;
 use App\Exceptions\DriverNotContainable;
 use App\Exceptions\HostArrangementRefused;
@@ -170,7 +170,7 @@ final class HostArrangementTest extends TestCase
             $driver,
             $build,
             $profile,
-            DriverVariant::Headless,
+            DriverType::Headless,
             $model,
         ));
     }

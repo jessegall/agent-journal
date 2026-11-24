@@ -6,14 +6,14 @@ namespace Domain\Chat\Data;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverCapability;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Values\BoundTarget;
 use App\Values\DriverRegistration;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One registered driver a start or switch form offers: its key and label, the family and mode a start sends, and
+ * One registered driver a start or switch form offers: its key and label, the family and driver type a start sends, and
  * whether it can run now, with the reason when it cannot.
  */
 #[TypeScript]
@@ -23,7 +23,7 @@ final class DriverChoiceData extends Data
         public readonly string $key,
         public readonly string $label,
         public readonly string $family,
-        public readonly DriverVariant $mode,
+        public readonly DriverType $driverType,
         public readonly bool $isAvailable,
         public readonly string|null $unavailableReason,
     ) {}
@@ -51,7 +51,7 @@ final class DriverChoiceData extends Data
             (string) $registration->key,
             $registration->label,
             $registration->family,
-            $registration->mode,
+            $registration->driverType,
             $run->isAllowed(),
             $run->isAllowed() ? null : $run->reason,
         );

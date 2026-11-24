@@ -6,13 +6,14 @@ namespace Tests\Feature\Profiles;
 
 use App\Enums\CapacityResource;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
 use App\Models\Agents\Agent;
 use App\Models\Starts\StartRecord;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
 use App\Support\StartSessions;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
@@ -104,12 +105,12 @@ final class StartReceiptReadTest extends TestCase
             $this->agent->id,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
-            'helpers.job 1',
+            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
     }
 }

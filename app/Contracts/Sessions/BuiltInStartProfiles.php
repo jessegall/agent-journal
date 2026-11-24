@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Sessions;
 
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;
 
@@ -26,7 +26,7 @@ interface BuiltInStartProfiles
     public function policyFor(string $profileKey): StartPolicy;
 
     /**
-     * How a start of the profile runs when neither the launch nor the agent names a variant.
+     * How a start of the profile runs when neither the launch nor the agent names a driver type.
      */
-    public function defaultVariantOf(string $profileKey): DriverVariant;
+    public function defaultDriverTypeOf(string $profileKey): DriverType;
 }

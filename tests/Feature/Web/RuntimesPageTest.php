@@ -8,7 +8,7 @@ use App\Commands\EnrollHost\EnrollHostCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\HoldReason;
 use App\Enums\HostWakeRefusal;
 use App\Enums\RequestOutcome;
@@ -176,7 +176,7 @@ final class RuntimesPageTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'claude-opus-5-5',
             firstMessage: 'hello',
         ));

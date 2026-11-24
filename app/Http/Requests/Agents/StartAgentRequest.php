@@ -8,7 +8,7 @@ use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Models\Agents\Agent;
 use App\Support\StartPreviews;
@@ -34,7 +34,7 @@ final class StartAgentRequest extends FormRequest
             'requestId' => ['required', 'ulid'],
             'driver' => ['nullable', 'string', 'max:32'],
             'model' => ['nullable', 'string', 'max:100'],
-            'mode' => ['nullable', Rule::enum(DriverVariant::class)],
+            'driverType' => ['nullable', Rule::enum(DriverType::class)],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
         ];
@@ -55,11 +55,11 @@ final class StartAgentRequest extends FormRequest
             $drivers,
         );
 
-        [$variant] = $previews->modeFor(
+        [$driverType] = $previews->chosenDriverType(
             $agent,
             $selection->driver,
-            $this->enum('mode', DriverVariant::class),
-            $profiles->defaultVariantOf($agent->profile_key),
+            $this->enum('driverType', DriverType::class),
+            $profiles->defaultDriverTypeOf($agent->profile_key),
         );
 
         return new StartAgentCommand(new StartRequest(
@@ -72,7 +72,7 @@ final class StartAgentRequest extends FormRequest
             ConversationModeType::New,
             null,
             StartPolicy::mainOnHost(base_path()),
-            $variant,
+            $driverType,
         ));
     }
 }

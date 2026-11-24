@@ -31,3 +31,4 @@ yours	not a coding word: say whose (another actor's, not the caller's)
 former	not a coding word: say previous, or name what it is now
 theirs	not a coding word: name what it holds (the other value, the second class)
 ours	not a coding word: name what it holds
+variant	say what it is: driver type for headless or terminal

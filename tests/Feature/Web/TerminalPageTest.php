@@ -6,7 +6,7 @@ namespace Tests\Feature\Web;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Data\Terminals\ScreenFrameData;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\TerminalFrameState;
 use App\Enums\TerminalViewRefusal;
 use App\Exceptions\ActorNotAllowed;
@@ -95,7 +95,7 @@ final class TerminalPageTest extends TestCase
 
     public function test_each_refusal_answers_its_code(): void
     {
-        $process = $this->runtimeOn('host-1', DriverVariant::Headless);
+        $process = $this->runtimeOn('host-1', DriverType::Headless);
         $stopped = $this->runtimeOn('host-1');
         $this->app->make(DriverRequestEndings::class)->closeAfterExit($stopped);
 
@@ -212,7 +212,7 @@ final class TerminalPageTest extends TestCase
             'claude-code',
             '1.0.0',
             'default',
-            DriverVariant::Terminal,
+            DriverType::Terminal,
             null,
             null,
             null,

@@ -14,7 +14,7 @@ use App\Values\ProfileSelection;
 use App\Values\SelectedDriver;
 
 /**
- * Selects the driver, model and default variant of a start from the profile's current revision through Core's SelectedDriver,
+ * Selects the driver, model and default driver type of a start from the profile's current revision through Core's SelectedDriver,
  * which records the profile key and revision as the selection's source.
  */
 final readonly class ProfileDrivers implements ProfileSelections
@@ -37,7 +37,7 @@ final readonly class ProfileDrivers implements ProfileSelections
             $start->driverPinned,
             $snapshot->model,
             $start->allowedModels,
-            $snapshot->base->defaultVariant,
+            $snapshot->base->defaultDriverType,
         );
 
         return new ProfileSelection(

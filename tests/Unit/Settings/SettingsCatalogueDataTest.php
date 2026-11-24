@@ -29,7 +29,7 @@ use Tests\TestCase;
 
 /**
  * The catalogue's Data keep honest types on the wire: booleans stay booleans, decimals are text, whole-number choices
- * are numbers, each variant names its type, an absent value is left out, and no property is an untyped bag.
+ * are numbers, each driver type names its type, an absent value is left out, and no property is an untyped bag.
  */
 final class SettingsCatalogueDataTest extends TestCase
 {

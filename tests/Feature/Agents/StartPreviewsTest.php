@@ -6,8 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverSourceType;
-use App\Enums\DriverVariant;
-use App\Enums\ModeSourceType;
+use App\Enums\DriverType;
+use App\Enums\DriverTypeSource;
 use App\Exceptions\DriverConflict;
 use App\Models\Agents\Agent;
 use App\Support\Capabilities\CodexTerminalCapabilities;
@@ -66,26 +66,26 @@ final class StartPreviewsTest extends TestCase
         $profile = $this->profile(DefaultDrivers::CLAUDE_CODE);
 
         $fromProfile = $this->previewOf($agent, null, null, $profile, null);
-        $agent->preferVariant(DriverVariant::Terminal);
+        $agent->preferDriverType(DriverType::Terminal);
         $saved = $this->previewOf($agent, null, null, $profile, null);
-        $named = $this->previewOf($agent, null, DriverVariant::Headless, $profile, null);
+        $named = $this->previewOf($agent, null, DriverType::Headless, $profile, null);
 
         $this->assertSame(
-            [DriverVariant::Headless, ModeSourceType::Profile],
-            [$fromProfile->mode, $fromProfile->modeSource],
+            [DriverType::Headless, DriverTypeSource::Profile],
+            [$fromProfile->driverType, $fromProfile->driverTypeSource],
         );
-        $this->assertSame([DriverVariant::Terminal, ModeSourceType::Saved], [$saved->mode, $saved->modeSource]);
-        $this->assertSame([DriverVariant::Headless, ModeSourceType::Explicit], [$named->mode, $named->modeSource]);
+        $this->assertSame([DriverType::Terminal, DriverTypeSource::Saved], [$saved->driverType, $saved->driverTypeSource]);
+        $this->assertSame([DriverType::Headless, DriverTypeSource::Explicit], [$named->driverType, $named->driverTypeSource]);
     }
 
     public function test_a_saved_terminal_that_cannot_run_here_stays_terminal_and_says_why(): void
     {
         $agent = Agent::create('Helper', 'read-only-helper');
-        $agent->preferVariant(DriverVariant::Terminal);
+        $agent->preferDriverType(DriverType::Terminal);
 
         $preview = $this->previewOf($agent, DefaultDrivers::CODEX, null, $this->profile(null), null);
 
-        $this->assertSame(DriverVariant::Terminal, $preview->mode);
+        $this->assertSame(DriverType::Terminal, $preview->driverType);
         $this->assertFalse($preview->canRun());
         $this->assertSame(CodexTerminalCapabilities::NOT_PROVEN, $preview->unavailableReason);
     }
@@ -102,7 +102,7 @@ final class StartPreviewsTest extends TestCase
         $registry->register(new DriverRegistration(
             DriverKey::from('acme-headless'),
             'acme',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'Acme headless',
             [],
             $headless->hookProtocol,
@@ -112,19 +112,19 @@ final class StartPreviewsTest extends TestCase
             [],
         ));
         $agent = Agent::create('Helper', 'read-only-helper');
-        $agent->preferVariant(DriverVariant::Terminal);
+        $agent->preferDriverType(DriverType::Terminal);
 
         $preview = $this->previewOf($agent, 'acme', null, $this->profile(null), null);
 
         $this->assertTrue($preview->isModeLocked);
-        $this->assertSame([DriverVariant::Headless, ModeSourceType::OnlyMode], [$preview->mode, $preview->modeSource]);
+        $this->assertSame([DriverType::Headless, DriverTypeSource::OnlyType], [$preview->driverType, $preview->driverTypeSource]);
         $this->assertSame('acme-headless', $preview->driverKey);
     }
 
     private function previewOf(
         Agent $agent,
         string|null $family,
-        DriverVariant|null $mode,
+        DriverType|null $mode,
         ProfileDefaults $profile,
         string|null $parentFamily,
     ): StartPreview {
@@ -140,6 +140,6 @@ final class StartPreviewsTest extends TestCase
 
     private function profile(string|null $driver, bool $pinned = false): ProfileDefaults
     {
-        return new ProfileDefaults('read-only-helper', 1, $driver, $pinned, 'opus', ['opus'], DriverVariant::Headless);
+        return new ProfileDefaults('read-only-helper', 1, $driver, $pinned, 'opus', ['opus'], DriverType::Headless);
     }
 }

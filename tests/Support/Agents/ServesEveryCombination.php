@@ -6,7 +6,7 @@ namespace Tests\Support\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ArrangementType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Models\Projects\Host;
 use App\Support\Compatibility\DriverCompatibility;
@@ -16,7 +16,7 @@ use App\Values\EnrolledDescriptor;
 use App\Values\HostDescriptor;
 
 /**
- * Enrols a local host of this protocol that declared every driver and variant on the protected host, so a main start
+ * Enrols a local host of this protocol that declared every driver and driver type on the protected host, so a main start
  * has a host to run on.
  */
 trait ServesEveryCombination
@@ -28,9 +28,9 @@ trait ServesEveryCombination
         $descriptors = [];
 
         foreach (DefaultDrivers::familyKeys() as $driver) {
-            foreach (DriverVariant::cases() as $variant) {
+            foreach (DriverType::cases() as $driverType) {
                 $descriptors[] = new HostDescriptor(
-                    $drivers->keyFor($driver, $variant),
+                    $drivers->keyFor($driver, $driverType),
                     DriverCompatibility::pinned($driver)->version,
                     ArrangementType::Local,
                     ExecutionModeType::ProtectedHost,

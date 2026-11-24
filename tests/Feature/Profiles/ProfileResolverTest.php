@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\PolicyOriginType;
 use App\Enums\RefusalCode;
@@ -114,12 +114,12 @@ final class ProfileResolverTest extends TestCase
         $this->activate('journal-reviewer', ProfileBase::readOnlyHelper());
         $this->activate('journal-worker', ProfileBase::writingHelper());
 
-        $variants = array_map(
-            fn (string $key) => $this->resolver()->snapshotFor(ProfileKey::from($key))->base->defaultVariant,
+        $driverTypes = array_map(
+            fn (string $key) => $this->resolver()->snapshotFor(ProfileKey::from($key))->base->defaultDriverType,
             ['journal-main', 'journal-reviewer', 'journal-worker'],
         );
 
-        $this->assertSame([DriverVariant::Terminal, DriverVariant::Headless, DriverVariant::Headless], $variants);
+        $this->assertSame([DriverType::Terminal, DriverType::Headless, DriverType::Headless], $driverTypes);
     }
 
     public function test_locally_the_main_agent_stays_on_the_protected_host_with_the_default_budget(): void

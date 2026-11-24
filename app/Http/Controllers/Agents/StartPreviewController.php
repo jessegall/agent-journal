@@ -28,7 +28,7 @@ final readonly class StartPreviewController
         $profile = $selections->select(ProfileKey::from($chosen->profile_key), $model, $family, null);
 
         return StartPreviewData::fromPreview(
-            $previews->preview($chosen, $family, $request->mode(), $model, $profile->defaults, null),
+            $previews->preview($chosen, $family, $request->driverType(), $model, $profile->defaults, null),
         );
     }
 }

@@ -614,7 +614,7 @@ use App\Enums\DriverOperation;
 use App\Enums\DriverOutcome;
 use App\Enums\DriverSourceType;
 use App\Enums\DriverSwitchStage;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\Emphasis;
 use App\Enums\EmptyPolicy;
 use App\Enums\EmptySelection;
@@ -842,11 +842,11 @@ use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverConflict;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Exceptions\DriverKeyInvalid;
-use App\Exceptions\DriverModeAmbiguous;
 use App\Exceptions\DriverRegisteredTwice;
 use App\Exceptions\DriverRequestMismatch;
 use App\Exceptions\DriverRequestRefused;
 use App\Exceptions\DriverRequired;
+use App\Exceptions\DriverTypeAmbiguous;
 use App\Exceptions\DriverUnknown;
 use App\Exceptions\DriverUnsupported;
 use App\Exceptions\EndpointDeclarationInvalid;
@@ -2485,7 +2485,7 @@ final class CoreApi
                 AutoAssignmentChange::class,
                 AutoAssignmentInput::class,
                 AutoAssignmentKey::class,
-                DriverVariant::class,
+                DriverType::class,
                 DriverReceipt::class,
                 ClaimedRequests::class,
                 ClaimedRequest::class,
@@ -3013,7 +3013,7 @@ final class CoreApi
                 DriverCapabilityUnsupported::class,
                 DriverUnknown::class,
                 DriverRegisteredTwice::class,
-                DriverModeAmbiguous::class,
+                DriverTypeAmbiguous::class,
                 DriverRequestMismatch::class,
                 ProviderKeyInvalid::class,
                 SkillConditionInvalid::class,

@@ -39,7 +39,7 @@ final class TestSelections
     public static function pinOf(StartRequest $request): PinnedDriver
     {
         return Container::getInstance()->make(DriverCatalogue::class)
-            ->pinned($request->selection->driver, $request->variant, $request->neededCapabilities());
+            ->pinned($request->selection->driver, $request->driverType, $request->neededCapabilities());
     }
 
     /**

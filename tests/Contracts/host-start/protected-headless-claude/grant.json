@@ -6,7 +6,6 @@
     "offline_reply": "neutral",
     "offline_reply_seal": "contract-seal",
     "runtime": {
-        "variant": "headless",
         "session_id": "01contractsession000000000",
         "driver": "claude-code",
         "driver_key": "claude-code-headless",

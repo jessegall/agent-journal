@@ -6,7 +6,7 @@ namespace App\Exceptions;
 
 use RuntimeException;
 
-final class DriverModeAmbiguous extends RuntimeException
+final class DriverTypeAmbiguous extends RuntimeException
 {
     public static function for(string $family, string $mode, string $registered, string $refused): self
     {

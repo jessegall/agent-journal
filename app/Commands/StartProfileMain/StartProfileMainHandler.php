@@ -45,16 +45,16 @@ final readonly class StartProfileMainHandler implements CommandHandler
 
         $agent = Agent::query()->findOrFail($command->agentId);
 
-        $variant = $this->previews->preview(
+        $driverType = $this->previews->preview(
             $agent,
             $command->driverKey,
-            $command->variant,
+            $command->driverType,
             $command->requested,
             $profile->defaults,
             null,
-        )->mode;
+        )->driverType;
 
-        $this->preflight->assertAdmitted($profile->proposal($variant, $command->requested->model));
+        $this->preflight->assertAdmitted($profile->proposal($driverType, $command->requested->model));
 
         $target = $command->conversationId === null
             ? null
@@ -71,9 +71,9 @@ final readonly class StartProfileMainHandler implements CommandHandler
             null,
             $profile->startPolicy(),
             conversationTarget: $target,
-            variant: $variant,
+            driverType: $driverType,
             chosenAccount: $command->chosenAccount,
-            savesVariant: $command->saveVariant,
+            savesDriverType: $command->saveDriverType,
             previewRevision: $command->previewRevision,
         )));
     }

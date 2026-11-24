@@ -6,7 +6,7 @@ namespace Domain\Helpers\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\JournalRouteType;
 use App\Support\CallKey;
 use App\Values\CommandReport;
@@ -46,7 +46,7 @@ final class HelperStartCommand extends Command
             'sourceSubjects' => array_values(array_map(strval(...), (array) $this->option('source'))),
             'independent' => $this->option('independent') === true,
             'requestKey' => CallKey::fromOption($this->textOption('key')),
-            'mode' => $this->namedMode(),
+            'driverType' => $this->namedDriverType(),
         ]);
 
         if ($this->option('json') === true) {
@@ -64,19 +64,19 @@ final class HelperStartCommand extends Command
             $call->requestKey,
             $call->sourceSubjects,
             $call->independent,
-            $call->mode,
+            $call->driverType,
         )));
     }
 
     /**
-     * The mode the flags name: headless, a terminal, or none to take the helper's saved mode or its profile's.
+     * The driver type the flags name: headless, a terminal, or none to take the helper's saved driver type or its profile's.
      */
-    private function namedMode(): DriverVariant|null
+    private function namedDriverType(): DriverType|null
     {
         if ($this->option('headless') !== true && $this->option('no-headless') !== true) {
             return null;
         }
 
-        return DriverVariant::ofHeadless($this->option('headless') === true);
+        return DriverType::ofHeadless($this->option('headless') === true);
     }
 }

@@ -8,13 +8,14 @@ use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\SessionOutputAccess;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Starts\ProcessStart;
 use App\Models\Starts\SessionOutputGrant;
 use App\Support\RecordConversationVisit;
+use App\Support\RecordIdentity;
 use App\Support\StartSessions;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
@@ -154,7 +155,7 @@ final class SessionOutputGrantsTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
 
         return AgentSession::query()->findOrFail(
@@ -165,8 +166,8 @@ final class SessionOutputGrantsTest extends TestCase
     /**
      * The job each conversation context was started for, the same one each time the context is started.
      */
-    private function ownerOf(string $context): string
+    private function ownerOf(string $context): RecordIdentity
     {
-        return $this->owners[$context] ??= 'helpers.job:'.Str::ulid();
+        return $this->owners[$context] ??= new RecordIdentity('tests.owner', (string) Str::ulid());
     }
 }

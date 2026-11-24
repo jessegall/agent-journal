@@ -15,7 +15,7 @@ use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Enums\AgentPresence;
 use App\Enums\DriverEvidence;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ProcessStartState;
 use App\Enums\RuntimeActivity;
 use App\Models\Accounts\Account;
@@ -179,7 +179,7 @@ final class ContainerAccountTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'claude-opus-5-5',
         );
 

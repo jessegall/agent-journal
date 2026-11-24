@@ -90,7 +90,7 @@ final class DeclaredLayoutTest extends TestCase
         ));
     }
 
-    public function test_a_variant_outside_the_catalogue_is_refused(): void
+    public function test_a_driver_type_outside_the_catalogue_is_refused(): void
     {
         $this->expectException(LayoutRefused::class);
 

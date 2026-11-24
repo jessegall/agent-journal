@@ -8,7 +8,7 @@ use App\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
 use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\CommandEntry;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use App\Values\ProfileSnapshot;
@@ -42,9 +42,9 @@ final readonly class BuiltInProfilePins implements BuiltInStartProfiles
         return $selection->pinnedTo($profile->key->key, $profile->revision);
     }
 
-    public function defaultVariantOf(string $profileKey): DriverVariant
+    public function defaultDriverTypeOf(string $profileKey): DriverType
     {
-        return $this->snapshotOf(ProfileKey::from($profileKey))->base->defaultVariant;
+        return $this->snapshotOf(ProfileKey::from($profileKey))->base->defaultDriverType;
     }
 
     public function policyFor(string $profileKey): StartPolicy

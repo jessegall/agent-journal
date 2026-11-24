@@ -7,7 +7,7 @@ namespace App\Enums;
 use App\Support\StartRemedy;
 
 /**
- * Why a proposed driver, variant and placement cannot start, in the words Home and the CLI both show.
+ * Why a proposed driver, driver type and placement cannot start, in the words Home and the CLI both show.
  */
 enum StartPreflightRefusal: string
 {

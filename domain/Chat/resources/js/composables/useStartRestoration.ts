@@ -3,7 +3,7 @@ import {
   keepStoredJson,
   readStoredJson,
 } from "@kit/browserStorage";
-import type { DriverVariant } from "@kit/CoreTypes";
+import type { DriverType } from "@kit/CoreTypes";
 
 /**
  * What an open session dialog keeps for this tab, so a reload shows the same choices and the same start: the
@@ -12,16 +12,16 @@ import type { DriverVariant } from "@kit/CoreTypes";
  */
 export type StartRestoration = {
   driver: string;
-  variant: DriverVariant | "";
+  driverType: DriverType | "";
   model: string | null;
   accountId: string | null;
   conversationId: string | null;
-  saveVariant: boolean;
+  saveDriverType: boolean;
   focus: string | null;
   requestId: string | null;
 };
 
-const variants = ["", "terminal", "headless"];
+const driverTypes = ["", "terminal", "headless"];
 
 function textOrNull(value: unknown): string | null {
   return typeof value === "string" ? value : null;
@@ -36,18 +36,18 @@ function parse(decoded: unknown): StartRestoration | null {
 
   if (
     typeof kept.driver !== "string" ||
-    !variants.includes(String(kept.variant))
+    !driverTypes.includes(String(kept.driverType))
   ) {
     return null;
   }
 
   return {
     driver: kept.driver,
-    variant: kept.variant as DriverVariant | "",
+    driverType: kept.driverType as DriverType | "",
     model: textOrNull(kept.model),
     accountId: textOrNull(kept.accountId),
     conversationId: textOrNull(kept.conversationId),
-    saveVariant: kept.saveVariant === true,
+    saveDriverType: kept.saveDriverType === true,
     focus: textOrNull(kept.focus),
     requestId: textOrNull(kept.requestId),
   };

@@ -6,7 +6,7 @@ namespace Tests\Support\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartOriginType;
 use App\Models\Reviews\CertifiedWork;
@@ -87,12 +87,12 @@ trait CertifiesHelperWork
             $launch->agent->id,
             SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
-            "{$work->type}:{$work->id}",
+            $work,
             null,
             ConversationModeType::New,
             null,
             new StartPolicy($policy->access, $policy->stopConditions, $execution, null, null, null, $requiresReview),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
         $start = StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
         $start->startedAs($launch->session);

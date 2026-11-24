@@ -12,7 +12,7 @@ use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartDisposition;
 use App\Enums\StartOriginType;
@@ -22,6 +22,7 @@ use App\Models\Agents\Agent;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\LaunchOutcome;
+use App\Support\RecordIdentity;
 use App\Support\StartReceipt;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
@@ -142,7 +143,7 @@ final class LaunchOutcomeTest extends TestCase
             $this->agentId,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
-            'helpers.job 1',
+            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
             ConversationModeType::New,
             null,
@@ -153,7 +154,7 @@ final class LaunchOutcomeTest extends TestCase
                 ExecutionBudgets::defaults(),
                 [],
             )),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
     }
 

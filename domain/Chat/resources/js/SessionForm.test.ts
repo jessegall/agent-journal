@@ -50,7 +50,7 @@ const drivers = [
     key: "claude-code",
     label: "Claude Code",
     family: "claude-code",
-    mode: "terminal",
+    driverType: "terminal",
     isAvailable: true,
     unavailableReason: null,
   },
@@ -58,7 +58,7 @@ const drivers = [
     key: "claude-code-headless",
     label: "Claude Code headless",
     family: "claude-code",
-    mode: "headless",
+    driverType: "headless",
     isAvailable: true,
     unavailableReason: null,
   },
@@ -66,7 +66,7 @@ const drivers = [
     key: "codex",
     label: "Codex",
     family: "codex",
-    mode: "terminal",
+    driverType: "terminal",
     isAvailable: false,
     unavailableReason: "The Codex terminal is not proven on any host yet.",
   },
@@ -74,7 +74,7 @@ const drivers = [
     key: "codex-headless",
     label: "Codex headless",
     family: "codex",
-    mode: "headless",
+    driverType: "headless",
     isAvailable: true,
     unavailableReason: null,
   },
@@ -118,7 +118,7 @@ vi.mock("@inertiajs/vue3", () => ({
     },
   },
 }));
-// The server's preview of a start: the drafted mode, else headless, and only the Codex terminal cannot run.
+// The server's preview of a start: the drafted driver type, else headless, and only the Codex terminal cannot run.
 vi.mock("@kit/pageReads", async (importOriginal) => {
   const original = await importOriginal<typeof import("@kit/pageReads")>();
 
@@ -129,17 +129,17 @@ vi.mock("@kit/pageReads", async (importOriginal) => {
         return original.readPage(routeName, query);
       }
 
-      const mode = query.mode === "" ? "headless" : query.mode;
-      const runs = !(query.family === "codex" && mode === "terminal");
+      const driverType = query.driverType === "" ? "headless" : query.driverType;
+      const runs = !(query.family === "codex" && driverType === "terminal");
 
       return Promise.resolve({
         family: query.family,
         familySource: "explicit",
-        mode,
-        modeSource: query.mode === "" ? "profile" : "explicit",
+        driverType,
+        driverTypeSource: query.driverType === "" ? "profile" : "explicit",
         driverKey:
-          mode === "headless" ? `${query.family}-headless` : query.family,
-        label: `${query.family} ${mode}`,
+          driverType === "headless" ? `${query.family}-headless` : query.family,
+        label: `${query.family} ${driverType}`,
         canRun: runs,
         unavailableReason: runs
           ? null
@@ -252,7 +252,7 @@ describe("SessionForm", () => {
       ["/profiles/journal-main/start-main", "ready", 4],
     ]);
     expect(posted[0].body.requestId).toBe(posted[1].body.requestId);
-    expect([posted[0].body.variant, posted[0].body.previewRevision]).toEqual([
+    expect([posted[0].body.driverType, posted[0].body.previewRevision]).toEqual([
       null,
       4,
     ]);

@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartPreflight;
 use App\Enums\ArrangementType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartPreflightRefusal;
 use App\Exceptions\StartPreflightRefused;
@@ -23,7 +23,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 /**
- * The server answers whether a driver, variant and placement can start before anything stops or is reserved: the
+ * The server answers whether a driver, driver type and placement can start before anything stops or is reserved: the
  * profile's pinned driver, contained Codex and the combinations the host declared each refuse with their reason.
  */
 final class StartPreflightTest extends TestCase
@@ -36,22 +36,22 @@ final class StartPreflightTest extends TestCase
 
     public function test_on_a_contained_host_codex_is_refused_and_a_claude_code_terminal_is_admitted(): void
     {
-        $this->containedHost([DriverVariant::Terminal]);
+        $this->containedHost([DriverType::Terminal]);
 
         $this->assertSame(
             [StartPreflightRefusal::DriverNotContainable],
-            $this->preflight()->refusals($this->proposal(DefaultDrivers::CODEX, DriverVariant::Headless)),
+            $this->preflight()->refusals($this->proposal(DefaultDrivers::CODEX, DriverType::Headless)),
         );
-        $this->assertSame([], $this->preflight()->refusals($this->proposal(DefaultDrivers::CLAUDE_CODE, DriverVariant::Terminal)));
+        $this->assertSame([], $this->preflight()->refusals($this->proposal(DefaultDrivers::CLAUDE_CODE, DriverType::Terminal)));
     }
 
     public function test_a_host_that_did_not_declare_headless_refuses_a_headless_start_and_reserves_nothing(): void
     {
-        $this->containedHost([DriverVariant::Terminal]);
+        $this->containedHost([DriverType::Terminal]);
         $runtimes = AgentRuntime::query()->count();
 
         try {
-            $this->preflight()->assertAdmitted($this->proposal(DefaultDrivers::CLAUDE_CODE, DriverVariant::Headless));
+            $this->preflight()->assertAdmitted($this->proposal(DefaultDrivers::CLAUDE_CODE, DriverType::Headless));
             $this->fail('A start the host never declared was admitted.');
         } catch (StartPreflightRefused $refused) {
             $this->assertSame(StartPreflightRefusal::CombinationNotDeclared, $refused->refusal);
@@ -62,7 +62,7 @@ final class StartPreflightTest extends TestCase
 
     public function test_a_pinned_profile_refuses_another_driver_and_no_host_is_its_own_reason(): void
     {
-        $pinned = new ProfileDefaults('main-agent', 1, DefaultDrivers::CLAUDE_CODE, true, 'opus', [], DriverVariant::Terminal);
+        $pinned = new ProfileDefaults('main-agent', 1, DefaultDrivers::CLAUDE_CODE, true, 'opus', [], DriverType::Terminal);
 
         $this->assertSame(
             [StartPreflightRefusal::DriverPinned, StartPreflightRefusal::NoHost],
@@ -70,7 +70,7 @@ final class StartPreflightTest extends TestCase
                 $pinned,
                 DefaultDrivers::CODEX,
                 '0.165.0',
-                DriverVariant::Headless,
+                DriverType::Headless,
                 ExecutionModeType::ProtectedHost,
                 null,
             )),
@@ -78,19 +78,19 @@ final class StartPreflightTest extends TestCase
     }
 
     /**
-     * @param  list<DriverVariant>  $variants
+     * @param  list<DriverType>  $driverTypes
      */
-    private function containedHost(array $variants): void
+    private function containedHost(array $driverTypes): void
     {
         $host = Host::create('contained host', 'secret', [base_path()], ArrangementType::Contained);
         $descriptors = array_map(
-            fn (DriverVariant $variant) => new HostDescriptor(
-                $this->app->make(DriverCatalogue::class)->keyFor(DefaultDrivers::CLAUDE_CODE, $variant),
+            fn (DriverType $driverType) => new HostDescriptor(
+                $this->app->make(DriverCatalogue::class)->keyFor(DefaultDrivers::CLAUDE_CODE, $driverType),
                 self::BUILD,
                 ArrangementType::Contained,
                 ExecutionModeType::RequiredContainer,
             ),
-            $variants,
+            $driverTypes,
         );
         $host->recordDescriptors(array_map(
             fn (EnrolledDescriptor $descriptor) => $descriptor->stored(),
@@ -98,13 +98,13 @@ final class StartPreflightTest extends TestCase
         ));
     }
 
-    private function proposal(string $driver, DriverVariant $variant): StartProposal
+    private function proposal(string $driver, DriverType $driverType): StartProposal
     {
         return new StartProposal(
-            new ProfileDefaults('main-agent', 1, null, false, 'opus', [], DriverVariant::Terminal),
+            new ProfileDefaults('main-agent', 1, null, false, 'opus', [], DriverType::Terminal),
             $driver,
             self::BUILD,
-            $variant,
+            $driverType,
             ExecutionModeType::RequiredContainer,
             null,
         );

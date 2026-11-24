@@ -33,8 +33,7 @@ return new class extends Migration
             $table->string('owner_reference', 128)->nullable()->index();
             $table->string('context_reference', 128)->nullable();
             $table->string('conversation_mode', 16);
-            $table->string('mode', 16)->default('headless');
-            $table->string('mode_intent', 16)->default('inherit');
+            $table->string('driver_type', 16)->default('headless');
             $table->boolean('account_chosen')->default(false);
             $table->boolean('remember')->default(false);
             $table->string('conversation_target', 200)->nullable();

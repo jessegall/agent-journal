@@ -14,7 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulid('agent_session_id')->unique();
             $table->ulid('host_id')->index();
-            $table->string('mode', 16);
+            $table->string('driver_type', 16);
             $table->boolean('remember')->default(false);
             $table->string('driver_key', 128);
             $table->string('family', 64);

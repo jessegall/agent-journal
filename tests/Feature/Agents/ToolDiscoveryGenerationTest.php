@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Drivers\ToolDiscovery;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\HoldReason;
 use App\Enums\RuntimeActivity;
 use App\Models\Agents\AgentRuntime;
@@ -62,7 +62,7 @@ final class ToolDiscoveryGenerationTest extends TestCase
             'claude-code',
             '1.0.0',
             'default',
-            DriverVariant::Headless,
+            DriverType::Headless,
             null,
             null,
             null,

@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Processes\RuntimeStatus;
 use App\Enums\DriverOperation;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\HoldReason;
 use App\Enums\RequestProgress;
 use App\Enums\RuntimeActivity;
@@ -51,7 +51,7 @@ use PhpOption\Option;
  * @property string $id
  * @property string $agent_session_id
  * @property string $host_id
- * @property DriverVariant $mode
+ * @property DriverType $driver_type
  * @property bool $remember
  * @property string $driver_key
  * @property string $family
@@ -77,7 +77,7 @@ use PhpOption\Option;
  * @property Carbon $updated_at
  * @property int $row_version
  */
-#[Fillable(['agent_session_id', 'host_id', 'mode', 'driver_key', 'driver_build', 'profile', 'canonical_folder'])]
+#[Fillable(['agent_session_id', 'host_id', 'driver_type', 'driver_key', 'driver_build', 'profile', 'canonical_folder'])]
 final class AgentRuntime extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -98,7 +98,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'mode' => DriverVariant::class,
+            'driver_type' => DriverType::class,
             'has_screen' => 'boolean',
             'start_grant' => 'encrypted',
             'activity' => RuntimeActivity::class,
@@ -115,8 +115,8 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
         $runtime = new self();
         $runtime->agent_session_id = $session->id;
         $runtime->host_id = $intent->hostId;
-        $runtime->mode = $intent->variant;
-        $runtime->remember = $intent->savesVariant;
+        $runtime->driver_type = $intent->driverType;
+        $runtime->remember = $intent->savesDriverType;
         $runtime->driver_key = (string) $registration->key;
         $runtime->family = $registration->family;
         $runtime->driver_label = $registration->label;

@@ -6,11 +6,11 @@ namespace App\Values;
 
 use App\Contracts\Drivers\DriverCapabilities;
 use App\Enums\DriverCapability;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 
 /**
- * One registered driver: its opaque key, the family and mode it is chosen by, the label the user reads, the protocols it
- * speaks and the class that reports what it can do. Family, mode and label are for choosing and showing only.
+ * One registered driver: its opaque key, the family and driver type it is chosen by, the label the user reads, the protocols it
+ * speaks and the class that reports what it can do. Family, driver type and label are for choosing and showing only.
  */
 final readonly class DriverRegistration
 {
@@ -26,7 +26,7 @@ final readonly class DriverRegistration
     public function __construct(
         public DriverKey $key,
         public string $family,
-        public DriverVariant $mode,
+        public DriverType $driverType,
         public string $label,
         public array $buildPins,
         public string $hookProtocol,
@@ -38,6 +38,6 @@ final readonly class DriverRegistration
 
     public function sharesModeWith(self $other): bool
     {
-        return $this->family === $other->family && $this->mode === $other->mode;
+        return $this->family === $other->family && $this->driverType === $other->driverType;
     }
 }

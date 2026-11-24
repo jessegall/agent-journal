@@ -10,7 +10,7 @@ use App\Commands\RunKeyScript\RunKeyScriptCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;
@@ -54,7 +54,7 @@ trait OpensLedgerRuntimes
                 'claude-code',
                 $build,
                 'claude',
-                DriverVariant::Headless,
+                DriverType::Headless,
                 'claude-opus-5-5',
                 firstMessage: $firstMessage,
             ),

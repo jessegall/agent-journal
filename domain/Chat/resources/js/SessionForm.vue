@@ -20,11 +20,11 @@ import type {
 } from "@generated/types/chat";
 import type {
   DriverSourceType,
-  ModeSourceType,
+  DriverTypeSource,
   StartPreviewData,
 } from "@kit/CoreTypes";
 import type { WindowResult } from "@kit/PageTypes";
-import type { DriverVariant } from "@kit/CoreTypes";
+import type { DriverType } from "@kit/CoreTypes";
 import {
   accountsPage,
   cancelLaunch,
@@ -37,7 +37,7 @@ import {
 
 /**
  * Starts, resumes or switches the chosen agent's session: the driver, the model among those the profile permits, the
- * registered driver (its terminal or headless mode kept for the agent when asked), the account among those the
+ * registered driver (its terminal or headless driver type kept for the agent when asked), the account among those the
  * driver may run with, and for a resume the conversation it continues. The form makes one request id when it opens,
  * so a second press repeats the same start; an edit after a refusal makes a fresh one. A refusal whose next step is a
  * field shows under that field and takes the focus; every other choice stays. Every id comes from the dialog's own
@@ -59,8 +59,8 @@ type SessionChoice = {
   agentId: string;
   model: string;
   driver: string;
-  variant: DriverVariant | null;
-  saveVariant: boolean;
+  driverType: DriverType | null;
+  saveDriverType: boolean;
   accountId: string | undefined;
   accountRevision: number | undefined;
   conversationId: string | null;
@@ -88,12 +88,12 @@ let requestId = newRequestId();
 const switching = useSwitchOperation(() => props.agent);
 // The driver family chosen; none takes the family of the agent's latest conversation, else the first.
 const family = ref<string | null>(null);
-// The mode as drafted: inherit takes the agent's saved mode or the profile's; on and off name headless or terminal.
+// The driver type as drafted: inherit takes the agent's saved one or the profile's; on and off name headless or terminal.
 type ModeDraft = "inherit" | "on" | "off";
 const modeDraft = ref<ModeDraft>("inherit");
 // The server's preview of the start as drafted, read again whenever the draft changes.
 const preview = ref<StartPreviewData | null>(null);
-const saveVariant = ref(false);
+const saveDriverType = ref(false);
 const accounts = ref<EligibleAccountData[]>([]);
 const accountId = ref<string | null>(null);
 const modelChoices = ref<string[]>([]);
@@ -159,7 +159,7 @@ if (restored !== null) {
   model.value = restored.model;
   accountId.value = restored.accountId;
   conversationId.value = restored.conversationId;
-  saveVariant.value = restored.saveVariant;
+  saveDriverType.value = restored.saveDriverType;
   requestId = restored.requestId ?? requestId;
 }
 
@@ -169,11 +169,11 @@ if (restored !== null) {
 function keepRestoration(sentRequestId: string | null): void {
   restoration.keep({
     driver: driver.value,
-    variant: draftedMode.value ?? "",
+    driverType: draftedDriverType.value ?? "",
     model: model.value,
     accountId: accountId.value,
     conversationId: conversationId.value,
-    saveVariant: saveVariant.value,
+    saveDriverType: saveDriverType.value,
     focus: focusedField.value,
     requestId: sentRequestId,
   });
@@ -284,21 +284,21 @@ const driver = computed(
     families.value[0] ??
     "claude-code",
 );
-const draftedMode = computed<DriverVariant | null>(
+const draftedDriverType = computed<DriverType | null>(
   () =>
     (({ inherit: null, on: "headless", off: "terminal" }) as const)[
       modeDraft.value
     ],
 );
-// The mode the start runs in, as the server resolved it; the drafted one until its preview arrives.
-const variant = computed<DriverVariant>(
-  () => preview.value?.mode ?? draftedMode.value ?? "headless",
+// The driver type the start runs in, as the server resolved it; the drafted one until its preview arrives.
+const driverType = computed<DriverType>(
+  () => preview.value?.driverType ?? draftedDriverType.value ?? "headless",
 );
-const modeSources: Record<ModeSourceType, string> = {
+const driverTypeSources: Record<DriverTypeSource, string> = {
   explicit: "chosen here",
   saved: "saved for this agent",
   profile: "the profile's default",
-  only_mode: "the only way this driver runs",
+  only_type: "the only way this driver runs",
 };
 const familySources: Record<DriverSourceType, string> = {
   explicit: "chosen here",
@@ -310,7 +310,7 @@ if (restored !== null) {
   family.value = restored.driver;
   modeDraft.value = (
     { "": "inherit", headless: "on", terminal: "off" } as const
-  )[restored.variant];
+  )[restored.driverType];
 }
 
 function chooseHeadless(event: Event): void {
@@ -321,7 +321,7 @@ function readPreview(): void {
   readPage<StartPreviewData>("web.start-preview", {
     agent: props.agent.id,
     family: driver.value,
-    mode: draftedMode.value ?? "",
+    driverType: draftedDriverType.value ?? "",
     model: model.value ?? "default",
   }).then(
     (answer) => (preview.value = answer),
@@ -329,15 +329,15 @@ function readPreview(): void {
   );
 }
 
-watch([driver, draftedMode, model], readPreview, { immediate: true });
+watch([driver, draftedDriverType, model], readPreview, { immediate: true });
 watch(
   [
     driver,
-    variant,
+    driverType,
     model,
     accountId,
     conversationId,
-    saveVariant,
+    saveDriverType,
     focusedField,
   ],
   () => keepRestoration(sentRequestId),
@@ -429,7 +429,7 @@ function showAccounts(read: EligibleAccountsData | undefined): void {
 
 // An edit after a refusal is a new choice: its submission gets a fresh request id, and the field's reason goes.
 watch(
-  [driver, model, variant, accountId, conversationId],
+  [driver, model, driverType, accountId, conversationId],
   () => {
     if (fieldRefusal.value === null && refusal.value === null) {
       return;
@@ -456,8 +456,8 @@ function sessionChoice(): SessionChoice {
     agentId: props.agent.id,
     model: model.value ?? "default",
     driver: driver.value,
-    variant: draftedMode.value,
-    saveVariant: saveVariant.value,
+    driverType: draftedDriverType.value,
+    saveDriverType: saveDriverType.value,
     accountId: account.value?.id,
     accountRevision: account.value?.signInRevision,
     conversationId: conversationId.value,
@@ -586,7 +586,7 @@ function followStart(): void {
 function switchSession(): void {
   switching.begin(requestId, switchMethod.url(props.agent.profileKey), {
     ...sessionChoice(),
-    variant: variant.value,
+    driverType: driverType.value,
     expectedSessionId: props.agent.sessionId,
     expectedGeneration: props.agent.sessionGeneration,
   });
@@ -811,7 +811,7 @@ onBeforeUnmount(() => following?.stop());
         <label class="flex items-center gap-2 text-small text-text-2">
           <input
             type="checkbox"
-            :checked="variant === 'headless'"
+            :checked="driverType === 'headless'"
             :disabled="preview?.isModeLocked === true"
             @change="chooseHeadless"
           />
@@ -819,7 +819,7 @@ onBeforeUnmount(() => following?.stop());
         </label>
         <template v-if="preview !== null">
           <p class="text-small text-text-3" aria-live="polite">
-            {{ preview.label }}: mode {{ modeSources[preview.modeSource] }},
+            {{ preview.label }}: driver type {{ driverTypeSources[preview.driverTypeSource] }},
             driver {{ familySources[preview.familySource] }}.
           </p>
           <template v-if="!preview.canRun">
@@ -864,7 +864,7 @@ onBeforeUnmount(() => following?.stop());
         </template>
       </Field>
       <label class="flex items-center gap-2 text-small text-text-2">
-        <input v-model="saveVariant" type="checkbox" />
+        <input v-model="saveDriverType" type="checkbox" />
         Use as default for this agent
       </label>
       <Field

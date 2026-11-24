@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverSkillAdapters;
 use App\Values\DriverKey;
@@ -23,8 +23,8 @@ final class SkillProtocolAdaptersTest extends TestCase
         $adapters = $this->app->make(DriverSkillAdapters::class);
 
         foreach (DefaultDrivers::familyKeys() as $family) {
-            $terminal = $drivers->forKey($drivers->keyFor($family, DriverVariant::Terminal))->descriptor();
-            $headless = $drivers->forKey($drivers->keyFor($family, DriverVariant::Headless))->descriptor();
+            $terminal = $drivers->forKey($drivers->keyFor($family, DriverType::Terminal))->descriptor();
+            $headless = $drivers->forKey($drivers->keyFor($family, DriverType::Headless))->descriptor();
 
             $this->assertSame(
                 $adapters->for(DriverKey::from($terminal->skillProtocol)),

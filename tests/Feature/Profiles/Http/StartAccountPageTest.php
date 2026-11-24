@@ -8,9 +8,10 @@ use App\Commands\RemoveAccount\RemoveAccountCommand;
 use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Models\Agents\Agent;
+use App\Support\RecordIdentity;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Domain\Access\Models\User;
@@ -77,12 +78,12 @@ final class StartAccountPageTest extends TestCase
             $agent->id,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
-            'helpers.job 1',
+            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
             'helpers.job 1',
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
 
         return $this->app->make(CommandBus::class)->run(new StartAgentCommand($request))->sessionId;

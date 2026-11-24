@@ -25,8 +25,8 @@ final readonly class OpenBindingMainRuntimeHandler implements CommandHandler
     public function handle(OpenBindingMainRuntimeCommand $command): OpenedRuntime
     {
         $agent = Agent::query()->findOrFail($command->agentId);
-        $variant = $agent->variantFor(null, $this->builtInProfiles->defaultVariantOf($agent->profile_key));
+        $driverType = $agent->driverTypeFor(null, $this->builtInProfiles->defaultDriverTypeOf($agent->profile_key));
 
-        return $this->runtimes->handle($command->asAgentRuntime($variant)->withDispatcher($command->dispatchedBy()));
+        return $this->runtimes->handle($command->asAgentRuntime($driverType)->withDispatcher($command->dispatchedBy()));
     }
 }

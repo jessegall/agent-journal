@@ -16,7 +16,7 @@ use App\Values\StartProposal;
 /**
  * Whether a proposed start can run, answered on the server before anything stops or a grant is allocated: the
  * profile's pinned driver and allowed models, and a connected host that speaks this protocol and declared the
- * driver, build, placement and variant. Admission, Switch and Home ask it alike.
+ * driver, build, placement and driver type. Admission, Switch and Home ask it alike.
  */
 final readonly class HostStartPreflight implements StartPreflight
 {
@@ -53,7 +53,7 @@ final readonly class HostStartPreflight implements StartPreflight
      */
     private function runsContained(StartProposal $proposal): bool
     {
-        $key = $this->drivers->keyFor($proposal->driver, $proposal->variant);
+        $key = $this->drivers->keyFor($proposal->driver, $proposal->driverType);
 
         return $this->drivers->forKey($key)
             ->capabilities(BoundTarget::beforePlacement())

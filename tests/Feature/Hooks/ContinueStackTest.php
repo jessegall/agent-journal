@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartTransaction;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\NoSubject;
 use App\Enums\StartOriginType;
 use App\Exceptions\StateTransferUnknown;
@@ -16,6 +16,7 @@ use App\Models\Agents\AgentStackRow;
 use App\Models\Starts\StartRecord;
 use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
+use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use App\Support\Stack\StateTypes;
@@ -111,12 +112,12 @@ final class ContinueStackTest extends TestCase
             $old->agent->id,
             SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
-            'helpers.job:01m7wgahp0n7766x1e1ta8ehew',
+            new RecordIdentity('helpers.job', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
             $mode,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
         StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
         $target = new StackTarget($old->agent->id, $session->id);

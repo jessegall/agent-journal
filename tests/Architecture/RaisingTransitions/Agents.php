@@ -9,7 +9,7 @@ declare(strict_types=1);
 return [
     'DriverSwitch::markStopped',
     'ProcessStart::refuse',
-    'Agent::preferVariant',
+    'Agent::preferDriverType',
     'Agent::adoptRuntime',
     'Agent::fenceRuntimes',
     'Agent::retireAt',

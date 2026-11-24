@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\AccessType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\OfflineReplyMode;
 use App\Exceptions\BuiltInProfileMissing;
@@ -39,8 +39,8 @@ final readonly class ProfileBase
         // Whether its driver is its container's own terminal process, which the host attaches to, again after a
         // restart: the main agent's is; a helper runs without a terminal.
         public bool $attachable,
-        // How its sessions run when a start names no variant: the main agent in a terminal, a helper headless.
-        public DriverVariant $defaultVariant,
+        // How its sessions run when a start names no driver type: the main agent in a terminal, a helper headless.
+        public DriverType $defaultDriverType,
     ) {}
 
     /**
@@ -70,7 +70,7 @@ final readonly class ProfileBase
             true,
             ExecutionBudgets::mainAgent(),
             true,
-            DriverVariant::Terminal
+            DriverType::Terminal
         );
     }
 
@@ -98,7 +98,7 @@ final readonly class ProfileBase
             false,
             ExecutionBudgets::defaults(),
             false,
-            DriverVariant::Headless,
+            DriverType::Headless,
         );
     }
 
@@ -121,7 +121,7 @@ final readonly class ProfileBase
             false,
             ExecutionBudgets::defaults(),
             false,
-            DriverVariant::Headless,
+            DriverType::Headless,
         );
     }
 

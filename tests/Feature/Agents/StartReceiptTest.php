@@ -11,7 +11,7 @@ use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\StartRecordResolver;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartDisposition;
 use App\Enums\StartOriginType;
@@ -28,6 +28,7 @@ use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
+use App\Support\RecordIdentity;
 use App\Support\StartReceipt;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
@@ -136,7 +137,7 @@ final class StartReceiptTest extends TestCase
         $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
 
         $this->assertThrows(
-            fn () => $this->start($this->containerRequest($request->requestId, 'helpers.job 2')),
+            fn () => $this->start($this->containerRequest($request->requestId, new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehex'))),
             StartRequestConflict::class,
         );
         $this->assertSame(
@@ -206,14 +207,16 @@ final class StartReceiptTest extends TestCase
         $this->app->instance(DockerImageVerifier::class, $this->images);
     }
 
-    private function containerRequest(string $requestId, string $ownerReference = 'helpers.job 1'): StartRequest
-    {
+    private function containerRequest(
+        string $requestId,
+        RecordIdentity $ownerWork = new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
+    ): StartRequest {
         return new StartRequest(
             $requestId,
             $this->agentId,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
-            $ownerReference,
+            $ownerWork,
             null,
             ConversationModeType::New,
             null,
@@ -224,7 +227,7 @@ final class StartReceiptTest extends TestCase
                 ExecutionBudgets::defaults(),
                 [],
             )),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
     }
 

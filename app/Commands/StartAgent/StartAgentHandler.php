@@ -81,7 +81,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
         $pinned = $this->drivers->pinned(
             $request->selection->driver,
-            $request->variant,
+            $request->driverType,
             $request->neededCapabilities(),
         );
 
@@ -152,7 +152,7 @@ final readonly class StartAgentHandler implements CommandHandler
     }
 
     /**
-     * A main start runs on the host that runs its driver build, placement and variant, in that host's start folder; a
+     * A main start runs on the host that runs its driver build, placement and driver type, in that host's start folder; a
      * start an owner runs through its own host's start socket opens no runtime here.
      *
      * @throws HostUnavailable
@@ -165,7 +165,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
         $driver = $request->selection->driver;
         $build = $this->builds->versionOf($driver);
-        $host = Host::runningStart($driver, $build, $request->execution()->mode, $request->variant);
+        $host = Host::runningStart($driver, $build, $request->execution()->mode, $request->driverType);
 
         return new RuntimeIntent(
             $host->id,
@@ -173,11 +173,11 @@ final readonly class StartAgentHandler implements CommandHandler
             $driver,
             $build,
             $driver,
-            $request->variant,
+            $request->driverType,
             $request->selection->model,
             null,
             null,
-            $request->savesVariant,
+            $request->savesDriverType,
         );
     }
 

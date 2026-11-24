@@ -9,7 +9,7 @@ use App\Commands\InterruptAgent\InterruptAgentCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\StopAgent\StopAgentCommand;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\HoldReason;
 use App\Enums\RequestProgress;
 use App\Exceptions\DriverRequestRefused;
@@ -76,7 +76,7 @@ final class UnfamiliarRegistrationTest extends TestCase
             'example',
             '1.0.0',
             'echo',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'echo-small',
         ));
         $receipt = $this->asOwner(DeliverAgentCommand::text($agent->id, $opened->sessionId, 'echo-1', 'Say hello'));
@@ -117,7 +117,7 @@ final class UnfamiliarRegistrationTest extends TestCase
             'example',
             '1.0.0',
             'echo',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'echo-small',
         ));
 
@@ -144,7 +144,7 @@ final class UnfamiliarRegistrationTest extends TestCase
         $registry->register(new DriverRegistration(
             DriverKey::from($key),
             'example',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'Echo',
             [],
             $headless->hookProtocol,

@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ArrangementType;
 use App\Enums\DriverCapability;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverRegisteredTwice;
@@ -47,8 +47,8 @@ final class ThirdPartyDriverTest extends TestCase
         ));
 
         $this->assertSame(
-            [['acme/reader', 'Acme reader', DriverVariant::Headless, true]],
-            array_map(fn (DriverChoiceData $choice) => [$choice->key, $choice->label, $choice->mode, $choice->isAvailable], $listed),
+            [['acme/reader', 'Acme reader', DriverType::Headless, true]],
+            array_map(fn (DriverChoiceData $choice) => [$choice->key, $choice->label, $choice->driverType, $choice->isAvailable], $listed),
         );
     }
 
@@ -56,17 +56,17 @@ final class ThirdPartyDriverTest extends TestCase
     {
         $registry = $this->registryWithAcme();
 
-        $registry->register($this->acme('acme/reader-terminal', DriverVariant::Terminal));
+        $registry->register($this->acme('acme/reader-terminal', DriverType::Terminal));
 
         $this->assertSame(
             ['acme/reader', 'acme/reader-terminal'],
             [
-                (string) $registry->keyFor('acme', DriverVariant::Headless),
-                (string) $registry->keyFor('acme', DriverVariant::Terminal),
+                (string) $registry->keyFor('acme', DriverType::Headless),
+                (string) $registry->keyFor('acme', DriverType::Terminal),
             ],
         );
         $this->expectException(DriverRegisteredTwice::class);
-        $registry->register($this->acme('acme/reader', DriverVariant::Headless));
+        $registry->register($this->acme('acme/reader', DriverType::Headless));
     }
 
     public function test_a_profile_that_needs_a_hook_the_driver_lacks_cannot_launch_it(): void
@@ -74,11 +74,11 @@ final class ThirdPartyDriverTest extends TestCase
         $registry = $this->registryWithAcme();
 
         $this->assertThrows(
-            fn () => $registry->pinned('acme', DriverVariant::Headless, [DriverCapability::HookMethods]),
+            fn () => $registry->pinned('acme', DriverType::Headless, [DriverCapability::HookMethods]),
             DriverCapabilityUnsupported::class,
             DriverCapabilityUnsupported::for(DriverCapability::HookMethods, AcmeReaderCapabilities::NO_HOOKS)->getMessage(),
         );
-        $this->assertSame('acme/reader', (string) $registry->pinned('acme', DriverVariant::Headless)->registration->key);
+        $this->assertSame('acme/reader', (string) $registry->pinned('acme', DriverType::Headless)->registration->key);
     }
 
     public function test_a_host_enrolls_a_third_party_driver_only_once_approved_and_only_an_approved_build(): void
@@ -103,12 +103,12 @@ final class ThirdPartyDriverTest extends TestCase
         $registry->registerFamily(
             new DriverFamily('acme', 'Acme', ProviderKey::from('acme'), 'acme', $claude->isolatesHooksPerSession, []),
         );
-        $registry->register($this->acme('acme/reader', DriverVariant::Headless));
+        $registry->register($this->acme('acme/reader', DriverType::Headless));
 
         return $registry;
     }
 
-    private function acme(string $key, DriverVariant $mode): DriverRegistration
+    private function acme(string $key, DriverType $mode): DriverRegistration
     {
         $registry = $this->app->make(DriverCatalogue::class);
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
@@ -117,7 +117,7 @@ final class ThirdPartyDriverTest extends TestCase
             DriverKey::from($key),
             'acme',
             $mode,
-            $mode === DriverVariant::Headless ? 'Acme reader' : 'Acme reader terminal',
+            $mode === DriverType::Headless ? 'Acme reader' : 'Acme reader terminal',
             [],
             $headless->hookProtocol,
             $headless->accountProtocol,

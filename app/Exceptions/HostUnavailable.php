@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use RuntimeException;
 
 /**
@@ -18,10 +18,10 @@ final class HostUnavailable extends RuntimeException implements CommandRefusal
         return new self("The host {$hostId} is not available to run agents.");
     }
 
-    public static function forStart(string $driver, DriverVariant $variant): self
+    public static function forStart(string $driver, DriverType $driverType): self
     {
         return new self(
-            "No connected host runs {$driver} as a {$variant->value} start. "
+            "No connected host runs {$driver} as a {$driverType->value} start. "
             .'Connect a host that runs it, then start again.',
         );
     }

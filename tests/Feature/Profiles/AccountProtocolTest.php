@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Models\Accounts\Account;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
@@ -27,7 +27,7 @@ final class AccountProtocolTest extends TestCase
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work'), '/journal/accounts/work');
         $drivers = $this->app->make(DriverCatalogue::class);
 
-        foreach ([DriverVariant::Terminal, DriverVariant::Headless] as $mode) {
+        foreach ([DriverType::Terminal, DriverType::Headless] as $mode) {
             $protocol = $drivers->pinned(DefaultDrivers::CLAUDE_CODE, $mode)->registration->accountProtocol;
 
             $this->assertSame(

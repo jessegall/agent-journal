@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Models\Agents\AgentSession;
 use App\Support\AgentRuntimes;
 use App\Values\RuntimeIntent;
@@ -22,7 +22,7 @@ trait OpensDriverRuntimes
             'claude-code',
             '1.0.0',
             'default',
-            DriverVariant::Headless,
+            DriverType::Headless,
             null,
             null,
             null,

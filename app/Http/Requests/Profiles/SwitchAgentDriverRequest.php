@@ -6,7 +6,7 @@ namespace App\Http\Requests\Profiles;
 
 use App\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use App\Values\ModelSelection;
@@ -17,7 +17,7 @@ use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\In;
 
 /**
- * A switch of an agent of the profile in the route to another driver, variant or account: the session and process
+ * A switch of an agent of the profile in the route to another driver, driver type or account: the session and process
  * generation the owner saw, so a stale tab is refused, and the request id that makes a repeat find the same switch.
  */
 final class SwitchAgentDriverRequest extends FormRequest
@@ -33,11 +33,11 @@ final class SwitchAgentDriverRequest extends FormRequest
             'expectedSessionId' => ['required', 'ulid'],
             'expectedGeneration' => ['required', 'integer', 'min:0'],
             'driver' => ['required', Rule::in($drivers->familyKeys())],
-            'variant' => ['required', Rule::enum(DriverVariant::class)],
+            'driverType' => ['required', Rule::enum(DriverType::class)],
             'accountId' => ['required', 'ulid'],
             'accountRevision' => ['required', 'integer', 'min:0'],
             'conversationId' => ['nullable', 'ulid'],
-            'saveVariant' => ['boolean'],
+            'saveDriverType' => ['boolean'],
             'model' => ['required', 'string', 'max:100'],
         ];
     }
@@ -59,10 +59,10 @@ final class SwitchAgentDriverRequest extends FormRequest
     {
         return new DriverSwitchTarget(
             $this->string('driver')->toString(),
-            DriverVariant::from($this->string('variant')->toString()),
+            DriverType::from($this->string('driverType')->toString()),
             new ChosenAccount($this->string('accountId')->lower()->toString(), $this->integer('accountRevision')),
             $this->filled('conversationId') ? $this->string('conversationId')->lower()->toString() : null,
-            $this->boolean('saveVariant'),
+            $this->boolean('saveDriverType'),
         );
     }
 }

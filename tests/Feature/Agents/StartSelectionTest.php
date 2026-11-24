@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverSourceType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ModelSelectionType;
 use App\Enums\StartRefusalType;
 use App\Exceptions\DefaultUnavailable;
@@ -171,6 +171,6 @@ final class StartSelectionTest extends TestCase
         string|null $defaultModel = null,
         array $allowedModels = [],
     ): ProfileDefaults {
-        return new ProfileDefaults('journal-researcher', 4, $driver, $pinned, $defaultModel, $allowedModels, DriverVariant::Headless);
+        return new ProfileDefaults('journal-researcher', 4, $driver, $pinned, $defaultModel, $allowedModels, DriverType::Headless);
     }
 }

@@ -29,7 +29,7 @@ final readonly class StartGrant
     /**
      * @return array{token: string, folders: list<array<string, mixed>>, profile_key: string|null,
      *     profile_revision: int|null, offline_reply: string, offline_reply_seal: string,
-     *     runtime: array{variant: string, driver: string, driver_build: string, folder: string,
+     *     runtime: array{session_id: string, driver: string, driver_key: string, driver_build: string, folder: string,
      *     process_generation: int, model: string|null, effort: string|null}, container: ContainerManifest|null}
      */
     public function toArray(): array

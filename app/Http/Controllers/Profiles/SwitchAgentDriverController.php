@@ -12,7 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 /**
- * Switches an agent to another driver, variant or account. A page's form returns to that page, which shows the
+ * Switches an agent to another driver, driver type or account. A page's form returns to that page, which shows the
  * switch's stage, with the reason as its error when the switch failed at once.
  */
 final readonly class SwitchAgentDriverController

@@ -12,7 +12,7 @@ use App\Contracts\Sessions\StartHeartbeats;
 use App\Contracts\Time\ServerClock;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverOperation;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ProcessStartState;
 use App\Enums\SessionStatus;
 use App\Enums\StartDisposition;
@@ -147,7 +147,7 @@ final class StartAgentTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
 
         $receipt = $this->start($request);
@@ -260,7 +260,7 @@ final class StartAgentTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
             previewRevision: $previewRevision,
         );
     }

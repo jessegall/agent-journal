@@ -40,7 +40,7 @@ use App\Data\Messages\MessageAttachmentData;
 use App\Data\Messages\MessageTextData;
 use App\Enums\ArrangementType;
 use App\Enums\DriverOperation;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\HoldReason;
 use App\Enums\HostRefusal;
@@ -212,7 +212,7 @@ final class AgentDriverLedgerTest extends TestCase
                 'claude-code',
                 '2.1.323',
                 'claude',
-                DriverVariant::Headless,
+                DriverType::Headless,
                 'claude-opus-5-5',
             ),
         );
@@ -449,7 +449,7 @@ final class AgentDriverLedgerTest extends TestCase
                 'claude-code',
                 '2.1.323',
                 'claude',
-                DriverVariant::Headless,
+                DriverType::Headless,
                 'claude-opus-5-5',
                 firstMessage: 'Another',
             ));
@@ -479,7 +479,7 @@ final class AgentDriverLedgerTest extends TestCase
 
         $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
 
-        $key = $this->app->make(DriverCatalogue::class)->keyFor($runtime->family, $runtime->mode);
+        $key = $this->app->make(DriverCatalogue::class)->keyFor($runtime->family, $runtime->driver_type);
         $label = $this->app->make(DriverCatalogue::class)->forKey($key)->descriptor()->label;
 
         $this->assertSame([(string) $key, (string) $key, $label], [$grant->runtime->driverKey, $runtime->driver_key, $runtime->driver_label]);
@@ -1773,7 +1773,7 @@ final class AgentDriverLedgerTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'claude-opus-5-5',
         ));
     }

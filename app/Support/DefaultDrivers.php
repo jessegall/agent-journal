@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Drivers\DriverCapabilities;
 use App\Enums\DriverCapability;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\Capabilities\HeadlessCapabilities;
@@ -72,28 +72,28 @@ final readonly class DefaultDrivers
             self::registration(
                 'claude-code',
                 self::CLAUDE_CODE,
-                DriverVariant::Terminal,
+                DriverType::Terminal,
                 'Claude Code',
                 TerminalCapabilities::class,
             ),
             self::registration(
                 'claude-code-headless',
                 self::CLAUDE_CODE,
-                DriverVariant::Headless,
+                DriverType::Headless,
                 'Claude Code headless',
                 HeadlessCapabilities::class,
             ),
             self::registration(
                 'codex',
                 self::CODEX,
-                DriverVariant::Terminal,
+                DriverType::Terminal,
                 'Codex',
                 CodexTerminalCapabilities::class,
             ),
             self::registration(
                 'codex-headless',
                 self::CODEX,
-                DriverVariant::Headless,
+                DriverType::Headless,
                 'Codex headless',
                 CodexHeadlessCapabilities::class,
             ),
@@ -106,14 +106,14 @@ final readonly class DefaultDrivers
     private static function registration(
         string $key,
         string $family,
-        DriverVariant $mode,
+        DriverType $driverType,
         string $label,
         string $capabilities,
     ): DriverRegistration {
         return new DriverRegistration(
             DriverKey::from($key),
             $family,
-            $mode,
+            $driverType,
             $label,
             [],
             $family,

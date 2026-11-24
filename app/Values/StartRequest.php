@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Enums\ConversationModeType;
 use App\Enums\DriverCapability;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Support\RecordIdentity;
 
@@ -21,16 +21,16 @@ final readonly class StartRequest
         public string $agentId,
         public SelectedDriver $selection,
         public StartOriginType $origin,
-        public string|null $ownerReference,
+        public RecordIdentity|null $ownerWork,
         public string|null $contextReference,
         public ConversationModeType $conversationMode,
         public string|null $parentSessionId,
         public StartPolicy $policy,
-        public DriverVariant $variant,
+        public DriverType $driverType,
         public RecordIdentity|null $authorizedSource = null,
         public string|null $conversationTarget = null,
         public ChosenAccount|null $chosenAccount = null,
-        public bool $savesVariant = false,
+        public bool $savesDriverType = false,
         // The catalogue revision the start was previewed at, when it was; the start refuses once it moved on.
         public int|null $previewRevision = null,
     ) {}
@@ -68,17 +68,17 @@ final readonly class StartRequest
             $source->profileKey,
             $source->profileRevision,
             $this->origin->value,
-            $this->ownerReference,
+            $this->ownerWork?->reference(),
             $this->contextReference,
             $this->conversationMode->value,
             $this->parentSessionId,
             $this->policy->digest(),
             $this->authorizedSource,
             $this->conversationTarget,
-            $this->variant->value,
+            $this->driverType->value,
             $this->chosenAccount?->accountId,
             $this->chosenAccount?->reviewedSignIn,
-            $this->savesVariant,
+            $this->savesDriverType,
         ], JSON_THROW_ON_ERROR));
     }
 }

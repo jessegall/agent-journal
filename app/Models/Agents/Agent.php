@@ -14,11 +14,11 @@ use App\Contracts\Chat\SeatedActor;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
+use App\Events\AgentDriverTypePreferred;
 use App\Events\AgentRetired;
 use App\Events\AgentRuntimeAdopted;
 use App\Events\AgentRuntimesFenced;
-use App\Events\AgentVariantPreferred;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Values\RunningRuntime;
@@ -39,7 +39,7 @@ use PhpOption\Some;
  * @property string $id
  * @property string|null $current_session_id
  * @property int $runtime_generation
- * @property DriverVariant|null $mode_preference
+ * @property DriverType|null $driver_type_preference
  * @property string $name
  * @property string $profile_key
  * @property Carbon|null $retired_at
@@ -67,7 +67,7 @@ final class Agent extends Model implements
      */
     protected function casts(): array
     {
-        return ['retired_at' => 'datetime', 'mode_preference' => DriverVariant::class];
+        return ['retired_at' => 'datetime', 'driver_type_preference' => DriverType::class];
     }
 
     /**
@@ -124,14 +124,14 @@ final class Agent extends Model implements
     // ----------[ Mutations ]----------
 
     /**
-     * The variant this agent's launches use from now on when they name none, kept once a launch that asked to save it
+     * The driver type this agent's launches use from now on when they name none, kept once a launch that asked to save it
      * runs.
      */
-    public function preferVariant(DriverVariant $variant): void
+    public function preferDriverType(DriverType $driverType): void
     {
-        $this->mode_preference = $variant;
+        $this->driver_type_preference = $driverType;
         $this->assertSaved($this->save());
-        $this->raise(new AgentVariantPreferred($this->id, $variant));
+        $this->raise(new AgentDriverTypePreferred($this->id, $driverType));
     }
 
     /**
@@ -166,11 +166,11 @@ final class Agent extends Model implements
     // ----------[ Answers ]----------
 
     /**
-     * The variant a launch runs: the one it names, then the agent's saved preference, then its profile's default.
+     * The driver type a launch runs: the one it names, then the agent's saved preference, then its profile's default.
      */
-    public function variantFor(DriverVariant|null $named, DriverVariant $profileDefault): DriverVariant
+    public function driverTypeFor(DriverType|null $named, DriverType $profileDefault): DriverType
     {
-        return $named ?? $this->mode_preference ?? $profileDefault;
+        return $named ?? $this->driver_type_preference ?? $profileDefault;
     }
 
     public function isCurrentRuntime(AgentSession $session): bool

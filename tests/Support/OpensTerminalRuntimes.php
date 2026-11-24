@@ -12,7 +12,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\TerminalControlData;
 use App\Data\Terminals\TerminalInterestData;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Support\ActorContext;
@@ -32,7 +32,7 @@ use Tests\Fixtures\Agents\TestSelections;
  */
 trait OpensTerminalRuntimes
 {
-    private function runtimeOn(string $hostId, DriverVariant $driver = DriverVariant::Terminal): AgentRuntime
+    private function runtimeOn(string $hostId, DriverType $driver = DriverType::Terminal): AgentRuntime
     {
         $agent = Agent::create('Watched agent '.Str::random(6), 'main-agent');
         $started = $this->app->make(StartSessions::class)->start(

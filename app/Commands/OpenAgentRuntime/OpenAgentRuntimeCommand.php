@@ -7,7 +7,7 @@ namespace App\Commands\OpenAgentRuntime;
 use App\Attributes\Authorize;
 use App\Contracts\Bus\AgentStartCommand;
 use App\Enums\AccessType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;
 use App\Support\OpenedRuntime;
@@ -29,11 +29,11 @@ final readonly class OpenAgentRuntimeCommand extends Command implements AgentSta
         public string $driver,
         public string $driverBuild,
         public string $profile,
-        public DriverVariant $variant,
+        public DriverType $driverType,
         public string|null $model = null,
         public string|null $effort = null,
         public string|null $firstMessage = null,
-        public bool $saveVariant = false,
+        public bool $saveDriverType = false,
     ) {}
 
     public function startedAgentId(): string

@@ -10,7 +10,7 @@ use App\Commands\RenewTerminalView\RenewTerminalViewCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\ServerClock;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\TerminalViewRefusal;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\TerminalViewRefused;
@@ -67,7 +67,7 @@ final class TerminalViewCommandsTest extends TestCase
 
     public function test_a_process_driver_agent_is_refused_and_no_view_is_made(): void
     {
-        $runtime = $this->runtimeOn('host-1', DriverVariant::Headless);
+        $runtime = $this->runtimeOn('host-1', DriverType::Headless);
 
         $this->assertRefused(
             $this->open($runtime),
@@ -312,7 +312,7 @@ final class TerminalViewCommandsTest extends TestCase
             'claude-code',
             '1.0.0',
             'default',
-            DriverVariant::Terminal,
+            DriverType::Terminal,
             null,
             null,
             null,

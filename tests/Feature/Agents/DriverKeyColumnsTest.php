@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 /**
  * Section Storage identities: every table that names a driver stores its whole key, up to the key's
- * own limit, and the start, runtime, switch and agent rows keep the mode instead of a variant.
+ * own limit, and the start, runtime, switch and agent rows keep the mode instead of a driver type.
  */
 final class DriverKeyColumnsTest extends TestCase
 {
@@ -33,13 +33,12 @@ final class DriverKeyColumnsTest extends TestCase
      * The columns the binding identity adds to each table.
      */
     private const array BINDING_COLUMNS = [
-        ['start_records', 'mode'],
-        ['start_records', 'mode_intent'],
+        ['start_records', 'driver_type'],
         ['start_records', 'remember'],
         ['start_records', 'catalogue_revision'],
-        ['agent_runtimes', 'mode'],
-        ['driver_switches', 'mode_intent'],
-        ['agents', 'mode_preference'],
+        ['agent_runtimes', 'driver_type'],
+        ['driver_switches', 'driver_type'],
+        ['agents', 'driver_type_preference'],
     ];
 
     /**

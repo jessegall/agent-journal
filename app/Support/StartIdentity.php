@@ -13,7 +13,7 @@ use App\Models\Starts\StartRecord;
 
 /**
  * Settles what a start's bootstrap proved: the conversation its driver runs makes the start ready, so its held
- * messages go out once and its remembered variant is kept; another conversation than the one it is bound to refuses
+ * messages go out once and its remembered driver type is kept; another conversation than the one it is bound to refuses
  * it with its messages still held; an unseen end leaves it uncertain. A refused start takes no later report.
  */
 final readonly class StartIdentity
@@ -55,7 +55,7 @@ final readonly class StartIdentity
         }
 
         if ($runtime->remember) {
-            $session->agent->preferVariant($runtime->mode);
+            $session->agent->preferDriverType($runtime->driver_type);
         }
     }
 }

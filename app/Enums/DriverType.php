@@ -7,7 +7,7 @@ namespace App\Enums;
 /**
  * How a host runs a driver: headless, one child per turn, or in one persistent terminal.
  */
-enum DriverVariant: string
+enum DriverType: string
 {
     case Headless = 'headless';
     case Terminal = 'terminal';

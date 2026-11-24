@@ -2285,9 +2285,11 @@ variable	SessionForm::canCancelStart
 variable	SessionForm::canSubmit
 variable	SessionForm::chatProp
 variable	SessionForm::conversationId
-variable	SessionForm::draftedMode
+variable	SessionForm::draftedDriverType
 variable	SessionForm::driver
 variable	SessionForm::driverChoices
+variable	SessionForm::driverType
+variable	SessionForm::driverTypeSources
 variable	SessionForm::emit
 variable	SessionForm::families
 variable	SessionForm::family
@@ -2306,7 +2308,6 @@ variable	SessionForm::isReviewing
 variable	SessionForm::isSwitchOpen
 variable	SessionForm::legAction
 variable	SessionForm::modeDraft
-variable	SessionForm::modeSources
 variable	SessionForm::model
 variable	SessionForm::modelChoices
 variable	SessionForm::ownPage
@@ -2319,7 +2320,7 @@ variable	SessionForm::requestId
 variable	SessionForm::restoration
 variable	SessionForm::restored
 variable	SessionForm::review
-variable	SessionForm::saveVariant
+variable	SessionForm::saveDriverType
 variable	SessionForm::sending
 variable	SessionForm::sentRequestId
 variable	SessionForm::shownProgress
@@ -2330,7 +2331,6 @@ variable	SessionForm::switching
 variable	SessionForm::targetLabel
 variable	SessionForm::titles
 variable	SessionForm::unconfirmedLeg
-variable	SessionForm::variant
 variable	SessionForm::viewer
 variable	SessionTerminal::area
 variable	SessionTerminal::control
@@ -2692,7 +2692,7 @@ variable	useShellOverlays::isSearchOpen
 variable	useSidebar::STORAGE_KEY
 variable	useSidebar::isMini
 variable	useSidebar::isOpenOnPhone
-variable	useStartRestoration::variants
+variable	useStartRestoration::driverTypes
 variable	useTerminalController::POLL_MILLISECONDS
 variable	useTerminalController::RENEW_MILLISECONDS
 variable	useTerminalResize::SETTLE_MILLISECONDS

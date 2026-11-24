@@ -69,11 +69,11 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             $command->driver,
             $command->driverBuild,
             $command->profile,
-            $command->variant,
+            $command->driverType,
             $command->model,
             $command->effort,
             $command->firstMessage,
-            $command->saveVariant,
+            $command->saveDriverType,
         );
 
         $agent = Agent::query()->findOrFail($command->agentId);
@@ -88,7 +88,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             null,
         )->selection;
 
-        $pinned = $this->drivers->pinned($command->driver, $command->variant);
+        $pinned = $this->drivers->pinned($command->driver, $command->driverType);
         $this->arrangement->assertContainable($pinned->support->supportOf(DriverCapability::RunContained));
 
         $this->sessions->lockForStart($agent);

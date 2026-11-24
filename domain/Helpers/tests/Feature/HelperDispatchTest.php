@@ -10,7 +10,7 @@ use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\StartReservations;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;
 use App\Exceptions\AccountContainerUnsupported;
@@ -97,9 +97,9 @@ final class HelperDispatchTest extends TestCase
     {
         $first = $this->start('request-1', 'Review plan 7');
         $record = StartRecord::query()->where('request_id', $first->start->launchReference)->sole();
-        $this->assertSame($this->keyOf($record->family, DriverVariant::Headless), $record->driver_key);
+        $this->assertSame($this->keyOf($record->family, DriverType::Headless), $record->driver_key);
 
-        Agent::query()->findOrFail($record->agent_id)->preferVariant(DriverVariant::Terminal);
+        Agent::query()->findOrFail($record->agent_id)->preferDriverType(DriverType::Terminal);
         $this->finish($first);
 
         $this->expectException(DriverCapabilityUnsupported::class);
@@ -117,11 +117,11 @@ final class HelperDispatchTest extends TestCase
             'default',
             null,
             new HelperWork(null, null, 'Review plan 7', 'Review it.', [], false),
-            DriverVariant::Terminal,
+            DriverType::Terminal,
         ));
     }
 
-    private function keyOf(string $family, DriverVariant $mode): string
+    private function keyOf(string $family, DriverType $mode): string
     {
         return (string) $this->app->make(DriverCatalogue::class)->keyFor($family, $mode);
     }

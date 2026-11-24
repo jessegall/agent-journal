@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 
 /**
  * What a new runtime is opened with: the host and folder it runs in, the driver build and profile, the driver,
@@ -18,10 +18,10 @@ final readonly class RuntimeIntent
         public string $driver,
         public string $driverBuild,
         public string $profile,
-        public DriverVariant $variant,
+        public DriverType $driverType,
         public string|null $model,
         public string|null $effort,
         public string|null $firstMessage,
-        public bool $savesVariant = false,
+        public bool $savesDriverType = false,
     ) {}
 }

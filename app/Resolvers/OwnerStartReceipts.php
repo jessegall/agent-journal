@@ -12,7 +12,6 @@ use App\Models\Starts\SessionPolicy;
 use App\Models\Starts\StartRecord;
 use App\Support\ActorIdentity;
 use App\Support\OwnerStartReceipt;
-use App\Support\OwnerStartRequest;
 use App\Support\RecordIdentity;
 use App\Support\StartReceipt;
 
@@ -26,7 +25,7 @@ final readonly class OwnerStartReceipts implements StartReceipts
 
     public function receiptFor(RecordIdentity $work): OwnerStartReceipt
     {
-        $reference = OwnerStartRequest::ownerReferenceOf($work);
+        $reference = $work->reference();
 
         $record = StartRecord::query()
             ->forOwnerReference($reference)

@@ -37,7 +37,7 @@ final class DriverFamilyTest extends TestCase
             fn () => $registry->register(new DriverRegistration(
                 DriverKey::from('extension-driver'),
                 'extension-family',
-                $claude->mode,
+                $claude->driverType,
                 $claude->label,
                 [],
                 $claude->hookProtocol,

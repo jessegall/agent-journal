@@ -15,7 +15,7 @@ use App\Enums\ConversationModeType;
 use App\Enums\DriverCapability;
 use App\Enums\DriverSourceType;
 use App\Enums\DriverSwitchStage;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ResumeRefusal;
 use App\Enums\StartPreflightRefusal;
 use App\Events\DriverSwitchStopped;
@@ -140,24 +140,24 @@ final class ProfileStartTest extends TestCase
         $this->assertSame(DefaultDrivers::CLAUDE_CODE, $session->driver_key);
     }
 
-    public function test_an_explicit_start_runs_the_chosen_account_and_variant_and_the_next_automatic_one_the_defaults(): void
+    public function test_an_explicit_start_runs_the_chosen_account_and_driver_type_and_the_next_automatic_one_the_defaults(): void
     {
         $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $chosen = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Account B'), '/journal/accounts/b');
         $requestId = strtolower((string) Str::ulid());
 
-        $explicit = $this->start('default', 'codex', $requestId, DriverVariant::Headless, $chosen);
-        $repeated = $this->start('default', 'codex', $requestId, DriverVariant::Headless, $chosen);
+        $explicit = $this->start('default', 'codex', $requestId, DriverType::Headless, $chosen);
+        $repeated = $this->start('default', 'codex', $requestId, DriverType::Headless, $chosen);
         $this->main = Agent::create('Second main', 'main-agent');
         $automatic = $this->start('default', 'claude-code');
 
         $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->newSession]);
         $this->assertSame(
-            [DefaultDrivers::CODEX, DriverVariant::Headless, true, $chosen->id],
+            [DefaultDrivers::CODEX, DriverType::Headless, true, $chosen->id],
             $this->recorded($explicit->requestId, $explicit->sessionId),
         );
         $this->assertSame(
-            [DefaultDrivers::CLAUDE_CODE, DriverVariant::Terminal, false, $this->accounts['claude-code']->id],
+            [DefaultDrivers::CLAUDE_CODE, DriverType::Terminal, false, $this->accounts['claude-code']->id],
             $this->recorded($automatic->requestId, $automatic->sessionId),
         );
     }
@@ -217,7 +217,7 @@ final class ProfileStartTest extends TestCase
             'expectedSessionId' => $old->sessionId,
             'expectedGeneration' => self::generationOf($old->sessionId),
             'driver' => DefaultDrivers::CODEX,
-            'variant' => DriverVariant::Headless->value,
+            'driverType' => DriverType::Headless->value,
             'accountId' => $codex->id,
             'accountRevision' => $codex->sign_in_generation,
             'model' => 'default',
@@ -276,7 +276,7 @@ final class ProfileStartTest extends TestCase
                 strtolower((string) Str::ulid()),
                 $session,
                 $this->accounts['codex'],
-                DriverVariant::Terminal,
+                DriverType::Terminal,
             ),
             DriverCapabilityUnsupported::class,
             DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
@@ -293,7 +293,7 @@ final class ProfileStartTest extends TestCase
         $this->switchTo($requestId, $session, $this->accounts['codex']);
 
         $switch = DriverSwitch::query()->where('request_id', $requestId)->sole();
-        $pin = $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverVariant::Headless);
+        $pin = $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverType::Headless);
         $this->assertSame(
             [(string) $pin->registration->key, $pin->registration->family],
             [$switch->target_driver_key, $switch->target_family],
@@ -314,7 +314,7 @@ final class ProfileStartTest extends TestCase
         $this->assertSame(DriverSwitchStage::Starting, $started->stage);
         $this->assertNotSame($started->expected_session_id, $started->replacement_session_id);
         $this->assertSame(
-            [DefaultDrivers::CODEX, DriverVariant::Headless, true, $codex->id],
+            [DefaultDrivers::CODEX, DriverType::Headless, true, $codex->id],
             $this->recorded($started->request_id, (string) $started->replacement_session_id),
         );
         $this->assertSame(DriverSwitchStage::LaunchFailed, $failed->refresh()->stage);
@@ -347,7 +347,7 @@ final class ProfileStartTest extends TestCase
         string $requestId,
         string $sessionId,
         Account $account,
-        DriverVariant $mode = DriverVariant::Headless,
+        DriverType $mode = DriverType::Headless,
     ): DriverSwitchReceipt {
         return $this->app->make(CommandBus::class)->run(new SwitchAgentDriverCommand(
             $requestId,
@@ -378,8 +378,8 @@ final class ProfileStartTest extends TestCase
             strtolower((string) Str::ulid()),
             $session,
             0,
-            new DriverSwitchTarget(DefaultDrivers::CODEX, DriverVariant::Headless, $account, null, false),
-            $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverVariant::Headless),
+            new DriverSwitchTarget(DefaultDrivers::CODEX, DriverType::Headless, $account, null, false),
+            $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverType::Headless),
             'owner',
         );
         $switch->markPreflighted();
@@ -401,16 +401,16 @@ final class ProfileStartTest extends TestCase
     }
 
     /**
-     * The driver, variant, whether the owner chose the account, and the account the start runs with.
+     * The driver, driver type, whether the owner chose the account, and the account the start runs with.
      *
-     * @return array{string, DriverVariant, bool, string}
+     * @return array{string, DriverType, bool, string}
      */
     private function recorded(string $requestId, string $sessionId): array
     {
         $record = StartRecord::query()->where('request_id', $requestId)->sole();
         $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::LINK_TYPE);
 
-        return [$record->family, $record->mode, $record->account_chosen, $account->id];
+        return [$record->family, $record->driver_type, $record->account_chosen, $account->id];
     }
 
     private static function main(string $model, string $driver, bool $pinned): ProposedProfile
@@ -449,7 +449,7 @@ final class ProfileStartTest extends TestCase
         string $model,
         string|null $driver,
         string|null $requestId = null,
-        DriverVariant|null $variant = null,
+        DriverType|null $driverType = null,
         Account|null $chosen = null,
     ): StartReceipt {
         $start = new StartProfileMainCommand(
@@ -458,7 +458,7 @@ final class ProfileStartTest extends TestCase
             ProfileKey::from('journal-main'),
             ModelSelection::fromInput($model),
             $driver,
-            $variant,
+            $driverType,
             false,
             $chosen === null ? null : new ChosenAccount($chosen->id, $chosen->sign_in_generation),
         );

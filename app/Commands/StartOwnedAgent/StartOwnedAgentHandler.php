@@ -34,15 +34,17 @@ final readonly class StartOwnedAgentHandler implements CommandHandler
         $parentSessionId = $this->sessions->hasSession() ? $this->sessions->sessionId() : null;
         $agent = Agent::query()->findOrFail($request->agent->id);
 
-        [$variant] = $this->previews->modeFor(
+        [$driverType] = $this->previews->chosenDriverType(
             $agent,
             $request->selection->driver,
-            $request->mode,
-            $this->profiles->defaultVariantOf($agent->profile_key),
+            $request->driverType,
+            $this->profiles->defaultDriverTypeOf($agent->profile_key),
         );
 
         $receipt = $this->commands->run(
-            new StartAgentCommand($request->startRequest($parentSessionId, $variant, $this->sources->selectedSource())),
+            new StartAgentCommand(
+                $request->startRequest($parentSessionId, $driverType, $this->sources->selectedSource()),
+            ),
         );
 
         return OwnerStartReceipt::ofStart(

@@ -8,7 +8,7 @@ use App\Commands\ContinueStart\ContinueStartCommand;
 use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Exceptions\StartRefused;
 use App\Models\Accounts\Account;
@@ -80,14 +80,14 @@ final class ContinueStartTest extends TestCase
 
     public function test_a_continued_terminal_session_goes_on_in_a_terminal(): void
     {
-        $first = $this->startFirst(DriverVariant::Terminal);
+        $first = $this->startFirst(DriverType::Terminal);
         AgentSession::query()->findOrFail($first)->endAt(CarbonImmutable::now());
 
         $successor = $this->bus()->run(new ContinueStartCommand($first, $this->agent->id));
 
         $this->assertSame(
-            DriverVariant::Terminal,
-            StartRecord::query()->where('request_id', $successor->requestId)->sole()->mode,
+            DriverType::Terminal,
+            StartRecord::query()->where('request_id', $successor->requestId)->sole()->driver_type,
         );
     }
 
@@ -101,7 +101,7 @@ final class ContinueStartTest extends TestCase
         $this->bus()->run(new ContinueStartCommand($first, $other->id));
     }
 
-    private function startFirst(DriverVariant $variant = DriverVariant::Headless): string
+    private function startFirst(DriverType $driverType = DriverType::Headless): string
     {
         $request = new StartRequest(
             TestSelections::requestId(),
@@ -113,7 +113,7 @@ final class ContinueStartTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: $variant,
+            driverType: $driverType,
         );
 
         return $this->bus()->run(new StartAgentCommand($request))->sessionId;

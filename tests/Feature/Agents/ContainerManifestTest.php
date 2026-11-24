@@ -10,7 +10,7 @@ use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;
 use App\Enums\LaunchProfileType;
@@ -680,12 +680,12 @@ final class ContainerManifestTest extends TestCase
             $agent->id,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
-            'helpers.job 1',
+            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile($this->policy()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
     }
 

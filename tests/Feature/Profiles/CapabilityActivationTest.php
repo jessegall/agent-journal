@@ -12,7 +12,7 @@ use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\HostCapabilityType;
 use App\Enums\StartOriginType;
 use App\Exceptions\AccountContainerUnsupported;
@@ -21,6 +21,7 @@ use App\Models\Agents\Agent;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\ProfileProposal;
+use App\Support\RecordIdentity;
 use App\Values\ProfileKey;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
@@ -85,12 +86,12 @@ final class CapabilityActivationTest extends TestCase
             $actor->id,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
-            'helpers.job 1',
+            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
             ConversationModeType::New,
             null,
             $policy,
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         ));
     }
 

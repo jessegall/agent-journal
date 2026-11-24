@@ -8,7 +8,7 @@ use App\Calls\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Processes\ShellCommandParser;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\NoSubject;
 use App\Enums\RewriteSupport;
 use App\Enums\ShellDialect;
@@ -132,7 +132,7 @@ trait CommittedHookStack
             'claude-code',
             '1.0.0',
             'default',
-            DriverVariant::Headless,
+            DriverType::Headless,
             null,
             null,
             null,

@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\Agent;
@@ -54,24 +54,24 @@ final readonly class ContinueStartHandler implements CommandHandler
             ConversationModeType::New,
             $predecessor->parent_session_id,
             $this->policies->policyFor($predecessor->id),
-            variant: $this->modeOf($predecessor),
+            driverType: $this->driverTypeOf($predecessor),
         )));
     }
 
     /**
-     * The successor runs in its predecessor's mode; one that ran no runtime takes the agent's own choice.
+     * The successor runs in its predecessor's driver type; one that ran no runtime takes the agent's own choice.
      */
-    private function modeOf(AgentSession $predecessor): DriverVariant
+    private function driverTypeOf(AgentSession $predecessor): DriverType
     {
         $runtime = AgentRuntime::ofSession($predecessor->id);
 
         if ($runtime !== null) {
-            return $runtime->mode;
+            return $runtime->driver_type;
         }
 
         $agent = Agent::query()->findOrFail($predecessor->agent_id);
 
-        return $agent->variantFor(null, $this->profiles->defaultVariantOf($agent->profile_key));
+        return $agent->driverTypeFor(null, $this->profiles->defaultDriverTypeOf($agent->profile_key));
     }
 
     /**

@@ -26,8 +26,8 @@ final readonly class OpenHostMainRuntimeHandler implements CommandHandler
     public function handle(OpenHostMainRuntimeCommand $command): OpenedRuntime
     {
         $agent = Agent::query()->findOrFail($command->agentId);
-        $variant = $agent->variantFor(null, $this->builtInProfiles->defaultVariantOf($agent->profile_key));
-        $runtime = $command->asAgentRuntime($variant)->withDispatcher($command->dispatchedBy());
+        $driverType = $agent->driverTypeFor(null, $this->builtInProfiles->defaultDriverTypeOf($agent->profile_key));
+        $runtime = $command->asAgentRuntime($driverType)->withDispatcher($command->dispatchedBy());
         $opened = $this->runtimes->handle($runtime);
         $this->takeover->takeOver($agent);
 

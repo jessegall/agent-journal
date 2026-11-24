@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\DriverSwitchStage;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ProcessStartState;
 use App\Events\DriverSwitchCancelled;
 use App\Events\DriverSwitchConfirmed;
@@ -43,7 +43,7 @@ use Illuminate\Support\Carbon;
  * @property int $expected_generation
  * @property string $target_driver_key
  * @property string $target_family
- * @property DriverVariant $mode
+ * @property DriverType $driver_type
  * @property string $account_id
  * @property int $account_revision
  * @property string|null $conversation_id
@@ -63,7 +63,7 @@ use Illuminate\Support\Carbon;
     'expected_generation',
     'target_driver_key',
     'target_family',
-    'mode',
+    'driver_type',
     'account_id',
     'account_revision',
     'conversation_id',
@@ -88,7 +88,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'mode' => DriverVariant::class,
+            'driver_type' => DriverType::class,
             'expected_generation' => 'integer',
             'account_revision' => 'integer',
             'remember' => 'boolean',
@@ -114,11 +114,11 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $switch->expected_generation = $generation;
         $switch->target_driver_key = (string) $pin->registration->key;
         $switch->target_family = $pin->registration->family;
-        $switch->mode = $target->variant;
+        $switch->driver_type = $target->driverType;
         $switch->account_id = $target->account->accountId;
         $switch->account_revision = $target->account->reviewedSignIn;
         $switch->conversation_id = $target->conversationId;
-        $switch->remember = $target->saveVariant;
+        $switch->remember = $target->saveDriverType;
         $switch->requested_by = $requestedBy;
         $switch->stage = DriverSwitchStage::Requested;
         $switch->save();
@@ -282,7 +282,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     {
         return Attribute::get(fn () => new DriverSwitchTarget(
             $this->target_family,
-            $this->mode,
+            $this->driver_type,
             new ChosenAccount($this->account_id, $this->account_revision),
             $this->conversation_id,
             $this->remember,

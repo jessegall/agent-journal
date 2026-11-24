@@ -6,7 +6,7 @@ namespace Tests\Feature\Drivers;
 
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Exceptions\AccountWriterTaken;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
@@ -66,9 +66,9 @@ final class AccountSharingTest extends TestCase
     public function test_a_driver_that_runs_alone_is_refused_on_an_account_in_use(): void
     {
         $host = $this->enrollHost();
-        $writer = $this->open($host, DriverVariant::Headless);
+        $writer = $this->open($host, DriverType::Headless);
 
-        $refused = $this->assertThrowsAccountWriterTaken(fn () => $this->open($host, DriverVariant::Terminal));
+        $refused = $this->assertThrowsAccountWriterTaken(fn () => $this->open($host, DriverType::Terminal));
 
         $this->assertSame($writer->sessionId, $refused->ownerSessionId);
     }
@@ -76,14 +76,14 @@ final class AccountSharingTest extends TestCase
     public function test_nothing_starts_on_an_account_a_driver_runs_alone_on(): void
     {
         $host = $this->enrollHost();
-        $alone = $this->open($host, DriverVariant::Terminal);
+        $alone = $this->open($host, DriverType::Terminal);
 
-        $refused = $this->assertThrowsAccountWriterTaken(fn () => $this->open($host, DriverVariant::Headless));
+        $refused = $this->assertThrowsAccountWriterTaken(fn () => $this->open($host, DriverType::Headless));
 
         $this->assertSame($alone->sessionId, $refused->ownerSessionId);
     }
 
-    private function open(EnrolledHost $host, DriverVariant $variant): OpenedRuntime
+    private function open(EnrolledHost $host, DriverType $driverType): OpenedRuntime
     {
         return $this->asOwner(new OpenAgentRuntimeCommand(
             $this->agent()->id,
@@ -92,7 +92,7 @@ final class AccountSharingTest extends TestCase
             'example',
             '1.0.0',
             'echo',
-            $variant,
+            $driverType,
             'echo-small',
         ));
     }
@@ -122,13 +122,13 @@ final class AccountSharingTest extends TestCase
         );
 
         foreach ([
-            ['example/echo-headless', DriverVariant::Headless, AcmeReaderCapabilities::class],
-            ['example/echo-terminal', DriverVariant::Terminal, RunsAloneCapabilities::class],
-        ] as [$key, $variant, $capabilities]) {
+            ['example/echo-headless', DriverType::Headless, AcmeReaderCapabilities::class],
+            ['example/echo-terminal', DriverType::Terminal, RunsAloneCapabilities::class],
+        ] as [$key, $driverType, $capabilities]) {
             $registry->register(new DriverRegistration(
                 DriverKey::from($key),
                 'example',
-                $variant,
+                $driverType,
                 'Echo',
                 [],
                 $headless->hookProtocol,

@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverSwitchStage;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ProcessStartState;
 use App\Enums\RuntimeActivity;
 use App\Exceptions\DriverSwitchStageRefused;
@@ -210,12 +210,12 @@ final class DriverSwitchTest extends TestCase
             0,
             new DriverSwitchTarget(
                 DefaultDrivers::CODEX,
-                DriverVariant::Headless,
+                DriverType::Headless,
                 new ChosenAccount(strtolower((string) Str::ulid()), 0),
                 null,
                 false,
             ),
-            $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverVariant::Headless),
+            $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverType::Headless),
             'owner',
         );
     }

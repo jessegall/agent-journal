@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartOriginType;
 use App\Models\Drivers\DriverConversation;
@@ -27,8 +27,8 @@ final readonly class OwnerStartRequest
         public SelectedDriver $selection,
         public ConversationModeType $conversationMode,
         public StartPolicy $policy,
-        // The mode named for this start, none to take the agent's saved one or its profile's.
-        public DriverVariant|null $mode = null,
+        // The driver type named for this start, none to take the agent's saved one or its profile's.
+        public DriverType|null $driverType = null,
     ) {}
 
     public function executionMode(): ExecutionModeType
@@ -36,14 +36,9 @@ final readonly class OwnerStartRequest
         return $this->policy->execution->mode;
     }
 
-    public static function ownerReferenceOf(RecordIdentity $work): string
-    {
-        return sprintf('%s:%s', $work->type, $work->id);
-    }
-
     public function startRequest(
         string|null $parentSessionId,
-        DriverVariant $variant,
+        DriverType $driverType,
         RecordIdentity|null $authorizedSource = null,
     ): StartRequest {
         return new StartRequest(
@@ -51,12 +46,12 @@ final readonly class OwnerStartRequest
             $this->agent->id,
             $this->selection,
             StartOriginType::OwnerRequest,
-            self::ownerReferenceOf($this->work),
+            $this->work,
             $this->contextReference,
             $this->conversationMode,
             $parentSessionId,
             $this->policy,
-            $variant,
+            $driverType,
             authorizedSource: $authorizedSource,
             conversationTarget: $this->conversationMode === ConversationModeType::Resume
                 ? DriverConversation::lastUnder($this->agent->id, $this->contextReference, $this->selection->driver)

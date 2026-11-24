@@ -3,13 +3,14 @@
 declare(strict_types=1);
 
 use App\Enums\CleanupState;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\HoldReason;
 use App\Enums\RuntimeActivity;
 use App\Enums\StopAttemptState;
 use App\Events\AccountSettingsRequested;
 use App\Events\AccountUseChanged;
 use App\Events\ActivityRecorded;
+use App\Events\AgentDriverTypePreferred;
 use App\Events\AgentHoldReleased;
 use App\Events\AgentRetired;
 use App\Events\AgentRuntimeAdopted;
@@ -32,7 +33,6 @@ use App\Events\AgentSessionEnded;
 use App\Events\AgentSessionHeartbeatRecorded;
 use App\Events\AgentSessionSelectionUsed;
 use App\Events\AgentSessionSkillsGenerated;
-use App\Events\AgentVariantPreferred;
 use App\Events\ChildCheckoutRequested;
 use App\Events\CleanupPassRecorded;
 use App\Events\DriverBuildsApproved;
@@ -351,12 +351,12 @@ return [
         'producers' => [],
         'sample' => fn () => new ProcessStartCancelled('start'),
     ],
-    AgentVariantPreferred::class => [
+    AgentDriverTypePreferred::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Agent::preferVariant',
+        'owner' => 'Agent::preferDriverType',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AgentVariantPreferred('agent', DriverVariant::Headless),
+        'sample' => fn () => new AgentDriverTypePreferred('agent', DriverType::Headless),
     ],
     AgentRuntimeAdopted::class => [
         'role' => EventRole::RowFact,

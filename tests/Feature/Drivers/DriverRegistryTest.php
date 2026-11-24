@@ -7,12 +7,12 @@ namespace Tests\Feature\Drivers;
 use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverCapability;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\SupportState;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverKeyInvalid;
-use App\Exceptions\DriverModeAmbiguous;
 use App\Exceptions\DriverRegisteredTwice;
+use App\Exceptions\DriverTypeAmbiguous;
 use App\Exceptions\DriverUnknown;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\Capabilities\CodexTerminalCapabilities;
@@ -66,7 +66,7 @@ final class DriverRegistryTest extends TestCase
         $claude = DefaultDrivers::registrations()[0];
 
         $this->assertThrows(fn () => $registry->register($claude), DriverRegisteredTwice::class);
-        $this->assertThrows(fn () => $registry->register($this->renamed($claude, 'acme/claude')), DriverModeAmbiguous::class);
+        $this->assertThrows(fn () => $registry->register($this->renamed($claude, 'acme/claude')), DriverTypeAmbiguous::class);
         $this->assertSame(4, $registry->revision());
     }
 
@@ -85,7 +85,7 @@ final class DriverRegistryTest extends TestCase
         $registry = $this->registry();
 
         $this->assertThrows(
-            fn () => $registry->pinned('codex', DriverVariant::Headless, [DriverCapability::ExactResume]),
+            fn () => $registry->pinned('codex', DriverType::Headless, [DriverCapability::ExactResume]),
             DriverCapabilityUnsupported::class,
             DriverCapabilityUnsupported::for(
                 DriverCapability::ExactResume,
@@ -94,11 +94,11 @@ final class DriverRegistryTest extends TestCase
         );
         $this->assertSame(
             'codex-headless',
-            (string) $registry->pinned('codex', DriverVariant::Headless)->registration->key,
+            (string) $registry->pinned('codex', DriverType::Headless)->registration->key,
         );
         $this->assertSame(
             'claude-code-headless',
-            (string) $registry->pinned('claude-code', DriverVariant::Headless, [DriverCapability::ExactResume])
+            (string) $registry->pinned('claude-code', DriverType::Headless, [DriverCapability::ExactResume])
                 ->registration->key,
         );
     }
@@ -176,7 +176,7 @@ final class DriverRegistryTest extends TestCase
         return new DriverRegistration(
             DriverKey::from($key),
             $registration->family,
-            DriverVariant::Terminal,
+            DriverType::Terminal,
             $registration->label,
             $registration->buildPins,
             $registration->hookProtocol,

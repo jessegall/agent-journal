@@ -8,12 +8,12 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCapabilities;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverFamilyRegisteredTwice;
 use App\Exceptions\DriverFamilyUnknown;
-use App\Exceptions\DriverModeAmbiguous;
 use App\Exceptions\DriverRegisteredTwice;
+use App\Exceptions\DriverTypeAmbiguous;
 use App\Exceptions\DriverUnknown;
 use App\Values\BoundTarget;
 use App\Values\DriverFamily;
@@ -57,7 +57,7 @@ final class DriverRegistry implements DriverCatalogue
     /**
      * @throws DriverFamilyUnknown when no family is registered under the registration's family
      * @throws DriverRegisteredTwice
-     * @throws DriverModeAmbiguous
+     * @throws DriverTypeAmbiguous
      */
     public function register(DriverRegistration $registration): void
     {
@@ -73,9 +73,9 @@ final class DriverRegistry implements DriverCatalogue
 
         foreach ($this->catalogue() as $registered) {
             if ($registered->sharesModeWith($registration)) {
-                throw DriverModeAmbiguous::for(
+                throw DriverTypeAmbiguous::for(
                     $registration->family,
-                    $registration->mode->value,
+                    $registration->driverType->value,
                     (string) $registered->key,
                     $key,
                 );
@@ -102,24 +102,24 @@ final class DriverRegistry implements DriverCatalogue
     /**
      * @throws DriverUnknown
      */
-    public function keyFor(string $family, DriverVariant $mode): DriverKey
+    public function keyFor(string $family, DriverType $driverType): DriverKey
     {
         foreach ($this->catalogue() as $registration) {
-            if ($registration->family === $family && $registration->mode === $mode) {
+            if ($registration->family === $family && $registration->driverType === $driverType) {
                 return $registration->key;
             }
         }
 
-        throw DriverUnknown::for("{$family} {$mode->value}");
+        throw DriverUnknown::for("{$family} {$driverType->value}");
     }
 
     /**
      * @throws DriverUnknown
      * @throws DriverCapabilityUnsupported
      */
-    public function pinned(string $family, DriverVariant $mode, array $neededCapabilities = []): PinnedDriver
+    public function pinned(string $family, DriverType $driverType, array $neededCapabilities = []): PinnedDriver
     {
-        $driver = $this->forKey($this->keyFor($family, $mode));
+        $driver = $this->forKey($this->keyFor($family, $driverType));
         $registration = $driver->descriptor();
         $support = $driver->capabilities(BoundTarget::beforePlacement());
         $support->assertSupports([...$registration->profileRequirements, ...$neededCapabilities]);

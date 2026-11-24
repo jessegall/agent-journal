@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Events\StartSettingsRequested;
 use App\Models\Drivers\HookCall;
 use App\Support\ActorContext;
@@ -67,8 +67,8 @@ final class NativeSubagentRuleTest extends TestCase
         $adapters = $this->app->make(DriverAdapters::class);
 
         foreach (DefaultDrivers::familyKeys() as $family) {
-            $terminal = $drivers->forKey($drivers->keyFor($family, DriverVariant::Terminal))->descriptor();
-            $headless = $drivers->forKey($drivers->keyFor($family, DriverVariant::Headless))->descriptor();
+            $terminal = $drivers->forKey($drivers->keyFor($family, DriverType::Terminal))->descriptor();
+            $headless = $drivers->forKey($drivers->keyFor($family, DriverType::Headless))->descriptor();
 
             $this->assertSame(
                 $adapters->for($terminal->hookProtocol),

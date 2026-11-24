@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ArrangementType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\TerminalInputType;
 use App\Events\HostBrowserInputAdvertised;
@@ -42,7 +42,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @property list<string> $start_roots
  * @property ArrangementType $arrangement
  * @property array<string, StoredReport> $protection
- * @property list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}> $descriptors
+ * @property list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}> $descriptors
  * @property CarbonImmutable|null $revoked_at
  * @property bool $browser_input
  * @property bool $browser_keys
@@ -161,7 +161,7 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The first serving enrolled host that runs this placement and declared the driver build and variant; a relay
+     * The first serving enrolled host that runs this placement and declared the driver build and driver type; a relay
      * host starts only through its binding.
      *
      * @throws HostUnavailable
@@ -170,15 +170,15 @@ final class Host extends Model implements EventSource, ReadableModel
         string $driver,
         string $build,
         ExecutionModeType $placement,
-        DriverVariant $variant,
+        DriverType $driverType,
     ): self {
         foreach (self::servingEnrolled() as $host) {
-            if ($host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $variant)) {
+            if ($host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $driverType)) {
                 return $host;
             }
         }
 
-        throw HostUnavailable::forStart($driver, $variant);
+        throw HostUnavailable::forStart($driver, $driverType);
     }
 
     // ----------[ Mutations ]----------
@@ -193,7 +193,7 @@ final class Host extends Model implements EventSource, ReadableModel
     /**
      * Keeps the drivers the host enrolled, in place of the ones it enrolled before.
      *
-     * @param  list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>  $descriptors
+     * @param  list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}>  $descriptors
      */
     public function recordDescriptors(array $descriptors): void
     {
@@ -272,21 +272,27 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Whether the host enrolled the proposed driver build as available, in its own arrangement, placement and mode.
+     * Whether the host enrolled the proposed driver build as available, in its own arrangement, placement and driver
+     * type.
      */
     public function declares(StartProposal $proposal): bool
     {
-        return $this->declaresRun($proposal->driver, $proposal->build, $proposal->placement, $proposal->variant);
+        return $this->declaresRun($proposal->driver, $proposal->build, $proposal->placement, $proposal->driverType);
     }
 
     /**
-     * Whether the host enrolled this driver build as available, in its own arrangement, the placement and the mode.
+     * Whether the host enrolled this driver build as available, in its own arrangement, the placement and the driver
+     * type.
      */
-    public function declaresRun(string $driver, string $build, ExecutionModeType $placement, DriverVariant $mode): bool
-    {
+    public function declaresRun(
+        string $driver,
+        string $build,
+        ExecutionModeType $placement,
+        DriverType $driverType,
+    ): bool {
         foreach ($this->availableDescriptors() as $descriptor) {
             if ($descriptor['family'] === $driver
-                && $descriptor['mode'] === $mode->value
+                && $descriptor['driver_type'] === $driverType->value
                 && $descriptor['build'] === $build
                 && $descriptor['arrangement'] === $this->arrangement->value
                 && $descriptor['placement'] === $placement->value) {
@@ -298,7 +304,7 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Whether the host enrolled any available driver of the family, in any build, placement or mode.
+     * Whether the host enrolled any available driver of the family, in any build, placement or driver type.
      */
     public function declaresDriver(string $family): bool
     {
@@ -312,7 +318,7 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * @return list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, mode: string|null, unavailable_reason: string|null}>
+     * @return list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}>
      */
     private function availableDescriptors(): array
     {

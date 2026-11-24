@@ -33,8 +33,13 @@ final readonly class RecordIdentity
     }
 
     /**
-     * @throws InvalidRecordIdentity
+     * The record as one text, its type and id joined by a colon, as a start keeps its owner's work.
      */
+    public function reference(): string
+    {
+        return "{$this->type}:{$this->id}";
+    }
+
     /**
      * The records whose id is among the found ones, in their own order.
      *

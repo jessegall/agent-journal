@@ -7,13 +7,12 @@ namespace App\Support;
 use App\Models\Agents\AgentRuntime;
 
 /**
- * What a host needs to start a runtime's driver: its driver type, the session it runs, the driver and the build it
- * was opened for, the folder it works in, the process generation to start under and the model and effort asked for.
+ * What a host needs to start a runtime's driver: the session it runs, the driver and the build it was opened for,
+ * the folder it works in, the process generation to start under and the model and effort asked for.
  */
 final readonly class RuntimeStart
 {
     public function __construct(
-        public string $variant,
         public string $sessionId,
         public string $driver,
         public string $driverKey,
@@ -27,7 +26,6 @@ final readonly class RuntimeStart
     public static function of(AgentRuntime $runtime): self
     {
         return new self(
-            $runtime->mode->value,
             $runtime->agent_session_id,
             $runtime->family,
             $runtime->driver_key,
@@ -40,13 +38,12 @@ final readonly class RuntimeStart
     }
 
     /**
-     * @return array{variant: string, session_id: string, driver: string, driver_key: string, driver_build: string, folder: string,
+     * @return array{session_id: string, driver: string, driver_key: string, driver_build: string, folder: string,
      *     process_generation: int, model: string|null, effort: string|null}
      */
     public function toArray(): array
     {
         return [
-            'variant' => $this->variant,
             'session_id' => $this->sessionId,
             'driver' => $this->driver,
             'driver_key' => $this->driverKey,

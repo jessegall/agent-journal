@@ -11,7 +11,7 @@ use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\StartExecutor;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;
 use App\Enums\StartOriginType;
@@ -20,6 +20,7 @@ use App\Models\Agents\Agent;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
+use App\Support\RecordIdentity;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
 use App\Values\StartPolicy;
@@ -75,12 +76,12 @@ final class HostBridgeTest extends TestCase
             $actor->id,
             TestSelections::of($driver),
             StartOriginType::OwnerRequest,
-            'helpers.job 1',
+            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile($policy),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
     }
 }

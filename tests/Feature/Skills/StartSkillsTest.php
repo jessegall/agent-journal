@@ -11,7 +11,7 @@ use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Skills\SkillPublisher;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\PublicationState;
 use App\Enums\SessionStatus;
 use App\Events\SessionOpened;
@@ -189,7 +189,7 @@ final class StartSkillsTest extends TestCase
             'codex',
             '0.165.0',
             'codex',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'gpt-5.5',
         ));
 

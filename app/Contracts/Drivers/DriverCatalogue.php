@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Drivers;
 
 use App\Enums\DriverCapability;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
@@ -23,17 +23,17 @@ interface DriverCatalogue
     public function forKey(DriverKey $key): Driver;
 
     /**
-     * The key of the one driver registered for a family in a mode, as a start form or the command line names it.
+     * The key of the one driver registered for a family in a driver type, as a start form or the command line names it.
      */
-    public function keyFor(string $family, DriverVariant $mode): DriverKey;
+    public function keyFor(string $family, DriverType $driverType): DriverKey;
 
     /**
-     * The registration a start of the family in the mode runs on, refused before anything is accepted when the driver
+     * The registration a start of the family in the driver type runs on, refused before anything is accepted when the driver
      * cannot do what every profile on it needs, such as the Codex terminal before it is proven.
      *
      * @param  list<DriverCapability>  $neededCapabilities  what this start needs of the driver beyond its profiles' requirements
      */
-    public function pinned(string $family, DriverVariant $mode, array $neededCapabilities = []): PinnedDriver;
+    public function pinned(string $family, DriverType $driverType, array $neededCapabilities = []): PinnedDriver;
 
     /**
      * @return list<DriverRegistration>

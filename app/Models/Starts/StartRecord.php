@@ -13,7 +13,7 @@ use App\Contracts\Refusals\StartRefusal;
 use App\Enums\ActorType;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverSourceType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\HostRefusal;
 use App\Enums\ModelSelectionType;
 use App\Enums\ResumeRefusal;
@@ -72,7 +72,7 @@ use PhpOption\Option;
  * @property string|null $context_reference
  * @property ConversationModeType $conversation_mode
  * @property string|null $conversation_target
- * @property DriverVariant $mode
+ * @property DriverType $driver_type
  * @property bool $account_chosen
  * @property bool $remember
  * @property bool|null $conversation_resumed
@@ -106,7 +106,7 @@ use PhpOption\Option;
     'context_reference',
     'conversation_mode',
     'conversation_target',
-    'mode',
+    'driver_type',
     'account_chosen',
     'remember',
     'conversation_resumed',
@@ -137,7 +137,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
             'origin_type' => StartOriginType::class,
             'conversation_mode' => ConversationModeType::class,
             'conversation_resumed' => 'boolean',
-            'mode' => DriverVariant::class,
+            'driver_type' => DriverType::class,
             'account_chosen' => 'boolean',
             'remember' => 'boolean',
             'disposition' => StartDisposition::class,
@@ -188,13 +188,13 @@ final class StartRecord extends Model implements EventSource, ReadableModel
             'profile_key' => $source->profileKey,
             'profile_revision' => $source->profileRevision,
             'origin_type' => $request->origin,
-            'owner_reference' => $request->ownerReference,
+            'owner_reference' => $request->ownerWork?->reference(),
             'context_reference' => $request->contextReference,
             'conversation_mode' => $request->conversationMode,
             'conversation_target' => $request->conversationTarget,
-            'mode' => $request->variant,
+            'driver_type' => $request->driverType,
             'account_chosen' => $request->chosenAccount !== null,
-            'remember' => $request->savesVariant,
+            'remember' => $request->savesDriverType,
             'payload_digest' => $request->digest(),
             'disposition' => StartDisposition::Accepted,
             'readiness' => StartReadiness::Accepted,
@@ -227,13 +227,13 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The variant the start of this session asked to keep for its agent once it runs, none when it asked nothing.
+     * The driver type the start of this session asked to keep for its agent once it runs, none when it asked nothing.
      */
-    public static function savedVariantOf(string $sessionId): DriverVariant|null
+    public static function savedDriverTypeOf(string $sessionId): DriverType|null
     {
         $record = self::query()->where('session_id', $sessionId)->where('remember', true)->first();
 
-        return $record?->mode;
+        return $record?->driver_type;
     }
 
     /**
@@ -418,7 +418,8 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         $this->session_id = $session->id;
         $this->disposition = StartDisposition::Started;
         $this->assertSaved($this->save());
-        $this->raise(new StartSessionOpened($this->id, $this->agent_id, $session->id, $this->ownerWork));
+        $ownerWork = $this->owner_reference === null ? null : $this->ownerWork;
+        $this->raise(new StartSessionOpened($this->id, $this->agent_id, $session->id, $ownerWork));
     }
 
     /**

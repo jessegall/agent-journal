@@ -6,7 +6,7 @@ namespace Domain\Helpers\Commands\StartHelper;
 
 use App\Attributes\Authorize;
 use App\Enums\AccessType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Support\Command;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Values\HelperReceipt;
@@ -31,6 +31,6 @@ final readonly class StartHelperCommand extends Command
         public string $model,
         public string|null $driverKey,
         public HelperWork $work,
-        public DriverVariant|null $mode = null,
+        public DriverType|null $driverType = null,
     ) {}
 }

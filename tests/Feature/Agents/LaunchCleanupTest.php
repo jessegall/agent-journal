@@ -10,7 +10,7 @@ use App\Enums\CapacityResource;
 use App\Enums\CleanupState;
 use App\Enums\CleanupStep;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ReservationState;
 use App\Enums\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
@@ -23,6 +23,7 @@ use App\Models\Starts\StartRecord;
 use App\Support\ActorIdentity;
 use App\Support\HeartbeatService;
 use App\Support\LaunchLimits;
+use App\Support\RecordIdentity;
 use App\Values\CleanupReport;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
@@ -192,12 +193,12 @@ final class LaunchCleanupTest extends TestCase
             $launch->agent->id,
             SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
-            'helpers.job:01m7wgahp0n7766x1e1ta8ehew',
+            new RecordIdentity('helpers.job', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
         StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($launch->session);
         SessionPolicy::create($launch->session, $request->policy);

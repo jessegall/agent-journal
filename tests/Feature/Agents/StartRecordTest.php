@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartRecordResolver;
 use App\Enums\ConversationModeType;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ModelSelectionType;
 use App\Enums\StartDisposition;
 use App\Enums\StartOriginType;
@@ -78,7 +78,7 @@ final class StartRecordTest extends TestCase
         $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, DefaultDrivers::CLAUDE_CODE, false, 'claude-sonnet-5-5', [], DriverVariant::Headless),
+            new ProfileDefaults('journal-researcher', 4, DefaultDrivers::CLAUDE_CODE, false, 'claude-sonnet-5-5', [], DriverType::Headless),
             null,
             $this->app->make(DriverCatalogue::class),
         );
@@ -197,7 +197,7 @@ final class StartRecordTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
     }
 }

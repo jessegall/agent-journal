@@ -11,7 +11,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\DriverCapability;
 use App\Enums\DriverEvidence;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ProcessStartState;
 use App\Events\SessionStateChanged;
 use App\Exceptions\DriverCapabilityUnsupported;
@@ -166,25 +166,25 @@ final class HostStartsTest extends TestCase
         $this->assertSame([], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
     }
 
-    public function test_a_launch_that_saves_its_variant_keeps_it_for_the_agent_only_once_it_runs(): void
+    public function test_a_launch_that_saves_its_driver_type_keeps_it_for_the_agent_only_once_it_runs(): void
     {
-        [$host, $opened] = $this->openRuntime(saveVariant: true);
+        [$host, $opened] = $this->openRuntime(saveDriverType: true);
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
-        $this->assertNull($agent->mode_preference);
+        $this->assertNull($agent->driver_type_preference);
 
         $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
             ->json('start_key');
         $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
 
         $agent->refresh();
-        $this->assertSame(DriverVariant::Headless, $agent->mode_preference);
-        $this->assertSame(DriverVariant::Terminal, $agent->variantFor(DriverVariant::Terminal, DriverVariant::Headless));
-        $this->assertSame(DriverVariant::Headless, $agent->variantFor(null, DriverVariant::Terminal));
+        $this->assertSame(DriverType::Headless, $agent->driver_type_preference);
+        $this->assertSame(DriverType::Terminal, $agent->driverTypeFor(DriverType::Terminal, DriverType::Headless));
+        $this->assertSame(DriverType::Headless, $agent->driverTypeFor(null, DriverType::Terminal));
     }
 
     public function test_a_running_report_that_comes_after_the_start_ended_keeps_no_mode(): void
     {
-        [$host, $opened] = $this->openRuntime(saveVariant: true);
+        [$host, $opened] = $this->openRuntime(saveDriverType: true);
         $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
             ->json('start_key');
 
@@ -192,7 +192,7 @@ final class HostStartsTest extends TestCase
         $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1']);
 
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
-        $this->assertNull($agent->mode_preference);
+        $this->assertNull($agent->driver_type_preference);
     }
 
     public function test_an_opened_runtime_keeps_the_driver_it_was_pinned_to(): void
@@ -211,7 +211,7 @@ final class HostStartsTest extends TestCase
     public function test_only_a_runtime_whose_driver_can_be_watched_has_a_screen(): void
     {
         [, $headless] = $this->openRuntime();
-        [, $terminal] = $this->openRuntime(variant: DriverVariant::Terminal);
+        [, $terminal] = $this->openRuntime(driverType: DriverType::Terminal);
 
         $this->assertSame(
             [false, true],
@@ -227,7 +227,7 @@ final class HostStartsTest extends TestCase
         $runtimes = AgentRuntime::query()->count();
 
         $this->assertThrows(
-            fn () => $this->openRuntime(driver: 'codex', variant: DriverVariant::Terminal),
+            fn () => $this->openRuntime(driver: 'codex', driverType: DriverType::Terminal),
             DriverCapabilityUnsupported::class,
             DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
         );
@@ -244,7 +244,7 @@ final class HostStartsTest extends TestCase
         $this->assertNotNull($policy->profile_revision);
     }
 
-    public function test_a_one_launch_variant_leaves_the_agent_on_its_profile_default(): void
+    public function test_a_one_launch_driver_type_leaves_the_agent_on_its_profile_default(): void
     {
         [$host, $opened] = $this->openRuntime();
         $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
@@ -252,8 +252,8 @@ final class HostStartsTest extends TestCase
         $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
 
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
-        $this->assertNull($agent->mode_preference);
-        $this->assertSame(DriverVariant::Terminal, $agent->variantFor(null, DriverVariant::Terminal));
+        $this->assertNull($agent->driver_type_preference);
+        $this->assertSame(DriverType::Terminal, $agent->driverTypeFor(null, DriverType::Terminal));
     }
 
     public function test_after_a_restart_only_proven_exits_end_and_another_host_reaches_nothing(): void
@@ -314,9 +314,9 @@ final class HostStartsTest extends TestCase
      * @return array{EnrolledHost, OpenedRuntime}
      */
     private function openRuntime(
-        bool $saveVariant = false,
+        bool $saveDriverType = false,
         string $driver = 'claude-code',
-        DriverVariant $variant = DriverVariant::Headless,
+        DriverType $driverType = DriverType::Headless,
     ): array {
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
@@ -328,9 +328,9 @@ final class HostStartsTest extends TestCase
             $driver,
             '2.1.323',
             'claude',
-            $variant,
+            $driverType,
             'claude-opus-5-5',
-            saveVariant: $saveVariant,
+            saveDriverType: $saveDriverType,
         );
 
         return [$host, $this->app->make(CommandBus::class)->run($command)];

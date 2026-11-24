@@ -16,7 +16,7 @@ use App\Enums\CleanupStep;
 use App\Enums\CommandEntry;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverOperation;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\StartOriginType;
 use App\Enums\StopResultType;
 use App\Events\HelperCompletionCertified;
@@ -245,12 +245,12 @@ final class HelperCompletionTest extends TestCase
             $session->agent_id,
             SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
-            "{$work->type}:{$work->id}",
+            $work,
             null,
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            variant: DriverVariant::Headless,
+            driverType: DriverType::Headless,
         );
         StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
 

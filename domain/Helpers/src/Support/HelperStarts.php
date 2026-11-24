@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support;
 
 use App\Contracts\Sessions\StartRecordResolver;
-use App\Support\OwnerStartRequest;
 use App\Support\StartRecordDetails;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
@@ -25,7 +24,7 @@ final readonly class HelperStarts
      */
     public function of(HelperJob $job): array
     {
-        return $this->starts->forOwnerReference(OwnerStartRequest::ownerReferenceOf($job->assignmentIdentity()));
+        return $this->starts->forOwnerReference($job->assignmentIdentity()->reference());
     }
 
     public function hasRequest(HelperJob $job, string $requestId): bool

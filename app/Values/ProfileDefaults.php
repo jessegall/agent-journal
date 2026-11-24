@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 
 /**
  * What a profile decides about a start, as plain values from its owner: its driver (pinned or open), its default
- * variant, its default model and the models it allows; an empty allowed list allows any model.
+ * driver type, its default model and the models it allows; an empty allowed list allows any model.
  */
 final readonly class ProfileDefaults
 {
@@ -22,7 +22,7 @@ final readonly class ProfileDefaults
         public bool $driverPinned,
         public string|null $defaultModel,
         public array $allowedModels,
-        public DriverVariant $defaultVariant,
+        public DriverType $defaultDriverType,
     ) {}
 
     public function allows(string $model): bool

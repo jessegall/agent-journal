@@ -13,7 +13,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\DriverEvidence;
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 use App\Enums\ProcessStartState;
 use App\Enums\SignInMethod;
 use App\Enums\StartUnavailableReason;
@@ -161,7 +161,7 @@ final class AccountMaintenanceTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverVariant::Headless,
+            DriverType::Headless,
             'claude-opus-5-5',
         );
 

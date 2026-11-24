@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverVariant;
+use App\Enums\DriverType;
 
 /**
  * A host's advertised driver as the journal enrolled it: the registration it matched, or the reason it is unavailable.
@@ -14,13 +14,13 @@ final readonly class EnrolledDescriptor
     private function __construct(
         public HostDescriptor $descriptor,
         public string|null $family,
-        public DriverVariant|null $mode,
+        public DriverType|null $driverType,
         public string|null $unavailableReason,
     ) {}
 
     public static function available(HostDescriptor $descriptor, DriverRegistration $registration): self
     {
-        return new self($descriptor, $registration->family, $registration->mode, null);
+        return new self($descriptor, $registration->family, $registration->driverType, null);
     }
 
     public static function unavailable(
@@ -28,12 +28,12 @@ final readonly class EnrolledDescriptor
         string $reason,
         DriverRegistration|null $registration,
     ): self {
-        return new self($descriptor, $registration?->family, $registration?->mode, $reason);
+        return new self($descriptor, $registration?->family, $registration?->driverType, $reason);
     }
 
     /**
      * @return array{key: string, build: string, arrangement: string, placement: string,
-     *     family: string|null, mode: string|null, unavailable_reason: string|null}
+     *     family: string|null, driver_type: string|null, unavailable_reason: string|null}
      */
     public function stored(): array
     {
@@ -43,7 +43,7 @@ final readonly class EnrolledDescriptor
             'arrangement' => $this->descriptor->arrangement->value,
             'placement' => $this->descriptor->placement->value,
             'family' => $this->family,
-            'mode' => $this->mode?->value,
+            'driver_type' => $this->driverType?->value,
             'unavailable_reason' => $this->unavailableReason,
         ];
     }

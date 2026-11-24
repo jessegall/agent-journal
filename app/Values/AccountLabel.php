@@ -28,7 +28,7 @@ final readonly class AccountLabel
     }
 
     /**
-     * The numbered variant used when this label is taken, such as 'Work (2)', its base cut so the whole fits.
+     * The numbered driver type used when this label is taken, such as 'Work (2)', its base cut so the whole fits.
      */
     public function numbered(int $number): self
     {
