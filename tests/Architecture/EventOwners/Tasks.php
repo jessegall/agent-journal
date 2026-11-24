@@ -11,6 +11,7 @@ use Domain\Tasks\Events\TaskCheckRecorded;
 use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskLogged;
+use Domain\Tasks\Events\TaskRunClaimed;
 use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Events\TaskWaitChanged;
@@ -22,6 +23,14 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    TaskRunClaimed::class => [
+        'role' => EventRole::CommandFact,
+        'migrated' => false,
+        'producers' => [
+            'domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php',
+            'domain/Tasks/src/Commands/StartTask/StartTaskHandler.php',
+        ],
+    ],
     TaskBlocked::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::block',

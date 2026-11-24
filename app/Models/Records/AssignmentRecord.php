@@ -15,6 +15,7 @@ use App\Models\Support\SignedInScope;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
 use App\Support\AssignmentReference;
+use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -106,13 +107,25 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     /**
      * The claims a lost assignment proved, whoever holds them, for their release.
      *
-     * @return Builder<self>
+     * @return ReadBuilder<self>
      */
-    public static function claimsProvedBy(AssignmentReference $source): Builder
+    public static function claimsProvedBy(AssignmentReference $source): ReadBuilder
     {
         return self::query()
             ->withoutGlobalScope(SignedInScope::class)
             ->whereIn('id', ClaimAuthorization::claimIdsFor($source));
+    }
+
+    /**
+     * The ids of the claims a lost assignment proved, whoever holds them.
+     *
+     * @return list<string>
+     */
+    public static function claimIdsProvedBy(AssignmentReference $source): array
+    {
+        $claims = self::claimsProvedBy($source)->readAll('every claim a lost assignment proved ends with it');
+
+        return array_values(array_map('strval', $claims->pluck('id')->all()));
     }
 
     /**

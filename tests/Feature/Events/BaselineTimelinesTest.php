@@ -160,6 +160,8 @@ final class BaselineTimelinesTest extends TestCase
             'saved Plan',
             'saved AgentStackRow',
             'commit',
+            'saved AgentStackRow',
+            'commit',
             'TaskStarted',
             'PlanProgressChanged',
             'saved AgentStackRow',
@@ -182,6 +184,8 @@ final class BaselineTimelinesTest extends TestCase
             'saved Plan',
             'saved AgentStackRow',
             'commit',
+            'saved AgentStackRow',
+            'commit',
             'TaskStarted',
             'PlanProgressChanged',
             'saved AgentStackRow',
@@ -201,7 +205,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'commit', 'TaskStarted'],
+            ['saved Task', 'commit', 'saved AgentStackRow', 'commit', 'TaskStarted'],
             $this->timeline,
         );
     }
@@ -218,7 +222,15 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'saved TaskRun', 'saved AgentStackRow', 'commit', 'TaskStarted'],
+            [
+                'saved Task',
+                'saved TaskRun',
+                'saved AgentStackRow',
+                'commit',
+                'saved AgentStackRow',
+                'commit',
+                'TaskStarted',
+            ],
             $this->timeline,
         );
     }
@@ -239,6 +251,8 @@ final class BaselineTimelinesTest extends TestCase
             'saved Task',
             'saved TaskRun',
             'saved Plan',
+            'commit',
+            'saved AgentStackRow',
             'commit',
             'TaskFinished',
             'saved AgentStackRow',
@@ -262,7 +276,16 @@ final class BaselineTimelinesTest extends TestCase
         $this->finish($task);
 
         $this->assertSame(
-            ['saved Task', 'saved TaskRun', 'commit', 'TaskFinished', 'saved AgentStackRow', 'commit'],
+            [
+                'saved Task',
+                'saved TaskRun',
+                'commit',
+                'saved AgentStackRow',
+                'commit',
+                'TaskFinished',
+                'saved AgentStackRow',
+                'commit',
+            ],
             $this->timeline,
         );
     }

@@ -42,7 +42,6 @@ use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Support\TaskDetailsFactory;
 use Domain\Tasks\Support\TaskType;
-use Domain\Tasks\Support\TaskWork;
 use Domain\Tasks\Values\TaskCard;
 use Domain\Tasks\Values\TaskExecution;
 use Domain\Tasks\Values\TaskSummary;
@@ -393,14 +392,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
 
         return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
-    }
-
-    /**
-     * What the stack sees of one run: the current run follows the task's state, an earlier run is over.
-     */
-    public function workFor(int $runNumber): TaskWork
-    {
-        return new TaskWork($this->number, $runNumber, $this->state, $runNumber === $this->run_number);
     }
 
     public function assignmentIdentity(): RecordIdentity

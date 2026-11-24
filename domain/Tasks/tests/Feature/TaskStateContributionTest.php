@@ -67,13 +67,13 @@ final class TaskStateContributionTest extends TestCase
         $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
     }
 
-    public function test_the_state_reads_the_task_fresh_and_the_next_hook_passes_over_a_finished_run(): void
+    public function test_the_frame_hears_its_run_finish_and_the_next_stop_passes(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 
         $held = $this->answerStop('call-1');
-        $task->finish('Done.');
+        $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 1, 'Done.'));
         $allowed = $this->answerStop('call-2');
 
         $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);

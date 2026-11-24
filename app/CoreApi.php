@@ -729,6 +729,7 @@ use App\Enums\WindowPlace;
 use App\Enums\WordSegmentType;
 use App\Enums\WorkRepairOutcome;
 use App\Enums\WorkspaceUse;
+use App\Events\AssignmentsEnded;
 use App\Events\ContextStarted;
 use App\Events\EngineTicked;
 use App\Events\HelperCompletionCertified;
@@ -1229,6 +1230,7 @@ use App\Support\References\WorkOccurrence;
 use App\Support\RefusalReason;
 use App\Support\ResumableConversation;
 use App\Support\RootRule;
+use App\Support\RunClaim;
 use App\Support\SavedSharePreview;
 use App\Support\ScreenReportAnswer;
 use App\Support\Searchable;
@@ -1542,6 +1544,7 @@ final class CoreApi
                 RunChanged::class,
                 EngineTicked::class,
                 ShareActivated::class,
+                AssignmentsEnded::class,
             )
             ->contracts(
                 MessagePart::class,
@@ -2299,6 +2302,7 @@ final class CoreApi
                 ActivityDefinition::class,
                 Assignment::class,
                 AssignmentReference::class,
+                RunClaim::class,
                 AssignmentSet::class,
                 AssignmentGroup::class,
                 AssignmentResult::class,

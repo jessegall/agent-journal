@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Support\Storage;
 
 use App\Contracts\Assignments\AssignmentStorage;
+use App\Contracts\Bus\CommandFacts;
 use App\Enums\AssignmentOutcomeType;
+use App\Events\AssignmentsEnded;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentTransactionRequired;
 use App\Models\Records\AssignmentRecord;
@@ -27,7 +29,7 @@ use PhpOption\Some;
  */
 final readonly class AssignmentStore implements AssignmentStorage
 {
-    public function __construct(private ConnectionInterface $database) {}
+    public function __construct(private ConnectionInterface $database, private CommandFacts $facts) {}
 
     /**
      * The record's current assignment, its row locked for update.
@@ -78,6 +80,7 @@ final readonly class AssignmentStore implements AssignmentStorage
     {
         $this->assertInTransaction();
         AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
+        $this->facts->publishAfterCommit(new AssignmentsEnded([$current->reference->id]));
 
         return AssignmentRecord::create($current->record, $holder)->toAssignment();
     }
@@ -86,6 +89,7 @@ final readonly class AssignmentStore implements AssignmentStorage
     {
         $this->assertInTransaction();
         AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
+        $this->facts->publishAfterCommit(new AssignmentsEnded([$current->reference->id]));
     }
 
     /**
@@ -105,6 +109,11 @@ final readonly class AssignmentStore implements AssignmentStorage
 
         AssignmentRecord::query()->heldForRetirement($holder)->whereKey($rows->modelKeys())->delete();
         $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all());
+
+        if ($released !== []) {
+            $endedIds = array_values(array_map('strval', $rows->modelKeys()));
+            $this->facts->publishAfterCommit(new AssignmentsEnded($endedIds));
+        }
 
         return new AssignmentResult(
             array_map(

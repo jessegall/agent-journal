@@ -2096,6 +2096,7 @@ class	AssignmentTypeUnavailable
 class	AssignmentWriteScan
 class	AssignmentWriteTool
 class	AssignmentsChanged
+class	AssignmentsEnded
 class	AssignmentsServiceProvider
 class	AttachListItem
 class	AttachRedirectToCompound
@@ -5775,6 +5776,7 @@ class	RunAdmissionStale
 class	RunAdmittedLinePipeline
 class	RunChanged
 class	RunChunk
+class	RunClaim
 class	RunClaimRefused
 class	RunContext
 class	RunCurrency
@@ -6960,6 +6962,7 @@ class	TaskRevisionChanged
 class	TaskRowData
 class	TaskRun
 class	TaskRunAssignments
+class	TaskRunClaimed
 class	TaskRunFinished
 class	TaskRunNotYours
 class	TaskRunPolicy
@@ -6995,7 +6998,6 @@ class	TaskWaitsData
 class	TaskWaitsPartData
 class	TaskWaitsUnmet
 class	TaskWindowResolver
-class	TaskWork
 class	TaskWriteTool
 class	TasksDomain
 class	TasksIndex
@@ -10885,6 +10887,7 @@ method	AssignmentRecord::assignedRecordIds()
 method	AssignmentRecord::assignmentsOf()
 method	AssignmentRecord::booted()
 method	AssignmentRecord::casts()
+method	AssignmentRecord::claimIdsProvedBy()
 method	AssignmentRecord::claimsProvedBy()
 method	AssignmentRecord::create()
 method	AssignmentRecord::forRecord()
@@ -11007,6 +11010,8 @@ method	AssignmentWriter::reassignUnfinished()
 method	AssignmentWriter::unassign()
 method	AssignmentWriter::unassignUnfinished()
 method	AssignmentsChanged::__construct()
+method	AssignmentsEnded::__construct()
+method	AssignmentsEnded::endsAnyOf()
 method	AssignmentsServiceProvider::boot()
 method	AssignmentsServiceProvider::register()
 method	AttachListItem::endsCommand()
@@ -20299,6 +20304,7 @@ method	ProveReaderCommand::__construct()
 method	ProveReaderController::__invoke()
 method	ProveReaderHandler::__construct()
 method	ProveReaderHandler::handle()
+method	ProvedClaimRelease::__construct()
 method	ProvedClaimRelease::releaseAuthorizedBy()
 method	ProvedClaims::validClaimsOn()
 method	ProvenBranch::__construct()
@@ -22716,6 +22722,8 @@ method	RunChanged::dockId()
 method	RunChanged::dockType()
 method	RunChunk::__construct()
 method	RunChunk::decodedBytes()
+method	RunClaim::__construct()
+method	RunClaim::assignmentIds()
 method	RunClaimRefused::claimedByAnother()
 method	RunClaimRefused::notTheHolder()
 method	RunClaimRefused::refusalCode()
@@ -26445,7 +26453,6 @@ method	Task::stateText()
 method	Task::summary()
 method	Task::summaryOf()
 method	Task::unfinished()
-method	Task::workFor()
 method	TaskActionRequest::expectedRevision()
 method	TaskActionRequest::expectedRunNumber()
 method	TaskActionRequest::reason()
@@ -26719,6 +26726,7 @@ method	TaskRun::starter()
 method	TaskRunAssignments::finishedRecords()
 method	TaskRunAssignments::requireAssignable()
 method	TaskRunAssignments::visibleRecords()
+method	TaskRunClaimed::__construct()
 method	TaskRunFinished::forRun()
 method	TaskRunFinished::refusalCode()
 method	TaskRunFinished::status()
@@ -26836,10 +26844,6 @@ method	TaskWindowResolver::read()
 method	TaskWindowResolver::readerPage()
 method	TaskWindowResolver::selectedLineOf()
 method	TaskWindowResolver::waitActionsOf()
-method	TaskWork::__construct()
-method	TaskWork::needsWork()
-method	TaskWork::unfinishedReason()
-method	TaskWork::unheld()
 method	TaskWriteTool::runSchema()
 method	TaskWriteTool::taskSchema()
 method	TasksDomain::assignables()
@@ -27942,11 +27946,12 @@ method	WorkingOnTaskState::__construct()
 method	WorkingOnTaskState::frameReuse()
 method	WorkingOnTaskState::instruction()
 method	WorkingOnTaskState::isFinished()
+method	WorkingOnTaskState::onAssignmentsEnded()
 method	WorkingOnTaskState::onStop()
 method	WorkingOnTaskState::onTaskBlocked()
 method	WorkingOnTaskState::onTaskCancelled()
 method	WorkingOnTaskState::onTaskFinished()
-method	WorkingOnTaskState::workBy()
+method	WorkingOnTaskState::onTaskRunClaimed()
 method	WorkingOnTaskState::workRecordType()
 method	WorkingOnTaskStateReference::forTask()
 method	WorkspaceClone::__construct()
@@ -29336,7 +29341,6 @@ parameter	$isCorrection
 parameter	$isCounted
 parameter	$isCredentialWriteInProgress
 parameter	$isCurrent
-parameter	$isCurrentRun
 parameter	$isDeclared
 parameter	$isDefault
 parameter	$isDirectoryRemoved
@@ -29353,7 +29357,6 @@ parameter	$isFound
 parameter	$isFromUser
 parameter	$isGuarded
 parameter	$isHealthy
-parameter	$isHeld
 parameter	$isHeldForCheck
 parameter	$isHistorical
 parameter	$isInForm
@@ -30818,6 +30821,7 @@ parameter	$stalledKey
 parameter	$stalledStep
 parameter	$stalls
 parameter	$standing
+parameter	$standsOn
 parameter	$start
 parameter	$startAccounts
 parameter	$startCommand
@@ -32231,6 +32235,7 @@ property	AssignmentResultData::$outcomes
 property	AssignmentRootFinished::$recovery
 property	AssignmentSet::$assignments
 property	AssignmentStore::$database
+property	AssignmentStore::$facts
 property	AssignmentTotals::$held
 property	AssignmentTotals::$room
 property	AssignmentTurns::$assignments
@@ -32248,6 +32253,7 @@ property	AssignmentsChanged::$changes
 property	AssignmentsChanged::$occurredAt
 property	AssignmentsChanged::$operationId
 property	AssignmentsChanged::$reason
+property	AssignmentsEnded::$assignmentIds
 property	AttachmentPages::$chunks
 property	AttachmentPages::$continuations
 property	AttentionOrigin::$id
@@ -37776,6 +37782,7 @@ property	ProveReaderCommand::$commandRequestId
 property	ProveReaderCommand::$readerRevisionId
 property	ProveReaderCommand::$runIds
 property	ProveReaderHandler::$check
+property	ProvedClaimRelease::$facts
 property	ProvenBranch::$manifests
 property	ProvenBranch::$outcome
 property	ProvenBranch::$partRunId
@@ -39181,6 +39188,7 @@ property	ResumeKeyScriptHandler::$recovery
 property	ResumeRefused::$refusal
 property	ResumeTaskRunCommand::$runId
 property	ResumeTaskRunHandler::$claims
+property	ResumeTaskRunHandler::$facts
 property	ResumeTaskRunHandler::$workStack
 property	RetainedActorRequestKey::$answerDays
 property	RetainedDraftView::$baseRevision
@@ -39448,6 +39456,8 @@ property	RunChunk::$bytes
 property	RunChunk::$offset
 property	RunChunk::$part
 property	RunChunk::$stream
+property	RunClaim::$claim
+property	RunClaim::$standsOn
 property	RunContext::$execution
 property	RunCurrency::$staleReason
 property	RunEvent::$because
@@ -41871,6 +41881,10 @@ property	TaskRowData::$id
 property	TaskRowData::$number
 property	TaskRowData::$state
 property	TaskRowData::$title
+property	TaskRunClaimed::$assignmentIds
+property	TaskRunClaimed::$holder
+property	TaskRunClaimed::$runNumber
+property	TaskRunClaimed::$taskId
 property	TaskRunPolicy::$claims
 property	TaskRunTaken::$taskId
 property	TaskRunnerData::$actorId
@@ -41970,11 +41984,6 @@ property	TaskWindowResolver::$request
 property	TaskWindowResolver::$slots
 property	TaskWindowResolver::$stream
 property	TaskWindowResolver::$waits
-property	TaskWork::$isCurrentRun
-property	TaskWork::$isHeld
-property	TaskWork::$number
-property	TaskWork::$runNumber
-property	TaskWork::$state
 property	TasksIndex::$producers
 property	TasksIndex::$tasks
 property	TasksListTool::$reader
@@ -42524,12 +42533,13 @@ property	WorkingOnPlanState::$isOpen
 property	WorkingOnPlanState::$number
 property	WorkingOnPlanState::$planId
 property	WorkingOnPlanState::$total
-property	WorkingOnTaskState::$claims
+property	WorkingOnTaskState::$claimAssignmentIds
+property	WorkingOnTaskState::$holderId
+property	WorkingOnTaskState::$isHeld
 property	WorkingOnTaskState::$isWorking
 property	WorkingOnTaskState::$number
 property	WorkingOnTaskState::$runNumber
 property	WorkingOnTaskState::$taskId
-property	WorkingOnTaskState::$tasks
 property	WorkspaceClone::$deployKeySecret
 property	WorkspaceClone::$repository
 property	WorkspaceClone::$revision
@@ -42907,6 +42917,7 @@ variable	$chosenInbox
 variable	$chunk
 variable	$chunks
 variable	$claim
+variable	$claimIds
 variable	$claimable
 variable	$claimed
 variable	$claimedRevision
@@ -43490,7 +43501,7 @@ variable	$isFull
 variable	$isFunction
 variable	$isGiven
 variable	$isGuided
-variable	$isHeld
+variable	$isHeldByThisAgent
 variable	$isHeldForCheck
 variable	$isInside
 variable	$isInsideFilter

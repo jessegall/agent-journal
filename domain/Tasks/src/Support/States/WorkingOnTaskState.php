@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Domain\Tasks\Support\States;
 
 use App\Attributes\StateType;
-use App\Contracts\Processes\RunClaims;
 use App\Enums\FrameReuse;
 use App\Enums\SessionTransferType;
-use App\Support\ActorIdentity;
+use App\Events\AssignmentsEnded;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
@@ -16,30 +15,40 @@ use App\Values\AgentText;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskRunClaimed;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Models\TaskRun;
-use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
-use Domain\Tasks\Support\TaskWork;
 use PhpOption\Option;
 use PhpOption\Some;
 
 /**
  * An agent working on one run of a task. The run stays open until the state hears the task finished, blocked or
- * cancelled; a stop is held back only while the run is still the task's current one, started and held by this agent,
- * which the state asks once, at the stop.
+ * cancelled, a newer run of it claimed, or the claim it holds ended; it keeps the claim it heard as its own, so a late
+ * end of an earlier claim never closes a resumed run. A stop is held back while the run is open and held by this agent.
  */
 #[StateType(WorkingOnTaskStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class WorkingOnTaskState extends AgentState
 {
     private bool $isWorking = true;
 
+    private bool $isHeld = true;
+
+    /**
+     * The actor holding the run's claim, once the state heard it taken.
+     */
+    private string|null $holderId = null;
+
+    /**
+     * The claim's own assignment and those it stands on, as the last claim of this run was taken.
+     *
+     * @var list<string>
+     */
+    private array $claimAssignmentIds = [];
+
     public function __construct(
         private readonly string $taskId,
         private readonly int $number,
         private readonly int $runNumber,
-        private readonly TaskRecords $tasks,
-        private readonly RunClaims $claims
     ) {}
 
     public function frameReuse(): FrameReuse
@@ -72,15 +81,15 @@ final class WorkingOnTaskState extends AgentState
 
     public function onStop(StopRequested $input): Decision
     {
-        $work = $this->workBy($input->hook->agentId);
+        $isHeldByThisAgent = $this->isHeld && ($this->holderId === null || $this->holderId === $input->hook->agentId);
 
-        if (! $work->needsWork()) {
+        if (! $this->isWorking || ! $isHeldByThisAgent) {
             $this->isWorking = false;
 
             return Decision::delegate();
         }
 
-        return Decision::deny($work->unfinishedReason());
+        return Decision::deny(AgentText::of('tasks.unfinished', ['task' => $this->number]));
     }
 
     // ----------[ Events ]----------
@@ -106,21 +115,27 @@ final class WorkingOnTaskState extends AgentState
         }
     }
 
-    // ----------[ Internals ]----------
-
-    /**
-     * The run as the agent sees it now: one read of the task and its run's claim.
-     */
-    private function workBy(string $agentId): TaskWork
+    public function onTaskRunClaimed(TaskRunClaimed $event): void
     {
-        $work = $this->tasks->get($this->taskId)->workFor($this->runNumber);
-        $run = TaskRun::ofPairs([[$this->taskId, $this->runNumber]])->first();
+        if ($event->taskId !== $this->taskId) {
+            return;
+        }
 
-        $isHeld = $run !== null
-            && $this->claims->holderOf($run->assignmentIdentity())
-                ->filter(fn (ActorIdentity $holder) => $holder->isAgent() && $holder->id === $agentId)
-                ->isDefined();
+        if ($event->runNumber !== $this->runNumber) {
+            $this->isWorking = false;
 
-        return $isHeld ? $work : $work->unheld();
+            return;
+        }
+
+        $this->isHeld = true;
+        $this->holderId = $event->holder->id;
+        $this->claimAssignmentIds = $event->assignmentIds;
+    }
+
+    public function onAssignmentsEnded(AssignmentsEnded $event): void
+    {
+        if ($event->endsAnyOf($this->claimAssignmentIds)) {
+            $this->isHeld = false;
+        }
     }
 }

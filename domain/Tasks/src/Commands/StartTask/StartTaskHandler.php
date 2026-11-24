@@ -11,6 +11,7 @@ use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Events\TaskRunClaimed;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Exceptions\TaskWaitsUnmet;
@@ -53,7 +54,11 @@ final readonly class StartTaskHandler extends TaskCommandHandler
         $this->facts->holdUntilReturn(function () use ($task, $actor): void {
             $task->start($actor);
             $run = TaskRun::currentFor($task, $actor, $this->replyInboxes->replyInboxIdFor($actor));
-            $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
+            $claim = $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
+
+            $this->facts->publishAfterCommit(
+                new TaskRunClaimed($task->id, $run->run_number, $actor, $claim->assignmentIds()),
+            );
         });
 
         $this->facts->runTransactionListeners();

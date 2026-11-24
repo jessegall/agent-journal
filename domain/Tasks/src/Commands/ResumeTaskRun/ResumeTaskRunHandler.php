@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands\ResumeTaskRun;
 
 use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Processes\RunClaims;
 use App\Exceptions\RunClaimRefused;
 use App\Support\ActorIdentity;
 use App\Support\References\SubjectReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Events\TaskRunClaimed;
 use Domain\Tasks\Exceptions\TaskResumeCovered;
 use Domain\Tasks\Exceptions\TaskRunFinished;
 use Domain\Tasks\Exceptions\TaskRunStale;
@@ -23,6 +25,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
     public function __construct(
         private RunClaims $claims,
         private ActorWorkStacks $workStack,
+        private CommandFacts $facts,
     ) {}
 
     /**
@@ -49,13 +52,14 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
 
         $this->assertNotCovered($task);
 
-        $this->claims->take(
-            $run->assignmentIdentity(),
-            $task->assignmentIdentity(),
-            ActorIdentity::of($command->dispatchedBy()),
-        );
+        $actor = ActorIdentity::of($command->dispatchedBy());
+        $claim = $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
 
         $this->workStack->push(WorkingOnTaskStateReference::forTask($task));
+
+        $this->facts->publishAfterCommit(
+            new TaskRunClaimed($task->id, $run->run_number, $actor, $claim->assignmentIds()),
+        );
 
         return $run->run_number;
     }

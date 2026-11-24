@@ -26,7 +26,7 @@ final readonly class DeskRunClaims implements RunClaims
         private ProvedClaims $proved,
     ) {}
 
-    public function take(RecordIdentity $run, RecordIdentity $work, ActorIdentity $actor): AssignmentReference
+    public function take(RecordIdentity $run, RecordIdentity $work, ActorIdentity $actor): RunClaim
     {
         $claimant = AssigneeIdentity::ofActorIdentity($actor);
         $current = $this->store->lockCurrent($run);
@@ -37,7 +37,7 @@ final readonly class DeskRunClaims implements RunClaims
 
             if ($proof !== null && $proof->isValidFor($holder)) {
                 return $holder->isSameAs($claimant)
-                    ? $current->get()->reference
+                    ? new RunClaim($current->get()->reference, $proof->sourceIds())
                     : throw RunClaimRefused::claimedByAnother($run->id);
             }
 
@@ -85,13 +85,12 @@ final readonly class DeskRunClaims implements RunClaims
     /**
      * @throws RunClaimRefused
      */
-    private function claim(RecordIdentity $run, Assignment $work, AssigneeIdentity $claimant): AssignmentReference
+    private function claim(RecordIdentity $run, Assignment $work, AssigneeIdentity $claimant): RunClaim
     {
         if ($work->holder()->isSameAs($claimant)) {
             $claim = $this->responsibilities->assign($run, $claimant)->reference;
-            ClaimAuthorization::forDirectRun($claim, $work->reference);
 
-            return $claim;
+            return new RunClaim($claim, ClaimAuthorization::forDirectRun($claim, $work->reference)->sourceIds());
         }
 
         $seat = AssignmentRecord::query()
@@ -104,8 +103,8 @@ final readonly class DeskRunClaims implements RunClaims
         }
 
         $claim = $this->responsibilities->assign($run, $claimant)->reference;
-        ClaimAuthorization::forDeskRun($claim, $seat->toAssignment()->reference, $work->reference);
+        $proof = ClaimAuthorization::forDeskRun($claim, $seat->toAssignment()->reference, $work->reference);
 
-        return $claim;
+        return new RunClaim($claim, $proof->sourceIds());
     }
 }

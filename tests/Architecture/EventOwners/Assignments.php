@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Events\AssignmentsChanged;
+use App\Events\AssignmentsEnded;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -11,6 +12,14 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    AssignmentsEnded::class => [
+        'role' => EventRole::CommandFact,
+        'migrated' => false,
+        'producers' => [
+            'app/Support/ProvedClaimRelease.php',
+            'app/Support/Storage/AssignmentStore.php',
+        ],
+    ],
     AssignmentsChanged::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,

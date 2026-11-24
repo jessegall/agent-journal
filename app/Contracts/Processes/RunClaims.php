@@ -6,8 +6,8 @@ namespace App\Contracts\Processes;
 
 use App\Exceptions\RunClaimRefused;
 use App\Support\ActorIdentity;
-use App\Support\AssignmentReference;
 use App\Support\RecordIdentity;
+use App\Support\RunClaim;
 use PhpOption\Option;
 
 /**
@@ -22,7 +22,7 @@ interface RunClaims
      *
      * @throws RunClaimRefused
      */
-    public function take(RecordIdentity $run, RecordIdentity $work, ActorIdentity $actor): AssignmentReference;
+    public function take(RecordIdentity $run, RecordIdentity $work, ActorIdentity $actor): RunClaim;
 
     /**
      * The actor whose claim on each run is still valid, keyed by run id; a run with no valid claim is left out.

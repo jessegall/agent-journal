@@ -17,8 +17,7 @@ use App\Support\Inputs\Values\SessionStartDetails;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use App\Support\Storage\WalkStep;
-use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Support\TaskWork;
+use App\Values\AgentText;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
@@ -84,7 +83,7 @@ final class HookTransactionTest extends TestCase
             proc_close($process['handle']);
         }
 
-        $this->assertStringContainsString(new TaskWork(43, 1, TaskState::Started)->unfinishedReason()->text, $reply->stdout);
+        $this->assertStringContainsString(AgentText::of('tasks.unfinished', ['task' => 43])->text, $reply->stdout);
         $this->assertSame(['pushed-by-other-process deny'], array_map(
             fn (WalkStep $step) => "{$step->frameId} {$step->answer->value}",
             HookCall::query()->sole()->steps->steps,
