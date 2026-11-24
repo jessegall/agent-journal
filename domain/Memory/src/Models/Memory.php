@@ -7,11 +7,15 @@ namespace Domain\Memory\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
+use Domain\Memory\Events\MemoryRevised;
+use Domain\Memory\Events\MemorySaved;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -34,7 +38,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['text', 'weight', 'revision'])]
-final class Memory extends Model implements Numbered, ReadableModel
+final class Memory extends Model implements EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
@@ -42,6 +46,7 @@ final class Memory extends Model implements Numbered, ReadableModel
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The record type a memory is linked and found under.
@@ -86,7 +91,8 @@ final class Memory extends Model implements Numbered, ReadableModel
     public function saveFor(ActorIdentity $actor): void
     {
         $this->belongTo($actor);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MemorySaved($this->id));
     }
 
     /**
@@ -97,7 +103,8 @@ final class Memory extends Model implements Numbered, ReadableModel
         $this->text = $text === null ? $this->text : $text;
         $this->weight = $weight === null ? $this->weight : $weight;
         $this->revision++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MemoryRevised($this->id));
     }
 
     // ----------[ Answers ]----------

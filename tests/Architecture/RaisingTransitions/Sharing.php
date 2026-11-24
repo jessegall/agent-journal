@@ -15,4 +15,9 @@ return [
     'Share::failActivation',
     'ShareGatewayConfiguration::create',
     'ShareGatewayConfiguration::disable',
+    'ShareGatewayEndpoint::moveTo',
+    'ShareGatewayEndpoint::recordHealthy',
+    'ShareGatewayOperation::claimFor',
+    'ShareGatewayOperation::finish',
+    'ShareInstallation::holdFor',
 ];

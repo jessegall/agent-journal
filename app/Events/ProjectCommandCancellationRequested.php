@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Events;
+
+use App\Contracts\Connections\ProjectCommandEvent;
+
+/**
+ * A project command run was asked to cancel.
+ */
+final readonly class ProjectCommandCancellationRequested extends ConnectionEvent implements ProjectCommandEvent
+{
+    public function __construct(
+        public string $runId,
+    ) {}
+}

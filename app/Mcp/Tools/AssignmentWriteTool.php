@@ -29,7 +29,7 @@ abstract class AssignmentWriteTool extends JournalWriteTool
     {
         return [
             'record_type' => $schema->string()->max(100)->required(),
-            'record_id' => $schema->string()->max(26)->required(),
+            'record_id' => $this->recordIdArgument($schema),
         ];
     }
 

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models\Sharing;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\ShareInstallationHeld;
 use App\Exceptions\GatewayRunStale;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -29,12 +31,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'run_id', 'run_lease_ends_at'])]
-final class ShareInstallation extends Model implements ReadableModel
+final class ShareInstallation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share-installation';
 
@@ -102,7 +104,8 @@ final class ShareInstallation extends Model implements ReadableModel
         $takesOver = $this->run_id !== $runId;
         $this->run_id = $runId;
         $this->run_lease_ends_at = CarbonImmutable::now()->addSeconds(self::RUN_LEASE_SECONDS);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareInstallationHeld($this->id, $runId));
 
         return $takesOver;
     }

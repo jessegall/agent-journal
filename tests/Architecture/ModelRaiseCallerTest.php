@@ -36,7 +36,7 @@ final class ModelRaiseCallerTest extends TestCase
 
     public function test_every_migrated_transition_is_called_only_inside_a_unit(): void
     {
-        $reach = CommandReach::of($this->app->make(CommandRegistry::class), base_path());
+        $reach = CommandReach::of($this->app->make(CommandRegistry::class), base_path(), $this->app);
         $callers = new RaiseCallers(
             base_path(),
             RaiseCallers::migrated(base_path()),

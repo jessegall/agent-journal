@@ -6,9 +6,16 @@ namespace App\Models\Projects;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\BindingReadiness;
 use App\Enums\DeviceGrantState;
+use App\Events\DeviceGrantApproved;
+use App\Events\DeviceGrantIssued;
+use App\Events\DeviceGrantPolled;
+use App\Events\DeviceGrantRestarted;
+use App\Events\DeviceGrantRevoked;
 use App\Exceptions\DeviceGrantRefused;
 use App\Support\ShortReference;
 use Carbon\CarbonImmutable;
@@ -46,11 +53,12 @@ use Illuminate\Support\Carbon;
     'binding_id', 'device_code_digest', 'user_code', 'scopes', 'state', 'code_expires_at', 'reference', 'generation',
     'start_key', 'environment_id',
 ])]
-final class DeviceGrant extends Model implements ReadableModel
+final class DeviceGrant extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * How long the owner has to approve a device code.
@@ -215,14 +223,16 @@ final class DeviceGrant extends Model implements ReadableModel
     public function restartWith(string $codeDigest): void
     {
         $this->device_code_digest = $codeDigest;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantRestarted($this->id));
     }
 
     public function approveBy(string $userId): void
     {
         $this->approved_by_user_id = $userId;
         $this->state = DeviceGrantState::Approved;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantApproved($this->id, $userId));
     }
 
     /**
@@ -243,7 +253,8 @@ final class DeviceGrant extends Model implements ReadableModel
         }
 
         $this->last_polled_at = $now;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantPolled($this->id));
     }
 
     /**
@@ -254,13 +265,15 @@ final class DeviceGrant extends Model implements ReadableModel
         $this->grant_digest = $digest;
         $this->grant_expires_at = CarbonImmutable::now()->addHours(self::GRANT_HOURS);
         $this->state = DeviceGrantState::Issued;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantIssued($this->id));
     }
 
     public function revoke(): void
     {
         $this->state = DeviceGrantState::Revoked;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantRevoked($this->id));
     }
 
     // ----------[ Answers ]----------

@@ -38,7 +38,7 @@ final class OutputsReadTool extends JournalReadTool
             'run' => $this->recordIdArgument($schema),
             'part' => $schema->integer()->min(0)->required(),
             'stream' => $this->caseArgument($schema, OutputStream::class)->required(),
-            'lines' => $schema->integer()->min(1)->max(self::MOST_LINES),
+            'lines' => $this->wholeNumberArgument($schema, 1, self::MOST_LINES),
         ];
     }
 

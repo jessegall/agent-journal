@@ -6,7 +6,9 @@ namespace Domain\Helpers\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\ConversationModeType;
@@ -17,6 +19,13 @@ use App\Support\RecordIdentity;
 use App\Values\AgentText;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Events\HelperJobCancelled;
+use Domain\Helpers\Events\HelperJobHeld;
+use Domain\Helpers\Events\HelperJobLeftUnfinished;
+use Domain\Helpers\Events\HelperJobReopenedForAttempt;
+use Domain\Helpers\Events\HelperJobReopenedForRepair;
+use Domain\Helpers\Events\HelperJobReported;
+use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Exceptions\HelperJobFinished;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\JobLaunch;
@@ -54,12 +63,13 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Table('helper_jobs')]
 #[Fillable(['brief', 'source_snapshot', 'request_id', 'state', 'steering', 'profile_revision'])]
-final class HelperJob extends Model implements Assignable, ReadableModel
+final class HelperJob extends Model implements Assignable, EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'helpers.job';
 
@@ -151,7 +161,8 @@ final class HelperJob extends Model implements Assignable, ReadableModel
     public function reopenForAttempt(): void
     {
         $this->moveTo(JobState::Accepted);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperJobReopenedForAttempt($this->id));
     }
 
     /**
@@ -163,14 +174,16 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         $this->state = JobState::Accepted;
         $this->finished_at = null;
         $this->steering = [...$this->steering, $findings];
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperJobReopenedForRepair($this->id));
     }
 
     public function addSteering(string $steering): void
     {
         $this->moveTo($this->state);
         $this->steering = [...$this->steering, $steering];
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperJobSteered($this->id));
     }
 
     /**
@@ -181,13 +194,15 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         $this->moveTo(JobState::Finished);
         $this->stop_evidence_reference = $reference;
         $this->finished_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperJobReported($this->id, $reference));
     }
 
     public function cancel(): void
     {
         $this->moveTo(JobState::Cancelled);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperJobCancelled($this->id));
     }
 
     /**
@@ -197,14 +212,16 @@ final class HelperJob extends Model implements Assignable, ReadableModel
     {
         $this->moveTo(JobState::Held);
         $this->stop_evidence_reference = $stopEvidenceReference;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperJobHeld($this->id));
     }
 
     public function markUnfinished(string $stopEvidenceReference): void
     {
         $this->moveTo(JobState::Unfinished);
         $this->stop_evidence_reference = $stopEvidenceReference;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperJobLeftUnfinished($this->id));
     }
 
     /**

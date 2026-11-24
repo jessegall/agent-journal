@@ -7,9 +7,13 @@ namespace App\Models\Sharing;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\GatewayOperationType;
 use App\Enums\GatewayOutcome;
+use App\Events\ShareGatewayOperationClaimed;
+use App\Events\ShareGatewayOperationFinished;
 use App\Exceptions\GatewayLeaseRefused;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayOperation;
@@ -41,12 +45,13 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['type', 'run_id', 'lease_token', 'lease_ends_at', 'outcome_code'])]
-final class ShareGatewayOperation extends Model implements ReadableModel
+final class ShareGatewayOperation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use InsertsRowSets;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share-gateway-operation';
 
@@ -160,7 +165,8 @@ final class ShareGatewayOperation extends Model implements ReadableModel
         $this->endpoint_version = $endpoint->endpoint_version;
         $this->lease_token = $leaseToken;
         $this->lease_ends_at = $leaseEndsAt;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareGatewayOperationClaimed($this->id, $runId));
 
         return new GatewayOperation(
             $this->id,
@@ -175,7 +181,8 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     public function finish(GatewayOutcome $outcome): void
     {
         $this->outcome_code = $outcome;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareGatewayOperationFinished($this->id, $outcome));
     }
 
     // ----------[ Answers ]----------

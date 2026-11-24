@@ -6,9 +6,11 @@ namespace App\Models\Records;
 
 use App\Casts\SettingsDocumentCast;
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\SettingsRevised;
 use App\Support\Storage\SettingsDocument;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -32,12 +34,12 @@ use PhpOption\Option;
  */
 #[Table('settings_records')]
 #[Fillable(['owner', 'revision', 'document'])]
-final class SettingsRecord extends Model implements ReadableModel
+final class SettingsRecord extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -107,7 +109,8 @@ final class SettingsRecord extends Model implements ReadableModel
     {
         $this->document = $document;
         $this->revision++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SettingsRevised($this->id));
     }
 
     // ----------[ Scopes ]----------

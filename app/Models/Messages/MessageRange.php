@@ -6,7 +6,10 @@ namespace App\Models\Messages;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\MessageRangeConfirmed;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -29,11 +32,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Table('message_ranges')]
 #[Fillable(['batch_id', 'outstanding_message_range_id', 'receipt_id', 'start_offset', 'end_offset', 'handle_digest'])]
-final class MessageRange extends Model implements ReadableModel
+final class MessageRange extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -84,7 +88,8 @@ final class MessageRange extends Model implements ReadableModel
         }
 
         $this->confirmed_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageRangeConfirmed($this->id));
 
         return true;
     }

@@ -7,11 +7,15 @@ namespace Domain\Plans\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RecordUnavailable;
 use App\Support\RecordIdentity;
+use Domain\Plans\Events\PhaseProgressRecorded;
+use Domain\Plans\Events\PhaseRevisionAdvanced;
 use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Domain\Plans\Values\PhaseDetails;
 use Domain\Plans\Values\PlanPhaseTasks;
@@ -45,12 +49,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title', 'revision'])]
-final class Phase extends Model implements Assignable, Numbered, ReadableModel
+final class Phase extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
     use BoundedReads;
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The stable name links and assignments use for a phase.
@@ -152,7 +157,8 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     public function advanceRevision(): void
     {
         $this->revision++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PhaseRevisionAdvanced($this->id));
     }
 
     /**
@@ -165,7 +171,8 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
         $this->cancelled_tasks = $progress->cancelled;
         $this->blocked_tasks = $progress->blocked;
         $this->started_tasks = $progress->started;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PhaseProgressRecorded($this->id));
     }
 
     // ----------[ Answers ]----------

@@ -6,7 +6,12 @@ namespace App\Models\Starts;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\StartTokenIssued;
+use App\Events\StartTokenRevoked;
+use App\Events\StartTokenRotated;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -27,11 +32,12 @@ use Illuminate\Support\Carbon;
  * @property-read AgentSession $session
  */
 #[Fillable(['revoked_at'])]
-final class StartToken extends Model implements ReadableModel
+final class StartToken extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -51,7 +57,8 @@ final class StartToken extends Model implements ReadableModel
     {
         $this->agent_session_id = $session->id;
         $this->token_hash = $hash;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartTokenIssued($this->id, $session->id));
     }
 
     /**
@@ -61,13 +68,15 @@ final class StartToken extends Model implements ReadableModel
     {
         $this->token_hash = $hash;
         $this->revoked_at = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartTokenRotated($this->id));
     }
 
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartTokenRevoked($this->id));
     }
 
     // ----------[ Answers ]----------

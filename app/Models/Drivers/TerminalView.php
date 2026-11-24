@@ -6,7 +6,11 @@ namespace App\Models\Drivers;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\TerminalViewClosed;
+use App\Events\TerminalViewFollowed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
@@ -39,12 +43,13 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['agent_runtime_id', 'interval_ms', 'process_generation', 'expires_at', 'closed_at'])]
-final class TerminalView extends Model implements ReadableModel
+final class TerminalView extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * How long a view stays live after it was opened or last renewed.
@@ -133,13 +138,15 @@ final class TerminalView extends Model implements ReadableModel
     {
         $this->agent_runtime_id = $runtime->id;
         $this->process_generation = $runtime->process_generation;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalViewFollowed($this->id, $runtime->id));
     }
 
     public function close(CarbonImmutable $now): void
     {
         $this->closed_at = $now;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalViewClosed($this->id));
     }
 
     // ----------[ Answers ]----------

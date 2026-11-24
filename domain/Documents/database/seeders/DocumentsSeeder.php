@@ -44,6 +44,7 @@ final class DocumentsSeeder extends Seeder
         }
 
         $document = Document::create($author);
+
         $document->startWith(DocumentRevision::create(
             $document,
             self::TITLE,

@@ -6,8 +6,11 @@ namespace App\Models\Skills;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\GenerationState;
+use App\Events\SkillGenerationRetired;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Values\GenerationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -32,11 +35,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['catalogue_digest', 'registration_digest', 'entries', 'state', 'error_reason'])]
-final class SkillGeneration extends Model implements ReadableModel
+final class SkillGeneration extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.skill-generation';
 
@@ -109,7 +113,8 @@ final class SkillGeneration extends Model implements ReadableModel
     public function retire(): void
     {
         $this->state = GenerationState::Retired;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SkillGenerationRetired($this->id));
     }
 
     /**

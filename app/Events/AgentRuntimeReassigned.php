@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Events;
 
+use App\Contracts\Sessions\AgentRuntimeEvent;
 use App\Support\ActorIdentity;
 
 /**
  * An operator moved a runtime to a new process generation: the audit record of the hosts, the proof that the old
  * process stopped, who did it and why.
  */
-final readonly class AgentRuntimeReassigned extends SessionEvent
+final readonly class AgentRuntimeReassigned extends SessionEvent implements AgentRuntimeEvent
 {
     public function __construct(
         public string $runtimeId,

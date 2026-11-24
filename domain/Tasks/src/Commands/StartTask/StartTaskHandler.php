@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands\StartTask;
 
 use App\Contracts\Bus\CommandFacts;
-use App\Contracts\Chat\ReplyInboxes;
 use App\Contracts\Processes\RunClaims;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
@@ -29,7 +28,6 @@ final readonly class StartTaskHandler extends TaskCommandHandler
     public function __construct(
         private CommandFacts $facts,
         private RunClaims $claims,
-        private ReplyInboxes $replyInboxes,
         private TaskWaitResolver $waits,
     ) {}
 
@@ -53,7 +51,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
 
         $this->facts->holdUntilReturn(function () use ($task, $actor): void {
             $task->start($actor);
-            $run = TaskRun::currentFor($task, $actor, $this->replyInboxes->replyInboxIdFor($actor));
+            $run = TaskRun::currentFor($task, $actor);
             $claim = $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
 
             $this->facts->publishAfterCommit(

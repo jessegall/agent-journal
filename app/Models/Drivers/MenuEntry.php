@@ -7,9 +7,16 @@ namespace App\Models\Drivers;
 use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\MenuEntryState;
 use App\Enums\NavigationCompletion;
+use App\Events\MenuEntryMarkedStale;
+use App\Events\MenuEntryProven;
+use App\Events\MenuEntryRetired;
+use App\Events\MenuEntrySuperseded;
+use App\Events\MenuEntryUsed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
@@ -68,12 +75,13 @@ use Illuminate\Database\Eloquent\Model;
     'last_replay_key',
     'last_used_at',
 ])]
-final class MenuEntry extends Model implements ReadableModel
+final class MenuEntry extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * @var array<string, mixed>
@@ -174,7 +182,8 @@ final class MenuEntry extends Model implements ReadableModel
     {
         $this->uses++;
         $this->last_used_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MenuEntryUsed($this->id));
     }
 
     /**
@@ -184,7 +193,8 @@ final class MenuEntry extends Model implements ReadableModel
     {
         $this->state = MenuEntryState::Superseded;
         $this->superseded_by_id = $entry->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MenuEntrySuperseded($this->id, $entry->id));
     }
 
     /**
@@ -193,7 +203,8 @@ final class MenuEntry extends Model implements ReadableModel
     public function retire(): void
     {
         $this->state = MenuEntryState::Retired;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MenuEntryRetired($this->id));
     }
 
     /**
@@ -233,6 +244,7 @@ final class MenuEntry extends Model implements ReadableModel
     public function provenOn(string $build): void
     {
         $this->storeBuild(MenuEntryBuild::proven($build, CarbonImmutable::now()));
+        $this->raise(new MenuEntryProven($this->id, $build));
     }
 
     /**
@@ -245,6 +257,7 @@ final class MenuEntry extends Model implements ReadableModel
         $proven = $this->buildOn($build) ?? MenuEntryBuild::proven($build, CarbonImmutable::now());
 
         $this->storeBuild($proven->markedStale($reason, $screen));
+        $this->raise(new MenuEntryMarkedStale($this->id, $build));
     }
 
     // ----------[ Accessors ]----------

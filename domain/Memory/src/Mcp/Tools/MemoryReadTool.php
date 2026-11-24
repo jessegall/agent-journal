@@ -27,7 +27,7 @@ final class MemoryReadTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'memory_id' => $schema->string()->max(26)->required(),
+            'memory_id' => $this->recordIdArgument($schema),
             'continuation' => $schema->string(),
         ];
     }

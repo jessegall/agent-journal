@@ -8,6 +8,7 @@ use Domain\Chat\Events\ChatReconciled;
 use Domain\Chat\Events\ChatReconcileMarked;
 use Domain\Chat\Events\ConversationClosed;
 use Domain\Chat\Events\ConversationTransferred;
+use Domain\Chat\Events\DirectChatRemoved;
 use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Events\MessageReactionAdded;
 use Domain\Chat\Events\MessageReactionWithdrawn;
@@ -67,5 +68,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new MessageReactionWithdrawn('inbox', 'message', new ActorIdentity(ActorType::User, 'user')),
+    ],
+    DirectChatRemoved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DirectChat::remove',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DirectChatRemoved('chat'),
     ],
 ];

@@ -41,7 +41,7 @@ abstract class PlanCascadeTool extends JournalWriteTool
     {
         return $schema->object([
             'type' => $schema->string()->enum(self::ROOT_TYPES)->required(),
-            'id' => $schema->string()->max(26)->required(),
+            'id' => $this->recordIdArgument($schema),
         ])->withoutAdditionalProperties()->required();
     }
 

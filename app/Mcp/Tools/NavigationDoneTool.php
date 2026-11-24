@@ -35,7 +35,7 @@ final class NavigationDoneTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'request' => $schema->string()->max(26)->required(),
+            'request' => $this->recordIdArgument($schema),
             'version' => $schema->integer()->min(1)->required(),
             'completes' => $schema->string()->enum(['goal', 'step'])->required(),
             'proof' => $schema->string()->max(200)->required(),

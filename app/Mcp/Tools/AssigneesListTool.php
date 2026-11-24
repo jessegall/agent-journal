@@ -42,8 +42,8 @@ final class AssigneesListTool extends JournalReadTool
             'type' => $schema->string()->enum(
                 array_map(fn (ActorType $type): string => $type->value, ActorType::requestTypes()),
             )->required(),
-            'after_id' => $schema->string()->max(26),
-            'limit' => $schema->integer()->min(1)->max(IdListPage::LARGEST_LIMIT),
+            'after_id' => $this->optionalRecordIdArgument($schema),
+            'limit' => $this->wholeNumberArgument($schema, 1, IdListPage::LARGEST_LIMIT),
             'continuation' => $schema->string(),
         ];
     }

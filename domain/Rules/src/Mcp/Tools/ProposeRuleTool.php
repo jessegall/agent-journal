@@ -31,7 +31,7 @@ final class ProposeRuleTool extends JournalWriteTool
         return [
             'text' => $schema->string()->max(2000)->required(),
             'reason' => $schema->string()->max(2000)->required(),
-            'replaces_rule_id' => $schema->string()->max(26),
+            'replaces_rule_id' => $this->optionalRecordIdArgument($schema),
         ];
     }
 

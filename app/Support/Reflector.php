@@ -10,12 +10,14 @@ use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\ClassMissing;
 use App\Exceptions\MethodMissing;
 use App\Exceptions\PropertyMissing;
+use Closure;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionEnumUnitCase;
+use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionProperty;
 use UnitEnum;
@@ -136,6 +138,19 @@ final class Reflector implements ReflectedType
     public static function find(string $name): Option
     {
         return self::exists($name) ? new Some(self::of($name)) : None::create();
+    }
+
+    /**
+     * The value a closure captured under the name, such as the class a container binding builds; none when it captured
+     * nothing of that name.
+     *
+     * @return Option<mixed>
+     */
+    public static function capturedBy(Closure $closure, string $name): Option
+    {
+        $captured = new ReflectionFunction($closure)->getStaticVariables();
+
+        return array_key_exists($name, $captured) ? new Some($captured[$name]) : None::create();
     }
 
     /**

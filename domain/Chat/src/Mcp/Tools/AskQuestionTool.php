@@ -29,7 +29,7 @@ final class AskQuestionTool extends JournalWriteTool
             'body' => $schema->string()->max(65536)->required(),
             'related_record' => $schema->object([
                 'type' => $schema->string()->max(100)->required(),
-                'id' => $schema->string()->max(26)->required(),
+                'id' => $this->recordIdArgument($schema),
             ])->withoutAdditionalProperties(),
         ];
     }

@@ -7,7 +7,6 @@ namespace App\Commands\StartAgent;
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Contracts\Chat\ReplyInboxes;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\PinnedBuilds;
 use App\Enums\ExecutionModeType;
@@ -56,7 +55,6 @@ final readonly class StartAgentHandler implements CommandHandler
         private RegisterPendingStart $pendingStarts,
         private PendingStartSecrets $pendingSecrets,
         private ContainerAdmission $containers,
-        private ReplyInboxes $replyInboxes,
         private CommandFacts $facts,
         private AgentWakes $wakes,
         private PinnedBuilds $builds,
@@ -91,7 +89,6 @@ final readonly class StartAgentHandler implements CommandHandler
             $request,
             $pinned,
             $dispatcher,
-            $this->replyInboxes->replyInboxIdFor($dispatcher),
         );
 
         // A replay of a start interrupted before its receipt resumes from the evidence its key holds: a session it

@@ -6,8 +6,11 @@ namespace App\Models\Desks;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Chat\Desk;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\DeskPreferenceSwitched;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -25,12 +28,13 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  */
 #[Fillable(['desk_id'])]
 #[Table('desk_preferences')]
-final class DeskPreference extends MorphPivot implements ReadableModel
+final class DeskPreference extends MorphPivot implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.desk-preference';
 
@@ -86,6 +90,7 @@ final class DeskPreference extends MorphPivot implements ReadableModel
     public function switchTo(Desk $desk): void
     {
         $this->desk_id = $desk->deskId();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DeskPreferenceSwitched($this->id));
     }
 }

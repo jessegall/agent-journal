@@ -28,7 +28,7 @@ final class EditDocumentTool extends DraftWriteTool
             'expected_revision' => $schema->integer()->min(1)->required(),
             'section' => $schema->string()->max(240)->required(),
             'body' => $schema->string(),
-            'upload_id' => $schema->string()->max(26),
+            'upload_id' => $this->optionalRecordIdArgument($schema),
         ];
     }
 

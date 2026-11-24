@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Domain\Chat\Models;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
+use Domain\Chat\Events\DirectChatRemoved;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,12 +31,12 @@ use Illuminate\Support\Str;
  * @property string $high_actor
  */
 #[Fillable(['id', 'conversation_id', 'environment_key', 'low_actor', 'high_actor'])]
-final class DirectChat extends Model implements ReadableModel
+final class DirectChat extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     private const string LOCAL_ENVIRONMENT = '';
 
@@ -107,6 +109,7 @@ final class DirectChat extends Model implements ReadableModel
     public function remove(): void
     {
         $this->delete();
+        $this->raise(new DirectChatRemoved($this->id));
     }
 
     // ----------[ Answers ]----------

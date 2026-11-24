@@ -5,11 +5,18 @@ declare(strict_types=1);
 namespace App\Models\Reviews;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\MergeAttemptState;
 use App\Enums\MergeRefusalReason;
+use App\Events\MergeAttemptAcknowledged;
+use App\Events\MergeAttemptApplying;
+use App\Events\MergeAttemptMerged;
+use App\Events\MergeAttemptRefused;
+use App\Events\MergeAttemptResolvedByOwner;
+use App\Events\MergeAttemptUncertain;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\HasWorkColumns;
 use App\Values\ApprovedHead;
@@ -71,14 +78,14 @@ use Illuminate\Support\Carbon;
     'owner_attested',
     'acknowledged_at',
 ])]
-final class MergeAttempt extends Model implements ReadableModel
+final class MergeAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
     use HasWorkColumns;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -176,7 +183,8 @@ final class MergeAttempt extends Model implements ReadableModel
         }
 
         $this->acknowledged_at = Carbon::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MergeAttemptAcknowledged($this->id));
     }
 
     /**
@@ -189,21 +197,24 @@ final class MergeAttempt extends Model implements ReadableModel
         $this->evidence = trim("{$this->evidence}\nOwner: {$statement}");
         $this->owner_attested = true;
         $this->acknowledged_at = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MergeAttemptResolvedByOwner($this->id, $state));
     }
 
     public function apply(string $targetBefore): void
     {
         $this->state = MergeAttemptState::Applying;
         $this->target_before = $targetBefore;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MergeAttemptApplying($this->id));
     }
 
     public function merged(string $result): void
     {
         $this->state = MergeAttemptState::Merged;
         $this->result = $result;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MergeAttemptMerged($this->id, $result));
     }
 
     public function refuse(MergeRefusalReason $reason, string $evidence): void
@@ -211,14 +222,16 @@ final class MergeAttempt extends Model implements ReadableModel
         $this->state = MergeAttemptState::Refused;
         $this->refusal = $reason;
         $this->evidence = $evidence;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MergeAttemptRefused($this->id, $reason));
     }
 
     public function becomeUncertain(string $evidence): void
     {
         $this->state = MergeAttemptState::Uncertain;
         $this->evidence = $evidence;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MergeAttemptUncertain($this->id));
     }
 
     // ----------[ Accessors ]----------

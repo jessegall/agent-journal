@@ -22,7 +22,7 @@ final class ReadAttachmentTool extends PublicationReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'attachment_id' => $schema->string()->max(26)->required(),
+            'attachment_id' => $this->recordIdArgument($schema),
             'continuation' => $schema->string(),
         ];
     }

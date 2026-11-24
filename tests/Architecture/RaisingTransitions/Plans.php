@@ -10,4 +10,10 @@ return [
     'Plan::cancel',
     'Plan::finish',
     'Plan::startOnce',
+    'Phase::advanceRevision',
+    'Phase::recordProgress',
+    'PlanReviewEdition::withdraw',
+    'PlanReviewEdition::approve',
+    'PlanReviewEdition::requestChanges',
+    'PlanReviewEdition::markHistorical',
 ];

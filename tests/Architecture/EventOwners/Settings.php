@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Events\SettingsChanged;
+use App\Events\SettingsRevised;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -17,5 +18,12 @@ return [
         'producers' => [
             'app/Support/SettingsWriter.php',
         ],
+    ],
+    SettingsRevised::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SettingsRecord::revise',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SettingsRevised('settings'),
     ],
 ];

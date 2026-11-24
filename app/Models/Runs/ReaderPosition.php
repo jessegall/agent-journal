@@ -6,11 +6,15 @@ namespace App\Models\Runs;
 
 use App\Casts\StoredValueCast;
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\InterpretationState;
 use App\Enums\PositionPurpose;
+use App\Events\ReaderPositionAdvanced;
+use App\Events\ReaderPositionFailed;
+use App\Events\ReaderPositionRewound;
 use App\Values\ReaderCheckpoint;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -31,12 +35,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['part_run_id', 'reader_revision_id', 'purpose', 'checkpoint', 'interpretation'])]
-final class ReaderPosition extends Model implements ReadableModel
+final class ReaderPosition extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -79,7 +83,8 @@ final class ReaderPosition extends Model implements ReadableModel
     public function markFailed(): void
     {
         $this->interpretation = InterpretationState::ReaderFailed;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ReaderPositionFailed($this->id));
     }
 
     /**
@@ -89,13 +94,15 @@ final class ReaderPosition extends Model implements ReadableModel
     {
         $this->checkpoint = $consumed;
         $this->interpretation = InterpretationState::Provisional;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ReaderPositionRewound($this->id));
     }
 
     public function advance(ReaderCheckpoint $checkpoint): void
     {
         $this->checkpoint = $checkpoint;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ReaderPositionAdvanced($this->id));
     }
 
     // ----------[ Answers ]----------

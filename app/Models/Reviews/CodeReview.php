@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Models\Reviews;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\CodeReviewState;
+use App\Events\CodeReviewImportFailed;
+use App\Events\CodeReviewOpened;
+use App\Events\CodeReviewSettled;
 use App\Exceptions\CodeReviewRefused;
 use App\Models\Asks\Ask;
 use App\Models\Support\HasWorkColumns;
@@ -64,13 +68,13 @@ use Illuminate\Support\Carbon;
     'origin_target',
     'ask_id',
 ])]
-final class CodeReview extends Model implements ReadableModel
+final class CodeReview extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use HasWorkColumns;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * How many failed imports leave the review waiting for someone to look.
@@ -144,7 +148,8 @@ final class CodeReview extends Model implements ReadableModel
     {
         $this->import_attempts++;
         $this->import_failure = $reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new CodeReviewImportFailed($this->id));
     }
 
     /**
@@ -160,13 +165,15 @@ final class CodeReview extends Model implements ReadableModel
         $this->import_failure = null;
         $this->ask_id = $ask->id;
         $this->origin_target = $ask->pending_target;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new CodeReviewOpened($this->id, $ask->id));
     }
 
     public function settle(CodeReviewState $state): void
     {
         $this->state = $state;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new CodeReviewSettled($this->id, $state));
     }
 
     // ----------[ Answers ]----------

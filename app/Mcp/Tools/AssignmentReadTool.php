@@ -36,7 +36,7 @@ final class AssignmentReadTool extends JournalReadTool
     {
         return [
             'record_type' => $schema->string()->max(100)->description('A registered record type such as tasks.task, plans.plan or plans.phase.')->required(),
-            'record_id' => $schema->string()->max(26)->required(),
+            'record_id' => $this->recordIdArgument($schema),
         ];
     }
 

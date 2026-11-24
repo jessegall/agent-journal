@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models\Starts;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\RevisionFenceReconciled;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -25,12 +27,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Table('revision_fences')]
 #[Fillable(['profile_key', 'profile_revision', 'reconciled_at'])]
-final class RevisionFence extends Model implements ReadableModel
+final class RevisionFence extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -73,6 +75,7 @@ final class RevisionFence extends Model implements ReadableModel
     public function markReconciledAt(CarbonImmutable $time): void
     {
         $this->reconciled_at = $time;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new RevisionFenceReconciled($this->id));
     }
 }

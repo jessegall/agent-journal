@@ -6,6 +6,7 @@ namespace Domain\Tasks\Resolvers\Support;
 
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Processes\RunClaims;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Values\TaskExecution;
@@ -36,7 +37,12 @@ final readonly class TaskExecutions
         );
 
         $runners = array_map(fn (TaskRun $run) => $holders[$run->id] ?? $run->starter, $runs);
-        $labels = $this->labels->labelsFor(array_values($runners));
+
+        $focusers = $tasks
+            ->flatMap(fn (Task $task) => $task->focuser()->map(fn (ActorIdentity $agent) => [$agent])->getOrElse([]))
+            ->all();
+
+        $labels = $this->labels->labelsFor([...array_values($runners), ...$focusers]);
 
         return $tasks->mapWithKeys(fn (Task $task) => [
             $task->id => isset($runners[$task->id])

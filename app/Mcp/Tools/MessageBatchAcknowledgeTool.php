@@ -30,7 +30,7 @@ final class MessageBatchAcknowledgeTool extends MessageWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'batch_id' => $schema->string()->max(26)->required(),
+            'batch_id' => $this->recordIdArgument($schema),
             'handles' => $schema->array()->items($schema->string()->max(64))->required(),
             'context_key' => $schema->string()->max(255)->required(),
         ];

@@ -40,6 +40,7 @@ final class TaskReaderData extends Data
         public readonly AssignmentData|Optional $holder = new Optional(),
         public readonly int|Optional $latestRun = new Optional(),
         public readonly TaskRunnerData|Optional $runningNow = new Optional(),
+        public readonly string|Optional $focusedBy = new Optional(),
         public readonly TaskLogsData|Optional $logs = new Optional(),
         public readonly TaskProofsData|Optional $proofs = new Optional(),
         public readonly TaskWaitsData|Optional $waits = new Optional(),
@@ -81,6 +82,7 @@ final class TaskReaderData extends Data
             'runningNow' => $execution !== null && $execution->isRunningNow
                 ? TaskRunnerData::fromExecution($execution)
                 : null,
+            'focusedBy' => $execution?->focusedBy->getOrElse(null),
             'logs' => $logs instanceof Optional ? null : $logs,
             'proofs' => $proofs instanceof Optional ? null : $proofs,
             'waits' => $waits instanceof Optional ? null : $waits,

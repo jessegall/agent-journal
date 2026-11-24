@@ -9,4 +9,5 @@ declare(strict_types=1);
 return [
     'Skill::makeCurrent',
     'Skill::retireBy',
+    'SkillGeneration::retire',
 ];

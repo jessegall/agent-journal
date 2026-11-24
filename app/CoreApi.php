@@ -332,7 +332,6 @@ use App\Contracts\Chat\MessageSender;
 use App\Contracts\Chat\Notifications;
 use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Chat\NotificationTargets;
-use App\Contracts\Chat\ReplyInboxes;
 use App\Contracts\Chat\SeatedActor;
 use App\Contracts\Chat\UserPresences;
 use App\Contracts\Domains\CallRegistrar;
@@ -1689,7 +1688,6 @@ final class CoreApi
                 ActorDesks::class,
                 ActorProvisioning::class,
                 RunClaims::class,
-                ReplyInboxes::class,
                 InternalAssignableContributor::class,
                 IncomingWorkProvider::class,
                 IncomingWork::class,

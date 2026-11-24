@@ -24,7 +24,7 @@ final class RetryDeliveryTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'range_id' => $schema->string()->max(26)->required(),
+            'range_id' => $this->recordIdArgument($schema),
         ];
     }
 

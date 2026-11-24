@@ -394,6 +394,18 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
     // ----------[ Answers ]----------
 
+    /**
+     * The agent whose focus the task is in; none when no agent has it in focus.
+     *
+     * @return Option<ActorIdentity>
+     */
+    public function focuser(): Option
+    {
+        return $this->focused_by_id === null
+            ? None::create()
+            : new Some(new ActorIdentity(ActorType::Agent, $this->focused_by_id));
+    }
+
     public function isOpenForAssignment(): bool
     {
         return $this->state === TaskState::Open;
@@ -405,8 +417,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     }
 
     /**
-     * Who works on the task's latest run, with the runner's label when the caller may see it; it runs now while the
-     * task is started and a claim on that run is live.
+     * Who works on the task's latest run, with the runner's label when the caller may see it, and the agent whose focus
+     * the task is in; it runs now while the task is started and a claim on that run is live.
      */
     public function executionBy(ActorIdentity $runner, ActorLabelSet $labels, bool $isClaimed): TaskExecution
     {
@@ -417,6 +429,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             $this->run_number,
             $this->state,
             $isClaimed && $this->state === TaskState::Started,
+            $this->focuser()->map(fn (ActorIdentity $agent) => $labels->nameOf($agent) ?? "agent {$agent->id}"),
         );
     }
 

@@ -6,12 +6,15 @@ namespace Domain\Reminders\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Reminders\Enums\ReminderStatus;
+use Domain\Reminders\Events\ReminderFinished;
 use Domain\Reminders\Exceptions\ReminderEnded;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -33,13 +36,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title', 'due_at', 'status'])]
-final class Reminder extends Model implements ReadableModel
+final class Reminder extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use FindsForUpdate;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The record type a reminder is linked and found under.
@@ -108,6 +112,7 @@ final class Reminder extends Model implements ReadableModel
         }
 
         $this->status = ReminderStatus::Done;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ReminderFinished($this->id));
     }
 }

@@ -6,7 +6,10 @@ namespace App\Models\Profiles;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\ProfileRetired;
 use App\Exceptions\ProfileMissing;
 use App\Values\ProfileKey;
 use Carbon\CarbonImmutable;
@@ -31,11 +34,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['key', 'label', 'description', 'current_revision_id', 'retired_at'])]
-final class Profile extends Model implements ReadableModel
+final class Profile extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.profile';
 
@@ -96,7 +100,8 @@ final class Profile extends Model implements ReadableModel
     public function retire(): void
     {
         $this->retired_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProfileRetired($this->id));
     }
 
     // ----------[ Answers ]----------

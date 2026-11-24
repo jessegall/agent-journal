@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Events\LinkRemoved;
 use App\Events\LinksRemoved;
 use Tests\Architecture\Support\EventRole;
 
@@ -17,5 +18,12 @@ return [
         'producers' => [
             'app/Support/LinkRemoval.php',
         ],
+    ],
+    LinkRemoved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Link::remove',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new LinkRemoved('link'),
     ],
 ];

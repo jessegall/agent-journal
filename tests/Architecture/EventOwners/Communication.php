@@ -6,6 +6,7 @@ use App\Enums\ActorType;
 use App\Enums\DismissalType;
 use App\Enums\IntervalRole;
 use App\Enums\LeaveReason;
+use App\Enums\MessageBatchState;
 use App\Enums\SpeechOpportunityState;
 use App\Enums\WakeState;
 use App\Events\ChatLinePosted;
@@ -15,25 +16,40 @@ use App\Events\ChatMessageAccepted;
 use App\Events\ChatMessageOffered;
 use App\Events\ChatReceiptPresented;
 use App\Events\ChatRoleChanged;
+use App\Events\InboxSequenceTaken;
 use App\Events\MessageAnswered;
 use App\Events\MessageAnswerRequired;
+use App\Events\MessageBatchClaimsGranted;
+use App\Events\MessageBatchProgressed;
+use App\Events\MessageBatchSettled;
+use App\Events\MessageBatchTurnBound;
 use App\Events\MessageClaimed;
 use App\Events\MessageClaimReleased;
 use App\Events\MessageDismissed;
+use App\Events\MessageRangeConfirmed;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
+use App\Events\NotificationReceiptHidden;
+use App\Events\NotificationReceiptRead;
+use App\Events\NotificationReceiptRevealed;
 use App\Events\NotificationsChanged;
 use App\Events\NotificationsMarkAllAdvanced;
 use App\Events\NotificationsMarkAllBegun;
 use App\Events\NotificationsMarkAllFinished;
 use App\Events\NotificationsWithdrawn;
+use App\Events\OutstandingMessageRangeConfirmed;
+use App\Events\OutstandingMessageRangeExhausted;
+use App\Events\OutstandingMessageRangeFailed;
+use App\Events\OutstandingMessageRangeReopened;
 use App\Events\ReceiptDeliveriesScheduled;
 use App\Events\ReceiptDeliveryAwaitingShown;
 use App\Events\ReceiptDeliveryChanged;
+use App\Events\ReceiptProgressAdvanced;
 use App\Events\SpeechOpportunityClaimed;
 use App\Events\SpeechOpportunityReleased;
 use App\Events\SpeechOpportunityReserved;
 use App\Events\SpeechOpportunitySettled;
+use App\Events\UserPresenceBeat;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
@@ -257,5 +273,110 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new NotificationsMarkAllFinished('scope'),
+    ],
+    MessageBatchTurnBound::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MessageBatch::bindTurn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MessageBatchTurnBound('batch', 'turn'),
+    ],
+    MessageBatchProgressed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MessageBatch::recordProgress',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MessageBatchProgressed('batch'),
+    ],
+    MessageBatchSettled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MessageBatch::settle',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MessageBatchSettled('batch', MessageBatchState::cases()[0]),
+    ],
+    MessageBatchClaimsGranted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MessageBatch::grantClaims',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MessageBatchClaimsGranted('batch'),
+    ],
+    MessageRangeConfirmed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MessageRange::confirm',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MessageRangeConfirmed('range'),
+    ],
+    OutstandingMessageRangeConfirmed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'OutstandingMessageRange::confirm',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new OutstandingMessageRangeConfirmed('range'),
+    ],
+    OutstandingMessageRangeFailed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'OutstandingMessageRange::recordFailure',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new OutstandingMessageRangeFailed('range'),
+    ],
+    OutstandingMessageRangeReopened::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'OutstandingMessageRange::reopen',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new OutstandingMessageRangeReopened('range'),
+    ],
+    OutstandingMessageRangeExhausted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'OutstandingMessageRange::exhaust',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new OutstandingMessageRangeExhausted('range', 'reason'),
+    ],
+    ReceiptProgressAdvanced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ReceiptProgress::advanceTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ReceiptProgressAdvanced('progress', 1),
+    ],
+    NotificationReceiptRead::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NotificationReceipt::markRead',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NotificationReceiptRead('receipt'),
+    ],
+    NotificationReceiptHidden::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NotificationReceipt::hide',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NotificationReceiptHidden('receipt'),
+    ],
+    NotificationReceiptRevealed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NotificationReceipt::reveal',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NotificationReceiptRevealed('receipt'),
+    ],
+    InboxSequenceTaken::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'InboxRecord::takeSequence',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new InboxSequenceTaken('inbox'),
+    ],
+    UserPresenceBeat::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'UserPresence::beatAt',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new UserPresenceBeat('presence'),
     ],
 ];

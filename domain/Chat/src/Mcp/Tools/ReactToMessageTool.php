@@ -32,8 +32,8 @@ final class ReactToMessageTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'chat_id' => $schema->string()->max(26)->required(),
-            'message_id' => $schema->string()->max(26)->required(),
+            'chat_id' => $this->recordIdArgument($schema),
+            'message_id' => $this->recordIdArgument($schema),
             'emoji' => $schema->string()->max(self::EMOJI_CHARACTER_LIMIT)->required(),
         ];
     }

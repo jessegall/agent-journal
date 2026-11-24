@@ -6,10 +6,16 @@ namespace App\Models\Projects;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ProjectReadFailure;
 use App\Enums\ProjectReadState;
 use App\Enums\ProjectReadType;
+use App\Events\ProjectReadAnsweredWithEntries;
+use App\Events\ProjectReadAnsweredWithText;
+use App\Events\ProjectReadClaimed;
+use App\Events\ProjectReadFailed;
 use App\Exceptions\ProjectReadRefused;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
@@ -50,12 +56,13 @@ use PhpOption\Option;
  */
 #[Table('project_reads')]
 #[Fillable(['type', 'path', 'state'])]
-final class ProjectRead extends Model implements ReadableModel
+final class ProjectRead extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The most entries one folder answer holds.
@@ -198,7 +205,8 @@ final class ProjectRead extends Model implements ReadableModel
     public function markClaimed(CarbonImmutable $now): void
     {
         $this->claimed_at = $now;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectReadClaimed($this->id));
     }
 
     /**
@@ -215,6 +223,7 @@ final class ProjectRead extends Model implements ReadableModel
 
         $this->is_truncated = $isTruncated || count($entries) > self::DIRECTORY_ENTRY_LIMIT;
         $this->settle(ProjectReadState::Answered);
+        $this->raise(new ProjectReadAnsweredWithEntries($this->id));
     }
 
     /**
@@ -227,12 +236,14 @@ final class ProjectRead extends Model implements ReadableModel
         $this->size = $text->size;
         $this->is_truncated = $isTruncated;
         $this->settle(ProjectReadState::Answered);
+        $this->raise(new ProjectReadAnsweredWithText($this->id));
     }
 
     public function fail(ProjectReadFailure $failure): void
     {
         $this->failure = $failure;
         $this->settle(ProjectReadState::Failed);
+        $this->raise(new ProjectReadFailed($this->id, $failure));
     }
 
     // ----------[ Answers ]----------

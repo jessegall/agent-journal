@@ -6,8 +6,11 @@ namespace App\Models\Reviews;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ReviewDecisionType;
+use App\Events\ReviewDecisionMergeLinked;
 use App\Models\Asks\Ask;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -48,11 +51,12 @@ use Illuminate\Support\Carbon;
     'merge_ask_id',
     'repaired_at',
 ])]
-final class ReviewDecision extends Model implements ReadableModel
+final class ReviewDecision extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -103,7 +107,8 @@ final class ReviewDecision extends Model implements ReadableModel
     public function linkMerge(Ask $merge): void
     {
         $this->merge_ask_id = $merge->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ReviewDecisionMergeLinked($this->id, $merge->id));
     }
 
     // ----------[ Relations ]----------

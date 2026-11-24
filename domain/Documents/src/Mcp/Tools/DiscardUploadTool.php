@@ -28,7 +28,7 @@ final class DiscardUploadTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'upload_id' => $schema->string()->max(26)->required(),
+            'upload_id' => $this->recordIdArgument($schema),
         ];
     }
 

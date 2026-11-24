@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Events\ChatAccessEnded;
+use App\Events\DeskPreferenceSwitched;
+use App\Events\DeskRenamed;
+use App\Events\DeskSeatingAdvanced;
 use App\Events\NotificationsInvalidated;
 use App\Events\PageChanged;
 use App\Events\ProtectedViewInvalidated;
@@ -43,5 +46,26 @@ return [
             'app/Listeners/BroadcastProtectedViewInvalidation.php',
             'app/Listeners/PurgeWithdrawnNotifications.php',
         ],
+    ],
+    DeskPreferenceSwitched::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DeskPreference::switchTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DeskPreferenceSwitched('preference'),
+    ],
+    DeskSeatingAdvanced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DeskRecord::advanceSeating',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DeskSeatingAdvanced('desk'),
+    ],
+    DeskRenamed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DeskRecord::rename',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DeskRenamed('desk', 'Desk'),
     ],
 ];

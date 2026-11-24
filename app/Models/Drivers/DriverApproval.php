@@ -6,7 +6,10 @@ namespace App\Models\Drivers;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\DriverBuildsApproved;
 use App\Values\DriverKey;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -24,11 +27,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['driver_key', 'build_pins'])]
-final class DriverApproval extends Model implements ReadableModel
+final class DriverApproval extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -76,6 +80,7 @@ final class DriverApproval extends Model implements ReadableModel
     public function approveBuilds(array $pins): void
     {
         $this->build_pins = $pins;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverBuildsApproved($this->id));
     }
 }

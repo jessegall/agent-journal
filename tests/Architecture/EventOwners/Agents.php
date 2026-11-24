@@ -2,12 +2,34 @@
 
 declare(strict_types=1);
 
+use App\Enums\CleanupState;
+use App\Enums\DriverVariant;
+use App\Enums\HoldReason;
+use App\Enums\RuntimeActivity;
 use App\Events\AccountSettingsRequested;
 use App\Events\AccountUseChanged;
 use App\Events\ActivityRecorded;
 use App\Events\AgentHoldReleased;
+use App\Events\AgentRetired;
+use App\Events\AgentRuntimeAdopted;
+use App\Events\AgentRuntimeBegun;
+use App\Events\AgentRuntimeClosed;
+use App\Events\AgentRuntimeConfirmedAlive;
+use App\Events\AgentRuntimeHeld;
+use App\Events\AgentRuntimeHostChanged;
+use App\Events\AgentRuntimeModelRequested;
+use App\Events\AgentRuntimeObserved;
 use App\Events\AgentRuntimeReassigned;
+use App\Events\AgentRuntimeRequestedSettingsRecomputed;
+use App\Events\AgentRuntimeSettingsObserved;
+use App\Events\AgentRuntimesFenced;
+use App\Events\AgentRuntimeStartGrantClaimed;
+use App\Events\AgentRuntimeStartGrantHeld;
+use App\Events\AgentRuntimeStopping;
+use App\Events\AgentVariantPreferred;
 use App\Events\ChildCheckoutRequested;
+use App\Events\CleanupPassRecorded;
+use App\Events\DriverBuildsApproved;
 use App\Events\DriverFailed;
 use App\Events\DriverRequestRecovered;
 use App\Events\DriverSwitchCancelled;
@@ -20,12 +42,18 @@ use App\Events\DriverSwitchStopBegun;
 use App\Events\DriverSwitchStopped;
 use App\Events\LaunchCancelled;
 use App\Events\LaunchEnded;
+use App\Events\MenuEntryMarkedStale;
+use App\Events\MenuEntryProven;
+use App\Events\MenuEntryRetired;
+use App\Events\MenuEntrySuperseded;
+use App\Events\MenuEntryUsed;
 use App\Events\MergeOutcomeRecorded;
 use App\Events\ProcessStartCancelled;
 use App\Events\ProcessStartClaimed;
 use App\Events\ProcessStartOutputAdvanced;
 use App\Events\ProcessStartRunning;
 use App\Events\ProcessStartStopped;
+use App\Events\RevisionFenceReconciled;
 use App\Events\SessionClosed;
 use App\Events\SessionOpened;
 use App\Events\SessionStateChanged;
@@ -33,7 +61,20 @@ use App\Events\StartAccepted;
 use App\Events\StartGrantRequested;
 use App\Events\StartRefused;
 use App\Events\StartSettingsRequested;
+use App\Events\StartTokenIssued;
+use App\Events\StartTokenRevoked;
+use App\Events\StartTokenRotated;
 use App\Events\StartUnavailable;
+use App\Events\TerminalGrantIssued;
+use App\Events\TerminalGrantRefused;
+use App\Events\TerminalGrantReleased;
+use App\Events\TerminalGrantReleasing;
+use App\Events\TerminalGrantRenewed;
+use App\Events\TerminalGrantRetired;
+use App\Events\TerminalGrantSequenceTaken;
+use App\Events\TerminalTakeSent;
+use App\Events\TerminalViewClosed;
+use App\Events\TerminalViewFollowed;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -281,5 +322,264 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProcessStartCancelled('start'),
+    ],
+    AgentVariantPreferred::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Agent::preferVariant',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentVariantPreferred('agent', DriverVariant::Headless),
+    ],
+    AgentRuntimeAdopted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Agent::adoptRuntime',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeAdopted('agent', 'session', 2),
+    ],
+    AgentRuntimesFenced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Agent::fenceRuntimes',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimesFenced('agent', 2),
+    ],
+    AgentRetired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Agent::retireAt',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRetired('agent'),
+    ],
+    AgentRuntimeStopping::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::markStopping',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeStopping('runtime'),
+    ],
+    AgentRuntimeHeld::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::holdFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeHeld('runtime', HoldReason::None),
+    ],
+    AgentRuntimeClosed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::closeAfterExit',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeClosed('runtime'),
+    ],
+    AgentRuntimeBegun::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::begin',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeBegun('runtime'),
+    ],
+    AgentRuntimeConfirmedAlive::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::confirmAlive',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeConfirmedAlive('runtime'),
+    ],
+    AgentRuntimeObserved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::recordObservation',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeObserved('runtime', RuntimeActivity::Starting, 1),
+    ],
+    AgentRuntimeSettingsObserved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::observeSettings',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeSettingsObserved('runtime'),
+    ],
+    AgentRuntimeStartGrantHeld::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::holdStartGrant',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeStartGrantHeld('runtime'),
+    ],
+    AgentRuntimeStartGrantClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::claimStartGrant',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeStartGrantClaimed('runtime'),
+    ],
+    AgentRuntimeRequestedSettingsRecomputed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::recomputeRequestedSettings',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeRequestedSettingsRecomputed('runtime'),
+    ],
+    AgentRuntimeHostChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::reassignTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeHostChanged('runtime', 'host', 2),
+    ],
+    AgentRuntimeModelRequested::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::requestModel',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeModelRequested('runtime', 'model'),
+    ],
+    StartTokenIssued::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'StartToken::issueFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new StartTokenIssued('token', 'session'),
+    ],
+    StartTokenRotated::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'StartToken::rotateTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new StartTokenRotated('token'),
+    ],
+    StartTokenRevoked::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'StartToken::revokeAt',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new StartTokenRevoked('token'),
+    ],
+    CleanupPassRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'CleanupOperation::recordPass',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new CleanupPassRecorded('cleanup', CleanupState::Pending),
+    ],
+    RevisionFenceReconciled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'RevisionFence::markReconciledAt',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RevisionFenceReconciled('fence'),
+    ],
+    DriverBuildsApproved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverApproval::approveBuilds',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverBuildsApproved('approval'),
+    ],
+    MenuEntryUsed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MenuEntry::used',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MenuEntryUsed('entry'),
+    ],
+    MenuEntrySuperseded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MenuEntry::supersededBy',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MenuEntrySuperseded('entry', 'newer'),
+    ],
+    MenuEntryRetired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MenuEntry::retire',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MenuEntryRetired('entry'),
+    ],
+    TerminalTakeSent::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalGrant::sendTakeWith',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalTakeSent('grant', 'request'),
+    ],
+    TerminalGrantIssued::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalGrant::issue',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalGrantIssued('grant'),
+    ],
+    TerminalGrantRefused::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalGrant::refuse',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalGrantRefused('grant'),
+    ],
+    TerminalGrantRenewed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalGrant::renew',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalGrantRenewed('grant'),
+    ],
+    TerminalGrantReleasing::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalGrant::release',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalGrantReleasing('grant', 'request'),
+    ],
+    TerminalGrantReleased::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalGrant::markReleased',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalGrantReleased('grant'),
+    ],
+    TerminalGrantRetired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalGrant::retire',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalGrantRetired('grant', 'request'),
+    ],
+    TerminalGrantSequenceTaken::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalGrant::takeSequence',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalGrantSequenceTaken('grant', 1),
+    ],
+    TerminalViewFollowed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalView::follow',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalViewFollowed('view', 'runtime'),
+    ],
+    TerminalViewClosed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TerminalView::close',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TerminalViewClosed('view'),
+    ],
+    MenuEntryProven::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MenuEntry::provenOn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MenuEntryProven('entry', '2.1.0'),
+    ],
+    MenuEntryMarkedStale::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'MenuEntry::markStaleOn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MenuEntryMarkedStale('entry', '2.1.0'),
     ],
 ];

@@ -3,8 +3,19 @@
 declare(strict_types=1);
 
 use App\Enums\BindingReadiness;
+use App\Enums\CommandRunState;
+use App\Enums\ProjectReadFailure;
 use App\Events\BindingStartRecorded;
+use App\Events\DeviceGrantApproved;
+use App\Events\DeviceGrantIssued;
+use App\Events\DeviceGrantPolled;
+use App\Events\DeviceGrantRestarted;
+use App\Events\DeviceGrantRevoked;
 use App\Events\EnvironmentOpened;
+use App\Events\HostBrowserInputAdvertised;
+use App\Events\HostDescriptorsRecorded;
+use App\Events\HostProtectionRecorded;
+use App\Events\HostRevoked;
 use App\Events\InstallAttemptCancelled;
 use App\Events\InstallAttemptOpened;
 use App\Events\InstallAttemptReplaced;
@@ -15,10 +26,19 @@ use App\Events\ProjectBindingLeased;
 use App\Events\ProjectBindingLeaseEnded;
 use App\Events\ProjectBindingReadinessChanged;
 use App\Events\ProjectBindingRevoked;
+use App\Events\ProjectCommandCancellationRequested;
+use App\Events\ProjectCommandCancelled;
+use App\Events\ProjectCommandFinished;
+use App\Events\ProjectCommandProcessRecorded;
+use App\Events\ProjectCommandReconciled;
 use App\Events\ProjectCreated;
 use App\Events\ProjectInvitationIssued;
 use App\Events\ProjectInvitationRevoked;
 use App\Events\ProjectInvitationSpent;
+use App\Events\ProjectReadAnsweredWithEntries;
+use App\Events\ProjectReadAnsweredWithText;
+use App\Events\ProjectReadClaimed;
+use App\Events\ProjectReadFailed;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -138,5 +158,131 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProjectBindingLeaseEnded('binding', 'runtime'),
+    ],
+    DeviceGrantRestarted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DeviceGrant::restartWith',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DeviceGrantRestarted('grant'),
+    ],
+    DeviceGrantApproved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DeviceGrant::approveBy',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DeviceGrantApproved('grant', 'user'),
+    ],
+    DeviceGrantPolled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DeviceGrant::recordPoll',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DeviceGrantPolled('grant'),
+    ],
+    DeviceGrantIssued::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DeviceGrant::issue',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DeviceGrantIssued('grant'),
+    ],
+    DeviceGrantRevoked::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DeviceGrant::revoke',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DeviceGrantRevoked('grant'),
+    ],
+    HostProtectionRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::recordProtection',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProtectionRecorded('host'),
+    ],
+    HostDescriptorsRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::recordDescriptors',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostDescriptorsRecorded('host'),
+    ],
+    HostBrowserInputAdvertised::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::advertiseBrowserInput',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostBrowserInputAdvertised('host'),
+    ],
+    HostRevoked::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::revokeAt',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostRevoked('host'),
+    ],
+    ProjectCommandProcessRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectCommandRun::recordProcess',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectCommandProcessRecorded('run', 1),
+    ],
+    ProjectCommandFinished::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectCommandRun::finish',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectCommandFinished('run', 0),
+    ],
+    ProjectCommandCancellationRequested::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectCommandRun::requestCancellation',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectCommandCancellationRequested('run'),
+    ],
+    ProjectCommandCancelled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectCommandRun::cancel',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectCommandCancelled('run'),
+    ],
+    ProjectCommandReconciled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectCommandRun::reconcile',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectCommandReconciled('run', CommandRunState::Cancelled),
+    ],
+    ProjectReadClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectRead::markClaimed',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectReadClaimed('read'),
+    ],
+    ProjectReadAnsweredWithEntries::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectRead::answerWithEntries',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectReadAnsweredWithEntries('read'),
+    ],
+    ProjectReadAnsweredWithText::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectRead::answerWithText',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectReadAnsweredWithText('read'),
+    ],
+    ProjectReadFailed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectRead::fail',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectReadFailed('read', ProjectReadFailure::cases()[0]),
     ],
 ];

@@ -26,8 +26,8 @@ final class MessageAcknowledgeTool extends MessageWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'inbox_id' => $schema->string()->max(26)->required(),
-            'message_ids' => $schema->array()->items($schema->string()->max(26))->required(),
+            'inbox_id' => $this->recordIdArgument($schema),
+            'message_ids' => $schema->array()->items($this->optionalRecordIdArgument($schema))->required(),
         ];
     }
 

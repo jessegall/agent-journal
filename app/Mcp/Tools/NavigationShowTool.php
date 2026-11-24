@@ -33,7 +33,7 @@ final class NavigationShowTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'request' => $schema->string()->max(26)->required(),
+            'request' => $this->recordIdArgument($schema),
             'first_round' => $schema->integer()->min(1),
         ];
     }

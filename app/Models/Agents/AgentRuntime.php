@@ -6,6 +6,8 @@ namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Processes\RuntimeStatus;
 use App\Enums\DriverOperation;
@@ -14,6 +16,18 @@ use App\Enums\HoldReason;
 use App\Enums\RequestProgress;
 use App\Enums\RuntimeActivity;
 use App\Enums\SessionStatus;
+use App\Events\AgentRuntimeBegun;
+use App\Events\AgentRuntimeClosed;
+use App\Events\AgentRuntimeConfirmedAlive;
+use App\Events\AgentRuntimeHeld;
+use App\Events\AgentRuntimeHostChanged;
+use App\Events\AgentRuntimeModelRequested;
+use App\Events\AgentRuntimeObserved;
+use App\Events\AgentRuntimeRequestedSettingsRecomputed;
+use App\Events\AgentRuntimeSettingsObserved;
+use App\Events\AgentRuntimeStartGrantClaimed;
+use App\Events\AgentRuntimeStartGrantHeld;
+use App\Events\AgentRuntimeStopping;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalView;
 use App\Models\Projects\Host;
@@ -65,11 +79,12 @@ use PhpOption\Option;
  * @property int $row_version
  */
 #[Fillable(['agent_session_id', 'host_id', 'mode', 'driver_key', 'driver_build', 'profile', 'canonical_folder'])]
-final class AgentRuntime extends Model implements ReadableModel
+final class AgentRuntime extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * How old a host observation may be before the runtime's status is shown as stale.
@@ -250,7 +265,8 @@ final class AgentRuntime extends Model implements ReadableModel
     public function markStopping(): void
     {
         $this->activity = RuntimeActivity::Stopping;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeStopping($this->id));
     }
 
     /**
@@ -259,7 +275,8 @@ final class AgentRuntime extends Model implements ReadableModel
     public function holdFor(HoldReason $reason): void
     {
         $this->hold_reason = $reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeHeld($this->id, $reason));
     }
 
     /**
@@ -269,7 +286,8 @@ final class AgentRuntime extends Model implements ReadableModel
     public function closeAfterExit(): void
     {
         $this->activity = RuntimeActivity::Stopped;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeClosed($this->id));
     }
 
     /**
@@ -281,7 +299,8 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->hold_reason = HoldReason::None;
         $this->process_generation = 1;
         $this->generation_started_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeBegun($this->id));
     }
 
     /**
@@ -292,7 +311,8 @@ final class AgentRuntime extends Model implements ReadableModel
     {
         $this->last_observed_at = $at;
         $this->row_version++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeConfirmedAlive($this->id));
     }
 
     /**
@@ -318,7 +338,8 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->last_observed_at = $at;
         $this->observation_sequence++;
         $this->row_version++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeObserved($this->id, $activity, $processGeneration));
 
         return true;
     }
@@ -331,7 +352,8 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->observed_model = $model ?? $this->observed_model;
         $this->observed_effort = $effort ?? $this->observed_effort;
         $this->settings_observed_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeSettingsObserved($this->id));
     }
 
     /**
@@ -340,7 +362,8 @@ final class AgentRuntime extends Model implements ReadableModel
     public function holdStartGrant(string $token): void
     {
         $this->start_grant = $token;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeStartGrantHeld($this->id));
     }
 
     /**
@@ -350,7 +373,8 @@ final class AgentRuntime extends Model implements ReadableModel
     {
         $token = $this->start_grant;
         $this->start_grant = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeStartGrantClaimed($this->id));
 
         return $token;
     }
@@ -370,7 +394,8 @@ final class AgentRuntime extends Model implements ReadableModel
 
         $this->requested_model = $open->where('operation', DriverOperation::ChangeModel)->last()?->model;
         $this->requested_effort = $open->where('operation', DriverOperation::ChangeEffort)->last()?->effort;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeRequestedSettingsRecomputed($this->id));
     }
 
     /**
@@ -384,13 +409,15 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->activity = RuntimeActivity::Starting;
         $this->hold_reason = HoldReason::None;
         $this->start_grant = $startToken;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeHostChanged($this->id, $hostId, $this->process_generation));
     }
 
     public function requestModel(string $model): void
     {
         $this->requested_model = $model;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeModelRequested($this->id, $model));
     }
 
     /**

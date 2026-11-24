@@ -5,7 +5,10 @@ declare(strict_types=1);
 use App\Enums\ActorType;
 use App\Enums\RunLogicalResult;
 use App\Events\BundleActivated;
+use App\Events\ClassificationRuleRetired;
 use App\Events\EvidenceInvalid;
+use App\Events\EvidencePermitConsumed;
+use App\Events\EvidencePermitExpired;
 use App\Events\OutputChunkCommitted;
 use App\Events\ProcessRunConsumed;
 use App\Events\ProcessRunLost;
@@ -14,7 +17,13 @@ use App\Events\ProcessRunOutcomeUserRevoked;
 use App\Events\ProcessRunOutlasted;
 use App\Events\ProcessRunStopped;
 use App\Events\ProcessRunUpdateCounted;
+use App\Events\ReaderPositionAdvanced;
+use App\Events\ReaderPositionFailed;
+use App\Events\ReaderPositionRewound;
+use App\Events\ResultReceiptSuperseded;
 use App\Events\RuleActivated;
+use App\Events\RuleProposalAdopted;
+use App\Events\RuleProposalWithdrawn;
 use App\Events\RuleRejected;
 use App\Events\RuleRetired;
 use App\Events\RunChanged;
@@ -132,5 +141,68 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProcessRunOutcomeUserRevoked('run'),
+    ],
+    ReaderPositionFailed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ReaderPosition::markFailed',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ReaderPositionFailed('position'),
+    ],
+    ReaderPositionRewound::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ReaderPosition::rewindTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ReaderPositionRewound('position'),
+    ],
+    ReaderPositionAdvanced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ReaderPosition::advance',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ReaderPositionAdvanced('position'),
+    ],
+    ResultReceiptSuperseded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ResultReceipt::supersedeBy',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ResultReceiptSuperseded('receipt', 'newer'),
+    ],
+    ClassificationRuleRetired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ClassificationRule::retire',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ClassificationRuleRetired('rule', 'reason'),
+    ],
+    EvidencePermitConsumed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'EvidencePermit::consume',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new EvidencePermitConsumed('permit', 'run'),
+    ],
+    EvidencePermitExpired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'EvidencePermit::expire',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new EvidencePermitExpired('permit'),
+    ],
+    RuleProposalWithdrawn::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'RuleProposal::withdraw',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RuleProposalWithdrawn('proposal'),
+    ],
+    RuleProposalAdopted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'RuleProposal::adopt',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RuleProposalAdopted('proposal'),
     ],
 ];

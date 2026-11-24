@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Events\AssignmentsChanged;
 use App\Events\AssignmentsEnded;
+use App\Events\AutoAssignmentConfigured;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -26,5 +27,12 @@ return [
         'producers' => [
             'app/Support/AssignmentFacts.php',
         ],
+    ],
+    AutoAssignmentConfigured::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AutoAssignment::configure',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AutoAssignmentConfigured('auto', true, 1),
     ],
 ];

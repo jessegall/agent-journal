@@ -28,7 +28,7 @@ final class DismissMessageTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'message_id' => $schema->string()->max(26)->required(),
+            'message_id' => $this->recordIdArgument($schema),
             'reason' => $schema->string()->max(2000)->required(),
         ];
     }

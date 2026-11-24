@@ -25,7 +25,7 @@ final class PlanReadTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'plan_id' => $schema->string()->max(26)->required(),
+            'plan_id' => $this->recordIdArgument($schema),
             'view' => $this->caseArgument($schema, ReadView::class),
             'continuation' => $schema->string(),
         ];

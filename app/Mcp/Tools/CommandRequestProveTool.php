@@ -34,7 +34,11 @@ final class CommandRequestProveTool extends JournalWriteTool
         return [
             'request' => $this->recordIdArgument($schema),
             'reader_revision' => $schema->string()->max(64)->required(),
-            'runs' => $schema->array()->items($schema->string()->max(26))->min(1)->max(self::MOST_RUNS)->required(),
+            'runs' => $schema->array()
+                ->items($this->optionalRecordIdArgument($schema))
+                ->min(1)
+                ->max(self::MOST_RUNS)
+                ->required(),
         ];
     }
 

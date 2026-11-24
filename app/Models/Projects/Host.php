@@ -6,11 +6,17 @@ namespace App\Models\Projects;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ArrangementType;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\TerminalInputType;
+use App\Events\HostBrowserInputAdvertised;
+use App\Events\HostDescriptorsRecorded;
+use App\Events\HostProtectionRecorded;
+use App\Events\HostRevoked;
 use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
@@ -45,11 +51,12 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @property bool $browser_private
  */
 #[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
-final class Host extends Model implements ReadableModel
+final class Host extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -179,7 +186,8 @@ final class Host extends Model implements ReadableModel
     public function recordProtection(ProtectionReport $report): void
     {
         $this->protection = [...$this->protection, $report->key() => $report->stored()];
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HostProtectionRecorded($this->id));
     }
 
     /**
@@ -190,7 +198,8 @@ final class Host extends Model implements ReadableModel
     public function recordDescriptors(array $descriptors): void
     {
         $this->descriptors = $descriptors;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HostDescriptorsRecorded($this->id));
     }
 
     /**
@@ -208,13 +217,15 @@ final class Host extends Model implements ReadableModel
             return;
         }
 
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HostBrowserInputAdvertised($this->id));
     }
 
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HostRevoked($this->id));
     }
 
     // ----------[ Answers ]----------

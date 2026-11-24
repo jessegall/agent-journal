@@ -6,8 +6,14 @@ namespace App\Models\Messages;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\OutstandingMessageRangeState;
+use App\Events\OutstandingMessageRangeConfirmed;
+use App\Events\OutstandingMessageRangeExhausted;
+use App\Events\OutstandingMessageRangeFailed;
+use App\Events\OutstandingMessageRangeReopened;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -26,11 +32,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Table('outstanding_message_ranges')]
 #[Fillable(['receipt_id', 'start_offset', 'consecutive_failures', 'state'])]
-final class OutstandingMessageRange extends Model implements ReadableModel
+final class OutstandingMessageRange extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -81,13 +88,15 @@ final class OutstandingMessageRange extends Model implements ReadableModel
     {
         $this->state = OutstandingMessageRangeState::Confirmed;
         $this->consecutive_failures = 0;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new OutstandingMessageRangeConfirmed($this->id));
     }
 
     public function recordFailure(): void
     {
         $this->consecutive_failures++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new OutstandingMessageRangeFailed($this->id));
     }
 
     /**
@@ -98,13 +107,15 @@ final class OutstandingMessageRange extends Model implements ReadableModel
         $this->state = OutstandingMessageRangeState::Outstanding;
         $this->consecutive_failures = 0;
         $this->exhausted_reason = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new OutstandingMessageRangeReopened($this->id));
     }
 
     public function exhaust(string $reason): void
     {
         $this->state = OutstandingMessageRangeState::Exhausted;
         $this->exhausted_reason = $reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new OutstandingMessageRangeExhausted($this->id, $reason));
     }
 }

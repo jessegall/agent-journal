@@ -6,8 +6,15 @@ namespace App\Models\Projects;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRunState;
+use App\Events\ProjectCommandCancellationRequested;
+use App\Events\ProjectCommandCancelled;
+use App\Events\ProjectCommandFinished;
+use App\Events\ProjectCommandProcessRecorded;
+use App\Events\ProjectCommandReconciled;
 use App\Support\CommandRunEvidence;
 use App\Values\CommandFrame;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -36,11 +43,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['request_key', 'agent_id', 'binding_id', 'argv', 'fingerprint', 'worker', 'state'])]
-final class ProjectCommandRun extends Model implements ReadableModel
+final class ProjectCommandRun extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -127,7 +135,8 @@ final class ProjectCommandRun extends Model implements ReadableModel
     public function recordProcess(int $pid): void
     {
         $this->pid = $pid;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectCommandProcessRecorded($this->id, $pid));
     }
 
     /**
@@ -138,7 +147,8 @@ final class ProjectCommandRun extends Model implements ReadableModel
         $this->frames = array_map(fn (CommandFrame $frame) => $frame->toArray(), $frames);
         $this->exit_code = $exitCode;
         $this->state = $this->state->settledBy($exitCode);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectCommandFinished($this->id, $exitCode));
     }
 
     /**
@@ -147,7 +157,8 @@ final class ProjectCommandRun extends Model implements ReadableModel
     public function requestCancellation(): void
     {
         $this->state = CommandRunState::CancellationRequested;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectCommandCancellationRequested($this->id));
     }
 
     /**
@@ -156,7 +167,8 @@ final class ProjectCommandRun extends Model implements ReadableModel
     public function cancel(): void
     {
         $this->state = CommandRunState::Cancelled;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectCommandCancelled($this->id));
     }
 
     /**
@@ -173,7 +185,8 @@ final class ProjectCommandRun extends Model implements ReadableModel
         }
 
         $this->state = $settled;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectCommandReconciled($this->id, $settled));
     }
 
     // ----------[ Answers ]----------

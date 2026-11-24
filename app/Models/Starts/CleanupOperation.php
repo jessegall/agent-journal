@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Models\Starts;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CleanupState;
 use App\Enums\CleanupStep;
+use App\Events\CleanupPassRecorded;
 use App\Models\Agents\AgentSession;
 use App\Values\CleanupReport;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -47,12 +49,12 @@ use Illuminate\Support\Carbon;
     'state',
     'attempts',
 ])]
-final class CleanupOperation extends Model implements ReadableModel
+final class CleanupOperation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * How many failed passes a cleanup takes before it stops retrying and needs attention.
@@ -134,7 +136,8 @@ final class CleanupOperation extends Model implements ReadableModel
         $this->last_error = $report->failure;
         $this->attempts += $report->hasFailed() ? 1 : 0;
         $this->state = $this->stateAfterPass();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new CleanupPassRecorded($this->id, $this->state));
     }
 
     // ----------[ Answers ]----------

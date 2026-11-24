@@ -13,6 +13,7 @@ use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskFocused;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Events\TaskRunClaimed;
+use Domain\Tasks\Events\TaskRunEnded;
 use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Events\TaskUnfocused;
@@ -109,5 +110,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new TaskDescribed('task'),
+    ],
+    TaskRunEnded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TaskRun::finish',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskRunEnded('run', 'task'),
     ],
 ];

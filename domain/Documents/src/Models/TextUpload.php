@@ -6,10 +6,15 @@ namespace Domain\Documents\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sessions\SessionProvenance;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;
+use Domain\Documents\Events\TextUploadChunkCounted;
+use Domain\Documents\Events\TextUploadConsumed;
+use Domain\Documents\Events\TextUploadSealed;
 use Domain\Documents\Exceptions\UploadChunkConflict;
 use Domain\Documents\Exceptions\UploadExpired;
 use Domain\Documents\Exceptions\UploadIncomplete;
@@ -31,11 +36,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $consumed_at
  */
 #[Fillable(['type', 'bytes', 'digest', 'expires_at'])]
-final class TextUpload extends Model implements ReadableModel
+final class TextUpload extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'documents.upload';
 
@@ -145,7 +151,8 @@ final class TextUpload extends Model implements ReadableModel
     {
         $this->received_bytes += $bytes;
         $this->next_index++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TextUploadChunkCounted($this->id));
     }
 
     public function seal(): void
@@ -159,7 +166,8 @@ final class TextUpload extends Model implements ReadableModel
         }
 
         $this->sealed_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TextUploadSealed($this->id));
     }
 
     public function consume(UploadType $type): string
@@ -174,7 +182,8 @@ final class TextUpload extends Model implements ReadableModel
 
         $body = $this->body();
         $this->consumed_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TextUploadConsumed($this->id));
 
         return $body;
     }

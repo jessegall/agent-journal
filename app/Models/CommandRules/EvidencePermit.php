@@ -7,7 +7,11 @@ namespace App\Models\CommandRules;
 use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\EvidencePermitConsumed;
+use App\Events\EvidencePermitExpired;
 use App\Exceptions\EvidencePermitRefused;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
@@ -61,11 +65,12 @@ use Illuminate\Support\Carbon;
     'command_request_id',
     'candidate_rules',
 ])]
-final class EvidencePermit extends Model implements ReadableModel
+final class EvidencePermit extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -116,13 +121,15 @@ final class EvidencePermit extends Model implements ReadableModel
         $this->request_id = $requestId;
         $this->consumed_at = CarbonImmutable::now();
         $this->process_run_id = $run->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new EvidencePermitConsumed($this->id, $run->id));
     }
 
     public function expire(): void
     {
         $this->expires_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new EvidencePermitExpired($this->id));
     }
 
     // ----------[ Answers ]----------

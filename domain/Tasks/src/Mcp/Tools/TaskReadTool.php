@@ -25,7 +25,7 @@ final class TaskReadTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'task_id' => $schema->string()->max(26)->required(),
+            'task_id' => $this->recordIdArgument($schema),
             'view' => $this->caseArgument($schema, ReadView::class),
             'continuation' => $schema->string(),
             'passage' => $schema->string()->max(64),

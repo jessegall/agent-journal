@@ -12,6 +12,9 @@ use Domain\Documents\Events\DocumentPublished;
 use Domain\Documents\Events\DraftKept;
 use Domain\Documents\Events\RecordSettled;
 use Domain\Documents\Events\ReportFiled;
+use Domain\Documents\Events\TextUploadChunkCounted;
+use Domain\Documents\Events\TextUploadConsumed;
+use Domain\Documents\Events\TextUploadSealed;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -82,5 +85,26 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DocumentFirstRevisionSet('document', 'revision'),
+    ],
+    TextUploadChunkCounted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TextUpload::countChunk',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TextUploadChunkCounted('upload'),
+    ],
+    TextUploadSealed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TextUpload::seal',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TextUploadSealed('upload'),
+    ],
+    TextUploadConsumed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TextUpload::consume',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TextUploadConsumed('upload'),
     ],
 ];

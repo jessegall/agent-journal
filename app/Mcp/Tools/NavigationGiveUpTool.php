@@ -32,7 +32,7 @@ final class NavigationGiveUpTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'request' => $schema->string()->max(26)->required(),
+            'request' => $this->recordIdArgument($schema),
             'version' => $schema->integer()->min(1)->required(),
             'reason' => $schema->string()->max(500)->required(),
         ];

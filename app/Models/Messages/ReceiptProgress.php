@@ -6,7 +6,10 @@ namespace App\Models\Messages;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\ReceiptProgressAdvanced;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -23,11 +26,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Table('receipt_progress')]
 #[Fillable(['receipt_id', 'context_key', 'confirmed_offset'])]
-final class ReceiptProgress extends Model implements ReadableModel
+final class ReceiptProgress extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -78,6 +82,7 @@ final class ReceiptProgress extends Model implements ReadableModel
         }
 
         $this->confirmed_offset = $offset;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ReceiptProgressAdvanced($this->id, $offset));
     }
 }

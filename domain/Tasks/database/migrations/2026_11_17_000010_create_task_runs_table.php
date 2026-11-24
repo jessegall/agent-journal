@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('started_by_id', 64);
             $table->string('state', 16);
             $table->text('outcome')->nullable();
-            $table->foreignUlid('reply_inbox_id')->nullable()->constrained('inboxes')->restrictOnDelete();
             $table->timestampsTz();
 
             $table->unique(['task_id', 'run_number']);

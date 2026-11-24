@@ -25,7 +25,7 @@ final class CreatePhaseTool extends PlanWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'plan_id' => $schema->string()->max(26)->required(),
+            'plan_id' => $this->recordIdArgument($schema),
             'title' => $schema->string()->max(PlanTextLimit::Title->value)->required(),
         ];
     }

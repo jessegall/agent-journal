@@ -2,13 +2,20 @@
 
 declare(strict_types=1);
 
+use App\Enums\GatewayEndpointState;
+use App\Enums\GatewayOutcome;
 use App\Enums\ShareState;
 use App\Events\ShareActivated;
 use App\Events\ShareCreated;
 use App\Events\ShareExpired;
 use App\Events\ShareFailed;
 use App\Events\ShareGatewayChanged;
+use App\Events\ShareGatewayEndpointHealthy;
+use App\Events\ShareGatewayEndpointMoved;
 use App\Events\ShareGatewayMadeDefault;
+use App\Events\ShareGatewayOperationClaimed;
+use App\Events\ShareGatewayOperationFinished;
+use App\Events\ShareInstallationHeld;
 use App\Events\SharePruned;
 use App\Events\ShareRequested;
 use App\Events\ShareRetried;
@@ -101,5 +108,40 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ShareGatewayMadeDefault('configuration'),
+    ],
+    ShareGatewayEndpointMoved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ShareGatewayEndpoint::moveTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareGatewayEndpointMoved('endpoint', GatewayEndpointState::cases()[0]),
+    ],
+    ShareGatewayEndpointHealthy::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ShareGatewayEndpoint::recordHealthy',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareGatewayEndpointHealthy('endpoint'),
+    ],
+    ShareGatewayOperationClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ShareGatewayOperation::claimFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareGatewayOperationClaimed('operation', 'run'),
+    ],
+    ShareGatewayOperationFinished::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ShareGatewayOperation::finish',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareGatewayOperationFinished('operation', GatewayOutcome::cases()[0]),
+    ],
+    ShareInstallationHeld::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ShareInstallation::holdFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareInstallationHeld('installation', 'run'),
     ],
 ];

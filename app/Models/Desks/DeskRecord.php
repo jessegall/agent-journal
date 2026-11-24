@@ -6,8 +6,12 @@ namespace App\Models\Desks;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Chat\Desk;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\DeskRenamed;
+use App\Events\DeskSeatingAdvanced;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
@@ -34,12 +38,13 @@ use PhpOption\Option;
  */
 #[Table('desks')]
 #[Fillable(['name', 'label', 'inbox_id', 'seat_count', 'forwards_occupants', 'seating_revision'])]
-final class DeskRecord extends Model implements Desk, ReadableModel
+final class DeskRecord extends Model implements Desk, EventSource, ReadableModel
 {
     use BoundedReads;
     use FindsForUpdate;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.desk';
 
@@ -117,13 +122,15 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     public function advanceSeating(): void
     {
         $this->seating_revision++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DeskSeatingAdvanced($this->id));
     }
 
     public function rename(string $label): void
     {
         $this->label = $label;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DeskRenamed($this->id, $label));
     }
 
     // ----------[ Answers ]----------

@@ -34,7 +34,7 @@ final class RuleReadTool extends JournalReadTool
 
     public function schema(JsonSchema $schema): array
     {
-        return ['rule_id' => $schema->string()->max(26)->required(), 'continuation' => $schema->string()];
+        return ['rule_id' => $this->recordIdArgument($schema), 'continuation' => $schema->string()];
     }
 
     public function readRequest(ToolArguments|null $arguments = null): ReadRequest

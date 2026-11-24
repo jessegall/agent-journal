@@ -11,6 +11,7 @@ use App\Events\AskHopAnswered;
 use App\Events\AskHopAssigned;
 use App\Events\AskHopAttentionRecorded;
 use App\Events\AskHopWakeRecorded;
+use App\Events\SupervisorLinkChanged;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
@@ -75,5 +76,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new AskHopAttentionRecorded('ask', 'hop', 'told'),
+    ],
+    SupervisorLinkChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SupervisorLink::change',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SupervisorLinkChanged('link'),
     ],
 ];

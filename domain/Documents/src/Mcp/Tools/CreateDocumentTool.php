@@ -31,7 +31,7 @@ final class CreateDocumentTool extends JournalWriteTool
             'title' => $schema->string()->max(240)->required(),
             'abstract' => $schema->string()->max(1000)->required(),
             'body' => $schema->string(),
-            'upload_id' => $schema->string()->max(26),
+            'upload_id' => $this->optionalRecordIdArgument($schema),
             'source_references' => $schema->array()->items($schema->string()->max(128))->max(50),
         ];
     }

@@ -32,7 +32,7 @@ final class SearchTool extends JournalReadTool
         return [
             'query' => $schema->string(),
             'within' => $schema->string()->max(200),
-            'limit' => $schema->integer()->min(1)->max(SearchRequest::LIMIT_MAXIMUM),
+            'limit' => $this->wholeNumberArgument($schema, 1, SearchRequest::LIMIT_MAXIMUM),
             'continuation' => $schema->string(),
             'discover' => $schema->boolean(),
             'prefix' => $schema->string()->max(64),

@@ -23,7 +23,7 @@ final class RecoverDraftTool extends DraftWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'draft_id' => $schema->string()->max(26)->required(),
+            'draft_id' => $this->recordIdArgument($schema),
             'expected_revision' => $schema->integer()->min(1)->required(),
         ];
     }

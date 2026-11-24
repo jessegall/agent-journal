@@ -31,8 +31,8 @@ final class DockListTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'chat' => $schema->string()->max(26),
-            'limit' => $schema->integer()->min(1)->max(DockProjection::LARGEST_CARD_LIMIT),
+            'chat' => $this->optionalRecordIdArgument($schema),
+            'limit' => $this->wholeNumberArgument($schema, 1, DockProjection::LARGEST_CARD_LIMIT),
         ];
     }
 

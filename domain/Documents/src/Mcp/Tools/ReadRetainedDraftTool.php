@@ -32,7 +32,7 @@ final class ReadRetainedDraftTool extends PublicationReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'draft_id' => $schema->string()->max(26)->required(),
+            'draft_id' => $this->recordIdArgument($schema),
             'continuation' => $schema->string(),
         ];
     }

@@ -23,10 +23,10 @@ final class EditMemoryTool extends MemoryWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'memory_id' => $schema->string()->max(26)->required(),
+            'memory_id' => $this->recordIdArgument($schema),
             'expected_revision' => $schema->integer()->min(1)->required(),
             'text' => $schema->string(),
-            'weight' => $schema->integer()->min(1)->max(10),
+            'weight' => $this->wholeNumberArgument($schema, 1, 10),
         ];
     }
 

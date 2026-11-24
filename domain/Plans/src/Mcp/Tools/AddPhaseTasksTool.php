@@ -24,9 +24,9 @@ final class AddPhaseTasksTool extends PlanWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'phase_id' => $schema->string()->max(26)->required(),
+            'phase_id' => $this->recordIdArgument($schema),
             'task_ids' => $schema->array()
-                ->items($schema->string()->max(26))
+                ->items($this->optionalRecordIdArgument($schema))
                 ->min(1)
                 ->max(AddPhaseTasksCommand::MAX_TASKS)
                 ->required(),

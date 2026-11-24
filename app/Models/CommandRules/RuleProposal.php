@@ -8,8 +8,12 @@ use App\Casts\RuleScopeCast;
 use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ProposalState;
+use App\Events\RuleProposalAdopted;
+use App\Events\RuleProposalWithdrawn;
 use App\Exceptions\RuleProposalRefused;
 use App\Support\ActorIdentity;
 use App\Values\ProposedRule;
@@ -59,11 +63,12 @@ use Illuminate\Support\Carbon;
     'replaces',
     'current_revision',
 ])]
-final class RuleProposal extends Model implements ReadableModel
+final class RuleProposal extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -133,7 +138,8 @@ final class RuleProposal extends Model implements ReadableModel
         }
 
         $this->state = ProposalState::Withdrawn;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new RuleProposalWithdrawn($this->id));
     }
 
     /**
@@ -147,7 +153,8 @@ final class RuleProposal extends Model implements ReadableModel
         $this->replaces = $proposed->rule->replaces;
         $this->current_revision = $revision->revision;
         $this->state = $proposed->isComplete() ? ProposalState::Pending : ProposalState::Draft;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new RuleProposalAdopted($this->id));
     }
 
     // ----------[ Answers ]----------

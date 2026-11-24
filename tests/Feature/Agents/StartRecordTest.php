@@ -70,7 +70,6 @@ final class StartRecordTest extends TestCase
             'payload_digest',
             'disposition',
             'session_id',
-            'reply_inbox_id',
         ]));
     }
 

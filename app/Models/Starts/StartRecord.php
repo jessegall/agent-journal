@@ -74,7 +74,6 @@ use PhpOption\Option;
  * @property string|null $refusal_reason
  * @property CarbonImmutable|null $refused_at
  * @property string|null $session_id
- * @property string|null $reply_inbox_id
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
@@ -107,7 +106,6 @@ use PhpOption\Option;
     'readiness',
     'native_id',
     'session_id',
-    'reply_inbox_id',
 ])]
 final class StartRecord extends Model implements ReadableModel
 {
@@ -142,7 +140,6 @@ final class StartRecord extends Model implements ReadableModel
      * The record of this request: the one already kept under its id when the contents match, else a new accepted one
      * that answers to the requester's reply inbox, fixed from then on. A request refused before is refused again.
      *
-     * @param  Option<string>  $replyInboxId
      *
      * @throws StartRequestConflict
      * @throws StartRefusalReplayed
@@ -151,7 +148,6 @@ final class StartRecord extends Model implements ReadableModel
         StartRequest $request,
         PinnedDriver $pin,
         ActorIdentity $requester,
-        Option $replyInboxId,
     ): self {
         $existing = self::query()->where('request_id', $request->requestId)->lockForUpdate()->first();
 
@@ -192,7 +188,6 @@ final class StartRecord extends Model implements ReadableModel
             'payload_digest' => $request->digest(),
             'disposition' => StartDisposition::Accepted,
             'readiness' => StartReadiness::Accepted,
-            'reply_inbox_id' => $replyInboxId->getOrElse(null),
         ]);
     }
 

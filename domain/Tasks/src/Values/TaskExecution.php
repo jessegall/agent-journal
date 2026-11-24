@@ -6,6 +6,7 @@ namespace Domain\Tasks\Values;
 
 use App\Enums\ActorType;
 use Domain\Tasks\Enums\TaskState;
+use PhpOption\Option;
 
 /**
  * Who works on a task now, apart from who holds it: the actor and its label (null when the caller may not see that
@@ -13,6 +14,9 @@ use Domain\Tasks\Enums\TaskState;
  */
 final readonly class TaskExecution
 {
+    /**
+     * @param  Option<string>  $focusedBy  the name of the agent whose focus the task is in
+     */
     public function __construct(
         public ActorType $actorType,
         public string $actorId,
@@ -20,5 +24,6 @@ final readonly class TaskExecution
         public int $runNumber,
         public TaskState $state,
         public bool $isRunningNow,
+        public Option $focusedBy,
     ) {}
 }

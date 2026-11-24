@@ -10,7 +10,6 @@ use App\Values\PinnedDriver;
 use App\Values\StartRequest;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
-use PhpOption\Option;
 
 /**
  * The refusals of starts that ran inside another command's transaction, held in this request until that outermost
@@ -24,17 +23,13 @@ final class HeldStartRefusals
      */
     private array $refusals = [];
 
-    /**
-     * @param  Option<string>  $replyInboxId
-     */
     public function hold(
         StartRequest $request,
         PinnedDriver $pin,
         ActorIdentity $requester,
-        Option $replyInboxId,
         StartRefusal $refusal,
     ): void {
-        $this->refusals[] = fn () => StartRecord::accept($request, $pin, $requester, $replyInboxId)->refuse($refusal);
+        $this->refusals[] = fn () => StartRecord::accept($request, $pin, $requester)->refuse($refusal);
     }
 
     /**

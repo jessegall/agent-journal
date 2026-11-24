@@ -26,8 +26,8 @@ final class MessageTakeNextTool extends MessageWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'inbox_id' => $schema->string()->max(26)->required(),
-            'limit' => $schema->integer()->min(1)->max(100),
+            'inbox_id' => $this->recordIdArgument($schema),
+            'limit' => $this->wholeNumberArgument($schema, 1, 100),
         ];
     }
 

@@ -28,7 +28,7 @@ final class ReplyToMessageTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'message_id' => $schema->string()->max(26)->required(),
+            'message_id' => $this->recordIdArgument($schema),
             'state_version' => $schema->integer()->min(0),
             'body' => $schema->string()->required(),
         ];

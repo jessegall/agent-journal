@@ -72,9 +72,25 @@ final readonly class TasksIndex extends TasksPage
                 'href' => route('tasks.task', ['task' => $card->number, ...$this->queryOf($filters)], false),
                 'isCurrent' => $filters->task === (string) $card->number,
                 'leading' => [LayoutPartData::text('number', (string) $card->number, 'muted')],
-                'trailing' => [LayoutPartData::badge('state', $word, $tone)],
+                'trailing' => [...$this->focusBadgeOf($card), LayoutPartData::badge('state', $word, $tone)],
             ],
         );
+    }
+
+    /**
+     * The badge naming the agent whose focus the task is in; none when no agent has it in focus.
+     *
+     * @return list<LayoutPartData>
+     */
+    private function focusBadgeOf(TaskCard $card): array
+    {
+        if ($card->execution === null) {
+            return [];
+        }
+
+        return $card->execution->focusedBy
+            ->map(fn (string $agent) => [LayoutPartData::badge('focus', "In focus of {$agent}", 'quiet')])
+            ->getOrElse([]);
     }
 
     private function choicesOf(TaskFiltersData $filters): LayoutPartData

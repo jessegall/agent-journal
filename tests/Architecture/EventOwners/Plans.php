@@ -5,11 +5,17 @@ declare(strict_types=1);
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Events\PhaseProgressRecorded;
+use Domain\Plans\Events\PhaseRevisionAdvanced;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanDescribed;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewDecided;
+use Domain\Plans\Events\PlanReviewEditionApproved;
+use Domain\Plans\Events\PlanReviewEditionChangesRequested;
+use Domain\Plans\Events\PlanReviewEditionHistorical;
+use Domain\Plans\Events\PlanReviewEditionWithdrawn;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanReviewWithdrawn;
 use Domain\Plans\Events\PlanStarted;
@@ -76,5 +82,47 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new PlanDescribed('plan', 1),
+    ],
+    PhaseRevisionAdvanced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Phase::advanceRevision',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PhaseRevisionAdvanced('phase'),
+    ],
+    PhaseProgressRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Phase::recordProgress',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PhaseProgressRecorded('phase'),
+    ],
+    PlanReviewEditionWithdrawn::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PlanReviewEdition::withdraw',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanReviewEditionWithdrawn('edition'),
+    ],
+    PlanReviewEditionApproved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PlanReviewEdition::approve',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanReviewEditionApproved('edition'),
+    ],
+    PlanReviewEditionChangesRequested::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PlanReviewEdition::requestChanges',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanReviewEditionChangesRequested('edition'),
+    ],
+    PlanReviewEditionHistorical::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PlanReviewEdition::markHistorical',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanReviewEditionHistorical('edition'),
     ],
 ];

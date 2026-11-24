@@ -21,7 +21,7 @@ abstract class MessageDetailsTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'message_id' => $schema->string()->max(26)->required(),
+            'message_id' => $this->recordIdArgument($schema),
             'continuation' => $schema->string(),
         ];
     }

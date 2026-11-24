@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models\Chats;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\UserPresenceBeat;
 use App\Support\PresenceWindow;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -27,12 +29,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['user_id', 'last_heartbeat_at'])]
-final class UserPresence extends Model implements ReadableModel
+final class UserPresence extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -68,7 +70,8 @@ final class UserPresence extends Model implements ReadableModel
     public function beatAt(CarbonImmutable $time): void
     {
         $this->last_heartbeat_at = $time;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new UserPresenceBeat($this->id));
     }
 
     // ----------[ Scopes ]----------

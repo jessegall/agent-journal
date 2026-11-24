@@ -7,10 +7,13 @@ namespace Domain\Access\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\GrantedInEnvironment;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ChatPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
+use Domain\Access\Events\EnvironmentUserGrantRevoked;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -42,12 +45,13 @@ use Illuminate\Database\Eloquent\Model;
     'granted_by_id',
     'granted_at',
 ])]
-final class EnvironmentUserGrant extends Model implements ReadableModel
+final class EnvironmentUserGrant extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use GrantedInEnvironment;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LOCAL_ENVIRONMENT = '';
 
@@ -97,7 +101,8 @@ final class EnvironmentUserGrant extends Model implements ReadableModel
     public function revoke(CarbonImmutable $at): void
     {
         $this->revoked_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new EnvironmentUserGrantRevoked($this->id));
     }
 
     // ----------[ Answers ]----------

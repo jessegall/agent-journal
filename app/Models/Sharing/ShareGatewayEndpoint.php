@@ -6,8 +6,12 @@ namespace App\Models\Sharing;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\GatewayEndpointState;
+use App\Events\ShareGatewayEndpointHealthy;
+use App\Events\ShareGatewayEndpointMoved;
 use App\Exceptions\GatewayLeaseRefused;
 use App\Support\GatewayEndpoint;
 use Carbon\CarbonImmutable;
@@ -35,11 +39,12 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['endpoint_version', 'run_id', 'public_origin', 'state', 'last_health_at'])]
-final class ShareGatewayEndpoint extends Model implements ReadableModel
+final class ShareGatewayEndpoint extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share-gateway-endpoint';
 
@@ -170,7 +175,8 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public function moveTo(GatewayEndpointState $state): void
     {
         $this->state = $state;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareGatewayEndpointMoved($this->id, $state));
     }
 
     /**
@@ -179,7 +185,8 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public function recordHealthy(): void
     {
         $this->last_health_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareGatewayEndpointHealthy($this->id));
     }
 
     // ----------[ Answers ]----------

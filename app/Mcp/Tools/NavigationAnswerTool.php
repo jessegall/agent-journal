@@ -37,7 +37,7 @@ final class NavigationAnswerTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'request' => $schema->string()->max(26)->required(),
+            'request' => $this->recordIdArgument($schema),
             'version' => $schema->integer()->min(1)->required(),
             'generation' => $schema->integer()->min(0)->required(),
             'keys' => $schema->array()->items($schema->string()->max(16)),

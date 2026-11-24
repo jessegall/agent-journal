@@ -6,13 +6,19 @@ namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Chat\MessageRecipient;
 use App\Contracts\Chat\MessageSender;
 use App\Contracts\Chat\SeatedActor;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\DriverVariant;
+use App\Events\AgentRetired;
+use App\Events\AgentRuntimeAdopted;
+use App\Events\AgentRuntimesFenced;
+use App\Events\AgentVariantPreferred;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Values\RunningRuntime;
@@ -41,11 +47,18 @@ use PhpOption\Some;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'profile_key'])]
-final class Agent extends Model implements Assignee, MessageRecipient, MessageSender, ReadableModel, SeatedActor
+final class Agent extends Model implements
+    Assignee,
+    EventSource,
+    MessageRecipient,
+    MessageSender,
+    ReadableModel,
+    SeatedActor
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -117,7 +130,8 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     public function preferVariant(DriverVariant $variant): void
     {
         $this->mode_preference = $variant;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentVariantPreferred($this->id, $variant));
     }
 
     /**
@@ -127,7 +141,8 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     {
         $this->runtime_generation++;
         $this->current_session_id = $session->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeAdopted($this->id, $session->id, $this->runtime_generation));
     }
 
     /**
@@ -137,13 +152,15 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     {
         $this->runtime_generation++;
         $this->current_session_id = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimesFenced($this->id, $this->runtime_generation));
     }
 
     public function retireAt(CarbonInterface $retiredAt): void
     {
         $this->retired_at = Carbon::instance($retiredAt);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRetired($this->id));
     }
 
     // ----------[ Answers ]----------

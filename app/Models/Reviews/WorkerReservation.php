@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Models\Reviews;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\WorkerReservationEmptied;
+use App\Events\WorkerReservationOccupied;
+use App\Events\WorkerReservationReleased;
 use App\Exceptions\WorkerAlreadyAssigned;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
@@ -30,12 +34,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['holder_type', 'holder_id', 'root_type', 'root_id'])]
-final class WorkerReservation extends Model implements ReadableModel
+final class WorkerReservation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -100,7 +104,8 @@ final class WorkerReservation extends Model implements ReadableModel
 
         $this->root_type = $root->type;
         $this->root_id = $root->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new WorkerReservationOccupied($this->id));
     }
 
     /**
@@ -114,7 +119,8 @@ final class WorkerReservation extends Model implements ReadableModel
 
         $this->root_type = null;
         $this->root_id = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new WorkerReservationReleased($this->id));
     }
 
     /**
@@ -124,6 +130,7 @@ final class WorkerReservation extends Model implements ReadableModel
     {
         $this->root_type = null;
         $this->root_id = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new WorkerReservationEmptied($this->id));
     }
 }

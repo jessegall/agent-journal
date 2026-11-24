@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PublicationState;
 use App\Events\SessionSkillsIntended;
+use App\Events\SkillGenerationRetired;
 use App\Events\SkillPublicationClaimed;
 use App\Events\SkillPublicationMoved;
 use App\Events\SkillPublicationProgressed;
@@ -51,5 +52,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SkillPublicationProgressed('publication', 3),
+    ],
+    SkillGenerationRetired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SkillGeneration::retire',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SkillGenerationRetired('generation'),
     ],
 ];

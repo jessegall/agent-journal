@@ -6,10 +6,14 @@ namespace Domain\Helpers\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
+use Domain\Helpers\Events\HelperDesignated;
+use Domain\Helpers\Events\HelperDesignationReleased;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -34,12 +38,13 @@ use PhpOption\Option;
  */
 #[Table('helper_identities')]
 #[Fillable(['profile_key', 'profile_base'])]
-final class HelperIdentity extends Model implements ReadableModel
+final class HelperIdentity extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The columns a declared identity never changes.
@@ -106,7 +111,8 @@ final class HelperIdentity extends Model implements ReadableModel
     public function designate(): self
     {
         $this->designated_profile = $this->profile_key;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperDesignated($this->id));
 
         return $this;
     }
@@ -122,7 +128,8 @@ final class HelperIdentity extends Model implements ReadableModel
         }
 
         $this->designated_profile = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperDesignationReleased($this->id));
     }
 
     // ----------[ Accessors ]----------

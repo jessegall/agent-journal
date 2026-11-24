@@ -25,8 +25,8 @@ final class TaskLogReadTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            TaskReadResult::ID_ARGUMENT => $schema->string()->max(26)->required(),
-            TaskLogReadResult::ENTRY_ARGUMENT => $schema->string()->max(26)->required(),
+            TaskReadResult::ID_ARGUMENT => $this->recordIdArgument($schema),
+            TaskLogReadResult::ENTRY_ARGUMENT => $this->recordIdArgument($schema),
         ];
     }
 

@@ -23,9 +23,9 @@ final class InboxHistoryTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'inbox_id' => $schema->string()->max(26)->required(),
-            'older_cursor' => $schema->string()->max(26),
-            'limit' => $schema->integer()->min(1)->max(100),
+            'inbox_id' => $this->recordIdArgument($schema),
+            'older_cursor' => $this->optionalRecordIdArgument($schema),
+            'limit' => $this->wholeNumberArgument($schema, 1, 100),
         ];
     }
 

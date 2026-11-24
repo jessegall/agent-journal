@@ -23,7 +23,7 @@ final class RemoveMemoryTool extends MemoryWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'memory_id' => $schema->string()->max(26)->required(),
+            'memory_id' => $this->recordIdArgument($schema),
         ];
     }
 

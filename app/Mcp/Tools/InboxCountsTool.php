@@ -22,7 +22,7 @@ final class InboxCountsTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'inbox_id' => $schema->string()->max(26)->required(),
+            'inbox_id' => $this->recordIdArgument($schema),
         ];
     }
 

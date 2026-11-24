@@ -27,7 +27,7 @@ final class SelectMessageTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
-        return ['message_id' => $schema->string()->max(26)->required()];
+        return ['message_id' => $this->recordIdArgument($schema)];
     }
 
     protected function command(ToolArguments $arguments): SelectMessageCommand

@@ -30,9 +30,9 @@ final class MessageClaimTool extends MessageWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'inbox_id' => $schema->string()->max(26)->required(),
-            'root_id' => $schema->string()->max(26)->required(),
-            'batch_id' => $schema->string()->max(26)->required(),
+            'inbox_id' => $this->recordIdArgument($schema),
+            'root_id' => $this->recordIdArgument($schema),
+            'batch_id' => $this->recordIdArgument($schema),
             'claim_grant' => $schema->string()->max(64)->required(),
         ];
     }

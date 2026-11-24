@@ -6,10 +6,12 @@ namespace App\Models\Records;
 
 use App\Casts\PoolReferenceCast;
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Events\AutoAssignmentConfigured;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Models\Support\HasActorColumns;
@@ -46,13 +48,13 @@ use PhpOption\Option;
  */
 #[Table('auto_assignments')]
 #[Fillable(['actor_type', 'actor_id', 'assignable_type', 'enabled', 'pool', 'size', 'configuration_revision'])]
-final class AutoAssignment extends Model implements ReadableModel
+final class AutoAssignment extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -139,7 +141,8 @@ final class AutoAssignment extends Model implements ReadableModel
         $this->pool = $pool;
         $this->size = $size;
         $this->configuration_revision++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AutoAssignmentConfigured($this->id, $enabled, $size));
 
         return true;
     }

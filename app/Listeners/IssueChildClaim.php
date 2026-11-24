@@ -8,6 +8,7 @@ use App\Contracts\Events\Listener;
 use App\Enums\ChildRole;
 use App\Events\ChildCheckoutRequested;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
 use App\Models\Agents\ChildClaim;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\WorkspaceRead;
@@ -49,13 +50,14 @@ final class IssueChildClaim implements Listener
         }
 
         $binding = ProjectBinding::query()->findOrFail($bindingId);
-        $parentClaims = ChildClaim::ofChildAgent($parent->session->agent_id);
+        $parentAgentId = AgentSession::byId($request->parentSessionId)->agent_id;
+        $parentClaims = ChildClaim::ofChildAgent($parentAgentId);
 
         return array_map(
             fn ($read) => $parentClaims === []
                 ? ChildClaim::forMainRuntime($binding, $parent->id, $request->childAgentId, ChildRole::Writer, $read)
                 : ChildClaim::nestedUnder($parentClaims[0], $request->childAgentId, ChildRole::Writer, $read),
-            WorkspaceRead::latestCommitReadOf($parent->session->agent_id),
+            WorkspaceRead::latestCommitReadOf($parentAgentId),
         );
     }
 }

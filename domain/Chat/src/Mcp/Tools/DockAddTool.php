@@ -27,7 +27,7 @@ final class DockAddTool extends JournalWriteTool
         return [
             'type' => $schema->string()->max(64)->required(),
             'id' => $schema->string()->max(255)->required(),
-            'chat' => $schema->string()->max(26),
+            'chat' => $this->optionalRecordIdArgument($schema),
         ];
     }
 

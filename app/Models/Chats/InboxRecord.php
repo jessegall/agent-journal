@@ -6,8 +6,11 @@ namespace App\Models\Chats;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Chat\ChatInboxStore;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\InboxSequenceTaken;
 use App\Exceptions\InboxUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -27,11 +30,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Table('inboxes')]
 #[Fillable(['provider_key', 'provider_id'])]
-final class InboxRecord extends Model implements ReadableModel
+final class InboxRecord extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -106,7 +110,8 @@ final class InboxRecord extends Model implements ReadableModel
     public function takeSequence(): int
     {
         $this->next_sequence++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new InboxSequenceTaken($this->id));
 
         return $this->next_sequence;
     }

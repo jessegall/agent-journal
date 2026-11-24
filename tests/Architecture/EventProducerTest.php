@@ -42,7 +42,7 @@ final class EventProducerTest extends TestCase
     public function test_every_event_is_sent_only_by_its_expected_producers(): void
     {
         $expected = EventProducers::expected(base_path());
-        $reach = CommandReach::of($this->app->make(CommandRegistry::class), base_path());
+        $reach = CommandReach::of($this->app->make(CommandRegistry::class), base_path(), $this->app);
         $violations = EventProducers::across(base_path(), $expected, $reach->handlersByFile)
             ->violations($expected, self::BUS_PUBLISHER);
 

@@ -23,6 +23,7 @@ use App\Events\AccountWriterClaimed;
 use App\Events\AccountWriterReleased;
 use App\Events\ActiveAccountCleared;
 use App\Events\ActiveAccountSelected;
+use App\Events\ProfileRetired;
 use App\Events\ProfileRevisionRevoked;
 use App\Events\SignInAttemptAnswerAccepted;
 use App\Events\SignInAttemptClaimed;
@@ -281,5 +282,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SignInAttemptCleanupApplied('claude-code', 'attempt', true),
+    ],
+    ProfileRetired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Profile::retire',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProfileRetired('profile'),
     ],
 ];

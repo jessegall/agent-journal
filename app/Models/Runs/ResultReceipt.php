@@ -6,8 +6,11 @@ namespace App\Models\Runs;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\AssessmentOutcome;
+use App\Events\ResultReceiptSuperseded;
 use App\Values\PublishedResult;
 use App\Values\VerifiedOutput;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -50,11 +53,12 @@ use Illuminate\Support\Carbon;
     'output_assessment_id',
     'outcome',
 ])]
-final class ResultReceipt extends Model implements ReadableModel
+final class ResultReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string CREATED_AT = 'published_at';
 
@@ -98,7 +102,8 @@ final class ResultReceipt extends Model implements ReadableModel
     public function supersedeBy(self $newer): void
     {
         $this->superseded_by_id = $newer->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ResultReceiptSuperseded($this->id, $newer->id));
     }
 
     // ----------[ Answers ]----------

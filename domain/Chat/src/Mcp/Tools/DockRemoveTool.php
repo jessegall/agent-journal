@@ -27,10 +27,10 @@ final class DockRemoveTool extends JournalWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'placement_id' => $schema->string()->max(26)->required(),
+            'placement_id' => $this->recordIdArgument($schema),
             'type' => $schema->string()->max(64)->required(),
             'source_id' => $schema->string()->max(255)->required(),
-            'chat' => $schema->string()->max(26),
+            'chat' => $this->optionalRecordIdArgument($schema),
         ];
     }
 

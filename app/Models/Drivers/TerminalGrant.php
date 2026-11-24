@@ -6,8 +6,18 @@ namespace App\Models\Drivers;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\TerminalGrantState;
+use App\Events\TerminalGrantIssued;
+use App\Events\TerminalGrantRefused;
+use App\Events\TerminalGrantReleased;
+use App\Events\TerminalGrantReleasing;
+use App\Events\TerminalGrantRenewed;
+use App\Events\TerminalGrantRetired;
+use App\Events\TerminalGrantSequenceTaken;
+use App\Events\TerminalTakeSent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
@@ -42,12 +52,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $expires_at
  */
 #[Fillable(['state', 'expires_at'])]
-final class TerminalGrant extends Model implements ReadableModel
+final class TerminalGrant extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * How long a grant lasts after its take or its last renewal, the host's own lifetime for it.
@@ -103,7 +114,8 @@ final class TerminalGrant extends Model implements ReadableModel
     public function sendTakeWith(DriverRequest $request): void
     {
         $this->take_request_id = $request->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalTakeSent($this->id, $request->id));
     }
 
     /**
@@ -117,19 +129,22 @@ final class TerminalGrant extends Model implements ReadableModel
 
         $this->grant_id = $grantId;
         $this->state = TerminalGrantState::Granted;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalGrantIssued($this->id));
     }
 
     public function refuse(): void
     {
         $this->state = TerminalGrantState::Refused;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalGrantRefused($this->id));
     }
 
     public function renew(CarbonImmutable $now): void
     {
         $this->expires_at = $now->addSeconds(self::LIFETIME_SECONDS);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalGrantRenewed($this->id));
     }
 
     /**
@@ -139,7 +154,8 @@ final class TerminalGrant extends Model implements ReadableModel
     {
         $this->state = TerminalGrantState::Releasing;
         $this->release_request_id = $request->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalGrantReleasing($this->id, $request->id));
     }
 
     /**
@@ -152,7 +168,8 @@ final class TerminalGrant extends Model implements ReadableModel
         }
 
         $this->state = TerminalGrantState::Released;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalGrantReleased($this->id));
     }
 
     /**
@@ -162,7 +179,8 @@ final class TerminalGrant extends Model implements ReadableModel
     {
         $this->state = TerminalGrantState::Retired;
         $this->release_request_id = $release->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalGrantRetired($this->id, $release->id));
     }
 
     /**
@@ -172,7 +190,8 @@ final class TerminalGrant extends Model implements ReadableModel
     {
         $sequence = $this->next_sequence;
         $this->next_sequence++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TerminalGrantSequenceTaken($this->id, $sequence));
 
         return $sequence;
     }

@@ -14,6 +14,7 @@ use App\Support\Reflector;
 use BackedEnum;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+use Illuminate\JsonSchema\Types\IntegerType;
 use Illuminate\JsonSchema\Types\StringType;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Tool;
@@ -30,6 +31,22 @@ abstract class JournalTool extends Tool
     final protected function recordIdArgument(JsonSchema $schema): StringType
     {
         return $schema->string()->max(26)->required();
+    }
+
+    /**
+     * An argument that may name one record by its ULID, such as a cursor to read on from.
+     */
+    final protected function optionalRecordIdArgument(JsonSchema $schema): StringType
+    {
+        return $schema->string()->max(26);
+    }
+
+    /**
+     * An argument that holds a whole number from the least to the most, such as how many rows to read.
+     */
+    final protected function wholeNumberArgument(JsonSchema $schema, int $least, int $most): IntegerType
+    {
+        return $schema->integer()->min($least)->max($most);
     }
 
     /**

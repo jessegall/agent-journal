@@ -16,4 +16,7 @@ return [
     'Report::create',
     'Report::settle',
     'RetainedDraft::create',
+    'TextUpload::countChunk',
+    'TextUpload::seal',
+    'TextUpload::consume',
 ];

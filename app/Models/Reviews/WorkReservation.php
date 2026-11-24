@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Models\Reviews;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Events\WorkReservationHandedOff;
+use App\Events\WorkReservationReleased;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -37,13 +40,13 @@ use Illuminate\Support\Carbon;
  */
 #[Table('work_reservations')]
 #[Fillable(['actor_type', 'actor_id', 'generation', 'certificate', 'handed_off_at', 'released_at'])]
-final class WorkReservation extends Model implements ReadableModel
+final class WorkReservation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -139,7 +142,8 @@ final class WorkReservation extends Model implements ReadableModel
         }
 
         $this->handed_off_at = Carbon::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new WorkReservationHandedOff($this->id));
     }
 
     /**
@@ -152,7 +156,8 @@ final class WorkReservation extends Model implements ReadableModel
         }
 
         $this->released_at = Carbon::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new WorkReservationReleased($this->id));
     }
 
     // ----------[ Answers ]----------

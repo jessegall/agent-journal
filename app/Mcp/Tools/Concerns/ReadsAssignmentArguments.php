@@ -24,7 +24,7 @@ trait ReadsAssignmentArguments
     {
         return $schema->object([
             'type' => $schema->string()->enum(array_column(ActorType::requestTypes(), 'value'))->required(),
-            'id' => $schema->string()->max(26)->required(),
+            'id' => $this->recordIdArgument($schema),
         ])->withoutAdditionalProperties()->required();
     }
 
@@ -34,7 +34,7 @@ trait ReadsAssignmentArguments
     final protected function expectedSchema(JsonSchema $schema): ObjectType
     {
         return $schema->object([
-            'id' => $schema->string()->max(26)->required(),
+            'id' => $this->recordIdArgument($schema),
             'holder' => $this->assigneeSchema($schema),
         ])->withoutAdditionalProperties()->required();
     }

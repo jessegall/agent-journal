@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Models\Reviews;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\RepairRequestState;
+use App\Events\RepairRequestSettled;
 use App\Models\Support\HasWorkColumns;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -48,13 +50,13 @@ use Illuminate\Support\Carbon;
     'target_commit',
     'state',
 ])]
-final class RepairRequest extends Model implements ReadableModel
+final class RepairRequest extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use HasWorkColumns;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -100,7 +102,8 @@ final class RepairRequest extends Model implements ReadableModel
     public function settle(RepairRequestState $state): void
     {
         $this->state = $state;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new RepairRequestSettled($this->id, $state));
     }
 
     // ----------[ Answers ]----------

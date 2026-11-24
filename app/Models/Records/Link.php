@@ -7,7 +7,10 @@ namespace App\Models\Records;
 use App\Concerns\BoundedReads;
 use App\Concerns\CountsPivotLoads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\LinkRemoved;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -31,12 +34,13 @@ use Illuminate\Support\Carbon;
  */
 #[Table('links')]
 #[Fillable(['source_type', 'source_id', 'target_type', 'target_id'])]
-final class Link extends MorphPivot implements ReadableModel
+final class Link extends MorphPivot implements EventSource, ReadableModel
 {
     use BoundedReads;
     use CountsPivotLoads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * A pivot opens every attribute by default; this one takes only its Fillable list.
@@ -115,6 +119,7 @@ final class Link extends MorphPivot implements ReadableModel
     public function remove(): void
     {
         $this->delete();
+        $this->raise(new LinkRemoved($this->id));
     }
 
     // ----------[ Answers ]----------

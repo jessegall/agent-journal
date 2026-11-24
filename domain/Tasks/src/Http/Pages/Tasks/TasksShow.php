@@ -144,6 +144,10 @@ final readonly class TasksShow extends TasksPage
             $facts[] = self::factRow('run', 'Latest run', (string) $reader->latestRun);
         }
 
+        if (! $reader->focusedBy instanceof Optional) {
+            $facts[] = self::factRow('focus', 'In focus of', $reader->focusedBy);
+        }
+
         foreach ([
             'block' => ['Blocked because', $reader->blockReason],
             'result' => ['Result', $reader->resultNote],

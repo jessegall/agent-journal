@@ -27,4 +27,5 @@ return [
     'SignInAttempt::finish',
     'SignInAttempt::releaseForHost',
     'SignInAttempt::retryCleanup',
+    'Profile::retire',
 ];

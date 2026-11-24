@@ -26,8 +26,8 @@ final class MessageAskTool extends MessageWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'source_inbox_id' => $schema->string()->max(26)->required(),
-            'destination_inbox_id' => $schema->string()->max(26)->required(),
+            'source_inbox_id' => $this->recordIdArgument($schema),
+            'destination_inbox_id' => $this->recordIdArgument($schema),
             'body' => $schema->string()->required(),
         ];
     }

@@ -7,8 +7,11 @@ namespace App\Models\CommandRules;
 use App\Casts\RuleScopeCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ClassificationState;
+use App\Events\ClassificationRuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Support\NamedByRuleScope;
 use App\Values\CommandRule;
@@ -37,12 +40,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['project_key', 'scope', 'rule_id', 'active_revision_id', 'active_revision', 'state', 'state_reason'])]
-final class ClassificationRule extends Model implements ReadableModel
+final class ClassificationRule extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
     use NamedByRuleScope;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -93,7 +97,8 @@ final class ClassificationRule extends Model implements ReadableModel
 
         $this->state = ClassificationState::Retired;
         $this->state_reason = $reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ClassificationRuleRetired($this->id, $reason));
     }
 
     // ----------[ Answers ]----------

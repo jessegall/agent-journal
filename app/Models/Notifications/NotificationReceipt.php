@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Models\Notifications;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\NotificationReceiptHidden;
+use App\Events\NotificationReceiptRead;
+use App\Events\NotificationReceiptRevealed;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -33,12 +37,12 @@ use PhpOption\Option;
  */
 #[Table('notification_receipts')]
 #[Fillable(['occurrence_id', 'scope_id', 'sequence'])]
-final class NotificationReceipt extends Model implements ReadableModel
+final class NotificationReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     public const ?string UPDATED_AT = null;
 
@@ -226,7 +230,8 @@ final class NotificationReceipt extends Model implements ReadableModel
         }
 
         $this->read_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new NotificationReceiptRead($this->id));
 
         return true;
     }
@@ -241,7 +246,8 @@ final class NotificationReceipt extends Model implements ReadableModel
         }
 
         $this->hidden_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new NotificationReceiptHidden($this->id));
 
         return true;
     }
@@ -256,7 +262,8 @@ final class NotificationReceipt extends Model implements ReadableModel
         }
 
         $this->hidden_at = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new NotificationReceiptRevealed($this->id));
 
         return true;
     }

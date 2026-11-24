@@ -6,10 +6,16 @@ namespace Domain\Plans\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Events\PlanReviewEditionApproved;
+use Domain\Plans\Events\PlanReviewEditionChangesRequested;
+use Domain\Plans\Events\PlanReviewEditionHistorical;
+use Domain\Plans\Events\PlanReviewEditionWithdrawn;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -43,11 +49,12 @@ use Illuminate\Support\Carbon;
     'plan_revision',
     'state',
 ])]
-final class PlanReviewEdition extends Model implements ReadableModel
+final class PlanReviewEdition extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -138,7 +145,8 @@ final class PlanReviewEdition extends Model implements ReadableModel
         $this->decided_by_type = $actor->type;
         $this->decided_by_id = $actor->id;
         $this->decided_at = Carbon::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PlanReviewEditionWithdrawn($this->id));
     }
 
     /**
@@ -147,6 +155,7 @@ final class PlanReviewEdition extends Model implements ReadableModel
     public function approve(ActorIdentity $actor, string $requestKey): void
     {
         $this->decide(PlanReviewState::Approved, $actor, $requestKey, null);
+        $this->raise(new PlanReviewEditionApproved($this->id));
     }
 
     /**
@@ -155,6 +164,7 @@ final class PlanReviewEdition extends Model implements ReadableModel
     public function requestChanges(ActorIdentity $actor, string $requestKey, string $reason): void
     {
         $this->decide(PlanReviewState::ChangesRequested, $actor, $requestKey, $reason);
+        $this->raise(new PlanReviewEditionChangesRequested($this->id));
     }
 
     /**
@@ -163,7 +173,8 @@ final class PlanReviewEdition extends Model implements ReadableModel
     public function markHistorical(): void
     {
         $this->is_historical = true;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PlanReviewEditionHistorical($this->id));
     }
 
     // ----------[ Internals ]----------

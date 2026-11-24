@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature\Http;
 
+use App\Enums\ActorType;
+use App\Models\Agents\Agent;
+use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
@@ -20,8 +25,8 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
- * A task's own page opens by its number with its state, its holder, its latest run and its brief, and an unknown
- * number is not found.
+ * A task's own page opens by its number with its state, its holder, its latest run, the agent whose focus it is in
+ * and its brief, and an unknown number is not found.
  */
 final class TaskPageTest extends TestCase
 {
@@ -44,6 +49,8 @@ final class TaskPageTest extends TestCase
     ];
 
     private const string READER = 'page.data.root.children.1.children.1.children';
+
+    private const string LIST = 'page.data.root.children.1.children.0.children.1.children';
 
     private User $owner;
 
@@ -78,6 +85,23 @@ final class TaskPageTest extends TestCase
             ->where(self::READER.'.4.rows.2.value', 'None')
             ->where(self::READER.'.4.rows.3.key', 'holds-up')
             ->missing(self::READER.'.4.rows.4'));
+    }
+
+    public function test_a_task_in_an_agents_focus_names_that_agent_on_its_row_and_in_its_facts(): void
+    {
+        $task = $this->focusedTask('Lady Lovelace');
+
+        $listPage = $this->actingAs($this->owner)->get('/tasks')->assertOk();
+        $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
+
+        $listPage->assertInertia(fn (AssertableInertia $page) => $page
+            ->where(self::LIST.'.0.rows.0.trailing.0.key', 'focus')
+            ->where(self::LIST.'.0.rows.0.trailing.0.text', 'In focus of Lady Lovelace'));
+
+        $taskPage->assertInertia(fn (AssertableInertia $page) => $page
+            ->where(self::READER.'.4.rows', fn ($rows) => collect($rows)->contains(
+                fn (array $row) => $row['key'] === 'focus' && $row['value'] === 'Lady Lovelace',
+            )));
     }
 
     public function test_the_facts_name_the_tasks_it_waits_for_and_holds_up_as_links(): void
@@ -175,5 +199,18 @@ final class TaskPageTest extends TestCase
     private static function key(): string
     {
         return (string) Str::uuid();
+    }
+
+    /**
+     * A started task on its first run, put in the focus of a new agent of the given name.
+     */
+    private function focusedTask(string $agentName): Task
+    {
+        $agent = Agent::create($agentName, 'main-agent');
+        $task = Task::factory()->create(['state' => TaskState::Started, 'run_number' => 1]);
+        TaskRun::create($task, 1, new ActorIdentity(ActorType::Agent, $agent->id));
+        $task->focusFor($agent->id);
+
+        return $task;
     }
 }

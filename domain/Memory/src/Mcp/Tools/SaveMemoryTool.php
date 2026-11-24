@@ -24,7 +24,7 @@ final class SaveMemoryTool extends MemoryWriteTool
     {
         return [
             'text' => $schema->string()->required(),
-            'weight' => $schema->integer()->min(1)->max(10)->required(),
+            'weight' => $this->wholeNumberArgument($schema, 1, 10)->required(),
         ];
     }
 

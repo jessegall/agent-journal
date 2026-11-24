@@ -18,7 +18,7 @@ abstract class TaskWriteTool extends JournalWriteTool
      */
     final protected function taskSchema(JsonSchema $schema): array
     {
-        return ['task_id' => $schema->string()->max(26)->required()];
+        return ['task_id' => $this->recordIdArgument($schema)];
     }
 
     /**

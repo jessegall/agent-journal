@@ -6,11 +6,14 @@ namespace Domain\Helpers\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Events\HelperNoticeDelivered;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,12 +32,13 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Table('helper_notices')]
 #[Fillable(['job_state', 'text'])]
-final class HelperNotice extends Model implements ReadableModel
+final class HelperNotice extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The most notices given to a parent at one context start.
@@ -88,6 +92,7 @@ final class HelperNotice extends Model implements ReadableModel
     public function markDelivered(): void
     {
         $this->delivered_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperNoticeDelivered($this->id));
     }
 }

@@ -6,7 +6,6 @@ namespace App\CommandMiddleware;
 
 use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandMiddleware;
-use App\Contracts\Chat\ReplyInboxes;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Refusals\StartRefusal;
 use App\Exceptions\DriverCapabilityUnsupported;
@@ -19,7 +18,6 @@ use App\Values\PinnedDriver;
 use App\Values\StartRequest;
 use Closure;
 use Illuminate\Database\DatabaseManager;
-use PhpOption\Option;
 use Throwable;
 
 /**
@@ -32,7 +30,6 @@ final readonly class KeepStartReceipt implements CommandMiddleware
     public function __construct(
         private DatabaseManager $databases,
         private StartRequestLock $locks,
-        private ReplyInboxes $replyInboxes,
         private HeldStartRefusals $heldRefusals,
         private DriverCatalogue $drivers,
     ) {}
@@ -47,14 +44,13 @@ final readonly class KeepStartReceipt implements CommandMiddleware
 
         $request = $command->request;
         $requester = ActorIdentity::of($command->dispatchedBy());
-        $replyInboxId = $this->replyInboxes->replyInboxIdFor($requester);
         $start = fn () => $next($call);
 
         return $this->locks->hold(
             $request->requestId,
             fn () => $this->databases->connection()->transactionLevel() === 0
-                ? $this->startInOwnTransaction($request, $requester, $replyInboxId, $start)
-                : $this->startInOpenTransaction($request, $requester, $replyInboxId, $start),
+                ? $this->startInOwnTransaction($request, $requester, $start)
+                : $this->startInOpenTransaction($request, $requester, $start),
         );
     }
 
@@ -62,16 +58,14 @@ final readonly class KeepStartReceipt implements CommandMiddleware
      * The intent commits before admission, so the refusal finds its record after the rollback; a failure that is no
      * refusal leaves the key free again.
      *
-     * @param  Option<string>  $replyInboxId
      * @param  Closure(): mixed  $start
      */
     private function startInOwnTransaction(
         StartRequest $request,
         ActorIdentity $requester,
-        Option $replyInboxId,
         Closure $start,
     ): mixed {
-        $intent = StartRecord::accept($request, $this->pinOf($request), $requester, $replyInboxId);
+        $intent = StartRecord::accept($request, $this->pinOf($request), $requester);
 
         try {
             return $start();
@@ -87,21 +81,19 @@ final readonly class KeepStartReceipt implements CommandMiddleware
     }
 
     /**
-     * @param  Option<string>  $replyInboxId
      * @param  Closure(): mixed  $start
      */
     private function startInOpenTransaction(
         StartRequest $request,
         ActorIdentity $requester,
-        Option $replyInboxId,
         Closure $start,
     ): mixed {
         try {
             return $start();
         } catch (StartRefusal $refusal) {
             $pin = $this->pinOf($request);
-            StartRecord::accept($request, $pin, $requester, $replyInboxId)->refuse($refusal);
-            $this->heldRefusals->hold($request, $pin, $requester, $replyInboxId, $refusal);
+            StartRecord::accept($request, $pin, $requester)->refuse($refusal);
+            $this->heldRefusals->hold($request, $pin, $requester, $refusal);
 
             throw $refusal;
         }

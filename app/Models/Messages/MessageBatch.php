@@ -6,8 +6,14 @@ namespace App\Models\Messages;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\MessageBatchState;
+use App\Events\MessageBatchClaimsGranted;
+use App\Events\MessageBatchProgressed;
+use App\Events\MessageBatchSettled;
+use App\Events\MessageBatchTurnBound;
 use App\Exceptions\ChatStateConflict;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -48,11 +54,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'lease_expires_at',
     'attempt',
 ])]
-final class MessageBatch extends Model implements ReadableModel
+final class MessageBatch extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -109,7 +116,8 @@ final class MessageBatch extends Model implements ReadableModel
     public function bindTurn(string $driverTurnId): void
     {
         $this->driver_turn_id = $driverTurnId;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageBatchTurnBound($this->id, $driverTurnId));
     }
 
     /**
@@ -118,7 +126,8 @@ final class MessageBatch extends Model implements ReadableModel
     public function recordProgress(CarbonImmutable $at): void
     {
         $this->last_progress_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageBatchProgressed($this->id));
     }
 
     /**
@@ -142,7 +151,8 @@ final class MessageBatch extends Model implements ReadableModel
 
         $this->state = $outcome;
         $this->settled_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageBatchSettled($this->id, $outcome));
     }
 
     /**
@@ -161,7 +171,8 @@ final class MessageBatch extends Model implements ReadableModel
     public function grantClaims(string $digest): void
     {
         $this->claim_grant_digest = $digest;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageBatchClaimsGranted($this->id));
     }
 
     // ----------[ Answers ]----------

@@ -11,4 +11,5 @@ return [
     'Task::cancel',
     'Task::finish',
     'Task::start',
+    'TaskRun::finish',
 ];

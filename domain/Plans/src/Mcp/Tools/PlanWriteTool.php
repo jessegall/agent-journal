@@ -21,7 +21,7 @@ abstract class PlanWriteTool extends JournalWriteTool
     final protected function planRevisionSchema(JsonSchema $schema): array
     {
         return [
-            'plan_id' => $schema->string()->max(26)->required(),
+            'plan_id' => $this->recordIdArgument($schema),
             'expected_revision' => $schema->integer()->min(1)->required(),
         ];
     }

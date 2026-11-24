@@ -7,7 +7,10 @@ namespace App\Models\Asks;
 use App\Casts\SupervisorRoutesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\SupervisorLinkChanged;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Values\AskTypeKey;
@@ -24,12 +27,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property array<string, int> $versions
  */
 #[Fillable(['routes', 'versions'])]
-final class SupervisorLink extends Model implements ReadableModel
+final class SupervisorLink extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.supervisor-link';
 
@@ -79,7 +83,8 @@ final class SupervisorLink extends Model implements ReadableModel
         $key = AskTypeKey::routeOf($type);
         $this->routes = $routes;
         $this->versions = [...$this->versions, $key => $this->versionFor($type) + 1];
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SupervisorLinkChanged($this->id));
     }
 
     // ----------[ Answers ]----------
