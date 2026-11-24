@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * How many tool uses an agent may make after it was shown a chat message before it must answer in the chat.
+ * How many tool uses an agent may make after it was shown a message before it must answer it.
  */
 final readonly class AnswerBudget
 {

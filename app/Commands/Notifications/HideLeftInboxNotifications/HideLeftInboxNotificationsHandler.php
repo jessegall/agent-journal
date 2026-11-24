@@ -11,7 +11,7 @@ use App\Events\Messages\NotificationsWithdrawn;
 use App\Models\Questions\Question;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
-use App\Resolvers\QuestionNotificationTarget;
+use App\Support\QuestionNotificationKeys;
 use App\Support\ActorIdentity;
 use App\Support\NotificationReceipts;
 use App\Support\NotificationScopes;
@@ -44,7 +44,7 @@ final readonly class HideLeftInboxNotificationsHandler implements CommandHandler
     {
         $receipts = NotificationReceipt::visibleWithTargetIn(
             $scope->id,
-            QuestionNotificationTarget::KEY,
+            QuestionNotificationKeys::TARGET,
             Question::query()->where('inbox_id', $inboxId)->where('target_type', $recipient->type->value)
                 ->where('target_id', $recipient->id)->select('id'),
             HideLeftInboxNotificationsCommand::BATCH,

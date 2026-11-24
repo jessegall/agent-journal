@@ -10,7 +10,7 @@ use DateTimeInterface;
 use JsonSerializable;
 
 /**
- * One message in a chat excerpt: who wrote it, when, and the start of its text as plain words.
+ * One message in a messages excerpt: who wrote it, when, and the start of its text as plain words.
  */
 final readonly class ExcerptMessage implements JsonSerializable
 {

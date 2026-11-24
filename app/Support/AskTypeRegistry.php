@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Chat\AskType;
+use App\Contracts\Asks\AskType;
 use App\Exceptions\AskRefused;
 use App\Exceptions\SupervisorRouteInvalid;
 use App\Values\AskTypeKey;

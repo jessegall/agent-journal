@@ -7,7 +7,7 @@ namespace App\Events\Messages;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about messages, chats and notifications: every event of that subject extends it, so a listener typed on it
+ * A fact about messages, inboxes and notifications: every event of that subject extends it, so a listener typed on it
  * hears them all.
  */
 abstract readonly class MessageEvent implements Event {}

@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Contracts\PairChats;
 use Domain\Documents\Http\Requests\DocumentFeedbackRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -23,7 +23,7 @@ final readonly class AskDocumentFeedbackPageController
         DocumentFeedbackRequest $request,
         AgentDirectory $agents,
         CommandBus $commands,
-        ChatInboxes $chats,
+        PairChats $chats,
         Redirector $redirect,
     ): RedirectResponse {
         $agent = $agents->visibleAgent($request->agentId());

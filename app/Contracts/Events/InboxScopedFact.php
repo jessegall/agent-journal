@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Events;
 
 /**
- * A fact about one chat inbox: the page change it causes reaches only the chat's active members.
+ * A fact about one inbox: the page change it causes reaches only the inbox's active members.
  */
 interface InboxScopedFact
 {

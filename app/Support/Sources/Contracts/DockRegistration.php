@@ -8,7 +8,7 @@ use App\Exceptions\DockDefinitionInvalid;
 use App\Support\Sources\DockDefinition;
 
 /**
- * Where an owner registers what a conversation may dock, once per type, at boot, and asks for Add to chat to be
+ * Where an owner registers what a conversation may dock, once per type, at boot, and asks for Add to conversation to be
  * offered on its sources. Every record type with no owner registration is dockable through its fallback card.
  */
 interface DockRegistration

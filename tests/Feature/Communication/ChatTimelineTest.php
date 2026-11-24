@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Chat\ChatLines;
 use App\Contracts\Chat\ChatTimeline;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Exceptions\ChatCursorRefused;
 use App\Http\Responses\PageReadProps;
 use App\Support\ActorIdentity;
@@ -41,7 +41,7 @@ final class ChatTimelineTest extends MessagingTestCase
         EnvironmentUserGrant::create(
             $this->bea,
             null,
-            [ChatPermission::ReceiveInvitations],
+            [InboxPermission::ReceiveInvitations],
             ActorIdentity::of($this->owner),
             CarbonImmutable::now(),
         );

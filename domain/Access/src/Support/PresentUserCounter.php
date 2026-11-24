@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Contracts\Actors\ActiveActorCounter;
-use App\Contracts\Chat\AdmittedRecipients;
-use App\Contracts\Chat\UserPresences;
+use App\Contracts\Messages\AdmittedRecipients;
+use App\Contracts\Presence\UserPresences;
 use App\Enums\ActorType;
 use Carbon\CarbonImmutable;
 

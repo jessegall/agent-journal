@@ -79,7 +79,7 @@ use Illuminate\Support\Carbon;
  * @property ExecutionPlan $plan
  * @property CarbonImmutable|null $consumed_at
  * @property CarbonImmutable|null $heartbeat_at
- * @property CarbonImmutable|null $shown_in_chat_at when its agent's chat began showing it
+ * @property CarbonImmutable|null $shown_at when its agent's conversation began showing it
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $ended_at
  * @property RunRequestIntent $request_intent
@@ -117,7 +117,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     public const string DOCK_TYPE = 'process.run';
 
     /**
-     * How long a quick command runs at most; a run past it shows in its agent's chat.
+     * How long a quick command runs at most; a run past it shows in its agent's conversation.
      */
     public const int QUICK_COMMAND_SECOND_LIMIT = 10;
 
@@ -148,7 +148,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
             'plan' => ExecutionPlan::class,
             'consumed_at' => 'immutable_datetime',
             'heartbeat_at' => 'immutable_datetime',
-            'shown_in_chat_at' => 'immutable_datetime',
+            'shown_at' => 'immutable_datetime',
             'request_intent' => RunRequestIntent::class,
         ];
     }
@@ -251,7 +251,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     }
 
     /**
-     * Notes that the run still lives; an agent's run that has gone on past a quick command's wait is shown in its chat,
+     * Notes that the run still lives; an agent's run that has gone on past a quick command's wait is shown in its conversation,
      * once.
      */
     public function recordHeartbeat(): void
@@ -260,7 +260,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $outlasted = $this->outlastsAQuickCommand();
 
         if ($outlasted) {
-            $this->shown_in_chat_at = $this->heartbeat_at;
+            $this->shown_at = $this->heartbeat_at;
         }
 
         $this->assertSaved($this->save());
@@ -271,11 +271,11 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     }
 
     /**
-     * Whether an agent's run, not yet shown in its chat, has run longer than a quick command waits.
+     * Whether an agent's run, not yet shown in its conversation, has run longer than a quick command waits.
      */
     private function outlastsAQuickCommand(): bool
     {
-        return $this->shown_in_chat_at === null
+        return $this->shown_at === null
             && $this->actor_type === ActorType::Agent->value
             && $this->started_at?->addSeconds(self::QUICK_COMMAND_SECOND_LIMIT)->isPast() === true;
     }

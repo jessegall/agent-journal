@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Assignments\AssigneeProvider;
-use App\Contracts\Chat\AdmittedRecipients;
+use App\Contracts\Messages\AdmittedRecipients;
 use App\Enums\ActorType;
 use App\Exceptions\AssigneeUnavailable;
 use App\Support\AssigneeIdentity;

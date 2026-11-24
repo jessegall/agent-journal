@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Hooks;
 
-use App\Contracts\Chat\AnsweredAtOnce;
+use App\Contracts\Asks\AnsweredAtOnce;
 use App\Contracts\Work\ReminderContribution;
 use App\Enums\ContextStartType;
 use App\Values\StackTarget;

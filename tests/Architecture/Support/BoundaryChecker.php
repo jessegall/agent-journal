@@ -6,13 +6,11 @@ namespace Tests\Architecture\Support;
 
 use App\Contracts\Events\Event;
 use App\Support\DomainEntry;
-use App\Support\Exports;
 use App\Support\Reflector;
 
 /**
  * Judges name uses against the domain each file belongs to, the domains it declares it requires and what each owner
- * exports: another domain's class must be on that domain's export list, and a Core class a domain uses must be on
- * CoreApi's list.
+ * exports: another domain's class must be on that domain's export list; every Core class may be used.
  */
 final readonly class BoundaryChecker
 {
@@ -25,12 +23,10 @@ final readonly class BoundaryChecker
 
     /**
      * @param  list<DomainEntry>  $entries
-     * @param  Exports  $coreExports  CoreApi's exports: the Core types a domain may use
      */
     public function __construct(
         private array $entries,
         private ProjectRoots $roots,
-        private Exports $coreExports,
         private BoundaryRoots|null $extraRoots = null,
     ) {}
 
@@ -68,19 +64,6 @@ final readonly class BoundaryChecker
         $userName = $user->name ?? self::SHARED_PLACE;
 
         if (! $this->isDomainName($use->name)) {
-            if ($user !== null && $this->isPrivateCoreName($use->name)) {
-                return [
-                    new Violation(
-                        $use->file,
-                        $use->line,
-                        $use->name,
-                        $userName,
-                        'Core',
-                        ViolationType::PrivateCoreType,
-                    ),
-                ];
-            }
-
             if ($user !== null
                 && $this->isCoreEvent($use->name)
                 && ! $isStateListenerUse
@@ -337,17 +320,6 @@ final readonly class BoundaryChecker
             ltrim($use->name, '\\'),
             $owner->className(),
         ) === 0;
-    }
-
-    /**
-     * A Core class that is not on CoreApi's list; Core is private by default, whatever folder a class sits in.
-     */
-    private function isPrivateCoreName(string $name): bool
-    {
-        $name = ltrim($name, '\\');
-
-        return stripos($name, 'App\\') === 0 && self::isDeclared($name)
-            && ! $this->coreExports->has($name);
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Tests\Feature;
 
-use App\Models\Chats\UserPresence;
+use App\Models\Presence\UserPresence;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

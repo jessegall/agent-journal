@@ -8,7 +8,7 @@ use App\Commands\Messages\AnswerMessage\AnswerMessageCommand;
 use App\Commands\Messages\DismissMessage\DismissMessageCommand;
 use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Commands\Messages\SelectMessage\SelectMessageCommand;
-use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Inboxes\InboxResolver;
 use App\Enums\MessageState;
 use App\Events\Messages\MessageAnswered;
 use App\Exceptions\MessageMissing;

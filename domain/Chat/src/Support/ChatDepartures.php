@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\Chat\ChatParticipationEnding;
+use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Contracts\Time\ServerClock;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
@@ -13,7 +13,7 @@ use App\Support\ActorIdentity;
 /**
  * An actor that may no longer take part in chats leaves every chat it is attached to.
  */
-final readonly class ChatDepartures implements ChatParticipationEnding
+final readonly class ChatDepartures implements InboxParticipationEnding
 {
     public function __construct(private ServerClock $clock) {}
 

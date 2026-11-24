@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Events\Inboxes\InboxLeft;
-use App\Events\Web\ChatAccessEnded;
+use App\Events\Web\InboxAccessEnded;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -19,7 +19,7 @@ final readonly class NotifyInboxAccessEnded implements Listener
     public function handle(InboxLeft $event): void
     {
         if ($event->actor->isUser()) {
-            $this->events->dispatch(new ChatAccessEnded($event->actor->id, $event->inboxId));
+            $this->events->dispatch(new InboxAccessEnded($event->actor->id, $event->inboxId));
         }
     }
 }

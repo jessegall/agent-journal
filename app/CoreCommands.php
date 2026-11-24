@@ -13,6 +13,7 @@ use App\Commands\Agents\ContinueStart\ContinueStartCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\Command;
+use App\Support\Exports;
 use App\Support\CommandOwner;
 use App\Support\CommandScope;
 use App\Support\FolderClasses;
@@ -29,17 +30,6 @@ final class CoreCommands
     public static function commands(): array
     {
         return FolderClasses::in(__DIR__.'/Commands/*/*', Command::class);
-    }
-
-    /**
-     * Core's commands that stay private: registered for Core's own runtime, such as the system's public share read,
-     * share expiry and the gateway supervisor's claims and reports, and never exported to a domain or module.
-     *
-     * @return list<class-string<Command<mixed>>>
-     */
-    public static function privateCommands(): array
-    {
-        return array_values(array_diff(self::commands(), CoreApi::exports()->commands));
     }
 
     /**
@@ -73,8 +63,7 @@ final class CoreCommands
     }
 
     /**
-     * Core as an owner of commands: the commands on CoreApi's commands list are exported to the domains; the private
-     * ones are not.
+     * Core as an owner of commands: every core command and class may be used by the domains.
      */
     public static function owner(): CommandOwner
     {
@@ -85,7 +74,7 @@ final class CoreCommands
             commands: self::commands(),
             middleware: self::middleware(),
             requires: [],
-            exports: CoreApi::exports(),
+            exports: Exports::everythingIn(__NAMESPACE__),
         );
     }
 }

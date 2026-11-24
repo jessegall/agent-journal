@@ -10,7 +10,7 @@ namespace Tests\Architecture\Support;
  */
 final readonly class LayoutRoots
 {
-    private const array CORE_ROOT_FILES = ['CoreApi.php', 'CoreCommands.php', 'CorePages.php', 'CoreMcpTools.php'];
+    private const array CORE_ROOT_FILES = ['CoreCommands.php', 'CorePages.php', 'CoreMcpTools.php'];
 
     /**
      * The role folders a root may hold; Actions is Access's alone, which FolderLayoutTest checks on its own.

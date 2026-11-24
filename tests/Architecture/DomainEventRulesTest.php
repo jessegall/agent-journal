@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Support\CoreListenerFolders;
 use App\Contracts\Bus\PipelineRunner;
-use App\CoreApi;
 use App\Declarations\StateMethods;
 use App\Exceptions\InvalidListener;
 use App\Support\CatalogueReflectorFactory;
@@ -83,7 +83,7 @@ final class DomainEventRulesTest extends TestCase
     public function test_state_event_permissions_and_manual_registration_use_the_listener_policy(): void
     {
         $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class]);
-        $ownership = new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory(), app_path());
+        $ownership = new ListenerOwnership($registry, CoreListenerFolders::all(), new CatalogueReflectorFactory(), app_path());
         $states = new StateListenerDeclarations($ownership, new CatalogueReflectorFactory());
         $policy = new ListenerPolicy($this->app->make(PipelineRunner::class), $ownership);
         $declaration = new StateMethods()->forState(PlanState::class)[self::TASK_CLOSED];
@@ -99,7 +99,7 @@ final class DomainEventRulesTest extends TestCase
         $roots = ProjectRoots::fromComposer(dirname(__DIR__, 2).'/composer.json');
         $file = $registry->get('Plans')->folder.'/States/PlanStateWithForeignUse.php';
         $calls = ScanCache::findings(new EventCallScan(), [$file]);
-        $violations = new BoundaryChecker($registry->all(), $roots, CoreApi::exports())->eventCallViolations($calls);
+        $violations = new BoundaryChecker($registry->all(), $roots)->eventCallViolations($calls);
 
         $this->assertSame([ViolationType::ReRaisedReceivedEvent], array_column($violations, 'type'));
     }
@@ -108,7 +108,7 @@ final class DomainEventRulesTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $states = new StateListenerDeclarations(
-            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory(), app_path()),
+            new ListenerOwnership($registry, CoreListenerFolders::all(), new CatalogueReflectorFactory(), app_path()),
             new CatalogueReflectorFactory(),
         );
         $methods = new StateMethods();
@@ -139,7 +139,6 @@ final class DomainEventRulesTest extends TestCase
             new BoundaryChecker(
                 $registry->all(),
                 $roots,
-                CoreApi::exports(),
             )->violations(DomainFiles::usesIn([$file], $roots)),
         );
     }

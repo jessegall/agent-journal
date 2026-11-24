@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Inboxes\LabeledInbox;
-use App\Contracts\Chat\InboxProvider;
-use App\Contracts\Chat\InboxRegistration;
-use App\Contracts\Chat\InboxResolver;
-use App\Contracts\Chat\NamedInboxes;
+use App\Contracts\Inboxes\InboxProvider;
+use App\Contracts\Inboxes\InboxRegistration;
+use App\Contracts\Inboxes\InboxResolver;
+use App\Contracts\Inboxes\NamedInboxes;
 use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\Inbox;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\CoreApi;
 use App\Support\StartDriver;
 use App\Values\DriverKey;
 use App\Values\ProviderKey;
@@ -36,11 +35,4 @@ final class StartProgramTest extends TestCase
         $this->assertNull(StartDriver::of(null, $this->app->make(DriverCatalogue::class))->driver);
     }
 
-    public function test_the_program_and_provider_keys_are_exported(): void
-    {
-        $exports = CoreApi::exports();
-
-        $this->assertContains(DriverKey::class, $exports->valueClasses);
-        $this->assertContains(ProviderKey::class, $exports->valueClasses);
-    }
 }

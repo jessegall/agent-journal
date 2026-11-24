@@ -27,6 +27,11 @@ return new class extends Migration
             $table->boolean('browser_resize')->default(false);
             $table->boolean('browser_private')->default(false);
             $table->timestampTz('revoked_at')->nullable();
+            $table->timestampTz('last_answered_at')->nullable();
+            $table->timestampTz('failing_since')->nullable();
+            $table->text('last_failure')->nullable();
+            $table->jsonb('reported_failures')->nullable();
+            $table->string('failing_route')->nullable();
             $table->timestampsTz();
         });
     }

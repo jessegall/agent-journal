@@ -10,7 +10,7 @@ namespace App\Enums;
 enum Icon: string
 {
     case Home = 'home';
-    case Chat = 'chat';
+    case Speech = 'speech';
     case Plan = 'plan';
     case Tasks = 'todos';
     case Rules = 'rules';

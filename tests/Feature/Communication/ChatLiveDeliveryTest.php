@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Enums\LeaveReason;
-use App\Events\Web\ChatAccessEnded;
+use App\Events\Web\InboxAccessEnded;
 use App\Events\Messages\ChatMemberLeft;
 use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Web\PageChanged;
@@ -33,7 +33,7 @@ final class ChatLiveDeliveryTest extends MessagingTestCase
         EnvironmentUserGrant::create(
             $bea,
             null,
-            [ChatPermission::ReceiveInvitations],
+            [InboxPermission::ReceiveInvitations],
             ActorIdentity::of($this->owner),
             CarbonImmutable::now(),
         );
@@ -44,7 +44,7 @@ final class ChatLiveDeliveryTest extends MessagingTestCase
 
         $this->assertTrue($this->app->make(UserChannel::class)->join($bea, $bea->id));
 
-        Event::fake([PageChanged::class, ChatAccessEnded::class]);
+        Event::fake([PageChanged::class, InboxAccessEnded::class]);
         $listener = $this->app->make(BroadcastPageChange::class);
         $listener->handle(new ChatMessageAccepted('message', $owner, $inboxId));
         Event::assertDispatched(
@@ -53,12 +53,12 @@ final class ChatLiveDeliveryTest extends MessagingTestCase
         );
 
         $this->runOnBus(new RemoveChatParticipantCommand($inboxId, "user:{$bea->id}"));
-        Event::fake([PageChanged::class, ChatAccessEnded::class]);
+        Event::fake([PageChanged::class, InboxAccessEnded::class]);
         $listener = $this->app->make(BroadcastPageChange::class);
         $listener->handle(new ChatMemberLeft('interval', $inboxId, ActorIdentity::of($bea), LeaveReason::Removed));
         $listener->handle(new ChatMessageAccepted('later', $owner, $inboxId));
 
-        Event::assertDispatchedTimes(ChatAccessEnded::class, 1);
+        Event::assertDispatchedTimes(InboxAccessEnded::class, 1);
         Event::assertNotDispatched(
             PageChanged::class,
             fn (PageChanged $change) => in_array($bea->id, $change->userIds, true),

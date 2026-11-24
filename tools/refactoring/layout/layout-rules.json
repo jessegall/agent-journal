@@ -67,7 +67,6 @@
     "package_routes_destination": "routes",
     "specialist_fallback": "Support/{kind}",
     "core_root_files": [
-        "CoreApi.php",
         "CoreCommands.php",
         "CorePages.php",
         "CoreMcpTools.php"

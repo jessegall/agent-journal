@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Contracts\Chat\ConversationResolver;
-use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Inboxes\InboxResolver;
 use App\Data\Messages\InboxView;
 use App\Enums\LeaveReason;
 use App\Exceptions\InboxUnavailable;

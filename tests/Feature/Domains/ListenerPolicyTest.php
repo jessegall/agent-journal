@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Support\CoreListenerFolders;
 use App\Contracts\Bus\PipelineRunner;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\CoreApi;
 use App\Exceptions\InvalidListener;
 use App\Listeners\BroadcastPageChange;
 use App\Providers\DomainEventServiceProvider;
@@ -84,7 +84,7 @@ final class ListenerPolicyTest extends TestCase
     {
         return new ListenerPolicy(
             $this->app->make(PipelineRunner::class),
-            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory(), app_path()),
+            new ListenerOwnership($registry, CoreListenerFolders::all(), new CatalogueReflectorFactory(), app_path()),
         );
     }
 }

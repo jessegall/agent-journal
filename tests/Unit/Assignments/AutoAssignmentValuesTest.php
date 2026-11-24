@@ -11,7 +11,6 @@ use App\Contracts\Assignments\AssignmentPoolFactory;
 use App\Contracts\Assignments\AssignmentQuery;
 use App\Contracts\Assignments\AutoAssigner;
 use App\Contracts\Assignments\AutoAssignmentProvider;
-use App\CoreApi;
 use App\Enums\PoolInputType;
 use App\Enums\PoolMembersType;
 use App\Exceptions\InvalidRecordIds;
@@ -103,41 +102,6 @@ final class AutoAssignmentValuesTest extends TestCase
         $this->assertSame($plan, $reference->target);
         $this->assertSame([], $reference->recordIds);
         $this->assertSame([TestIds::of(2), TestIds::of(1)], $named->recordIds);
-    }
-
-    public function test_core_exports_the_auto_assignment_contracts_values_and_exception(): void
-    {
-        $exports = CoreApi::exports();
-
-        $contracts = [
-            AutoAssigner::class,
-            AssignmentPool::class,
-            AssignmentPoolFactory::class,
-            AssignedWorkResolver::class,
-            AssignedWorkProvider::class,
-            AssignmentQuery::class,
-            AutoAssignmentProvider::class,
-        ];
-        $values = [
-            OrderedRecordIds::class,
-            PoolReference::class,
-            PoolMembers::class,
-            PoolMembersType::class,
-            PoolDefinition::class,
-            PoolDescription::class,
-            PoolInputType::class,
-            AutoAssignerDefinition::class,
-        ];
-
-        foreach ($contracts as $contract) {
-            $this->assertContains($contract, $exports->contracts);
-        }
-
-        foreach ($values as $value) {
-            $this->assertContains($value, $exports->valueClasses);
-        }
-
-        $this->assertContains(InvalidRecordIds::class, $exports->exceptions);
     }
 
     /**

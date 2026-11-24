@@ -22,13 +22,10 @@ return new class extends Migration
             $table->jsonb('counts');
             $table->jsonb('final_offsets');
             $table->ulid('replaces_assessment_id')->nullable();
+            $table->foreign('replaces_assessment_id')->references('id')->on('output_assessments')->nullOnDelete();
             $table->timestampTz('created_at');
 
             $table->index(['project_key', 'part_run_id']);
-        });
-
-        Schema::table('output_assessments', function (Blueprint $table) {
-            $table->foreign('replaces_assessment_id')->references('id')->on('output_assessments')->nullOnDelete();
         });
     }
 

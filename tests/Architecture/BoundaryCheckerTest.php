@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\CoreApi;
 use App\Support\DomainRegistry;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\BoundaryChecker;
@@ -227,7 +226,7 @@ final class BoundaryCheckerTest extends TestCase
 
     private function checker(): BoundaryChecker
     {
-        return new BoundaryChecker($this->registry()->all(), $this->roots(), CoreApi::exports());
+        return new BoundaryChecker($this->registry()->all(), $this->roots());
     }
 
     private function registry(): DomainRegistry

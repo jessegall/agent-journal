@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Support;
 
 use App\Support\Cards\Button;
-use App\Support\Cards\ChatExcerpt;
+use App\Support\Cards\MessagesExcerpt;
 use App\Support\Cards\ConsoleOutput;
 use App\Support\Cards\CountedProgress;
 use App\Support\Cards\Disclosure;
@@ -64,7 +64,7 @@ final readonly class ReleaseReview implements Dockable
             new IndeterminateProgress('estimate', 'Waiting for estimate'),
             new Duration('build', $this->now->modify('-65 seconds'), $this->now),
             new Duration('deploy', $this->now->modify('-10 seconds')),
-            new ChatExcerpt('excerpt', [new ExcerptMessage('Build bot', $this->now, 'Build ready')]),
+            new MessagesExcerpt('excerpt', [new ExcerptMessage('Build bot', $this->now, 'Build ready')]),
             new ConsoleOutput('stderr', ConsoleStream::Stderr, ["\e[31merror\e[0m: <script>", 'second line'], true),
         ];
 

@@ -22,7 +22,7 @@ use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
 use App\Support\ProjectReadRetentionService;
 use App\Values\BindingFolder;
-use App\Values\ChatMemberAuthority;
+use App\Values\InboxMemberAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
@@ -173,7 +173,7 @@ final class ProjectReadTest extends TestCase
     public function test_a_signed_in_member_who_is_not_the_owner_may_not_read_the_project(): void
     {
         $this->ownedBy(8);
-        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(7), new ChatMemberAuthority('the web sign-in'));
+        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(7), new InboxMemberAuthority('the web sign-in'));
 
         $this->expectException(CommandNotRegistered::class);
 

@@ -12,7 +12,7 @@ use App\Enums\PartType;
 use App\Enums\Tone;
 use App\Exceptions\PartMapInvalid;
 use App\Support\Cards\Button;
-use App\Support\Cards\ChatExcerpt;
+use App\Support\Cards\MessagesExcerpt;
 use App\Support\Cards\ConsoleOutput;
 use App\Support\Cards\Contracts\DockPart;
 use App\Support\Cards\CountedProgress;
@@ -112,8 +112,8 @@ final class PartMap
         );
 
         $map->part(
-            ChatExcerpt::class,
-            PartType::ChatExcerpt,
+            MessagesExcerpt::class,
+            PartType::MessagesExcerpt,
             ExcerptField::named('messages'),
             $openField,
         );

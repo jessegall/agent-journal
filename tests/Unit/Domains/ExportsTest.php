@@ -6,7 +6,6 @@ namespace Tests\Unit\Domains;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Events\Event;
-use App\CoreApi;
 use App\Exceptions\AmbiguousDomainRoot;
 use App\Exceptions\InvalidExports;
 use App\Support\DomainRegistry;
@@ -128,8 +127,4 @@ final class ExportsTest extends TestCase
         DomainRegistry::from([NestingDomain::class, InnerDomain::class]);
     }
 
-    public function test_cores_exports_pass_the_same_check(): void
-    {
-        $this->assertContains(Actor::class, ExportValidator::check('Core', 'App', CoreApi::exports())->contracts);
-    }
 }

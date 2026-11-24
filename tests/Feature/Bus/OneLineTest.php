@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Attributes\OneLine;
-use App\CoreApi;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\Bus\OneLineTitle;
 use Tests\TestCase;
@@ -53,11 +52,6 @@ final class OneLineTest extends TestCase
                 $this->assertStringContainsString(self::ONE_LINE_REFUSAL, $refusal->errors()['title'][0]);
             }
         }
-    }
-
-    public function test_the_attribute_is_exported_from_core(): void
-    {
-        $this->assertTrue(CoreApi::exports()->has(OneLine::class));
     }
 
     private function titled(string $text): OneLineTitle

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Contracts\Chat\AskType;
+use App\Contracts\Asks\AskType;
 use App\Enums\SupervisorCoverageType;
 use App\Values\SupervisorCoverage;
 use App\Values\SupervisorProfile;

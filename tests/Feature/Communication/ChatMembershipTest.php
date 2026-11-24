@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Enums\IntervalRole;
 use App\Enums\TimelineEventType;
 use App\Exceptions\InboxUnavailable;
@@ -125,7 +125,7 @@ final class ChatMembershipTest extends MessagingTestCase
         EnvironmentUserGrant::create(
             $user,
             null,
-            [ChatPermission::ReceiveInvitations],
+            [InboxPermission::ReceiveInvitations],
             ActorIdentity::of($this->owner),
             CarbonImmutable::now(),
         );

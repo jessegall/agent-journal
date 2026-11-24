@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Asks;
 
-use App\Contracts\Chat\AskHopEvent;
+use App\Contracts\Asks\AskHopEvent;
 use App\Support\ActorIdentity;
 
 /**

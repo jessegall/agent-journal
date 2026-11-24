@@ -6,7 +6,7 @@ namespace App\Support\Readers;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\AssignmentResolver;
-use App\Contracts\Chat\AskReader;
+use App\Contracts\Asks\AskReader;
 use App\Data\Asks\AskCard;
 use App\Data\Asks\AskDetail;
 use App\Data\Asks\AskInbox;

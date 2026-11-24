@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Navigation;
 
 /**
- * Which records can be drafted by answering questions in a guided chat, by the noun of the record.
+ * Which records can be drafted by answering questions in a guided conversation, by the noun of the record.
  */
 interface DraftProducers
 {

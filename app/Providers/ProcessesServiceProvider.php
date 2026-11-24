@@ -32,7 +32,7 @@ use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Bus\CommandClassifier;
 use App\Contracts\Bus\ResultReceipts;
-use App\Contracts\Chat\NotificationTargets;
+use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Hosts\ServedEnvironment;
 use App\Contracts\Processes\ProcessRunCallers;
 use App\Contracts\Processes\ShellCommandParser;

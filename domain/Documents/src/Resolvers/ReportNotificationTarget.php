@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Contracts\Actors\ActorLabels;
-use App\Contracts\Chat\NotificationTargetResolver;
+use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Data\Notifications\NotificationLink;
 use App\Support\ActorIdentity;

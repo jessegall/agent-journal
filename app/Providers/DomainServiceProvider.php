@@ -8,7 +8,6 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Bus\PipelineRunner;
 use App\Contracts\Domains\DomainAvailability;
 use App\Contracts\Reflection\ReflectorFactory;
-use App\CoreApi;
 use App\CoreCommands;
 use App\CoreMcpTools;
 use App\Mcp\Support\McpCatalogue;
@@ -46,7 +45,6 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        ExportsCheck::check('Core', Str::beforeLast(CoreApi::class, '\\'), CoreApi::exports());
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);

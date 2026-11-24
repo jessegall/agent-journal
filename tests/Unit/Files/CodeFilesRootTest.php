@@ -18,7 +18,7 @@ final class CodeFilesRootTest extends TestCase
     {
         $fixture = base_path('tests/Fixtures');
 
-        $this->assertSame('app/CoreApi.php', CodeFiles::ofProcess()->projectPathOf(base_path('app/CoreApi.php'))->relative);
+        $this->assertSame('app/CoreCommands.php', CodeFiles::ofProcess()->projectPathOf(base_path('app/CoreCommands.php'))->relative);
         $this->assertSame('Listeners', CodeFiles::over($fixture)->projectPathOf("{$fixture}/Listeners")->relative);
     }
 }

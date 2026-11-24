@@ -21,7 +21,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Agents\EngineFrameTime;
 use App\Models\Asks\Ask;
-use App\Models\Chats\UserPresence;
+use App\Models\Presence\UserPresence;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;

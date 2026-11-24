@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Models\Chats\UserPresence;
+use App\Models\Presence\UserPresence;
 use App\Support\DatabaseClock;
 use App\Support\PresenceWindow;
 use Carbon\CarbonImmutable;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Autoload;
 
-use App\CoreApi;
 use App\Enums\Place;
 use App\Support\CodeFiles;
 use App\Support\FolderClasses;
@@ -22,11 +21,6 @@ final class ReadOncePerProcessTest extends TestCase
     public function test_composer_roots_are_read_once(): void
     {
         $this->assertSame(Psr4ClassNames::fromComposer(), Psr4ClassNames::fromComposer());
-    }
-
-    public function test_core_exports_are_built_once(): void
-    {
-        $this->assertSame(CoreApi::exports(), CoreApi::exports());
     }
 
     public function test_a_folder_is_read_once_and_answers_the_same_classes(): void

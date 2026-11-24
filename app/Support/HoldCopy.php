@@ -41,7 +41,7 @@ final readonly class HoldCopy
             ),
             HoldReason::LoginRequired => new self(
                 'Waiting for sign-in',
-                'Sign in to its account in the running driver or on the host, never in chat.',
+                'Sign in to its account in the running driver or on the host, never in a message.',
                 $hasTerminal ? $open : [StatusAction::of(StatusActionType::SignIn)],
             ),
             HoldReason::TrustRequired => new self(

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Types;
 
-use App\Contracts\Chat\AskSubjectResolver;
-use App\Contracts\Chat\AskType;
+use App\Contracts\Asks\AskSubjectResolver;
+use App\Contracts\Asks\AskType;
 use App\Enums\CoreAskType;
 use App\Support\VisibleAskSubjects;
 use App\Values\AskTypeKey;

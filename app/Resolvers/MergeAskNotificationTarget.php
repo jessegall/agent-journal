@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Concerns\LinksTargetsOneByOne;
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Chat\NotificationTargetResolver;
+use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Data\Notifications\NotificationLink;
 use App\Enums\AskResult;

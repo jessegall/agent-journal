@@ -37,7 +37,7 @@ final readonly class ClaimedRequest
         public string|null $processStartId,
         public int $processGeneration,
         // Whether this is the start's bootstrap: the initial wake of a start still proving its conversation, which
-        // carries no chat text and makes the driver prove its conversation without a turn.
+        // carries no message text and makes the driver prove its conversation without a turn.
         public bool $shouldBootstrap = false,
     ) {}
 

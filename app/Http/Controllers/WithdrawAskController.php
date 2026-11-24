@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 use App\Calls\Supervision\WithdrawAskCall;
 use App\Commands\Asks\WithdrawAsk\WithdrawAskCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Chat\AskReader;
+use App\Contracts\Asks\AskReader;
 use App\Data\Asks\AskCard;
 use App\Values\AskReference;
 

@@ -5,7 +5,7 @@ import ActivityWindow from './ActivityWindow.vue';
 import type { ActivityEventData } from '@/types/generated';
 
 const events: ActivityEventData[] = [
-    { id: '1', occurredAt: '2026-11-23T10:00:00+00:00', level: 3, icon: 'chat', who: 'Agent 1', text: 'answered', found: [] },
+    { id: '1', occurredAt: '2026-11-23T10:00:00+00:00', level: 3, icon: 'speech', who: 'Agent 1', text: 'answered', found: [] },
     { id: '2', occurredAt: '2026-11-23T10:01:00+00:00', level: 1, icon: 'file', who: 'Agent 1', text: 'read a file', found: [] },
 ];
 

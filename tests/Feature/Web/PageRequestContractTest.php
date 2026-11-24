@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Enums\SignInMethod;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
@@ -102,7 +102,7 @@ final class PageRequestContractTest extends TestCase
             EnvironmentUserGrant::create(
                 $invited,
                 null,
-                [ChatPermission::ReceiveInvitations],
+                [InboxPermission::ReceiveInvitations],
                 ActorIdentity::of($owner),
                 CarbonImmutable::now(),
             );

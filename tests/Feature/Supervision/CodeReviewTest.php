@@ -10,7 +10,7 @@ use App\Commands\Reviews\HandOffCodeReview\HandOffCodeReviewCommand;
 use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Chat\AskReader;
+use App\Contracts\Asks\AskReader;
 use App\Enums\AskResult;
 use App\Enums\CodeReviewState;
 use App\Enums\CommandEntry;

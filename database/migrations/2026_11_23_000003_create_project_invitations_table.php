@@ -23,8 +23,8 @@ return new class extends Migration
             $table->timestampTz('spent_at')->nullable();
             $table->foreignUlid('binding_id')->nullable()->constrained('project_bindings');
             $table->timestampsTz();
-            $table->foreignUlid('install_attempt_id')->nullable();
-            $table->foreignUlid('environment_id')->nullable();
+            $table->foreignUlid('install_attempt_id')->nullable()->constrained('install_attempts');
+            $table->foreignUlid('environment_id')->nullable()->constrained('project_environments')->nullOnDelete();
         });
     }
 

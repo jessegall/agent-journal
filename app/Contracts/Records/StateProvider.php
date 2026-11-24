@@ -7,7 +7,7 @@ namespace App\Contracts\Records;
 use App\Support\States\AgentState;
 
 /**
- * A domain that puts its own states on an agent's stack, such as Chat's answering-message state. Its Domain class
+ * A domain that puts its own states on an agent's stack, such as a domain's own work state. Its Domain class
  * implements this beside Domain and lists every state it registers; the domain foundation registers them when Core
  * builds the state types.
  */

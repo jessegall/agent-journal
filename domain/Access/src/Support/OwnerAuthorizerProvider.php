@@ -9,12 +9,12 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Authorization\Authorizer;
 use App\Contracts\Authorization\AuthorizerProvider;
-use App\Contracts\Chat\ChatEligibility;
-use App\Contracts\Chat\ChatMemberPolicies;
+use App\Contracts\Inboxes\InboxEligibility;
+use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Exceptions\ActorNotAllowed;
 use App\Support\ActorIdentity;
 use App\Support\UnrestrictedAuthorizer;
-use App\Values\ChatMemberAuthority;
+use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
 
 /**
@@ -26,8 +26,8 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
     public function __construct(
         private JournalAdmission $admission,
         private CurrentActor $actors,
-        private ChatEligibility $chats,
-        private ChatMemberPolicies $chatPolicies,
+        private InboxEligibility $chats,
+        private InboxMemberPolicies $chatPolicies,
     ) {}
 
     /**
@@ -42,7 +42,7 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
             return new UnrestrictedAuthorizer();
         }
 
-        if ($this->actors->authority() instanceof ChatMemberAuthority) {
+        if ($this->actors->authority() instanceof InboxMemberAuthority) {
             return new ChatMemberAuthorizer($this->chatPolicies);
         }
 

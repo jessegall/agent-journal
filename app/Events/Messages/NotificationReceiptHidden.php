@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Messages;
 
-use App\Contracts\Chat\NotificationReceiptEvent;
+use App\Contracts\Notifications\NotificationReceiptEvent;
 
 /**
  * A notification was hidden.

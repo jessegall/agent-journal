@@ -8,9 +8,9 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Authorization\AuthoritySource;
-use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Inboxes\InboxEligibility;
 use App\Support\ActorIdentity;
-use App\Values\ChatMemberAuthority;
+use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
 use Closure;
 use Domain\Access\Exceptions\JournalAccessDenied;
@@ -30,7 +30,7 @@ final readonly class AuthenticateUser
 
     public function __construct(
         private JournalAdmission $admission,
-        private ChatEligibility $chats,
+        private InboxEligibility $chats,
         private CurrentActorSetter $actors,
     ) {}
 
@@ -69,7 +69,7 @@ final readonly class AuthenticateUser
             throw JournalAccessDenied::forUser();
         }
 
-        return new ChatMemberAuthority('the web sign-in');
+        return new InboxMemberAuthority('the web sign-in');
     }
 
     private function isChatRoute(Request $request): bool

@@ -22,13 +22,9 @@ return new class extends Migration
             $table->string('base_oid', 64);
             $table->boolean('parent_was_dirty');
             $table->ulid('parent_claim_id')->nullable();
+            $table->foreign('parent_claim_id')->references('id')->on('child_claims');
             $table->string('root_runtime_id');
             $table->timestampsTz();
-        });
-
-        // The chain's self-reference is added once the table and its primary key exist.
-        Schema::table('child_claims', function (Blueprint $table) {
-            $table->foreign('parent_claim_id')->references('id')->on('child_claims');
         });
     }
 

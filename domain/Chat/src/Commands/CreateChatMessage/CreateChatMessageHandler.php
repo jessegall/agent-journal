@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\CreateChatMessage;
 
-use App\Contracts\Records\AuthoredRecord;
+use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Time\ServerClock;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Exceptions\ChatSourceRefused;
@@ -26,7 +26,7 @@ final readonly class CreateChatMessageHandler extends ChatCommandHandler
         $model = Relation::getMorphedModel($command->sourceType) ?? throw ChatSourceRefused::unknownType($command->sourceType);
         $source = $model::query()->findOrFail($command->sourceId);
 
-        if (! $source instanceof AuthoredRecord) {
+        if (! $source instanceof AuthoredModel) {
             throw ChatSourceRefused::notAuthored($command->sourceType);
         }
 

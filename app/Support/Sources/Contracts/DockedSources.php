@@ -17,7 +17,7 @@ interface DockedSources
     public function isDocked(DockIdentity $source): bool;
 
     /**
-     * The ids of the inboxes of the chats the source is docked in, at most a hundred.
+     * The ids of the inboxes the source is docked in, at most a hundred.
      *
      * @return list<string>
      */

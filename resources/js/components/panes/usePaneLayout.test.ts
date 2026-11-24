@@ -9,7 +9,7 @@ import { providePaneLayout } from './usePaneLayout';
 import type { PaneLayoutStore } from './usePaneLayout';
 
 const windows = [
-    { key: 'chat', title: 'Chat', icon: 'chat' },
+    { key: 'chat', title: 'Chat', icon: 'speech' },
     { key: 'plans', title: 'Plans', icon: 'plan' },
     { key: 'tasks', title: 'Tasks', icon: 'todos' },
 ] as PaneWindow[];

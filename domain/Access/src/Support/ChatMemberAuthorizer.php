@@ -6,7 +6,7 @@ namespace Domain\Access\Support;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\Authorizer;
-use App\Contracts\Chat\ChatMemberPolicies;
+use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Enums\AccessType;
 use Illuminate\Auth\Access\Response;
 
@@ -16,7 +16,7 @@ use Illuminate\Auth\Access\Response;
  */
 final readonly class ChatMemberAuthorizer implements Authorizer
 {
-    public function __construct(private ChatMemberPolicies $policies) {}
+    public function __construct(private InboxMemberPolicies $policies) {}
 
     public function evaluate(string $policy, Actor $actor, object|string $subject, AccessType $access): Response
     {

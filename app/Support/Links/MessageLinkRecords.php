@@ -13,7 +13,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Messages as linkable records, kept as private as Chat keeps them: an agent reads only the messages addressed to it,
+ * Messages as linkable records, kept as private as their inboxes keep them: an agent reads only the messages addressed to it,
  * a user reads every one, and anyone else is answered as if the message did not exist. A card shows the first line.
  */
 #[Scoped]

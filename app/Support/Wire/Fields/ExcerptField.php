@@ -9,7 +9,7 @@ use App\Support\Wire\Contracts\PartField;
 use App\Support\Wire\DestinationEncoder;
 
 /**
- * A field holding a chat excerpt's messages, in order.
+ * A field holding a messages excerpt's messages, in order.
  */
 final readonly class ExcerptField implements PartField
 {

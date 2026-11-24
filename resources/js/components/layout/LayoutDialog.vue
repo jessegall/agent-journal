@@ -109,7 +109,7 @@ watch(() => page.url, close);
                 </MenuItem>
                 <MenuItem @click="startGuided">
                     <template #leading>
-                        <Icon name="chat" :size="14" />
+                        <Icon name="speech" :size="14" />
                     </template>
                     <MenuItemLabel>{{ ways.guided }}</MenuItemLabel>
                     <MenuItemSub>An agent asks a few questions, then drafts it.</MenuItemSub>

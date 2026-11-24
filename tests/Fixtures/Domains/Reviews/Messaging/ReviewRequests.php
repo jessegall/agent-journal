@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Chat\ConversationResolver;
-use App\Contracts\Chat\InboxDestinationResolver;
+use App\Contracts\Inboxes\InboxDestinationResolver;
 use App\Data\Messages\MessageView;
 
 /**

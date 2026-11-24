@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Profiles;
 
 use App\Contracts\Sessions\ProfileResolver;
-use App\CoreApi;
 use App\Enums\ModelTier;
 use App\Exceptions\ProfileKeyInvalid;
 use App\Exceptions\ProfileMissing;
@@ -18,22 +17,10 @@ use Tests\Fixtures\Profiles\TestStartPolicies;
 use Tests\TestCase;
 
 /**
- * Profiles is Core: no domain carries it, and Core exports its reader, key, type, snapshot and exceptions.
+ * Profiles is Core: no domain carries it.
  */
 final class ProfilesExportsTest extends TestCase
 {
-    public function test_core_exports_the_profile_reader_values_and_exceptions(): void
-    {
-        $exports = CoreApi::exports();
-
-        $this->assertContains(ProfileResolver::class, $exports->contracts);
-        $this->assertContains(ProfileKey::class, $exports->valueClasses);
-        $this->assertContains(ProfileBase::class, $exports->valueClasses);
-        $this->assertContains(ProfileSnapshot::class, $exports->valueClasses);
-        $this->assertContains(ProfileKeyInvalid::class, $exports->exceptions);
-        $this->assertContains(ProfileMissing::class, $exports->exceptions);
-    }
-
     public function test_no_profiles_domain_is_registered_or_autoloaded(): void
     {
         $domains = DomainRegistry::installedClasses(base_path());

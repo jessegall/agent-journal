@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Chat\ConversationResolver;
-use App\Contracts\Chat\InboxRegistration;
+use App\Contracts\Inboxes\InboxRegistration;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;

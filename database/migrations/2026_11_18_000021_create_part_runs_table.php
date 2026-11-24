@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('part_id', 64);
             $table->unsignedInteger('attempt');
             $table->ulid('parent_part_run_id')->nullable();
+            $table->foreign('parent_part_run_id')->references('id')->on('part_runs')->nullOnDelete();
             $table->string('operation');
             $table->string('lifecycle', 16);
             $table->timestampTz('started_at')->nullable();
@@ -34,10 +35,6 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->unique(['process_run_id', 'syntax_node', 'part_id', 'attempt']);
-        });
-
-        Schema::table('part_runs', function (Blueprint $table) {
-            $table->foreign('parent_part_run_id')->references('id')->on('part_runs')->nullOnDelete();
         });
     }
 

@@ -9,8 +9,8 @@ use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\CurrentUserResolver;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Authorization\AuthorizerProviderRegistration;
-use App\Contracts\Chat\AdmittedRecipients;
-use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Messages\AdmittedRecipients;
+use App\Contracts\Inboxes\InboxEligibility;
 use App\Contracts\Reflection\TypeReflections;
 use App\Enums\ActorType;
 use App\Support\FolderClasses;
@@ -48,7 +48,7 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(CurrentUserResolver::class, CurrentUserRecords::class);
         $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
         $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
-        $this->app->bind(ChatEligibility::class, EnvironmentChatEligibility::class);
+        $this->app->bind(InboxEligibility::class, EnvironmentChatEligibility::class);
 
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
         $this->app->singleton(AccessSettings::class, fn (): AccessSettings => $this->app->make(TypeReflections::class)

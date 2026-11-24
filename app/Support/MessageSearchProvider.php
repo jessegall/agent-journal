@@ -15,7 +15,7 @@ use App\Values\SearchResult;
 use App\Values\TieredSearchSource;
 
 /**
- * Searches chat message bodies through the shared bounded tiered search. Every read goes through the Message model,
+ * Searches message bodies through the shared bounded tiered search. Every read goes through the Message model,
  * so its visibility scope decides which messages exist for the reader before anything is matched, scored or
  * quoted, and follows that scope as it changes; a hidden message's words give no hit.
  */

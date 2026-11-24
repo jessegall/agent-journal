@@ -6,12 +6,12 @@ namespace App\Providers;
 
 use App\Contracts\Bus\PipelineRunner;
 use App\Contracts\Reflection\ReflectorFactory;
-use App\CoreApi;
 use App\Declarations\StateEvents;
 use App\Declarations\StateMethods;
 use App\Enums\ListenerLane;
 use App\Exceptions\InvalidListener;
 use App\Support\AvailableListener;
+use App\Support\CoreListenerFolders;
 use App\Support\Delivery\StateEventBridge;
 use App\Support\DomainRegistry;
 use App\Support\IsolatedListener;
@@ -186,7 +186,6 @@ final class DomainEventServiceProvider extends EventServiceProvider
     {
         return new ListenerOwnership(
             $this->app->make(DomainRegistry::class),
-            CoreApi::exports(),
             $this->coreListenerFolders(),
             $this->app->make(ReflectorFactory::class),
             $this->app->path(),
@@ -200,6 +199,6 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     private function coreListenerFolders(): array
     {
-        return [...CoreApi::listenerFolders(), ...self::$eventDiscoveryPaths ?? []];
+        return [...CoreListenerFolders::all(), ...self::$eventDiscoveryPaths ?? []];
     }
 }

@@ -6,10 +6,10 @@ namespace Domain\Chat\Resolvers\Support;
 
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Inboxes\InboxEligibility;
 use App\Contracts\Messages\MessageParticipant;
 use App\Enums\ActorType;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
@@ -45,7 +45,7 @@ final readonly class ChatPages
         private ActorLabels $labels,
         private AgentDrivers $agentDrivers,
         private DockProjection $dock,
-        private ChatEligibility $eligibility,
+        private InboxEligibility $eligibility,
         private MessageParticipants $participants,
     ) {}
 
@@ -172,7 +172,7 @@ final readonly class ChatPages
     private function capabilitiesOf(ActorIdentity $viewer, Inbox $inbox, int $memberCount): ChatCapabilitiesData
     {
         $isGroup = $inbox->provider_key === ChatInboxes::GROUP_PROVIDER;
-        $manages = $isGroup && $this->eligibility->holds($viewer, ChatPermission::ManageMembers, null);
+        $manages = $isGroup && $this->eligibility->holds($viewer, InboxPermission::ManageMembers, null);
 
         return ChatCapabilitiesData::from([
             'canAdd' => $manages,

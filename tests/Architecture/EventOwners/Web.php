@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Events\Web\ChatAccessEnded;
+use App\Events\Web\InboxAccessEnded;
 use App\Events\Web\DeskPreferenceSwitched;
 use App\Events\Web\DeskRenamed;
 use App\Events\Web\DeskSeatingAdvanced;
@@ -27,7 +27,7 @@ return [
             'app/Listeners/BroadcastDockedSourceChange.php',
         ],
     ],
-    ChatAccessEnded::class => [
+    InboxAccessEnded::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [

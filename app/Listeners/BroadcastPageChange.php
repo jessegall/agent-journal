@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\InboxScopedFact;
 use App\Contracts\Events\Listener;
-use App\Contracts\Chat\AdmittedRecipients;
+use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Enums\ActorType;
 use App\Events\Web\PageChanged;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Messages;
 
-use App\Contracts\Records\AuthoredRecord;
+use App\Contracts\Records\AuthoredModel;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
@@ -39,7 +39,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable|null $updated_at
  */
 #[Fillable(['inbox_id', 'number', 'sender_type', 'sender_id', 'body', 'target_message_id'])]
-final class Message extends Model implements AuthoredRecord, EventSource
+final class Message extends Model implements AuthoredModel, EventSource
 {
     use HasUlids;
     use Linkable;

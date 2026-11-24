@@ -199,7 +199,7 @@ final class WebServiceProvider extends ServiceProvider
                     ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
         });
 
-        // A coded refusal of a read, such as a chat cursor that no longer fits, answers with its own status, so a
+        // A coded refusal of a read, such as a page cursor that no longer fits, answers with its own status, so a
         // partial reload hears why its read was refused.
         $exceptions->renderable(function (Throwable $refused, Request $request): JsonResponse|Response|null {
             if (! $refused instanceof CodedRefusal || ! $request->hasSession() || $refused instanceof CommandRefusal) {

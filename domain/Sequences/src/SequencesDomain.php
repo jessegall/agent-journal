@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences;
 
+use Domain\Sequences\Events\SequenceStarted;
 use App\Concerns\HasStates;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
@@ -126,6 +127,7 @@ final class SequencesDomain extends Domain implements
     public function exports(): Exports
     {
         return Exports::make()
+            ->events(SequenceStarted::class)
             ->build();
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Decisions;
 
-use App\Contracts\Chat\Answer;
+use App\Contracts\Asks\Answer;
 use App\Enums\AnswerType;
 
 /**

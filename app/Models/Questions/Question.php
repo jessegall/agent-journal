@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Questions;
 
-use App\Contracts\Records\AuthoredRecord;
+use App\Contracts\Records\AuthoredModel;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Enums\ActorType;
@@ -38,7 +38,7 @@ use Illuminate\Database\Eloquent\Model;
     'inbox_id', 'sender_type', 'sender_id', 'target_type', 'target_id', 'text', 'type', 'options', 'answer',
     'answered_at',
 ])]
-final class Question extends Model implements AuthoredRecord, EventSource
+final class Question extends Model implements AuthoredModel, EventSource
 {
     use HasUlids;
     use RaisesEvents;

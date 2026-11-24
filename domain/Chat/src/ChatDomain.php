@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Sequences\SequencesDomain;
+use Domain\Chat\Contracts\PairChats;
 use Domain\Chat\Events\ChatMessageChanged;
 use Domain\Chat\Http\Controllers\AnswerQuestionController;
 use App\Contracts\Authorization\PolicyProvider;
@@ -67,14 +68,14 @@ final class ChatDomain extends Domain implements
      */
     public function requires(): array
     {
-        return [];
+        return [SequencesDomain::class];
     }
 
     public function exports(): Exports
     {
         return Exports::make()
             ->events(DockChanged::class, ChatMessageChanged::class)
-            ->support(ChatInboxes::class)
+            ->contracts(PairChats::class)
             ->build();
     }
 
@@ -101,7 +102,7 @@ final class ChatDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::make('conversation', 'Chat', Icon::Chat, ChatWindowResolver::class, 'ChatWindow.vue')
+            Page::make('conversation', 'Chat', Icon::Speech, ChatWindowResolver::class, 'ChatWindow.vue')
                 ->at('')
                 ->onHome(10)
                 ->slots(Slot::make('dock', SlotContextType::Session))

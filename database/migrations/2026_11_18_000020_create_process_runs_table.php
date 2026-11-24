@@ -33,7 +33,7 @@ return new class extends Migration
             $table->jsonb('plan')->default('{}');
             $table->timestampTz('consumed_at')->nullable();
             $table->timestampTz('heartbeat_at')->nullable();
-            $table->timestampTz('shown_in_chat_at')->nullable();
+            $table->timestampTz('shown_at')->nullable();
             $table->timestampTz('started_at')->nullable();
             $table->timestampTz('ended_at')->nullable();
             $table->string('request_intent', 32)->default('explicit_request');

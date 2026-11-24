@@ -15,7 +15,7 @@ use App\Commands\Asks\RouteAsk\RouteAskCommand;
 use App\Commands\Asks\WithdrawAsk\WithdrawAskCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Chat\AskReader;
+use App\Contracts\Asks\AskReader;
 use App\Contracts\Work\WorkProgress;
 use App\Enums\AskRouteStatus;
 use App\Enums\NoSubject;

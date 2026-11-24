@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Chat\ChatParticipationEnding;
-use App\Enums\ChatPermission;
+use App\Contracts\Inboxes\InboxParticipationEnding;
+use App\Enums\InboxPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
@@ -20,12 +20,12 @@ use Domain\Access\Models\User;
 final readonly class EnvironmentAccess
 {
     public function __construct(
-        private ChatParticipationEnding $chats,
+        private InboxParticipationEnding $chats,
         private CurrentActor $actors,
     ) {}
 
     /**
-     * @param  list<ChatPermission>  $permissions
+     * @param  list<InboxPermission>  $permissions
      */
     public function grant(string $userId, string|null $environmentId, array $permissions): void
     {

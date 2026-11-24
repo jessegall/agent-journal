@@ -22,7 +22,6 @@ final readonly class ListenerOwnership
      */
     public function __construct(
         private DomainRegistry $registry,
-        private Exports $coreExports,
         private array $coreListenerFolders,
         private ReflectorFactory $reflectors,
         private string $corePath,
@@ -40,11 +39,8 @@ final readonly class ListenerOwnership
             return;
         }
 
+        // Every core event may be heard: core keeps nothing private.
         if ($owner === null) {
-            if (! $this->coreExports->hasEvent($event)) {
-                throw InvalidListener::privateEvent($listener, $method, $event, self::CORE);
-            }
-
             return;
         }
 

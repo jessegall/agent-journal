@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\CoreApi;
+use App\Support\Exports;
 use App\Support\DomainRegistry;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\ProjectRoots;
@@ -23,7 +23,7 @@ final class PublicContractTest extends TestCase
     public function test_every_export_is_publishable_and_shows_nothing_private(): void
     {
         $owners = [
-            PublicOwner::core(CoreApi::exports()),
+            PublicOwner::core(Exports::everythingIn('App')),
             ...array_map(PublicOwner::fromDomain(...), $this->app->make(DomainRegistry::class)->all()),
         ];
 

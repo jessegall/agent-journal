@@ -10,7 +10,7 @@ use App\Policies\MessagePolicy;
 use App\Support\Command;
 
 /**
- * The acting actor marks read its own receipt of one question, after the chat showed that exact question; it reads
+ * The acting actor marks read its own receipt of one question, after the page showed that exact question; it reads
  * nothing else and answers nothing.
  *
  * @extends Command<null>

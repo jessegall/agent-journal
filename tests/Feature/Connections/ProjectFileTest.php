@@ -27,7 +27,7 @@ use App\Support\EnrolledHost;
 use App\Support\ProjectReadRetentionService;
 use App\Support\RecordIdentity;
 use App\Values\BindingFolder;
-use App\Values\ChatMemberAuthority;
+use App\Values\InboxMemberAuthority;
 use App\Values\TextRange;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -133,7 +133,7 @@ final class ProjectFileTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(User::factory()->create()->id),
-            new ChatMemberAuthority('the web sign-in'),
+            new InboxMemberAuthority('the web sign-in'),
         );
 
         $this->expectException(RecordUnavailable::class);

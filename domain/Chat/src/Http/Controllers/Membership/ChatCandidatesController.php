@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers\Membership;
 
 use App\Contracts\Actors\ActorLabels;
-use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Inboxes\InboxEligibility;
 use App\Enums\ActorType;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
@@ -26,7 +26,7 @@ final readonly class ChatCandidatesController
     public function __invoke(
         ChatInput $input,
         ChatInboxes $chats,
-        ChatEligibility $eligibility,
+        InboxEligibility $eligibility,
         ActorLabels $labels,
     ): array {
         $chats->assertManages($input->inboxId);

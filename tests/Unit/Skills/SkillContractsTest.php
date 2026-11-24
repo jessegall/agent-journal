@@ -11,7 +11,6 @@ use App\Contracts\Skills\SkillConditionProvider;
 use App\Contracts\Skills\SkillProvider;
 use App\Contracts\Skills\SkillPublisher;
 use App\Contracts\Skills\SkillResolver;
-use App\CoreApi;
 use App\Enums\ConditionOutcome;
 use App\Exceptions\SkillKeyInvalid;
 use App\Support\CanonicalRenderer;
@@ -38,41 +37,6 @@ final class SkillContractsTest extends TestCase
     private const string PLANS_SELECTOR = 'plans.md > Failure > Retry';
 
     private const string PLAN_PURPOSE = 'A plan orders the work.';
-
-    public function test_core_exports_what_a_domain_needs_to_declare_skills_and_keeps_the_ports_private(): void
-    {
-        $exports = CoreApi::exports();
-
-        foreach ([
-            SkillProvider::class,
-            Skill::class,
-            SkillCondition::class,
-            SkillConditionProvider::class,
-            SkillResolver::class,
-        ] as $contract) {
-            $this->assertContains($contract, $exports->contracts);
-        }
-
-        foreach ([
-            SkillKey::class,
-            SkillSection::class,
-            SkillSections::class,
-            MarkdownPart::class,
-            SkillContext::class,
-            Conditions::class,
-        ] as $value) {
-            $this->assertContains($value, $exports->valueClasses);
-        }
-
-        foreach ([
-            CanonicalRenderer::class,
-            StoredSkillSource::class,
-            SkillPublisher::class,
-            DriverSkills::class,
-        ] as $port) {
-            $this->assertFalse($exports->has($port), $port);
-        }
-    }
 
     public function test_a_skill_key_shares_the_stable_key_grammar_and_knows_its_reserved_prefixes(): void
     {

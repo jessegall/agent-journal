@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\CoreApi;
 use App\Support\Domain;
 use App\Support\DomainRegistry;
 use Domain\Plans\Support\PlanStructure;
@@ -107,7 +106,6 @@ final class DomainBoundaryTest extends TestCase
         return new BoundaryChecker(
             $registry->all(),
             ProjectRoots::fromComposer(base_path('composer.json')),
-            CoreApi::exports(),
             new BoundaryRoots($registry->all(), base_path()),
         );
     }
@@ -117,7 +115,7 @@ final class DomainBoundaryTest extends TestCase
         $registry = $this->app->make(DomainRegistry::class);
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
 
-        $violations = new BoundaryChecker($registry->all(), $roots, CoreApi::exports())
+        $violations = new BoundaryChecker($registry->all(), $roots)
             ->compositionViolations(DomainFiles::usesIn(CompositionSite::files(base_path()), $roots), base_path());
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));

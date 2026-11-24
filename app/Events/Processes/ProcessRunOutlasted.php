@@ -8,7 +8,7 @@ use App\Contracts\Processes\ProcessRunEvent;
 use App\Support\ActorIdentity;
 
 /**
- * A run its agent started has gone on past the wait a quick command takes, so the agent's chat shows it as a card.
+ * A run its agent started has gone on past the wait a quick command takes, so the agent's conversation shows it as a card.
  */
 final readonly class ProcessRunOutlasted extends ProcessEvent implements ProcessRunEvent
 {

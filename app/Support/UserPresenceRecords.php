@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Chat\UserPresences;
-use App\Models\Chats\UserPresence;
+use App\Contracts\Presence\UserPresences;
+use App\Models\Presence\UserPresence;
 use Carbon\CarbonImmutable;
 
 /**

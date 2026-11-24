@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Inboxes\LabeledInbox;
-use App\Contracts\Chat\InboxProvider;
-use App\Contracts\Chat\NamedInboxes;
+use App\Contracts\Inboxes\InboxProvider;
+use App\Contracts\Inboxes\NamedInboxes;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\Inbox;
 use PhpOption\Option;

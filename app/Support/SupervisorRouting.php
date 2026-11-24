@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
-use App\Contracts\Chat\AskType;
+use App\Contracts\Asks\AskType;
 use App\Contracts\Processes\SupervisorDefinitions;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Exceptions\SupervisorRouteInvalid;

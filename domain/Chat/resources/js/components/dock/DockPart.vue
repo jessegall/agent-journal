@@ -33,7 +33,7 @@ const renderers: Record<DockNode["type"], Component> = {
   "indeterminate-progress": IndeterminateProgressPart,
   duration: DurationPart,
   "console-output": ConsoleOutputPart,
-  "chat-excerpt": ChatExcerptPart,
+  "messages-excerpt": ChatExcerptPart,
   button: ButtonPart,
 };
 </script>

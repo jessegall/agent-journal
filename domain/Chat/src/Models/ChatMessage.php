@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Models;
 
-use App\Contracts\Records\AuthoredRecord;
+use App\Contracts\Records\AuthoredModel;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Exceptions\InboxUnavailable;
@@ -67,7 +67,7 @@ final class ChatMessage extends Model implements EventSource
      */
     public static function record(
         string $inboxId,
-        AuthoredRecord&Model $source,
+        AuthoredModel $source,
         ChatMessageType $type,
         CarbonImmutable $at,
     ): self {
@@ -79,7 +79,7 @@ final class ChatMessage extends Model implements EventSource
             return $existing;
         }
 
-        $latest = self::newestInInbox($inboxId)->lockForUpdate()->first();
+        $latest = self::query()->newestInInbox($inboxId)->lockForUpdate()->first();
         $author = $source->author();
         $entry = self::query()->create([
             'inbox_id' => $inboxId,
@@ -101,7 +101,7 @@ final class ChatMessage extends Model implements EventSource
     /**
      * The entry that shows the source, or none while it is not recorded yet.
      */
-    public static function findForSource(AuthoredRecord&Model $source): self|null
+    public static function findForSource(AuthoredModel $source): self|null
     {
         return self::query()->forSource($source)->first();
     }
@@ -125,7 +125,7 @@ final class ChatMessage extends Model implements EventSource
     /**
      * The event that shows the record, or none while it is not recorded yet.
      */
-    public static function findForEvent(AuthoredRecord&Model $record): self|null
+    public static function findForEvent(AuthoredModel $record): self|null
     {
         return self::query()->forSource($record)->where('type', ChatMessageType::Event)->first();
     }
@@ -229,7 +229,7 @@ final class ChatMessage extends Model implements EventSource
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function forSource(Builder $query, AuthoredRecord&Model $source): void
+    protected function forSource(Builder $query, AuthoredModel $source): void
     {
         $query->forSourceKey($source->getMorphClass(), (string) $source->getKey());
     }

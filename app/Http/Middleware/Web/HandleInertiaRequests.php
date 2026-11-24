@@ -20,7 +20,7 @@ use App\Support\ActorContext;
 use App\Support\CoreSettings;
 use App\Support\HostLinkAlarms;
 use App\Support\InstallationFaults;
-use App\Values\ChatMemberAuthority;
+use App\Values\InboxMemberAuthority;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Inertia\ResponseFactory;
@@ -93,8 +93,8 @@ class HandleInertiaRequests extends Middleware
                     'version' => $this->version->label(),
                     'currentUser' => CurrentUserData::from($user->get()),
                     'canShare' => $this->sharing->mayManage(ActorContext::forUser($user->get()->id)),
-                    // A chat member is a guest: what the installation could not heal is the operator's to see.
-                    'installationFaults' => $this->isChatMember() ? [] : [
+                    // An inbox member is a guest: what the installation could not heal is the operator's to see.
+                    'installationFaults' => $this->isInboxMember() ? [] : [
                         ...$this->installationFaults->current(),
                         ...$this->hostLinkAlarms->current(),
                     ],
@@ -104,22 +104,22 @@ class HandleInertiaRequests extends Middleware
             // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it
             // up.
             'navigation' => fn () => $this->navigation->tree($request),
-            // A chat member is shown no journal counts: it sees only the chats it is in.
-            'navigationCounts' => $this->isChatMember()
+            // An inbox member is shown no journal counts: it sees only the inboxes it is in.
+            'navigationCounts' => $this->isInboxMember()
                 ? []
                 : $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
             // The bell's notifications, read only by a partial reload that names them.
-            ...($this->isChatMember() ? [] : $this->notifications->of($request)),
+            ...($this->isInboxMember() ? [] : $this->notifications->of($request)),
             // The keyboard palette's search and its scope picker, read only by a partial reload that names them.
-            ...($this->isChatMember() ? [] : $this->search->of($request)),
+            ...($this->isInboxMember() ? [] : $this->search->of($request)),
             // The reads pages declare beside their own result, each read only by a partial reload that names it.
             ...$this->pageReads->of($request),
         ];
     }
 
-    private function isChatMember(): bool
+    private function isInboxMember(): bool
     {
-        return $this->actors->hasActor() && $this->actors->authority() instanceof ChatMemberAuthority;
+        return $this->actors->hasActor() && $this->actors->authority() instanceof InboxMemberAuthority;
     }
 
     /**

@@ -9,7 +9,7 @@ use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Actors\ActorProvisioning;
 use App\Contracts\Assignments\AssignmentDestinationResolver;
 use App\Contracts\Assignments\AssignmentRegistration;
-use App\Contracts\Chat\InboxDestinationResolver;
+use App\Contracts\Inboxes\InboxDestinationResolver;
 use App\Contracts\Inboxes\MainInbox;
 use App\Contracts\Inboxes\MainInboxTakeover;
 use App\Contracts\Processes\RunClaims;
@@ -34,19 +34,18 @@ use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Bus\RequestSource;
-use App\Contracts\Chat\ChatMemberPolicies;
+use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Contracts\Agents\AgentNotices;
-use App\Contracts\Chat\InboxRegistration;
-use App\Contracts\Chat\InboxResolver;
-use App\Contracts\Chat\Notifications;
-use App\Contracts\Chat\NotificationTargets;
+use App\Contracts\Inboxes\InboxRegistration;
+use App\Contracts\Inboxes\InboxResolver;
+use App\Contracts\Notifications\Notifications;
+use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Records\RecordProviderRegistration;
 use App\Enums\AccessType;
 use App\Models\Messages\Message;
 use App\Models\Questions\Question;
 use App\Policies\MessageAdministrationPolicy;
 use App\Policies\MessagePolicy;
-use App\Resolvers\QuestionNotificationTarget;
 use App\Support\EngineListenerSet;
 use App\Support\JournalAgentNotices;
 use App\Support\Links\MessageLinkRecords;
@@ -103,10 +102,10 @@ final class CommunicationServiceProvider extends ServiceProvider
         DestinationRegistry $destinations,
         AssignmentRegistration $assignments,
         NotificationTargetRegistry $notificationTargets,
-        ChatMemberPolicies $chatMembers,
+        InboxMemberPolicies $inboxMembers,
         EngineListenerSet $engineListeners,
     ): void {
-        $chatMembers->allow(MessagePolicy::class);
+        $inboxMembers->allow(MessagePolicy::class);
         $readGrant = ReadEntitlement::grant(MessagePolicy::class);
 
         $reads->declare('messages_read', $readGrant);
@@ -139,7 +138,6 @@ final class CommunicationServiceProvider extends ServiceProvider
         }
 
         $assignments->registerAssignees(new AssigneeDefinition(Inbox::ASSIGNEE_TYPE, InboxAssignees::class));
-        $notificationTargets->register(QuestionNotificationTarget::KEY, QuestionNotificationTarget::class);
 
         $this->callAfterResolving(
             Schedule::class,

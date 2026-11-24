@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Models;
 
 use App\Enums\ActorType;
-use App\Contracts\Records\AuthoredRecord;
+use App\Contracts\Records\AuthoredModel;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
@@ -64,7 +64,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'steps'])]
-final class SequenceRun extends Model implements AuthoredRecord, Dockable, EventSource, Numbered, ReadableModel
+final class SequenceRun extends Model implements AuthoredModel, Dockable, EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;

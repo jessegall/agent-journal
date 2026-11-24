@@ -19,8 +19,8 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Authorization\SystemEntryPolicies as SystemEntryPoliciesContract;
 use App\Contracts\Authorization\TargetAuthorizer;
-use App\Contracts\Chat\ChatMemberPolicies;
-use App\Contracts\Chat\UserPresences;
+use App\Contracts\Inboxes\InboxMemberPolicies;
+use App\Contracts\Presence\UserPresences;
 use App\Contracts\Time\ServerClock;
 use App\Contracts\Work\ActorStackSessions;
 use App\Enums\ActorType;
@@ -34,7 +34,7 @@ use App\Support\DatabaseClock;
 use App\Support\DeclaredReads;
 use App\Support\JournalVisibility;
 use App\Support\PresenceWindow;
-use App\Support\RegisteredChatMemberPolicies;
+use App\Support\RegisteredInboxMemberPolicies;
 use App\Support\RegisteredPolicies;
 use App\Support\SystemActors;
 use App\Support\SystemAuthorizerProvider;
@@ -57,8 +57,8 @@ final class ActorsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SystemEntryPolicies::class);
-        $this->app->singleton(RegisteredChatMemberPolicies::class);
-        $this->app->alias(RegisteredChatMemberPolicies::class, ChatMemberPolicies::class);
+        $this->app->singleton(RegisteredInboxMemberPolicies::class);
+        $this->app->alias(RegisteredInboxMemberPolicies::class, InboxMemberPolicies::class);
         $this->app->alias(SystemEntryPolicies::class, SystemEntryPoliciesContract::class);
         $this->app->bind(CurrentActor::class, ActorStore::class);
         $this->app->bind(CurrentActorSetter::class, ActorStore::class);

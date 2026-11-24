@@ -184,7 +184,7 @@ function resumeOrAgain(row: AccountRowData): void {
                         </MenuItem>
                         <MenuItem data-account-guided @click="setUpWithAgent">
                             <template #leading>
-                                <Icon name="chat" :size="14" />
+                                <Icon name="speech" :size="14" />
                             </template>
                             <MenuItemLabel>Set it up with an agent</MenuItemLabel>
                             <MenuItemSub>An agent asks three short questions and drafts it.</MenuItemSub>

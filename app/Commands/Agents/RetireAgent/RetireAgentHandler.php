@@ -9,7 +9,7 @@ use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Contracts\Chat\ChatParticipationEnding;
+use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Enums\AccessType;
 use App\Enums\AssignmentReason;
 use App\Enums\ProcessStartState;
@@ -47,7 +47,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private AssignmentFactPublisher $facts,
         private DriverRequests $requests,
         private CommandFacts $commandFacts,
-        private ChatParticipationEnding $chats,
+        private InboxParticipationEnding $inboxes,
     ) {}
 
     public function handle(RetireAgentCommand $command): AssignmentResult
@@ -64,7 +64,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         $target->retireAt(CarbonImmutable::now());
         $this->endSessionsOf($target);
         // Under the lifecycle lock an enrollment of this agent either committed before and ends here, or is refused.
-        $this->chats->endForRetirement(ActorIdentity::of($target));
+        $this->inboxes->endForRetirement(ActorIdentity::of($target));
 
         foreach ($this->cancelPendingOfAgent($target->id) as $account) {
             $this->commandFacts->publishAfterCommit(new AccountUseChanged($account));

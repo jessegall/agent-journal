@@ -57,7 +57,7 @@ final class ActivityEntry extends Model implements ReadableModel
     public const int KEPT_ENTRY_LIMIT = 2000;
 
     /**
-     * The longest a subject may be: a command or a chat line is cut to this many characters.
+     * The longest a subject may be: a command or a posted line is cut to this many characters.
      */
     public const int SUBJECT_CHARACTER_LIMIT = 200;
 

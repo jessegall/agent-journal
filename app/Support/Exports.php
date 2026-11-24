@@ -29,7 +29,16 @@ final readonly class Exports
         public array $commands,
         public array $exceptions,
         public array $support,
+        public string|null $openNamespace = null,
     ) {}
+
+    /**
+     * Every class of the namespace, such as core's: whatever it holds may be used outside it.
+     */
+    public static function everythingIn(string $namespace): self
+    {
+        return new self([], [], [], [], [], [], $namespace);
+    }
 
     public static function make(): ExportBuilder
     {
@@ -99,17 +108,29 @@ final readonly class Exports
 
     public function has(string $name): bool
     {
-        return self::listHolds($this->all(), $name);
+        return $this->opens($name) || self::listHolds($this->all(), $name);
     }
 
     public function hasEvent(string $name): bool
     {
-        return self::listHolds($this->events, $name);
+        return $this->opens($name) || self::listHolds($this->events, $name);
     }
 
     public function hasCommand(string $name): bool
     {
-        return self::listHolds($this->commands, $name);
+        return $this->opens($name) || self::listHolds($this->commands, $name);
+    }
+
+    /**
+     * Whether the name sits in the namespace these exports open whole.
+     */
+    private function opens(string $name): bool
+    {
+        if ($this->openNamespace === null) {
+            return false;
+        }
+
+        return str_starts_with(self::normalized($name), self::normalized($this->openNamespace).'\\');
     }
 
     /**

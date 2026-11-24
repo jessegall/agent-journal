@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Chat\AskSubjectResolver;
+use App\Contracts\Asks\AskSubjectResolver;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\AskRefused;
 use App\Values\AskReference;

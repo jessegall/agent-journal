@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
@@ -31,7 +31,7 @@ final class ChatDockPermissionTest extends MessagingTestCase
         EnvironmentUserGrant::create(
             $bea,
             null,
-            [ChatPermission::ReceiveInvitations],
+            [InboxPermission::ReceiveInvitations],
             ActorIdentity::of($this->owner),
             CarbonImmutable::now(),
         );

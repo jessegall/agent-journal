@@ -88,7 +88,7 @@ final class ActivityRecordersTest extends MessagingTestCase
             new ChatMessageAccepted($replyId, $this->actorOf($this->builder), $betweenAgents->inbox_id),
         );
 
-        $this->assertSame([['posted', 'The tests pass.', ActivityLevel::Chat->value]], $this->entries());
+        $this->assertSame([['posted', 'The tests pass.', ActivityLevel::Notable->value]], $this->entries());
     }
 
     /**

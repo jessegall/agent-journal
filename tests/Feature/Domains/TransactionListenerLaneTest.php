@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Support\CoreListenerFolders;
 use App\Contracts\Bus\PipelineRunner;
-use App\CoreApi;
 use App\Enums\ListenerLane;
 use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskHopAssigned;
@@ -185,7 +185,7 @@ final class TransactionListenerLaneTest extends TestCase
     {
         return new ListenerPolicy(
             $this->app->make(PipelineRunner::class),
-            new ListenerOwnership($registry, CoreApi::exports(), [...CoreApi::listenerFolders(), base_path('tests/Fixtures/Listeners')], new CatalogueReflectorFactory(), app_path()),
+            new ListenerOwnership($registry, [...CoreListenerFolders::all(), base_path('tests/Fixtures/Listeners')], new CatalogueReflectorFactory(), app_path()),
         );
     }
 }

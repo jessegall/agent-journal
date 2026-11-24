@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
-use App\Contracts\Chat\ChatParticipationEnding;
-use App\Contracts\Chat\InboxResolver;
-use App\Enums\ChatPermission;
+use App\Contracts\Inboxes\InboxParticipationEnding;
+use App\Contracts\Inboxes\InboxResolver;
+use App\Enums\InboxPermission;
 use App\Events\Engine\EngineTicked;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
@@ -38,8 +38,8 @@ final class ChatRevocationTest extends MessagingTestCase
 
     public function test_revoking_the_owner_hands_the_chat_to_a_manager_and_the_revoked_user_can_no_longer_post(): void
     {
-        $bea = $this->grantedUser('Bea', [ChatPermission::CreateChats, ChatPermission::ManageMembers]);
-        $cy = $this->grantedUser('Cy', [ChatPermission::ReceiveInvitations, ChatPermission::ManageMembers]);
+        $bea = $this->grantedUser('Bea', [InboxPermission::OpenInboxes, InboxPermission::ManageMembers]);
+        $cy = $this->grantedUser('Cy', [InboxPermission::ReceiveInvitations, InboxPermission::ManageMembers]);
 
         $this->startUserRequestAs($bea->id);
         $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$cy->id]));
@@ -60,8 +60,8 @@ final class ChatRevocationTest extends MessagingTestCase
 
     public function test_disabling_the_owner_of_a_chat_nobody_else_may_manage_closes_it(): void
     {
-        $bea = $this->grantedUser('Bea', [ChatPermission::CreateChats, ChatPermission::ManageMembers]);
-        $dee = $this->grantedUser('Dee', [ChatPermission::ReceiveInvitations]);
+        $bea = $this->grantedUser('Bea', [InboxPermission::OpenInboxes, InboxPermission::ManageMembers]);
+        $dee = $this->grantedUser('Dee', [InboxPermission::ReceiveInvitations]);
 
         $this->startUserRequestAs($bea->id);
         $inboxId = $this->runOnBus(new CreateGroupChatCommand('Quiet', [$dee->id]));
@@ -75,10 +75,10 @@ final class ChatRevocationTest extends MessagingTestCase
     public function test_a_revocation_past_the_inline_limit_marks_the_remaining_chats_and_refuses_the_user_there(): void
     {
         $this->app->bind(
-            ChatParticipationEnding::class,
+            InboxParticipationEnding::class,
             fn () => $this->app->make(ChatRevocation::class, ['inlineChatLimit' => 2]),
         );
-        $cy = $this->grantedUser('Cy', [ChatPermission::ReceiveInvitations]);
+        $cy = $this->grantedUser('Cy', [InboxPermission::ReceiveInvitations]);
         $this->startUserRequestAs($this->owner->id);
         $inboxIds = [];
 
@@ -111,10 +111,10 @@ final class ChatRevocationTest extends MessagingTestCase
     public function test_a_post_into_a_marked_chat_settles_it_first_and_leaves_an_untouched_one_marked(): void
     {
         $this->app->bind(
-            ChatParticipationEnding::class,
+            InboxParticipationEnding::class,
             fn () => $this->app->make(ChatRevocation::class, ['inlineChatLimit' => 0]),
         );
-        $cy = $this->grantedUser('Cy', [ChatPermission::ReceiveInvitations]);
+        $cy = $this->grantedUser('Cy', [InboxPermission::ReceiveInvitations]);
         $this->startUserRequestAs($this->owner->id);
         $posted = $this->runOnBus(new CreateGroupChatCommand('Design', [$cy->id]));
         $swept = $this->runOnBus(new CreateGroupChatCommand('Build', [$cy->id]));
@@ -138,10 +138,10 @@ final class ChatRevocationTest extends MessagingTestCase
     public function test_a_marked_chat_nobody_opens_is_settled_by_one_engine_pass(): void
     {
         $this->app->bind(
-            ChatParticipationEnding::class,
+            InboxParticipationEnding::class,
             fn () => $this->app->make(ChatRevocation::class, ['inlineChatLimit' => 0]),
         );
-        $cy = $this->grantedUser('Cy', [ChatPermission::ReceiveInvitations]);
+        $cy = $this->grantedUser('Cy', [InboxPermission::ReceiveInvitations]);
         $this->startUserRequestAs($this->owner->id);
         $marked = $this->runOnBus(new CreateGroupChatCommand('Design', [$cy->id]));
         $this->runOnBus(new RevokeEnvironmentAccessCommand($cy->id, null));
@@ -165,7 +165,7 @@ final class ChatRevocationTest extends MessagingTestCase
 
     public function test_a_marked_chat_is_found_until_it_is_cleared_and_a_closed_chat_never_is(): void
     {
-        $dee = $this->grantedUser('Dee', [ChatPermission::ReceiveInvitations]);
+        $dee = $this->grantedUser('Dee', [InboxPermission::ReceiveInvitations]);
         $this->startUserRequestAs($this->owner->id);
         $open = Conversation::forInbox($this->runOnBus(new CreateGroupChatCommand('Open', [$dee->id])));
         $closed = Conversation::forInbox($this->runOnBus(new CreateGroupChatCommand('Closed', [$dee->id])));
@@ -182,7 +182,7 @@ final class ChatRevocationTest extends MessagingTestCase
     }
 
     /**
-     * @param  list<ChatPermission>  $permissions
+     * @param  list<InboxPermission>  $permissions
      */
     private function grantedUser(string $name, array $permissions): User
     {

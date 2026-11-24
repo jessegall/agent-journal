@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Events\EnvironmentUserGrantRevoked;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string $user_id
  * @property string $environment_key
- * @property bool $can_create_chats
+ * @property bool $can_open_inboxes
  * @property bool $can_manage_members
  * @property bool $can_receive_invitations
  * @property string $granted_by_type
@@ -38,7 +38,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable([
     'user_id',
     'environment_key',
-    'can_create_chats',
+    'can_open_inboxes',
     'can_manage_members',
     'can_receive_invitations',
     'granted_by_type',
@@ -63,7 +63,7 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
     protected function casts(): array
     {
         return [
-            'can_create_chats' => 'boolean',
+            'can_open_inboxes' => 'boolean',
             'can_manage_members' => 'boolean',
             'can_receive_invitations' => 'boolean',
             'granted_at' => 'immutable_datetime',
@@ -74,7 +74,7 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
     /**
      * Admits the user to the environment with the given permissions; the grant it replaces is revoked by the caller.
      *
-     * @param  list<ChatPermission>  $permissions
+     * @param  list<InboxPermission>  $permissions
      */
     public static function create(
         User $user,
@@ -108,7 +108,7 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
 
     // ----------[ Answers ]----------
 
-    public function allows(ChatPermission $permission): bool
+    public function allows(InboxPermission $permission): bool
     {
         return (bool) $this->getAttribute($permission->column());
     }
@@ -116,14 +116,14 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
     // ----------[ Internals ]----------
 
     /**
-     * @param  list<ChatPermission>  $permissions
+     * @param  list<InboxPermission>  $permissions
      * @return array<string, bool>
      */
     private static function columnsOf(array $permissions): array
     {
         $columns = [];
 
-        foreach (ChatPermission::cases() as $permission) {
+        foreach (InboxPermission::cases() as $permission) {
             $columns[$permission->column()] = in_array($permission, $permissions, true);
         }
 

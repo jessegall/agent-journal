@@ -66,7 +66,7 @@ export function connectUser(userId: string, handlers: LiveHandlers): UserConnect
             handlers.onChange();
         })
         // A chat the user left, was removed from or saw closed: the page is read again without it.
-        .listen('.chat.access-ended', (notice: { inboxId: string }) => {
+        .listen('.inbox.access-ended', (notice: { inboxId: string }) => {
             traceLive('chat access ended');
             handlers.onChatAccessEnded(notice.inboxId);
             handlers.onChange();

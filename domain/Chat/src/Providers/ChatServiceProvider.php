@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
+use App\Contracts\Notifications\NotificationTargets;
+use App\Support\QuestionNotificationKeys;
+use Domain\Chat\Resolvers\QuestionNotificationTarget;
 use App\Support\CoreInboxes;
 use Domain\Chat\Support\ChatDepartures;
+use Domain\Chat\Contracts\PairChats;
 use Domain\Chat\Support\ChatInboxes;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Bus\CommandRefusal;
-use App\Contracts\Chat\ChatMemberPolicies;
-use App\Contracts\Chat\ChatParticipationEnding;
-use App\Contracts\Chat\InboxRegistration;
+use App\Contracts\Inboxes\InboxMemberPolicies;
+use App\Contracts\Inboxes\InboxParticipationEnding;
+use App\Contracts\Inboxes\InboxRegistration;
 use App\Exceptions\SessionOutdated;
 use App\Exceptions\StackTargetRefused;
 use App\Support\FolderClasses;
@@ -40,16 +44,19 @@ final class ChatServiceProvider extends ServiceProvider
     {
         $this->app->bind(DockOffers::class, AgentDockOffers::class);
         $this->app->bind(DockedSources::class, PlacedSources::class);
-        $this->app->bind(ChatParticipationEnding::class, ChatDepartures::class);
+        $this->app->bind(PairChats::class, ChatInboxes::class);
+        $this->app->bind(InboxParticipationEnding::class, ChatDepartures::class);
     }
 
     public function boot(
         ExceptionHandler $exceptions,
         ReadEntitlements $reads,
         InboxRegistration $inboxes,
-        ChatMemberPolicies $members,
+        InboxMemberPolicies $members,
+        NotificationTargets $notificationTargets,
     ): void {
         $members->allow(MessagePinPolicy::class);
+        $notificationTargets->register(QuestionNotificationKeys::TARGET, QuestionNotificationTarget::class);
         $inboxes->register(ChatInboxes::PAIR_PROVIDER, CoreInboxes::class);
         $inboxes->register(ChatInboxes::GROUP_PROVIDER, CoreInboxes::class);
 

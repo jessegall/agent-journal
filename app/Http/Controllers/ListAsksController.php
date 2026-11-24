@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Calls\Supervision\ListAsksCall;
-use App\Contracts\Chat\AskReader;
+use App\Contracts\Asks\AskReader;
 use App\Data\Asks\AskInbox;
 
 final readonly class ListAsksController

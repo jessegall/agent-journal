@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('reference')->nullable()->unique();
             $table->unsignedInteger('generation')->default(1);
             $table->string('start_key')->nullable();
-            $table->foreignUlid('environment_id')->nullable();
+            $table->foreignUlid('environment_id')->nullable()->constrained('project_environments')->nullOnDelete();
             $table->unique(['binding_id', 'start_key']);
         });
     }

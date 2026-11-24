@@ -739,7 +739,7 @@ describe('a declared layout', () => {
                                 key: 'head',
                                 style: 'row',
                                 children: [
-                                    part({ tag: 'text', key: 'icon', style: 'icon', text: 'chat' }),
+                                    part({ tag: 'text', key: 'icon', style: 'icon', text: 'speech' }),
                                     part({ tag: 'text', key: 'title', style: 'plain', text: 'Which branch?' }),
                                     part({ tag: 'text', key: 'badge', style: 'badge', text: 'Waiting', tone: 'warn' }),
                                 ],

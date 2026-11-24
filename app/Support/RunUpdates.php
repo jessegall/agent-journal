@@ -14,7 +14,7 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Sends a run's live updates: a chatty part sends at most one a second, while a part's end or a new assessment is
+ * Sends a run's live updates: a part that changes often sends at most one a second, while a part's end or a new assessment is
  * sent at once. Every update sent takes the run's next number.
  */
 final readonly class RunUpdates

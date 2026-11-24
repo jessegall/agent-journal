@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Events\Listener;
 use App\Enums\NotificationSourceType;
 use App\Events\Questions\QuestionAsked;
-use App\Resolvers\QuestionNotificationTarget;
+use App\Support\QuestionNotificationKeys;
 use App\Data\Notifications\NotificationTarget;
 use App\Support\NotificationDelivery;
 
@@ -21,9 +21,9 @@ final readonly class NotifyQuestionTarget implements Listener
     public function handle(QuestionAsked $event): void
     {
         $this->delivery->deliver(
-            QuestionNotificationTarget::occurrenceKey($event->questionId),
+            QuestionNotificationKeys::occurrenceKey($event->questionId),
             NotificationSourceType::Question,
-            new NotificationTarget(QuestionNotificationTarget::KEY, $event->questionId),
+            new NotificationTarget(QuestionNotificationKeys::TARGET, $event->questionId),
             [$event->target],
         );
     }

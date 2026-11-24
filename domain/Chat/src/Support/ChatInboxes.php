@@ -8,11 +8,12 @@ use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Chat\ChatEligibility;
-use App\Enums\ChatPermission;
+use App\Contracts\Inboxes\InboxEligibility;
+use App\Enums\InboxPermission;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
+use Domain\Chat\Contracts\PairChats;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -21,7 +22,7 @@ use Illuminate\Support\Str;
  * The chats as the chat domain sees them: a pair chat between a user and an agent, a group chat of users, each a core
  * inbox, and the ones the current actor is attached to.
  */
-final readonly class ChatInboxes
+final readonly class ChatInboxes implements PairChats
 {
     public const string PAIR_PROVIDER = 'chat.pair';
 
@@ -31,16 +32,16 @@ final readonly class ChatInboxes
         private CurrentActor $actors,
         private CommandBus $commands,
         private ActorLabels $labels,
-        private ChatEligibility $eligibility,
+        private InboxEligibility $eligibility,
     ) {}
 
     /**
-     * The pair chat of the current actor and the agent, opened the first time; returns its inbox id.
+     * The pair chat of the current actor and the actor, opened the first time; returns its inbox id.
      */
-    public function pairWith(ActorIdentity $agent): string
+    public function pairWith(ActorIdentity $actor): string
     {
         $viewer = ActorIdentity::of($this->actors->actor());
-        $members = [$viewer, $agent];
+        $members = [$viewer, $actor];
         $key = implode('|', array_map(fn (ActorIdentity $member) => $member->text(), $members));
         $sorted = array_map(fn (ActorIdentity $member) => $member->text(), $members);
         sort($sorted);
@@ -48,7 +49,7 @@ final readonly class ChatInboxes
         return $this->commands->run(new OpenInboxCommand(
             self::PAIR_PROVIDER,
             implode('|', $sorted),
-            $this->labels->labelsFor([$agent])->nameOf($agent) ?? $key,
+            $this->labels->labelsFor([$actor])->nameOf($actor) ?? $key,
             $members,
         ));
     }
@@ -91,7 +92,7 @@ final readonly class ChatInboxes
         $inbox = $this->attached($inboxId);
         $viewer = ActorIdentity::of($this->actors->actor());
 
-        if ($inbox->provider_key !== self::GROUP_PROVIDER || ! $this->eligibility->holds($viewer, ChatPermission::ManageMembers, null)) {
+        if ($inbox->provider_key !== self::GROUP_PROVIDER || ! $this->eligibility->holds($viewer, InboxPermission::ManageMembers, null)) {
             throw ChatUnavailable::notAttached($inboxId);
         }
     }
@@ -105,7 +106,7 @@ final readonly class ChatInboxes
     {
         $viewer = ActorIdentity::of($this->actors->actor());
 
-        if (! $this->eligibility->holds($viewer, ChatPermission::CreateChats, null)) {
+        if (! $this->eligibility->holds($viewer, InboxPermission::OpenInboxes, null)) {
             throw ChatUnavailable::none();
         }
     }
@@ -115,7 +116,7 @@ final readonly class ChatInboxes
      */
     public function mayCreate(): bool
     {
-        return $this->eligibility->holds(ActorIdentity::of($this->actors->actor()), ChatPermission::CreateChats, null);
+        return $this->eligibility->holds(ActorIdentity::of($this->actors->actor()), InboxPermission::OpenInboxes, null);
     }
 
     /**

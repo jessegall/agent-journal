@@ -7,7 +7,7 @@ namespace App\Enums;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * What an agent did: read a file, ran a command, edited a file, started or finished a helper, or posted in the chat.
+ * What an agent did: read a file, ran a command, edited a file, started or finished a helper, or posted a message.
  */
 #[TypeScript]
 enum ActivityType: string
@@ -30,7 +30,7 @@ enum ActivityType: string
             self::Edited => 'pencil',
             self::HelperStarted => 'agents',
             self::HelperFinished => 'tick',
-            self::Posted => 'chat',
+            self::Posted => 'speech',
         };
     }
 
@@ -54,7 +54,7 @@ enum ActivityType: string
         return match ($this) {
             self::Read => ActivityLevel::Detail,
             self::Ran, self::Edited, self::HelperStarted, self::HelperFinished => ActivityLevel::Panel,
-            self::Posted => ActivityLevel::Chat,
+            self::Posted => ActivityLevel::Notable,
         };
     }
 }

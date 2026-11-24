@@ -9,7 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * The query every declared page and Home share: the record open in the inspector (?inspect=<full page key> with the
  * record page's parameters), each window's own filters (window[<full page key>][...]) and the agent session chosen in
- * Chat. Each reader validates its own part with its own request class.
+ * the conversation window. Each reader validates its own part with its own request class.
  */
 final class DeclaredPageRequest extends FormRequest
 {
@@ -85,7 +85,7 @@ final class DeclaredPageRequest extends FormRequest
     }
 
     /**
-     * The agent session chosen in Chat, as a decimal string, or an empty string when none is.
+     * The agent session chosen in the conversation window, as a decimal string, or an empty string when none is.
      */
     public function chosenSession(): string
     {

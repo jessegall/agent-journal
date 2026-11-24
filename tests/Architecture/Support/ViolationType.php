@@ -11,7 +11,6 @@ enum ViolationType: string
 {
     case UndeclaredDomain = 'undeclared-domain';
     case PrivateType = 'private-type';
-    case PrivateCoreType = 'private-core-type';
     case PrivateTypeInSignature = 'private-type-in-signature';
     case DisallowedCategory = 'disallowed-category';
     case CompositionMisuse = 'composition-misuse';
@@ -60,10 +59,6 @@ enum ViolationType: string
                 $violation->owner,
                 $violation->owner,
                 $violation->owner,
-            ),
-            self::PrivateCoreType => sprintf(
-                'uses %s, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists',
-                $violation->subject,
             ),
             self::PrivateTypeInSignature => sprintf(
                 'shows %s at %s, but it is private to %s; export it or keep it out of the public signature',

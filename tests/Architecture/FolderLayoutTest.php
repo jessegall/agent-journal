@@ -50,7 +50,7 @@ final class FolderLayoutTest extends TestCase
 
         $this->assertSame(['Gardening'], $roots->misplaced(['Models', 'Gardening'], [], []));
         $this->assertSame([], $roots->misplaced(['Models'], [], []));
-        $this->assertSame(['Loose.php'], $roots->misplaced([], ['CoreApi.php', 'Loose.php'], LayoutRoots::coreRootFiles()));
+        $this->assertSame(['Loose.php'], $roots->misplaced([], ['CoreCommands.php', 'Loose.php'], LayoutRoots::coreRootFiles()));
     }
 
     /**

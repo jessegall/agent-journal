@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Chat\AskReader;
+use App\Contracts\Asks\AskReader;
 use App\Contracts\Navigation\PageResolver;
 use App\Data\Asks\AskDetail;
 use App\Http\Requests\AskPageRequest;

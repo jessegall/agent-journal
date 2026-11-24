@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
@@ -28,7 +28,7 @@ final class ChatMemberSignInTest extends MessagingTestCase
         EnvironmentUserGrant::create(
             $this->bea,
             null,
-            [ChatPermission::ReceiveInvitations],
+            [InboxPermission::ReceiveInvitations],
             ActorIdentity::of($this->owner),
             CarbonImmutable::now(),
         );

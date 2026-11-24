@@ -24,13 +24,10 @@ return new class extends Migration
             $table->foreignUlid('output_assessment_id')->unique()->constrained('output_assessments')->cascadeOnDelete();
             $table->string('outcome', 16);
             $table->ulid('superseded_by_id')->nullable();
+            $table->foreign('superseded_by_id')->references('id')->on('result_receipts')->nullOnDelete();
             $table->timestampTz('published_at');
 
             $table->index(['project_key', 'part_run_id']);
-        });
-
-        Schema::table('result_receipts', function (Blueprint $table) {
-            $table->foreign('superseded_by_id')->references('id')->on('result_receipts')->nullOnDelete();
         });
     }
 

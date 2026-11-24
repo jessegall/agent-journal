@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Commands\Messages\RetryDelivery\RetryDeliveryCommand;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Enums\OutstandingMessageRangeState;
 use App\Enums\ReceiptDeliveryState;
 use App\Enums\WakeState;
@@ -41,7 +41,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         EnvironmentUserGrant::create(
             $bea,
             null,
-            [ChatPermission::ReceiveInvitations],
+            [InboxPermission::ReceiveInvitations],
             ActorIdentity::of($this->owner),
             CarbonImmutable::now(),
         );

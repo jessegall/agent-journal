@@ -8,7 +8,7 @@ import type { PaneWindow } from './paneLayout';
 import { providePaneLayout } from './usePaneLayout';
 
 const windows = [
-    { key: 'chat', title: 'Chat', icon: 'chat' },
+    { key: 'chat', title: 'Chat', icon: 'speech' },
     { key: 'tasks', title: 'Tasks', icon: 'todos' },
 ] as PaneWindow[];
 
@@ -17,7 +17,7 @@ describe('the desk by keyboard', () => {
         const view = mount(PaneTabs, {
             props: {
                 tabs: [
-                    { key: 'chat', title: 'Chat', icon: 'chat', isActive: true },
+                    { key: 'chat', title: 'Chat', icon: 'speech', isActive: true },
                     { key: 'tasks', title: 'Tasks', icon: 'todos', isActive: false },
                 ],
             },

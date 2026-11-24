@@ -14,7 +14,7 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 
 const windows = [
-    { key: 'chat', title: 'Chat', icon: 'chat' },
+    { key: 'chat', title: 'Chat', icon: 'speech' },
     { key: 'tasks', title: 'Tasks', icon: 'todos' },
 ] as PaneWindow[];
 

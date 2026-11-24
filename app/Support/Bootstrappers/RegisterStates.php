@@ -6,7 +6,6 @@ namespace App\Support\Bootstrappers;
 
 use App\Contracts\Domains\DomainAvailability;
 use App\Contracts\Domains\DomainBootstrapper;
-use App\CoreApi;
 use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\InvalidListener;
 use App\Support\DomainEntry;
@@ -27,10 +26,6 @@ final readonly class RegisterStates implements DomainBootstrapper
 
     public function __invoke(DomainEntry $domain): void
     {
-        if (! CoreApi::exports()->hasEvent(StateTypesRequested::class)) {
-            throw InvalidListener::privateEvent(self::class, '__invoke', StateTypesRequested::class, 'Core');
-        }
-
         $availability = static fn (): DomainAvailability => ContainerInstance::getInstance()->make(
             DomainAvailability::class,
         );

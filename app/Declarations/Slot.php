@@ -20,7 +20,7 @@ final readonly class Slot
     ) {}
 
     /**
-     * A slot that hands its sections nothing or the session chosen in Chat.
+     * A slot that hands its sections nothing or the session chosen in the conversation window.
      */
     public static function make(string $key, SlotContextType $takes): self
     {

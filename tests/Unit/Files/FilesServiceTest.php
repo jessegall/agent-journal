@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Files;
 
 use App\Contracts\Files\Files;
-use App\CoreApi;
 use App\Enums\Place;
 use App\Exceptions\PlaceUnavailable;
 use App\Support\CodeFiles;
@@ -36,13 +35,6 @@ final class FilesServiceTest extends TestCase
         $pattern = FilePath::in(Place::Project, 'app/Contracts/*.php');
 
         $this->assertSame(CodeFiles::ofProcess()->folder($pattern), $this->app->make(Files::class)->codeFolder($pattern));
-    }
-
-    public function test_core_exports_the_funnel_to_the_domains(): void
-    {
-        foreach ([Files::class, FilePath::class, Place::class, Depth::class, PlaceUnavailable::class] as $type) {
-            $this->assertTrue(CoreApi::exports()->has($type), $type);
-        }
     }
 
     public function test_a_test_points_a_place_at_its_own_folder_and_reads_there(): void

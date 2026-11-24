@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Processes\ShellCommandParser;
-use App\CoreApi;
 use App\Support\ActorStore;
 use App\Support\DomainRegistry;
 use App\Support\Exports;
@@ -45,7 +44,6 @@ final class BindingRulesTest extends TestCase
         'app/Providers/ActorsServiceProvider.php',
         'app/Contracts/Actors/CurrentActor.php',
         'app/Contracts/Actors/CurrentActorSetter.php',
-        'app/CoreApi.php',
         'app/Http/Middleware/Agents/AuthenticateAgent.php',
         'app/Http/Middleware/Agents/AuthenticateHost.php',
         'app/Http/Middleware/AuthenticateDeviceGrant.php',
@@ -59,7 +57,7 @@ final class BindingRulesTest extends TestCase
 
     /**
      * The files that compose the application and may register assignable record types and actor types: the contract,
-     * the registry, Core's composition root and export list, its area providers, and the domain foundation.
+     * the registry, Core's composition root, its area providers, and the domain foundation.
      */
     private const array ASSIGNMENT_REGISTRATION_SITES = [
         'app/Contracts/Assignments/AssignmentRegistration.php',
@@ -69,14 +67,13 @@ final class BindingRulesTest extends TestCase
         'app/Providers/DesksServiceProvider.php',
         'app/Providers/CommunicationServiceProvider.php',
         'app/Providers/CoreServiceProvider.php',
-        'app/CoreApi.php',
         'app/Support/Bootstrappers/RegisterAssignables.php',
     ];
 
     public function test_every_stated_binding_of_the_app_is_sound(): void
     {
         $owners = [
-            PublicOwner::core(CoreApi::exports()),
+            PublicOwner::core(Exports::everythingIn('App')),
             ...array_map(PublicOwner::fromDomain(...), $this->app->make(DomainRegistry::class)->all()),
         ];
 
@@ -92,7 +89,7 @@ final class BindingRulesTest extends TestCase
     {
         $fixtures = base_path('tests/Fixtures/Bindings');
         $owners = [
-            PublicOwner::core(CoreApi::exports()),
+            PublicOwner::core(Exports::everythingIn('App')),
             new PublicOwner('Plans', 'Tests\Fixtures\Bindings\Plans', Exports::make()->build()),
             new PublicOwner('Tasks', 'Tests\Fixtures\Bindings\Tasks', Exports::make()->build()),
         ];

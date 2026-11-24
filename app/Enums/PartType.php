@@ -20,7 +20,7 @@ enum PartType: string
     case IndeterminateProgress = 'indeterminate-progress';
     case Duration = 'duration';
     case ConsoleOutput = 'console-output';
-    case ChatExcerpt = 'chat-excerpt';
+    case MessagesExcerpt = 'messages-excerpt';
     case Button = 'button';
 
     public function isContainer(): bool

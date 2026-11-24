@@ -22,7 +22,7 @@ class FakeObserver {
 const phone = { width: 390, height: 844 };
 
 const windows = [
-    { key: 'chat', title: 'Chat', icon: 'chat' },
+    { key: 'chat', title: 'Chat', icon: 'speech' },
     { key: 'tasks', title: 'Tasks', icon: 'todos' },
 ] as PaneWindow[];
 

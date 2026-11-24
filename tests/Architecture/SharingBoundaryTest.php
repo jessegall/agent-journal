@@ -26,7 +26,6 @@ use App\Contracts\Sharing\ShareGatewayProvider;
 use App\Contracts\Sharing\SharePolicy;
 use App\Contracts\Sharing\ShareRecordContributor;
 use App\Contracts\Sharing\ShareRecordProvider;
-use App\CoreApi;
 use App\CoreCommands;
 use App\Events\Sharing\ShareActivated;
 use App\Models\Sharing\Share;
@@ -137,35 +136,4 @@ final class SharingBoundaryTest extends TestCase
         }
     }
 
-    public function test_core_exports_the_sharing_seams_events_and_entry_commands_and_nothing_private(): void
-    {
-        $exports = CoreApi::exports();
-
-        foreach ([...self::SEAMS, ...self::EVENTS, ...self::ENTRY_COMMANDS] as $exported) {
-            $this->assertTrue($exports->has($exported), $exported);
-        }
-
-        foreach (self::EVENTS as $event) {
-            $this->assertTrue($exports->hasEvent($event), $event);
-        }
-
-        foreach (self::ENTRY_COMMANDS as $command) {
-            $this->assertTrue($exports->hasCommand($command), $command);
-        }
-
-        $private = [
-            ...self::SYSTEM_COMMANDS,
-            ReadPermit::class,
-            ...self::MODELS,
-            ...self::SHARE_WORK,
-            ...array_map(
-                fn (string $command) => substr($command, 0, -strlen('Command')).'Handler',
-                [...self::ENTRY_COMMANDS, ...self::SYSTEM_COMMANDS],
-            ),
-        ];
-
-        foreach ($private as $class) {
-            $this->assertFalse($exports->has($class), $class);
-        }
-    }
 }

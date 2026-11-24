@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\CoreApi;
 use App\Events\Messages\MessageSent;
 use App\Support\RequestKey;
 use Illuminate\Support\Facades\Event;
@@ -33,14 +32,4 @@ final class DomainConsumerTest extends MessagingTestCase
         Event::assertDispatched(MessageSent::class, fn (MessageSent $sent) => $sent->messageId === $view->id);
     }
 
-    public function test_the_consumer_names_only_types_core_exports(): void
-    {
-        $source = (string) file_get_contents(base_path('tests/Fixtures/Domains/Reviews/Messaging/ReviewRequests.php'));
-        preg_match_all('/^use (App\\\\[^;]+);$/m', $source, $uses);
-        $exports = CoreApi::exports();
-
-        foreach ($uses[1] as $used) {
-            $this->assertTrue($exports->has($used), $used);
-        }
-    }
 }

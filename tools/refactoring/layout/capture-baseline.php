@@ -11,7 +11,7 @@ declare(strict_types=1);
  *   php tools/refactoring/layout/capture-baseline.php
  */
 
-use App\CoreApi;
+use App\Support\CoreListenerFolders;
 use App\Mcp\Support\McpCatalogue;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\CommandName;
@@ -37,10 +37,8 @@ $snapshots['command-pairs'] = array_map(
     $pairs,
 );
 
-$exports = CoreApi::exports();
-$snapshots['exports'] = sorted(array_map('strval', $exports->all()));
 $snapshots['installed-domains'] = array_map('strval', require $root.'/bootstrap/domains.php');
-$snapshots['listener-roots'] = sorted(array_map('strval', CoreApi::listenerFolders()));
+$snapshots['listener-roots'] = sorted(array_map('strval', CoreListenerFolders::all()));
 
 $events = new DomainEventServiceProvider($app)->discoverEvents();
 $lanes = [];

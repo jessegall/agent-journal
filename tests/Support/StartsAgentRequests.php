@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\SignedCall;
-use App\Values\ChatMemberAuthority;
+use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
@@ -60,6 +60,6 @@ trait StartsAgentRequests
      */
     protected function startChatMemberRequestAs(string $userId): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId), new ChatMemberAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId), new InboxMemberAuthority('test'));
     }
 }

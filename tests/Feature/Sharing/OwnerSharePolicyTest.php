@@ -6,7 +6,7 @@ namespace Tests\Feature\Sharing;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Chat\AdmittedRecipients;
+use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Sharing\SharePolicy;
 use App\Exceptions\SharingNotAllowed;
 use App\Models\Sharing\Share;

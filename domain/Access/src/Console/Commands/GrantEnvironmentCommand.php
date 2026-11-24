@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Console\Commands;
 
 use App\Contracts\Bus\OwnerCommands;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use Domain\Access\Commands\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use Domain\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
 use Domain\Access\Models\User;
@@ -37,8 +37,8 @@ final class GrantEnvironmentCommand extends Command
         }
 
         $permissions = array_values(array_filter(
-            ChatPermission::cases(),
-            fn (ChatPermission $permission) => $this->option(str_replace('_', '-', $permission->value)) === true,
+            InboxPermission::cases(),
+            fn (InboxPermission $permission) => $this->option(str_replace('_', '-', $permission->value)) === true,
         ));
 
         $commands->run(new GrantEnvironmentAccessCommand($user->id, $environment, $permissions));

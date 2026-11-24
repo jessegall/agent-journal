@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents;
 
+use Domain\Chat\ChatDomain;
 use App\Concerns\HasLinkRecords;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
@@ -160,7 +161,7 @@ final class DocumentsDomain extends Domain implements
 
     public function requires(): array
     {
-        return [];
+        return [ChatDomain::class];
     }
 
     public function exports(): Exports

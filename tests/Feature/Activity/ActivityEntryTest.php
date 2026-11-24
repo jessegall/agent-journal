@@ -45,7 +45,7 @@ final class ActivityEntryTest extends TestCase
         $this->assertSame(ActivityEntry::SUBJECT_CHARACTER_LIMIT, mb_strlen($long->subject));
         $this->assertCount(ActivityEntry::FOUND_COUNT_LIMIT, $long->found ?? []);
         $this->assertSame(ActivityEntry::FOUND_CHARACTER_LIMIT, mb_strlen(($long->found ?? [''])[0]));
-        $this->assertSame(ActivityLevel::Chat, ActivityType::Posted->defaultLevel());
+        $this->assertSame(ActivityLevel::Notable, ActivityType::Posted->defaultLevel());
     }
 
     public function test_entries_are_read_newest_first_from_a_cursor_and_new_ones_past_an_id(): void

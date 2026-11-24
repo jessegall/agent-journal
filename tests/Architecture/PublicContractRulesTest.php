@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\CoreApi;
 use App\Support\Exports;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\ProjectRoots;
@@ -66,7 +65,7 @@ final class PublicContractRulesTest extends TestCase
     private function violationsOf(array $planExports): array
     {
         $owners = [
-            PublicOwner::core(CoreApi::exports()),
+            PublicOwner::core(Exports::everythingIn('App')),
             new PublicOwner(
                 'Plans',
                 'Tests\Fixtures\PublicContracts\Plans',

@@ -18,7 +18,7 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * Builds the context a section reads in: nothing, the agent session chosen in Chat (the query's session), or the
+ * Builds the context a section reads in: nothing, the agent session chosen in the conversation window (the query's session), or the
  * record whose number the host page's route holds. With no session chosen or no record open there is no context, and
  * the section is not read; a record the user may not read is unavailable, the same as a missing one.
  */

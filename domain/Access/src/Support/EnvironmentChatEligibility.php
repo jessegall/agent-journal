@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\Chat\ChatEligibility;
-use App\Enums\ChatPermission;
+use App\Contracts\Inboxes\InboxEligibility;
+use App\Enums\InboxPermission;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
@@ -14,7 +14,7 @@ use Domain\Access\Models\User;
  * Chat eligibility from environment grants: the owner holds every permission without one, any other user what its
  * active grant allows, and a disabled account or an actor that is not a user nothing.
  */
-final readonly class EnvironmentChatEligibility implements ChatEligibility
+final readonly class EnvironmentChatEligibility implements InboxEligibility
 {
     public function __construct(private AccessSettings $settings) {}
 
@@ -38,7 +38,7 @@ final readonly class EnvironmentChatEligibility implements ChatEligibility
             || EnvironmentUserGrant::query()->activeFor($user->id, $environmentId)->exists();
     }
 
-    public function holds(ActorIdentity $user, ChatPermission $permission, string|null $environmentId): bool
+    public function holds(ActorIdentity $user, InboxPermission $permission, string|null $environmentId): bool
     {
         if (! $this->isActiveUser($user)) {
             return false;
@@ -57,7 +57,7 @@ final readonly class EnvironmentChatEligibility implements ChatEligibility
     {
         $granted = EnvironmentUserGrant::query()
             ->inEnvironment($environmentId)
-            ->where(ChatPermission::ReceiveInvitations->column(), true)
+            ->where(InboxPermission::ReceiveInvitations->column(), true)
             ->select('user_id');
 
         return array_values(array_map(strval(...), User::query()

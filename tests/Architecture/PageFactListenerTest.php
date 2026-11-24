@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Support\CoreListenerFolders;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\CoreApi;
 use App\Listeners\BroadcastPageChange;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
@@ -26,8 +26,7 @@ final class PageFactListenerTest extends TestCase
         $listeners = $this->app->make(Dispatcher::class)->getRawListeners();
         $ownership = new ListenerOwnership(
             $this->app->make(DomainRegistry::class),
-            CoreApi::exports(),
-            CoreApi::listenerFolders(),
+            CoreListenerFolders::all(),
             new CatalogueReflectorFactory(),
             app_path(),
         );

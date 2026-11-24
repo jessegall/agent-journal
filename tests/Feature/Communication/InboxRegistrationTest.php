@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Contracts\Chat\InboxRegistration;
-use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Inboxes\InboxRegistration;
+use App\Contracts\Inboxes\InboxResolver;
 use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\Inbox;

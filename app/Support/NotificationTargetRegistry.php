@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Chat\NotificationTargetResolver;
-use App\Contracts\Chat\NotificationTargets;
+use App\Contracts\Notifications\NotificationTargetResolver;
+use App\Contracts\Notifications\NotificationTargets;
 use App\Exceptions\NotificationTargetUnregistered;
 use Illuminate\Container\Container;
 
 /**
- * The resolver class of each notification target key, such as chat.question, registered once at boot and made
+ * The resolver class of each notification target key, such as core.question, registered once at boot and made
  * for each read, so it answers for the actor of that request.
  */
 final class NotificationTargetRegistry implements NotificationTargets

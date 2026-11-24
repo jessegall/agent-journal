@@ -15,7 +15,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('environment_key');
-            $table->boolean('can_create_chats')->default(false);
+            $table->boolean('can_open_inboxes')->default(false);
             $table->boolean('can_manage_members')->default(false);
             $table->boolean('can_receive_invitations')->default(false);
             $table->string('granted_by_type', 16);

@@ -6,7 +6,7 @@ namespace Domain\Access\Commands\GrantEnvironmentAccess;
 
 use App\Attributes\Authorize;
 use App\Enums\AccessType;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Support\Command;
 use Domain\Access\Policies\EnvironmentAccessPolicy;
 
@@ -20,7 +20,7 @@ use Domain\Access\Policies\EnvironmentAccessPolicy;
 final readonly class GrantEnvironmentAccessCommand extends Command
 {
     /**
-     * @param  list<ChatPermission>  $permissions
+     * @param  list<InboxPermission>  $permissions
      */
     public function __construct(
         public string $userId,

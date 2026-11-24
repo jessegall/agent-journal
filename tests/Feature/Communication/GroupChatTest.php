@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
-use App\Enums\ChatPermission;
+use App\Enums\InboxPermission;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
@@ -58,7 +58,7 @@ final class GroupChatTest extends MessagingTestCase
         EnvironmentUserGrant::create(
             $user,
             null,
-            [ChatPermission::ReceiveInvitations],
+            [InboxPermission::ReceiveInvitations],
             ActorIdentity::of($this->owner),
             CarbonImmutable::now(),
         );

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
-use App\Contracts\Chat\Notifications;
+use App\Contracts\Notifications\Notifications;
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationSourceType;
 use App\Events\Messages\NotificationsWithdrawn;
