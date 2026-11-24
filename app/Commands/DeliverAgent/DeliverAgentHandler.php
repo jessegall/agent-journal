@@ -6,6 +6,7 @@ namespace App\Commands\DeliverAgent;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\AttachmentReferences;
+use App\Data\Messages\MessageAttachmentData;
 use App\Enums\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
 use App\Support\DriverBudgets;
@@ -35,7 +36,7 @@ final readonly class DeliverAgentHandler implements CommandHandler
         }
 
         foreach ($command->parts as $part) {
-            if ($part->isAttachment()) {
+            if ($part instanceof MessageAttachmentData) {
                 $this->attachments->assertReadable($part, $command->sessionId);
             }
         }

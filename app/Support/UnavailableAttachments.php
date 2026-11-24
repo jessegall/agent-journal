@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Drivers\AttachmentReferences;
-use App\Contracts\Drivers\MessagePart;
+use App\Data\Messages\MessageAttachmentData;
 use App\Exceptions\DriverRequestRefused;
 
 /**
@@ -13,8 +13,8 @@ use App\Exceptions\DriverRequestRefused;
  */
 final readonly class UnavailableAttachments implements AttachmentReferences
 {
-    public function assertReadable(MessagePart $part, string $recipientSessionId): void
+    public function assertReadable(MessageAttachmentData $part, string $recipientSessionId): void
     {
-        throw DriverRequestRefused::attachmentMissing($part->attachmentId());
+        throw DriverRequestRefused::attachmentMissing($part->attachmentId);
     }
 }

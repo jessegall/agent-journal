@@ -7,7 +7,7 @@ namespace Domain\Documents\Tests\Feature;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandTransaction;
 use App\Contracts\Drivers\AttachmentReferences;
-use App\Data\Messages\MessagePartData;
+use App\Data\Messages\MessageAttachmentData;
 use App\Exceptions\DriverRequestRefused;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
@@ -98,13 +98,13 @@ final class TextUploadTest extends TestCase
         $attachments = $this->app->make(AttachmentReferences::class);
 
         $attachments->assertReadable(
-            MessagePartData::forAttachment($id, hash('sha256', 'notes'), 'notes.md'),
+            new MessageAttachmentData($id, hash('sha256', 'notes'), 'notes.md'),
             $recipient->session->id,
         );
 
         $this->assertThrows(
             fn () => $attachments->assertReadable(
-                MessagePartData::forAttachment($id, hash('sha256', 'notes'), 'notes.md'),
+                new MessageAttachmentData($id, hash('sha256', 'notes'), 'notes.md'),
                 $other->session->id,
             ),
             DriverRequestRefused::class,
@@ -113,7 +113,7 @@ final class TextUploadTest extends TestCase
 
         $this->assertThrows(
             fn () => $attachments->assertReadable(
-                MessagePartData::forAttachment($id, 'older', 'notes.md'),
+                new MessageAttachmentData($id, 'older', 'notes.md'),
                 $recipient->session->id,
             ),
             DriverRequestRefused::class,

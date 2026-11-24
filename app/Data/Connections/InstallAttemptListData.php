@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Data\Connections;
 
 use App\Values\InstallAttemptPage;
-use App\Values\InstallAttemptRow;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -28,7 +27,7 @@ final class InstallAttemptListData extends Data
     public static function fromPage(InstallAttemptPage $page): self
     {
         return self::from([
-            'rows' => array_map(fn (InstallAttemptRow $row) => InstallAttemptRowData::fromRow($row), $page->rows),
+            'rows' => $page->rows,
             'nextCursor' => $page->nextCursor,
         ]);
     }

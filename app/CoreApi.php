@@ -496,14 +496,15 @@ use App\Data\Messages\DeliveryView;
 use App\Data\Messages\DraftQuestionData;
 use App\Data\Messages\InboxCounts;
 use App\Data\Messages\InboxView;
+use App\Data\Messages\MessageAttachmentData;
 use App\Data\Messages\MessageBatchData;
 use App\Data\Messages\MessageBatchItemData;
 use App\Data\Messages\MessageClaimHolder;
 use App\Data\Messages\MessagePage;
-use App\Data\Messages\MessagePartData;
 use App\Data\Messages\MessageReadBatch;
 use App\Data\Messages\MessageReader;
 use App\Data\Messages\MessageReadResult;
+use App\Data\Messages\MessageTextData;
 use App\Data\Messages\MessageView;
 use App\Data\Messages\ReplyOriginal;
 use App\Data\Messages\WakeStatus;
@@ -2524,7 +2525,8 @@ final class CoreApi
                 OperationRule::class,
                 ProfileChangeType::class,
                 SignInMethod::class,
-                MessagePartData::class,
+                MessageTextData::class,
+                MessageAttachmentData::class,
                 MessagePartType::class,
                 FieldOrigin::class,
                 PolicyOriginType::class,

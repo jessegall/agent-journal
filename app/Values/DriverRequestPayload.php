@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Contracts\Drivers\MessagePart;
-use App\Data\Messages\MessagePartData;
+use App\Data\Messages\MessageTextData;
 
 /**
  * What a driver request carries beside its operation: the message to deliver, the model or effort to switch to, or
@@ -45,7 +45,7 @@ final readonly class DriverRequestPayload
 
     public static function text(string $text): self
     {
-        return self::parts([MessagePartData::forText($text)]);
+        return self::parts([new MessageTextData($text)]);
     }
 
     /**

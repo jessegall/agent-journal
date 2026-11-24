@@ -10,10 +10,7 @@
             "parts": [
                 {
                     "type": "text",
-                    "text": "Say hello",
-                    "attachmentId": "",
-                    "digest": "",
-                    "label": ""
+                    "text": "Say hello"
                 }
             ],
             "model": null,

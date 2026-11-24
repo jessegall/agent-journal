@@ -9,11 +9,11 @@ use App\Concerns\Linkable;
 use App\Contracts\Drivers\MessagePart;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Agents\DriverRequestStatus;
-use App\Data\Messages\MessagePartData;
 use App\Enums\DriverOperation;
 use App\Enums\ExpectedTiming;
 use App\Enums\HoldReason;
 use App\Enums\HostWakeRefusal;
+use App\Enums\MessagePartType;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
 use App\Exceptions\NavigationRaiseRefused;
@@ -503,7 +503,10 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function partList(): array
     {
-        return MessagePartData::listOf($this->parts ?? []);
+        return array_map(
+            fn (array $stored) => MessagePartType::from($stored['type'])->partFrom($stored),
+            $this->parts ?? [],
+        );
     }
 
     /**

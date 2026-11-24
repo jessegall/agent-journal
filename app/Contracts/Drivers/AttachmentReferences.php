@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Drivers;
 
+use App\Data\Messages\MessageAttachmentData;
 use App\Exceptions\DriverRequestRefused;
 
 /**
@@ -15,5 +16,5 @@ interface AttachmentReferences
     /**
      * @throws DriverRequestRefused
      */
-    public function assertReadable(MessagePart $part, string $recipientSessionId): void;
+    public function assertReadable(MessageAttachmentData $part, string $recipientSessionId): void;
 }

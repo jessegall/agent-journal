@@ -45,7 +45,7 @@ final class ReleaseOfferData extends Data
 
         return self::from([
             'release' => $manifest->version,
-            'targets' => array_map(ReleaseTargetData::fromTarget(...), $manifest->targets),
+            'targets' => $manifest->targets,
             'missingCapabilities' => $manifest->missingCapabilities(),
         ]);
     }
