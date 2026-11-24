@@ -4,61 +4,83 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support;
 
-use PHPUnit\Framework\TestCase;
-use Tests\Architecture\Support\InterfacesDeclared;
+use Illuminate\Support\Str;
+use Tests\Architecture\Support\ParsedFile;
+use Tests\Support\ScanCache\FileScan;
 use Tests\Support\ScanCache\ScanCache;
+use Tests\TestCase;
 
 /**
- * The scan cache keeps each file's findings by its content: a second scan of unchanged files parses none of them and
- * finds the same, and a changed file is parsed again.
+ * The scan cache reads a file again whenever its content changed, also when it was rewritten within the same second
+ * at the same size, and reads an unchanged file from the cache.
  */
 final class ScanCacheTest extends TestCase
 {
-    public function test_unchanged_files_are_not_parsed_again_and_a_changed_one_is(): void
+    private string $folder;
+
+    private string $key;
+
+    protected function setUp(): void
     {
-        $run = bin2hex(random_bytes(4));
-        $folder = sys_get_temp_dir()."/scan-cache-test-{$run}";
-        mkdir($folder);
-        $first = "{$folder}/First.php";
-        $second = "{$folder}/Second.php";
-        file_put_contents($first, <<<TEXT
-        <?php
-        // run {$run}
-        namespace Cached;
-        interface First {}
+        parent::setUp();
 
-        TEXT);
-        file_put_contents($second, <<<TEXT
-        <?php
-        // run {$run}
-        namespace Cached;
-        interface Second {}
+        $this->key = 'scan-cache-test-'.Str::random(8);
+        $this->folder = storage_path("framework/testing/{$this->key}");
+        mkdir($this->folder, 0777, true);
+    }
 
-        TEXT);
-        $scan = new InterfacesDeclared();
+    protected function tearDown(): void
+    {
+        $cacheFiles = glob(storage_path("framework/testing/scan-cache/{$this->key}*")) ?: [];
+        array_map(unlink(...), [...glob("{$this->folder}/*") ?: [], ...$cacheFiles]);
+        rmdir($this->folder);
 
-        $before = ScanCache::parsedFiles();
-        $found = ScanCache::findings($scan, [$first, $second]);
-        $afterFirstScan = ScanCache::parsedFiles();
-        $foundAgain = ScanCache::findings($scan, [$first, $second]);
+        parent::tearDown();
+    }
 
-        $this->assertSame(['Cached\\First', 'Cached\\Second'], $found);
-        $this->assertSame($found, $foundAgain);
-        $this->assertSame($afterFirstScan, ScanCache::parsedFiles());
-        $this->assertSame(2, $afterFirstScan - $before);
+    public function test_a_file_rewritten_in_the_same_second_at_the_same_size_is_read_again(): void
+    {
+        $path = "{$this->folder}/note.php";
 
-        file_put_contents($second, <<<TEXT
-        <?php
-        // run {$run}
-        namespace Cached;
-        interface Changed {}
+        file_put_contents($path, '<?php // one');
+        $first = ScanCache::findings($this->scan(), [$path]);
+        file_put_contents($path, '<?php // two');
+        $second = ScanCache::findings($this->scan(), [$path]);
 
-        TEXT);
+        $this->assertSame([['// one'], ['// two']], [$first, $second]);
+    }
 
-        $this->assertSame(['Cached\\First', 'Cached\\Changed'], ScanCache::findings($scan, [$first, $second]));
-        $this->assertSame($afterFirstScan + 1, ScanCache::parsedFiles());
+    public function test_an_unchanged_file_is_not_parsed_again(): void
+    {
+        $path = "{$this->folder}/note.php";
+        file_put_contents($path, '<?php // one');
+        ScanCache::findings($this->scan(), [$path]);
+        $parsedBefore = ScanCache::parsedFiles();
 
-        array_map(unlink(...), [$first, $second]);
-        rmdir($folder);
+        $this->assertSame(['// one'], ScanCache::findings($this->scan(), [$path]));
+        $this->assertSame($parsedBefore, ScanCache::parsedFiles());
+    }
+
+    /**
+     * A scan whose one finding is the file's code after its opening tag.
+     *
+     * @return FileScan<string>
+     */
+    private function scan(): FileScan
+    {
+        return new readonly class($this->key) implements FileScan
+        {
+            public function __construct(private string $key) {}
+
+            public function key(): string
+            {
+                return $this->key;
+            }
+
+            public function findingsIn(ParsedFile $file): array
+            {
+                return [trim(substr($file->code, strlen('<?php')))];
+            }
+        };
     }
 }

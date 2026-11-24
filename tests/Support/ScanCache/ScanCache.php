@@ -18,6 +18,12 @@ final class ScanCache
     /**
      * How many files the scans of this process had to parse, for the test that proves unchanged files are skipped.
      */
+    /**
+     * How many seconds after its last change a file's stamp is trusted, past the one-second precision of a
+     * modification time and a small difference between the clock of a container and of the disk it reads.
+     */
+    private const int RACY_SECONDS = 2;
+
     private static int $parsedFiles = 0;
 
     /**
@@ -35,8 +41,11 @@ final class ScanCache
     /**
      * The scan's findings for every PHP file under the folders, keyed by file path.
      *
+     * @template TFinding
+     *
+     * @param  FileScan<TFinding>  $scan
      * @param  list<string>  $folders
-     * @return array<string, mixed>
+     * @return array<string, list<TFinding>>
      */
     public static function findingsInFolders(FileScan $scan, array $folders): array
     {
@@ -52,13 +61,16 @@ final class ScanCache
      */
     public static function findingsByFile(FileScan $scan, array $paths): array
     {
+        // A file changed earlier in this process must be stated afresh, not from PHP's stat cache.
+        clearstatcache();
         $cacheFile = self::cacheFileFor($scan);
         $stored = self::read($cacheFile);
         $byFile = [];
         $changed = false;
 
         foreach ($paths as $path) {
-            $stamp = filemtime($path).':'.filesize($path);
+            $modified = (int) filemtime($path);
+            $stamp = $modified.':'.filesize($path);
 
             if (($stored[$path]['stamp'] ?? null) !== $stamp) {
                 $hash = sha1((string) file_get_contents($path));
@@ -68,7 +80,9 @@ final class ScanCache
                     $stored[$path] = ['hash' => $hash, 'findings' => $scan->findingsIn(ParsedFile::fromPath($path))];
                 }
 
-                $stored[$path]['stamp'] = $stamp;
+                // A file written within a second of its reading may change again without its stamp changing, so its
+                // stamp is kept only once that time has passed; until then its content hash is compared on each read.
+                $stored[$path]['stamp'] = $modified < time() - self::RACY_SECONDS ? $stamp : '';
                 $changed = true;
             }
 
@@ -88,6 +102,9 @@ final class ScanCache
         return self::$parsedFiles;
     }
 
+    /**
+     * @param  FileScan<mixed>  $scan
+     */
     private static function cacheFileFor(FileScan $scan): string
     {
         return dirname(__DIR__, 3).'/storage/framework/testing/scan-cache/'.preg_replace(
