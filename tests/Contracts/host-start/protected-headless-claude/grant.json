@@ -28,7 +28,8 @@
             "claude.ai",
             "oauth_token",
             "api_key_helper"
-        ]
+        ],
+        "confines_account_starts": true
     },
     "container": {
         "image": "journal-agent@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

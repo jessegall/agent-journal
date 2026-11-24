@@ -133,22 +133,19 @@ func TestAWakeOnAnIdleRuntimeMakesOneTurn(t *testing.T) {
 	}
 }
 
-func TestAnInterruptGoesFirstAndHoldsEverythingElse(t *testing.T) {
+// An interrupt goes first; the queue keeps no hold of its own, since the journal offers no work to a runtime it holds.
+func TestAnInterruptGoesFirstAndTheQueueHoldsNothingItself(t *testing.T) {
 	queue := RuntimeQueue{}
 	queue.TurnStarted()
-	queue.Add(request(1, operationDeliver), request(2, operationWake), request(3, operationInterrupt))
+	queue.Add(request(1, operationDeliver), request(2, operationInterrupt))
 
 	interrupt := queue.Next()
-	if interrupt.Control == nil || interrupt.Control.Sequence != 3 {
+	if interrupt.Control == nil || interrupt.Control.Sequence != 2 {
 		t.Fatalf("got %+v", interrupt)
 	}
 	queue.TurnFinished()
-	if !queue.Next().IsEmpty() {
-		t.Fatal("pending work restarted after the interrupt")
-	}
-	queue.Release()
 	if !equal(turnOf(queue.Next()), []int{1}) {
-		t.Fatal("the release did not let the pending delivery run")
+		t.Fatal("the delivery the journal offered did not run after the interrupt")
 	}
 }
 

@@ -545,6 +545,32 @@ final class AgentDriverLedgerTest extends TestCase
         );
     }
 
+    /**
+     * The journal's hold is the only one: an interrupted runtime is offered no new work until a user releases it, and
+     * then it is.
+     */
+    public function test_an_interrupted_runtime_is_offered_work_again_only_once_its_hold_is_released(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $agentId = $this->agentIdOf($opened);
+        $this->asOwner(new InterruptAgentCommand($agentId, $opened->sessionId, 'interrupt-1'));
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $delivery = $this->deliver($opened, 'after-interrupt', 'Go on later');
+
+        $held = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->asOwner(new ReleaseAgentHoldCommand($agentId, $opened->sessionId, HoldReason::Interrupted, 'go on'));
+        $released = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+
+        $this->assertNotContains(
+            $delivery->requestId,
+            array_map(fn ($request): string => $request->requestId, $held->requests),
+        );
+        $this->assertContains(
+            $delivery->requestId,
+            array_map(fn ($request): string => $request->requestId, $released->requests),
+        );
+    }
+
     public function test_an_interrupt_holds_the_runtime_at_once(): void
     {
         [, $opened] = $this->openRuntime();

@@ -59,11 +59,10 @@ type TerminalRuntime struct {
 // TerminalDriver carries out the six operations on one persistent program in one process generation: every delivered
 // prompt is a new turn of the same program, typed into an empty composer, never into an active turn.
 type TerminalDriver struct {
-	runtime     TerminalRuntime
-	mutex       sync.Mutex
-	turns       int
-	interrupted bool
-	turnEnd     *turnEnd
+	runtime TerminalRuntime
+	mutex   sync.Mutex
+	turns   int
+	turnEnd *turnEnd
 	// stalled is the key script run stopped for the main agent, which its rounds answer; nil while none is.
 	stalled *stalledScript
 }
@@ -162,7 +161,7 @@ func (driver *TerminalDriver) ChangeEffort(
 	return staged(change.Request), nil
 }
 
-// Interrupt stops the running turn and holds the runtime until a user or a new delivery releases it. The turn is
+// Interrupt stops the running turn; the journal holds the runtime and offers it no work until the hold is released. The turn is
 // checked and the key sent under one lock, so a turn that ended, or another turn, gets no key: an interrupt of an
 // ended turn answers already idle and never types into a composer that waits for the user.
 func (driver *TerminalDriver) Interrupt(
@@ -179,13 +178,7 @@ func (driver *TerminalDriver) Interrupt(
 		return failed(interrupt.Request), err
 	}
 
-	driver.interrupted = true
-
-	return contracts.OperationResult{
-		Request:  interrupt.Request,
-		Progress: contracts.ProgressApplying,
-		Hold:     contracts.HoldInterrupted,
-	}, nil
+	return contracts.OperationResult{Request: interrupt.Request, Progress: contracts.ProgressApplying}, nil
 }
 
 // Stop fences the input first, retiring a browser writer, any pending take and every queued input in one step, then
@@ -294,23 +287,12 @@ func (driver *TerminalDriver) run(
 	return driver.runtime.Runner.Run(script, request.Parameters)
 }
 
-// prompt types a prompt into an empty, still composer, waits for its echo and submits it once. An interrupted
-// runtime or a composer that is not ready keeps the request staged; a lost echo makes it uncertain.
+// prompt types a prompt into an empty, still composer, waits for its echo and submits it once. A composer that is not
+// ready keeps the request staged; a lost echo makes it uncertain.
 func (driver *TerminalDriver) prompt(
 	request contracts.RequestIdentity,
 	text string,
 ) (contracts.OperationResult, error) {
-	driver.mutex.Lock()
-	interrupted := driver.interrupted
-	driver.mutex.Unlock()
-
-	if interrupted {
-		return contracts.OperationResult{
-			Request:  request,
-			Progress: contracts.ProgressStaged,
-			Hold:     contracts.HoldInterrupted,
-		}, nil
-	}
 	if driver.waitUntil(driver.runtime.Limits.ReadyWait(), driver.screenDecided); !driver.promptReady() {
 		return driver.stagedBehindScreen(request)
 	}

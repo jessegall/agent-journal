@@ -61,6 +61,9 @@ type HeadlessRuntime struct {
 	Limits contracts.Limits
 	// SignInMethods are the Claude sign-in methods the journal accepts for an account start, as the program names them.
 	SignInMethods []string
+	// ConfinesAccountStarts is whether the journal has an account start's turns run in their session sandbox; the
+	// host applies its platform's mechanism, the macOS sandbox profile.
+	ConfinesAccountStarts bool
 }
 
 // TurnContainer gives one turn of the program, at the process generation given, as its session container's own
@@ -189,7 +192,7 @@ func (driver *HeadlessDriver) Interrupt(_ context.Context, interrupt contracts.I
 		return contracts.OperationResult{}, err
 	}
 
-	return contracts.OperationResult{Request: interrupt.Request, Progress: contracts.ProgressApplying, Hold: contracts.HoldInterrupted}, nil
+	return contracts.OperationResult{Request: interrupt.Request, Progress: contracts.ProgressApplying}, nil
 }
 
 // Stop ends the current child's process group in bounded stages, gracefully and then by force, and answers applied
@@ -329,7 +332,7 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 
 		return command, nil
 	}
-	if driver.claudeAccountStart() && runtime.GOOS == "darwin" {
+	if driver.claudeAccountStart() && driver.runtime.ConfinesAccountStarts && runtime.GOOS == "darwin" {
 		sandbox, err := host.WriteSessionSandbox(
 			start.SettingsFolder,
 			driver.runtime.Start.Account.Folder,
@@ -442,7 +445,6 @@ func alreadyIdle(request contracts.RequestIdentity) contracts.OperationResult {
 		Request:  request,
 		Progress: contracts.ProgressApplied,
 		Outcome:  contracts.OutcomeAlreadyIdle,
-		Hold:     contracts.HoldInterrupted,
 	}
 }
 

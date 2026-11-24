@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"testing"
 	"time"
@@ -15,12 +16,12 @@ import (
 	profilecontracts "journal-agent/profiles/contracts"
 )
 
-func TestAnInterruptWithNoRunningTurnIsAlreadyIdleAndKeepsTheHold(t *testing.T) {
+func TestAnInterruptWithNoRunningTurnIsAlreadyIdle(t *testing.T) {
 	driver := NewHeadlessDriver(HeadlessRuntime{Limits: journalLimits}, 1)
 
 	interrupt, err := driver.Interrupt(context.Background(), contracts.InterruptRequest{Request: request("late"), Turn: 1})
 
-	if err != nil || interrupt.Outcome != contracts.OutcomeAlreadyIdle || interrupt.Hold != contracts.HoldInterrupted {
+	if err != nil || interrupt.Outcome != contracts.OutcomeAlreadyIdle || interrupt.IsHeld() {
 		t.Fatalf("the interrupt ended %+v, %v", interrupt, err)
 	}
 }
@@ -118,6 +119,32 @@ func TestAConfinedChildTurnRunsUnderItsConfinementInPlaceOfTheSessionSandbox(t *
 	}
 	if _, err := os.Stat(filepath.Join(settings, "session.sb")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("a session sandbox was written beside the confinement: %v", err)
+	}
+}
+
+// The journal decides whether an account start is confined; on macOS the host applies it with the session sandbox,
+// and writes none when the journal did not ask for one.
+func TestAnAccountStartRunsInTheSessionSandboxOnlyWhenTheJournalConfinesIt(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("the session sandbox is the macOS mechanism")
+	}
+	for _, confines := range []bool{true, false} {
+		settings := t.TempDir()
+		turn := profilecontracts.BaseStart{SettingsFolder: settings, SessionID: "conversation"}
+		start := turn
+		start.WorkFolder, start.Account = t.TempDir(), &profilecontracts.AccountStart{Folder: t.TempDir()}
+		driver := NewHeadlessDriver(HeadlessRuntime{
+			Limits: journalLimits, Start: start, Profile: profiles.ClaudeCode{}, Executable: "/opt/claude",
+			ConfinesAccountStarts: confines,
+		}, 1)
+
+		if _, err := driver.command(turn.Turn("", false)); err != nil {
+			t.Fatal(err)
+		}
+		_, err := os.Stat(filepath.Join(settings, "session.sb"))
+		if written := err == nil; written != confines {
+			t.Fatalf("the journal confined %v and a session sandbox was written %v", confines, written)
+		}
 	}
 }
 

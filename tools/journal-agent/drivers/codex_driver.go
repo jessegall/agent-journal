@@ -72,9 +72,7 @@ func (driver *CodexDriver) Interrupt(ctx context.Context, interrupt contracts.In
 	if err := driver.owner.Interrupt(ctx, threadID, turnID); err != nil {
 		return contracts.OperationResult{}, err
 	}
-	return contracts.OperationResult{
-		Request: interrupt.Request, Progress: contracts.ProgressApplying, Hold: contracts.HoldInterrupted,
-	}, nil
+	return contracts.OperationResult{Request: interrupt.Request, Progress: contracts.ProgressApplying}, nil
 }
 
 // Stop interrupts the thread's running turn; the owner and its other threads go on.

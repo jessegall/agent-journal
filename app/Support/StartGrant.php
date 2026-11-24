@@ -31,7 +31,7 @@ final readonly class StartGrant
      *     profile_revision: int|null, offline_reply: string, offline_reply_seal: string,
      *     runtime: array{session_id: string, driver: string, driver_key: string, driver_build: string, folder: string,
      *     process_generation: int, model: string|null, effort: string|null, limits: array<string, int>,
-     *     sign_in_methods: list<string>},
+     *     sign_in_methods: list<string>, confines_account_starts: bool},
      *     container: ContainerManifest|null}
      */
     public function toArray(): array

@@ -468,6 +468,14 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public function canReleaseHold(): bool
     {
+        return $this->isHeldFromWork();
+    }
+
+    /**
+     * Whether the journal holds the runtime from new work: interrupted, or needing attention, until a user releases it.
+     */
+    public function isHeldFromWork(): bool
+    {
         return in_array($this->hold_reason, [HoldReason::Interrupted, HoldReason::NeedsAttention], true);
     }
 

@@ -179,12 +179,9 @@ func (loop *Loop) control(ctx context.Context, runtime *liveRuntime, request cli
 		}
 		loop.mutex.Unlock()
 		result, err := runtime.driver.Interrupt(ctx, contracts.InterruptRequest{Request: identity, Turn: turn})
-		if err == nil && result.IsHeld() {
+		if err == nil && result.Progress == contracts.ProgressApplying {
 			loop.mutex.Lock()
-			runtime.hold = result.Hold
-			if result.Progress == contracts.ProgressApplying {
-				runtime.interrupts = append(runtime.interrupts, request)
-			}
+			runtime.interrupts = append(runtime.interrupts, request)
 			loop.mutex.Unlock()
 		}
 		loop.reportResult(ctx, request, result, err)
@@ -292,7 +289,7 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 	default:
 		result, err = runtime.driver.Wake(ctx, contracts.WakeRequest{Request: identity, Prompt: text(turn.Message)})
 	}
-	if err == nil && result.Progress == contracts.ProgressStaged && result.Hold != contracts.HoldInterrupted {
+	if err == nil && result.Progress == contracts.ProgressStaged {
 		loop.holdBehindScreen(ctx, runtime, result.Hold)
 	}
 	if err != nil || result.Progress != contracts.ProgressApplying {

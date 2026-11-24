@@ -8498,6 +8498,7 @@ constant	RunWindowResolver::TAIL_LINES
 constant	RuntimeLease::SECONDS
 constant	RuntimeScreen::KEEP_SECONDS
 constant	RuntimeStart::CLAUDE_SIGN_IN_METHODS
+constant	RuntimeStart::CONFINES_ACCOUNT_STARTS
 constant	RuntimeStatusResolver::REQUESTS_EACH
 constant	RuntimeStatusResolver::RUNTIMES
 constant	SaveDraftPageController::SAVED_DRAFT
@@ -10553,6 +10554,7 @@ method	AgentRuntime::hostOfSession()
 method	AgentRuntime::isAssignedTo()
 method	AgentRuntime::isAtGeneration()
 method	AgentRuntime::isHeldFor()
+method	AgentRuntime::isHeldFromWork()
 method	AgentRuntime::isObservedRunningAfter()
 method	AgentRuntime::isRunningForSession()
 method	AgentRuntime::isStale()
@@ -15043,6 +15045,7 @@ method	DriverNotContainable::because()
 method	DriverNotContainable::reason()
 method	DriverOperation::control()
 method	DriverOperation::isTerminalControl()
+method	DriverOperation::startsWork()
 method	DriverOperation::terminalControl()
 method	DriverReceipt::__construct()
 method	DriverRegisteredTwice::for()
@@ -28289,8 +28292,10 @@ method	TunlerStatusData::__construct()
 method	TunlerStatusUnreadable::because()
 method	TurnEnd::__construct()
 method	TurnEnd::failed()
+method	TurnEnd::isSettledByEvidence()
 method	TurnEnd::isUnread()
 method	TurnEnd::outcome()
+method	TurnEnd::outcomeOf()
 method	TurnEnd::progress()
 method	TurnEnd::progressOf()
 method	TurnEnd::showsModel()
@@ -29945,7 +29950,6 @@ parameter	$flag
 parameter	$flags
 parameter	$floatSize
 parameter	$flowchart
-parameter	$focus
 parameter	$focusable
 parameter	$focused
 parameter	$focusedBy

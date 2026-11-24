@@ -210,7 +210,7 @@ func (runtime *fakeRuntime) ChangeEffort(_ context.Context, change contracts.Eff
 }
 
 func (runtime *fakeRuntime) Interrupt(_ context.Context, interrupt contracts.InterruptRequest) (contracts.OperationResult, error) {
-	return contracts.OperationResult{Request: interrupt.Request, Progress: contracts.ProgressApplying, Hold: contracts.HoldInterrupted}, nil
+	return contracts.OperationResult{Request: interrupt.Request, Progress: contracts.ProgressApplying}, nil
 }
 
 func (runtime *fakeRuntime) Stop(_ context.Context, stop contracts.StopRequest) (contracts.OperationResult, error) {

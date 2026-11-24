@@ -565,6 +565,8 @@ type RuntimeStart struct {
 	Limits contracts.Limits `json:"limits"`
 	// SignInMethods are the Claude sign-in methods the journal accepts for an account start.
 	SignInMethods []string `json:"sign_in_methods"`
+	// ConfinesAccountStarts is whether an account start's turns run in their session sandbox.
+	ConfinesAccountStarts bool `json:"confines_account_starts"`
 }
 
 // RequestedModel is the model the journal asked this start to run on; empty when it leaves the choice to the program.

@@ -126,6 +126,12 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
                     continue;
                 }
 
+                // A runtime the journal holds, interrupted or needing attention, gets no work until its hold is
+                // released; the host keeps no hold of its own.
+                if ($request->operation->startsWork() && $runtimes->get($runtimeId)->isHeldFromWork()) {
+                    continue;
+                }
+
                 $runtime = $runtimes->get($runtimeId);
                 $sessionId = $runtime->agent_session_id;
 

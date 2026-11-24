@@ -78,16 +78,13 @@ func (queue *RuntimeQueue) Release()      { queue.held = false }
 // SettingsReconciled records the program's evidence that a repaired setting took effect, so content may run again.
 func (queue *RuntimeQueue) SettingsReconciled() { queue.reconciling = false }
 
-// Next takes what may run now out of the queue. A stop or an interrupt goes first, past everything; an interrupt also
-// holds the runtime, so nothing waiting restarts work until it is released. A held runtime admits nothing else. A
+// Next takes what may run now out of the queue. A stop or an interrupt goes first, past everything; after an interrupt
+// the journal offers no work until it releases its hold. A runtime held for a navigation round admits nothing else. A
 // busy runtime only stages the settings at the front of the queue. An idle one stages those settings, then takes a
 // key script at the front to run alone, or else the delivery or wake at the front as one turn: the journal builds each
 // turn's whole prompt, so the host joins none.
 func (queue *RuntimeQueue) Next() Admission {
 	if control, found := queue.takeControl(); found {
-		if control.Operation == operationInterrupt {
-			queue.held = true
-		}
 		return Admission{Control: &control}
 	}
 	if queue.held {

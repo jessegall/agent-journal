@@ -222,21 +222,15 @@ func TestADeliveryWaitsForAReadyComposerOnlyAsLongAsTheJournalSent(t *testing.T)
 	}
 }
 
-func TestAnInterruptHoldsTheRuntimeAndAWakeDoesNotRestartWork(t *testing.T) {
-	driver, _, program := recordedTurn(t, 11*time.Second)
+// The driver interrupts and keeps no hold of its own: the journal holds the runtime and offers it no work meanwhile.
+func TestAnInterruptStopsTheTurnAndKeepsNoHoldOfItsOwn(t *testing.T) {
+	driver, _, _ := recordedTurn(t, 11*time.Second)
 	driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)})
 
 	bound := contracts.InterruptRequest{Request: request("stop"), Turn: driver.Turns()}
 	interrupt, err := driver.Interrupt(context.Background(), bound)
-	if err != nil || interrupt.Hold != contracts.HoldInterrupted || interrupt.Outcome == contracts.OutcomeAlreadyIdle {
+	if err != nil || interrupt.Progress != contracts.ProgressApplying || interrupt.IsHeld() {
 		t.Fatalf("the interrupt ended %+v, %v", interrupt, err)
-	}
-	wake, err := driver.Wake(context.Background(), contracts.WakeRequest{Request: request("wake"), Prompt: "Look at your work."})
-	if err != nil || wake.Progress != contracts.ProgressStaged || wake.Hold != contracts.HoldInterrupted {
-		t.Fatalf("a wake while interrupted ended %+v, %v", wake, err)
-	}
-	if strings.Contains(program.String(), "Look at your work.") || driver.Turns() != 1 {
-		t.Fatalf("the held runtime got %q", program.String())
 	}
 }
 
@@ -247,7 +241,7 @@ func TestAnInterruptBoundToAnEarlierTurnInterruptsNothing(t *testing.T) {
 
 	late := contracts.InterruptRequest{Request: request("late"), Turn: driver.Turns() - 1}
 	interrupt, err := driver.Interrupt(context.Background(), late)
-	if err != nil || interrupt.Outcome != contracts.OutcomeAlreadyIdle || interrupt.Hold != contracts.HoldInterrupted {
+	if err != nil || interrupt.Outcome != contracts.OutcomeAlreadyIdle || interrupt.IsHeld() {
 		t.Fatalf("the late interrupt ended %+v, %v", interrupt, err)
 	}
 	if program.String() != typed {

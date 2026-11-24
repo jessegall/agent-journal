@@ -76,4 +76,12 @@ enum DriverOperation: string
     {
         return in_array($this, self::terminalControl(), true);
     }
+
+    /**
+     * Whether the operation sets the agent to work: a delivery, a wake or a key script, which a held runtime waits for.
+     */
+    public function startsWork(): bool
+    {
+        return in_array($this, [self::Deliver, self::Wake, self::KeyScript], true);
+    }
 }
