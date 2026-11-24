@@ -73,7 +73,6 @@ secrets/*
 
 # The saved agent and runner images .docker/helper/build.sh writes for the agent daemon to load.
 /images/
-/.installed-version
 /.installed-commit
 /.failed-commit
 

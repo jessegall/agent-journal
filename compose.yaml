@@ -43,6 +43,8 @@ services:
             # The record of the images built for this installation, which no image holds (.dockerignore): the builds
             # write it, and a start is admitted only on an image it records.
             - ./docs/accounts:/app/docs/accounts:ro
+            # The version the updater installed (storage/installation/installed-version), which no image holds.
+            - ./storage/installation:/app/storage/installation:ro
         depends_on:
             postgres:
                 condition: service_healthy
@@ -91,6 +93,7 @@ services:
         command: ['php', 'artisan', 'queue:work', '--tries=3', '--backoff=5']
         volumes:
             - ./docs/accounts:/app/docs/accounts:ro
+            - ./storage/installation:/app/storage/installation:ro
         # A worker listens on no port; the image's web server check does not apply.
         healthcheck:
             disable: true
@@ -111,6 +114,7 @@ services:
         command: ['php', 'artisan', 'schedule:work']
         volumes:
             - ./docs/accounts:/app/docs/accounts:ro
+            - ./storage/installation:/app/storage/installation:ro
         # The scheduler listens on no port; the image's web server check does not apply.
         healthcheck:
             disable: true
@@ -131,6 +135,7 @@ services:
         command: ['php', 'artisan', 'engine:tick']
         volumes:
             - ./docs/accounts:/app/docs/accounts:ro
+            - ./storage/installation:/app/storage/installation:ro
         # The ticker listens on no port; the image's web server check does not apply.
         healthcheck:
             disable: true

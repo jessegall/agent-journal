@@ -12,9 +12,9 @@ use Illuminate\Process\Factory as ProcessFactory;
 
 /**
  * Which version of the journal runs here, as the sidebar shows it: the release tag of a commit on main, else the short
- * commit hash. An installation the updater keeps reads .installed-version, which it writes into each build (commit,
- * branch and tag, one per line); a checkout asks git for its HEAD. The answer is cached until the updater clears it
- * after an install, so no request waits on a file or on git.
+ * commit hash. An installation the updater keeps reads storage/installation/installed-version, which it writes at
+ * each install (commit, branch and tag, one per line); a checkout asks git for its HEAD. The answer is cached until the
+ * updater clears it after an install, so no request waits on a file or on git.
  */
 final readonly class InstalledVersion implements InstalledVersionContract
 {
@@ -35,7 +35,7 @@ final readonly class InstalledVersion implements InstalledVersionContract
 
     private function readLabel(): string
     {
-        $installed = $this->files->pathIn(Place::Project, base_path('.installed-version'));
+        $installed = $this->files->pathIn(Place::Project, base_path('storage/installation/installed-version'));
 
         if ($this->files->exists($installed)) {
             [$commit, $branch, $tag] = array_pad(explode("\n", trim($this->files->read($installed))), 3, '');

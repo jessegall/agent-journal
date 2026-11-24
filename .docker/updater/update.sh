@@ -62,11 +62,13 @@ remove_deleted_files() {
     done
 }
 
-# The version the journal shows: the commit, its branch and its release tag, if it has one.
+# The version the journal shows: the commit, its branch and its release tag, if it has one. It lives in a folder the
+# app services mount, never in an image, so a push that changes nothing else changes no image.
 write_version_file() {
     local tag
     tag=$(git -C "$mirror" describe --tags --exact-match "$newest" 2>/dev/null || true)
-    printf '%s\n%s\n%s\n' "$newest" "$branch" "$tag" > .installed-version
+    mkdir -p storage/installation
+    printf '%s\n%s\n%s\n' "$newest" "$branch" "$tag" > storage/installation/installed-version
 }
 
 # A contained installation also runs the services of the contained profile.

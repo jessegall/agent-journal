@@ -124,6 +124,7 @@ final class UpdateTest extends TestCase
 
         $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
         $this->assertSame($pushed, $this->installation->installedCommit());
+        $this->assertStringStartsWith($pushed, $this->installation->installedVersion());
         $this->assertFalse($this->installation->docker->wasAsked(self::ROLL));
         $this->assertFalse($this->installation->docker->wasAsked(self::SAVE_CALL));
         $this->assertSame([], $this->releaseBuilds());

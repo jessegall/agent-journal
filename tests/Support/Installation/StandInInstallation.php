@@ -132,6 +132,14 @@ final readonly class StandInInstallation
         return $this->recorded('secrets/journal_host_secret');
     }
 
+    /**
+     * The version file the app services mount: the commit, its branch and its tag, one per line.
+     */
+    public function installedVersion(): string
+    {
+        return $this->recorded('storage/installation/installed-version');
+    }
+
     public function installedCommit(): string
     {
         return $this->recorded('.installed-commit');
