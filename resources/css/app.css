@@ -82,6 +82,7 @@
     --color-float-bar: var(--float-bar);
     --color-chip: var(--chip);
     --color-bubble: var(--bubble);
+    --color-bubble-agent: var(--bubble-agent);
     --color-code-bg: var(--code-bg);
     --color-term: var(--term);
     --color-term-text: var(--term-text);
@@ -174,6 +175,8 @@
     --float-bar: #f1efec;
     --chip: #edeae6;
     --bubble: #f4f2ef;
+    /* A message of someone else sits on a fainter bubble than your own. */
+    --bubble-agent: #f8f7f5;
     --code-bg: #f6f5f2;
     --term: #181715;
     --border-inner: #f0eeeb;
@@ -251,6 +254,7 @@
     --float-bar: #121110;
     --chip: #282523;
     --bubble: #1c1a18;
+    --bubble-agent: #181716;
     --code-bg: #131211;
     --term: #0b0a0a;
     --border: #282523;

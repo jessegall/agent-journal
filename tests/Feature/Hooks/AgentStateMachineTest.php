@@ -68,7 +68,7 @@ final class AgentStateMachineTest extends TestCase
         );
 
         $this->assertSame('{}', $reply->stdout);
-        $this->assertSame(['hooks.ready', 'test.tasks'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'test.tasks'], $this->storedTypeKeys());
     }
 
     #[TimeLimit(
@@ -88,7 +88,7 @@ final class AgentStateMachineTest extends TestCase
 
         $command = json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command'];
         $this->assertStringStartsWith(self::ADMISSION_PREFIX, $command);
-        $this->assertSame(['hooks.ready', 'test.rewriting'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'test.rewriting'], $this->storedTypeKeys());
         $this->assertSame(AnswerType::Rewrite, HookCall::query()->sole()->answer->type);
     }
 
@@ -108,7 +108,7 @@ final class AgentStateMachineTest extends TestCase
         );
 
         $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(['hooks.ready', 'test.rewriting'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'test.rewriting'], $this->storedTypeKeys());
         $this->assertSame(AnswerType::Deny, HookCall::query()->sole()->answer->type);
     }
 
@@ -161,7 +161,7 @@ final class AgentStateMachineTest extends TestCase
             $this->fail('The adapter failure was swallowed.');
         } catch (TestFailure) {
             $this->assertSame(0, HookCall::query()->count());
-            $this->assertSame(['hooks.ready', 'test.tasks'], $this->storedTypeKeys());
+            $this->assertSame(['core.ready', 'test.tasks'], $this->storedTypeKeys());
         }
     }
 

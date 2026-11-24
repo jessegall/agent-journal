@@ -9,8 +9,7 @@ use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed as Closed;
 
 final class PlanState extends AgentState
 {
-    public function onTaskClosed(Closed $event): null
+    public function onTaskClosed(Closed $event): void
     {
-        return null;
     }
 }

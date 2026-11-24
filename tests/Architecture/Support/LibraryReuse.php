@@ -42,6 +42,14 @@ final readonly class LibraryReuse
     ];
 
     /**
+     * An anchored floating surface drawn by hand, positioned and lifted the way the kit's Popover and Menu are, which
+     * then lacks their outside press, Escape and focus return.
+     */
+    public const string FLOATING = 'floating';
+
+    private const string FLOATING_CLASSES = '/\babsolute\b.*\bshadow-(?:pop|\(--shadow-pop\))|\bshadow-(?:pop|\(--shadow-pop\)).*\babsolute\b/';
+
+    /**
      * Folders whose files are the library itself or generated, never judged.
      */
     private const array SKIPPED = ['/components/kit/', '/generated/', '/actions/', '/routes/'];
@@ -86,6 +94,10 @@ final readonly class LibraryReuse
             return self::ROLES[substr($element, 5)];
         }
 
+        if ($element === self::FLOATING) {
+            return 'Popover or Menu';
+        }
+
         return self::ELEMENTS[$element];
     }
 
@@ -111,6 +123,10 @@ final readonly class LibraryReuse
 
             foreach ($roleMatches[1] as $role) {
                 $found["{$path}:{$number}:role={$role}"] = "{$path}:role={$role}";
+            }
+
+            if (preg_match(self::FLOATING_CLASSES, $line) === 1) {
+                $found["{$path}:{$number}:".self::FLOATING] = "{$path}:".self::FLOATING;
             }
         }
 

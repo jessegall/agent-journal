@@ -43,6 +43,8 @@ final class MessageView extends Data
         public readonly string|null $requestKey,
         // A chat reply whose parent the viewer may not see names no parent and says it is unavailable.
         public readonly bool $replyUnavailable = false,
+        // The parent of a chat reply the viewer may see, as the reply line shows it.
+        public readonly ReplyOriginal|Optional $replyOriginal = new Optional(),
         // A chat row's timeline position, the user message it belongs under when the viewer may see it, whom it
         // addresses, and whether it was shown to the viewer; a desk message has none of them.
         public readonly int|null $sequence = null,

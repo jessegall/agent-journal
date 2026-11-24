@@ -69,7 +69,7 @@ final class UserStacksTest extends TestCase
 
         $this->pushInTransaction($this->target);
 
-        $this->assertSame(['hooks.ready', 'notes.writing'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'notes.writing'], $this->storedTypeKeys());
     }
 
     public function test_a_user_push_of_a_switched_off_conditional_state_stores_nothing(): void
@@ -83,7 +83,7 @@ final class UserStacksTest extends TestCase
             ),
         );
 
-        $this->assertSame(['hooks.ready'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready'], $this->storedTypeKeys());
     }
 
     public function test_an_agent_without_the_steer_ability_cannot_push_onto_a_stack(): void

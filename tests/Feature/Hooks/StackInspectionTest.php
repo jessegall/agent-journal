@@ -37,7 +37,7 @@ final class StackInspectionTest extends TestCase
             [TestIds::of(1), TestIds::of(10), 'active'],
             [$inspection['agentId'], $inspection['sessionId'], $inspection['status']],
         );
-        $this->assertSame(['hooks.ready', 'test.tasks', 'guide'], array_column($inspection['frames'], 'typeKey'));
+        $this->assertSame(['core.ready', 'test.tasks', 'guide'], array_column($inspection['frames'], 'typeKey'));
         $this->assertSame(
             [null, ['id' => '42', 'runNumber' => 1], null],
             array_column($inspection['frames'], 'subject'),

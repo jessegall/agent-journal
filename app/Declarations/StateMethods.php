@@ -130,12 +130,15 @@ final class StateMethods
     }
 
     /**
-     * Whether the method declares void, or only the types a hook method returns: AnswerPart, Command, Event and iterable.
+     * Whether the method declares void or never, or only the types a hook method returns: AnswerPart, Command, Event
+     * and iterable.
      */
     private function answersAsHooksDo(ReflectedMethod $method): bool
     {
         return $method->returnType()
-            ->map(fn (DeclaredType $type) => $type->isNamedAs('void') || $this->isHookAnswerType($type))
+            ->map(fn (DeclaredType $type) => $type->isNamedAs('void')
+                || $type->isNamedAs('never')
+                || $this->isHookAnswerType($type))
             ->getOrElse(false);
     }
 

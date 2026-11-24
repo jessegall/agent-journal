@@ -16,7 +16,7 @@ use App\Support\References\SubjectReference;
  */
 final class AnsweringMessageStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'communication.answering';
+    public const string TYPE_KEY = 'core.messages.answering';
 
     public static function forOffer(ChatMessageOffered $offer): StateReference
     {

@@ -14,6 +14,7 @@ use App\Data\Messages\InboxView;
 use App\Data\Messages\MessageClaimHolder;
 use App\Data\Messages\MessagePage;
 use App\Data\Messages\MessageView;
+use App\Data\Messages\ReplyOriginal;
 use App\Enums\AccessType;
 use App\Enums\MessageType;
 use App\Exceptions\ChatInboxRefused;
@@ -31,6 +32,7 @@ use App\Support\InboxMembers;
 use App\Support\ProvedClaims;
 use App\Support\RegisteredInboxes;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 /**
  * Reads messages through the visibility scope: what the actor may see now, page by page on creation time and id, so
@@ -237,6 +239,7 @@ final readonly class MessageRecords implements ConversationResolver
         $holderFields = array_map(fn ($claim) => ['claimHolder' => MessageClaimHolder::ofClaim($claim)], $claims);
 
         $hiddenParents = $this->hiddenChatParents($messages);
+        $originalFields = $this->replyOriginalFields($messages);
         $chatFields = $this->chatFieldsOf($messages, $hiddenParents);
 
         $requestKeys = CommandReceipt::readableKeysOf(array_values(array_unique(
@@ -260,10 +263,46 @@ final readonly class MessageRecords implements ConversationResolver
             'answerId' => $message->answer_message_id,
             'firstReader' => $message->firstRead(),
             ...$holderFields[$message->id] ?? [],
+            ...$originalFields[$message->reply_to_id] ?? [],
             'sentAt' => (string) $message->created_at?->toIso8601String(),
             'requestKey' => $requestKeys[$message->origin_receipt_id] ?? null,
             ...$chatFields[$message->id] ?? [],
         ]), $messages);
+    }
+
+    /**
+     * The view fields of the parents of chat replies that the reader may see, keyed by the parent's id, as the reply
+     * line shows them.
+     *
+     * @param  list<Message>  $messages
+     * @return array<string, array{replyOriginal: ReplyOriginal}>
+     */
+    private function replyOriginalFields(array $messages): array
+    {
+        $parentIds = array_values(array_unique(array_filter(array_map(
+            fn (Message $message) => $message->isChat() ? $message->reply_to_id : null,
+            $messages,
+        ))));
+
+        if ($parentIds === []) {
+            return [];
+        }
+
+        $parents = array_values(Message::query()->whereKey($parentIds)->limit(count($parentIds))->get()->all());
+        $authors = $this->labels->labelsFor(array_map(fn (Message $parent) => $parent->author(), $parents));
+        $originals = [];
+
+        foreach ($parents as $parent) {
+            $author = $parent->author();
+
+            $originals[$parent->id]['replyOriginal'] = ReplyOriginal::from([
+                'actor' => "{$author->type->value}:{$author->id}",
+                'label' => $authors->nameOf($author) ?? "{$author->type->value}:{$author->id}",
+                'excerpt' => Str::limit(Str::squish($parent->body), ReplyOriginal::EXCERPT_LIMIT),
+            ]);
+        }
+
+        return $originals;
     }
 
     /**

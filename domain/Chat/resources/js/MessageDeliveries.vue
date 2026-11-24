@@ -1,26 +1,32 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
 import { router } from "@inertiajs/vue3";
-import { nextTick } from "vue";
+import { computed, nextTick } from "vue";
 import type { ChatMessageData, DeliveryData } from "@generated/types/chat";
 import { retryDelivery } from "@generated/routes/chat";
 
 /**
- * How far each woken recipient of one row got, as its author or an operator sees it: still trying or waiting for it
- * to start, which needs no action, or given up with the reason and the character the text still waits from. An
- * operator retries only that recipient's delivery; afterwards the focus rests on that recipient's line.
+ * The delivery line under the viewer's own bubble, right-aligned with it: for each recipient still being reached
+ * whether it is delivering, waits for its agent to start, or was not delivered with the reason and Retry. Once every
+ * recipient has it the line says Delivered, under the latest message only, and on hover for older ones.
  */
 const props = defineProps<{
   message: ChatMessageData;
   conversationProp: string;
+  // Whether this is the viewer's latest message, the only one that keeps Delivered in view.
+  isLatest: boolean;
 }>();
 
-const stateLabels: Record<DeliveryData["state"], string> = {
-  pending: "Delivering…",
-  waiting_for_startup: "Waiting for it to start",
-  accepted: "Delivered",
-  exhausted: "Not delivered",
-  cancelled: "No longer delivered",
+const unsettled = computed(() => props.message.deliveries.filter((delivery) => delivery.state !== "accepted"));
+
+const isDelivered = computed(() => props.message.deliveries.length > 0 && unsettled.value.length === 0);
+
+const stateWords: Record<DeliveryData["state"], (delivery: DeliveryData) => string> = {
+  pending: () => "Delivering…",
+  waiting_for_startup: (delivery) => `Waiting for ${delivery.label} to start`,
+  accepted: () => "Delivered",
+  exhausted: () => "Not delivered",
+  cancelled: () => "No longer delivered",
 };
 
 function lineId(delivery: DeliveryData): string {
@@ -39,41 +45,45 @@ function retry(delivery: DeliveryData): void {
       preserveScroll: true,
       preserveState: true,
       only: [props.conversationProp],
-      onFinish: () =>
-        void nextTick(() => document.getElementById(lineId(delivery))?.focus()),
+      onFinish: () => void nextTick(() => document.getElementById(lineId(delivery))?.focus()),
     },
   );
 }
 </script>
 
 <template>
+  <template v-if="isDelivered">
+  <p
+    :class="[
+      'text-right text-meta leading-[15px] text-text-4 tabular-nums',
+      isLatest
+        ? ''
+        : 'pointer-events-none absolute top-[calc(100%+3px)] right-0 whitespace-nowrap opacity-0 transition-opacity duration-(--duration-hover) group-focus-within/mine:opacity-100 group-hover/mine:opacity-100',
+    ]"
+  >
+    Delivered
+  </p>
+  </template>
+  <template v-else-if="unsettled.length > 0">
   <ul
-    class="flex flex-col gap-0.5 text-small text-text-3"
+    class="flex flex-col items-end gap-0.5 text-right text-meta leading-[15px] text-text-4 tabular-nums"
     aria-label="Delivery"
   >
-    <template v-for="delivery in message.deliveries" :key="delivery.recipient">
-      <template v-if="delivery.state !== 'accepted'">
-        <li :id="lineId(delivery)" tabindex="-1" class="flex gap-2">
-          <span>{{ delivery.label }}: {{ stateLabels[delivery.state] }}</span>
-          <template
-            v-if="delivery.state === 'exhausted' && delivery.reason !== null"
-          >
-            <span>{{ delivery.reason }}</span>
-          </template>
-          <template
-            v-if="
-              delivery.state === 'exhausted' && delivery.pendingFrom !== null
-            "
-          >
-            <span>from character {{ delivery.pendingFrom }}</span>
-          </template>
-          <template
-            v-if="message.actions.retryDelivery && delivery.rangeId !== null"
-          >
-            <TextLink @click="retry(delivery)">Retry</TextLink>
-          </template>
-        </li>
-      </template>
+    <template v-for="delivery in unsettled" :key="delivery.recipient">
+      <li :id="lineId(delivery)" tabindex="-1" class="flex flex-wrap items-center justify-end gap-x-1.5">
+        <span :class="delivery.state === 'exhausted' ? 'font-medium text-danger' : ''">{{
+          message.deliveries.length > 1 ? `${delivery.label}: ${stateWords[delivery.state](delivery)}` : stateWords[delivery.state](delivery)
+        }}</span>
+        <template v-if="delivery.state === 'exhausted' && delivery.reason !== null">
+          <span class="text-border-3">·</span>
+          <span class="text-text-3">{{ delivery.reason }}</span>
+        </template>
+        <template v-if="message.actions.retryDelivery && delivery.rangeId !== null">
+          <span class="text-border-3">·</span>
+          <TextLink variant="quiet" @click="retry(delivery)">Retry</TextLink>
+        </template>
+      </li>
     </template>
   </ul>
+  </template>
 </template>

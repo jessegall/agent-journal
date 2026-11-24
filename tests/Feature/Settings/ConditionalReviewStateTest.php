@@ -95,7 +95,7 @@ final class ConditionalReviewStateTest extends TestCase
     {
         $this->pushReview();
 
-        $this->assertSame(['hooks.ready', ReviewState::TYPE_KEY], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', ReviewState::TYPE_KEY], $this->storedTypeKeys());
     }
 
     public function test_while_the_group_is_off_a_push_is_declined_and_a_stored_frame_is_removed_for_good(): void
@@ -104,12 +104,12 @@ final class ConditionalReviewStateTest extends TestCase
         $this->switchReview(off: true, expectedRevision: 0);
 
         $this->pushReview();
-        $this->assertSame(['hooks.ready'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready'], $this->storedTypeKeys());
 
         $this->switchReview(off: false, expectedRevision: 1);
 
         $this->assertSame(
-            ['hooks.ready'],
+            ['core.ready'],
             $this->storedTypeKeys(),
             self::NO_RESTORED_FRAME,
         );

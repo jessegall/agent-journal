@@ -90,6 +90,24 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         $this->assertThrows(fn () => $this->runOnBus(new RetryDeliveryCommand($range->id)), Throwable::class);
     }
 
+    public function test_a_delivery_accepted_after_an_earlier_try_gave_up_shows_as_delivered(): void
+    {
+        $this->app->make(AgentChatAccess::class)
+            ->allow($this->builder->agent_id, null, [$this->owner->id], ActorIdentity::system(), CarbonImmutable::now());
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', []));
+        $this->runOnBus(new AddChatParticipantCommand($inboxId, "agent:{$this->builder->agent_id}"));
+        $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Plan?', 'ada-plan'));
+
+        $receipt = $this->receiptOf($messageId, $this->builder->agent_id);
+        OutstandingMessageRange::create($receipt, 0)->exhaust('The driver did not answer.');
+        ReceiptDelivery::query()->where('receipt_id', $receipt->id)->sole()->accept();
+
+        $states = array_map(fn ($shown) => $shown->state, $this->rowOf($inboxId, $messageId)->deliveries);
+
+        $this->assertSame([WakeState::Accepted], $states);
+    }
+
     /**
      * The application never allows a row that raises events to be saved outside a command; the tests do, which hid
      * that a delivery tried after its message committed saved its row in no unit and so was rolled back whole.

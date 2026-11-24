@@ -199,7 +199,7 @@ final class HookStorageTest extends TestCase
         return new FrameRecords([
             new FrameRecord(
                 'frame-1',
-                new StateReference('hooks.ready', NoSubject::None),
+                new StateReference('core.ready', NoSubject::None),
                 true,
                 1,
                 CarbonImmutable::now(),

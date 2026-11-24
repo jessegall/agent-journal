@@ -7,6 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\AskChatQuestion\AskChatQuestionCommand;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Data\Messages\ReplyOriginal;
 use App\Enums\ChatPermission;
 use App\Exceptions\RespondentRequired;
 use App\Exceptions\StaleAddressee;
@@ -20,6 +21,7 @@ use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
 use Domain\Chat\Data\ChatMessageData;
 use Domain\Chat\Resolvers\Support\ChatConversations;
+use Spatie\LaravelData\Optional;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -90,6 +92,20 @@ final class ChatAddressingTest extends MessagingTestCase
         $this->assertNotNull($reply->replyTo);
         $this->assertFalse($reply->replyTo->visible);
         $this->assertNull($reply->replyTo->id);
+        $this->assertInstanceOf(Optional::class, $reply->replyTo->original);
+    }
+
+    public function test_a_reply_names_who_wrote_the_original_and_carries_one_line_of_it(): void
+    {
+        $originalId = $this->runOnBus(new PostChatMessageCommand($this->inboxId, "First\n\nline", 'first'));
+        $replyId = $this->runOnBus(new ReplyInChatCommand($originalId, 'Agreed.', 'reply'));
+
+        $original = $this->rowAs($replyId)->replyTo->original;
+
+        $this->assertInstanceOf(ReplyOriginal::class, $original);
+        $this->assertSame($this->keyOf($this->owner), $original->actor);
+        $this->assertSame($this->owner->name, $original->label);
+        $this->assertSame(['First', 'line'], explode(' ', $original->excerpt));
     }
 
     private function rowAs(string $messageId): ChatMessageData

@@ -23,13 +23,13 @@ const statusLabels: Record<ConversationIntent["status"], string> = {
 </script>
 
 <template>
-  <div class="flex max-w-[78%] flex-col items-end gap-0.5 self-end">
+  <div class="flex max-w-[78%] flex-col items-end gap-[3px] self-end">
     <p
       class="rounded-[10px_10px_4px_10px] bg-bubble px-3 py-2 text-body whitespace-pre-wrap text-text opacity-70"
     >
       {{ intent.text }}
     </p>
-    <span class="flex gap-2 text-small text-text-3">
+    <span class="flex flex-wrap items-center justify-end gap-x-1.5 text-right text-meta leading-[15px] text-text-4">
       <span class="inline-flex items-center gap-1.5">
         <template
           v-if="intent.status === 'sending' || intent.status === 'uncertain'"

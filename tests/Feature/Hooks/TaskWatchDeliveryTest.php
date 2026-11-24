@@ -45,9 +45,9 @@ final class TaskWatchDeliveryTest extends TestCase
     {
         $taskId = TestIds::of(42);
         $this->pushState($this->task(42));
-        $this->pushState(new StateReference('states.task_watch', new SubjectReference($taskId, 1), ['taskId' => $taskId, 'runNumber' => 1]));
-        $this->pushState(new StateReference('states.ordinary_task_watch', new SubjectReference($taskId, 2), ['taskId' => $taskId, 'runNumber' => 2]));
-        $this->pushState(new StateReference('states.task_watch', new SubjectReference($taskId, 3), ['taskId' => $taskId, 'runNumber' => 3]));
+        $this->pushState(new StateReference('tasks.task_watch', new SubjectReference($taskId, 1), ['taskId' => $taskId, 'runNumber' => 1]));
+        $this->pushState(new StateReference('tasks.ordinary_task_watch', new SubjectReference($taskId, 2), ['taskId' => $taskId, 'runNumber' => 2]));
+        $this->pushState(new StateReference('tasks.task_watch', new SubjectReference($taskId, 3), ['taskId' => $taskId, 'runNumber' => 3]));
 
         $attention = new RecordedAttention();
         $this->app->instance(ActorAttention::class, $attention);

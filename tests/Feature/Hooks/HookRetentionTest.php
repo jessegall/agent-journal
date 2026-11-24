@@ -164,7 +164,7 @@ final class HookRetentionTest extends TestCase
                 [
                     new FrameRecord(
                         'ready',
-                        new StateReference('hooks.ready', NoSubject::None),
+                        new StateReference('core.ready', NoSubject::None),
                         true,
                         1,
                         CarbonImmutable::now(),

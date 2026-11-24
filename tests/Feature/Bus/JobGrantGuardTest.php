@@ -74,7 +74,7 @@ final class JobGrantGuardTest extends TestCase
     {
         $frame = new Frame(
             'answering',
-            new StateReference('communication.answering', NoSubject::None),
+            new StateReference('core.messages.answering', NoSubject::None),
             AnsweringStates::holding('message-id'),
             CarbonImmutable::now(),
         );

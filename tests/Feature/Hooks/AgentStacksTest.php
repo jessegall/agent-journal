@@ -111,7 +111,7 @@ final class AgentStacksTest extends TestCase
 
         $this->assertCount(1, $frames);
         $this->assertTrue($frames[0]->isBottom);
-        $this->assertSame('hooks.ready', $frames[0]->reference->typeKey);
+        $this->assertSame('core.ready', $frames[0]->reference->typeKey);
     }
 
     public function test_creating_the_same_stack_again_leaves_the_first_one(): void
@@ -127,7 +127,7 @@ final class AgentStacksTest extends TestCase
 
     public function test_a_stack_a_racing_start_committed_first_is_kept_and_the_transaction_goes_on(): void
     {
-        $this->insertStackThrough($this->otherConnection(), 'racer-ready', 'hooks.ready');
+        $this->insertStackThrough($this->otherConnection(), 'racer-ready', 'core.ready');
 
         $this->transaction()->run(function (): void {
             $this->startStacks()->open($this->target);
@@ -164,7 +164,7 @@ final class AgentStacksTest extends TestCase
         });
 
         $this->assertSame(
-            ['hooks.ready', 'test.tasks'],
+            ['core.ready', 'test.tasks'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
         $this->assertSame(['task 42 started'], DomainWrite::names());
@@ -215,7 +215,7 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $counting));
 
         $this->assertSame(
-            ['hooks.ready', 'test.counting', 'test.counting'],
+            ['core.ready', 'test.counting', 'test.counting'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -251,7 +251,7 @@ final class AgentStacksTest extends TestCase
             fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None, ['enabled' => false])),
         );
         $this->assertSame(
-            ['hooks.ready'],
+            ['core.ready'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
 
@@ -259,7 +259,7 @@ final class AgentStacksTest extends TestCase
             fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None, ['enabled' => true])),
         );
         $this->assertSame(
-            ['hooks.ready', 'test.switched_on'],
+            ['core.ready', 'test.switched_on'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -285,7 +285,7 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
         $this->assertSame(
-            ['hooks.ready', 'test.tasks'],
+            ['core.ready', 'test.tasks'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -305,7 +305,7 @@ final class AgentStacksTest extends TestCase
         );
 
         $this->assertSame(
-            ['hooks.ready'],
+            ['core.ready'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }

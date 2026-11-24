@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Popover from "@kit/Popover";
 import { router } from "@inertiajs/vue3";
 import { computed, onMounted, ref, useId, useTemplateRef } from "vue";
 import ListBox from "@kit/ListBox";
@@ -113,10 +114,15 @@ function handTo(event: DragEvent, agent: AgentOptionData): void {
 </script>
 
 <template>
-  <div
-    ref="root"
-    class="absolute top-full left-0 z-90 mt-1 flex w-72 flex-col overflow-hidden rounded-menu border border-border-2 bg-raised shadow-(--shadow-pop)"
+  <Popover
+    :open="true"
+    :anchor="opener"
+    align="left"
+    :width="288"
+    label="Choose an agent"
+    @update:open="(isOpen) => !isOpen && emit('close')"
   >
+    <div ref="root" class="flex flex-col">
     <SearchField
       v-model="search"
       label="Find an agent"
@@ -160,4 +166,5 @@ function handTo(event: DragEvent, agent: AgentOptionData): void {
       </template>
     </div>
   </div>
+  </Popover>
 </template>

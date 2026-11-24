@@ -42,8 +42,10 @@ final readonly class ChatDeliveries
 
         foreach ($deliveries as $delivery) {
             $receipt = $receipts->get($delivery->receipt_id);
-            $range = $exhausted->get($delivery->receipt_id);
-            $state = $range === null ? $delivery->state->wakeState() : WakeState::Exhausted;
+            $wake = $delivery->state->wakeState();
+            // A delivery the agent accepted is delivered, whatever an earlier try left behind.
+            $range = $wake === WakeState::Accepted ? null : $exhausted->get($delivery->receipt_id);
+            $state = $range === null ? $wake : WakeState::Exhausted;
 
             $views[$receipt->message_id][] = new DeliveryView(
                 $receipt->message_id,

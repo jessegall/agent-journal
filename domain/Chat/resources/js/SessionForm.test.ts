@@ -423,6 +423,31 @@ describe("SessionForm", () => {
     form.unmount();
   });
 
+  it("ends a start whose session is gone without a refusal, says why, and starts anew under a new key", async () => {
+    const form = mount(SessionForm, {
+      props: { agent: idle, mode: "start" },
+    });
+    await flushPromises();
+
+    await form.find("form").trigger("submit");
+    const firstKey = postOptions.at(-1)?.headers?.["Idempotency-Key"];
+    await form.setProps({
+      agent: {
+        ...idle,
+        sessionId: null,
+        status: { ...idle.status, sessionState: "stopped", reason: "Restarted", isProcessConfirmed: false },
+      },
+    });
+    postOptions.at(-1)?.onSuccess({ flash: { startedSessionId: "session-1" } });
+    await flushPromises();
+    expect(form.text()).toContain("Restarted");
+    expect(form.text()).not.toContain("Starting");
+
+    await form.find("form").trigger("submit");
+    expect(postOptions.at(-1)?.headers?.["Idempotency-Key"]).not.toBe(firstKey);
+    form.unmount();
+  });
+
   it("keeps the chosen second account through a refresh while another stays the default", async () => {
     const all = accountsAnswer.accounts;
     accountsAnswer.accounts = [

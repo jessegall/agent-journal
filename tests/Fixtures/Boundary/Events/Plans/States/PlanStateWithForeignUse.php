@@ -9,11 +9,9 @@ use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 
 final class PlanStateWithForeignUse extends AgentState
 {
-    public function onTaskClosed(TaskClosed $event): null
+    public function onTaskClosed(TaskClosed $event): void
     {
         event($event);
-
-        return null;
     }
 
     public function eventClass(): string

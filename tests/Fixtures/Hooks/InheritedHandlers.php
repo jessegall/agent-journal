@@ -18,8 +18,7 @@ trait InheritedHandlers
         return Decision::delegate();
     }
 
-    public function onTaskStarted(Started $event): null
+    public function onTaskStarted(Started $event): void
     {
-        return null;
     }
 }

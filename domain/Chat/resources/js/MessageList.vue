@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TextLink from '@kit/TextLink';
-import { computed } from "vue";
+import { computed, useTemplateRef } from "vue";
 import Card from "@kit/Card";
 import type { DockCardEnvelope } from "@kit/dockCards";
 import { ACTING_AGENT, groupTurns } from "./chatTurns";
@@ -13,6 +13,8 @@ import type {
 } from "@generated/types/chat";
 import type { ConversationIntent } from "./composables/useConversationIntents";
 import type { RecoveryEntry } from "./composables/useMessageDrafts";
+import { useChatScroll } from "./composables/useChatScroll";
+import MessageDeliveries from "./MessageDeliveries.vue";
 import MessageRow from "./MessageRow.vue";
 import NoMessages from "./NoMessages.vue";
 import PendingMessage from "./PendingMessage.vue";
@@ -150,6 +152,37 @@ const turns = computed(() =>
   })),
 );
 
+/** How long after a speaker's message their next one still joins it as one run. */
+const RUN_GAP_MILLISECONDS = 5 * 60 * 1000;
+
+/**
+ * Whether a row joins the one above as a run: the same speaker, not the viewer, nothing between, within five minutes.
+ */
+function continuesRun(turnRows: LogRow[], index: number): boolean {
+  const message = turnRows[index].message;
+  const previous = index === 0 ? null : turnRows[index - 1].message;
+
+  if (message === null || previous === null || isOwn(message)) {
+    return false;
+  }
+
+  return (
+    previous.speaker.actor === message.speaker.actor &&
+    new Date(message.sentAt).getTime() - new Date(previous.sentAt).getTime() < RUN_GAP_MILLISECONDS
+  );
+}
+
+const log = useTemplateRef<HTMLElement>("log");
+
+useChatScroll(
+  log,
+  () => rows.value.map((row) => row.key),
+  () => props.pending.length,
+);
+
+/** The viewer's latest message, the only one that keeps Delivered in view. */
+const latestOwnId = computed(() => props.messages.findLast((message) => isOwn(message))?.id ?? null);
+
 function isOwn(message: ChatMessageData): boolean {
   return message.speaker.actor === props.viewer;
 }
@@ -181,17 +214,6 @@ function rowLabel(message: ChatMessageData): string {
   return `${speaker}${addressee}`;
 }
 
-/**
- * What the reply link says: the original's speaker and its first words, when this view holds it.
- */
-function originalLabel(message: ChatMessageData): string {
-  const original =
-    message.replyTo === undefined ? undefined : props.messages.find((shown) => shown.id === message.replyTo?.id);
-
-  return original === undefined
-    ? "Go to the original message"
-    : `Go to the original from ${original.speaker.label}: ${original.body.slice(0, 80)}`;
-}
 
 // Nothing to show yet: no message, no plain line, none being sent and none refused.
 const isEmpty = computed(
@@ -204,6 +226,7 @@ const isEmpty = computed(
 
 <template>
   <div
+    ref="log"
     class="flex flex-1 flex-col gap-6 overflow-y-auto pt-[22px] pb-[18px]"
     role="log"
     aria-live="polite"
@@ -226,7 +249,7 @@ const isEmpty = computed(
         <p class="self-center text-badge text-text-3">{{ turn.day }}</p>
       </template>
       <div class="flex flex-col gap-2" data-turn>
-        <template v-for="{ key, message, line, time } in turn.rows" :key="key">
+        <template v-for="({ key, message, line, time }, index) in turn.rows" :key="key">
           <template
             v-if="
               line !== null && line.card !== null && line.cardPlacement === 'inline'
@@ -254,14 +277,38 @@ const isEmpty = computed(
               <LineWords :subject="line.subject" :words="line.line" />
             </p>
           </template>
-          <template v-if="message !== null">
+          <template v-if="message !== null && isOwn(message)">
+            <div class="group/mine relative flex max-w-[78%] flex-col items-end gap-[3px] self-end">
+              <MessageRow
+                :message="message"
+                :time="time"
+                :is-own="isOwn(message)"
+                :continues-run="continuesRun(turn.rows, index)"
+                :label="rowLabel(message)"
+                :addressee="message.addressedTo === null ? null : labelOf(message.addressedTo)"
+                :viewer="viewer"
+                :question-url="questionUrl(message.id)"
+                :inbox-id="inboxId"
+                :conversation-prop="conversationProp"
+                @reply="emit('reply', message)"
+                @decline="emit('decline', message)"
+              />
+              <MessageDeliveries
+                :message="message"
+                :conversation-prop="conversationProp"
+                :is-latest="message.id === latestOwnId"
+              />
+            </div>
+          </template>
+          <template v-else-if="message !== null">
             <MessageRow
               :message="message"
               :time="time"
               :is-own="isOwn(message)"
+              :continues-run="continuesRun(turn.rows, index)"
               :label="rowLabel(message)"
               :addressee="message.addressedTo === null ? null : labelOf(message.addressedTo)"
-              :original-label="originalLabel(message)"
+              :viewer="viewer"
               :question-url="questionUrl(message.id)"
               :inbox-id="inboxId"
               :conversation-prop="conversationProp"

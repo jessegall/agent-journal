@@ -20,9 +20,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class LayoutPartData extends Data
 {
     /**
-     * The tones a badge takes.
+     * The tones a badge takes; waiting is a state that has not begun or is absent, drawn with a hollow dot.
      */
-    private const array TONES = ['quiet', 'good', 'warn', 'danger', 'busy'];
+    private const array TONES = ['quiet', 'good', 'warn', 'danger', 'busy', 'waiting'];
 
     /**
      * @param  list<LayoutRowData>  $rows
@@ -126,7 +126,7 @@ final class LayoutPartData extends Data
     }
 
     /**
-     * A short state word in a tone: quiet, good, warn, danger or busy.
+     * A short state word in a tone: quiet, good, warn, danger, busy, or waiting for a state that has not begun.
      */
     public static function badge(string $key, string $word, string $tone = 'quiet'): self
     {

@@ -17,9 +17,9 @@ use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 final class WatchingNoteState extends AgentState
 {
     /**
-     * @return list<Command<mixed>>
+     * @return iterable<Command<mixed>>
      */
-    public function onNoteWritten(NoteWritten $event): array
+    public function onNoteWritten(NoteWritten $event): iterable
     {
         return $event->ordinary;
     }

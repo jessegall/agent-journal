@@ -499,6 +499,7 @@ use App\Data\Messages\MessageReadBatch;
 use App\Data\Messages\MessageReader;
 use App\Data\Messages\MessageReadResult;
 use App\Data\Messages\MessageView;
+use App\Data\Messages\ReplyOriginal;
 use App\Data\Messages\WakeStatus;
 use App\Data\Notifications\NotificationLink;
 use App\Data\Notifications\NotificationTarget;
@@ -2107,6 +2108,7 @@ final class CoreApi
                 WholeRecord::class,
                 CommentType::class,
                 MessageView::class,
+                ReplyOriginal::class,
                 MessagePage::class,
                 MessageReader::class,
                 MessageClaimHolder::class,

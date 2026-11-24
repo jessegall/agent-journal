@@ -35,10 +35,7 @@ final class StateMethodSelectorTest extends TestCase
                 return Decision::delegate();
             }
 
-            public function onTaskStarted(TaskStarted $event): null
-            {
-                return null;
-            }
+            public function onTaskStarted(TaskStarted $event): void {}
         };
         $inherited = new class extends InheritingState {};
         $finished = new class extends InheritingState

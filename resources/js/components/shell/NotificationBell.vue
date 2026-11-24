@@ -2,6 +2,7 @@
 import TextLink from '@kit/TextLink';
 import { computed, nextTick, ref, watch } from 'vue';
 import IconAction from '@/components/kit/IconAction.vue';
+import Popover from '@/components/kit/Popover.vue';
 import Sheet from '@/components/kit/Sheet.vue';
 import { useBellPanel } from '@/composables/useBellPanel';
 import { useNotifications } from '@/composables/useNotifications';
@@ -21,6 +22,7 @@ const { isOpen, registerFocus } = useBellPanel();
 const isCompact = ref(false);
 const lastOpenedId = ref<string | undefined>(undefined);
 const bell = ref<InstanceType<typeof IconAction> | null>(null);
+const bellElement = computed(() => (bell.value?.$el as HTMLElement | undefined) ?? null);
 
 registerFocus(() => bell.value?.focus());
 
@@ -109,8 +111,9 @@ function followed(receiptId: string): void {
                 >
             </template>
         </IconAction>
-        <template v-if="isOpen && !isCompact">
-            <div class="absolute top-8 right-0 z-90 rounded-menu border border-border-2 bg-raised p-1.5 shadow-pop">
+        <template v-if="!isCompact">
+            <Popover v-model:open="isOpen" :anchor="bellElement" align="right" label="Notifications">
+              <div class="p-1.5">
                 <NotificationList
                     :id="panelId"
                     :state="state"
@@ -134,7 +137,8 @@ function followed(receiptId: string): void {
                         Show pop-ups again
                     </TextLink>
                 </template>
-            </div>
+              </div>
+            </Popover>
         </template>
         <template v-if="isCompact">
             <Sheet :is-open="isOpen" title="Notifications" @close="close">

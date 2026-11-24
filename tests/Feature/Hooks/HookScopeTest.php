@@ -152,7 +152,7 @@ final class HookScopeTest extends TestCase
         new AgentStackRow()->startFor($target, new FrameRecords([
             new FrameRecord(
                 'ready',
-                new StateReference('hooks.ready', NoSubject::None),
+                new StateReference('core.ready', NoSubject::None),
                 true,
                 1,
                 CarbonImmutable::now(),

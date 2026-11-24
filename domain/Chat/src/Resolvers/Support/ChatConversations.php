@@ -321,7 +321,11 @@ final readonly class ChatConversations
             return Optional::create();
         }
 
-        return ReplyTargetData::from(['id' => $message->replyToId, 'visible' => ! $message->replyUnavailable]);
+        return ReplyTargetData::from([
+            'id' => $message->replyToId,
+            'visible' => ! $message->replyUnavailable,
+            'original' => $message->replyOriginal,
+        ]);
     }
 
     private static function keyOf(ActorIdentity $actor): string

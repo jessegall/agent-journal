@@ -9,6 +9,17 @@ vi.mock('@inertiajs/vue3', () => ({
     Link: { props: ['href'], template: '<a :href="href"><slot /></a>' },
     router: { on: vi.fn(), visit: (...values: unknown[]) => visit(...values) },
     usePage: () => ({ url: '/plans' }),
+    // A form of the dialog's layout holds its values the way Inertia's form does, without sending anything.
+    useForm: (fields: Record<string, unknown>) => ({
+        ...fields,
+        errors: {},
+        processing: false,
+        data: () => fields,
+        defaults: vi.fn(),
+        reset: vi.fn(),
+        transform: vi.fn(),
+        submit: vi.fn(),
+    }),
 }));
 
 const { default: LayoutDialog } = await import('./LayoutDialog.vue');

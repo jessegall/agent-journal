@@ -12,8 +12,7 @@ use Domain\Plans\Events\PlanProgressChanged;
  */
 final class OwnerlessState extends AgentState
 {
-    public function onPlanProgressChanged(PlanProgressChanged $event): null
+    public function onPlanProgressChanged(PlanProgressChanged $event): void
     {
-        return null;
     }
 }

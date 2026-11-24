@@ -86,7 +86,7 @@ final class StateTypeLifecycleTest extends TestCase
         $stack = $this->app->make(StackRestorer::class)->restore(new FrameRecords([
             new FrameRecord(
                 'ready',
-                new StateReference('hooks.ready', NoSubject::None),
+                new StateReference('core.ready', NoSubject::None),
                 true,
                 1,
                 CarbonImmutable::now(),

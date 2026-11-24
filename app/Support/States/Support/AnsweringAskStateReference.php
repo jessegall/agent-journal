@@ -14,7 +14,7 @@ use App\Support\References\SubjectReference;
  */
 final class AnsweringAskStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'supervision.answering';
+    public const string TYPE_KEY = 'core.asks.answering';
 
     public static function forHop(AskHop $hop): StateReference
     {

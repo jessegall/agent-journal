@@ -5424,6 +5424,7 @@ class	ReplyInChatCommand
 class	ReplyInChatController
 class	ReplyInChatHandler
 class	ReplyInput
+class	ReplyOriginal
 class	ReplyTargetData
 class	ReplyToAskCall
 class	ReplyToAskCommand
@@ -7758,6 +7759,8 @@ constant	LayoutRoots::CORE_ROOT_FILES
 constant	LayoutRoots::ROLE_FOLDERS
 constant	LayoutSplitData::LIST_WIDTH
 constant	LibraryReuse::ELEMENTS
+constant	LibraryReuse::FLOATING
+constant	LibraryReuse::FLOATING_CLASSES
 constant	LibraryReuse::ROLES
 constant	LibraryReuse::SKIPPED
 constant	LimitMcpMessage::BYTE_LIMIT
@@ -8079,6 +8082,7 @@ constant	ReleaseTarget::REQUIRED_PROVIDERS
 constant	Reminder::LINK_TYPE
 constant	Reminder::TITLE_CHARACTER_LIMIT
 constant	RepairRouting::ROUND_LIMIT
+constant	ReplyOriginal::EXCERPT_LIMIT
 constant	Report::LINK_TYPE
 constant	ReportDockCard::ABSTRACT_CHARACTER_LIMIT
 constant	ReportJobDiscrepancy::UPDATED_AT
@@ -9587,6 +9591,7 @@ method	AccountsIndex::readerOf()
 method	AccountsIndex::resetTime()
 method	AccountsIndex::rowOf()
 method	AccountsIndex::signInHelp()
+method	AccountsIndex::stateToneOf()
 method	AccountsIndex::stateWordOf()
 method	AccountsIndex::summaryOf()
 method	AccountsIndex::typeOf()
@@ -17652,6 +17657,7 @@ method	MessageRecords::history()
 method	MessageRecords::inspect()
 method	MessageRecords::ownInboxes()
 method	MessageRecords::page()
+method	MessageRecords::replyOriginalFields()
 method	MessageRecords::sitsAt()
 method	MessageRecords::timeline()
 method	MessageRecords::viewsOf()
@@ -21825,6 +21831,7 @@ method	ReplyInChatHandler::__construct()
 method	ReplyInChatHandler::handle()
 method	ReplyInboxes::replyInboxIdFor()
 method	ReplyInput::__construct()
+method	ReplyOriginal::__construct()
 method	ReplyTargetData::__construct()
 method	ReplyToAskCall::__construct()
 method	ReplyToAskCommand::__construct()
@@ -30315,6 +30322,7 @@ parameter	$replyClass
 parameter	$replyId
 parameter	$replyInboxId
 parameter	$replyInboxes
+parameter	$replyOriginal
 parameter	$replyTo
 parameter	$replyToId
 parameter	$replyUnavailable
@@ -36039,6 +36047,7 @@ property	MessageView::$destinationInboxId
 property	MessageView::$destinationInboxLabel
 property	MessageView::$firstReader
 property	MessageView::$id
+property	MessageView::$replyOriginal
 property	MessageView::$replyToId
 property	MessageView::$replyUnavailable
 property	MessageView::$requestKey
@@ -38712,7 +38721,11 @@ property	ReplyInput::$inboxId
 property	ReplyInput::$messageId
 property	ReplyInput::$requestKey
 property	ReplyInput::$stateVersion
+property	ReplyOriginal::$actor
+property	ReplyOriginal::$excerpt
+property	ReplyOriginal::$label
 property	ReplyTargetData::$id
+property	ReplyTargetData::$original
 property	ReplyTargetData::$visible
 property	ReplyToAskCall::$body
 property	ReplyToAskCall::$id
@@ -43751,6 +43764,8 @@ variable	$ordinary
 variable	$orientation
 variable	$origin
 variable	$original
+variable	$originalFields
+variable	$originals
 variable	$other
 variable	$otherDocumentDraft
 variable	$otherHead

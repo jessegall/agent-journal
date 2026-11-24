@@ -22,7 +22,7 @@ use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQ
 #[Ticks(guard: AwaitingAnswerGuard::class)]
 final class AwaitingAnswerState extends AgentState implements TickableState
 {
-    public const string TYPE_KEY = 'reminders.awaiting';
+    public const string TYPE_KEY = 'question_reminders.awaiting';
 
     public const int REMIND_AFTER_SECONDS = 60;
 

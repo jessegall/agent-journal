@@ -89,7 +89,7 @@ final readonly class AccountsIndex
             ],
             'trailing' => [
                 ...$this->usageMeterOf($row),
-                LayoutPartData::badge('state', $this->stateWordOf($row)),
+                LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateToneOf($row)),
             ],
         ]);
     }
@@ -206,7 +206,7 @@ final readonly class AccountsIndex
             'Sign-in',
             $row->state === AccountState::NeedsSignIn
                 ? $this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')
-                : LayoutPartData::badge('state', $this->stateWordOf($row)),
+                : LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateToneOf($row)),
             $this->signInHelp($row),
         );
 
@@ -357,6 +357,14 @@ final readonly class AccountsIndex
             'inline',
             LayoutPartData::action("{$key}-send", $label, LayoutActionData::submitting()),
         );
+    }
+
+    /**
+     * Not signed in and expired are states that have not begun, drawn with a hollow dot; the rest are quiet.
+     */
+    private function stateToneOf(AccountRowData $row): string
+    {
+        return $row->state === AccountState::NeedsSignIn ? 'waiting' : 'quiet';
     }
 
     private function stateWordOf(AccountRowData $row): string

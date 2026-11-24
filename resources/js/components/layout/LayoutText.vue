@@ -12,7 +12,7 @@ import { dateTime } from '@/kit/format';
 // A line of text of a declared layout, drawn by its style.
 const props = defineProps<{ part: LayoutPartData }>();
 
-type BadgeTone = 'quiet' | 'good' | 'warn' | 'danger' | 'busy';
+type BadgeTone = 'quiet' | 'good' | 'warn' | 'danger' | 'busy' | 'waiting';
 
 // The server admits only these tones on a badge, so the word is one of them.
 const badgeTone = computed(() => (props.part.tone ?? 'quiet') as BadgeTone);

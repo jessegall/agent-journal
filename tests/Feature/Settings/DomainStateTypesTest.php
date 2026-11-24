@@ -41,7 +41,7 @@ final class DomainStateTypesTest extends TestCase
 
         $this->assertSame(WorkingOnTaskState::class, $working->stateClass);
         $this->assertSame(1, $working->schemaVersion);
-        $this->assertTrue($types->get('hooks.ready')->isEnabled());
+        $this->assertTrue($types->get('core.ready')->isEnabled());
     }
 
     public function test_a_domains_ticking_state_type_still_ticks(): void

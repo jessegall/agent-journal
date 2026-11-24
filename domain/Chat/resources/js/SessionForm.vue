@@ -2,7 +2,7 @@
 import TextLink from '@kit/TextLink';
 import { dateTime } from "@kit/format";
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, watch } from "vue";
 import Button from "@kit/Button";
 import Field from "@kit/Field";
 import Dialog from "@kit/Dialog";
@@ -108,6 +108,8 @@ const progress = ref<string | null>(null);
 const sending = ref(false);
 const isCancelling = ref(false);
 let startedSessionId: string | null = null;
+// The agent as the page showed it when the start was sent: until the page reads it again, it says nothing new.
+const agentWhenSent = shallowRef<typeof props.agent | null>(null);
 let following: { stop: () => void } | undefined;
 
 const account = computed(() =>
@@ -473,6 +475,7 @@ function start(): void {
   refusal.value = null;
   sending.value = true;
   sentRequestId = requestId;
+  agentWhenSent.value = props.agent;
   keepRestoration(sentRequestId);
   keyedPost(startMain.url(props.agent.profileKey), sessionChoice(), requestId, {
     onAccepted: (flash) => {
@@ -536,6 +539,20 @@ function showStart(): boolean {
   if (hasStartedSessionEnded && shown.startRefusal !== null) {
     progress.value = null;
     refusal.value = shown.startRefusal;
+
+    return true;
+  }
+
+  // The session this start made is gone and the agent, as the page read it after the start was sent, holds none and
+  // shows no refusal: the start is over, so the dialog says why it ended and the next Start is a new start.
+  if (
+    hasStartedSessionEnded &&
+    shown.sessionId === null &&
+    shown !== agentWhenSent.value
+  ) {
+    progress.value = null;
+    refusal.value = status.reason ?? "The session this start made has ended; start it again.";
+    forgetRefusedStart();
 
     return true;
   }

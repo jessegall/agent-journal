@@ -135,7 +135,7 @@ describe("MessageList", () => {
 
     expect(asBea.text()).toContain("Ada");
     expect(asBea.text()).toContain("→ Bea");
-    expect(asBea.text()).toContain("The original was removed");
+    expect(asBea.find("article span.italic").exists()).toBe(true);
     expect(asBea.find("article").attributes("aria-label")).toBe("Ada to Bea");
     expect(asBea.find("article").attributes("tabindex")).toBe("0");
     expect(asBea.find('a[href^="#message-"]').exists()).toBe(false);
@@ -145,7 +145,7 @@ describe("MessageList", () => {
     expect(asCy.text()).not.toContain("Decline");
   });
 
-  it("shows which recipient was given up from which character, and the retry only when the server offers it", () => {
+  it("shows which recipient was not delivered under your bubble, and the retry only when the server offers it", () => {
     const row = (retryDelivery: boolean) => ({
       id: "m1",
       sequence: 1,
@@ -198,7 +198,7 @@ describe("MessageList", () => {
     });
 
     expect(operator.text()).toContain("Codex: Not delivered");
-    expect(operator.text()).toContain("from character 8000");
+    expect(operator.text()).not.toContain("8000");
     expect(operator.text()).not.toContain("Claude:");
     expect(operator.findAll("button").map((button) => button.text())).toContain(
       "Retry",
@@ -295,5 +295,123 @@ describe("MessageList", () => {
 
     expect(text.indexOf(step.line)).toBeGreaterThan(text.indexOf("Body first"));
     expect(text.indexOf(step.line)).toBeLessThan(text.indexOf("Body second"));
+  });
+
+  it("puts who a reply answers and a line of the original above its text, as You for the viewer's own", () => {
+    const row = (id: string, actor: string, replyTo: object, body: string) => ({
+      id,
+      sequence: 1,
+      rootId: null,
+      speaker: { actor, label: actor === "user:ada" ? "Ada" : "Bea", driver: null },
+      addressedTo: null,
+      replyTo,
+      body,
+      state: "sent",
+      stateVersion: 0,
+      respondent: null,
+      actions: { answer: false, decline: false, retryDelivery: false },
+      readByMe: true,
+      sentAt: "2026-11-22T13:42:00Z",
+      requestKey: null,
+      deliveries: [],
+      reactions: [],
+    });
+    const original = { actor: "user:ada", label: "Ada", excerpt: "Agreed" };
+    const list = (viewer: string) =>
+      mount(MessageList, {
+        props: {
+          lines: [],
+          messages: [row("r1", "user:bea", { id: "m0", visible: true, original }, "Thanks")],
+          pending: [],
+          refused: [],
+          viewer,
+          participants: [],
+          questionUrl: () => "#",
+        } as never,
+      });
+
+    const asCy = list("user:cy");
+    const line = asCy.get("article button[title]");
+    expect(line.text()).toContain("Ada");
+    expect(line.text()).toContain("Agreed");
+    expect(asCy.text().indexOf("Agreed")).toBeLessThan(asCy.text().indexOf("Thanks"));
+    expect(list("user:ada").get("article button[title]").text()).toContain("You");
+    expect(list("user:bea").get("article button[title]").text()).toContain("Ada");
+  });
+
+  it("names an agent once for a run of its messages and again after five minutes", () => {
+    const row = (id: string, sequence: number, sentAt: string) => ({
+      id,
+      sequence,
+      rootId: null,
+      speaker: { actor: "agent:a1", label: "Builder", driver: "Claude Code" },
+      addressedTo: null,
+      body: id,
+      state: "sent",
+      stateVersion: 0,
+      respondent: null,
+      actions: { answer: false, decline: false, retryDelivery: false },
+      readByMe: true,
+      sentAt,
+      requestKey: null,
+      deliveries: [],
+      reactions: [],
+    });
+    const list = mount(MessageList, {
+      props: {
+        lines: [],
+        messages: [
+          row("first", 1, "2026-11-22T13:00:00Z"),
+          row("second", 2, "2026-11-22T13:02:00Z"),
+          row("third", 3, "2026-11-22T13:09:00Z"),
+        ],
+        pending: [],
+        refused: [],
+        viewer: "user:ada",
+        participants: [],
+        questionUrl: () => "#",
+      } as never,
+    });
+
+    const names = list.findAll("article").map((article) => article.text().includes("Builder"));
+    expect(names).toEqual([true, false, true]);
+  });
+
+  it("keeps Delivered in view under your latest message only", () => {
+    const row = (id: string, sequence: number) => ({
+      id,
+      sequence,
+      rootId: null,
+      speaker: { actor: "user:ada", label: "Ada", driver: null },
+      addressedTo: null,
+      body: id,
+      state: "sent",
+      stateVersion: 0,
+      respondent: null,
+      actions: { answer: false, decline: false, retryDelivery: false },
+      readByMe: true,
+      sentAt: "2026-11-22T13:42:00Z",
+      requestKey: null,
+      deliveries: [
+        { recipient: "agent:a1", label: "Builder", state: "accepted", reason: null, pendingFrom: null, rangeId: null },
+      ],
+      reactions: [],
+    });
+    const list = mount(MessageList, {
+      props: {
+        lines: [],
+        messages: [row("older", 1), row("latest", 2)],
+        pending: [],
+        refused: [],
+        viewer: "user:ada",
+        participants: [],
+        questionUrl: () => "#",
+      } as never,
+    });
+
+    const lines = list.findAll("p").filter((line) => line.text() === "Delivered");
+    expect(lines).toHaveLength(2);
+    expect(lines[0].classes()).toContain("opacity-0");
+    expect(lines[1].classes()).not.toContain("opacity-0");
   });
 });

@@ -47,7 +47,7 @@ final class SequenceStateContributionTest extends TestCase
             [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->actor_type, $run->fresh()?->actor_id],
         );
 
-        $this->assertSame(['hooks.ready', 'sequences.following'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'sequences.following'], $this->storedTypeKeys());
     }
 
     public function test_a_failed_push_rolls_the_start_back(): void
@@ -103,7 +103,7 @@ final class SequenceStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new CancelSequenceCommand($cancelled->id));
 
         $this->assertSame('{}', $this->answerStop('call-2'));
-        $this->assertSame(['hooks.ready', 'sequences.following'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'sequences.following'], $this->storedTypeKeys());
     }
 
     private function newRun(): SequenceRun

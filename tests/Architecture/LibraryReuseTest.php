@@ -20,7 +20,7 @@ final class LibraryReuseTest extends TestCase
 
     private const string SHRINK_THE_BASELINE = 'These no longer offend: remove their lines from the baseline.';
 
-    public function test_a_raw_button_a_textarea_opened_on_its_own_line_and_an_own_menu_role_are_caught(): void
+    public function test_a_raw_button_a_textarea_opened_on_its_own_line_an_own_menu_role_and_a_floating_surface_are_caught(): void
     {
         $root = dirname(__DIR__, 2);
 
@@ -28,6 +28,7 @@ final class LibraryReuseTest extends TestCase
 
         $this->assertSame(
             [
+                'tests/Fixtures/LibraryReuse/OwnMenu.vue:floating',
                 'tests/Fixtures/LibraryReuse/OwnMenu.vue:role=menu',
                 'tests/Fixtures/LibraryReuse/OwnMenu.vue:button',
                 'tests/Fixtures/LibraryReuse/OwnMenu.vue:textarea',

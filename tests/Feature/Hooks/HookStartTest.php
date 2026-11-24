@@ -95,8 +95,8 @@ final class HookStartTest extends TestCase
             $second->session->id,
             $this->app->make(CredentialLookup::class)->sessionFor($second->token)->id,
         );
-        $this->assertSame(['hooks.ready'], $this->bottomOf($first));
-        $this->assertSame(['hooks.ready'], $this->bottomOf($second));
+        $this->assertSame(['core.ready'], $this->bottomOf($first));
+        $this->assertSame(['core.ready'], $this->bottomOf($second));
     }
 
     public function test_every_start_starts_on_the_one_ready_bottom(): void

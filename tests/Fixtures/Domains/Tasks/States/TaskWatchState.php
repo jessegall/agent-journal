@@ -18,7 +18,7 @@ use Tests\Fixtures\Domains\Tasks\States\Commands\RecordFinishedTask\RecordFinish
 /**
  * A fixture watcher whose context identifies the frame reacting to a Tasks fact.
  */
-#[StateType('states.task_watch', schemaVersion: 1, transfer: SessionTransferType::Durable)]
+#[StateType('tasks.task_watch', schemaVersion: 1, transfer: SessionTransferType::Durable)]
 class TaskWatchState extends AgentState
 {
     public function __construct(private readonly string $taskId, private readonly int $runNumber) {}

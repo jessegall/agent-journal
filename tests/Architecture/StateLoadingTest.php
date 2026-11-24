@@ -16,7 +16,7 @@ use SplFileInfo;
 use Tests\TestCase;
 
 /**
- * Adding a state is writing one class (task 2944): the class names its own type, the one builder makes it from its
+ * Adding a state is writing one class: the class names its own type, the one builder makes it from its
  * saved values, and no factory or loader is written for it.
  */
 final class StateLoadingTest extends TestCase

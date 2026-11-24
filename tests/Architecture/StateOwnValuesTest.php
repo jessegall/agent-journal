@@ -14,7 +14,7 @@ use Tests\Fixtures\Hooks\StateLoading\KeptValuesState;
 use Tests\TestCase;
 
 /**
- * A state keeps its own flags, counts and steps as properties it changes itself (rule 93): its constructor takes only
+ * A state keeps its own flags, counts and steps as properties it changes itself: its constructor takes only
  * the subject it is about, which never changes, and the collaborators it works with, never a flag or a value it then
  * changes.
  */

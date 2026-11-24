@@ -13,7 +13,7 @@ use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCance
 /**
  * Replaces the cancellation method with an ordinary override.
  */
-#[StateType('states.ordinary_task_watch', schemaVersion: 1, transfer: SessionTransferType::Durable)]
+#[StateType('tasks.ordinary_task_watch', schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class OrdinaryTaskWatchState extends TaskWatchState
 {
     public function onTaskCancelled(TaskCancelled $event): RecordCancelledTaskCommand|Decision

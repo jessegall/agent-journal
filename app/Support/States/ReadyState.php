@@ -31,7 +31,7 @@ use App\Values\Operation;
 #[StateType(self::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
 class ReadyState extends AgentState
 {
-    public const string TYPE_KEY = 'hooks.ready';
+    public const string TYPE_KEY = 'core.ready';
 
     public function __construct(
         private readonly OperationPolicy $policy,

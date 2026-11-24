@@ -52,7 +52,7 @@ final class DomainEventRulesTest extends TestCase
 
         yield 'an unrelated state helper has no event permission' => [
             'Plans/States/PlanStateWithForeignUse.php',
-            ['21 names '.self::TASK_CLOSED.$onlyAListener],
+            ['19 names '.self::TASK_CLOSED.$onlyAListener],
         ];
 
         yield 'a listener with a group import, naming a descriptor outside its own descriptor' => [
@@ -114,7 +114,7 @@ final class DomainEventRulesTest extends TestCase
         $methods = new StateMethods();
         $types = $this->app->make(StateTypes::class)->registry()->types();
 
-        $this->assertArrayHasKey('hooks.ready', $types);
+        $this->assertArrayHasKey('core.ready', $types);
 
         foreach ($types as $type) {
             foreach ($methods->forState($type->stateClass) as $input => $method) {

@@ -27,9 +27,9 @@ final class WritingNoteState extends AgentState
     }
 
     /**
-     * @return list<Command<mixed>>
+     * @return iterable<Command<mixed>>
      */
-    public function onNoteWritten(NoteWritten $event): array
+    public function onNoteWritten(NoteWritten $event): iterable
     {
         if ($event->listenerFails) {
             throw NoteWorkFailed::whileListening();
@@ -39,9 +39,9 @@ final class WritingNoteState extends AgentState
     }
 
     /**
-     * @return list<Command<mixed>>
+     * @return iterable<Command<mixed>>
      */
-    public function onNotePublished(NotePublished $event): array
+    public function onNotePublished(NotePublished $event): iterable
     {
         return $this->onNoteWritten($event->note);
     }

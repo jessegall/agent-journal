@@ -592,7 +592,7 @@ final class AgentStackTest extends TestCase
 
     private function answeringFrame(bool $messageWaits): Frame
     {
-        $reference = $this->reference('communication.answering', '95');
+        $reference = $this->reference('core.messages.answering', '95');
 
         return new Frame(
             'message-95',

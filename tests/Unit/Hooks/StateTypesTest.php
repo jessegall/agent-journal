@@ -45,14 +45,14 @@ final class StateTypesTest extends TestCase
 
         $this->assertTrue($registry->has('tasks.working'));
         $this->assertSame($type, $registry->get('tasks.working'));
-        $this->assertFalse($registry->has('communication.answering'));
+        $this->assertFalse($registry->has('core.messages.answering'));
     }
 
     public function test_an_unknown_key_is_an_error(): void
     {
         $this->expectException(StateTypeUnknown::class);
 
-        new StateTypeRegistry()->get('communication.answering');
+        new StateTypeRegistry()->get('core.messages.answering');
     }
 
     public function test_a_key_registered_twice_is_an_error(): void

@@ -38,7 +38,7 @@ final class DeclaredLayoutTest extends TestCase
 {
     private const string OWNER_ONLY_REASON = 'Only the owner approves';
 
-    private const array BADGE_TONES = ['quiet', 'good', 'warn', 'danger', 'busy'];
+    private const array BADGE_TONES = ['quiet', 'good', 'warn', 'danger', 'busy', 'waiting'];
 
     public function test_a_layout_page_is_drawn_by_the_shared_renderer_from_its_readers_layout(): void
     {

@@ -110,7 +110,7 @@ final class HookRecoveryTest extends TestCase
         );
         $this->assertSame(StackStatus::Active, $this->stackOf($started)->status);
         $this->assertSame(
-            ['hooks.ready', 'tasks.working'],
+            ['core.ready', 'tasks.working'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($started)->frames->all()),
         );
         $this->assertSame(TaskState::Started, $task->fresh()?->state);
@@ -154,7 +154,7 @@ final class HookRecoveryTest extends TestCase
 
         $this->assertNotSame($exited->session->id, $replacement->session->id);
         $this->assertSame(
-            ['hooks.ready'],
+            ['core.ready'],
             array_map(
                 fn (FrameRecord $frame) => $frame->reference->typeKey,
                 $this->stackOf($replacement)->frames->all(),

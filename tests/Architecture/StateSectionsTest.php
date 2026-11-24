@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 /**
  * A state lays out its methods as the state machine reads them: the constructor, its reference makers and its own
- * answers first under no marker, then Lifecycle, Hooks, Events and Internals (user messages 19769, 19907 to 19914).
+ * answers first under no marker, then Lifecycle, Hooks, Events and Internals.
  * tools/refactoring/state-sections.php lists every fault.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]

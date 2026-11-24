@@ -15,14 +15,16 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex max-w-[78%] flex-col items-end gap-0.5 self-end">
+  <div class="flex max-w-[78%] flex-col items-end gap-[3px] self-end">
     <p
       class="rounded-[10px_10px_4px_10px] border border-border-2 px-3 py-2 text-body whitespace-pre-wrap text-text-2"
     >
       {{ entry.text }}
     </p>
-    <span class="flex gap-2 text-small text-tone-warn">
-      <span>{{ reason }}</span>
+    <span class="flex flex-wrap items-center justify-end gap-x-1.5 text-right text-meta leading-[15px] text-text-4">
+      <span class="font-medium text-danger">Not delivered</span>
+      <span class="text-border-3">·</span>
+      <span class="text-text-3">{{ reason }}</span>
       <Button
         size="small"
         variant="ghost"

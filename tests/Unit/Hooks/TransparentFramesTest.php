@@ -181,7 +181,7 @@ final class TransparentFramesTest extends TestCase
     {
         $state = $answered ? AnsweringStates::answered() : AnsweringStates::holding('9');
 
-        return $this->frame('message', 'communication.answering', '9', $state);
+        return $this->frame('message', 'core.messages.answering', '9', $state);
     }
 
     private function frame(string $id, string $typeKey, string $subjectId, AgentState $state): Frame
