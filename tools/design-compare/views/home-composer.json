@@ -1,0 +1,17 @@
+{
+    "name": "home-composer",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "pairing": "order",
+    "design": {
+        "url": "docs/designs/home-v6/index.html",
+        "steps": [],
+        "part": ".composer"
+    },
+    "app": {
+        "url": "http://localhost:54700/login",
+        "steps": [{"login": "owner@journal.local"}, {"goto": "http://localhost:54700/"}],
+        "part": "form:has(textarea)"
+    }
+}

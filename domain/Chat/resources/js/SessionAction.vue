@@ -4,12 +4,11 @@ import Icon from "@kit/Icon";
 import type { StatusActionData } from "@generated/types/chat";
 
 /**
- * One thing the agent's status offers now, as a button with the server's words; the bar's one primary action is
- * filled, the others bordered, and Stop is always bordered with its mark, as the design draws it.
+ * One thing the agent's status offers now, as a bordered button with the server's words, Stop with its mark, as the
+ * design draws the agent bar's actions.
  */
 defineProps<{
   action: StatusActionData;
-  isPrimary: boolean;
   isPending: boolean;
 }>();
 
@@ -18,13 +17,13 @@ const emit = defineEmits<{ activate: [] }>();
 
 <template>
   <Button
-    :variant="isPrimary && action.type !== 'stop' ? 'primary' : 'bordered'"
+    variant="bordered"
     size="small"
     :pending="isPending"
     @click="emit('activate')"
   >
     <template v-if="action.type === 'stop'">
-      <Icon name="dot" :size="14" />
+      <Icon name="stop" :size="14" />
     </template>
     {{ action.label }}
   </Button>

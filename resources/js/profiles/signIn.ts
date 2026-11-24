@@ -1,5 +1,6 @@
 import type {
     SignInAttemptData,
+    SignInMethod,
     SignInReceiptData,
 } from '@generated/types/accounts';
 import { challenge } from '@generated/routes/accounts';
@@ -20,7 +21,33 @@ export type SignInChallenge = { address: string | null; code: string | null };
 export type WizardRequest =
     | { kind: 'new' }
     | { kind: 'resume'; attemptId: string }
-    | { kind: 'again'; driver: string; accountId: string };
+    | { kind: 'again'; driver: string; accountId: string }
+    // An agent's draft: the driver and the way to sign in chosen, and the name the new account takes.
+    | { kind: 'drafted'; driver: string; method: SignInMethod; name: string };
+
+const SIGN_IN_METHODS: readonly SignInMethod[] = ['oauth', 'provider_token', 'api_key'];
+
+/**
+ * A draft named a sign-in method the journal does not have.
+ */
+export class SignInMethodUnknown extends Error {
+    static named(word: string): SignInMethodUnknown {
+        return new SignInMethodUnknown(`No sign-in method is called ${word}.`);
+    }
+}
+
+/**
+ * The sign-in method a draft names; a word that is no method is a fault of the draft, never a default.
+ */
+export function signInMethodOf(word: string): SignInMethod {
+    const method = SIGN_IN_METHODS.find((each) => each === word);
+
+    if (method === undefined) {
+        throw SignInMethodUnknown.named(word);
+    }
+
+    return method;
+}
 
 export function codeDirection(driver: string): CodeDirection {
     return driver === 'codex' ? 'outgoing' : 'paste-back';

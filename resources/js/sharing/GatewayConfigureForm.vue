@@ -4,6 +4,7 @@ import type { GatewayConfigurePartData } from '@generated/types/sharing';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';
+import Select from '@kit/Select';
 
 /**
  * The form that configures a share gateway, a native part of the gateway settings: its secrets are typed into
@@ -46,11 +47,7 @@ function addSecret(): void {
     >
         <label class="flex flex-col">
             <span>Gateway</span>
-            <select v-model="form.gatewayKey">
-                <template v-for="key in gatewayKeys" :key="key">
-                    <option :value="key">{{ key }}</option>
-                </template>
-            </select>
+            <Select v-model="form.gatewayKey" :options="gatewayKeys.map((key) => ({ value: key, label: key }))" />
         </label>
         <label class="flex flex-col"
             ><span>Program version</span

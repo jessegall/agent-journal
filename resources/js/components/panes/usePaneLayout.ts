@@ -23,7 +23,7 @@ import type {
     Preset,
     Screen,
 } from '@/components/panes/arrangement';
-import { originalKeyOf } from '@/components/panes/paneLayout';
+import { originalKeyOf, panesIn } from '@/components/panes/paneLayout';
 import type { LayoutNode, PaneWindow } from '@/components/panes/paneLayout';
 
 /**
@@ -43,6 +43,14 @@ export type WindowDrag = {
 export type PaneLayoutStore = {
     arrangement: Ref<Arrangement>;
     layout: ComputedRef<LayoutNode>;
+    /**
+     * The pane that fills Home for now, until the layout is restored; it is never remembered.
+     */
+    zoomedPaneId: Ref<string | null>;
+    /**
+     * What the grid draws: the zoomed pane alone while one fills Home, else the whole layout.
+     */
+    shownLayout: ComputedRef<LayoutNode>;
     detached: ComputedRef<DetachedWindow[]>;
     windows: ComputedRef<PaneWindow[]>;
     /**
@@ -91,9 +99,14 @@ export function providePaneLayout(
         ),
     );
 
+    const zoomedPaneId = ref<string | null>(null);
     const store: PaneLayoutStore = {
         arrangement,
         layout: computed(() => arrangement.value.grid),
+        zoomedPaneId,
+        shownLayout: computed(
+            () => panesIn(arrangement.value.grid).find((each) => each.id === zoomedPaneId.value) ?? arrangement.value.grid,
+        ),
         detached: computed(() => arrangement.value.detached),
         windows: windowList,
         windowOf: (key) => {

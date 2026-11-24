@@ -135,6 +135,11 @@ watch(
             followedId.value = request.attemptId;
         }
 
+        if (request?.kind === 'drafted') {
+            driver.value = request.driver;
+            method.value = request.method;
+        }
+
         if (request?.kind === 'again') {
             driver.value = request.driver;
             awaited.value = {
@@ -451,6 +456,7 @@ function cancelAndClose(): void {
                     :driver="shownDriver"
                     :method="shownMethod"
                     :account="accountToName"
+                    :suggested-name="request?.kind === 'drafted' ? request.name : undefined"
                     :form-id="formId"
                     @named="markNamed"
                 />

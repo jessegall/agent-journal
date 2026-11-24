@@ -1,0 +1,34 @@
+{
+    "name": "sequences-reader",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "pairing": "order",
+    "design": {
+        "url": "docs/designs/home-v6/index.html",
+        "steps": [
+            {
+                "click": "role=button[name='Sequences']"
+            },
+            {
+                "click": "#main .pglist [data-item] >> nth=0"
+            }
+        ],
+        "part": ".reader"
+    },
+    "app": {
+        "url": "http://localhost:54700/login",
+        "steps": [
+            {
+                "login": "owner@journal.local"
+            },
+            {
+                "goto": "http://localhost:54700/sequences"
+            },
+            {
+                "click": "li:has(a[data-row-key]) >> nth=0"
+            }
+        ],
+        "part": "[data-layout-box='reader']"
+    }
+}

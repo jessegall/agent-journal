@@ -6,11 +6,17 @@ import type {
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
 import Icon from '@kit/Icon';
+import MenuGroup from '@kit/MenuGroup';
+import MenuItem from '@kit/MenuItem';
+import MenuItemLabel from '@kit/MenuItemLabel';
+import MenuItemSub from '@kit/MenuItemSub';
 import PageHeader from '@kit/PageHeader';
+import SplitButton from '@kit/SplitButton';
 import Spinner from '@kit/Spinner';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useScrollAnchor } from '@kit/useScrollAnchor';
 import { useIsStale } from '@kit/windowFreshness';
+import { useGuidedCreation } from '@kit/guidedCreation';
 import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
 import AddAccountWizard from './AddAccountWizard.vue';
@@ -20,7 +26,7 @@ import {
     isChosen,
     newestSelections,
 } from './accountSelections';
-import { attemptToRejoin, isLive } from './signIn';
+import { attemptToRejoin, isLive, signInMethodOf } from './signIn';
 import type { WizardRequest } from './signIn';
 import { useUsageClock } from './usageClock';
 
@@ -78,7 +84,7 @@ async function closeWizard(
 
     const target = {
         waiting: '[data-sign-in-resume]',
-        cancelled: '[data-account-add]',
+        cancelled: '[data-account-add] button',
         renewed: `[data-account-row="${accountId}"]`,
         shown: `[data-account-row="${accountId}"]`,
     }[ending];
@@ -107,11 +113,30 @@ watch(
 
         root.value
             .querySelector<HTMLElement>(
-                '[data-account-row], [data-account-add]',
+                '[data-account-row], [data-account-add] button',
             )
             ?.focus();
     },
 );
+
+const { ask } = useGuidedCreation();
+
+/**
+ * The split button's second way: an agent asks three questions, and its draft opens the wizard with them chosen.
+ */
+function setUpWithAgent(): void {
+    ask({
+        noun: 'account',
+        onDraft: ({ fields }) => {
+            request.value = {
+                kind: 'drafted',
+                driver: fields.driver,
+                method: signInMethodOf(fields.method),
+                name: fields.name,
+            };
+        },
+    });
+}
 
 function resumeOrAgain(row: AccountRowData): void {
     const running = attemptToRejoin(data.attempts, row.driver, row.id);
@@ -141,14 +166,31 @@ function resumeOrAgain(row: AccountRowData): void {
                         ><Spinner />Finish signing in</Button
                     >
                 </template>
-                <Button
-                    variant="primary"
-                    size="small"
+                <SplitButton
+                    label="Add account"
+                    icon="plus"
+                    hint="Add it yourself"
+                    noun="account"
                     data-account-add
                     :disabled="waitingSignIn !== undefined || isStale"
-                    @click="request = { kind: 'new' }"
-                    ><Icon name="plus" />Add account</Button
+                    @create="request = { kind: 'new' }"
                 >
+                    <MenuGroup label="Add account">
+                        <MenuItem @click="request = { kind: 'new' }">
+                            <template #leading>
+                                <Icon name="plus" :size="14" />
+                            </template>
+                            <MenuItemLabel>Add it yourself</MenuItemLabel>
+                        </MenuItem>
+                        <MenuItem data-account-guided @click="setUpWithAgent">
+                            <template #leading>
+                                <Icon name="chat" :size="14" />
+                            </template>
+                            <MenuItemLabel>Set it up with an agent</MenuItemLabel>
+                            <MenuItemSub>An agent asks three short questions and drafts it.</MenuItemSub>
+                        </MenuItem>
+                    </MenuGroup>
+                </SplitButton>
             </template>
         </PageHeader>
         <template v-if="data.rows.length === 0">

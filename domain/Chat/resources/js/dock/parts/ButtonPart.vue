@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { router } from "@inertiajs/vue3";
+import Button from "@kit/Button";
 import type { ButtonNode } from "@kit/dockCards";
 
 /**
@@ -7,11 +8,11 @@ import type { ButtonNode } from "@kit/dockCards";
  */
 const props = defineProps<{ node: ButtonNode }>();
 
-const emphases: Record<ButtonNode["emphasis"], string> = {
-  primary: "bg-brand text-on-brand",
-  secondary: "border border-border-2 text-text-2",
-  quiet: "text-text-3 underline",
-};
+const variants = {
+  primary: "primary",
+  secondary: "bordered",
+  quiet: "word",
+} as const satisfies Record<ButtonNode["emphasis"], string>;
 
 function press(): void {
   if (props.node.target !== null) {
@@ -21,12 +22,11 @@ function press(): void {
 </script>
 
 <template>
-  <button
-    type="button"
-    class="w-fit rounded-control px-2 py-0.5 text-small"
-    :class="emphases[node.emphasis]"
+  <Button
+    class="w-fit"
+    :variant="variants[node.emphasis]"
+    size="small"
     @click="press"
+    >{{ node.label }}</Button
   >
-    {{ node.label }}
-  </button>
 </template>

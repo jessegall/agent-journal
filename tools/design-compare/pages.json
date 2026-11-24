@@ -1,0 +1,79 @@
+{
+    "web.home": {
+        "views": [
+            "home-agent-bar",
+            "home-chat",
+            "home-composer",
+            "home-docked-activity",
+            "home-floating-activity",
+            "sidebar"
+        ]
+    },
+    "tasks.list": {
+        "views": [
+            "tasks-header",
+            "tasks-row"
+        ]
+    },
+    "tasks.task": {
+        "views": [
+            "tasks-reader"
+        ]
+    },
+    "plans.list": {
+        "views": [
+            "plans-header",
+            "plans-row"
+        ]
+    },
+    "plans.plan": {
+        "views": [
+            "plans-reader"
+        ]
+    },
+    "documents.library": {
+        "views": [
+            "documents-header",
+            "empty-page"
+        ]
+    },
+    "documents.document": {
+        "views": [
+            "documents-reader"
+        ]
+    },
+    "sequences.index": {
+        "views": [
+            "sequences-row"
+        ]
+    },
+    "sequences.sequence": {
+        "views": [
+            "sequences-reader"
+        ]
+    },
+    "accounts.accounts": {
+        "views": [
+            "accounts-row",
+            "accounts-usage",
+            "accounts-reader"
+        ]
+    },
+    "accounts.profiles": {
+        "views": [
+            "profiles-reader"
+        ]
+    },
+    "settings.settings": {
+        "views": [
+            "settings",
+            "settings-connect"
+        ]
+    },
+    "connections.connect": {
+        "noDesign": "The design connects a project from Settings, which the settings-connect view compares."
+    },
+    "rules.list": {
+        "noDesign": "The design draws no Rules page yet."
+    }
+}

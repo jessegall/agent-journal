@@ -1646,6 +1646,7 @@ class	AccountCleanupRetried
 class	AccountConfigurationUnwritten
 class	AccountConfigurationWrite
 class	AccountContainerUnsupported
+class	AccountDraftProducer
 class	AccountEvent
 class	AccountFolderInvalid
 class	AccountFolderRefused
@@ -7319,6 +7320,7 @@ class	WriteStateValues
 class	YieldKeyword
 constant	AccessPolicy::PROTECTED_PATHS
 constant	Account::LINK_TYPE
+constant	AccountDraftProducer::AGENT
 constant	AccountLabel::LENGTH_LIMIT
 constant	AccountUsagePurge::CHUNK_SIZE
 constant	AccountsIndex::SESSION_LABEL
@@ -9415,6 +9417,8 @@ method	AccountConfigurationWrite::withTables()
 method	AccountConfigurationWrite::withoutTables()
 method	AccountContainerUnsupported::for()
 method	AccountContainerUnsupported::reason()
+method	AccountDraftProducer::draft()
+method	AccountDraftProducer::questions()
 method	AccountFolderInvalid::named()
 method	AccountFolderRefused::byHost()
 method	AccountFolderRefused::hostUnreachable()

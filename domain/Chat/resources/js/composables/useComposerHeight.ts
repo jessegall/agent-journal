@@ -2,10 +2,10 @@ import type { Ref } from "vue";
 import { nextTick, watch } from "vue";
 
 /**
- * Sizes the composer's text area: three rows at rest, growing to the text plus one row, at most sixteen
+ * Sizes the composer's text area as the design draws it: one row at rest, growing with the text to at most sixteen
  * rows, then it scrolls.
  */
-const restingRows = 3;
+const restingRows = 1;
 const mostRows = 16;
 
 export function useComposerHeight(
@@ -20,11 +20,17 @@ export function useComposerHeight(
       return;
     }
 
-    const lineHeight = parseFloat(getComputedStyle(element).lineHeight);
+    const style = getComputedStyle(element);
+    const lineHeight = parseFloat(style.lineHeight);
+    const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
     element.style.height = "auto";
-    const textRows = Math.ceil(element.scrollHeight / lineHeight);
-    const rows = Math.min(Math.max(textRows + 1, restingRows), mostRows);
-    element.style.height = `${rows * lineHeight}px`;
+    // An empty area measures its placeholder, which may wrap while the column is still being laid out.
+    const textRows =
+      text.value === ""
+        ? restingRows
+        : Math.round((element.scrollHeight - padding) / lineHeight);
+    const rows = Math.min(Math.max(textRows, restingRows), mostRows);
+    element.style.height = `${rows * lineHeight + padding}px`;
   }
 
   watch(text, fit, { immediate: true });

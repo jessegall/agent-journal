@@ -49,6 +49,16 @@ export type PaneWindow = {
 export type SplitSide = 'left' | 'right' | 'above' | 'below';
 
 /**
+ * One choice of a pane's or a tab's menu: its words, what it does, and whether a separator starts its group.
+ */
+export type MenuEntry = {
+    label: string;
+    run: () => void;
+    disabled?: boolean;
+    startsGroup?: boolean;
+};
+
+/**
  * Where a dragged window lands on a pane: as a tab (centre) or in a new half on one side.
  */
 export type DropZone = 'centre' | SplitSide;

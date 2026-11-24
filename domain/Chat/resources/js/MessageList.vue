@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { timeOfDay } from "@kit/format";
 import TextLink from '@kit/TextLink';
 import { computed, useTemplateRef } from "vue";
 import Card from "@kit/Card";
@@ -58,10 +59,6 @@ const emit = defineEmits<{
   openRecord: [card: DockCardEnvelope];
 }>();
 
-const timeFormat = new Intl.DateTimeFormat(undefined, {
-  hour: "2-digit",
-  minute: "2-digit",
-});
 const dayFormat = new Intl.DateTimeFormat(undefined, {
   weekday: "long",
   day: "numeric",
@@ -125,7 +122,7 @@ const rows = computed((): LogRow[] => {
       key: entry.message?.id ?? `line-${entry.sequence}`,
       message: entry.message,
       line: entry.line,
-      time: timeFormat.format(at),
+      time: timeOfDay(at),
       day: startsDay ? dayLabel(at) : null,
     };
   });

@@ -32,6 +32,7 @@ import DockStack from "./dock/DockStack.vue";
 import FocusedQuestion from "./FocusedQuestion.vue";
 import MessageList from "./MessageList.vue";
 import ChatRoster from "./chats/ChatRoster.vue";
+import { chatRoster } from "./composables/useChatRoster";
 import { AGENT_BAR_MEMBERS } from "./agentBarMembers";
 import InboxSelector from "./chats/InboxSelector.vue";
 
@@ -52,7 +53,6 @@ const props = defineProps<{
 
 const page = usePage();
 const conversation = computed(() => props.chat.conversation);
-const isRosterOpen = ref(false);
 // The members as their avatars: agents by their driver's mark, users by their initial.
 const members = computed(() =>
   (conversation.value?.participants ?? []).map((member) => ({
@@ -334,7 +334,7 @@ function retryFocused(): void {
 
 <template>
   <section
-    class="@container flex h-full min-h-0 flex-col gap-2 px-3 pb-2"
+    class="@container flex h-full min-h-0 flex-col gap-2 px-[clamp(16px,4%,24px)]"
     aria-label="Chat"
   >
     <template v-if="offersChoice">
@@ -386,25 +386,24 @@ function retryFocused(): void {
             <Button
               size="small"
               variant="ghost"
-              :aria-expanded="isRosterOpen"
+              :aria-expanded="chatRoster.isOpen"
               aria-haspopup="dialog"
-              @click="isRosterOpen = !isRosterOpen"
+              @click="chatRoster.isOpen = !chatRoster.isOpen"
             >
               <AvatarStack :members="members" />
               {{ conversation.participants.length }} in this chat
             </Button>
           </template>
           <IconButton
-            icon="users"
+            icon="userplus"
             label="Add someone to this chat"
-            size="sm"
             haspopup="dialog"
-            :expanded="isRosterOpen"
-            @click="isRosterOpen = !isRosterOpen"
+            :expanded="chatRoster.isOpen"
+            @click="chatRoster.isOpen = !chatRoster.isOpen"
           />
           <Teleport to="body">
             <Popover
-              v-model:open="isRosterOpen"
+              v-model:open="chatRoster.isOpen"
               label="Members of this chat"
               :anchor="membersRow"
               :align="isBarShown ? 'left' : 'right'"

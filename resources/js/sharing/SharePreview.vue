@@ -4,6 +4,7 @@ import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';
 import PageHeader from '@kit/PageHeader';
+import Select from '@kit/Select';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { ref } from 'vue';
 import UpdateLiveShareButton from './UpdateLiveShareButton.vue';
@@ -105,16 +106,10 @@ function confirmTo(url: string): void {
                 <template v-if="data.liveShare === undefined">
                     <label class="flex items-center gap-2">
                         <span>Share for</span>
-                        <select v-model.number="minutes">
-                            <template
-                                v-for="duration in durations"
-                                :key="duration.minutes"
-                            >
-                                <option :value="duration.minutes">
-                                    {{ duration.label }}
-                                </option>
-                            </template>
-                        </select>
+                        <Select
+                            v-model="minutes"
+                            :options="durations.map((duration) => ({ value: duration.minutes, label: duration.label }))"
+                        />
                     </label>
                 </template>
                 <div class="flex flex-wrap gap-2">

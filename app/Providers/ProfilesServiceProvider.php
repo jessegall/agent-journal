@@ -41,6 +41,7 @@ use App\Policies\ProfileDraftPolicy;
 use App\Resolvers\ActiveAccountRecords;
 use App\Resolvers\ProfileDrivers;
 use App\Resolvers\ProfileRecords;
+use App\Support\AccountDraftProducer;
 use App\Support\AgentImage;
 use App\Support\BuiltInAuthorizations;
 use App\Support\BuiltInProfilePins;
@@ -50,6 +51,7 @@ use App\Support\ClaudeTokenSignIn;
 use App\Support\CodexKeySignIn;
 use App\Support\CodexSignIn;
 use App\Support\ConfiguredOperations;
+use App\Support\DraftProducerRegistry;
 use App\Support\EligibleAccounts;
 use App\Support\PolicyReadAdmission;
 use App\Support\ProfileAuthorizerProvider;
@@ -110,6 +112,11 @@ final class ProfilesServiceProvider extends ServiceProvider
                 $protocols->register('codex', SignInMethod::OAuth, CodexSignIn::class);
                 $protocols->register('codex', SignInMethod::ApiKey, CodexKeySignIn::class);
             },
+        );
+
+        $this->callAfterResolving(
+            DraftProducerRegistry::class,
+            fn (DraftProducerRegistry $producers) => $producers->register('account', AccountDraftProducer::class),
         );
     }
 

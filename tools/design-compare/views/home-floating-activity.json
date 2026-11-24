@@ -1,0 +1,41 @@
+{
+    "name": "home-floating-activity",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "pairing": "order",
+    "design": {
+        "url": "docs/designs/home-v6/index.html",
+        "steps": [
+            {
+                "evaluate": "step='ide';load();render()"
+            },
+            {
+                "wait": 300
+            }
+        ]
+    },
+    "app": {
+        "url": "http://localhost:54700/login",
+        "steps": [
+            {
+                "login": "owner@journal.local"
+            },
+            {
+                "goto": "http://localhost:54700/"
+            },
+            {
+                "evaluate": "document.querySelector('[aria-label=\"Add a window\"]').click()"
+            },
+            {
+                "wait": 400
+            },
+            {
+                "evaluate": "[...document.querySelectorAll('[aria-label=\"Windows to add\"] [role=option]')].find(o => /Activity/.test(o.textContent)).click()"
+            },
+            {
+                "wait": 800
+            }
+        ]
+    }
+}

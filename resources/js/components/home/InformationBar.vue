@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import Icon from '@/components/kit/Icon.vue';
+import ChipButton from '@/components/kit/ChipButton.vue';
 import { bringToFront, changeDetached } from '@/components/panes/arrangement';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 
@@ -34,19 +35,12 @@ function restore(key: string): void {
         >
             <span>Floating</span>
             <template v-for="window in floating" :key="window.key">
-                <button
-                    type="button"
-                    class="inline-flex h-[22px] items-center gap-[5px] rounded-seg border border-line px-2 text-badge text-text-3 hover:border-border-3 hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
-                    :aria-label="`Restore ${window.title}`"
-                    @click="restore(window.key)"
-                >
-                    <Icon :name="window.icon" :size="13" />
-                    {{
-                        window.isMinimised
-                            ? `${window.title} · bar only`
-                            : window.title
-                    }}
-                </button>
+                <ChipButton tone="quiet" :aria-label="`Restore ${window.title}`" @click="restore(window.key)">
+                    <template #leading>
+                        <Icon :name="window.icon" :size="13" />
+                    </template>
+                    {{ window.isMinimised ? `${window.title} · bar only` : window.title }}
+                </ChipButton>
             </template>
         </div>
     </template>

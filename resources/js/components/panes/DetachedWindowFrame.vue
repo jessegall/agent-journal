@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import Icon from '@/components/kit/Icon.vue';
 import IconButton from '@/components/kit/IconButton.vue';
 import ResizeGrip from '@/components/kit/ResizeGrip.vue';
@@ -12,7 +12,9 @@ import {
 } from '@/components/panes/arrangement';
 import type { DetachedWindow } from '@/components/panes/arrangement';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
-import MenuList from './MenuList.vue';
+import Menu from '@/components/kit/Menu.vue';
+import MenuItem from '@/components/kit/MenuItem.vue';
+import MenuSeparator from '@/components/kit/MenuSeparator.vue';
 
 /**
  * Version 5's floating window (kit/FloatWindow.vue): a 1 px border, 10 px radius and a deep shadow; a 34 px bar that
@@ -22,7 +24,6 @@ import MenuList from './MenuList.vue';
 const props = defineProps<{ window: DetachedWindow }>();
 
 const store = usePaneLayout();
-const isMenuOpen = ref(false);
 
 const shown = computed(() => store.windowOf(props.window.key));
 
@@ -131,36 +132,17 @@ function dock(): void {
                     :label="window.isMinimised ? 'Show the whole window' : 'Show only this bar'"
                     @click="change({ isMinimised: !window.isMinimised })"
                 />
-                <IconButton
-                    icon="dots-vertical"
-                    label="Window menu"
-                    haspopup="menu"
-                    :expanded="isMenuOpen"
-                    @click.stop="isMenuOpen = !isMenuOpen"
-                />
+                <Menu label="Window menu">
+                    <MenuItem @click="dock">Dock</MenuItem>
+                    <MenuItem @click="change({ isMinimised: !window.isMinimised })">{{
+                        window.isMinimised ? 'Show the whole window' : 'Show only this bar'
+                    }}</MenuItem>
+                    <MenuSeparator />
+                    <MenuItem @click="close">Close</MenuItem>
+                </Menu>
                 <IconButton icon="dock" label="Dock" @click="dock" />
             </template>
         </WindowHeader>
-        <template v-if="isMenuOpen">
-            <MenuList
-                :entries="[
-                    { label: 'Dock', run: dock },
-                    {
-                        label: window.isMinimised
-                            ? 'Show the whole window'
-                            : 'Show only this bar',
-                        run: () => change({ isMinimised: !window.isMinimised }),
-                    },
-                    {
-                        label: 'Close',
-                        startsGroup: true,
-                        run: close,
-                    },
-                ]"
-                class="absolute top-[34px] right-[5px]"
-                @done="isMenuOpen = false"
-            />
-        </template>
         <div
             v-show="!window.isMinimised"
             class="relative min-h-0 flex-1 overflow-auto"

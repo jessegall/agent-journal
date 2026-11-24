@@ -13,7 +13,7 @@ import Tabs from '@/components/kit/Tabs.vue';
  * viewer's own clock. It keeps the reader where they are as events arrive, following the newest only while the reader
  * is at the bottom, and asks for older events when the reader reaches the top while there are more, keeping the
  * reader's place as they are added above. A connected feed with nothing in it says it is waiting; a level that
- * matches nothing offers Show all; when the connection drops the events stay, with Reconnect.
+ * matches nothing offers Show everything; when the connection drops the events stay, with Reconnect.
  */
 const props = defineProps<{
     events: ActivityEventData[];
@@ -22,19 +22,19 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ reconnect: []; older: [] }>();
 
+// Each tab shows its level and every level above it, as the design's filters do.
 const levels = [
-    { key: 'all', label: 'All' },
-    { key: '3', label: 'In the chat' },
-    { key: '2', label: 'In the panel' },
-    { key: '1', label: 'Detail' },
+    { key: '3', label: 'Important' },
+    { key: '2', label: 'Normal and up' },
+    { key: '1', label: 'Everything' },
 ] as const;
 
 const clock = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
-const chosen = ref<string>('all');
+const chosen = ref<string>('1');
 const feed = useTemplateRef<HTMLElement>('feed');
 const shown = computed(() =>
-    chosen.value === 'all' ? props.events : props.events.filter((event) => String(event.level) === chosen.value),
+    props.events.filter((event) => event.level >= Number(chosen.value)),
 );
 
 watch(
@@ -69,7 +69,7 @@ function readOlderAtTop(): void {
 <template>
     <section aria-label="Activity" class="flex h-full min-h-0 flex-col">
         <PanelToolbar label="Activity levels">
-            <Tabs v-model="chosen" label="Activity levels" variant="filters" :tabs="levels" />
+            <Tabs v-model="chosen" label="Activity levels" variant="toolbar" :tabs="levels" />
         </PanelToolbar>
         <template v-if="connection === 'disconnected'">
             <p role="status" class="flex items-center gap-2 border-b border-line px-3 py-1.5 text-small text-text-3">
@@ -83,7 +83,7 @@ function readOlderAtTop(): void {
             </template>
             <template v-else-if="shown.length === 0">
                 <EmptyState icon="activity" title="Nothing at this level">
-                    <Button size="small" variant="bordered" @click="chosen = 'all'">Show all</Button>
+                    <Button size="small" variant="bordered" @click="chosen = '1'">Show everything</Button>
                 </EmptyState>
             </template>
             <template v-else>

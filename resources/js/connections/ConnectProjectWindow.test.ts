@@ -281,9 +281,11 @@ describe('ConnectProjectWindow', () => {
         const wrapper = await openedWindow();
 
         await button(wrapper, 'Join a project').trigger('click');
+        await wrapper.find('#join-environment').trigger('click');
         await wrapper
-            .find('#join-environment')
-            .setValue('environment-research');
+            .findAll('[role="option"]')
+            .find((option) => option.text() === 'Research')!
+            .trigger('click');
         await button(wrapper, 'Generate install line').trigger('click');
         await flushPromises();
 

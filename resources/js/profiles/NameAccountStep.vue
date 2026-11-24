@@ -4,7 +4,7 @@ import type {
     SignInMethodData,
 } from '@generated/types/accounts';
 import Field from '@kit/Field';
-import { onMounted, ref, useId } from 'vue';
+import { nextTick, onMounted, ref, useId } from 'vue';
 import ChosenSignIn from './ChosenSignIn.vue';
 import { useAccountNaming } from './accountNaming';
 
@@ -17,6 +17,8 @@ const props = defineProps<{
     method: SignInMethodData;
     account: AccountRowData;
     formId: string;
+    // The name an agent's draft chose, put in the field in place of the default.
+    suggestedName?: string;
 }>();
 const emit = defineEmits<{ named: [] }>();
 
@@ -27,9 +29,16 @@ const { naming, refusal, canSave, startFrom, save } = useAccountNaming(
 const fieldId = `new-account-name-${useId()}`;
 const form = ref<HTMLFormElement | null>(null);
 
-onMounted(() =>
-    startFrom(form.value?.querySelector<HTMLInputElement>('input') ?? null),
-);
+onMounted(async () => {
+    const field = form.value?.querySelector<HTMLInputElement>('input') ?? null;
+    startFrom(field);
+
+    if (props.suggestedName !== undefined) {
+        naming.label = props.suggestedName;
+        await nextTick();
+        field?.select();
+    }
+});
 
 function saveOrSkip(): void {
     if (!canSave.value) {

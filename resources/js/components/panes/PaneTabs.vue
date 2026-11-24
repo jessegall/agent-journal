@@ -2,8 +2,10 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Icon from '@/components/kit/Icon.vue';
 import type { IconName } from '@/components/kit/Icon.vue';
-import MenuList from './MenuList.vue';
-import type { MenuEntry } from './MenuList.vue';
+import ContextMenu from '@/components/kit/ContextMenu.vue';
+import MenuItem from '@/components/kit/MenuItem.vue';
+import MenuSeparator from '@/components/kit/MenuSeparator.vue';
+import type { MenuEntry } from './paneLayout';
 import type { SplitSide } from './paneLayout';
 
 /**
@@ -25,8 +27,9 @@ export type PaneTab = {
 };
 
 const props = withDefaults(
-    defineProps<{ tabs: PaneTab[]; insertAt?: number }>(),
-    { insertAt: -1 },
+    // paneEntries: the pane's own choices, which follow the tab's in its right-click menu.
+    defineProps<{ tabs: PaneTab[]; insertAt?: number; paneEntries?: MenuEntry[] }>(),
+    { insertAt: -1, paneEntries: () => [] },
 );
 
 const emit = defineEmits<{
@@ -39,7 +42,6 @@ const emit = defineEmits<{
 
 const row = ref<HTMLElement | null>(null);
 const isCompact = ref(false);
-const menu = ref<{ tab: PaneTab; left: number; top: number } | null>(null);
 let watcher: ResizeObserver | null = null;
 
 async function fit(): Promise<void> {
@@ -86,33 +88,10 @@ function menuOf(tab: PaneTab): MenuEntry[] {
         { label: 'Dock above', disabled: isAlone, run: () => emit('split', tab.key, 'above') },
         { label: 'Dock below', disabled: isAlone, run: () => emit('split', tab.key, 'below') },
         { label: 'Detach', run: () => emit('detach', tab.key) },
+        ...props.paneEntries.map((entry, place) => (place === 0 ? { ...entry, startsGroup: true } : entry)),
     ];
 }
 
-function openMenu(event: MouseEvent, tab: PaneTab): void {
-    menu.value = { tab, left: event.clientX, top: event.clientY };
-}
-
-/**
- * The Menu key or Shift and F10 on a focused tab opens the same menu a right click does, at the tab.
- */
-function openMenuFromKey(event: KeyboardEvent, tab: PaneTab): void {
-    if (event.key !== 'ContextMenu' && !(event.key === 'F10' && event.shiftKey)) {
-        return;
-    }
-
-    event.preventDefault();
-    const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    menu.value = { tab, left: box.left, top: box.bottom };
-}
-
-/**
- * A tab's keys besides Enter, Space and Delete: the menu key opens its menu, the arrows, Home and End move along.
- */
-function answerKey(event: KeyboardEvent, tab: PaneTab): void {
-    openMenuFromKey(event, tab);
-    void pickByKey(event, tab);
-}
 
 async function pickByKey(event: KeyboardEvent, tab: PaneTab): Promise<void> {
     const place = props.tabs.indexOf(tab);
@@ -169,6 +148,7 @@ onBeforeUnmount(() => watcher?.disconnect());
             class="flex min-w-0 flex-1 gap-3 overflow-hidden"
         >
             <template v-for="tab in tabs" :key="tab.key">
+                <ContextMenu :label="tab.title">
                 <div
                     role="tab"
                     :tabindex="tab.isActive ? 0 : -1"
@@ -191,11 +171,10 @@ onBeforeUnmount(() => watcher?.disconnect());
                     @pointerdown="emit('grab', $event, tab.key)"
                     @mousedown.middle.prevent
                     @auxclick="closeByMiddleClick($event, tab.key)"
-                    @contextmenu.prevent="openMenu($event, tab)"
                     @keydown.enter.prevent="emit('pick', tab.key)"
                     @keydown.space.prevent="emit('pick', tab.key)"
                     @keydown.delete.prevent="emit('close', tab.key)"
-                    @keydown="answerKey($event, tab)"
+                    @keydown="pickByKey($event, tab)"
                 >
                     <Icon :name="tab.icon" :size="13" />
                     <span v-show="!isCompact || tab.isActive">{{
@@ -227,19 +206,19 @@ onBeforeUnmount(() => watcher?.disconnect());
                         <Icon name="close" :size="10" />
                     </button>
                 </div>
+                <template #menu>
+                    <template v-for="entry in menuOf(tab)" :key="entry.label">
+                        <template v-if="entry.startsGroup">
+                            <MenuSeparator />
+                        </template>
+                        <MenuItem :disabled="entry.disabled" @click="entry.run">{{ entry.label }}</MenuItem>
+                    </template>
+                </template>
+                </ContextMenu>
             </template>
         </div>
         <div class="flex flex-none items-center gap-0.5">
             <slot />
         </div>
-        <template v-if="menu">
-            <MenuList
-                :title="menu.tab.title"
-                :entries="menuOf(menu.tab)"
-                class="fixed"
-                :style="{ left: `${menu.left}px`, top: `${menu.top}px` }"
-                @done="menu = null"
-            />
-        </template>
     </div>
 </template>

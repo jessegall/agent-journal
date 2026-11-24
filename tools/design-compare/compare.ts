@@ -11,7 +11,10 @@
  * "text" (the default: elements pair by what they say) or "order" (they pair by place, for a part that shows other
  * content on each side, such as a list row filled with other tasks). "width",
  * "height" and "theme" (light or dark) set the window both sides open in. A step value may name an environment
- * variable as ${NAME}, such as a password. The pictures and the report land in storage/design-compare/<view name>/.
+ * variable as ${NAME}, such as a password. "accepted" lists differences that stay on purpose, each as its report line
+ * without the leading dash ("\"Send\" (button) x") and a reason; they are left out of the count. The pictures and the
+ * report land in storage/design-compare/<view name>/, and each run writes the view's line in record.json: when it ran,
+ * the hash of the design it ran against and the differences left.
  *
  *   {"name": "settings-general", "width": 1440, "height": 900, "theme": "dark",
  *    "labels": {"What this journal is called.": "How this journal names itself."},
@@ -35,6 +38,8 @@ import {
     gapDifferences,
     pairElements,
 } from './comparison.ts';
+import { designHash, readRecords, RECORD_FILE } from './record.ts';
+import type { ViewRecord } from './record.ts';
 
 type Step =
     | { click: string }
@@ -54,9 +59,11 @@ type View = {
     theme?: 'light' | 'dark';
     labels?: Record<string, string>;
     pairing?: 'text' | 'order';
+    accepted?: { difference: string; reason: string }[];
     design: Side;
     app: Side;
 };
+
 
 /** The styles a text is measured by. */
 const TEXT_STYLES = [
@@ -89,12 +96,15 @@ try {
     const app = await capture(view.app, view.labels ?? {});
     const { pairs, onlyInDesign, onlyInApp } = pairElements(design.elements, app.elements, view.pairing ?? 'text');
     const placedPairs = pairs.filter(([designElement]) => designElement.role !== 'part');
+    const accepted = new Set((view.accepted ?? []).map((each) => each.difference));
     const differences: Difference[] = [
         ...pairs.flatMap(([designElement, appElement]) => differencesOf(designElement, appElement)),
         ...gapDifferences(placedPairs),
         ...alignmentDifferences(placedPairs),
-    ];
+    ].filter((found) => !accepted.has(`"${found.text}" (${found.role}) ${found.measure}`));
     const areas = drawPixelDifferences(design.picture, app.picture);
+
+    record(differences.length + onlyInDesign.length + onlyInApp.length);
 
     writeFileSync(resolve(folder, 'report.json'), JSON.stringify({ differences, onlyInDesign, onlyInApp, areas }, null, 2));
     writeFileSync(resolve(folder, 'report.md'), reportOf(differences, onlyInDesign, onlyInApp, areas.length));
@@ -348,6 +358,18 @@ function reportOf(differences: Difference[], onlyInDesign: CapturedElement[], on
     }
 
     return `${lines.join('\n')}\n`;
+}
+
+/** Writes this view's line in the record: when it ran, against which design, and how many differences it left. */
+function record(differencesLeft: number): void {
+    const records = readRecords();
+    records[view.name] = { ranAt: new Date().toISOString(), designHash: designHash(), differencesLeft };
+
+    writeFileSync(RECORD_FILE, `${JSON.stringify(sortedByKey(records), null, 4)}\n`);
+}
+
+function sortedByKey(records: Record<string, ViewRecord>): Record<string, ViewRecord> {
+    return Object.fromEntries(Object.entries(records).sort(([one], [other]) => one.localeCompare(other)));
 }
 
 /** A web address as it is, or a file path as a file address. */

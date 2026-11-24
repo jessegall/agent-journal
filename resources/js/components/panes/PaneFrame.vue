@@ -8,8 +8,6 @@ import { detachWindow, dropWindow, showWindow } from './arrangement';
 import DropCompass from '@/components/kit/DropCompass.vue';
 import DropPreview from '@/components/kit/DropPreview.vue';
 import type { CompassTarget } from '@/components/kit/compassTargets';
-import MenuList from './MenuList.vue';
-import type { MenuEntry } from './MenuList.vue';
 import AddWindowPopover from './AddWindowPopover.vue';
 import PaneTabs from './PaneTabs.vue';
 import SplitOffer from './SplitOffer.vue';
@@ -24,7 +22,7 @@ import {
     splitPane,
     toggleLimitWidth,
 } from './paneLayout';
-import type { DropZone, Pane, SplitSide } from './paneLayout';
+import type { DropZone, MenuEntry, Pane, SplitSide } from './paneLayout';
 
 /**
  * One pane of the grid, as version 5's pane stage draws it: the tab strip with + (the add bar) and ⋮ (the pane menu),
@@ -44,7 +42,7 @@ const addAnchor = computed(() => addButton.value?.$el ?? null);
 const isPlain = computed(
     () => store.layout.value.type === 'pane' && props.pane.windows.length === 1,
 );
-const isMenuOpen = ref(false);
+const isZoomed = computed(() => store.zoomedPaneId.value === props.pane.id);
 
 const tabs = computed<PaneTab[]>(() =>
     props.pane.windows.flatMap((key) => {
@@ -177,12 +175,12 @@ function answerOffer(zone: DropZone | null): void {
     }
 }
 
-const menuEntries = computed<MenuEntry[]>(() => {
-    const isAlone = props.pane.windows.length < 2;
+// The pane's own choices, which follow each tab's choices in its right-click menu.
+const paneEntries = computed<MenuEntry[]>(() => {
     const active = props.pane.active;
     const moves: MenuEntry[] = otherPanes.value.map((other, place) => ({
         label: `Join ${titleOf(other)}`,
-        groupLabel: place === 0 ? 'Join pane' : undefined,
+        startsGroup: place === 0,
         disabled: active === null,
         run: () => {
             if (active !== null) {
@@ -216,15 +214,6 @@ const menuEntries = computed<MenuEntry[]>(() => {
     }
 
     return [
-        { label: 'Dock left', disabled: isAlone, run: () => split(props.pane.active, 'left') },
-        { label: 'Dock right', disabled: isAlone, run: () => split(props.pane.active, 'right') },
-        { label: 'Dock above', disabled: isAlone, run: () => split(props.pane.active, 'above') },
-        { label: 'Dock below', disabled: isAlone, run: () => split(props.pane.active, 'below') },
-        {
-            label: 'Detach',
-            disabled: props.pane.active === null,
-            run: () => detach(props.pane.active),
-        },
         {
             label: props.pane.limitWidth ? 'Use full width' : 'Limit width',
             run: () =>
@@ -248,6 +237,7 @@ const menuEntries = computed<MenuEntry[]>(() => {
         <template v-if="!isPlain">
             <PaneTabs
                 :tabs="tabs"
+                :pane-entries="paneEntries"
                 :insert-at="insertAt"
                 :data-tabs-of="pane.id"
                 @grab="
@@ -267,21 +257,19 @@ const menuEntries = computed<MenuEntry[]>(() => {
                 @split="split"
             >
                 <Button
-                    ref="addButton"
                     variant="icon"
-                    aria-label="Add a window"
-                    title="Add a window"
-                    :aria-expanded="isAdding"
-                    @click="isAdding = !isAdding"
-                    ><Icon name="plus" :size="13"
+                    :aria-label="isZoomed ? 'Restore the layout' : 'Fill Home with this pane'"
+                    :title="isZoomed ? 'Restore the layout' : 'Fill Home with this pane'"
+                    @click="store.zoomedPaneId.value = isZoomed ? null : pane.id"
+                    ><Icon :name="isZoomed ? 'restore' : 'fill'" :size="14"
                 /></Button>
                 <Button
                     variant="icon"
-                    aria-label="Window settings"
-                    title="Window settings"
-                    :aria-expanded="isMenuOpen"
-                    @click="isMenuOpen = !isMenuOpen"
-                    ><Icon name="dots-vertical" :size="13"
+                    aria-label="Float this window"
+                    title="Float this window"
+                    :disabled="pane.active === null"
+                    @click="detach(pane.active)"
+                    ><Icon name="float" :size="14"
                 /></Button>
             </PaneTabs>
         </template>
@@ -300,18 +288,11 @@ const menuEntries = computed<MenuEntry[]>(() => {
                 }
             "
         />
-        <template v-if="isMenuOpen">
-            <MenuList
-                :entries="menuEntries"
-                class="absolute top-[34px] right-[5px]"
-                @done="isMenuOpen = false"
-            />
-        </template>
         <div class="relative min-h-0 flex-1 overflow-auto">
             <template v-if="pane.active">
                 <div
                     class="h-full"
-                    :class="{ 'mx-auto max-w-[760px]': pane.limitWidth }"
+                    :class="{ 'mx-auto max-w-[808px]': pane.limitWidth }"
                 >
                     <slot :window-key="pane.active" />
                 </div>
@@ -320,7 +301,9 @@ const menuEntries = computed<MenuEntry[]>(() => {
                 <div class="flex flex-col items-start gap-2 p-4">
                     <p class="text-body text-text-3">Nothing is open in this pane.</p>
                     <template v-if="store.closedWindows.value.length > 0">
-                        <Button variant="bordered" size="small" @click="isAdding = true">Open a window</Button>
+                        <Button ref="addButton" variant="bordered" size="small" @click="isAdding = true"
+                            >Open a window</Button
+                        >
                     </template>
                 </div>
             </template>

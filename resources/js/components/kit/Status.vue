@@ -10,10 +10,18 @@ import type { StatusState } from './status';
  * A state as a mark plus a word. `state` picks both (see status.ts); `label` overrides the word; `strong` sets it in
  * --text at weight 500; `live` wraps it in role status so a change is announced.
  */
-const props = defineProps<{ state: StatusState; label?: string; strong?: boolean; live?: boolean }>();
+// secondary draws the word in the second text colour, as the agent bar does.
+const props = defineProps<{ state: StatusState; label?: string; strong?: boolean; secondary?: boolean; live?: boolean }>();
 
 const look = computed(() => statusLooks[props.state]);
 const emphasised = computed(() => props.strong || look.value.strong);
+const wordLook = computed(() => {
+    if (emphasised.value) {
+        return 'font-medium text-text';
+    }
+
+    return props.secondary ? 'text-text-2' : 'text-text-3';
+});
 </script>
 
 <template>
@@ -21,7 +29,7 @@ const emphasised = computed(() => props.strong || look.value.strong);
         :role="live ? 'status' : undefined"
         class="inline-flex items-center gap-1.5 text-small whitespace-nowrap"
         :class="[
-            emphasised ? 'font-medium text-text' : 'text-text-3',
+            wordLook,
             look.mark === 'alert' && 'text-danger',
             look.mark === 'spinner' && 'text-text-2',
         ]"

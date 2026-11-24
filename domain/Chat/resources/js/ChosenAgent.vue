@@ -8,8 +8,9 @@ import Icon from "@kit/Icon";
 import Status from "@kit/Status";
 import type { StatusState } from "@kit/Status";
 import { agentUrl } from "./agentLinks";
-import { carriesRecord } from "./composables/useHandOver";
-import AgentMenu from "./AgentMenu.vue";
+import Dialog from "@kit/Dialog";
+import CreateChatForm from "./chats/CreateChatForm.vue";
+import ConversationMenu from "./ConversationMenu.vue";
 import AgentSessionActions from "./AgentSessionActions.vue";
 import { AGENT_BAR_MEMBERS } from "./agentBarMembers";
 import { useStatusAnnouncement } from "./composables/useStatusAnnouncement";
@@ -22,7 +23,7 @@ import { useStatusAnnouncement } from "./composables/useStatusAnnouncement";
 const props = defineProps<{ data: ChatData }>();
 
 const page = usePage();
-const isMenuOpen = ref(false);
+const isNewGroupOpen = ref(false);
 const isDialogOpen = ref(false);
 const selected = computed(() =>
   props.data.agents.find((agent) => agent.id === props.data.selectedAgentId),
@@ -74,18 +75,17 @@ const subline = computed(() => {
 </script>
 
 <template>
-  <div class="relative z-90 flex flex-1 flex-wrap items-center gap-2.5">
+  <div class="relative z-90 flex flex-1 flex-wrap items-center gap-2">
     <div class="relative">
-      <button
-        type="button"
-        class="flex items-center gap-2 rounded-control py-1 pr-1.5 pl-1 text-left hover:bg-hover"
-        aria-haspopup="listbox"
-        :aria-expanded="isMenuOpen"
-        title="Choose whom this chat talks to"
-        @click="isMenuOpen = !isMenuOpen"
-        @dragenter="carriesRecord($event) && (isMenuOpen = true)"
-        @dragover="carriesRecord($event) && $event.preventDefault()"
+      <ConversationMenu
+        :agents="data.agents"
+        :main-agent-id="data.mainAgentId"
+        :selected-agent-id="data.selectedAgentId"
+        :can-create-chats="data.canCreateChats"
+        :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
+        @new-group="isNewGroupOpen = true"
       >
+        <template #trigger>
         <template v-if="selected">
           <Avatar
             :participant="{
@@ -94,18 +94,19 @@ const subline = computed(() => {
             }"
             size="lg"
           />
-          <span class="flex flex-col leading-tight">
+          <span class="flex min-w-0 flex-col leading-[1.25] whitespace-nowrap">
             <span class="text-body text-text">{{
               isMain ? `${selected.name} · main` : selected.name
             }}</span>
-            <small class="text-small text-text-3">{{ subline }}</small>
+            <small class="max-w-[340px] truncate text-badge text-text-3">{{ subline }}</small>
           </span>
         </template>
         <template v-else>
           <span class="font-semibold text-text">Choose an agent</span>
         </template>
         <Icon name="caret" :size="14" />
-      </button>
+        </template>
+      </ConversationMenu>
       <template v-if="status?.reason">
         <p class="max-w-[60ch] px-1.5 text-small break-words text-danger">
           {{ status.reason }}
@@ -124,19 +125,23 @@ const subline = computed(() => {
           Last report {{ status.observationAgeSeconds }} s ago
         </p>
       </template>
-      <template v-if="isMenuOpen">
-        <AgentMenu
-          :agents="data.agents"
-          :main-agent-id="data.mainAgentId"
-          :selected-agent-id="data.selectedAgentId"
-          :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
-          @close="isMenuOpen = false"
-        />
-      </template>
+      <Dialog
+        :open="isNewGroupOpen"
+        title="New group chat"
+        size="sm"
+        @close="isNewGroupOpen = false"
+      >
+        <CreateChatForm />
+      </Dialog>
     </div>
     <span :id="AGENT_BAR_MEMBERS" class="flex items-center"></span>
     <template v-if="status">
-      <Status :state="looks[status.sessionState]" :label="status.label" />
+      <Status
+        class="ml-1"
+        :state="looks[status.sessionState]"
+        :label="status.label"
+        secondary
+      />
     </template>
     <template v-if="data.setupRequired">
       <span class="text-small text-text-3"

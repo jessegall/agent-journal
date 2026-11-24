@@ -8,14 +8,15 @@ import type { TabItem } from './tabs';
  * A tab list bound to its panels: tablist, tab and tabpanel roles with aria-controls and aria-labelledby. Left and
  * Right move and choose the tab, round the ends, and Home and End go to the first and last (roving tabindex). The
  * caller gives the tabs as data (with a panel slot per tab key) or draws its own Tab parts in the tabs slot. Variants:
- * inline (margin 10 0 6, a --line rule), pagehead (52 px high, no rule) and filters (padding 0 12, a --line rule); the
+ * inline (margin 10 0 6, a --line rule), pagehead (52 px high, no rule), filters (padding 0 12, a --line rule) and
+ * toolbar (inside a toolbar that draws the rule: 14 px apart, no rule, no padding, no space above an empty panel); the
  * gap is 12 px in a strip and 16 px on a page; the chosen line is the brand colour or quiet.
  */
 const props = withDefaults(
     defineProps<{
         tabs?: readonly TabItem[];
         label?: string;
-        variant?: 'inline' | 'pagehead' | 'filters';
+        variant?: 'inline' | 'pagehead' | 'filters' | 'toolbar';
         line?: 'brand' | 'quiet';
         gap?: 12 | 16;
     }>(),
@@ -60,6 +61,15 @@ async function move(event: KeyboardEvent): Promise<void> {
     await nextTick();
     tabs[targets[event.key]].focus();
 }
+
+// A toolbar's tabs sit 14 px apart, as the design's filters do; elsewhere the gap is the strip's or the page's.
+const tabGap = computed(() => {
+    if (props.variant === 'toolbar') {
+        return 'gap-3.5';
+    }
+
+    return props.gap === 12 ? 'gap-3' : 'gap-4';
+});
 </script>
 
 <template>
@@ -70,11 +80,12 @@ async function move(event: KeyboardEvent): Promise<void> {
             :aria-label="label"
             class="flex"
             :class="[
-                gap === 12 ? 'gap-3' : 'gap-4',
+                tabGap,
                 {
                     inline: 'mt-2.5 mb-1.5 border-b border-line',
                     pagehead: 'h-13 items-center',
                     filters: 'border-b border-line px-3',
+                    toolbar: '',
                 }[variant],
             ]"
             @keydown="move"
@@ -98,7 +109,8 @@ async function move(event: KeyboardEvent): Promise<void> {
                 role="tabpanel"
                 :aria-labelledby="`${idPrefix}-tab-${tab.key}`"
                 tabindex="0"
-                class="pt-3 outline-none focus-visible:outline-2 focus-visible:outline-focus"
+                class="outline-none focus-visible:outline-2 focus-visible:outline-focus"
+                :class="{ 'pt-3': variant !== 'toolbar' }"
             >
                 <slot :name="tab.key" />
             </div>

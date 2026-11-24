@@ -165,7 +165,7 @@ function sendOnEnter(event: KeyboardEvent): void {
       rows="1"
       :placeholder="placeholder"
       :aria-label="placeholder"
-      class="block w-full resize-none border-0 bg-transparent p-0 text-body leading-[1.45] text-text transition-[height] duration-160 outline-none placeholder:text-text-4"
+      class="block w-full resize-none border-0 bg-transparent p-0.5 text-body leading-[1.45] text-text transition-[height] duration-160 outline-none placeholder:text-text-4"
       @keydown.enter="sendOnEnter"
     />
     <div class="mt-2 flex items-center gap-1.5">
@@ -203,8 +203,8 @@ function sendOnEnter(event: KeyboardEvent): void {
       <Button
         type="submit"
         size="small"
-        :variant="hasText ? 'primary' : 'bordered'"
-        :disabled="!hasText"
+        variant="quiet-to-primary"
+        :filled="hasText"
       >
         <Icon name="arrow" :size="14" />
         Send

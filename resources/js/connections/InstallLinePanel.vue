@@ -9,6 +9,7 @@ import {
 } from '@generated/routes/connections/invitations';
 import Button from '@kit/Button';
 import Field from '@kit/Field';
+import Select from '@kit/Select';
 import SegmentedControl from '@kit/SegmentedControl';
 import { keyedPost } from '@kit/keyedPost';
 import { router } from '@inertiajs/vue3';
@@ -183,34 +184,20 @@ function cancel(): void {
                 <template v-else>
                     <Field id="join-project" label="Project">
                         <template #default="{ id }">
-                            <select :id="id" v-model="projectId" class="input">
-                                <template
-                                    v-for="project in projects"
-                                    :key="project.id"
-                                >
-                                    <option :value="project.id">
-                                        {{ project.label }}
-                                    </option>
-                                </template>
-                            </select>
+                            <Select
+                                :id="id"
+                                v-model="projectId"
+                                :options="projects.map((project) => ({ value: project.id, label: project.label }))"
+                            />
                         </template>
                     </Field>
                     <Field id="join-environment" label="Environment">
                         <template #default="{ id }">
-                            <select
+                            <Select
                                 :id="id"
                                 v-model="environmentId"
-                                class="input"
-                            >
-                                <template
-                                    v-for="environment in environments"
-                                    :key="environment.id"
-                                >
-                                    <option :value="environment.id">
-                                        {{ environment.label }}
-                                    </option>
-                                </template>
-                            </select>
+                                :options="environments.map((environment) => ({ value: environment.id, label: environment.label }))"
+                            />
                         </template>
                     </Field>
                 </template>

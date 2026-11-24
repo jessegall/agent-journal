@@ -1,0 +1,17 @@
+{
+    "name": "home-chat",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "pairing": "order",
+    "design": {
+        "url": "docs/designs/home-v6/index.html",
+        "steps": [],
+        "part": ".chatcol"
+    },
+    "app": {
+        "url": "http://localhost:54700/login",
+        "steps": [{"login": "owner@journal.local"}, {"goto": "http://localhost:54700/"}],
+        "part": "section[aria-label=Chat]"
+    }
+}

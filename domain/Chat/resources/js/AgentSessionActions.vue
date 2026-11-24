@@ -289,10 +289,9 @@ const handlers: Record<StatusActionData["type"], () => void> = {
         >
       </p>
     </template>
-    <template v-for="(action, index) in drawnActions" :key="action.type">
+    <template v-for="action in drawnActions" :key="action.type">
       <SessionAction
         :action="action"
-        :is-primary="index === 0"
         :is-pending="pendingType === action.type"
         @activate="handlers[action.type]()"
       />

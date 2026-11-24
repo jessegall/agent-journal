@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h, nextTick } from 'vue';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { defaultArrangement, shownWindows } from './arrangement';
+import { panesIn } from './paneLayout';
 import type { PaneWindow } from './paneLayout';
 import { providePaneLayout } from './usePaneLayout';
 import type { PaneLayoutStore } from './usePaneLayout';
@@ -53,5 +54,20 @@ describe('the Home arrangement', () => {
 
         expect(shownWindows(next.arrangement.value)).toEqual(shownWindows(arranged));
         expect(next.isDefault.value).toBe(false);
+    });
+
+    it('fills Home with one pane until the layout is restored, and remembers none of it', async () => {
+        const store = await openHome();
+        store.apply(defaultArrangement('chat', ['plans', 'tasks']));
+        const [first] = panesIn(store.layout.value);
+
+        store.zoomedPaneId.value = first.id;
+
+        expect(store.shownLayout.value).toEqual(first);
+
+        store.zoomedPaneId.value = null;
+
+        expect(store.shownLayout.value).toEqual(store.layout.value);
+        expect((await openHome()).zoomedPaneId.value).toBeNull();
     });
 });

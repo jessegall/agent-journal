@@ -1,0 +1,67 @@
+{
+    "accounts-reader": {
+        "ranAt": "2026-11-24T04:25:17.502Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 115
+    },
+    "accounts-row": {
+        "ranAt": "2026-11-24T04:24:54.838Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 30
+    },
+    "documents-header": {
+        "ranAt": "2026-11-24T04:23:39.205Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 16
+    },
+    "empty-page": {
+        "ranAt": "2026-11-24T04:23:42.936Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 9
+    },
+    "home-agent-bar": {
+        "ranAt": "2026-11-24T04:21:06.374Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 43
+    },
+    "home-chat": {
+        "ranAt": "2026-11-24T04:21:10.645Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 814
+    },
+    "home-composer": {
+        "ranAt": "2026-11-24T04:21:14.693Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 15
+    },
+    "home-docked-activity": {
+        "ranAt": "2026-11-24T04:21:21.491Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 9227
+    },
+    "home-floating-activity": {
+        "ranAt": "2026-11-24T04:21:27.568Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 9448
+    },
+    "plans-header": {
+        "ranAt": "2026-11-24T04:22:43.338Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 7
+    },
+    "settings": {
+        "ranAt": "2026-11-24T04:25:40.066Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 52
+    },
+    "sidebar": {
+        "ranAt": "2026-11-24T04:21:31.797Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 13
+    },
+    "tasks-header": {
+        "ranAt": "2026-11-24T04:21:35.572Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 46
+    }
+}

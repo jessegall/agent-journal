@@ -16,13 +16,18 @@ describe('the activity window', () => {
         expect(view.text()).toContain('Waiting for activity');
     });
 
-    it('filters by level and offers Show all when a level matches nothing', async () => {
-        const view = mount(ActivityWindow, { props: { events: [events[0]], connection: 'connected' } });
+    it('shows a level with every level above it, and offers Show everything when a level matches nothing', async () => {
+        const view = mount(ActivityWindow, { props: { events, connection: 'connected' } });
 
-        await view.findAll('[role="tab"]').find((tab) => tab.text() === 'Detail')?.trigger('click');
+        expect(view.findAll('li')).toHaveLength(2);
+
+        await view.findAll('[role="tab"]').find((tab) => tab.text() === 'Normal and up')?.trigger('click');
+        expect(view.findAll('li')).toHaveLength(1);
+
+        await view.setProps({ events: [events[1]] });
         expect(view.findAll('li')).toHaveLength(0);
 
-        await view.findAll('button').find((button) => button.text() === 'Show all')?.trigger('click');
+        await view.findAll('button').find((button) => button.text() === 'Show everything')?.trigger('click');
         expect(view.findAll('li')).toHaveLength(1);
     });
 

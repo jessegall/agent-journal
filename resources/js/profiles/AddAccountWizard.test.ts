@@ -212,6 +212,24 @@ describe('AddAccountWizard', () => {
         expect(start.submit).toHaveBeenCalledTimes(1);
     });
 
+    it('opens a draft of an agent with its driver and its way to sign in chosen', async () => {
+        const view = mount(AddAccountWizard, {
+            attachTo: document.body,
+            global: { stubs: { teleport: true } },
+            props: {
+                request: { kind: 'drafted', driver: 'claude-code', method: 'api_key', name: 'Team' },
+                methods,
+                attempts: [],
+                rows: [],
+            },
+        });
+        await flushPromises();
+        const key = view.findAll('[role="radio"]').find((card) => card.text().includes('API key'));
+
+        expect(key?.attributes('aria-checked')).toBe('true');
+        view.unmount();
+    });
+
     it('follows a sign-in that was already running when its start joins it', async () => {
         const running = attempt('waiting', { method: 'oauth' });
         const view = mount(AddAccountWizard, {

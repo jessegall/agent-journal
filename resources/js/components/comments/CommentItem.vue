@@ -4,6 +4,7 @@ import type {
     TextCommentView,
 } from '@/generated/types/core';
 import SwitchItem from '@/components/kit/SwitchItem.vue';
+import TextLink from '@/components/kit/TextLink.vue';
 
 /**
  * One comment in a list: who left it and when, what it is about, and its text. A whole-record comment offers to open
@@ -27,20 +28,12 @@ const comment = props.item.comment;
         </p>
         <SwitchItem :item="item" by="type">
             <template #record>
-                <button
-                    type="button"
-                    class="text-left text-small underline"
-                    @click="$emit('open', comment.id)"
-                >
+                <TextLink class="self-start text-small" @click="$emit('open', comment.id)">
                     On the whole record: open record
-                </button>
+                </TextLink>
             </template>
             <template #text="{ item: text }">
-                <button
-                    type="button"
-                    class="text-left text-small underline"
-                    @click="$emit('open', comment.id)"
-                >
+                <TextLink class="self-start text-small" @click="$emit('open', comment.id)">
                     On {{ text.anchor.versionLabel }}, lines
                     {{ text.anchor.firstLine }}–{{ text.anchor.lastLine }}
                     <template
@@ -51,7 +44,7 @@ const comment = props.item.comment;
                     >
                         (on an older version): open where it was</template
                     >
-                </button>
+                </TextLink>
             </template>
         </SwitchItem>
         <div class="prose" v-html="comment.bodyHtml" />

@@ -80,7 +80,7 @@ onBeforeUnmount(() => watcher?.disconnect());
             </div>
         </template>
         <template v-else>
-            <PaneNode :node="store.layout.value">
+            <PaneNode :node="store.shownLayout.value">
                 <template #default="{ windowKey }">
                     <slot :window-key="windowKey" />
                 </template>

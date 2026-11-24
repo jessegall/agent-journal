@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Enums\SignInMethod;
 use App\Http\Responses\PageReadProps;
+use App\Support\AccountDraftProducer;
 use App\Support\DraftProducerRegistry;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -76,6 +78,18 @@ final class DraftReadsTest extends TestCase
         $this->assertCount(3, $questions->json('props.read_web_draft_questions.questions'));
         $this->assertSame($fields, array_keys($record->json('props.read_web_draft_record.fields')));
         $this->assertSame($agent, $record->json('props.read_web_draft_record.agent'));
+    }
+
+    public function test_an_account_is_drafted_with_its_program_its_way_to_sign_in_and_its_name(): void
+    {
+        $record = $this->pageRead('web.draft-record', ['noun' => 'account', 'answers' => ['Codex', 'An API key', 'Team']])
+            ->assertOk();
+
+        $this->assertSame(
+            ['driver' => 'codex', 'method' => SignInMethod::ApiKey->value, 'name' => 'Team'],
+            $record->json('props.read_web_draft_record.fields'),
+        );
+        $this->assertSame(AccountDraftProducer::AGENT, $record->json('props.read_web_draft_record.agent'));
     }
 
     public function test_a_read_that_names_no_noun_is_refused_as_missing(): void

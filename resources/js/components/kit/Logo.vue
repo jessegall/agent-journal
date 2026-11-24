@@ -5,7 +5,7 @@
 <template>
     <span
         aria-hidden="true"
-        class="inline-flex size-5 shrink-0 items-center justify-center rounded-control bg-brand text-meta font-semibold text-on-brand"
+        class="inline-flex size-5 shrink-0 items-center justify-center rounded-control bg-brand text-meta font-black text-on-brand"
         >J</span
     >
 </template>

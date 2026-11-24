@@ -44,13 +44,13 @@ const look = computed(() => {
     }
 
     return {
-        ghost: 'text-text-2 hover:bg-hover hover:text-text',
+        ghost: 'border-transparent text-text-2 hover:bg-hover hover:text-text',
         bordered: 'border-border-2 bg-bg text-text hover:bg-hover',
         primary: 'border-brand bg-brand text-on-brand hover:brightness-112',
         quiet: 'border-border-2 text-text-3 hover:bg-hover hover:text-text',
         danger: 'border-[color-mix(in_srgb,var(--danger)_55%,var(--border-2))] text-danger hover:bg-[color-mix(in_srgb,var(--danger)_12%,transparent)]',
-        icon: 'size-6 justify-center p-0 text-text-3 hover:bg-[color-mix(in_srgb,var(--border-3)_70%,transparent)] hover:text-text',
-        word: 'h-5 px-1 text-badge text-text-3 hover:text-text',
+        icon: 'size-6 justify-center border-transparent p-0 text-text-3 hover:bg-[color-mix(in_srgb,var(--border-3)_70%,transparent)] hover:text-text',
+        word: 'h-5 border-transparent px-1 text-badge text-text-3 hover:text-text',
     }[kind.value];
 });
 
@@ -79,7 +79,7 @@ const isInactive = computed(() => props.disabled || props.pending);
         :disabled="href ? undefined : isInactive"
         :aria-busy="pending || undefined"
         :aria-pressed="pressed"
-        class="relative inline-flex items-center gap-1.5 rounded-button border border-transparent whitespace-nowrap transition-colors duration-(--duration-hover) focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus disabled:pointer-events-none disabled:opacity-45"
+        class="relative inline-flex items-center gap-1.5 rounded-button border whitespace-nowrap transition-colors duration-(--duration-hover) focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus disabled:pointer-events-none disabled:opacity-45"
         :class="[look, height]"
     >
         <span :class="[{ invisible: pending }, variant === 'word' ? 'gap-1' : 'gap-1.5']" class="inline-flex items-center">

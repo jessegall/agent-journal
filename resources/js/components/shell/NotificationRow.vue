@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NotificationItem } from '@/generated/types/core';
 import { Link } from '@inertiajs/vue3';
+import Button from '@/components/kit/Button.vue';
 import { computed } from 'vue';
 
 /**
@@ -49,15 +50,13 @@ const isUnread = computed(() => props.item.readAt === null);
                     >
                 </template>
                 <template v-if="isUnread">
-                    <button
-                        type="button"
-                        class="underline disabled:opacity-50"
+                    <Button
+                        variant="word"
                         :aria-label="`Mark ${item.title} read`"
                         :disabled="!canChange || isPending"
                         @click="emit('read')"
+                        >Mark read</Button
                     >
-                        Mark read
-                    </button>
                 </template>
             </span>
         </div>

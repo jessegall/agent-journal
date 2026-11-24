@@ -6,6 +6,7 @@ import DraftedBanner from '@kit/DraftedBanner';
 import Field from '@kit/Field';
 import FormErrors from '@kit/FormErrors';
 import Icon from '@kit/Icon';
+import IconButton from '@kit/IconButton';
 import type { SequenceEditorPartData } from '@generated/types/sequences';
 import { canMove, emptyStep, errorsByStep, moveStep, moveTo, removeStep } from './sequenceDraft';
 import type { Direction, FocusAfter } from './sequenceDraft';
@@ -135,14 +136,12 @@ function save(): void {
                     class="flex gap-2 rounded-card border border-line p-2"
                     :class="dragging === step.id && 'bg-sel'"
                 >
-                    <button
-                        type="button"
-                        :aria-label="`Drag step ${index + 1}`"
-                        class="shrink-0 cursor-grab self-start rounded-button p-1 text-text-3 focus-visible:outline-2 focus-visible:outline-focus"
+                    <IconButton
+                        icon="dots-vertical"
+                        :label="`Drag step ${index + 1}`"
+                        class="cursor-grab self-start"
                         @pointerdown="startDrag($event, step.id)"
-                    >
-                        <Icon name="dots-vertical" :size="14" />
-                    </button>
+                    />
                     <div class="grid min-w-0 flex-1 grid-cols-1 gap-2 @2xl:grid-cols-3">
                         <Field v-model="step.title" label="Step title" :error="parsed.byStep[step.id]?.title" />
                         <Field v-model="step.runsWhen" label="Runs when" :error="parsed.byStep[step.id]?.runsWhen" />

@@ -27,7 +27,7 @@ const props = withDefaults(
 const expanded = defineModel<boolean>('expanded', { default: false });
 
 const glyph = computed(() => ({ 3: '●', 2: '○', 1: '·' })[props.level]);
-const levelWords = computed(() => ({ 3: 'In the chat', 2: 'In the panel', 1: 'Detail' })[props.level]);
+const levelWords = computed(() => ({ 3: 'Reaches the chat', 2: 'In the panel', 1: 'Detail' })[props.level]);
 const hasFound = computed(() => props.found.length > 0);
 const toggle = (): void => {
     if (hasFound.value) {
@@ -56,7 +56,7 @@ const toggle = (): void => {
             @click="toggle"
         >
             <span class="w-9.5 shrink-0 text-text-3 tabular-nums">{{ time }}</span>
-            <span aria-hidden="true" class="w-2.5 shrink-0 text-center">{{ glyph }}</span>
+            <span aria-hidden="true" class="w-2.5 shrink-0 text-center text-text-3">{{ glyph }}</span>
             <span class="sr-only">{{ levelWords }}</span>
             <Icon :name="icon" :size="14" class="shrink-0 text-text-3" />
             <span class="min-w-0"
