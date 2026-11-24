@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Dispatches(ToggleReactionCommand::class)]
 #[Description('React to a chat message with an emoji, as your answer when no words are needed. The same emoji again takes it back.')]
-final class ReactToMessageTool extends JournalWriteTool
+final class MessageReactionTool extends JournalWriteTool
 {
     public const string NAME = 'messages_react';
 

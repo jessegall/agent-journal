@@ -63,45 +63,45 @@ final class TaskCheckTest extends TestCase
     {
         Event::fake([TaskCheckRecorded::class]);
         $task = Task::factory()->create();
-        $mine = (string) Str::ulid();
-        $theirs = (string) Str::ulid();
+        $own = (string) Str::ulid();
+        $other = (string) Str::ulid();
 
         $this->callersAre([
-            $mine => ActorIdentity::of($this->owner),
-            $theirs => new ActorIdentity(ActorType::User, TestIds::of(9)),
+            $own => ActorIdentity::of($this->owner),
+            $other => new ActorIdentity(ActorType::User, TestIds::of(9)),
         ]);
 
         $this->startUserRequestAs($this->owner->id);
         $this->runCommand(new StartTaskCommand($task->id));
 
-        $this->runCommand(new RunTaskCheckCommand($task->id, 1, $mine, 'acme verify'));
+        $this->runCommand(new RunTaskCheckCommand($task->id, 1, $own, 'acme verify'));
 
         $this->assertThrows(
-            fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $theirs, 'acme verify')),
+            fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $other, 'acme verify')),
             TaskCheckRefused::class,
         );
 
         $this->assertThrows(
-            fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $mine, 'acme verify')),
+            fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $own, 'acme verify')),
             TaskCheckRefused::class,
         );
 
-        $mineReceipt = strtolower((string) Str::ulid());
+        $ownReceipt = strtolower((string) Str::ulid());
         $looseReceipt = strtolower((string) Str::ulid());
 
         $this->receiptsAre([
-            $mineReceipt => self::passed($mineReceipt, $mine),
+            $ownReceipt => self::passed($ownReceipt, $own),
             $looseReceipt => self::passed($looseReceipt, (string) Str::ulid()),
         ]);
 
-        $this->bind($mineReceipt);
-        $this->bind($mineReceipt);
+        $this->bind($ownReceipt);
+        $this->bind($ownReceipt);
         $this->bind($looseReceipt);
 
         $check = TaskCheck::query()->where('task_id', $task->id)->sole();
 
         $this->assertSame(
-            [$mineReceipt, 'passed', 1],
+            [$ownReceipt, 'passed', 1],
             [$check->result_receipt_id, $check->outcome, $check->run_number],
         );
 

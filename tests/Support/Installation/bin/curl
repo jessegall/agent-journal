@@ -9,7 +9,7 @@ project=$here/../../../..
 main() {
     printf '%s\n' "$*" >> "$STAND_IN/requests.log"
     case "$*" in
-        *"/.docker/updater/update.sh -o "*) cp "$project/.docker/updater/update.sh" "$(option_after -o "$@")" ;;
+        *"/.docker/updater/update.sh -o "*) cp "$project/.docker/updater/update.sh" "$(read_option -o "$@")" ;;
     esac
 }
 

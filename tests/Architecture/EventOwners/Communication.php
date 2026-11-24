@@ -50,7 +50,7 @@ use App\Events\SpeechOpportunityClaimed;
 use App\Events\SpeechOpportunityReleased;
 use App\Events\SpeechOpportunityReserved;
 use App\Events\SpeechOpportunitySettled;
-use App\Events\UserPresenceBeat;
+use App\Events\UserPresenceConfirmed;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
@@ -373,12 +373,12 @@ return [
         'producers' => [],
         'sample' => fn () => new InboxSequenceTaken('inbox'),
     ],
-    UserPresenceBeat::class => [
+    UserPresenceConfirmed::class => [
         'role' => EventRole::RowFact,
         'owner' => 'UserPresence::beatAt',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new UserPresenceBeat('presence'),
+        'sample' => fn () => new UserPresenceConfirmed('presence'),
     ],
     AgentChatPermissionWithdrawn::class => [
         'role' => EventRole::RowFact,

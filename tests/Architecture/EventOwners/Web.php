@@ -46,7 +46,7 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Listeners/BroadcastProtectedViewInvalidation.php',
-            'app/Listeners/PurgeWithdrawnNotifications.php',
+            'app/Listeners/NotifyWithdrawnReceipts.php',
         ],
     ],
     DeskPreferenceSwitched::class => [

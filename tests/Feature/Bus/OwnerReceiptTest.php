@@ -88,7 +88,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->assertSame(1, $this->rowCount());
     }
 
-    public function test_the_prune_expires_a_receipt_past_its_retention_and_removes_it_past_its_tombstone(): void
+    public function test_the_prune_expires_a_receipt_past_its_retention_and_removes_it_past_its_removal_time(): void
     {
         $this->app->make(RequestKey::class)->set(self::KEY);
         $bus = $this->app->make(CommandBus::class);

@@ -11,7 +11,7 @@ main() {
 }
 
 create_database() {
-    if [ "$(database_exists "$1")" = "1" ]; then
+    if [ "$(has_database "$1")" = "1" ]; then
         echo "The test database $1 already exists."
         return
     fi
@@ -19,7 +19,7 @@ create_database() {
     echo "The test database $1 was created."
 }
 
-database_exists() {
+has_database() {
     docker compose exec -T postgres sh -c \
         "psql -U \"\$POSTGRES_USER\" -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname = '$1'\""
 }

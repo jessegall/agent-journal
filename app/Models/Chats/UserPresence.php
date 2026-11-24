@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\UserPresenceBeat;
+use App\Events\UserPresenceConfirmed;
 use App\Support\PresenceWindow;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -71,7 +71,7 @@ final class UserPresence extends Model implements EventSource, ReadableModel
     {
         $this->last_heartbeat_at = $time;
         $this->assertSaved($this->save());
-        $this->raise(new UserPresenceBeat($this->id));
+        $this->raise(new UserPresenceConfirmed($this->id));
     }
 
     // ----------[ Scopes ]----------

@@ -99,16 +99,16 @@ final class LayoutsTest extends TestCase
 
     public function test_another_users_layout_is_neither_listed_nor_reached(): void
     {
-        $theirs = Layout::create(User::factory()->create()->id, 'Theirs', LayoutShape::of($this->shape));
+        $other = Layout::create(User::factory()->create()->id, 'Theirs', LayoutShape::of($this->shape));
 
         $this->actingAs($this->owner)->get('/')->assertInertia(
             fn (AssertableInertia $page) => $page->where('page.data.layouts', []),
         );
         $this->actingAs($this->owner)->put(
-            "/layouts/{$theirs->id}",
+            "/layouts/{$other->id}",
             ['name' => 'Mine', 'shape' => $this->shape],
         )->assertNotFound();
-        $this->actingAs($this->owner)->delete("/layouts/{$theirs->id}")->assertNotFound();
+        $this->actingAs($this->owner)->delete("/layouts/{$other->id}")->assertNotFound();
         $this->actingAs($this->owner)->post(
             '/layouts',
             ['name' => 'Theirs', 'shape' => $this->shape],

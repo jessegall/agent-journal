@@ -102,7 +102,7 @@ final class AskRecordsTest extends TestCase
         );
     }
 
-    public function test_an_unrelated_actor_sees_nothing_while_a_former_holder_can_still_read_the_ask(): void
+    public function test_an_unrelated_actor_sees_nothing_while_a_previous_holder_can_still_read_the_ask(): void
     {
         $this->activateProfiles();
         $requester = Agent::create('Requester', 'journal-worker');

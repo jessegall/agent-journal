@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Boundary\Plans;
 
 use Tests\Fixtures\Boundary\Chat\Message;
 use Tests\Fixtures\Boundary\Outside\Helper;
-use Tests\Fixtures\Boundary\PlansExtra\Thing;
+use Tests\Fixtures\Boundary\PlansExtra\PlanExtra;
 
 final class UsesForbidden
 {
@@ -15,6 +15,6 @@ final class UsesForbidden
      */
     public function forbidden(): array
     {
-        return [new Message(), new Helper(), new Thing(), 'tests\fixtures\boundary\chat\Message'];
+        return [new Message(), new Helper(), new PlanExtra(), 'tests\fixtures\boundary\chat\Message'];
     }
 }

@@ -49,7 +49,7 @@ Code two scripts need lives once in `scripts/lib` and is sourced.
 |---|---|
 | `scripts/lib/settings.sh` | `setting NAME` reads a setting of `.env`; `set_setting NAME VALUE` writes one |
 | `scripts/lib/templates.sh` | `fill_template FILE name=value ...` prints a template with each `{{name}}` replaced |
-| `scripts/lib/arguments.sh` | `option_after --tag "$@"` gives the value that follows an option |
+| `scripts/lib/arguments.sh` | `read_option --tag "$@"` gives the value that follows an option |
 
 ## Tests
 

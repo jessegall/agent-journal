@@ -25,7 +25,7 @@ use Tests\TestCase;
 final class DomainDeclarationTest extends TestCase
 {
     private const string STARTER_KIT_REASON = 'is starter-kit code that uses '
-        .'Tests\\Fixtures\\Declarations\\Good\\Thing of Good; starter-kit code may use no domain';
+        .'Tests\\Fixtures\\Declarations\\Good\\GoodItem of Good; starter-kit code may use no domain';
 
     /**
      * The starter-kit files that exist today, relative to app; new behaviour lives in a domain.

@@ -9,7 +9,7 @@ use App\Contracts\Bus\ResultReceipts;
 use App\Enums\AssessmentOutcome;
 use App\Enums\ProblemCode;
 use App\Enums\RunMode;
-use App\Events\EvidenceInvalid;
+use App\Events\EvidenceFoundInvalid;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ResultReceipt;
@@ -44,14 +44,14 @@ final class ResultReceiptTest extends TestCase
 
     public function test_unrecognized_bytes_give_no_receipt_and_the_invalid_evidence_is_told(): void
     {
-        Event::fake([EvidenceInvalid::class]);
+        Event::fake([EvidenceFoundInvalid::class]);
         $part = $this->normalRun(0, "error: disk full\n".self::PASSED_OUTPUT);
 
         $this->assertSame('', $this->runAsAgent(new AssessPartOutputCommand($part->id)));
 
         $this->assertContains(ProblemCode::OutputUnrecognized, $this->codesOf($part));
         $this->assertSame(0, ResultReceipt::query()->count());
-        Event::assertDispatched(EvidenceInvalid::class);
+        Event::assertDispatched(EvidenceFoundInvalid::class);
     }
 
     public function test_an_exit_that_disagrees_with_the_output_is_an_outcome_conflict(): void

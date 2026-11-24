@@ -9,4 +9,4 @@ use App\Contracts\Events\Event;
 /**
  * The only event of a fixture domain that has no base.
  */
-final readonly class ThingHappened implements Event {}
+final readonly class ItemHappened implements Event {}

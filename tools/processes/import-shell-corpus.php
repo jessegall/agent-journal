@@ -240,9 +240,9 @@ final class CaseSet
 
     /**
      * @param  array<string, mixed>  $origin
-     * @param  array<string, mixed>  $legacy
+     * @param  array<string, mixed>  $stored
      */
-    public function add(string $source, string $dialect, array $origin, array $legacy): void
+    public function add(string $source, string $dialect, array $origin, array $stored): void
     {
         $this->inputs++;
         $this->origins++;
@@ -254,8 +254,8 @@ final class CaseSet
         $this->cases[$key] ??= ['id' => 'case-'.substr($key, 0, 16), 'source' => $source, 'dialect' => $dialect, 'context' => CONTEXT, 'origins' => [], 'legacy' => [], 'expected' => new stdClass()];
         $this->cases[$key]['origins'][] = $origin;
 
-        if ($legacy !== []) {
-            $this->cases[$key]['legacy'][] = ['origin' => $origin['type'], ...$legacy];
+        if ($stored !== []) {
+            $this->cases[$key]['legacy'][] = ['origin' => $origin['type'], ...$stored];
         }
     }
 

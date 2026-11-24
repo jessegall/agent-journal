@@ -13,7 +13,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * Tells a user's open tabs that receipts were taken from them, so they drop what they show before reading again; an
  * agent has no browser to tell.
  */
-final readonly class PurgeWithdrawnNotifications implements Listener
+final readonly class NotifyWithdrawnReceipts implements Listener
 {
     public function __construct(private Dispatcher $events) {}
 

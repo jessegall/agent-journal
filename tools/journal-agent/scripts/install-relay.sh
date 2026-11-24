@@ -13,7 +13,7 @@ main() {
     echo "journal: connecting the project folder $root"
     check_project_folder "$root"
     installation="$HOME/.journal-agent/releases/$version"
-    placement=$(command_placement) || exit 1
+    placement=$(find_command_placement) || exit 1
     install_release "$origin" "$version" "$downloads" "$target" "$installation"
     connect_folder "$root" "$ticket" "$origin" "$installation"
     connected=$?
@@ -35,14 +35,14 @@ fetch_file() {
         refuse "$1 answered $status instead of the file itself; the journal must serve it directly, with no redirect. Nothing was installed."
 }
 
-builds_in() {
+list_builds() {
     grep -o '"source":"[a-z0-9]*-[a-z0-9]*/bin/journal-agent"' "$1/manifest.json" 2>/dev/null |
         sed 's/"source":"//; s/\/bin\/journal-agent"//' | sort -u | tr '\n' ' '
 }
 
 target_name() {
     local os arch unsupported
-    unsupported="this computer ($(uname -s) $(uname -m)) is not supported. This release has builds for: $(builds_in "$1"). The install line was not used."
+    unsupported="this computer ($(uname -s) $(uname -m)) is not supported. This release has builds for: $(list_builds "$1"). The install line was not used."
     case "$(uname -s)" in
         Darwin) os=darwin ;;
         Linux) os=linux ;;
@@ -65,7 +65,7 @@ check_tools() {
         refuse "a SHA-256 tool (sha256sum or shasum) is needed and was not found."
 }
 
-digest_of() {
+read_digest() {
     if command -v sha256sum >/dev/null 2>&1; then
         sha256sum "$1" | cut -d ' ' -f 1
     else
@@ -90,12 +90,12 @@ check_project_folder() {
 
 # Where journal comes from: this journal's dispatcher already wins, the agent-journal launcher wins and runs the
 # folder's .journal/journal, a writable home folder on PATH, or ~/.local/bin with a PATH line in the startup file.
-command_placement() {
+find_command_placement() {
     local winner
     winner=$(command -v journal 2>/dev/null || true)
     case "$winner" in
         "") new_command_placement ;;
-        /*) existing_command_placement "$winner" ;;
+        /*) find_existing_command_placement "$winner" ;;
         *) refuse "journal is an alias or a function in this shell ($winner). Remove it, then run the install line again." ;;
     esac
 }
@@ -114,7 +114,7 @@ new_command_placement() {
     esac
 }
 
-existing_command_placement() {
+find_existing_command_placement() {
     case "$(readlink "$1" 2>/dev/null || true)" in
         "$HOME"/.journal-agent/releases/*/bin/journal) echo dispatcher; return ;;
     esac
@@ -128,10 +128,10 @@ install_release() {
     line="\"name\":\"bin/journal-agent\",\"source\":\"$4/bin/journal-agent\",\"sha256\":\""
     sha256=$(grep -o "$line[0-9a-f]*" "$3/manifest.json" | sed "s/.*sha256\":\"//")
     [ -n "$sha256" ] ||
-        refuse "this release holds no build matching this computer ($4). It has builds for: $(builds_in "$3"). The install line was not used."
+        refuse "this release holds no build matching this computer ($4). It has builds for: $(list_builds "$3"). The install line was not used."
     fetch_file "$1/releases/$2/$4/bin/journal-agent" "$program" ||
         refuse "the download step failed: journal-agent could not be downloaded from $1."
-    [ "$(digest_of "$program")" = "$sha256" ] ||
+    [ "$(read_digest "$program")" = "$sha256" ] ||
         refuse "the verification step failed: journal-agent was damaged on the way. Run the install line again."
     chmod 700 "$program"
     "$program" install-release --origin "$1" --manifest "$3/manifest.json" --signature "$3/manifest.json.sig" --into "$5" ||

@@ -6,7 +6,7 @@ namespace App\CommandMiddleware;
 
 use App\Contracts\Bus\AgentStartCommand;
 use App\Contracts\Bus\CommandMiddleware;
-use App\Events\StartUnavailable;
+use App\Events\StartRefusedWithoutAccount;
 use App\Exceptions\AccountUnavailable;
 use App\Support\CommandCall;
 use Closure;
@@ -29,7 +29,7 @@ final readonly class AnnounceUnavailableStart implements CommandMiddleware
 
             if ($command instanceof AgentStartCommand) {
                 $this->events->dispatch(
-                    new StartUnavailable($command->startedAgentId(), $refused->driver, $refused->reason),
+                    new StartRefusedWithoutAccount($command->startedAgentId(), $refused->driver, $refused->reason),
                 );
             }
 

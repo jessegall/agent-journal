@@ -26,7 +26,7 @@ main() {
 build_changed_images() {
     local name state
     for name in agent runner; do
-        state=$(source_state "$name")
+        state=$(read_source_state "$name")
         if [ ! -f "images/$name-$2.tar" ] || [ "$(cat "images/$name-$2.source" 2>/dev/null)" != "$state" ]; then
             sh .docker/helper/build.sh "$1" "$name"
             printf '%s\n' "$state" > "images/$name-$2.source"
@@ -35,7 +35,7 @@ build_changed_images() {
 }
 
 # The agent image follows its own folder and journal-check: its Go programs are mounted from the checkout's builds.
-source_state() {
+read_source_state() {
     case "$1" in
         agent) git ls-files -co --exclude-standard -z -- .docker/helper tools/journal-check \
             | xargs -0 shasum 2>/dev/null | shasum | cut -d' ' -f1 ;;
@@ -55,12 +55,12 @@ write_contained_settings() {
     set_setting AGENTS_WORKSPACES_FOLDER "$HOME/.agent-journal-6/workspaces"
     set_setting AGENTS_WORKSPACES '{"main":{"folder":"main"}}'
     set_setting AGENTS_SESSION_JOURNAL_URL "http://host.docker.internal:${APP_PORT:-54700}"
-    set_setting AGENT_IMAGE "$(image_pin agent "$1")"
-    set_setting RUNNER_IMAGE "$(image_pin runner "$1")"
+    set_setting AGENT_IMAGE "$(read_image_pin agent "$1")"
+    set_setting RUNNER_IMAGE "$(read_image_pin runner "$1")"
 }
 
 # An image's pin is the id the agent daemon gives it once loaded, read from the saved archive.
-image_pin() {
+read_image_pin() {
     tar -xOf "images/$1-$2.tar" manifest.json | sed -n 's#.*"Config":"blobs/sha256/\([0-9a-f]*\)".*#sha256:\1#p'
 }
 

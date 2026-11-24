@@ -84,21 +84,21 @@ changed_files() {
 }
 
 # Whether a migration is among the changed files; options narrow the kind of change, as for changed_files.
-migrations_among() {
+find_migrations() {
     changed_files "$@" | grep -qE '(^|/)(Database/Migrations|database/migrations)/'
 }
 
 # A first install always migrates.
 has_new_migrations() {
-    ! has_installed_commit || migrations_among
+    ! has_installed_commit || find_migrations
 }
 
 # Nothing is released yet, so a migration that changed or went away rebuilds the database.
 schema_changed() {
-    has_installed_commit && migrations_among --diff-filter=MDR
+    has_installed_commit && find_migrations --diff-filter=MDR
 }
 
-updater_changed() {
+has_updater_changed() {
     ! cmp -s "$running_loop" .docker/updater/loop.sh
 }
 
@@ -138,13 +138,13 @@ pin_images() {
 # The agent image is built only when its own sources changed since the pinned one was built.
 pin_agent_image() {
     local sources
-    sources=$(agent_source_state) || return 1
+    sources=$(read_agent_source_state) || return 1
     [ "$(cat images/agent.source 2>/dev/null)" != "$sources" ] || return 0
     build_and_pin agent AGENT_IMAGE &&
         printf '%s\n' "$sources" > images/agent.source
 }
 
-agent_source_state() {
+read_agent_source_state() {
     git -C "$mirror" rev-parse "$newest:.docker/helper" "$newest:tools/journal-agent" "$newest:tools/journal-check"
 }
 
@@ -282,7 +282,7 @@ record_installed() {
     echo "$newest" > .installed-commit
     rm -f .failed-commit
     echo "$(now) installed $newest"
-    ! updater_changed || replace_updater
+    ! has_updater_changed || replace_updater
 }
 
 record_failed() {

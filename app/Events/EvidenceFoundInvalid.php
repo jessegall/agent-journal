@@ -8,7 +8,7 @@ namespace App\Events;
  * A check's run gave no result: its assessment found problems. Raised once per assessment after it is stored, for the
  * run's actor and the project owner, with every problem code.
  */
-final readonly class EvidenceInvalid extends ProcessEvent
+final readonly class EvidenceFoundInvalid extends ProcessEvent
 {
     /**
      * @param  list<string>  $codes

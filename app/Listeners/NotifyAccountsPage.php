@@ -13,7 +13,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * Tells the owner's Accounts page to reread when a committed Profiles fact it shows arrives, naming the driver and
  * the account, attempt or notice the fact is about.
  */
-final readonly class ProjectAccountsChanged implements Listener
+final readonly class NotifyAccountsPage implements Listener
 {
     public function __construct(private Dispatcher $events) {}
 

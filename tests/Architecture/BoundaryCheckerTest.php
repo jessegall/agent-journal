@@ -56,10 +56,10 @@ final class BoundaryCheckerTest extends TestCase
         yield 'every forbidden use with its reason' => ['Plans/UsesForbidden.php', [
             '7 uses Tests\Fixtures\Boundary\Chat\Message, but Plans does not require Chat',
             '8 uses Tests\Fixtures\Boundary\Outside\Helper, which is project code outside every domain',
-            '9 uses Tests\Fixtures\Boundary\PlansExtra\Thing, which is project code outside every domain',
+            '9 uses Tests\Fixtures\Boundary\PlansExtra\PlanExtra, which is project code outside every domain',
             '18 uses Tests\Fixtures\Boundary\Chat\Message, but Plans does not require Chat',
             '18 uses Tests\Fixtures\Boundary\Outside\Helper, which is project code outside every domain',
-            '18 uses Tests\Fixtures\Boundary\PlansExtra\Thing, which is project code outside every domain',
+            '18 uses Tests\Fixtures\Boundary\PlansExtra\PlanExtra, which is project code outside every domain',
             '18 uses tests\fixtures\boundary\chat\Message, but Plans does not require Chat',
         ]];
     }

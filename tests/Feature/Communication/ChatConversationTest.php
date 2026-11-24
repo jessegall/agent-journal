@@ -19,7 +19,7 @@ use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
-use Domain\Chat\Mcp\Tools\ReactToMessageTool;
+use Domain\Chat\Mcp\Tools\MessageReactionTool;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\MessagingTestCase;
@@ -123,7 +123,7 @@ final class ChatConversationTest extends MessagingTestCase
         $inboxId = $this->runOnBus(new OpenPairChatCommand($agent->agent->id));
         $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Thanks!', 'owner-thanks'));
 
-        $this->useTool($agent, ReactToMessageTool::NAME, [
+        $this->useTool($agent, MessageReactionTool::NAME, [
             'chat_id' => $inboxId,
             'message_id' => $messageId,
             'emoji' => "\u{1F44D}",

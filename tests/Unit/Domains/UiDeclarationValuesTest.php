@@ -145,7 +145,7 @@ final class UiDeclarationValuesTest extends TestCase
         NavigationItem::page('year', '2026', page: 'collection', route: ['year' => 2026]);
     }
 
-    public function test_a_child_with_a_group_or_at_the_foot_is_refused(): void
+    public function test_a_child_with_a_group_or_at_the_bottom_is_refused(): void
     {
         $this->expectExceptionObject(InvalidNavigationDeclaration::rootOnlyOnChild('list', 'settings'));
 

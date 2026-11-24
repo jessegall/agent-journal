@@ -90,7 +90,7 @@ use App\Events\StartSettingsRequested;
 use App\Events\StartTokenIssued;
 use App\Events\StartTokenRevoked;
 use App\Events\StartTokenRotated;
-use App\Events\StartUnavailable;
+use App\Events\StartRefusedWithoutAccount;
 use App\Events\StartVerificationCancelled;
 use App\Events\StopAttemptCertified;
 use App\Events\StopAttemptSettled;
@@ -263,7 +263,7 @@ return [
         'producers' => [],
         'sample' => fn () => new StartRefused('agent', 'session', 'it cannot start here', new DateTimeImmutable('2026-01-01')),
     ],
-    StartUnavailable::class => [
+    StartRefusedWithoutAccount::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [

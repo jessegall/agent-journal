@@ -7,7 +7,7 @@ use App\Enums\CaptureState;
 use App\Enums\RunLogicalResult;
 use App\Events\BundleActivated;
 use App\Events\ClassificationRuleRetired;
-use App\Events\EvidenceInvalid;
+use App\Events\EvidenceFoundInvalid;
 use App\Events\EvidencePermitConsumed;
 use App\Events\EvidencePermitExpired;
 use App\Events\OutputChunkCommitted;
@@ -61,7 +61,7 @@ return [
             'app/Commands/ApproveRuleBundle/ApproveRuleBundleHandler.php',
         ],
     ],
-    EvidenceInvalid::class => [
+    EvidenceFoundInvalid::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [

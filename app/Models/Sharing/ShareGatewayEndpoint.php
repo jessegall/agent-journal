@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\GatewayEndpointState;
-use App\Events\ShareGatewayEndpointHealthy;
+use App\Events\ShareGatewayEndpointFoundHealthy;
 use App\Events\ShareGatewayEndpointMoved;
 use App\Exceptions\GatewayLeaseRefused;
 use App\Support\GatewayEndpoint;
@@ -186,7 +186,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     {
         $this->last_health_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
-        $this->raise(new ShareGatewayEndpointHealthy($this->id));
+        $this->raise(new ShareGatewayEndpointFoundHealthy($this->id));
     }
 
     // ----------[ Answers ]----------

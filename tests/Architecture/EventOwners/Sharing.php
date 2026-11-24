@@ -10,7 +10,7 @@ use App\Events\ShareCreated;
 use App\Events\ShareExpired;
 use App\Events\ShareFailed;
 use App\Events\ShareGatewayChanged;
-use App\Events\ShareGatewayEndpointHealthy;
+use App\Events\ShareGatewayEndpointFoundHealthy;
 use App\Events\ShareGatewayEndpointMoved;
 use App\Events\ShareGatewayMadeDefault;
 use App\Events\ShareGatewayOperationClaimed;
@@ -117,12 +117,12 @@ return [
         'producers' => [],
         'sample' => fn () => new ShareGatewayEndpointMoved('endpoint', GatewayEndpointState::cases()[0]),
     ],
-    ShareGatewayEndpointHealthy::class => [
+    ShareGatewayEndpointFoundHealthy::class => [
         'role' => EventRole::RowFact,
         'owner' => 'ShareGatewayEndpoint::recordHealthy',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareGatewayEndpointHealthy('endpoint'),
+        'sample' => fn () => new ShareGatewayEndpointFoundHealthy('endpoint'),
     ],
     ShareGatewayOperationClaimed::class => [
         'role' => EventRole::RowFact,

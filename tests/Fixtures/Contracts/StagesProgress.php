@@ -15,6 +15,6 @@ final readonly class StagesProgress
 
     public function handle(RowRenamed $event): void
     {
-        $this->lifecycle->publishAfterCommit(new LegacyRenameNoticed("progress of {$event->name}"));
+        $this->lifecycle->publishAfterCommit(new StreamedRenameNoticed("progress of {$event->name}"));
     }
 }

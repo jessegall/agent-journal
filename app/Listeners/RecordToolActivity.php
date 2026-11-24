@@ -13,7 +13,7 @@ use App\Values\ToolActivity;
  * Records a file an agent read or edited, or a command it ran, once the tool call finished; a call a hook refused
  * never finishes, so it leaves no entry.
  */
-final readonly class ToolActivityRecorder implements Listener
+final readonly class RecordToolActivity implements Listener
 {
     public function __construct(private ActivityLog $activity) {}
 

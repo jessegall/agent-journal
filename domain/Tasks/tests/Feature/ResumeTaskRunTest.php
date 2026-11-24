@@ -61,7 +61,7 @@ final class ResumeTaskRunTest extends TestCase
         'command_receipts',
     ];
 
-    public function test_a_new_occupant_resumes_the_run_and_the_former_one_is_refused(): void
+    public function test_a_new_occupant_resumes_the_run_and_the_previous_one_is_refused(): void
     {
         $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 1, false);
         $leaving = $this->started('First');

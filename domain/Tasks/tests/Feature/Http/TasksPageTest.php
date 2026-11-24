@@ -83,9 +83,9 @@ final class TasksPageTest extends TestCase
                 (string) $tasks[2]->number,
             ));
 
-        $mine = $this->actingAs($this->owner)->get('/tasks?holder=mine');
+        $own = $this->actingAs($this->owner)->get('/tasks?holder=mine');
 
-        $mine->assertInertia(fn (AssertableInertia $page) => $page
+        $own->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.root.children.0.children.1.text', '2'));
     }
 

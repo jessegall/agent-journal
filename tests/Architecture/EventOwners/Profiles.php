@@ -56,7 +56,7 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Commands/PublishSignInChallenge/PublishSignInChallengeHandler.php',
-            'app/Listeners/ProjectAccountsChanged.php',
+            'app/Listeners/NotifyAccountsPage.php',
         ],
     ],
     AccountCleaned::class => [

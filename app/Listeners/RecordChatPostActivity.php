@@ -16,7 +16,7 @@ use App\Models\Scopes\MessageVisibility;
  * Records what an agent posted in a chat a user takes part in, by its first characters; messages between agents
  * alone are not activity a user follows.
  */
-final readonly class ChatPostActivityRecorder implements Listener
+final readonly class RecordChatPostActivity implements Listener
 {
     public function __construct(private ActivityLog $activity) {}
 

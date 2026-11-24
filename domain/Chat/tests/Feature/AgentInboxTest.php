@@ -53,13 +53,13 @@ final class AgentInboxTest extends TestCase
     public function test_the_inbox_and_overview_count_only_messages_addressed_to_the_caller(): void
     {
         $caller = TestStart::start();
-        $mine = $this->askInboxOf(ActorIdentity::of($caller->agent), 'A question for this inbox.');
+        $own = $this->askInboxOf(ActorIdentity::of($caller->agent), 'A question for this inbox.');
         $unrelated = $this->askNobody('A different inbox.');
         $caller->startRequest($this->app);
         $reader = $this->app->make(AgentMessageReader::class);
         $inbox = $reader->inbox(AgentInboxState::Pending, 1);
 
-        $this->assertSame([$mine->id], array_column($inbox->messages, 'id'));
+        $this->assertSame([$own->id], array_column($inbox->messages, 'id'));
         $this->assertSame(1, $inbox->messages[0]->revision);
         $this->assertTrue($inbox->messages[0]->isQuestion);
 
@@ -73,7 +73,7 @@ final class AgentInboxTest extends TestCase
             ->assertJsonPath('result.structuredContent.sections.messages.counts.pending', 1);
 
         $this->assertNull(AgentSession::selectedMessage($caller->session->id));
-        $this->assertNull($mine->refresh()->read_at);
+        $this->assertNull($own->refresh()->read_at);
     }
 
     public function test_a_long_body_resumes_and_the_parent_of_a_reply_is_read_without_selecting_it(): void

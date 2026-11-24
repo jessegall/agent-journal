@@ -135,7 +135,7 @@ final class HookTransactionTest extends TestCase
         $line = fgets($stream);
 
         if ($line !== "{$expected}\n") {
-            throw TestFailure::lockHolderSaid(var_export($line, true));
+            throw TestFailure::lockHolderMessage(var_export($line, true));
         }
     }
 

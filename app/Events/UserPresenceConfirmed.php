@@ -7,7 +7,7 @@ namespace App\Events;
 /**
  * A user's presence was confirmed at a moment.
  */
-final readonly class UserPresenceBeat extends MessageEvent
+final readonly class UserPresenceConfirmed extends MessageEvent
 {
     public function __construct(
         public string $presenceId,

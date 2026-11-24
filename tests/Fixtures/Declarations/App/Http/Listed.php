@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\App\Http;
 
-use Tests\Fixtures\Declarations\Good\Thing;
+use Tests\Fixtures\Declarations\Good\GoodItem;
 
 final class Listed
 {
-    public function thing(): Thing
+    public function item(): GoodItem
     {
-        return new Thing();
+        return new GoodItem();
     }
 }

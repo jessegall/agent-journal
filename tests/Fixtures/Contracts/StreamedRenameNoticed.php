@@ -9,7 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A legacy send of a handler, which has no row to raise on and goes through the stream.
  */
-final readonly class LegacyRenameNoticed implements Event
+final readonly class StreamedRenameNoticed implements Event
 {
     public function __construct(public string $label) {}
 }

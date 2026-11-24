@@ -39,8 +39,8 @@ fail_when_asked() {
 # keeps the client versions it was given.
 remember_build() {
     local argument tag
-    tag=$(option_after --tag "$@")
-    [ -f "$STAND_IN/cached" ] || echo $(($(count_builds "$tag") + 1)) > "$(builds_file "$tag")"
+    tag=$(read_option --tag "$@")
+    [ -f "$STAND_IN/cached" ] || echo $(($(count_builds "$tag") + 1)) > "$(read_builds_file "$tag")"
     for argument in "$@"; do
         case "$argument" in
             CLAUDE_CODE_VERSION=*) echo "${argument#*=} (Claude Code)" > "$STAND_IN/claude-version" ;;
@@ -49,12 +49,12 @@ remember_build() {
     done
 }
 
-builds_file() {
+read_builds_file() {
     echo "$STAND_IN/builds-$(printf '%s' "$1" | tr ':/' '--')"
 }
 
 count_builds() {
-    cat "$(builds_file "$1")" 2>/dev/null || echo 0
+    cat "$(read_builds_file "$1")" 2>/dev/null || echo 0
 }
 
 # The digest of a tag's newest build: image_digest <tag>
@@ -102,14 +102,14 @@ inspect_daemon_images() {
 
 # Loading an archive holds the image its manifest names.
 load_archive() {
-    tar -xOf "$(option_after --input "$@")" manifest.json \
+    tar -xOf "$(read_option --input "$@")" manifest.json \
         | sed -n 's#.*"Config": *"blobs/sha256/\([0-9a-f]*\)".*#sha256:\1#p' >> "$STAND_IN/daemon-images"
 }
 
 # A container runs on each image $STAND_IN/images-in-use lists.
 answer_container() {
     local ancestor
-    ancestor=$(option_after --filter "$@")
+    ancestor=$(read_option --filter "$@")
     grep -qx "${ancestor#ancestor=}" "$STAND_IN/images-in-use" 2>/dev/null && echo container-1
     return 0
 }
@@ -134,7 +134,7 @@ answer_run() {
 
 save_archive() {
     local archive folder digest last
-    archive=$(option_after -o "$@")
+    archive=$(read_option -o "$@")
     folder=$(mktemp -d)
     for last; do :; done
     digest=$(image_digest "$last")

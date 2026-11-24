@@ -16,7 +16,7 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventGroups;
 use Tests\Fixtures\EventGroups\Billing\Events\InvoiceSent;
 use Tests\Fixtures\EventGroups\Contracts\LonelyGroup;
-use Tests\Fixtures\EventGroups\Empty\Events\ThingHappened;
+use Tests\Fixtures\EventGroups\Empty\Events\ItemHappened;
 use Tests\Fixtures\EventGroups\Orders\Events\OrderBilled;
 use Tests\Fixtures\EventGroups\Orders\Events\OrderLinePosted;
 use Tests\Fixtures\EventGroups\Orders\Events\OrderShipped;
@@ -61,7 +61,7 @@ final class EventGroupTest extends TestCase
         $groups = new EventGroups($events, $folders, self::groupsIn([$root]));
 
         $this->assertSame(
-            [OrderBilled::class, OrderShipped::class, ThingHappened::class],
+            [OrderBilled::class, OrderShipped::class, ItemHappened::class],
             self::named($groups->baseFaults(), $events),
         );
         $this->assertCount(2, $groups->domainBaseFaults());

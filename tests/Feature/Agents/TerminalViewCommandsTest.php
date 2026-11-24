@@ -220,9 +220,9 @@ final class TerminalViewCommandsTest extends TestCase
             (string) Str::ulid(),
         );
 
-        $mine = $this->asOwner($this->open($runtime));
+        $own = $this->asOwner($this->open($runtime));
 
-        $this->asOwner($this->close($runtime, $mine->readInterestId));
+        $this->asOwner($this->close($runtime, $own->readInterestId));
         $this->assertSame([$runtime->id], array_column($watched->forHost('host-1'), 'runtimeId'));
         $this->assertTrue($other->refresh()->isLive());
 

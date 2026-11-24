@@ -28,7 +28,7 @@ final class FilePathTest extends TestCase
     }
 
     #[DataProvider('climbingPaths')]
-    public function test_a_path_that_climbs_out_of_its_place_is_refused_by_name(string $relative): void
+    public function test_a_path_that_escapes_its_place_is_refused_by_name(string $relative): void
     {
         $this->expectExceptionObject(FilePathInvalid::escapesItsRoot($relative));
 
@@ -50,7 +50,7 @@ final class FilePathTest extends TestCase
         $this->assertSame('app', FilePath::in(Place::Project, '')->child('app')->relative);
     }
 
-    public function test_a_child_name_that_climbs_is_refused(): void
+    public function test_a_child_name_that_escapes_is_refused(): void
     {
         $this->expectException(FilePathInvalid::class);
 

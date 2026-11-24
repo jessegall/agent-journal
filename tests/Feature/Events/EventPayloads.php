@@ -21,7 +21,7 @@ use App\Events\ContextStarted;
 use App\Events\DriverFailed;
 use App\Events\DriverRequestRecovered;
 use App\Events\EngineTicked;
-use App\Events\EvidenceInvalid;
+use App\Events\EvidenceFoundInvalid;
 use App\Events\HelperCompletionCertified;
 use App\Events\HelperStopHeld;
 use App\Events\LaunchCancelled;
@@ -61,7 +61,7 @@ use App\Events\SpeechOpportunitySettled;
 use App\Events\StartAccepted;
 use App\Events\StartGrantRequested;
 use App\Events\StartSettingsRequested;
-use App\Events\StartUnavailable;
+use App\Events\StartRefusedWithoutAccount;
 use App\Events\StateTypesRequested;
 use App\Events\ToolCallFinished;
 use Domain\Documents\Events\DocumentClosed;
@@ -175,7 +175,7 @@ final class EventPayloads
                     'parentAgentId' => '?string',
                 ],
             ],
-            StartUnavailable::class => [
+            StartRefusedWithoutAccount::class => [
                 'fields' => [
                     'agentId' => 'string',
                     'driver' => 'string',
@@ -332,7 +332,7 @@ final class EventPayloads
                     'digest' => 'string',
                 ],
             ],
-            EvidenceInvalid::class => [
+            EvidenceFoundInvalid::class => [
                 'fields' => [
                     'assessmentId' => 'string',
                     'partRunId' => 'string',

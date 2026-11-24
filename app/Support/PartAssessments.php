@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
-use App\Events\EvidenceInvalid;
+use App\Events\EvidenceFoundInvalid;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -65,7 +65,7 @@ final readonly class PartAssessments
             $actor = [(string) $run->actor_type, (string) $run->actor_id];
 
             $this->facts->publishAfterCommit(
-                new EvidenceInvalid($assessment->id, $part->id, $actor[0], $actor[1], $codes),
+                new EvidenceFoundInvalid($assessment->id, $part->id, $actor[0], $actor[1], $codes),
             );
 
             return '';

@@ -52,7 +52,7 @@ final class TaskSearchAccessTest extends TestCase
         $this->assertFalse($authorization->readTargets(TaskReadResult::TOOL)->isRestricted());
     }
 
-    public function test_the_source_is_discovered_without_a_dummy_task_id(): void
+    public function test_the_source_is_discovered_without_a_stand_in_task_id(): void
     {
         $access = new TaskSearchAccess($this->grantFor([self::TASK_A]));
 

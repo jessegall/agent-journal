@@ -11,7 +11,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
-use Tests\Fixtures\Contracts\LegacyRenameNoticed;
+use Tests\Fixtures\Contracts\StreamedRenameNoticed;
 use Tests\Fixtures\Contracts\RaisingRow;
 use Tests\Fixtures\Contracts\RowRenamed;
 use Tests\Fixtures\Contracts\StagesProgress;
@@ -47,8 +47,8 @@ final class OrderedStreamTest extends TestCase
         $dispatcher = $this->app->make(Dispatcher::class);
         $dispatcher->listen(RowRenamed::class, fn (RowRenamed $renamed) => $this->released[] = "M {$renamed->name}");
         $dispatcher->listen(
-            LegacyRenameNoticed::class,
-            fn (LegacyRenameNoticed $noticed) => $this->released[] = "L {$noticed->label}",
+            StreamedRenameNoticed::class,
+            fn (StreamedRenameNoticed $noticed) => $this->released[] = "L {$noticed->label}",
         );
     }
 
@@ -59,7 +59,7 @@ final class OrderedStreamTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_legacy_migrated_legacy_releases_in_that_order(): void
+    public function test_streamed_migrated_streamed_releases_in_that_order(): void
     {
         $row = $this->row();
 
@@ -72,7 +72,7 @@ final class OrderedStreamTest extends TestCase
         $this->assertSame(['L one', 'M middle', 'L two'], $this->released);
     }
 
-    public function test_migrated_legacy_migrated_releases_in_that_order(): void
+    public function test_migrated_streamed_migrated_releases_in_that_order(): void
     {
         [$first, $second] = [$this->row(), $this->row()];
 
@@ -122,7 +122,7 @@ final class OrderedStreamTest extends TestCase
 
     private function stream(string $label): void
     {
-        $this->app->make(EventUnitLifecycle::class)->publishAfterCommit(new LegacyRenameNoticed($label));
+        $this->app->make(EventUnitLifecycle::class)->publishAfterCommit(new StreamedRenameNoticed($label));
     }
 
     private function row(): RaisingRow

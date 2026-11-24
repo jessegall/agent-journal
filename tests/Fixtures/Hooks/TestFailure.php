@@ -31,7 +31,7 @@ final class TestFailure extends RuntimeException
         return new self('The lock holder process did not start.');
     }
 
-    public static function lockHolderSaid(string $line): self
+    public static function lockHolderMessage(string $line): self
     {
         return new self("The lock holder said {$line} instead of locked.");
     }

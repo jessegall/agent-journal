@@ -14,7 +14,7 @@ use App\Enums\StartUnavailableReason;
  * A start of an agent was refused because no account could run its driver; it names the driver and a safe
  * reason, never an account.
  */
-final readonly class StartUnavailable extends SessionEvent implements AccountNoticeCause, ListenerFailureLog, UserInterfaceUpdater
+final readonly class StartRefusedWithoutAccount extends SessionEvent implements AccountNoticeCause, ListenerFailureLog, UserInterfaceUpdater
 {
     public function __construct(
         public string $agentId,
