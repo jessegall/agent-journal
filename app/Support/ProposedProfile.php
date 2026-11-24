@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Enums\ModelTier;
 use App\Enums\ExecutionModeType;
 use App\Enums\InstancePolicy;
 use App\Values\ProfileBase;
@@ -20,7 +21,6 @@ use App\Values\WithheldGrant;
 final readonly class ProposedProfile
 {
     /**
-     * @param  list<string>  $allowedModels
      * @param  list<string>|null  $skillAllowlist
      * @param  list<string>  $requiredSkills
      * @param  list<StopCondition>  $stopConditions
@@ -32,10 +32,8 @@ final readonly class ProposedProfile
         public string $label,
         public ProfileBase $base,
         public string $instructions,
-        public string $model,
-        public string|null $driver,
-        public bool $driverPinned,
-        public array $allowedModels,
+        public ModelTier $tier,
+        public string|null $preferredDriver,
         public array|null $skillAllowlist,
         public array $requiredSkills,
         public ExecutionModeType|null $container,

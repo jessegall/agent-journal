@@ -13,9 +13,7 @@ const data = defineProps<RunWindowData>();
 
 const page = usePage<{ errors: Record<string, string> }>();
 const refusal = computed(() => page.props.errors.review ?? '');
-const running = computed(
-    () => !['ended', 'stopped', 'lost'].includes(data.snapshot.lifecycle),
-);
+const running = computed(() => data.snapshot.isRunning);
 
 /**
  * A stop asked for and taken by the server reads Stopping until the run reports it stopped; a refused stop clears it.

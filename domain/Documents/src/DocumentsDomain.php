@@ -88,6 +88,7 @@ use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Exceptions\SettlementDenied;
 use Domain\Documents\Exceptions\StaleRead;
+use Domain\Documents\Http\Controllers\AskDocumentFeedbackPageController;
 use Domain\Documents\Http\Controllers\CloseDraftPageController;
 use Domain\Documents\Http\Controllers\CreateDocumentPageController;
 use Domain\Documents\Http\Controllers\CreateReportPageController;
@@ -355,6 +356,7 @@ final class DocumentsDomain extends Domain implements
                     ActionRoute::post('docs/{document}/close', CloseDraftPageController::class, 'close-draft'),
                     ActionRoute::post('docs/{document}/settle', SettleDocumentPageController::class, 'settle-document'),
                     ActionRoute::post('docs/{document}/recover', RecoverDocumentPageController::class, 'recover-draft'),
+                    ActionRoute::post('docs/{document}/feedback', AskDocumentFeedbackPageController::class, 'ask-feedback'),
                 )
                 ->slots(Slot::record('inspector', 'document', 'doc')),
             Page::layout('revision', 'Revision', Icon::Docs, RevisionWindowResolver::class)

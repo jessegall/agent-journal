@@ -607,3 +607,33 @@ func TestAStandardManifestNamesNoInitAndAddsNoCapabilities(t *testing.T) {
 		t.Fatalf("a standard container got protected options: %+v %+v", options.Config, options.HostConfig)
 	}
 }
+
+func TestALocalDevelopmentHostMountsTheCheckoutsProgramsOverTheImagesReadOnly(t *testing.T) {
+	development := containedRules
+	development.DevelopmentPrograms = "/srv/journal/development"
+
+	options, err := containedManifest().CreateOptions("journal-session-7", accountLabels("7"), development)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, target := range []string{"/opt/journal/bin/journal-init", "/opt/journal/bin/journal-exec", "/opt/journal/shell/bash"} {
+		program := mountAt(t, options, target)
+		if program.Type != mount.TypeBind || !program.ReadOnly || !strings.HasPrefix(program.Source, "/srv/journal/development/") {
+			t.Fatalf("%s is mounted as %+v", target, program)
+		}
+	}
+}
+
+func TestAProductionHostMountsNoProgramOverTheImage(t *testing.T) {
+	options, err := containedManifest().CreateOptions("journal-session-7", accountLabels("7"), containedRules)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, mounted := range options.HostConfig.Mounts {
+		if strings.HasPrefix(mounted.Target, "/opt/journal/") {
+			t.Fatalf("a production container mounts %s over its image", mounted.Target)
+		}
+	}
+}

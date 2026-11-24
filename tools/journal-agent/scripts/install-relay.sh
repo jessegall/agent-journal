@@ -1,185 +1,183 @@
 #!/bin/sh
-# The second stage of an install line: checks this folder and this computer before the ticket is spent, installs the
-# verified journal-agent release, connects the folder and puts the journal command on PATH.
-# Arguments: the journal's origin, the release version and the folder holding the manifest and its signature.
-# The ticket arrives on standard input only.
-
+# The second stage of an install line: checks this folder and computer, installs the verified release, connects the
+# folder and puts journal on PATH.   sh install-relay.sh <origin> <version> <downloads folder>   (ticket on stdin)
 set -u
-umask 077
 
-origin=$1
-version=$2
-downloads=$3
-ticket=$(head -n 1)
+main() {
+    local origin=$1 version=$2 downloads=$3 ticket target root installation placement connected
+    ticket=$(head -n 1)
+    umask 077
+    target=$(target_name "$downloads") || exit 1
+    check_tools
+    root=$(project_root)
+    echo "journal: connecting the project folder $root"
+    check_project_folder "$root"
+    installation="$HOME/.journal-agent/releases/$version"
+    placement=$(command_placement) || exit 1
+    install_release "$origin" "$version" "$downloads" "$target" "$installation"
+    connect_folder "$root" "$ticket" "$origin" "$installation"
+    connected=$?
+    place_command "$placement" "$installation/bin/journal" "$root"
+    report_connected "$connected" "$installation/bin/journal"
+    exit "$connected"
+}
 
 refuse() {
     echo "journal: $1" >&2
     exit 1
 }
 
-# Downloads one file from the journal's exact origin: no redirect is followed, and any answer but 200 stops the
-# install before the file is used.
-fetch() {
+# No redirect is followed, and any answer but 200 stops the install before the file is used.
+fetch_file() {
+    local status
     status=$(curl -sS --proto "=${1%%://*}" --max-redirs 0 -o "$2" -w '%{http_code}' "$1") || return 1
     [ "$status" = 200 ] ||
         refuse "$1 answered $status instead of the file itself; the journal must serve it directly, with no redirect. Nothing was installed."
 }
 
-platform="$(uname -s) $(uname -m)"
-builds=$(grep -o '"source":"[a-z0-9]*-[a-z0-9]*/bin/journal-agent"' "$downloads/manifest.json" 2>/dev/null |
-    sed 's/"source":"//; s/\/bin\/journal-agent"//' | sort -u | tr '\n' ' ')
+builds_in() {
+    grep -o '"source":"[a-z0-9]*-[a-z0-9]*/bin/journal-agent"' "$1/manifest.json" 2>/dev/null |
+        sed 's/"source":"//; s/\/bin\/journal-agent"//' | sort -u | tr '\n' ' '
+}
 
-case "$(uname -s)" in
-    Darwin) os=darwin ;;
-    Linux) os=linux ;;
-    *) refuse "this computer ($platform) is not supported. This release has builds for: ${builds:-none}. The install line was not used." ;;
-esac
+target_name() {
+    local os arch unsupported
+    unsupported="this computer ($(uname -s) $(uname -m)) is not supported. This release has builds for: $(builds_in "$1"). The install line was not used."
+    case "$(uname -s)" in
+        Darwin) os=darwin ;;
+        Linux) os=linux ;;
+        *) refuse "$unsupported" ;;
+    esac
+    case "$(uname -m)" in
+        arm64 | aarch64) arch=arm64 ;;
+        x86_64 | amd64) arch=amd64 ;;
+        *) refuse "$unsupported" ;;
+    esac
+    echo "$os-$arch"
+}
 
-case "$(uname -m)" in
-    arm64 | aarch64) arch=arm64 ;;
-    x86_64 | amd64) arch=amd64 ;;
-    *) refuse "this computer ($platform) is not supported. This release has builds for: ${builds:-none}. The install line was not used." ;;
-esac
+check_tools() {
+    local tool
+    for tool in sh curl mktemp; do
+        command -v "$tool" >/dev/null 2>&1 || refuse "$tool is needed and was not found."
+    done
+    command -v sha256sum >/dev/null 2>&1 || command -v shasum >/dev/null 2>&1 ||
+        refuse "a SHA-256 tool (sha256sum or shasum) is needed and was not found."
+}
 
-target="$os-$arch"
+digest_of() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | cut -d ' ' -f 1
+    else
+        shasum -a 256 "$1" | cut -d ' ' -f 1
+    fi
+}
 
-for tool in sh curl mktemp; do
-    command -v "$tool" >/dev/null 2>&1 || refuse "$tool is needed and was not found."
-done
+# The top of the Git checkout this runs in, or the folder itself outside Git.
+project_root() {
+    git rev-parse --show-toplevel 2>/dev/null || pwd -P
+}
 
-if command -v sha256sum >/dev/null 2>&1; then
-    digest_of() { sha256sum "$1" | cut -d ' ' -f 1; }
-elif command -v shasum >/dev/null 2>&1; then
-    digest_of() { shasum -a 256 "$1" | cut -d ' ' -f 1; }
-else
-    refuse "a SHA-256 tool (sha256sum or shasum) is needed and was not found."
-fi
+check_project_folder() {
+    [ ! -L "$1/.journal" ] || refuse "$1/.journal is a link. Remove it, then run the install line again."
+    if command -v git >/dev/null 2>&1 && [ -n "$(git -C "$1" ls-files -- .journal 2>/dev/null)" ]; then
+        refuse "$1/.journal is tracked by Git. Untrack it (git rm -r --cached .journal), then run the install line again."
+    fi
+    if [ -d "$1/.journal" ] && [ ! -f "$1/.journal/connection.json" ]; then
+        refuse "$1/.journal holds a journal version 5 installation. Connect a separate clean checkout of this project instead."
+    fi
+}
 
-root=$(pwd -P)
-has_git=0
-if command -v git >/dev/null 2>&1 && top=$(git rev-parse --show-toplevel 2>/dev/null); then
-    root=$top
-    has_git=1
-fi
-echo "journal: connecting the project folder $root"
+# Where journal comes from: this journal's dispatcher already wins, the agent-journal launcher wins and runs the
+# folder's .journal/journal, a writable home folder on PATH, or ~/.local/bin with a PATH line in the startup file.
+command_placement() {
+    local winner
+    winner=$(command -v journal 2>/dev/null || true)
+    case "$winner" in
+        "") new_command_placement ;;
+        /*) existing_command_placement "$winner" ;;
+        *) refuse "journal is an alias or a function in this shell ($winner). Remove it, then run the install line again." ;;
+    esac
+}
 
-if [ -L "$root/.journal" ]; then
-    refuse "$root/.journal is a link. Remove it, then run the install line again."
-fi
-
-if [ "$has_git" = 1 ] && [ -n "$(git -C "$root" ls-files -- .journal)" ]; then
-    refuse "$root/.journal is tracked by Git. Untrack it (git rm -r --cached .journal), then run the install line again."
-fi
-
-if [ -d "$root/.journal" ] && [ ! -f "$root/.journal/connection.json" ]; then
-    refuse "$root/.journal holds a journal version 5 installation. Connect a separate clean checkout of this project instead."
-fi
-
-installation="$HOME/.journal-agent/releases/$version"
-dispatcher="$installation/bin/journal"
-
-# Where the journal command will come from: a dispatcher of this journal already wins on PATH, the agent-journal
-# launcher wins on PATH and runs the .journal/journal it finds in the folder, a writable folder that wins on PATH, or
-# ~/.local/bin with one owned PATH line in the shell's startup file.
-winner=$(command -v journal 2>/dev/null || true)
-link_folder=""
-startup_file=""
-beside_launcher=0
-case "$winner" in
-    "")
-        saved_ifs=$IFS
-        IFS=:
-        set -f
-        for folder in $PATH; do
-            case "$folder" in
-                "$HOME"/*)
-                    if [ -d "$folder" ] && [ -w "$folder" ]; then
-                        link_folder=$folder
-                        break
-                    fi
-                    ;;
-            esac
-        done
-        set +f
-        IFS=$saved_ifs
-        if [ -z "$link_folder" ]; then
-            link_folder="$HOME/.local/bin"
-            case "$(basename "${SHELL:-sh}")" in
-                zsh) startup_file="$HOME/.zshrc" ;;
-                bash) startup_file="$HOME/.bashrc" ;;
-                *) refuse "no folder on PATH can hold the journal command. Add a folder of your home to PATH, then run the install line again." ;;
-            esac
-        fi
-        ;;
-    /*)
-        case "$(readlink "$winner" 2>/dev/null || true)" in
-            "$HOME"/.journal-agent/releases/*/bin/journal) ;;
-            *)
-                if grep -q '^# agent-journal: the journal command' "$winner" 2>/dev/null; then
-                    beside_launcher=1
-                else
-                    refuse "another journal command wins on PATH at $winner. Remove it or put it later on PATH, then run the install line again."
-                fi
-                ;;
+new_command_placement() {
+    local folder
+    for folder in $(printf '%s' "$PATH" | tr ':' ' '); do
+        case "$folder" in
+            "$HOME"/*) [ -d "$folder" ] && [ -w "$folder" ] && { echo "folder $folder"; return; } ;;
         esac
-        ;;
-    *) refuse "journal is an alias or a function in this shell ($winner). Remove it, then run the install line again." ;;
-esac
+    done
+    case "$(basename "${SHELL:-sh}")" in
+        zsh) echo "local $HOME/.zshrc" ;;
+        bash) echo "local $HOME/.bashrc" ;;
+        *) refuse "no folder on PATH can hold the journal command. Add a folder of your home to PATH, then run the install line again." ;;
+    esac
+}
 
-# The journal-agent of the target is checked against the manifest before it runs; it verifies the manifest's
-# signature itself, with the key it pins, and installs the rest.
-program="$downloads/journal-agent"
-program_line="\"name\":\"bin/journal-agent\",\"source\":\"$target/bin/journal-agent\",\"sha256\":\""
-program_sha256=$(grep -o "$program_line[0-9a-f]*" "$downloads/manifest.json" | sed "s/.*sha256\":\"//")
-[ -n "$program_sha256" ] ||
-    refuse "this release has no build for this computer ($target). It has builds for: ${builds:-none}. The install line was not used."
+existing_command_placement() {
+    case "$(readlink "$1" 2>/dev/null || true)" in
+        "$HOME"/.journal-agent/releases/*/bin/journal) echo dispatcher; return ;;
+    esac
+    grep -q '^# agent-journal: the journal command' "$1" 2>/dev/null && { echo launcher; return; }
+    refuse "another journal command wins on PATH at $1. Remove it or put it later on PATH, then run the install line again."
+}
 
-if ! fetch "$origin/releases/$version/$target/bin/journal-agent" "$program"; then
-    refuse "the download step failed: journal-agent could not be downloaded from $origin."
-fi
-[ "$(digest_of "$program")" = "$program_sha256" ] ||
-    refuse "the verification step failed: journal-agent was damaged on the way. Run the install line again."
-chmod 700 "$program"
+# journal-agent is checked against the manifest before it runs; it verifies the manifest's signature itself.
+install_release() {
+    local program="$3/journal-agent" line sha256
+    line="\"name\":\"bin/journal-agent\",\"source\":\"$4/bin/journal-agent\",\"sha256\":\""
+    sha256=$(grep -o "$line[0-9a-f]*" "$3/manifest.json" | sed "s/.*sha256\":\"//")
+    [ -n "$sha256" ] ||
+        refuse "this release holds no build matching this computer ($4). It has builds for: $(builds_in "$3"). The install line was not used."
+    fetch_file "$1/releases/$2/$4/bin/journal-agent" "$program" ||
+        refuse "the download step failed: journal-agent could not be downloaded from $1."
+    [ "$(digest_of "$program")" = "$sha256" ] ||
+        refuse "the verification step failed: journal-agent was damaged on the way. Run the install line again."
+    chmod 700 "$program"
+    "$program" install-release --origin "$1" --manifest "$3/manifest.json" --signature "$3/manifest.json.sig" --into "$5" ||
+        refuse "the install-release step failed: the release could not be installed."
+}
 
-"$program" install-release --origin "$origin" --manifest "$downloads/manifest.json" \
-    --signature "$downloads/manifest.json.sig" --into "$installation" ||
-    refuse "the install-release step failed: the release could not be installed."
+# Ends 0 once the journal acknowledged the setup, 2 when its relay has not reached the journal yet; the line is spent.
+connect_folder() {
+    local status
+    (cd "$1" && printf '%s\n' "$2" | "$4/bin/journal-agent" connect --ticket-stdin --origin "$3")
+    status=$?
+    case "$status" in
+        0 | 2) return "$status" ;;
+        *) refuse "the connect step failed (exit $status). The output above says why." ;;
+    esac
+}
 
-# connect ends with 0 once the journal acknowledged this setup, 2 when the folder is enrolled and its relay has not
-# reached the journal yet, and anything else on a failure; the spent line is never used again here.
-(cd "$root" && printf '%s\n' "$ticket" | "$installation/bin/journal-agent" connect --ticket-stdin --origin "$origin")
-connected=$?
-case "$connected" in
-    0 | 2) ;;
-    *) refuse "the connect step failed (exit $connected). The output above says why." ;;
-esac
+# Each change outside the project is recorded, so disconnecting the last project can undo it when unchanged.
+place_command() {
+    local changes="$HOME/.journal-agent/machine-changes"
+    mkdir -p "$HOME/.journal-agent" && chmod 700 "$HOME/.journal-agent"
+    case "$1" in
+        launcher) ln -sf "$2" "$3/.journal/journal" ||
+            refuse "the link step failed: the journal command could not be linked into $3/.journal." ;;
+        folder\ *) link_command "${1#folder }" "$2" "$changes" ;;
+        local\ *) link_command "$HOME/.local/bin" "$2" "$changes" && add_path_line "${1#local }" "$changes" ;;
+    esac
+}
 
-# Each change made outside the project is recorded, so disconnecting the last project can undo it when unchanged.
-changes="$HOME/.journal-agent/machine-changes"
-mkdir -p "$HOME/.journal-agent" && chmod 700 "$HOME/.journal-agent"
+link_command() {
+    [ -e "$1/journal" ] || [ -L "$1/journal" ] || printf 'link\t%s\n' "$1/journal" >> "$3"
+    mkdir -p "$1" && ln -sf "$2" "$1/journal" ||
+        refuse "the link step failed: the journal command could not be linked into $1."
+}
 
-if [ -n "$link_folder" ]; then
-    [ -e "$link_folder/journal" ] || [ -L "$link_folder/journal" ] || printf 'link\t%s\n' "$link_folder/journal" >>"$changes"
-    mkdir -p "$link_folder" && ln -sf "$dispatcher" "$link_folder/journal" ||
-        refuse "the link step failed: the journal command could not be linked into $link_folder."
-fi
+add_path_line() {
+    grep -qF '# journal: the journal command' "$1" 2>/dev/null && return 0
+    printf '\n# journal: the journal command\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$1" ||
+        refuse "the PATH step failed: $1 could not be changed."
+    printf 'startup\t%s\n' "$1" >> "$2"
+}
 
-# The agent-journal launcher runs the .journal/journal of the folder it is started in, so the folder holds a link to
-# this journal's dispatcher; disconnecting removes it with the folder's .journal.
-if [ "$beside_launcher" = 1 ]; then
-    ln -sf "$dispatcher" "$root/.journal/journal" ||
-        refuse "the link step failed: the journal command could not be linked into $root/.journal."
-fi
+report_connected() {
+    [ "$1" = 0 ] && echo "journal: connected."
+    echo "journal: in this terminal run: \"$2\" status"
+    echo "journal: in a new terminal run: journal status"
+}
 
-if [ -n "$startup_file" ] && ! grep -qF '# journal: the journal command' "$startup_file" 2>/dev/null; then
-    printf '\n# journal: the journal command\nexport PATH="$HOME/.local/bin:$PATH"\n' >>"$startup_file" ||
-        refuse "the PATH step failed: $startup_file could not be changed."
-    printf 'startup\t%s\n' "$startup_file" >>"$changes"
-fi
-
-if [ "$connected" = 0 ]; then
-    echo "journal: connected."
-fi
-echo "journal: in this terminal run: \"$dispatcher\" status"
-echo "journal: in a new terminal run: journal status"
-exit "$connected"
+main "$@"

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
+use App\Enums\ModelTier;
 use App\Casts\ProfileAuthorizationCast;
 use App\Casts\ProfileBaseCast;
 use App\Casts\ProfileStartPolicyCast;
@@ -51,7 +52,7 @@ use PhpOption\Some;
  * @property int $revision
  * @property ProfileBase $base
  * @property string $instructions
- * @property string $model
+ * @property ModelTier $preferred_tier
  * @property list<string>|null $skill_allowlist
  * @property list<string> $required_skills
  * @property ProfileStartPolicy $start_policy
@@ -106,6 +107,7 @@ final class ProfileRevision extends Model implements ReadableModel
         return [
             'revision' => 'integer',
             'base' => ProfileBaseCast::class,
+            'preferred_tier' => ModelTier::class,
             'skill_allowlist' => 'array',
             'required_skills' => 'array',
             'start_policy' => ProfileStartPolicyCast::class,
@@ -138,7 +140,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'revision' => (is_numeric($latest) ? (int) $latest : 0) + 1,
             'base' => $definition->base,
             'instructions' => $definition->instructions,
-            'model' => $definition->model,
+            'preferred_tier' => $definition->preferredTier,
             'skill_allowlist' => $definition->skillAllowlist,
             'required_skills' => $definition->requiredSkills,
             'start_policy' => $definition->start,

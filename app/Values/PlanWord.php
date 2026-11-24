@@ -26,4 +26,17 @@ final class PlanWord extends Data
 
         return $substituted ? null : implode('', $this->pieces);
     }
+
+    /**
+     * The word's text with each substitution's output put in its place.
+     *
+     * @param  array<int, string>  $substitutionOutputs  each substitution's output by its syntax node id
+     */
+    public function textWith(array $substitutionOutputs): string
+    {
+        return implode('', array_map(
+            fn (string|int $piece) => is_int($piece) ? $substitutionOutputs[$piece] : $piece,
+            $this->pieces,
+        ));
+    }
 }

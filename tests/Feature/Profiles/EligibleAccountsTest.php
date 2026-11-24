@@ -76,12 +76,8 @@ final class EligibleAccountsTest extends TestCase
 
         $eligible = $this->app->make(EligibleAccounts::class)->forProfileStart(DefaultDrivers::CLAUDE_CODE, self::PROFILE);
 
-        $this->assertSame([], $profile->start->allowedModels);
-        $this->assertNotSame([], $family->models);
-        $this->assertSame(
-            array_values(array_unique([$profile->model, ...$family->models])),
-            $eligible->toArray()['modelChoices'],
-        );
+        $this->assertSame($family->models, $eligible->toArray()['modelChoices']);
+        $this->assertSame($family->modelAt($profile->preferredTier), $eligible->toArray()['defaultModel']);
     }
 
     public function test_an_agent_is_refused_and_learns_no_label(): void

@@ -65,8 +65,12 @@ function choose(event: MouseEvent, key: string): void {
     }
 }
 
+/**
+ * A press on a closed window closes the menu and starts a grab that adds the window on release.
+ */
 function grab(event: PointerEvent, key: string): void {
     if (!isShown(key)) {
+        open.value = false;
         emit('grab', event, key);
     }
 }

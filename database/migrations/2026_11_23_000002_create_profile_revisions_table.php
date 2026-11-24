@@ -16,12 +16,10 @@ return new class extends Migration
             $table->unsignedInteger('revision');
             $table->string('base', 32);
             $table->text('instructions');
-            $table->string('model');
+            $table->unsignedTinyInteger('preferred_tier');
             $table->json('skill_allowlist')->nullable();
             $table->json('required_skills');
-            $table->string('driver', 32)->nullable();
-            $table->boolean('driver_pinned');
-            $table->json('allowed_models');
+            $table->string('preferred_driver', 32)->nullable();
             $table->json('access_policy');
             $table->json('stop_conditions');
             $table->json('execution_policy');

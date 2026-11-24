@@ -41,7 +41,9 @@ const accountsAnswer = {
       isDefault: false,
     },
   ],
-  modelChoices: ["claude-opus-5-5", "claude-sonnet-5-5"],
+  modelChoices: ["claude-sonnet-5-5", "claude-opus-5-5"],
+  defaultModel: "claude-opus-5-5",
+  preferredDriver: null as string | null,
 };
 
 // The registered drivers the chat window offers, as the journal's catalogue lists them.
@@ -197,6 +199,7 @@ const idle: AgentOptionData = {
   needsAttention: false,
   status: {
     sessionState: "stopped",
+    isStartRefused: false,
     label: "Stopped",
     reason: null,
     remedy: null,
@@ -208,6 +211,24 @@ const idle: AgentOptionData = {
   },
 };
 
+/** The options of the kit Select whose button's id ends in the field's name. */
+function optionsOf(form: VueWrapper, field: string) {
+  return form.findAll(`button[id$="-${field}"] ~ div [role="option"]`);
+}
+
+/** Opens the Select of a field and chooses the option with that label. */
+async function choose(form: VueWrapper, field: string, label: string) {
+  await form.get(`button[id$="-${field}"]`).trigger("click");
+  await optionsOf(form, field)
+    .find((option) => option.text() === label)!
+    .trigger("click");
+}
+
+/** The label the Select of a field shows as chosen. */
+function chosenIn(form: VueWrapper, field: string): string {
+  return form.get(`button[id$="-${field}"]`).text();
+}
+
 describe("SessionForm", () => {
   beforeEach(() => window.sessionStorage.clear());
 
@@ -217,7 +238,7 @@ describe("SessionForm", () => {
     });
     await flushPromises();
 
-    const options = form.findAll('select[id$="-account"] option');
+    const options = optionsOf(form, "account");
     expect(
       options.map((option) => [
         option.text(),
@@ -230,7 +251,7 @@ describe("SessionForm", () => {
     expect(form.text()).toContain(
       "Starts claude-code headless, on Work account.",
     );
-    const driverOptions = form.findAll('select[id$="-driver"] option');
+    const driverOptions = optionsOf(form, "driver");
     expect(driverOptions.map((option) => option.text())).toEqual([
       "Claude Code",
       "Codex",
@@ -266,8 +287,8 @@ describe("SessionForm", () => {
     });
     await flushPromises();
 
-    await form.find('select[id$="-driver"]').setValue("codex");
-    await form.find('input[type="checkbox"]').setValue(false);
+    await choose(form, "driver", "Codex");
+    await form.get('[role="switch"][aria-label="Headless"]').trigger("click");
     await flushPromises();
 
     expect(form.text()).toContain(
@@ -275,7 +296,7 @@ describe("SessionForm", () => {
     );
     expect(startButton(form)?.attributes("disabled")).toBeDefined();
 
-    await form.find('input[type="checkbox"]').setValue(true);
+    await form.get('[role="switch"][aria-label="Headless"]').trigger("click");
     await flushPromises();
 
     expect(form.text()).not.toContain(
@@ -328,7 +349,7 @@ describe("SessionForm", () => {
       .trigger("click");
     await flushPromises();
 
-    expect(form.findAll('select[id$="-account"] option')).toHaveLength(2);
+    expect(optionsOf(form, "account")).toHaveLength(2);
     form.unmount();
   });
 
@@ -361,6 +382,7 @@ describe("SessionForm", () => {
         status: {
           ...idle.status,
           sessionState: "idle",
+          isStartRefused: false,
           isProcessConfirmed: true,
         },
       },
@@ -372,35 +394,42 @@ describe("SessionForm", () => {
     form.unmount();
   });
 
-  it("offers the profile's models, default first, and shows a model refusal under Model with the focus there", async () => {
+  it("offers every model with the profile's tier default marked, and shows a model refusal under Model with the focus there", async () => {
     const form = mount(SessionForm, {
       props: { agent: idle, mode: "start" },
       attachTo: document.body,
     });
     await flushPromises();
 
-    const models = form
-      .findAll('select[id$="-model"] option')
-      .map((option) => option.text());
-    expect(models).toEqual(["claude-opus-5-5 (default)", "claude-sonnet-5-5"]);
+    const models = optionsOf(form, "model").map((option) => option.text());
+    expect(models).toEqual(["claude-sonnet-5-5", "claude-opus-5-5 (default)"]);
+    expect(chosenIn(form, "model")).toBe("claude-opus-5-5 (default)");
 
     await form.find("form").trigger("submit");
     postOptions
       .at(-1)
-      ?.onError({ model: "This profile does not allow that model." });
+      ?.onError({ model: "That model cannot start on this account." });
     await flushPromises();
 
-    const model = form.find('select[id$="-model"]');
+    const model = form.find('button[id$="-model"]');
     expect(model.attributes("aria-describedby")).toBe(
       `${model.attributes("id")}-error`,
     );
     expect(form.find(`#${model.attributes("id")}-error`).text()).toBe(
-      "This profile does not allow that model.",
+      "That model cannot start on this account.",
     );
     expect(document.activeElement?.id).toBe(model.attributes("id"));
-    expect(
-      (form.find('select[id$="-account"]').element as HTMLSelectElement).value,
-    ).toBe("ready");
+    expect(chosenIn(form, "account")).toBe("Work account");
+    form.unmount();
+  });
+
+  it("preselects the driver the profile prefers while nothing chose one", async () => {
+    accountsAnswer.preferredDriver = "codex";
+    const form = mount(SessionForm, { props: { agent: idle, mode: "start" } });
+    await flushPromises();
+
+    expect(chosenIn(form, "driver")).toBe("Codex");
+    accountsAnswer.preferredDriver = null;
     form.unmount();
   });
 
@@ -465,7 +494,7 @@ describe("SessionForm", () => {
     });
     await flushPromises();
 
-    await form.find('select[id$="-account"]').setValue("second");
+    await choose(form, "account", "Second account");
     shownPage.props = {
       window_chat_conversation: {
         state: "ready",
@@ -474,9 +503,7 @@ describe("SessionForm", () => {
     };
     await flushPromises();
 
-    expect(
-      (form.find('select[id$="-account"]').element as HTMLSelectElement).value,
-    ).toBe("second");
+    expect(chosenIn(form, "account")).toBe("Second account");
     accountsAnswer.accounts = all;
     form.unmount();
   });
@@ -493,7 +520,7 @@ describe("SessionForm", () => {
     await flushPromises();
 
     const ids = both
-      .findAll('select[id$="-model"]')
+      .findAll('button[id$="-model"]')
       .map((field) => field.attributes("id"));
 
     expect(ids).toHaveLength(2);

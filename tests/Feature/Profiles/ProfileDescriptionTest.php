@@ -100,13 +100,13 @@ final class ProfileDescriptionTest extends TestCase
             'profiles' => [
                 'reviewer' => [
                     'base' => 'read-only-helper',
-                    'model' => 'sonnet',
+                    'tier' => 2,
                     'description' => self::DESCRIPTION,
                     'supervisor' => ['default' => 'owner'],
                 ],
                 'worker' => [
                     'base' => 'writing-helper',
-                    'model' => 'sonnet',
+                    'tier' => 2,
                     'supervisor' => ['default' => 'owner'],
                 ],
             ],

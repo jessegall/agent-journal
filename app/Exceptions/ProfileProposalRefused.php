@@ -32,6 +32,11 @@ final class ProfileProposalRefused extends InvalidArgumentException implements C
         return new self("Profile {$key} names instances {$value}; use single, per_job or reusable.");
     }
 
+    public static function unknownTier(string $key, int $tier): self
+    {
+        return new self("Profile {$key} names tier {$tier}; use 1 (simplest), 2 (general), 3 (complex) or 4 (exceptional).");
+    }
+
     public static function unsupportedField(string $key, string $field): self
     {
         return new self("Profile {$key} sets {$field}, which this version does not support yet.");

@@ -47,9 +47,7 @@ final class ProfileResolverTest extends TestCase
     public function test_the_revision_table_holds_the_start_policy_columns(): void
     {
         $this->assertTrue(Schema::hasColumns('profile_revisions', [
-            'driver',
-            'driver_pinned',
-            'allowed_models',
+            'preferred_driver',
             'access_policy',
             'stop_conditions',
             'execution_policy',
@@ -66,9 +64,7 @@ final class ProfileResolverTest extends TestCase
 
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
         $start = $snapshot->start;
-        $this->assertSame(DefaultDrivers::CODEX, $start->driver);
-        $this->assertFalse($start->driverPinned);
-        $this->assertSame(['opus', 'sonnet'], $start->allowedModels);
+        $this->assertSame(DefaultDrivers::CODEX, $start->preferredDriver);
         $this->assertSame([], $start->stopConditions->conditions);
         $this->assertSame(ExecutionModeType::RequiredContainer, $start->execution->mode);
         $this->assertSame($activation->configurationHash, $start->provenance->configurationHash);

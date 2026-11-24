@@ -6,7 +6,10 @@ namespace App\Pipelines;
 
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Answer\ComposeForeground;
-use App\Pipes\Answer\DeliverMessages;
+use App\Support\CallStages\WalkedCall;
+use App\Support\Step;
+use App\Pipes\Answer\HandOverWaitingMessages;
+use App\Pipes\Answer\KeepMessagesAndWake;
 use App\Pipes\Answer\FindReplay;
 use App\Pipes\Answer\LockStack;
 use App\Pipes\Answer\PrepareCall;
@@ -39,7 +42,11 @@ final readonly class AnswerHookPipeline implements PipelineDefinition
             PrepareCall::class,
             RestoreStack::class,
             WalkStack::class,
-            DeliverMessages::class,
+            Step::chosen(
+                fn (WalkedCall $walked) => $walked->leavesMessagesWithIdleAgent(),
+                KeepMessagesAndWake::class,
+                HandOverWaitingMessages::class,
+            ),
             PublishHookEffects::class,
             ComposeForeground::class,
             RenderReply::class,

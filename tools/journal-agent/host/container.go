@@ -36,7 +36,7 @@ const daemonBindRoot = "/srv/journal/"
 
 // containedTargets are the folders a contained container may have mounted, each at most once.
 var containedTargets = []string{
-	"/workspace", "/home/journal/.account", "/home/journal/.account/projects", SessionFilesTarget,
+	"/workspace", "/home/journal/.account", "/home/journal/.account/projects", SessionFilesTarget, ManagedSettingsTarget,
 }
 
 // maxContainedMounts is the most mounts a contained container has: its workspace, its account, its projects and its
@@ -156,6 +156,36 @@ type ContainerRules struct {
 	Arrangement      Arrangement
 	InstallationName InstallationName
 	AgentImage       string
+	// DevelopmentPrograms is a daemon folder of the journal's own programs built from the checkout, mounted over the
+	// image's copies in local development only, so a change to them needs no image build; empty everywhere else.
+	DevelopmentPrograms string
+}
+
+// developmentPrograms are the programs of the agent image a local development host replaces with the checkout's
+// builds, each by the path it has in the image.
+var developmentPrograms = map[string]string{
+	"journal-init":  "/opt/journal/bin/journal-init",
+	"journal-exec":  "/opt/journal/bin/journal-exec",
+	"journal-shell": "/opt/journal/bin/journal-shell",
+	"journal-hook":  "/opt/journal/bin/journal-hook",
+	"journal-mcp":   "/opt/journal/bin/journal-mcp",
+}
+
+// developmentShellBridge is where the image keeps the shell bridge under the name its driver calls.
+const developmentShellBridge = "/opt/journal/shell/bash"
+
+// developmentMounts are the read-only binds that put the checkout's builds over the image's programs, none outside
+// local development.
+func (rules ContainerRules) developmentMounts() []mount.Mount {
+	if rules.DevelopmentPrograms == "" {
+		return nil
+	}
+	mounts := []mount.Mount{bindMount(rules.DevelopmentPrograms+"/journal-shell", developmentShellBridge, false)}
+	for program, target := range developmentPrograms {
+		mounts = append(mounts, bindMount(rules.DevelopmentPrograms+"/"+program, target, false))
+	}
+
+	return mounts
 }
 
 // The tmpfs folders a helper writes to, and the sizes they keep when the budgets name none, mirroring
@@ -291,6 +321,7 @@ func (manifest ContainerManifest) CreateOptions(name string, labels LaunchLabels
 	for _, mounted := range manifest.Mounts {
 		hostConfig.Mounts = append(hostConfig.Mounts, mounted.daemonMount())
 	}
+	hostConfig.Mounts = append(hostConfig.Mounts, rules.developmentMounts()...)
 
 	return client.ContainerCreateOptions{Name: name, Config: config, HostConfig: hostConfig}, nil
 }

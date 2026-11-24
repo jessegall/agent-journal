@@ -25,9 +25,13 @@ final class UpdateTest extends TestCase
 
     private const string RELEASE = 'JOURNAL_RELEASE';
 
+    private const string RELEASE_BUILD = 'golang:1.26.4-bookworm';
+
     private const string MIGRATE = 'migrate';
 
     private const string SANDBOX_TOOL_CHECK = '--entrypoint socat';
+
+    private const string MCP_RELAY_CHECK = '--entrypoint /opt/journal/bin/journal-mcp';
 
     private const string RUN_IN_IMAGE_CALL = '--entrypoint';
 
@@ -82,6 +86,29 @@ final class UpdateTest extends TestCase
             $this->installation->setting(self::RUNNER_PIN),
         );
         $this->assertSame(substr($pushed, 0, 12), $this->installation->setting(self::RELEASE));
+    }
+
+    public function test_a_push_that_leaves_the_host_program_alone_keeps_its_release(): void
+    {
+        $this->installation->update();
+        $released = $this->installation->setting(self::RELEASE);
+        $this->installation->push(['docs/notes.md' => '# Notes']);
+
+        $this->installation->update();
+
+        $this->assertSame($released, $this->installation->setting(self::RELEASE));
+        $this->assertCount(1, $this->releaseBuilds());
+    }
+
+    public function test_a_push_that_changes_the_host_program_publishes_a_new_release(): void
+    {
+        $this->installation->update();
+        $pushed = $this->installation->push(['tools/journal-agent/relay.go' => 'package relay']);
+
+        $this->installation->update();
+
+        $this->assertSame(substr($pushed, 0, 12), $this->installation->setting(self::RELEASE));
+        $this->assertCount(2, $this->releaseBuilds());
     }
 
     public function test_the_images_built_here_stay_in_the_record_a_later_commit_replaces(): void
@@ -182,6 +209,19 @@ final class UpdateTest extends TestCase
         $this->assertSame($recorded + 1, $this->installation->recordedImages());
     }
 
+    public function test_an_agent_image_whose_mcp_relay_does_not_answer_is_not_pinned(): void
+    {
+        $this->installation->update();
+        $pinned = $this->installation->setting(self::AGENT_PIN);
+        $this->installation->push(['tools/journal-agent/relay.go' => 'package relay']);
+        $this->installation->failCallsHolding(self::MCP_RELAY_CHECK);
+
+        $update = $this->installation->update();
+
+        $this->assertNotSame(0, $update->getExitCode());
+        $this->assertSame($pinned, $this->installation->setting(self::AGENT_PIN));
+    }
+
     public function test_a_migration_that_fails_keeps_the_installed_commit_and_records_the_failed_one(): void
     {
         $this->installation->update();
@@ -262,5 +302,16 @@ final class UpdateTest extends TestCase
 
         $this->assertTrue($this->installation->wasFetched($pushed));
         $this->assertSame($pushed, $this->installation->installedCommit());
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function releaseBuilds(): array
+    {
+        return array_values(array_filter(
+            $this->installation->calls(),
+            fn (string $call) => str_contains($call, self::RELEASE_BUILD),
+        ));
     }
 }

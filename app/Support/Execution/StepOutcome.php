@@ -12,14 +12,23 @@ use App\Values\ExecutionContext;
  */
 final readonly class StepOutcome
 {
-    public function __construct(public int $status, public ExecutionContext $context, public string $output = '') {}
+    /**
+     * The most standard output a step keeps in memory as a substitution value; the recorder keeps every byte.
+     */
+    public const int KEPT_OUTPUT_BYTE_LIMIT = 1_048_576;
+
+    public function __construct(
+        public StepStatus $status,
+        public ExecutionContext $context,
+        public string $output = '',
+    ) {}
 
     /**
      * The outcome as ! reports it: only the branch decision flips, never the stored exit of the part.
      */
     public function negated(): self
     {
-        return new self($this->status === 0 ? 1 : 0, $this->context, $this->output);
+        return new self($this->status->negated(), $this->context, $this->output);
     }
 
     public function withContext(ExecutionContext $context): self

@@ -25,6 +25,7 @@ final class AgentStatusData extends Data
      */
     public function __construct(
         public readonly SessionState $sessionState,
+        public readonly bool $isStartRefused,
         public readonly string $label,
         public readonly string|null $reason,
         public readonly string|null $remedy,
@@ -41,6 +42,7 @@ final class AgentStatusData extends Data
     {
         return self::from([
             'sessionState' => $status->sessionState,
+            'isStartRefused' => $status->sessionState->isStartRefused(),
             'label' => $status->label,
             'reason' => $status->reason,
             'remedy' => $status->remedy,

@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Pipes\Supervision;
+
+use App\Contracts\Bus\Pipe;
+use App\Support\Execution\RunToSupervise;
+use App\Support\Execution\RunUnderway;
+
+/**
+ * Opens the run's state: where its events go, the stop signal, its attempts and its background parts.
+ */
+final readonly class StartRun implements Pipe
+{
+    public function handle(RunToSupervise $run): RunUnderway
+    {
+        return $run->underway();
+    }
+}

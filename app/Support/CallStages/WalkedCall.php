@@ -20,6 +20,14 @@ final readonly class WalkedCall
         public HookAnswer $answer,
     ) {}
 
+    /**
+     * Whether the answer carries messages for an agent it leaves idle: they are kept for its next turn, and it is woken.
+     */
+    public function leavesMessagesWithIdleAgent(): bool
+    {
+        return $this->answer->messages !== [] && $this->call->input->leavesAgentIdle($this->answer->decision->answerType());
+    }
+
     public function answeredBy(HookAnswer $answer): self
     {
         return clone ($this, ['answer' => $answer]);

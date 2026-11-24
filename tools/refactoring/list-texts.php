@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Lists every text a user reads on screen as "file:line<TAB>text" for review, as list-names.php does for names.
+ * Lists every text a user reads on screen as "file:line<TAB>text" for review.
  *
  *   php tools/refactoring/list-texts.php resources/js app
  *       prints every text.

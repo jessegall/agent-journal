@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Enums\ModelTier;
 use App\Attributes\Authorize;
 use App\Contracts\Authorization\Policy;
 use App\Contracts\Bus\Command;
@@ -26,7 +27,7 @@ final class ProfileSnapshot extends Data
         public readonly int $revision,
         public readonly ProfileBase $base,
         public readonly string $instructions,
-        public readonly string $model,
+        public readonly ModelTier $preferredTier,
         public readonly array|null $skillAllowlist,
         public readonly array $requiredSkills,
         public readonly ProfileStartPolicy $start,

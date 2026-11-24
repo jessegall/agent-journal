@@ -7,18 +7,18 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverSourceType;
 use App\Enums\DriverType;
+use App\Enums\ModelTier;
 use App\Enums\ModelSelectionType;
 use App\Enums\StartRefusalType;
 use App\Exceptions\DefaultUnavailable;
-use App\Exceptions\DriverConflict;
 use App\Exceptions\DriverRequired;
 use App\Exceptions\DriverUnsupported;
 use App\Exceptions\ModelRequired;
-use App\Exceptions\ModelUnavailable;
 use App\Support\DefaultDrivers;
 use App\Values\ModelSelection;
 use App\Values\ProfileDefaults;
 use App\Values\SelectedDriver;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -43,18 +43,18 @@ final class StartSelectionTest extends TestCase
         }
     }
 
-    public function test_default_keeps_the_requested_default_while_the_model_is_the_profiles_concrete_one(): void
+    public function test_default_keeps_the_requested_default_while_the_model_is_the_familys_at_the_profiles_tier(): void
     {
         $selected = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            $this->profile(defaultModel: 'gpt-5-codex'),
+            $this->profile(tier: ModelTier::Inventive),
             null,
             $this->app->make(DriverCatalogue::class),
         );
 
         $this->assertSame(ModelSelectionType::ProfileDefault, $selected->requested->type);
-        $this->assertSame('gpt-5-codex', $selected->model);
+        $this->assertSame('gpt-6.2-sol', $selected->model);
         $this->assertSame(DefaultDrivers::CODEX, $selected->driver);
         $this->assertSame(
             [DriverSourceType::Profile, 'journal-researcher', 4],
@@ -102,6 +102,51 @@ final class StartSelectionTest extends TestCase
         );
     }
 
+    /**
+     * @return iterable<string, array{string, ModelTier, string}>
+     */
+    public static function tierModels(): iterable
+    {
+        yield 'Claude Code, simplest' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Simplest, 'haiku'];
+        yield 'Claude Code, general' => [DefaultDrivers::CLAUDE_CODE, ModelTier::General, 'sonnet'];
+        yield 'Claude Code, complex' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Inventive, 'opus'];
+        yield 'Claude Code, exceptional' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Exceptional, 'fable'];
+        yield 'Codex, simplest' => [DefaultDrivers::CODEX, ModelTier::Simplest, 'gpt-6-luna'];
+        yield 'Codex, general' => [DefaultDrivers::CODEX, ModelTier::General, 'gpt-6.1-terra'];
+        yield 'Codex, complex' => [DefaultDrivers::CODEX, ModelTier::Inventive, 'gpt-6.2-sol'];
+        yield 'Codex, exceptional' => [DefaultDrivers::CODEX, ModelTier::Exceptional, 'gpt-6.2-astra'];
+    }
+
+    #[DataProvider('tierModels')]
+    public function test_the_default_model_follows_the_profiles_tier_for_each_family(
+        string $driver,
+        ModelTier $tier,
+        string $model,
+    ): void {
+        $selected = SelectedDriver::resolve(
+            null,
+            ModelSelection::profileDefault(),
+            $this->profile($driver, $tier),
+            null,
+            $this->app->make(DriverCatalogue::class),
+        );
+
+        $this->assertSame($model, $selected->model);
+    }
+
+    public function test_any_driver_and_model_can_be_started_under_any_profile(): void
+    {
+        $selected = SelectedDriver::resolve(
+            DefaultDrivers::CLAUDE_CODE,
+            ModelSelection::named('any-model'),
+            $this->profile(DefaultDrivers::CODEX, ModelTier::Simplest),
+            null,
+            $this->app->make(DriverCatalogue::class),
+        );
+
+        $this->assertSame([DefaultDrivers::CLAUDE_CODE, 'any-model'], [$selected->driver, $selected->model]);
+    }
+
     public function test_each_refusal_has_its_reason_and_wording(): void
     {
         $this->assertRefused(
@@ -115,30 +160,6 @@ final class StartSelectionTest extends TestCase
             StartRefusalType::DriverRequired,
             DriverRequired::forStart()->getMessage(),
             fn () => SelectedDriver::resolve(null, ModelSelection::named('m'), null, null, $this->app->make(DriverCatalogue::class)),
-        );
-        $this->assertRefused(
-            DriverConflict::class,
-            StartRefusalType::DriverConflict,
-            DriverConflict::for('journal-researcher', 'claude-code')->getMessage(),
-            fn () => SelectedDriver::resolve(
-                'claude-code',
-                ModelSelection::named('m'),
-                $this->profile(pinned: true),
-                null,
-                $this->app->make(DriverCatalogue::class),
-            ),
-        );
-        $this->assertRefused(
-            ModelUnavailable::class,
-            StartRefusalType::ModelUnavailable,
-            ModelUnavailable::for('gpt-4', 'codex')->getMessage(),
-            fn () => SelectedDriver::resolve(
-                null,
-                ModelSelection::named('gpt-4'),
-                $this->profile(allowedModels: ['gpt-5-codex']),
-                null,
-                $this->app->make(DriverCatalogue::class),
-            ),
         );
         $this->assertRefused(
             DriverUnsupported::class,
@@ -156,21 +177,16 @@ final class StartSelectionTest extends TestCase
         try {
             $start();
             $this->fail("{$reason->value} was not refused.");
-        } catch (DefaultUnavailable|DriverRequired|DriverConflict|ModelUnavailable|DriverUnsupported $refusal) {
+        } catch (DefaultUnavailable|DriverRequired|DriverUnsupported $refusal) {
             $this->assertInstanceOf($class, $refusal);
             $this->assertSame([$reason, $wording], [$refusal->reason(), $refusal->getMessage()]);
         }
     }
 
-    /**
-     * @param  list<string>  $allowedModels
-     */
     private function profile(
         string|null $driver = DefaultDrivers::CODEX,
-        bool $pinned = false,
-        string|null $defaultModel = null,
-        array $allowedModels = [],
+        ModelTier $tier = ModelTier::General,
     ): ProfileDefaults {
-        return new ProfileDefaults('journal-researcher', 4, $driver, $pinned, $defaultModel, $allowedModels, DriverType::Headless);
+        return new ProfileDefaults('journal-researcher', 4, $driver, $tier, DriverType::Headless);
     }
 }

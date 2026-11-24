@@ -35,18 +35,7 @@ const isWaiting = computed(
   () => question.value?.state === "waiting_for_answer",
 );
 
-const stateLabel = computed(() => {
-  switch (question.value?.state) {
-    case "waiting_for_answer":
-      return "Waiting for an answer";
-    case "answered":
-      return "Answered";
-    case "dismissed":
-      return "Dismissed";
-    default:
-      return null;
-  }
-});
+const stateLabel = computed(() => props.focused?.stateLabel);
 
 let markedId: string | undefined;
 
@@ -101,7 +90,7 @@ function goBack(): void {
         Question from {{ question.authorLabel ?? question.sourceInboxLabel }}
       </h2>
       <p class="text-body whitespace-pre-wrap text-text">{{ question.body }}</p>
-      <template v-if="stateLabel !== null">
+      <template v-if="stateLabel !== undefined">
         <p class="text-small text-text-3">{{ stateLabel }}</p>
       </template>
       <template v-if="focused?.answer">

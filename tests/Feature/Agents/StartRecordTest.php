@@ -8,6 +8,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartRecordResolver;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverType;
+use App\Enums\ModelTier;
 use App\Enums\ModelSelectionType;
 use App\Enums\StartDisposition;
 use App\Enums\StartOriginType;
@@ -78,7 +79,7 @@ final class StartRecordTest extends TestCase
         $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, DefaultDrivers::CLAUDE_CODE, false, 'claude-sonnet-5-5', [], DriverType::Headless),
+            new ProfileDefaults('journal-researcher', 4, DefaultDrivers::CLAUDE_CODE, ModelTier::General, DriverType::Headless),
             null,
             $this->app->make(DriverCatalogue::class),
         );

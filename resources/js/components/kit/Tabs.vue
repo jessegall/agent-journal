@@ -9,8 +9,9 @@ import type { TabItem } from './tabs';
  * Right move and choose the tab, round the ends, and Home and End go to the first and last (roving tabindex). The
  * caller gives the tabs as data (with a panel slot per tab key) or draws its own Tab parts in the tabs slot. Variants:
  * inline (margin 10 0 6, a --line rule), pagehead (52 px high, no rule), filters (padding 0 12, a --line rule) and
- * toolbar (inside a toolbar that draws the rule: 14 px apart, no rule, no padding, no space above an empty panel); the
- * gap is 12 px in a strip and 16 px on a page; the chosen line is the brand colour or quiet.
+ * toolbar (inside a toolbar that draws the rule: 14 px apart, no rule, no padding, no space above an empty panel). The
+ * other variants are a record's or a page's tabs, 16 px apart and each as wide as its label; a toolbar's tabs are a
+ * window's tab strip, each at least 56 px wide. The chosen line is the brand colour or quiet.
  */
 const props = withDefaults(
     defineProps<{
@@ -18,9 +19,8 @@ const props = withDefaults(
         label?: string;
         variant?: 'inline' | 'pagehead' | 'filters' | 'toolbar';
         line?: 'brand' | 'quiet';
-        gap?: 12 | 16;
     }>(),
-    { tabs: () => [], label: undefined, variant: 'inline', line: 'brand', gap: 12 },
+    { tabs: () => [], label: undefined, variant: 'inline', line: 'brand' },
 );
 const active = defineModel<string>({ required: true });
 const emit = defineEmits<{ close: [key: string] }>();
@@ -35,6 +35,7 @@ provide(tabsKey, {
     tabId: (value) => `${idPrefix}-tab-${value}`,
     panelId: (value) => `${idPrefix}-panel-${value}`,
     line: computed(() => props.line),
+    hasLeastWidth: computed(() => props.variant === 'toolbar'),
 });
 
 function panelId(key: string): string {
@@ -63,13 +64,7 @@ async function move(event: KeyboardEvent): Promise<void> {
 }
 
 // A toolbar's tabs sit 14 px apart, as the design's filters do; elsewhere the gap is the strip's or the page's.
-const tabGap = computed(() => {
-    if (props.variant === 'toolbar') {
-        return 'gap-3.5';
-    }
-
-    return props.gap === 12 ? 'gap-3' : 'gap-4';
-});
+const tabGap = computed(() => (props.variant === 'toolbar' ? 'gap-3.5' : 'gap-4'));
 </script>
 
 <template>

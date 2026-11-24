@@ -8,6 +8,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartPreflight;
 use App\Enums\ArrangementType;
 use App\Enums\DriverType;
+use App\Enums\ModelTier;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartPreflightRefusal;
 use App\Exceptions\StartPreflightRefused;
@@ -60,14 +61,20 @@ final class StartPreflightTest extends TestCase
         $this->assertSame($runtimes, AgentRuntime::query()->count());
     }
 
-    public function test_a_pinned_profile_refuses_another_driver_and_no_host_is_its_own_reason(): void
+    public function test_a_profile_preferring_another_driver_refuses_nothing_and_no_host_is_its_own_reason(): void
     {
-        $pinned = new ProfileDefaults('main-agent', 1, DefaultDrivers::CLAUDE_CODE, true, 'opus', [], DriverType::Terminal);
+        $preferring = new ProfileDefaults(
+            'main-agent',
+            1,
+            DefaultDrivers::CLAUDE_CODE,
+            ModelTier::Inventive,
+            DriverType::Terminal,
+        );
 
         $this->assertSame(
-            [StartPreflightRefusal::DriverPinned, StartPreflightRefusal::NoHost],
+            [StartPreflightRefusal::NoHost],
             $this->preflight()->refusals(new StartProposal(
-                $pinned,
+                $preferring,
                 DefaultDrivers::CODEX,
                 '0.165.0',
                 DriverType::Headless,
@@ -101,7 +108,7 @@ final class StartPreflightTest extends TestCase
     private function proposal(string $driver, DriverType $driverType): StartProposal
     {
         return new StartProposal(
-            new ProfileDefaults('main-agent', 1, null, false, 'opus', [], DriverType::Terminal),
+            new ProfileDefaults('main-agent', 1, null, ModelTier::Inventive, DriverType::Terminal),
             $driver,
             self::BUILD,
             $driverType,

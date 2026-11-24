@@ -284,39 +284,37 @@ describe('a declared layout', () => {
             value: '',
             query: {},
             isCurrent: false,
-        hasColumns: false,
+            hasColumns: false,
         });
-        const layout = (rows: string[], more: boolean) => ({
-            root: part({
-                tag: 'box',
-                key: 'root',
-                style: 'stack',
-                children: [
+        const layout = (rows: string[], more: boolean) => {
+            const children = [
+                part({
+                    tag: 'collection',
+                    key: 'rows',
+                    style: 'list',
+                    rows: rows.map(row),
+                }),
+            ];
+
+            if (more) {
+                children.push(
                     part({
-                        tag: 'collection',
-                        key: 'rows',
-                        style: 'list',
-                        rows: rows.map(row),
+                        tag: 'action',
+                        key: 'more',
+                        style: 'bordered',
+                        size: 'normal',
+                        text: 'Show more',
+                        action: {
+                            query: { after: 'b' },
+                            submits: false,
+                            appends: true,
+                        },
                     }),
-                    ...(more
-                        ? [
-                              part({
-                                  tag: 'action',
-                                  key: 'more',
-                                  style: 'bordered',
-                                  size: 'normal',
-                                  text: 'Show more',
-                                  action: {
-                                      query: { after: 'b' },
-                                      submits: false,
-                                      appends: true,
-                                  },
-                              }),
-                          ]
-                        : []),
-                ],
-            }),
-        });
+                );
+            }
+
+            return { root: part({ tag: 'box', key: 'root', style: 'stack', children }) };
+        };
         const view = mount(DeclaredLayout, {
             props: { data: layout(['a', 'b'], true) },
         });

@@ -21,7 +21,14 @@ final readonly class MountRules
 
     private const string ACCOUNTS_ROOT = '/srv/journal/accounts';
 
-    private const int MOST_CONTAINED_MOUNTS = 4;
+    /**
+     * The session folder and the file in it that hold the managed settings a contained Claude Code reads.
+     */
+    public const string MANAGED_SETTINGS_FOLDER = 'managed';
+
+    public const string MANAGED_SETTINGS_FILE = 'managed-settings.json';
+
+    private const int MOST_CONTAINED_MOUNTS = 5;
 
     private const string ACCOUNT_TARGET = '/home/journal/.account';
 
@@ -35,11 +42,17 @@ final readonly class MountRules
      */
     private const string SESSION_TARGET = '/tmp/journal-session';
 
+    /**
+     * Where Claude Code reads the managed settings no session may change.
+     */
+    private const string MANAGED_SETTINGS_TARGET = '/etc/claude-code/managed-settings.json';
+
     private const array CONTAINED_TARGETS = [
         '/workspace',
         self::ACCOUNT_TARGET,
         self::PROJECTS_TARGET,
         self::SESSION_TARGET,
+        self::MANAGED_SETTINGS_TARGET,
     ];
 
     /**
@@ -142,7 +155,7 @@ final readonly class MountRules
     /**
      * The mounts a contained session has beside its workspace: its own history volume over the account's projects
      * folder, so sessions on one account never read each other's conversations, and its own files from the host, such
-     * as its skills, read-only. A session that resumes a conversation mounts the history of the session that held it,
+     * as its skills, read-only, with the managed settings among them mounted where Claude Code reads them. A session that resumes a conversation mounts the history of the session that held it,
      * which must still exist. A local session has none; its sandbox profile hides the other sessions' history.
      *
      * @return list<ManifestMount>
@@ -153,17 +166,23 @@ final readonly class MountRules
             return [];
         }
 
-        $files = ManifestMount::daemonBind(self::SESSIONS_ROOT.'/'.$sessionId, self::SESSION_TARGET, false);
+        $folder = self::SESSIONS_ROOT.'/'.$sessionId;
+        $files = ManifestMount::daemonBind($folder, self::SESSION_TARGET, false);
+        $settings = ManifestMount::daemonBind(
+            $folder.'/'.self::MANAGED_SETTINGS_FOLDER.'/'.self::MANAGED_SETTINGS_FILE,
+            self::MANAGED_SETTINGS_TARGET,
+            false,
+        );
 
         if ($resumedSessionId !== null) {
             $history = "{$this->installationName}-history-{$resumedSessionId}";
 
-            return [ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true), $files];
+            return [ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true), $files, $settings];
         }
 
         $history = ManifestMount::volume("{$this->installationName}-history-{$sessionId}", self::PROJECTS_TARGET, true);
 
-        return [$history, $files];
+        return [$history, $files, $settings];
     }
 
     /**

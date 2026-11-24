@@ -5,6 +5,9 @@ import { Link, router, usePage } from "@inertiajs/vue3";
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, watch } from "vue";
 import Button from "@kit/Button";
 import Field from "@kit/Field";
+import OptionCards from "@kit/OptionCards";
+import Select from "@kit/Select";
+import Toggle from "@kit/Toggle";
 import Dialog from "@kit/Dialog";
 import { followPage } from "@kit/followPage";
 import { keyedPost } from "@kit/keyedPost";
@@ -98,6 +101,7 @@ const saveDriverType = ref(false);
 const accounts = ref<EligibleAccountData[]>([]);
 const accountId = ref<string | null>(null);
 const modelChoices = ref<string[]>([]);
+const defaultModel = ref<string | null>(null);
 const model = ref<string | null>(null);
 // A refusal that belongs to one field, shown under it; a refusal of the whole change stays in refusal.
 const fieldRefusal = ref<{ field: FieldKey; reason: string } | null>(null);
@@ -278,6 +282,47 @@ const driverChoices = computed<DriverChoiceData[]>(() => {
 const families = computed(() => [
   ...new Set(driverChoices.value.map((choice) => choice.family)),
 ]);
+const familyOptions = computed(() =>
+  families.value.map((choice) => ({ value: choice, label: familyLabel(choice) })),
+);
+// The model the profile's tier names for this driver is marked as its default.
+const modelOptions = computed(() =>
+  modelChoices.value.map((choice) => ({
+    value: choice,
+    label: choice === defaultModel.value ? `${choice} (default)` : choice,
+  })),
+);
+// An account that cannot start now is shown with the reason, and cannot be chosen.
+// The card that starts a new conversation stands beside one card per conversation to resume.
+const NEW_CONVERSATION = "new";
+const conversationChoice = computed({
+  get: () => conversationId.value ?? NEW_CONVERSATION,
+  set: (choice: string | null) =>
+    (conversationId.value = choice === NEW_CONVERSATION ? null : choice),
+});
+const conversationOptions = computed(() => [
+  ...props.agent.conversations.map((conversation) => ({
+    value: conversation.id,
+    title: familyLabel(conversation.driver),
+    aside: dateTime(conversation.startedAt),
+    description: "",
+  })),
+  {
+    value: NEW_CONVERSATION,
+    title: "Start a new conversation instead",
+    aside: "",
+    description: "",
+  },
+]);
+const accountOptions = computed(() =>
+  accounts.value.map((choice) => ({
+    value: choice.id,
+    label: choice.unavailableSentence
+      ? `${choice.label}: ${choice.unavailableSentence}`
+      : choice.label,
+    disabled: choice.unavailableReason !== null,
+  })),
+);
 const driver = computed(
   () =>
     family.value ??
@@ -314,8 +359,8 @@ if (restored !== null) {
   )[restored.driverType];
 }
 
-function chooseHeadless(event: Event): void {
-  modeDraft.value = (event.target as HTMLInputElement).checked ? "on" : "off";
+function chooseHeadless(isHeadless: boolean): void {
+  modeDraft.value = isHeadless ? "on" : "off";
 }
 
 function readPreview(): void {
@@ -383,6 +428,17 @@ function refuseAt(field: FieldKey, reason: string): void {
 }
 
 /**
+ * Chooses the driver the profile prefers while nothing chose one: no driver picked, no conversation to resume.
+ */
+function preselectPreferredDriver(preferred: string | null): void {
+  if (preferred === null || family.value !== null || props.agent.conversations.length > 0) {
+    return;
+  }
+
+  family.value = preferred;
+}
+
+/**
  * Shows the accounts read again: a chosen account that can still start stays chosen even when another is the default;
  * a chosen one that no longer can is cleared with its reason beside the field; with none chosen the default is.
  */
@@ -393,6 +449,8 @@ function showAccounts(read: EligibleAccountsData | undefined): void {
 
   accounts.value = read.accounts;
   modelChoices.value = read.modelChoices;
+  defaultModel.value = read.defaultModel;
+  preselectPreferredDriver(read.preferredDriver);
 
   if (!isFocusRestored && restored?.focus && restored.focus in fieldIds) {
     isFocusRestored = true;
@@ -402,7 +460,7 @@ function showAccounts(read: EligibleAccountsData | undefined): void {
   model.value =
     model.value !== null && read.modelChoices.includes(model.value)
       ? model.value
-      : (read.modelChoices[0] ?? null);
+      : read.defaultModel;
   refusal.value = null;
   isAccountReadFailed.value = false;
   const kept = accounts.value.find((choice) => choice.id === accountId.value);
@@ -521,12 +579,7 @@ function showStart(): boolean {
   const isOtherSessionShown =
     shown.sessionId !== null && shown.sessionId !== startedSessionId;
 
-  if (
-    isThisStart &&
-    ["refused", "no-capacity", "waiting-for-sign-in"].includes(
-      status.sessionState,
-    )
-  ) {
+  if (isThisStart && status.isStartRefused) {
     progress.value = null;
     refusal.value = [status.reason, status.remedy].filter(Boolean).join(" ");
 
@@ -758,24 +811,11 @@ onBeforeUnmount(() => following?.stop());
           "
         >
           <legend class="text-small text-text-2">Conversation</legend>
-          <template
-            v-for="conversation in agent.conversations"
-            :key="conversation.id"
-          >
-            <label class="flex items-center gap-2 text-small text-text">
-              <input
-                v-model="conversationId"
-                type="radio"
-                :value="conversation.id"
-              />
-              {{ familyLabel(conversation.driver) }},
-              {{ dateTime(conversation.startedAt) }}
-            </label>
-          </template>
-          <label class="flex items-center gap-2 text-small text-text">
-            <input v-model="conversationId" type="radio" :value="null" />
-            Start a new conversation instead
-          </label>
+          <OptionCards
+            v-model="conversationChoice"
+            label="Conversation"
+            :options="conversationOptions"
+          />
           <template v-if="fieldRefusal?.field === 'conversationId'">
             <p
               :id="`${fieldIds.conversationId}-description`"
@@ -794,27 +834,23 @@ onBeforeUnmount(() => following?.stop());
         "
       >
         <template #default="{ id, describedBy, invalid }">
-          <select
+          <Select
             :id="id"
-            :value="driver"
+            :model-value="driver"
+            :options="familyOptions"
             :aria-describedby="describedBy"
-            :aria-invalid="invalid"
-            class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body"
-            @change="family = ($event.target as HTMLSelectElement).value"
-          >
-            <template v-for="choice in families" :key="choice">
-              <option :value="choice">{{ familyLabel(choice) }}</option>
-            </template>
-          </select>
+            :invalid="invalid"
+            @update:model-value="family = $event"
+          />
         </template>
       </Field>
       <div class="flex flex-col gap-1">
         <label class="flex items-center gap-2 text-small text-text-2">
-          <input
-            type="checkbox"
-            :checked="driverType === 'headless'"
+          <Toggle
+            label="Headless"
+            :model-value="driverType === 'headless'"
             :disabled="preview?.isModeLocked === true"
-            @change="chooseHeadless"
+            @update:model-value="chooseHeadless"
           />
           Headless
         </label>
@@ -849,23 +885,17 @@ onBeforeUnmount(() => following?.stop());
         "
       >
         <template #default="{ id, describedBy, invalid }">
-          <select
+          <Select
             :id="id"
             v-model="model"
+            :options="modelOptions"
             :aria-describedby="describedBy"
-            :aria-invalid="invalid"
-            class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body"
-          >
-            <template v-for="(choice, index) in modelChoices" :key="choice">
-              <option :value="choice">
-                {{ choice }}<template v-if="index === 0"> (default)</template>
-              </option>
-            </template>
-          </select>
+            :invalid="invalid"
+          />
         </template>
       </Field>
       <label class="flex items-center gap-2 text-small text-text-2">
-        <input v-model="saveDriverType" type="checkbox" />
+        <Toggle v-model="saveDriverType" label="Use as default for this agent" />
         Use as default for this agent
       </label>
       <Field
@@ -896,25 +926,13 @@ onBeforeUnmount(() => following?.stop());
             </p>
           </template>
           <template v-else>
-            <select
+            <Select
               :id="id"
               v-model="accountId"
+              :options="accountOptions"
               :aria-describedby="describedBy"
-              :aria-invalid="invalid"
-              class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body"
-            >
-              <template v-for="choice in accounts" :key="choice.id">
-                <option
-                  :value="choice.id"
-                  :disabled="choice.unavailableReason !== null"
-                >
-                  {{ choice.label
-                  }}<template v-if="choice.unavailableSentence"
-                    >: {{ choice.unavailableSentence }}</template
-                  >
-                </option>
-              </template>
-            </select>
+              :invalid="invalid"
+            />
             <template v-if="isEveryAccountUnavailable">
               <p class="mt-1 text-small text-text-3">
                 None of its accounts can start now.

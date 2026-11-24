@@ -9,7 +9,7 @@ export type DeclaredName = { type: string; name: string; line: number };
 
 const SCRIPT_BLOCK = /<script\b[^>]*>([\s\S]*?)<\/script>/g;
 
-export function reviewLine(declared: DeclaredName): string {
+export function nameLine(declared: DeclaredName): string {
     return `${declared.type}\t${declared.name}`;
 }
 

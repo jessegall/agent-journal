@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
+use App\Enums\ModelTier;
 use App\Support\DefaultDrivers;
 use App\Enums\InstancePolicy;
 use App\Support\PolicyOverride;
@@ -28,7 +29,7 @@ final class TestProposals
         string $key,
         ProfileBase $type,
         string $instructions = 'Work.',
-        string $model = 'opus',
+        ModelTier $tier = ModelTier::Inventive,
         array|null $skillAllowlist = null,
         array $requiredSkills = [],
         array $withheldGrants = [],
@@ -39,10 +40,8 @@ final class TestProposals
             $key,
             $type,
             $instructions,
-            $model,
+            $tier,
             DefaultDrivers::CODEX,
-            false,
-            ['opus', 'sonnet'],
             $skillAllowlist,
             $requiredSkills,
             null,

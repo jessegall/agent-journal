@@ -23,7 +23,7 @@ final readonly class ProfileSnapshots
             'revision' => $revision->revision,
             'base' => $revision->base,
             'instructions' => $revision->instructions,
-            'model' => $revision->model,
+            'preferredTier' => $revision->preferred_tier,
             'skillAllowlist' => $revision->skill_allowlist,
             'requiredSkills' => $revision->required_skills,
             'start' => $revision->start_policy,

@@ -20,6 +20,10 @@ import (
 // program's file tools may read.
 const SessionFilesTarget = "/tmp/journal-session"
 
+// ManagedSettingsTarget is where a contained Claude Code reads the managed settings its start hands it: one file of
+// the session's own folder, mounted read-only.
+const ManagedSettingsTarget = "/etc/claude-code/managed-settings.json"
+
 // plainSessionID is a session's id as the journal makes it: lowercase letters and digits, nothing else.
 var plainSessionID = regexp.MustCompile(`^[a-z0-9]+$`)
 

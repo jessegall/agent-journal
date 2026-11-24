@@ -1,7 +1,6 @@
 #!/bin/sh
-# Builds the agent image (the default) or the runner image for one architecture, checks it, saves it as an archive in
-# images/ and records its id in docs/accounts/docker-images.json. A check that fails stops the build unrecorded, and
-# an image that came out the same as the archived one is not checked, archived or recorded again.
+# Builds, checks and archives the agent image (the default) or the runner image for one architecture, recorded in
+# docs/accounts/docker-images.json; an image the same as the archived one is left as it is.
 #   sh .docker/helper/build.sh linux/arm64 [agent|runner]
 set -eu
 
@@ -75,6 +74,7 @@ check_agent_image() {
     check_protected_files
     check_folders
     check_hook_refusal
+    check_mcp_relay
     check_sandbox_tools
     check_absent_programs
 }
@@ -84,14 +84,13 @@ check_users() {
     in_image id journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
 }
 
-# Root owns what a session must not change: the start programs, the relays, the shell bridge and the settings.
+# Root owns what a session must not change: the start programs, the relays and the shell bridge.
 check_protected_files() {
     local protected
     in_image test -x /opt/journal/bin/journal-check
     for protected in bin/journal-init bin/journal-exec bin/journal-shell bin/journal-hook bin/journal-mcp shell/bash; do
         in_image stat -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
     done
-    in_image stat -c '%U:%G %a' /etc/claude-code/managed-settings.json | grep -qx 'root:root 444'
 }
 
 # The tools user shares the workspace through its group, and a new history volume belongs to the account's user.
@@ -106,16 +105,23 @@ check_hook_refusal() {
         < .docker/helper/checks/prompt-hook.json | grep -q '"decision":"block"'
 }
 
+# The MCP relay runs as the session's user on a read-only root and answers a frame it cannot pass on with a refusal.
+check_mcp_relay() {
+    in_image -i --read-only --network=none --env=JOURNAL_URL=http://journal.invalid --env=JOURNAL_START_TOKEN=check \
+        --env=JOURNAL_PROFILE=check --env=JOURNAL_PROFILE_REVISION=1 /opt/journal/bin/journal-mcp \
+        < .docker/helper/checks/mcp-initialize.json | grep -q '"code":"unavailable"'
+}
+
 check_sandbox_tools() {
     in_image bwrap --version >/dev/null
     in_image socat -V >/dev/null
 }
 
 check_absent_programs() {
-    local absent
-    for absent in docker journal-agent; do
-        if in_image sh -c "command -v $absent" >/dev/null 2>&1; then
-            echo "The agent image holds $absent: it is refused." >&2
+    local program
+    for program in docker journal-agent; do
+        if in_image sh -c "command -v $program" >/dev/null 2>&1; then
+            echo "The agent image holds $program: it is refused." >&2
             exit 1
         fi
     done

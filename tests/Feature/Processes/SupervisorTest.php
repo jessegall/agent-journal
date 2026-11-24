@@ -14,7 +14,9 @@ use App\Support\ActorIdentity;
 use App\Support\Execution\RecordedRunEvents;
 use App\Support\Execution\SpawnedProcess;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\Supervisor;
+use App\Pipelines\SuperviseRunPipeline;
+use App\Support\Execution\RunToSupervise;
+use App\Support\PipelineRunner;
 use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
@@ -62,7 +64,7 @@ final class SupervisorTest extends TestCase
     {
         $outcome = $this->supervise('false; echo after');
 
-        $this->assertSame(0, $outcome->status);
+        $this->assertSame(0, $outcome->status->code);
         $this->assertSame("after\n", $this->output->stdoutOf($this->parts()[1]));
     }
 
@@ -70,7 +72,7 @@ final class SupervisorTest extends TestCase
     {
         $outcome = $this->supervise('! false');
 
-        $this->assertSame(0, $outcome->status);
+        $this->assertSame(0, $outcome->status->code);
         $this->assertSame(1, $this->parts()[0]->end->code);
     }
 
@@ -138,10 +140,10 @@ final class SupervisorTest extends TestCase
             TestRunAdmissions::of(line: $line, plan: $plan),
         );
 
-        return $this->app->make(Supervisor::class)->run(
-            new RecordedRunEvents($this->processRun, $this->output),
-            $plan,
-            $context,
+        return $this->app->make(PipelineRunner::class)->run(
+            SuperviseRunPipeline::class,
+            new RunToSupervise(new RecordedRunEvents($this->processRun, $this->output), $plan, $context),
+            StepOutcome::class,
         );
     }
 

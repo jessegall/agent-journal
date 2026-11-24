@@ -8,6 +8,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\SessionResolver;
 use App\Enums\DriverSourceType;
 use App\Enums\DriverType;
+use App\Enums\ModelTier;
 use App\Enums\ModelSelectionType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -43,7 +44,7 @@ final class SessionSelectionReadTest extends TestCase
         $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, DefaultDrivers::CLAUDE_CODE, false, 'claude-sonnet-5-5', [], DriverType::Headless),
+            new ProfileDefaults('journal-researcher', 4, DefaultDrivers::CLAUDE_CODE, ModelTier::General, DriverType::Headless),
             null,
             $this->app->make(DriverCatalogue::class),
         );

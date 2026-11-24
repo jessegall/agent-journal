@@ -44,7 +44,7 @@ function follow(
 ): void {
     event.preventDefault();
     const start = { x: event.clientX, y: event.clientY };
-    const move = (moved: PointerEvent): void =>
+    const move = (moved: PointerEvent) =>
         change(patchAt(moved.clientX - start.x, moved.clientY - start.y));
     const stop = (): void => {
         window.removeEventListener('pointermove', move);

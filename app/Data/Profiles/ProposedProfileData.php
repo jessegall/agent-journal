@@ -19,7 +19,6 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class ProposedProfileData extends Data
 {
     /**
-     * @param  list<string>  $allowedModels
      * @param  list<string>|null  $skillAllowlist  null when the proposal leaves it out
      * @param  list<string>  $requiredSkills
      * @param  list<ProposedStopConditionData>  $stopConditions
@@ -28,13 +27,12 @@ final class ProposedProfileData extends Data
      */
     public function __construct(
         public readonly string $base,
-        public readonly string $model,
+        // The tier of work that names the default model; without one the base type's tier.
+        public readonly int|null $tier = null,
         public readonly string|null $label = null,
         public readonly string $description = '',
         public readonly string $instructions = '',
-        public readonly string|null $driver = null,
-        public readonly bool $driverPinned = false,
-        public readonly array $allowedModels = [],
+        public readonly string|null $preferredDriver = null,
         public readonly array|null $skillAllowlist = null,
         public readonly array $requiredSkills = [],
         public readonly string|null $container = null,

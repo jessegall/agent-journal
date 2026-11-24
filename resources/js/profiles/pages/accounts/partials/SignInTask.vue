@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SwitchCase from '@kit/SwitchCase';
 import type {
     SignInAttemptData,
     SignInMethodData,
@@ -58,14 +59,14 @@ const host = computed(() => {
 const fieldId = useId();
 
 /**
- * What the copy button last did: copied, or refused by the browser, in which case the whole link is shown to select
- * by hand. It is forgotten when the attempt or its link changes.
+ * What the copy button last did: nothing yet (idle), copied, or refused by the browser, in which case the whole link
+ * is shown to select by hand. It goes back to idle when the attempt or its link changes.
  */
-const copied = ref<'copied' | 'refused' | null>(null);
+const copied = ref<'idle' | 'copied' | 'refused'>('idle');
 
 watch(
     () => [props.attempt?.id, props.actions.challenge.value.address],
-    () => (copied.value = null),
+    () => (copied.value = 'idle'),
 );
 
 async function copy(text: string | null): Promise<void> {
@@ -252,20 +253,22 @@ const openLink =
                     >Open ↗</a
                 >
             </div>
-            <template v-if="copied === 'refused'">
-                <p class="text-small text-text-2" role="alert">
-                    Copy failed. Select the link below and copy it yourself.
-                </p>
-                <Field
-                    :id="`sign-in-link-${fieldId}`"
-                    :model-value="actions.challenge.value.address ?? ''"
-                    label="Link to Claude's sign-in page"
-                    readonly
-                />
-            </template>
-            <template v-else-if="copied === 'copied'">
-                <p class="text-small text-text-2" role="status">Link copied.</p>
-            </template>
+            <SwitchCase :value="copied">
+                <template #refused>
+                    <p class="text-small text-text-2" role="alert">
+                        Copy failed. Select the link below and copy it yourself.
+                    </p>
+                    <Field
+                        :id="`sign-in-link-${fieldId}`"
+                        :model-value="actions.challenge.value.address ?? ''"
+                        label="Link to Claude's sign-in page"
+                        readonly
+                    />
+                </template>
+                <template #copied>
+                    <p class="text-small text-text-2" role="status">Link copied.</p>
+                </template>
+            </SwitchCase>
             <template v-if="actions.isAnswerLost.value">
                 <p class="text-small text-text-2" role="alert">
                     Your last code did not arrive. Paste it again.

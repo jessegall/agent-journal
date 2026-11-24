@@ -1,5 +1,8 @@
-# Words no declared name may hold, one to a line, a tab, then why. list-names.php refuses a name that holds one,
-# in --check and in --accept. A word is matched whole, after a name is split at its capitals and underscores.
+# Words no declared name may hold, one to a line, a tab, then why. name-faults.php refuses a name that holds one. A
+# word is matched whole, after a name is split at its capitals and underscores. A line starting with verb: names an
+# action's first word (its verb) that has a better coding word; the word stays free as a noun elsewhere.
+verb:report	an action that tells someone something happened notifies: say notify (NotifyStop, not ReportStop)
+underway	say what state it is in: pending, active or running
 begun	an event names what happened, not that something started: say what started (StopRequested, AttemptStarted)
 legacy	version 6 holds no old code (rule 87); name what the thing is now
 deprecated	version 6 holds no old code (rule 87)

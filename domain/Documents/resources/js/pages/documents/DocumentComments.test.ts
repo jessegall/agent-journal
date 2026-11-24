@@ -12,7 +12,7 @@ function part(overrides: Partial<DocumentCommentsPartData> = {}): DocumentCommen
     return {
         revision: '3',
         target: 'doc 7',
-        blocks: [1, 2, 3, 4].map((line) => ({ line, text: `Line ${line}` })),
+        blocks: [1, 2, 3, 4].map((line) => ({ type: 'paragraph', text: `Line ${line}`, firstLine: line, lastLine: line })),
         threads: [],
         recipients: [],
         ...overrides,

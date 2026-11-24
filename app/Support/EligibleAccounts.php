@@ -15,7 +15,6 @@ use App\Models\Accounts\ActiveAccount;
 use App\Models\Profiles\Profile;
 use App\Policies\ProfileAdministrationPolicy;
 use App\Values\ProfileKey;
-use App\Values\ProfileSnapshot;
 
 /**
  * The accounts the owner may choose for a start of one driver, read under the authority the start itself needs, so
@@ -33,26 +32,15 @@ final readonly class EligibleAccounts implements StartAccounts
     {
         $accounts = $this->forDriver($driver);
         $profile = $this->profiles->snapshotFor(ProfileKey::from($profileKey));
+        $family = $this->drivers->family($driver);
 
         return EligibleAccountsData::from([
             'driver' => $accounts->driver,
             'accounts' => $accounts->accounts,
-            'modelChoices' => $this->modelChoices($driver, $profile),
+            'modelChoices' => $family->models,
+            'defaultModel' => $family->modelAt($profile->preferredTier),
+            'preferredDriver' => $profile->start->preferredDriver,
         ]);
-    }
-
-    /**
-     * The models a start may choose: the profile's own and those it allows, or, when it allows any, the profile's
-     * own and every model the driver's family runs.
-     *
-     * @return list<string>
-     */
-    private function modelChoices(string $driver, ProfileSnapshot $profile): array
-    {
-        $allowed = $profile->start->allowedModels;
-        $offered = $allowed === [] ? $this->drivers->family($driver)->models : $allowed;
-
-        return array_values(array_unique([$profile->model, ...$offered]));
     }
 
     public function forDriver(string $driver): EligibleAccountsData

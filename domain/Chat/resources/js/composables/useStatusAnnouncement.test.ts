@@ -10,6 +10,7 @@ function status(
 ): AgentStatusData {
   return {
     sessionState,
+    isStartRefused: sessionState === "refused",
     label,
     reason:
       sessionState === "refused" ? "Choose a model for this session." : null,

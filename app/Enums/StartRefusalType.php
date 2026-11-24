@@ -12,10 +12,8 @@ use App\Support\StartRemedy;
 enum StartRefusalType: string
 {
     case ModelRequired = 'model-required';
-    case ModelUnavailable = 'model-unavailable';
     case DefaultUnavailable = 'default-unavailable';
     case DriverRequired = 'driver-required';
-    case DriverConflict = 'driver-conflict';
     case DriverUnsupported = 'driver-unsupported';
     case AccountContainerUnsupported = 'account-container-unsupported';
     case CapabilityUnsupported = 'capability-unsupported';
@@ -31,10 +29,8 @@ enum StartRefusalType: string
     {
         return match ($this) {
             self::ModelRequired => 'Choose a model for this session.',
-            self::ModelUnavailable => 'The selected model is unavailable.',
             self::DefaultUnavailable => 'The default model is unavailable.',
             self::DriverRequired => 'Choose a driver for this session.',
-            self::DriverConflict => 'The selected driver conflicts with this configuration.',
             self::DriverUnsupported => 'This driver cannot run here.',
             self::AccountContainerUnsupported => 'This account cannot run in this environment.',
             self::CapabilityUnsupported => 'A required feature is unavailable with these settings.',
@@ -52,9 +48,7 @@ enum StartRefusalType: string
                 StartRemedyType::ChooseModel,
                 'Choose model',
             ),
-            self::ModelUnavailable => StartRemedy::forEveryone(StartRemedyType::ChooseModel, 'Choose another model'),
             self::DriverRequired => StartRemedy::forEveryone(StartRemedyType::ChooseDriver, 'Choose driver'),
-            self::DriverConflict => StartRemedy::forEveryone(StartRemedyType::ChooseDriver, 'Review driver'),
             self::DriverUnsupported => StartRemedy::forEveryone(
                 StartRemedyType::ChooseDriver,
                 'Choose a supported driver',

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
+use App\Enums\StepType;
+use App\Values\PlanStep;
 use App\Contracts\Events\RunEvents;
 use App\Contracts\Processes\StopSignal;
 use App\Values\PartKey;
@@ -15,7 +17,7 @@ use App\Values\PartKey;
 final class RunState
 {
     /**
-     * @var list<array{PartKey, SpawnedProcess}>
+     * @var list<SpawnedPart>
      */
     private array $background = [];
 
@@ -27,24 +29,39 @@ final class RunState
     public function __construct(public readonly RunEvents $events, public readonly StopSignal $stop) {}
 
     /**
-     * The next attempt number of a syntax node: an xargs or find -exec child runs it again under a new attempt.
+     * Queues a part of the run under the next attempt of its syntax node: an xargs or find -exec child runs it again
+     * under a new attempt.
      */
-    public function nextAttempt(int $node): int
+    public function queue(PlanStep $step): PartKey
     {
-        $this->attempts[$node] = ($this->attempts[$node] ?? 0) + 1;
+        $this->attempts[$step->node] = ($this->attempts[$step->node] ?? 0) + 1;
+        $part = new PartKey($step->node, $this->attempts[$step->node], (string) ($step->argv[0] ?? null)?->literal());
+        $this->events->queued($part);
 
-        return $this->attempts[$node];
+        return $part;
     }
 
-    public function track(PartKey $part, SpawnedProcess $process): void
+    /**
+     * Records every part of a step that does not run as skipped, with the result that decided it.
+     */
+    public function skipEveryPart(PlanStep $step, string $controllingResult): void
     {
-        $this->background[] = [$part, $process];
+        foreach ($step->flatten() as $part) {
+            if (in_array($part->type, [StepType::Command, StepType::Builtin], true)) {
+                $this->events->skipped($this->queue($part), $controllingResult);
+            }
+        }
+    }
+
+    public function track(SpawnedPart $part): void
+    {
+        $this->background[] = $part;
     }
 
     /**
      * The background parts still to wait for, handed over once.
      *
-     * @return list<array{PartKey, SpawnedProcess}>
+     * @return list<SpawnedPart>
      */
     public function takeBackground(): array
     {

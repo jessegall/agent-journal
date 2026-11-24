@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import Button from '@/components/kit/Button.vue';
+import Dialog from '@/components/kit/Dialog.vue';
 import Icon from '@/components/kit/Icon.vue';
 import type { DropZone } from '@/components/panes/paneLayout';
 
 /**
- * Version 5's split offer (panes/SplitOffer.vue): a window dropped from the add bar onto a pane that already shows one
- * asks whether to sit beside it, under it, or join its tabs.
+ * Asks, over the one pane it is dropped on, where a window dropped from the add bar goes when the pane already shows
+ * one: beside it, under it, or among its tabs. Escape, a click beside it and Cancel place nothing.
  */
 defineProps<{ title: string }>();
 
@@ -13,22 +14,10 @@ const emit = defineEmits<{ pick: [zone: DropZone | null] }>();
 </script>
 
 <template>
-    <div
-        class="absolute inset-0 z-5 grid place-items-center bg-[rgba(13,14,16,.62)] p-4"
-        @pointerdown.stop
-    >
-        <div
-            class="w-[min(410px,100%)] rounded-bubble border border-border-2 bg-raised p-4 shadow-[0_12px_32px_rgba(0,0,0,.45)]"
-            role="dialog"
-            aria-label="Split this pane in two?"
-        >
-            <p class="font-medium text-card text-text">
-                Split this pane in two?
-            </p>
-            <p class="mt-1 mb-3.5 text-small text-pretty text-text-3">
-                {{ title }} can sit beside this pane or join its tabs.
-            </p>
-            <div class="flex flex-wrap gap-1.5">
+    <div class="contents" @pointerdown.stop>
+        <Dialog open title="Split this pane in two?" size="sm" placement="pane" @close="emit('pick', null)">
+            <p class="text-small text-pretty text-text-3">{{ title }} can sit beside this pane or join its tabs.</p>
+            <template #footer>
                 <Button variant="primary" @click="emit('pick', 'right')"
                     ><Icon name="columns" :size="13" />Side by side</Button
                 >
@@ -39,7 +28,7 @@ const emit = defineEmits<{ pick: [zone: DropZone | null] }>();
                     ><Icon name="tab" :size="13" />Add as tab</Button
                 >
                 <Button @click="emit('pick', null)">Cancel</Button>
-            </div>
-        </div>
+            </template>
+        </Dialog>
     </div>
 </template>

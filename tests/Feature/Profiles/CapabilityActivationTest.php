@@ -73,7 +73,7 @@ final class CapabilityActivationTest extends TestCase
     private function activation(): ActivateProfilesCommand
     {
         return new ActivateProfilesCommand(ProfileProposal::fromConfiguration(['profiles' => [
-            self::PROFILE => ['base' => 'writing-helper', 'model' => 'opus', 'driver' => 'claude-code'],
+            self::PROFILE => ['base' => 'writing-helper', 'tier' => 3, 'preferred_driver' => 'claude-code'],
         ]]));
     }
 

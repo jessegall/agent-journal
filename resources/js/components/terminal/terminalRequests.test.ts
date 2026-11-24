@@ -1,8 +1,10 @@
 /// <reference types="node" />
 import type { TerminalFrameData, TerminalInterestData } from '@generated/types/core';
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { browser, CONTRACTS, holdsContract, RECORDED } from '@kit/testing/pageRequests';
+import type { SentRequest } from '@kit/testing/pageRequests';
 import * as webRoutes from '@/routes/web';
 import { TerminalSubscription } from './terminalSubscription';
 import type { TerminalFailure } from './terminalSubscription';
@@ -11,45 +13,7 @@ import { terminalClientFor } from './useTerminalController';
 
 vi.mock('@/echo', () => ({ xsrfToken: () => 'xsrf-token' }));
 
-/**
- * The agent every recorded address names; the server's replay puts a real agent in its place.
- */
-const AGENT = '01JPAGEREQUESTAGENT0000000';
-const CONTRACTS = 'tests/Contracts/page-requests';
-
-type SentRequest = { method: string; url: string; body: unknown };
-
-/**
- * Stands in for the browser's fetch: keeps each request as sent and answers with the next answer given.
- */
-function browser(...answers: unknown[]): SentRequest[] {
-    const sent: SentRequest[] = [];
-    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
-        sent.push({ method: String(init.method), url, body: init.body === undefined ? null : JSON.parse(String(init.body)) });
-
-        return new Response(JSON.stringify(answers.shift() ?? {}), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    });
-
-    return sent;
-}
-
-/**
- * Holds the request to its contract file, which the server's test replays against the real route; a missing file is
- * written, and UPDATE_CONTRACTS=1 writes it anew after a change that is meant.
- */
-function holdsContract(name: string, request: SentRequest | undefined): void {
-    const path = join(CONTRACTS, `${name}.json`);
-    const json = JSON.stringify(request, null, 4) + '\n';
-
-    if (process.env.UPDATE_CONTRACTS === '1' || !existsSync(path)) {
-        writeFileSync(path, json);
-    }
-
-    expect(JSON.parse(readFileSync(path, 'utf8'))).toStrictEqual(request);
-}
+const AGENT = RECORDED.agent;
 
 async function settled(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 0));

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
+import { visitLink } from "../../dockLinks";
 import Button from "@kit/Button";
 import type { ButtonNode } from "@kit/dockCards";
 
@@ -15,9 +15,7 @@ const variants = {
 } as const satisfies Record<ButtonNode["emphasis"], string>;
 
 function press(): void {
-  if (props.node.target !== null) {
-    router.visit(props.node.target.href);
-  }
+  visitLink(props.node.target);
 }
 </script>
 

@@ -11,6 +11,7 @@ use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\ProfileResolver;
+use App\Enums\ModelTier;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverCapability;
 use App\Enums\DriverSourceType;
@@ -20,7 +21,6 @@ use App\Enums\ResumeRefusal;
 use App\Enums\StartPreflightRefusal;
 use App\Events\DriverSwitchStopped;
 use App\Exceptions\DriverCapabilityUnsupported;
-use App\Exceptions\DriverConflict;
 use App\Exceptions\DriverSwitchStale;
 use App\Exceptions\ProfileCannotCoordinate;
 use App\Exceptions\ResumeRefused;
@@ -94,7 +94,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_default_resolves_to_the_profiles_model_and_revision(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $revision = $this->currentRevision();
 
         $receipt = $this->start('default', null);
@@ -107,13 +107,14 @@ final class ProfileStartTest extends TestCase
         $this->assertSame($revision, $source->profileRevision);
     }
 
-    public function test_a_pinned_program_refuses_another(): void
+    public function test_a_preferred_driver_still_lets_a_start_choose_another(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, true));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
 
-        $this->expectException(DriverConflict::class);
+        $receipt = $this->start('default', 'codex');
 
-        $this->start('default', 'codex');
+        $session = AgentSession::query()->findOrFail($receipt->sessionId);
+        $this->assertSame([DefaultDrivers::CODEX, 'gpt-6.2-sol'], [$session->driver_key, $session->model]);
     }
 
     public function test_a_helper_profile_cannot_start_a_main(): void
@@ -127,11 +128,11 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_later_activation_leaves_an_accepted_start_as_it_was(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $revision = $this->currentRevision();
         $receipt = $this->start('default', null);
 
-        $this->activate(self::main('sonnet', DefaultDrivers::CODEX, true));
+        $this->activate(self::main(ModelTier::General, DefaultDrivers::CODEX));
 
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
 
@@ -142,7 +143,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_an_explicit_start_runs_the_chosen_account_and_driver_type_and_the_next_automatic_one_the_defaults(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $chosen = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Account B'), '/journal/accounts/b');
         $requestId = strtolower((string) Str::ulid());
 
@@ -164,7 +165,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_an_automatic_codex_start_on_the_terminal_default_is_refused_with_its_reason(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
 
         $this->assertThrows(
             fn () => $this->start('default', 'codex'),
@@ -175,7 +176,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_start_the_host_cannot_run_is_refused_before_a_session(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         Host::query()->update(['descriptors' => []]);
         $sessions = AgentSession::query()->count();
 
@@ -191,7 +192,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_switch_the_host_cannot_run_is_refused_and_keeps_the_old_session_and_a_repeat_answers_it(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $old = $this->start('default', null);
         Host::query()->update(['descriptors' => []]);
         $requestId = strtolower((string) Str::ulid());
@@ -207,7 +208,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_repeated_switch_makes_one_switch_and_its_stage_is_read_back(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $old = $this->start('default', null);
         Host::query()->update(['descriptors' => []]);
         $codex = $this->accounts['codex'];
@@ -236,7 +237,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_an_explicit_resume_continues_the_chosen_older_thread_and_a_foreign_one_is_refused(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $first = AgentSession::query()->findOrFail($this->start('default', null)->sessionId);
         $older = DriverConversation::create($first, 'settings', 'older-thread-0001', null);
         DriverConversation::create($first, 'settings', 'newer-thread-0002', null);
@@ -258,7 +259,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_switch_that_expects_another_session_is_stale(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $this->start('default', null);
 
         $this->expectException(DriverSwitchStale::class);
@@ -268,7 +269,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_switch_to_the_codex_terminal_is_refused_with_its_reason_before_any_switch_exists(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $session = $this->start('default', null)->sessionId;
 
         $this->assertThrows(
@@ -286,7 +287,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_switch_keeps_the_registration_its_target_was_pinned_to(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $session = $this->start('default', null)->sessionId;
         $requestId = strtolower((string) Str::ulid());
 
@@ -302,7 +303,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_after_a_proven_stop_the_replacement_starts_and_a_refused_one_fails_the_switch(): void
     {
-        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $codex = $this->accounts['codex'];
 
         $started = $this->stoppedSwitch(new ChosenAccount($codex->id, $codex->sign_in_generation));
@@ -413,17 +414,15 @@ final class ProfileStartTest extends TestCase
         return [$record->family, $record->driver_type, $record->account_chosen, $account->id];
     }
 
-    private static function main(string $model, string $driver, bool $pinned): ProposedProfile
+    private static function main(ModelTier $tier, string $preferredDriver): ProposedProfile
     {
         return new ProposedProfile(
             ProfileKey::from('journal-main'),
             'Main',
             ProfileBase::mainAgent(),
             'Lead the work.',
-            $model,
-            $driver,
-            $pinned,
-            ['opus', 'sonnet'],
+            $tier,
+            $preferredDriver,
             null,
             [],
             null,

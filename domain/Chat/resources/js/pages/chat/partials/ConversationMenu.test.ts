@@ -38,6 +38,7 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
     needsAttention: false,
     status: {
       sessionState: retired ? "retired" : "idle",
+      isStartRefused: false,
       label: retired ? "Retired" : "Idle",
       reason: null,
       remedy: null,

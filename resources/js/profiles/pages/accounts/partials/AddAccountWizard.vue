@@ -76,14 +76,7 @@ const step = computed<1 | 2 | 3>(() => {
         return awaited.value === null ? 1 : 2;
     }
 
-    if (
-        followed.value.state === 'starting' ||
-        followed.value.state === 'waiting'
-    ) {
-        return 2;
-    }
-
-    return 3;
+    return followed.value.isAwaitingSignIn ? 2 : 3;
 });
 
 /**

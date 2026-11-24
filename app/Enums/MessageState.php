@@ -21,4 +21,17 @@ enum MessageState: string
     {
         return $this === self::Answered || $this === self::Dismissed;
     }
+
+    /**
+     * The state as a question card names it.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Sent => 'Sent',
+            self::WaitingForAnswer => 'Waiting for an answer',
+            self::Answered => 'Answered',
+            self::Dismissed => 'Dismissed',
+        };
+    }
 }

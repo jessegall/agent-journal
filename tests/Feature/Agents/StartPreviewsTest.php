@@ -7,8 +7,8 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverSourceType;
 use App\Enums\DriverType;
+use App\Enums\ModelTier;
 use App\Enums\DriverTypeSource;
-use App\Exceptions\DriverConflict;
 use App\Models\Agents\Agent;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;
@@ -46,18 +46,18 @@ final class StartPreviewsTest extends TestCase
         $this->assertSame(DriverSourceType::Explicit, $named->selection->source->driverSource);
     }
 
-    public function test_a_profile_pinned_to_claude_refuses_codex(): void
+    public function test_a_profile_preferring_claude_still_lets_a_start_choose_codex(): void
     {
-        $this->expectException(DriverConflict::class);
-
-        $this->previews()->preview(
+        $preview = $this->previews()->preview(
             Agent::create('Helper', 'read-only-helper'),
             DefaultDrivers::CODEX,
             null,
             ModelSelection::fromInput('opus'),
-            $this->profile(DefaultDrivers::CLAUDE_CODE, pinned: true),
+            $this->profile(DefaultDrivers::CLAUDE_CODE),
             null,
         );
+
+        $this->assertSame(DefaultDrivers::CODEX, $preview->selection->driver);
     }
 
     public function test_the_mode_is_named_else_saved_else_the_profiles(): void
@@ -138,8 +138,8 @@ final class StartPreviewsTest extends TestCase
         return $this->app->make(StartPreviews::class);
     }
 
-    private function profile(string|null $driver, bool $pinned = false): ProfileDefaults
+    private function profile(string|null $driver): ProfileDefaults
     {
-        return new ProfileDefaults('read-only-helper', 1, $driver, $pinned, 'opus', ['opus'], DriverType::Headless);
+        return new ProfileDefaults('read-only-helper', 1, $driver, ModelTier::Inventive, DriverType::Headless);
     }
 }

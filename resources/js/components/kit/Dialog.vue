@@ -6,7 +6,8 @@ import Scrim from './Scrim.vue';
 
 /**
  * A modal task over a Scrim, above everything else: the title, the body in the default slot and the footer in its
- * slots sit in a DialogContent (size sm, md or lg). It is placed in the middle or 64 or 72 from the top. It opens with
+ * slots sit in a DialogContent (size sm, md or lg). It is placed in the middle or 64 or 72 from the top, or as pane in
+ * the middle of the positioned part it stands in, such as one pane, covering only that part. It opens with
  * the focus on initialFocus (a selector inside it), else on its first field, else on the dialog itself; Tab and
  * Shift+Tab loop inside it; Escape and a click on the Scrim ask the owner to close it through close; and when it
  * closes the focus returns to returnFocus, else to what had it before it opened. It enters over 180ms with a 4px
@@ -17,7 +18,7 @@ const props = withDefaults(
         open: boolean;
         title: string;
         size?: 'sm' | 'md' | 'lg';
-        placement?: 'center' | 'top-64' | 'top-72';
+        placement?: 'center' | 'top-64' | 'top-72' | 'pane';
         header?: boolean;
         flush?: boolean;
         initialFocus?: string;
@@ -109,11 +110,16 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <Teleport :to="overlayTarget()">
+    <Teleport :to="overlayTarget()" :disabled="placement === 'pane'">
         <template v-if="open">
             <div
-                class="fixed inset-0 z-(--z-dialog) flex justify-center"
-                :class="{ center: 'items-center', 'top-64': 'items-start pt-16', 'top-72': 'items-start pt-18' }[placement]"
+                class="inset-0 flex justify-center"
+                :class="{
+                    center: 'fixed z-(--z-dialog) items-center',
+                    'top-64': 'fixed z-(--z-dialog) items-start pt-16',
+                    'top-72': 'fixed z-(--z-dialog) items-start pt-18',
+                    pane: 'absolute z-5 items-center',
+                }[placement]"
                 @keydown="keepFocusInside"
             >
                 <Scrim

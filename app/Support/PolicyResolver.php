@@ -51,15 +51,12 @@ final readonly class PolicyResolver
         $this->assertKnownOperations($profile, $project);
 
         $start = new ProfileStartPolicy(
-            $profile->driver,
-            $profile->driverPinned,
-            $profile->allowedModels,
+            $profile->preferredDriver,
             $this->access($profile, $project),
             $this->stopConditions($profile),
             $this->execution($profile),
             new ProfileProvenance($configurationHash, [
-                new FieldOrigin('driver', PolicyOriginType::Profile),
-                new FieldOrigin('allowedModels', PolicyOriginType::Profile),
+                new FieldOrigin('preferredDriver', PolicyOriginType::Profile),
                 new FieldOrigin('access', self::originOf($project, $profile->override)),
                 new FieldOrigin('stopConditions', $profile->stopConditions === []
                     ? PolicyOriginType::GlobalDefault
@@ -75,7 +72,7 @@ final readonly class PolicyResolver
             $profile->label,
             $profile->base,
             $profile->instructions,
-            $profile->model,
+            $profile->tier,
             $profile->skillAllowlist,
             $profile->requiredSkills,
             $start,

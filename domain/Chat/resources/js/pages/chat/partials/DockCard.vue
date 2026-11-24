@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
 import DockedCard from "@kit/DockedCard";
 import type { DockCardEnvelope } from "@kit/dockCards";
 import { startHanding } from "../../../composables/useHandOver";
 import DockPart from "../../../components/dock/DockPart.vue";
+import { visitLink } from "../../../dockLinks";
 
 /**
  * One docked card on the kit's DockedCard: its owner's parts, or only its summary when nothing more may be shown, with
@@ -22,9 +22,7 @@ function hand(event: DragEvent): void {
 }
 
 function open(): void {
-  if (props.card.open !== null) {
-    router.visit(props.card.open.href);
-  }
+  visitLink(props.card.open);
 }
 </script>
 

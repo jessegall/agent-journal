@@ -1,8 +1,2 @@
 # Vue files outside the kit that still draw a control the library has, one path:element per line.
 # The list may only shrink: LibraryReuseTest fails on a line that no longer offends.
-domain/Chat/resources/js/pages/chat/partials/SessionForm.vue:input
-domain/Chat/resources/js/pages/chat/partials/SessionForm.vue:select
-resources/js/web/pages/web/partials/LayoutPicker.vue:button
-resources/js/web/pages/web/partials/LayoutPicker.vue:input
-resources/js/web/pages/web/partials/LayoutPicker.vue:role=menu
-resources/js/web/pages/web/partials/SplitOffer.vue:role=dialog

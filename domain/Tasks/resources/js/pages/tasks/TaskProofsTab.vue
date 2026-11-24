@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, watch } from 'vue';
 import Button from '@kit/Button';
+import SwitchCase from '@kit/SwitchCase';
 import type { TaskProofData, TaskProofsData } from '@generated/types/tasks';
 import { useWindowReload } from '@kit/useWindowQuery';
 
@@ -68,26 +69,28 @@ onMounted(() => {
 
 <template>
     <div class="flex flex-col gap-2">
-        <template v-if="state.status === 'restricted'">
-            <p class="text-body text-text-3">You can't read this task's proofs.</p>
-        </template>
-        <template v-else-if="state.status === 'failed'">
-            <p role="alert" class="flex items-center gap-2 text-small text-text-2">
-                <span>The proofs could not be read.</span>
-                <Button
-                    size="small"
-                    variant="bordered"
-                    @click="ask(state.askedAfter)"
-                    >Retry</Button
-                >
-            </p>
-        </template>
-        <template v-if="state.status === 'loading' && state.proofs.length === 0">
-            <p role="status" class="text-small text-text-3">Loading the proofs</p>
-        </template>
-        <template v-else-if="state.status === 'shown' && state.proofs.length === 0">
-            <p class="text-body text-text-3">No proofs yet</p>
-        </template>
+        <SwitchCase :value="state.status">
+            <template #restricted>
+                <p class="text-body text-text-3">You can't read this task's proofs.</p>
+            </template>
+            <template #failed>
+                <p role="alert" class="flex items-center gap-2 text-small text-text-2">
+                    <span>The proofs could not be read.</span>
+                    <Button
+                        size="small"
+                        variant="bordered"
+                        @click="ask(state.askedAfter)"
+                        >Retry</Button
+                    >
+                </p>
+            </template>
+            <template v-if="state.proofs.length === 0" #loading>
+                <p role="status" class="text-small text-text-3">Loading the proofs</p>
+            </template>
+            <template v-if="state.proofs.length === 0" #shown>
+                <p class="text-body text-text-3">No proofs yet</p>
+            </template>
+        </SwitchCase>
         <ol class="flex flex-col gap-2" aria-label="Proofs">
             <template v-for="proof in state.proofs" :key="proof.id">
                 <li class="flex flex-col gap-0.5 border-l-2 border-border pl-2 text-small">

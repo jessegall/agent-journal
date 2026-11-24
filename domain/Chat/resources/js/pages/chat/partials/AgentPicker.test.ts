@@ -39,6 +39,7 @@ function agent(
     needsAttention: false,
     status: {
       sessionState: presenceLabel === "Working" ? "working" : "idle",
+      isStartRefused: false,
       label: presenceLabel,
       reason: null,
       remedy: null,

@@ -19,14 +19,17 @@ use App\Values\ProfileRuleGroup;
 use App\Values\SupervisorRoutes;
 
 /**
- * One profile as a read-only reader: its label and description, then its supplied facts in order: Type, Model,
- * Models it may use, Driver, Answers to and How many run, then a group of Rules it works under with its Scripts. A fact
+ * One profile as a read-only reader: its label and description, then its supplied facts in order: Type, Work it does
+ * (its tier), Preferred driver, Answers to and How many run, then a group of Rules it works under with its Scripts. A fact
  * no read supplies is left out, and the rules, which nothing reads for a profile yet, say they are not available
  * instead of looking empty.
  */
 final readonly class ProfilesShow extends ProfilesPage
 {
-    private const string MODELS_HELP = 'Others can be chosen when it starts.';
+    /**
+     * What the tier decides, after what the tier is for.
+     */
+    private const string TIER_HELP = 'A start runs the model of this tier, and any other model can be chosen.';
 
     private const string ANSWERS_HELP = 'Its supervisor, who gets its reports and questions.';
 
@@ -47,19 +50,21 @@ final readonly class ProfilesShow extends ProfilesPage
         }
 
         $snapshot = $this->profiles->snapshotFor($key);
-        $models = $snapshot->start->allowedModels;
+        $tier = $snapshot->preferredTier;
         $script = ProfileRevision::currentOf($profile)->script_source;
 
         $rows = [
             SettingsRow::value('type', 'Type', $snapshot->base->label, 'The kind of agent it is.'),
-            SettingsRow::value('model', 'Model', $snapshot->model, 'The model it starts with.'),
-            $models === []
-                ? SettingsRow::value('models', 'Models it may use', 'Any model', self::MODELS_HELP)->inBlock()
-                : SettingsRow::chips('models', 'Models it may use', $models, self::MODELS_HELP),
+            SettingsRow::value('tier', 'Work it does', $tier->label(), $tier->description().' '.self::TIER_HELP),
         ];
 
-        if ($snapshot->start->driver !== null) {
-            $rows[] = SettingsRow::value('driver', 'Driver', $snapshot->start->driver, 'How the journal runs it.');
+        if ($snapshot->start->preferredDriver !== null) {
+            $rows[] = SettingsRow::value(
+                'driver',
+                'Preferred driver',
+                $snapshot->start->preferredDriver,
+                'The driver a start chooses first; you can still choose another.',
+            );
         }
 
         array_push($rows, ...$this->answersTo($snapshot->supervisor));

@@ -37,7 +37,7 @@ final class SupervisorRoutesTest extends TestCase
 
     private const string ROUTE_CYCLE = 'The question supervisor route has a cycle:';
 
-    private const array PROFILE = ['base' => 'writing-helper', 'model' => 'sonnet'];
+    private const array PROFILE = ['base' => 'writing-helper', 'tier' => 2];
 
     public function test_shipped_routes_are_stored_and_their_supervisors_admit_every_required_command(): void
     {

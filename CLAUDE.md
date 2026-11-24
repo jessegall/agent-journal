@@ -117,3 +117,17 @@ yours to resolve at its source.
 - No other code reads, guesses or answers a driver's screens, sends it keys, or writes a driver's own state files (such as `.claude.json` and its onboarding and trust fields) to make a screen go away.
 - A screen the navigation does not know ends the start with what the screen shows; it never waits forever.
 - One exception (rule 81; user message 19430): a first-run screen may also be avoided by settling the account once, in exactly one named place, the account's first-run step of the sign-in service, and only together with the navigation knowing the same screen. Both exist: the account is left ready so the screen never shows, and the navigation can still pass it if it does.
+
+## Names are checked by a scan, never approved by list (rule 99; user messages 21092 to 21121)
+
+- No name is written down as approved. `php tools/refactoring/name-faults.php` reads every name of the project fresh
+  (PHP, frontend, Go, shell scripts, file names) and refuses each that breaks the grammar of
+  `tools/refactoring/name-grammar.php` or holds a word of `docs/naming/forbidden-words.txt`. Check 2 and
+  `NamesFollowTheRulesTest` run it. Run it at every phase end, every plan end, and whenever the user asks.
+- Beside it, `php tools/refactoring/name-words.php --since=<commit>` lists the words that are new since a commit, and
+  without `--since` every word with its count, so a word that slipped through is found. A word we do not want goes into
+  `forbidden-words.txt`; a verb with a better word goes in as `verb:<word>`; a bad shape goes into the grammar.
+- A name says what a thing is, never what will be done with it (`PendingStep`, not `StepToRun`); an action starts with
+  its verb; an event says what happened; a yes or no reads as a question; an action that tells someone notifies.
+- Rename PHP names with `php tools/refactoring/name-faults.php rename <word> <new word> [--type=] [--namespace=]
+  [--path=]`, read the list it prints, then add `--apply`: it renames from the syntax tree, never by search and replace.

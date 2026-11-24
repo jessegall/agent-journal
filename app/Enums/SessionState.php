@@ -28,6 +28,14 @@ enum SessionState: string
     case Unverified = 'unverified';
 
     /**
+     * Whether a start ended without a session: refused, no capacity for it, or its account must sign in first.
+     */
+    public function isStartRefused(): bool
+    {
+        return in_array($this, [self::Refused, self::NoCapacity, self::WaitingForSignIn], true);
+    }
+
+    /**
      * The words the bar shows for this state when nothing more specific names it.
      */
     public function label(): string

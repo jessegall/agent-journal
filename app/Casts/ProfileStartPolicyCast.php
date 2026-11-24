@@ -21,7 +21,7 @@ use TypeError;
 use ValueError;
 
 /**
- * Stores a revision's start policy in its own columns (driver, whether it is pinned, allowed models, the policies,
+ * Stores a revision's start policy in its own columns (the preferred driver, the policies,
  * the configuration hash and provenance) and rebuilds it through the policies' own checks when read. A column that no
  * longer reads fails the read rather than stand in for a default.
  *
@@ -38,9 +38,7 @@ final class ProfileStartPolicyCast implements CastsAttributes
     {
         try {
             return new ProfileStartPolicy(
-                $attributes['driver'] === null ? null : (string) $attributes['driver'],
-                (bool) $attributes['driver_pinned'],
-                self::models((string) $attributes['allowed_models']),
+                $attributes['preferred_driver'] === null ? null : (string) $attributes['preferred_driver'],
                 StoredAccessPolicy::from((string) $attributes['access_policy'])->toAccessPolicy(),
                 StoredStopConditions::from((string) $attributes['stop_conditions'])->toStopConditions(),
                 StoredExecutionPolicy::from((string) $attributes['execution_policy'])->toExecutionPolicy(),
@@ -62,9 +60,7 @@ final class ProfileStartPolicyCast implements CastsAttributes
     public function set(Model $model, string $key, mixed $value, array $attributes): array
     {
         return [
-            'driver' => $value->driver,
-            'driver_pinned' => $value->driverPinned,
-            'allowed_models' => json_encode($value->allowedModels, JSON_THROW_ON_ERROR),
+            'preferred_driver' => $value->preferredDriver,
             'access_policy' => StoredAccessPolicy::fromAccessPolicy($value->access)->toJson(),
             'stop_conditions' => StoredStopConditions::fromStopConditions($value->stopConditions)->toJson(),
             'execution_policy' => StoredExecutionPolicy::fromExecutionPolicy($value->execution)->toJson(),
@@ -74,18 +70,6 @@ final class ProfileStartPolicyCast implements CastsAttributes
                 JSON_THROW_ON_ERROR,
             ),
         ];
-    }
-
-    /**
-     * The allowed models a column lists; any entry that is no model name fails the read.
-     *
-     * @return list<string>
-     *
-     * @throws JsonException
-     */
-    private static function models(string $column): array
-    {
-        return array_values(self::decodedList($column)->map(fn (string $model): string => $model)->all());
     }
 
     /**

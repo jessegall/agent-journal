@@ -47,7 +47,7 @@ final class ProfilePolicyTest extends TestCase
 
     private const array WORKER = [
         'base' => 'writing-helper',
-        'model' => 'opus',
+        'tier' => 3,
         'container' => 'required',
         'allow_operations' => [
             [
@@ -85,10 +85,10 @@ final class ProfilePolicyTest extends TestCase
     {
         $proposal = [
             'profiles' => [
-                'journal-researcher' => ['base' => 'read-only-helper', 'model' => 'opus'],
+                'journal-researcher' => ['base' => 'read-only-helper', 'tier' => 3],
                 'journal-editor' => [
                     'base' => 'read-only-helper',
-                    'model' => 'opus',
+                    'tier' => 3,
                     'allow_paths' => ['edit:.'],
                 ],
             ],
@@ -119,8 +119,8 @@ final class ProfilePolicyTest extends TestCase
     public function test_a_session_keeps_its_revision_and_the_next_start_gets_the_new_one(): void
     {
         $first = $this->activate(['profiles' => ['journal-worker' => self::WORKER]]);
-        $second = $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'model' => 'sonnet']]]);
-        $third = $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'model' => 'sonnet']]]);
+        $second = $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'tier' => 2]]]);
+        $third = $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'tier' => 2]]]);
 
         $key = ProfileKey::from('journal-worker');
 

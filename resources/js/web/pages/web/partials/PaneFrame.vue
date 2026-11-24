@@ -32,7 +32,8 @@ import type { DropZone, MenuEntry, Pane, SplitSide } from '@/components/panes/pa
 const props = defineProps<{ pane: Pane }>();
 
 const store = usePaneLayout();
-const { grab } = useWindowDrag();
+const { grab, grabToAdd } = useWindowDrag();
+const grabbedToAdd = grabToAdd(add);
 const isAdding = ref(false);
 const addButton = ref<{ $el: HTMLElement } | null>(null);
 const addAnchor = computed(() => addButton.value?.$el ?? null);
@@ -281,12 +282,7 @@ const paneEntries = computed<MenuEntry[]>(() => {
             hint="Enter adds it to this pane · drag a row to place it"
             @add="add"
             @show="(key) => store.apply(showWindow(store.arrangement.value, key))"
-            @grab="
-                (event, key) => {
-                    isAdding = false;
-                    grab(event, key, null, () => add(key));
-                }
-            "
+            @grab="grabbedToAdd"
         />
         <div class="relative min-h-0 flex-1 overflow-auto">
             <template v-if="pane.active">

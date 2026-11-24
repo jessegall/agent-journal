@@ -29,6 +29,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Agents\HostContract;
 use Tests\Fixtures\Hooks\JournalUnreachable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestText;
@@ -60,6 +61,15 @@ final class HookRelayTest extends TestCase
         .'"cwd":"/work","tool_input":{"file_path":"../journal/accounts/a/projects/-work/other.jsonl"}}';
 
     private TestStart $start;
+
+    private const array COMPARED_HEADERS = ['authorization', 'content-type', 'x-journal-'];
+
+    private const array VARYING_HEADERS = [
+        'authorization',
+        'x-journal-call-id',
+        'x-journal-call-issued-at',
+        'x-journal-call-signature',
+    ];
 
     private string $bypassLog;
 
@@ -101,6 +111,36 @@ final class HookRelayTest extends TestCase
 
         $this->assertSame(['{}', '', 0], [$reply->stdout, $reply->stderr, $reply->exitCode]);
         $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+    }
+
+    /**
+     * The exchange the Go hook relay (tools/journal-agent/cmd/journal-hook) must hold to: the payload, the start it
+     * runs for, each call as it went to the real endpoint with its answer, and the reply printed.
+     */
+    public function test_the_calls_it_sends_and_the_reply_it_prints_hold_to_the_contract_the_go_relay_shares(): void
+    {
+        $exchange = ['calls' => [], 'answers' => []];
+        Http::fake(function (Request $request) use (&$exchange) {
+            $response = $this->forward($request)->wait();
+            $exchange['calls'][] = [
+                'path' => (string) parse_url($request->url(), PHP_URL_PATH),
+                'body' => json_decode($request->body(), true, flags: JSON_THROW_ON_ERROR),
+                'headers' => $this->comparedHeaders($request->headers()),
+            ];
+            $exchange['answers'][] = ['status' => $response->getStatusCode(), 'body' => (string) $response->getBody()];
+
+            return $response;
+        });
+
+        $reply = $this->relay(self::STOP);
+
+        HostContract::of('relays/hook-exchange.json')->assertHolds([
+            'payload' => self::STOP,
+            'profile' => $this->start->pin()->key,
+            'profileRevision' => $this->start->pin()->revision,
+            ...$exchange,
+            'printed' => ['stdout' => $reply->stdout, 'stderr' => $reply->stderr, 'exitCode' => $reply->exitCode],
+        ], []);
     }
 
     public function test_during_an_outage_the_main_agent_goes_on_and_the_bypass_is_logged(): void
@@ -313,6 +353,32 @@ final class HookRelayTest extends TestCase
         );
 
         return Http::response((string) $response->getContent(), $response->getStatusCode());
+    }
+
+    /**
+     * The headers both relays must send alike, by lowercase name; the token, signature, time and call id differ on
+     * every call and are written as varies.
+     *
+     * @param  array<string, list<string>>  $headers
+     * @return array<string, string>
+     */
+    private function comparedHeaders(array $headers): array
+    {
+        $compared = [];
+
+        foreach ($headers as $name => $values) {
+            $name = strtolower($name);
+
+            $isCompared = array_any(self::COMPARED_HEADERS, fn (string $start) => str_starts_with($name, $start));
+
+            if ($isCompared) {
+                $compared[$name] = in_array($name, self::VARYING_HEADERS, true) ? 'varies' : $values[0];
+            }
+        }
+
+        ksort($compared);
+
+        return $compared;
     }
 
     private function target(): StackTarget

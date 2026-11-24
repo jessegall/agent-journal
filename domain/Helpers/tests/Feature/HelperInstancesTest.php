@@ -114,7 +114,7 @@ final class HelperInstancesTest extends TestCase
         $this->expectException(ProfileProposalRefused::class);
 
         ProfileProposal::fromConfiguration(['profiles' => [
-            'odd-reviewer' => ['base' => 'read-only-helper', 'model' => 'sonnet', 'instances' => 'many'],
+            'odd-reviewer' => ['base' => 'read-only-helper', 'tier' => 2, 'instances' => 'many'],
         ]]);
     }
 }

@@ -31,7 +31,7 @@ type managedSettings struct {
 
 func readManagedSettings(t *testing.T) managedSettings {
 	t.Helper()
-	content, err := os.ReadFile("../../../.docker/helper/claude-managed-settings.json")
+	content, err := os.ReadFile("../../../resources/agents/claude-code-managed-settings.json")
 	if err != nil {
 		t.Fatal(err)
 	}

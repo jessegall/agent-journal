@@ -6,6 +6,11 @@ import type { SequenceStepData } from '@generated/types/sequences';
  */
 export type Direction = 'up' | 'down';
 
+/** The other way a step can move. */
+export function oppositeOf(direction: Direction): Direction {
+    return direction === 'up' ? 'down' : 'up';
+}
+
 export type FocusAfter = { kind: 'step'; id: string } | { kind: 'add' };
 
 export function emptyStep(id: string): SequenceStepData {

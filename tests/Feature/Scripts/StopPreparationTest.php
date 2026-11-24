@@ -205,7 +205,7 @@ SCRIPT, ['tests' => [
         ]]);
         $commands->run(new SaveProfileDraftCommand($profile, 0, $source));
         $proposal = ProfileProposal::fromConfiguration(['profiles' => [
-            $profile->key => ['base' => 'writing-helper', 'model' => 'sonnet'],
+            $profile->key => ['base' => 'writing-helper', 'tier' => 2],
         ]]);
         $commands->run(new ActivateProfilesCommand($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
     }

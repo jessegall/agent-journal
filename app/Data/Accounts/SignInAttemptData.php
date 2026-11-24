@@ -32,6 +32,7 @@ final class SignInAttemptData extends Data
         public readonly bool $isWaitingForAgents,
         public readonly bool $isUnclaimed,
         public readonly SignInState $state,
+        public readonly bool $isAwaitingSignIn,
         public readonly string $expiresAt,
         public readonly string|null $refusal,
     ) {}
@@ -48,6 +49,7 @@ final class SignInAttemptData extends Data
             $attempt->isWaitingForAgents(),
             $attempt->isUnclaimedSince(CarbonImmutable::now()),
             $attempt->state,
+            $attempt->state->isAwaitingSignIn(),
             $attempt->expires_at->toIso8601String(),
             $attempt->refusal,
         );

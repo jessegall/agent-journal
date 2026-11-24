@@ -14,6 +14,12 @@ use Symfony\Component\Process\Process;
  */
 final readonly class StandInInstallation
 {
+    /**
+     * The Docker address a script under test is given: a docker program that is not the stand-in fails on it at once,
+     * so the normal suite never reaches a real Docker.
+     */
+    public const string NO_REAL_DOCKER = 'unix:///nonexistent/stand-in-only.sock';
+
     private const string BRANCH = 'version-6';
 
     private const string BUILD_CALL = 'buildx build';
@@ -99,6 +105,7 @@ final readonly class StandInInstallation
             'JOURNAL_UPDATER_LOOP' => "{$this->folder}/state/journal-updater",
             'STAND_IN' => "{$this->folder}/stand-in",
             'PATH' => __DIR__.'/bin:'.getenv('PATH'),
+            'DOCKER_HOST' => self::NO_REAL_DOCKER,
         ]);
         $update->run();
 

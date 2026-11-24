@@ -6,6 +6,7 @@ namespace Tests\Feature\Mcp;
 
 use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process;
+use Tests\Support\Agents\HostContract;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -20,6 +21,14 @@ use Tests\TestCase;
 final class RelayTest extends TestCase
 {
     private const float WAIT_SECONDS = 15.0;
+
+    /**
+     * The headers of a call the Go relay (tools/journal-agent/cmd/journal-mcp) must send alike, and those of them whose
+     * value differs on every call.
+     */
+    private const array COMPARED_HEADERS = ['authorization', 'content-type', 'mcp-', 'x-journal-'];
+
+    private const array VARYING_HEADERS = ['x-journal-call-id', 'x-journal-call-issued-at', 'x-journal-call-signature'];
 
     private int $port;
 
@@ -59,6 +68,24 @@ final class RelayTest extends TestCase
         $this->assertTrue($lines[2]['result']['signed']);
         $this->assertSame('2025-11-25', $lines[1]['result']['protocol']);
         $this->assertCount(4, $this->serverCalls());
+    }
+
+    public function test_the_calls_it_sends_and_the_lines_it_prints_hold_to_the_contract_the_go_relay_shares(): void
+    {
+        $this->startServer();
+        $frames = [
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}',
+            '{"jsonrpc":"2.0","method":"notifications/initialized"}',
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}',
+        ];
+
+        $printed = $this->relay($frames);
+
+        HostContract::of('relays/mcp-exchange.json')->assertHolds([
+            'frames' => $frames,
+            'calls' => $this->comparableCalls(),
+            'printed' => $printed,
+        ], []);
     }
 
     public function test_a_stopped_server_gives_one_unavailable_error_and_the_next_frame_works_once_it_answers(): void
@@ -187,6 +214,43 @@ final class RelayTest extends TestCase
             fn (string $line): array => json_decode($line, true),
             file($this->serverLog, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [],
         );
+    }
+
+    /**
+     * Each call as both relays must send it: its path, its body and the compared headers, a varying value written as
+     * the word varies; in the order of their methods, since the relays may send at once.
+     *
+     * @return list<array{path: string, body: mixed, headers: array<string, string>}>
+     */
+    private function comparableCalls(): array
+    {
+        $calls = array_map(fn (array $call): array => [
+            'path' => $call['path'],
+            'body' => json_decode($call['body'], true, flags: JSON_THROW_ON_ERROR),
+            'headers' => $this->comparedHeaders($call['headers']),
+        ], $this->serverCalls());
+        usort($calls, fn (array $first, array $second) => strcmp($first['body']['method'], $second['body']['method']));
+
+        return $calls;
+    }
+
+    /**
+     * @param  array<string, string>  $headers
+     * @return array<string, string>
+     */
+    private function comparedHeaders(array $headers): array
+    {
+        $compared = [];
+
+        foreach ($headers as $name => $value) {
+            if (array_any(self::COMPARED_HEADERS, fn (string $prefix) => str_starts_with($name, $prefix))) {
+                $compared[$name] = in_array($name, self::VARYING_HEADERS, true) ? 'varies' : $value;
+            }
+        }
+
+        ksort($compared);
+
+        return $compared;
     }
 
     /**

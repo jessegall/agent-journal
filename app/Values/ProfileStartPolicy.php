@@ -18,15 +18,13 @@ final readonly class ProfileStartPolicy
 
     public const string HELPER_IMAGE = 'journal-helper';
 
-    public const array FIELDS = ['driver', 'allowedModels', 'access', 'stopConditions', 'execution'];
+    public const array FIELDS = ['preferredDriver', 'access', 'stopConditions', 'execution'];
 
     /**
-     * @param  list<string>  $allowedModels
+     * @param  string|null  $preferredDriver  the driver family a start preselects; any start may choose another
      */
     public function __construct(
-        public string|null $driver,
-        public bool $driverPinned,
-        public array $allowedModels,
+        public string|null $preferredDriver,
         public AccessPolicy $access,
         public StopConditions $stopConditions,
         public ExecutionPolicy $execution,
@@ -35,22 +33,12 @@ final readonly class ProfileStartPolicy
     ) {}
 
     /**
-     * The global defaults of the type for a driver, pinned or open: every policy field from the defaults.
-     *
-     * @param  list<string>  $allowedModels
+     * The global defaults of the type for a preferred driver: every policy field from the defaults.
      */
-    public static function defaultsFor(
-        ProfileBase $type,
-        string|null $driver,
-        bool $driverPinned,
-        array $allowedModels,
-        string $configurationHash,
-    ): self {
-
+    public static function defaultsFor(ProfileBase $type, string|null $preferredDriver, string $configurationHash): self
+    {
         return new self(
-            $driver,
-            $driverPinned,
-            $allowedModels,
+            $preferredDriver,
             $type->defaultAccess(),
             StopConditions::make($type->defaultStopConditions()),
             self::defaultExecution($type),

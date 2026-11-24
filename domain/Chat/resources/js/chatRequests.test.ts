@@ -1,0 +1,75 @@
+// @vitest-environment happy-dom
+import { mount } from '@vue/test-utils';
+import { describe, it, vi } from 'vitest';
+import type { ConversationData } from '@generated/types/chat';
+import { holdsContract, RECORDED } from '@kit/testing/pageRequests';
+import type { SentRequest } from '@kit/testing/pageRequests';
+
+const sent: SentRequest[] = vi.hoisted(() => []);
+
+vi.mock('@inertiajs/vue3', async () => (await import('@kit/testing/pageRequests')).recordingInertia(sent));
+vi.mock('@kit/requestId', () => ({ newRequestId: () => 'request-1' }));
+
+const { default: ChatRoster } = await import('./pages/chat/partials/ChatRoster.vue');
+const { default: CreateChatForm } = await import('./pages/chat/partials/CreateChatForm.vue');
+const { toggleReaction } = await import('./reactions');
+const { useConversationIntents } = await import('./composables/useConversationIntents');
+
+const member = `user:${RECORDED.member}`;
+
+const conversation = {
+    inboxId: RECORDED.inbox,
+    viewer: 'user:owner',
+    participants: [
+        { actor: 'user:owner', label: 'Ada', driver: null, role: 'owner' },
+        { actor: member, label: 'Bea', driver: null, role: 'member' },
+    ],
+    capabilities: { add: true, remove: true, transfer: true, leave: false, close: true },
+} as unknown as ConversationData;
+
+function last(): SentRequest | undefined {
+    return sent.at(-1);
+}
+
+describe('the Inertia posts of the chat, as the page sends them', () => {
+    it('sends a message', () => {
+        const owner = useConversationIntents('chat-requests');
+        const intent = owner.beginSend({
+            draftKey: 'chat-requests',
+            text: 'Hello',
+            agent: null,
+            expectedSessionId: null,
+            expectedGeneration: 0,
+            inboxId: RECORDED.inbox,
+        });
+        owner.submit(intent, 'conversation');
+
+        holdsContract('chat-send', last());
+    });
+
+    it('reacts to a message', () => {
+        toggleReaction(RECORDED.inbox, RECORDED.message, '👍', 'conversation');
+
+        holdsContract('chat-react', last());
+    });
+
+    it('opens a group chat', async () => {
+        const form = mount(CreateChatForm);
+        await form.find('input').setValue('Design');
+        await form.find('form').trigger('submit');
+
+        holdsContract('chat-create-group', last());
+    });
+
+    it('removes a member, makes a member owner and closes the chat', async () => {
+        const roster = mount(ChatRoster, { props: { conversation, conversationProp: 'conversation' } });
+        const press = (label: string) => roster.findAll('button').find((button) => button.text() === label)?.trigger('click');
+
+        await press('Remove');
+        holdsContract('chat-remove-member', last());
+        await press('Make owner');
+        holdsContract('chat-transfer', last());
+        await press('Close chat');
+        holdsContract('chat-close', last());
+    });
+});

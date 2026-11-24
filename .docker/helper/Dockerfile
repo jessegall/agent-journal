@@ -39,10 +39,9 @@ COPY --chown=root:root tools/journal-check/journal-check /opt/journal/bin/journa
 COPY --from=protected-start --chown=root:root /out/journal-init /out/journal-exec /out/journal-shell /opt/journal/bin/
 # Claude Code takes a shell only by the name bash: the shell bridge under that name hands every command to the executor.
 COPY --from=protected-start --chown=root:root /out/journal-shell /opt/journal/shell/bash
-# Claude Code's managed policy: its file tools never reach the account folder, and no project, user or launch setting
-# adds a rule, a hook or an MCP server (docs/accounts/claude-integration.md, section Managed policy).
-COPY --chown=root:root .docker/helper/claude-managed-settings.json /etc/claude-code/managed-settings.json
-RUN chmod 0555 /opt/journal/bin/* /opt/journal/shell/bash && chmod 0444 /etc/claude-code/managed-settings.json
+# Root owns the start programs and the shell bridge, and a session can only run them. Claude Code's managed policy is
+# handed with each start, never built in (docs/accounts/claude-integration.md, section Managed policy).
+RUN chmod 0555 /opt/journal/bin/* /opt/journal/shell/bash
 
 # The program's user 10001 alone reads the sign-in; under the protected-account profile the commands the model runs go
 # through the executor's user 10002, and the init drops to 10003. The program and the executor share the workspace

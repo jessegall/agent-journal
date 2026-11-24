@@ -23,6 +23,7 @@ final class RunSnapshotData extends Data
         public readonly int $sequence,
         public readonly string $mode,
         public readonly string $lifecycle,
+        public readonly bool $isRunning,
         #[DataCollectionOf(PartSnapshotData::class)]
         public readonly array $parts,
     ) {}

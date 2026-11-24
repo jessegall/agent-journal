@@ -33,10 +33,8 @@ final readonly class ProfileDrivers implements ProfileSelections
         $defaults = new ProfileDefaults(
             $profile->key,
             $snapshot->revision,
-            $start->driver,
-            $start->driverPinned,
-            $snapshot->model,
-            $start->allowedModels,
+            $start->preferredDriver,
+            $snapshot->preferredTier,
             $snapshot->base->defaultDriverType,
         );
 

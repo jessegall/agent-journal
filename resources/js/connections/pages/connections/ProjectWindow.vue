@@ -3,6 +3,7 @@ import type { ProjectTreeEntryData, ProjectWindowData } from '@generated/types/c
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
 import RowSkeleton from '@kit/RowSkeleton';
+import SwitchCase from '@kit/SwitchCase';
 import { useFileOpener } from '@kit/fileOpener';
 import ProjectTree from '@kit/ProjectTree';
 import { useWindowReload } from '@kit/useWindowQuery';
@@ -37,6 +38,12 @@ const { gaveUp, retry, restart } = usePendingPoll(
     () => props.data.state === 'pending' || isLoadingIn(props.data.entries),
     ask,
 );
+/**
+ * What the window shows: the reading placeholder while the host has not answered, or the project's state, whose tree
+ * shows for every state without a look of its own.
+ */
+const shown = computed(() => (props.data.state === 'pending' && !gaveUp.value ? 'reading' : props.data.state));
+
 const treeState = computed(() => (props.data.state === 'failed' || gaveUp.value ? 'failed' : 'ready'));
 
 function changeOpen(paths: string[]): void {
@@ -48,28 +55,30 @@ function changeOpen(paths: string[]): void {
 
 <template>
     <section aria-label="Project" class="flex h-full flex-col overflow-auto">
-        <template v-if="data.state === 'none'">
-            <EmptyState icon="folder" title="No project is connected">
-                <Button variant="bordered" size="small" :href="data.connectAddress">Connect a project</Button>
-            </EmptyState>
-        </template>
-        <template v-else-if="data.state === 'offline'">
-            <div role="alert" class="flex flex-col items-start gap-2 p-4 text-body text-text-2">
-                <p>{{ data.machineLabel }} is not connected, so {{ data.projectLabel }} cannot be read.</p>
-                <Button variant="bordered" size="small" @click="retry">Retry</Button>
-            </div>
-        </template>
-        <template v-else-if="data.state === 'pending' && !gaveUp">
-            <RowSkeleton label="Reading the project's files" :rows="6" />
-        </template>
-        <template v-else>
-            <ProjectTree
-                :entries="data.entries"
-                :state="treeState"
-                @update:open="changeOpen"
-                @open="openFile"
-                @retry="retry"
-            />
-        </template>
+        <SwitchCase :value="shown">
+            <template #none>
+                <EmptyState icon="folder" title="No project is connected">
+                    <Button variant="bordered" size="small" :href="data.connectAddress">Connect a project</Button>
+                </EmptyState>
+            </template>
+            <template #offline>
+                <div role="alert" class="flex flex-col items-start gap-2 p-4 text-body text-text-2">
+                    <p>{{ data.machineLabel }} is not connected, so {{ data.projectLabel }} cannot be read.</p>
+                    <Button variant="bordered" size="small" @click="retry">Retry</Button>
+                </div>
+            </template>
+            <template #reading>
+                <RowSkeleton label="Reading the project's files" :rows="6" />
+            </template>
+            <template #default>
+                <ProjectTree
+                    :entries="data.entries"
+                    :state="treeState"
+                    @update:open="changeOpen"
+                    @open="openFile"
+                    @retry="retry"
+                />
+            </template>
+        </SwitchCase>
     </section>
 </template>

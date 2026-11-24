@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
+use App\Enums\ModelTier;
 use App\Contracts\Sessions\ProfileResolver;
 use App\CoreApi;
 use App\Exceptions\ProfileKeyInvalid;
@@ -60,7 +61,7 @@ final class ProfilesExportsTest extends TestCase
             'revision' => 1,
             'base' => ProfileBase::readOnlyHelper(),
             'instructions' => 'Review the change.',
-            'model' => 'opus',
+            'preferredTier' => ModelTier::Inventive,
             'skillAllowlist' => null,
             'requiredSkills' => [],
             'start' => TestStartPolicies::for(ProfileBase::readOnlyHelper()),

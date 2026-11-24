@@ -5,6 +5,7 @@ import { CHECK_READ_MILLISECONDS, CHECK_WAIT_MILLISECONDS, useStatusCheck } from
 function statusReportedSecondsAgo(age: number | null): AgentStatusData {
   return {
     sessionState: "unknown",
+    isStartRefused: false,
     label: "Status unknown",
     reason: null,
     remedy: null,

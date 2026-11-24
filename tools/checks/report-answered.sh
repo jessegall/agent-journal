@@ -1,41 +1,48 @@
 #!/bin/sh
-# Watches one code-commandments report: passes while the issue waits, and once it is closed or commented on, fails
-# with the answer on every run for half an hour, so the journal has time to tell the agent; only then it removes its
-# own check. The first answered run is kept in .journal/report-checks/<issue>.
-#
-#   tools/checks/report-answered.sh <issue number> <check number>
+# Passes while a code-commandments issue waits; once answered it fails with the answer for half an hour, then removes
+# its own check.   tools/checks/report-answered.sh <issue number> <check number>
 set -eu
 
-issue=$1
-check=$2
-repository=jessegall/code-commandments
-answered_folder=.journal/report-checks
-answered_marker=$answered_folder/$issue
-keep_failing_seconds=1800
+main() {
+    local issue=$1 check=$2 marker answer
+    marker=.journal/report-checks/$issue
+    answer=$(read_answer "$issue")
+    if [ -z "$answer" ]; then
+        echo "Issue $issue waits for an answer."
+        exit 0
+    fi
+    show_answer "$issue" "$answer"
+    mark_answered "$marker"
+    remove_check_after_grace "$marker" "$check"
+    exit 1
+}
 
-answer=$(gh issue view "$issue" --repo "$repository" --json state,comments \
-    --jq 'if .state == "CLOSED" or (.comments | length) > 0 then "\(.state)\n\(.comments | map(.body) | join("\n---\n"))" else "" end')
+read_answer() {
+    gh issue view "$1" --repo jessegall/code-commandments --json state,comments \
+        --jq "$(cat tools/checks/answer-of-issue.jq)"
+}
 
-if [ -z "$answer" ]; then
-    echo "Issue $issue waits for an answer."
-    exit 0
-fi
+show_answer() {
+    echo "Issue $1 of jessegall/code-commandments is answered:"
+    echo "$2"
+    echo
+    echo "Act on the answer: upgrade the plugin when it names a release (journal plugin upgrade code-commandments --yes),"
+    echo "fix the code when the finding is upheld, then drop the report so its lines are judged again:"
+    echo "  .journal/plugins/code-commandments/bin/commandments-release report forget $1"
+}
 
-echo "Issue $issue of $repository is answered:"
-echo "$answer"
-echo
-echo "Act on the answer: upgrade the plugin when it names a release (journal plugin upgrade code-commandments --yes),"
-echo "fix the code when the finding is upheld, then drop the report so its lines are judged again:"
-echo "  .journal/plugins/code-commandments/bin/commandments-release report forget $issue"
+# The first answered run is kept, so the check fails for half an hour and the journal can tell the agent.
+mark_answered() {
+    mkdir -p "$(dirname "$1")"
+    [ -f "$1" ] || date +%s > "$1"
+}
 
-mkdir -p "$answered_folder"
-if [ ! -f "$answered_marker" ]; then
-    date +%s > "$answered_marker"
-fi
+remove_check_after_grace() {
+    local answered_at
+    answered_at=$(cat "$1")
+    [ $(( $(date +%s) - answered_at )) -ge 1800 ] || return 0
+    journal check remove "$2" >/dev/null 2>&1 || echo "Check $2 could not remove itself: remove it with journal check remove $2."
+    rm -f "$1"
+}
 
-answered_at=$(cat "$answered_marker")
-if [ $(( $(date +%s) - answered_at )) -ge "$keep_failing_seconds" ]; then
-    journal check remove "$check" >/dev/null 2>&1 || echo "Check $check could not remove itself: remove it with journal check remove $check."
-    rm -f "$answered_marker"
-fi
-exit 1
+main "$@"

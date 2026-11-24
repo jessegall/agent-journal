@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Enums\ModelTier;
+
 /**
  * One family of drivers, such as Claude Code, which a terminal and a headless driver share: its name as users read
  * it, the provider that runs it and the name the protected host knows it by.
@@ -16,8 +18,8 @@ final readonly class DriverFamily
      * @param  string  $hostName  the name the protected host knows the family by, as its profiles and start protocol write it
      * @param  bool  $isolatesHooksPerSession  whether the family's drivers scope their hooks to one session, as a connected
      *                                         project folder needs to run it isolated
-     * @param  list<string>  $models  the models the family's drivers run, cheapest first, offered at a start whose
-     *                                profile allows any model
+     * @param  list<string>  $models  the models the family's drivers run, one per tier, cheapest first; every one
+     *                                can be chosen at any start
      */
     public function __construct(
         public string $key,
@@ -27,4 +29,12 @@ final readonly class DriverFamily
         public bool $isolatesHooksPerSession,
         public array $models,
     ) {}
+
+    /**
+     * The family's model for work of a tier: the default model of a start whose profile prefers that tier.
+     */
+    public function modelAt(ModelTier $tier): string
+    {
+        return $this->models[$tier->value - 1];
+    }
 }

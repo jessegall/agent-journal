@@ -59,6 +59,17 @@ function middleOf(prerequisiteId: string, dependentId: string): { x: number; y: 
 function isLit(edge: TaskGraphEdge): boolean {
     return props.lit.has(edge.prerequisiteId) && props.lit.has(edge.dependentId);
 }
+
+/**
+ * An edge the change adds is the thickest, a lit edge thicker than the rest.
+ */
+function strokeWidthOf(edge: TaskGraphEdge): number {
+    if (edge.mark === 'added') {
+        return 3;
+    }
+
+    return isLit(edge) ? 2 : 1;
+}
 </script>
 
 <template>
@@ -78,7 +89,7 @@ function isLit(edge: TaskGraphEdge): boolean {
                         :marker-end="`url(#${markerId})`"
                         :data-edge="`${edge.prerequisiteId}>${edge.dependentId}`"
                         :data-mark="edge.mark || undefined"
-                        :stroke-width="edge.mark === 'added' ? 3 : isLit(edge) ? 2 : 1"
+                        :stroke-width="strokeWidthOf(edge)"
                         :stroke-dasharray="edge.mark === 'removed' ? '5 4' : undefined"
                         :class="edge.mark !== '' || isLit(edge) ? 'text-text' : 'text-border-3'"
                     />

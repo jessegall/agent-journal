@@ -18,6 +18,8 @@ export interface TabsGroup {
     tabId: (value: string) => string;
     panelId: (value: string) => string;
     line: Ref<'brand' | 'quiet'>;
+    /** Whether each tab keeps a least width of 56 px, as a window's tab strip does; a record's tabs fit their label. */
+    hasLeastWidth: Ref<boolean>;
 }
 
 export const tabsKey: InjectionKey<TabsGroup> = Symbol('tabs');

@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
+import SwitchCase from '@kit/SwitchCase';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { task as taskRoute } from '@generated/routes/tasks';
 import type { TaskWaitActionsData, TaskWaitItemData, TaskWaitsData } from '@generated/types/tasks';
@@ -150,22 +151,24 @@ function spoken(direction: 'waitsFor' | 'holdsUp', item: TaskWaitItemData): stri
                                 class="flex flex-wrap items-center gap-x-2 text-small"
                                 :aria-label="spoken(direction, item)"
                             >
-                                <template v-if="item.type === 'task'">
-                                    <Link
-                                        :href="taskRoute.url({ task: item.number ?? '' })"
-                                        :data-task-number="item.number"
-                                        class="text-text underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text [overflow-wrap:anywhere]"
-                                        @click="rememberFollowedWait(number, item.number ?? '')"
-                                        >Task {{ item.number }} · {{ item.title }}</Link
-                                    >
-                                    <span class="text-text-3">{{ stateText(item) }}</span>
-                                </template>
-                                <template v-else-if="item.type === 'removed'">
-                                    <span class="text-text-2">Removed task</span>
-                                </template>
-                                <template v-else>
-                                    <span class="text-text-2">A prerequisite you cannot see</span>
-                                </template>
+                                <SwitchCase :value="item.type">
+                                    <template #task>
+                                        <Link
+                                            :href="taskRoute.url({ task: item.number ?? '' })"
+                                            :data-task-number="item.number"
+                                            class="text-text underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text [overflow-wrap:anywhere]"
+                                            @click="rememberFollowedWait(number, item.number ?? '')"
+                                            >Task {{ item.number }} · {{ item.title }}</Link
+                                        >
+                                        <span class="text-text-3">{{ stateText(item) }}</span>
+                                    </template>
+                                    <template #removed>
+                                        <span class="text-text-2">Removed task</span>
+                                    </template>
+                                    <template #default>
+                                        <span class="text-text-2">A prerequisite you cannot see</span>
+                                    </template>
+                                </SwitchCase>
                                 <span class="text-text-2">{{ metText(item) }}</span>
                                 <template
                                     v-if="direction === 'waitsFor' && item.number !== undefined"

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Enums\ModelTier;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Models\Agents\Agent;
 use App\Support\BuiltInAuthorizations;
@@ -55,7 +56,7 @@ final class TestStartAuthority
             'revision' => 1,
             'base' => $type,
             'instructions' => 'Work as the test asks.',
-            'model' => 'opus',
+            'preferredTier' => ModelTier::Inventive,
             'skillAllowlist' => null,
             'requiredSkills' => [],
             'start' => TestStartPolicies::for($type),

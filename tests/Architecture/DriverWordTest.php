@@ -65,7 +65,6 @@ final class DriverWordTest extends TestCase
         'app/Support/Classification/TreeClassifier.php',
         'app/Support/CommandRuleRegistry.php',
         'app/Support/ExecutableCheck.php',
-        'app/Support/Execution/BuiltinSteps.php',
         'app/Support/Execution/Supervisor.php',
         'app/Support/Explanations.php',
         'app/Support/GatewayEndpoint.php',

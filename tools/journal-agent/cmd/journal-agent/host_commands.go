@@ -119,6 +119,8 @@ func serve(arguments []string) error {
 	protectedTrial := flags.String("protected-trial", "", "drivers on the protected-account trial, by key, split by commas")
 	sessionJournal := flags.String("session-journal", "",
 		"the journal's URL as a session container reaches it, when that differs from the host's own")
+	developmentPrograms := flags.String("development-programs", os.Getenv("JOURNAL_DEVELOPMENT_PROGRAMS"),
+		"local development only: a daemon folder of the checkout's builds of the image's programs, mounted over them")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -162,7 +164,8 @@ func serve(arguments []string) error {
 	}
 	prerequisites := localPrerequisites(*stateFolder, *installationFolder)
 	if arrangement.IsContained() {
-		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
+		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage,
+			DevelopmentPrograms: *developmentPrograms}
 		opener.containers, err = host.ContainersOn(*dockerSocket, rules)
 		if err != nil {
 			return err

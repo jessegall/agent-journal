@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { frontendNamesOf, reviewLine } from './frontendNames';
+import { frontendNamesOf, nameLine } from './frontendNames';
 
 describe('frontendNamesOf', () => {
     it('names exported declarations alone and file-local ones with their file', () => {
@@ -10,7 +10,7 @@ describe('frontendNamesOf', () => {
             'function clampWidth() {}',
         ].join('\n');
 
-        expect(frontendNamesOf('resources/js/panes.ts', source).map(reviewLine)).toEqual([
+        expect(frontendNamesOf('resources/js/panes.ts', source).map(nameLine)).toEqual([
             'function\tusePanes',
             'type\tPaneId',
             'variable\tpanes::width',
@@ -33,7 +33,7 @@ describe('frontendNamesOf', () => {
     it('gives a new name a review line the reviewed list does not hold yet', () => {
         const reviewed = new Set(['function\tusePanes']);
         const lines = frontendNamesOf('resources/js/panes.ts', 'export function usePanes() {}\nexport const x2 = 1;').map(
-            reviewLine,
+            nameLine,
         );
 
         expect(lines.filter((line) => !reviewed.has(line))).toEqual(['variable\tx2']);

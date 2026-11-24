@@ -16,7 +16,9 @@ use App\Support\Execution\NoStop;
 use App\Support\Execution\RecordedRunEvents;
 use App\Support\Execution\SpawnedProcess;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\Supervisor;
+use App\Pipelines\SuperviseRunPipeline;
+use App\Support\Execution\RunToSupervise;
+use App\Support\PipelineRunner;
 use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
@@ -75,7 +77,7 @@ final class PipelineAndStopTest extends TestCase
         $this->assertSame(self::INPUT_LINES, $this->output->stdoutOf($cat));
         $this->assertSame(self::MATCHING_LINES, $this->output->stdoutOf($grep));
         $this->assertSame(PartEndType::Exited, $cat->end->type);
-        $this->assertSame(0, $outcome->status);
+        $this->assertSame(0, $outcome->status->code);
     }
 
     #[TimeLimit(10, 'It pipes a 20 MiB file into head, which closes early.')]
@@ -145,11 +147,10 @@ final class PipelineAndStopTest extends TestCase
             TestRunAdmissions::of(line: $line, plan: $plan),
         );
 
-        return $this->app->make(Supervisor::class)->run(
-            new RecordedRunEvents($this->processRun, $this->output),
-            $plan,
-            $context,
-            $stop,
+        return $this->app->make(PipelineRunner::class)->run(
+            SuperviseRunPipeline::class,
+            new RunToSupervise(new RecordedRunEvents($this->processRun, $this->output), $plan, $context, $stop),
+            StepOutcome::class,
         );
     }
 

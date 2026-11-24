@@ -4,6 +4,7 @@ import Menu from '@kit/Menu';
 import MenuItem from '@kit/MenuItem';
 import MenuItemLabel from '@kit/MenuItemLabel';
 import type { PlanCardData } from '@generated/types/plans';
+import { planName } from '../../planLooks';
 import StartPlanForm from './StartPlanForm.vue';
 
 /**

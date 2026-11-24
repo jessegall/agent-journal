@@ -7,6 +7,7 @@ namespace Domain\Documents\Data;
 use App\Data\Comments\CommentList;
 use App\Data\Comments\TextCommentView;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Domain\Documents\Support\MarkdownBlocks;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -37,8 +38,8 @@ final class DocumentCommentsPartData extends Data
     ) {}
 
     /**
-     * The part for a document's text: every line of the body numbered from one, and the comments of its page that are
-     * anchored to lines of this revision.
+     * The part for a document's text: the body read into the blocks the reader draws, each with the lines it came from,
+     * and the comments of its page that are anchored to lines of this revision.
      *
      * @param  list<DocumentRecipientData>  $recipients
      */
@@ -50,15 +51,10 @@ final class DocumentCommentsPartData extends Data
         array $recipients = [],
         string|null $feedbackAddress = null,
     ): self {
-        $lines = explode("\n", $body);
-
         return new self(
             $revision,
             $target,
-            array_map(
-                fn (int $index) => new DocumentBlockData($index + 1, $lines[$index]),
-                array_keys($lines),
-            ),
+            MarkdownBlocks::of($body),
             array_values(array_map(
                 fn (TextCommentView $view) => new DocumentThreadData(
                     $view->comment->id,

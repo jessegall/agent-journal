@@ -94,8 +94,8 @@ and parent.
 
 ## Managed policy
 
-The agent image installs `.docker/helper/claude-managed-settings.json` at `/etc/claude-code/managed-settings.json`
-(root, mode 0444; the Linux managed path of the settings documentation). The program's user 10001 can read the account
+The journal hands each contained session `resources/agents/claude-code-managed-settings.json` with its start grant, and its container mounts that file read-only at `/etc/claude-code/managed-settings.json`
+(written by the host as root, mode 0644, and mounted read-only; the Linux managed path of the settings documentation). The program's user 10001 can read the account
 folder, so Claude Code's own file tools must never be pointed at it; the policy does that, and nothing a project, a
 user or a launch writes can loosen it:
 
@@ -142,7 +142,7 @@ and a workspace `.claude/settings.json` both allowed `Read(//home/**)` and `Edit
 
 Every action the model or a message to it can take in Claude Code 2.1.323 under the protected-account profile, how
 it is reached and what closes it. Lines are `tools/journal-agent/profiles/claude_code.go` unless named; the managed
-policy is `.docker/helper/claude-managed-settings.json` (section Managed policy).
+policy is `resources/agents/claude-code-managed-settings.json` (section Managed policy).
 
 | Route | Reached by | Closed by | Where |
 |---|---|---|---|

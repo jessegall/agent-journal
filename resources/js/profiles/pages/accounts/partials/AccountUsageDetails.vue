@@ -36,18 +36,16 @@ const facts = computed(() => [
 </script>
 
 <template>
-    <section
-        v-if="facts.length > 0"
-        class="flex flex-col gap-2"
-        aria-label="Usage"
-    >
-        <span class="text-text-3">Usage</span>
-        <template v-if="usage.monthCost !== undefined">
-            <p class="text-small text-text-2">
-                Estimated USD value observed by the journal. It covers only the
-                sessions the journal ran.
-            </p>
-        </template>
-        <AccountFactList :facts="facts" />
-    </section>
+    <template v-if="facts.length > 0">
+        <section class="flex flex-col gap-2" aria-label="Usage">
+            <span class="text-text-3">Usage</span>
+            <template v-if="usage.monthCost !== undefined">
+                <p class="text-small text-text-2">
+                    Estimated USD value observed by the journal. It covers only the
+                    sessions the journal ran.
+                </p>
+            </template>
+            <AccountFactList :facts="facts" />
+        </section>
+    </template>
 </template>

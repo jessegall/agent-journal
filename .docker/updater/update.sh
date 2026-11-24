@@ -168,9 +168,9 @@ run_migrations() {
 
 # An artisan command: "run" starts a container for it, before the app runs the new commit; "exec" uses the running app.
 artisan() {
-    local how=$1
+    local container=$1
     shift
-    case "$how" in
+    case "$container" in
         run) docker compose run --rm -T app php artisan "$@" ;;
         exec) docker compose exec -T app php artisan "$@" ;;
     esac
@@ -192,6 +192,7 @@ enroll_host() {
 # Install lines hand out the journal-agent host of this commit, signed with the operator's key on the updater volume.
 publish_release() {
     local version key source project
+    release_needed || return 0
     version=$(printf '%.12s' "$newest")
     key=$state/release.key
     source=$state/release-source
@@ -203,6 +204,11 @@ publish_release() {
         build_release "$project" "$source" "$version" "$key" &&
         rm -rf "$source" &&
         set_setting JOURNAL_RELEASE "$version"
+}
+
+# A release is built again only when the host program's sources changed, or none was published yet.
+release_needed() {
+    [ -z "$(setting JOURNAL_RELEASE)" ] || ! has_installed_commit || changed_files | grep -q '^tools/journal-agent/'
 }
 
 # Builds the release in a Go container from a clone of the commit: build_release <project> <clone> <version> <key>
@@ -218,14 +224,14 @@ build_release() {
 
 # The new app container starts beside the old one, which stops only once the new one is healthy.
 roll_app() {
-    local old new
-    old=$(docker compose ps -q app)
-    [ -n "$old" ] || return 0
+    local old_container new_container
+    old_container=$(docker compose ps -q app)
+    [ -n "$old_container" ] || return 0
     docker compose up -d --no-deps --no-recreate --scale app=2 app &&
-        new=$(docker compose ps -q app | grep -v "$old") &&
-        wait_healthy "$new" &&
-        docker stop "$old" >/dev/null &&
-        docker rm "$old" >/dev/null &&
+        new_container=$(docker compose ps -q app | grep -v "$old_container") &&
+        wait_healthy "$new_container" &&
+        docker stop "$old_container" >/dev/null &&
+        docker rm "$old_container" >/dev/null &&
         docker compose up -d --no-deps --no-recreate --scale app=1 app
 }
 
@@ -267,7 +273,7 @@ check_front_door() {
         sleep 2
     done
     if curl -fsS -H 'X-Forwarded-Proto: https' "$front/login" | grep -q 'http://[^"]*/build/'; then
-        echo "a page asked for over HTTPS links its assets over http"
+        echo "the login page served over HTTPS links its assets over plain http"
         return 1
     fi
 }

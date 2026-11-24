@@ -1,33 +1,63 @@
 #!/bin/sh
-# Development only: builds journal-agent for the local containers on this machine, with Go's own caches, whenever a Go
-# file under tools/journal-agent changes, and restarts the running services that run it. A change reaches the local
-# host in seconds with no image build: compose.override.yaml puts .build/dev/bin first on those services' PATH.
-#
-#   sh scripts/dev-watch-host.sh          builds now, then again on every change, until stopped
-#   sh scripts/dev-watch-host.sh --once   builds once and restarts nothing (scripts/local-host.sh runs this)
+# Development only: builds journal-agent for the local containers whenever a Go file changes, and restarts the running
+# services on it.   sh scripts/dev-watch-host.sh [--once]   (--once builds once and restarts nothing)
 set -eu
-cd "$(dirname "$0")/.."
 
-architecture=$(docker info --format '{{.Architecture}}' | sed 's/x86_64/amd64/; s/aarch64/arm64/')
-binaries=.build/dev/bin
-built=.build/dev/built
-services="agent-host accounts"
-mkdir -p "$binaries"
-
-build() {
-    (cd tools/journal-agent &&
-        CGO_ENABLED=0 GOOS=linux GOARCH="$architecture" go build -o "../../$binaries/journal-agent.next" ./cmd/journal-agent)
-    mv "$binaries/journal-agent.next" "$binaries/journal-agent"
-    # The relays a session container runs, for a look at one outside its image.
-    (cd tools/journal-agent &&
-        CGO_ENABLED=0 GOOS=linux GOARCH="$architecture" go build -o "../../$binaries/" ./cmd/journal-hook ./cmd/journal-mcp)
-    touch "$built"
+main() {
+    local architecture binaries=.build/dev/bin built=.build/dev/built
+    cd "$(dirname "$0")/.."
+    architecture=$(docker_architecture)
+    mkdir -p "$binaries"
+    build_binaries "$architecture" "$binaries" "$built"
+    echo "Built journal-agent for linux/$architecture into $binaries."
+    [ "${1:-}" = --once ] && exit 0
+    watch_changes "$architecture" "$binaries" "$built"
 }
 
-# Only the services that are running are restarted; one that is stopped starts on the new binary by itself.
-restart() {
+docker_architecture() {
+    docker info --format '{{.Architecture}}' | sed 's/x86_64/amd64/; s/aarch64/arm64/'
+}
+
+# The agent image's own programs are built too: the local host mounts them over the image's copies.
+build_binaries() {
+    (cd tools/journal-agent &&
+        env CGO_ENABLED=0 GOOS=linux GOARCH="$1" go build -o "../../$2/journal-agent.next" ./cmd/journal-agent)
+    mv "$2/journal-agent.next" "$2/journal-agent"
+    mkdir -p .build/dev/protected
+    (cd tools/journal-agent &&
+        env CGO_ENABLED=0 GOOS=linux GOARCH="$1" go build -o ../../.build/dev/protected/ \
+            ./cmd/journal-init ./cmd/journal-exec ./cmd/journal-shell ./cmd/journal-hook ./cmd/journal-mcp)
+    touch "$3"
+}
+
+watch_changes() {
+    local changed
+    echo "Watching the Go files of tools/journal-agent."
+    while :; do
+        sleep 1
+        changed=$(find tools/journal-agent -name '*.go' -newer "$3" | head -n 1)
+        [ -n "$changed" ] || continue
+        echo "Changed: $changed"
+        rebuild "$@"
+    done
+}
+
+# A failed build keeps the running binary; the next change tries again.
+rebuild() {
+    if build_binaries "$@"; then
+        echo "Built journal-agent."
+        restart_services
+    else
+        touch "$3"
+        echo "The build failed; the running host keeps its binary."
+    fi
+}
+
+# Only running services are restarted; a stopped one starts on the new binary by itself.
+restart_services() {
+    local running service
     running=$(docker compose ps --services --status running)
-    for service in $services; do
+    for service in agent-host accounts; do
         if printf '%s\n' "$running" | grep -qx "$service"; then
             docker compose restart "$service" >/dev/null
             echo "Restarted $service."
@@ -35,22 +65,4 @@ restart() {
     done
 }
 
-build
-echo "Built journal-agent for linux/$architecture into $binaries."
-[ "${1:-}" = --once ] && exit 0
-
-echo "Watching tools/journal-agent for changes."
-while :; do
-    sleep 1
-    changed=$(find tools/journal-agent -name '*.go' -newer "$built" | head -n 1)
-    [ -n "$changed" ] || continue
-    echo "Changed: $changed"
-    if build; then
-        echo "Built journal-agent."
-        restart
-    else
-        # A failed build keeps the running binary; the next change tries again.
-        touch "$built"
-        echo "The build failed; the running host keeps its binary."
-    fi
-done
+main "$@"

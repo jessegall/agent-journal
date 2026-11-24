@@ -12,7 +12,6 @@ use App\Exceptions\StateEventReentry;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Agents\PendingAgentMessage;
 use App\Support\ActorContext;
-use App\Support\AgentMessageDelivery;
 use App\Support\AgentStacks;
 use App\Support\AttentionOrigin;
 use App\Support\Drivers\DriverReplies;
@@ -303,8 +302,10 @@ final class StateEventDeliveryTest extends TestCase
      */
     private function takeContext(): array
     {
-        return $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(AgentMessageDelivery::class)->takeAllFor($this->target->actorIdentity()),
-        );
+        $agent = $this->target->actorIdentity();
+        $waiting = PendingAgentMessage::query()->ownedBy($agent)->orderBy('created_at')->orderBy('id')->get();
+        PendingAgentMessage::query()->ownedBy($agent)->whereKey($waiting->modelKeys())->delete();
+
+        return array_values($waiting->flatMap(fn (PendingAgentMessage $message) => $message->lines)->all());
     }
 }

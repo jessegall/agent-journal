@@ -18,6 +18,7 @@ export function useWindowDrag(): {
         fromPaneId: string | null,
         onClick: () => void,
     ) => void;
+    grabToAdd: (add: (key: string) => void) => (event: PointerEvent, key: string) => void;
 } {
     const store = usePaneLayout();
     let release: (() => void) | null = null;
@@ -237,5 +238,12 @@ export function useWindowDrag(): {
 
     onBeforeUnmount(() => release?.());
 
-    return { grab };
+    /**
+     * The grab of a window from the add menu: a click adds it, a drag places it where it is dropped.
+     */
+    function grabToAdd(add: (key: string) => void): (event: PointerEvent, key: string) => void {
+        return (event, key) => grab(event, key, null, () => add(key));
+    }
+
+    return { grab, grabToAdd };
 }

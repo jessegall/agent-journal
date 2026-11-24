@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
+use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
@@ -89,6 +90,7 @@ final class ChatDomain extends Domain implements
     {
         return Exports::make()
             ->events(DockChanged::class, ChatReconcileMarked::class, ChatReconciled::class)
+            ->commands(OpenPairChatCommand::class)
             ->build();
     }
 

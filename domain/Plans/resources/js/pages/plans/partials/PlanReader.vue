@@ -27,6 +27,7 @@ const props = defineProps<{
     selectionMissing: boolean;
 }>();
 const card = computed(() => props.reader?.card);
+const holder = computed(() => card.value?.holder);
 
 const paragraphs = computed(() =>
     (props.reader?.brief ?? '')
@@ -56,11 +57,10 @@ const paragraphs = computed(() =>
                 class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-small text-text-3"
             >
                 <StateBadge v-bind="stateLook[card.state]" outlined />
-                <template v-if="card.holder">
+                <template v-if="holder">
                     <span class="[overflow-wrap:anywhere]"
-                        >Held by {{ card.holder.name }} ({{
-                            card.holder.type
-                        }}), assignment {{ card.holder.reference }}</span
+                        >Held by {{ holder.name }} ({{ holder.type }}), assignment
+                        {{ holder.reference }}</span
                     >
                 </template>
             </div>
@@ -86,7 +86,7 @@ const paragraphs = computed(() =>
                     :review="reader.review"
                     :number="card.number"
                     :state="card.state"
-                    :holder="card.holder"
+                    :holder="holder"
                 />
             </template>
             <template v-if="card.phase === undefined">

@@ -146,7 +146,7 @@ final readonly class ChatWindowResolver implements PageResolver
                 ? $this->messages->detail($question->answerId)
                 : Optional::create();
 
-            $asked['focusedQuestion'] = new FocusedQuestionData($question, $answer);
+            $asked['focusedQuestion'] = new FocusedQuestionData($question, $question->state->label(), $answer);
         }
 
         return $asked;

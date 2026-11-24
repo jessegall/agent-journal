@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Enums\ModelTier;
 use App\Data\Profiles\PolicyOverrideData;
 use App\Data\Profiles\ProfileConfigurationData;
 use App\Data\Profiles\ProposedProfileData;
@@ -90,6 +91,20 @@ final readonly class ProfileProposal
     }
 
     /**
+     * The tier a profile names, or its base type's when it names none; a number that is no tier refuses the proposal.
+     *
+     * @throws ProfileProposalRefused
+     */
+    private static function tier(string $key, int|null $tier, ProfileBase $base): ModelTier
+    {
+        if ($tier === null) {
+            return $base->tier;
+        }
+
+        return ModelTier::tryFrom($tier) ?? throw ProfileProposalRefused::unknownTier($key, $tier);
+    }
+
+    /**
      * @param  array<string, mixed>  $profile
      *
      * @throws ProfileProposalRefused
@@ -109,10 +124,8 @@ final readonly class ProfileProposal
             $fields->label ?? $key,
             ProfileBase::of($fields->base),
             $fields->instructions,
-            $fields->model,
-            $fields->driver === null ? null : $fields->driver,
-            $fields->driverPinned,
-            $fields->allowedModels,
+            self::tier($key, $fields->tier, ProfileBase::of($fields->base)),
+            $fields->preferredDriver,
             $fields->skillAllowlist,
             $fields->requiredSkills,
             $fields->container === null ? null : self::executionMode($fields->container),

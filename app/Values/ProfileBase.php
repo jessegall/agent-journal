@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Enums\ModelTier;
 use App\Enums\AccessType;
 use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
@@ -26,7 +27,7 @@ final readonly class ProfileBase
         public string $key,
         public string $label,
         public string $description,
-        public string $model,
+        public ModelTier $tier,
         public array $grants,
         public array $paths,
         public ExecutionModeType $executionMode,
@@ -53,7 +54,7 @@ final readonly class ProfileBase
             'main-agent',
             'Main agent',
             'Changes and runs the project on this machine, and coordinates the journal\'s work.',
-            'opus',
+            ModelTier::Inventive,
             [
                 ...self::looking(),
                 ...self::changing(),
@@ -83,7 +84,7 @@ final readonly class ProfileBase
             'read-only-helper',
             'Read-only helper',
             'Reads, searches and runs commands in a container, and changes no file of the project.',
-            'sonnet',
+            ModelTier::General,
             [
                 ...self::journalWork(),
                 AccessType::Execute,
@@ -111,7 +112,7 @@ final readonly class ProfileBase
             'writing-helper',
             'Writing helper',
             'Changes the project\'s files for one bounded job, in a container of its own.',
-            'sonnet',
+            ModelTier::General,
             [...self::journalWork(), ...self::running()],
             [HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()])],
             ExecutionModeType::RequiredContainer,

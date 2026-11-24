@@ -19,13 +19,16 @@ import type { LayoutData } from '@/types/generated';
 defineProps<{ layouts: LayoutData[] }>();
 
 const store = usePaneLayout();
-const { grab } = useWindowDrag();
+const { grabToAdd } = useWindowDrag();
+const grabbedToAdd = grabToAdd(add);
 const isHidden = ref(false);
 const isLayoutMenuOpen = ref(false);
 const isAdding = ref(false);
 const addButton = ref<{ $el: HTMLElement } | null>(null);
 const agentBar = ref<HTMLElement | null>(null);
 const addAnchor = computed(() => addButton.value?.$el ?? null);
+const layoutButton = ref<{ $el: HTMLElement } | null>(null);
+const layoutAnchor = computed(() => layoutButton.value?.$el ?? null);
 
 /** The information bar's height: it shows under this bar as soon as a window floats. */
 const INFORMATION_BAR_HEIGHT = 30;
@@ -71,10 +74,11 @@ function deskEdges(): DeskEdges {
             </template>
         </div>
         <Button
+            ref="layoutButton"
             variant="icon"
             aria-label="Layouts"
             title="Layouts"
-            aria-haspopup="menu"
+            aria-haspopup="dialog"
             :aria-expanded="isLayoutMenuOpen"
             @click="isLayoutMenuOpen = !isLayoutMenuOpen"
             ><Icon name="layout" :size="13"
@@ -96,13 +100,7 @@ function deskEdges(): DeskEdges {
             @click="isHidden = !isHidden"
             ><Icon name="minimize" :size="13"
         /></Button>
-        <template v-if="isLayoutMenuOpen">
-            <LayoutPicker
-                :layouts="layouts"
-                class="absolute top-[50px] right-[5px]"
-                @done="isLayoutMenuOpen = false"
-            />
-        </template>
+        <LayoutPicker v-model:open="isLayoutMenuOpen" :layouts="layouts" :anchor="layoutAnchor" />
         <AddWindowPopover
             v-model:open="isAdding"
             :windows="store.windows.value"
@@ -111,12 +109,7 @@ function deskEdges(): DeskEdges {
             hint="Enter opens it floating · drag a row onto Home to dock it"
             @add="add"
             @show="(key) => store.apply(showWindow(store.arrangement.value, key))"
-            @grab="
-                (event, key) => {
-                    isAdding = false;
-                    grab(event, key, null, () => add(key));
-                }
-            "
+            @grab="grabbedToAdd"
         />
     </div>
 </template>

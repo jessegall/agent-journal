@@ -8,7 +8,7 @@ import FormErrors from '@kit/FormErrors';
 import Icon from '@kit/Icon';
 import IconButton from '@kit/IconButton';
 import type { SequenceEditorPartData } from '@generated/types/sequences';
-import { canMove, emptyStep, errorsByStep, moveStep, moveTo, removeStep } from '../../sequenceDraft';
+import { canMove, emptyStep, errorsByStep, moveStep, moveTo, oppositeOf, removeStep } from '../../sequenceDraft';
 import type { Direction, FocusAfter } from '../../sequenceDraft';
 
 /**
@@ -65,7 +65,7 @@ function move(id: string, direction: Direction): void {
     steps.value = moveStep(steps.value, id, direction);
 
     void nextTick(() => {
-        const available: Direction = canMove(steps.value, id, direction) ? direction : direction === 'up' ? 'down' : 'up';
+        const available: Direction = canMove(steps.value, id, direction) ? direction : oppositeOf(direction);
 
         stepElement(id)?.querySelector<HTMLElement>(`[data-move="${available}"]`)?.focus();
     });

@@ -7,10 +7,8 @@ namespace App\Values;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverSourceType;
 use App\Exceptions\DefaultUnavailable;
-use App\Exceptions\DriverConflict;
 use App\Exceptions\DriverRequired;
 use App\Exceptions\DriverUnsupported;
-use App\Exceptions\ModelUnavailable;
 
 /**
  * The driver and concrete model a start runs, the model selection it asked for and where the driver came from.
@@ -35,14 +33,12 @@ final readonly class SelectedDriver
     }
 
     /**
-     * Applies D7: a driver the caller names wins unless the profile pins another, then the profile's driver, then
-     * the parent session's; the default model comes from the profile, and a named one must be allowed by it.
+     * A driver the caller names wins, then the profile's preferred driver, then the parent session's; a model the
+     * caller names wins, otherwise the driver family's model at the profile's preferred tier.
      *
      * @throws DriverRequired
-     * @throws DriverConflict
      * @throws DriverUnsupported
      * @throws DefaultUnavailable
-     * @throws ModelUnavailable
      */
     public static function resolve(
         string|null $driverKey,
@@ -54,14 +50,13 @@ final readonly class SelectedDriver
         [$driver, $driverSource] = self::driver($driverKey, $profile, $parentDriver, $drivers);
         $source = new SelectionSource($driverSource, $profile?->key, $profile?->revision);
 
-        return new self($driver, self::model($requested, $profile, $driver), $requested, $source);
+        return new self($driver, self::model($requested, $profile, $drivers->family($driver)), $requested, $source);
     }
 
     /**
      * @return array{0: string, 1: DriverSourceType}
      *
      * @throws DriverRequired
-     * @throws DriverConflict
      * @throws DriverUnsupported
      */
     private static function driver(
@@ -71,17 +66,11 @@ final readonly class SelectedDriver
         DriverCatalogue $drivers,
     ): array {
         if ($driverKey !== null) {
-            $driver = self::supported($driverKey, $drivers);
-
-            if ($profile !== null && $profile->driverPinned && $profile->driver !== $driver) {
-                throw DriverConflict::for($profile->key, $driver);
-            }
-
-            return [$driver, DriverSourceType::Explicit];
+            return [self::supported($driverKey, $drivers), DriverSourceType::Explicit];
         }
 
-        if ($profile?->driver !== null) {
-            return [$profile->driver, DriverSourceType::Profile];
+        if ($profile?->preferredDriver !== null) {
+            return [$profile->preferredDriver, DriverSourceType::Profile];
         }
 
         if ($parentDriver !== null) {
@@ -93,24 +82,14 @@ final readonly class SelectedDriver
 
     /**
      * @throws DefaultUnavailable
-     * @throws ModelUnavailable
      */
-    private static function model(
-        ModelSelection $requested,
-        ProfileDefaults|null $profile,
-        string $driver,
-    ): string {
-        $model = $requested->model;
-
-        if ($model === null) {
-            return $profile->defaultModel ?? throw DefaultUnavailable::forStart();
+    private static function model(ModelSelection $requested, ProfileDefaults|null $profile, DriverFamily $family): string
+    {
+        if ($requested->model !== null) {
+            return $requested->model;
         }
 
-        if ($profile !== null && ! $profile->allows($model)) {
-            throw ModelUnavailable::for($model, $driver);
-        }
-
-        return $model;
+        return $profile === null ? throw DefaultUnavailable::forStart() : $family->modelAt($profile->preferredTier);
     }
 
     /**

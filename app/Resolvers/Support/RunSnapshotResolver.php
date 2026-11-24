@@ -47,6 +47,7 @@ final readonly class RunSnapshotResolver
             'sequence' => $run->update_sequence,
             'mode' => $run->mode->value,
             'lifecycle' => $run->lifecycle->value,
+            'isRunning' => ! $run->lifecycle->isFinal(),
             'parts' => array_values($parts->map(fn (PartRun $part) => $this->partOf($part))->all()),
         ]);
     }

@@ -113,8 +113,8 @@ final class ProfileDraftTest extends TestCase
     private function proposal(): ProfileProposal
     {
         return ProfileProposal::fromConfiguration(['profiles' => [
-            'draft-test' => ['base' => 'writing-helper', 'model' => 'opus'],
-            'another-draft' => ['base' => 'writing-helper', 'model' => 'opus'],
+            'draft-test' => ['base' => 'writing-helper', 'tier' => 3],
+            'another-draft' => ['base' => 'writing-helper', 'tier' => 3],
         ]]);
     }
 }

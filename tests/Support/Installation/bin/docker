@@ -17,6 +17,8 @@ main() {
         save) save_archive "$@" ;;
         inspect) echo healthy ;;
         image) answer_image "$@" ;;
+        load) load_archive "$@" ;;
+        container) answer_container "$@" ;;
         compose) shift; answer_compose "$@" ;;
     esac
 }
@@ -60,12 +62,56 @@ image_digest() {
     printf 'image %s %s' "$1" "$(count_builds "$1")" | sha256sum | cut -d' ' -f1
 }
 
+# With $STAND_IN/daemon-images the stand-in is the agent daemon, holding the image ids that file lists.
 answer_image() {
     local last
     for last; do :; done
+    if [ -f "$STAND_IN/daemon-images" ]; then
+        answer_daemon_image "$@"
+        return
+    fi
     case "$2" in
         inspect) echo "sha256:$(image_digest "$last")" ;;
     esac
+}
+
+answer_daemon_image() {
+    local image
+    shift
+    case "$1" in
+        ls) cat "$STAND_IN/daemon-images" ;;
+        rm) for image; do sed -i.before "\|^$image\$|d" "$STAND_IN/daemon-images"; done; rm -f "$STAND_IN/daemon-images.before" ;;
+        inspect) inspect_daemon_images "$@" ;;
+    esac
+}
+
+# Fails when one of the images is not held; with --format it prints each held image's id.
+inspect_daemon_images() {
+    local image printing=false
+    shift
+    for image; do
+        case "$image" in
+            --format) printing=true; continue ;;
+            --*|'{{.Id}}') continue ;;
+        esac
+        grep -qx "$image" "$STAND_IN/daemon-images" || exit 1
+        $printing && echo "$image"
+    done
+    return 0
+}
+
+# Loading an archive holds the image its manifest names.
+load_archive() {
+    tar -xOf "$(option_after --input "$@")" manifest.json \
+        | sed -n 's#.*"Config": *"blobs/sha256/\([0-9a-f]*\)".*#sha256:\1#p' >> "$STAND_IN/daemon-images"
+}
+
+# A container runs on each image $STAND_IN/images-in-use lists.
+answer_container() {
+    local ancestor
+    ancestor=$(option_after --filter "$@")
+    grep -qx "${ancestor#ancestor=}" "$STAND_IN/images-in-use" 2>/dev/null && echo container-1
+    return 0
 }
 
 # What a command run in a well-built image prints, or how it ends.
@@ -81,6 +127,7 @@ answer_run() {
         *"--entrypoint stat "*/home/journal/.account/projects) echo "10001:10001 700" ;;
         *"--entrypoint stat "*) echo "root:root 555" ;;
         *"--entrypoint /opt/journal/bin/journal-hook "*) cat "$answers/hook-refusal.json" ;;
+        *"--entrypoint /opt/journal/bin/journal-mcp "*) cat "$answers/mcp-unreachable.json" ;;
         *"--entrypoint sh "*"command -v "* | *"--entrypoint sh "*"-name artisan"*) exit 1 ;;
     esac
 }

@@ -116,6 +116,10 @@ services:
     # scripts/local-host.sh names its image, data folder and socket group in .env.
     agent-docker:
         privileged: true
+        # The checkout's builds of the agent image's programs (scripts/dev-watch-host.sh), which the host mounts over
+        # the image's copies, so a change to journal-init or the shell bridge needs no image build.
+        volumes:
+            - ./.build/dev/protected:/srv/journal/development:ro
 
     # The Mac's Docker names an image by its manifest digest, not by the config digest the agent daemon pins, so the
     # services the Mac itself runs from the runner image take it by its build tag. The services that run journal-agent
@@ -134,6 +138,7 @@ services:
         image: journal-runner:build
         environment:
             PATH: *development-path
+            JOURNAL_DEVELOPMENT_PROGRAMS: /srv/journal/development
         volumes:
             - *development-binaries
     accounts:

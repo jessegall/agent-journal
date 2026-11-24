@@ -16,7 +16,10 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Support\Execution\RecordedRunEvents;
-use App\Support\Execution\Supervisor;
+use App\Pipelines\SuperviseRunPipeline;
+use App\Support\Execution\RunToSupervise;
+use App\Support\Execution\StepOutcome;
+use App\Support\PipelineRunner;
 use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;
 use App\Values\ArgumentGrammar;
@@ -82,7 +85,11 @@ final class StaleAdmissionTest extends TestCase
             'rule-revision-changed: printf was retired',
         );
 
-        $this->app->make(Supervisor::class)->run($events, $plan, $context);
+        $this->app->make(PipelineRunner::class)->run(
+            SuperviseRunPipeline::class,
+            new RunToSupervise($events, $plan, $context),
+            StepOutcome::class,
+        );
 
         $parts = PartRun::query()->where('process_run_id', $run->id)->orderBy('syntax_node')->get();
         $this->assertSame(LifecycleState::Ended, $parts[0]->lifecycle);

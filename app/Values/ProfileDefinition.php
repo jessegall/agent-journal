@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Enums\ModelTier;
 use App\Enums\InstancePolicy;
 use App\Support\Reflector;
 
@@ -27,7 +28,7 @@ final readonly class ProfileDefinition
         public string $label,
         public ProfileBase $base,
         public string $instructions,
-        public string $model,
+        public ModelTier $preferredTier,
         public array|null $skillAllowlist,
         public array $requiredSkills,
         public ProfileStartPolicy $start,

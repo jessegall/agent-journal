@@ -10,8 +10,8 @@ use App\Values\ProfileKey;
 use App\Values\ProfileSelection;
 
 /**
- * Resolves a start from a profile's current revision: its driver (asked for, the profile's own, or the parent
- * session's), its model by the profile's default and allowed models, and the policy it runs under.
+ * Resolves a start from a profile's current revision: its driver (asked for, the profile's preferred one, or the
+ * parent session's), its model (asked for, or the family's model at the profile's tier) and the policy it runs under.
  */
 interface ProfileSelections
 {

@@ -39,6 +39,14 @@ enum SignInState: string
         return in_array($this, self::live(), true);
     }
 
+    /**
+     * Whether the attempt still waits for the person to sign in: its process starts or shows the sign-in page.
+     */
+    public function isAwaitingSignIn(): bool
+    {
+        return $this === self::Starting || $this === self::Waiting;
+    }
+
     public function canComplete(): bool
     {
         return $this === self::Waiting || $this === self::Checking;

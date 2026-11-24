@@ -6,7 +6,8 @@ import IconButton from './IconButton.vue';
 import { tabsKey } from './tabs';
 
 /**
- * One tab of a Tabs list: --text-badge with .03em spacing, --text-3, padding 7 0 and a least width of 56 px; a long
+ * One tab of a Tabs list: --text-badge with .03em spacing, --text-3, padding 7 0, and in a window's tab strip a least
+ * width of 56 px; a long
  * label shrinks and ends in an ellipsis. The chosen tab is --text with an inset 1px bottom line (--brand for a page or
  * an active pane, --border-3 otherwise). Only the chosen tab is a tab stop. A closable tab shows a close button on
  * hover, selection or focus, and closes on Delete, Backspace or a middle click.
@@ -40,8 +41,9 @@ function middleClick(event: MouseEvent): void {
         :aria-selected="group?.active.value === value"
         :aria-controls="group?.panelId(value)"
         :tabindex="group?.active.value === value ? 0 : -1"
-        class="group/tab inline-flex min-w-14 shrink items-center gap-1.5 py-[7px] text-badge tracking-[0.03em] transition-colors duration-(--duration-hover) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-focus"
-        :class="
+        class="group/tab inline-flex shrink items-center gap-1.5 py-[7px] text-badge tracking-[0.03em] transition-colors duration-(--duration-hover) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-focus"
+        :class="[
+            { 'min-w-14': group?.hasLeastWidth.value },
             group?.active.value === value
                 ? [
                       'text-text',
@@ -49,8 +51,8 @@ function middleClick(event: MouseEvent): void {
                           ? 'shadow-[inset_0_-1px_0_var(--brand)]'
                           : 'shadow-[inset_0_-1px_0_var(--border-3)]',
                   ]
-                : 'text-text-3 hover:text-text-2'
-        "
+                : 'text-text-3 hover:text-text-2',
+        ]"
         @click="group?.select(value)"
         @auxclick="middleClick"
         @keydown="press"

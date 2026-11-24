@@ -29,6 +29,7 @@ function agentIn(sessionState: SessionState): AgentOptionData {
     needsAttention: false,
     status: {
       sessionState,
+      isStartRefused: false,
       label: "Verifying session",
       reason: "The journal is checking.",
       remedy: null,

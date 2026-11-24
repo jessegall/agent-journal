@@ -7,6 +7,8 @@ namespace App\Pipelines;
 use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Run\CheckPlanDigest;
 use App\Pipes\Run\ReportPartResults;
+use App\Pipes\Run\OpenRunChannel;
+use App\Pipes\Run\ReportRunEnd;
 use App\Pipes\Run\SuperviseRun;
 use App\Support\Run\FetchedAdmission;
 use App\Values\CommandReport;
@@ -26,7 +28,9 @@ final readonly class RunAdmittedLinePipeline implements PipelineDefinition
     {
         return [
             CheckPlanDigest::class,
+            OpenRunChannel::class,
             SuperviseRun::class,
+            ReportRunEnd::class,
             ReportPartResults::class,
         ];
     }

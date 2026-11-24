@@ -131,6 +131,7 @@ function attempt(
         isWaitingForAgents: false,
         isUnclaimed: false,
         state,
+        isAwaitingSignIn: state === 'starting' || state === 'waiting',
         expiresAt: '2026-11-21T12:00:00+00:00',
         refusal: null,
         ...fields,

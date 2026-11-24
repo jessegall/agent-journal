@@ -110,7 +110,7 @@ SCRIPT, ['tests' => [
         $source = new ScriptSource("ON STOP\nYIELD \"Check again.\"\nEND");
         $commands->run(new SaveProfileDraftCommand($profile, 0, $source));
         $proposal = ProfileProposal::fromConfiguration(['profiles' => [
-            $profile->key => ['base' => 'read-only-helper', 'model' => 'opus'],
+            $profile->key => ['base' => 'read-only-helper', 'tier' => 3],
         ]]);
         $commands->run(new ActivateProfilesCommand($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
 

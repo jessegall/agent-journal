@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Documents;
 
+use App\Contracts\Sessions\AgentDirectory;
+use App\Support\AgentOption;
 use App\Contracts\Navigation\RecordMenus;
 use App\Data\Comments\CommentList;
 use App\Data\Pages\RecordCard;
@@ -22,6 +24,8 @@ use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\DraftEditorPartData;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\RecordCommentsPartData;
+use Domain\Documents\Data\DocumentFeedbackPartData;
+use Domain\Documents\Data\DocumentRecipientData;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordLinksPartData;
 use Domain\Documents\Data\RecordReadsData;
@@ -42,7 +46,7 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class DocumentsShow extends DocumentsPage
 {
-    public function __construct(private RecordMenus $menus) {}
+    public function __construct(private RecordMenus $menus, private AgentDirectory $agents) {}
 
     /**
      * Each closure reads what one tab shows, only when that tab is chosen.
@@ -67,6 +71,13 @@ final readonly class DocumentsShow extends DocumentsPage
     ): LayoutPartData {
         $number = (int) $document->number;
         $label = "doc {$number}";
+        $feedback = DocumentFeedbackPartData::from([
+            'recipients' => array_map(
+                fn (AgentOption $agent) => new DocumentRecipientData($agent->agentId, $agent->name),
+                $this->agents->visible(),
+            ),
+            'address' => route('documents.ask-feedback', ['document' => $number], false),
+        ]);
 
         return DetailPage::make($document->title)
             ->above(LayoutPartData::text('label', "Doc {$number} · revision {$document->revision}", 'muted'))
@@ -75,12 +86,12 @@ final readonly class DocumentsShow extends DocumentsPage
                 'actions',
                 $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, (string) $number),
             ))
-            ->withStanding($this->editingOf($document, $editing))
+            ->withStanding(...$this->feedbackOf($feedback), ...$this->editingOf($document, $editing))
             ->withTabs(
                 PublicationTab::deferred(
                     'text',
                     'Text',
-                    fn () => $this->textOf($document, $label, $isPublic(), $comments(), $reads()),
+                    fn () => $this->textOf($document, $label, $feedback, $isPublic(), $comments(), $reads()),
                 ),
                 PublicationTab::deferred('history', 'History', fn () => $this->historyOf($number, $revisions())),
                 PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::native(
@@ -102,6 +113,7 @@ final readonly class DocumentsShow extends DocumentsPage
     private function textOf(
         DocumentView $document,
         string $label,
+        DocumentFeedbackPartData $feedback,
         bool $isPublic,
         CommentList $commentList,
         RecordReadsData $reads,
@@ -116,7 +128,14 @@ final readonly class DocumentsShow extends DocumentsPage
             );
         }
 
-        $lines = DocumentCommentsPartData::of($document->revision, $label, $document->body, $commentList);
+        $lines = DocumentCommentsPartData::of(
+            $document->revision,
+            $label,
+            $document->body,
+            $commentList,
+            $feedback->recipients,
+            $feedback->address,
+        );
 
         $parts[] = LayoutPartData::native('lines', LayoutNativeData::of('documents/DocumentComments', $lines));
 
@@ -133,15 +152,31 @@ final readonly class DocumentsShow extends DocumentsPage
     }
 
     /**
-     * What the viewer may do with the draft: edit their own in the native editor, recover someone else's they may
-     * recover, see who else edits it, or open it for editing while nobody holds it.
+     * Ask for feedback, while there is an agent to ask.
+     *
+     * @return list<LayoutPartData>
      */
-    private function editingOf(DocumentView $document, DraftState $editing): LayoutPartData
+    private function feedbackOf(DocumentFeedbackPartData $feedback): array
+    {
+        if ($feedback->recipients === []) {
+            return [];
+        }
+
+        return [LayoutPartData::native('feedback', LayoutNativeData::of('documents/DocumentFeedback', $feedback))];
+    }
+
+    /**
+     * What the viewer may do with the draft: edit their own in the native editor, recover someone else's they may
+     * recover, or see who else edits it; while nobody holds it, Edit in the actions menu opens it.
+     *
+     * @return list<LayoutPartData>
+     */
+    private function editingOf(DocumentView $document, DraftState $editing): array
     {
         if ($editing->state === EditingState::HeldByViewer && ! $editing->draft instanceof Optional) {
             $editor = DraftEditorPartData::from(['number' => $document->number, 'draft' => $editing->draft]);
 
-            return LayoutPartData::native('editing', LayoutNativeData::of('documents/DraftEditor', $editor));
+            return [LayoutPartData::native('editing', LayoutNativeData::of('documents/DraftEditor', $editor))];
         }
 
         if ($editing->state === EditingState::Held && ! $editing->held instanceof Optional) {
@@ -151,24 +186,14 @@ final readonly class DocumentsShow extends DocumentsPage
                 'held' => $editing->held,
             ]);
 
-            return LayoutPartData::native('editing', LayoutNativeData::of('documents/RecoverForm', $recovery));
+            return [LayoutPartData::native('editing', LayoutNativeData::of('documents/RecoverForm', $recovery))];
         }
 
         if ($editing->state === EditingState::Held) {
-            return LayoutPartData::notice('editing', 'info', "{$this->holderOf($editing)} is editing this document.");
+            return [LayoutPartData::notice('editing', 'info', "{$this->holderOf($editing)} is editing this document.")];
         }
 
-        return LayoutPartData::form(
-            'editing',
-            LayoutFormData::from(
-                [
-                    'method' => ActionMethod::Post,
-                    'href' => route('documents.open-document', ['document' => $document->number], false),
-                ],
-            ),
-            'inline',
-            LayoutPartData::action('send', 'Edit', LayoutActionData::submitting()),
-        );
+        return [];
     }
 
     /**

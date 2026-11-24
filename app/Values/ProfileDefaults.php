@@ -4,29 +4,20 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Enums\ModelTier;
 use App\Enums\DriverType;
 
 /**
- * What a profile decides about a start, as plain values from its owner: its driver (pinned or open), its default
- * driver type, its default model and the models it allows; an empty allowed list allows any model.
+ * What a profile prefers for a start, as plain values from its owner: the driver it preselects, the tier of work that
+ * names the default model, and its default driver type. Every driver and model can still be chosen.
  */
 final readonly class ProfileDefaults
 {
-    /**
-     * @param  list<string>  $allowedModels
-     */
     public function __construct(
         public string $key,
         public int $revision,
-        public string|null $driver,
-        public bool $driverPinned,
-        public string|null $defaultModel,
-        public array $allowedModels,
+        public string|null $preferredDriver,
+        public ModelTier $preferredTier,
         public DriverType $defaultDriverType,
     ) {}
-
-    public function allows(string $model): bool
-    {
-        return $this->allowedModels === [] || in_array($model, $this->allowedModels, true);
-    }
 }

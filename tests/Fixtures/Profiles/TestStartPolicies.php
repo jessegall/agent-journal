@@ -19,8 +19,6 @@ final class TestStartPolicies
         return ProfileStartPolicy::defaultsFor(
             $type,
             DefaultDrivers::CLAUDE_CODE,
-            true,
-            ['opus', 'sonnet'],
             hash('sha256', "test defaults of {$type->key}"),
         );
     }

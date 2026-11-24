@@ -57,3 +57,15 @@ func TestAContainedManifestMayMountTheSessionsFilesReadOnly(t *testing.T) {
 		t.Fatal("the session files mount was refused")
 	}
 }
+
+func TestAContainedManifestMayMountTheHandedManagedSettingsReadOnly(t *testing.T) {
+	mounts := []ContainerMount{
+		{Type: MountVolume, Source: "journal-workspace-s1", Target: "/workspace", Writable: true},
+		{Type: MountDaemonBind, Source: "/srv/journal/sessions/s1", Target: SessionFilesTarget},
+		{Type: MountDaemonBind, Source: "/srv/journal/sessions/s1/managed/managed-settings.json", Target: ManagedSettingsTarget},
+	}
+
+	if !containedRules.permit(mounts) {
+		t.Fatal("the managed settings mount was refused")
+	}
+}

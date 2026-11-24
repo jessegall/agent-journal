@@ -18,6 +18,7 @@ final class FocusedQuestionData extends Data
 {
     public function __construct(
         public readonly MessageView $question,
+        public readonly string $stateLabel,
         public readonly MessageView|Optional $answer = new Optional(),
     ) {}
 }

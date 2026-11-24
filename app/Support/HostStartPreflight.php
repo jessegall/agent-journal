@@ -14,9 +14,9 @@ use App\Values\BoundTarget;
 use App\Values\StartProposal;
 
 /**
- * Whether a proposed start can run, answered on the server before anything stops or a grant is allocated: the
- * profile's pinned driver and allowed models, and a connected host that speaks this protocol and declared the
- * driver, build, placement and driver type. Admission, Switch and Home ask it alike.
+ * Whether a proposed start can run, answered on the server before anything stops or a grant is allocated: a connected
+ * host that speaks this protocol and declared the driver, build, placement and driver type. Admission, Switch and Home
+ * ask it alike; a profile only prefers a driver and a model, so it refuses none.
  */
 final readonly class HostStartPreflight implements StartPreflight
 {
@@ -24,21 +24,11 @@ final readonly class HostStartPreflight implements StartPreflight
 
     public function refusals(StartProposal $proposal): array
     {
-        $refusals = [];
-
-        if ($proposal->isDriverPinnedAway()) {
-            $refusals[] = StartPreflightRefusal::DriverPinned;
-        }
-
-        if ($proposal->isModelRefused()) {
-            $refusals[] = StartPreflightRefusal::ModelNotAllowed;
-        }
-
         if ($proposal->isContained() && ! $this->runsContained($proposal)) {
-            return [...$refusals, StartPreflightRefusal::DriverNotContainable];
+            return [StartPreflightRefusal::DriverNotContainable];
         }
 
-        return [...$refusals, ...$this->hostRefusals($proposal)];
+        return $this->hostRefusals($proposal);
     }
 
     public function assertAdmitted(StartProposal $proposal): void

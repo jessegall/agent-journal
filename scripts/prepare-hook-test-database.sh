@@ -1,17 +1,27 @@
 #!/usr/bin/env sh
-# Creates the dedicated Postgres test databases in the compose postgres service, once each: journal_hooks_test for the
-# agents' own runs and journal_hooks_test_checkpoint for the journal's checkpoint runs, so the two never share worker
-# databases. It reads the user from the container's own POSTGRES_USER, so no credential is printed or passed here.
+# Creates the Postgres test databases of the agents' runs and of the journal's checkpoint runs, once each, as the
+# postgres service's own user, so no credential is passed here.   sh scripts/prepare-hook-test-database.sh
 set -eu
 
-for database in journal_hooks_test journal_hooks_test_checkpoint; do
-    exists=$(docker compose exec -T postgres sh -c "psql -U \"\$POSTGRES_USER\" -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname = '${database}'\"")
+main() {
+    local database
+    for database in journal_hooks_test journal_hooks_test_checkpoint; do
+        create_database "$database"
+    done
+}
 
-    if [ "$exists" = "1" ]; then
-        echo "The test database ${database} already exists."
-        continue
+create_database() {
+    if [ "$(database_exists "$1")" = "1" ]; then
+        echo "The test database $1 already exists."
+        return
     fi
+    docker compose exec -T postgres sh -c "createdb -U \"\$POSTGRES_USER\" $1"
+    echo "The test database $1 was created."
+}
 
-    docker compose exec -T postgres sh -c "createdb -U \"\$POSTGRES_USER\" ${database}"
-    echo "The test database ${database} was created."
-done
+database_exists() {
+    docker compose exec -T postgres sh -c \
+        "psql -U \"\$POSTGRES_USER\" -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname = '$1'\""
+}
+
+main "$@"

@@ -841,7 +841,6 @@ use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\DomainDisabled;
 use App\Exceptions\DraftAnswerMissing;
 use App\Exceptions\DriverCapabilityUnsupported;
-use App\Exceptions\DriverConflict;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Exceptions\DriverKeyInvalid;
 use App\Exceptions\DriverRegisteredTwice;
@@ -907,7 +906,6 @@ use App\Exceptions\MiddlewareSwallowedFailure;
 use App\Exceptions\ModelMissing;
 use App\Exceptions\ModelReadAllRefused;
 use App\Exceptions\ModelRequired;
-use App\Exceptions\ModelUnavailable;
 use App\Exceptions\MonotonicClockWentBack;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NestedCommandFailureIgnored;
@@ -2977,10 +2975,8 @@ final class CoreApi
                 AccountContainerUnsupported::class,
                 HostCapabilityUnsupported::class,
                 ModelRequired::class,
-                ModelUnavailable::class,
                 DefaultUnavailable::class,
                 DriverRequired::class,
-                DriverConflict::class,
                 DriverUnsupported::class,
                 StartRequestConflict::class,
                 AgentBusy::class,
