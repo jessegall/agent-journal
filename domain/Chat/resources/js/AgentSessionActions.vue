@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
 import { router, usePage } from "@inertiajs/vue3";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { newRequestId } from "@kit/requestId";
 import type { AgentOptionData, StatusActionData } from "@generated/types/chat";
 import {
@@ -13,7 +13,6 @@ import {
   retry,
   interruptTurn,
   stopSession,
-  terminalPage,
 } from "@kit/sessionStarts";
 import { keyedPost } from "@kit/keyedPost";
 import { sendPageAction } from "@kit/pageActions";
@@ -21,7 +20,7 @@ import { readPage } from "@kit/pageReads";
 import { useOpenSessionDialog } from "./composables/useChosenAgent";
 import { useStatusCheck } from "./composables/useStatusCheck";
 import { useSwitchOperation } from "./composables/useSwitchOperation";
-import { openTerminalBesideChat } from "./composables/useTerminalDock";
+import { openAgentTerminal } from "./composables/useTerminalModal";
 import SessionAction from "./SessionAction.vue";
 import SessionForm from "./SessionForm.vue";
 import StopConfirmation from "./StopConfirmation.vue";
@@ -237,32 +236,16 @@ function interrupt(): void {
   );
 }
 
-/**
- * Opens the agent's terminal beside the chat; with no chat window to take it, its own page opens instead.
- */
 function openTerminal(): void {
-  if (
-    !openTerminalBesideChat(
-      props.agent.id,
-      props.agent.sessionId,
-      props.agent.sessionGeneration,
-    )
-  ) {
-    router.visit(terminalPage.url(props.agent.id));
-  }
+  openAgentTerminal(props.agent);
 }
 
-/**
- * A plain click opens the terminal beside the chat; a click that asks for a new tab or window follows the link.
- */
-function openTerminalFromLink(event: MouseEvent): void {
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) {
-    return;
-  }
-
-  event.preventDefault();
-  openTerminal();
-}
+// The terminal has no button in the agent bar: the agent menu opens it, and the words below while the driver waits.
+const drawnActions = computed(() =>
+  props.agent.status.actions.filter(
+    (action) => action.type !== "open-terminal" || !props.agent.hasTerminal,
+  ),
+);
 
 const handlers: Record<StatusActionData["type"], () => void> = {
   stop: () => {
@@ -295,29 +278,18 @@ const handlers: Record<StatusActionData["type"], () => void> = {
 
 <template>
   <div class="flex flex-wrap items-center gap-1.5" aria-label="Session actions">
-    <template v-if="agent.hasTerminal && agent.sessionId !== null">
-      <a
-        :href="terminalPage.url(agent.id)"
-        data-terminal-action
-        class="rounded-control border border-border-2 px-2.5 py-0.5 text-small text-text-2 hover:bg-hover hover:text-text"
-        @click="openTerminalFromLink"
-        >Terminal</a
-      >
-    </template>
     <template
       v-if="
         agent.needsAttention && agent.hasTerminal && agent.sessionId !== null
       "
     >
-      <p class="flex items-center gap-1.5 text-small text-text-2" role="status">
-        The driver needs your attention.
-        <TextLink @click="openTerminal">Open terminal</TextLink>
+      <p class="text-small text-text-2" role="status">
+        <TextLink data-terminal-action @click="openTerminal"
+          >The driver needs your attention</TextLink
+        >
       </p>
     </template>
-    <template
-      v-for="(action, index) in agent.status.actions"
-      :key="action.type"
-    >
+    <template v-for="(action, index) in drawnActions" :key="action.type">
       <SessionAction
         :action="action"
         :is-primary="index === 0"

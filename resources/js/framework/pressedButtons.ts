@@ -8,6 +8,14 @@ export const SPINNER_AFTER_MS = 120;
 const PRESSABLE = 'button, [role="button"], [role="switch"], [role="menuitem"]';
 
 /**
+ * The mark a visit carries from its start to its finish: Inertia finishes a copy of the visit it started, and the copy
+ * keeps the visit's own enumerable keys, this symbol among them, so the finish is matched by the mark, not by identity.
+ */
+const VISIT_MARK = Symbol("pressed-button-visit");
+
+type MarkedVisit = { [VISIT_MARK]?: object };
+
+/**
  * One request's hold on the button whose click sent it; a request sent outside a click holds no button.
  */
 export class ButtonHold {
@@ -110,9 +118,11 @@ export class PressedButtons {
 
     router.on("before", (event) => {
       const visit = event.detail.visit;
+      const mark = {};
+      (visit as MarkedVisit)[VISIT_MARK] = mark;
       const hold = this.hold(visit.method === "get" ? SPINNER_AFTER_MS : 0);
       const stopListening = router.on("finish", (finished) => {
-        if (finished.detail.visit !== visit) {
+        if ((finished.detail.visit as MarkedVisit)[VISIT_MARK] !== mark) {
           return;
         }
 

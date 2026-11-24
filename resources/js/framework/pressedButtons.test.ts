@@ -83,4 +83,14 @@ describe("a pressed button", () => {
     expect(button.dataset.busy).toBeUndefined();
     expect(button.disabled).toBe(false);
   });
+
+  it("is given back when Inertia finishes a copy of the visit it started, as it does for every visit", () => {
+    const visit = { method: "post" };
+    const button = buttonClickedWith(() => emit("before", visit));
+
+    emit("finish", { ...visit });
+
+    expect(button.dataset.busy).toBeUndefined();
+    expect(button.disabled).toBe(false);
+  });
 });

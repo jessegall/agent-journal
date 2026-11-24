@@ -8,7 +8,7 @@ import { router } from "@inertiajs/vue3";
 import { ref, toRef, watch } from "vue";
 
 /**
- * The terminal the chat shows beside it: one controller for the agent, which reads only while the terminal is shown,
+ * An agent's terminal in its modal: one controller for the agent, which reads only while the terminal is shown,
  * and the shared terminal drawing, with the control bar, Retry for a host that stopped reporting and Back to chat
  * when the agent's terminal does not run. Unmounting it closes its read and drops its control.
  */

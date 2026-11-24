@@ -12,6 +12,7 @@ import {
   droppedRecord,
   useHandOver,
 } from "./composables/useHandOver";
+import { openAgentTerminal } from "./composables/useTerminalModal";
 
 /**
  * The agent picker's menu, drawn as the design's menus on the kit: a search field that keeps the focus above the agents
@@ -35,6 +36,21 @@ const opener =
 function closeToOpener(): void {
   emit("close");
   opener?.focus();
+}
+
+// The chosen agent's own terminal, offered below the agents while it runs in one.
+const terminalAgent = computed(() =>
+  props.agents.find(
+    (agent) =>
+      agent.id === props.selectedAgentId &&
+      agent.hasTerminal &&
+      agent.sessionId !== null,
+  ),
+);
+
+function openTerminalOf(agent: AgentOptionData): void {
+  emit("close");
+  openAgentTerminal(agent);
 }
 
 const search = ref("");
@@ -165,6 +181,13 @@ function handTo(event: DragEvent, agent: AgentOptionData): void {
         </p>
       </template>
     </div>
+    <template v-if="terminalAgent">
+      <div class="border-t border-line p-1.5">
+        <MenuItem data-open-terminal @click="openTerminalOf(terminalAgent)">
+          Open {{ terminalAgent.sessionDriverLabel ?? "its" }} terminal
+        </MenuItem>
+      </div>
+    </template>
   </div>
   </Popover>
 </template>

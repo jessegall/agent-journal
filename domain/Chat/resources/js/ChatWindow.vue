@@ -3,11 +3,11 @@ import { router, usePage } from "@inertiajs/vue3";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
 import { agentUrl, chatUrl, questionUrl } from "./agentLinks";
 import ChatPane from "./ChatPane.vue";
-import ChatWithTerminal from "./ChatWithTerminal.vue";
+import TerminalModal from "./TerminalModal.vue";
 
 /**
  * The chat window, on Home and on its own page. On Home the agent bar chooses the agent; on its own page the window
- * offers the choice itself. The chosen agent's terminal opens beside it.
+ * offers the choice itself. An agent's terminal opens over the page as a modal.
  */
 defineProps<{ data: ChatData }>();
 
@@ -33,18 +33,14 @@ function loadMore(token: string): void {
 </script>
 
 <template>
-  <ChatWithTerminal
-    :agents="data.agents"
-    :selected-agent-id="data.selectedAgentId"
-  >
-    <ChatPane
-      :chat="data"
-      :offers-choice="ownPage"
-      :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
-      :chat-url="(inboxId: string) => chatUrl(page.url, inboxId)"
-      :question-url="(messageId: string) => questionUrl(page.url, messageId)"
-      :load-more="loadMore"
-      :protected-prop="ownPage ? 'page' : HOME_PROP"
-    />
-  </ChatWithTerminal>
+  <ChatPane
+    :chat="data"
+    :offers-choice="ownPage"
+    :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
+    :chat-url="(inboxId: string) => chatUrl(page.url, inboxId)"
+    :question-url="(messageId: string) => questionUrl(page.url, messageId)"
+    :load-more="loadMore"
+    :protected-prop="ownPage ? 'page' : HOME_PROP"
+  />
+  <TerminalModal :agents="data.agents" />
 </template>

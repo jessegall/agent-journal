@@ -332,7 +332,7 @@ describe("SessionForm", () => {
     form.unmount();
   });
 
-  it("shows Starting at once and Ready only once the session the start answered with runs", async () => {
+  it("shows Starting at once and closes only once the session the start answered with runs", async () => {
     const form = mount(SessionForm, {
       props: { agent: idle, mode: "start" },
     });
@@ -365,9 +365,10 @@ describe("SessionForm", () => {
         },
       },
     });
+    expect(form.emitted("close")).toBeUndefined();
     postOptions.at(-1)?.onSuccess({ flash: { startedSessionId: "session-1" } });
     await flushPromises();
-    expect(form.text()).toContain("Ready");
+    expect(form.emitted("close")).toHaveLength(1);
     form.unmount();
   });
 

@@ -557,8 +557,10 @@ function showStart(): boolean {
     return true;
   }
 
+  // The start is over once its session runs: the dialog closes and the agent bar says the session's state.
   if (isStartedSessionShown && status.isProcessConfirmed) {
     progress.value = "Ready";
+    close();
 
     return true;
   }
