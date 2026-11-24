@@ -81,7 +81,7 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
         CloseCause $cause,
         Actor|null $closer,
         string|null $reason,
-        bool $published,
+        bool $isPublished,
     ): self {
         $close = new self([
             'token' => $draft->token,
@@ -94,7 +94,7 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
             'closer_type' => $closer?->actorType(),
             'closer_id' => $closer?->actorId(),
             'reason' => $reason === null ? null : trim($reason),
-            'published' => $published,
+            'published' => $isPublished,
             'closed_at' => CarbonImmutable::now(),
         ]);
 

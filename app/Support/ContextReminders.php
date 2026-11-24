@@ -27,9 +27,9 @@ final class ContextReminders implements ReminderContribution
 
     public function __construct(private readonly ContextBudget $budget, private readonly AgentTexts $texts) {}
 
-    public function add(AgentText $reminder, bool $required): void
+    public function add(AgentText $reminder, bool $isRequired): void
     {
-        if ($required) {
+        if ($isRequired) {
             $this->required[] = $this->texts->render($reminder);
 
             return;

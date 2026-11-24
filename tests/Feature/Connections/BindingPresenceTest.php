@@ -150,7 +150,7 @@ final class BindingPresenceTest extends TestCase
         string $binding,
         string $bootId,
         int $sequence,
-        bool $takeover = false,
+        bool $isTakeover = false,
         int $setupGeneration = 1,
     ): TestResponse {
         return $this->signedRelayCall(
@@ -162,7 +162,7 @@ final class BindingPresenceTest extends TestCase
                 'release' => '1.0.0',
                 'descriptors' => [],
                 'provisioning' => 'succeeded',
-                'takeover' => $takeover,
+                'takeover' => $isTakeover,
                 'setupGeneration' => $setupGeneration,
             ],
             (string) Str::uuid(),

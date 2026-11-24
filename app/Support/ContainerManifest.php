@@ -97,16 +97,16 @@ final readonly class ContainerManifest
     public static function make(
         string $image,
         string $user,
-        bool $readOnlyRoot,
+        bool $isReadOnlyRoot,
         array $capabilities,
-        bool $privileged,
+        bool $isPrivileged,
         string $network,
         array $mounts,
         array $publishedPorts,
         ExecutionBudgets $budgets,
         MountRules $rules,
         SecurityOptions $securityOptions,
-        bool $attachable = false,
+        bool $isAttachable = false,
         LaunchProfileType $launchProfile = LaunchProfileType::Standard,
     ): self {
         if (preg_match('/(^|@)sha256:[0-9a-f]{64}$/', $image) !== 1) {
@@ -115,7 +115,7 @@ final readonly class ContainerManifest
 
         $matchesProfile = $user === $launchProfile->user() && $capabilities === $launchProfile->capabilities();
 
-        if ($privileged || ! $matchesProfile || ! $readOnlyRoot) {
+        if ($isPrivileged || ! $matchesProfile || ! $isReadOnlyRoot) {
             throw ManifestRefused::because(match ($launchProfile) {
                 LaunchProfileType::Standard => 'a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities',
                 LaunchProfileType::ProtectedAccount => 'a protected start runs its init as 0:0 with only SETUID, SETGID and SETPCAP, unprivileged, on a read-only root',
@@ -149,7 +149,7 @@ final readonly class ContainerManifest
             $mounts,
             [],
             $budgets,
-            $attachable,
+            $isAttachable,
             $rules->workspacePreparation(),
             $launchProfile,
         );

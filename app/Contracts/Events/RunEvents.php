@@ -38,7 +38,7 @@ interface RunEvents
     /**
      * The part ended as the end says, with all its output read when drained.
      */
-    public function ended(PartKey $part, PartEnd $end, bool $drained): void;
+    public function ended(PartKey $part, PartEnd $end, bool $isDrained): void;
 
     /**
      * The part never started, because the result of an earlier part decided against it.

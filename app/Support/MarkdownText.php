@@ -61,7 +61,7 @@ final readonly class MarkdownText
         return self::parseBody($text, false);
     }
 
-    private static function parseBody(string $text, bool $closedFence): self
+    private static function parseBody(string $text, bool $isClosedFence): self
     {
         if (! mb_check_encoding($text, 'UTF-8')) {
             throw MarkdownInvalid::encoding();
@@ -77,7 +77,7 @@ final readonly class MarkdownText
             throw ContentTooLarge::field('body', self::BODY_BYTES.' bytes');
         }
 
-        return new self($normalized, self::outlineOf($normalized, $closedFence));
+        return new self($normalized, self::outlineOf($normalized, $isClosedFence));
     }
 
     /**

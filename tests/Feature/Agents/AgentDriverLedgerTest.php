@@ -1753,7 +1753,7 @@ final class AgentDriverLedgerTest extends TestCase
         EnrolledHost $host,
         array $claimed,
         string|null $reason,
-        bool $noProcessCreated,
+        bool $hasCreatedNoProcess,
     ): void {
         $this->hostCall($host, '/host/reports/request', [
             'request_id' => $claimed['requestId'],
@@ -1762,7 +1762,7 @@ final class AgentDriverLedgerTest extends TestCase
             'actual_binding' => null,
             'outcome' => 'refused',
             'refusal_reason' => $reason,
-            'no_process_created' => $noProcessCreated,
+            'no_process_created' => $hasCreatedNoProcess,
             'session_id' => $claimed['sessionId'],
             'process_start_id' => $claimed['processStartId'],
             'process_generation' => $claimed['processGeneration'],

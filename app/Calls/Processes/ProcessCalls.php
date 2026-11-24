@@ -91,12 +91,12 @@ final readonly class ProcessCalls
      */
     public function cleanOutput(
         array $runs,
-        bool $preview,
+        bool $isPreview,
         CallKey $requestKey = new CallKey(),
     ): OutputCleaned {
         return $this->sender->send(CleanOutputCall::from([
             'runs' => $runs,
-            'preview' => $preview,
+            'preview' => $isPreview,
             'requestKey' => $requestKey,
         ]));
     }

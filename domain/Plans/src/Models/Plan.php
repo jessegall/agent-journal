@@ -406,9 +406,9 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      * The card of this plan with its own tallies and its current phase's number, none for a plan without phases.
      *
      * @param  Option<AssignmentHolder>  $holder
-     * @param  bool  $focused  whether this is the plan the caller's stack works on now
+     * @param  bool  $isFocused  whether this is the plan the caller's stack works on now
      */
-    public function card(int|null $currentPhase, Option $holder, bool $focused): PlanCard
+    public function card(int|null $currentPhase, Option $holder, bool $isFocused): PlanCard
     {
         $progress = $this->progress;
 
@@ -419,7 +419,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             $this->type,
             $this->state,
             $this->state->canStart(),
-            $focused,
+            $isFocused,
             $progress,
             $currentPhase,
             $holder,
@@ -442,7 +442,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      *
      * @param  list<PlanPhaseTasks>  $phases
      */
-    public function details(PlanCard $card, array $phases, int|null $nextTaskOffset, bool $withText): PlanDetails
+    public function details(PlanCard $card, array $phases, int|null $nextTaskOffset, bool $hasText): PlanDetails
     {
         return new PlanDetails(
             $this->id,
@@ -457,9 +457,9 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             $card->currentPhase,
             $phases,
             $nextTaskOffset,
-            $withText ? $this->brief : null,
-            $withText ? $this->finish_note : null,
-            $withText ? $this->cancel_reason : null,
+            $hasText ? $this->brief : null,
+            $hasText ? $this->finish_note : null,
+            $hasText ? $this->cancel_reason : null,
         );
     }
 

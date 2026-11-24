@@ -15,7 +15,7 @@ interface WorkspaceSource
     /**
      * How the workspace is mounted into an agent's container, writable or read only.
      */
-    public function mount(bool $writable): ManifestMount;
+    public function mount(bool $isWritable): ManifestMount;
 
     /**
      * What the host makes ready before a container mounts it.

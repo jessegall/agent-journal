@@ -163,14 +163,14 @@ final class HookRewriteTest extends TestCase
         return $this->stack($rewriter, $guard);
     }
 
-    private function frame(string $id, AgentState $state, bool $bottom = false): Frame
+    private function frame(string $id, AgentState $state, bool $isBottom = false): Frame
     {
         return new Frame(
             $id,
             new StateReference($id, NoSubject::None),
             $state,
             CarbonImmutable::now(),
-            isBottom: $bottom,
+            isBottom: $isBottom,
         );
     }
 

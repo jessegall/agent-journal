@@ -65,7 +65,7 @@ final readonly class HelperCalls
         string $brief,
         CallKey $requestKey = new CallKey(),
         array $sourceSubjects = [],
-        bool $independent = false,
+        bool $isIndependent = false,
     ): HelperReceiptData {
         return $this->sender->send(SendHelperCall::from([
             'identityId' => $identityId,
@@ -78,7 +78,7 @@ final readonly class HelperCalls
             'brief' => $brief,
             'requestKey' => $requestKey,
             'sourceSubjects' => $sourceSubjects,
-            'independent' => $independent,
+            'independent' => $isIndependent,
         ]));
     }
 

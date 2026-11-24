@@ -281,9 +281,9 @@ function pinned_build_item(DriverCompatibility $compatibility, InstalledBuild $i
  *
  * @return array{item: string, result: string, reason: string, consumer: string}
  */
-function judged(string $id, bool $passed, string $passReason, string $failReason, string $consumer): array
+function judged(string $id, bool $hasPassed, string $passReason, string $failReason, string $consumer): array
 {
-    return item($id, $passed ? PASS : FAIL, $passed ? $passReason : $failReason, $consumer);
+    return item($id, $hasPassed ? PASS : FAIL, $hasPassed ? $passReason : $failReason, $consumer);
 }
 
 /**

@@ -448,10 +448,10 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      * Keeps why the host refused the request and whether it proved no process of the driver was made; settling a
      * launch on it is the start's own decision.
      */
-    public function recordRefusal(HostWakeRefusal $reason, bool $noProcessCreated): void
+    public function recordRefusal(HostWakeRefusal $reason, bool $hasCreatedNoProcess): void
     {
         $this->refusal_reason = $reason;
-        $this->no_process_created = $noProcessCreated;
+        $this->no_process_created = $hasCreatedNoProcess;
         $this->save();
     }
 

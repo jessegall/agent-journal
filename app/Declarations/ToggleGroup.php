@@ -33,13 +33,13 @@ final readonly class ToggleGroup implements GroupDeclaration
     public static function make(
         string $key,
         string $label,
-        bool $defaultEnabled,
+        bool $isDefaultEnabled,
         array $settings,
         string|null $description = null,
     ): self {
         SettingKey::require($key, $label);
 
-        return new self($key, $label, $defaultEnabled, $settings, $description);
+        return new self($key, $label, $isDefaultEnabled, $settings, $description);
     }
 
     public function key(): string

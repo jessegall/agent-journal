@@ -319,9 +319,9 @@ function frozenExpectations(string $path): array
 /**
  * A command shape with every optional piece kept or dropped and each slot given the first value of its type.
  */
-function filledShape(string $shape, bool $keepOptional): string
+function filledShape(string $shape, bool $shouldKeepOptional): string
 {
-    $optional = preg_replace_callback('/\[([^\]]*)\]/', fn (array $match): string => $keepOptional ? $match[1] : '', $shape);
+    $optional = preg_replace_callback('/\[([^\]]*)\]/', fn (array $match): string => $shouldKeepOptional ? $match[1] : '', $shape);
     $filled = preg_replace_callback('/<([^>]+)>/', fn (array $match): string => SLOT_VALUES[$match[1]] ?? 'value', (string) $optional);
 
     return implode(' ', preg_split('/\s+/', trim((string) $filled)) ?: []);

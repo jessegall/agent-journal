@@ -15,5 +15,5 @@ interface ReminderContribution
     /**
      * Adds a reminder to the starting context; a required one is always given, any other while the budget lasts.
      */
-    public function add(AgentText $reminder, bool $required): void;
+    public function add(AgentText $reminder, bool $isRequired): void;
 }

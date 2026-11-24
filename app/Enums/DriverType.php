@@ -15,8 +15,8 @@ enum DriverType: string
     /**
      * The mode a headless choice names: headless when asked for, else the terminal.
      */
-    public static function ofHeadless(bool $headless): self
+    public static function ofHeadless(bool $isHeadless): self
     {
-        return $headless ? self::Headless : self::Terminal;
+        return $isHeadless ? self::Headless : self::Terminal;
     }
 }

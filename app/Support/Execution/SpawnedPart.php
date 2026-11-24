@@ -20,7 +20,7 @@ final readonly class SpawnedPart
 
     public function __construct(public QueuedPart $queued, public SpawnedProcess $process) {}
 
-    public function end(bool $drained): StepStatus
+    public function end(bool $isDrained): StepStatus
     {
         $state = $this->queued->state;
         $part = $this->queued->part;
@@ -37,7 +37,7 @@ final readonly class SpawnedPart
 
         $this->process->drain(fn (OutputStream $stream, string $bytes) => $state->events->output($part, $stream, $bytes));
         $end = $this->process->wait();
-        $state->events->ended($part, $end, $drained);
+        $state->events->ended($part, $end, $isDrained);
 
         return StepStatus::ofEnd($end);
     }

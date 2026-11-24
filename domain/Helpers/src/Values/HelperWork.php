@@ -36,11 +36,11 @@ final readonly class HelperWork
         string|null $purposeText,
         string $brief,
         array $sourceSubjects,
-        bool $independent,
+        bool $isIndependent,
     ): self {
         $subjectRecord = $subject === null ? null : new RecordIdentity(...explode(':', $subject, 2));
 
-        return new self($subjectRecord, $purposeId, $purposeText, $brief, $sourceSubjects, $independent);
+        return new self($subjectRecord, $purposeId, $purposeText, $brief, $sourceSubjects, $isIndependent);
     }
 
     /**

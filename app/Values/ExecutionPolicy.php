@@ -40,13 +40,13 @@ final readonly class ExecutionPolicy
         string $worktree,
         ExecutionBudgets $budgets,
         array $networkCapabilities,
-        bool $attachable = false,
+        bool $isAttachable = false,
     ): self {
         if ($mode === ExecutionModeType::RequiredContainer && $imageReference === null) {
             throw ExecutionPolicyInvalid::imageMissing();
         }
 
-        return new self($mode, $imageReference, $worktree, $budgets, $networkCapabilities, $attachable);
+        return new self($mode, $imageReference, $worktree, $budgets, $networkCapabilities, $isAttachable);
     }
 
     /**

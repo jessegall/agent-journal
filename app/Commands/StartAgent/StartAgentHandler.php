@@ -196,7 +196,7 @@ final readonly class StartAgentHandler implements CommandHandler
         );
     }
 
-    private function receiptOf(StartRequest $request, AgentSession $session, bool $newSession): StartReceipt
+    private function receiptOf(StartRequest $request, AgentSession $session, bool $isNewSession): StartReceipt
     {
         $selection = $session->selection;
 
@@ -205,7 +205,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $session->id,
             $session->agent_id,
             $selection,
-            $newSession,
+            $isNewSession,
             $request->conversationMode,
             StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
             $this->adapters->for($selection->driver)->modelArguments($selection->model),

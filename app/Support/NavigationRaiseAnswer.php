@@ -40,8 +40,8 @@ final readonly class NavigationRaiseAnswer
      * An entry of the owner's library the host replays; guarded when it was proven on another build only, so the
      * host replays it with every check before it counts on it.
      */
-    public static function entry(LibraryEntryAnswer $entry, bool $guarded): self
+    public static function entry(LibraryEntryAnswer $entry, bool $isGuarded): self
     {
-        return new self(NavigationRaiseOutcome::Entry, entry: $entry, isGuarded: $guarded);
+        return new self(NavigationRaiseOutcome::Entry, entry: $entry, isGuarded: $isGuarded);
     }
 }

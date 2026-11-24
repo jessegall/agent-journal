@@ -61,11 +61,11 @@ final readonly class PreparationState
         ];
     }
 
-    private function write(string $generation, bool $prepared): void
+    private function write(string $generation, bool $isPrepared): void
     {
         $this->files->write(
             $this->file,
-            json_encode(['generation' => $generation, 'prepared' => $prepared], JSON_THROW_ON_ERROR),
+            json_encode(['generation' => $generation, 'prepared' => $isPrepared], JSON_THROW_ON_ERROR),
         );
     }
 }

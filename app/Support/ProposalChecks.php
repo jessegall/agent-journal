@@ -17,17 +17,17 @@ final readonly class ProposalChecks
     public function __construct(private CommandRuleRegistry $rules) {}
 
     /**
-     * @param  bool  $heldForReader  whether the request the rule answers already holds the command for its reader
+     * @param  bool  $isHeldForReader  whether the request the rule answers already holds the command for its reader
      *
      * @throws RuleProposalRefused
      */
-    public function check(CommandRule $rule, bool $heldForReader): void
+    public function check(CommandRule $rule, bool $isHeldForReader): void
     {
         if ($rule->scope->type !== ScopeType::Project) {
             throw RuleProposalRefused::outsideProject($rule->id);
         }
 
-        if (! $rule->hasContract() && ($heldForReader || $this->rules->coversAsCheck($rule))) {
+        if (! $rule->hasContract() && ($isHeldForReader || $this->rules->coversAsCheck($rule))) {
             throw RuleProposalRefused::checkRenamed($rule->operation());
         }
     }

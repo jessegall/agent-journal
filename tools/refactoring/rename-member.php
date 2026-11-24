@@ -22,7 +22,8 @@ declare(strict_types=1);
  * renamed only when its receiver's type resolves to the family ($this, a typed property, parameter or return, a new
  * or a container make), left alone when it resolves elsewhere, and listed for checking by hand when it cannot be
  * resolved; --with=App\\Other\\Class renames the other class's member as well. A variable is renamed wherever it is used in the PHP files under the
- * folder or file, including closure uses and @param lines. A line selects a parameter of the closure there.
+ * folder or file, including closure uses and @param lines. A line selects the parameter of the function, method or
+ * closure there.
  * Strings that spell the old name are listed for checking by hand,
  * never changed. A list file holds one rename per line in the same words; blank lines and # lines are skipped.
  */
@@ -65,10 +66,10 @@ final class RenameRefused extends RuntimeException
         );
     }
 
-    public static function closureParameterMissing(string $path, int $line, string $parameter): self
+    public static function parameterMissing(string $path, int $line, string $parameter): self
     {
         return new self(sprintf(
-            '%s:%d must identify one closure with parameter $%s and no nested functions',
+            '%s:%d must hold a parameter $%s of one function, method or closure that is not a promoted property',
             $path,
             $line,
             $parameter,
@@ -255,14 +256,14 @@ final class ParsedProject
      */
     public function under(string $path): array
     {
-        $inSearched = array_filter(
-            $this->searched(),
-            static fn (string $file): bool => $file === $path || str_starts_with($file, rtrim($path, '/').'/'),
-            ARRAY_FILTER_USE_KEY,
-        );
+        $isUnder = static fn (string $file): bool => $file === $path || str_starts_with($file, rtrim($path, '/').'/');
 
-        if ($inSearched !== []) {
-            return $inSearched;
+        foreach ([$this->searched(), $this->others] as $parsedAlready) {
+            $inParsed = array_filter($parsedAlready, $isUnder, ARRAY_FILTER_USE_KEY);
+
+            if ($inParsed !== []) {
+                return $inParsed;
+            }
         }
 
         $parsed = parsedFiles($this->root, [$path]);
@@ -823,7 +824,7 @@ function memberSites(
     string $new,
     array $family,
     Closure $receiverOf,
-    bool $static = false,
+    bool $isStatic = false,
 ): array {
     $sites = [];
     $inFamily = static fn (Node|null $class): bool => $class instanceof Node\Name && (isset($family[$class->toString()]) || in_array(
@@ -832,7 +833,7 @@ function memberSites(
         true,
     ));
 
-    if ($what === 'method' && $static) {
+    if ($what === 'method' && $isStatic) {
         $named = match (true) {
             $node instanceof Node\Stmt\ClassMethod => isset($family[declaringType($node)]) ? $node->name : null,
             $node instanceof Node\Expr\StaticCall => staticCallReaches($node, $family) ? $node->name : null,
@@ -966,7 +967,7 @@ function variableEdits(array $files, string $old, string $new, int $line): array
 
     foreach ($files as $path => $file) {
         $found = [];
-        $statements = $line > 0 ? closureScope($file['statements'], $path, $line, $old) : $file['statements'];
+        $statements = $line > 0 ? parameterScope($file['statements'], $path, $line, $old) : $file['statements'];
 
         foreach ($finder->find($statements, static fn (Node $node) => isVariableNamed($node, $old)) as $variable) {
             $found[] = [$variable->getStartFilePos(), $variable->getEndFilePos(), '$'.$new];
@@ -988,27 +989,32 @@ function variableEdits(array $files, string $old, string $new, int $line): array
 }
 
 /**
+ * The function, method or closure whose parameter of that name stands on the line, innermost first; a promoted
+ * property is renamed as a property, never here.
+ *
  * @param  list<Node>  $statements
  * @return list<Node>
  */
-function closureScope(array $statements, string $path, int $line, string $parameter): array
+function parameterScope(array $statements, string $path, int $line, string $parameter): array
 {
     $finder = new NodeFinder();
-    $closures = $finder->find(
+    $functions = $finder->find(
         $statements,
-        static fn (Node $node) => ($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction)
-            && $node->getStartLine() === $line,
+        static fn (Node $node) => $node instanceof Node\FunctionLike && array_any(
+            $node->getParams(),
+            static fn (Node\Param $param) => isVariableNamed($param->var, $parameter) && $param->getStartLine() === $line && $param->flags === 0,
+        ),
     );
-    $function = $closures[0] ?? null;
+    $innermost = array_find(
+        $functions,
+        static fn (Node $function) => array_all($functions, static fn (Node $other) => $other === $function || $other->getStartFilePos() <= $function->getStartFilePos()),
+    );
 
-    if (count($finder->findInstanceOf($closures, Node\FunctionLike::class)) !== 1
-        || ! $function instanceof Node\FunctionLike
-        || ! array_any($function->getParams(), static fn (Node\Param $param) => isVariableNamed($param->var, $parameter))
-    ) {
-        throw RenameRefused::closureParameterMissing($path, $line, $parameter);
+    if (! $innermost instanceof Node\FunctionLike) {
+        throw RenameRefused::parameterMissing($path, $line, $parameter);
     }
 
-    return $closures;
+    return [$innermost];
 }
 
 /**
@@ -1244,6 +1250,16 @@ function testCases(): array
         $join = fn (array $count) => implode(', ', $count);
         PHP;
 
+    $methods = <<<'PHP'
+        <?php
+        final class Gate {
+            public function __construct(public bool $ready) {}
+            public function open(bool $ready): bool { return $ready; }
+            public function close(bool $ready): bool { return ! $ready; }
+        }
+        PHP;
+    $renamedMethods = str_replace('open(bool $ready): bool { return $ready; }', 'open(bool $isReady): bool { return $isReady; }', $methods);
+
     return [
         ['a property, its promoted parameter, accesses and named arguments', [
             'property',
@@ -1293,6 +1309,20 @@ function testCases(): array
             'copyCount',
         ], [],
             ['app/Use/one.php' => $closures], ['app/Use/one.php' => $renamedClosure], false, []],
+        ['a method parameter by its line renames it in that method only', [
+            'variable',
+            'app/Use/methods.php:4',
+            'ready',
+            'isReady',
+        ], [],
+            ['app/Use/methods.php' => $methods], ['app/Use/methods.php' => $renamedMethods], false, []],
+        ['a promoted parameter by its line is refused, as its property is renamed instead', [
+            'variable',
+            'app/Use/methods.php:3',
+            'ready',
+            'isReady',
+        ], [],
+            ['app/Use/methods.php' => $methods], ['app/Use/methods.php' => $methods], true, []],
         ['a closure rename refuses a malformed line', ['variable', 'app/Use/one.php:line', 'count', 'copyCount'], [],
             ['app/Use/one.php' => $closures], ['app/Use/one.php' => $closures], true, []],
         ['a closure rename refuses a name outside its parameters', [

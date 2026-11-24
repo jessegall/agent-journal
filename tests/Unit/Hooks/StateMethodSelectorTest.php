@@ -86,14 +86,14 @@ final class StateMethodSelectorTest extends TestCase
         $this->assertNotSame(InheritingState::class, $selection[2]->method->declaringClass);
     }
 
-    private function frame(string $id, AgentState $state, bool $enabled = true): Frame
+    private function frame(string $id, AgentState $state, bool $isEnabled = true): Frame
     {
         return new Frame(
             $id,
             new StateReference($id, NoSubject::None),
             $state,
             CarbonImmutable::now(),
-            isTypeEnabled: $enabled,
+            isTypeEnabled: $isEnabled,
         );
     }
 }

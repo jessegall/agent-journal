@@ -96,9 +96,9 @@ final class ProfileRunTest extends TestCase
         );
     }
 
-    private function answer(bool $dirty): void
+    private function answer(bool $isDirty): void
     {
-        $this->asSystem(new NotifyWorkspaceReadCommand('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3, CommitObservation::notRecorded()));
+        $this->asSystem(new NotifyWorkspaceReadCommand('host-1', new WorkspaceReadReference('read-1'), true, $isDirty, ! $isDirty, 3, CommitObservation::notRecorded()));
     }
 
     private function notify(ProfileRun $run, string $step, StepStatus $status): void

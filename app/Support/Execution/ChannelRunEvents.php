@@ -73,9 +73,9 @@ final class ChannelRunEvents implements RunEvents
         $this->append('chunks.jsonl', new RunChunk(RunPart::of($part), $stream, $offset, base64_encode($bytes)));
     }
 
-    public function ended(PartKey $part, PartEnd $end, bool $drained): void
+    public function ended(PartKey $part, PartEnd $end, bool $isDrained): void
     {
-        $this->emit(RunEventType::PartEnded, $part, end: $end, drained: $drained);
+        $this->emit(RunEventType::PartEnded, $part, end: $end, drained: $isDrained);
     }
 
     public function skipped(PartKey $part, string $controllingResult): void

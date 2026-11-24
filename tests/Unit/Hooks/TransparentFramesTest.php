@@ -193,25 +193,25 @@ final class TransparentFramesTest extends TestCase
         );
     }
 
-    private function plan(bool $cancelled = false): Frame
+    private function plan(bool $isCancelled = false): Frame
     {
         $plans = new FinishedSubjects();
-        $plans->finished = $cancelled ? ['plan'] : [];
+        $plans->finished = $isCancelled ? ['plan'] : [];
         $state = new FinishableState('plan', $plans);
 
         return $this->frame('plan', 'plans.working', '12', $state);
     }
 
-    private function task(bool $finished = false): Frame
+    private function task(bool $hasFinished = false): Frame
     {
-        $tasks = new InMemoryTasks([41 => $finished ? TaskState::Finished : TaskState::Started]);
+        $tasks = new InMemoryTasks([41 => $hasFinished ? TaskState::Finished : TaskState::Started]);
 
         return $this->frame('task', 'tasks.working', '41', new InMemoryTaskState(41, 3, $tasks));
     }
 
-    private function message(bool $answered = false): Frame
+    private function message(bool $isAnswered = false): Frame
     {
-        $state = $answered ? AnsweringStates::answered() : AnsweringStates::holding('9');
+        $state = $isAnswered ? AnsweringStates::answered() : AnsweringStates::holding('9');
 
         return $this->frame('message', 'core.messages.answering', '9', $state);
     }

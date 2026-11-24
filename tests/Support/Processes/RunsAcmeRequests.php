@@ -93,7 +93,7 @@ trait RunsAcmeRequests
     /**
      * One owner-approved sample that ended with the status and wrote the output, read by the agent when asked.
      */
-    private function sample(int $status, string $output, bool $read): string
+    private function sample(int $status, string $output, bool $isRead): string
     {
         $permit = $this->asUser(new ApproveSampleCommand($this->requestId, 1, $this->request()->source_digest));
         $runId = $this->runAsAgent(new StartSampleCommand($this->requestId, $permit, "sample-{$status}"));
@@ -108,7 +108,7 @@ trait RunsAcmeRequests
         $part->finishDraining();
         $recorder->finish($part, PartEnd::exited($status));
 
-        if ($read) {
+        if ($isRead) {
             $this->signed($this->start, "/agent/processes/runs/{$runId}/output/summary", [])->assertOk();
             $tail = ['part' => 1, 'stream' => 'stdout', 'lines' => 50];
             $this->signed($this->start, "/agent/processes/runs/{$runId}/output/tail", $tail)->assertOk();

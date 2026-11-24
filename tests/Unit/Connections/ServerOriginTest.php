@@ -32,9 +32,9 @@ final class ServerOriginTest extends TestCase
     }
 
     #[DataProvider('origins')]
-    public function test_an_origin_is_usable_only_on_its_terms(string $configured, bool $runsLocally, bool $usable): void
+    public function test_an_origin_is_usable_only_on_its_terms(string $configured, bool $runsLocally, bool $isUsable): void
     {
-        $this->assertSame($usable, new ServerOrigin($configured, $runsLocally)->isUsable());
+        $this->assertSame($isUsable, new ServerOrigin($configured, $runsLocally)->isUsable());
     }
 
     public function test_a_local_http_origin_keeps_its_scheme_and_port(): void

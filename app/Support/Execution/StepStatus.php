@@ -44,10 +44,10 @@ final readonly class StepStatus
      *
      * @param  list<self>  $statuses
      */
-    public static function ofPipeline(array $statuses, bool $pipefail): self
+    public static function ofPipeline(array $statuses, bool $isPipefail): self
     {
         $failed = array_values(array_filter($statuses, fn (self $status) => ! $status->isSuccess()));
-        $counted = $pipefail ? $failed : $statuses;
+        $counted = $isPipefail ? $failed : $statuses;
 
         return $counted === [] ? self::of(ExitStatus::Success) : $counted[array_key_last($counted)];
     }

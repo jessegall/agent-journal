@@ -39,7 +39,7 @@ final readonly class Frame
     /**
      * The frame of a stored record, with whether its state type runs now as the restore found it.
      */
-    public static function restored(FrameRecord $record, AgentState $state, bool $typeEnabled = true): self
+    public static function restored(FrameRecord $record, AgentState $state, bool $isTypeEnabled = true): self
     {
         return new self(
             $record->id,
@@ -48,7 +48,7 @@ final readonly class Frame
             $record->enteredAt,
             $record->isBottom,
             $record->schemaVersion,
-            $typeEnabled,
+            $isTypeEnabled,
         );
     }
 

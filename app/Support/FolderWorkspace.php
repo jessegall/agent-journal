@@ -18,9 +18,9 @@ final class FolderWorkspace extends Data implements WorkspaceSource
 
     public function __construct(public readonly string $folder) {}
 
-    public function mount(bool $writable): ManifestMount
+    public function mount(bool $isWritable): ManifestMount
     {
-        return ManifestMount::daemonBind(self::ROOT.'/'.$this->folder, ContainerManifest::WORKDIR, $writable);
+        return ManifestMount::daemonBind(self::ROOT.'/'.$this->folder, ContainerManifest::WORKDIR, $isWritable);
     }
 
     public function preparation(): WorkspacePreparation

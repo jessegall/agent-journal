@@ -35,11 +35,11 @@ final readonly class CommandCall
     public static function of(
         Command $command,
         string $owner,
-        bool $exported,
-        bool $repeatableRead,
+        bool $isExported,
+        bool $isRepeatableRead,
         ActorContext|null $actor,
     ): self {
-        return new self($command, $command, $owner, $exported, $repeatableRead, $actor);
+        return new self($command, $command, $owner, $isExported, $isRepeatableRead, $actor);
     }
 
     /**

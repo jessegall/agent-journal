@@ -67,10 +67,10 @@ final readonly class StateEffectScan implements FileScan
     /**
      * A class extending the base state, or a trait kept beside the states for them to share.
      */
-    private static function isStatePart(Node $node, bool $inStates): bool
+    private static function isStatePart(Node $node, bool $isInStates): bool
     {
         if ($node instanceof Stmt\Trait_) {
-            return $inStates;
+            return $isInStates;
         }
 
         return $node instanceof Stmt\Class_ && $node->extends?->toString() === self::STATE;

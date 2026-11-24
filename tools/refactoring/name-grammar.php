@@ -34,13 +34,13 @@ const PAST_FORM = '/(ed|en|wn|ne|ung|un|ound|ought|aught|ent|ept|eft|eld|old|ost
 
 /**
  * The verbs of the code, learned from its actions: those a command method or function starts with, and with
- * $withActionClasses also those an action class starts with. A test's helpers are left out, since a test may name a
+ * $shouldIncludeActionClasses also those an action class starts with. A test's helpers are left out, since a test may name a
  * step for its subject.
  *
  * @param  list<DeclaredName>  $names
  * @return array<string, true>
  */
-function verbsOf(array $names, bool $withActionClasses): array
+function verbsOf(array $names, bool $shouldIncludeActionClasses): array
 {
     $verbs = [];
 
@@ -48,7 +48,7 @@ function verbsOf(array $names, bool $withActionClasses): array
         $isTest = preg_match('#Test\.php|_test\.go|tests/Support/#', $declared->place) === 1;
         $isCommand = $declared->role === 'action' && in_array($declared->declarationType, ['method', 'function'], true)
             && ! str_contains($declared->place, '.sh');
-        $isActionClass = $withActionClasses && $declared->role === 'action' && $declared->declarationType === 'class';
+        $isActionClass = $shouldIncludeActionClasses && $declared->role === 'action' && $declared->declarationType === 'class';
 
         if (! $isTest && ($isCommand || $isActionClass)) {
             $verbs[firstWordOf($declared->name)] = true;

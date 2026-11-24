@@ -278,11 +278,11 @@ final class ReadShareTest extends TestCase
         return $token->token;
     }
 
-    private function read(string $token, string $path = '', string|null $cursor = null, bool $head = false): SharedPage
+    private function read(string $token, string $path = '', string|null $cursor = null, bool $isHead = false): SharedPage
     {
         $permit = $this->app->make(ReadPermits::class)->issue($token);
 
-        return $this->throughEntry(new ReadShareCommand($permit->reference, $path, $cursor, $head));
+        return $this->throughEntry(new ReadShareCommand($permit->reference, $path, $cursor, $isHead));
     }
 
     /**

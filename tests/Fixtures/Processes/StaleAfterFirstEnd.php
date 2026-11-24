@@ -37,9 +37,9 @@ final readonly class StaleAfterFirstEnd implements RunEvents
         $this->recorded->output($part, $stream, $bytes);
     }
 
-    public function ended(PartKey $part, PartEnd $end, bool $drained): void
+    public function ended(PartKey $part, PartEnd $end, bool $isDrained): void
     {
-        $this->recorded->ended($part, $end, $drained);
+        $this->recorded->ended($part, $end, $isDrained);
         $this->run->markStale($this->reason);
     }
 

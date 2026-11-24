@@ -327,7 +327,7 @@ final readonly class DeclarativeReader
      *
      * @param  list<OutputRecord>  $outcomes
      */
-    private function claimOf(OutputRecord|null $summary, array $outcomes, bool $empty): ClaimedOutcome
+    private function claimOf(OutputRecord|null $summary, array $outcomes, bool $isEmpty): ClaimedOutcome
     {
         $field = $this->definition->failureField;
         $failures = $field === null ? null : $summary?->count($field);
@@ -340,7 +340,7 @@ final readonly class DeclarativeReader
 
         return match (true) {
             $last !== null => $last->claimedOutcome(),
-            $empty && $this->contract->allowsEmptySuccess() => ClaimedOutcome::Passed,
+            $isEmpty && $this->contract->allowsEmptySuccess() => ClaimedOutcome::Passed,
             default => ClaimedOutcome::Unknown,
         };
     }

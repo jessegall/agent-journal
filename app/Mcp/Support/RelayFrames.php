@@ -172,12 +172,12 @@ final class RelayFrames
     /**
      * Reads what arrived, waiting for it when asked, and admits each complete line.
      */
-    private function admit(bool $wait): void
+    private function admit(bool $shouldWait): void
     {
         $read = [$this->input];
         $none = null;
 
-        if (stream_select($read, $none, $none, $wait ? null : 0) === 0) {
+        if (stream_select($read, $none, $none, $shouldWait ? null : 0) === 0) {
             return;
         }
 

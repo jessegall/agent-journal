@@ -101,11 +101,11 @@ final readonly class SettingsWriter
      * @throws CommandTransactionMissing
      * @throws SettingsConflict
      */
-    public function setToggle(ToggleGroup $group, bool $enabled, int $expectedRevision): SettingsChange
+    public function setToggle(ToggleGroup $group, bool $isEnabled, int $expectedRevision): SettingsChange
     {
         $owner = $this->registry->ownerOf($group)->owner;
         $record = $this->lockedRecord($owner, $group->key, $expectedRevision);
-        $encodedToggle = EncodedValue::of($enabled);
+        $encodedToggle = EncodedValue::of($isEnabled);
 
         if ($record->document
             ->toggle($group->key)

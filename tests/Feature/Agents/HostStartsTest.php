@@ -314,7 +314,7 @@ final class HostStartsTest extends TestCase
      * @return array{EnrolledHost, OpenedRuntime}
      */
     private function openRuntime(
-        bool $saveDriverType = false,
+        bool $shouldSaveDriverType = false,
         string $driver = 'claude-code',
         DriverType $driverType = DriverType::Headless,
     ): array {
@@ -330,7 +330,7 @@ final class HostStartsTest extends TestCase
             'claude',
             $driverType,
             'claude-opus-5-5',
-            shouldSaveDriverType: $saveDriverType,
+            shouldSaveDriverType: $shouldSaveDriverType,
         );
 
         return [$host, $this->app->make(CommandBus::class)->run($command)];

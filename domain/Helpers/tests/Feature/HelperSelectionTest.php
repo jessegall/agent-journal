@@ -144,7 +144,7 @@ final class HelperSelectionTest extends TestCase
     /**
      * @return list<HelperCandidate>
      */
-    private function candidates(string $driver, string $model, bool $independent = false): array
+    private function candidates(string $driver, string $model, bool $isIndependent = false): array
     {
         return $this->app->make(HelperCandidates::class)->candidatesFor(new CandidateQuery(
             'read-only-helper',
@@ -152,7 +152,7 @@ final class HelperSelectionTest extends TestCase
             $this->review,
             $driver,
             $model,
-            $independent,
+            $isIndependent,
         ));
     }
 

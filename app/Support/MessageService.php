@@ -269,7 +269,7 @@ final readonly class MessageService
         Message $message,
         InboxMembership $membership,
         CarbonImmutable $now,
-        bool $held,
+        bool $isHeld,
     ): MessageReadResult {
         if ($membership->isChat()) {
             // An agent's chat row is read only through a confirmed showing of its whole body, never by id.
@@ -284,7 +284,7 @@ final readonly class MessageService
 
         $firstRead = $message->acknowledge($membership, $now);
 
-        $claimed = $message->awaitsReply() && ! $held;
+        $claimed = $message->awaitsReply() && ! $isHeld;
 
         if ($claimed) {
             $this->claim($message, $membership);

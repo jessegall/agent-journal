@@ -25,9 +25,9 @@ final class GitWorkspace extends Data implements WorkspaceSource
         public readonly string $deployKeySecret,
     ) {}
 
-    public function mount(bool $writable): ManifestMount
+    public function mount(bool $isWritable): ManifestMount
     {
-        return ManifestMount::volume($this->volume, ContainerManifest::WORKDIR, $writable);
+        return ManifestMount::volume($this->volume, ContainerManifest::WORKDIR, $isWritable);
     }
 
     public function preparation(): WorkspacePreparation

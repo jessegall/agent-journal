@@ -14,9 +14,9 @@ const DEFAULT_PROCESSES = 4;
  * @param  list<string>  $command
  * @param  array<string, string>  $environment
  */
-function run(array $command, array $environment, string $root, bool $keepOutput): string
+function run(array $command, array $environment, string $root, bool $shouldKeepOutput): string
 {
-    $streams = $keepOutput ? [1 => ['pipe', 'w'], 2 => STDERR] : [1 => STDOUT, 2 => STDERR];
+    $streams = $shouldKeepOutput ? [1 => ['pipe', 'w'], 2 => STDERR] : [1 => STDOUT, 2 => STDERR];
     $process = proc_open($command, $streams, $pipes, $root, $environment);
 
     if (! is_resource($process)) {
@@ -24,10 +24,10 @@ function run(array $command, array $environment, string $root, bool $keepOutput)
         exit(2);
     }
 
-    $output = $keepOutput ? (string) stream_get_contents($pipes[1]) : '';
+    $output = $shouldKeepOutput ? (string) stream_get_contents($pipes[1]) : '';
     $exitCode = proc_close($process);
 
-    return $keepOutput ? $output : (string) $exitCode;
+    return $shouldKeepOutput ? $output : (string) $exitCode;
 }
 
 /**

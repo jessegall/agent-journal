@@ -29,7 +29,7 @@ final readonly class PolicyDefinition
      *
      * @return list<AccessType>
      */
-    public function grantsForAgents(bool $coordinator, bool $readOnly): array
+    public function grantsForAgents(bool $isCoordinator, bool $isReadOnly): array
     {
         if (Reflector::factory()->isSubclassOf($this->policy, OwnerPolicy::class)) {
             return [];
@@ -37,7 +37,7 @@ final readonly class PolicyDefinition
 
         return array_values(array_filter(
             $this->accesses,
-            fn (AccessType $access) => $this->isGrantedToAgent($access, $coordinator, $readOnly),
+            fn (AccessType $access) => $this->isGrantedToAgent($access, $isCoordinator, $isReadOnly),
         ));
     }
 

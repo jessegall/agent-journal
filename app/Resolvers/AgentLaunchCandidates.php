@@ -73,13 +73,13 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
         return array_map(fn (array $pair) => $pair[1], $ranked);
     }
 
-    private function rankOf(LaunchCandidateFacts $helper, bool $lastOnExactModel): LaunchCandidateRank
+    private function rankOf(LaunchCandidateFacts $helper, bool $isLastOnExactModel): LaunchCandidateRank
     {
         if (! $helper->hasDoneThisPurpose) {
             return LaunchCandidateRank::OtherPurpose;
         }
 
-        return $lastOnExactModel ? LaunchCandidateRank::ExactConversation : LaunchCandidateRank::SamePurpose;
+        return $isLastOnExactModel ? LaunchCandidateRank::ExactConversation : LaunchCandidateRank::SamePurpose;
     }
 
     /**

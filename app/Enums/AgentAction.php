@@ -23,20 +23,20 @@ enum AgentAction: string
      * @return list<self>
      */
     public static function offeredFor(
-        bool $retired,
-        bool $live,
+        bool $isRetired,
+        bool $isLive,
         bool $hasTerminal,
-        bool $resumable,
+        bool $isResumable,
         DriverSwitchStage|null $switchStage,
     ): array {
         return match (true) {
-            $retired => [],
+            $isRetired => [],
             $switchStage === DriverSwitchStage::LaunchFailed => [self::Retry, self::Start],
             $switchStage?->isUnconfirmed() === true => [self::Recheck],
             $switchStage !== null && ! $switchStage->isFinal() => [],
-            $live && $hasTerminal => [self::Open, self::Switch],
-            $live => [self::Switch],
-            $resumable => [self::Start, self::Resume],
+            $isLive && $hasTerminal => [self::Open, self::Switch],
+            $isLive => [self::Switch],
+            $isResumable => [self::Start, self::Resume],
             default => [self::Start],
         };
     }

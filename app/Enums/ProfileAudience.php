@@ -18,13 +18,13 @@ enum ProfileAudience: string
     /**
      * Whether a built-in agent profile of this kind may be granted the access.
      */
-    public function admitsAgent(bool $coordinator, bool $readOnly): bool
+    public function admitsAgent(bool $isCoordinator, bool $isReadOnly): bool
     {
         return match ($this) {
             self::Anyone => true,
             self::Owner => false,
-            self::Coordinator => $coordinator,
-            self::Writable => ! $readOnly,
+            self::Coordinator => $isCoordinator,
+            self::Writable => ! $isReadOnly,
         };
     }
 }

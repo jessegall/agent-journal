@@ -71,7 +71,7 @@ final class RecordedRunEvents implements RunEvents
         $this->recorder->append(new CapturedChunk($this->part($part), $stream, $bytes, CarbonImmutable::now()));
     }
 
-    public function ended(PartKey $part, PartEnd $end, bool $drained): void
+    public function ended(PartKey $part, PartEnd $end, bool $isDrained): void
     {
         if (! $this->note(ProcessEventFacts::partEnded($part, $end))) {
             return;
@@ -82,7 +82,7 @@ final class RecordedRunEvents implements RunEvents
         $record->finishDraining();
         $this->recorder->finish($record, $end);
 
-        if (! $drained) {
+        if (! $isDrained) {
             $record->markCapture(CaptureState::Incomplete);
         }
     }

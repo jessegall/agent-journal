@@ -135,11 +135,11 @@ final class ReaderProposalTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    private function definition(bool $withSummary): array
+    private function definition(bool $hasSummary): array
     {
         $rules = [['role' => 'outcome', 'pattern' => '^ok {name:rest}$']];
 
-        if ($withSummary) {
+        if ($hasSummary) {
             $rules[] = ['role' => 'summary', 'pattern' => '^done {passed:int} {failed:int}$'];
         }
 

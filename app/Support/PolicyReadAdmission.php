@@ -129,9 +129,9 @@ final readonly class PolicyReadAdmission implements ReadAdmission
         return $targets->admits($request->target);
     }
 
-    private function named(ReadRequest $request, bool $held): AccessDecision
+    private function named(ReadRequest $request, bool $isHeld): AccessDecision
     {
-        if ($held) {
+        if ($isHeld) {
             return AccessDecision::allowed(
                 AccessRuleType::OperationGrant,
                 AgentText::of('core.access.profile_holds', ['name' => $request->name]),

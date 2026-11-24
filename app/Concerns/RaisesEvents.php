@@ -60,9 +60,9 @@ trait RaisesEvents
     /**
      * @throws RowWriteRefused
      */
-    protected function assertSaved(bool $saved): void
+    protected function assertSaved(bool $isSaved): void
     {
-        if ($saved) {
+        if ($isSaved) {
             return;
         }
 

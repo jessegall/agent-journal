@@ -186,11 +186,11 @@ final class LexerCursor
     /**
      * @return array<string, TokenType>
      */
-    private function operators(bool $extended): array
+    private function operators(bool $isExtended): array
     {
         $operators = ['&&' => TokenType::AndIf, '||' => TokenType::OrIf];
 
-        if ($extended) {
+        if ($isExtended) {
             $operators += ['|&' => TokenType::PipeBoth, '&>>' => TokenType::Redirect, '&>' => TokenType::Redirect];
         }
 

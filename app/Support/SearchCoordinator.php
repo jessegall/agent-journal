@@ -327,11 +327,11 @@ final readonly class SearchCoordinator implements RecordSearch
         int $started,
         SearchQuery $query,
         string $outcome,
-        bool $kept,
+        bool $isKept,
     ): bool {
         $meter->add($declared->qualifiedKey, intdiv(hrtime(true) - $started, 1000), $query->budget, $outcome);
 
-        return $kept;
+        return $isKept;
     }
 
     /**
@@ -597,7 +597,7 @@ final readonly class SearchCoordinator implements RecordSearch
      * @param  array<string, DeclaredSearchable>  $sources
      * @param  list<EmittedHit>  $emitted
      */
-    private function ended(SearchProgress $progress, array $sources, array $emitted, bool $timedOut): SearchAnswer
+    private function ended(SearchProgress $progress, array $sources, array $emitted, bool $isTimedOut): SearchAnswer
     {
         if ($progress->isFinished()) {
             return new SearchAnswer(SearchStatus::Complete, $emitted);
@@ -606,7 +606,7 @@ final readonly class SearchCoordinator implements RecordSearch
         if ($emitted !== []) {
             $progress->idleCalls = 0;
 
-            return new SearchAnswer($timedOut ? SearchStatus::Retryable : SearchStatus::More, $emitted);
+            return new SearchAnswer($isTimedOut ? SearchStatus::Retryable : SearchStatus::More, $emitted);
         }
 
         $progress->idleCalls++;
@@ -615,7 +615,7 @@ final readonly class SearchCoordinator implements RecordSearch
             return $this->incomplete($progress, $sources, $emitted, null);
         }
 
-        return new SearchAnswer($timedOut ? SearchStatus::Retryable : SearchStatus::Pending);
+        return new SearchAnswer($isTimedOut ? SearchStatus::Retryable : SearchStatus::Pending);
     }
 
     /**

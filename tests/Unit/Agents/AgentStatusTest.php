@@ -439,7 +439,7 @@ final class AgentStatusTest extends TestCase
         LaunchOutcome|null $launch = null,
         ProcessStartState $start = ProcessStartState::Running,
         DriverRequestStatus|null $request = null,
-        bool $terminal = false,
+        bool $isTerminal = false,
     ): AgentEvidence {
         return new AgentEvidence(
             false,
@@ -453,7 +453,7 @@ final class AgentStatusTest extends TestCase
             $launch,
             false,
             false,
-            $terminal,
+            $isTerminal,
         );
     }
 

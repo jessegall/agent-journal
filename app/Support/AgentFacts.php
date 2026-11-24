@@ -36,7 +36,7 @@ final readonly class AgentFacts
      * host and opens no runtime here, so only a main start is expected to have one; only an owner's start in
      * progress may be cancelled, and only an actor allowed to stop it may stop a live session.
      */
-    public function evidence(bool $retired, bool $resumable, bool $canStop, CarbonImmutable $now): AgentEvidence
+    public function evidence(bool $isRetired, bool $isResumable, bool $canStop, CarbonImmutable $now): AgentEvidence
     {
         $session = $this->session;
         $isOwnerStart = $session?->parent_session_id !== null;
@@ -45,7 +45,7 @@ final readonly class AgentFacts
             || in_array($this->start?->state, ProcessStartState::unresolved(), true);
 
         return new AgentEvidence(
-            $retired,
+            $isRetired,
             $session?->id,
             $session?->status,
             $this->start?->state,
@@ -54,7 +54,7 @@ final readonly class AgentFacts
             $this->switch === null ? null : SwitchEvidence::of($this->switch),
             $this->request?->status,
             $this->launch,
-            $resumable,
+            $isResumable,
             $session !== null && (($isOwnerStart && $launchInProgress) || $this->readiness?->isUnverified() === true),
             $this->runtime?->hasScreen() === true,
             $canStop && $session !== null,

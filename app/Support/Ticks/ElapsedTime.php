@@ -34,9 +34,9 @@ final readonly class ElapsedTime
         return new self($endNanoseconds - $startNanoseconds, false);
     }
 
-    public static function fromSeconds(float $seconds, bool $approximate): self
+    public static function fromSeconds(float $seconds, bool $isApproximate): self
     {
-        return new self((int) round($seconds * self::NANOSECONDS_PER_SECOND), $approximate);
+        return new self((int) round($seconds * self::NANOSECONDS_PER_SECOND), $isApproximate);
     }
 
     public static function zero(bool $approximate): self

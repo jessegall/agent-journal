@@ -251,7 +251,7 @@ final class NavigationRoundTest extends TestCase
     /**
      * @param  list<array<string, mixed>>  $steps
      */
-    private function notify(EnrolledHost $host, DriverRequest $round, bool $proofSeen, array $steps = []): TestResponse
+    private function notify(EnrolledHost $host, DriverRequest $round, bool $isProofSeen, array $steps = []): TestResponse
     {
         return $this->hostCall($host, '/host/reports/request', [
             'request_id' => $round->id,
@@ -263,7 +263,7 @@ final class NavigationRoundTest extends TestCase
                 'rows' => ['Model: GPT-6'],
                 'highlight' => -1,
                 'generation' => 8,
-                'has_observed_proof' => $proofSeen,
+                'has_observed_proof' => $isProofSeen,
                 ...($steps === [] ? [] : ['steps' => $steps]),
             ],
         ]);

@@ -92,9 +92,9 @@ final readonly class ExecutionContext
         return clone ($this, ['positional' => $arguments, 'aliases' => [...$this->aliases, $aliasId]]);
     }
 
-    public function withPipefail(bool $pipefail): self
+    public function withPipefail(bool $isPipefail): self
     {
-        return clone ($this, ['pipefail' => $pipefail]);
+        return clone ($this, ['pipefail' => $isPipefail]);
     }
 
     public function withLastStatus(int $status): self

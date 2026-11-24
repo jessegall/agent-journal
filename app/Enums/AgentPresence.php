@@ -16,13 +16,13 @@ enum AgentPresence: string
     case Failed = 'failed';
     case Retired = 'retired';
 
-    public static function of(bool $retired, bool $live, DriverSwitchStage|null $switchStage, bool $startRefused): self
+    public static function of(bool $isRetired, bool $isLive, DriverSwitchStage|null $switchStage, bool $isStartRefused): self
     {
         return match (true) {
-            $retired => self::Retired,
-            $switchStage === DriverSwitchStage::LaunchFailed, $startRefused => self::Failed,
+            $isRetired => self::Retired,
+            $switchStage === DriverSwitchStage::LaunchFailed, $isStartRefused => self::Failed,
             $switchStage !== null && ! $switchStage->isFinal() => self::PendingSwitch,
-            $live => self::Working,
+            $isLive => self::Working,
             default => self::Idle,
         };
     }

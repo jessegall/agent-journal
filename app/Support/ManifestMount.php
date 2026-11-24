@@ -25,9 +25,9 @@ final readonly class ManifestMount
     /**
      * A folder of the machine the host runs on, the one mount of a local helper.
      */
-    public static function bind(string $source, string $target, bool $writable): self
+    public static function bind(string $source, string $target, bool $isWritable): self
     {
-        return new self(MountType::Bind, $source, $target, $writable);
+        return new self(MountType::Bind, $source, $target, $isWritable);
     }
 
     /**

@@ -86,7 +86,7 @@ $expected = [
     'docs_create' => in_array('docs_create', $snapshots['mcp-tools'], true),
     'journal://v1/reports/{id}' => in_array('journal://v1/reports/{id}', $snapshots['mcp-resources'], true),
 ];
-$failures = array_keys(array_filter($expected, fn (bool $found) => ! $found));
+$failures = array_keys(array_filter($expected, fn (bool $isFound) => ! $isFound));
 
 foreach ($snapshots as $name => $snapshot) {
     if ($snapshot === [] || (isset($snapshot['providers']) && $snapshot['providers'] === [])) {

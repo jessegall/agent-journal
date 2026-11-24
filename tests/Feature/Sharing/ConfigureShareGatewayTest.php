@@ -137,7 +137,7 @@ final class ConfigureShareGatewayTest extends TestCase
      */
     private function configure(
         string $gatewayKey,
-        bool $makeDefault,
+        bool $shouldMakeDefault,
         array $secretReferences = [],
     ): GatewayConfiguration {
         $key = (string) Str::ulid();
@@ -153,7 +153,7 @@ final class ConfigureShareGatewayTest extends TestCase
                 FakeShareGateway::PUBLIC_ORIGIN,
                 8100,
                 $secretReferences,
-                $makeDefault,
+                $shouldMakeDefault,
                 $key,
             ),
         );

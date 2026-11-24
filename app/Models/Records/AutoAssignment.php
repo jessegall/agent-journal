@@ -131,18 +131,18 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
      * Sets whether it is on, its pool and its size, and moves to the next revision only when one of them changed;
      * answers whether anything changed.
      */
-    public function configure(bool $enabled, PoolReference $pool, int $size): bool
+    public function configure(bool $isEnabled, PoolReference $pool, int $size): bool
     {
-        if ($this->enabled === $enabled && $this->pool->isSameAs($pool) && $this->size === $size) {
+        if ($this->enabled === $isEnabled && $this->pool->isSameAs($pool) && $this->size === $size) {
             return false;
         }
 
-        $this->enabled = $enabled;
+        $this->enabled = $isEnabled;
         $this->pool = $pool;
         $this->size = $size;
         $this->configuration_revision++;
         $this->assertSaved($this->save());
-        $this->raise(new AutoAssignmentConfigured($this->id, $enabled, $size));
+        $this->raise(new AutoAssignmentConfigured($this->id, $isEnabled, $size));
 
         return true;
     }

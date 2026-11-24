@@ -51,10 +51,10 @@ final readonly class AutoAssignmentStatus
     /**
      * A stored auto-assignment whose configuration cannot be read; nothing of it stands in for a default.
      */
-    public static function unreadable(bool $enabled, int $revision): self
+    public static function unreadable(bool $isEnabled, int $revision): self
     {
         return new self(
-            $enabled,
+            $isEnabled,
             AutoAssignmentState::Invalid,
             $revision,
             None::create(),

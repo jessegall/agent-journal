@@ -30,11 +30,11 @@ final readonly class BooleanSetting implements Setting
     /**
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string $key, string $label, bool $default, string|null $description = null): self
+    public static function make(string $key, string $label, bool $isDefault, string|null $description = null): self
     {
         SettingKey::require($key, $label);
 
-        return new self($key, $label, $default, $description);
+        return new self($key, $label, $isDefault, $description);
     }
 
     public function key(): string

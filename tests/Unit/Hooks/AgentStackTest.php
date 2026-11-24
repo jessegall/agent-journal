@@ -548,7 +548,7 @@ final class AgentStackTest extends TestCase
         $this->assertSame(['ready', 'review', 'task-42', 'notes'], $stack->withoutExposedInactive()->frameIds());
     }
 
-    private function exampleStack(TaskState $taskState, bool $messageWaits): AgentStack
+    private function exampleStack(TaskState $taskState, bool $doesMessageWait): AgentStack
     {
         return $this->stack(
             $this->ready(),
@@ -558,7 +558,7 @@ final class AgentStackTest extends TestCase
                 new InMemoryTaskState(42, 1, new InMemoryTasks([42 => $taskState])),
                 CarbonImmutable::now(),
             ),
-            $this->answeringFrame($messageWaits),
+            $this->answeringFrame($doesMessageWait),
         );
     }
 

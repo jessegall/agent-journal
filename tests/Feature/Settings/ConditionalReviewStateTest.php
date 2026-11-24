@@ -170,11 +170,11 @@ final class ConditionalReviewStateTest extends TestCase
         );
     }
 
-    private function switchReview(bool $off, int $expectedRevision): void
+    private function switchReview(bool $isOff, int $expectedRevision): void
     {
         $commands = new RegisteredSettingCommands($this->app->make(SettingRegistry::class), new CatalogueReflectorFactory());
 
-        $command = $off ? $commands->disable(
+        $command = $isOff ? $commands->disable(
             $this->reviews->review,
             $expectedRevision,
         ) : $commands->enable($this->reviews->review, $expectedRevision);
