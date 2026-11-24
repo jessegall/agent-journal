@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Enums\AnswerType;
 use App\Enums\DismissalType;
 use App\Events\ChatMessageAccepted;
@@ -119,14 +119,14 @@ final class AnsweringMessageStateTest extends TestCase
         $this->assertTrue($state->isFinished());
     }
 
-    public function test_a_turn_that_ends_on_words_posts_them_in_the_chat_as_a_message_and_finishes(): void
+    public function test_a_turn_that_ends_on_words_replies_with_them_to_the_oldest_waiting_message_and_finishes(): void
     {
         $state = $this->waiting(self::FIRST, self::SECOND);
 
-        $post = $state->onStop($this->stop(closingWords: self::CLOSING_WORDS));
+        $reply = $state->onStop($this->stop(closingWords: self::CLOSING_WORDS));
 
-        $this->assertInstanceOf(PostChatMessageCommand::class, $post);
-        $this->assertSame([self::CHAT, self::CLOSING_WORDS], [$post->inboxId, $post->body]);
+        $this->assertInstanceOf(ReplyInChatCommand::class, $reply);
+        $this->assertSame([self::FIRST, self::CHAT, self::CLOSING_WORDS], [$reply->parentId, $reply->inboxId, $reply->body]);
         $this->assertTrue($state->isFinished());
     }
 

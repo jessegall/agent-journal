@@ -30,7 +30,6 @@ use App\Models\Messages\ReceiptDelivery;
 use App\Models\Messages\ReceiptProgress;
 use App\Values\AgentText;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
@@ -66,7 +65,6 @@ final readonly class MessageBatchService
         private ActorLabels $labels,
         private McpCatalogue $tools,
         private CurrentSession $session,
-        private ConnectionInterface $database,
         private ActorAttention $attention,
         private AgentTexts $texts,
     ) {}
@@ -515,8 +513,9 @@ final readonly class MessageBatchService
             ->pluck('id')
             ->all();
 
+        // The engine's command holds the transaction, and a pass settles a bounded few.
         foreach ($batchIds as $batchId) {
-            $this->database->transaction(fn () => $this->settleOne((string) $batchId, $at));
+            $this->settleOne((string) $batchId, $at);
         }
     }
 

@@ -7,6 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Enums\IntervalRole;
 use App\Enums\MessageBatchState;
 use App\Enums\OutstandingMessageRangeState;
+use App\Events\EngineTicked;
 use App\Models\Chats\InboxInterval;
 use App\Models\Chats\InboxRecord;
 use App\Models\CommandRules\CommandReceipt;
@@ -19,13 +20,19 @@ use App\Models\Records\GlobalGroup;
 use App\Support\AcceptedOperation;
 use App\Support\ActorContext;
 use App\Support\DeskService;
+use App\Support\EngineAccess;
+use App\Support\EngineListenerSet;
 use App\Support\MessageBatchService;
 use App\Support\MessageBody;
 use App\Support\MessageEnvelope;
+use App\Support\OutsideCommandAllowance;
 use App\Support\ReceiptCaller;
 use App\Support\ReceiptRetention;
+use App\Support\SettleDispatchedBatchesOnTick;
+use App\Support\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 use stdClass;
+use Tests\Support\Engine\RunsEnginePasses;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -38,6 +45,7 @@ use Tests\TestCase;
 final class MessageBatchSweepTest extends TestCase
 {
     use RefreshHookDatabase;
+    use RunsEnginePasses;
 
     public function test_only_the_unconfirmed_suffix_counts_failures_and_is_exhausted_after_five(): void
     {
@@ -62,6 +70,28 @@ final class MessageBatchSweepTest extends TestCase
 
         $this->assertSame(0, $prefix->refresh()->consecutive_failures);
         $this->assertSame(OutstandingMessageRangeState::Exhausted, $suffix->refresh()->state);
+    }
+
+    public function test_an_engine_pass_settles_a_dispatched_batch_inside_a_command(): void
+    {
+        GlobalGroup::installJournal();
+        $inbox = InboxRecord::create('test-chat', (string) str()->ulid());
+        $interval = InboxInterval::create($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
+        $receipt = MessageReceipt::forAudience($this->message(), [$interval], TestIds::of(9))[0];
+        $dispatched = CarbonImmutable::now()->subHour();
+        $batch = MessageBatch::create($interval->id, TestIds::of(5), 1, 'thread-1', 1, $dispatched, $dispatched);
+        MessageRange::create($batch, OutstandingMessageRange::create($receipt, 0), 200, hash('sha256', 'whole'));
+        // The real app refuses a write outside a command, which the sweep once was.
+        $this->app->make(OutsideCommandAllowance::class)->forbid();
+
+        $sweep = $this->app->make(SettleDispatchedBatchesOnTick::class);
+        $this->pass(fn () => $this->app->make(EngineAccess::class)->withinMaintenance(
+            $sweep->maintenanceScope(),
+            fn () => $sweep(new EngineTicked(CarbonImmutable::now(), ElapsedTime::between(0, 1_000_000_000))),
+        ));
+
+        $this->assertTrue($this->app->make(EngineListenerSet::class)->has(SettleDispatchedBatchesOnTick::class));
+        $this->assertFalse(MessageBatch::query()->whereKey($batch->id)->where('state', MessageBatchState::Dispatched)->exists());
     }
 
     private function message(): Message

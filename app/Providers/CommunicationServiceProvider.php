@@ -34,13 +34,13 @@ use App\Resolvers\MessageRecords;
 use App\Resolvers\QuestionNotificationTarget;
 use App\Resolvers\Support\IntervalChatTimeline;
 use App\Support\ChatInboxes;
+use App\Support\EngineListenerSet;
 use App\Support\InboxIntervals;
 use App\Support\InboxNotices;
 use App\Support\IntervalChatDepartures;
 use App\Support\Links\MessageLinkRecords;
 use App\Support\LinkTypeRegistry;
 use App\Support\MessageAnswerActivation;
-use App\Support\MessageBatchService;
 use App\Support\MessageClaimProvider;
 use App\Support\NotificationChangeRetentionService;
 use App\Support\NotificationTargetRegistry;
@@ -50,6 +50,7 @@ use App\Support\ReceiptDeliveryService;
 use App\Support\RecipientNotifications;
 use App\Support\RegisteredInboxes;
 use App\Support\SelectedMessages;
+use App\Support\SettleDispatchedBatchesOnTick;
 use App\Support\SystemEntryPolicies;
 use App\Support\TimelineChatLines;
 use App\Values\AnswerBudget;
@@ -101,7 +102,9 @@ final class CommunicationServiceProvider extends ServiceProvider
         ReadEntitlements $reads,
         NotificationTargetRegistry $notificationTargets,
         ChatMemberPolicies $chatMembers,
+        EngineListenerSet $engineListeners,
     ): void {
+        $engineListeners->add(SettleDispatchedBatchesOnTick::class);
         $chatMembers->allow(MessagePolicy::class);
         $readGrant = ReadEntitlement::grant(MessagePolicy::class);
 
@@ -139,13 +142,6 @@ final class CommunicationServiceProvider extends ServiceProvider
             Schedule::class,
             fn (Schedule $schedule) => $schedule
                 ->call(fn (ReceiptDeliveryService $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
-                ->everyMinute(),
-        );
-
-        $this->callAfterResolving(
-            Schedule::class,
-            fn (Schedule $schedule) => $schedule
-                ->call(fn (MessageBatchService $sweep) => $sweep->sweep(CarbonImmutable::now()))
                 ->everyMinute(),
         );
 

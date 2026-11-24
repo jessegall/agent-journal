@@ -8,14 +8,19 @@ declare(strict_types=1);
  * the model's executor. It never prints a credential byte, a token or the canary itself: only hashes, and of the
  * credential file only its time, inode, mode and, for Claude, the expiry number.
  *
- *   php tools/accounts/isolation-probe.php setup <container> [--program=claude|codex]
- *   php tools/accounts/isolation-probe.php expect <container>
- *   php tools/accounts/isolation-probe.php credential-state <container> [--program=claude|codex]
- *   php tools/accounts/isolation-probe.php cleanup <container>
- *   php tools/accounts/isolation-probe.php transcript <container>
+ *   php tools/accounts/isolation-probe.php setup <session> [--program=claude|codex]
+ *   php tools/accounts/isolation-probe.php expect <session>
+ *   php tools/accounts/isolation-probe.php credential-state <session> [--program=claude|codex]
+ *   php tools/accounts/isolation-probe.php cleanup <session>
+ *   php tools/accounts/isolation-probe.php transcript <session>
+ *   php tools/accounts/isolation-probe.php executor <session> < line
  *
- * A container that already ended, such as the one a headless program ran a turn in, is entered through a new container
- * of its image that holds its mounts.
+ * Each step enters the session's newest container. A headless program runs each turn in a container that ends with the
+ * turn and is later removed, so an ended or removed one is entered through a new container of its image with its
+ * mounts, read from the session container's spec, which is kept, without its environment, under
+ * storage/acceptance/sessions each time a container is seen. The executor step runs the line on standard input as the session's Bash tool
+ * hands it on: through the shell bridge to the executor, in a container started as the session's own, from its init,
+ * with its mounts, users, capabilities and limits, and prints what the line printed.
  *
  * JOURNAL_AGENT_DOCKER names the docker command that reaches the agent daemon, by default
  * "docker compose exec -T agent-docker docker".
@@ -33,7 +38,7 @@ const CREDENTIALS = [
     'codex' => '/home/journal/.account/auth.json',
 ];
 
-[$step, $container] = [$argv[1] ?? '', $argv[2] ?? ''];
+[$step, $session] = [$argv[1] ?? '', $argv[2] ?? ''];
 $program = 'claude';
 
 foreach (array_slice($argv, 3) as $option) {
@@ -42,24 +47,43 @@ foreach (array_slice($argv, 3) as $option) {
     }
 }
 
-if ($container === '' || ! array_key_exists($program, CREDENTIALS)) {
-    fwrite(STDERR, "Usage: isolation-probe.php setup|expect|credential-state|cleanup|transcript <container> [--program=claude|codex]\n");
+if ($session === '' || ! array_key_exists($program, CREDENTIALS)) {
+    fwrite(STDERR, "Usage: isolation-probe.php setup|expect|credential-state|cleanup|transcript|executor <session> [--program=claude|codex]\n");
     exit(2);
 }
 
+// The executor step's line comes first, before a docker call can take standard input.
+$line = $step === 'executor' ? trim((string) stream_get_contents(STDIN)) : '';
 $docker = preg_split('/\s+/', trim((string) (getenv('JOURNAL_AGENT_DOCKER') ?: 'docker compose exec -T agent-docker docker')));
 
-$isRunning = trim((string) shell_exec(implode(' ', array_map(
-    'escapeshellarg',
-    [...$docker, 'inspect', '--format', '{{.State.Running}}', $container],
-)))) === 'true';
-$image = trim((string) shell_exec(implode(' ', array_map(
-    'escapeshellarg',
-    [...$docker, 'inspect', '--format', '{{.Image}}', $container],
-))));
+$daemon = fn (string ...$arguments): string => (string) shell_exec(implode(' ', array_map('escapeshellarg', [...$docker, ...$arguments])));
+$specFile = dirname(__DIR__, 2)."/storage/acceptance/sessions/{$session}.json";
+$container = strtok($daemon('ps', '--all', '--filter', "label=journal.session={$session}", '--format', '{{.Names}}'), "\n") ?: '';
+
+if ($container !== '') {
+    $spec = json_decode($daemon('inspect', $container), true, 64, JSON_THROW_ON_ERROR)[0];
+    // The environment carries the start's grant, which the kept spec must never hold.
+    unset($spec['Config']['Env']);
+    @mkdir(dirname($specFile), 0o700, true);
+    file_put_contents($specFile, json_encode($spec, JSON_THROW_ON_ERROR));
+} elseif (is_file($specFile)) {
+    $spec = json_decode((string) file_get_contents($specFile), true, 64, JSON_THROW_ON_ERROR);
+} else {
+    fwrite(STDERR, "The session {$session} has no container, and none was seen before to read its mounts from.\n");
+    exit(1);
+}
+
+$isRunning = $container !== '' && $spec['State']['Running'] === true;
+$image = (string) $spec['Image'];
+$mounts = array_merge(...array_map(fn (array $mount): array => ['--mount', implode(',', array_filter([
+    'type='.$mount['Type'],
+    'src='.($mount['Type'] === 'volume' ? $mount['Name'] : $mount['Source']),
+    'dst='.$mount['Destination'],
+    $mount['RW'] ? null : 'readonly',
+]))], $spec['Mounts'] ?? []));
 $entry = $isRunning
     ? ['exec', '-i', '-u', '10001', $container]
-    : ['run', '--rm', '-i', '-u', '10001', '--network', 'none', '--volumes-from', $container, '--entrypoint', 'sh', $image, '-c'];
+    : ['run', '--rm', '-i', '-u', '10001', '--network', 'none', ...$mounts, '--entrypoint', 'sh', $image, '-c'];
 
 // Runs a shell line inside the container as the program's user and answers its exit code and output; a value the
 // line needs comes through standard input, never through its arguments, so no process listing shows it.
@@ -119,8 +143,8 @@ switch ($step) {
         break;
 
     case 'cleanup':
-        $inContainer('rm -f '.CANARY.' '.MARKER);
-        echo "removed the canary and the marker\n";
+        $inContainer('rm -f '.CANARY.' '.MARKER.' /workspace/.account-link');
+        echo "removed the canary, the marker and the workspace link\n";
         break;
 
     // The newest transcript the program wrote under its account folder, one JSON line per entry.
@@ -129,7 +153,36 @@ switch ($step) {
             .' && cat "$newest"')->stdout;
         break;
 
+    case 'executor':
+        $host = $spec['HostConfig'];
+        $limits = ['--user', '0:0', '--network', 'none', ...$mounts, '--pids-limit', (string) $host['PidsLimit']];
+        $limits = [...$limits, ...($host['ReadonlyRootfs'] ? ['--read-only'] : [])];
+
+        foreach ($host['CapDrop'] ?? [] as $capability) {
+            array_push($limits, '--cap-drop', $capability);
+        }
+
+        foreach ($host['CapAdd'] ?? [] as $capability) {
+            array_push($limits, '--cap-add', $capability);
+        }
+
+        foreach ($host['SecurityOpt'] ?? [] as $option) {
+            array_push($limits, '--security-opt', $option);
+        }
+
+        foreach ($host['Tmpfs'] ?? [] as $path => $options) {
+            array_push($limits, '--tmpfs', $options === '' ? $path : "{$path}:{$options}");
+        }
+
+        $bridge = [...$docker, 'run', '--rm', ...$limits, '--entrypoint', '/opt/journal/bin/journal-init', $image];
+        $printed = (string) shell_exec(implode(' ', array_map(
+            'escapeshellarg',
+            [...$bridge, '--', '/opt/journal/shell/bash', '-c', $line],
+        )).' 2>&1');
+        echo implode("\n", array_filter(explode("\n", $printed), fn (string $printedLine): bool => $printedLine !== 'journal-init: ready'));
+        break;
+
     default:
-        fwrite(STDERR, "Name a step: setup, expect, credential-state, cleanup or transcript.\n");
+        fwrite(STDERR, "Name a step: setup, expect, credential-state, cleanup, transcript or executor.\n");
         exit(2);
 }

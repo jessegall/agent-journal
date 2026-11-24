@@ -42,14 +42,26 @@ final readonly class Containers
     }
 
     /**
-     * The name of the newest container the agent daemon made for the session, running or ended; empty before the first.
+     * The name of the newest container the agent daemon made for the session, running or ended; empty when none came
+     * within half a minute.
      */
     public function sessionContainer(string $sessionId): string
     {
-        $names = $this->agentDaemon(['ps', '--all', '--filter', "label=journal.session={$sessionId}", '--format', '{{.Names}}']);
+        // Between two turns the host replaces the container, so a moment with none is waited through.
+        for ($attempt = 0; $attempt < 30; $attempt++) {
+            $names = $this->agentDaemon(['ps', '--all', '--filter', "label=journal.session={$sessionId}", '--format', '{{.Names}}']);
 
-        // The daemon lists the newest container first.
-        return strtok($names, "\n") ?: '';
+            // The daemon lists the newest container first.
+            $newest = strtok($names, "\n");
+
+            if ($newest !== false && $newest !== '') {
+                return $newest;
+            }
+
+            sleep(1);
+        }
+
+        return '';
     }
 
     /**
@@ -68,13 +80,20 @@ final readonly class Containers
     }
 
     /**
-     * Runs the trusted probe of tools/accounts against the session's newest container and answers what it printed.
+     * Runs the line as the session's Bash tool hands it on, through the shell bridge to the executor in a container
+     * set up as the session's own, and answers what it printed.
+     */
+    public function executor(string $sessionId, string $line): string
+    {
+        return $this->run(['php', 'tools/accounts/isolation-probe.php', 'executor', $sessionId], $line);
+    }
+
+    /**
+     * Runs the trusted probe of tools/accounts against the session and answers what it printed.
      */
     public function probe(string $step, string $sessionId, string $program): string
     {
-        $container = $this->sessionContainer($sessionId);
-
-        return $this->run(['php', 'tools/accounts/isolation-probe.php', $step, $container, "--program={$program}"]);
+        return $this->run(['php', 'tools/accounts/isolation-probe.php', $step, $sessionId, "--program={$program}"]);
     }
 
     /**
@@ -88,9 +107,9 @@ final readonly class Containers
     /**
      * @param  list<string>  $command
      */
-    private function run(array $command): string
+    private function run(array $command, string $input = ''): string
     {
-        $process = new Process($command, $this->checkout, null, null, 300);
+        $process = new Process($command, $this->checkout, null, $input, 300);
         $process->run();
 
         if (! $process->isSuccessful()) {

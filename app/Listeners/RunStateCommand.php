@@ -15,11 +15,13 @@ use App\Exceptions\StateAnswerRefused;
 use App\Models\Agents\AgentStackRow;
 use App\Support\CommandRegistry;
 use App\Support\OperationDeadline;
+use App\Support\RequestKey;
 use Psr\Log\LoggerInterface;
 
 /**
  * Runs a command a state answered a hook or a moment of its frame's life with, once the change committed, while the
- * agent's stack is still open; a command that is refused or finds the stack closed is logged and not retried.
+ * agent's stack is still open; a command that is refused or finds the stack closed is logged and not retried. A command
+ * that runs only under a request key runs under one made from the answer itself, so a replayed answer finds its receipt.
  */
 final readonly class RunStateCommand implements Listener
 {
@@ -30,6 +32,7 @@ final readonly class RunStateCommand implements Listener
         private CommandRegistry $commands,
         private ActorRunner $actors,
         private LoggerInterface $log,
+        private RequestKey $requestKey,
     ) {}
 
     public function handle(StateCommandAnswered $answered): void
@@ -40,13 +43,16 @@ final readonly class RunStateCommand implements Listener
             throw StateAnswerRefused::notApplicationCommand($command::class);
         }
 
-        $status = $this->actors->within($answered->actor, $answered->authority, fn () => $this->admission->admit(
+        $run = fn () => $this->actors->within($answered->actor, $answered->authority, fn () => $this->admission->admit(
             $answered->target->sessionId,
             $this->deadline,
             fn () => $this->bus->runGuarded($command, fn () => AgentStackRow::activeFor($answered->target)->isDefined()
                 ? CommandOriginStatus::Eligible
                 : CommandOriginStatus::TargetUnavailable),
         ));
+        $status = $this->commands->requiresRequestKey($command::class)
+            ? $this->requestKey->independently($this->keyOf($answered), $run)
+            : $run();
 
         if ($status !== CommandOriginStatus::Eligible) {
             $this->log->info('A command a state answered with was skipped.', [
@@ -55,5 +61,13 @@ final readonly class RunStateCommand implements Listener
                 'outcome' => $status->value,
             ]);
         }
+    }
+
+    /**
+     * The same answer of the same stack always makes the same key.
+     */
+    private function keyOf(StateCommandAnswered $answered): string
+    {
+        return 'state-'.substr(hash('sha256', $answered->target->description().serialize($answered->command)), 0, 40);
     }
 }

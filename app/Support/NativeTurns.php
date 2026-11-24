@@ -70,7 +70,12 @@ final readonly class NativeTurns implements NativeTurnRecords
         }
 
         $turnGeneration = $generation ?? $runtime->process_generation;
-        $turn = DriverTurn::recordStart($runtime->id, $turnGeneration, $promptId, CarbonImmutable::now());
-        $this->batches->bindTo($runtime->agent_session_id, $turnGeneration, $turn->id);
+
+        // Like the wake's acknowledgement, the turn is written before the hook's own transaction, in one of its own, so
+        // its facts reach their listeners.
+        $this->transaction->run(function () use ($runtime, $turnGeneration, $promptId): void {
+            $turn = DriverTurn::recordStart($runtime->id, $turnGeneration, $promptId, CarbonImmutable::now());
+            $this->batches->bindTo($runtime->agent_session_id, $turnGeneration, $turn->id);
+        });
     }
 }

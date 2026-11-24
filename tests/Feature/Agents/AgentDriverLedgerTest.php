@@ -93,6 +93,7 @@ use App\Support\InitialWakeSettlement;
 use App\Support\LaunchProfiles;
 use App\Support\MessageBatchService;
 use App\Support\NativeTurns;
+use App\Support\OutsideCommandAllowance;
 use App\Support\OpenedRuntime;
 use App\Support\PendingWorkSources;
 use App\Support\RequestKey;
@@ -1642,10 +1643,12 @@ final class AgentDriverLedgerTest extends TestCase
         $this->app->make(NativeTurns::class)->checkGeneration($opened->sessionId, 2);
     }
 
-    public function test_each_native_prompt_id_makes_one_turn(): void
+    public function test_each_native_prompt_id_makes_one_turn_inside_a_unit_of_its_own(): void
     {
         [, $opened] = $this->openRuntime();
         $turns = $this->app->make(NativeTurns::class);
+        // A hook records its prompt's turn outside any command, as the real app forbids.
+        $this->app->make(OutsideCommandAllowance::class)->forbid();
 
         $turns->recordPrompt($opened->sessionId, 1, 'prompt-a');
         $turns->recordPrompt($opened->sessionId, 1, 'prompt-a');

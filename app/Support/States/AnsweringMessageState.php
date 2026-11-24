@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\StateType;
-use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Contracts\Chat\ChatAnswer;
 use App\Contracts\Chat\MessageOffered;
 use App\Enums\FrameReuse;
@@ -110,11 +110,11 @@ final class AnsweringMessageState extends AgentState
     }
 
     /**
-     * A turn that ends on words posts them in the chat as an ordinary message, so an answer written only in the
-     * terminal reaches the chat and answers what waited. A turn that ends on nothing is sent back to answer, up to the
-     * limit in a row.
+     * A turn that ends on words posts them in the chat as the reply to the oldest message that waited, so an answer
+     * written only in the terminal reaches the chat where an agent may write: under a message it was shown. A turn that
+     * ends on nothing is sent back to answer, up to the limit in a row.
      */
-    public function onStop(StopRequested $input): Decision|PostChatMessageCommand
+    public function onStop(StopRequested $input): Decision|ReplyInChatCommand
     {
         if ($this->isAnswered() || $this->refusedStops >= self::REFUSED_STOP_LIMIT) {
             return Decision::delegate();
@@ -126,9 +126,10 @@ final class AnsweringMessageState extends AgentState
             return Decision::deny($this->answerNowText());
         }
 
+        $answered = $this->oldestId();
         $this->clear();
 
-        return new PostChatMessageCommand($this->inboxId, $input->stop->closingWords, "stop-{$input->stop->turnId}");
+        return new ReplyInChatCommand($answered, $input->stop->closingWords, "stop-{$input->stop->turnId}", $this->inboxId);
     }
 
     /**

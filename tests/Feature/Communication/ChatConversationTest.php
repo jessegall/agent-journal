@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Enums\ReceiptDeliveryState;
 use App\Events\PageChanged;
+use App\Events\StateCommandAnswered;
+use App\Listeners\RunStateCommand;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageAttention;
 use App\Models\Messages\MessageReceipt;
 use App\Models\Messages\ReceiptDelivery;
+use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\MessageBatchService;
 use App\Support\States\Support\AnsweringMessageStateReference;
@@ -22,6 +26,7 @@ use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Domain\Chat\Mcp\Tools\MessageReactionTool;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\TestStartAuthority;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -113,6 +118,35 @@ final class ChatConversationTest extends MessagingTestCase
             [['waitingIds' => [], 'toolUses' => 0, 'refusedStops' => 0]],
             $this->answeringValuesOf($agent, $inboxId),
         );
+    }
+
+    public function test_a_reply_a_state_answers_with_runs_under_a_key_made_from_the_answer(): void
+    {
+        $agent = TestStart::start();
+        $agent->openStack($this->app);
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new OpenPairChatCommand($agent->agent->id));
+        $questionId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'What is 2 plus 2?', 'owner-asks'));
+        $this->app->make(MessageBatchService::class)->next(
+            ActorIdentity::of($agent->agent),
+            $agent->session->id,
+            1,
+            self::CONTEXT_KEY,
+            CarbonImmutable::now(),
+        );
+        $agent->startRequest($this->app);
+        $answered = new StateCommandAnswered(
+            new StackTarget($agent->agent->id, $agent->session->id),
+            new ReplyInChatCommand($questionId, 'Four.', 'stop-turn-1', $inboxId),
+            ActorContext::forAgent($agent->agent->id),
+            TestStartAuthority::forAgent($agent->agent->id),
+        );
+
+        // A hook request carries no request key of its own, and the same answer heard twice posts once.
+        $this->app->make(RunStateCommand::class)->handle($answered);
+        $this->app->make(RunStateCommand::class)->handle($answered);
+
+        $this->assertSame(1, Message::query()->where('body', 'Four.')->count());
     }
 
     public function test_a_reaction_of_the_agent_answers_what_waited_in_the_chat(): void

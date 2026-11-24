@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Runs an installation check against a running journal: it starts real containers and sessions, so it is never part
  * of composer test (README.md).
  *
- *   php tools/installation-checks/run.php protected-session <claude-code|codex> [--skip-renewal] [--origin=<url>]
+ *   php tools/installation-checks/run.php protected-session <claude-code|codex> [--skip-renewal] [--reuse-session] [--origin=<url>]
  *       [--email=<owner email>] [--password=<owner password>]
  */
 
@@ -30,7 +30,7 @@ foreach (array_slice($argv, 1) as $argument) {
 [$check, $driver] = [$arguments[0] ?? '', $arguments[1] ?? ''];
 
 if ($check !== 'protected-session' || $driver === '') {
-    fwrite(STDERR, "Usage: run.php protected-session <claude-code|codex> [--skip-renewal] [--origin=<url>]\n");
+    fwrite(STDERR, "Usage: run.php protected-session <claude-code|codex> [--skip-renewal] [--reuse-session] [--origin=<url>]\n");
     exit(2);
 }
 
@@ -38,7 +38,13 @@ $journal = new Journal((string) ($options['origin'] ?? 'http://localhost:54700')
 $containers = new Containers($checkout);
 $startedAt = gmdate('Ymd-His');
 
-$sessionCheck = new ProtectedSessionCheck($journal, $containers, $driver, isset($options['skip-renewal']));
+$sessionCheck = new ProtectedSessionCheck(
+    $journal,
+    $containers,
+    $driver,
+    isset($options['skip-renewal']),
+    isset($options['reuse-session']),
+);
 
 try {
     $journal->signIn((string) ($options['email'] ?? 'owner@journal.local'), (string) ($options['password'] ?? 'password'));

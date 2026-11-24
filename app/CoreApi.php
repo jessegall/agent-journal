@@ -83,6 +83,7 @@ use App\Commands\DismissMessage\DismissMessageCommand;
 use App\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Commands\EndTerminalViews\EndTerminalViewsCommand;
+use App\Commands\SettleDispatchedBatches\SettleDispatchedBatchesCommand;
 use App\Commands\EnforceLaunchLimits\EnforceLaunchLimitsCommand;
 use App\Commands\EnrollHost\EnrollHostCommand;
 use App\Commands\ExpireNavigationRequests\ExpireNavigationRequestsCommand;
@@ -2689,6 +2690,7 @@ final class CoreApi
                 MarkSilentSessionsCommand::class,
                 CertifyPassedStopsCommand::class,
                 EndTerminalViewsCommand::class,
+                SettleDispatchedBatchesCommand::class,
                 EnforceLaunchLimitsCommand::class,
                 AdvanceAskCommand::class,
                 HandOffCodeReviewCommand::class,
