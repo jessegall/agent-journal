@@ -84,6 +84,7 @@
             "Tests\\Fixtures\\Modules\\Ledger\\": "tests/Fixtures/Modules/Ledger/src/",
             "Tests\\Fixtures\\Modules\\Notes\\": "tests/Fixtures/Modules/Notes/src/",
             "Tests\\": "tests/",
+            "Tools\\InstallationChecks\\": "tools/installation-checks/src/",
             "Tools\\CodeStyle\\": "tools/code-style/"
         }
     },
@@ -145,6 +146,10 @@
         "test:run-inside": [
             "Composer\\Config::disableProcessTimeout",
             "@php tests/bin/run-tests.php"
+        ],
+        "installation-checks": [
+            "Composer\\Config::disableProcessTimeout",
+            "php tools/installation-checks/run.php"
         ],
         "test:affected": [
             "Composer\\Config::disableProcessTimeout",
