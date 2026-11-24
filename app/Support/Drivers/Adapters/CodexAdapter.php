@@ -168,7 +168,7 @@ final readonly class CodexAdapter implements DriverAdapter
             HookEvent::Stop => new JudgedCall(
                 new StopRequested($hook, new StopDetails(
                     $hook->hookId,
-                    $hookInput->isStopContinuation(),
+                    $hookInput->isAfterRefusedStop(),
                     $hookInput->closingWords(),
                 )),
                 fn (HookAnswer $answer) => DriverReplies::stop($answer),

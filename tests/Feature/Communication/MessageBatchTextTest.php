@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Data\MessageBatchItemData;
+use App\Data\Messages\MessageBatchItemData;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Tools\MessageBatchAcknowledgeTool;
@@ -24,7 +24,7 @@ use Tests\Support\MessagingTestCase;
 
 /**
  * An agent has the journal's tools and no command line, so the text a wake shows it names the one tool that answers,
- * with the message to answer; how the chat works is said once to a driver context (user message 19690).
+ * with the message to answer; how the chat works is said once to a driver context.
  */
 final class MessageBatchTextTest extends MessagingTestCase
 {

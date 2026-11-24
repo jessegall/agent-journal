@@ -6,7 +6,7 @@ namespace App\Support\Links;
 
 use App\Concerns\ProvidesModelRecords;
 use App\Contracts\Records\RecordProvider;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Models\Messages\Message;
 use App\Support\ReadBuilder;
 use Illuminate\Container\Attributes\Scoped;

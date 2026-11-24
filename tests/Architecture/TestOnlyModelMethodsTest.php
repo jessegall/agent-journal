@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 /**
  * No public model method is called only by tests: such a method is a second copy of behaviour the application no
- * longer uses (user 10742). tools/refactoring/test-only-methods.php finds them; the ones already known wait in
+ * longer uses. tools/refactoring/test-only-methods.php finds them; the ones already known wait in
  * docs/naming/test-only-model-methods.txt for their own decision, so only a new one fails.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every model and reads the whole application and its tests.')]

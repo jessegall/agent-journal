@@ -39,7 +39,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Every fact of doc 70 table 1 keeps its published shape through plan 40 (doc 67 sections 12 and 21): its fields and
+ * Every published fact keeps its shape: its fields and
  * their types, actor fields included, its delivery after the commit or at once, and a payload a queue can carry. The
  * Tasks and Plans facts are also sent through their real commands, a repeat included. Each migration slice keeps its
  * rows passing unchanged.

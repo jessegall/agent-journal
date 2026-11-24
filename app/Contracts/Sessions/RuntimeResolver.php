@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts\Sessions;
 
-use App\Data\DriverRequestStatus;
-use App\Data\RuntimeStatus;
+use App\Data\Agents\DriverRequestStatus;
+use App\Data\Processes\RuntimeStatus;
 use App\Exceptions\StackTargetRefused;
 
 /**

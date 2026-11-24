@@ -8,7 +8,7 @@ use App\Commands\AskMessage\AskMessageCommand;
 use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Chat\ConversationResolver;
-use App\Data\MessageView;
+use App\Data\Messages\MessageView;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\MessagingTestCase;
 

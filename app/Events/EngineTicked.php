@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Support\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 
@@ -12,7 +11,7 @@ use Carbon\CarbonImmutable;
  * One engine pass ran: the time it started and how long since the previous dispatched pass started, or since the
  * engine took its lock for the first pass. It names no frame and no stack.
  */
-final readonly class EngineTicked implements Event
+final readonly class EngineTicked extends EngineEvent
 {
     public function __construct(
         public CarbonImmutable $now,

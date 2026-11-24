@@ -16,8 +16,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A refusal as the caller sees it (doc 19, Book I): a form error on a web page, and on a JSON request the refusal's
- * code, message and fields with its status. Refused input (doc 49, Book 3) is a 422 invalid-input with its fields.
+ * A refusal as the caller sees it: a form error on a web page, and on a JSON request the refusal's
+ * code, message and fields with its status. Refused input is a 422 invalid-input with its fields.
  */
 final class CommandRefusalRenderingTest extends TestCase
 {

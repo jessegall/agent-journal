@@ -55,6 +55,7 @@ $frames['frames'][] = [
     'isBottom' => false,
     'subject' => ['id' => (string) $environment('LOCK_TASK_NUMBER'), 'runNumber' => 1],
     'enteredAt' => new DateTimeImmutable()->format('Y-m-d\\TH:i:s.uP'),
+    'values' => ['number' => (int) $environment('LOCK_TASK_NUMBER'), 'runNumber' => 1],
 ];
 
 $update = $database->prepare('UPDATE agent_stacks SET frames = ?, version = version + 1 WHERE id = ?');

@@ -6,6 +6,7 @@ namespace App\Support\States;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
+use App\Enums\FrameReuse;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\ContextCompacted;
@@ -29,6 +30,14 @@ use PhpOption\Option;
  */
 abstract class AgentState implements HookAnswerer
 {
+    /**
+     * How a push of this state finds a frame already on the stack instead of adding one; none by default.
+     */
+    public function frameReuse(): FrameReuse
+    {
+        return FrameReuse::None;
+    }
+
     /**
      * Whether the work this state stands for is done. A finished frame stays stored but a walk passes over it, as if it
      * were transparent; it leaves only when an explicit pop exposes it at the top.

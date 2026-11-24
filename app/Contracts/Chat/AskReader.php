@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Contracts\Chat;
 
-use App\Data\AskCard;
-use App\Data\AskDetail;
-use App\Data\AskInbox;
+use App\Data\Asks\AskCard;
+use App\Data\Asks\AskDetail;
+use App\Data\Asks\AskInbox;
 use App\Values\AskReference;
 
 interface AskReader

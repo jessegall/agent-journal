@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\CallerReceipts;
-use App\Data\Profiles\SignInReceiptData;
+use App\Data\Accounts\SignInReceiptData;
 use App\Enums\ReceiptState;
 use App\Enums\SignInReceiptStatus;
 use App\Http\Requests\Profiles\SignInReceiptRequest;

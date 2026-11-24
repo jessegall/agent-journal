@@ -14,7 +14,7 @@ use Illuminate\Routing\Redirector;
 final readonly class ReadShownController
 {
     /**
-     * Marks the shown incoming messages read for everyone at the inbox, and takes up the questions among them.
+     * Marks the shown incoming messages read for everyone at the inbox, and claims the questions among them.
      */
     public function __invoke(ReadShownInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {

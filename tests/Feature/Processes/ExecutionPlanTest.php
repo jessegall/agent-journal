@@ -17,8 +17,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A known, completely read command line is lowered into steps with literal arguments, never shell text (doc 21
- * revision 6, sections 53 and 55).
+ * A known, completely read command line is lowered into steps with literal arguments, never shell text.
  */
 final class ExecutionPlanTest extends TestCase
 {

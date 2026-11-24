@@ -1,4 +1,4 @@
-# Task 1347 (user 9325): a type is named with a noun for its role, never a verb phrase about its implementer.
+# A type is named with a noun for its role, never a verb phrase about its implementer.
 App\Bus\Contracts\AnswersFromReceipt ReceiptRefusal
 App\Web\Contracts\ChecksUiOwnerAvailability UiOwnerAvailability
 App\Bus\Contracts\DeclaresClassLevelAbilities ClassLevelAbilities

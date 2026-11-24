@@ -9,7 +9,7 @@ use App\Support\Reflector;
 use Tests\TestCase;
 
 /**
- * Doc 107, Runtime ownership of controllers and MCP discovery: while packages move from src/Mcp to src/Mcp/Tools and
+ * Runtime ownership of controllers and MCP discovery: while packages move from src/Mcp to src/Mcp/Tools and
  * src/Mcp/Resources, the MCP server offers exactly the tool names and resource addresses of the layout baseline.
  */
 final class McpDiscoveryBaselineTest extends TestCase

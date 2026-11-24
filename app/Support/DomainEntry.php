@@ -42,6 +42,7 @@ use App\Exceptions\SkillDeclarationRefused;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\ExportValidator as ExportsCheck;
+use App\Support\States\AgentState;
 use App\Values\CommandRule;
 use App\Values\PolicyDefinition;
 use App\Values\RuleScope;
@@ -143,16 +144,20 @@ final readonly class DomainEntry
     }
 
     /**
-     * Whether a fully written name is one of this domain's events: a class of its own that implements Event, wherever
-     * it sits.
+     * Whether a fully written name is one of this domain's events: a concrete class of its own that implements Event,
+     * wherever it sits; a group type its events implement is a contract.
      */
     public function ownsEvent(string $name): bool
     {
         $className = ltrim($name, '\\');
 
-        return $this->ownsName($className)
-            && Reflector::exists($className)
-            && Reflector::of($className)->isSubclassOf(Event::class);
+        if (! $this->ownsName($className) || ! Reflector::exists($className)) {
+            return false;
+        }
+
+        $type = Reflector::of($className);
+
+        return $type->isSubclassOf(Event::class) && $type->isInstantiable();
     }
 
     /**
@@ -560,9 +565,9 @@ final readonly class DomainEntry
     }
 
     /**
-     * The agent states this domain declares, each type key with its factory; none when it declares no StateProvider.
+     * The agent state classes this domain declares; none when it declares no StateProvider.
      *
-     * @return array<string, class-string>
+     * @return list<class-string<AgentState>>
      */
     public function states(): array
     {

@@ -8,7 +8,7 @@ use App\Calls\Supervision\MakeAskCall;
 use App\Commands\AskSupervisor\AskSupervisorCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\AskReader;
-use App\Data\AskCard;
+use App\Data\Asks\AskCard;
 
 final readonly class MakeAskController
 {

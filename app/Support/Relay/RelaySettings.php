@@ -137,7 +137,7 @@ final readonly class RelaySettings
 
     /**
      * The hook path, with the process generation the host gave this driver when it has one, so the server can refuse
-     * a call from an older process (doc 40, section 12).
+     * a call from an older process.
      */
     public function hookPath(string $driver): string
     {

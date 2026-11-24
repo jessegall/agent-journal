@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Events;
 
 use App\Contracts\Events\ActiveRuleChange;
-use App\Contracts\Events\Event;
 use App\Models\CommandRules\ClassificationRule;
 
 /**
  * A project owner retired a command rule: new admissions stop relying on it, processes already started run on.
  */
-final readonly class RuleRetired implements ActiveRuleChange, Event
+final readonly class RuleRetired extends ProcessEvent implements ActiveRuleChange
 {
     public function __construct(
         public string $projectKey,

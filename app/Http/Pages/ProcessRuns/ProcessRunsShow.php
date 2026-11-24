@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\ProcessRuns;
 
-use App\Data\RunWindowData;
+use App\Data\Processes\RunWindowData;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutBackData;

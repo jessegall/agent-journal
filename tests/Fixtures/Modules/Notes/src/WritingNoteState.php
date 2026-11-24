@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use App\Attributes\StateType;
+use App\Enums\SessionTransferType;
 use App\Contracts\Bus\Command;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
@@ -16,6 +18,7 @@ use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 /**
  * While the agent writes a note, it may not stop.
  */
+#[StateType('notes.writing', schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class WritingNoteState extends AgentState
 {
     public function onStop(StopRequested $input): Decision

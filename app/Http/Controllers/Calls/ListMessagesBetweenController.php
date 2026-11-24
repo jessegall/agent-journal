@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\ListMessagesBetweenCall;
 use App\Contracts\Chat\ConversationResolver;
-use App\Data\MessagePage;
+use App\Data\Messages\MessagePage;
 
 /**
  * Reads the messages between two inboxes, both ways, older than the cursor.

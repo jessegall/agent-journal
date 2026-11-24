@@ -15,8 +15,7 @@ use Tests\TestCase;
 
 /**
  * The runs list and the run page show every part with its four observations, its output tails and its problems, a
- * result only with a receipt, and let the owner stop a run; another project's runs never show (doc 21 revision 6,
- * sections 54, 69 and 70).
+ * result only with a receipt, and let the owner stop a run; another project's runs never show.
  */
 final class RunPageTest extends TestCase
 {

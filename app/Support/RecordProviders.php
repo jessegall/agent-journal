@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Records\RecordProvider;
 use App\Contracts\Records\RecordProviderRegistration;
 use App\Contracts\Records\RecordResolver;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Exceptions\RecordProviderInvalid;
 use App\Exceptions\UnknownLinkType;
 use App\Models\Records\Link;

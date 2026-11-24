@@ -20,7 +20,7 @@ export type PageActionOptions = Omit<
 /**
  * Sends a change from a page and stays on it: the controller answers with a redirect back and its flash (a notice the
  * shell's toast region shows, or the id of what it made), Inertia maps a refusal to the page's errors, and only the
- * props named reload, with the scroll and the open state kept (rule 56). A change that arrives meanwhile is read after.
+ * props named reload, with the scroll and the open state kept. A change that arrives meanwhile is read after.
  */
 export function sendPageAction(
     route: RouteDefinition<PageActionMethod>,

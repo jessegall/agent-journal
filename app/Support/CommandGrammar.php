@@ -8,7 +8,7 @@ use BackedEnum;
 use PhpOption\Option;
 
 /**
- * What a command may carry and a handler may return (doc 19, section 6.7): whole numbers, text, yes or no and
+ * What a command may carry and a handler may return: whole numbers, text, yes or no and
  * decimals, backed enums, their nullable forms, allowed values (final readonly classes the owner may name whose own
  * properties follow the same grammar), and lists of whole numbers, text, one enum or one allowed value.
  */

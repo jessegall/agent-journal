@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Data\HostDescriptorData;
+use App\Data\Hosts\HostDescriptorData;
 use App\Values\PresenceReport;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\Validation\In;

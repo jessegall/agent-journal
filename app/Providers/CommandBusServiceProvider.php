@@ -56,7 +56,7 @@ use Throwable;
 
 /**
  * Binds the command bus for each request, and refuses any transaction a handler or middleware opens itself while a
- * command runs: the bus opens the one transaction (doc 19, section 6.11).
+ * command runs: the bus opens the one transaction.
  */
 final class CommandBusServiceProvider extends ServiceProvider
 {

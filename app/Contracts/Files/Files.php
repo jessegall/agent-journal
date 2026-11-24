@@ -39,7 +39,7 @@ interface Files
 
     /**
      * A file the user names on the command line: read through its place when an open place holds it, refused with
-     * FolderClosed when a private place does, and read as named when it lies outside every place (doc 69).
+     * FolderClosed when a private place does, and read as named when it lies outside every place.
      */
     public function readNamed(string $path): string;
 

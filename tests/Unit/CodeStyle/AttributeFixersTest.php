@@ -13,7 +13,7 @@ use Tools\CodeStyle\AttributeOrderFixer;
 use Tools\CodeStyle\StandaloneAttributeFixer;
 
 /**
- * User messages 9145, 9262 and 15837: the formatter puts an attribute on its own line above a property or promoted
+ * The formatter puts an attribute on its own line above a property or promoted
  * parameter, and stacks attributes shortest first.
  */
 final class AttributeFixersTest extends TestCase

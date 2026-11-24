@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Data\Profiles\AccountMonthCostData;
-use App\Data\Profiles\AccountRowData;
-use App\Data\Profiles\AccountThreadTokensData;
-use App\Data\Profiles\AccountUsageData;
+use App\Data\Accounts\AccountMonthCostData;
+use App\Data\Accounts\AccountRowData;
+use App\Data\Accounts\AccountThreadTokensData;
+use App\Data\Accounts\AccountUsageData;
 use App\Enums\UsageWindowSlot;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;

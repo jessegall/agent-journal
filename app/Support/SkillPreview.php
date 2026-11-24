@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\SkillAgentSelection;
+use App\Data\Skills\SkillAgentSelection;
 use App\Exceptions\SkillAgentHidden;
 use App\Exceptions\SkillContextUnavailable;
 use App\Exceptions\SkillSelectionConflict;

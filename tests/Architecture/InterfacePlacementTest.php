@@ -10,7 +10,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Rule 17: every interface of a domain or the core lives in a Contracts folder of the area that uses it.
+ * Every interface of a domain or the core lives in a Contracts folder of the area that uses it.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class InterfacePlacementTest extends TestCase

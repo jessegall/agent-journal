@@ -27,8 +27,7 @@ use App\Values\RunAdmission;
 use App\Values\TimingVerdict;
 
 /**
- * Issues evidence permits for known command lines and turns a used permit into an evidence-only run (doc 21 revision
- * 6, section 71): the exact line is read and classified again, must keep its full output, and becomes a run admitted
+ * Issues evidence permits for known command lines and turns a used permit into an evidence-only run: the exact line is read and classified again, must keep its full output, and becomes a run admitted
  * in evidence mode that never answers the agent. The run's admission id is the permit's, so a second start of the
  * same permit fails on that unique key.
  */

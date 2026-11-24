@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Attributes\RequiresTransactionListener;
-use App\Contracts\Events\Event;
+use App\Attributes\TransactionListenerConsent;
 
 /**
  * A task got a new title and brief, raised by the task inside the transaction that changed it, so Plans can refuse
  * the change while the task's plan is under review; its listener is named as text so Tasks does not depend on Plans.
  */
-#[RequiresTransactionListener('Domain\Plans\Listeners\RefuseTaskChangeUnderReview')]
-final readonly class TaskDescribed implements Event
+#[TransactionListenerConsent]
+final readonly class TaskDescribed extends TaskEvent
 {
     public function __construct(public string $taskId) {}
 }

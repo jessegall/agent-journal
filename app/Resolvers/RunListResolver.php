@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Data\RunRowData;
+use App\Data\Processes\RunRowData;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\Layout\DeclaredLayoutData;
@@ -14,7 +14,7 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\ProjectKey;
 
 /**
- * The current project's newest runs the viewer may see (rule 4) as a list layout: what each ran, whether it was a
+ * The current project's newest runs the viewer may see as a list layout: what each ran, whether it was a
  * normal run or evidence only, its lifecycle and start, each opening its own run; a notice when there is none.
  */
 final readonly class RunListResolver implements PageResolver

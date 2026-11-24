@@ -13,7 +13,7 @@ use App\Values\OptionGrammar;
 use App\Values\ProgramSpellings;
 
 /**
- * Programs that only read (doc 21 revision 6, section 6, baseline families): cat, head, tail, ls, pwd, wc, stat, file,
+ * Programs that only read: cat, head, tail, ls, pwd, wc, stat, file,
  * echo, printf, grep, rg, diff, which and tree, each with the options it is known to take.
  */
 final readonly class ReadingRules

@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Rule 67 (user messages 16018, 16024): a test never compares a literal sentence, so rewording a text never breaks a
+ * A test never compares a literal sentence, so rewording a text never breaks a
  * test. It asserts the exception class and its fields, or compares against what the code builds.
  */
 #[TimeLimit(seconds: 20, reason: 'It parses every test file it judges, from the scan cache after the first run.')]

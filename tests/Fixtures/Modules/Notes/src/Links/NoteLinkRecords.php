@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Support\ActorIdentity;
 use App\Support\ReadBuilder;
 use App\Contracts\Records\RecordProvider;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Concerns\ProvidesModelRecords;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;

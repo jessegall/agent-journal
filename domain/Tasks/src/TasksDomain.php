@@ -45,6 +45,8 @@ use Domain\Tasks\Contracts\TaskLogResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskProofResolver;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskRunEndEvent;
+use Domain\Tasks\Contracts\TaskStateEvent;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Data\TaskGraph;
@@ -91,8 +93,7 @@ use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\TaskAssigner;
 use Domain\Tasks\Support\Mcp\HeldTasksOverview;
 use Domain\Tasks\Support\Skills\TasksSkill;
-use Domain\Tasks\Support\States\Support\WorkingOnTaskStateFactory;
-use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskDraftProducer;
 use Domain\Tasks\Support\TaskLogSearchAccess;
 use Domain\Tasks\Support\TaskLogSearchProvider;
@@ -214,6 +215,8 @@ final class TasksDomain extends Domain implements
                 TaskWaitChanged::class,
             )
             ->contracts(
+                TaskStateEvent::class,
+                TaskRunEndEvent::class,
                 TaskProgressCounter::class,
                 TaskHistoryResolver::class,
                 TaskLogResolver::class,
@@ -276,7 +279,7 @@ final class TasksDomain extends Domain implements
 
     public function states(): array
     {
-        return [WorkingOnTaskStateReference::TYPE_KEY => WorkingOnTaskStateFactory::class];
+        return [WorkingOnTaskState::class];
     }
 
     public function assignables(): array

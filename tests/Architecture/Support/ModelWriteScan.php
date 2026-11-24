@@ -31,7 +31,7 @@ use Tests\Support\ScanCache\FileScan;
 final readonly class ModelWriteScan implements FileScan
 {
     /**
-     * The contract and trait of a model that records the facts of its writes (plan 40, task 1578).
+     * The contract and trait of a model that records the facts of its writes.
      */
     public const string EVENT_SOURCE = 'App\Contracts\Events\EventSource';
 

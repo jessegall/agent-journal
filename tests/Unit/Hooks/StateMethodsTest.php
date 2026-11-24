@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Contracts\Events\Event;
 use App\Declarations\StateMethods;
 use App\Exceptions\InvalidStateMethod;
+use App\Support\Decisions\Decision;
 use App\Support\States\AgentState;
 use App\Support\States\Exceptions\InvalidStateClass;
 use Domain\Tasks\Events\TaskStarted;
@@ -51,7 +53,7 @@ final class StateMethodsTest extends TestCase
             {
                 return null;
             }
-        }, '::onTaskStarted must be a public instance method with one required concrete Event.'];
+        }, '::onTaskStarted must be a public instance method with one required Event.'];
 
         yield 'static method' => [new class extends AgentState
         {
@@ -59,6 +61,38 @@ final class StateMethodsTest extends TestCase
             {
                 return null;
             }
-        }, '::onTaskStarted must be a public instance method with one required concrete Event.'];
+        }, '::onTaskStarted must be a public instance method with one required Event.'];
+
+        yield 'nullable answer' => [new class extends AgentState
+        {
+            public function onTaskStarted(TaskStarted $event): Decision|null
+            {
+                return null;
+            }
+        }, '::onTaskStarted must return void or what a hook returns'];
+
+        yield 'array answer' => [new class extends AgentState
+        {
+            /**
+             * @return list<Decision>
+             */
+            public function onTaskStarted(TaskStarted $event): array
+            {
+                return [Decision::delegate()];
+            }
+        }, '::onTaskStarted must return void or what a hook returns'];
+    }
+
+    public function test_an_event_method_may_answer_with_a_command_or_a_delegate_decision(): void
+    {
+        $state = new class extends AgentState
+        {
+            public function onTaskStarted(TaskStarted $event): UnlinkRecordsCommand|Decision
+            {
+                return Decision::delegate();
+            }
+        };
+
+        $this->assertArrayHasKey(TaskStarted::class, new StateMethods()->eventsOf($state::class));
     }
 }

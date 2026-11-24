@@ -52,7 +52,7 @@ func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing
 	if len(files) != 2 || files[1].Name != "mcp.json" {
 		t.Fatalf("files %+v", files)
 	}
-	// Restricted mode refuses the mode every session runs in (user messages 19631, 19636), so no start names it.
+	// Restricted mode refuses the mode every session runs in, so no start names it.
 	if slices.Contains(arguments, "--restricted") || !slices.Contains(arguments, "/state/runtimes/r1/mcp.json") {
 		t.Fatalf("arguments %v", arguments)
 	}
@@ -76,7 +76,7 @@ func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T)
 
 // A protected start runs every command as the executor's user through the shell bridge, so Claude Code's own sandbox,
 // which cannot start in the agent container, is off; and an account that switches off the mode every session runs
-// in, so that Claude Code would ask a user, is not started (user messages 19631, 19636).
+// in, so that Claude Code would ask a user, is not started.
 func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndNeverAsksAUser(t *testing.T) {
 	start := contracts.BaseStart{SettingsFolder: "/state", SessionID: "session", Protected: true, Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer}}.Turn("", false)
 

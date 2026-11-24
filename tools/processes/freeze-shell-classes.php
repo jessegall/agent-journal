@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 /*
- * Freezes the expected classification of every complete case in tests/Fixtures/Processes/ShellCorpus (doc 21
- * revision 6, sections 35 and 38): whether it is known, the classes it needs and, per part, its program, purpose,
+ * Freezes the expected classification of every complete case in tests/Fixtures/Processes/ShellCorpus: whether it is known, the classes it needs and, per part, its program, purpose,
  * unresolved reasons and contract tools, with no saved aliases. Each frozen block was reviewed against the rules of
- * plan 14 phase 70, and class-decisions.jsonl names every intended difference from version 5. Run it in the app container only after a
+ * And class-decisions.jsonl names every intended difference from version 5. Run it in the app container only after a
  * reviewed rule change; ShellCorpusTest compares the classifier with what it wrote. Running it twice gives the same
  * bytes.
  *

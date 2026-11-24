@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 /**
  * Nothing above the driver chooses how an operation is carried out by the runtime's driver type: only Agents records
- * it, and only the host's runtime factory picks a driver by it (doc 40 revision 3, sections 5 and 61).
+ * it, and only the host's runtime factory picks a driver by it.
  */
 #[TimeLimit(seconds: 5, reason: 'It reads every PHP file of Core and the domains.')]
 final class DriverVariantBoundaryTest extends TestCase
@@ -49,7 +49,7 @@ final class DriverVariantBoundaryTest extends TestCase
 
     /**
      * Agents keeps a runtime's variant, Profiles declares and chooses the default a launch runs with, and Drivers
-     * registers the mode each driver runs in (doc 103, section 3).
+     * registers the mode each driver runs in.
      */
     private static function mayNameVariant(string $path): bool
     {

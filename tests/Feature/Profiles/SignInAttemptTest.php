@@ -11,7 +11,7 @@ use App\Commands\CompleteSignIn\CompleteSignInCommand;
 use App\Commands\ReconcileAccounts\ReconcileAccountsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Data\Profiles\SignInAttemptData;
+use App\Data\Accounts\SignInAttemptData;
 use App\Enums\AccountState;
 use App\Enums\CommandEntry;
 use App\Enums\SignInMethod;

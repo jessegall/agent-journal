@@ -15,7 +15,7 @@ use SplFileInfo;
 
 /**
  * An attribute on a property or a promoted constructor parameter sits on its own line above it, never in front of it
- * on the same line (user message 9145).
+ * on the same line.
  */
 final class StandaloneAttributeFixer implements FixerInterface
 {

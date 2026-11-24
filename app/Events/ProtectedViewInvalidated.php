@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Support\UserChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -13,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
  * Tells each affected user's browser that something it shows may no longer be theirs to see, so it drops what it
  * shows before reading again. It names nothing.
  */
-final readonly class ProtectedViewInvalidated implements Event, ShouldBroadcast
+final readonly class ProtectedViewInvalidated extends WebEvent implements ShouldBroadcast
 {
     public const string NAME = 'view.protected-invalidated';
 

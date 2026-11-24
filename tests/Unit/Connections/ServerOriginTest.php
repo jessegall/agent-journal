@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Task 2742: install lines name an https origin; plain http only while the app runs locally, and only for this
+ * Install lines name an https origin; plain http only while the app runs locally, and only for this
  * machine or a private network address, so a folder on the same Mac or network can be connected for a test.
  */
 final class ServerOriginTest extends TestCase

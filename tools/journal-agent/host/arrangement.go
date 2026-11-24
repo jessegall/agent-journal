@@ -8,7 +8,7 @@ import (
 )
 
 // Arrangement is where this host runs agents: on the machine itself, or each in a container of the agent daemon
-// (doc 61, decision 1). The journal refuses a claim from a host whose arrangement is not the one it enrolled with.
+//. The journal refuses a claim from a host whose arrangement is not the one it enrolled with.
 type Arrangement string
 
 const (
@@ -47,7 +47,7 @@ func (arrangement Arrangement) IsContained() bool {
 
 // AssertServable refuses a contained host that lacks the agent daemon's socket or its installation name; a local host
 // ErrDriverNotContainable refuses a Codex start on a contained host, whatever its account's sign-in method: Codex's
-// sandbox limits writes only, so its tools could read its sign-in (doc 61, decision 8).
+// sandbox limits writes only, so its tools could read its sign-in.
 var ErrDriverNotContainable = errors.New("Codex's sandbox does not keep tools from its sign-in; container starts " +
 	"wait for the provider transport")
 
@@ -81,7 +81,7 @@ func (arrangement Arrangement) AssertServable(dockerSocket string, installationN
 var ErrContainedNeedsImages = errors.New("a contained host needs --agent-image and --runner-image, each by id or digest")
 
 // PinnedImages are the agent and sign-in runner images a contained host runs, each named by its digest: the sealed
-// installation of the contained arrangement (doc 61, decision 4).
+// installation of the contained arrangement.
 type PinnedImages struct {
 	Agent  string
 	Runner string

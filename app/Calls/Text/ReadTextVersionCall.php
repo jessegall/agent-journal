@@ -6,7 +6,7 @@ namespace App\Calls\Text;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Data\TextVersionSummary;
+use App\Data\Pages\TextVersionSummary;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Data;

@@ -8,9 +8,7 @@ use App\Attributes\InCommandTransaction;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Events\Listener;
 use App\Support\ActorIdentity;
-use Domain\Tasks\Events\TaskBlocked;
-use Domain\Tasks\Events\TaskCancelled;
-use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Contracts\TaskStateEvent;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskHistoryEntry;
@@ -26,7 +24,7 @@ final readonly class RecordTaskHistory implements Listener
 {
     public function __construct(private CurrentActor $actors) {}
 
-    public function handle(TaskStarted|TaskFinished|TaskBlocked|TaskCancelled $event): void
+    public function handle(TaskStateEvent $event): void
     {
         $task = Task::query()->whereKey($event->taskId)->sole();
         $actor = $event instanceof TaskStarted ? $event->actor : ActorIdentity::of($this->actors->actor());

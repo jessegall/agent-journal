@@ -7,7 +7,7 @@ namespace App\Calls\Scripts;
 use App\Attributes\Endpoint;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\JournalCall;
-use App\Data\ProfileDraftData;
+use App\Data\Profiles\ProfileDraftData;
 use App\Enums\CallEffect;
 use App\Enums\ReceiptOwner;
 use App\Support\CallKey;

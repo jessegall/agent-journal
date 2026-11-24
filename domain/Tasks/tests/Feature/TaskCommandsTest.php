@@ -22,7 +22,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
- * The Tasks commands on the bus (doc 19, phase 4): finish, block and cancel announce their change once it committed,
+ * The Tasks commands on the bus: finish, block and cancel announce their change once it committed,
  * a task nobody has is refused with nothing written, and a start needs a session the actor may see.
  */
 final class TaskCommandsTest extends TestCase

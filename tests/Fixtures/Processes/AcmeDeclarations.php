@@ -30,7 +30,7 @@ use App\Values\RuleExample;
 use App\Values\RuleScope;
 
 /**
- * The hypothetical acme verify check of doc 21 revision 6, section 72, as a project declaration with its proven exits.
+ * The hypothetical acme verify check as a project declaration with its proven exits.
  */
 final class AcmeDeclarations
 {

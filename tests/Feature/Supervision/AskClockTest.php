@@ -38,7 +38,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * An ask's clock and its escalation (task 954): a holder that keeps answering never lets its queue escalate, the ask
+ * An ask's clock and its escalation: a holder that keeps answering never lets its queue escalate, the ask
  * it answers runs out on its own allowance while those behind it wait, an overdue ask moves up to the owner, the root
  * of the chain closes it unanswered, 48 hours close it whatever it does, and the owner's late text keeps that outcome.
  */

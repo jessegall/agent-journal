@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Support\UserChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -13,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
  * One user's access to one chat ended: it left, was removed or the chat closed. Its window reads the page again and
  * hears nothing more about that chat.
  */
-final readonly class ChatAccessEnded implements Event, ShouldBroadcast
+final readonly class ChatAccessEnded extends WebEvent implements ShouldBroadcast
 {
     public const string NAME = 'chat.access-ended';
 

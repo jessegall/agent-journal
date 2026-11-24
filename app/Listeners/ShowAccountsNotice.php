@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Commands\RecordAccountNotice\RecordAccountNoticeCommand;
+use App\Contracts\Accounts\AccountNoticeCause;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\AccountNoticeReason;
 use App\Enums\CommandEntry;
-use App\Events\DriverFailed;
-use App\Events\StartUnavailable;
 
 /**
  * Turns a refused start or a failure the owner can act on into a notice on the driver's accounts, from the safe
@@ -20,11 +18,9 @@ final readonly class ShowAccountsNotice implements Listener
 {
     public function __construct(private JournalCommands $journal) {}
 
-    public function handle(StartUnavailable|DriverFailed $fact): void
+    public function handle(AccountNoticeCause $fact): void
     {
-        $reason = $fact instanceof StartUnavailable
-            ? AccountNoticeReason::forStart($fact->reason)
-            : AccountNoticeReason::forFailure($fact->failure);
+        $reason = $fact->noticeReason();
 
         if ($reason === null) {
             return;

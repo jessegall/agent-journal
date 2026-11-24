@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support\Readers;
 
 use App\Contracts\Sessions\ProfileLanguage;
-use App\Data\ProfileLanguageData;
-use App\Data\ScriptKeywordData;
-use App\Data\ScriptObjectData;
+use App\Data\Profiles\ProfileLanguageData;
+use App\Data\Profiles\ScriptKeywordData;
+use App\Data\Profiles\ScriptObjectData;
 use App\Support\KeywordRegistry;
 use App\Support\ObjectRegistry;
 use App\Support\ScriptChecker;

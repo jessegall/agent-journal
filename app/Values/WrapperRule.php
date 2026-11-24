@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * A program that runs another command, such as env, sudo or timeout (doc 21 revision 3, section 8): its own options,
+ * A program that runs another command, such as env, sudo or timeout: its own options,
  * the classes it adds by itself, how many operands it takes before the child, and whether NAME=value words come first.
  * The child is classified as a command of its own and its classes are added to the wrapper's.
  */

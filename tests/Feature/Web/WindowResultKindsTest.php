@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Data\FailedWindow;
+use App\Data\Pages\FailedWindow;
 use App\Declarations\ResolverDefinition;
 use App\Enums\LayoutTag;
 use App\Exceptions\LayoutRefused;

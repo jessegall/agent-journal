@@ -133,16 +133,6 @@ final class DocblockAndStringScanTest extends TestCase
         $this->assertCount(9, $names);
     }
 
-    public function test_a_listener_a_requires_listener_attribute_names_is_no_use(): void
-    {
-        $names = array_map(
-            fn (NameUse $use) => $use->name,
-            StringScan::of($this->fixture('DeclaredListener'), $this->roots()),
-        );
-
-        $this->assertSame(['Domain\\Tasks\\Models\\Task'], $names);
-    }
-
     public function test_the_project_roots_come_from_composer(): void
     {
         $namespaces = $this->roots()->namespaces;

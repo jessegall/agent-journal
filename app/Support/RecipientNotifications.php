@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Chat\Notifications;
-use App\Data\NotificationTarget;
+use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationSourceType;
 use App\Events\NotificationsWithdrawn;
 use App\Models\Notifications\NotificationReceipt;

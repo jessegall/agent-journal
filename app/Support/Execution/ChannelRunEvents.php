@@ -20,7 +20,7 @@ use App\Values\RunEvent;
 use Psr\Log\LoggerInterface;
 
 /**
- * The host's side of a run's event channel (doc 21 revision 6, section 53): every event and output piece is first
+ * The host's side of a run's event channel: every event and output piece is first
  * written to a spool file in the run's folder, then sent signed with the start token and the run's event key. What a
  * lost connection kept back is sent again, in order, with the next send; the server ignores repeats.
  */

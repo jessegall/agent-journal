@@ -277,6 +277,28 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
+     * The targets of every active stack whose session runs and that holds a frame of one of the state types, of any
+     * agent: the stacks a fact reaches because one of their states listens for it.
+     *
+     * @param  list<string>  $typeKeys
+     * @return list<StackTarget>
+     */
+    public static function targetsHolding(array $typeKeys): array
+    {
+        $targets = [];
+
+        self::query()->runningOpen()->readInChunks(100, function ($rows) use ($typeKeys, &$targets): void {
+            foreach ($rows as $row) {
+                if ($row->frames->holdAnyOf($typeKeys)) {
+                    $targets[] = $row->target();
+                }
+            }
+        });
+
+        return $targets;
+    }
+
+    /**
      * The engine's read of every active stack that holds a ticking frame and whose session still runs, of any agent.
      *
      * @param  Builder<self>  $query
@@ -284,9 +306,19 @@ final class AgentStackRow extends Model implements ReadableModel
     #[Scope]
     protected function tickingOpen(Builder $query): void
     {
+        $query->runningOpen()->where('has_ticking_frames', true);
+    }
+
+    /**
+     * Every active stack whose session still runs, of any agent.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function runningOpen(Builder $query): void
+    {
         $query->withoutGlobalScope(AgentSessionScope::class)
             ->where('status', StackStatus::Active->value)
-            ->where('has_ticking_frames', true)
             ->whereIn(
                 'session_id',
                 AgentSession::query()->select('id')->whereIn(

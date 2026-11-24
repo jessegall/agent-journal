@@ -14,7 +14,7 @@ use SplFileInfo;
 
 /**
  * A statement of several lines stands apart by a blank line above and below, unless it is the first or last of its
- * block, while one-line statements in a row stay together (user message 13592). Only expression statements count, as
+ * block, while one-line statements in a row stay together. Only expression statements count, as
  * a control structure already gets its blank line from blank_line_before_statement.
  */
 final class BlankLineAroundMultilineStatementFixer implements FixerInterface

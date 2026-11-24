@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A receipt that an actor read part of a run's stored output (doc 21 revision 6, section 71 step 5): the envelope or
+ * A receipt that an actor read part of a run's stored output: the envelope or
  * one byte range of one stream, so a reader is proven only after its author looked at the real evidence (story 202).
  *
  * @property string $id

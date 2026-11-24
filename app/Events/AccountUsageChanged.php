@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * A usage reading of a saved account changed: a newer limit window, a new cost or a newer thread token count.
  */
-final readonly class AccountUsageChanged implements ShownOnAccounts
+final readonly class AccountUsageChanged extends AccountEvent implements ShownOnAccounts
 {
     public function __construct(public string $driver, public string $accountId) {}
 

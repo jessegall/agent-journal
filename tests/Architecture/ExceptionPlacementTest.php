@@ -10,7 +10,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Rule 14: every exception class of a domain or the core lives in that domain's or core area's Exceptions folder.
+ * Every exception class of a domain or the core lives in that domain's or core area's Exceptions folder.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class ExceptionPlacementTest extends TestCase

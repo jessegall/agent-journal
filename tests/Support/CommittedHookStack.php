@@ -11,7 +11,6 @@ use App\Enums\DriverVariant;
 use App\Enums\NoSubject;
 use App\Enums\RewriteSupport;
 use App\Enums\ShellDialect;
-use App\Events\StateTypesRequested;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
@@ -37,10 +36,9 @@ use App\Values\RuntimeIntent;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
-use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Hooks\ClosureStateLoader;
-use Tests\Fixtures\Hooks\InMemoryTaskLoader;
+use Tests\Fixtures\Hooks\InMemoryTasks;
+use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Fixtures\Hooks\MessagingState;
 use Tests\Fixtures\Hooks\RewritingState;
@@ -53,8 +51,9 @@ use Tests\Fixtures\Hooks\ScriptedState;
 trait CommittedHookStack
 {
     use RefreshHookDatabase;
+    use RegistersTestStates;
 
-    protected InMemoryTaskLoader $tasks;
+    protected InMemoryTasks $tasks;
 
     protected StackTarget $target;
 
@@ -72,29 +71,14 @@ trait CommittedHookStack
         config(['processes.runner' => true]);
         $this->target = $this->startedTarget();
         $this->openRuntime();
-        $this->tasks = new InMemoryTaskLoader([42 => TaskState::Started, 43 => TaskState::Started]);
+        $this->tasks = new InMemoryTasks([42 => TaskState::Started, 43 => TaskState::Started]);
+        $this->app->instance(InMemoryTasks::class, $this->tasks);
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
-        $tasks = $this->tasks;
-        $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, function (
-            StateTypesRequested $event,
-        ) use ($tasks): void {
-            $event->registry->register('test.tasks', $tasks);
-            $event->registry->register(
-                'guide',
-                new ClosureStateLoader(ScriptedState::class, fn () => ScriptedState::passing()),
-            );
-            $event->registry->register(
-                'test.messaging',
-                new ClosureStateLoader(MessagingState::class, fn () => new MessagingState()),
-            );
-            $event->registry->register(
-                'test.rewriting',
-                new ClosureStateLoader(RewritingState::class, fn () => new RewritingState(
-                    ['composer test' => 'git status', 'make docs' => 'acme publish --docs'],
-                    new StateReference('guide', NoSubject::None),
-                )),
-            );
-        });
+        $this->registerTestState('test.tasks', InMemoryTaskState::class);
+        $this->registerTestState('guide', ScriptedState::class);
+        $this->makeStatesWith(ScriptedState::class, fn () => ScriptedState::passing());
+        $this->registerTestState('test.messaging', MessagingState::class);
+        $this->registerTestState('test.rewriting', RewritingState::class);
         $this->callAs('call-1');
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(StartStacks::class)->open($this->target),
@@ -118,6 +102,16 @@ trait CommittedHookStack
         $session->save();
 
         return new StackTarget($agent->id, $session->id);
+    }
+
+    /**
+     * The rewriting state, which runs another line in place of each line it knows.
+     */
+    protected function rewriting(): StateReference
+    {
+        return new StateReference('test.rewriting', NoSubject::None, [
+            'replacements' => ['composer test' => 'git status', 'make docs' => 'acme publish --docs'],
+        ]);
     }
 
     /**
@@ -186,7 +180,7 @@ trait CommittedHookStack
 
     protected function task(int $number): StateReference
     {
-        return new StateReference('test.tasks', new SubjectReference((string) $number, 1));
+        return new StateReference('test.tasks', new SubjectReference((string) $number, 1), ['number' => $number, 'runNumber' => 1]);
     }
 
     protected function machine(): AgentStateMachine

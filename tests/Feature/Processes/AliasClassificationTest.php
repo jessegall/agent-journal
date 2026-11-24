@@ -18,8 +18,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A journal run of a saved alias is classified by its stored body, with its id and revision on every fact (doc 21
- * revision 6, sections 10, 26 and 68).
+ * A journal run of a saved alias is classified by its stored body, with its id and revision on every fact.
  */
 final class AliasClassificationTest extends TestCase
 {

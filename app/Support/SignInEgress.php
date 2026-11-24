@@ -6,7 +6,7 @@ namespace App\Support;
 
 /**
  * The way out a sign-in driver takes on a server: the allow-list proxy the contained arrangement names
- * (JOURNAL_EGRESS_PROXY, doc 61 decision 5), so no sign-in, check or sign-out reaches a provider around it. With no
+ * (JOURNAL_EGRESS_PROXY), so no sign-in, check or sign-out reaches a provider around it. With no
  * proxy set, as on the Mac, it adds nothing.
  */
 final readonly class SignInEgress

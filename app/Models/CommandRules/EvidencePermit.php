@@ -23,8 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A project owner's one-use permission to run one exact command line as an evidence-only sample (doc 21 revision 6,
- * sections 71 and 72): the line and its digests, the effects approved, the actor who may run it, capture limits and
+ * A project owner's one-use permission to run one exact command line as an evidence-only sample: the line and its digests, the effects approved, the actor who may run it, capture limits and
  * expiry. It is used once; the same request id returns the run it already started.
  *
  * @property string $id

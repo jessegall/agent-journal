@@ -16,7 +16,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A parent imports a helper's certified commits through a trusted operation (task 424): a certified writer's two
+ * A parent imports a helper's certified commits through a trusted operation: a certified writer's two
  * commits land under the work's ref without any hook running and without changing a branch, uncertified work is
  * refused, and repeating the import changes nothing.
  */

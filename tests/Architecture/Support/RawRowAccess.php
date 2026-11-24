@@ -15,7 +15,7 @@ use PhpParser\NodeFinder;
 use Tests\Support\ScanCache\FileScan;
 
 /**
- * Rows read or written past their model (rule 25): a DB facade query or statement, or a connection's table().
+ * Rows read or written past their model: a DB facade query or statement, or a connection's table().
  * Schema DDL through DB::statement('ALTER TABLE ...') and transaction control stay allowed.
  *
  * @implements FileScan<Violation>

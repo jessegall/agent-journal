@@ -147,7 +147,7 @@ func TestTwoDeliveredPromptsAreTwoTurnsOfOneGeneration(t *testing.T) {
 	}
 }
 
-// User message 19571: the program need not draw a typed line character for character: it folds a long paste into a
+// The program need not draw a typed line character for character: it folds a long paste into a
 // marker of its own and redraws cell by cell. A line counts as drawn once the composer changed and holds something,
 // and then gets its Enter; here the recording draws other words than the ones delivered.
 func TestAPromptTheProgramDrawsInItsOwnWordsIsStillEntered(t *testing.T) {

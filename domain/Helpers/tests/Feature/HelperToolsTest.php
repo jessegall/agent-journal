@@ -12,7 +12,7 @@ use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * The helper commands are MCP tools for the main agent (task 422): it discovers all five, a helper neither discovers
+ * The helper commands are MCP tools for the main agent: it discovers all five, a helper neither discovers
  * nor calls them, and a start without a model is refused before any command runs.
  */
 #[TimeLimit(6, 'Signed MCP requests page through the whole catalogue.')]

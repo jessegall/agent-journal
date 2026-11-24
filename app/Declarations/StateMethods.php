@@ -4,23 +4,32 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
+use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\TickableState;
 use App\Events\StateTypesRequested;
 use App\Exceptions\InvalidStateMethod;
+use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\DeclaredType;
 use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
-use App\Support\StateLoading\Contracts\StateLoader;
 use App\Support\States\AgentState;
 use App\Support\States\Exceptions\InvalidStateClass;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * Checks and caches effective hook and event declarations by state class.
  */
 final class StateMethods
 {
+    /**
+     * The types a hook method returns, and so the only ones an event method may return besides void.
+     */
+    private const array HOOK_ANSWER_TYPES = [AnswerPart::class, Command::class, Event::class];
+
     /**
      * @var array<class-string<AgentState>, array{
      *     methods: array<string, StateMethod>, events: array<class-string<Event>, StateMethod>
@@ -29,19 +38,35 @@ final class StateMethods
     private array $byClass = [];
 
     /**
-     * @return array<string, StateMethod>
+     * The event listeners the state class declares, by event.
+     *
+     * @param  class-string<AgentState>  $class
+     * @return array<class-string<Event>, StateMethod>
      */
-    public function forLoader(StateLoader $loader): array
+    public function eventsOf(string $class): array
     {
-        return $this->forState($loader->stateClass());
+        return $this->declarationsFor($class)['events'];
     }
 
     /**
-     * @return array<class-string<Event>, StateMethod>
+     * The state's method that hears the event: the one typed on its class, or else the one typed on a group it
+     * belongs to.
+     *
+     * @param  class-string<AgentState>  $class
+     * @return Option<StateMethod>
      */
-    public function eventsForLoader(StateLoader $loader): array
+    public function methodFor(string $class, Event $event): Option
     {
-        return $this->declarationsFor($loader->stateClass())['events'];
+        $events = $this->eventsOf($class);
+
+        if (array_key_exists($event::class, $events)) {
+            return new Some($events[$event::class]);
+        }
+
+        $eventTypes = Reflector::of($event)->typeNames();
+        $group = array_find_key($events, fn (StateMethod $method, string $type) => in_array($type, $eventTypes, true));
+
+        return $group === null ? None::create() : new Some($events[$group]);
     }
 
     /**
@@ -81,16 +106,13 @@ final class StateMethods
             || $parameterClass === Event::class
             || ! $this->hasRequiredArgument($method)
             || ! $this->isPublicInstanceMethod($method)) {
-            throw InvalidStateMethod::for($method, 'must be a public instance method with one required concrete Event.');
+            throw InvalidStateMethod::for($method, 'must be a public instance method with one required Event.');
         }
 
         $event = Reflector::of($parameterClass);
 
-        if ($event->isAbstract()
-            || $event->isInterface()
-            || $event->isEnum()
-            || $parameterClass === StateTypesRequested::class) {
-            throw InvalidStateMethod::for($method, 'must receive a concrete application event available to live states.');
+        if ($event->isEnum() || $parameterClass === StateTypesRequested::class) {
+            throw InvalidStateMethod::for($method, 'must receive an application event available to live states.');
         }
 
         $expected = 'on'.$event->shortName();
@@ -99,7 +121,46 @@ final class StateMethods
             throw InvalidStateMethod::for($method, "must be named {$expected}.");
         }
 
+        if (! $this->answersAsHooksDo($method)) {
+            throw InvalidStateMethod::for($method, 'must return void or what a hook returns: an AnswerPart, a Command, '
+                .'an Event or an iterable of them, never null or an array.');
+        }
+
         return $event->name();
+    }
+
+    /**
+     * Whether the method declares void, or only the types a hook method returns: AnswerPart, Command, Event and iterable.
+     */
+    private function answersAsHooksDo(ReflectedMethod $method): bool
+    {
+        return $method->returnType()
+            ->map(fn (DeclaredType $type) => $type->isNamedAs('void') || $this->isHookAnswerType($type))
+            ->getOrElse(false);
+    }
+
+    private function isHookAnswerType(DeclaredType $type): bool
+    {
+        if ($type->allowsNull) {
+            return false;
+        }
+
+        if (! $type->isNamed()) {
+            return array_all($type->members, fn (DeclaredType $member) => $this->isHookAnswerType($member));
+        }
+
+        $name = $type->name();
+
+        if ($type->isBuiltin() || ! Reflector::exists($name)) {
+            return $name === 'iterable';
+        }
+
+        $declared = Reflector::of($name);
+
+        return array_any(
+            self::HOOK_ANSWER_TYPES,
+            fn (string $answer) => in_array($answer, $declared->typeNames(), true),
+        );
     }
 
     /**
@@ -189,16 +250,7 @@ final class StateMethods
 
     private function argumentClass(ReflectedMethod $method): string|null
     {
-        $parameters = $method->parameters();
-
-        if ($parameters === []) {
-            return null;
-        }
-
-        return $parameters[0]->type()
-            ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin())
-            ->map(fn (DeclaredType $type) => $type->name())
-            ->getOrElse(null);
+        return $method->firstParameterClass()->getOrElse(null);
     }
 
     private function isPublicInstanceMethod(ReflectedMethod $method): bool

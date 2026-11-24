@@ -111,7 +111,7 @@ final class HostStartsTest extends TestCase
         $this->assertSame('/journal/accounts/claude-code', $recipe['environment'][0]['value']);
         $this->assertSame(['ANTHROPIC_CONFIG_DIR'], $recipe['emptyFolderVariables']);
         $this->assertContains('ANTHROPIC_API_KEY', $recipe['removedVariables']);
-        // Restricted mode refuses the never-ask mode every session runs in (user messages 19631, 19636).
+        // Restricted mode refuses the never-ask mode every session runs in.
         $this->assertNotContains('--restricted', $recipe['startFlags']);
         $this->assertSame(['2.1.323', 'direct-processes'], [$recipe['driverVersion'], $recipe['arrangement']]);
         $this->assertStringContainsString(
@@ -273,7 +273,7 @@ final class HostStartsTest extends TestCase
         $this->assertSame(ProcessStartState::Stopped, ProcessStart::query()->withoutGlobalScopes()->sole()->state);
     }
 
-    // User message 19586: a session its restarted host no longer serves is stopped by itself, and the pages hear it.
+    // A session its restarted host no longer serves is stopped by itself, and the pages hear it.
     public function test_a_start_the_restarted_host_ended_ends_its_session_and_tells_the_open_pages(): void
     {
         [$host, $opened] = $this->openRuntime();

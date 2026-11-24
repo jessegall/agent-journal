@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Data\StoredSkillSection;
+use App\Data\Skills\StoredSkillSection;
 use App\Values\SkillSection;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;

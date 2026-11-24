@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
-use App\Data\CommentList;
-use App\Data\TextCommentView;
+use App\Data\Comments\CommentList;
+use App\Data\Comments\TextCommentView;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

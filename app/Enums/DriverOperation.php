@@ -7,7 +7,7 @@ namespace App\Enums;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The operations every driver offers (doc 40, section 51), plus a key script.
+ * The operations every driver offers, plus a key script.
  */
 #[TypeScript]
 enum DriverOperation: string

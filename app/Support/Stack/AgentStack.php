@@ -85,7 +85,7 @@ final readonly class AgentStack
                 }
             }
 
-            if ($decision === null) {
+            if ($decision->answerType() === AnswerType::Delegate) {
                 continue;
             }
 
@@ -153,15 +153,15 @@ final readonly class AgentStack
     }
 
     /**
-     * The stack with a state put on top, or this stack when it already holds unfinished work for the same reference
-     * or the state is a conditional state that is switched off. A finished frame for the same reference gives way to
-     * the new one, so work that comes again starts with values of its own. Every push passes through here, so a
-     * declined push stores nothing.
+     * The stack with a state put on top, or this stack when a unique state already holds unfinished work for the same
+     * reference or the state's type is switched off. A finished frame of a unique state gives way to the new one, so
+     * work that comes again starts with values of its own; any other state gets a new frame on every push. Every push
+     * passes through here, so a declined push stores nothing.
      */
     public function withStateOnTop(StateReference $reference): self
     {
         foreach ($this->frames as $frame) {
-            if (! $frame->isFor($reference)) {
+            if (! $frame->keepsOneFrameFor($reference)) {
                 continue;
             }
 
@@ -176,7 +176,7 @@ final readonly class AgentStack
             return $this;
         }
 
-        $frame = $this->factory->frameFor($reference, $this->target);
+        $frame = $this->factory->frameFor($reference);
 
         if (! $frame->isEnabled()) {
             return $this;

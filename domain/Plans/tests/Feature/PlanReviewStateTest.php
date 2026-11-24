@@ -20,7 +20,7 @@ use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
 
 /**
- * Users 15889 and 15938: each agent named to review a plan gets the review on its stack once the request commits; a
+ * Each agent named to review a plan gets the review on its stack once the request commits; a
  * user named as reviewer works on no stack and gets nothing.
  */
 final class PlanReviewStateTest extends TestCase

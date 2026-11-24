@@ -6,8 +6,8 @@ namespace App\Casts;
 
 use App\Attributes\DecodesAnyJson;
 use App\Contracts\Bus\Command;
-use App\Data\StoredPolicyGrant;
-use App\Data\StoredScopedRead;
+use App\Data\Profiles\StoredPolicyGrant;
+use App\Data\Sharing\StoredScopedRead;
 use App\Enums\AuthorizationType;
 use App\Exceptions\GrantShapeInvalid;
 use App\Exceptions\ProfileRevisionUnreadable;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Data\MessagePage;
+use App\Data\Messages\MessagePage;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class MessagesBetweenRequest extends FormRequest

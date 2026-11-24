@@ -39,7 +39,7 @@ use App\Values\WordSegment;
 use App\Values\WrapperRule;
 
 /**
- * Classifies every node of a shell tree (doc 21 revision 3, sections 5, 6, 8 and 26): each simple command by its
+ * Classifies every node of a shell tree: each simple command by its
  * program's declared rule, a wrapper together with the child it runs, a literal sh -c source as a tree of its own,
  * each redirect and background job by what the syntax does, and everything it cannot place as an unresolved fact.
  * A pipe, negation or condition never exempts a child, and a line that could not be read is unknown as a whole.
@@ -303,7 +303,7 @@ final readonly class TreeClassifier implements CommandClassifier
     }
 
     /**
-     * Git with its global options read first (doc 21 revision 3, section 7): -C, --git-dir, --work-tree, --no-pager and
+     * Git with its global options read first: -C, --git-dir, --work-tree, --no-pager and
      * --no-optional-locks are passed over; options that change configuration, the executable path or the pager leave
      * the part unresolved, and an unknown global option never shifts the subcommand.
      *
@@ -339,7 +339,7 @@ final readonly class TreeClassifier implements CommandClassifier
     }
 
     /**
-     * A package script (doc 21 revision 6, sections 67 and 68): each body line is read as a command of its own, an
+     * A package script: each body line is read as a command of its own, an
      *
      * @-reference as the command it names, and the script's part is the union of its children with the purpose of the
      * first child that has one, never a purpose taken from the script's name. A Composer callback that is not declared
@@ -422,7 +422,7 @@ final readonly class TreeClassifier implements CommandClassifier
     }
 
     /**
-     * A saved alias (doc 21 revision 6, sections 10 and 68): its body is classified as a command of its own, with the
+     * A saved alias: its body is classified as a command of its own, with the
      * given arguments bound to $1, $2 ... as whole words, and every fact names the alias and its revision. An alias
      * that reaches itself again stops and names the aliases of the loop.
      *

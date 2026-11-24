@@ -710,7 +710,7 @@
     "App\\Events\\MessageDismissed",
     "App\\Events\\MessageRead",
     "App\\Events\\MessageSent",
-    "App\\Events\\MessageTakenUp",
+    "App\\Events\\MessageClaimed",
     "App\\Events\\ProfileRevisionRevoked",
     "App\\Events\\RunChanged",
     "App\\Events\\SessionClosed",

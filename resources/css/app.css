@@ -10,7 +10,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Version 6 design tokens (doc 4, section 2 and 3). Light values sit on :root and dark values on .dark. Version 5's
+ * Version 6 design tokens. Light values sit on :root and dark values on .dark. Version 5's
  * --accent family is called --brand here (choice 2), so shadcn's --accent can stay a hover surface.
  */
 @theme inline {
@@ -123,7 +123,7 @@
     --color-delegated: var(--delegated);
 }
 
-/* Elevation (doc 105, section 7): a window, the palette and a dialog float on --shadow-window; a menu, popover, toast,
+/* Elevation: a window, the palette and a dialog float on --shadow-window; a menu, popover, toast,
    tooltip, compass cell and drag ghost on --shadow-pop. Static, so the variables exist for the dark override below. */
 @theme static {
     --shadow-window: 0 10px 30px rgba(20, 22, 30, 0.14), 0 1px 3px rgba(20, 22, 30, 0.08);
@@ -138,7 +138,7 @@
     --icon-md: 14px;
     --icon-lg: 16px;
 
-    /* The stacking ladder inside the app (doc 105, section 7). A window's place in the stack adds to --z-window. */
+    /* The stacking ladder inside the app. A window's place in the stack adds to --z-window. */
     --z-strip: 6;
     --z-window: 20;
     --z-chat-panel: 30;
@@ -170,7 +170,7 @@
     --raised: #f7f6f4;
     --hover: #efedea;
     --sel: #e8e5e1;
-    /* Version 5 hard-codes the float bar dark; version 6 gives it a light value (doc 12, deviations). */
+    /* Version 5 hard-codes the float bar dark; version 6 gives it a light value. */
     --float-bar: #f1efec;
     --chip: #edeae6;
     --bubble: #f4f2ef;

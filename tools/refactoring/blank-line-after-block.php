@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Puts a blank line after every closing brace that a statement follows at the same indentation (rule 52).
+ * Puts a blank line after every closing brace that a statement follows at the same indentation.
  *
  *   php tools/refactoring/blank-line-after-block.php app domain tests
  *   php tools/refactoring/blank-line-after-block.php --check app domain tests

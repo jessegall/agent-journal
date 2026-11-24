@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Events;
 
-use App\Contracts\Events\Event;
 use App\Support\ActorIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Contracts\ChatLineSource;
@@ -13,7 +12,7 @@ use Domain\Sequences\Models\SequenceRun;
 /**
  * A sequence run started for an agent and session, raised inside the transaction that started it.
  */
-final readonly class SequenceStarted implements ChatLineSource, Event
+final readonly class SequenceStarted extends SequenceEvent implements ChatLineSource
 {
     public function __construct(
         public string $runId,

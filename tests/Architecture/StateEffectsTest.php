@@ -10,7 +10,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A state's methods change nothing themselves (doc 74, story 50): they answer with commands the engine runs. It reads
+ * A state's methods change nothing themselves: they answer with commands the engine runs. It reads
  * the calls written in the states and their traits; a collaborator that changes something, or dynamic PHP, stays a
  * matter for review.
  */

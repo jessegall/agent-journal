@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\ShowMessageCall;
 use App\Contracts\Chat\ConversationResolver;
-use App\Data\MessageView;
+use App\Data\Messages\MessageView;
 
 /**
  * Reads one message.

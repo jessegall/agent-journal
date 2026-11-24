@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Data\PartOutputData;
-use App\Data\ProblemData;
-use App\Data\RunWindowData;
+use App\Data\Processes\PartOutputData;
+use App\Data\Processes\ProblemData;
+use App\Data\Processes\RunWindowData;
 use App\Http\Pages\ProcessRuns\ProcessRunsShow;
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Models\Runs\OutputAssessment;

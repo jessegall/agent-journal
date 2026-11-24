@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * What one actor may run (doc 21 revision 6, sections 10 and 28): allowed and denied classes, allowed and denied exact
+ * What one actor may run: allowed and denied classes, allowed and denied exact
  * patterns, and the declared ceiling that no allow goes past. A denied pattern or class beats every allow; an exact
  * allowed pattern admits a command its classes alone would not, within the ceiling.
  */

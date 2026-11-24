@@ -29,7 +29,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Command rules are matched by their declared words, never by order or priority, and conflicting declarations stop
- * start-up naming both owners (doc 21 revision 3, sections 9, 27 and 51).
+ * start-up naming both owners.
  */
 final class CommandRuleRegistryTest extends TestCase
 {

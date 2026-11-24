@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Records;
 
-use App\Support\StateLoading\Contracts\StateLoader;
+use App\Support\States\AgentState;
 
 /**
  * A domain that puts its own states on an agent's stack, such as Chat's answering-message state. Its Domain class
@@ -14,10 +14,9 @@ use App\Support\StateLoading\Contracts\StateLoader;
 interface StateProvider
 {
     /**
-     * Every state type key of the domain with the factory that builds its state, such as
-     * ['tasks.working' => WorkingOnTaskStateFactory::class].
+     * Every agent state class of the domain, such as [WorkingOnTaskState::class]; each names its own type.
      *
-     * @return array<string, class-string<StateLoader>>
+     * @return list<class-string<AgentState>>
      */
     public function states(): array;
 }

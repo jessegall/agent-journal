@@ -21,7 +21,7 @@ use App\Values\OutputPosition;
 use App\Values\PartEnd;
 
 /**
- * Keeps every byte a part writes on the private process-output disk (doc 21 revision 6, section 54): each piece is
+ * Keeps every byte a part writes on the private process-output disk: each piece is
  * written append-only to its own file and synced before its row is created, so a row never points at bytes that are
  * not stored. Bytes are stored raw: binary data and carriage returns stay as written.
  */

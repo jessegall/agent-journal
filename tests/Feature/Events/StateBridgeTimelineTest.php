@@ -16,7 +16,7 @@ use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
- * The state bridge's place in the order plan 40 must keep (doc 67 section 19, the state bridge row): two stack
+ * The state bridge's place in the order that must hold: two stack
  * siblings each send an after-commit event in one transaction, and after the commit each event reaches its ordinary
  * listener first and the bridge last, with the audience its own sibling admitted.
  */

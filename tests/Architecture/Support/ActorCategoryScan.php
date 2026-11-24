@@ -18,7 +18,7 @@ use PhpParser\Node\Stmt\Case_;
 use PhpParser\NodeFinder;
 
 /**
- * Finds where code chooses behaviour by the kind of actor (rule 39): an ActorType case compared or matched on, a call
+ * Finds where code chooses behaviour by the kind of actor: an ActorType case compared or matched on, a call
  * of a removed identity-category helper, and a use of a removed role or actor attribute. Each finding is the file and
  * line with what was found.
  */

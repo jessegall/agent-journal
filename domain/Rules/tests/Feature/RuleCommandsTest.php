@@ -26,7 +26,7 @@ use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 
 /**
- * The Rules commands on the bus (doc 19, phase 2): proposing answers the new rule's id, removing raises its fact,
+ * The Rules commands on the bus: proposing answers the new rule's id, removing raises its fact,
  * only a user approves, and the refusals reach the caller as refusals.
  */
 final class RuleCommandsTest extends TestCase

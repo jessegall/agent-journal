@@ -17,8 +17,7 @@ use Tests\TestCase;
 
 /**
  * The journal proves a draft reader itself, by replaying it over real samples it captured for the request, one per
- * exit branch, after the request's actor read them (doc 21 revision 6, sections 71 and 72; stories 184, 185, 188 and
- * 201).
+ * exit branch, after the request's actor read them.
  */
 final class ReaderProofTest extends TestCase
 {

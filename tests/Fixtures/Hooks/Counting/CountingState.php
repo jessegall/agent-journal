@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Counting;
 
-use App\Contracts\Work\OwnValuesState;
 use App\Support\States\AgentState;
 
 /**
  * A state for tests that keeps a count of its own, as a plan review keeps its count of reviewers still out.
  */
-final class CountingState extends AgentState implements OwnValuesState
+final class CountingState extends AgentState
 {
     private CountedValues $values;
 
@@ -27,15 +26,5 @@ final class CountingState extends AgentState implements OwnValuesState
     public function counted(): int
     {
         return $this->values->count;
-    }
-
-    public function ownValues(): CountedValues
-    {
-        return $this->values;
-    }
-
-    public function restoreOwnValues(array $stored): void
-    {
-        $this->values = CountedValues::from($stored);
     }
 }

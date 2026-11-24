@@ -18,6 +18,9 @@ final class WorkingOnTaskStateReference extends StateReferenceFactory
 
     public static function forTask(Task $task): StateReference
     {
-        return self::about(new SubjectReference($task->id, $task->run_number));
+        return self::about(
+            new SubjectReference($task->id, $task->run_number),
+            ['taskId' => $task->id, 'number' => $task->number, 'runNumber' => $task->run_number],
+        );
     }
 }

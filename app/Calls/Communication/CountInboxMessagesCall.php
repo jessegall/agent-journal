@@ -6,7 +6,7 @@ namespace App\Calls\Communication;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Data\InboxCounts;
+use App\Data\Messages\InboxCounts;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Size;

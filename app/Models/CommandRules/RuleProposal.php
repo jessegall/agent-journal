@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One proposed command declaration under review (doc 21 revision 6, section 51): its owner scope in one project, the
+ * One proposed command declaration under review: its owner scope in one project, the
  * request it answers, the canonical program and operation, its state, its author, the exact rule revision it replaces
  * and its current revision. A request id is used once per author and project, bound to the payload it first sent.
  *

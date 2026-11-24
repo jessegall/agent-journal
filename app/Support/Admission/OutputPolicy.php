@@ -17,8 +17,7 @@ use App\Values\ShellNode;
 use App\Values\ShellTree;
 
 /**
- * Refuses a command line that would hide the output of a check or build before anything starts (doc 21 revision 6,
- * section 54): a pipe out of the part or anything around it, a redirect of its output or errors to a file or
+ * Refuses a command line that would hide the output of a check or build before anything starts: a pipe out of the part or anything around it, a redirect of its output or errors to a file or
  * /dev/null, a closed stream, or a merge of its streams when its contract needs them apart. pipefail and ! waive
  * nothing; an input redirect and an ordinary part are never refused.
  */

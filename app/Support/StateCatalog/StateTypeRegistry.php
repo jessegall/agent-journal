@@ -9,8 +9,7 @@ use App\Exceptions\StateTypesFrozen;
 use App\Exceptions\StateTypeUnknown;
 use App\Support\Registry;
 use App\Support\StateCatalog\Registration\Contracts\StateRegistration;
-use App\Support\StateLoading\Contracts\StateLoader;
-use App\Support\StateLoading\Contracts\TickableStateLoader;
+use App\Support\StateLoading\RegisteredStateType;
 
 /**
  * Every state type under its type key. Domains register theirs while it is being built; then it is frozen.
@@ -18,7 +17,7 @@ use App\Support\StateLoading\Contracts\TickableStateLoader;
 final class StateTypeRegistry implements StateRegistration
 {
     /**
-     * @var Registry<StateLoader>
+     * @var Registry<RegisteredStateType>
      */
     private readonly Registry $types;
 
@@ -29,24 +28,24 @@ final class StateTypeRegistry implements StateRegistration
         $this->types = Registry::once(StateTypeUnknown::forKey(...), StateTypeRepeated::forKey(...));
     }
 
-    public function register(string $typeKey, StateLoader $type): void
+    public function register(RegisteredStateType $type): void
     {
         if ($this->isFrozen) {
-            throw StateTypesFrozen::forKey($typeKey);
+            throw StateTypesFrozen::forKey($type->key);
         }
 
-        $this->types->put($typeKey, $type);
+        $this->types->put($type->key, $type);
     }
 
-    public function get(string $typeKey): StateLoader
+    public function get(string $typeKey): RegisteredStateType
     {
         return $this->types->get($typeKey);
     }
 
     /**
-     * @return array<string, StateLoader>
+     * @return array<string, RegisteredStateType>
      */
-    public function loaders(): array
+    public function types(): array
     {
         return $this->types->all();
     }
@@ -57,27 +56,13 @@ final class StateTypeRegistry implements StateRegistration
     }
 
     /**
-     * The type keys whose loader is marked as ticking, the mark inherited or not.
+     * The type keys whose state ticks.
      *
      * @return list<string>
      */
     public function tickingTypeKeys(): array
     {
-        $ticking = array_filter($this->types->all(), fn (StateLoader $type) => $type instanceof TickableStateLoader);
-
-        return array_keys($ticking);
-    }
-
-    /**
-     * The ticking state type of the key; a type that does not tick has no tick to guard.
-     *
-     * @throws StateTypeUnknown
-     */
-    public function tickingType(string $typeKey): TickableStateLoader
-    {
-        $type = $this->get($typeKey);
-
-        return $type instanceof TickableStateLoader ? $type : throw StateTypeUnknown::forTicking($typeKey);
+        return array_keys(array_filter($this->types->all(), fn (RegisteredStateType $type) => $type->isTicking()));
     }
 
     public function freeze(): void

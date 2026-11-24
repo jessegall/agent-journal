@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 /*
- * Builds the portable shell corpus in tests/Fixtures/Processes/ShellCorpus from version 5's checked-in fixtures (doc 21
- * revision 3, sections 34 and 35): every splitter line, every recorded correction, every distilled command shape and chain, the
+ * Builds the portable shell corpus in tests/Fixtures/Processes/ShellCorpus from version 5's checked-in fixtures: every splitter line, every recorded correction, every distilled command shape and chain, the
  * 500-case seed-7 sample, one deterministic case per shape with its optional pieces kept and dropped, wrapper and
  * redirect boundaries, and the synthetic adversarial cases. Cases are deduplicated by source, dialect and context, keeping
  * every origin. The expected block stays empty until the structural expectations are frozen; decisions.jsonl starts
@@ -61,7 +60,7 @@ const BOUNDARY_CASES = [
 ];
 
 /**
- * The adversarial shapes of doc 21 sections 14 to 16 and 30: quoting, nesting, expansion, multiline text and empty input.
+ * The adversarial shapes: quoting, nesting, expansion, multiline text and empty input.
  *
  * @var list<array{string, string, string}>
  */

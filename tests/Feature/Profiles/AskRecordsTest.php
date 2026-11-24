@@ -37,8 +37,8 @@ use App\Support\AttentionOutcome;
 use App\Support\ProfileProposal;
 use App\Support\References\StateReference;
 use App\Support\RequestKey;
-use App\Support\States\AnsweringAskState;
 use App\Support\States\ReadyState;
+use App\Support\States\Support\AnsweringAskStateReference;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\Ticks\TickingTypes;
@@ -264,7 +264,7 @@ final class AskRecordsTest extends TestCase
         );
     }
 
-    public function test_only_the_first_ask_enters_the_stack_and_pending_reply_attention_recovers_once(): void
+    public function test_only_the_first_ask_enters_the_stack_its_close_offers_the_next_and_reply_attention_recovers_once(): void
     {
         $this->activateProfiles();
         $requester = TestStart::start('journal-worker');
@@ -294,15 +294,14 @@ final class AskRecordsTest extends TestCase
         $firstHop = AskHop::query()->where('ask_id', $first->id)->sole();
         $secondHop = AskHop::query()->where('ask_id', $second->id)->sole();
         $progress = $this->app->make(WorkProgress::class);
-        $firstWork = AnsweringAskState::reference($firstHop)->workReference();
-        $secondWork = AnsweringAskState::reference($secondHop)->workReference();
+        $firstWork = AnsweringAskStateReference::forHop($firstHop)->workReference();
+        $secondWork = AnsweringAskStateReference::forHop($secondHop)->workReference();
         $this->assertNotNull($progress->enteredAt($holder, $firstWork));
         $this->assertNull($progress->enteredAt($holder, $secondWork));
 
         $recipient->startRequest($this->app);
         $this->app->instance(ActorAttention::class, $attention);
         $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($first, 'Check the input.'));
-        $this->assertNull($progress->enteredAt($holder, $firstWork));
         $this->assertNotNull($progress->enteredAt($holder, $secondWork));
         $this->assertSame(AskHop::PENDING_DELIVERY, $firstHop->refresh()->attention);
 

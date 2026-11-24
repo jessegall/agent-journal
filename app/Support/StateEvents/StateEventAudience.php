@@ -7,9 +7,13 @@ namespace App\Support\StateEvents;
 use App\Contracts\Authorization\AuthoritySource;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
+use App\Support\EngineActor;
 use App\Values\FrameGrant;
 use App\Values\StackTarget;
+use App\Values\TrustedEntryAuthority;
+use PhpOption\None;
 use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The original actor, authority and resolved targets admitted for an event.
@@ -28,6 +32,21 @@ final readonly class StateEventAudience
         public Option $session,
         public Option $engineFrame,
     ) {}
+
+    /**
+     * The caller of what a state answers to a fact it heard by listening on its own stack: the engine, under a grant
+     * for that one frame, as for a ticking state.
+     */
+    public static function listening(StackTarget $target, string $frameId): self
+    {
+        return new self(
+            ActorContext::of(new EngineActor()),
+            new TrustedEntryAuthority('state listener'),
+            [$target],
+            None::create(),
+            new Some(new FrameGrant($target, $frameId)),
+        );
+    }
 
     public function allowsTarget(StackTarget $target): bool
     {

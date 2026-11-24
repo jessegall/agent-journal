@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Communication;
 
-use App\Data\MessagePage;
+use App\Data\Messages\MessagePage;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;

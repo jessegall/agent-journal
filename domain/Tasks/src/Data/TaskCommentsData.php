@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use App\Data\CommentList;
+use App\Data\Comments\CommentList;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

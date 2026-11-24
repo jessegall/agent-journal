@@ -7,7 +7,7 @@ namespace App\Declarations;
 use App\Contracts\Settings\CatalogueConstraints;
 use App\Contracts\Settings\CatalogueValue;
 use App\Contracts\Settings\Setting;
-use App\Data\BooleanValueData;
+use App\Data\Settings\BooleanValueData;
 use App\Enums\SettingType;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\SettingKey;

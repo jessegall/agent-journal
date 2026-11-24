@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * A pane layout a user saved under a name of their own, to restore on Home later: the pane tree and the detached
- * windows as the browser keeps them. Each user sees only their own layouts (rule 4), and a name is used once per user.
+ * windows as the browser keeps them. Each user sees only their own layouts, and a name is used once per user.
  *
  * @property string $id
  * @property string $user_id

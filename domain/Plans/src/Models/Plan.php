@@ -58,7 +58,7 @@ use PhpOption\Option;
 
 /**
  * A goal with phases in order and the tasks in each phase. Every agent and the owner read every plan, so it has no
- * agent limit (rule 4, message 519).
+ * agent limit.
  *
  * @property string $id
  * @property string $title
@@ -275,7 +275,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
 
         $this->state = PlanState::Reviewing;
         $this->assertSaved($this->save());
-        $this->raise(new PlanReviewRequested($this->id, $review->id, $reviewers));
+        $this->raise(new PlanReviewRequested($this->id, $review->id, $reviewers, $this->number));
     }
 
     /**

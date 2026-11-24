@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Every start refusal reads as its public explanation and its one next step, as doc 96 lists them; a step only a host
+ * Every start refusal reads as its public explanation and its one next step, as the design lists them; a step only a host
  * operator can take reads to every other member as a request to ask their host operator.
  */
 final class StartRefusalCopyTest extends TestCase

@@ -25,7 +25,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Program names drop their path prefix and map only declared spellings, while the executable they resolve to is
- * checked apart (doc 21 revision 3, section 52; stories 97-104).
+ * checked apart.
  */
 final class ProgramIdentityTest extends TestCase
 {

@@ -17,7 +17,7 @@ use App\Values\GroupReference;
 use Tests\Support\MessagingTestCase;
 
 /**
- * The messaging traces of plan 26's phase 4 review (doc 40 revision 3, section 59): messages sent while no host
+ * The messaging traces of a review of wakes: messages sent while no host
  * takes requests stay committed and share one durable wake, and messaging between agents still wakes them with Chat
  * switched off. Neither a wake nor its delivery marks a message read.
  */

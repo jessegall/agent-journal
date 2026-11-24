@@ -9,7 +9,7 @@ use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Task 2737: Reflector::propertiesMatch compares two objects, of one class or of two, by the public properties both
+ * Reflector::propertiesMatch compares two objects, of one class or of two, by the public properties both
  * declare, whole for a nested object unless a left-out path reaches inside it.
  */
 final class ReflectorPropertiesMatchTest extends TestCase

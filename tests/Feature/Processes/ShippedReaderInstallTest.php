@@ -23,8 +23,7 @@ use Tests\TestCase;
 
 /**
  * A project whose installed tool is the version a shipped reader was proven on gets that reader approved through
- * the owner's own workflow, so the check is admitted; another version gets nothing and stays reader_required (doc 21
- * revision 6, sections 68 and 71).
+ * the owner's own workflow, so the check is admitted; another version gets nothing and stays reader_required.
  */
 final class ShippedReaderInstallTest extends TestCase
 {

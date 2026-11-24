@@ -14,7 +14,7 @@ use Tests\Support\ScanCache\FileScan;
 /**
  * The classes, interfaces and enums a file declares whose name opens with a verb about what the implementer does
  * (RunsPipelines, ProvidesPages), by full name. A type is named with a noun for what it is or the role it plays
- * (rule 43); a trait or an attribute class may say what the class using it does, so neither is read.
+ *; a trait or an attribute class may say what the class using it does, so neither is read.
  *
  * @implements FileScan<string>
  */

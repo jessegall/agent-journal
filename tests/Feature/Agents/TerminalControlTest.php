@@ -11,7 +11,7 @@ use App\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
 use App\Commands\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Navigation\TerminalViewCloser;
-use App\Data\TerminalControlData;
+use App\Data\Terminals\TerminalControlData;
 use App\Enums\DriverOperation;
 use App\Enums\TerminalControlRefusal;
 use App\Enums\TerminalGrantState;

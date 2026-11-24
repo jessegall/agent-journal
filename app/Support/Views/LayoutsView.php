@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Views;
 
-use App\Data\LayoutData;
+use App\Data\Pages\LayoutData;
 use App\Models\Records\Layout;
 
 /**

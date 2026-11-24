@@ -23,7 +23,7 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\TestIds;
 
 /**
- * The actor of a command (doc 19, Book D): no command runs without one, the engine runs one only under a grant, and
+ * The actor of a command: no command runs without one, the engine runs one only under a grant, and
  * the log line names the command, its owner, the actor and the outcome but no field.
  */
 final class CommandActorTest extends CommandBusTestCase

@@ -60,7 +60,7 @@ use Tests\TestCase;
 
 /**
  * Start-up checks every command, handler and middleware declaration and refuses the first wrong one by name; a
- * correct set gives each command its handler, owner, settings and ordered middleware (doc 19, Books B and F).
+ * correct set gives each command its handler, owner, settings and ordered middleware.
  */
 final class CommandRegistryTest extends TestCase
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Drafts;
 
-use App\Data\DraftQuestionsData;
+use App\Data\Messages\DraftQuestionsData;
 use App\Http\Requests\Web\DraftQuestionsRequest;
 use App\Support\DraftProducerRegistry;
 

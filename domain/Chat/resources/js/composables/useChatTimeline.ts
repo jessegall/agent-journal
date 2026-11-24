@@ -112,7 +112,7 @@ export type ChatTimelineView = {
 };
 
 /**
- * One chat view's own timeline (doc 102, ordered acceptance, reads and recovery): it keeps the last contiguous position
+ * One chat view's own timeline: it keeps the last contiguous position
  * of its membership, holds rows past a gap, reads the missing range up to the server's watermark, merges by id, and
  * after a refused cursor starts again from a fresh snapshot. Each view keeps its own position, so two devices of one
  * user each receive every event, whoever acknowledged it first.

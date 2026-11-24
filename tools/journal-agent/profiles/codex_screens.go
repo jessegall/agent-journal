@@ -21,8 +21,8 @@ func codexMenu(name, hold string, keywords ...string) screen.MenuFamily {
 
 // Screens is how Codex 0.165.0 draws its terminal, measured from testdata/recordings/codex/0.165.0: it draws on the
 // alternate buffer, its composer is the lowest › row with at most its status lines below it, empty while the cursor
-// sits right after the ›, whatever placeholder it shows. The menu families come from report 175 (the binary's
-// strings): each is known by its › option list and two of its keywords and holds the runtime for a user. No Later
+// sits right after the ›, whatever placeholder it shows. The menu families come from the binary's
+// strings: each is known by its › option list and two of its keywords and holds the runtime for a user. No Later
 // of the update prompt is recorded, so it is held too.
 func (Codex) Screens() screen.Layout {
 	return screen.Layout{

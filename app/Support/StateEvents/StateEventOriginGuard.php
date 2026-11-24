@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
+use App\Declarations\StateMethod;
+use App\Declarations\StateMethods;
 use App\Enums\CommandOriginStatus;
+use App\Support\Stack\AgentStack;
+use App\Support\Stack\Frames\Frame;
+use App\Support\Stack\SelectedStateMethod;
 use App\Support\Stack\StateMethodSelector;
 
 /**
@@ -16,6 +21,7 @@ final readonly class StateEventOriginGuard
         private StateEventStacks $stacks,
         private StateMethodSelector $selector,
         private StateEventActivity $activity,
+        private StateMethods $methods,
     ) {}
 
     public function check(StateEventOrigin $origin): CommandOriginStatus
@@ -37,6 +43,32 @@ final readonly class StateEventOriginGuard
             }
         }
 
-        return CommandOriginStatus::Stale;
+        return $this->settledByItsAnswer($stack->get(), $origin)
+            ? CommandOriginStatus::Eligible
+            : CommandOriginStatus::Stale;
+    }
+
+    /**
+     * Whether the frame that answered settled through that very answer, so it no longer hears facts but still issues
+     * the commands it answered with, such as an ask's frame asking for the next ask as its ask closes.
+     */
+    private function settledByItsAnswer(AgentStack $stack, StateEventOrigin $origin): bool
+    {
+        $settled = array_find(
+            $stack->frames(),
+            fn (Frame $frame) => $frame->id === $origin->frameId() && $frame->isEnabled() && $frame->isFinished(),
+        );
+
+        if ($settled === null) {
+            return false;
+        }
+
+        $answered = fn (StateMethod $method) => $origin->listenerResult->matches(
+            new SelectedStateMethod($settled, $method),
+        );
+
+        return $this->methods->methodFor($settled->state::class, $origin->dispatch->event)
+            ->map($answered)
+            ->getOrElse(false);
     }
 }

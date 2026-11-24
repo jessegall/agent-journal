@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Enums\BindingType;
 
 /**
- * What the host will actually execute for a program family (doc 21 revision 3, section 52): a built-in or module
+ * What the host will actually execute for a program family: a built-in or module
  * program trusted by the folders it is installed in, or a project tool trusted by its path and content digest.
  * Relocating a program changes its binding, never its grammar.
  */

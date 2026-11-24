@@ -40,8 +40,7 @@ use Tests\TestCase;
 
 /**
  * A project owner approves a proven declaration and reader pair in one transaction, and rejects, retires and restores
- * declarations; an agent can do none of it (doc 21 revision 6, sections 51, 55, 71 and 72; stories 45, 47, 48, 81-83,
- * 85, 86, 91, 95, 96, 186, 187, 189 and 191).
+ * declarations; an agent can do none of it.
  */
 final class RuleApprovalTest extends TestCase
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * What one executable part may do (doc 21 revision 6, section 6). A part can hold several classes, and none implies
+ * What one executable part may do. A part can hold several classes, and none implies
  * another: edit never implies write. An unknown part has no class of its own; it carries an unresolved fact instead.
  */
 enum CommandClass: string

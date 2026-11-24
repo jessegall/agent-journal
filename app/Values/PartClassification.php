@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\PartSummaryData;
+use App\Data\Processes\PartSummaryData;
 use App\Declarations\VerificationContract;
 use App\Enums\CommandClass;
 use App\Enums\CommandType;

@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\CountInboxMessagesCall;
 use App\Contracts\Chat\ConversationResolver;
-use App\Data\InboxCounts;
+use App\Data\Messages\InboxCounts;
 
 /**
  * Counts an inbox's unread, unclaimed and claimed messages.

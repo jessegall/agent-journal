@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Events;
+
+use App\Contracts\Events\Event;
+
+/**
+ * A fact about messages, chats and notifications: every event of that subject extends it, so a listener typed on it
+ * hears them all.
+ */
+abstract readonly class MessageEvent implements Event {}

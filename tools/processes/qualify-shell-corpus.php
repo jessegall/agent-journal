@@ -7,7 +7,7 @@ use App\Enums\ShellDialect;
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 
 /*
- * The full-corpus qualification of version 6's shell syntax (doc 21 revision 3, sections 35 and 36). It reads every
+ * The full-corpus qualification of version 6's shell syntax. It reads every
  * private corpus source in ../shell-corpus-private (outside the project), deduplicates the lines by source and dialect, splits them into
  * deterministic chunks, and for each chunk compares version 6's reading (tools/processes/analyse-shell-lines.php, run
  * in the app container) with the independent reference (tools/shell-oracle, mvdan.cc/sh). A cursor tied to the input

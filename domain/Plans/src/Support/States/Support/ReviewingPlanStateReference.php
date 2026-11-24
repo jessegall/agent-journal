@@ -15,8 +15,8 @@ final class ReviewingPlanStateReference extends StateReferenceFactory
 {
     public const string TYPE_KEY = 'plans.reviewing';
 
-    public static function forPlan(string $planId): StateReference
+    public static function forPlan(string $planId, int $number): StateReference
     {
-        return self::about(new SubjectReference($planId, 1));
+        return self::about(new SubjectReference($planId, 1), ['planId' => $planId, 'number' => $number]);
     }
 }

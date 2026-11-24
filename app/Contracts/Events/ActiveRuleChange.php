@@ -7,7 +7,7 @@ namespace App\Contracts\Events;
 /**
  * An event after which the rules a project classifies with are not what its unfinished runs were admitted under.
  */
-interface ActiveRuleChange
+interface ActiveRuleChange extends Event
 {
     public function project(): string;
 

@@ -652,7 +652,7 @@ func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport
 	return client.call(ctx, "/host/reports/heartbeat", report, nil)
 }
 
-// HostDescriptor mirrors App\Data\HostDescriptorData: one driver registration this host runs, by its key, with the
+// HostDescriptor mirrors App\Data\Hosts\HostDescriptorData: one driver registration this host runs, by its key, with the
 // build it pins and where it runs it.
 type HostDescriptor struct {
 	Key         string `json:"key"`
@@ -661,7 +661,7 @@ type HostDescriptor struct {
 	Placement   string `json:"placement"`
 }
 
-// HostDescriptors mirrors App\Data\HostDescriptorsData: every driver this host runs.
+// HostDescriptors mirrors App\Data\Hosts\HostDescriptorsData: every driver this host runs.
 type HostDescriptors struct {
 	Descriptors []HostDescriptor `json:"descriptors"`
 }

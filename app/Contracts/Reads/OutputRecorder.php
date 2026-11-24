@@ -10,7 +10,7 @@ use App\Values\OutputPosition;
 use App\Values\PartEnd;
 
 /**
- * Keeps every byte a part writes, from byte zero (doc 21 revision 6, sections 54 and 55).
+ * Keeps every byte a part writes, from byte zero.
  */
 interface OutputRecorder
 {

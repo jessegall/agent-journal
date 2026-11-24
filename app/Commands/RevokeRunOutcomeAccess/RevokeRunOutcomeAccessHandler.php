@@ -6,7 +6,7 @@ namespace App\Commands\RevokeRunOutcomeAccess;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Chat\Notifications;
-use App\Data\NotificationTarget;
+use App\Data\Notifications\NotificationTarget;
 use App\Enums\ActorType;
 use App\Exceptions\RunOutcomeAccessRefused;
 use App\Models\Runs\ProcessRun;

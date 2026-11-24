@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\UiDeclarations;
 
 use App\Contracts\Navigation\DraftProducer;
-use App\Data\DraftedRecordData;
-use App\Data\DraftQuestionData;
+use App\Data\Pages\DraftedRecordData;
+use App\Data\Messages\DraftQuestionData;
 
 /**
  * A draft producer with three questions that drafts a title from the first answer.

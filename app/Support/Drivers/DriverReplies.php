@@ -89,8 +89,8 @@ final class DriverReplies
         $type = $answer->decision->answerType();
 
         return match ($type) {
-            AnswerType::Allow => self::allowTool($answer->context),
-            AnswerType::Deny => self::denyTool($answer->decision->refusalReason(), $answer->context),
+            AnswerType::Allow => self::allowTool($answer->shownContext()),
+            AnswerType::Deny => self::denyTool($answer->decision->refusalReason(), $answer->shownContext()),
             AnswerType::Rewrite => self::rewrite($rewrites, $answer, $original),
             AnswerType::Delegate => throw InvalidShellAnswer::forAnswer($type->value),
         };
@@ -107,9 +107,9 @@ final class DriverReplies
         return match ($rewrites) {
             RewriteSupport::WithoutApproval => self::rewriteTool(
                 $original->withCommand($answer->decision->replacementLine()),
-                $answer->context,
+                $answer->shownContext(),
             ),
-            RewriteSupport::NeedsApproval => self::denyTool(self::REWRITE_REFUSAL, $answer->context),
+            RewriteSupport::NeedsApproval => self::denyTool(self::REWRITE_REFUSAL, $answer->shownContext()),
         };
     }
 
@@ -120,7 +120,7 @@ final class DriverReplies
         return match ($type) {
             AnswerType::Deny => DriverReply::json(BlockBody::from([
                 'decision' => DriverStopDecision::Block,
-                'reason' => implode("\n", [$answer->decision->refusalReason(), ...$answer->context]),
+                'reason' => implode("\n", [$answer->decision->refusalReason(), ...$answer->shownContext()]),
             ])),
             AnswerType::Allow => DriverReply::emptyObject(),
             AnswerType::Delegate, AnswerType::Rewrite => throw InvalidStopAnswer::forAnswer($type->value),
@@ -156,13 +156,13 @@ final class DriverReplies
             throw InvalidObservationAnswer::forAnswer($type->value);
         }
 
-        if ($answer->context === [] || ! $event->hasReaderAfterIt()) {
+        if ($answer->shownContext() === [] || ! $event->hasReaderAfterIt()) {
             return DriverReply::emptyObject();
         }
 
         return DriverReply::json(ContextBody::from(['hookSpecificOutput' => [
             'hookEventName' => $event->value,
-            'additionalContext' => implode("\n", $answer->context),
+            'additionalContext' => implode("\n", $answer->shownContext()),
         ]]));
     }
 }

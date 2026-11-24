@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Resolvers\Support;
 
 use App\Contracts\Bus\ResultReceipts;
-use App\Data\PartSnapshotData;
-use App\Data\RunSnapshotData;
+use App\Data\Processes\PartSnapshotData;
+use App\Data\Processes\RunSnapshotData;
 use App\Enums\PositionPurpose;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The snapshot of one run of the current project that the caller may see (rule 4): every part with its lifecycle,
+ * The snapshot of one run of the current project that the caller may see: every part with its lifecycle,
  * capture, live reading, latest assessment and receipt kept apart, and the run's last update number.
  */
 final readonly class RunSnapshotResolver

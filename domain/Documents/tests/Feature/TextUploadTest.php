@@ -7,7 +7,7 @@ namespace Domain\Documents\Tests\Feature;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandTransaction;
 use App\Contracts\Drivers\AttachmentReferences;
-use App\Data\MessagePartData;
+use App\Data\Messages\MessagePartData;
 use App\Exceptions\DriverRequestRefused;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;

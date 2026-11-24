@@ -35,7 +35,7 @@ final readonly class StartSessions
 
     /**
      * Starts a session with its credential, and, with a runtime intent, its runtime in Starting and the first delivery,
-     * all in one start transaction (doc 40, section 11).
+     * all in one start transaction.
      */
     public function start(
         Agent $agent,

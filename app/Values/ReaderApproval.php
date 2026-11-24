@@ -8,8 +8,7 @@ use App\Contracts\Settings\StoredValue;
 use App\Support\Stored\StoredReaderApproval;
 
 /**
- * The reader revision and the reader proof a test, check or build rule was approved with (doc 21 revision 6, section
- * 72), so the approval binds that exact reader.
+ * The reader revision and the reader proof a test, check or build rule was approved with, so the approval binds that exact reader.
  */
 final readonly class ReaderApproval implements StoredValue
 {

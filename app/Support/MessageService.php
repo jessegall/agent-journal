@@ -13,9 +13,9 @@ use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Contracts\Sessions\CurrentSession;
-use App\Data\MessageReadBatch;
-use App\Data\MessageReadResult;
-use App\Events\MessageTakenUp;
+use App\Data\Messages\MessageReadBatch;
+use App\Data\Messages\MessageReadResult;
+use App\Events\MessageClaimed;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\ChatInboxRefused;
 use App\Exceptions\InboxUnavailable;
@@ -32,7 +32,7 @@ use Closure;
  * What is done with a message between inboxes. Sending: both inboxes locked in a fixed order, the author's membership
  * of the source, the message recorded under the accepted receipt, the destination's members asked to look, and the
  * fact after commit. Reading: the reader admitted under the inbox's shared guard; for desk mail the first read of each
- * message kept and each waiting message nobody validly holds taken up by the reader, proved by its seat; for a chat
+ * message kept and each waiting message nobody validly holds claimed by the reader, proved by its seat; for a chat
  * the reader's own receipt of each message marked shown, once. Answering: a question closed with its durable reply.
  */
 final readonly class MessageService
@@ -276,21 +276,21 @@ final readonly class MessageService
             $shown = ! $membership->actor->isAgent()
                 && $this->present($message, $membership->interval(), $now);
 
-            $takenUp = $message->awaitsReply()
-                && $this->speech->claimOnTakeUp($message, $membership->actor, $membership->interval(), $now);
+            $claimed = $message->awaitsReply()
+                && $this->speech->claimTurnForQuestion($message, $membership->actor, $membership->interval(), $now);
 
-            return new MessageReadResult($message->id, $shown, $takenUp);
+            return new MessageReadResult($message->id, $shown, $claimed);
         }
 
         $firstRead = $message->acknowledge($membership, $now);
 
-        $takenUp = $message->awaitsReply() && ! $held;
+        $claimed = $message->awaitsReply() && ! $held;
 
-        if ($takenUp) {
-            $this->takeUp($message, $membership);
+        if ($claimed) {
+            $this->claim($message, $membership);
         }
 
-        return new MessageReadResult($message->id, $firstRead, $takenUp);
+        return new MessageReadResult($message->id, $firstRead, $claimed);
     }
 
     /**
@@ -306,7 +306,7 @@ final readonly class MessageService
     /**
      * Replaces a stale claim with the reader's, proved by its seat at the inbox's desk.
      */
-    private function takeUp(Message $message, InboxMembership $membership): void
+    private function claim(Message $message, InboxMembership $membership): void
     {
         $record = $message->assignmentIdentity();
         $stale = $this->store->lockCurrent($record);
@@ -317,7 +317,8 @@ final readonly class MessageService
 
         $claim = $this->responsibilities->assign($record, AssigneeIdentity::ofActorIdentity($membership->actor));
         ClaimAuthorization::forInbox($claim->reference, $membership->deskSeat());
-        $this->facts->publishAfterCommit(new MessageTakenUp($message->id, $membership->actor));
+        $claimed = new MessageClaimed($message->id, $message->destination_inbox_id, $membership->actor);
+        $this->facts->publishAfterCommit($claimed);
     }
 
     /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Docking;
 
 use App\Contracts\Records\RecordResolver;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\RecordUnavailable;
 use App\Support\Cards\ComposedCard;

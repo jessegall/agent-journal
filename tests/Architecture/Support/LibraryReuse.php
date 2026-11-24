@@ -8,7 +8,7 @@ use Symfony\Component\Finder\Finder;
 
 /**
  * The places a Vue template outside the kit draws a control of its own where the library has one: a raw form or
- * dialog element, or a role the kit's components already carry (user message 15814, doc 105).
+ * dialog element, or a role the kit's components already carry.
  */
 final readonly class LibraryReuse
 {

@@ -12,7 +12,7 @@ use App\Declarations\StateMethods;
 use App\Support\StateCatalog\StateTypeRegistry;
 
 /**
- * Collects state listeners from loaders and checks the owners of their methods and source files.
+ * Collects state listeners from the registered state types and checks the owners of their methods and source files.
  */
 final readonly class StateListenerDeclarations
 {
@@ -22,11 +22,14 @@ final readonly class StateListenerDeclarations
     {
         $declarations = [];
 
-        foreach ($types->loaders() as $loader) {
-            foreach ($methods->eventsForLoader($loader) as $event => $method) {
-                $owner = $this->ownerOf($event, $method);
-                $declaration = new StateEventDeclaration($event, $method, $owner);
-                $declarations[$declaration->cacheEntry()] = $declaration;
+        foreach ($types->types() as $type) {
+            foreach ($methods->eventsOf($type->stateClass) as $heard => $method) {
+                $events = ListenerOwnership::isGroup($heard) ? $this->ownership->eventsOf($heard) : [$heard];
+
+                foreach ($events as $event) {
+                    $declaration = new StateEventDeclaration($event, $method, $this->ownerOf($event, $method));
+                    $declarations[$declaration->cacheEntry()] = $declaration;
+                }
             }
         }
 

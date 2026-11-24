@@ -32,7 +32,7 @@ interface DriverAdapter
 
     /**
      * The driver's own tools that start or reach another agent; they are always denied, since only the journal's
-     * helpers and workers are ever started (rule 36).
+     * helpers and workers are ever started.
      *
      * @return list<string>
      */

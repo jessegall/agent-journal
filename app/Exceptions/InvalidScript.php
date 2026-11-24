@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
-use App\Data\ScriptDiagnostic;
+use App\Data\Profiles\ScriptDiagnostic;
 use RuntimeException;
 
 final class InvalidScript extends RuntimeException implements CommandRefusal

@@ -26,7 +26,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Inspecting a writer session shows what it runs under (task 422): its frozen profile revision, execution mode and
+ * Inspecting a writer session shows what it runs under: its frozen profile revision, execution mode and
  * wall budget, its stop conditions by label and the results of its last stop, with the guidance and never the output.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts a test agent session and settles a stop attempt.')]

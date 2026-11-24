@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Mcp\Tools\JournalTool;
-use App\Support\CodeFiles;
-use App\Support\Psr4ClassNames;
-use App\Support\Reflector;
+use App\Support\FolderClasses;
 
 /**
  * Discovers concrete tools in a domain's MCP directory in filename order; a missing directory holds none.
@@ -27,25 +25,6 @@ final readonly class McpToolDirectory
      */
     public static function classesIn(string $folder): array
     {
-        $code = CodeFiles::ofProcess();
-        $names = Psr4ClassNames::fromComposer();
-        $tools = [];
-
-        foreach ($code->folder($code->projectPathOf("{$folder}/*.php")) as $entry) {
-            if (! $entry->isFile()) {
-                continue;
-            }
-
-            $class = $names->classOf($entry->fingerprint->realPath);
-
-            if (! Reflector::factory()->isSubclassOf($class, JournalTool::class)
-                || Reflector::of($class)->isAbstract()) {
-                continue;
-            }
-
-            $tools[] = $class;
-        }
-
-        return $tools;
+        return FolderClasses::in($folder, JournalTool::class);
     }
 }

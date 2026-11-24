@@ -163,7 +163,7 @@ func (driver *TerminalDriver) Wake(_ context.Context, wake contracts.WakeRequest
 }
 
 // ChangeModel stays staged: the recorded model picker reaches the wanted entry, but no recording shows a confirmed
-// choice and its evidence, so nothing is applied live (task 1048).
+// choice and its evidence, so nothing is applied live.
 func (driver *TerminalDriver) ChangeModel(
 	_ context.Context,
 	change contracts.ModelChange,

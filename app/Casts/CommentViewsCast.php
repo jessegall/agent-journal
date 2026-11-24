@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Data\RecordCommentView;
-use App\Data\TextCommentView;
+use App\Data\Comments\RecordCommentView;
+use App\Data\Comments\TextCommentView;
 use App\Enums\CommentType;
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Data;

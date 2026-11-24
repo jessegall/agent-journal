@@ -52,7 +52,7 @@ func TestTheManagedPolicyCarriesEveryRuleAndHookOfTheLaunch(t *testing.T) {
 	if !settings.AllowManagedPermissionRulesOnly || !settings.AllowManagedHooksOnly || !settings.AllowManagedMcpServersOnly {
 		t.Fatalf("the policy leaves a setting source open: %+v", settings)
 	}
-	// User messages 19631 and 19636: every session in a container runs without permission questions, set here.
+	// Every session in a container runs without permission questions, set here.
 	if settings.Permissions.DefaultMode != claudeCodeNeverAsks || !settings.SkipDangerousModePermissionPrompt {
 		t.Fatalf("a session in the container would ask a user: %+v", settings)
 	}

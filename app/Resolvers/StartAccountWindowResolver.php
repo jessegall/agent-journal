@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Navigation\PageResolver;
-use App\Data\Profiles\StartAccountData;
+use App\Data\Accounts\StartAccountData;
 use App\Exceptions\AccountUseMissing;
 use App\Http\Requests\Profiles\StartAccountPageRequest;
 use App\Models\Accounts\Account;

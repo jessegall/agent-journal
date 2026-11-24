@@ -14,7 +14,7 @@ use Tests\Support\ScanCache\FileScan;
 
 /**
  * Each assertion of a test that takes a literal sentence, a string literal with white space between two words, as
- * one of its own arguments, values put into it included: its line and the sentence (user messages 16018, 16024).
+ * one of its own arguments, values put into it included: its line and the sentence.
  *
  * @implements FileScan<array{line: int, sentence: string}>
  */

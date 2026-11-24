@@ -13,7 +13,7 @@ use App\Values\WorkspacePreparation;
 /**
  * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at
  * /workspace; contained, one to three mounts of the agent daemon on their own folders, volumes of this installation
- * and folders under /srv/journal/, an account folder only the session's own (doc 61, decision 6).
+ * and folders under /srv/journal/, an account folder only the session's own.
  */
 final readonly class MountRules
 {
@@ -105,7 +105,7 @@ final readonly class MountRules
 
     /**
      * A contained session's own account folder, bound read-write at the account home so the driver can refresh its
-     * sign-in (doc 61, decision 8, the user's question 30); none locally or without an account.
+     * sign-in; none locally or without an account.
      *
      * @return list<ManifestMount>
      */
@@ -128,7 +128,7 @@ final readonly class MountRules
 
     /**
      * The mounts a contained session has beside its workspace: its own history volume over the account's projects
-     * folder, so sessions on one account never read each other's conversations (doc 61, decision 7). A session that
+     * folder, so sessions on one account never read each other's conversations. A session that
      * resumes a conversation mounts the history of the session that held it, which must still exist. A local session
      * has none; its sandbox profile hides the other sessions' history.
      *

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Contracts\Events\ListenerFailureLog;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Support\AssignmentReference;
@@ -12,7 +11,7 @@ use App\Support\AssignmentReference;
 /**
  * A stalled claim on a waiting message was ended by recovery; the message waits for another member to take it up.
  */
-final readonly class MessageClaimReleased implements Event, ListenerFailureLog, UserInterfaceUpdater
+final readonly class MessageClaimReleased extends MessageEvent implements ListenerFailureLog, UserInterfaceUpdater
 {
     public function __construct(
         public string $messageId,

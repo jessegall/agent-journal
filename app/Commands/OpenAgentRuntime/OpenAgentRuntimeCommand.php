@@ -15,7 +15,7 @@ use App\Support\OpenedRuntime;
 /**
  * Opens a runtime for an agent on an enrolled host: a user may pick any host and permitted folder, an agent only
  * opens a child on its own session's host inside its own folder. One commit holds the session, the runtime in
- * Starting and the first delivery (doc 40, section 11).
+ * Starting and the first delivery.
  *
  * @extends Command<OpenedRuntime>
  */

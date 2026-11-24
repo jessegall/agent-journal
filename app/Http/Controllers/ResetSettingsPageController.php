@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 use App\Commands\ResetSetting\ResetSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsCatalogue;
-use App\Data\SettingData;
+use App\Data\Settings\SettingData;
 use App\Enums\SettingSource;
 use App\Http\Requests\Settings\SettingsGroupRequest;
 use App\Http\Responses\PageActionAnswers;

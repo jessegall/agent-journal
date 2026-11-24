@@ -1,4 +1,4 @@
-# Verified on the test server (task 1482, report of 21 November): the hosts the sign-ins and their checks reached.
+# Verified on the test server: the hosts the sign-ins and their checks reached.
 # Claude Code OAuth, setup token and API key, and Codex by ChatGPT sign-in all completed with only these allowed.
 api.anthropic.com
 .claude.com

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Data\ScreenFrameData;
+use App\Data\Terminals\ScreenFrameData;
 use App\Enums\DriverVariant;
 use App\Enums\TerminalFrameState;
 use App\Enums\TerminalViewRefusal;

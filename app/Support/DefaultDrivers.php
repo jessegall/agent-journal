@@ -17,7 +17,7 @@ use App\Values\DriverRegistration;
 use App\Values\ProviderKey;
 
 /**
- * The four drivers every journal ships: Claude Code and Codex, each in a terminal and headless (doc 103, section 3).
+ * The four drivers every journal ships: Claude Code and Codex, each in a terminal and headless.
  */
 final readonly class DefaultDrivers
 {

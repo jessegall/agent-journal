@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts\Reads;
 
-use App\Data\TextSections;
-use App\Data\TextVersionSummary;
+use App\Data\Pages\TextSections;
+use App\Data\Pages\TextVersionSummary;
 use App\Support\RecordIdentity;
 use App\Support\TextPart;
 use App\Support\TextSelection;

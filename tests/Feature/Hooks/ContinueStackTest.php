@@ -38,7 +38,7 @@ use Tests\TestCase;
 
 /**
  * A session that resumes an agent's conversation opens its stack with the durable frames of the agent's last
- * closed stack (task 292): owed work carries over, a session-only frame stays behind, a new conversation starts
+ * closed stack: owed work carries over, a session-only frame stays behind, a new conversation starts
  * bottom-only, and a frame nothing registers refuses the start.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts test agent sessions and empties the hook tables.')]

@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Events;
 
 use App\Contracts\Events\ActiveRuleChange;
-use App\Contracts\Events\Event;
 use App\Models\CommandRules\ModuleRuleBundle;
 
 /**
  * A project owner activated a module's rule bundle at one digest; raised after the change is committed.
  */
-final readonly class BundleActivated implements ActiveRuleChange, Event
+final readonly class BundleActivated extends ProcessEvent implements ActiveRuleChange
 {
     public function __construct(public string $projectKey, public string $module, public string $digest) {}
 

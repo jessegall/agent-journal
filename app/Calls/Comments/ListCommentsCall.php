@@ -6,7 +6,7 @@ namespace App\Calls\Comments;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Data\CommentList;
+use App\Data\Comments\CommentList;
 use App\Enums\CallEffect;
 use App\Support\Page;
 use Spatie\LaravelData\Attributes\MapName;

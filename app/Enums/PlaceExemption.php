@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * A reason, settled with the user, why code may touch a file outside the funnel's places (doc 69).
+ * A reason, settled with the user, why code may touch a file outside the funnel's places.
  */
 enum PlaceExemption: string
 {

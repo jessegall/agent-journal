@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * Whether a test or check may start now (rule 31, story 148): allowed, or refused while the caller's plan phase still
+ * Whether a test or check may start now: allowed, or refused while the caller's plan phase still
  * has open or started tasks, naming the plan, the phase and those tasks.
  */
 final readonly class TimingVerdict

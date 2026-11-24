@@ -14,12 +14,14 @@ use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Hooks\Stacks\FinishableStateLoader;
+use Tests\Fixtures\Hooks\Stacks\FinishableState;
+use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsAsEngine;
 use Tests\TestCase;
@@ -36,16 +38,19 @@ final class EngineStackTest extends TestCase
 
     private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
-    private FinishableStateLoader $tasks;
+    private FinishedSubjects $tasks;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->tasks = new FinishableStateLoader();
+        $this->tasks = new FinishedSubjects();
+        $this->app->instance(FinishedSubjects::class, $this->tasks);
         Event::listen(
             StateTypesRequested::class,
-            fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $this->tasks),
+            fn (StateTypesRequested $event) => $event->registry->register(
+                RegisteredStateType::named('test.tasks', FinishableState::class),
+            ),
         );
     }
 
@@ -112,7 +117,7 @@ final class EngineStackTest extends TestCase
 
     private function task(string $subject): StateReference
     {
-        return new StateReference('test.tasks', new SubjectReference($subject, 1));
+        return new StateReference('test.tasks', new SubjectReference($subject, 1), ['subject' => $subject]);
     }
 
     /**

@@ -12,7 +12,7 @@ use App\Values\ExecutionPlan;
 use App\Values\ShellTree;
 
 /**
- * Lowers a completely read and fully known command line into its execution plan (doc 21 revision 6, section 53).
+ * Lowers a completely read and fully known command line into its execution plan.
  */
 final readonly class ExecutionPlanner
 {

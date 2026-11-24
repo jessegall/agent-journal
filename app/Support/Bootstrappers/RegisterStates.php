@@ -11,11 +11,7 @@ use App\Events\StateTypesRequested;
 use App\Exceptions\InvalidListener;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
-use App\Support\DomainStateType;
-use App\Support\DomainTickableStateType;
-use App\Support\StateLoading\Contracts\StateLoader;
-use App\Support\StateLoading\Contracts\TickableStateLoader;
-use Closure;
+use App\Support\StateLoading\RegisteredStateType;
 use Illuminate\Container\Container as ContainerInstance;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -44,26 +40,13 @@ final readonly class RegisterStates implements DomainBootstrapper
         ) use ($domain, $availability): void {
             $switchable = $this->container->make(DomainRegistry::class)->has($domain->name);
 
-            foreach ($domain->states() as $typeKey => $factory) {
-                $loader = $this->container->make($factory);
+            foreach ($domain->states() as $stateClass) {
+                $type = RegisteredStateType::of($stateClass);
 
                 $event->registry->register(
-                    $typeKey,
-                    $switchable ? $this->domainStateType($domain, $loader, $availability) : $loader,
+                    $switchable ? $type->switchedBy(fn (): bool => $availability()->isEnabled($domain->name)) : $type,
                 );
             }
         });
-    }
-
-    /**
-     * The loader wrapped with its domain; a ticking loader keeps its mark, so the engine still finds its frames.
-     *
-     * @param  Closure(): DomainAvailability  $availability
-     */
-    private function domainStateType(DomainEntry $domain, StateLoader $loader, Closure $availability): StateLoader
-    {
-        $type = new DomainStateType($domain->name, $loader, $availability);
-
-        return $loader instanceof TickableStateLoader ? new DomainTickableStateType($type, $loader) : $type;
     }
 }

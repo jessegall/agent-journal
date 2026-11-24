@@ -136,10 +136,10 @@ final readonly class SpeechAllowance
     }
 
     /**
-     * Claims the reader's turn kept for the question it takes up, without handing out a token: the agent then answers
+     * Claims the reader's turn kept for the question it claims, without handing out a token: the agent then answers
      * or declines through the ordinary commands while the lease runs. Answers whether a turn was claimed.
      */
-    public function claimOnTakeUp(
+    public function claimTurnForQuestion(
         Message $question,
         ActorIdentity $reader,
         string $intervalId,

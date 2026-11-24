@@ -11,7 +11,7 @@ type Limits struct {
 	MaxScrollbackLines int
 }
 
-// DefaultLimits are measured from the phase 1 recordings with ample headroom (task 882 log). The longest recorded
+// DefaultLimits are measured from the first recordings with ample headroom. The longest recorded
 // turn scrolls about 300 lines; the scrollback keeps the latest 5000 and drops older lines, so memory stays bounded.
 var DefaultLimits = Limits{MaxChunkBytes: 1 << 20, MaxColumns: 500, MaxRows: 300, MaxScrollbackLines: 5000}
 

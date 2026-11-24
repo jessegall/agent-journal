@@ -39,7 +39,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * An ended container launch is cleaned up durably (task 419): a full pass removes its transient resources and only
+ * An ended container launch is cleaned up durably: a full pass removes its transient resources and only
  * then releases its capacity, a failed pass keeps the dirty workspace as the recovery location and retries, a repeated
  * pass changes nothing more, and a launch past its wall budget or from a revoked revision is stopped.
  */

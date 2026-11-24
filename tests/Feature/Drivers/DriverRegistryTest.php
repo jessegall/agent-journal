@@ -25,7 +25,7 @@ use App\Values\DriverRegistration;
 use Tests\TestCase;
 
 /**
- * Doc 103, sections 3 to 7 (task 2210): the journal holds four drivers under opaque keys, selects one only by its key,
+ * The journal holds four drivers under opaque keys, selects one only by its key,
  * refuses a repeated key or a second driver for one family and mode, and Codex's terminal says why it waits.
  */
 final class DriverRegistryTest extends TestCase

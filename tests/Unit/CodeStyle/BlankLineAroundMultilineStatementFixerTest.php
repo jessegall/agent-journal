@@ -11,7 +11,7 @@ use SplFileInfo;
 use Tools\CodeStyle\BlankLineAroundMultilineStatementFixer;
 
 /**
- * User messages 13592 and 15832: a statement of several lines stands apart, and the formatter puts it apart itself.
+ * A statement of several lines stands apart, and the formatter puts it apart itself.
  */
 final class BlankLineAroundMultilineStatementFixerTest extends TestCase
 {

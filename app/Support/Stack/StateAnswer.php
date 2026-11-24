@@ -14,8 +14,8 @@ use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 
 /**
- * What one state answered a hook: the lines it added, the commands and events it answered with, and its decision, if
- * it made one, which is always the last part.
+ * What one state answered a hook: its decision, delegate unless it made one as its last part, the lines it added
+ * and the commands and events it answered with.
  */
 final readonly class StateAnswer
 {
@@ -26,9 +26,9 @@ final readonly class StateAnswer
     private function __construct(
         public string $state,
         public string $hook,
+        public Decision $decision,
         public array $lines = [],
         public array $effects = [],
-        public Decision|null $decision = null,
     ) {}
 
     /**
@@ -43,7 +43,7 @@ final readonly class StateAnswer
     {
         $parts = is_iterable($returned) ? $returned : [$returned];
 
-        $answer = new self($state, $hook);
+        $answer = new self($state, $hook, Decision::delegate());
 
         foreach ($parts as $part) {
             $answer = $answer->with($part);
@@ -58,7 +58,7 @@ final readonly class StateAnswer
     }
 
     /**
-     * A delegate leaves the answer without a decision, so the walk goes on to the state below.
+     * A delegate leaves the answer delegating, so the walk goes on to the state below.
      *
      * @throws HookAnswerRefused when the decision is an allow, which a state never answers
      */
@@ -80,7 +80,7 @@ final readonly class StateAnswer
      */
     private function with(mixed $part): self
     {
-        if ($this->decision !== null) {
+        if ($this->decision->answerType() !== AnswerType::Delegate) {
             throw HookAnswerRefused::afterDecision($this->state, $this->hook);
         }
 

@@ -9,7 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * The update script an installation runs on every push, run for real against a stand-in Docker (rule 76): what it
+ * The update script an installation runs on every push, run for real against a stand-in Docker: what it
  * builds, pins and records for a push, and what it leaves alone when a step fails.
  */
 #[TimeLimit(seconds: 30, reason: 'Each test runs the real update script, which starts a few hundred small programs.')]
@@ -112,7 +112,7 @@ final class UpdateTest extends TestCase
     }
 
     /**
-     * Rule 82: a change to the agent's sources that leaves its image the same, such as a test file, costs a cached
+     * A change to the agent's sources that leaves its image the same, such as a test file, costs a cached
      * build and nothing more: no check runs in the image and no archive is written.
      */
     public function test_an_agent_image_that_comes_out_the_same_is_not_checked_or_archived_again(): void

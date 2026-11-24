@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Data\NotificationChangeItem;
-use App\Data\NotificationChangePage;
+use App\Data\Notifications\NotificationChangeItem;
+use App\Data\Notifications\NotificationChangePage;
 use App\Enums\NotificationMutationType;
 use App\Exceptions\NotificationCursorInvalid;
 use App\Models\Notifications\NotificationChange;

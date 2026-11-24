@@ -14,7 +14,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Task 2733: every page names the journal by its Journal name setting, never by the framework's app name.
+ * Every page names the journal by its Journal name setting, never by the framework's app name.
  */
 final class JournalNameTest extends TestCase
 {

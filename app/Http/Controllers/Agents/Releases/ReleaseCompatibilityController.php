@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Releases;
 
-use App\Data\ReleaseCompatibilityData;
+use App\Data\Images\ReleaseCompatibilityData;
 use App\Support\PublishedReleases;
 
 /**

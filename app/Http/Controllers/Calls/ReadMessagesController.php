@@ -8,7 +8,7 @@ use App\Calls\Communication\MessagesRead;
 use App\Calls\Communication\ReadMessagesCall;
 use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Data\MessageReadResult;
+use App\Data\Messages\MessageReadResult;
 
 /**
  * Marks messages of an inbox read.
@@ -23,7 +23,7 @@ final readonly class ReadMessagesController
             fn (MessageReadResult $messageRead) => [
                 'messageId' => $messageRead->messageId,
                 'firstRead' => $messageRead->firstRead,
-                'takenUp' => $messageRead->takenUp,
+                'claimed' => $messageRead->claimed,
             ],
             $batch->messageReads,
         )]);

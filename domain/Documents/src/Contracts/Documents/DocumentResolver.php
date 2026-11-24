@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts\Documents;
 
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Exceptions\SectionMissing;
 use App\Support\TextSelection;
 use Domain\Documents\Data\DocumentFilters;

@@ -32,7 +32,7 @@ use Tests\TestCase;
 
 /**
  * An agent proposes a draft reader for its request's declaration, and the journal records which parts of a sample run
- * it read (doc 21 revision 6, sections 71 and 72; stories 180, 181 and 202).
+ * it read.
  */
 final class ReaderProposalTest extends TestCase
 {

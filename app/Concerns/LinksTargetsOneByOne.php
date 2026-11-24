@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Data\NotificationLink;
+use App\Data\Notifications\NotificationLink;
 use PhpOption\Option;
 
 /**

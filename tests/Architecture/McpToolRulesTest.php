@@ -40,7 +40,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A journal MCP tool or resource holds no logic of its own (doc 16, section 3.4): it names no model, query builder,
+ * A journal MCP tool or resource holds no logic of its own: it names no model, query builder,
  * database, transaction, event dispatcher or stack contract; a tool extends the journal's base and is named in
  * snake_case; and no schema asks for the caller's identity.
  */

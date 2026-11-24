@@ -74,6 +74,26 @@ yours to resolve at its source.
 - A listener that means a whole group is typed on the group type, never on a hand-kept list of events, so a new event of the group is heard without being added anywhere.
 - An architecture test fails on an event class with no group type or more than one, and on a group listener wired to single events. A new event gets its group type when it is written.
 
+## An agent's behaviour lives in its states (rule 93; user messages 19771, 19774, 19882, 19888, 19935)
+
+- What an agent has to do next, how far along it is and what it still waits on lives in a state on its stack. A state
+  keeps its own values (a count, a list, a step, a flag) as its data and changes them itself when it hears a hook call
+  or a fact. Its own values are properties, never constructor parameters.
+- No column, table, listener or service outside the stack keeps a count, flag or list for a state, and nothing outside
+  a state works one out for it. One builder makes every state from its saved values; there are no state factories.
+- A fact reaches every active stack that holds a state listening for it; nothing addresses or tells stacks a fact.
+- A state's methods are laid out as rule 94 says: constructor, reference makers and own answers unmarked, then
+  Lifecycle, Hooks, Events, Internals; `tools/refactoring/state-sections.php` lists every fault.
+- An architecture test fails on a state handed a worked-out flag, count or list.
+
+## Domains share what they export (rule 90; user messages 19890, 19894)
+
+- A domain uses another domain's exported commands, events, contracts and values freely, and a state may listen to any
+  exported event and answer it with exported commands.
+- Not exported does not mean private: it may simply not be exported yet. Never build a workaround around a missing
+  export. Ask whether the thing belongs to that domain's public surface; if it does, add it to the exports, and if it
+  is an internal shared only inside the domain, use an exported way instead.
+
 ## A local rebuild does only what the change needs (rule 82; user messages 19439, 19442)
 
 - After a change to the Go host only, swap it in with `sh scripts/dev-watch-host.sh --once` and restart the host service: seconds. Never run `journal local-host` for that.

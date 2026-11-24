@@ -15,7 +15,7 @@ use App\Values\OptionGrammar;
 use App\Values\ProgramSpellings;
 
 /**
- * The reviewed rules of the developer tools the shell corpus still left unknown (task 987): the GitHub CLI, Docker,
+ * The reviewed rules of the developer tools the shell corpus still left unknown: the GitHub CLI, Docker,
  * Go's other verbs, SQLite, SSH without a remote command, PHP's own options, the read verbs of npm and Composer, and
  * Vitest. Every option is listed; an unlisted one stays unknown. make, interpreters, docker exec and remote commands
  * stay unknown by decision.

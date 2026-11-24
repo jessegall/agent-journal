@@ -7,8 +7,8 @@ namespace Tests\Architecture;
 use Tests\TestCase;
 
 /**
- * Rule 44: a model sits in the folder of its subject, such as app/Models/Messages/Message.php, never directly in
- * app/Models (user message 19708).
+ * A model sits in the folder of its subject, such as app/Models/Messages/Message.php, never directly in
+ * app/Models.
  */
 final class ModelFolderTest extends TestCase
 {

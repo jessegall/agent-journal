@@ -18,14 +18,15 @@ use App\Support\SignedCall;
 use App\Support\StackTransaction;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
-use App\Support\States\AgentState;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Hooks\ClosureStateLoader;
-use Tests\Fixtures\Hooks\Ticks\TickingLoader;
+use Tests\Fixtures\Hooks\Stacks\FinishableState;
+use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
+use Tests\Fixtures\Hooks\Ticks\ScriptedOccurrenceGuard;
 use Tests\Fixtures\Hooks\Ticks\TickingState;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsAsEngine;
@@ -43,23 +44,18 @@ final class TickingStackFlagTest extends TestCase
 
     private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
-    /**
-     * @var list<string> subjects of ticking frames whose work is done
-     */
-    private array $finished = [];
+    private FinishedSubjects $finished;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->finished = new FinishedSubjects();
+        $this->app->instance(FinishedSubjects::class, $this->finished);
+        $this->app->instance(ScriptedOccurrenceGuard::class, new ScriptedOccurrenceGuard());
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register('test.ticking', new TickingLoader(
-                fn (StateReference $reference): AgentState => TickingState::of($reference, $this->finished),
-            ));
-            $event->registry->register(
-                'test.plain',
-                new ClosureStateLoader(TickingState::class, fn () => new TickingState(false)),
-            );
+            $event->registry->register(RegisteredStateType::named('test.ticking', TickingState::class));
+            $event->registry->register(RegisteredStateType::named('test.plain', FinishableState::class));
         });
     }
 
@@ -74,7 +70,7 @@ final class TickingStackFlagTest extends TestCase
         $this->push($started, 'test.ticking', 'T');
         $this->assertTrue($this->stackOf($started)->has_ticking_frames);
 
-        $this->finished = ['T'];
+        $this->finished->finished = ['T'];
         $this->asEngineFor(
             $this->targetOf($started),
             fn () => $this->app->make(EngineStacks::class)->popExposed($this->targetOf($started)),
@@ -116,7 +112,7 @@ final class TickingStackFlagTest extends TestCase
             $started,
             fn () => $this->app->make(AgentStacks::class)->push(
                 $this->targetOf($started),
-                new StateReference($typeKey, new SubjectReference($subject, 1)),
+                new StateReference($typeKey, new SubjectReference($subject, 1), ['subject' => $subject]),
             ),
         );
     }

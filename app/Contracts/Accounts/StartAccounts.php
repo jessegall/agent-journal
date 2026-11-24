@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Accounts;
 
-use App\Data\Profiles\EligibleAccountsData;
+use App\Data\Accounts\EligibleAccountsData;
 
 /**
  * The accounts the current actor may choose for a start of one driver, read under the authority the start itself

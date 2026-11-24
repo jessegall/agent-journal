@@ -13,8 +13,8 @@ use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\StackRestorer;
 use App\Support\Storage\FrameRecord;
 use App\Values\OwnerAuthority;
+use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
-use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
@@ -86,11 +86,18 @@ final class PlanWorkingStateTest extends TestCase
         $restorer = $this->app->make(StackRestorer::class);
 
         $this->assertFalse($this->planFrame($restorer, $row)->isFinished());
-        $state = $this->planFrame($restorer, $row)->state;
-        $this->assertInstanceOf(WorkingOnPlanState::class, $state);
-        $this->assertSame([$plan->id, $plan->number], [$state->plan->planId, $state->plan->number]);
+        $this->assertInstanceOf(WorkingOnPlanState::class, $this->planFrame($restorer, $row)->state);
 
-        Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Cancelled->value]);
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
+
+        $this->app->make(CommandBus::class)->run(
+            new CancelPlanCommand($plan->id, $plan->refresh()->revision, 'No longer needed'),
+        );
+
+        $row = AgentStackRow::query()->forTarget($this->target)->sole();
 
         $this->assertTrue($this->planFrame($restorer, $row)->isFinished());
         $this->assertTrue($restorer->restore($row->frames, $row->target())->top()->isBottom());

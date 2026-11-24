@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * Whether a command line keeps the full output of every check and build part (doc 21 revision 6, section 54): allowed,
+ * Whether a command line keeps the full output of every check and build part: allowed,
  * or refused as output_hidden with each hiding operator named.
  */
 final readonly class OutputVerdict

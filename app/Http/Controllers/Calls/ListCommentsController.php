@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Comments\ListCommentsCall;
 use App\Contracts\Records\CommentResolver;
 use App\Contracts\Records\RecordResolver;
-use App\Data\CommentList;
+use App\Data\Comments\CommentList;
 use App\Support\Page;
 use App\Support\RecordReference;
 use App\Values\PageSize;

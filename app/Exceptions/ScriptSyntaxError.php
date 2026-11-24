@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Data\ScriptDiagnostic;
+use App\Data\Profiles\ScriptDiagnostic;
 use App\Enums\DiagnosticCode;
 use App\Values\ScriptRange;
 use RuntimeException;

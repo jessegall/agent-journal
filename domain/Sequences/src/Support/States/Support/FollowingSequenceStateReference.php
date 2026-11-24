@@ -18,6 +18,11 @@ final class FollowingSequenceStateReference extends StateReferenceFactory
 
     public static function forRun(SequenceRun $run): StateReference
     {
-        return self::about(new SubjectReference($run->id, 1));
+        return self::about(new SubjectReference($run->id, 1), [
+            'runId' => $run->id,
+            'runNumber' => $run->number,
+            'steps' => $run->steps,
+            'currentStep' => $run->current_step,
+        ]);
     }
 }

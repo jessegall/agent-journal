@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
+use App\Contracts\Connections\ProjectBindingEvent;
 use DateTimeImmutable;
 
 /**
  * A binding was revoked: its authority generation rose, so every credential of the one before it is refused.
  */
-final readonly class ProjectBindingRevoked implements Event
+final readonly class ProjectBindingRevoked extends ConnectionEvent implements ProjectBindingEvent
 {
     public function __construct(
         public string $bindingId,

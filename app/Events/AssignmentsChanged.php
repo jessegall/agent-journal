@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Enums\AssignmentReason;
 use App\Support\ActorIdentity;
@@ -16,7 +15,7 @@ use DateTimeImmutable;
  * record whose holder changed. A command that changed nothing raises none. Delivery is not guaranteed and nothing is
  * kept to replay it.
  */
-final readonly class AssignmentsChanged implements Event, UserInterfaceUpdater
+final readonly class AssignmentsChanged extends AssignmentEvent implements UserInterfaceUpdater
 {
     /**
      * @param  list<AssignmentChange>  $changes

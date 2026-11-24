@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Data\NotificationTarget;
+use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationSourceType;
 use App\Events\NotificationsChanged;
 use App\Events\NotificationsInvalidated;

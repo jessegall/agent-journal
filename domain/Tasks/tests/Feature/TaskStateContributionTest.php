@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\RunClaims;
-use App\Contracts\Work\StackTransaction;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\StackAlreadyClosed;
 use App\Models\Agents\AgentStackRow;
-use App\Support\References\Exceptions\ActivationDeclined;
 use App\Support\References\SubjectReference;
 use App\Support\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
@@ -23,9 +20,7 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
 use Domain\Tasks\Tests\TestCase;
-use Illuminate\Database\Events\QueryExecuted;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -107,50 +102,6 @@ final class TaskStateContributionTest extends TestCase
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
-    public function test_activating_a_task_whose_run_claim_is_gone_is_refused_and_changes_nothing(): void
-    {
-        $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-        $run = $task->fresh()?->currentRun();
-        $this->assertNotNull($run);
-        $claims = $this->app->make(RunClaims::class);
-
-        $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $claims->release($run->assignmentIdentity()),
-        );
-
-        $frames = $this->taskFrames();
-
-        $this->assertThrows(
-            fn () => $this->app->make(StackTransaction::class)->run(
-                fn () => $this->app->make(ActorWorkStacks::class)->push(WorkingOnTaskStateReference::forTask($task)),
-            ),
-            ActivationDeclined::class,
-        );
-
-        $this->assertSame($frames, $this->taskFrames());
-    }
-
-    public function test_each_read_of_a_stack_reads_the_runs_of_all_its_task_frames_in_one_query(): void
-    {
-        $first = Task::factory()->create(['title' => 'Write the walk']);
-        $second = Task::factory()->create(['title' => 'Read the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($first->id));
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($second->id));
-        $pairQueries = [];
-
-        $this->app->make('db')->listen(function (QueryExecuted $query) use (&$pairQueries): void {
-            if (str_contains($query->sql, 'from "task_runs" where (("task_id" = ?')) {
-                $pairQueries[] = substr_count($query->sql, '"run_number" = ?');
-            }
-        });
-
-        $this->answerStop('call-1');
-
-        $this->assertNotEmpty($pairQueries);
-        $this->assertSame(array_fill(0, count($pairQueries), 2), $pairQueries);
-    }
-
     public function test_a_finished_task_frame_keeps_its_stored_place(): void
     {
         $first = Task::factory()->create(['title' => 'Write the walk']);
@@ -168,7 +119,7 @@ final class TaskStateContributionTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-        $task->block('Waits.');
+        $this->app->make(CommandBus::class)->run(new BlockTaskCommand($task->id, 1, 'Waits.'));
 
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 

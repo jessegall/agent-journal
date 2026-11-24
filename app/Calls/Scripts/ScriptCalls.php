@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Calls\Scripts;
 
 use App\Contracts\Domains\CallSender;
-use App\Data\ProfileDraftData;
-use App\Data\ProfileLanguageData;
-use App\Data\ProfileRunData;
+use App\Data\Profiles\ProfileDraftData;
+use App\Data\Profiles\ProfileLanguageData;
+use App\Data\Profiles\ProfileRunData;
 use App\Support\CallKey;
 
 /**

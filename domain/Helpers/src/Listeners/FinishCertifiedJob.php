@@ -53,7 +53,7 @@ final readonly class FinishCertifiedJob implements Listener
         $helper = HelperIdentity::query()->findOrFail($job->helper_identity_id)->helperActor();
 
         $purpose->subject_record->forAll(
-            fn (RecordIdentity $subject) => $this->helperFacts->reported($job->actor(), $subject, $helper->id),
+            fn (RecordIdentity $subject) => $this->helperFacts->reported($subject, $helper->id),
         );
     }
 }

@@ -12,7 +12,7 @@ use App\Enums\StreamUse;
 use App\Enums\SummaryRule;
 
 /**
- * What a check's output must look like for its reader to judge it (doc 21 revision 6, section 68): encoding, framing,
+ * What a check's output must look like for its reader to judge it: encoding, framing,
  * schema versions, whether its streams may be merged, whether it must end with a summary, and what an empty output or
  * an empty selection means.
  */

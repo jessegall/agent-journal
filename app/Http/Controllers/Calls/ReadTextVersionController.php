@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Text\ReadTextVersionCall;
 use App\Contracts\Reads\TextResolver;
 use App\Contracts\Records\RecordResolver;
-use App\Data\TextVersionSummary;
+use App\Data\Pages\TextVersionSummary;
 use App\Support\RecordReference;
 
 /**

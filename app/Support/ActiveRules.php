@@ -13,7 +13,7 @@ use App\Values\RuleBundle;
 use App\Values\RuleReference;
 
 /**
- * The rules one request classifies with (doc 21 revision 6, section 9): Core's built-ins, the module bundles the
+ * The rules one request classifies with: Core's built-ins, the module bundles the
  * project owner activated at their exact digest, and the project's active approved rules, exact replacements included.
  * It is bound per request and read from the store each time, never shared between projects.
  */

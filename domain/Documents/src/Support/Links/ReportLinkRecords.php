@@ -7,7 +7,7 @@ namespace Domain\Documents\Support\Links;
 use App\Concerns\ProvidesModelRecords;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Records\RecordProvider;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Support\ReadBuilder;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordChanges;

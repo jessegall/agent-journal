@@ -9,7 +9,7 @@ use App\Values\PartEnd;
 use App\Values\PartKey;
 
 /**
- * Where a supervisor reports what happens in its run (doc 21 revision 6, section 53): on the server they become
+ * Where a supervisor reports what happens in its run: on the server they become
  * records at once; on the host they are spooled and sent over the signed event channel. A child's printed text is
  * only ever output, never one of these events.
  */

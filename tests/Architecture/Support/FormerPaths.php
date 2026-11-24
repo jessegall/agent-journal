@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 /**
- * The path each Core file had before plan 62 moved it to its role folder, so a rule written for an old area, such as
- * only app/Sharing names the sharing secrets, keeps judging the same files. A file plan 62 did not move keeps its path.
+ * The path each Core file had before the move to Laravel's layout, so a rule written for an old area, such as
+ * only app/Sharing names the sharing secrets, keeps judging the same files. A file that did not move keeps its path.
  */
 final class FormerPaths
 {

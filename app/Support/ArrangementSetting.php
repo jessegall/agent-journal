@@ -74,7 +74,7 @@ final readonly class ArrangementSetting
 
     /**
      * The name a contained session's container and its own network share on the agent daemon: the installation name
-     * and the session, so the host's sweep tells this installation's sessions apart (task 1472).
+     * and the session, so the host's sweep tells this installation's sessions apart.
      */
     public function sessionContainerName(string $sessionId): string
     {

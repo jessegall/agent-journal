@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Data\WakeStatus;
+use App\Data\Messages\WakeStatus;
 use App\Enums\ReceiptDeliveryState;
 use App\Events\ReceiptDeliveryChanged;
 use App\Exceptions\ChatStateConflict;

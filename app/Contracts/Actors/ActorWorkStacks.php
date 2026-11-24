@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Contracts\Actors;
 
-use App\Contracts\Events\Event;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
@@ -32,17 +31,6 @@ interface ActorWorkStacks
      * offered to an actor that is busy is left for later.
      */
     public function offerFor(ActorIdentity $actor, StateReference $state): void;
-
-    /**
-     * Tells the stacks another actor works on now a fact, so the states there hear it as their own; nothing when it
-     * runs no session.
-     */
-    public function tellFor(ActorIdentity $actor, Event $fact): void;
-
-    /**
-     * Removes the finished states exposed at the top of the acting actor's stacks.
-     */
-    public function pruneCurrent(): void;
 
     /**
      * The live frame of the type on the acting actor's work stack; none for an actor that works on no stack.

@@ -15,7 +15,7 @@ use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * The helper commands run end to end over the signed helper calls (task 288): a start prints the identity, job,
+ * The helper commands run end to end over the signed helper calls: a start prints the identity, job,
  * conversation and the requested, resolved and actual model; a start without a model is refused before any call;
  * a steer reaches the live job, a cancel ends it, and the notices list answers.
  */

@@ -29,7 +29,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 
 /**
- * Users 15883 and 15889: a plan under review holds still. Requesting a review puts the plan in Reviewing and refuses
+ * A plan under review holds still. Requesting a review puts the plan in Reviewing and refuses
  * every change to it, its phases and its tasks until the review is withdrawn or decided; no copy of the plan is made.
  */
 final class PlanReviewTest extends TestCase

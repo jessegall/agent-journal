@@ -21,7 +21,7 @@ use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 
 /**
- * Doc 106, section 4: several waits change at once only against the graph version they were read at, and any change
+ * Several waits change at once only against the graph version they were read at, and any change
  * the batch cannot make leaves every wait as it was.
  */
 final class ApplyTaskWaitsTest extends TestCase

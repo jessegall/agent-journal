@@ -30,17 +30,15 @@ final readonly class SelectedStateMethod
      * The step of a walk this selection took: the frame and method it chose, how the state answered and how many
      * lines it added.
      */
-    public function walkStep(Decision|null $decision, int $lineCount): WalkStep
+    public function walkStep(Decision $decision, int $lineCount): WalkStep
     {
-        $denied = $decision !== null && $decision->answerType() === AnswerType::Deny;
-
         return new WalkStep(
             frameId: $this->frame->id,
             stateType: $this->frame->typeKey(),
             hookMethod: $this->method->name,
-            answer: $decision === null ? AnswerType::Delegate : $decision->answerType(),
+            answer: $decision->answerType(),
             contextCount: $lineCount,
-            denialReason: $denied ? $decision->refusalReason() : null,
+            denialReason: $decision->answerType() === AnswerType::Deny ? $decision->refusalReason() : null,
         );
     }
 }

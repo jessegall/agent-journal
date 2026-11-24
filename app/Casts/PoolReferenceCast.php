@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Data\StoredPoolData;
+use App\Data\Assignments\StoredPoolData;
 use App\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Support\PoolReference;
 use ErrorException;

@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
 use App\Contracts\Sessions\ProfileLanguage;
-use App\Data\ProfileScriptPageData;
+use App\Data\Profiles\ProfileScriptPageData;
 use App\Support\Readers\ProfileDraftReader;
 use App\Values\ProfileKey;
 use Illuminate\Http\Request;

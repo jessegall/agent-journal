@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Checks that every Eloquent model makes its new rows through one static create (rule 40): it prints
+ * Checks that every Eloquent model makes its new rows through one static create: it prints
  * "file:line<TAB>Model::method" for a public static method that saves one new row under another name, and fails
  * while there is one. A method that may hand back a row that exists (a find-or-create), writes several rows or only
  * some (insert, insertOrIgnore, a loop), or changes a row it locked is no constructor and keeps its name.

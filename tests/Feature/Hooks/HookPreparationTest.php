@@ -21,7 +21,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * The host refuses tool calls until the driver's current context generation is prepared (task 293): a never
+ * The host refuses tool calls until the driver's current context generation is prepared: a never
  * prepared main is refused even during an outage, a prepared main goes on with a logged bypass, a helper is refused
  * during an outage, a session start the journal answers prepares its generation, and an answer for an older
  * generation prepares nothing.

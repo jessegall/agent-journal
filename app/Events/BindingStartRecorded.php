@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use DateTimeImmutable;
 
 /**
  * A binding's start was recorded under the id its device chose, with the runtime it opened.
  */
-final readonly class BindingStartRecorded implements Event
+final readonly class BindingStartRecorded extends ConnectionEvent
 {
     public function __construct(
         public string $bindingId,

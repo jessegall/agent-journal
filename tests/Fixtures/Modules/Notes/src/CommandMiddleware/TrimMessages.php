@@ -9,7 +9,7 @@ use App\Support\CommandCall;
 use Closure;
 
 /**
- * Trims the body of every message sent, before Chat saves it (doc 19, section 7.6).
+ * Trims the body of every message sent, before Chat saves it.
  */
 final readonly class TrimMessages implements CommandMiddleware
 {

@@ -6,7 +6,7 @@ namespace App\Support;
 
 /**
  * The settings file a started driver reads from its own isolated settings folder: only the journal's hooks and
- * the journal's tool rules, allowed and denied, never anything from the user's own configuration (rule 2).
+ * the journal's tool rules, allowed and denied, never anything from the user's own configuration.
  */
 final class IsolatedHookSettings
 {

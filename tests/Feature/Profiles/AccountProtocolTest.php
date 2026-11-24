@@ -13,7 +13,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 /**
- * Doc 103, Storage identities: an account is kept under its account provider's protocol, which both drivers of a
+ * Storage identities: an account is kept under its account provider's protocol, which both drivers of a
  * family share, so the terminal and the headless driver find the same account.
  */
 final class AccountProtocolTest extends TestCase

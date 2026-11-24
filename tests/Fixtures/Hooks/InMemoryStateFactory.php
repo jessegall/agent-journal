@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Values\StackTarget;
 use App\Support\Stack\Contracts\StateFactory;
 use App\Support\References\StateReference;
 use App\Support\Stack\Frames\Frame;
@@ -24,16 +23,16 @@ final class InMemoryStateFactory implements StateFactory
      */
     public function __construct(private readonly array $types = []) {}
 
-    public function frameFor(StateReference $reference, StackTarget $target): Frame
+    public function frameFor(StateReference $reference): Frame
     {
         $this->pushedCount++;
 
         return new Frame(
-"pushed-{$this->pushedCount}",
- $reference,
- ($this->types[$reference->typeKey])($reference),
- CarbonImmutable::now(),
-);
+            "pushed-{$this->pushedCount}",
+            $reference,
+            ($this->types[$reference->typeKey])($reference),
+            CarbonImmutable::now(),
+        );
     }
 
     public function isEnabled(StateReference $reference): bool

@@ -30,7 +30,7 @@ use Tests\TestCase;
 
 /**
  * AGENTS_ARRANGEMENT says whether the journal runs agents locally or in containers, and a start on a host of the
- * other arrangement is refused before anything is created (doc 61, decision 1).
+ * other arrangement is refused before anything is created.
  */
 final class HostArrangementTest extends TestCase
 {

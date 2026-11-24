@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Exceptions\RecordUnavailable;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;

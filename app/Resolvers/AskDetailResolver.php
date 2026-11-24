@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Chat\AskReader;
 use App\Contracts\Navigation\PageResolver;
-use App\Data\AskDetail;
+use App\Data\Asks\AskDetail;
 use App\Http\Requests\AskPageRequest;
 
 /**

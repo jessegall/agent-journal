@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Navigation;
 
-use App\Data\SlotSectionData;
+use App\Data\Pages\SlotSectionData;
 
 /**
  * The sections the domains put in one slot of a page, each by the prop that carries it and its component.

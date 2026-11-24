@@ -30,7 +30,7 @@ final readonly class StaticFactoryScan implements FileScan
 
     /**
      * The Reflector's static answers that make no Reflector, so a class the container builds asks them of the
-     * Reflector itself: whether a name loads (user message 17588).
+     * Reflector itself: whether a name loads.
      */
     private const array NOT_FACTORIES = ['exists'];
 

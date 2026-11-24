@@ -7,10 +7,10 @@ namespace App\Support\Stack\Frames;
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\ConditionalState;
-use App\Contracts\Work\OwnValuesState;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
+use App\Support\StateLoading\StateValues;
 use App\Support\States\AgentState;
 use App\Support\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
@@ -36,10 +36,6 @@ final readonly class Frame
      */
     public static function restored(FrameRecord $record, AgentState $state, bool $typeEnabled = true): self
     {
-        if ($state instanceof OwnValuesState && $record->values !== []) {
-            $state->restoreOwnValues($record->values);
-        }
-
         return new self(
             $record->id,
             $record->reference,
@@ -59,7 +55,7 @@ final readonly class Frame
             $this->bottom,
             $this->schemaVersion,
             $this->enteredAt,
-            $this->state instanceof OwnValuesState ? $this->state->ownValues()->toArray() : [],
+            StateValues::of($this->state),
         );
     }
 
@@ -76,6 +72,14 @@ final readonly class Frame
     public function isFor(StateReference $reference): bool
     {
         return $this->reference->isSameAs($reference);
+    }
+
+    /**
+     * Whether a push of the reference finds this frame in place of adding one, as the state's frame reuse says.
+     */
+    public function keepsOneFrameFor(StateReference $reference): bool
+    {
+        return $this->state->frameReuse()->keepsOneFrame($this->reference, $reference);
     }
 
     public function isFinished(): bool

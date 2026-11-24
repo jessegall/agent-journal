@@ -136,7 +136,7 @@ func claudeCodeChangeEffort() keyscripts.KeyScript {
 }
 
 // Registered is every key script the host may run. The MCP login has no recording through to its result, so it is
-// not registered for any build (doc 40, section 26; task 1233).
+// not registered for any build.
 func Registered() *keyscripts.Registry {
 	return keyscripts.NewRegistry(recorded()...)
 }

@@ -10,7 +10,7 @@ use App\Values\ReviewBatches;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Only short shapes reach an agent, in batches capped in count and characters (user messages 4175 and 4180).
+ * Only short shapes reach an agent, in batches capped in count and characters.
  */
 final class ReviewBatchesTest extends TestCase
 {

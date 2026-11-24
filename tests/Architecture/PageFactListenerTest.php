@@ -4,69 +4,48 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\CoreApi;
-use App\Support\DomainEntry;
+use App\Listeners\BroadcastPageChange;
+use App\Support\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
 use App\Support\ListenerOwnership;
-use App\Support\Reflector;
-use Tests\Architecture\Support\DomainFiles;
+use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A listener typed on one of the expanded interfaces, such as the one that tells the open pages, is attached only to
- * the events their owner exports. So every event that implements such an interface is exported: one that is not
- * reaches no page, as the chat's facts did not (user messages 19571 and 19640).
+ * The listener that tells the open pages is typed on the group of facts that change a page, so every event of Core
+ * and of the domains that joins the group reaches it, exported or not, with no list of events to keep.
  */
-#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
+#[TimeLimit(seconds: 15, reason: 'It reads every event folder of the project.')]
 final class PageFactListenerTest extends TestCase
 {
-    public function test_every_event_that_updates_a_page_is_exported_so_its_listeners_hear_it(): void
+    public function test_every_event_that_updates_a_page_is_heard_by_the_page_listener(): void
     {
-        $exported = [
-            ...CoreApi::exports()->events,
-            ...array_merge([], ...array_map(
-                fn (DomainEntry $entry) => $entry->exports->events,
-                $this->app->make(DomainRegistry::class)->all(),
-            )),
-        ];
-        $unheard = [];
+        $listeners = $this->app->make(Dispatcher::class)->getRawListeners();
+        $ownership = new ListenerOwnership(
+            $this->app->make(DomainRegistry::class),
+            CoreApi::exports(),
+            CoreApi::listenerFolders(),
+            new CatalogueReflectorFactory(),
+            app_path(),
+        );
+        $events = $ownership->eventsOf(UserInterfaceUpdater::class);
+        $unheard = array_values(array_filter(
+            $events,
+            fn (string $event) => ! self::names($listeners[$event] ?? [], BroadcastPageChange::class),
+        ));
 
-        foreach (DomainFiles::in([app_path('Events'), ...DomainFiles::domainCode()]) as $file) {
-            $class = self::eventIn($file);
-
-            if ($class !== null && self::updatesAPage($class) && ! in_array($class, $exported, true)) {
-                $unheard[] = $class;
-            }
-        }
-
+        $this->assertNotSame([], $events);
         $this->assertSame([], $unheard);
     }
 
-    private static function updatesAPage(string $class): bool
+    /**
+     * Whether the wired listeners, in whatever wrapper the dispatcher keeps them, name the listener class.
+     */
+    private static function names(mixed $listeners, string $class): bool
     {
-        foreach (ListenerOwnership::EXPANDED_INTERFACES as $interface) {
-            if (Reflector::factory()->isSubclassOf($class, $interface)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static function eventIn(string $file): string|null
-    {
-        $source = (string) file_get_contents($file);
-        $isEvent = preg_match('#/Events/\w+\.php$#', $file) === 1;
-
-        if (! $isEvent || preg_match('/^namespace ([^;]+);/m', $source, $namespace) !== 1 || preg_match(
-            '/^(?:final )?(?:readonly )?class (\w+)/m',
-            $source,
-            $name,
-        ) !== 1) {
-            return null;
-        }
-
-        return $namespace[1].'\\'.$name[1];
+        return str_contains(stripslashes((string) json_encode($listeners)), $class.'@');
     }
 }

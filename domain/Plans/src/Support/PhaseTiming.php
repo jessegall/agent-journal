@@ -20,7 +20,7 @@ use Domain\Tasks\Values\TaskSummary;
 
 /**
  * Holds an agent's tests and checks while the current phase of a started plan it holds still has open or started
- * tasks (rule 31); an agent without a plan phase, and a user, may run them.
+ * tasks; an agent without a plan phase, and a user, may run them.
  */
 final readonly class PhaseTiming implements VerificationTiming
 {

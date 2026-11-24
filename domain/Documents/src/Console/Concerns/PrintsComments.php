@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Concerns;
 
 use App\Calls\Comments\ListCommentsCall;
-use App\Data\CommentDetails;
-use App\Data\RecordCommentView;
-use App\Data\TextCommentView;
+use App\Data\Comments\CommentDetails;
+use App\Data\Comments\RecordCommentView;
+use App\Data\Comments\TextCommentView;
 use App\Values\CommandReport;
 
 /**

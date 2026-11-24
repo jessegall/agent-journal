@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Data\NavigationData;
-use App\Data\NavigationGroupData;
-use App\Data\NavigationItemData;
+use App\Data\Navigation\NavigationData;
+use App\Data\Navigation\NavigationGroupData;
+use App\Data\Navigation\NavigationItemData;
 use App\Declarations\DomainUi;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;

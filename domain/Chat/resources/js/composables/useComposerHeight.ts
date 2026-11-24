@@ -2,7 +2,7 @@ import type { Ref } from "vue";
 import { nextTick, watch } from "vue";
 
 /**
- * Sizes the composer's text area (doc 4, 6.5): three rows at rest, growing to the text plus one row, at most sixteen
+ * Sizes the composer's text area: three rows at rest, growing to the text plus one row, at most sixteen
  * rows, then it scrolls.
  */
 const restingRows = 3;

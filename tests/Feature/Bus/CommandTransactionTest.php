@@ -19,7 +19,7 @@ use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 /**
- * One transaction per command (doc 19, Book D): it commits in the command's isolation, a nested command joins it, a
+ * One transaction per command: it commits in the command's isolation, a nested command joins it, a
  * refusal or an ignored inner failure rolls everything back, a handler may not open its own, and a stack transaction
  * is joined only at the same isolation.
  */

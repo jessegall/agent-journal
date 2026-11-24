@@ -10,7 +10,7 @@ use App\Values\ProfileBase;
 use Tests\TestCase;
 
 /**
- * Every built-in base is granted exactly the policy accesses reviewed here, in this order (doc 79, phase 1): a change
+ * Every built-in base is granted exactly the policy accesses reviewed here, in this order: a change
  * to how a policy or an access type restricts its grants that gives a profile one more or one fewer fails here.
  */
 final class BuiltInGrantsTest extends TestCase

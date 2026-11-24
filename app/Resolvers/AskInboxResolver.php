@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Chat\AskReader;
 use App\Contracts\Navigation\PageResolver;
-use App\Data\AskInbox;
+use App\Data\Asks\AskInbox;
 
 final readonly class AskInboxResolver implements PageResolver
 {

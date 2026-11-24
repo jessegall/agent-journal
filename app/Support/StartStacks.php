@@ -86,11 +86,11 @@ final readonly class StartStacks
 
             $type = $this->types->registry()->get($record->reference->typeKey);
 
-            if ($record->schemaVersion !== $type->schemaVersion()) {
-                throw StateSchemaUnknown::for($record->description(), $type->schemaVersion());
+            if ($record->schemaVersion !== $type->schemaVersion) {
+                throw StateSchemaUnknown::for($record->description(), $type->schemaVersion);
             }
 
-            if ($type->sessionTransfer() === SessionTransferType::Durable) {
+            if ($type->transfer === SessionTransferType::Durable) {
                 $carriedFrames[] = $record;
             }
         }

@@ -17,11 +17,11 @@ use App\Events\ChatReceiptPresented;
 use App\Events\ChatRoleChanged;
 use App\Events\MessageAnswered;
 use App\Events\MessageAnswerRequired;
+use App\Events\MessageClaimed;
 use App\Events\MessageClaimReleased;
 use App\Events\MessageDismissed;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
-use App\Events\MessageTakenUp;
 use App\Events\NotificationsChanged;
 use App\Events\NotificationsWithdrawn;
 use App\Events\ReceiptDeliveriesScheduled;
@@ -175,7 +175,7 @@ return [
         'producers' => [],
         'sample' => fn () => new MessageSent('message', new ActorIdentity(ActorType::Agent, 'agent'), 'source', 'destination'),
     ],
-    MessageTakenUp::class => [
+    MessageClaimed::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [

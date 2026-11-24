@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Data\DockOfferData;
+use App\Data\Docks\DockOfferData;
 use App\Exceptions\DockSourceUnavailable;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\DockOffers;

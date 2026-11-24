@@ -87,6 +87,20 @@ final class ReflectedMethod
         );
     }
 
+    /**
+     * The class or interface the first parameter is typed on; none for no parameter, a builtin or a union type.
+     *
+     * @return Option<string>
+     */
+    public function firstParameterClass(): Option
+    {
+        $parameters = $this->parameters();
+
+        return ($parameters === [] ? None::create() : $parameters[0]->type())
+            ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin())
+            ->map(fn (DeclaredType $type) => $type->name());
+    }
+
     public function requiredParameterCount(): int
     {
         return $this->method->getNumberOfRequiredParameters();

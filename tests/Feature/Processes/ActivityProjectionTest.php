@@ -24,8 +24,7 @@ use Tests\TestCase;
 
 /**
  * Every part of every run shows its activity without a reader: name, elapsed time, bytes and its latest line, with a
- * draining part shown as finalizing and never a result (doc 21 revision 6, sections 54, 59 and 69; stories 124, 125,
- * 132, 166, 174 and 176).
+ * draining part shown as finalizing and never a result.
  */
 final class ActivityProjectionTest extends TestCase
 {

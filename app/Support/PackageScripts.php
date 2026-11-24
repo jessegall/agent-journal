@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Attributes\OutsideThePlaces;
-use App\Data\PackageFileData;
+use App\Data\Images\PackageFileData;
 use App\Enums\PlaceExemption;
 use App\Values\ScriptBinding;
 use App\Values\ScriptBody;
@@ -15,7 +15,7 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
 /**
- * Finds the package script a composer, npm or pnpm command runs (doc 21 revision 6, sections 67 and 68) in the trusted
+ * Finds the package script a composer, npm or pnpm command runs in the trusted
  * project root's composer.json or package.json, with the digest of its body. A script name is never a class by
  * itself: the classifier reads the body line by line.
  */

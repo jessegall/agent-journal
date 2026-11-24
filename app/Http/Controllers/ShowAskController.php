@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Calls\Supervision\ShowAskCall;
 use App\Contracts\Chat\AskReader;
-use App\Data\AskCard;
+use App\Data\Asks\AskCard;
 use App\Values\AskReference;
 
 final readonly class ShowAskController

@@ -18,7 +18,7 @@ use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
- * A navigation request follows the state table of doc 54, section 5: raised once per host raise, one open per
+ * A navigation request follows its state table: raised once per host raise, one open per
  * runtime, moved only where the table allows, and read only by the user who owns it.
  */
 final class NavigationRequestTest extends TestCase

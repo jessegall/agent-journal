@@ -6,7 +6,6 @@ namespace App\Events;
 
 use App\Contracts\Authorization\AuthoritySource;
 use App\Contracts\Bus\Command;
-use App\Contracts\Events\Event;
 use App\Support\ActorContext;
 use App\Values\StackTarget;
 
@@ -14,7 +13,7 @@ use App\Values\StackTarget;
  * A state answered a hook with a command, which runs under the hook's actor and authority once the hook commits, so a
  * rolled-back hook leaves nothing to run.
  */
-final readonly class HookCommandAnswered implements Event
+final readonly class HookCommandAnswered extends HookEvent
 {
     /**
      * @param  Command<mixed>  $command

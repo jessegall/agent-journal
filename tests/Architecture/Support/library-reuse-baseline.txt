@@ -1,4 +1,4 @@
-# Vue files outside the kit that still draw a control the library has, one path:element per line (task 2365).
+# Vue files outside the kit that still draw a control the library has, one path:element per line.
 # The list may only shrink: LibraryReuseTest fails on a line that no longer offends.
 domain/Chat/resources/js/AgentPicker.vue:role=listbox
 domain/Chat/resources/js/AgentPicker.vue:role=option

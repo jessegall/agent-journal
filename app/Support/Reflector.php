@@ -529,6 +529,20 @@ final class Reflector implements ReflectedType
     }
 
     /**
+     * The names of every type it is: itself, each class it extends and each interface it implements, for a reader
+     * that holds the other type only as a name.
+     *
+     * @return list<class-string>
+     */
+    public function typeNames(): array
+    {
+        return [
+            ...array_map(fn (self $type) => $type->name(), $this->lineage()),
+            ...array_map(fn (self $type) => $type->name(), $this->interfaces()),
+        ];
+    }
+
+    /**
      * Every interface it implements, itself or through a parent or another interface.
      *
      * @return list<Reflector<object>>

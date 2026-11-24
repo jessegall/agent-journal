@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\DriverRequestStatus;
+use App\Data\Agents\DriverRequestStatus;
 use App\Enums\DriverOperation;
 use App\Enums\DriverSwitchStage;
 use App\Enums\HoldReason;

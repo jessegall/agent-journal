@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
-use App\Data\NotificationLink;
+use App\Data\Notifications\NotificationLink;
 use App\Models\Messages\Message;
 
 /**

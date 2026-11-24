@@ -15,7 +15,7 @@ use App\Values\ProgressPolicy;
 use App\Values\ReaderReference;
 
 /**
- * What a test, check or build promises about its run (doc 21 revision 6, sections 68 and 72): the operation and the
+ * What a test, check or build promises about its run: the operation and the
  * executable it binds, its output contract, its exit policy, its progress policy, its reader and its tool type. A
  * result is published only when a run meets its contract; exits of real tools are added only once proven.
  */

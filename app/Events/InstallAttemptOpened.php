@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
+use App\Contracts\Connections\InstallAttemptEvent;
 use DateTimeImmutable;
 
 /**
  * An owner opened an attempt to install a line for one target, under its public reference.
  */
-final readonly class InstallAttemptOpened implements Event
+final readonly class InstallAttemptOpened extends ConnectionEvent implements InstallAttemptEvent
 {
     public function __construct(
         public string $attemptId,

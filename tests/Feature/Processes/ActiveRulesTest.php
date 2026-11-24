@@ -35,7 +35,7 @@ use Tests\TestCase;
 
 /**
  * Each request classifies with Core's rules, the module bundles its project's owner activated and the project's own
- * active rules, read from the store each time (doc 21 revision 6, sections 9 and 51; stories 58, 59, 88, 89, 92, 93).
+ * active rules, read from the store each time.
  */
 final class ActiveRulesTest extends TestCase
 {

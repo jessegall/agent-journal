@@ -26,7 +26,7 @@ use Tests\TestCase;
 
 /**
  * A declarative reader accounts for every line of a check's committed output and reports every problem together
- * (doc 21 revision 6, sections 70 to 72; stories 150-162, 199, 201 and 205).
+ *.
  */
 final class DeclarativeReaderTest extends TestCase
 {

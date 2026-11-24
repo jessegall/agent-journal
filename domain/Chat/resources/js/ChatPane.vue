@@ -36,7 +36,7 @@ import { AGENT_BAR_MEMBERS } from "./agentBarMembers";
 import InboxSelector from "./chats/InboxSelector.vue";
 
 /**
- * The chat (doc 4, 6.1): the chosen agent's conversation, what other domains suggest in the dock slot, the sources
+ * The chat: the chosen agent's conversation, what other domains suggest in the dock slot, the sources
  * docked in the conversation and the composer. On Chat's own page it also offers the agents and their session actions, which
  * Home's agent bar offers instead.
  */

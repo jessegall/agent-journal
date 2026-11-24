@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Data\RunOutcomePageData;
-use App\Data\RunOutcomeSummaryData;
+use App\Data\Processes\RunOutcomePageData;
+use App\Data\Processes\RunOutcomeSummaryData;
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Resolvers\Support\RunOutcomeSummaries;
 use Spatie\LaravelData\Optional;

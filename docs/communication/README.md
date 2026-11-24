@@ -35,7 +35,7 @@ Anyone sees it only through an inbox they sit at, or because they wrote it (`Mes
 | `SendMessage` | a note nobody has to answer |
 | `AskMessage` | a question that waits for an answer; an inbox nobody sits at is refused |
 | `ReadMessages` | marks shown messages read for everyone at the inbox; the first reader of a question takes it up |
-| `TakeNextMessages` | takes up the oldest questions nobody took up, skipping locked rows |
+| `TakeNextMessages` | claims the oldest questions nobody claimed, skipping locked rows |
 | `ReplyToMessage` | replies at the observed `state_version`; answers a question and releases its claim |
 | `RequireMessageAnswer` | the author turns a note into a question |
 | `DismissMessage` | withdraw (author), decline (member) or cancel (owner, as inspection) with a reason |
@@ -48,7 +48,7 @@ Reads go through `ConversationResolver`: `detail`, `between` and `history` in ke
 `ownInboxes`, `inspect` for an admitted inspector, and `wakeStatus` for the author. `MessageView` is generated Data;
 its first reader and claim holder are absent until there is one.
 
-Facts (`MessageSent`, `MessageRead`, `MessageTakenUp`, `MessageAnswered`, `MessageAnswerRequired`, `MessageDismissed`,
+Facts (`MessageSent`, `MessageRead`, `MessageClaimed`, `MessageAnswered`, `MessageAnswerRequired`, `MessageDismissed`,
 `MessageClaimReleased`) carry ids and actors, never a body, dispatch after commit and are `ListenerFailureLog`: a
 failing listener is logged and cannot undo the message.
 

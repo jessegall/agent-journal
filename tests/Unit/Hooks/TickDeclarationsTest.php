@@ -9,35 +9,34 @@ use App\Exceptions\TooManyTickCommands;
 use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use App\Support\StateCatalog\StateTypeRegistry;
-use App\Support\States\AgentState;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Ticks\ElapsedTime;
 use App\Support\Ticks\TickCommands;
 use App\Support\Ticks\TickContext;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Hooks\ClosureStateLoader;
-use Tests\Fixtures\Hooks\Ticks\InheritedTickingLoader;
-use Tests\Fixtures\Hooks\Ticks\TickingLoader;
+use Tests\Fixtures\Hooks\Ticks\ScriptedOccurrenceGuard;
+use Tests\Fixtures\Hooks\Ticks\ScriptedTickingState;
 use Tests\Fixtures\Hooks\Ticks\TickingState;
-use Tests\Support\Exceptions\SimulatedFailure;
+use Tests\Fixtures\Hooks\Ticks\UnreadState;
 use Tests\Support\TestActors;
 
 /**
- * A state type ticks only when its loader carries the TickableStateLoader mark, inherited or not; a tick answers a few
+ * A state type ticks only when its state class carries the Ticks attribute; a tick answers a few
  * ordered commands at most and is told exactly the time, its delta, its entry time and its stack.
  */
 final class TickDeclarationsTest extends TestCase
 {
-    public function test_only_marked_loaders_and_their_subclasses_tick(): void
+    public function test_only_states_marked_as_ticking_tick(): void
     {
-        $make = fn (): AgentState => throw SimulatedFailure::of('No state is built here.');
         $registry = new StateTypeRegistry();
-        $registry->register('test.ticking', new TickingLoader($make));
-        $registry->register('test.inherited', new InheritedTickingLoader($make));
-        $registry->register('test.plain', new ClosureStateLoader(TickingState::class, $make));
+        $registry->register(RegisteredStateType::named('test.ticking', TickingState::class));
+        $registry->register(RegisteredStateType::named('test.scripted', ScriptedTickingState::class));
+        $registry->register(RegisteredStateType::named('test.plain', UnreadState::class));
 
-        $this->assertSame(['test.ticking', 'test.inherited'], $registry->tickingTypeKeys());
+        $this->assertSame(['test.ticking', 'test.scripted'], $registry->tickingTypeKeys());
+        $this->assertSame(ScriptedOccurrenceGuard::class, $registry->get('test.ticking')->tickGuard());
     }
 
     public function test_a_tick_answers_at_most_ten_commands_in_order(): void

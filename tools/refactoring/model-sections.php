@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Checks that every Eloquent model's methods sit in marked sections (rule 50), and sorts them into sections.
+ * Checks that every Eloquent model's methods sit in marked sections, and sorts them into sections.
  *
  *   php tools/refactoring/model-sections.php app domain
  *       prints "file:line<TAB>what is wrong" for a method outside a section, an unknown section name, a section out
@@ -21,6 +21,7 @@ use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require __DIR__.'/models.php';
+require __DIR__.'/sections.php';
 
 const SECTIONS = ['Constructors', 'Queries', 'Mutations', 'Answers', 'Accessors', 'Relations', 'Internals', 'Scopes'];
 
@@ -28,8 +29,6 @@ const RELATIONS = [
     'BelongsTo', 'BelongsToMany', 'HasMany', 'HasOne', 'HasManyThrough', 'HasOneThrough', 'MorphTo', 'MorphMany',
     'MorphOne', 'MorphToMany', 'MorphedByMany',
 ];
-
-const MARKER = '/^\s*\/\/ -+\[ (\w+) \]-+\s*$/';
 
 const MARKER_ANYWHERE = '/^[ \t]*\/\/ -+\[ (\w+) \]-+[ \t]*$/m';
 
@@ -95,50 +94,21 @@ function textOf(string $source, ClassMethod $method): string
  */
 function faultsOf(string $source, Class_ $class): array
 {
-    $faults = [];
-    $lines = explode("\n", $source);
-    $seen = [];
-    $section = null;
-    $line = $class->getStartLine();
-    $methods = [];
-
-    foreach ($class->getMethods() as $method) {
-        $methods[$method->getStartLine()] = $method;
-    }
-
-    for (; $line <= $class->getEndLine(); $line++) {
-        if (preg_match(MARKER, $lines[$line - 1], $match) === 1) {
-            $name = $match[1];
-            $place = array_search($name, SECTIONS, true);
-
-            if ($place === false) {
-                $faults[] = "{$line}\tunknown section {$name}";
-            } elseif (in_array($name, $seen, true)) {
-                $faults[] = "{$line}\tsection {$name} written twice";
-            } elseif ($seen !== [] && $place < array_search(end($seen), SECTIONS, true)) {
-                $faults[] = "{$line}\tsection {$name} comes before ".end($seen);
-            }
-
-            $seen[] = $name;
-            $section = $name;
-        }
-
-        if (! isset($methods[$line])) {
-            continue;
-        }
-
-        $name = $methods[$line]->name->toString();
+    return sectionFaults($source, $class, SECTIONS, function (ClassMethod $method, string|null $section): string|null {
+        $name = $method->name->toString();
 
         if ($section === null) {
-            $faults[] = "{$line}\tmethod {$name} is outside a section";
-        } elseif (isAccessor($methods[$line]) !== ($section === 'Accessors')) {
-            $faults[] = isAccessor($methods[$line])
-                ? "{$line}\taccessor {$name} sits in {$section}, not in Accessors"
-                : "{$line}\tmethod {$name} is no accessor, so it does not belong in Accessors";
+            return "method {$name} is outside a section";
         }
-    }
 
-    return $faults;
+        if (isAccessor($method) === ($section === 'Accessors')) {
+            return null;
+        }
+
+        return isAccessor($method)
+            ? "accessor {$name} sits in {$section}, not in Accessors"
+            : "method {$name} is no accessor, so it does not belong in Accessors";
+    });
 }
 
 /**

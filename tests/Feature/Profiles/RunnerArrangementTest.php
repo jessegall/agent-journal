@@ -14,7 +14,7 @@ use Tests\TestCase;
 
 /**
  * One journal never runs both sign-in runners: a runner of the other arrangement is refused on every claim before
- * anything is claimed (doc 61, decision 1).
+ * anything is claimed.
  */
 final class RunnerArrangementTest extends TestCase
 {

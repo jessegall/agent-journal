@@ -19,8 +19,7 @@ use Tests\Support\SendsSignedCalls;
 
 /**
  * A phase relies only on a current validated result receipt published after its tasks last changed; an evidence
- * run, a run without a result, a superseded receipt and a receipt from before the last task change are refused
- * (story 197, plan 14 decisions D15 and D16).
+ * run, a run without a result, a superseded receipt and a receipt from before the last task change are refused.
  */
 final class PhaseCheckTest extends TestCase
 {

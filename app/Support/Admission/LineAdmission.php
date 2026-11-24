@@ -45,7 +45,7 @@ use Illuminate\Contracts\Container\Container;
 use Throwable;
 
 /**
- * The one admission of a shell line (doc 21 revision 6, sections 10 and 26): syntax, classification with the
+ * The one admission of a shell line: syntax, classification with the
  * project's active rules, output visibility, the actor's permissions, phase timing and the approved proven reader of
  * every test, check or build, then the runner. The whole line is admitted or refused at once; a refusal starts
  * nothing, and unknown work or a missing reader is held in a command request that names the next step. The classifier

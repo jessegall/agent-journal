@@ -25,12 +25,12 @@ var _ contracts.DriverProfile = Codex{}
 var codexAgentFeatures = []string{"multi_agent", "multi_agent_mode", "multi_agent_v2", "multi_agent_v2_dynamic_tools", "agent_message_board", "runtime_agent_instances"}
 
 // codexInProcessFeatures are the features of 0.165.0 that read files or run code in Codex's own process rather than
-// through its environment, so a protected start, whose environment is the executor, turns them off (report 299).
+// through its environment, so a protected start, whose environment is the executor, turns them off.
 var codexInProcessFeatures = []string{"view_image", "code_mode", "code_mode_only", "code_mode_host"}
 
 // codexExecutorEnvironment is the CODEX_HOME/environments.toml of a protected start: one default environment whose
 // program is the executor's shell, running the pinned Codex's own exec-server as the tools user, and no local
-// environment, so every command, terminal, patch and file read of the model runs as the tools user (report 300).
+// environment, so every command, terminal, patch and file read of the model runs as the tools user.
 const codexExecutorEnvironment = `default = "executor"
 include_local = false
 
@@ -51,7 +51,7 @@ var codexRouteSettings = []string{
 
 // codexSandboxOf is the sandbox Codex itself applies: workspace-write, except in a protected start, where its bwrap
 // cannot make namespaces inside the container and every tool already runs as the executor's user in the container,
-// so Codex's own sandbox is off (task 1766's probe in the agent image).
+// so Codex's own sandbox is off.
 func codexSandboxOf(start contracts.Start) string {
 	if start.Protected {
 		return "danger-full-access"
@@ -84,8 +84,8 @@ func (Codex) Build() string {
 }
 
 // CheckBuild refuses any build but 0.165.0. That build still offers the collaboration tools (spawn_agent and the
-// rest) with every agent feature off (task 888 evidence); the hook policy refuses every call to them, as version 5
-// does (task 885), so no native child starts.
+// rest) with every agent feature off; the hook policy refuses every call to them, as version 5
+// does, so no native child starts.
 func (profile Codex) CheckBuild(reportedVersion string) error {
 	if strings.TrimSpace(reportedVersion) == "codex-cli "+profile.Build() {
 		return nil
@@ -152,7 +152,7 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 }
 
 // foreignSkillsSwitchedOff is the setting that turns off every skill the journal did not select which codex-cli 0.165.0
-// would still offer whatever CODEX_HOME is (report 171): the user's own ~/.agents/skills and the work folder's
+// would still offer whatever CODEX_HOME is: the user's own ~/.agents/skills and the work folder's
 // .agents/skills. Each is reported with its path and left unchanged; empty when there is none.
 func foreignSkillsSwitchedOff(workFolder string) string {
 	folders := []string{}
@@ -314,7 +314,7 @@ func (Codex) OffersTerminal() bool {
 	return true
 }
 
-// KeepsToolsFromSignIn: Codex's sandbox limits writes only, so its tools could read its sign-in (doc 61, decision 8).
+// KeepsToolsFromSignIn: Codex's sandbox limits writes only, so its tools could read its sign-in.
 func (Codex) KeepsToolsFromSignIn() bool {
 	return false
 }

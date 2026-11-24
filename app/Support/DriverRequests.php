@@ -53,7 +53,7 @@ final readonly class DriverRequests
 
     /**
      * Marks earlier requests of the same operation that have not run yet as superseded: a later value of the same
-     * setting replaces them (doc 40, section 15).
+     * setting replaces them.
      */
     public function supersedeEarlier(DriverRequest $request): void
     {
@@ -104,7 +104,7 @@ final readonly class DriverRequests
 
     /**
      * Asks the runtime to stop: a stop request, after which it takes no more requests. The session's running helpers
-     * are asked first, and the host is handed this stop only once each of them is proven stopped (doc 61, story 46).
+     * are asked first, and the host is handed this stop only once each of them is proven stopped.
      */
     public function stop(StackTarget $target, string $idempotencyKey): DriverRequest
     {

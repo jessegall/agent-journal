@@ -29,7 +29,7 @@ use Tests\TestCase;
 
 /**
  * Pipeline stages run at the same time with their own output and ends, background parts outlive the foreground step,
- * and a stop reaches the whole process group (doc 21 revision 6, section 53).
+ * and a stop reaches the whole process group.
  */
 final class PipelineAndStopTest extends TestCase
 {

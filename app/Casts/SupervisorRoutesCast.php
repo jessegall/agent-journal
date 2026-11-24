@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Data\StoredSupervisorRoutes;
+use App\Data\Asks\StoredSupervisorRoutes;
 use App\Values\SupervisorRoutes;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;

@@ -47,7 +47,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One admitted command line run under supervision (doc 21 revision 6, sections 53 and 69): its single-use admission,
+ * One admitted command line run under supervision: its single-use admission,
  * whether it is a normal or an evidence run, the source and tree digests and rule revisions it was admitted under,
  * and where its lifecycle and capture stand. The actor who runs it holds it.
  *

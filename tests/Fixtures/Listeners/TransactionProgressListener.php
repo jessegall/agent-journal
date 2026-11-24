@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use Domain\Plans\Events\PlanProgressChanged;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 
 /**
  * A Core listener the command's transaction requires.
@@ -13,5 +13,5 @@ use Domain\Plans\Events\PlanProgressChanged;
 #[InCommandTransaction]
 final class TransactionProgressListener
 {
-    public function handle(PlanProgressChanged $event): void {}
+    public function handle(UserInterfaceUpdater $event): void {}
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Gateways\Tunler;
 
-use App\Data\TunlerStatusData;
+use App\Data\Sharing\TunlerStatusData;
 use App\Exceptions\TunlerStatusUnreadable;
 use JsonException;
 use Spatie\LaravelData\Exceptions\CannotCreateData;

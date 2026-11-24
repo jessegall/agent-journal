@@ -21,8 +21,7 @@ use Tests\TestCase;
 
 /**
  * The shell admission starts nothing while the runner's host capability is off; with it on, each demonstration
- * process:run executes runs with a record, an own exit and full output per part (doc 21 revision 6, sections 53,
- * 56 and 73).
+ * process:run executes runs with a record, an own exit and full output per part.
  */
 final class RunnerCapabilityTest extends TestCase
 {

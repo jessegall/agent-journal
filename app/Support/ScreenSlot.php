@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\ScreenFrameData;
-use App\Data\StoredScreenData;
+use App\Data\Terminals\ScreenFrameData;
+use App\Data\Terminals\StoredScreenData;
 use Carbon\CarbonImmutable;
 
 /**

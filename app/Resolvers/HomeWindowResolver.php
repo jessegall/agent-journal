@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Data\HomeData;
-use App\Data\HomeWindowData;
+use App\Data\Pages\HomeData;
+use App\Data\Pages\HomeWindowData;
 use App\Declarations\RegisteredPage;
 use App\Support\UiDeclarations;
 use App\Support\Views\LayoutsView;

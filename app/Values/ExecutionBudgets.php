@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Exceptions\ExecutionBudgetInvalid;
 
 /**
- * The resources one start may use (doc 14, section 62): every limit above zero, memory and swap equal, and none above
+ * The resources one start may use: every limit above zero, memory and swap equal, and none above
  * the host's maxima for one helper.
  */
 final readonly class ExecutionBudgets

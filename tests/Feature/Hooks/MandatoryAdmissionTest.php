@@ -34,7 +34,7 @@ use Tests\TestCase;
 /**
  * Core's admission runs on every shell line the frames let through, after the final answer is known and before it is
  * recorded or sent: an admitted line reaches the agent as the supervised runner's line, and a refused one is denied on
- * the stack from before the walk (doc 21 revision 6, section 10; plan 14 task 464).
+ * the stack from before the walk.
  */
 #[TimeLimit(seconds: 5, reason: 'Each test runs Core\'s real admission, which classifies the line by stored rules.')]
 final class MandatoryAdmissionTest extends TestCase
@@ -90,7 +90,7 @@ final class MandatoryAdmissionTest extends TestCase
 
     public function test_a_rewritten_line_is_admitted_as_its_replacement_and_its_refusal_keeps_the_old_stack(): void
     {
-        $this->pushState(new StateReference('test.rewriting', NoSubject::None));
+        $this->pushState($this->rewriting());
 
         $answer = $this->answerShell('make docs');
 

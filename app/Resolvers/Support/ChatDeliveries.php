@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Data\DeliveryView;
+use App\Data\Messages\DeliveryView;
 use App\Enums\OutstandingMessageRangeState;
 use App\Enums\WakeState;
 use App\Models\Messages\MessageReceipt;

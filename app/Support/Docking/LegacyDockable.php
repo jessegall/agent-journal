@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Docking;
 
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockDestination;
 use App\Support\Cards\DockIdentity;

@@ -21,7 +21,7 @@ final class ReleaseMessageClaimTest extends MessagingTestCase
 {
     public function test_the_owner_releases_the_exact_claim_and_the_question_still_waits(): void
     {
-        $questionId = $this->takenUpByBuilder();
+        $questionId = $this->claimedByBuilder();
         $this->asOwner();
 
         $this->runOnBus(new ReleaseMessageClaimCommand($questionId, $this->claimOf($questionId), 'The builder is stuck.'));
@@ -32,7 +32,7 @@ final class ReleaseMessageClaimTest extends MessagingTestCase
 
     public function test_a_claim_that_changed_in_between_is_refused(): void
     {
-        $questionId = $this->takenUpByBuilder();
+        $questionId = $this->claimedByBuilder();
         $claim = $this->claimOf($questionId);
         $this->asOwner();
         $this->runOnBus(new ReleaseMessageClaimCommand($questionId, $claim, 'First release.'));
@@ -44,14 +44,14 @@ final class ReleaseMessageClaimTest extends MessagingTestCase
 
     public function test_an_agent_may_not_release_a_claim(): void
     {
-        $questionId = $this->takenUpByBuilder();
+        $questionId = $this->claimedByBuilder();
 
         $this->expectException(CommandAdmissionRefused::class);
 
         $this->runOnBus(new ReleaseMessageClaimCommand($questionId, $this->claimOf($questionId), 'Mine to give up.'));
     }
 
-    private function takenUpByBuilder(): string
+    private function claimedByBuilder(): string
     {
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
         $this->asAgent($this->builder);

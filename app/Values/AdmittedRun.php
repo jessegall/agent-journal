@@ -8,7 +8,7 @@ use App\Enums\RunMode;
 use App\Support\ActorIdentity;
 
 /**
- * A command line admitted to run (doc 21 revision 6, section 55): its single-use admission id, normal or evidence
+ * A command line admitted to run: its single-use admission id, normal or evidence
  * mode, its exact line, folder and plan, the digests and revisions it was admitted under, the bindings it relied on,
  * and the actor it runs for. Only the named factories make one; a serialized copy is no authority, since the runner
  * checks it again at start.

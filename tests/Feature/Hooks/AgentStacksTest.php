@@ -26,6 +26,7 @@ use App\Support\Stack\StackRestorer;
 use App\Support\Stack\StateTypes;
 use App\Support\StackTransaction;
 use App\Support\StartStacks;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
 use App\Support\Storage\FrameRecord;
@@ -40,11 +41,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\Counting\CountingState;
-use Tests\Fixtures\Hooks\Counting\CountingStateLoader;
 use Tests\Fixtures\Hooks\DomainWrite;
-use Tests\Fixtures\Hooks\InMemoryTaskLoader;
+use Tests\Fixtures\Hooks\InMemoryTasks;
+use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
@@ -79,14 +79,18 @@ final class AgentStacksTest extends TestCase
                 null,
             ),
         );
-        $tasks = new InMemoryTaskLoader([42 => TaskState::Started, 43 => TaskState::Started]);
+        $this->app->instance(InMemoryTasks::class, new InMemoryTasks([42 => TaskState::Started, 43 => TaskState::Started]));
         Event::listen(
             StateTypesRequested::class,
-            fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks),
+            fn (StateTypesRequested $event) => $event->registry->register(
+                RegisteredStateType::named('test.tasks', InMemoryTaskState::class),
+            ),
         );
         Event::listen(
             StateTypesRequested::class,
-            fn (StateTypesRequested $event) => $event->registry->register('test.counting', new CountingStateLoader()),
+            fn (StateTypesRequested $event) => $event->registry->register(
+                RegisteredStateType::named('test.counting', CountingState::class),
+            ),
         );
     }
 
@@ -181,7 +185,7 @@ final class AgentStacksTest extends TestCase
                 ->saveFrames($stack->records(), $this->app->make(StateTypes::class)->ticking());
         });
 
-        $this->assertSame(['count' => 2], $this->storedFrames()[1]->values);
+        $this->assertSame(['values' => ['count' => 2]], $this->storedFrames()[1]->values);
         $this->assertSame(2, $this->countingStateOf($this->reloadedStack())->counted());
         $this->assertSame([], $this->storedFrames()[0]->values);
     }
@@ -202,7 +206,21 @@ final class AgentStacksTest extends TestCase
         }
     }
 
-    public function test_pushing_a_state_already_on_the_stack_adds_nothing(): void
+    public function test_pushing_a_state_that_is_not_unique_again_adds_a_frame_of_its_own(): void
+    {
+        $this->createStack();
+        $counting = new StateReference('test.counting', NoSubject::None);
+
+        $this->transaction()->run(fn () => $this->stacks()->push($this->target, $counting));
+        $this->transaction()->run(fn () => $this->stacks()->push($this->target, $counting));
+
+        $this->assertSame(
+            ['hooks.ready', 'test.counting', 'test.counting'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
+        );
+    }
+
+    public function test_pushing_a_unique_state_already_on_the_stack_adds_nothing(): void
     {
         $this->createStack();
 
@@ -224,19 +242,13 @@ final class AgentStacksTest extends TestCase
     public function test_a_switched_off_conditional_state_is_declined_and_a_switched_on_one_is_pushed(): void
     {
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register(
-                'test.switched_off',
-                new ClosureStateLoader(SwitchableState::class, fn () => new SwitchableState(false)),
-            );
-            $event->registry->register(
-                'test.switched_on',
-                new ClosureStateLoader(SwitchableState::class, fn () => new SwitchableState(true)),
-            );
+            $event->registry->register(RegisteredStateType::named('test.switched_off', SwitchableState::class));
+            $event->registry->register(RegisteredStateType::named('test.switched_on', SwitchableState::class));
         });
         $this->createStack();
 
         $this->transaction()->run(
-            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None)),
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None, ['enabled' => false])),
         );
         $this->assertSame(
             ['hooks.ready'],
@@ -244,7 +256,7 @@ final class AgentStacksTest extends TestCase
         );
 
         $this->transaction()->run(
-            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None)),
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None, ['enabled' => true])),
         );
         $this->assertSame(
             ['hooks.ready', 'test.switched_on'],
@@ -257,15 +269,16 @@ final class AgentStacksTest extends TestCase
         $enabled = true;
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event) use (&$enabled): void {
             $event->registry->register(
-                'test.switchable',
-                new ClosureStateLoader(SwitchableState::class, function () use (&$enabled) {
-                    return new SwitchableState($enabled);
-                }),
+                RegisteredStateType::named('test.switchable', SwitchableState::class)->switchedBy(
+                    function () use (&$enabled): bool {
+                        return $enabled;
+                    },
+                ),
             );
         });
         $this->createStack();
         $this->transaction()->run(
-            fn () => $this->stacks()->push($this->target, new StateReference('test.switchable', NoSubject::None)),
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switchable', NoSubject::None, ['enabled' => true])),
         );
 
         $enabled = false;
@@ -400,7 +413,7 @@ final class AgentStacksTest extends TestCase
 
     private function task(int $number): StateReference
     {
-        return new StateReference('test.tasks', new SubjectReference((string) $number, 1));
+        return new StateReference('test.tasks', new SubjectReference((string) $number, 1), ['number' => $number, 'runNumber' => 1]);
     }
 
     private function reloadedStack(): AgentStack

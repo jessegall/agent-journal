@@ -25,7 +25,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Script reads and steps go through the host once (task 961): a workspace read first waits for its host, the host's
+ * Script reads and steps go through the host once: a workspace read first waits for its host, the host's
  * one answer is what every read of that reference gives, a failed read is a diagnostic and never false, and a step
  * outcome is recorded once on the run that waits on it and resumes it.
  */

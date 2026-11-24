@@ -21,7 +21,7 @@ type ClaudeCode struct{}
 
 var _ contracts.DriverProfile = ClaudeCode{}
 
-// claudeCodeAllowedTools is the evidence-checked inventory of 2.1.323 (task 887). It leaves out Agent, Task,
+// claudeCodeAllowedTools is the evidence-checked inventory of 2.1.323. It leaves out Agent, Task,
 // Workflow, SendMessage, ListAgents, RemoteTrigger, Skill, the cron and wake-up tools and the worktree tools.
 var claudeCodeAllowedTools = []string{"Bash", "Read", "Edit", "Write", "NotebookEdit", "WebFetch", "WebSearch", "ToolSearch"}
 
@@ -326,8 +326,7 @@ func leaveCommandsToExecutor(settings map[string]any) {
 }
 
 // requireBoundary refuses an account start whose effective settings would make Claude Code ask a user, or, outside
-// a protected start, run a tool outside Claude Code's sandbox: every session runs without permission questions (user
-// messages 19438, 19631, 19636), and what a tool may do is decided by the journal's hook, the deny rules and the
+// a protected start, run a tool outside Claude Code's sandbox: every session runs without permission questions, and what a tool may do is decided by the journal's hook, the deny rules and the
 // sandbox or the container.
 func requireBoundary(settings map[string]any, protected bool) error {
 	sandbox, _ := settings["sandbox"].(map[string]any)

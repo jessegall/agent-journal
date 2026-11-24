@@ -20,10 +20,8 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\InheritingState;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
-use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestActors;
 
 final class StateMethodSelectorTest extends TestCase
@@ -70,9 +68,8 @@ final class StateMethodSelectorTest extends TestCase
 
     public function test_metadata_is_reflected_and_reused_without_creating_a_state(): void
     {
-        $loader = new ClosureStateLoader(InheritingState::class, fn () => throw SimulatedFailure::of('Unexpected load.'));
         $methods = new StateMethods();
-        $first = $methods->forLoader($loader);
+        $first = $methods->forState(InheritingState::class);
 
         $this->assertSame($first, $methods->forState(InheritingState::class));
         $this->assertEqualsCanonicalizing(['onStop', TaskStarted::class], array_keys($first));

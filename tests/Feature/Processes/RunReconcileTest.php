@@ -28,7 +28,7 @@ use Tests\TestCase;
 
 /**
  * A run whose supervisor fell silent is settled as lost, never as a success, and a user retries it as a new run
- * through a fresh admission (doc 21 revision 6, sections 53 and 70; stories 128, 129, 137, 165 and 178).
+ * through a fresh admission.
  */
 final class RunReconcileTest extends TestCase
 {

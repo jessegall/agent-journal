@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * Rule 6 for every model of a domain: an explicit #[Fillable] list, nothing else, and never an open model.
+ * Every model of a domain has an explicit #[Fillable] list, nothing else, and never an open model.
  */
 final class ModelConventions
 {
@@ -75,7 +75,7 @@ final class ModelConventions
     }
 
     /**
-     * Every model is keyed by a ULID through HasUlids and can be linked through Linkable (rule 29).
+     * Every model is keyed by a ULID through HasUlids and can be linked through Linkable.
      *
      * @param  list<string>  $files
      * @return list<Violation>
@@ -185,7 +185,7 @@ final class ModelConventions
     }
 
     /**
-     * Rule 6: the model's fillable columns come from a non-empty #[Fillable] attribute alone, as Laravel reads them.
+     * The model's fillable columns come from a non-empty #[Fillable] attribute alone, as Laravel reads them.
      *
      * @param  class-string<Model>  $class
      */

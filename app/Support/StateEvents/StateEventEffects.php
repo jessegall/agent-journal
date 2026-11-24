@@ -51,7 +51,9 @@ final readonly class StateEventEffects
 
     private function applyOrigin(StateEventOrigin $origin): CommandOriginStatus
     {
-        $audience = $origin->dispatch->audience->get();
+        $audience = $origin->dispatch->admits($origin->target)
+            ? $origin->dispatch->audience->get()
+            : StateEventAudience::listening($origin->target, $origin->frameId());
 
         foreach ($origin->effects() as $answered) {
             $effect = $answered instanceof Event

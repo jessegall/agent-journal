@@ -6,8 +6,8 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Contracts\Chat\ConversationResolver;
-use App\Data\MessageClaimHolder;
-use App\Data\MessageReader;
+use App\Data\Messages\MessageClaimHolder;
+use App\Data\Messages\MessageReader;
 use Spatie\LaravelData\Optional;
 use Tests\Support\MessagingTestCase;
 

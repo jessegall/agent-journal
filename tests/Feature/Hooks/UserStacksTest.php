@@ -16,12 +16,12 @@ use App\Support\References\StateReference;
 use App\Support\StackTransaction;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Storage\FrameRecord;
 use App\Support\UserStacks;
 use App\Values\StackTarget;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\ActsAsActors;
@@ -57,8 +57,7 @@ final class UserStacksTest extends TestCase
         Event::listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register(
-                'test.switched_off',
-                new ClosureStateLoader(SwitchableState::class, fn () => new SwitchableState(false)),
+                RegisteredStateType::named('test.switched_off', SwitchableState::class),
             ),
         );
         $this->target = $this->targetOf($this->start());
@@ -80,7 +79,7 @@ final class UserStacksTest extends TestCase
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(UserStacks::class)->push(
                 $this->target,
-                new StateReference('test.switched_off', NoSubject::None),
+                new StateReference('test.switched_off', NoSubject::None, ['enabled' => false]),
             ),
         );
 

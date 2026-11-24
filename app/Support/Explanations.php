@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\CommandClassifier;
-use App\Data\ExplainedNodeData;
-use App\Data\ExplanationData;
-use App\Data\HeldPartData;
+use App\Data\Processes\ExplainedNodeData;
+use App\Data\Processes\ExplanationData;
+use App\Data\Processes\HeldPartData;
 use App\Declarations\VerificationContract;
 use App\Enums\CommandClass;
 use App\Enums\NodeType;

@@ -27,7 +27,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A parent continues, steers and cancels its helper jobs as commands (task 287): an ended attempt leaves the job
+ * A parent continues, steers and cancels its helper jobs as commands: an ended attempt leaves the job
  * unfinished with a notice that holds the exact continue command, a continue keeps the job and brief on the model
  * named now, a finished job refuses with a send command, a steer changes no selection, and a cancel marks the job
  * cancelled.
@@ -45,7 +45,7 @@ final class HelperContinueTest extends TestCase
     private const string CONTINUE_COMMAND = 'journal helper continue';
 
     /**
-     * A driver that reopens an earlier conversation; Codex headless cannot yet (task 2480).
+     * A driver that reopens an earlier conversation; Codex headless cannot yet.
      */
     private const string RESUMING_DRIVER = 'claude-code';
 

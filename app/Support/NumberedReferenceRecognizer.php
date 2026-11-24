@@ -10,7 +10,7 @@ use App\Values\SearchWords;
 
 /**
  * Recognizes a whole input that is a numbered record's reference as the journal writes it, such as task 2241 or
- * plan 57, in any case. It reads nothing; a bare number gets the hint to type the reference in full.
+ * In any case. It reads nothing; a bare number gets the hint to type the reference in full.
  */
 abstract readonly class NumberedReferenceRecognizer implements ReferenceRecognizer
 {

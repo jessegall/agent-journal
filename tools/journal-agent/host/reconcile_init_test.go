@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// User message 19586: a session whose host restarted is no longer served, so it is stopped by itself and marked so.
+// A session whose host restarted is no longer served, so it is stopped by itself and marked so.
 func TestASessionContainerFoundRunningWhenTheHostStartsIsRemovedAndCountsAsExited(t *testing.T) {
 	containers, daemon := standIn(t, localRules)
 	daemon.AddContainer("journal-session-7", map[string]string{installationLabel: "journal", sessionLabel: "session-7"}, true)

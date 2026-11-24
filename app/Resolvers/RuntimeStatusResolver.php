@@ -6,9 +6,9 @@ namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
 use App\Contracts\Sessions\RuntimeResolver;
-use App\Data\RecoveryRefusalPartData;
-use App\Data\RuntimeEntryData;
-use App\Data\RuntimeStatus;
+use App\Data\Processes\RecoveryRefusalPartData;
+use App\Data\Processes\RuntimeEntryData;
+use App\Data\Processes\RuntimeStatus;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutNativeData;

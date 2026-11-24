@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Rule 47: a method whose only purpose is to throw when something does not hold is named assert<What>, never
+ * A method whose only purpose is to throw when something does not hold is named assert<What>, never
  * require, ensure, check, guard or refuse.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Readers;
 
 use App\Contracts\Scripts\ScriptChecks;
-use App\Data\ProfileDraftData;
+use App\Data\Profiles\ProfileDraftData;
 use App\Models\Profiles\ProfileDraft;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;

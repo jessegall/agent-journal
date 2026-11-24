@@ -24,8 +24,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * Every start freezes the policy it runs under with its session (doc 14 revision 5, section 49; plan 10 decision
- * P11): written with the start, read back as it was, never changed afterwards.
+ * Every start freezes the policy it runs under with its session: written with the start, read back as it was, never changed afterwards.
  */
 final class SessionPolicyTest extends TestCase
 {

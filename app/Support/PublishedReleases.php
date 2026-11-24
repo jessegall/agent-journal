@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Files\Files;
-use App\Data\ReleaseCompatibilityData;
+use App\Data\Images\ReleaseCompatibilityData;
 use App\Enums\Place;
 use App\Exceptions\ReleaseMissing;
 use App\Values\FilePath;

@@ -52,8 +52,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * The order of writes, events and the commit in the flows whose order plan 40 must keep (doc 67 section 19, Baseline
- * and pilot exit, and Ordering during coexistence), recorded through the real command entries with the real
+ * The order of writes, events and the commit in the flows whose order must hold, recorded through the real command entries with the real
  * listeners. An event's entry follows the writes of its synchronous listeners, which run before the recorder.
  */
 #[TimeLimit(seconds: 20, reason: 'Each flow commits through the bus and empties its tables around each test.')]
@@ -145,7 +144,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19: Task save, run and claim, TaskStarted's stack push and plan membership inside the
+     * Task save, run and claim, TaskStarted's stack push and plan membership inside the
      * transaction, commit, then the public TaskStarted and plan progress; the claim sends no AssignmentsChanged. After
      * the commit, the new frame's instruction marker and the plan frames hearing the progress each commit on their own.
      */
@@ -167,7 +166,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19: a stack-owned start keeps the same order; the stack's transaction is the one that commits.
+     * A stack-owned start keeps the same order; the stack's transaction is the one that commits.
      */
     public function test_a_stack_owned_task_start_keeps_the_order_and_commits_with_the_stack(): void
     {
@@ -187,7 +186,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19: a permitted repeated start sends TaskStarted again; the stack already holds the task.
+     * A permitted repeated start sends TaskStarted again; the stack already holds the task.
      */
     public function test_a_repeated_start_sends_task_started_again(): void
     {
@@ -204,7 +203,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19, run with Plans disabled: the start keeps its order and no plan progress is projected.
+     * Run with Plans disabled: the start keeps its order and no plan progress is projected.
      */
     public function test_with_plans_disabled_a_task_start_projects_no_plan_progress(): void
     {
@@ -221,8 +220,9 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19: finish saves the task and the run and releases the claim, commits, then TaskFinished is
-     * delivered; the plan progress its listener sends from committed membership reaches the recorder first.
+     * Finish saves the task and the run and releases the claim, commits, then TaskFinished is
+     * delivered; the plan progress its listener sends from committed membership reaches the recorder first, and the
+     * task's frame hears the finish and commits its own end.
      */
     public function test_a_task_finish_saves_the_task_and_run_then_commits_and_publishes(): void
     {
@@ -239,11 +239,13 @@ final class BaselineTimelinesTest extends TestCase
             'commit',
             'PlanProgressChanged',
             'TaskFinished',
+            'saved AgentStackRow',
+            'commit',
         ], $this->timeline);
     }
 
     /**
-     * Doc 67 section 19, run with Plans disabled: the finish keeps its order and no plan progress is projected.
+     * Run with Plans disabled: the finish keeps its order and no plan progress is projected.
      */
     public function test_with_plans_disabled_a_task_finish_projects_no_plan_progress(): void
     {
@@ -255,13 +257,13 @@ final class BaselineTimelinesTest extends TestCase
         $this->finish($task);
 
         $this->assertSame(
-            ['saved Task', 'saved TaskRun', 'commit', 'TaskFinished'],
+            ['saved Task', 'saved TaskRun', 'commit', 'TaskFinished', 'saved AgentStackRow', 'commit'],
             $this->timeline,
         );
     }
 
     /**
-     * Doc 67 section 19: TaskFinished samples plan membership at committed delivery, so a task moved to another
+     * TaskFinished samples plan membership at committed delivery, so a task moved to another
      * plan's phase in the same transaction reports the progress of the plan it moved to.
      */
     public function test_a_finish_reports_the_progress_of_the_plan_the_task_moved_to_in_the_same_transaction(): void
@@ -281,7 +283,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19: a move committed concurrently from a second connection before the finish commits is the
+     * A move committed concurrently from a second connection before the finish commits is the
      * membership TaskFinished's plan progress reads.
      */
     public function test_a_finish_reports_the_progress_of_the_plan_a_concurrent_move_committed(): void
@@ -305,7 +307,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19: a plan start pushes the work stack only on the true startOnce branch and sends PlanStarted
+     * A plan start pushes the work stack only on the true startOnce branch and sends PlanStarted
      * after the commit; starting it again writes and sends nothing.
      */
     public function test_a_plan_start_pushes_the_stack_once_and_a_second_start_sends_nothing(): void
@@ -324,7 +326,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19, Profiles reconciliation: each lost attempt ends and releases its account's writer before
+     * Profiles reconciliation: each lost attempt ends and releases its account's writer before
      * the next attempt, and their AccountsChanged follow the commit in the same order.
      */
     public function test_reconciling_two_lost_attempts_ends_and_releases_each_in_turn(): void

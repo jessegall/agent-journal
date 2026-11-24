@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Rule 39 stays true: no code in app or a domain chooses behaviour by the kind of actor, calls a removed
+ * No code in app or a domain chooses behaviour by the kind of actor, calls a removed
  * identity-category helper, or names a removed role or actor attribute. It asks an ability instead. That every
  * command declares Authorize or a trusted entry is kept by CommandFolderTest.
  */

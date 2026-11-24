@@ -19,7 +19,7 @@ use App\Support\FolderClasses;
 use App\Support\MiddlewareDeclaration;
 
 /**
- * Core's own commands and middleware, read at start-up beside the domains' (doc 19, section 6.1).
+ * Core's own commands and middleware, read at start-up beside the domains'.
  */
 final class CoreCommands
 {

@@ -20,8 +20,7 @@ use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
- * Runs, parts, events and output chunks are stored as four observations with legal lifecycle moves only (doc 21
- * revision 6, sections 53, 54 and 69).
+ * Runs, parts, events and output chunks are stored as four observations with legal lifecycle moves only.
  */
 final class ProcessRecordsTest extends TestCase
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * The fixed limits of one shell analysis (doc 21 revision 3, section 5): a line past any of them keeps only a
+ * The fixed limits of one shell analysis: a line past any of them keeps only a
  * diagnostic naming the limit.
  */
 enum AnalysisLimit: int

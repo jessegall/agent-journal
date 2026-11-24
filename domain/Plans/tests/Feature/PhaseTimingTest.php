@@ -23,7 +23,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * An agent's tests and checks wait while the current phase of the started plan it holds has open or started tasks,
- * and run once they ended (rule 31, story 148, plan 14 decision D18).
+ * and run once they ended.
  */
 final class PhaseTimingTest extends TestCase
 {

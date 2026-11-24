@@ -9,7 +9,7 @@ use Tests\Support\ScanCache\ScanCache;
 use Throwable;
 
 /**
- * Rule 14: an exception class lives in an Exceptions folder of its domain or core area.
+ * An exception class lives in an Exceptions folder of its domain or core area.
  */
 final class ExceptionPlacement
 {

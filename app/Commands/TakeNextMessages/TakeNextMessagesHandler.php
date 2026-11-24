@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\TakeNextMessages;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Data\MessageReadBatch;
+use App\Data\Messages\MessageReadBatch;
 use App\Models\Messages\Message;
 use App\Support\MessageService;
 
@@ -19,7 +19,7 @@ final readonly class TakeNextMessagesHandler implements CommandHandler
         $limit = max(1, min($command->limit, TakeNextMessagesCommand::LARGEST_LIMIT));
 
         $candidates = Message::query()
-            ->waitingForTakeUp($inbox->inboxId(), TakeNextMessagesCommand::LARGEST_LIMIT)
+            ->waitingForClaim($inbox->inboxId(), TakeNextMessagesCommand::LARGEST_LIMIT)
             ->get()
             ->all();
 

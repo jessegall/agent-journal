@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Sessions\RuntimeResolver;
-use App\Data\RuntimeStatus;
+use App\Data\Processes\RuntimeStatus;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;

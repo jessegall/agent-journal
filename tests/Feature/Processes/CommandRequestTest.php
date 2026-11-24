@@ -15,8 +15,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * One persistent request holds a command the journal will not run yet and names its next step (doc 21 revision 6,
- * section 71; stories 149, 179, 183 and 191-194).
+ * One persistent request holds a command the journal will not run yet and names its next step.
  */
 final class CommandRequestTest extends TestCase
 {

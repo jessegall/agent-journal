@@ -9,11 +9,7 @@ use App\Contracts\Events\Listener;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanProgressCount;
-use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Events\TaskBlocked;
-use Domain\Tasks\Events\TaskCancelled;
-use Domain\Tasks\Events\TaskFinished;
-use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Contracts\TaskStateEvent;
 
 /**
  * Moves the task tallies of the phase holding a task, and of its plan, from the state the task left to the one it
@@ -23,9 +19,9 @@ use Domain\Tasks\Events\TaskStarted;
 #[InCommandTransaction]
 final readonly class CountPhaseTaskStates implements Listener
 {
-    public function handle(TaskStarted|TaskFinished|TaskBlocked|TaskCancelled $event): void
+    public function handle(TaskStateEvent $event): void
     {
-        $enteredState = self::enteredStateOf($event);
+        $enteredState = $event->enteredState();
 
         if ($event->previousState === $enteredState) {
             return;
@@ -42,15 +38,5 @@ final readonly class CountPhaseTaskStates implements Listener
 
         $phase->recordProgress(PlanProgressCount::afterMove($phase->progress, $event->previousState, $enteredState));
         $plan->recordProgress(PlanProgressCount::afterMove($plan->progress, $event->previousState, $enteredState));
-    }
-
-    private static function enteredStateOf(TaskStarted|TaskFinished|TaskBlocked|TaskCancelled $event): TaskState
-    {
-        return match ($event::class) {
-            TaskStarted::class => TaskState::Started,
-            TaskFinished::class => TaskState::Finished,
-            TaskBlocked::class => TaskState::Blocked,
-            TaskCancelled::class => TaskState::Cancelled,
-        };
     }
 }

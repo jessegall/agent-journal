@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Enums;
 
 /**
- * Where a plan stands, in the words of doc 4's state badge: planned until it starts, reviewing while a review holds it,
+ * Where a plan stands, in the words of its state badge: planned until it starts, reviewing while a review holds it,
  * then started, paused, cancelled or done.
  */
 enum PlanState: string

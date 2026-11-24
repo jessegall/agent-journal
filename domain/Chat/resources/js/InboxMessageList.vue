@@ -11,7 +11,7 @@ import RefusedSend from "./RefusedSend.vue";
 
 /**
  * The messages of one desk inbox, oldest first, as the Inbox page shows them: the user's own on the right, the other inbox's on the left with
- * the name of whoever wrote it, and for each incoming question whether it is unread, waiting or taken up. After them
+ * the name of whoever wrote it, and for each incoming question whether it is unread, waiting or claimed. After them
  * come the user's own sends still settling, and the refused ones to restore or discard. Bodies are shown as text,
  * never as HTML.
  */

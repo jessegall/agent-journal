@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Contracts\Navigation\DraftProducer;
-use App\Data\DraftedRecordData;
-use App\Data\DraftQuestionData;
+use App\Data\Messages\DraftQuestionData;
+use App\Data\Pages\DraftedRecordData;
 use App\Support\DraftAnswers;
 use Domain\Documents\Models\Document;
 

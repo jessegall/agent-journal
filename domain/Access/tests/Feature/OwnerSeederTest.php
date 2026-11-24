@@ -11,7 +11,7 @@ use Domain\Access\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
 /**
- * Doc 107, Foundation permissions: the owner seeder reaches the bus through the exported JournalCommands contract, and
+ * Foundation permissions: the owner seeder reaches the bus through the exported JournalCommands contract, and
  * seeding twice makes the owner and provisions its desk once.
  */
 final class OwnerSeederTest extends TestCase

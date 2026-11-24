@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * A page's title with an optional count, and its buttons at the right end (doc 4, 7.1).
+ * A page's title with an optional count, and its buttons at the right end.
  */
 defineProps<{ title: string; count?: number }>();
 </script>

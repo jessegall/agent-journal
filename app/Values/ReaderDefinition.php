@@ -8,7 +8,7 @@ use App\Enums\RecordRole;
 use App\Exceptions\ReaderDefinitionInvalid;
 
 /**
- * A declarative, bounded reader of one check's output (doc 21 revision 6, section 72): its record rules in order,
+ * A declarative, bounded reader of one check's output: its record rules in order,
  * the summary fields that count results and the one that holds their total, the field that counts failures, and its
  * limits per record and per read.
  */

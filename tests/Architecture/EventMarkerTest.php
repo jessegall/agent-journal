@@ -16,8 +16,8 @@ use Tests\TestCase;
 
 /**
  * Every class in an Events folder of Core, a domain or an installed module implements Core's Event marker, so what
- * happens is recognisable as an event (user message 2307); every class in a Listeners folder implements Listener and
- * every handler beside its command implements CommandHandler (user message 3246), and neither marker is used outside
+ * happens is recognisable as an event; every class in a Listeners folder implements Listener and
+ * every handler beside its command implements CommandHandler, and neither marker is used outside
  * its
  * folder.
  */

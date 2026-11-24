@@ -91,10 +91,8 @@ use Domain\Plans\Support\PlanSearchAccess;
 use Domain\Plans\Support\PlanSearchProvider;
 use Domain\Plans\Support\PlanShareProvider;
 use Domain\Plans\Support\Skills\PlanSkill;
-use Domain\Plans\Support\States\Support\ReviewingPlanStateFactory;
-use Domain\Plans\Support\States\Support\ReviewingPlanStateReference;
-use Domain\Plans\Support\States\Support\WorkingOnPlanStateFactory;
-use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
+use Domain\Plans\Support\States\ReviewingPlanState;
+use Domain\Plans\Support\States\WorkingOnPlanState;
 use Domain\Plans\Values\AssignedPlanFilters;
 use Domain\Plans\Values\AssignedPlanList;
 use Domain\Plans\Values\PhaseDetails;
@@ -335,8 +333,8 @@ final class PlansDomain extends Domain implements
     public function states(): array
     {
         return [
-            WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateFactory::class,
-            ReviewingPlanStateReference::TYPE_KEY => ReviewingPlanStateFactory::class,
+            WorkingOnPlanState::class,
+            ReviewingPlanState::class,
         ];
     }
 

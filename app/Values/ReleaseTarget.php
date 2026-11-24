@@ -13,7 +13,7 @@ final readonly class ReleaseTarget
 {
     /**
      * The local providers every advertised platform must run: Claude Code, while local Codex stays withheld until its
-     * hook calls carry a per-thread capability (task 1913).
+     * hook calls carry a per-thread capability.
      */
     public const array REQUIRED_PROVIDERS = ['claude-code'];
 

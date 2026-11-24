@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Contracts\Records;
 
-use App\Data\CommentList;
-use App\Data\RecordCommentLocation;
-use App\Data\TextCommentLocation;
+use App\Data\Comments\CommentList;
+use App\Data\Comments\RecordCommentLocation;
+use App\Data\Comments\TextCommentLocation;
 use App\Support\Page;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;

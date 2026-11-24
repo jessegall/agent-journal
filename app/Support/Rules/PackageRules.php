@@ -14,7 +14,7 @@ use App\Values\ProgramSpellings;
 
 /**
  * Package managers that install, update or remove dependencies: they reach the network and read, write and delete in
- * the project. Their script runners are not rules; task 770 resolves scripts to what they run.
+ * the project. Their script runners are not rules: a script is judged by what it runs.
  */
 final readonly class PackageRules
 {

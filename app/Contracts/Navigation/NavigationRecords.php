@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts\Navigation;
 
-use App\Data\NavigationCountsData;
-use App\Data\NavigationData;
+use App\Data\Navigation\NavigationCountsData;
+use App\Data\Navigation\NavigationData;
 use Illuminate\Http\Request;
 
 /**

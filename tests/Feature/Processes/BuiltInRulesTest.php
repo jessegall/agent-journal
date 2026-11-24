@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Data\ExplainedNodeData;
+use App\Data\Processes\ExplainedNodeData;
 use App\Enums\CommandClass;
 use App\Enums\CommandType;
 use App\Enums\OutputRequirement;
@@ -18,7 +18,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Core's built-in rules classify the common command families as doc 21 revision 6, sections 6 and 68 declare.
+ * Core's built-in rules classify the common command families as they are declared.
  */
 final class BuiltInRulesTest extends TestCase
 {

@@ -9,7 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Rule 48: a parameter drops a leading word its context already says ($profileKey and $profileRevision in a method
+ * A parameter drops a leading word its context already says ($profileKey and $profileRevision in a method
  * where nothing else is $key or $revision are $key and $revision). tools/refactoring/shared-prefix-names.php lists
  * every such name, and renames them with --fix.
  */

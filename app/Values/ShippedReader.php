@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\ProofManifestData;
+use App\Data\Processes\ProofManifestData;
 use App\Support\CodeFiles;
 
 /**

@@ -34,7 +34,7 @@ use Tests\TestCase;
 /**
  * A driver the journal has never heard of, registered under a namespaced key of the longest length, runs a turn
  * through the ordinary path: open, deliver, claim, report and the outcome, with nothing branching on its name
- * (doc 103 revision 3, Phases in order step 1, story 60).
+ *.
  */
 final class UnfamiliarRegistrationTest extends TestCase
 {

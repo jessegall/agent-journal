@@ -8,7 +8,7 @@ use App\Contracts\Accounts\StartAccounts;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Data\Profiles\EligibleAccountsData;
+use App\Data\Accounts\EligibleAccountsData;
 use App\Enums\AccessType;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;

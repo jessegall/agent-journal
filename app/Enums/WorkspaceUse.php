@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * How a session's container has the workspace at /workspace (doc 61, decision 6): read-only when its access grants
+ * How a session's container has the workspace at /workspace: read-only when its access grants
  * no change of workspace files; the environment's own workspace, read-write, for the main agent; and for a helper
  * that writes, its own clone, so its commits stay there until the merger takes them.
  */

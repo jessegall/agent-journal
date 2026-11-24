@@ -92,7 +92,7 @@ func TestCodexRefusesEveryArgumentThatWouldMoveAToolOffTheExecutorRoute(t *testi
 	}
 }
 
-// User message 19438: a session never waits on a user's approval; the journal's hook decides each call.
+// A session never waits on a user's approval; the journal's hook decides each call.
 func TestCodexInTheTerminalAsksNoUserForApprovalAndAOneShotTurnTakesNoSuchOption(t *testing.T) {
 	for _, start := range []contracts.Start{
 		contracts.BaseStart{}.Terminal(false),

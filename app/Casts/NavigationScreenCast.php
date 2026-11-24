@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Data\StoredNavigationScreen;
+use App\Data\Navigation\StoredNavigationScreen;
 use App\Values\NavigationScreen;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;

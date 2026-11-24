@@ -7,19 +7,18 @@ namespace Tests\Feature\Communication;
 use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Actors\ActorWorkStacks;
+use App\Models\Agents\AgentStackRow;
 use App\Models\Messages\Message;
-use App\Support\Decisions\StateReferences;
 use App\Support\MessageAnswerActivation;
 use App\Support\References\StateReference;
-use App\Support\States\AgentState;
-use App\Support\States\Support\AnsweringMessageStateFactory;
 use App\Support\States\Support\AnsweringMessageStateReference;
+use App\Support\Storage\FrameRecord;
 use PhpOption\Option;
 use Tests\Support\MessagingTestCase;
 
 /**
- * An agent holding a claim on a question is given one answering frame, named by that claim, at the start of a hook;
- * the frame stands while the claim does and finishes once the question is answered.
+ * An agent holding a claim on a question is given one answering frame for the question's chat at the start of a hook,
+ * with the question waiting; the frame finishes once the question is answered.
  */
 final class MessageActivationTest extends MessagingTestCase
 {
@@ -28,19 +27,16 @@ final class MessageActivationTest extends MessagingTestCase
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
         $this->asAgent($this->builder);
         $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId]));
-        $claimId = $this->claimsOn($questionId)[$questionId]->reference->id;
-
         $this->activate();
         $this->activate();
 
-        $frame = $this->currentFrame()->get();
-        $this->assertEquals(AnsweringMessageStateReference::forClaim($claimId), $frame);
-        $this->assertFalse($this->stateOf($claimId)->isFinished());
+        $this->assertSame($this->inboxIdOf($this->builder), $this->currentFrame()->get()->subject->id);
+        $this->assertSame([$questionId], $this->waitingIds());
 
         $version = Message::query()->findOrFail($questionId)->state_version;
         $this->runOnBus(new ReplyToMessageCommand($questionId, $version, 'Port 8080.'));
 
-        $this->assertTrue($this->stateOf($claimId)->isFinished());
+        $this->assertSame([], $this->waitingIds());
     }
 
     public function test_an_agent_with_no_claim_gets_no_frame(): void
@@ -58,11 +54,18 @@ final class MessageActivationTest extends MessagingTestCase
         $this->app->make(MessageAnswerActivation::class)->accept();
     }
 
-    private function stateOf(string $claimId): AgentState
+    /**
+     * The messages the agent's saved answering frame still waits to answer, as the state keeps them.
+     *
+     * @return list<string>
+     */
+    private function waitingIds(): array
     {
-        $references = new StateReferences([AnsweringMessageStateReference::forClaim($claimId)]);
+        $frames = AgentStackRow::query()->withoutGlobalScopes()->get()
+            ->flatMap(fn (AgentStackRow $row) => $row->frames->all())
+            ->filter(fn (FrameRecord $frame) => $frame->reference->typeKey === AnsweringMessageStateReference::TYPE_KEY);
 
-        return $this->app->make(AnsweringMessageStateFactory::class)->statesFor($references)->stateAt(0);
+        return $frames->sole()->values['waitingIds'];
     }
 
     /**

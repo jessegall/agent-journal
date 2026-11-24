@@ -181,7 +181,7 @@ func TestATerminalStartCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
 	}
 }
 
-// User message 19542: a terminal start on this machine names the model the journal asked for, for both programs.
+// A terminal start on this machine names the model the journal asked for, for both programs.
 func TestATerminalStartRunsOnTheModelTheJournalAskedFor(t *testing.T) {
 	asked := "haiku"
 

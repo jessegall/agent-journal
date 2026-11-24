@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Data\StoredGatewaySettings;
+use App\Data\Sharing\StoredGatewaySettings;
 use App\Exceptions\StoredShareColumnInvalid;
 use App\Support\GatewaySettings;
 use Error;

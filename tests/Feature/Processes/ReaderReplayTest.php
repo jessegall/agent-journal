@@ -24,8 +24,7 @@ use Tests\TestCase;
 
 /**
  * A check's part is read live by its approved reader, a broken reader fails alone while capture goes on, and a
- * finished normal part is replayed into a new assessment without running anything again (doc 21 revision 6,
- * sections 54, 69, 70 and 74; stories 162, 188, 195, 198 and 205).
+ * finished normal part is replayed into a new assessment without running anything again.
  */
 final class ReaderReplayTest extends TestCase
 {

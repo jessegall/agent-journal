@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Every first-party use of native PHP reflection, and every question about a type by its name, goes through the
- * wrapper in app/Reflection (doc 84): RawReflectionRule runs over all of the project's own PHP and finds none outside
+ * wrapper in app/Reflection: RawReflectionRule runs over all of the project's own PHP and finds none outside
  * the wrapper's own files.
  */
 #[TimeLimit(seconds: 600, reason: 'It runs PHPStan over every PHP source the project owns.')]

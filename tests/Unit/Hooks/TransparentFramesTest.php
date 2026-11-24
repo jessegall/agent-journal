@@ -17,28 +17,26 @@ use App\Support\References\SubjectReference;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\Frames\Frame;
 use App\Support\States\AgentState;
-use App\Support\States\AnsweringMessageState;
 use App\Support\States\ReadyState;
 use App\Support\Storage\WalkStep;
 use App\Values\CommandPart;
 use App\Values\ShellCommand;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Domain\Plans\Enums\PlanState;
-use Domain\Plans\Support\PlanWork;
-use Domain\Plans\Support\States\WorkingOnPlanState;
-use Domain\Plans\Values\PlanProgress;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Support\States\WorkingOnTaskState;
-use Domain\Tasks\Support\TaskWork;
 use Tests\Fixtures\Hooks\AllowedStops;
+use Tests\Fixtures\Hooks\AnsweringStates;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
+use Tests\Fixtures\Hooks\InMemoryTasks;
+use Tests\Fixtures\Hooks\InMemoryTaskState;
+use Tests\Fixtures\Hooks\Stacks\FinishableState;
+use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\TestCase;
 
 /**
- * The worked walks and pops of doc 48 revision 4, sections 14 and 15: a finished frame stays stored and a walk passes
+ * The worked walks and pops of the stack: a finished frame stays stored and a walk passes
  * over it; only an explicit transition removes frames, and then only the exposed inactive ones.
  */
 final class TransparentFramesTest extends TestCase
@@ -54,7 +52,7 @@ final class TransparentFramesTest extends TestCase
         $this->assertSame(['ready', 'plan', 'task'], $answer->stack->frameIds());
     }
 
-    public function test_a_message_above_a_finished_task_denies_an_edit_at_once_and_lets_a_read_through(): void
+    public function test_a_message_above_a_finished_task_with_its_tool_uses_spent_denies_an_edit_and_a_read(): void
     {
         $stack = $this->stack($this->ready(), $this->plan(), $this->task(finished: true), $this->message());
 
@@ -62,7 +60,7 @@ final class TransparentFramesTest extends TestCase
         $read = $stack->answer($this->readOnlyShellLine());
 
         $this->assertSame(['message'], $this->visited($edit->steps));
-        $this->assertSame(['message', 'ready'], $this->visited($read->steps));
+        $this->assertSame(['message'], $this->visited($read->steps));
         $this->assertSame('message', $stack->top()->id);
         $this->assertSame(['ready', 'plan', 'task', 'message'], $read->stack->frameIds());
     }
@@ -147,7 +145,7 @@ final class TransparentFramesTest extends TestCase
 
     private function stack(Frame ...$frames): AgentStack
     {
-        $pushed = fn (): AgentState => new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started));
+        $pushed = fn (): AgentState => new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started]));
 
         return new AgentStack(array_values($frames), new InMemoryStateFactory(['tasks.working' => $pushed]), new StackTarget('agent-1', 'session-1'));
     }
@@ -165,21 +163,25 @@ final class TransparentFramesTest extends TestCase
 
     private function plan(bool $cancelled = false): Frame
     {
-        $state = new WorkingOnPlanState(new PlanWork('plan-1', 1, $cancelled ? PlanState::Cancelled : PlanState::Started), PlanProgress::none(...));
+        $plans = new FinishedSubjects();
+        $plans->finished = $cancelled ? ['plan'] : [];
+        $state = new FinishableState('plan', $plans);
 
         return $this->frame('plan', 'plans.working', '12', $state);
     }
 
     private function task(bool $finished = false): Frame
     {
-        $work = new TaskWork(41, 3, $finished ? TaskState::Finished : TaskState::Started);
+        $tasks = new InMemoryTasks([41 => $finished ? TaskState::Finished : TaskState::Started]);
 
-        return $this->frame('task', 'tasks.working', '41', new WorkingOnTaskState($work));
+        return $this->frame('task', 'tasks.working', '41', new InMemoryTaskState(41, 3, $tasks));
     }
 
     private function message(bool $answered = false): Frame
     {
-        return $this->frame('message', 'communication.answering', '9', new AnsweringMessageState('9', ! $answered));
+        $state = $answered ? AnsweringStates::answered() : AnsweringStates::holding('9');
+
+        return $this->frame('message', 'communication.answering', '9', $state);
     }
 
     private function frame(string $id, string $typeKey, string $subjectId, AgentState $state): Frame

@@ -40,7 +40,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Certified work that must be reviewed reaches its reviewer and, once approved, its merger (task 965): the engine's
+ * Certified work that must be reviewed reaches its reviewer and, once approved, its merger: the engine's
  * handoff imports it once and opens one review ask even when no certification event is heard, the reviewer's typed
  * approval opens one merge ask on the merge route of the code-reviewer role, and a reply that says approved decides
  * nothing.

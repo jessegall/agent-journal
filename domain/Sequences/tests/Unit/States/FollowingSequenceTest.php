@@ -12,25 +12,17 @@ use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\StopDetails;
 use Domain\Sequences\Enums\SequenceRunState;
-use Domain\Sequences\Support\SequenceWork;
+use Domain\Sequences\Events\SequenceEnded;
+use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Support\States\FollowingSequenceState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 
 final class FollowingSequenceTest extends TestCase
 {
-    /**
-     * @return iterable<string, array{SequenceRunState}>
-     */
-    public static function settledStates(): iterable
-    {
-        yield 'finished' => [SequenceRunState::Finished];
-
-        yield 'cancelled' => [SequenceRunState::Cancelled];
-    }
-
     /**
      * @return iterable<string, array{HookInput}>
      */
@@ -54,20 +46,21 @@ final class FollowingSequenceTest extends TestCase
 
     public function test_its_current_step_is_its_foreground_instruction_and_reading_it_advances_nothing(): void
     {
-        $sequence = $this->running();
-        $state = new FollowingSequenceState($sequence);
+        $state = $this->following();
 
-        $this->assertSame($sequence->currentInstruction(), $state->instruction()->get());
         $this->assertSame($state->instruction()->get(), $state->instruction()->get());
-        $this->assertSame(3, $sequence->stepNumber);
     }
 
-    #[DataProvider('settledStates')]
-    public function test_a_settled_run_is_finished(SequenceRunState $state): void
+    public function test_hearing_the_next_step_moves_it_on_and_hearing_the_end_finishes_it(): void
     {
-        $this->assertTrue(
-            new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', $state))->isFinished(),
-        );
+        $state = $this->following();
+        $before = $state->instruction()->get();
+
+        $state->onSequenceStepReached(new SequenceStepReached('run-8', TestActors::agentIdentity(1), 2));
+        $this->assertNotSame($before, $state->instruction()->get());
+
+        $state->onSequenceEnded(new SequenceEnded('run-8', TestActors::agentIdentity(1), SequenceRunState::Finished));
+        $this->assertTrue($state->isFinished());
     }
 
     public function test_a_running_sequence_is_not_finished(): void
@@ -81,14 +74,9 @@ final class FollowingSequenceTest extends TestCase
         $this->assertEquals(Decision::delegate(), $input->answerBy($this->following()));
     }
 
-    private function running(): SequenceWork
-    {
-        return new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
-    }
-
     private function following(): FollowingSequenceState
     {
-        return new FollowingSequenceState($this->running());
+        return new FollowingSequenceState('run-8', 8, ['Run the phase tests.', 'Report what the tests found.']);
     }
 
     private function stop(): StopRequested

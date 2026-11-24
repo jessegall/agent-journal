@@ -11,8 +11,7 @@ use App\Values\ExecutionContext;
 use App\Values\ShellTree;
 
 /**
- * Classifies every executable part of a shell tree by the declared behaviour of its program (doc 21 revision 6,
- * section 55). It executes nothing; what it cannot place it reports as unresolved facts.
+ * Classifies every executable part of a shell tree by the declared behaviour of its program. It executes nothing; what it cannot place it reports as unresolved facts.
  */
 interface CommandClassifier
 {

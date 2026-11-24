@@ -22,7 +22,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * The protected merge of reviewed work (task 968 and 1452): a clean merge publishes the exact reviewed head onto the
+ * The protected merge of reviewed work: a clean merge publishes the exact reviewed head onto the
  * checked-out target, a conflict leaves the target as it was with its paths, and an interrupted attempt with no effect
  * merges when it is inspected again.
  */

@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * The owner asked a saved account's failed cleanup to run again.
  */
-final readonly class AccountCleanupRetried implements ShownOnAccounts
+final readonly class AccountCleanupRetried extends AccountEvent implements ShownOnAccounts
 {
     public function __construct(public string $driver, public string $accountId) {}
 

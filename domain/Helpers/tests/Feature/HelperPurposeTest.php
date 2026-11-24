@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 
 /**
- * A helper job's purpose comes from exactly one of a subject, a purpose or words (doc 14 revision 4, decision D2):
+ * A helper job's purpose comes from exactly one of a subject, a purpose or words:
  * one purpose per parent, profile and record however often it is asked for; a hidden record answers like a missing
  * one; words always make a new purpose.
  */

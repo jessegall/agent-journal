@@ -1,11 +1,10 @@
-# The agent image: every agent's program runs inside one of these containers (doc 14, sections 58 and 59; doc 61
-# decision 9). No account, login, personal settings or build secret goes into any layer. Pin BASE to a digest when
+# The agent image: every agent's program runs inside one of these containers. No account, login, personal settings or build secret goes into any layer. Pin BASE to a digest when
 # building. bubblewrap and socat let the program sandbox its own tools and reach the host's relays; TOOLCHAIN_PACKAGES
 # names the apt packages of the project toolchains the main agent's workspace needs, none by default.
 ARG BASE=php:8.5-cli-bookworm
 ARG GO_IMAGE=golang:1.26.4-bookworm
 
-# The protected-account init and the fixed shell executor (doc 78), built static for the target architecture.
+# The protected-account init and the fixed shell executor, built static for the target architecture.
 FROM --platform=$BUILDPLATFORM ${GO_IMAGE} AS protected-start
 ARG TARGETOS
 ARG TARGETARCH

@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Rule 43: a class, interface or enum is named with a noun for what it is or the role it plays, never with a verb
+ * A class, interface or enum is named with a noun for what it is or the role it plays, never with a verb
  * phrase about what its implementer does; a trait or an attribute may say what the class using it does.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]

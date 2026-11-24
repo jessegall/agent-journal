@@ -15,10 +15,12 @@ use App\Attributes\OutsideThePlaces;
 use App\Attributes\PresentList;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RequiresRequestKey;
-use App\Attributes\RequiresTransactionListener;
 use App\Attributes\RetainedActorRequestKey;
 use App\Attributes\ScriptMember;
 use App\Attributes\ScriptObject;
+use App\Attributes\StateType;
+use App\Attributes\Ticks;
+use App\Attributes\TransactionListenerConsent;
 use App\Calls\Assignments\Concerns\NamesExpectedAssignment;
 use App\Calls\Assignments\Concerns\NamesRecipient;
 use App\Calls\Comments\ListCommentsCall;
@@ -304,6 +306,7 @@ use App\Contracts\Chat\ActorDesks;
 use App\Contracts\Chat\AdmittedRecipients;
 use App\Contracts\Chat\AgentMessageReader;
 use App\Contracts\Chat\Answer;
+use App\Contracts\Chat\ChatAnswer;
 use App\Contracts\Chat\ChatDepartures;
 use App\Contracts\Chat\ChatEligibility;
 use App\Contracts\Chat\ChatLines;
@@ -447,92 +450,91 @@ use App\Contracts\Skills\SkillResolver;
 use App\Contracts\Time\VerificationTiming;
 use App\Contracts\Work\AgentStack;
 use App\Contracts\Work\ConditionalState;
-use App\Contracts\Work\ConditionalStateType;
 use App\Contracts\Work\CurrentState;
 use App\Contracts\Work\EnvironmentTasks;
 use App\Contracts\Work\IncomingWork;
 use App\Contracts\Work\IncomingWorkProvider;
 use App\Contracts\Work\IncomingWorkRegistration;
-use App\Contracts\Work\OwnValuesState;
 use App\Contracts\Work\ReminderContribution;
 use App\Contracts\Work\StackEditor;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Contracts\Work\UserStack;
 use App\Contracts\Work\WorkAllowance;
+use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Contracts\Work\WorkProgress;
 use App\Contracts\Work\WorkRepair;
 use App\Contracts\Work\WorkStackProvider;
 use App\Contracts\Work\WorkStacks;
-use App\Data\AgentChatPart;
-use App\Data\AgentInbox;
-use App\Data\AgentInboxCounts;
-use App\Data\AgentMessageCard;
-use App\Data\AgentMessageDetails;
+use App\Data\Accounts\EligibleAccountData;
+use App\Data\Accounts\EligibleAccountsData;
+use App\Data\Agents\DriverRequestStatus;
 use App\Data\Assignments\RecordHolderData;
-use App\Data\BooleanValueData;
-use App\Data\ChatEventPage;
-use App\Data\ChatEventView;
-use App\Data\ClassificationSummaryData;
-use App\Data\CommentDetails;
-use App\Data\CommentList;
-use App\Data\DecimalConstraintsData;
-use App\Data\DecimalValueData;
-use App\Data\DeliveryView;
-use App\Data\DockablePublicationData;
-use App\Data\DockDestinationOptionData;
-use App\Data\DockOfferData;
-use App\Data\DraftedRecordData;
-use App\Data\DraftQuestionData;
-use App\Data\DriverRequestStatus;
-use App\Data\InboxCounts;
-use App\Data\InboxView;
-use App\Data\IntegerChoiceConstraintsData;
-use App\Data\IntegerChoiceOptionData;
-use App\Data\IntegerChoiceValueData;
-use App\Data\IntegerConstraintsData;
-use App\Data\IntegerValueData;
-use App\Data\InvalidValueData;
-use App\Data\MessageBatchData;
-use App\Data\MessageBatchItemData;
-use App\Data\MessageClaimHolder;
-use App\Data\MessagePage;
-use App\Data\MessagePartData;
-use App\Data\MessageReadBatch;
-use App\Data\MessageReader;
-use App\Data\MessageReadResult;
-use App\Data\MessageView;
-use App\Data\NotificationLink;
-use App\Data\NotificationTarget;
-use App\Data\PaginationData;
-use App\Data\PartSummaryData;
-use App\Data\PlainGroupAvailabilityData;
-use App\Data\Profiles\EligibleAccountData;
-use App\Data\Profiles\EligibleAccountsData;
-use App\Data\RecordCard;
-use App\Data\RecordCommentLocation;
-use App\Data\RecordCommentView;
-use App\Data\RuntimeSetting;
-use App\Data\RuntimeStatus;
-use App\Data\SettingData;
-use App\Data\SettingGroupData;
-use App\Data\SettingIdentityData;
-use App\Data\SettingsCatalogueData;
-use App\Data\SlotSectionData;
-use App\Data\SourceActionData;
-use App\Data\StringChoiceConstraintsData;
-use App\Data\StringChoiceOptionData;
-use App\Data\StringChoiceValueData;
-use App\Data\StringConstraintsData;
-use App\Data\StringValueData;
-use App\Data\TerminalControlData;
-use App\Data\TerminalInterestData;
-use App\Data\TerminalReceiptData;
-use App\Data\TextCommentLocation;
-use App\Data\TextCommentView;
-use App\Data\TextSections;
-use App\Data\TextVersionSummary;
-use App\Data\ToggleGroupAvailabilityData;
-use App\Data\WakeStatus;
+use App\Data\Comments\CommentDetails;
+use App\Data\Comments\CommentList;
+use App\Data\Comments\RecordCommentLocation;
+use App\Data\Comments\RecordCommentView;
+use App\Data\Comments\TextCommentLocation;
+use App\Data\Comments\TextCommentView;
+use App\Data\Docks\DockablePublicationData;
+use App\Data\Docks\DockDestinationOptionData;
+use App\Data\Docks\DockOfferData;
+use App\Data\Docks\SourceActionData;
+use App\Data\Messages\AgentChatPart;
+use App\Data\Messages\AgentInbox;
+use App\Data\Messages\AgentInboxCounts;
+use App\Data\Messages\AgentMessageCard;
+use App\Data\Messages\AgentMessageDetails;
+use App\Data\Messages\ChatEventPage;
+use App\Data\Messages\ChatEventView;
+use App\Data\Messages\DeliveryView;
+use App\Data\Messages\DraftQuestionData;
+use App\Data\Messages\InboxCounts;
+use App\Data\Messages\InboxView;
+use App\Data\Messages\MessageBatchData;
+use App\Data\Messages\MessageBatchItemData;
+use App\Data\Messages\MessageClaimHolder;
+use App\Data\Messages\MessagePage;
+use App\Data\Messages\MessagePartData;
+use App\Data\Messages\MessageReadBatch;
+use App\Data\Messages\MessageReader;
+use App\Data\Messages\MessageReadResult;
+use App\Data\Messages\MessageView;
+use App\Data\Messages\WakeStatus;
+use App\Data\Notifications\NotificationLink;
+use App\Data\Notifications\NotificationTarget;
+use App\Data\Pages\DraftedRecordData;
+use App\Data\Pages\PaginationData;
+use App\Data\Pages\RecordCard;
+use App\Data\Pages\SlotSectionData;
+use App\Data\Pages\TextSections;
+use App\Data\Pages\TextVersionSummary;
+use App\Data\Processes\ClassificationSummaryData;
+use App\Data\Processes\PartSummaryData;
+use App\Data\Processes\RuntimeStatus;
+use App\Data\Settings\BooleanValueData;
+use App\Data\Settings\DecimalConstraintsData;
+use App\Data\Settings\DecimalValueData;
+use App\Data\Settings\IntegerChoiceConstraintsData;
+use App\Data\Settings\IntegerChoiceOptionData;
+use App\Data\Settings\IntegerChoiceValueData;
+use App\Data\Settings\IntegerConstraintsData;
+use App\Data\Settings\IntegerValueData;
+use App\Data\Settings\InvalidValueData;
+use App\Data\Settings\PlainGroupAvailabilityData;
+use App\Data\Settings\RuntimeSetting;
+use App\Data\Settings\SettingData;
+use App\Data\Settings\SettingGroupData;
+use App\Data\Settings\SettingIdentityData;
+use App\Data\Settings\SettingsCatalogueData;
+use App\Data\Settings\StringChoiceConstraintsData;
+use App\Data\Settings\StringChoiceOptionData;
+use App\Data\Settings\StringChoiceValueData;
+use App\Data\Settings\StringConstraintsData;
+use App\Data\Settings\StringValueData;
+use App\Data\Settings\ToggleGroupAvailabilityData;
+use App\Data\Terminals\TerminalControlData;
+use App\Data\Terminals\TerminalInterestData;
+use App\Data\Terminals\TerminalReceiptData;
 use App\Declarations\ActionRoute;
 use App\Declarations\BooleanSetting;
 use App\Declarations\ChoiceOption;
@@ -609,6 +611,7 @@ use App\Enums\ExecutionModeType;
 use App\Enums\ExpectedTiming;
 use App\Enums\FailureReason;
 use App\Enums\FileOperation;
+use App\Enums\FrameReuse;
 use App\Enums\FramingType;
 use App\Enums\GroupAvailability;
 use App\Enums\HoldReason;
@@ -719,23 +722,7 @@ use App\Enums\WindowPlace;
 use App\Enums\WordSegmentType;
 use App\Enums\WorkRepairOutcome;
 use App\Enums\WorkspaceUse;
-use App\Events\AccountsChanged;
-use App\Events\AccountUseChanged;
-use App\Events\ActivityRecorded;
-use App\Events\AgentHoldReleased;
-use App\Events\AgentRuntimeReassigned;
-use App\Events\AssignmentsChanged;
-use App\Events\ChatLinePosted;
-use App\Events\ChatMemberJoined;
-use App\Events\ChatMemberLeft;
-use App\Events\ChatMessageAccepted;
-use App\Events\ChatMessageOffered;
-use App\Events\ChatReceiptPresented;
-use App\Events\ChatRoleChanged;
-use App\Events\CommentPosted;
 use App\Events\ContextStarted;
-use App\Events\DriverFailed;
-use App\Events\DriverRequestRecovered;
 use App\Events\EngineTicked;
 use App\Events\HelperCompletionCertified;
 use App\Events\HelperReportedOnRecord;
@@ -743,32 +730,10 @@ use App\Events\HelperSentOnRecord;
 use App\Events\HelperStopHeld;
 use App\Events\LaunchCancelled;
 use App\Events\LaunchEnded;
-use App\Events\LinksRemoved;
-use App\Events\MessageAnswered;
-use App\Events\MessageAnswerRequired;
-use App\Events\MessageClaimReleased;
-use App\Events\MessageDismissed;
-use App\Events\MessageRead;
 use App\Events\MessageSent;
-use App\Events\MessageTakenUp;
-use App\Events\ProfileRevisionRevoked;
-use App\Events\ProjectBindingReadinessChanged;
-use App\Events\ReceiptDeliveryChanged;
 use App\Events\RunChanged;
 use App\Events\SessionClosed;
-use App\Events\SessionStateChanged;
-use App\Events\SettingsChanged;
 use App\Events\ShareActivated;
-use App\Events\ShareCreated;
-use App\Events\ShareExpired;
-use App\Events\ShareFailed;
-use App\Events\ShareGatewayChanged;
-use App\Events\ShareRequested;
-use App\Events\ShareRevoked;
-use App\Events\ShareScopeChanged;
-use App\Events\StartAccepted;
-use App\Events\StartRefused as StartRefusedFact;
-use App\Events\StartUnavailable;
 use App\Events\StateTypesRequested;
 use App\Exceptions\AccessPolicyInvalid;
 use App\Exceptions\AccountContainerUnsupported;
@@ -1006,11 +971,10 @@ use App\Exceptions\StartRefused;
 use App\Exceptions\StartRequestConflict;
 use App\Exceptions\StateBlocked;
 use App\Exceptions\StatementTimedOut;
-use App\Exceptions\StateReferencesInvalid;
-use App\Exceptions\StateSubjectMissing;
 use App\Exceptions\StateTypeMissing;
 use App\Exceptions\StateTypeRepeated;
 use App\Exceptions\StateTypesFrozen;
+use App\Exceptions\StateTypeUnknown;
 use App\Exceptions\StopConditionsInvalid;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Exceptions\SystemActorRequired;
@@ -1141,7 +1105,6 @@ use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Decisions\StateReferenceFactory;
-use App\Support\Decisions\StateReferences;
 use App\Support\DeskSeatEvidence;
 use App\Support\DisabledSettingsGroup;
 use App\Support\Domain;
@@ -1250,8 +1213,10 @@ use App\Support\RecordIdentity;
 use App\Support\RecordIds;
 use App\Support\RecordReference;
 use App\Support\References\Exceptions\ActivationDeclined;
+use App\Support\References\Exceptions\WorkOccurrenceStale;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
+use App\Support\References\WorkOccurrence;
 use App\Support\RefusalReason;
 use App\Support\ResumableConversation;
 use App\Support\RootRule;
@@ -1296,9 +1261,7 @@ use App\Support\StartReceipt;
 use App\Support\StartRecordDetails;
 use App\Support\StartRemedy;
 use App\Support\StateCatalog\Registration\Contracts\StateRegistration;
-use App\Support\StateLoading\Contracts\RecipientStateLoader;
-use App\Support\StateLoading\Contracts\StateLoader;
-use App\Support\StateLoading\StateSet;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\States\AgentState;
 use App\Support\StatusAction;
 use App\Support\StatusOperation;
@@ -1556,57 +1519,19 @@ final class CoreApi
     {
         return Exports::make()
             ->events(
-                LinksRemoved::class,
-                CommentPosted::class,
                 MessageSent::class,
-                MessageAnswered::class,
-                MessageDismissed::class,
-                MessageRead::class,
-                MessageTakenUp::class,
-                MessageAnswerRequired::class,
-                MessageClaimReleased::class,
                 ContextStarted::class,
                 HelperCompletionCertified::class,
                 HelperSentOnRecord::class,
                 HelperReportedOnRecord::class,
                 HelperStopHeld::class,
                 StateTypesRequested::class,
-                AssignmentsChanged::class,
                 SessionClosed::class,
-                DriverRequestRecovered::class,
-                AgentHoldReleased::class,
-                AgentRuntimeReassigned::class,
-                ProfileRevisionRevoked::class,
-                StartAccepted::class,
-                StartUnavailable::class,
                 LaunchCancelled::class,
                 LaunchEnded::class,
-                DriverFailed::class,
-                AccountUseChanged::class,
-                SessionStateChanged::class,
-                ActivityRecorded::class,
-                ProjectBindingReadinessChanged::class,
-                ChatRoleChanged::class,
-                ChatMemberJoined::class,
-                ChatLinePosted::class,
-                ChatMemberLeft::class,
-                ChatReceiptPresented::class,
-                ReceiptDeliveryChanged::class,
-                ChatMessageAccepted::class,
-                ChatMessageOffered::class,
-                StartRefusedFact::class,
-                AccountsChanged::class,
                 RunChanged::class,
                 EngineTicked::class,
-                SettingsChanged::class,
-                ShareRequested::class,
-                ShareCreated::class,
                 ShareActivated::class,
-                ShareFailed::class,
-                ShareScopeChanged::class,
-                ShareRevoked::class,
-                ShareExpired::class,
-                ShareGatewayChanged::class,
             )
             ->contracts(
                 MessagePart::class,
@@ -1706,11 +1631,8 @@ final class CoreApi
                 DriverCatalogue::class,
                 DriverCapabilities::class,
                 HelperRecordFacts::class,
-                OwnValuesState::class,
                 UserStack::class,
                 StackTransactionRunner::class,
-                StateLoader::class,
-                RecipientStateLoader::class,
                 Answer::class,
                 StackEditor::class,
                 CurrentState::class,
@@ -1786,11 +1708,11 @@ final class CoreApi
                 VerificationTiming::class,
                 HookAnswerer::class,
                 AnswerPart::class,
+                WorkOccurrenceGuard::class,
                 HookInput::class,
                 OperationPolicy::class,
                 StateRegistration::class,
                 ConditionalState::class,
-                ConditionalStateType::class,
                 DomainAvailability::class,
                 ReminderContribution::class,
                 Assignee::class,
@@ -1836,6 +1758,7 @@ final class CoreApi
                 WorkRepair::class,
                 ActorGuidance::class,
                 UserInterfaceUpdater::class,
+                ChatAnswer::class,
                 CountResolver::class,
                 NavigationChildren::class,
                 PageOption::class,
@@ -2126,8 +2049,6 @@ final class CoreApi
                 RecoveryCall::class,
                 AnswerBudget::class,
                 RecordCard::class,
-                StateReferences::class,
-                StateSet::class,
                 ReadMode::class,
                 ReadOrder::class,
                 PageSize::class,
@@ -2212,6 +2133,7 @@ final class CoreApi
                 CompactionDetails::class,
                 ContextStartType::class,
                 SessionTransferType::class,
+                FrameReuse::class,
                 SupervisorDispatchOutcome::class,
                 WorkRepairOutcome::class,
                 FileEditRequested::class,
@@ -2401,7 +2323,11 @@ final class CoreApi
                 Authorize::class,
                 Effect::class,
                 InCommandTransaction::class,
-                RequiresTransactionListener::class,
+                TransactionListenerConsent::class,
+                StateType::class,
+                Ticks::class,
+                RegisteredStateType::class,
+                WorkOccurrence::class,
                 CommandEffectType::class,
                 CommandCall::class,
                 CommandName::class,
@@ -2793,6 +2719,8 @@ final class CoreApi
             )
             ->exceptions(
                 DraftAnswerMissing::class,
+                WorkOccurrenceStale::class,
+                StateTypeUnknown::class,
                 WorkBudgetSpent::class,
                 DriverFamilyUnknown::class,
                 DriverRequestRefused::class,
@@ -2898,7 +2826,6 @@ final class CoreApi
                 ReadPolicyMissing::class,
                 QueryInValueRead::class,
                 LazyLoadRefused::class,
-                StateReferencesInvalid::class,
                 StateTypeMissing::class,
                 ReadLimitInvalid::class,
                 ReadLimitTooLarge::class,
@@ -2931,7 +2858,6 @@ final class CoreApi
                 StateTypeRepeated::class,
                 StateTypesFrozen::class,
                 UnknownLinkType::class,
-                StateSubjectMissing::class,
                 StackTargetRefused::class,
                 SessionOutdated::class,
                 StackLockTimedOut::class,

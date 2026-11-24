@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts\Navigation;
 
-use App\Data\DraftedRecordData;
-use App\Data\DraftQuestionData;
+use App\Data\Messages\DraftQuestionData;
+use App\Data\Pages\DraftedRecordData;
 
 /**
  * The drafting of one noun's record from a few answers, such as a task or a plan: its questions with suggested

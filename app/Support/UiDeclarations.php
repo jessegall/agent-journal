@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Authorization\VisibilityCheck;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Contracts\Navigation\SlotSections;
-use App\Data\SlotSectionData;
+use App\Data\Pages\SlotSectionData;
 use App\Declarations\DomainUi;
 use App\Declarations\Menu;
 use App\Declarations\MenuItem;

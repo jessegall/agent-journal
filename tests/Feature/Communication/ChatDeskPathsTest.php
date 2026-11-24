@@ -64,7 +64,7 @@ final class ChatDeskPathsTest extends MessagingTestCase
 
         $question = Message::query()->acrossInboxes()->findOrFail($questionId);
 
-        $this->assertTrue($taken->messageReads[0]->takenUp);
+        $this->assertTrue($taken->messageReads[0]->claimed);
         $this->assertSame([MessageState::Answered, $replyId], [$question->state, $question->answer_message_id]);
     }
 }

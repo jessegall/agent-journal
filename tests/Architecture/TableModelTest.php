@@ -14,8 +14,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Every table a create migration makes has a model (rule 25; rule 34 keeps every change inside the create migration),
- * and a pivot table's model is a Pivot (rule 33), judged by the columns of the migrated test database.
+ * Every table a create migration makes has a model,
+ * and a pivot table's model is a Pivot, judged by the columns of the migrated test database.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class TableModelTest extends TestCase

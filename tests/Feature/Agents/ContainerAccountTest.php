@@ -38,10 +38,10 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A launch keeps the account it was accepted on and is never started twice (task 420): switching the active account
+ * A launch keeps the account it was accepted on and is never started twice: switching the active account
  * while a helper runs moves only the next launch, a repeated claim after a lost acknowledgement starts no second
  * process, a restarted host's claimed launch stays possibly running until its exit is proven, and a driver that
- * cannot start here ends its start with the refusal the agent then shows (task 1904).
+ * cannot start here ends its start with the refusal the agent then shows.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls a host, opens runtimes and commits each start step, emptying many tables.')]
 final class ContainerAccountTest extends TestCase

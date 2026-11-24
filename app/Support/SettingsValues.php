@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\BooleanValueData;
-use App\Data\IntegerValueData;
-use App\Data\InvalidValueData;
-use App\Data\SettingData;
-use App\Data\StringChoiceValueData;
-use App\Data\StringValueData;
+use App\Data\Settings\BooleanValueData;
+use App\Data\Settings\IntegerValueData;
+use App\Data\Settings\InvalidValueData;
+use App\Data\Settings\SettingData;
+use App\Data\Settings\StringChoiceValueData;
+use App\Data\Settings\StringValueData;
 use App\Enums\SettingType;
 use Spatie\LaravelData\Optional;
 

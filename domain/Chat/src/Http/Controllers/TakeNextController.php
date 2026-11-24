@@ -13,7 +13,7 @@ use Illuminate\Routing\Redirector;
 final readonly class TakeNextController
 {
     /**
-     * Takes up the oldest question nobody has taken up in the inbox, then shows the Inbox page again.
+     * Claims the oldest question nobody has claimed in the inbox, then shows the Inbox page again.
      */
     public function __invoke(TakeNextInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {

@@ -88,7 +88,7 @@ final class AccountsPageTest extends TestCase
     }
 
     /**
-     * User message 19462: a row is drawn as the design draws it, the kind of account under its name and its state in
+     * A row is drawn as the design draws it, the kind of account under its name and its state in
      * a column of its own, and the reader says the same kind under its title.
      */
     public function test_a_row_and_its_reader_name_the_kind_of_account_and_the_row_stands_in_columns(): void

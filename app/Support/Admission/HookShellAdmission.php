@@ -19,7 +19,7 @@ use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
 
 /**
- * Core's mandatory admission of a shell line the frames let through (doc 21 revision 6, section 10): whatever a frame
+ * Core's mandatory admission of a shell line the frames let through: whatever a frame
  * answered, a line that would run is admitted first, the replacement when a state rewrote it. A refused line is denied
  * on the stack from before the walk; an admitted one reaches the agent as the supervised runner's line. A driver
  * that cannot take a rewrite, or a session with no runtime to run in, is refused, since the runner cannot reach it.

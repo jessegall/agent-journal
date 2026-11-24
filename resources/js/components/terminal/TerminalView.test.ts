@@ -6,7 +6,7 @@ import TerminalView from './TerminalView.vue';
 const row = (text: string) => ({ runs: [{ text, style: {} }] });
 
 describe('TerminalView', () => {
-    // User message 19534: the screen sits in a pre, which keeps every space and line break of the template, so
+    // The screen sits in a pre, which keeps every space and line break of the template, so
     // anything between two rows pushes them apart. The rows follow each other directly, as lines of a terminal do.
     it('draws the rows of the screen directly under each other, with nothing between them', () => {
         const view = mount(TerminalView, {

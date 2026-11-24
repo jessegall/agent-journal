@@ -8,7 +8,7 @@ use App\Calls\Communication\MessagesRead;
 use App\Calls\Communication\TakeNextMessagesCall;
 use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Data\MessageReadResult;
+use App\Data\Messages\MessageReadResult;
 
 /**
  * Takes up the next unclaimed messages of an inbox.
@@ -23,7 +23,7 @@ final readonly class TakeNextMessagesController
             fn (MessageReadResult $messageRead) => [
                 'messageId' => $messageRead->messageId,
                 'firstRead' => $messageRead->firstRead,
-                'takenUp' => $messageRead->takenUp,
+                'claimed' => $messageRead->claimed,
             ],
             $batch->messageReads,
         )]);

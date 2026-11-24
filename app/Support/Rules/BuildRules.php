@@ -15,7 +15,7 @@ use App\Values\OptionGrammar;
 use App\Values\ProgramSpellings;
 
 /**
- * Builds (doc 21 revision 6, section 68): their own purpose, Build, with the whole output kept; generating types is a
+ * Builds: their own purpose, Build, with the whole output kept; generating types is a
  * build that writes, never a check.
  */
 final readonly class BuildRules

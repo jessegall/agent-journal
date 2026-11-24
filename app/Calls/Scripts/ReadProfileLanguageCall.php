@@ -6,7 +6,7 @@ namespace App\Calls\Scripts;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Data\ProfileLanguageData;
+use App\Data\Profiles\ProfileLanguageData;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Data;
 

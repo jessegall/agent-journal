@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Commands run only through the CommandBus (doc 19, story 70) and entry adapters write only by dispatching a command
+ * Commands run only through the CommandBus and entry adapters write only by dispatching a command
  * (story 86), in every owner already moved onto the bus. The list grows phase by phase as owners move.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
@@ -72,7 +72,7 @@ final class CommandBypassTest extends TestCase
     {
         $found = [];
 
-        // Core's checked areas are judged by the folders their files had before plan 62 moved them to their roles.
+        // Core's checked areas are judged by the folders their files had before the move to Laravel's layout.
         foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), FormerPaths::foldersToScan($folders))) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
 

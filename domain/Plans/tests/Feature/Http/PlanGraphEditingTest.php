@@ -17,7 +17,7 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 
 /**
- * Doc 106, section 4: the plan graph's Suggest keeps a suggestion that drops the waits phase order or other waits
+ * The plan graph's Suggest keeps a suggestion that drops the waits phase order or other waits
  * already imply, Apply makes it as one version-checked change, and Undo puts the earlier waits back.
  */
 final class PlanGraphEditingTest extends TestCase

@@ -24,8 +24,7 @@ use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
- * The supervisor runs control flow, builtins and argv spawns, each part with its own record and its own end (doc 21
- * revision 6, section 53; stories 106-118, 169, 170, 173 and 204).
+ * The supervisor runs control flow, builtins and argv spawns, each part with its own record and its own end.
  */
 final class SupervisorTest extends TestCase
 {

@@ -11,7 +11,7 @@ use App\Models\Runs\ProcessRun;
 use Carbon\CarbonImmutable;
 
 /**
- * Settles runs whose supervisor fell silent (doc 21 revision 6, section 53): after a minute without a heartbeat the
+ * Settles runs whose supervisor fell silent: after a minute without a heartbeat the
  * host had its chance to replay its spool, so every part not yet ended is lost with no status and incomplete capture;
  * nothing is ever inferred as a success. A lost attempt with no trustworthy outcome records Unknown, provisionally,
  * so a genuine late signed result may still correct it.

@@ -12,7 +12,7 @@ use Tests\TestCase;
 /**
  * A function holds what a static factory gave it instead of asking for it again with the same arguments, and a class
  * the container builds takes the ReflectorFactory in its constructor instead of calling the Reflector statically
- * (user messages 13796, 13812).
+ *.
  */
 #[TimeLimit(seconds: 30, reason: 'It parses every source file of app and the domains.')]
 final class RepeatedStaticFactoryTest extends TestCase

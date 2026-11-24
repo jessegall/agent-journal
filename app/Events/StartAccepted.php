@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Support\RecordIdentity;
 
 /**
  * A start the journal accepted and committed: what the host's delivery receives, so no driver starts inside the
  * transaction.
  */
-final readonly class StartAccepted implements Event
+final readonly class StartAccepted extends SessionEvent
 {
     public function __construct(
         public string $requestId,

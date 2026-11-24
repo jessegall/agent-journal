@@ -14,7 +14,7 @@ use App\Values\UnresolvedFact;
 use App\Values\Word;
 
 /**
- * Every declared command rule, keyed by program family (doc 21 revision 3, sections 9 and 51). It is checked once when
+ * Every declared command rule, keyed by program family. It is checked once when
  * built: one id has one owner unless a project rule replaces that exact revision, and rules covering the same program
  * and subcommands must be disjoint. Rules are kept in id order, so registration order never decides. A module's rules
  * wait for review and match nothing until then.

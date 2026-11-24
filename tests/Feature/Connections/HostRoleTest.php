@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 /**
  * A host is a folder's relay when a project binding names it, and enrolled otherwise; starts choose only enrolled
- * hosts (plan 71, task 2687).
+ * hosts.
  */
 final class HostRoleTest extends TestCase
 {

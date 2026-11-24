@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\AcknowledgeChatMessages;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Data\MessageReadBatch;
+use App\Data\Messages\MessageReadBatch;
 use App\Exceptions\MessageMissing;
 use App\Support\MessageService;
 

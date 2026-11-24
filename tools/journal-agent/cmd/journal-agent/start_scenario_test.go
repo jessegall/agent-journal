@@ -235,7 +235,7 @@ func TestScenarioAProtectedHeadlessClaudeStartRunsItsTurnInItsContainer(t *testi
 	}
 }
 
-// Rule 83: a contained session with a terminal lives its whole life through the daemon. Its container is created
+// A contained session with a terminal lives its whole life through the daemon. Its container is created
 // with a terminal and started, the host holds that terminal through the daemon's attach at the window's size, what is
 // typed reaches the program, a hangup of the terminal leaves the program running as a lost connection, and the stop
 // removes the container and its network.

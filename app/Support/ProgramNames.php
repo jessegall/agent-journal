@@ -11,7 +11,7 @@ use App\Values\UnresolvedFact;
 use App\Values\Word;
 
 /**
- * Turns the executable word of a command into its canonical program (doc 21 revision 3, section 52): the literal text
+ * Turns the executable word of a command into its canonical program: the literal text
  * loses every directory component, then a declared spelling maps to its family. Operands are never touched, and a word
  * whose text is only known at run time is unresolved, never an empty name.
  */

@@ -11,7 +11,7 @@ use Tests\Support\ScanCache\ScanCache;
 /**
  * The writes of every Eloquent model of the given folders outside its own row, found by ModelWriteScan in the
  * models, their traits and private helpers, with each call of another model's writing method resolved against
- * that model; and the frozen lists of the methods still waiting for plan 40 to move their writes, one file per area.
+ * that model; and the frozen lists of the methods still waiting to move their writes into their models, one file per area.
  *
  * @phpstan-import-type Type from ModelWriteScan
  * @phpstan-import-type Method from ModelWriteScan

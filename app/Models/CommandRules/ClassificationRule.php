@@ -22,8 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One command rule of an owner in a project and the pointer to its active approved revision (doc 21 revision 6,
- * section 51; the design's CommandRule table). Activating, retiring and restoring each name the revision the caller
+ * One command rule of an owner in a project and the pointer to its active approved revision. Activating, retiring and restoring each name the revision the caller
  * expects to be active, so a change made in between is refused rather than overwritten.
  *
  * @property string $id

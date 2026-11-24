@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Skills\SkillResolver;
-use App\Data\SkillRevisionRow;
-use App\Data\SkillRevisionView;
-use App\Data\SkillWriteReceipt;
+use App\Data\Skills\SkillRevisionRow;
+use App\Data\Skills\SkillRevisionView;
+use App\Data\Skills\SkillWriteReceipt;
 use App\Enums\SkillOrigin;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Exceptions\ShippedSkillReadOnly;

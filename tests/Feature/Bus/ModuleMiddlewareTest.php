@@ -67,7 +67,7 @@ use Tests\Support\TestIds;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * Module middleware on the Cards and Notes test modules (doc 19, Book E): the order by stage, owner and declaration,
+ * Module middleware on the Cards and Notes test modules: the order by stage, owner and declaration,
  * a replacement the handler sees, a refusal that writes nothing, and every break of the middleware contract refused
  * by name.
  */

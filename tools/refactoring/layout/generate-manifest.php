@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * Writes the move manifest of one scope (core, or a package name such as Tasks) from doc 107 revision 3: one row per
+ * Writes the move manifest of one scope (core, or a package name such as Tasks) from the layout design: one row per
  * tracked file with its old and final path and class, whether it moves, stays or is generated, and its kind. The
  * destination key is data in layout-rules.json; reviewed decisions are in overrides-<scope>.json.
  *
@@ -265,7 +265,7 @@ function specialist(string $inArea, array $rules): string
 }
 
 /**
- * A general composition trait the key sends to Support goes to Concerns instead (doc 107, Placement decisions).
+ * A general composition trait the key sends to Support goes to Concerns instead.
  *
  * @param  array<string, mixed>  $rules
  */
@@ -285,7 +285,7 @@ function compositionTraitPlace(string $new, string $root, string $old, string $k
 }
 
 /**
- * Phase 4 moves registration and assets; phase 3 the contracts, values, models, events, policies and their support.
+ * The fourth batch moves registration and assets; the third the contracts, values, models, events, policies and their support.
  *
  * @param  array<string, mixed>  $rules
  */

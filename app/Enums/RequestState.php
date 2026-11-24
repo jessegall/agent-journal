@@ -7,7 +7,7 @@ namespace App\Enums;
 use App\Values\NextStep;
 
 /**
- * Where a command request stands (doc 21 revision 6, section 71). Each state names what is still owed and the one
+ * Where a command request stands. Each state names what is still owed and the one
  * command that moves it on; no state is left by a timeout, a skip, an unreadable mark or a waiver.
  */
 enum RequestState: string

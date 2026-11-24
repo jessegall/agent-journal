@@ -7,8 +7,7 @@ namespace Tests\Architecture\Support;
 use App\Support\DomainEntry;
 
 /**
- * The folders outside the code roots that the boundary check also owns (doc 107, Foundation permissions and discovery
- * roots): routes, seeders and migrations belong to Core at the repository root and to the package beside its src.
+ * The folders outside the code roots that the boundary check also owns: routes, seeders and migrations belong to Core at the repository root and to the package beside its src.
  */
 final readonly class BoundaryRoots
 {

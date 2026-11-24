@@ -64,12 +64,9 @@ use App\Support\Stack\Contracts\StackPermission;
 use App\Support\Stack\Contracts\StateFactory;
 use App\Support\Stack\RegisteredStateFactory;
 use App\Support\Stack\StateTypes;
-use App\Support\Stack\TargetStates;
 use App\Support\StackTransaction;
 use App\Support\StateCatalog\Contracts\StateTypes as StateTypesContract;
 use App\Support\StateEvents\StateEventScope;
-use App\Support\StateLoading\Contracts\StackStates;
-use App\Support\StateLoading\Loaders\ReadyStateLoader;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Support\StopAttemptGate;
 use App\Support\UserStacks;
@@ -114,11 +111,6 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(IncomingWorkList::class);
         $this->app->singleton(IncomingWorkRegistration::class, IncomingWorkList::class);
 
-        $this->app->bind(
-            ReadyStateLoader::class,
-            static fn () => new ReadyStateLoader(static fn () => Container::getInstance()),
-        );
-
         $this->app->singleton(StateTypes::class);
         $this->app->singleton(StateMethods::class);
         $this->app->bind(StartTransaction::class, StackTransaction::class);
@@ -145,7 +137,6 @@ final class HooksServiceProvider extends ServiceProvider
         ));
 
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
-        $this->app->bind(StackStates::class, TargetStates::class);
 
         $this->app->singleton(
             OperationDeadline::class,

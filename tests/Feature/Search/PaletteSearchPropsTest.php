@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Search;
 
-use App\Data\PaletteHitData;
-use App\Data\PaletteSearchData;
-use App\Data\PaletteSourcesData;
+use App\Data\Palette\PaletteHitData;
+use App\Data\Palette\PaletteSearchData;
+use App\Data\Palette\PaletteSourcesData;
 use App\Http\Responses\SearchProps;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

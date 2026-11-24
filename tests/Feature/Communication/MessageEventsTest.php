@@ -55,7 +55,7 @@ final class MessageEventsTest extends MessagingTestCase
         $this->assertSame([$first], $this->received);
     }
 
-    // User message 19647: a failing listener is never swallowed. The message stays saved, the listeners after it
+    // A failing listener is never swallowed. The message stays saved, the listeners after it
     // still hear the fact, and then the failure is thrown.
     public function test_a_failing_listener_leaves_the_message_saved_and_heard_and_is_then_thrown(): void
     {
@@ -75,7 +75,7 @@ final class MessageEventsTest extends MessagingTestCase
 
     public function test_no_message_fact_carries_a_body_or_a_model(): void
     {
-        // The message facts by the folder they had before plan 62 moved them to app/Events.
+        // The message facts by the folder they had before the move to Laravel's layout.
         foreach (FormerPaths::filesFrom(['app/Communication/Events/']) as $file) {
             $parameters = Reflector::of('App\\Events\\'.basename($file, '.php'))->constructor()
                 ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())

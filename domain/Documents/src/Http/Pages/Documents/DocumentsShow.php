@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Pages\Documents;
 
 use App\Contracts\Navigation\RecordMenus;
-use App\Data\CommentList;
-use App\Data\RecordCard;
+use App\Data\Comments\CommentList;
+use App\Data\Pages\RecordCard;
 use App\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;

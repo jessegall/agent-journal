@@ -9,8 +9,7 @@ use App\Enums\JournalRouteType;
 use Attribute;
 
 /**
- * Marks a console command agents may run through the journal, and what running it does (doc 21 revision 3, section
- * 10): it reads or writes the journal, and may also need classes beyond that, such as a route that writes local files
+ * Marks a console command agents may run through the journal, and what running it does: it reads or writes the journal, and may also need classes beyond that, such as a route that writes local files
  * or reaches an outside system. A console command without it is unknown to the classifier.
  */
 #[Attribute(Attribute::TARGET_CLASS)]

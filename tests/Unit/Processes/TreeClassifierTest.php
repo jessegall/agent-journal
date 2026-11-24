@@ -34,7 +34,7 @@ use Tests\Fixtures\Processes\NoAliases;
 
 /**
  * The tree classifier gives every part its declared classes, every redirect and background job its own fact, and
- * reports what it cannot place (doc 21 revision 3, section 30, the representative analysis results).
+ * reports what it cannot place.
  */
 final class TreeClassifierTest extends TestCase
 {

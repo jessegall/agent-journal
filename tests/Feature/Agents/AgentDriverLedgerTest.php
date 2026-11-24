@@ -35,7 +35,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\MessagePart;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Contracts\Sessions\RuntimeResolver;
-use App\Data\MessagePartData;
+use App\Data\Messages\MessagePartData;
 use App\Enums\ArrangementType;
 use App\Enums\DriverOperation;
 use App\Enums\DriverVariant;
@@ -106,7 +106,7 @@ use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * The driver ledger end to end inside the journal (plan 26 phase 2): opening a runtime, the six acceptance commands
+ * The driver ledger end to end inside the journal: opening a runtime, the six acceptance commands
  * with their ordering and idempotency, the host protocol and its stale-report fences, the runtime reader and the
  * heartbeat bridge. Hosts are driven through their commands; one test goes through the signed host route.
  */
@@ -705,7 +705,7 @@ final class AgentDriverLedgerTest extends TestCase
     }
 
     /**
-     * User message 19457: an idle runtime reports nothing between two turns, so its last report grew stale after a
+     * An idle runtime reports nothing between two turns, so its last report grew stale after a
      * minute and its session read as Status unknown though nothing was wrong.
      */
     public function test_a_heartbeat_keeps_an_idle_runtimes_report_fresh(): void
@@ -739,7 +739,7 @@ final class AgentDriverLedgerTest extends TestCase
     }
 
     /**
-     * User message 19457: a page learns that a session's state changed from the host's report itself, so its header
+     * A page learns that a session's state changed from the host's report itself, so its header
      * never waits for a reload; a beat that only keeps a fresh report fresh says nothing.
      */
     public function test_a_report_that_changes_a_sessions_state_tells_the_pages_and_a_plain_beat_does_not(): void

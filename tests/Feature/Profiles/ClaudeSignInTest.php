@@ -93,7 +93,7 @@ final class ClaudeSignInTest extends TestCase
     }
 
     /**
-     * Rule 81: a signed-in folder is left past Claude Code's welcome screens and its trust question for the folder a
+     * A signed-in folder is left past Claude Code's welcome screens and its trust question for the folder a
      * session works in, and what Claude Code keeps beside them stays as it wrote it, empty objects included.
      */
     public function test_a_folder_is_left_past_the_first_run_questions_and_keeps_what_claude_code_wrote(): void

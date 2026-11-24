@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\Profiles\EligibleAccountData;
+use App\Data\Accounts\EligibleAccountData;
 use App\Models\Accounts\Account;
 
 /**

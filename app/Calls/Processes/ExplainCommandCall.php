@@ -6,7 +6,7 @@ namespace App\Calls\Processes;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Data\ExplanationData;
+use App\Data\Processes\ExplanationData;
 use App\Enums\CallEffect;
 use App\Enums\ShellDialect;
 use Spatie\LaravelData\Attributes\Validation\Max;

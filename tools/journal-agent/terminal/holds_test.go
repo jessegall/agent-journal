@@ -81,7 +81,7 @@ func TestTheRecordedWelcomeScreenIsPassedWithItsRecordedEnterAndHoldsNothing(t *
 	}
 }
 
-// User message 19571: a paste of several lines is drawn as the program's own fold marker, and the copy of the screen
+// A paste of several lines is drawn as the program's own fold marker, and the copy of the screen
 // may hold it with stray characters. The line counts as drawn once the composer changed and holds anything; its
 // characters are not compared.
 func TestAPasteOfSeveralLinesCountsAsDrawnOnceTheComposerChangedAndHoldsSomething(t *testing.T) {

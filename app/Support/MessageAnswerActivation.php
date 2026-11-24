@@ -46,7 +46,8 @@ final readonly class MessageAnswerActivation implements IncomingWork
         $oldest = $valid === [] ? null : $valid[min(array_keys($valid))];
 
         if ($oldest !== null && $oldest->holder()->isSameAs($actor)) {
-            $frame = AnsweringMessageStateReference::forClaim($oldest->reference->id);
+            $message = Message::query()->whereKey($oldest->record->id)->readExactly(1)->sole();
+            $frame = AnsweringMessageStateReference::forClaim($message, $actor);
             $this->transaction->run(fn () => $this->workStacks->push($frame));
         }
     }

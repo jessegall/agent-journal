@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\ScreenFrameData;
+use App\Data\Terminals\ScreenFrameData;
 
 /**
  * Whose screen a frame is: the runtime's registration, and the host process, stream and privacy revision of the

@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Refuses a sign-in, check or cleanup claim from a sign-in runner of the other arrangement before anything is
- * claimed, so one journal never runs both runners (doc 61, decision 1). A runner that names none, as the Mac's
+ * claimed, so one journal never runs both runners. A runner that names none, as the Mac's
  * bin/journal-account, is a local one.
  */
 final readonly class RefuseRunnerOfOtherArrangement

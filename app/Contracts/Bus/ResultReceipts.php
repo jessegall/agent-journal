@@ -8,7 +8,7 @@ use App\Values\PublishedResult;
 use PhpOption\Option;
 
 /**
- * The one gate every consumer reads results through (doc 21 revision 6, section 69): a current receipt of the
+ * The one gate every consumer reads results through: a current receipt of the
  * project, or none; a superseded receipt is never answered.
  */
 interface ResultReceipts

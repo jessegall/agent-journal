@@ -20,7 +20,7 @@ use Tests\TestCase;
 /**
  * The owner's command review pages: the project's requests, rules and waiting bundles, and one request with its
  * proposal, samples and readers, from which the owner approves a sample, approves or rejects, and activates a bundle;
- * nothing of another project shows (doc 21 revision 6, sections 51 and 71; stories 81-86, 89, 92, 96, 182, 186, 191).
+ * nothing of another project shows.
  */
 final class RequestReviewPageTest extends TestCase
 {

@@ -14,6 +14,6 @@ final class MessageRead extends Data
     public function __construct(
         public string $messageId,
         public bool $firstRead,
-        public bool $takenUp,
+        public bool $claimed,
     ) {}
 }

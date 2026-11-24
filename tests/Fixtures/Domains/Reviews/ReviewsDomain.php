@@ -12,7 +12,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Contracts\Settings\SettingsProvider;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
-use Tests\Fixtures\Domains\Reviews\States\ReviewStateType;
+use Tests\Fixtures\Domains\Reviews\States\ReviewState;
 use Tests\Fixtures\Domains\Reviews\Work\ReviewInbox;
 
 final class ReviewsDomain extends Domain implements IncomingWorkProvider, SettingsProvider, StateProvider
@@ -42,7 +42,7 @@ final class ReviewsDomain extends Domain implements IncomingWorkProvider, Settin
 
     public function states(): array
     {
-        return [ReviewStateType::TYPE_KEY => ReviewStateType::class];
+        return [ReviewState::class];
     }
 
     public function settings(): ReviewSettings

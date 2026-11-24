@@ -7,7 +7,7 @@ namespace App\Enums;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Where an accepted driver request stands (doc 40, section 14); its outcome is a separate fact.
+ * Where an accepted driver request stands; its outcome is a separate fact.
  */
 #[TypeScript]
 enum RequestProgress: string

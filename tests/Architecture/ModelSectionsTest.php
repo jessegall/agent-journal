@@ -9,7 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Rule 50: an Eloquent model's methods sit in marked sections, Constructors, Queries, Mutations, Answers, Accessors,
+ * An Eloquent model's methods sit in marked sections, Constructors, Queries, Mutations, Answers, Accessors,
  * Relations, Internals and Scopes, in that order, and an accessor (a method returning Attribute) sits only in
  * Accessors. tools/refactoring/model-sections.php lists every fault, and sorts with --fix.
  */

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Contracts\Chat;
 
-use App\Data\AgentInbox;
-use App\Data\AgentInboxCounts;
-use App\Data\AgentMessageDetails;
+use App\Data\Messages\AgentInbox;
+use App\Data\Messages\AgentInboxCounts;
+use App\Data\Messages\AgentMessageDetails;
 use App\Enums\AgentInboxState;
 use App\Enums\ReadView;
 

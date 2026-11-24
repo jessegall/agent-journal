@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\ClaudeStatusData;
+use App\Data\Accounts\ClaudeStatusData;
 use JsonException;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;

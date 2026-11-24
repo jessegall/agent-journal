@@ -16,7 +16,7 @@ use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 
 /**
- * The acting parent's helpers that may take new work, best first (doc 14 decisions D0, D3 and D5): its own identities
+ * The acting parent's helpers that may take new work, best first: its own identities
  * of the same profile key and base, ranked by Agents from their work facts; an independent query drops every helper
  * that saw the subject in a job, a source or a conversation. The list is advisory: a start checks again under its lock.
  */

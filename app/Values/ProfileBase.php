@@ -187,7 +187,7 @@ final readonly class ProfileBase
     }
 
     /**
-     * The global access defaults (doc 14, section 51); a project and a profile only override them. A base that
+     * The global access defaults; a project and a profile only override them. A base that
      * changes no workspace file runs reading commands only.
      */
     public function defaultAccess(): AccessPolicy

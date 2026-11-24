@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Chat;
 
-use App\Data\ChatEventPage;
+use App\Data\Messages\ChatEventPage;
 use App\Exceptions\ChatCursorRefused;
 
 /**

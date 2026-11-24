@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\CommentDetails;
+use App\Data\Comments\CommentDetails;
 use App\Models\Records\Comment;
 
 /**

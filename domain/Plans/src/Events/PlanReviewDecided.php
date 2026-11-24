@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Events;
 
-use App\Contracts\Events\Event;
 use App\Contracts\Navigation\UserInterfaceUpdater;
+use Domain\Plans\Contracts\PlanReviewEvent;
 use Domain\Plans\Enums\PlanReviewState;
 
 /**
  * A plan's review edition was decided, approved or sent back for changes, and the plan is Planned again. Raised only
  * once the decision has committed.
  */
-final readonly class PlanReviewDecided implements Event, UserInterfaceUpdater
+final readonly class PlanReviewDecided extends PlanEvent implements PlanReviewEvent, UserInterfaceUpdater
 {
     public function __construct(
         public string $planId,

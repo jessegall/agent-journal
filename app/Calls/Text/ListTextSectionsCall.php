@@ -6,7 +6,7 @@ namespace App\Calls\Text;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Data\TextSections;
+use App\Data\Pages\TextSections;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;

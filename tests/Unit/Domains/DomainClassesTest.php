@@ -46,6 +46,8 @@ final class DomainClassesTest extends TestCase
             'TaskProgress',
             'TaskResolver',
             'TaskSummary',
+            'TaskStateEvent',
+            'TaskRunEndEvent',
             'TaskMissing',
             'TaskAssignmentResolver',
             'TaskAssignmentCompletion',

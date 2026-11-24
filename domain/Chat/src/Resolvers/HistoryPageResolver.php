@@ -6,8 +6,8 @@ namespace Domain\Chat\Resolvers;
 
 use App\Contracts\Chat\ConversationResolver;
 use App\Contracts\Navigation\PageResolver;
-use App\Data\MessagePage;
-use App\Data\MessageView;
+use App\Data\Messages\MessagePage;
+use App\Data\Messages\MessageView;
 use App\Enums\ActionMethod;
 use App\Enums\MessageState;
 use App\Support\Layout\DeclaredLayoutData;

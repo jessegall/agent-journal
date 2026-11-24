@@ -35,7 +35,6 @@ use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Events\SequenceStepEnded;
 use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
-use Domain\Sequences\Support\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -261,15 +260,5 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
             $isRunning => new StateLabel($key, 'Running', Tone::Note),
             default => new StateLabel($key, 'Waiting', Tone::Neutral),
         };
-    }
-
-    public function work(): SequenceWork
-    {
-        return new SequenceWork(
-            $this->number,
-            $this->current_step,
-            $this->steps[$this->current_step - 1],
-            $this->state,
-        );
     }
 }

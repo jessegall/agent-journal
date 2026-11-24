@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 
 /**
@@ -12,7 +11,7 @@ use App\Contracts\Navigation\UserInterfaceUpdater;
  * its start runs or ended, or that it lives again after a silence. The pages that show the session read it again,
  * so no state waits for a reload or a click.
  */
-final readonly class SessionStateChanged implements Event, UserInterfaceUpdater
+final readonly class SessionStateChanged extends SessionEvent implements UserInterfaceUpdater
 {
     public function __construct(public string $sessionId) {}
 }

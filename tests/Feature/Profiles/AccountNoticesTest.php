@@ -9,7 +9,7 @@ use App\Commands\StartAgent\StartAgentCommand;
 use App\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Data\Profiles\AccountNoticesData;
+use App\Data\Accounts\AccountNoticesData;
 use App\Declarations\SlotContext;
 use App\Enums\AccountNoticeReason;
 use App\Enums\ConversationModeType;

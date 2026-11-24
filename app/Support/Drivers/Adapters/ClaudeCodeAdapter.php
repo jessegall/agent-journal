@@ -54,7 +54,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
     private const string DRIVER = 'Claude Code';
 
     /**
-     * The tools plan 26's start evidence found per build that start or reach another agent.
+     * The tools of each recorded build that start or reach another agent.
      */
     public const array NATIVE_CHILD_TOOLS = [
         'Agent',
@@ -178,7 +178,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
             HookEvent::Stop => new JudgedCall(
                 new StopRequested($hook, new StopDetails(
                     $hook->hookId,
-                    $hookInput->isStopContinuation(),
+                    $hookInput->isAfterRefusedStop(),
                     $hookInput->closingWords(),
                 )),
                 fn (HookAnswer $answer) => DriverReplies::stop($answer),

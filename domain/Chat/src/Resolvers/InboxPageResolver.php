@@ -6,8 +6,8 @@ namespace Domain\Chat\Resolvers;
 
 use App\Contracts\Chat\ConversationResolver;
 use App\Contracts\Navigation\PageResolver;
-use App\Data\InboxView;
-use App\Data\MessagePage;
+use App\Data\Messages\InboxView;
+use App\Data\Messages\MessagePage;
 use App\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
@@ -52,7 +52,7 @@ final readonly class InboxPageResolver implements PageResolver
             LayoutPartData::text('label', $inbox->label, 'heading'),
             LayoutPartData::text(
                 'counts',
-                "{$counts->unread} unread, {$counts->unclaimed} waiting, {$counts->claimed} taken up",
+                "{$counts->unread} unread, {$counts->unclaimed} waiting, {$counts->claimed} claimed",
                 'muted',
             ),
         ];

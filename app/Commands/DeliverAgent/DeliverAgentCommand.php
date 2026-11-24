@@ -7,7 +7,7 @@ namespace App\Commands\DeliverAgent;
 use App\Attributes\Authorize;
 use App\Contracts\Bus\AgentStackCommand;
 use App\Contracts\Drivers\MessagePart;
-use App\Data\MessagePartData;
+use App\Data\Messages\MessagePartData;
 use App\Enums\AccessType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;

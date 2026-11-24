@@ -19,7 +19,7 @@ use PhpOption\None;
 
 /**
  * Every registered command with its handler, owner and middleware, checked once at start-up so a wrong declaration
- * stops the application before any command runs (doc 19, section 6.1). It holds class names and values only.
+ * stops the application before any command runs. It holds class names and values only.
  */
 final readonly class CommandRegistry
 {

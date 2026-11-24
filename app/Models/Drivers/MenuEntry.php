@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * One proven path through a driver's menus, in its owner's library: the steps that reach the goal from the screen
  * its first step expects, what replaying it completes, the proof that ends it, and the builds it was proven on, each
- * marked stale on its own (doc 54, sections 4 and 15). It belongs to the user, never to an agent.
+ * marked stale on its own. It belongs to the user, never to an agent.
  *
  * @property string $id
  * @property string $family

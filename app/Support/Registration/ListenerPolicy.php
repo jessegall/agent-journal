@@ -6,7 +6,7 @@ namespace App\Support\Registration;
 
 use App\Contracts\Bus\PipelineRunner;
 use App\Pipes\CheckListenerPairs;
-use App\Pipes\ExpandUiUpdaterListeners;
+use App\Pipes\ExpandGroupListeners;
 use App\Pipes\GateListenersByDomain;
 use App\Pipes\SeparateTransactionListeners;
 use App\Support\ListenerDeclarations;
@@ -30,7 +30,7 @@ final readonly class ListenerPolicy
     public function discover(array $events): array
     {
         $declarations = $this->runner->runSteps(
-            [ExpandUiUpdaterListeners::class, CheckListenerPairs::class, SeparateTransactionListeners::class],
+            [ExpandGroupListeners::class, CheckListenerPairs::class, SeparateTransactionListeners::class],
             new ListenerDeclarations($events, $this->ownership),
             ListenerDeclarations::class,
         );

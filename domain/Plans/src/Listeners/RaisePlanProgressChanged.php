@@ -7,9 +7,7 @@ namespace Domain\Plans\Listeners;
 use App\Contracts\Events\Listener;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Phase;
-use Domain\Tasks\Events\TaskBlocked;
-use Domain\Tasks\Events\TaskCancelled;
-use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Contracts\TaskRunEndEvent;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -20,7 +18,7 @@ final readonly class RaisePlanProgressChanged implements Listener
 {
     public function __construct(private Dispatcher $events) {}
 
-    public function handle(TaskFinished|TaskBlocked|TaskCancelled $event): void
+    public function handle(TaskRunEndEvent $event): void
     {
         $phase = Phase::query()->holdingTask($event->taskId)->first();
 

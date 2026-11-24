@@ -10,24 +10,27 @@ use App\Contracts\Time\ServerClock;
 use App\Enums\CommandEntry;
 use App\Events\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
+use App\Providers\DomainEventServiceProvider;
 use App\Support\ActiveActorsResolver;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
 use App\Support\EnginePass;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Storage\FrameRecord;
 use App\Support\TickDelivery;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
+use Tests\Fixtures\Domains\QuestionReminders\Events\QuestionAnswered;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
-use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;
+use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerState;
 use Tests\Fixtures\Domains\QuestionReminders\Support\RouteHeartbeatSource;
-use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
@@ -81,11 +84,12 @@ final class DueWorkOnTickTest extends TestCase
         Event::listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register(
-                'test.plain',
-                new ClosureStateLoader(ScriptedState::class, fn () => ScriptedState::passing()),
+                RegisteredStateType::named('test.plain', ScriptedState::class),
             ),
         );
+        $this->app->bind(ScriptedState::class, fn () => ScriptedState::passing());
         $this->bootModules(QuestionRemindersDomain::class);
+        new DomainEventServiceProvider($this->app)->boot();
         $this->asked = CarbonImmutable::parse('2026-11-18 12:00:00');
         $this->clock = new FakeMonotonicClock();
         $this->serverClock = new FakeServerClock($this->asked);
@@ -103,7 +107,7 @@ final class DueWorkOnTickTest extends TestCase
     public function test_ticking_twice_past_the_wait_sends_one_reminder(): void
     {
         $question = Question::ask('Which database?');
-        $this->tickingStack(AwaitingAnswerLoader::TYPE_KEY, [$question->id], $this->asked);
+        $this->tickingStack(AwaitingAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
 
         $this->passAt(30);
         $this->assertNull($question->refresh()->reminded_at);
@@ -117,7 +121,7 @@ final class DueWorkOnTickTest extends TestCase
     public function test_an_answer_before_the_tick_sends_nothing(): void
     {
         $question = Question::ask('Which database?');
-        $this->tickingStack(AwaitingAnswerLoader::TYPE_KEY, [$question->id], $this->asked);
+        $this->tickingStack(AwaitingAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
         $question->answer();
 
         $this->passAt(61);
@@ -128,9 +132,10 @@ final class DueWorkOnTickTest extends TestCase
     public function test_an_answer_before_the_reminder_sends_none_and_removes_the_frame_in_that_command(): void
     {
         $question = Question::ask('Which database?');
-        $stack = $this->tickingStack(AwaitingAnswerLoader::TYPE_KEY, [$question->id], $this->asked);
+        $stack = $this->tickingStack(AwaitingAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
         $target = new StackTarget($stack->agent_id, $stack->session_id);
         $question->answer();
+        $this->app->make(Dispatcher::class)->dispatch(new QuestionAnswered($question->id));
 
         $this->app->make(EnginePass::class)->run(function () use ($target, $question): void {
             $this->app->make(EngineAccess::class)->grantFrame($target, $question->id);

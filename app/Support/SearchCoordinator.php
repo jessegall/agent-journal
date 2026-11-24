@@ -55,7 +55,7 @@ final readonly class SearchCoordinator implements RecordSearch
     /**
      * The batches a call may ask of each source once there are more sources than the floor covers twice: a source with
      * nothing to find needs a batch per tier to prove it, so a broad search over many sources would otherwise end
-     * every first call before the later sources could certify a head (doc 104 section 6 left eight to be tuned).
+     * every first call before the later sources could certify a head.
      */
     public const int BATCHES_PER_SOURCE = 2;
 

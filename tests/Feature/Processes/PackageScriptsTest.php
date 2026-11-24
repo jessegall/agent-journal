@@ -16,8 +16,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A composer or npm script is classified by what its body runs, never by its name (doc 21 revision 6, sections 67 and
- * 68; stories 143-147).
+ * A composer or npm script is classified by what its body runs, never by its name.
  */
 final class PackageScriptsTest extends TestCase
 {

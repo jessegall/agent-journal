@@ -11,7 +11,7 @@ use Closure;
 use Tests\Fixtures\Modules\Notes\Support\CommandTrail;
 
 /**
- * A quota a module puts on another owner's exported command: refuses StartPlan before it runs (doc 19, section 7.6).
+ * A quota a module puts on another owner's exported command: refuses StartPlan before it runs.
  */
 final readonly class LimitPlanStarts implements CommandMiddleware
 {

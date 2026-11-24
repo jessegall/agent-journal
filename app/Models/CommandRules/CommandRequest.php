@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One persistent request that holds a command the journal will not run yet (doc 21 revision 6, section 71): scoped to
+ * One persistent request that holds a command the journal will not run yet: scoped to
  * a project, the actor who opened it and one canonical operation and binding, it names what is still owed and the
  * next allowed command. It is read from the database every time, never from a session, and it changes state only
  * through its transition methods; there is no transition for a timeout, a skip, an unreadable mark or a waiver.

@@ -13,7 +13,7 @@ use App\Values\OptionGrammar;
 use App\Values\ProgramSpellings;
 
 /**
- * Programs that change files (doc 21 revision 6, section 6): cp reads and writes, mv also deletes its source, mkdir,
+ * Programs that change files: cp reads and writes, mv also deletes its source, mkdir,
  * touch, chmod, ln, truncate and tee write, rm and rmdir delete, and sed reads or, with -i, edits. An option not listed
  * leaves the command unknown, never a weaker class.
  */

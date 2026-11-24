@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * The trusted side of the account-isolation acceptance run (doc 78 revision 2, Decisive read check). Run by root on
+ * The trusted side of the account-isolation acceptance run. Run by root on
  * the protected host against one agent container; every step runs inside it as the program's user 10001, never as
  * the model's executor. It never prints a credential byte, a token or the canary itself: only hashes, and of the
  * credential file only its time, inode, mode and, for Claude, the expiry number.

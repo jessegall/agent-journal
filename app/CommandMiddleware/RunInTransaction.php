@@ -22,7 +22,7 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 
 /**
- * The one place a command transaction starts (doc 19, sections 6.5 and 6.6). With none open it begins one in the
+ * The one place a command transaction starts. With none open it begins one in the
  * command's isolation with lock and statement limits, and reruns the whole attempt on a serialization failure or a
  * deadlock, three attempts at most; with one open it joins it after checking the isolation, with no savepoint.
  */

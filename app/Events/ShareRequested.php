@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Support\ShareFact;
 
 /**
@@ -12,7 +11,7 @@ use App\Support\ShareFact;
  * no-op raises
  * none.
  */
-final readonly class ShareRequested implements Event
+final readonly class ShareRequested extends ShareEvent
 {
     public function __construct(public ShareFact $share) {}
 }

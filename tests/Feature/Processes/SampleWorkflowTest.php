@@ -35,8 +35,7 @@ use Tests\TestCase;
 
 /**
  * A project owner approves one evidence sample of a request's exact line; the request's actor runs it once and the
- * request moves on to its proof, or back to the owner when the capture failed (doc 21 revision 6, sections 71 and 72;
- * stories 182, 183 and 185).
+ * request moves on to its proof, or back to the owner when the capture failed.
  */
 final class SampleWorkflowTest extends TestCase
 {

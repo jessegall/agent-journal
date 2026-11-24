@@ -17,7 +17,7 @@ use Tests\Fixtures\Modules\Notes\Commands\LimitNote\LimitNoteCommand;
 use Tests\Support\ClearsStartRows;
 
 /**
- * Before any lock, transaction or receipt, a command's input passes the rules its properties declare (doc 49, Book 2):
+ * Before any lock, transaction or receipt, a command's input passes the rules its properties declare:
  * bad input never reaches the handler, a null optional field is not checked, and a nested command is checked too.
  */
 final class ValidateCommandTest extends CommandBusTestCase

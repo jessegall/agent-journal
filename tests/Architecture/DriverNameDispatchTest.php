@@ -11,7 +11,7 @@ use Tests\TestCase;
 /**
  * Code outside a driver never chooses what to do by the driver's name: it never compares a driver key or family with
  * a literal, never looks for headless in a key and never tests for a concrete driver class. It asks the driver, its
- * registration or its capabilities instead (doc 103 revision 3, Decision and user choice).
+ * registration or its capabilities instead.
  */
 #[TimeLimit(seconds: 5, reason: 'It reads every PHP file of Core and the domains.')]
 final class DriverNameDispatchTest extends TestCase

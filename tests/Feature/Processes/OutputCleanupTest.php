@@ -26,8 +26,7 @@ use Tests\TestCase;
 
 /**
  * Stored output is removed only on a user's explicit clean of ended runs, after a preview; restored files count only
- * when every byte matches; a full output disk starts nothing (doc 21 revision 6, sections 54 and 70; stories 126,
- * 128, 164 and 196).
+ * when every byte matches; a full output disk starts nothing.
  */
 final class OutputCleanupTest extends TestCase
 {

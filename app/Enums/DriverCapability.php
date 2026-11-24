@@ -7,7 +7,7 @@ namespace App\Enums;
 use App\Values\OperationSupport;
 
 /**
- * An operation a driver reports its support for, each answered on its own for the bound host (doc 103, section 4).
+ * An operation a driver reports its support for, each answered on its own for the bound host.
  */
 enum DriverCapability: string
 {

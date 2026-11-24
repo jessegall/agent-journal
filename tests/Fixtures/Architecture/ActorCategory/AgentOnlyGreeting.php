@@ -8,7 +8,7 @@ use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 
 /**
- * Chooses behaviour by the kind of actor, which rule 39 forbids; the rule 39 test must find it.
+ * Chooses behaviour by the kind of actor, which is forbidden; the actor category test must find it.
  */
 final readonly class AgentOnlyGreeting
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\NotificationTarget;
+use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationMutationType;
 use App\Enums\NotificationSourceType;
 use App\Models\Notifications\NotificationChange;

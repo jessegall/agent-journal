@@ -18,7 +18,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * An ask routed to a supervisor profile with no running helper starts it (task 957): two asks to the single reviewer
+ * An ask routed to a supervisor profile with no running helper starts it: two asks to the single reviewer
  * keep one owner-held helper, with no owner configured nothing starts, and without Helpers every start is unavailable.
  */
 #[TimeLimit(seconds: 8, reason: 'It activates profiles and starts helper sessions for asks.')]

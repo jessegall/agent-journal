@@ -19,7 +19,7 @@ use Tests\Support\ScanCache\FileScan;
 
 /**
  * The methods whose only purpose is to throw when something does not hold, yet are named require, ensure, check,
- * guard or refuse: such a method returns void, throws, and does nothing else, so it is named assert<What> (rule 47).
+ * guard or refuse: such a method returns void, throws, and does nothing else, so it is named assert<What>.
  * Found by `Class::method`.
  *
  * @implements FileScan<string>

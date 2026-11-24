@@ -95,7 +95,7 @@ final class CodexTest extends TestCase
         $input = $this->inputOf($this->adapter()->callFor($this->payload('stop continuing'), $this->hook()));
 
         $this->assertInstanceOf(StopRequested::class, $input);
-        $this->assertTrue($input->stop->isContinuation);
+        $this->assertTrue($input->stop->isAfterRefusedStop);
     }
 
     public function test_a_journal_allow_answers_allow_so_no_approval_is_asked(): void

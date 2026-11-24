@@ -12,7 +12,7 @@ use Illuminate\Contracts\Filesystem\Factory;
 use Illuminate\Support\Collection;
 
 /**
- * Reads a part's stored output afterwards, without ever running its command again (doc 21 revision 6, section 54):
+ * Reads a part's stored output afterwards, without ever running its command again:
  * the raw bytes of a stream, its last lines, the offsets of a search, and a bounded preview that escapes control and
  * invalid bytes.
  */

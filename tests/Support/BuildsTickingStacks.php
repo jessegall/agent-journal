@@ -24,13 +24,15 @@ use Tests\Fixtures\Agents\TestSelections;
 trait BuildsTickingStacks
 {
     /**
-     * @param  list<string>  $subjects  one ticking frame per subject, its frame id the subject itself
+     * @param  list<string>  $subjects  one ticking frame per subject, its frame id the subject itself, saved as the
+     *                                  ticking state's value of the name given
      */
     private function tickingStack(
         string $tickingType,
         array $subjects,
         CarbonImmutable $enteredAt,
         string $plainType = 'test.plain',
+        string $subjectValue = 'subject',
     ): AgentStackRow {
         $agent = Agent::create('Ticking agent', 'main-agent');
         $session = $this->app->make(AgentSessions::class)->start(
@@ -62,6 +64,7 @@ trait BuildsTickingStacks
                 false,
                 1,
                 $enteredAt,
+                [$subjectValue => $subject],
             );
         }
 

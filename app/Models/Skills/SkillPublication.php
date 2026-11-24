@@ -6,8 +6,11 @@ namespace App\Models\Skills;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\PublicationState;
+use App\Events\SkillPublicationMoved;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationMissing;
 use App\Exceptions\SkillPublicationStale;
@@ -63,11 +66,12 @@ use Illuminate\Support\Carbon;
     'manifest',
     'error',
 ])]
-final class SkillPublication extends Model implements ReadableModel
+final class SkillPublication extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -305,6 +309,7 @@ final class SkillPublication extends Model implements ReadableModel
         $this->lease_holder = null;
         $this->lease_until = null;
         $this->save();
+        $this->raiseMoved();
     }
 
     public function fail(string $reason): void
@@ -315,6 +320,7 @@ final class SkillPublication extends Model implements ReadableModel
         $this->lease_holder = null;
         $this->lease_until = null;
         $this->save();
+        $this->raiseMoved();
     }
 
     /**
@@ -336,6 +342,7 @@ final class SkillPublication extends Model implements ReadableModel
         $this->error = null;
         $this->open_key = self::openKeyOf($this->session_id, $this->target);
         $this->save();
+        $this->raiseMoved();
     }
 
     public function supersede(): void
@@ -343,12 +350,14 @@ final class SkillPublication extends Model implements ReadableModel
         $this->moveTo(PublicationState::Superseded);
         $this->open_key = null;
         $this->save();
+        $this->raiseMoved();
     }
 
     public function retire(): void
     {
         $this->moveTo(PublicationState::Retired);
         $this->save();
+        $this->raiseMoved();
     }
 
     // ----------[ Answers ]----------
@@ -443,6 +452,14 @@ final class SkillPublication extends Model implements ReadableModel
         }
 
         $this->state = $next;
+    }
+
+    /**
+     * Raised after the save, so the fact belongs to the committed move.
+     */
+    private function raiseMoved(): void
+    {
+        $this->raise(new SkillPublicationMoved($this->id, $this->session_id, $this->state));
     }
 
     /**

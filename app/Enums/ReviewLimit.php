@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * The limits on what is sent to an agent for classification (user messages 4175 and 4180): a shape longer than
+ * The limits on what is sent to an agent for classification: a shape longer than
  * ShapeCharacters is never sent, and each batch holds at most BatchShapes shapes and BatchCharacters characters.
  * ShapeCharacters covers every distilled shape measured in the corpus (the longest is 174 characters) with room for
  * unseen ones, under the user's ceiling of 2,000.

@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Support\Processes\ParsesBashLines;
 
 /**
- * The shell grammar builds the lossless tree of doc 21 section 5 and stops at its limits with a diagnostic only.
+ * The shell grammar builds the lossless tree and stops at its limits with a diagnostic only.
  */
 final class ShellGrammarTest extends TestCase
 {

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
+use App\Contracts\Connections\ProjectBindingEvent;
 use DateTimeImmutable;
 
 /**
  * The owner assigned a binding with no environment to an environment of its project.
  */
-final readonly class ProjectBindingEnvironmentAssigned implements Event
+final readonly class ProjectBindingEnvironmentAssigned extends ConnectionEvent implements ProjectBindingEvent
 {
     public function __construct(
         public string $bindingId,

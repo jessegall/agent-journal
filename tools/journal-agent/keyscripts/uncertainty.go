@@ -2,7 +2,7 @@ package keyscripts
 
 import "journal-agent/screen"
 
-// UncertaintyReason is why a run could not be certain of its next key (doc 54, section 4, decision 3).
+// UncertaintyReason is why a run could not be certain of its next key.
 type UncertaintyReason string
 
 const (

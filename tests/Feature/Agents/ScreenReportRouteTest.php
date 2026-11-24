@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Time\ServerClock;
-use App\Data\ScreenFrameData;
-use App\Data\TerminalFrameData;
+use App\Data\Terminals\ScreenFrameData;
+use App\Data\Terminals\TerminalFrameData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\TerminalView;
 use App\Support\EnrolledHost;

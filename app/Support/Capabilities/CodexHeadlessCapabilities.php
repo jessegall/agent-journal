@@ -17,7 +17,7 @@ use App\Values\SupportSnapshot;
 final readonly class CodexHeadlessCapabilities implements DriverCapabilities
 {
     /**
-     * Codex's sandbox limits writes only, so its tools could read its sign-in in a shared container (doc 61, decision 8).
+     * Codex's sandbox limits writes only, so its tools could read its sign-in in a shared container.
      */
     public const string NOT_CONTAINABLE = "Codex's sandbox does not keep tools from its sign-in; container starts wait for the provider transport";
 

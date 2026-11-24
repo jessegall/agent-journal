@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Events;
 
-use App\Contracts\Events\Event;
-
 /**
  * A filed report was tied, once and for good, to the helper job it answers. It carries ids and the report's number only.
  */
-final readonly class ReportJobLinked implements Event
+final readonly class ReportJobLinked extends HelperEvent
 {
     public function __construct(
         public string $reportId,

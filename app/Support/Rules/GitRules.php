@@ -13,7 +13,7 @@ use App\Values\OptionGrammar;
 use App\Values\ProgramSpellings;
 
 /**
- * Git's subcommands as doc 21 revision 3, section 7 maps them, each with version_control: inspection forms read,
+ * Git's subcommands, each with version_control: inspection forms read,
  * only the declared list and show forms of branch, tag, remote, config, stash and worktree count as inspection, and
  * every form that changes refs, the index, the work tree or a remote carries those classes. Global options before the
  * subcommand are read by the classifier.

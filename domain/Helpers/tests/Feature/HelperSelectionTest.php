@@ -29,7 +29,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Which of a parent's helpers takes new work (doc 14 decisions D0, D3 and D5): a conversation on the chosen program
+ * Which of a parent's helpers takes new work: a conversation on the chosen program
  * and exact model beats a newer one elsewhere, ties go to the lower actor id, independent work skips every helper
  * that saw the subject, and a profile never reuses a helper of another one.
  */

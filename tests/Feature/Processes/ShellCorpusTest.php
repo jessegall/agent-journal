@@ -20,8 +20,7 @@ use Tests\TestCase;
 
 /**
  * Every case of the portable shell corpus goes through the container's TreeParser and must read as its frozen
- * expectation says: the outcome, and for a complete line the span of every command it runs (doc 21 revision 3,
- * section 35). The fixture's files must match the manifest's hashes, so an expectation cannot change unnoticed.
+ * expectation says: the outcome, and for a complete line the span of every command it runs. The fixture's files must match the manifest's hashes, so an expectation cannot change unnoticed.
  */
 final class ShellCorpusTest extends TestCase
 {

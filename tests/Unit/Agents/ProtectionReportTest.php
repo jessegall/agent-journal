@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * A protection report awaits only its evidence when every item has its mechanism and the recorded run alone is
- * missing: the state a protected-account trial starts in (doc 78 revision 2, task 1772).
+ * missing: the state a protected-account trial starts in.
  */
 final class ProtectionReportTest extends TestCase
 {

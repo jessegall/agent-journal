@@ -7,7 +7,7 @@ namespace App\Models\Agents;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Data\RuntimeStatus;
+use App\Data\Processes\RuntimeStatus;
 use App\Enums\DriverOperation;
 use App\Enums\DriverVariant;
 use App\Enums\HoldReason;

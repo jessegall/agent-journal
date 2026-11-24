@@ -1,5 +1,5 @@
 // Command shell-oracle reads shell lines with mvdan.cc/sh, an independent parser, and writes what version 6's shell
-// grammar is expected to find (doc 21 revision 3, sections 5 and 35): the outcome and the byte span of every command
+// grammar is expected to find: the outcome and the byte span of every command
 // the shell would run. It reads one JSON object per line on standard input, {"id", "source", "dialect"}, and writes
 // one JSON object per line. It never runs anything.
 package main
@@ -33,7 +33,7 @@ type output struct {
 	Parts       []Span `json:"parts"`
 }
 
-// unsupportedCommands are the words that start a construct version 6 reads as Unsupported (doc 21 section 5).
+// unsupportedCommands are the words that start a construct version 6 reads as Unsupported.
 var unsupportedCommands = map[string]string{"set": "shell options", "shopt": "shell options", "setopt": "shell options", "unsetopt": "shell options"}
 
 const sourceLimit = 65536

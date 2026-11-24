@@ -6,7 +6,7 @@ namespace App\Commands\ReportRuntimeScreen;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Data\ScreenReportData;
+use App\Data\Terminals\ScreenReportData;
 use App\Enums\ScreenReportRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Support\RuntimeScreen;

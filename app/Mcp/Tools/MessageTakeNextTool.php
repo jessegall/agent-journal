@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('messages_take_next')]
 #[Dispatches(TakeNextMessagesCommand::class)]
-#[Description('Take up the oldest questions nobody has taken up in one of your inboxes.')]
+#[Description('Claim the oldest questions nobody has claimed in one of your inboxes.')]
 final class MessageTakeNextTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

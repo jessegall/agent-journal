@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Records\RecordProvider;
 use App\Contracts\Records\RecordResolver;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Records\Comment;
 use App\Support\RecordIdentity;

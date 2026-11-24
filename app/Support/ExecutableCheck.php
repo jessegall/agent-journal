@@ -12,7 +12,7 @@ use App\Values\ExecutionContext;
 use App\Values\ProgramIdentity;
 
 /**
- * Verifies that the executable a command names is the one its binding trusts (doc 21 revision 3, section 52), from the
+ * Verifies that the executable a command names is the one its binding trusts, from the
  * trusted execution context alone: it never runs which, a shell or the program. A path the agent wrote is taken as
  * written; a bare name resolves through the context's program resolution. A matching base name alone never passes.
  */

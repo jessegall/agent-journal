@@ -7,7 +7,7 @@ namespace Domain\Documents\Resolvers;
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Chat\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
-use App\Data\NotificationLink;
+use App\Data\Notifications\NotificationLink;
 use App\Support\ActorIdentity;
 use Domain\Documents\Models\Report;
 

@@ -84,7 +84,7 @@ func TestAContainerWithoutATerminalIsNoSessionContainer(t *testing.T) {
 	}
 }
 
-// Rule 83: the host types into a session's terminal and reads its screen through the daemon's attach, sizes the
+// The host types into a session's terminal and reads its screen through the daemon's attach, sizes the
 // container's terminal, and a hangup leaves the program running.
 func TestTheHostTypesIntoASessionsTerminalReadsItAndSizesItThroughTheDaemon(t *testing.T) {
 	container, daemon := sessionOn(t)
@@ -174,7 +174,7 @@ const (
 	programsColouredOutput = "starting\r\n\x1b[31m" + programsOwnWords + "\x1b[0m\r\n"
 )
 
-// Task 2891: a program that ends at once is reported with its own last lines, as plain text, as the reason.
+// A program that ends at once is reported with its own last lines, as plain text, as the reason.
 func TestAProgramThatEndsAtOnceIsReportedWithItsOwnLastLines(t *testing.T) {
 	container, daemon := sessionOn(t)
 	daemon.Programs = func(*dockerstandin.Container) dockerstandin.Program {

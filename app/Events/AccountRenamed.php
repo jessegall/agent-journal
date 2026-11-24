@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * The owner renamed a saved account.
  */
-final readonly class AccountRenamed implements ShownOnAccounts
+final readonly class AccountRenamed extends AccountEvent implements ShownOnAccounts
 {
     public function __construct(public string $driver, public string $accountId) {}
 

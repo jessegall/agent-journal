@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Chat;
 
-use App\Data\NotificationLink;
+use App\Data\Notifications\NotificationLink;
 
 /**
  * Answers, for the signed-in actor, what one type of notification target shows: its title and address while the

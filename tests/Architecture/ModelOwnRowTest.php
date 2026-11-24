@@ -13,7 +13,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A model method writes only its own row (plan 40): every write of a model, its traits and helpers outside that row
+ * A model method writes only its own row: every write of a model, its traits and helpers outside that row
  * is either on the frozen list of its area, tests/Architecture/Legacy/ModelWrites, or the test fails; a listed method
  * that writes only its own row fails it too, so the lists only shrink.
  */

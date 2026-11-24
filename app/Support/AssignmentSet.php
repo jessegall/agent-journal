@@ -10,8 +10,7 @@ use PhpOption\Some;
 
 /**
  * The assignments of the records a read asked for, at most one per record. A record with no visible assignment is
- * simply absent; callers ask forRecord and never build keys of their own (doc 13 section 28, kept as a public list
- * because exported values hold no private state).
+ * simply absent; callers ask forRecord and never build keys of their own.
  */
 final readonly class AssignmentSet
 {

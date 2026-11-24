@@ -12,7 +12,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Navigation\PageResolver;
 use App\Contracts\Navigation\SlotSections;
 use App\Contracts\Sessions\AgentDirectory;
-use App\Data\Profiles\EligibleAccountsData;
+use App\Data\Accounts\EligibleAccountsData;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\StackTargetRefused;

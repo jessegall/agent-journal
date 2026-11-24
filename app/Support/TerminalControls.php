@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Data\PrivateInputMessageData;
-use App\Data\TerminalControlData;
+use App\Data\Messages\PrivateInputMessageData;
+use App\Data\Terminals\TerminalControlData;
 use App\Enums\AccessType;
 use App\Enums\DriverOperation;
 use App\Enums\TerminalDraftChoice;

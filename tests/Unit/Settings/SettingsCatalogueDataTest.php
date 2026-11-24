@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Data\BooleanValueData;
-use App\Data\DecimalConstraintsData;
-use App\Data\DecimalValueData;
-use App\Data\IntegerChoiceConstraintsData;
-use App\Data\IntegerChoiceValueData;
-use App\Data\InvalidValueData;
-use App\Data\PlainGroupAvailabilityData;
-use App\Data\SettingIdentityData;
-use App\Data\SettingsCatalogueData;
-use App\Data\ToggleGroupAvailabilityData;
+use App\Data\Settings\BooleanValueData;
+use App\Data\Settings\DecimalConstraintsData;
+use App\Data\Settings\DecimalValueData;
+use App\Data\Settings\IntegerChoiceConstraintsData;
+use App\Data\Settings\IntegerChoiceValueData;
+use App\Data\Settings\InvalidValueData;
+use App\Data\Settings\PlainGroupAvailabilityData;
+use App\Data\Settings\SettingIdentityData;
+use App\Data\Settings\SettingsCatalogueData;
+use App\Data\Settings\ToggleGroupAvailabilityData;
 use App\Enums\GroupAvailability;
 use App\Enums\SettingAvailability;
 use App\Enums\SettingSource;
@@ -115,7 +115,7 @@ final class SettingsCatalogueDataTest extends TestCase
 
     public function test_no_catalogue_property_is_mixed_or_an_untyped_array(): void
     {
-        // The catalogue's data classes by the folder they had before plan 62 moved them to app/Data.
+        // The catalogue's data classes by the folder they had before the move to Laravel's layout.
         foreach (FormerPaths::filesFrom(['app/Settings/Data/']) as $file) {
             $class = Reflector::of('App\\'.str_replace('/', '\\', substr($file, 4, -4)));
             $this->assertTrue($class->isFinal(), $class->name());

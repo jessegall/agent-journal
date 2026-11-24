@@ -7,7 +7,7 @@ namespace App\Support\Web;
 use App\Contracts\Navigation\UiOwnerAvailability;
 use App\Contracts\Navigation\WindowResults;
 use App\Contracts\Reads\ReaderRequests;
-use App\Data\UnavailableWindow;
+use App\Data\Pages\UnavailableWindow;
 use App\Declarations\RegisteredPage;
 use App\Declarations\RegisteredSection;
 use App\Enums\PageDestination;

@@ -24,8 +24,7 @@ use App\Values\ProvenBranch;
 use App\Values\ReaderApproval;
 
 /**
- * An owner's approval of a proposal's current revision, all in the bus's one transaction (doc 21 revision 6, sections
- * 51 and 71 step 6): the exact revision, no conflict with Core, module or active project rules, a proof that binds
+ * An owner's approval of a proposal's current revision, all in the bus's one transaction: the exact revision, no conflict with Core, module or active project rules, a proof that binds
  * this declaration and reader and covers every exit branch, then the immutable approved revision and the active
  * pointer at the revision the owner expected. Approval grants no permission and starts nothing.
  */

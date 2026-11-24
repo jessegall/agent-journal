@@ -15,7 +15,7 @@ use App\Values\SkillKey;
 use Tests\TestCase;
 
 /**
- * Each driver's skill adapter gives the folder, start additions and layout report 171 found: a --plugin-dir plugin
+ * Each driver's skill adapter gives the folder, start additions and layout each program reads: a --plugin-dir plugin
  * folder in the start's settings folder for Claude Code, the skills folder of the isolated CODEX_HOME for Codex; a
  * driver without an adapter is refused.
  */

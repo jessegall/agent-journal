@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Enums\PublicationState;
 use App\Events\SessionSkillsIntended;
+use App\Events\SkillPublicationMoved;
 use App\Events\SkillsChanged;
 use Tests\Architecture\Support\EventRole;
 
@@ -19,6 +21,13 @@ return [
             'app/Listeners/AdmitStartSkills.php',
             'app/Listeners/RefreshSessionSkills.php',
         ],
+    ],
+    SkillPublicationMoved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SkillPublication::raiseMoved',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SkillPublicationMoved('publication', 'session', PublicationState::Delivered),
     ],
     SkillsChanged::class => [
         'role' => EventRole::RowFact,

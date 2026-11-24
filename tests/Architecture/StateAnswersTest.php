@@ -18,7 +18,7 @@ use Traversable;
 /**
  * A state's hook method always answers, and only with what a state may answer: an answer part (a decision or a line),
  * a command, an event, or several of those to yield. Never null and never mixed: a state that has nothing to say
- * answers Decision::delegate() (user messages 19767, 19779, 19781). The contract declares it, so PHP refuses a state
+ * answers Decision::delegate(). The contract declares it, so PHP refuses a state
  * that widens it; this test holds the contract itself.
  */
 final class StateAnswersTest extends TestCase

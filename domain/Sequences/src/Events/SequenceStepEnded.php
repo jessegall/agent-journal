@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Events;
 
-use App\Contracts\Events\Event;
 use App\Support\ActorIdentity;
 use Domain\Sequences\Contracts\ChatLineSource;
+use Domain\Sequences\Contracts\SequenceStepEvent;
 use Domain\Sequences\Models\SequenceRun;
 
 /**
  * A step of a sequence run ended, numbered from one, as its agent went on past it.
  */
-final readonly class SequenceStepEnded implements ChatLineSource, Event
+final readonly class SequenceStepEnded extends SequenceEvent implements ChatLineSource, SequenceStepEvent
 {
     public function __construct(
         public string $runId,

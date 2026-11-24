@@ -100,7 +100,7 @@ final class PairChatDemonstrationTest extends MessagingTestCase
         $this->assertSame($inboxId, $this->runOnBus(new OpenPairChatCommand($this->builder->agent_id)));
     }
 
-    // User messages 19571 and 19640: the agent answered, and the open chat showed nothing until a reload, because no
+    // The agent answered, and the open chat showed nothing until a reload, because no
     // page was told of a chat fact. The answer reaches the owner's open pages by itself.
     public function test_an_agents_answer_in_a_pair_chat_tells_the_owners_open_pages(): void
     {

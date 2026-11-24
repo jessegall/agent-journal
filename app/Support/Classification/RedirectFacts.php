@@ -15,7 +15,7 @@ use App\Values\SyntaxOrigin;
 use App\Values\UnresolvedFact;
 
 /**
- * What a node's redirects do by themselves (doc 21 revision 3, section 5): < reads its target, > >> >| write it, <>
+ * What a node's redirects do by themselves: < reads its target, > >> >| write it, <>
  * does both, duplications and closes touch no file, /dev/null and the fixed descriptors are harmless, /dev/tcp and
  * /dev/udp reach the network, and any other special endpoint or a target known only at run time is unresolved.
  */

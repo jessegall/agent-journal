@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Chat\Notifications;
 use App\Contracts\Events\Listener;
-use App\Data\NotificationTarget;
+use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationSourceType;
 use App\Events\RunOutcomeRecorded;
 use App\Models\Runs\ProcessRun;

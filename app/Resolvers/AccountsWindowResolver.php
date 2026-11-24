@@ -6,10 +6,10 @@ namespace App\Resolvers;
 
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Navigation\PageResolver;
-use App\Data\Profiles\AccountListData;
-use App\Data\Profiles\AccountRowData;
-use App\Data\Profiles\AccountUsageData;
-use App\Data\Profiles\DriverMethodsData;
+use App\Data\Accounts\AccountListData;
+use App\Data\Accounts\AccountRowData;
+use App\Data\Accounts\AccountUsageData;
+use App\Data\Accounts\DriverMethodsData;
 use App\Http\Pages\Accounts\AccountsIndex;
 use App\Http\Requests\Profiles\AccountsPageRequest;
 use App\Models\Accounts\Account;

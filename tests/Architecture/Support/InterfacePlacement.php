@@ -7,7 +7,7 @@ namespace Tests\Architecture\Support;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * Rule 17: an interface lives in a Contracts folder of the domain, the domain part, the core area or the core that
+ * An interface lives in a Contracts folder of the domain, the domain part, the core area or the core that
  * uses it.
  */
 final class InterfacePlacement

@@ -16,7 +16,7 @@ use Tests\TestCase;
 /**
  * Decoded JSON is read into a Data class, so its shape is written down and read through typed properties: every
  * json_decode in app/ and the domains is handed straight to a Data class's from(), collect() or validateAndCreate()
- * (user messages 10999, 11389). The Files area decodes for readJson and is left out, and only the methods listed
+ *. The Files area decodes for readJson and is left out, and only the methods listed
  * in ANY_JSON_METHODS may decode JSON of no fixed shape under #[DecodesAnyJson].
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app/ and the domains.')]
@@ -54,7 +54,7 @@ final class JsonIntoDataTest extends TestCase
         foreach (ScanCache::findingsInFolders(new JsonDecodeScan(), $folders) as $path => $decodes) {
             $relative = substr($path, strlen(base_path()) + 1);
 
-            // The Files area decodes files as it reads them: its files plan 62 moved, and LocalFiles, moved before.
+            // The Files area decodes files as it reads them: its files moved to Laravel's layout, and LocalFiles, moved before.
             if (FormerPaths::wasIn($relative, ['app/Files/']) || $relative === 'app/Support/LocalFiles.php') {
                 continue;
             }

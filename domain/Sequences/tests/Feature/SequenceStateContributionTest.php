@@ -15,13 +15,15 @@ use App\Support\Inputs\Values\CompactionDetails;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
+use App\Support\StateLoading\RegisteredStateType;
+use App\Support\StateLoading\StateBuilder;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
 use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
-use Domain\Sequences\Support\SequenceWork;
+use Domain\Sequences\Support\States\FollowingSequenceState;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
@@ -70,9 +72,9 @@ final class SequenceStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($run->id));
         $onSecondStep = $this->answerStop('call-2');
 
-        $this->assertStringContainsString($this->stepText($run, 1, self::FIRST_STEP), $onFirstStep);
+        $this->assertStringContainsString($this->stepText($run, 1), $onFirstStep);
 
-        $this->assertStringContainsString($this->stepText($run, 2, self::SECOND_STEP), $onSecondStep);
+        $this->assertStringContainsString($this->stepText($run, 2), $onSecondStep);
     }
 
     public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
@@ -82,7 +84,7 @@ final class SequenceStateContributionTest extends TestCase
 
         $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertContains($this->stepText($run, 1, self::FIRST_STEP), $context);
+        $this->assertContains($this->stepText($run, 1), $context);
         $this->assertSame(1, $run->fresh()?->current_step);
     }
 
@@ -109,9 +111,14 @@ final class SequenceStateContributionTest extends TestCase
         return SequenceRun::create('Close a task', [self::FIRST_STEP, self::SECOND_STEP]);
     }
 
-    private function stepText(SequenceRun $run, int $step, string $instruction): string
+    private function stepText(SequenceRun $run, int $step): string
     {
-        return new SequenceWork($run->number, $step, $instruction, SequenceRunState::Running)->currentInstruction();
+        $values = ['runId' => $run->id, 'runNumber' => $run->number, 'steps' => $run->steps, 'currentStep' => $step];
+
+        return $this->app->make(StateBuilder::class)
+            ->build(RegisteredStateType::of(FollowingSequenceState::class), $values)
+            ->instruction()
+            ->get();
     }
 
     /**

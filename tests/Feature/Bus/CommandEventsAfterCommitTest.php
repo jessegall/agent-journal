@@ -12,7 +12,7 @@ use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 
 /**
- * User 16063 (task 2392): a fact dispatched anywhere inside a command, even with a plain dispatch from its handler,
+ * A fact dispatched anywhere inside a command, even with a plain dispatch from its handler,
  * is heard only once the command's transaction commits, and never when it rolls back.
  */
 final class CommandEventsAfterCommitTest extends CommandBusTestCase

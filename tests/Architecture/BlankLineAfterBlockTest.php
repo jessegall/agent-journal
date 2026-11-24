@@ -9,7 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A blank line follows every closing brace that a statement follows (rule 52, user messages 11006 and 11012). The
+ * A blank line follows every closing brace that a statement follows. The
  * code rules read the syntax tree, which holds no blank lines, so tools/refactoring/blank-line-after-block.php checks
  * it from PHP's own tokens; run it without --check to add the lines.
  */

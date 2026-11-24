@@ -90,7 +90,7 @@ final class AccountsProjectionTest extends TestCase
         $this->assertSame([['claude-code', $notice->id]], $this->changes);
     }
 
-    // User message 19647: a failure is never swallowed, so the failing notice command is thrown, named by its fact.
+    // A failure is never swallowed, so the failing notice command is thrown, named by its fact.
     public function test_a_failing_notice_command_is_thrown_as_a_failed_listener_of_its_fact(): void
     {
         $this->app->bind(JournalCommands::class, fn () => throw new RuntimeException('The notice command failed.'));

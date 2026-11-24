@@ -23,7 +23,7 @@ use App\Values\ReaderCheckpoint;
 use App\Values\VerifiedOutput;
 
 /**
- * The one boundary between a run and a result (doc 21 revision 6, sections 69 and 72): a normal run whose part ended
+ * The one boundary between a run and a result: a normal run whose part ended
  * with its own exit, whose capture is complete and verified, whose approved reader consumed every byte without a
  * problem and claimed what the exit branch means, and whose empty policy holds. Anything else is a problem with a
  * stable code; an execution error is never findings.

@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One interpretation of a part's output by an approved reader (doc 21 revision 6, section 69): its state, its outcome,
+ * One interpretation of a part's output by an approved reader: its state, its outcome,
  * every problem with its code, the counts and the offsets the reader consumed. It is never updated; a replay appends a
  * new assessment that names the one it replaces.
  *

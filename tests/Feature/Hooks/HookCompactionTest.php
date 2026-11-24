@@ -17,9 +17,8 @@ use App\Support\Stack\HookAnswer;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
-use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
-use Domain\Sequences\Support\SequenceWork;
+use Domain\Sequences\Support\States\FollowingSequenceState;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
@@ -76,7 +75,7 @@ final class HookCompactionTest extends TestCase
             array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))),
         );
         $this->assertContains(
-            new SequenceWork($this->run->number, 1, 'Read the brief.', SequenceRunState::Running)->currentInstruction(),
+            new FollowingSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get(),
             $context,
         );
     }

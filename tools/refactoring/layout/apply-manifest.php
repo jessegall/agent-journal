@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * Checks a move manifest against Git and the working tree, previews it, rehearses it in a throwaway checkout, or
- * applies a batch of its rows (doc 107 revision 3, Batch admission, recovery and phase evidence).
+ * applies a batch of its rows.
  *
  *   php tools/refactoring/layout/apply-manifest.php <manifest.json> --dry-run
  *   php tools/refactoring/layout/apply-manifest.php <manifest.json> --rows=<old path prefix> [--rows=…]

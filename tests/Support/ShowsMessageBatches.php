@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Commands\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand;
 use App\Commands\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Sessions\CurrentSession;
-use App\Data\MessageBatchItemData;
+use App\Data\Messages\MessageBatchItemData;
 use App\Enums\ActorType;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorIdentity;

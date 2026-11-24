@@ -8,8 +8,8 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Drivers\MessagePart;
 use App\Contracts\Records\ReadableModel;
-use App\Data\DriverRequestStatus;
-use App\Data\MessagePartData;
+use App\Data\Agents\DriverRequestStatus;
+use App\Data\Messages\MessagePartData;
 use App\Enums\DriverOperation;
 use App\Enums\ExpectedTiming;
 use App\Enums\HoldReason;
@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * One accepted request to a runtime's driver, in the order it was accepted: its payload, attempts, progress and
- * outcome, expected and actual timing, wake watermarks and key script progress (doc 40, sections 14 to 20).
+ * outcome, expected and actual timing, wake watermarks and key script progress.
  *
  * @property string $id
  * @property string $agent_runtime_id

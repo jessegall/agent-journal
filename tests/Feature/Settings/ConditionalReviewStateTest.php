@@ -15,7 +15,6 @@ use App\Support\AgentContext;
 use App\Support\AgentStacks;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;
-use App\Support\Decisions\StateReferences;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\References\StateReference;
@@ -24,6 +23,8 @@ use App\Support\SettingRegistry;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
 use App\Support\StartStacks;
+use App\Support\StateLoading\RegisteredStateType;
+use App\Support\StateLoading\StateBuilder;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
 use App\Support\Storage\FrameRecord;
@@ -36,7 +37,6 @@ use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Domains\Reviews\States\ReviewState;
-use Tests\Fixtures\Domains\Reviews\States\ReviewStateType;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -95,7 +95,7 @@ final class ConditionalReviewStateTest extends TestCase
     {
         $this->pushReview();
 
-        $this->assertSame(['hooks.ready', ReviewStateType::TYPE_KEY], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', ReviewState::TYPE_KEY], $this->storedTypeKeys());
     }
 
     public function test_while_the_group_is_off_a_push_is_declined_and_a_stored_frame_is_removed_for_good(): void
@@ -115,12 +115,9 @@ final class ConditionalReviewStateTest extends TestCase
         );
     }
 
-    public function test_a_retained_factory_reads_the_settings_of_each_request(): void
+    public function test_a_built_state_reads_the_settings_of_each_request(): void
     {
-        $factory = $this->app->make(ReviewStateType::class);
-        $references = new StateReferences([new StateReference(ReviewStateType::TYPE_KEY, NoSubject::None)]);
-
-        $first = $factory->statesFor($references)->stateAt(0);
+        $first = $this->builtReview();
         $this->assertInstanceOf(ReviewState::class, $first);
         $this->assertTrue($first->isEnabled());
         $this->assertSame(3, $first->retryLimit());
@@ -129,25 +126,25 @@ final class ConditionalReviewStateTest extends TestCase
         $record = SettingsRecord::sharedRuntimeForOwner('Reviews')->get();
         $record->revise($record->document->withToggle(new EncodedToggle('review', EncodedValue::of(false))));
 
-        $sameRequest = $factory->statesFor($references)->stateAt(0);
+        $sameRequest = $this->builtReview();
         $this->assertInstanceOf(ReviewState::class, $sameRequest);
         $this->assertTrue($sameRequest->isEnabled(), self::ONE_READ);
 
         $this->app->forgetScopedInstances();
-        $nextRequest = $factory->statesFor($references)->stateAt(0);
+        $nextRequest = $this->builtReview();
         $this->assertInstanceOf(ReviewState::class, $nextRequest);
         $this->assertFalse($nextRequest->isEnabled());
     }
 
     public function test_a_failed_settings_read_is_an_error_never_off(): void
     {
-        $factory = $this->app->make(ReviewStateType::class);
+        $review = $this->builtReview();
         DB::beginTransaction();
         Schema::drop('settings_records');
 
         try {
-            $factory->statesFor(new StateReferences([new StateReference(ReviewStateType::TYPE_KEY, NoSubject::None)]));
-            $this->fail('A failed settings read built a state.');
+            $review->isEnabled();
+            $this->fail('A failed settings read answered.');
         } catch (SettingsUnavailable) {
             $this->addToAssertionCount(1);
         } finally {
@@ -155,12 +152,20 @@ final class ConditionalReviewStateTest extends TestCase
         }
     }
 
+    private function builtReview(): ReviewState
+    {
+        $state = $this->app->make(StateBuilder::class)->build(RegisteredStateType::of(ReviewState::class), []);
+        $this->assertInstanceOf(ReviewState::class, $state);
+
+        return $state;
+    }
+
     private function pushReview(): void
     {
         $this->transaction()->run(
             fn () => $this->app->make(AgentStacks::class)->push(
                 $this->target,
-                new StateReference(ReviewStateType::TYPE_KEY, NoSubject::None),
+                new StateReference(ReviewState::TYPE_KEY, NoSubject::None),
             ),
         );
     }

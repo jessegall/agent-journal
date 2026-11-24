@@ -35,12 +35,6 @@ final readonly class StatePush
         return $after;
     }
 
-    public function prune(StackTarget $target, AgentStackRow $row): void
-    {
-        $before = $this->restorer->restore($row->frames, $row->target());
-        $this->save($target, $row, $before, $before->withoutExposedInactive());
-    }
-
     private function save(StackTarget $target, AgentStackRow $row, AgentStack $before, AgentStack $after): void
     {
         if ($after->frameIds() === $before->frameIds()) {

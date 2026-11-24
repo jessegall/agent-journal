@@ -17,7 +17,7 @@ import type { ParticipantData } from "@generated/types/chat";
 import { useMessageDrafts } from "./composables/useMessageDrafts";
 
 /**
- * Posts in the chat with the chosen agent, at the chat's own inbox (doc 4, 6.5). The text is the draft of this chat,
+ * Posts in the chat with the chosen agent, at the chat's own inbox. The text is the draft of this chat,
  * so browsing other chats, a switch or a reload keeps it; a send names the session the user saw the agent run, is
  * refused when the agent runs another one by then, and clears only its own draft, only if it was not typed on since.
  */

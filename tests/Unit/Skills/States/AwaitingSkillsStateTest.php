@@ -11,6 +11,7 @@ use App\Enums\FileOperation;
 use App\Enums\ParseOutcome;
 use App\Enums\PublicationState;
 use App\Enums\ShellDialect;
+use App\Events\SkillPublicationMoved;
 use App\Support\Decisions\Denied;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
@@ -59,7 +60,7 @@ final class AwaitingSkillsStateTest extends TestCase
     #[DataProvider('waitingStates')]
     public function test_a_file_change_is_held_with_the_reason_while_the_set_waits(PublicationState $state): void
     {
-        $awaiting = new AwaitingSkillsState($state);
+        $awaiting = $this->awaiting($state);
         $edit = new FileEditRequested(
             $this->hook(),
             new FileChanges([new FileChange('app/Thing.php', FileOperation::Edit)]),
@@ -76,7 +77,7 @@ final class AwaitingSkillsStateTest extends TestCase
     {
         $status = new ShellCommandRequested($this->hook(), self::command('php', CommandEffect::ReadsOnly));
 
-        $decision = new AwaitingSkillsState(PublicationState::Pending)->onShellCommand($status);
+        $decision = $this->awaiting(PublicationState::Pending)->onShellCommand($status);
 
         $this->assertSame(AnswerType::Delegate, $decision->answerType());
     }
@@ -84,7 +85,28 @@ final class AwaitingSkillsStateTest extends TestCase
     #[DataProvider('settledStates')]
     public function test_a_settled_publication_ends_the_hold(PublicationState $state): void
     {
-        $this->assertTrue(new AwaitingSkillsState($state)->isFinished());
+        $this->assertTrue($this->awaiting($state)->isFinished());
+    }
+
+    public function test_another_publication_moving_leaves_the_hold(): void
+    {
+        $awaiting = new AwaitingSkillsState('publication-1');
+        $moved = new SkillPublicationMoved('publication-2', 'session-1', PublicationState::Delivered);
+
+        $awaiting->onSkillPublicationMoved($moved);
+
+        $this->assertFalse($awaiting->isFinished());
+    }
+
+    /**
+     * A state waiting for publication 1, which it has heard move to the state given.
+     */
+    private function awaiting(PublicationState $state): AwaitingSkillsState
+    {
+        $awaiting = new AwaitingSkillsState('publication-1');
+        $awaiting->onSkillPublicationMoved(new SkillPublicationMoved('publication-1', 'session-1', $state));
+
+        return $awaiting;
     }
 
     private static function command(string $driver, CommandEffect $effect): ShellCommand

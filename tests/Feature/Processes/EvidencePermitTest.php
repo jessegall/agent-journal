@@ -21,8 +21,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A project owner's one-use permit runs its exact command line once as an evidence-only run (doc 21 revision 6,
- * sections 71 and 72; stories 182, 183 and 165).
+ * A project owner's one-use permit runs its exact command line once as an evidence-only run.
  */
 final class EvidencePermitTest extends TestCase
 {

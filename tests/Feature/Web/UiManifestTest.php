@@ -192,7 +192,7 @@ final class UiManifestTest extends TestCase
 
         $this->assertSame('core', $owners->ownerOf('App\\Support\\AssignmentData'));
         $this->assertSame('plans', $owners->ownerOf('Domain\\Plans\\Data\\AssignedPlanListData'));
-        $this->assertSame('web', $owners->ownerOf('App\\Data\\HomeData'));
+        $this->assertSame('web', $owners->ownerOf('App\\Data\\Pages\\HomeData'));
         $this->assertSame('shared', $owners->ownerOf('Tests\\Fixtures\\UiDeclarations\\RecentNotesData'));
     }
 

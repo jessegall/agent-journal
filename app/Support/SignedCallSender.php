@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Domains\CallSender;
 use App\Contracts\Domains\JournalCall;
-use App\Data\RefusalAnswerData;
+use App\Data\Agents\RefusalAnswerData;
 use App\Exceptions\AnswerUnreadable;
 use App\Exceptions\CallTooLarge;
 use App\Exceptions\JournalUnavailable;

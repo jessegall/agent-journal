@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Data\NotificationDestination;
-use App\Data\NotificationItem;
-use App\Data\NotificationLink;
-use App\Data\NotificationPage;
+use App\Data\Notifications\NotificationDestination;
+use App\Data\Notifications\NotificationItem;
+use App\Data\Notifications\NotificationLink;
+use App\Data\Notifications\NotificationPage;
 use App\Exceptions\NotificationCursorInvalid;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;

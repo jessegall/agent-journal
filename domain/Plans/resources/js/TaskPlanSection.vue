@@ -4,7 +4,7 @@ import { phase as phaseRoute, plan as planRoute } from '@generated/routes/plans'
 import type { TaskPlanData } from '@generated/types/plans';
 
 /**
- * The task's plan beside its facts in Tasks' reader: Plan 12 · Phase 2, each a link, or Not in a plan.
+ * The task's plan beside its facts in Tasks' reader, such as Plan 12 · Phase 2, each a link, or Not in a plan.
  */
 defineProps<{ data: TaskPlanData }>();
 </script>

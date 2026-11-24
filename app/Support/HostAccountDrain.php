@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Accounts\AccountOwnerDrain;
-use App\Data\DrainReplyData;
-use App\Data\FolderUseReplyData;
+use App\Data\Hosts\DrainReplyData;
+use App\Data\Hosts\FolderUseReplyData;
 use App\Enums\ArrangementType;
 
 /**

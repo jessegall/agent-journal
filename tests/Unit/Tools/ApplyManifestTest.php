@@ -7,7 +7,7 @@ namespace Tests\Unit\Tools;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Doc 107, Batch admission, recovery and phase evidence: the manifest applier refuses an occupied destination, a
+ * Batch admission, recovery and phase evidence: the manifest applier refuses an occupied destination, a
  * case-folded clash, a stale source and an unrecorded edit, previews without touching the tree, and resumes a batch
  * that stopped half way.
  */

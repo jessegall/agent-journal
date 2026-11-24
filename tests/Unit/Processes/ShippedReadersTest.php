@@ -17,8 +17,7 @@ use Tests\TestCase;
 
 /**
  * Every shipped reader reads the samples it was proven on: a clean run passes, a run with findings is findings, and
- * an execution error is never read as either; a reader bound to one version is no reader for another (doc 21 revision
- * 6, sections 68 and 71; stories 139 to 143).
+ * an execution error is never read as either; a reader bound to one version is no reader for another.
  */
 final class ShippedReadersTest extends TestCase
 {

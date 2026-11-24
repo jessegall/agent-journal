@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Attributes\RequiresTransactionListener;
-use App\Contracts\Events\Event;
+use App\Attributes\TransactionListenerConsent;
 use App\Support\ActorIdentity;
+use Domain\Tasks\Contracts\TaskStateEvent;
 use Domain\Tasks\Enums\TaskState;
 
 /**
@@ -14,9 +14,8 @@ use Domain\Tasks\Enums\TaskState;
  * reads the started task's plan and moves its phase tallies from the state the task left in that transaction; its
  * listeners are named as text so Tasks does not depend on Plans. It names the id of its entry in the task's history.
  */
-#[RequiresTransactionListener('Domain\Plans\Listeners\CountPhaseTaskStates')]
-#[RequiresTransactionListener('Domain\Plans\Listeners\SamplePlanOfStartedTask')]
-final readonly class TaskStarted implements Event
+#[TransactionListenerConsent]
+final readonly class TaskStarted extends TaskEvent implements TaskStateEvent
 {
     public function __construct(
         public string $taskId,
@@ -24,4 +23,9 @@ final readonly class TaskStarted implements Event
         public TaskState $previousState,
         public string $historyEntryId,
     ) {}
+
+    public function enteredState(): TaskState
+    {
+        return TaskState::Started;
+    }
 }

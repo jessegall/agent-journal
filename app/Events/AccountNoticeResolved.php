@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events;
 
+use App\Contracts\Accounts\AccountNoticeEvent;
 use App\Contracts\Accounts\ShownOnAccounts;
 
 /**
  * A notice on the driver's accounts was resolved.
  */
-final readonly class AccountNoticeResolved implements ShownOnAccounts
+final readonly class AccountNoticeResolved extends AccountEvent implements AccountNoticeEvent, ShownOnAccounts
 {
     public function __construct(public string $driver, public string $noticeId) {}
 

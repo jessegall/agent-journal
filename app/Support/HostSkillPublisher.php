@@ -26,7 +26,7 @@ use App\Values\FolderEntry;
 final readonly class HostSkillPublisher implements SkillPublisher
 {
     /**
-     * The deepest a staged publication goes: skills/<key>/SKILL.md for Claude Code (doc 69).
+     * The deepest a staged publication goes: skills/<key>/SKILL.md for Claude Code.
      */
     private const int STAGED_LEVEL_LIMIT = 3;
 

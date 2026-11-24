@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * An assignment's holder and record and a claim authorization's fields are written only by their models and their
- * writers in Assignments and Desks, and no state reaches Assignments (doc 74). Allocation, delegation and run claims
+ * writers in Assignments and Desks, and no state reaches Assignments. Allocation, delegation and run claims
  * call those writers, so they stay allowed.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app and the domains.')]

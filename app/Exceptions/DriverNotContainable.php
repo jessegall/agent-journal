@@ -10,7 +10,7 @@ use RuntimeException;
 
 /**
  * A start of a driver the contained arrangement cannot keep from its sign-in, whatever the account's sign-in
- * method; nothing is created (doc 61, decision 8).
+ * method; nothing is created.
  */
 final class DriverNotContainable extends RuntimeException implements StartRefusal
 {

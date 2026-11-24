@@ -10,12 +10,14 @@ use App\Support\Delivery\StateEventBridge;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Fixtures\Modules\Notes\WritingNoteState;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RegistersNoteStates;
 use Tests\Support\SetsEventCachePath;
 use Tests\TestCase;
 
 final class StateEventRegistrationTest extends TestCase
 {
+    use RefreshHookDatabase;
     use RegistersNoteStates;
     use SetsEventCachePath;
 

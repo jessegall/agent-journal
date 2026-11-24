@@ -13,7 +13,7 @@ use App\Support\Run\RunStart;
 use Illuminate\Console\Command;
 
 /**
- * Runs an admitted command line on the host (doc 21 revision 6, section 53) through RunProcessPipeline: it
+ * Runs an admitted command line on the host through RunProcessPipeline: it
  * fetches the admission once, checks the plan against the admitted tree digest, runs the supervisor and reports
  * every event over the signed channel, then prints the report. A second start of the same admission runs nothing.
  */

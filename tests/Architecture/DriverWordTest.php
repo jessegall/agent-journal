@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Task 2196: Claude Code, Codex and the like are drivers, so no name or text calls one a program. Program keeps its
+ * Claude Code, Codex and the like are drivers, so no name or text calls one a program. Program keeps its
  * own meaning only where it is an operating-system executable: the command classifier (Processes and Shell), the
  * sharing gateways' binaries, a shell part's program and the sign-in executable.
  */
@@ -88,7 +88,7 @@ final class DriverWordTest extends TestCase
     }
 
     /**
-     * Whether the line names an App class whose file was in app/Processes before plan 62 moved it.
+     * Whether the line names an App class whose file was in app/Processes before the move to Laravel's layout.
      */
     private static function namesAProcessesClass(string $text): bool
     {

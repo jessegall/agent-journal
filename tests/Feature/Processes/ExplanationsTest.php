@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Data\ExplanationData;
+use App\Data\Processes\ExplanationData;
 use App\Enums\AnalysisLimit;
 use App\Enums\ShellDialect;
 use App\Support\Explanations;

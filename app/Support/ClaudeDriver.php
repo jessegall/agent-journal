@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\ClaudeAnswerData;
+use App\Data\Accounts\ClaudeAnswerData;
 use App\Values\ClaudeStatus;
 use Illuminate\Contracts\Config\Repository;
 use JsonException;

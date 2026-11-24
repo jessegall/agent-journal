@@ -18,7 +18,7 @@ use App\Support\Stored\StoredRuleScope;
 use App\Support\Stored\StoredVerificationContract;
 
 /**
- * One declared behaviour of a program (doc 21 revision 3, sections 9 and 27): which program and subcommands it
+ * One declared behaviour of a program: which program and subcommands it
  * covers, the words it accepts, the classes it emits, its purpose and output requirement, the executable it trusts,
  * and who owns it at which revision. A project rule may replace exactly one other rule revision.
  */

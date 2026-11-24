@@ -43,6 +43,7 @@ use App\Commands\MarkQuestionNotificationRead\MarkQuestionNotificationReadComman
 use App\Commands\MarkRunsStale\MarkRunsStaleCommand;
 use App\Commands\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
 use App\Commands\MergeReviewedWork\MergeReviewedWorkCommand;
+use App\Commands\OfferNextAsk\OfferNextAskCommand;
 use App\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
 use App\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Commands\ProposeReader\ProposeReaderCommand;
@@ -119,7 +120,7 @@ use App\Support\MiddlewareDeclaration;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 
 /**
- * Core's own commands (doc 19, phase 5): a module uses them without declaring Core, every one but Core's private
+ * Core's own commands: a module uses them without declaring Core, every one but Core's private
  * runtime commands is exported, and a scope owned by Core covers exactly them.
  */
 final class CoreCommandsTest extends CommandBusTestCase
@@ -155,6 +156,7 @@ final class CoreCommandsTest extends CommandBusTestCase
         $this->assertEqualsCanonicalizing([
             ClaimStartCommand::class,
             MergeReviewedWorkCommand::class,
+            OfferNextAskCommand::class,
             ReportRunningCommand::class,
             ReportStoppedCommand::class,
             RecordStopResultsCommand::class,

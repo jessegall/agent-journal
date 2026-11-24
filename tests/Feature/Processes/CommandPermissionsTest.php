@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 /**
  * Each role runs only what its permissions and ceiling allow; denies beat allows and revocations narrow the next
- * admission (doc 21 revision 6, sections 10 and 28; stories 49-53).
+ * admission.
  */
 final class CommandPermissionsTest extends TestCase
 {

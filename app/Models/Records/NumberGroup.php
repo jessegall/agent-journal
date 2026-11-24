@@ -16,8 +16,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The counter that numbers one type of record within one holder: the journal for task 12, a plan for its phase 2. It
- * stays after its holder is deleted, so a number is never handed out twice.
+ * The counter that numbers one type of record within one holder, such as task 12 in the journal and phase 2 in its
+ * plan. It stays after its holder is deleted, so a number is never handed out twice.
  *
  * @property string $id
  * @property string $holder_type

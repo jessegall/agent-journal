@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Text\ListTextSectionsCall;
 use App\Contracts\Reads\TextResolver;
 use App\Contracts\Records\RecordResolver;
-use App\Data\TextSections;
+use App\Data\Pages\TextSections;
 use App\Support\RecordReference;
 use App\Values\PageSize;
 

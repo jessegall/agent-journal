@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 /**
- * What may sit directly under app and under a package's src (doc 107, Architecture enforcement): Laravel's role
+ * What may sit directly under app and under a package's src: Laravel's role
  * folders and the named root files.
  */
 final readonly class LayoutRoots

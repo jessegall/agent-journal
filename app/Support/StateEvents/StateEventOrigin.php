@@ -29,6 +29,14 @@ final readonly class StateEventOrigin
         return $this->listenerResult->effects;
     }
 
+    /**
+     * The frame whose state answered the fact.
+     */
+    public function frameId(): string
+    {
+        return $this->listenerResult->frameId();
+    }
+
     public function logDrop(LoggerInterface $log, CommandOriginStatus $status): void
     {
         $log->info('State event commands dropped after rechecking the origin.', [

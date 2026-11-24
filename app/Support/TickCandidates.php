@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Work\ConditionalStateType;
 use App\Contracts\Work\TickableState;
 use App\Exceptions\StateSchemaUnknown;
 use App\Exceptions\TickableStateMissing;
 use App\Models\Agents\AgentStackRow;
-use App\Support\Decisions\StateReferences;
 use App\Support\References\WorkOccurrence;
 use App\Support\StateCatalog\Contracts\StateTypes;
-use App\Support\StateLoading\Contracts\StackStates;
+use App\Support\StateLoading\StateBuilder;
 use App\Support\States\AgentState;
 use App\Values\ScanProgress;
 use App\Values\TickBatch;
@@ -23,7 +21,7 @@ use PhpOption\Some;
 
 /**
  * Selects the ticking frames of a pass: open stacks that hold one, in stack and frame order from where the last pass
- * stopped, up to a limit, and restores only their ticking states, at most 100 references per type per read. Finished
+ * stopped, up to a limit, and builds only their ticking states from their saved values. Finished
  * frames and the frames of a switched-off type are skipped and stay stored. The scan progress lives as long as the
  * engine process.
  */
@@ -33,7 +31,7 @@ final class TickCandidates
 
     public function __construct(
         private readonly StateTypes $types,
-        private readonly StackStates $states,
+        private readonly StateBuilder $builder,
     ) {
         $this->progress = ScanProgress::start();
     }
@@ -131,71 +129,35 @@ final class TickCandidates
     }
 
     /**
-     * Restores the selected frames by type, in batches of at most 100 references, keeping stack and frame order.
+     * Builds the state of each selected frame from its saved values, keeping stack and frame order; a frame whose
+     * type is switched off or whose work is finished is no candidate.
      *
      * @param  list<SelectedFrame>  $selected
      * @return list<TickCandidate>
      */
     private function restore(array $selected): array
     {
-        $byType = [];
-
-        foreach ($selected as $index => $frame) {
-            $byType[$frame->record->reference->typeKey][$frame->row->id][] = $index;
-        }
-
         $candidates = [];
 
-        foreach ($byType as $typeKey => $indexesByStack) {
-            $type = $this->types->registry()->get($typeKey);
+        foreach ($selected as $frame) {
+            $type = $this->types->registry()->get($frame->typeKey());
 
-            if ($type instanceof ConditionalStateType && ! $type->isEnabled()) {
+            if (! $type->isEnabled()) {
                 continue;
             }
 
-            foreach ($this->batchesPerStack($indexesByStack) as $batch) {
-                $states = $this->states->of(
-                    $type,
-                    new StateReferences(array_map(fn (int $index) => $selected[$index]->record->reference, $batch)),
-                    $selected[$batch[0]]->row->target(),
-                );
+            if ($frame->record->schemaVersion !== $type->schemaVersion) {
+                throw StateSchemaUnknown::for($frame->record->description(), $type->schemaVersion);
+            }
 
-                foreach ($batch as $position => $index) {
-                    $frame = $selected[$index];
+            $state = $this->builder->build($type, $frame->record->values);
 
-                    if ($frame->record->schemaVersion !== $type->schemaVersion()) {
-                        throw StateSchemaUnknown::for($frame->record->description(), $type->schemaVersion());
-                    }
-
-                    $state = $states->stateOfClassAt($position, $type->stateClass());
-
-                    if (! $state->isFinished()) {
-                        $candidates[$index] = $this->candidate($frame, $state);
-                    }
-                }
+            if (! $state->isFinished()) {
+                $candidates[] = $this->candidate($frame, $state);
             }
         }
 
-        ksort($candidates);
-
-        return array_values($candidates);
-    }
-
-    /**
-     * One stack's frames of a type, in batches no larger than a read takes, since a state is read for its own stack.
-     *
-     * @param  array<string, list<int>>  $indexesByStack
-     * @return list<non-empty-list<int>>
-     */
-    private function batchesPerStack(array $indexesByStack): array
-    {
-        $batches = [];
-
-        foreach ($indexesByStack as $indexes) {
-            array_push($batches, ...array_chunk($indexes, StateReferences::MAXIMUM));
-        }
-
-        return $batches;
+        return $candidates;
     }
 
     private function candidate(SelectedFrame $frame, AgentState $state): TickCandidate

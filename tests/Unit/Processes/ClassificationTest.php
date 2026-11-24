@@ -20,7 +20,7 @@ use Tests\Support\Processes\ParsesBashLines;
 
 /**
  * A classification unions the facts of its parts and redirects, keeps where each came from, and stays unknown while
- * anything is unresolved (doc 21 revision 6, sections 6 and 26).
+ * anything is unresolved.
  */
 final class ClassificationTest extends TestCase
 {

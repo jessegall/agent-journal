@@ -7,7 +7,7 @@ namespace App\Support\Rules;
 use App\Values\CommandRule;
 
 /**
- * Core's built-in command rules, active from the start (doc 21 revision 6, section 6): readers, file tools, network
+ * Core's built-in command rules, active from the start: readers, file tools, network
  * tools, process control, package managers, tests and checks, builds and Git. Wrappers are declared apart, in
  * WrapperRules, because they run a child rather than act alone.
  */

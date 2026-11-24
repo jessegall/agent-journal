@@ -8,9 +8,13 @@ use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Events\StateTypesRequested;
 use App\Support\StateCatalog\Contracts\StateTypes as StateTypesContract;
 use App\Support\StateCatalog\StateTypeRegistry;
-use App\Support\StateLoading\Loaders\ReadyStateLoader;
+use App\Support\StateLoading\RegisteredStateType;
+use App\Support\States\AnsweringAskState;
+use App\Support\States\AnsweringMessageState;
+use App\Support\States\AwaitingSkillsState;
 use App\Support\States\ReadyState;
 use App\Support\Ticks\TickingTypes;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -19,11 +23,21 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final class StateTypes implements StateTypesContract
 {
+    /**
+     * Core's own states; every domain registers its own when the registry is built.
+     */
+    private const array CORE_STATES = [
+        ReadyState::class,
+        AnsweringAskState::class,
+        AnsweringMessageState::class,
+        AwaitingSkillsState::class,
+    ];
+
     private StateTypeRegistry|null $registry = null;
 
     public function __construct(
         private readonly Dispatcher $events,
-        private ReadyStateLoader $readyStates,
+        private readonly Container $container,
     ) {}
 
     public function registrationSnapshot(): StateTypeRegistry
@@ -41,7 +55,7 @@ final class StateTypes implements StateTypesContract
      */
     public function occurrenceGuardOf(string $typeKey): WorkOccurrenceGuard
     {
-        return $this->registry()->tickingType($typeKey)->occurrenceGuard();
+        return $this->container->make($this->registry()->get($typeKey)->tickGuard());
     }
 
     public function ticking(): TickingTypes
@@ -53,7 +67,9 @@ final class StateTypes implements StateTypesContract
     {
         $registry = new StateTypeRegistry();
 
-        $registry->register(ReadyState::TYPE_KEY, $this->readyStates);
+        foreach (self::CORE_STATES as $stateClass) {
+            $registry->register(RegisteredStateType::of($stateClass));
+        }
 
         $this->events->dispatch(new StateTypesRequested($registry));
         $registry->freeze();

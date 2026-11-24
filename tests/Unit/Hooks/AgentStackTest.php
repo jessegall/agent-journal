@@ -9,7 +9,6 @@ use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\AccessRuleType;
 use App\Enums\AnswerType;
 use App\Enums\NoSubject;
-use App\Enums\PublicationState;
 use App\Exceptions\BottomStateCannotFinish;
 use App\Exceptions\HookAnswerRefused;
 use App\Exceptions\InvalidHookAnswer;
@@ -26,28 +25,29 @@ use App\Support\Stack\AgentStack;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\HookAnswer;
 use App\Support\States\AgentState;
-use App\Support\States\AnsweringMessageState;
 use App\Support\States\AwaitingSkillsState;
 use App\Support\States\ReadyState;
 use App\Support\Storage\WalkStep;
 use App\Values\AccessDecision;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Domain\Sequences\Enums\SequenceRunState;
-use Domain\Sequences\Support\SequenceWork;
 use Domain\Sequences\Support\States\FollowingSequenceState;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Support\States\WorkingOnTaskState;
-use Domain\Tasks\Support\TaskWork;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 use Tests\Fixtures\Hooks\AllowedStops;
+use Tests\Fixtures\Hooks\AnsweringStates;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
+use Tests\Fixtures\Hooks\InMemoryTasks;
+use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Fixtures\Hooks\ShellAnswerState;
+use Tests\Fixtures\Hooks\Stacks\FinishableState;
+use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
+use Tests\Fixtures\Hooks\Stacks\SingleState;
 use Tests\Fixtures\Hooks\StopAnswerState;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\TestActors;
@@ -87,7 +87,9 @@ final class AgentStackTest extends TestCase
     {
         $factory = new InMemoryStateFactory([
             'sequences.following' => fn () => new FollowingSequenceState(
-                new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running),
+                'run-8',
+                8,
+                ['Run the phase tests.'],
             ),
         ]);
         $stack = new AgentStack([
@@ -95,7 +97,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.working', '42'),
-                new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started)),
+                new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started])),
                 CarbonImmutable::now(),
             ),
         ], $factory, new StackTarget('agent-1', 'session-1'));
@@ -132,7 +134,7 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame(['guide delegate', 'ready deny'], $this->stepsOf($file));
 
-        $pending = $this->frame('skills', new AwaitingSkillsState(PublicationState::Pending));
+        $pending = $this->frame('skills', new AwaitingSkillsState('publication-1'));
         $guarded = $this->stack($this->ready(), $pending, $passing);
 
         $this->assertSame(['guide delegate', 'skills deny'], $this->stepsOf($guarded->answer(HookInputs::all()['shell command'])));
@@ -161,10 +163,9 @@ final class AgentStackTest extends TestCase
 
     public function test_hidden_message_and_sequence_guards_add_no_context_of_their_own_during_the_walk(): void
     {
-        $work = new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
         $stack = $this->stack(
             $this->ready(),
-            $this->frame('sequence', new FollowingSequenceState($work)),
+            $this->frame('sequence', new FollowingSequenceState('run-8', 8, ['Run the phase tests.'])),
             $this->answeringFrame(true),
             $this->frame('guide', ScriptedState::passing()),
         );
@@ -365,13 +366,33 @@ final class AgentStackTest extends TestCase
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
     }
 
-    public function test_a_push_replaces_a_finished_frame_for_the_same_reference_with_a_new_one_on_top(): void
+    public function test_a_state_reused_per_type_keeps_one_frame_and_one_reused_per_subject_keeps_one_per_subject(): void
     {
-        $factory = new InMemoryStateFactory(['guide' => fn () => ScriptedState::passing()]);
+        $factory = new InMemoryStateFactory([
+            'single' => fn () => new SingleState(),
+            'guide' => fn () => new FinishableState('guide', new FinishedSubjects()),
+        ]);
+        $stack = new AgentStack([$this->ready()], $factory, new StackTarget('agent-1', 'session-1'));
+
+        $pushed = $stack
+            ->withStateOnTop($this->reference('single', 'first'))
+            ->withStateOnTop($this->reference('single', 'second'))
+            ->withStateOnTop($this->reference('guide', 'first'))
+            ->withStateOnTop($this->reference('guide', 'second'))
+            ->withStateOnTop($this->reference('guide', 'first'));
+
+        $this->assertSame(['ready', 'pushed-1', 'pushed-2', 'pushed-3'], $pushed->frameIds());
+    }
+
+    public function test_a_push_of_a_reused_state_replaces_its_finished_frame_with_a_new_one_on_top(): void
+    {
+        $done = new FinishedSubjects();
+        $done->finished = ['guide'];
+        $factory = new InMemoryStateFactory(['guide' => fn () => new FinishableState('guide', new FinishedSubjects())]);
         $finished = new Frame(
             'guide-1',
             $this->reference('guide'),
-            new ScriptedState(Decision::delegate(), finished: true),
+            new FinishableState('guide', $done),
             CarbonImmutable::now(),
         );
         $stack = new AgentStack(
@@ -458,7 +479,7 @@ final class AgentStackTest extends TestCase
 
     public function test_the_shown_instruction_is_the_top_live_state_that_has_one(): void
     {
-        $task = new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started));
+        $task = new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started]));
         $stack = $this->stack(
             $this->ready(),
             $this->answeringFrame(true),
@@ -478,7 +499,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.working', '42'),
-                new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started)),
+                new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started])),
                 CarbonImmutable::now(),
             ),
             $this->frame('review', $switchedOff),
@@ -496,7 +517,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.working', '42'),
-                new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started)),
+                new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started])),
                 CarbonImmutable::now(),
             ),
             $this->frame('notes', new SwitchableState(true)),
@@ -513,7 +534,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.working', '42'),
-                new WorkingOnTaskState(new TaskWork(42, 1, $taskState)),
+                new InMemoryTaskState(42, 1, new InMemoryTasks([42 => $taskState])),
                 CarbonImmutable::now(),
             ),
             $this->answeringFrame($messageWaits),
@@ -576,7 +597,7 @@ final class AgentStackTest extends TestCase
         return new Frame(
             'message-95',
             $reference,
-            new AnsweringMessageState('95', $messageWaits),
+            $messageWaits ? AnsweringStates::holding('95') : AnsweringStates::answered(),
             CarbonImmutable::now(),
         );
     }

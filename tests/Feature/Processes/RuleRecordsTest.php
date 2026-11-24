@@ -36,7 +36,7 @@ use Tests\TestCase;
 
 /**
  * Proposals, their revisions, approved rule revisions and the active rule pointer are versioned project records
- * (doc 21 revision 6, sections 51, 55 and 72; stories 80, 84, 86-88, 95, 96, 180 and 186).
+ *.
  */
 final class RuleRecordsTest extends TestCase
 {

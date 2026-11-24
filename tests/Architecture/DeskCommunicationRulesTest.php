@@ -163,7 +163,7 @@ final class DeskCommunicationRulesTest extends TestCase
         $root = dirname(__DIR__, 2);
         $files = [];
 
-        // The desk and communication files by the folders they had before plan 62 moved them to their roles.
+        // The desk and communication files by the folders they had before the move to Laravel's layout.
         foreach (FormerPaths::filesFrom(self::FOLDERS) as $path) {
             $files[$path] = (string) file_get_contents("{$root}/{$path}");
         }

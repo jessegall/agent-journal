@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Calls\Scripts\ShowProfileRunCall;
-use App\Data\ProfileRunData;
+use App\Data\Profiles\ProfileRunData;
 use App\Models\Profiles\ProfileRun;
 
 /**

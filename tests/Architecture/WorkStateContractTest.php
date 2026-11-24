@@ -6,14 +6,14 @@ namespace Tests\Architecture;
 
 use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
-use App\Support\StateLoading\Contracts\StateLoader;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\States\AgentState;
 use Tests\Fixtures\Hooks\WorkStates\GatesToolsOnly;
 use Tests\Fixtures\Hooks\WorkStates\SilentWork;
 use Tests\TestCase;
 
 /**
- * Every registered state that names a work record also tells the agent what to do with it (doc 74, story 54); a
+ * Every registered state that names a work record also tells the agent what to do with it; a
  * passive state that only gates names neither. Reflection proves the answer is declared; its text is caught by each
  * state's own tests.
  */
@@ -22,8 +22,8 @@ final class WorkStateContractTest extends TestCase
     public function test_every_registered_work_state_answers_its_instruction(): void
     {
         $classes = array_map(
-            fn (StateLoader $loader) => $loader->stateClass(),
-            $this->app->make(StateTypes::class)->registry()->loaders(),
+            fn (RegisteredStateType $type) => $type->stateClass,
+            $this->app->make(StateTypes::class)->registry()->types(),
         );
 
         $this->assertSame([], array_values(array_filter(array_values($classes), self::isSilent(...))));

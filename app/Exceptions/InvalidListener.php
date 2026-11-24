@@ -92,7 +92,7 @@ final class InvalidListener extends DomainDeclarationError
     {
         return new self(
             "{$listener} of {$owner} cannot run in the transaction of {$event}, whose write another owner holds; "
-            .'the event must name it with #[RequiresTransactionListener].',
+            .'the event or the group it listens through must carry #[TransactionListenerConsent].',
         );
     }
 

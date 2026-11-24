@@ -9,7 +9,7 @@ use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
 /**
- * What a known, completely read command line runs, lowered from its syntax tree (doc 21 revision 6, section 53): the
+ * What a known, completely read command line runs, lowered from its syntax tree: the
  * root step and the digest of the tree it came from. Every node is planned before the first side effect, and no step
  * holds a reassembled shell string.
  */

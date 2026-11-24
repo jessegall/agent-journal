@@ -33,7 +33,7 @@ func containedStart() host.PreparedStart {
 	}
 }
 
-// User message 19542: a terminal session started as haiku ran the account's default model, because the terminal
+// A terminal session started as haiku ran the account's default model, because the terminal
 // start named no model. Every terminal start names the model the journal asked for, new and resumed alike.
 func TestAContainedTerminalStartRunsOnTheModelTheJournalAskedFor(t *testing.T) {
 	asked := "haiku"

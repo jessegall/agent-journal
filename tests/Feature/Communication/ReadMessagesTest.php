@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Data\MessageReadBatch;
+use App\Data\Messages\MessageReadBatch;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\MessageMissing;
 use App\Models\Messages\Message;
@@ -13,7 +13,7 @@ use App\Support\ProvedClaims;
 use Tests\Support\MessagingTestCase;
 
 /**
- * A member reads messages in its inbox: the first read marks it read, and a question it reads is taken up by it, so
+ * A member reads messages in its inbox: the first read marks it read, and a question it reads is claimed by it, so
  * its claim stands; reading again changes nothing, and an inbox it is not seated at refuses.
  */
 final class ReadMessagesTest extends MessagingTestCase
@@ -68,7 +68,7 @@ final class ReadMessagesTest extends MessagingTestCase
     private function rows(MessageReadBatch $batch): array
     {
         return array_map(
-            fn ($read) => [$read->messageId, $read->firstRead, $read->takenUp],
+            fn ($read) => [$read->messageId, $read->firstRead, $read->claimed],
             $batch->messageReads,
         );
     }

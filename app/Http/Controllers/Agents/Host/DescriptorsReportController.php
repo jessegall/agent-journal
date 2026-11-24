@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\RecordHostDescriptors\RecordHostDescriptorsCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Data\HostDescriptorsData;
+use App\Data\Hosts\HostDescriptorsData;
 use App\Values\HostContext;
 use Illuminate\Http\Response;
 

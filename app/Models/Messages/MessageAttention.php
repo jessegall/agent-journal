@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Data\WakeStatus;
+use App\Data\Messages\WakeStatus;
 use App\Enums\WakeState;
 use App\Support\ActorIdentity;
 use App\Support\AttentionOrigin;

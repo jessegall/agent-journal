@@ -14,7 +14,7 @@ use Laravel\Mcp\Server\Attributes\Name;
 
 #[VisibleToProfiles]
 #[Name('inbox_counts')]
-#[Description('Count what is unread in an inbox and how many questions wait, taken up or not.')]
+#[Description('Count what is unread in an inbox and how many questions wait, claimed or not.')]
 final class InboxCountsTool extends JournalReadTool
 {
     public function __construct(private readonly ConversationResolver $conversations) {}

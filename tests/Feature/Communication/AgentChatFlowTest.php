@@ -33,7 +33,7 @@ final class AgentChatFlowTest extends MessagingTestCase
         $this->chat = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
     }
 
-    // User message 19690: an answer confirms what the agent was shown, so nothing is left to confirm after it.
+    // An answer confirms what the agent was shown, so nothing is left to confirm after it.
     public function test_the_agent_claims_and_answers_and_has_no_pending_work_left(): void
     {
         $this->asOwner();

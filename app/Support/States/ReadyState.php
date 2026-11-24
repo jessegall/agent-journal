@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\States;
 
+use App\Attributes\StateType;
 use App\Contracts\Authorization\OperationPolicy;
+use App\Enums\FrameReuse;
+use App\Enums\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Inputs\ContextCompacted;
@@ -25,6 +28,7 @@ use App\Values\Operation;
  * refused operation is refused whole; a shell line is left to Core's admission, which judges every part of it. A stop
  * waits on the stop conditions the session was started under.
  */
+#[StateType(self::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
 class ReadyState extends AgentState
 {
     public const string TYPE_KEY = 'hooks.ready';
@@ -33,6 +37,13 @@ class ReadyState extends AgentState
         private readonly OperationPolicy $policy,
         private readonly StopConditionGate $stops,
     ) {}
+
+    public function frameReuse(): FrameReuse
+    {
+        return FrameReuse::PerType;
+    }
+
+    // ----------[ Hooks ]----------
 
     public function onSessionStart(SessionStarted $input): Decision
     {
@@ -49,14 +60,14 @@ class ReadyState extends AgentState
         return Decision::delegate();
     }
 
-    public function onFileEdit(FileEditRequested $input): Decision
-    {
-        return $this->decide($input->changes->operations());
-    }
-
     public function onToolRequested(ToolRequested $input): Decision
     {
         return $this->decide([$input->operation]);
+    }
+
+    public function onFileEdit(FileEditRequested $input): Decision
+    {
+        return $this->decide($input->changes->operations());
     }
 
     public function onStop(StopRequested $input): Decision|MessageLine
@@ -78,6 +89,8 @@ class ReadyState extends AgentState
     {
         return Decision::delegate();
     }
+
+    // ----------[ Internals ]----------
 
     /**
      * Passes the call when the policy grants every operation of it, else refuses it with the first refusal's reason.

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Contracts\Events;
 
-use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 
 /**
@@ -19,8 +18,7 @@ interface HelperRecordFacts
     public function sent(RecordIdentity $subject, string $agentId): void;
 
     /**
-     * The helper the parent sent on the record reported back; the parent's running stack hears it, and a parent with
-     * no running session hears nothing.
+     * The helper sent on the record reported back; every running stack with a state listening for it hears it.
      */
-    public function reported(ActorIdentity $parent, RecordIdentity $subject, string $agentId): void;
+    public function reported(RecordIdentity $subject, string $agentId): void;
 }

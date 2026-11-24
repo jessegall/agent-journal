@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Calls\Scripts\ShowProfileDraftCall;
-use App\Data\ProfileDraftData;
+use App\Data\Profiles\ProfileDraftData;
 use App\Support\Readers\ProfileDraftReader;
 
 /**

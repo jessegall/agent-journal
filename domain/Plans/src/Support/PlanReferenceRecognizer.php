@@ -7,7 +7,7 @@ namespace Domain\Plans\Support;
 use App\Support\NumberedReferenceRecognizer;
 
 /**
- * Recognizes a whole input that is a plan reference, plan 57, in any case.
+ * Recognizes a whole input that is a plan reference, such as plan 57, in any case.
  */
 final readonly class PlanReferenceRecognizer extends NumberedReferenceRecognizer
 {

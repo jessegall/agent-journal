@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Data\ScreenFrameData;
+use App\Data\Terminals\ScreenFrameData;
 use App\Enums\ScreenBuffer;
 use App\Support\RuntimeScreen;
 use App\Support\ScreenRegistration;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Docking;
 
 use App\Contracts\Records\RecordResolver;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Models\Messages\Message;
 use App\Support\ActorContext;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Navigation\TerminalViewCloser;
-use App\Data\TerminalFrameData;
-use App\Data\TerminalInterestData;
-use App\Data\TerminalScreenIdentityData;
+use App\Data\Terminals\TerminalFrameData;
+use App\Data\Terminals\TerminalInterestData;
+use App\Data\Terminals\TerminalScreenIdentityData;
 use App\Enums\TerminalFrameState;
 use App\Exceptions\TerminalViewRefused;
 use App\Models\Agents\AgentRuntime;

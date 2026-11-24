@@ -21,16 +21,18 @@ abstract class StateReferenceFactory
     public const string TYPE_KEY = '';
 
     /**
-     * The reference of this class's state type about the subject.
+     * The reference of this class's state type about the subject, with the state's first values by the name of its data.
+     *
+     * @param  array<string, mixed>  $values
      *
      * @throws StateTypeMissing when the class names no type
      */
-    protected static function about(SubjectReference|NoSubject $subject): StateReference
+    protected static function about(SubjectReference|NoSubject $subject, array $values = []): StateReference
     {
         if (static::TYPE_KEY === '') {
             throw StateTypeMissing::forClass(static::class);
         }
 
-        return new StateReference(static::TYPE_KEY, $subject);
+        return new StateReference(static::TYPE_KEY, $subject, $values);
     }
 }

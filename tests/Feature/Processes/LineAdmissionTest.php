@@ -21,7 +21,7 @@ use Tests\TestCase;
 
 /**
  * One admission decides a whole shell line before anything starts: known, permitted, timed and, for a check, backed by
- * an approved proven reader; unknown work is held in a command request (doc 21 revision 6, sections 10, 26 and 71).
+ * an approved proven reader; unknown work is held in a command request.
  */
 final class LineAdmissionTest extends TestCase
 {

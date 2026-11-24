@@ -7,28 +7,28 @@ namespace App\Pages;
 use App\Contracts\Drivers\NativePartProvider;
 use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Records\TypeProvider;
-use App\Data\BundleListPartData;
-use App\Data\BundleRowData;
-use App\Data\ClassificationRuleRowData;
-use App\Data\ClassificationSummaryData;
-use App\Data\DeclarationData;
-use App\Data\ExplainedNodeData;
-use App\Data\ExplanationData;
-use App\Data\HeldPartData;
-use App\Data\PartOutputData;
-use App\Data\PartSnapshotData;
-use App\Data\PartSummaryData;
-use App\Data\ProblemData;
-use App\Data\ProposalData;
-use App\Data\ReaderProofData;
-use App\Data\RequestRowData;
-use App\Data\RequestWindowData;
-use App\Data\RunOutcomePageData;
-use App\Data\RunOutcomeSummaryData;
-use App\Data\RunRowData;
-use App\Data\RunSnapshotData;
-use App\Data\RunWindowData;
-use App\Data\SampleData;
+use App\Data\Pages\DeclarationData;
+use App\Data\Pages\RequestWindowData;
+use App\Data\Processes\BundleListPartData;
+use App\Data\Processes\BundleRowData;
+use App\Data\Processes\ClassificationRuleRowData;
+use App\Data\Processes\ClassificationSummaryData;
+use App\Data\Processes\ExplainedNodeData;
+use App\Data\Processes\ExplanationData;
+use App\Data\Processes\HeldPartData;
+use App\Data\Processes\PartOutputData;
+use App\Data\Processes\PartSnapshotData;
+use App\Data\Processes\PartSummaryData;
+use App\Data\Processes\ProblemData;
+use App\Data\Processes\ReaderProofData;
+use App\Data\Processes\RequestRowData;
+use App\Data\Processes\RunOutcomePageData;
+use App\Data\Processes\RunOutcomeSummaryData;
+use App\Data\Processes\RunRowData;
+use App\Data\Processes\RunSnapshotData;
+use App\Data\Processes\RunWindowData;
+use App\Data\Processes\SampleData;
+use App\Data\Profiles\ProposalData;
 use App\Declarations\ActionRoute;
 use App\Declarations\DomainUi;
 use App\Declarations\Page;
@@ -100,7 +100,7 @@ use App\Resolvers\RunOutcomeWindowResolver;
 use App\Resolvers\RunWindowResolver;
 
 /**
- * The project owner's review of command classification (doc 21 revision 6, sections 51 and 71): the requests by
+ * The project owner's review of command classification: the requests by
  * state, the active and retired rules and the module bundles waiting, and one request with everything its approval
  * binds.
  */

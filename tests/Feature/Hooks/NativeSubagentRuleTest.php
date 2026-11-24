@@ -24,7 +24,7 @@ use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * Rule 36: a driver's own subagents never run. Every driver's start settings deny its native child tools, and the
+ * A driver's own subagents never run. Every driver's start settings deny its native child tools, and the
  * hook endpoint refuses a call to one of them, or a call from inside a native child, before it touches a session.
  */
 final class NativeSubagentRuleTest extends TestCase

@@ -109,7 +109,7 @@ type ProtectedAccountFiles interface {
 }
 
 // DriverProfile is how the host starts one pinned build of one agent driver with its native subagents off
-// (rule 36). Both programs implement it; nothing above it checks which program it has.
+//. Both programs implement it; nothing above it checks which program it has.
 type DriverProfile interface {
 	// Driver names the agent driver, such as claude or codex.
 	Driver() string

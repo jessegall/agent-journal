@@ -22,7 +22,7 @@ use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 
 /**
- * A helper job ends only on what Core says about its helper's stop (task 415): a certified stop finishes it with the
+ * A helper job ends only on what Core says about its helper's stop: a certified stop finishes it with the
  * evidence, a held stop holds it for repair (heard by the job's listener alone; Core also opens a stuck ask), a
  * cancelled launch cancels it, and a job that already ended or other work is left alone.
  */

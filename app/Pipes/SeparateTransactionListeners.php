@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Attributes\InCommandTransaction;
-use App\Attributes\RequiresTransactionListener;
+use App\Attributes\TransactionListenerConsent;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\InvalidListener;
 use App\Support\ListenerDeclarations;
@@ -14,11 +14,12 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Str;
 
 /**
  * Takes the listeners marked InCommandTransaction out of the dispatcher's map into the transaction map, each event's in
  * the order of their full names, and refuses a transaction listener that defers its work, is registered twice, or
- * belongs to a domain other than the event's owner without the owner's RequiresTransactionListener declaration.
+ * belongs to a domain other than the event's owner unless the type it listens through carries the owner's consent.
  */
 final readonly class SeparateTransactionListeners implements Pipe
 {
@@ -108,28 +109,27 @@ final readonly class SeparateTransactionListeners implements Pipe
 
         $isForeignUndeclared = $owner !== null
             && $owner !== $eventOwner
-            && ! self::isDeclaredBy($event, $class->name());
+            && ! self::listensWithConsent($event, $class, $listener);
 
         if ($isForeignUndeclared) {
             throw InvalidListener::inTransactionWithoutDeclaration($listener, $event, $owner->name);
         }
     }
 
-    private static function isDeclaredBy(string $event, string $listener): bool
+    /**
+     * Whether the listener is typed on the event, or on a group of it, whose owner consents to transaction listeners.
+     *
+     * @param  Reflector<object>  $class
+     */
+    private static function listensWithConsent(string $event, Reflector $class, string $listener): bool
     {
-        $eventType = Reflector::find($event)->filter(fn (Reflector $type) => $type->isClass());
+        $method = Str::after($listener, '@');
+        $type = $class->method($method === $listener ? 'handle' : $method)->firstParameterClass()->getOrElse('');
 
-        if ($eventType->isEmpty()) {
-            return false;
-        }
-
-        foreach ($eventType->get()->attributes(RequiresTransactionListener::class) as $declaration) {
-            if ($declaration->listener === $listener) {
-                return true;
-            }
-        }
-
-        return false;
+        return Reflector::exists($type)
+            && Reflector::exists($event)
+            && in_array($type, Reflector::of($event)->typeNames(), true)
+            && Reflector::of($type)->hasAttribute(TransactionListenerConsent::class);
     }
 
     /**

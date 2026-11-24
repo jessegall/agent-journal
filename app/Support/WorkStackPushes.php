@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Events\Event;
 use App\Contracts\Work\AgentStack;
 use App\Contracts\Work\CurrentState;
 use App\Contracts\Work\WorkStacks;
@@ -43,24 +42,10 @@ final readonly class WorkStackPushes implements ActorWorkStacks
         }
     }
 
-    public function tellFor(ActorIdentity $actor, Event $fact): void
-    {
-        foreach ($this->stackTargetsOf($actor) as $target) {
-            $this->addressed->tell($target, $fact);
-        }
-    }
-
     public function offerFor(ActorIdentity $actor, StateReference $state): void
     {
         $rows = AgentStackRow::lockActiveOf($actor, $this->workStacks->sessionsOf($actor));
         $this->addressed->offer($rows, $state);
-    }
-
-    public function pruneCurrent(): void
-    {
-        foreach ($this->targets() as $target) {
-            $this->addressed->prune($target);
-        }
     }
 
     public function current(string $typeKey): Option

@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 /*
- * The bounded analysis worker of the full-corpus qualification (doc 21 revision 3, section 35): reads one JSON object
+ * The bounded analysis worker of the full-corpus qualification: reads one JSON object
  * per line on standard input, {"id", "source", "dialect"}, parses each source with version 6's shell syntax, and
  * writes one JSON object per line: the opaque id, the outcome, the byte span of every command and, for a complete
- * line, its classification summary with no saved aliases (doc 21 revision 6, section 38). It reads no database and
+ * line, its classification summary with no saved aliases. It reads no database and
  * executes nothing.
  *
  *   php tools/processes/analyse-shell-lines.php < input.jsonl > results.jsonl

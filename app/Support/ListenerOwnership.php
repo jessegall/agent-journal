@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Events\Event;
-use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\InvalidListener;
-use App\Support\Sources\Contracts\DockSourceChanged;
-use App\Support\Sources\Contracts\DockSourceDeleted;
 use Illuminate\Support\Str;
 use PhpOption\Option;
 
@@ -18,16 +15,6 @@ use PhpOption\Option;
  */
 final readonly class ListenerOwnership
 {
-    /**
-     * The interfaces a listener may be typed on in place of a concrete event: the facts that update the UI, and the
-     * facts that change or delete a dockable source.
-     */
-    public const array EXPANDED_INTERFACES = [
-        UserInterfaceUpdater::class,
-        DockSourceChanged::class,
-        DockSourceDeleted::class,
-    ];
-
     public const string CORE = 'Core';
 
     /**
@@ -49,10 +36,12 @@ final readonly class ListenerOwnership
     ): void {
         $owner = $this->eventDomain($event, $listener);
 
-        if ($owner === null) {
-            $isCoreListener = $domain === null;
+        if ($domain === $owner || $this->listensThroughOpenGroup($event, $listener, $method, $domain)) {
+            return;
+        }
 
-            if (! $isCoreListener && ! $this->coreExports->hasEvent($event)) {
+        if ($owner === null) {
+            if (! $this->coreExports->hasEvent($event)) {
                 throw InvalidListener::privateEvent($listener, $method, $event, self::CORE);
             }
 
@@ -60,26 +49,7 @@ final readonly class ListenerOwnership
         }
 
         if ($domain === null) {
-            $isExpanded = array_filter(
-                self::EXPANDED_INTERFACES,
-                fn (string $interface) => $this->reflectors->isSubclassOf($event, $interface),
-            ) !== [];
-
-            $isExportedUiEvent = $owner->exportsEvent($event) && $isExpanded;
-
-            if (! $isExportedUiEvent) {
-                throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);
-            }
-
-            return;
-        }
-
-        if ($domain === $owner) {
-            return;
-        }
-
-        if ($owner->exportsEvent($event) && self::listensThroughCoreContract($event, $listener, $method)) {
-            return;
+            throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);
         }
 
         if (! $domain->requiresDomain($owner)) {
@@ -174,6 +144,50 @@ final readonly class ListenerOwnership
     }
 
     /**
+     * Whether the type names a group of events, a base class or an interface an event implements, rather than one event.
+     *
+     * @param  class-string  $type
+     */
+    public static function isGroup(string $type): bool
+    {
+        $reflected = Reflector::of($type);
+
+        return $type !== Event::class && ($reflected->isAbstract() || $reflected->isInterface());
+    }
+
+    /**
+     * The events of a group: every event class of Core and of the domains that extends or implements it.
+     *
+     * @param  class-string  $group
+     * @return list<class-string<Event>>
+     */
+    public function eventsOf(string $group): array
+    {
+        return array_values(array_filter(
+            $this->eventClasses(),
+            fn (string $event) => in_array($group, Reflector::of($event)->typeNames(), true),
+        ));
+    }
+
+    /**
+     * Every event class that Core's and each domain's Events folder holds.
+     *
+     * @return list<class-string<Event>>
+     */
+    public function eventClasses(): array
+    {
+        $folders = [
+            "{$this->corePath}/Events",
+            ...array_map(fn (DomainEntry $entry) => "{$entry->folder}/Events", $this->registry->all()),
+        ];
+
+        return array_merge([], ...array_map(
+            fn (string $folder) => FolderClasses::in($folder, Event::class),
+            $folders,
+        ));
+    }
+
+    /**
      * @return list<class-string<Event>>
      */
     public function exportedEvents(): array
@@ -188,25 +202,34 @@ final readonly class ListenerOwnership
     }
 
     /**
-     * Whether the listener takes a Core contract the event implements, so it hears every domain's exported fact of
-     * that kind without requiring the domain.
+     * Whether the listener takes a group the event belongs to and may hear: a group of Core, of its own domain or one
+     * its domain exports. An event joins a group by implementing it, so the group's listeners hear it unexported.
      */
-    private static function listensThroughCoreContract(string $event, string $listener, string $method): bool
-    {
+    private function listensThroughOpenGroup(
+        string $event,
+        string $listener,
+        string $method,
+        DomainEntry|null $domain,
+    ): bool {
         $listenerClass = Str::before($listener, '@');
 
         if (! Reflector::exists($listenerClass)) {
             return false;
         }
 
-        $parameters = Reflector::of($listenerClass)->method($method)->parameters();
+        $handler = $this->reflectors->make($listenerClass)->method($method);
+        $group = $handler->firstParameterClass()->getOrElse('');
 
-        $type = $parameters === [] ? '' : $parameters[0]->type()
-            ->filter(fn (DeclaredType $declared) => $declared->isNamed())
-            ->map(fn (DeclaredType $declared) => $declared->name())
-            ->getOrElse('');
+        if (! Reflector::exists($group) || ! self::isGroup($group)) {
+            return false;
+        }
 
-        return in_array($type, self::EXPANDED_INTERFACES, true)
-            && Reflector::factory()->isSubclassOf($event, $type);
+        if (! Reflector::exists($event) || ! in_array($group, $this->reflectors->make($event)->typeNames(), true)) {
+            return false;
+        }
+
+        $groupOwner = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->ownsName($group));
+
+        return $groupOwner === null || $groupOwner === $domain || $groupOwner->exportsName($group);
     }
 }

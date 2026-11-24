@@ -9,7 +9,7 @@ use App\Exceptions\FolderOutsideProject;
 use Illuminate\Contracts\Config\Repository;
 
 /**
- * The key of the project a request serves (plan 14, decision D3): the project of the connected folder the request
+ * The key of the project a request serves: the project of the connected folder the request
  * came from, once the request named one, else the project this installation serves, from configuration. It lives for
  * one request (Octane), never longer, and is never taken from what a client sends.
  */

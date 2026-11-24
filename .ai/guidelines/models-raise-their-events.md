@@ -12,8 +12,8 @@ A model method changes only its own row, and the fact of that change is raised b
   carrying the command's operation or reason, is staged with `App\Contracts\Bus\CommandFacts::publishAfterCommit`.
 - A listener whose writes must commit or roll back with the command is marked
   `#[App\Attributes\InCommandTransaction]`; it runs inside the transaction. Every other listener hears the
-  fact after the real commit. A domain's listener on another domain's fact is admitted only when the fact's owner
-  names it with `#[RequiresTransactionListener]`.
+  fact after the real commit. A domain's in-transaction listener on another domain's fact is admitted only when the
+  event, or the group it listens through, carries the owner's `#[TransactionListenerConsent]`.
 - Requests (an event a listener answers at once, such as `StateTypesRequested`) stay synchronous; projections (such as
   `AccountsChanged` and `PlanProgressChanged`) are public listeners that derive their event from committed facts.
 

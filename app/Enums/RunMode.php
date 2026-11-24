@@ -6,7 +6,7 @@ namespace App\Enums;
 
 /**
  * Whether a run's result may answer the agent (Normal) or only proves a reader or contract and never gets a result
- * receipt (Evidence, plan 14 decision D16).
+ * receipt.
  */
 enum RunMode: string
 {

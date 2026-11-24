@@ -43,7 +43,6 @@ final readonly class ReplyToAskHandler implements CommandHandler
         $this->attention->retainReply($ask, $hop, $body);
         $this->assignments->releaseForJournal($ask->assignmentIdentity());
         $ask->close();
-        $this->attention->finishAnswering($hop->actor());
 
         return $command->ask;
     }

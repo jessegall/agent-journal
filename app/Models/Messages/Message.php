@@ -15,7 +15,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sessions\CurrentSession;
-use App\Data\MessageReader;
+use App\Data\Messages\MessageReader;
 use App\Enums\ActorType;
 use App\Enums\AgentInboxState;
 use App\Enums\DismissalType;
@@ -571,7 +571,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function waitingForTakeUp(Builder $query, string $inboxId, int $limit): void
+    protected function waitingForClaim(Builder $query, string $inboxId, int $limit): void
     {
         $query->where('destination_inbox_id', $inboxId)
             ->where('state', MessageState::WaitingForAnswer)

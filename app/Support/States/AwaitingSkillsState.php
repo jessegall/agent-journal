@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support\States;
 
+use App\Attributes\StateType;
+use App\Enums\FrameReuse;
 use App\Enums\PublicationState;
+use App\Enums\SessionTransferType;
+use App\Events\SkillPublicationMoved;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
+use App\Support\States\Support\AwaitingSkillsStateReference;
 use App\Values\RecoveryCall;
 use App\Values\StackVerdict;
 use PhpOption\Option;
@@ -17,11 +22,17 @@ use PhpOption\Some;
  * A session whose new skill set is not delivered yet: it may read, including skill:status and skill:show, but changes
  * no file until the set is delivered. It ends by itself once the publication settles.
  */
+#[StateType(AwaitingSkillsStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
 final class AwaitingSkillsState extends AgentState
 {
-    public function __construct(
-        private readonly PublicationState $publication,
-    ) {}
+    private PublicationState $publication = PublicationState::Pending;
+
+    public function __construct(private readonly string $publicationId) {}
+
+    public function frameReuse(): FrameReuse
+    {
+        return FrameReuse::PerType;
+    }
 
     public function isFinished(): bool
     {
@@ -32,6 +43,16 @@ final class AwaitingSkillsState extends AgentState
     {
         return StackVerdict::refuse($this->reason(), new RecoveryCall('overview_read'));
     }
+
+    /**
+     * @return Option<string>
+     */
+    public function instruction(): Option
+    {
+        return new Some($this->reason());
+    }
+
+    // ----------[ Hooks ]----------
 
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
@@ -47,6 +68,17 @@ final class AwaitingSkillsState extends AgentState
         return Decision::deny($this->reason());
     }
 
+    // ----------[ Events ]----------
+
+    public function onSkillPublicationMoved(SkillPublicationMoved $event): void
+    {
+        if ($event->publicationId === $this->publicationId) {
+            $this->publication = $event->state;
+        }
+    }
+
+    // ----------[ Internals ]----------
+
     private function reason(): string
     {
         return sprintf(
@@ -54,13 +86,5 @@ final class AwaitingSkillsState extends AgentState
             .'php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
             $this->publication->value,
         );
-    }
-
-    /**
-     * @return Option<string>
-     */
-    public function instruction(): Option
-    {
-        return new Some($this->reason());
     }
 }

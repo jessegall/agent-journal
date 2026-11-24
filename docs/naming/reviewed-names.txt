@@ -489,6 +489,9 @@ case	FolderType::States
 case	FrameLiveness::Disabled
 case	FrameLiveness::Finished
 case	FrameLiveness::Live
+case	FrameReuse::None
+case	FrameReuse::PerSubject
+case	FrameReuse::PerType
 case	FramingType::Json
 case	FramingType::JsonLines
 case	FramingType::Lines
@@ -1643,6 +1646,7 @@ class	AccountCleanupRetried
 class	AccountConfigurationUnwritten
 class	AccountConfigurationWrite
 class	AccountContainerUnsupported
+class	AccountEvent
 class	AccountFolderInvalid
 class	AccountFolderRefused
 class	AccountFolderReplyData
@@ -1911,14 +1915,9 @@ class	AnswerNavigationCommand
 class	AnswerNavigationHandler
 class	AnswerUnreadable
 class	AnsweringAskState
-class	AnsweringAskStates
-class	AnsweringChatState
-class	AnsweringChatStateFactory
-class	AnsweringChatStateReference
+class	AnsweringAskStateReference
 class	AnsweringMessageState
-class	AnsweringMessageStateFactory
 class	AnsweringMessageStateReference
-class	AnsweringValuesData
 class	AnyOf
 class	AppServiceProvider
 class	AppendUploadCommand
@@ -1983,6 +1982,7 @@ class	AskClosed
 class	AskDetail
 class	AskDetailResolver
 class	AskEscalation
+class	AskEvent
 class	AskHop
 class	AskHopAssigned
 class	AskInbox
@@ -2057,6 +2057,7 @@ class	AssignmentChange
 class	AssignmentConflict
 class	AssignmentData
 class	AssignmentDenied
+class	AssignmentEvent
 class	AssignmentFacts
 class	AssignmentGroup
 class	AssignmentGroupTooLarge
@@ -2146,7 +2147,6 @@ class	AutoAssignmentStatusData
 class	AutoAssignmentStatuses
 class	AvailableListener
 class	AwaitingSkillsState
-class	AwaitingSkillsStateFactory
 class	AwaitingSkillsStateReference
 class	BaseOverride
 class	BeginSignInAgainCommand
@@ -2202,12 +2202,14 @@ class	BrowserInputCapabilities
 class	BufferedHit
 class	BuildRules
 class	BuildShellTreePipeline
+class	BuildStatePipeline
 class	BuiltInAskType
 class	BuiltInAuthorizations
 class	BuiltInDesks
 class	BuiltInProfileMissing
 class	BuiltInProfilePins
 class	BuiltInProfiles
+class	BuiltState
 class	BuiltinResult
 class	BuiltinSteps
 class	BundleActivated
@@ -2307,6 +2309,9 @@ class	CapacityUnavailable
 class	CaptureJobMessageSource
 class	CapturedChunk
 class	CapturedPart
+class	CastConstructorValues
+class	CastPropertyValues
+class	CastStateValuesPipeline
 class	CatalogueOnFirstRead
 class	CatalogueReflectorFactory
 class	CausalDepthExceeded
@@ -2341,6 +2346,7 @@ class	ChatData
 class	ChatDeliveries
 class	ChatDomain
 class	ChatEnvelope
+class	ChatEvent
 class	ChatEventData
 class	ChatEventPage
 class	ChatEventView
@@ -2641,6 +2647,7 @@ class	CommentCalls
 class	CommentDetails
 class	CommentDetailsFactory
 class	CommentDocumentController
+class	CommentEvent
 class	CommentImmutable
 class	CommentLinkRecords
 class	CommentList
@@ -2710,6 +2717,7 @@ class	ConnectProjectWindowResolver
 class	ConnectedProject
 class	ConnectionAudit
 class	ConnectionCalls
+class	ConnectionEvent
 class	ConnectionsHostOperatorAccess
 class	ConnectionsOwnerCheck
 class	ConnectionsPages
@@ -3056,6 +3064,7 @@ class	DocumentDocking
 class	DocumentDraft
 class	DocumentDraftProducer
 class	DocumentDraftSaved
+class	DocumentEvent
 class	DocumentFilters
 class	DocumentLinkRecords
 class	DocumentMissing
@@ -3093,10 +3102,8 @@ class	DomainNotFound
 class	DomainRegistry
 class	DomainRequiresItself
 class	DomainServiceProvider
-class	DomainStateType
 class	DomainStatus
 class	DomainSwitches
-class	DomainTickableStateType
 class	DomainTypeWriter
 class	DomainUi
 class	DraftAnswerMissing
@@ -3254,6 +3261,7 @@ class	EngineActor
 class	EngineActorRequired
 class	EngineAuthorizerProvider
 class	EngineConnectionLost
+class	EngineEvent
 class	EngineFrameTime
 class	EngineListenerSet
 class	EngineLoop
@@ -3291,6 +3299,7 @@ class	EvaluationGuard
 class	EventCall
 class	EventCallScan
 class	EventCapture
+class	EventGroups
 class	EventProducer
 class	EventProducers
 class	EventUnit
@@ -3329,7 +3338,7 @@ class	ExitBranch
 class	ExitPolicy
 class	ExitReceipt
 class	ExitReportController
-class	ExpandUiUpdaterListeners
+class	ExpandGroupListeners
 class	ExpectedDraftRevision
 class	ExpireNavigationRequestsCommand
 class	ExpireNavigationRequestsHandler
@@ -3433,7 +3442,6 @@ class	FolderUseReplyData
 class	FolderWalker
 class	FolderWorkspace
 class	FollowingSequenceState
-class	FollowingSequenceStateFactory
 class	FollowingSequenceStateReference
 class	FormerPaths
 class	Frame
@@ -3509,7 +3517,7 @@ class	HeldPartData
 class	HeldPlansOverview
 class	HeldStartRefusals
 class	HeldTasksOverview
-class	HelperActivityRecorder
+class	HelperActivity
 class	HelperBusy
 class	HelperCalls
 class	HelperCancelCommand
@@ -3520,6 +3528,7 @@ class	HelperCommitImport
 class	HelperCompletionCertified
 class	HelperContinueCommand
 class	HelperDispatch
+class	HelperEvent
 class	HelperIdentity
 class	HelperIdentityFixed
 class	HelperImportFailed
@@ -3594,6 +3603,7 @@ class	HookCommandAnswered
 class	HookController
 class	HookDeadlineExpired
 class	HookDigestChanged
+class	HookEvent
 class	HookFailure
 class	HookGuidance
 class	HookIdentity
@@ -3787,6 +3797,7 @@ class	JournalBusy
 class	JournalClassifier
 class	JournalClient
 class	JournalReadTool
+class	JournalReferences
 class	JournalResource
 class	JournalRoute
 class	JournalRoutes
@@ -3874,6 +3885,7 @@ class	Link
 class	LinkAccess
 class	LinkAddCommand
 class	LinkChanged
+class	LinkEvent
 class	LinkLeavesPlace
 class	LinkLoop
 class	LinkRecordsCommand
@@ -3936,6 +3948,7 @@ class	ListenerDeclarations
 class	ListenerOwnership
 class	ListenerPolicy
 class	ListenerRegistry
+class	ListeningStacks
 class	LiteralSentenceAssertionScan
 class	LiveShareStatus
 class	LoadMigrations
@@ -3974,6 +3987,7 @@ class	MakeDocumentController
 class	MakeReportCall
 class	MakeReportController
 class	MakeShareGatewayDefaultController
+class	MakeState
 class	MalformedExports
 class	ManifestCheck
 class	ManifestMount
@@ -4074,7 +4088,6 @@ class	MessageAnswerRequired
 class	MessageAnswered
 class	MessageAskTool
 class	MessageAttention
-class	MessageAwaitsAnswer
 class	MessageBatch
 class	MessageBatchAcknowledgeTool
 class	MessageBatchAcknowledged
@@ -4087,11 +4100,13 @@ class	MessageClaimHolder
 class	MessageClaimProvider
 class	MessageClaimReleased
 class	MessageClaimTool
+class	MessageClaimed
 class	MessageClaims
 class	MessageContextTool
 class	MessageDetailsTool
 class	MessageDismissed
 class	MessageEnvelope
+class	MessageEvent
 class	MessageInput
 class	MessageLine
 class	MessageLinkRecords
@@ -4124,7 +4139,6 @@ class	MessageService
 class	MessageShowTool
 class	MessageStateConflict
 class	MessageTakeNextTool
-class	MessageTakenUp
 class	MessageToSelf
 class	MessageView
 class	MessageVisibility
@@ -4288,6 +4302,8 @@ class	ObjectRegistry
 class	OccupiedForwardingSeats
 class	OccupiedSeat
 class	Occurrence
+class	OfferNextAskCommand
+class	OfferNextAskHandler
 class	OfflineReplyModeInvalid
 class	OfflineReplySeal
 class	OfflineReplySealInvalid
@@ -4528,6 +4544,7 @@ class	PlanDocking
 class	PlanDraftProducer
 class	PlanEdited
 class	PlanEndRequest
+class	PlanEvent
 class	PlanFilters
 class	PlanFiltersData
 class	PlanFinished
@@ -4584,7 +4601,6 @@ class	PlanUnderReview
 class	PlanWaitSuggester
 class	PlanWindowResolver
 class	PlanWord
-class	PlanWork
 class	PlanWorkPreviewData
 class	PlanWorkRecipientData
 class	PlanWorkRequest
@@ -4915,7 +4931,7 @@ class	PurposeChoice
 class	PurposeConflict
 class	PurposeRequired
 class	PurposeResolver
-class	PushAnsweringChatState
+class	PushAnsweringMessageState
 class	PushPlanReviewState
 class	PushPlanState
 class	PushSequenceState
@@ -5045,7 +5061,6 @@ class	ReadinessCheckSweep
 class	ReadingRules
 class	ReadsServiceProvider
 class	ReadyState
-class	ReadyStateLoader
 class	ReadyWindow
 class	Reason
 class	ReassignAgentRuntimeCommand
@@ -5125,6 +5140,8 @@ class	RecordHeartbeatCall
 class	RecordHeartbeatCommand
 class	RecordHeartbeatController
 class	RecordHeartbeatHandler
+class	RecordHelperFinish
+class	RecordHelperStart
 class	RecordHolderData
 class	RecordHostDescriptorsCommand
 class	RecordHostDescriptorsHandler
@@ -5256,10 +5273,7 @@ class	RefuseRunnerOfOtherArrangement
 class	RefuseStaleRuns
 class	RefuseTaskChangeUnderReview
 class	RefuseWritesDuringEvaluation
-class	RegisterAnsweringAskState
-class	RegisterAnsweringState
 class	RegisterAssignables
-class	RegisterAwaitingSkillsState
 class	RegisterCommands
 class	RegisterDraftProducers
 class	RegisterIncomingWork
@@ -5287,6 +5301,7 @@ class	RegisteredSection
 class	RegisteredSettingCommands
 class	RegisteredSidebarGroup
 class	RegisteredStateFactory
+class	RegisteredStateType
 class	Registry
 class	RejectProposalCall
 class	RejectProposalController
@@ -5537,7 +5552,6 @@ class	RequiredDomainMissing
 class	RequiredDomainTwice
 class	RequiredServices
 class	RequiresRequestKey
-class	RequiresTransactionListener
 class	ReserveStarts
 class	ReservedWordReader
 class	ResetSettingCommand
@@ -5645,7 +5659,6 @@ class	ReviewResponses
 class	ReviewRuleRequest
 class	ReviewersOutData
 class	ReviewingPlanState
-class	ReviewingPlanStateFactory
 class	ReviewingPlanStateReference
 class	ReviseProposalCall
 class	ReviseProposalController
@@ -5706,6 +5719,7 @@ class	RuleDeclarations
 class	RuleDenied
 class	RuleDetailRecords
 class	RuleDetails
+class	RuleEvent
 class	RuleExample
 class	RuleFilters
 class	RuleFiltersData
@@ -5845,6 +5859,7 @@ class	SaveSharePreviewHandler
 class	SaveSharePreviewRequest
 class	SavedSharePreview
 class	SavedSharePreviewData
+class	SavedState
 class	ScanProgress
 class	ScanTokens
 class	ScannedSource
@@ -5987,6 +6002,7 @@ class	SequenceDraftProducer
 class	SequenceEditorPartData
 class	SequenceEditorResolver
 class	SequenceEnded
+class	SequenceEvent
 class	SequenceIndexResolver
 class	SequenceMissing
 class	SequencePageViews
@@ -6009,7 +6025,6 @@ class	SequenceStepData
 class	SequenceStepEnded
 class	SequenceStepReached
 class	SequenceWindowResolver
-class	SequenceWork
 class	SequencesDomain
 class	SequencesIndex
 class	SequencesServiceProvider
@@ -6023,6 +6038,7 @@ class	SessionClosed
 class	SessionContainers
 class	SessionEndDetails
 class	SessionEnded
+class	SessionEvent
 class	SessionInspection
 class	SessionInspections
 class	SessionOpened
@@ -6060,6 +6076,7 @@ class	SettingCodec
 class	SettingData
 class	SettingDeclarationInvalid
 class	SettingDisabled
+class	SettingEvent
 class	SettingGroup
 class	SettingGroupData
 class	SettingHandleUnknown
@@ -6145,6 +6162,7 @@ class	ShareDuration
 class	ShareDurationInvalid
 class	ShareEndInvalid
 class	ShareEndings
+class	ShareEvent
 class	ShareExpired
 class	ShareExpiry
 class	ShareFact
@@ -6365,6 +6383,7 @@ class	SkillDelivery
 class	SkillDraft
 class	SkillEditCommand
 class	SkillEntry
+class	SkillEvent
 class	SkillGeneration
 class	SkillGenerationImmutable
 class	SkillKey
@@ -6384,6 +6403,7 @@ class	SkillPruneCommand
 class	SkillPublication
 class	SkillPublicationFailed
 class	SkillPublicationMissing
+class	SkillPublicationMoved
 class	SkillPublicationStale
 class	SkillPublications
 class	SkillPublishing
@@ -6583,8 +6603,10 @@ class	StartUnavailable
 class	StartedAgent
 class	StateAnswer
 class	StateAnswerRefused
+class	StateArguments
 class	StateBlocked
 class	StateBridgeFactStaging
+class	StateBuilder
 class	StateClassMismatch
 class	StateEffectScan
 class	StateEventActivity
@@ -6616,12 +6638,9 @@ class	StateMethods
 class	StatePush
 class	StateReference
 class	StateReferenceFactory
-class	StateReferences
-class	StateReferencesInvalid
 class	StateSchemaUnknown
-class	StateSet
-class	StateSubjectMissing
 class	StateTransferUnknown
+class	StateType
 class	StateTypeMissing
 class	StateTypeRegistry
 class	StateTypeRepeated
@@ -6629,6 +6648,8 @@ class	StateTypeUnknown
 class	StateTypes
 class	StateTypesFrozen
 class	StateTypesRequested
+class	StateValues
+class	StateValuesRefused
 class	StatementDeadline
 class	StatementTimedOut
 class	StaticFactoryScan
@@ -6835,7 +6856,6 @@ class	TakeTerminalControlHandler
 class	TargetActorAuthorizer
 class	TargetHasNoText
 class	TargetNotCommentable
-class	TargetStates
 class	Task
 class	TaskActionRequest
 class	TaskActionsData
@@ -6863,6 +6883,7 @@ class	TaskDetailsFactory
 class	TaskDocking
 class	TaskDraftProducer
 class	TaskEdited
+class	TaskEvent
 class	TaskExecution
 class	TaskExecutionData
 class	TaskExecutions
@@ -7043,6 +7064,7 @@ class	TickSubjectUndeclared
 class	TickableStateMissing
 class	TicketMalformed
 class	TickingTypes
+class	Ticks
 class	TieredRecordSearch
 class	TieredSearchSource
 class	TimeBudget
@@ -7071,6 +7093,7 @@ class	ToolResult
 class	ToolRules
 class	ToolVersions
 class	TraitsUsed
+class	TransactionListenerConsent
 class	TransactionListenerDrain
 class	TransactionalIdentityLinks
 class	TransactionalRecordLinker
@@ -7220,6 +7243,7 @@ class	WalkStep
 class	WalkedCall
 class	WatchedRuntime
 class	WatchedRuntimes
+class	WebEvent
 class	WebNavigationRecords
 class	WebPages
 class	WebServiceProvider
@@ -7259,10 +7283,8 @@ class	WorkStackPushes
 class	WorkerAlreadyAssigned
 class	WorkerReservation
 class	WorkingOnPlanState
-class	WorkingOnPlanStateFactory
 class	WorkingOnPlanStateReference
 class	WorkingOnTaskState
-class	WorkingOnTaskStateFactory
 class	WorkingOnTaskStateReference
 class	WorkspaceClone
 class	WorkspaceFacts
@@ -7282,6 +7304,7 @@ class	WrapperRule
 class	WrapperRules
 class	WriteAssignments
 class	WriteResponsibilities
+class	WriteStateValues
 class	YieldKeyword
 constant	AccessPolicy::PROTECTED_PATHS
 constant	Account::LINK_TYPE
@@ -7322,8 +7345,8 @@ constant	AgentWorkStack::RUNNING_SESSIONS_READ
 constant	AgentsServiceProvider::OWNER
 constant	AllOf::TYPE
 constant	AllOf::VERSION
-constant	AnsweringAskState::TYPE
-constant	AnsweringChatStateReference::TYPE_KEY
+constant	AnsweringAskStateReference::TYPE_KEY
+constant	AnsweringMessageState::REFUSED_STOP_LIMIT
 constant	AnsweringMessageStateReference::TYPE_KEY
 constant	AnyOf::TYPE
 constant	AnyOf::VERSION
@@ -7716,6 +7739,10 @@ constant	IntervalChatTimeline::SCAN_LIMIT
 constant	IssueProjectInvitationController::ISSUED_LINE
 constant	JobStopEvidence::ATTEMPT_PREFIX
 constant	JournalBusy::CODE
+constant	JournalReferences::EXAMPLE
+constant	JournalReferences::LINE_COMMENT
+constant	JournalReferences::PHP_COMMENT
+constant	JournalReferences::REFERENCE
 constant	JournalResource::MIME_TYPES
 constant	JournalServer::PATH
 constant	JournalTools::RESOURCE_SCHEME
@@ -7739,7 +7766,6 @@ constant	LimitUsageReport::MOST_BYTES
 constant	LineAdmission::EXPLAIN
 constant	LineAdmission::NEEDS_RUNNER
 constant	ListenerOwnership::CORE
-constant	ListenerOwnership::EXPANDED_INTERFACES
 constant	LoggedMcpCall::OUTCOME_OK
 constant	LoginPage::COMPONENT
 constant	MarkHelperJobUnfinishedHandler::ENDED_REFERENCE
@@ -8305,8 +8331,9 @@ constant	StateEffectScan::STATE
 constant	StateEventActivity::MAXIMUM_DEPTH
 constant	StateEventBridge::LISTENER
 constant	StateEventDelivery::EFFECT_LIMIT
+constant	StateMethods::HOOK_ANSWER_TYPES
 constant	StateReferenceFactory::TYPE_KEY
-constant	StateReferences::MAXIMUM
+constant	StateTypes::CORE_STATES
 constant	StatementDeadline::CANCELLED
 constant	StaticFactoryScan::FRESH_EACH_CALL
 constant	StaticFactoryScan::INJECTABLE
@@ -8590,6 +8617,7 @@ enum	FileWindowState
 enum	FlowNodeType
 enum	FolderType
 enum	FrameLiveness
+enum	FrameReuse
 enum	FramingType
 enum	GatewayAddressCheck
 enum	GatewayEndpointState
@@ -8820,8 +8848,11 @@ enum	WorkChainEnding
 enum	WorkRepairOutcome
 enum	WorkspaceUse
 interface	AccountFolders
+interface	AccountNoticeCause
+interface	AccountNoticeEvent
 interface	AccountOwnerDrain
 interface	AccountSettingsFiller
+interface	AccountSignInEvent
 interface	AccountUses
 interface	ActiveAccountReader
 interface	ActiveActorCounter
@@ -8907,11 +8938,15 @@ interface	CardContext
 interface	CardEncoder
 interface	CatalogueConstraints
 interface	CatalogueValue
+interface	ChatAnswer
+interface	ChatDeliveryEvent
 interface	ChatDepartures
 interface	ChatEligibility
 interface	ChatLineSource
 interface	ChatLines
 interface	ChatMemberPolicies
+interface	ChatMembershipEvent
+interface	ChatMessageEvent
 interface	ChatParticipationEnding
 interface	ChatTimeline
 interface	ChoiceLabel
@@ -8935,7 +8970,6 @@ interface	CommandTransaction
 interface	CommentResolver
 interface	Commentable
 interface	ConditionalState
-interface	ConditionalStateType
 interface	Continuations
 interface	ConversationResolver
 interface	ConversationVisits
@@ -9014,6 +9048,7 @@ interface	InboxScopedFact
 interface	IncomingWork
 interface	IncomingWorkProvider
 interface	IncomingWorkRegistration
+interface	InstallAttemptEvent
 interface	InstalledVersion
 interface	InternalAssignableContributor
 interface	JobPermissionReader
@@ -9041,6 +9076,7 @@ interface	MemoryResolver
 interface	MenuProvider
 interface	MergeAdmission
 interface	MessageCommand
+interface	MessageOffered
 interface	MessagePart
 interface	MessageRecipient
 interface	MessageSearch
@@ -9065,7 +9101,6 @@ interface	OperationResolver
 interface	OptionSetting
 interface	OutputRecorder
 interface	OverviewContribution
-interface	OwnValuesState
 interface	OwnerCommands
 interface	OwnerPolicy
 interface	PageOption
@@ -9080,6 +9115,7 @@ interface	PipelineDefinition
 interface	PipelineRunner
 interface	PlanDetailsResolver
 interface	PlanResolver
+interface	PlanReviewEvent
 interface	Policy
 interface	PolicyCatalogue
 interface	PolicyProvider
@@ -9091,7 +9127,9 @@ interface	ProfileRules
 interface	ProfileScripts
 interface	ProfileSelections
 interface	ProgramClassifier
+interface	ProjectBindingEvent
 interface	ProjectFiles
+interface	ProjectInvitationEvent
 interface	PublicCommentResolver
 interface	ReadAdmission
 interface	ReadEntitlements
@@ -9101,7 +9139,6 @@ interface	ReadMeter
 interface	ReadableModel
 interface	ReaderRequests
 interface	ReceiptRefusal
-interface	RecipientStateLoader
 interface	RecordCommand
 interface	RecordLinker
 interface	RecordMenus
@@ -9148,6 +9185,7 @@ interface	SearchSources
 interface	SeatedActor
 interface	SectionProvider
 interface	SectionResolver
+interface	SequenceStepEvent
 interface	ServedEnvironment
 interface	ServerClock
 interface	SessionOutputAccess
@@ -9175,6 +9213,7 @@ interface	ShellAdmission
 interface	ShellCommandParser
 interface	ShownOnAccounts
 interface	SidebarGroupProvider
+interface	SignInAttemptEvent
 interface	SignInHost
 interface	SignInProtocol
 interface	Skill
@@ -9190,7 +9229,6 @@ interface	StackAdmission
 interface	StackEditor
 interface	StackInspectionQuery
 interface	StackPermission
-interface	StackStates
 interface	StackTransaction
 interface	StackTransactionRunner
 interface	StaleRefusal
@@ -9206,7 +9244,6 @@ interface	StartReservations
 interface	StartTokenSource
 interface	StartTransaction
 interface	StateFactory
-interface	StateLoader
 interface	StateProvider
 interface	StateRegistration
 interface	StateTypes
@@ -9232,6 +9269,9 @@ interface	TaskLogResolver
 interface	TaskProgressCounter
 interface	TaskProofResolver
 interface	TaskResolver
+interface	TaskRunEndEvent
+interface	TaskStateEvent
+interface	TaskWaitEvent
 interface	TaskWaitResolver
 interface	TerminalViewCloser
 interface	TextContent
@@ -9239,7 +9279,6 @@ interface	TextFields
 interface	TextResolver
 interface	TickSubjectLocks
 interface	TickableState
-interface	TickableStateLoader
 interface	TieredSearch
 interface	ToolDiscovery
 interface	TypeProvider
@@ -9415,6 +9454,7 @@ method	AccountNotice::lockedOpenOf()
 method	AccountNotice::open()
 method	AccountNotice::openNotices()
 method	AccountNotice::resolveAt()
+method	AccountNoticeCause::noticeReason()
 method	AccountNoticeData::__construct()
 method	AccountNoticeData::fromNotice()
 method	AccountNoticeReason::forFailure()
@@ -9774,10 +9814,8 @@ method	ActorVisibilityProvider::readAcrossOwners()
 method	ActorWorkStacks::current()
 method	ActorWorkStacks::currentRecord()
 method	ActorWorkStacks::offerFor()
-method	ActorWorkStacks::pruneCurrent()
 method	ActorWorkStacks::push()
 method	ActorWorkStacks::pushFor()
-method	ActorWorkStacks::tellFor()
 method	ActorsServiceProvider::boot()
 method	ActorsServiceProvider::register()
 method	AddChatParticipantCommand::__construct()
@@ -9815,9 +9853,7 @@ method	AddUsageCostHandler::handle()
 method	AddressedStackPush::__construct()
 method	AddressedStackPush::assertRunning()
 method	AddressedStackPush::offer()
-method	AddressedStackPush::prune()
 method	AddressedStackPush::push()
-method	AddressedStackPush::tell()
 method	Admission::__construct()
 method	Admission::allowed()
 method	Admission::isAllowed()
@@ -10190,14 +10226,17 @@ method	AgentStackRow::lockAuthorizedFor()
 method	AgentStackRow::lockFor()
 method	AgentStackRow::lockKeptFor()
 method	AgentStackRow::prunableBefore()
+method	AgentStackRow::runningOpen()
 method	AgentStackRow::saveFrames()
 method	AgentStackRow::startFor()
 method	AgentStackRow::target()
+method	AgentStackRow::targetsHolding()
 method	AgentStackRow::tickingOpen()
 method	AgentStacks::__construct()
 method	AgentStacks::activate()
 method	AgentStacks::push()
 method	AgentStartCommand::startedAgentId()
+method	AgentState::frameReuse()
 method	AgentState::instruction()
 method	AgentState::isFinished()
 method	AgentState::onCompaction()
@@ -10318,61 +10357,42 @@ method	AnswerType::fitsEveryHook()
 method	AnswerType::replaces()
 method	AnswerUnreadable::at()
 method	AnsweringAskState::__construct()
+method	AnsweringAskState::frameReuse()
 method	AnsweringAskState::instruction()
 method	AnsweringAskState::isFinished()
-method	AnsweringAskState::reference()
-method	AnsweringAskStates::schemaVersion()
-method	AnsweringAskStates::sessionTransfer()
-method	AnsweringAskStates::stateClass()
-method	AnsweringAskStates::statesFor()
-method	AnsweringChatState::__construct()
-method	AnsweringChatState::answerNowText()
-method	AnsweringChatState::countText()
-method	AnsweringChatState::decide()
-method	AnsweringChatState::hasWaiting()
-method	AnsweringChatState::hearAnswer()
-method	AnsweringChatState::howToAnswerText()
-method	AnsweringChatState::instruction()
-method	AnsweringChatState::isFinished()
-method	AnsweringChatState::mustAnswerNow()
-method	AnsweringChatState::oldestId()
-method	AnsweringChatState::onChatMessageAccepted()
-method	AnsweringChatState::onFileEdit()
-method	AnsweringChatState::onMessageAwaitsAnswer()
-method	AnsweringChatState::onMessageReactionAdded()
-method	AnsweringChatState::onShellCommand()
-method	AnsweringChatState::onStop()
-method	AnsweringChatState::onToolFinished()
-method	AnsweringChatState::onToolRequested()
-method	AnsweringChatState::ownValues()
-method	AnsweringChatState::restoreOwnValues()
-method	AnsweringChatState::waitingText()
-method	AnsweringChatState::workPermission()
-method	AnsweringChatStateFactory::__construct()
-method	AnsweringChatStateFactory::chatOf()
-method	AnsweringChatStateFactory::schemaVersion()
-method	AnsweringChatStateFactory::sessionTransfer()
-method	AnsweringChatStateFactory::stateClass()
-method	AnsweringChatStateFactory::statesFor()
-method	AnsweringChatStateReference::forChat()
+method	AnsweringAskState::onAskClosed()
+method	AnsweringAskState::onAskHopAssigned()
+method	AnsweringAskStateReference::forHop()
 method	AnsweringMessageState::__construct()
-method	AnsweringMessageState::answerText()
+method	AnsweringMessageState::addMessage()
+method	AnsweringMessageState::agentBelongsToChat()
+method	AnsweringMessageState::answerNowText()
+method	AnsweringMessageState::clear()
+method	AnsweringMessageState::countText()
+method	AnsweringMessageState::decide()
+method	AnsweringMessageState::frameReuse()
+method	AnsweringMessageState::howToAnswerText()
 method	AnsweringMessageState::instruction()
+method	AnsweringMessageState::isAnswered()
 method	AnsweringMessageState::isFinished()
+method	AnsweringMessageState::mustAnswerNow()
+method	AnsweringMessageState::oldestId()
+method	AnsweringMessageState::onChatAnswer()
 method	AnsweringMessageState::onFileEdit()
+method	AnsweringMessageState::onMessageAnswered()
+method	AnsweringMessageState::onMessageClaimReleased()
+method	AnsweringMessageState::onMessageDismissed()
+method	AnsweringMessageState::onMessageOffered()
 method	AnsweringMessageState::onShellCommand()
 method	AnsweringMessageState::onStop()
+method	AnsweringMessageState::onToolFinished()
+method	AnsweringMessageState::onToolRequested()
+method	AnsweringMessageState::removeMessage()
+method	AnsweringMessageState::waitingText()
 method	AnsweringMessageState::workPermission()
-method	AnsweringMessageStateFactory::schemaVersion()
-method	AnsweringMessageStateFactory::sessionTransfer()
-method	AnsweringMessageStateFactory::stateClass()
-method	AnsweringMessageStateFactory::stateOf()
-method	AnsweringMessageStateFactory::statesFor()
 method	AnsweringMessageStateReference::forClaim()
-method	AnsweringValuesData::__construct()
-method	AnsweringValuesData::answered()
-method	AnsweringValuesData::withMessage()
-method	AnsweringValuesData::withToolUse()
+method	AnsweringMessageStateReference::forOffer()
+method	AnsweringMessageStateReference::waiting()
 method	AnswersMessageCommands::answerWithActedMessage()
 method	AnswersMessageCommands::answerWithNewMessage()
 method	AnswersMessageCommands::answerWithResult()
@@ -10528,7 +10548,6 @@ method	AskAssignments::requireRouteEditor()
 method	AskAssignments::runsAny()
 method	AskAssignments::visibleRecords()
 method	AskAttention::__construct()
-method	AskAttention::finishAnswering()
 method	AskAttention::offerNext()
 method	AskAttention::recover()
 method	AskAttention::recoverEach()
@@ -11151,16 +11170,14 @@ method	AutoAssignmentWriter::claim()
 method	AvailableListener::__construct()
 method	AvailableListener::__invoke()
 method	AwaitingSkillsState::__construct()
+method	AwaitingSkillsState::frameReuse()
 method	AwaitingSkillsState::instruction()
 method	AwaitingSkillsState::isFinished()
 method	AwaitingSkillsState::onFileEdit()
 method	AwaitingSkillsState::onShellCommand()
+method	AwaitingSkillsState::onSkillPublicationMoved()
 method	AwaitingSkillsState::reason()
 method	AwaitingSkillsState::workPermission()
-method	AwaitingSkillsStateFactory::schemaVersion()
-method	AwaitingSkillsStateFactory::sessionTransfer()
-method	AwaitingSkillsStateFactory::stateClass()
-method	AwaitingSkillsStateFactory::statesFor()
 method	AwaitingSkillsStateReference::forPublication()
 method	BaseOverride::__construct()
 method	BatchOutcome::canCarryHits()
@@ -11333,6 +11350,7 @@ method	BufferedHit::compare()
 method	BuildRules::all()
 method	BuildRules::build()
 method	BuildShellTreePipeline::pipes()
+method	BuildStatePipeline::pipes()
 method	BuiltInAskType::__construct()
 method	BuiltInAskType::allowance()
 method	BuiltInAskType::definition()
@@ -11356,6 +11374,7 @@ method	BuiltInProfiles::proposed()
 method	BuiltInStartProfiles::defaultVariantOf()
 method	BuiltInStartProfiles::pin()
 method	BuiltInStartProfiles::policyFor()
+method	BuiltState::__construct()
 method	BuiltinResult::__construct()
 method	BuiltinSteps::assignmentsIn()
 method	BuiltinSteps::changeFolder()
@@ -11556,6 +11575,10 @@ method	CapturedChunk::__construct()
 method	CapturedPart::__construct()
 method	CardContext::permittedDestination()
 method	CardEncoder::encode()
+method	CastConstructorValues::handle()
+method	CastConstructorValues::parametersOf()
+method	CastPropertyValues::handle()
+method	CastStateValuesPipeline::pipes()
 method	CatalogueOnFirstRead::__construct()
 method	CatalogueOnFirstRead::all()
 method	CatalogueOnFirstRead::catalogue()
@@ -11628,6 +11651,7 @@ method	ChatAdmissionPolicy::isMember()
 method	ChatAdmissionPolicy::mayAdd()
 method	ChatAdmissionPolicy::mayCreate()
 method	ChatAdmissionPolicy::mayInvite()
+method	ChatAnswer::answerer()
 method	ChatCalls::__construct()
 method	ChatCalls::dockAdd()
 method	ChatCalls::dockList()
@@ -11666,7 +11690,6 @@ method	ChatDomain::requires()
 method	ChatDomain::searchables()
 method	ChatDomain::sections()
 method	ChatDomain::skills()
-method	ChatDomain::states()
 method	ChatEligibility::holds()
 method	ChatEligibility::invitableUserIds()
 method	ChatEligibility::isAdmitted()
@@ -11762,9 +11785,11 @@ method	ChatMembershipRefused::notOwner()
 method	ChatMembershipRefused::refusalCode()
 method	ChatMembershipRefused::rosterFull()
 method	ChatMessageAccepted::__construct()
+method	ChatMessageAccepted::answerer()
 method	ChatMessageAccepted::scopedInboxId()
 method	ChatMessageData::__construct()
 method	ChatMessageOffered::__construct()
+method	ChatMessageOffered::answerer()
 method	ChatMessageRefused::conversion()
 method	ChatMessageRefused::notRespondent()
 method	ChatMessageRefused::notSelectable()
@@ -12904,7 +12929,6 @@ method	ConditionalKeyword::definition()
 method	ConditionalKeyword::execute()
 method	ConditionalKeyword::flow()
 method	ConditionalState::isEnabled()
-method	ConditionalStateType::isEnabled()
 method	Conditions::all()
 method	Conditions::any()
 method	Conditions::dispatchesWork()
@@ -13149,7 +13173,6 @@ method	CoreSkills::owner()
 method	CoreSkills::skills()
 method	CountInboxMessagesCall::__construct()
 method	CountInboxMessagesController::__invoke()
-method	CountPhaseTaskStates::enteredStateOf()
 method	CountPhaseTaskStates::handle()
 method	CountResolver::count()
 method	CountedProgress::__construct()
@@ -14229,25 +14252,10 @@ method	DomainServiceProvider::domainClasses()
 method	DomainServiceProvider::mcpCatalogue()
 method	DomainServiceProvider::register()
 method	DomainServiceProvider::settingRegistry()
-method	DomainStateType::__construct()
-method	DomainStateType::isEnabled()
-method	DomainStateType::schemaVersion()
-method	DomainStateType::sessionTransfer()
-method	DomainStateType::stateClass()
-method	DomainStateType::statesFor()
-method	DomainStateType::statesForRecipient()
 method	DomainStatus::__construct()
 method	DomainSwitches::__construct()
 method	DomainSwitches::groups()
 method	DomainSwitches::of()
-method	DomainTickableStateType::__construct()
-method	DomainTickableStateType::isEnabled()
-method	DomainTickableStateType::occurrenceGuard()
-method	DomainTickableStateType::schemaVersion()
-method	DomainTickableStateType::sessionTransfer()
-method	DomainTickableStateType::stateClass()
-method	DomainTickableStateType::statesFor()
-method	DomainTickableStateType::statesForRecipient()
 method	DomainTypeWriter::__construct()
 method	DomainTypeWriter::output()
 method	DomainTypeWriter::ownerExportLines()
@@ -14443,6 +14451,7 @@ method	DriverConversationSummary::__construct()
 method	DriverEventName::of()
 method	DriverEvidence::isNativeShown()
 method	DriverFailed::__construct()
+method	DriverFailed::noticeReason()
 method	DriverFailure::fromCheckedCode()
 method	DriverFailure::isAccountCheckNeeded()
 method	DriverFamily::__construct()
@@ -14959,6 +14968,15 @@ method	EventCallScan::sentEventOf()
 method	EventCallScan::siteOf()
 method	EventCapture::__construct()
 method	EventCapture::persisted()
+method	EventGroups::__construct()
+method	EventGroups::baseFaults()
+method	EventGroups::baseOf()
+method	EventGroups::domainBaseFaults()
+method	EventGroups::emptyGroupFaults()
+method	EventGroups::isIn()
+method	EventGroups::sharedGroups()
+method	EventGroups::stemFaults()
+method	EventGroups::wiringFaults()
 method	EventProducer::__construct()
 method	EventProducer::isRaise()
 method	EventProducer::line()
@@ -15111,7 +15129,7 @@ method	ExitPolicy::outcomeOf()
 method	ExitPolicy::unproven()
 method	ExitReceipt::__construct()
 method	ExitReportController::__invoke()
-method	ExpandUiUpdaterListeners::handle()
+method	ExpandGroupListeners::handle()
 method	ExpectedDraftRevision::__construct()
 method	ExpireNavigationRequestsHandler::__construct()
 method	ExpireNavigationRequestsHandler::handle()
@@ -15435,12 +15453,10 @@ method	FolderWorkspace::preparation()
 method	FollowingSequenceState::__construct()
 method	FollowingSequenceState::instruction()
 method	FollowingSequenceState::isFinished()
+method	FollowingSequenceState::onSequenceEnded()
+method	FollowingSequenceState::onSequenceStepReached()
 method	FollowingSequenceState::onStop()
-method	FollowingSequenceStateFactory::__construct()
-method	FollowingSequenceStateFactory::schemaVersion()
-method	FollowingSequenceStateFactory::sessionTransfer()
-method	FollowingSequenceStateFactory::stateClass()
-method	FollowingSequenceStateFactory::statesFor()
+method	FollowingSequenceState::stepText()
 method	FollowingSequenceStateReference::forRun()
 method	FormerPaths::classWasIn()
 method	FormerPaths::filesFrom()
@@ -15464,6 +15480,7 @@ method	Frame::isFor()
 method	Frame::isLegacyInitialize()
 method	Frame::isLive()
 method	Frame::isRequest()
+method	Frame::keepsOneFrameFor()
 method	Frame::mcpHeaders()
 method	Frame::method()
 method	Frame::mirroredHeaders()
@@ -15491,9 +15508,11 @@ method	FrameRecords::all()
 method	FrameRecords::checkBottom()
 method	FrameRecords::entryFor()
 method	FrameRecords::hasSameValuesAs()
+method	FrameRecords::holdAnyOf()
 method	FrameRecords::holdTicking()
 method	FrameRecordsCast::get()
 method	FrameRecordsCast::set()
+method	FrameReuse::keepsOneFrame()
 method	FrameSettlement::__construct()
 method	FrameSettlement::at()
 method	FrameSettlement::settledAt()
@@ -15671,9 +15690,10 @@ method	HeldStartRefusals::keep()
 method	HeldTasksOverview::__construct()
 method	HeldTasksOverview::read()
 method	HeldTasksOverview::section()
-method	HelperActivityRecorder::__construct()
-method	HelperActivityRecorder::handle()
-method	HelperActivityRecorder::record()
+method	HelperActivity::__construct()
+method	HelperActivity::finished()
+method	HelperActivity::record()
+method	HelperActivity::started()
 method	HelperBusy::onJob()
 method	HelperBusy::running()
 method	HelperCalls::__construct()
@@ -15895,6 +15915,7 @@ method	HookAnswer::isDenied()
 method	HookAnswer::isRewrite()
 method	HookAnswer::refusedOn()
 method	HookAnswer::replacedBy()
+method	HookAnswer::shownContext()
 method	HookAnswer::withContextAdded()
 method	HookAnswer::withFollowingWalk()
 method	HookAnswer::withRemindersFirst()
@@ -15949,9 +15970,9 @@ method	HookPayload::driverFailure()
 method	HookPayload::endReason()
 method	HookPayload::event()
 method	HookPayload::fileRead()
+method	HookPayload::isAfterRefusedStop()
 method	HookPayload::isFromNativeChild()
 method	HookPayload::isSessionStart()
-method	HookPayload::isStopContinuation()
 method	HookPayload::nativePromptId()
 method	HookPayload::promptText()
 method	HookPayload::reasonText()
@@ -16538,6 +16559,8 @@ method	JournalReadTool::handle()
 method	JournalReadTool::read()
 method	JournalReadTool::readRequest()
 method	JournalReadTool::recordReadRequest()
+method	JournalReferences::comments()
+method	JournalReferences::in()
 method	JournalResource::handle()
 method	JournalResource::mimeType()
 method	JournalResource::read()
@@ -16969,10 +16992,13 @@ method	ListenerDeclarations::__construct()
 method	ListenerOwnership::__construct()
 method	ListenerOwnership::assertOwnership()
 method	ListenerOwnership::domainHoldingListener()
+method	ListenerOwnership::eventClasses()
 method	ListenerOwnership::eventDomain()
+method	ListenerOwnership::eventsOf()
 method	ListenerOwnership::exportedEvents()
+method	ListenerOwnership::isGroup()
 method	ListenerOwnership::listenerDomain()
-method	ListenerOwnership::listensThroughCoreContract()
+method	ListenerOwnership::listensThroughOpenGroup()
 method	ListenerOwnership::stateDomain()
 method	ListenerOwnership::stateSource()
 method	ListenerPolicy::__construct()
@@ -16982,6 +17008,9 @@ method	ListenerPolicy::registerDiscovered()
 method	ListenerRegistry::__construct()
 method	ListenerRegistry::byEvent()
 method	ListenerRegistry::listenersOf()
+method	ListeningStacks::__construct()
+method	ListeningStacks::listens()
+method	ListeningStacks::of()
 method	LiteralSentenceAssertionScan::findingsIn()
 method	LiteralSentenceAssertionScan::isAssertion()
 method	LiteralSentenceAssertionScan::key()
@@ -17101,6 +17130,8 @@ method	MakeDocumentController::__invoke()
 method	MakeReportCall::__construct()
 method	MakeReportController::__invoke()
 method	MakeShareGatewayDefaultController::__invoke()
+method	MakeState::handle()
+method	MakeState::make()
 method	MalformedExports::emptyName()
 method	MalformedExports::keyedList()
 method	MalformedExports::listedTwice()
@@ -17454,7 +17485,7 @@ method	Message::unpresentedTo()
 method	Message::unreadBy()
 method	Message::visibleById()
 method	Message::waitingFor()
-method	Message::waitingForTakeUp()
+method	Message::waitingForClaim()
 method	Message::waitingOnRespondent()
 method	Message::withTimelinePosition()
 method	MessageAcknowledgeTool::command()
@@ -17477,7 +17508,6 @@ method	MessageAttention::outcomeFields()
 method	MessageAttention::recordAgain()
 method	MessageAttention::unsaved()
 method	MessageAttention::wakeStatus()
-method	MessageAwaitsAnswer::__construct()
 method	MessageBatch::admitsClaim()
 method	MessageBatch::bindTurn()
 method	MessageBatch::carriesRoot()
@@ -17534,6 +17564,8 @@ method	MessageClaimReleased::__construct()
 method	MessageClaimTool::command()
 method	MessageClaimTool::payload()
 method	MessageClaimTool::writeSchema()
+method	MessageClaimed::__construct()
+method	MessageClaimed::answerer()
 method	MessageClaims::__construct()
 method	MessageClaims::releaseAny()
 method	MessageDetailsTool::__construct()
@@ -17556,6 +17588,7 @@ method	MessageLinkRecords::referenceWord()
 method	MessageMissing::forId()
 method	MessageMissing::refusalCode()
 method	MessageNamed::__construct()
+method	MessageOffered::answerer()
 method	MessagePage::__construct()
 method	MessagePart::attachmentId()
 method	MessagePart::digest()
@@ -17589,6 +17622,7 @@ method	MessageReaction::findFor()
 method	MessageReaction::toMessages()
 method	MessageReaction::withdraw()
 method	MessageReactionAdded::__construct()
+method	MessageReactionAdded::answerer()
 method	MessageReactionPolicy::model()
 method	MessageRead::__construct()
 method	MessageReadBatch::__construct()
@@ -17643,6 +17677,7 @@ method	MessageService::admit()
 method	MessageService::answer()
 method	MessageService::ask()
 method	MessageService::assertSourceAccess()
+method	MessageService::claim()
 method	MessageService::deliver()
 method	MessageService::heldIds()
 method	MessageService::lockShared()
@@ -17654,7 +17689,6 @@ method	MessageService::readOne()
 method	MessageService::recipientOf()
 method	MessageService::reply()
 method	MessageService::send()
-method	MessageService::takeUp()
 method	MessageShowTool::__construct()
 method	MessageShowTool::read()
 method	MessageShowTool::readRequest()
@@ -17670,7 +17704,6 @@ method	MessageStateConflict::status()
 method	MessageTakeNextTool::command()
 method	MessageTakeNextTool::payload()
 method	MessageTakeNextTool::writeSchema()
-method	MessageTakenUp::__construct()
 method	MessageToSelf::forInbox()
 method	MessageToSelf::refusalCode()
 method	MessageToSelf::status()
@@ -18282,6 +18315,9 @@ method	OccupiedForwardingSeats::occupied()
 method	OccupiedSeat::__construct()
 method	Occurrence::__construct()
 method	Occurrence::chainWithItself()
+method	OfferNextAskCommand::__construct()
+method	OfferNextAskHandler::__construct()
+method	OfferNextAskHandler::handle()
 method	OfflineReplyMode::fromStart()
 method	OfflineReplyMode::passesOutages()
 method	OfflineReplyModeInvalid::for()
@@ -18516,8 +18552,6 @@ method	OwnMemories::memory()
 method	OwnMemories::own()
 method	OwnReminders::__construct()
 method	OwnReminders::own()
-method	OwnValuesState::ownValues()
-method	OwnValuesState::restoreOwnValues()
 method	OwnerAdmission::__construct()
 method	OwnerAdmission::admits()
 method	OwnerAdmission::owner()
@@ -19233,7 +19267,6 @@ method	PlanWindowResolver::__construct()
 method	PlanWindowResolver::read()
 method	PlanWord::__construct()
 method	PlanWord::literal()
-method	PlanWork::__construct()
 method	PlanWorkPreviewData::__construct()
 method	PlanWorkRecipientData::__construct()
 method	PlanWorkRecipientData::ofName()
@@ -20386,8 +20419,8 @@ method	PurposeConflict::forJob()
 method	PurposeRequired::forJob()
 method	PurposeResolver::__construct()
 method	PurposeResolver::resolve()
-method	PushAnsweringChatState::__construct()
-method	PushAnsweringChatState::handle()
+method	PushAnsweringMessageState::__construct()
+method	PushAnsweringMessageState::handle()
 method	PushPlanReviewState::__construct()
 method	PushPlanReviewState::handle()
 method	PushPlanState::__construct()
@@ -20790,6 +20823,7 @@ method	ReadsTaskFilters::filterRules()
 method	ReadsTaskFilters::filters()
 method	ReadyState::__construct()
 method	ReadyState::decide()
+method	ReadyState::frameReuse()
 method	ReadyState::onCompaction()
 method	ReadyState::onFileEdit()
 method	ReadyState::onPrompt()
@@ -20799,11 +20833,6 @@ method	ReadyState::onShellCommand()
 method	ReadyState::onStop()
 method	ReadyState::onToolFinished()
 method	ReadyState::onToolRequested()
-method	ReadyStateLoader::__construct()
-method	ReadyStateLoader::schemaVersion()
-method	ReadyStateLoader::sessionTransfer()
-method	ReadyStateLoader::stateClass()
-method	ReadyStateLoader::statesFor()
 method	ReadyWindow::__construct()
 method	ReadyWindow::of()
 method	ReadyWindow::offering()
@@ -20905,7 +20934,6 @@ method	RecipientNotifications::deliver()
 method	RecipientNotifications::receiptsOf()
 method	RecipientNotifications::settle()
 method	RecipientNotifications::withdraw()
-method	RecipientStateLoader::statesForRecipient()
 method	RecognizedReference::__construct()
 method	ReconcileAccountsCommand::handle()
 method	ReconcileAccountsHandler::__construct()
@@ -20980,6 +21008,10 @@ method	RecordHeartbeatCommand::__construct()
 method	RecordHeartbeatController::__invoke()
 method	RecordHeartbeatHandler::__construct()
 method	RecordHeartbeatHandler::handle()
+method	RecordHelperFinish::__construct()
+method	RecordHelperFinish::handle()
+method	RecordHelperStart::__construct()
+method	RecordHelperStart::handle()
 method	RecordHolderData::__construct()
 method	RecordHolderData::of()
 method	RecordHostDescriptorsCommand::__construct()
@@ -21237,6 +21269,7 @@ method	ReflectedMethod::declaredAttributes()
 method	ReflectedMethod::declaringClass()
 method	ReflectedMethod::docComment()
 method	ReflectedMethod::fileName()
+method	ReflectedMethod::firstParameterClass()
 method	ReflectedMethod::invokeOn()
 method	ReflectedMethod::isAbstract()
 method	ReflectedMethod::isFinal()
@@ -21344,6 +21377,7 @@ method	Reflector::property()
 method	Reflector::shortName()
 method	Reflector::startLine()
 method	Reflector::traits()
+method	Reflector::typeNames()
 method	Reflector::uses()
 method	Reflector::valuesMatch()
 method	ReflectorFactory::is()
@@ -21420,14 +21454,8 @@ method	RefusesOtherDrafts::assertCurrentDraftVersion()
 method	RefusesOtherDrafts::assertDraftEditor()
 method	RefusesStaleGatewayRuns::assertCurrentGatewayRun()
 method	RefusesUnusableSessions::assertUsableSession()
-method	RegisterAnsweringAskState::__construct()
-method	RegisterAnsweringAskState::handle()
-method	RegisterAnsweringState::__construct()
-method	RegisterAnsweringState::handle()
 method	RegisterAssignables::__construct()
 method	RegisterAssignables::__invoke()
-method	RegisterAwaitingSkillsState::__construct()
-method	RegisterAwaitingSkillsState::handle()
 method	RegisterCommands::__construct()
 method	RegisterCommands::handle()
 method	RegisterCommands::middlewareFor()
@@ -21445,7 +21473,6 @@ method	RegisterScriptDefinitions::registerKeywords()
 method	RegisterScriptDefinitions::registerObjects()
 method	RegisterStates::__construct()
 method	RegisterStates::__invoke()
-method	RegisterStates::domainStateType()
 method	RegisteredAction::__construct()
 method	RegisteredAction::of()
 method	RegisteredAssignedWork::__construct()
@@ -21531,6 +21558,13 @@ method	RegisteredSidebarGroup::of()
 method	RegisteredStateFactory::__construct()
 method	RegisteredStateFactory::frameFor()
 method	RegisteredStateFactory::isEnabled()
+method	RegisteredStateType::__construct()
+method	RegisteredStateType::isEnabled()
+method	RegisteredStateType::isTicking()
+method	RegisteredStateType::named()
+method	RegisteredStateType::of()
+method	RegisteredStateType::switchedBy()
+method	RegisteredStateType::tickGuard()
 method	Registry::__construct()
 method	Registry::all()
 method	Registry::clear()
@@ -22087,7 +22121,6 @@ method	RequiredDomainMissing::for()
 method	RequiredDomainTwice::for()
 method	RequiredServices::check()
 method	RequiresRequestKey::__construct()
-method	RequiresTransactionListener::__construct()
 method	ReserveStarts::__construct()
 method	ReserveStarts::hasRetired()
 method	ReserveStarts::reserve()
@@ -22310,19 +22343,16 @@ method	ReviewersOutData::__construct()
 method	ReviewersOutData::adding()
 method	ReviewersOutData::removing()
 method	ReviewingPlanState::__construct()
+method	ReviewingPlanState::frameReuse()
 method	ReviewingPlanState::instruction()
 method	ReviewingPlanState::isAbout()
 method	ReviewingPlanState::isFinished()
 method	ReviewingPlanState::onHelperReportedOnRecord()
 method	ReviewingPlanState::onHelperSentOnRecord()
+method	ReviewingPlanState::onPlanReviewDecided()
+method	ReviewingPlanState::onPlanReviewWithdrawn()
 method	ReviewingPlanState::onStop()
-method	ReviewingPlanState::ownValues()
-method	ReviewingPlanState::restoreOwnValues()
 method	ReviewingPlanState::reviewText()
-method	ReviewingPlanStateFactory::schemaVersion()
-method	ReviewingPlanStateFactory::sessionTransfer()
-method	ReviewingPlanStateFactory::stateClass()
-method	ReviewingPlanStateFactory::statesFor()
 method	ReviewingPlanStateReference::forPlan()
 method	ReviseProposalCall::__construct()
 method	ReviseProposalController::__invoke()
@@ -22866,6 +22896,7 @@ method	SaveSharePreviewRequest::selectedIds()
 method	SavedSharePreview::__construct()
 method	SavedSharePreviewData::__construct()
 method	SavedSharePreviewData::fromPreview()
+method	SavedState::__construct()
 method	ScanProgress::__construct()
 method	ScanProgress::after()
 method	ScanProgress::isAhead()
@@ -23378,7 +23409,7 @@ method	SentMessageAnswer::to()
 method	SentOperation::command()
 method	SeparateTransactionListeners::assertTransactionListener()
 method	SeparateTransactionListeners::handle()
-method	SeparateTransactionListeners::isDeclaredBy()
+method	SeparateTransactionListeners::listensWithConsent()
 method	SeparateTransactionListeners::sorted()
 method	SeparateTransactionListeners::transactionClassOf()
 method	Sequence::byId()
@@ -23429,7 +23460,6 @@ method	SequenceRun::sequence()
 method	SequenceRun::startFor()
 method	SequenceRun::stepLabel()
 method	SequenceRun::stepLine()
-method	SequenceRun::work()
 method	SequenceRunDocking::cardsFor()
 method	SequenceRunDocking::requireReadable()
 method	SequenceRunMissing::forId()
@@ -23471,9 +23501,6 @@ method	SequenceStepReached::runId()
 method	SequenceStepReached::wordsFor()
 method	SequenceWindowResolver::__construct()
 method	SequenceWindowResolver::read()
-method	SequenceWork::__construct()
-method	SequenceWork::currentInstruction()
-method	SequenceWork::needsWork()
 method	SequencesDomain::commands()
 method	SequencesDomain::description()
 method	SequencesDomain::draftProducers()
@@ -24896,6 +24923,7 @@ method	SkillPublication::lockById()
 method	SkillPublication::moveTo()
 method	SkillPublication::open()
 method	SkillPublication::openKeyOf()
+method	SkillPublication::raiseMoved()
 method	SkillPublication::recordProgress()
 method	SkillPublication::retire()
 method	SkillPublication::retry()
@@ -24916,6 +24944,7 @@ method	SkillPublicationFailed::transition()
 method	SkillPublicationFailed::write()
 method	SkillPublicationMissing::for()
 method	SkillPublicationMissing::refusalCode()
+method	SkillPublicationMoved::__construct()
 method	SkillPublicationStale::for()
 method	SkillPublicationStale::refusalCode()
 method	SkillPublications::deliver()
@@ -25109,7 +25138,7 @@ method	SpeakerData::__construct()
 method	SpeechAllowance::__construct()
 method	SpeechAllowance::assertGrant()
 method	SpeechAllowance::claim()
-method	SpeechAllowance::claimOnTakeUp()
+method	SpeechAllowance::claimTurnForQuestion()
 method	SpeechAllowance::claimedTurn()
 method	SpeechAllowance::declineWith()
 method	SpeechAllowance::digestOf()
@@ -25191,9 +25220,7 @@ method	StackLockTimedOut::spent()
 method	StackMissing::forTarget()
 method	StackPermission::allows()
 method	StackRestorer::__construct()
-method	StackRestorer::positionsByType()
 method	StackRestorer::restore()
-method	StackStates::of()
 method	StackTarget::__construct()
 method	StackTarget::actorIdentity()
 method	StackTarget::description()
@@ -25531,6 +25558,7 @@ method	StartTokens::rotate()
 method	StartTransaction::run()
 method	StartTransaction::runForSession()
 method	StartUnavailable::__construct()
+method	StartUnavailable::noticeReason()
 method	StartUnavailableReason::explanation()
 method	StartUnavailableReason::remedy()
 method	StartUnavailableReason::sentence()
@@ -25545,10 +25573,16 @@ method	StateAnswer::withLine()
 method	StateAnswerRefused::notAnEffect()
 method	StateAnswerRefused::notApplicationCommand()
 method	StateAnswerRefused::tooMany()
+method	StateArguments::__construct()
+method	StateArguments::castValue()
+method	StateArguments::withConstructorValues()
+method	StateArguments::withPropertyValues()
 method	StateBridgeFactStaging::__construct()
 method	StateBridgeFactStaging::deliver()
 method	StateBridgeFactStaging::dispatcher()
 method	StateBridgeFactStaging::stage()
+method	StateBuilder::__construct()
+method	StateBuilder::build()
 method	StateClassMismatch::for()
 method	StateEffectScan::callOf()
 method	StateEffectScan::findingsIn()
@@ -25563,6 +25597,7 @@ method	StateEventActivity::trackOrigin()
 method	StateEventAfterCommitFailed::during()
 method	StateEventAudience::__construct()
 method	StateEventAudience::allowsTarget()
+method	StateEventAudience::listening()
 method	StateEventBridge::__construct()
 method	StateEventBridge::receive()
 method	StateEventCommandRefused::for()
@@ -25575,10 +25610,14 @@ method	StateEventDelivery::deliverToAudience()
 method	StateEventDelivery::effectsOf()
 method	StateEventDelivery::evaluate()
 method	StateEventDelivery::invoke()
+method	StateEventDelivery::isDelegated()
 method	StateEventDelivery::reportFailure()
 method	StateEventDispatch::__construct()
+method	StateEventDispatch::admits()
 method	StateEventDispatch::assertTargetGranted()
 method	StateEventDispatch::scheduledAfterCommit()
+method	StateEventDispatch::targets()
+method	StateEventDispatch::withListening()
 method	StateEventDispatcher::__construct()
 method	StateEventDispatcher::awaitsCommit()
 method	StateEventDispatcher::bridgePosition()
@@ -25600,10 +25639,12 @@ method	StateEventEffects::withCaller()
 method	StateEventMethodUnregistered::for()
 method	StateEventOrigin::__construct()
 method	StateEventOrigin::effects()
+method	StateEventOrigin::frameId()
 method	StateEventOrigin::logDrop()
 method	StateEventOriginGuard::__construct()
 method	StateEventOriginGuard::check()
 method	StateEventOriginGuard::checkFromSnapshot()
+method	StateEventOriginGuard::settledByItsAnswer()
 method	StateEventParameter::matches()
 method	StateEventPayload::__construct()
 method	StateEventPayload::hasKey()
@@ -25643,30 +25684,27 @@ method	StateLabel::type()
 method	StateListenerDeclarations::__construct()
 method	StateListenerDeclarations::declarations()
 method	StateListenerDeclarations::ownerOf()
-method	StateLoader::schemaVersion()
-method	StateLoader::sessionTransfer()
-method	StateLoader::stateClass()
-method	StateLoader::statesFor()
 method	StateMethod::__construct()
 method	StateMethod::fromMethod()
 method	StateMethodSelector::__construct()
 method	StateMethodSelector::forEvent()
 method	StateMethodSelector::forHook()
 method	StateMethodSelector::select()
+method	StateMethods::answersAsHooksDo()
 method	StateMethods::argumentClass()
 method	StateMethods::declarationsFor()
 method	StateMethods::discover()
 method	StateMethods::eventFor()
-method	StateMethods::eventsForLoader()
-method	StateMethods::forLoader()
+method	StateMethods::eventsOf()
 method	StateMethods::forState()
 method	StateMethods::hasEventMethodName()
 method	StateMethods::hasRequiredArgument()
+method	StateMethods::isHookAnswerType()
 method	StateMethods::isHookOverride()
 method	StateMethods::isPublicInstanceMethod()
+method	StateMethods::methodFor()
 method	StateProvider::states()
 method	StatePush::__construct()
-method	StatePush::prune()
 method	StatePush::push()
 method	StatePush::save()
 method	StateReference::__construct()
@@ -25674,27 +25712,18 @@ method	StateReference::isForWork()
 method	StateReference::isSameAs()
 method	StateReference::workReference()
 method	StateReferenceFactory::about()
-method	StateReferences::__construct()
-method	StateReferences::subjectIds()
-method	StateReferencesInvalid::tooMany()
 method	StateRegistration::register()
 method	StateSchemaUnknown::for()
-method	StateSet::__construct()
-method	StateSet::build()
-method	StateSet::forSubjects()
-method	StateSet::stateAt()
-method	StateSet::stateOfClassAt()
-method	StateSubjectMissing::for()
 method	StateTransferUnknown::for()
+method	StateType::__construct()
 method	StateTypeMissing::forClass()
 method	StateTypeRegistry::__construct()
 method	StateTypeRegistry::freeze()
 method	StateTypeRegistry::get()
 method	StateTypeRegistry::has()
-method	StateTypeRegistry::loaders()
 method	StateTypeRegistry::register()
-method	StateTypeRegistry::tickingType()
 method	StateTypeRegistry::tickingTypeKeys()
+method	StateTypeRegistry::types()
 method	StateTypeRepeated::forKey()
 method	StateTypeUnknown::forKey()
 method	StateTypeUnknown::forTicking()
@@ -25706,6 +25735,14 @@ method	StateTypes::registry()
 method	StateTypes::ticking()
 method	StateTypesFrozen::forKey()
 method	StateTypesRequested::__construct()
+method	StateValues::cast()
+method	StateValues::dataProperties()
+method	StateValues::isData()
+method	StateValues::isEnumOrData()
+method	StateValues::of()
+method	StateValues::saved()
+method	StateValuesRefused::missing()
+method	StateValuesRefused::mistyped()
 method	StatementDeadline::__construct()
 method	StatementDeadline::within()
 method	StatementDeadlines::within()
@@ -26043,7 +26080,6 @@ method	StringChoiceConstraintsData::__construct()
 method	StringChoiceOptionData::__construct()
 method	StringChoiceValueData::__construct()
 method	StringConstraintsData::__construct()
-method	StringScan::declaredListenersIn()
 method	StringScan::of()
 method	StringSetting::__construct()
 method	StringSetting::accepts()
@@ -26308,7 +26344,6 @@ method	TargetAuthorizer::authorize()
 method	TargetAuthorizer::filterActions()
 method	TargetHasNoText::for()
 method	TargetNotCommentable::for()
-method	TargetStates::of()
 method	TargetedCommand::receiptTarget()
 method	Task::amongSelectedIds()
 method	Task::assignmentIdentity()
@@ -26367,6 +26402,7 @@ method	TaskAssignments::visibleRecords()
 method	TaskBlocked::__construct()
 method	TaskBlocked::dockId()
 method	TaskBlocked::dockType()
+method	TaskBlocked::enteredState()
 method	TaskBriefPassage::__construct()
 method	TaskBriefPassage::excerptOf()
 method	TaskBriefPassage::fromId()
@@ -26382,6 +26418,7 @@ method	TaskCalls::listAssignedTasks()
 method	TaskCancelled::__construct()
 method	TaskCancelled::dockId()
 method	TaskCancelled::dockType()
+method	TaskCancelled::enteredState()
 method	TaskCard::__construct()
 method	TaskChangedSinceRead::notBlockable()
 method	TaskChangedSinceRead::notCancellable()
@@ -26433,6 +26470,7 @@ method	TaskFiltersData::toDomain()
 method	TaskFinished::__construct()
 method	TaskFinished::dockId()
 method	TaskFinished::dockType()
+method	TaskFinished::enteredState()
 method	TaskGraph::__construct()
 method	TaskGraphChanged::refusalCode()
 method	TaskGraphChanged::since()
@@ -26646,11 +26684,13 @@ method	TaskSearchProvider::hitOf()
 method	TaskSearchProvider::search()
 method	TaskStartCommitted::__construct()
 method	TaskStarted::__construct()
+method	TaskStarted::enteredState()
 method	TaskState::badge()
 method	TaskState::hasEnded()
 method	TaskState::isHoldingChecks()
 method	TaskState::stateLabel()
 method	TaskState::unfinished()
+method	TaskStateEvent::enteredState()
 method	TaskStateGroup::states()
 method	TaskStream::__construct()
 method	TaskStream::changes()
@@ -27056,7 +27096,6 @@ method	TickBatch::count()
 method	TickBatch::isEmpty()
 method	TickCandidate::__construct()
 method	TickCandidates::__construct()
-method	TickCandidates::batchesPerStack()
 method	TickCandidates::candidate()
 method	TickCandidates::examineAfter()
 method	TickCandidates::next()
@@ -27083,12 +27122,12 @@ method	TickOrigins::runWith()
 method	TickSubjectLocks::lockedSubjects()
 method	TickSubjectUndeclared::forCommand()
 method	TickableState::onTick()
-method	TickableStateLoader::occurrenceGuard()
 method	TickableStateMissing::forType()
 method	TicketMalformed::outsideBase64Url()
 method	TickingTypes::__construct()
 method	TickingTypes::contains()
 method	TickingTypes::typeKeys()
+method	Ticks::__construct()
 method	TieredRecordSearch::__construct()
 method	TieredRecordSearch::afterTier()
 method	TieredRecordSearch::batch()
@@ -27805,12 +27844,10 @@ method	WorkStackPushes::__construct()
 method	WorkStackPushes::current()
 method	WorkStackPushes::currentRecord()
 method	WorkStackPushes::offerFor()
-method	WorkStackPushes::pruneCurrent()
 method	WorkStackPushes::push()
 method	WorkStackPushes::pushFor()
 method	WorkStackPushes::stackTargetsOf()
 method	WorkStackPushes::targets()
-method	WorkStackPushes::tellFor()
 method	WorkStacks::sessionsOf()
 method	WorkStacks::sessionsToAdmit()
 method	WorkerAlreadyAssigned::holding()
@@ -27821,28 +27858,23 @@ method	WorkerReservation::occupy()
 method	WorkerReservation::release()
 method	WorkerReservation::releaseAll()
 method	WorkingOnPlanState::__construct()
+method	WorkingOnPlanState::frameReuse()
 method	WorkingOnPlanState::instruction()
 method	WorkingOnPlanState::isFinished()
+method	WorkingOnPlanState::onPlanCancelled()
+method	WorkingOnPlanState::onPlanFinished()
 method	WorkingOnPlanState::workRecordType()
-method	WorkingOnPlanStateFactory::__construct()
-method	WorkingOnPlanStateFactory::schemaVersion()
-method	WorkingOnPlanStateFactory::sessionTransfer()
-method	WorkingOnPlanStateFactory::stateClass()
-method	WorkingOnPlanStateFactory::statesFor()
 method	WorkingOnPlanStateReference::forPlan()
 method	WorkingOnTaskState::__construct()
+method	WorkingOnTaskState::frameReuse()
 method	WorkingOnTaskState::instruction()
 method	WorkingOnTaskState::isFinished()
 method	WorkingOnTaskState::onStop()
+method	WorkingOnTaskState::onTaskBlocked()
+method	WorkingOnTaskState::onTaskCancelled()
+method	WorkingOnTaskState::onTaskFinished()
+method	WorkingOnTaskState::workBy()
 method	WorkingOnTaskState::workRecordType()
-method	WorkingOnTaskStateFactory::__construct()
-method	WorkingOnTaskStateFactory::build()
-method	WorkingOnTaskStateFactory::runsOf()
-method	WorkingOnTaskStateFactory::schemaVersion()
-method	WorkingOnTaskStateFactory::sessionTransfer()
-method	WorkingOnTaskStateFactory::stateClass()
-method	WorkingOnTaskStateFactory::statesFor()
-method	WorkingOnTaskStateFactory::statesForRecipient()
 method	WorkingOnTaskStateReference::forTask()
 method	WorkspaceClone::__construct()
 method	WorkspaceFacts::__construct()
@@ -27918,6 +27950,7 @@ method	WriteResponsibilities::admit()
 method	WriteResponsibilities::assign()
 method	WriteResponsibilities::release()
 method	WriteResponsibilities::replace()
+method	WriteStateValues::handle()
 method	YieldKeyword::compile()
 method	YieldKeyword::definition()
 method	YieldKeyword::execute()
@@ -28356,7 +28389,6 @@ parameter	$claimGrant
 parameter	$claimHolder
 parameter	$claimId
 parameter	$claimLimit
-parameter	$claimStands
 parameter	$claimToken
 parameter	$claimableRootId
 parameter	$claimant
@@ -28472,12 +28504,12 @@ parameter	$constantAccess
 parameter	$constraints
 parameter	$construct
 parameter	$constructor
+parameter	$constructorValues
 parameter	$consumed
 parameter	$containedBudgets
 parameter	$containedShortfall
 parameter	$container
 parameter	$containerInstance
-parameter	$containerOfRequest
 parameter	$containerRequired
 parameter	$containers
 parameter	$content
@@ -28686,6 +28718,7 @@ parameter	$documentation
 parameter	$documents
 parameter	$domain
 parameter	$domainClass
+parameter	$domainEventFolders
 parameter	$domainName
 parameter	$domainSwitches
 parameter	$domains
@@ -28933,7 +28966,6 @@ parameter	$filterValue
 parameter	$filters
 parameter	$filtersOf
 parameter	$find
-parameter	$finder
 parameter	$finding
 parameter	$findings
 parameter	$fingerprint
@@ -29157,7 +29189,6 @@ parameter	$incoming
 parameter	$incomingWork
 parameter	$independent
 parameter	$index
-parameter	$indexesByStack
 parameter	$ineligible
 parameter	$inertia
 parameter	$inherited
@@ -29207,7 +29238,7 @@ parameter	$isActive
 parameter	$isAdded
 parameter	$isAdding
 parameter	$isAfterLastChange
-parameter	$isAnswered
+parameter	$isAfterRefusedStop
 parameter	$isArrayAssignment
 parameter	$isAuthenticated
 parameter	$isAvailable
@@ -29224,7 +29255,6 @@ parameter	$isChosen
 parameter	$isClaimed
 parameter	$isClean
 parameter	$isConnections
-parameter	$isContinuation
 parameter	$isCorrection
 parameter	$isCounted
 parameter	$isCredentialWriteInProgress
@@ -29270,6 +29300,7 @@ parameter	$isNew
 parameter	$isNewIdentity
 parameter	$isNewJob
 parameter	$isOffline
+parameter	$isOn
 parameter	$isOpen
 parameter	$isOverLimit
 parameter	$isProcessConfirmed
@@ -29317,9 +29348,9 @@ parameter	$issued
 parameter	$issuedAt
 parameter	$italic
 parameter	$item
-parameter	$item	app/Data/NotificationChangeItem.php
-parameter	$item	app/Data/ProtectedItemData.php
-parameter	$item	app/Data/ProtectionReportData.php
+parameter	$item	app/Data/Notifications/NotificationChangeItem.php
+parameter	$item	app/Data/Profiles/ProtectedItemData.php
+parameter	$item	app/Data/Profiles/ProtectionReportData.php
 parameter	$item	app/Declarations/RegisteredMenuItem.php
 parameter	$item	app/Declarations/RegisteredNavigation.php
 parameter	$item	app/Exceptions/InvalidMenuDeclaration.php
@@ -29331,9 +29362,9 @@ parameter	$item	app/Values/ProtectedItem.php
 parameter	$item	app/Values/ProtectionReport.php
 parameter	$itemValue
 parameter	$items
-parameter	$items	app/Data/MessageBatchData.php
-parameter	$items	app/Data/NotificationPage.php
-parameter	$items	app/Data/ProtectionReportData.php
+parameter	$items	app/Data/Messages/MessageBatchData.php
+parameter	$items	app/Data/Notifications/NotificationPage.php
+parameter	$items	app/Data/Profiles/ProtectionReportData.php
 parameter	$items	app/Support/Layout/LayoutMenuGroupData.php
 parameter	$items	app/Support/RecordMenus.php
 parameter	$items	app/Values/ProtectionReport.php
@@ -29453,6 +29484,7 @@ parameter	$listenerPort
 parameter	$listenerResult
 parameter	$listenerResults
 parameter	$listeners
+parameter	$listening
 parameter	$listing
 parameter	$listingOperation
 parameter	$literal
@@ -29557,6 +29589,7 @@ parameter	$messages
 parameter	$metadata
 parameter	$meter
 parameter	$method
+parameter	$methodOf
 parameter	$methods
 parameter	$middleware
 parameter	$migrationFolders
@@ -29716,7 +29749,6 @@ parameter	$occurredAt
 parameter	$occurrence
 parameter	$occurrenceKey
 parameter	$occurrences
-parameter	$of
 parameter	$ofType
 parameter	$offer
 parameter	$offered
@@ -30053,6 +30085,7 @@ parameter	$propTypes
 parameter	$properties
 parameter	$property
 parameter	$propertyRules
+parameter	$propertyValues
 parameter	$proposal
 parameter	$proposalId
 parameter	$proposals
@@ -30106,6 +30139,7 @@ parameter	$purposeLabel
 parameter	$purposeReference
 parameter	$purposeText
 parameter	$purposes
+parameter	$pushed
 parameter	$qualifiedKey
 parameter	$queriesByCategory
 parameter	$queriesByConnection
@@ -30161,7 +30195,6 @@ parameter	$readiness
 parameter	$reading
 parameter	$readings
 parameter	$reads
-parameter	$readyStates
 parameter	$readyToFinish
 parameter	$real
 parameter	$realDirectory
@@ -30343,11 +30376,11 @@ parameter	$restorer
 parameter	$restricted
 parameter	$result
 parameter	$result	app/Commands/ResolveMergeAttempt/ResolveMergeAttemptCommand.php
-parameter	$result	app/Data/AskDetail.php
-parameter	$result	app/Data/ClaudeAnswerData.php
-parameter	$result	app/Data/CodexMessageData.php
-parameter	$result	app/Data/ProfileStepData.php
-parameter	$result	app/Data/RunOutcomeSummaryData.php
+parameter	$result	app/Data/Accounts/ClaudeAnswerData.php
+parameter	$result	app/Data/Accounts/CodexMessageData.php
+parameter	$result	app/Data/Asks/AskDetail.php
+parameter	$result	app/Data/Processes/RunOutcomeSummaryData.php
+parameter	$result	app/Data/Profiles/ProfileStepData.php
 parameter	$result	app/Events/RunOutcomeRecorded.php
 parameter	$result	app/Mcp/Data/JsonRpcReplyData.php
 parameter	$result	app/Models/Reviews/MergeAttempt.php
@@ -30750,8 +30783,6 @@ parameter	$stdout
 parameter	$steering
 parameter	$step
 parameter	$stepInput
-parameter	$stepInstruction
-parameter	$stepNumber
 parameter	$stepOutcome
 parameter	$stepOutcomes
 parameter	$stepOutput
@@ -30842,7 +30873,6 @@ parameter	$tag
 parameter	$takeId
 parameter	$takePending
 parameter	$taken
-parameter	$takenUp
 parameter	$takeover
 parameter	$takes
 parameter	$takesAssignments
@@ -31041,7 +31071,7 @@ parameter	$value	app/Casts/StoredValueCast.php
 parameter	$value	app/Casts/StoredValuesCast.php
 parameter	$value	app/Casts/SupervisorRoutesCast.php
 parameter	$value	app/Concerns/BoundedReads.php
-parameter	$value	app/Data/DockDestinationOptionData.php
+parameter	$value	app/Data/Docks/DockDestinationOptionData.php
 parameter	$value	app/Exceptions/ArrangementUnknown.php
 parameter	$value	app/Exceptions/ProfileProposalRefused.php
 parameter	$value	app/Http/Responses/PageActionAnswers.php
@@ -31058,6 +31088,7 @@ parameter	$value	app/Support/OneLineRule.php
 parameter	$value	app/Support/PrivateValues.php
 parameter	$value	app/Support/ReflectedProperty.php
 parameter	$value	app/Support/Reflector.php
+parameter	$value	app/Support/StateLoading/StateValues.php
 parameter	$value	app/Support/Storage/FrameRecordsCast.php
 parameter	$value	app/Support/Storage/RecordedAnswerCast.php
 parameter	$value	app/Support/Storage/RecordedStepsCast.php
@@ -31066,6 +31097,11 @@ parameter	$value	app/Values/ObjectRead.php
 parameter	$valueClass
 parameter	$valueClasses
 parameter	$values	app/Http/Controllers/Terminal/SubmitPrivateInputController.php
+parameter	$values	app/Support/Decisions/StateReferenceFactory.php
+parameter	$values	app/Support/References/StateReference.php
+parameter	$values	app/Support/StateLoading/SavedState.php
+parameter	$values	app/Support/StateLoading/StateArguments.php
+parameter	$values	app/Support/StateLoading/StateBuilder.php
 parameter	$values	app/Support/Storage/FrameRecord.php
 parameter	$values	app/Support/Storage/StoredFrame.php
 parameter	$variable
@@ -31101,7 +31137,6 @@ parameter	$wait
 parameter	$waitActions
 parameter	$waitId
 parameter	$waiting
-parameter	$waitingIds
 parameter	$waits
 parameter	$waitsFor
 parameter	$waitsOnHelpers
@@ -31140,6 +31175,7 @@ parameter	$windowSeconds
 parameter	$windows
 parameter	$wire
 parameter	$wireParameters
+parameter	$wiring
 parameter	$withText
 parameter	$withheld
 parameter	$withheldGrants
@@ -31152,7 +31188,6 @@ parameter	$work
 parameter	$workClass
 parameter	$workFolder
 parameter	$workId
-parameter	$workOf
 parameter	$workProviderClass
 parameter	$workStack
 parameter	$workStacks
@@ -31217,6 +31252,7 @@ property	AccountMonthCostData::$lastObservedAt
 property	AccountMonthCostData::$monthStart
 property	AccountMonthCostData::$observations
 property	AccountMonthCostData::$usd
+property	AccountNoticeCause::$driver
 property	AccountNoticeData::$driver
 property	AccountNoticeData::$id
 property	AccountNoticeData::$reason
@@ -31444,8 +31480,6 @@ property	AddTaskWaitHandler::$tasks
 property	AddUsageCostCommand::$cost
 property	AddUsageCostCommand::$start
 property	AddUsageCostHandler::$accounts
-property	AddressedStackPush::$eventScope
-property	AddressedStackPush::$events
 property	AddressedStackPush::$restorer
 property	AddressedStackPush::$statePush
 property	AddressedStackPush::$transaction
@@ -31789,16 +31823,15 @@ property	AnswerNavigationCommand::$generation
 property	AnswerNavigationCommand::$navigationId
 property	AnswerNavigationHandler::$answering
 property	AnswerNavigationHandler::$rounds
+property	AnsweringAskState::$askId
+property	AnsweringAskState::$hopId
 property	AnsweringAskState::$isOpen
-property	AnsweringChatState::$budget
-property	AnsweringChatState::$inboxId
-property	AnsweringChatState::$values
-property	AnsweringChatStateFactory::$budget
-property	AnsweringMessageState::$claimStands
-property	AnsweringMessageState::$messageId
-property	AnsweringValuesData::$isAnswered
-property	AnsweringValuesData::$toolUses
-property	AnsweringValuesData::$waitingIds
+property	AnsweringMessageState::$agentId
+property	AnsweringMessageState::$budget
+property	AnsweringMessageState::$inboxId
+property	AnsweringMessageState::$refusedStops
+property	AnsweringMessageState::$toolUses
+property	AnsweringMessageState::$waitingIds
 property	AnyOf::$children
 property	AppendUploadCommand::$digest
 property	AppendUploadCommand::$index
@@ -32248,6 +32281,7 @@ property	AutoAssignmentStatuses::$work
 property	AvailableListener::$listener
 property	AvailableListener::$owner
 property	AwaitingSkillsState::$publication
+property	AwaitingSkillsState::$publicationId
 property	BaseOverride::$base
 property	BaseOverride::$override
 property	BeginSignInAgainCommand::$accountId
@@ -32355,6 +32389,7 @@ property	BuiltInAskType::$subjects
 property	BuiltInDesks::$desks
 property	BuiltInProfilePins::$dispatchers
 property	BuiltInProfilePins::$profiles
+property	BuiltState::$state
 property	BuiltinResult::$context
 property	BuiltinResult::$status
 property	BuiltinResult::$stderr
@@ -32532,6 +32567,7 @@ property	ChatAdmissionPolicy::$agents
 property	ChatAdmissionPolicy::$chats
 property	ChatAdmissionPolicy::$eligibility
 property	ChatAdmissionPolicy::$inboxes
+property	ChatAnswer::$inboxId
 property	ChatCalls::$sender
 property	ChatCapabilitiesData::$add
 property	ChatCapabilitiesData::$close
@@ -34014,16 +34050,11 @@ property	DomainEntry::$skills
 property	DomainEntry::$switchable
 property	DomainEventServiceProvider::$discovered
 property	DomainRegistry::$domainsByName
-property	DomainStateType::$availability
-property	DomainStateType::$loader
-property	DomainStateType::$owner
 property	DomainStatus::$available
 property	DomainStatus::$owner
 property	DomainStatus::$switchedOn
 property	DomainStatus::$unavailableRequirements
 property	DomainSwitches::$groups
-property	DomainTickableStateType::$loader
-property	DomainTickableStateType::$type
 property	DomainTypeWriter::$owners
 property	DomainUi::$key
 property	DomainUi::$menuItems
@@ -34080,7 +34111,9 @@ property	DraftSkill::$key
 property	DraftState::$draft
 property	DraftState::$held
 property	DraftState::$holder
+property	DraftState::$propertyValues
 property	DraftState::$state
+property	DraftState::$type
 property	DraftTarget::$documentNumber
 property	DraftTarget::$expectedVersion
 property	DraftTarget::$token
@@ -34460,6 +34493,9 @@ property	EventCall::$site
 property	EventCall::$takesOnlyEvents
 property	EventCapture::$outsideCommands
 property	EventCapture::$units
+property	EventGroups::$domainEventFolders
+property	EventGroups::$events
+property	EventGroups::$groups
 property	EventProducer::$call
 property	EventProducer::$event
 property	EventProducer::$line
@@ -34734,8 +34770,11 @@ property	FolderWalker::$closed
 property	FolderWalker::$confinement
 property	FolderWalker::$roots
 property	FolderWorkspace::$folder
-property	FollowingSequenceState::$sequence
-property	FollowingSequenceStateFactory::$runs
+property	FollowingSequenceState::$currentStep
+property	FollowingSequenceState::$isFollowing
+property	FollowingSequenceState::$runId
+property	FollowingSequenceState::$runNumber
+property	FollowingSequenceState::$steps
 property	FormerPaths::$paths
 property	Frame::$admittedAt
 property	Frame::$bottom
@@ -34876,7 +34915,7 @@ property	HeldPartData::$requestState
 property	HeldPlansOverview::$plans
 property	HeldStartRefusals::$refusals
 property	HeldTasksOverview::$tasks
-property	HelperActivityRecorder::$activity
+property	HelperActivity::$activity
 property	HelperCalls::$sender
 property	HelperCancelCommand::$description
 property	HelperCancelCommand::$signature
@@ -34940,10 +34979,8 @@ property	HelperReceiptData::$requestedModel
 property	HelperReceiptData::$requestedModelType
 property	HelperReceiptData::$resolvedModel
 property	HelperReceiptData::$state
-property	HelperRecordFactSender::$eventScope
 property	HelperRecordFactSender::$events
 property	HelperRecordFactSender::$facts
-property	HelperRecordFactSender::$transaction
 property	HelperRecords::$starts
 property	HelperReportedOnRecord::$helperAgentId
 property	HelperReportedOnRecord::$subject
@@ -35652,6 +35689,8 @@ property	ListenerPolicy::$ownership
 property	ListenerPolicy::$runner
 property	ListenerRegistry::$afterCommit
 property	ListenerRegistry::$inCommandTransaction
+property	ListeningStacks::$methods
+property	ListeningStacks::$types
 property	LoadMigrations::$app
 property	LocalAccountFolders::$files
 property	LocalFiles::$code
@@ -35877,8 +35916,6 @@ property	MessageAnswerRequired::$messageId
 property	MessageAnswered::$answeredBy
 property	MessageAnswered::$messageId
 property	MessageAnswered::$replyId
-property	MessageAwaitsAnswer::$inboxId
-property	MessageAwaitsAnswer::$messageId
 property	MessageBatchAcknowledged::$batchId
 property	MessageBatchAcknowledged::$confirmed
 property	MessageBatchData::$batchId
@@ -35910,6 +35947,9 @@ property	MessageClaimHolder::$holderId
 property	MessageClaimHolder::$holderType
 property	MessageClaimReleased::$claim
 property	MessageClaimReleased::$messageId
+property	MessageClaimed::$claimant
+property	MessageClaimed::$inboxId
+property	MessageClaimed::$messageId
 property	MessageClaims::$responsibilities
 property	MessageClaims::$store
 property	MessageCommand::$messageId
@@ -35933,6 +35973,8 @@ property	MessageInput::$question
 property	MessageInput::$requestKey
 property	MessageLine::$text
 property	MessageNamed::$messageId
+property	MessageOffered::$inboxId
+property	MessageOffered::$messageId
 property	MessagePage::$messages
 property	MessagePage::$olderCursor
 property	MessagePartData::$attachmentId
@@ -35945,16 +35987,16 @@ property	MessagePinRecords::$pinnable
 property	MessageReactionAdded::$inboxId
 property	MessageReactionAdded::$messageId
 property	MessageReactionAdded::$owner
+property	MessageRead::$claimed
 property	MessageRead::$firstRead
 property	MessageRead::$inboxId
 property	MessageRead::$messageId
 property	MessageRead::$reader
-property	MessageRead::$takenUp
 property	MessageReadBatch::$messageReads
+property	MessageReadResult::$claimed
 property	MessageReadResult::$firstRead
 property	MessageReadResult::$messageId
 property	MessageReadResult::$messages
-property	MessageReadResult::$takenUp
 property	MessageReader::$actorId
 property	MessageReader::$actorType
 property	MessageReader::$readAt
@@ -35985,8 +36027,6 @@ property	MessageService::$speech
 property	MessageService::$store
 property	MessageShowTool::$conversations
 property	MessageStateConflict::$staleCode
-property	MessageTakenUp::$claimant
-property	MessageTakenUp::$messageId
 property	MessageView::$addresseeId
 property	MessageView::$addresseeType
 property	MessageView::$answerId
@@ -36309,6 +36349,8 @@ property	OccupiedSeat::$reference
 property	Occurrence::$chain
 property	Occurrence::$event
 property	Occurrence::$staged
+property	OfferNextAskCommand::$hopId
+property	OfferNextAskHandler::$attention
 property	OfflineReplySeal::$key
 property	OpenAction::$arguments
 property	OpenAction::$tool
@@ -36976,6 +37018,7 @@ property	PlanReviewReceiptData::$isHistorical
 property	PlanReviewReceiptData::$reason
 property	PlanReviewRequested::$editionId
 property	PlanReviewRequested::$planId
+property	PlanReviewRequested::$planNumber
 property	PlanReviewRequested::$reviewers
 property	PlanReviewView::$assignees
 property	PlanReviewView::$authorizer
@@ -37013,9 +37056,6 @@ property	PlanWindowResolver::$records
 property	PlanWindowResolver::$request
 property	PlanWindowResolver::$review
 property	PlanWord::$pieces
-property	PlanWork::$number
-property	PlanWork::$planId
-property	PlanWork::$state
 property	PlanWorkPreviewData::$isOverLimit
 property	PlanWorkPreviewData::$mayAssign
 property	PlanWorkPreviewData::$movingTasks
@@ -37767,7 +37807,7 @@ property	PurposeChoice::$purposeId
 property	PurposeChoice::$purposeText
 property	PurposeChoice::$subject
 property	PurposeResolver::$visibility
-property	PushAnsweringChatState::$workStacks
+property	PushAnsweringMessageState::$workStacks
 property	PushPlanReviewState::$workStack
 property	PushPlanState::$workStack
 property	PushSequenceState::$runs
@@ -37952,7 +37992,6 @@ property	ReadinessCheckSweep::$database
 property	ReadsServiceProvider::$countedConnections
 property	ReadyState::$policy
 property	ReadyState::$stops
-property	ReadyStateLoader::$containerOfRequest
 property	ReadyWindow::$dockOffer
 property	ReadyWindow::$state
 property	ReadyWindow::$windowFields
@@ -38112,6 +38151,8 @@ property	RecordGatewayOutcomeCommand::$runId
 property	RecordHeartbeatCall::$requestKey
 property	RecordHeartbeatCommand::$sessionId
 property	RecordHeartbeatHandler::$clock
+property	RecordHelperFinish::$activity
+property	RecordHelperStart::$activity
 property	RecordHolderData::$holder
 property	RecordHolderData::$recordId
 property	RecordHolderData::$recordType
@@ -38377,10 +38418,7 @@ property	RefusalReplayed::$storedDetails
 property	RefuseRunnerOfOtherArrangement::$setting
 property	RefuseStaleRuns::$commands
 property	RefuseWritesDuringEvaluation::$guard
-property	RegisterAnsweringAskState::$states
-property	RegisterAnsweringState::$factory
 property	RegisterAssignables::$assignments
-property	RegisterAwaitingSkillsState::$factory
 property	RegisterCommands::$propertyRules
 property	RegisterDraftProducers::$producers
 property	RegisterIncomingWork::$incoming
@@ -38468,9 +38506,14 @@ property	RegisteredSettingCommands::$registry
 property	RegisteredSidebarGroup::$key
 property	RegisteredSidebarGroup::$label
 property	RegisteredSidebarGroup::$owner
+property	RegisteredStateFactory::$builder
 property	RegisteredStateFactory::$clock
-property	RegisteredStateFactory::$states
 property	RegisteredStateFactory::$types
+property	RegisteredStateType::$isOn
+property	RegisteredStateType::$key
+property	RegisteredStateType::$schemaVersion
+property	RegisteredStateType::$stateClass
+property	RegisteredStateType::$transfer
 property	Registry::$missing
 property	Registry::$registrations
 property	Registry::$repeated
@@ -38952,7 +38995,6 @@ property	RequireMessageAnswerHandler::$inboxes
 property	RequireMessageAnswerHandler::$responsibilities
 property	RequiresRequestKey::$retentionDays
 property	RequiresRequestKey::$tombstoneDays
-property	RequiresTransactionListener::$listener
 property	ReserveStarts::$sessions
 property	ResetSettingCommand::$expectedRevision
 property	ResetSettingCommand::$setting
@@ -39112,7 +39154,9 @@ property	ReviewMergeAdmission::$config
 property	ReviewResponses::$commands
 property	ReviewResponses::$redirect
 property	ReviewersOutData::$agentIds
-property	ReviewingPlanState::$plan
+property	ReviewingPlanState::$isReviewing
+property	ReviewingPlanState::$number
+property	ReviewingPlanState::$planId
 property	ReviewingPlanState::$reviewersOut
 property	ReviseProposalCall::$declaration
 property	ReviseProposalCall::$expectedRevision
@@ -39521,6 +39565,8 @@ property	SavedSharePreviewData::$checksum
 property	SavedSharePreviewData::$expiresAt
 property	SavedSharePreviewData::$id
 property	SavedSharePreviewData::$selectedIds
+property	SavedState::$type
+property	SavedState::$values
 property	ScanProgress::$anchorFrameId
 property	ScanProgress::$delivered
 property	ScanProgress::$position
@@ -39910,10 +39956,6 @@ property	SequenceStepReached::$runId
 property	SequenceStepReached::$step
 property	SequenceWindowResolver::$page
 property	SequenceWindowResolver::$request
-property	SequenceWork::$runNumber
-property	SequenceWork::$state
-property	SequenceWork::$stepInstruction
-property	SequenceWork::$stepNumber
 property	SequencesIndex::$producers
 property	SequencesShow::$index
 property	ServedActivityLog::$events
@@ -40561,6 +40603,9 @@ property	SkillPreviewTool::$preview
 property	SkillPreviewTool::$skills
 property	SkillPruneCommand::$description
 property	SkillPruneCommand::$signature
+property	SkillPublicationMoved::$publicationId
+property	SkillPublicationMoved::$sessionId
+property	SkillPublicationMoved::$state
 property	SkillPublishing::$dispatchers
 property	SkillRefreshCommand::$description
 property	SkillRefreshCommand::$signature
@@ -40688,9 +40733,9 @@ property	StackInspection::$status
 property	StackInspection::$version
 property	StackInspectionController::$inspections
 property	StackInspectionQuery::$restorer
+property	StackRestorer::$builder
 property	StackRestorer::$factory
 property	StackRestorer::$selector
-property	StackRestorer::$states
 property	StackRestorer::$types
 property	StackTarget::$agentId
 property	StackTarget::$sessionId
@@ -40953,8 +40998,13 @@ property	StateAnswer::$effects
 property	StateAnswer::$hook
 property	StateAnswer::$lines
 property	StateAnswer::$state
+property	StateArguments::$constructorValues
+property	StateArguments::$propertyValues
+property	StateArguments::$type
+property	StateArguments::$values
 property	StateBridgeFactStaging::$container
 property	StateBridgeFactStaging::$scope
+property	StateBuilder::$pipelines
 property	StateEventActivity::$deliveries
 property	StateEventActivity::$evaluating
 property	StateEventAudience::$actor
@@ -40972,6 +41022,7 @@ property	StateEventDelivery::$commands
 property	StateEventDelivery::$declarations
 property	StateEventDelivery::$effects
 property	StateEventDelivery::$engineStacks
+property	StateEventDelivery::$listening
 property	StateEventDelivery::$log
 property	StateEventDelivery::$selector
 property	StateEventDelivery::$stacks
@@ -40980,6 +41031,7 @@ property	StateEventDispatch::$afterCommit
 property	StateEventDispatch::$audience
 property	StateEventDispatch::$event
 property	StateEventDispatch::$id
+property	StateEventDispatch::$listening
 property	StateEventDispatcher::$payloadKey
 property	StateEventDispatcher::$scope
 property	StateEventEffects::$actors
@@ -40996,6 +41048,7 @@ property	StateEventOrigin::$dispatch
 property	StateEventOrigin::$listenerResult
 property	StateEventOrigin::$target
 property	StateEventOriginGuard::$activity
+property	StateEventOriginGuard::$methods
 property	StateEventOriginGuard::$selector
 property	StateEventOriginGuard::$stacks
 property	StateEventPayload::$dispatch
@@ -41025,13 +41078,14 @@ property	StatePush::$restorer
 property	StatePush::$types
 property	StateReference::$subject
 property	StateReference::$typeKey
-property	StateReferences::$references
-property	StateSet::$states
-property	StateSet::$typeKey
+property	StateReference::$values
+property	StateType::$key
+property	StateType::$schemaVersion
+property	StateType::$transfer
 property	StateTypeRegistry::$isFrozen
 property	StateTypeRegistry::$types
+property	StateTypes::$container
 property	StateTypes::$events
-property	StateTypes::$readyStates
 property	StateTypes::$registry
 property	StateTypesRequested::$registry
 property	StatementDeadline::$connections
@@ -41098,7 +41152,7 @@ property	StopConditionRunData::$timeoutSeconds
 property	StopConditions::$attemptSeconds
 property	StopConditions::$conditions
 property	StopDetails::$closingWords
-property	StopDetails::$isContinuation
+property	StopDetails::$isAfterRefusedStop
 property	StopDetails::$turnId
 property	StopPreparation::$message
 property	StopPreparation::$state
@@ -41719,6 +41773,9 @@ property	TaskStarted::$actor
 property	TaskStarted::$historyEntryId
 property	TaskStarted::$previousState
 property	TaskStarted::$taskId
+property	TaskStateEvent::$historyEntryId
+property	TaskStateEvent::$previousState
+property	TaskStateEvent::$taskId
 property	TaskStream::$history
 property	TaskStream::$log
 property	TaskStreamEntryData::$actorId
@@ -41964,8 +42021,8 @@ property	TickCandidate::$stackId
 property	TickCandidate::$stackVersion
 property	TickCandidate::$state
 property	TickCandidate::$target
+property	TickCandidates::$builder
 property	TickCandidates::$progress
-property	TickCandidates::$states
 property	TickCandidates::$types
 property	TickCommand::$description
 property	TickCommand::$signature
@@ -41987,6 +42044,7 @@ property	TickDelivery::$settings
 property	TickOrigins::$running
 property	TickOrigins::$types
 property	TickingTypes::$typeKeys
+property	Ticks::$guard
 property	TieredRecordSearch::$deadline
 property	TieredSearchSource::$admitsOpen
 property	TieredSearchSource::$admitted
@@ -42345,12 +42403,15 @@ property	WorkStackPushes::$addressed
 property	WorkStackPushes::$stacks
 property	WorkStackPushes::$states
 property	WorkStackPushes::$workStacks
-property	WorkingOnPlanState::$plan
-property	WorkingOnPlanState::$progress
-property	WorkingOnPlanStateFactory::$container
-property	WorkingOnTaskState::$task
-property	WorkingOnTaskStateFactory::$container
-property	WorkingOnTaskStateFactory::$tasks
+property	WorkingOnPlanState::$isOpen
+property	WorkingOnPlanState::$planId
+property	WorkingOnPlanState::$plans
+property	WorkingOnTaskState::$claims
+property	WorkingOnTaskState::$isWorking
+property	WorkingOnTaskState::$number
+property	WorkingOnTaskState::$runNumber
+property	WorkingOnTaskState::$taskId
+property	WorkingOnTaskState::$tasks
 property	WorkspaceClone::$deployKeySecret
 property	WorkspaceClone::$repository
 property	WorkspaceClone::$revision
@@ -42601,6 +42662,7 @@ variable	$backing
 variable	$bare
 variable	$base
 variable	$baseRevision
+variable	$bases
 variable	$batch
 variable	$batchId
 variable	$batchIds
@@ -42629,6 +42691,7 @@ variable	$bounds
 variable	$branch
 variable	$branches
 variable	$bridge
+variable	$bridged
 variable	$broken
 variable	$browserInput
 variable	$budget
@@ -42649,6 +42712,7 @@ variable	$byName
 variable	$byOwner
 variable	$byPath
 variable	$byRange
+variable	$byStem
 variable	$byType
 variable	$bytes
 variable	$bytesFull
@@ -42724,7 +42788,6 @@ variable	$chosenInbox
 variable	$chunk
 variable	$chunks
 variable	$claim
-variable	$claimIds
 variable	$claimable
 variable	$claimed
 variable	$claimedRevision
@@ -43022,7 +43085,7 @@ variable	$eventMethod
 variable	$eventName
 variable	$eventNameItem
 variable	$eventOwner
-variable	$eventType
+variable	$eventTypes
 variable	$events
 variable	$eventsAreOff
 variable	$evidence
@@ -43057,8 +43120,6 @@ variable	$exposure
 variable	$extended
 variable	$extra
 variable	$facade
-variable	$fact
-variable	$factory
 variable	$facts
 variable	$failed
 variable	$failure
@@ -43151,6 +43212,7 @@ variable	$graph
 variable	$group
 variable	$groupKeys
 variable	$groupName
+variable	$groupOwner
 variable	$groupPositions
 variable	$grouped
 variable	$groups
@@ -43185,6 +43247,7 @@ variable	$heading
 variable	$headingLevel
 variable	$headings
 variable	$healthy
+variable	$heard
 variable	$held
 variable	$heldIds
 variable	$help
@@ -43241,7 +43304,6 @@ variable	$include
 variable	$incoming
 variable	$incomplete
 variable	$index
-variable	$indexes
 variable	$ineligible
 variable	$information
 variable	$inline
@@ -43297,8 +43359,7 @@ variable	$isCurrent
 variable	$isDirectChild
 variable	$isDirectoryRemoved
 variable	$isDone
-variable	$isExpanded
-variable	$isExportedUiEvent
+variable	$isExample
 variable	$isFacade
 variable	$isField
 variable	$isFirst
@@ -43310,6 +43371,7 @@ variable	$isFull
 variable	$isFunction
 variable	$isGiven
 variable	$isGuided
+variable	$isHeld
 variable	$isHeldForCheck
 variable	$isInside
 variable	$isInsideFilter
@@ -43470,6 +43532,8 @@ variable	$listenerResult
 variable	$listenerResults
 variable	$listenerType
 variable	$listeners
+variable	$listening
+variable	$listens
 variable	$listing
 variable	$lists
 variable	$literal
@@ -43801,7 +43865,6 @@ variable	$planCard
 variable	$planId
 variable	$planPage
 variable	$planPhases
-variable	$plans
 variable	$platform
 variable	$plugin
 variable	$pointer
@@ -43817,7 +43880,6 @@ variable	$port
 variable	$ports
 variable	$position
 variable	$positioned
-variable	$positions
 variable	$post
 variable	$postedFrom
 variable	$posts
@@ -43909,7 +43971,6 @@ variable	$ranges
 variable	$rank
 variable	$ranked
 variable	$ranks
-variable	$react
 variable	$reaction
 variable	$read
 variable	$readGrant
@@ -43959,6 +44020,7 @@ variable	$redirects
 variable	$ref
 variable	$reference
 variable	$references
+variable	$reflected
 variable	$reflector
 variable	$refresh
 variable	$refusal
@@ -44042,6 +44104,7 @@ variable	$result	app/Resolvers/MergeAskNotificationTarget.php
 variable	$result	app/Support/EventUnit.php
 variable	$result	app/Support/EventUnitLifecycle.php
 variable	$result	app/Support/Readers/AskRecords.php
+variable	$result	app/Support/StateLoading/StateBuilder.php
 variable	$result	app/Support/Web/PageProps.php
 variable	$resultBytes
 variable	$resumable
@@ -44235,7 +44298,6 @@ variable	$staging
 variable	$stale
 variable	$stalled
 variable	$standing
-variable	$stands
 variable	$start
 variable	$startKey
 variable	$startReason
@@ -44265,6 +44327,7 @@ variable	$statuses
 variable	$staysOnOwnRow
 variable	$stdout
 variable	$steerReceipt
+variable	$stem
 variable	$step
 variable	$stepInput
 variable	$steps
@@ -44321,7 +44384,6 @@ variable	$tail
 variable	$take
 variable	$takeNext
 variable	$taken
-variable	$takenUp
 variable	$takesBoth
 variable	$takesEvent
 variable	$takesOver
@@ -44404,9 +44466,9 @@ variable	$turnEnded
 variable	$turnGeneration
 variable	$type
 variable	$typeCollector
-variable	$typeEnabled
-variable	$typeKey
+variable	$typeKeys
 variable	$types
+variable	$unadmitted
 variable	$unavailable
 variable	$unavailableTaskIds
 variable	$uncertainty
@@ -44467,6 +44529,7 @@ variable	$value	app/Support/Wire/Fields/NumberField.php
 variable	$value	app/Support/Wire/Fields/TextField.php
 variable	$value	app/Values/SourcePosition.php
 variable	$values
+variable	$values	app/Support/StateLoading/StateValues.php
 variable	$variable
 variable	$variables
 variable	$variant
@@ -44519,6 +44582,7 @@ variable	$wildcard
 variable	$window
 variable	$windowContent
 variable	$windows
+variable	$wired
 variable	$withdrawn
 variable	$within
 variable	$withoutKey

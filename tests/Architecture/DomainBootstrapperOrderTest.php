@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * A domain that adds boot steps of its own says what it is and what its boot runs first: bootstrappers() is the method
- * right below description() (rule 35).
+ * right below description().
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainBootstrapperOrderTest extends TestCase

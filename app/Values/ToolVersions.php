@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\LockFileData;
+use App\Data\Images\LockFileData;
 use App\Support\CodeFiles;
 use JsonException;
 

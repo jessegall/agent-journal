@@ -8,7 +8,7 @@ use App\Contracts\Processes\StopSignal;
 use App\Enums\OutputStream;
 
 /**
- * Moves bytes between the concurrent commands of a pipeline (doc 21 revision 6, section 53): each stage's output is
+ * Moves bytes between the concurrent commands of a pipeline: each stage's output is
  * handed to the callback, which records it, before it is forwarded to the next command; at most 1 MiB waits per stage,
  * then the producer is no longer read. When a consumer ends, its producer's pipe is closed, so the producer gets
  * SIGPIPE on its next write as it would in a shell.

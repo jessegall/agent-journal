@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Support\Stack;
 
 use App\Contracts\Events\Event;
+use App\Declarations\StateMethod;
 use App\Declarations\StateMethods;
 use App\Support\Inputs\Contracts\HookInput;
+use App\Support\States\AgentState;
+use Closure;
+use PhpOption\Option;
 
 /**
  * Selects every live frame of the starting snapshot whose state declares the method, top first.
@@ -20,7 +24,10 @@ final readonly class StateMethodSelector
      */
     public function forHook(AgentStack $stack, HookInput $input): array
     {
-        return $this->select($stack, $input->methodName());
+        return $this->select($stack, fn (AgentState $state) => Option::fromArraysValue(
+            $this->methods->forState($state::class),
+            $input->methodName(),
+        ));
     }
 
     /**
@@ -28,13 +35,14 @@ final readonly class StateMethodSelector
      */
     public function forEvent(AgentStack $stack, Event $event): array
     {
-        return $this->select($stack, $event::class);
+        return $this->select($stack, fn (AgentState $state) => $this->methods->methodFor($state::class, $event));
     }
 
     /**
+     * @param  Closure(AgentState): Option<StateMethod>  $methodOf
      * @return list<SelectedStateMethod>
      */
-    private function select(AgentStack $stack, string $input): array
+    private function select(AgentStack $stack, Closure $methodOf): array
     {
         $selected = [];
 
@@ -43,14 +51,9 @@ final readonly class StateMethodSelector
                 continue;
             }
 
-            $methods = $this->methods->forState($frame->state::class);
-            $method = $methods[$input] ?? null;
-
-            if ($method === null) {
-                continue;
+            foreach ($methodOf($frame->state) as $method) {
+                $selected[] = new SelectedStateMethod($frame, $method);
             }
-
-            $selected[] = new SelectedStateMethod($frame, $method);
         }
 
         return $selected;

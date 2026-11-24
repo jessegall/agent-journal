@@ -4,24 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
+use App\Attributes\StateType;
+use App\Attributes\Ticks;
+use App\Enums\SessionTransferType;
 use App\Contracts\Work\TickableState;
 use App\Support\States\AgentState;
 use App\Support\Ticks\TickCommands;
 use App\Support\Ticks\TickContext;
+use Tests\Fixtures\Domains\QuestionReminders\Events\QuestionAnswered;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
 
 /**
  * An agent waits for the answer to its question. Once it waited long enough the tick asks for one reminder; the
  * reminder's handler rechecks the question under its lock, so a second tick or a late answer sends nothing more.
  */
+#[StateType(self::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
+#[Ticks(guard: AwaitingAnswerGuard::class)]
 final class AwaitingAnswerState extends AgentState implements TickableState
 {
+    public const string TYPE_KEY = 'reminders.awaiting';
+
     public const int REMIND_AFTER_SECONDS = 60;
 
-    public function __construct(
-        private readonly string $questionId,
-        private readonly bool $settled,
-    ) {}
+    private bool $settled = false;
+
+    public function __construct(private readonly string $questionId) {}
 
     public function isFinished(): bool
     {
@@ -35,5 +42,14 @@ final class AwaitingAnswerState extends AgentState implements TickableState
         }
 
         return TickCommands::of(new SendQuestionReminderCommand($tick->target, $this->questionId));
+    }
+
+    // ----------[ Events ]----------
+
+    public function onQuestionAnswered(QuestionAnswered $event): void
+    {
+        if ($event->questionId === $this->questionId) {
+            $this->settled = true;
+        }
     }
 }

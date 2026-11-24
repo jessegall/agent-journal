@@ -60,6 +60,18 @@ final readonly class HookAnswer
     }
 
     /**
+     * The lines shown beside the decision: each once, and none that repeats the refusal reason shown with them.
+     *
+     * @return list<string>
+     */
+    public function shownContext(): array
+    {
+        $reason = $this->isDenied() ? [$this->decision->refusalReason()] : [];
+
+        return array_values(array_diff(array_unique($this->context), $reason));
+    }
+
+    /**
      * The instruction the stack this walk left shows.
      *
      * @return Option<string>

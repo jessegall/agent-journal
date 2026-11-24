@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Data\FieldOriginData;
+use App\Data\Profiles\FieldOriginData;
 use App\Exceptions\ProfileRevisionUnreadable;
 use App\Support\Stored\StoredAccessPolicy;
 use App\Support\Stored\StoredExecutionPolicy;

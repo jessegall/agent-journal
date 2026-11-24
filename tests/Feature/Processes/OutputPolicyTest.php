@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 /**
  * A check or build whose output would be hidden starts nothing, and the refusal names what is lost and the command to
- * run instead (doc 21 revision 6, section 54; stories 119-123, 167, 168 and 203).
+ * run instead.
  */
 final class OutputPolicyTest extends TestCase
 {

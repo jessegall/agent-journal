@@ -25,7 +25,7 @@ func clientOn(t *testing.T, daemon *Daemon) *client.Client {
 	return docker
 }
 
-// Rule 76: the stand-in answers Docker's own client as a daemon does, through a container's whole life.
+// The stand-in answers Docker's own client as a daemon does, through a container's whole life.
 func TestDockersOwnClientRunsAContainerToItsEndOnTheStandIn(t *testing.T) {
 	daemon := Start(t, heldImage)
 	daemon.Programs = func(*Container) Program { return Printing("done\n", 3) }

@@ -20,7 +20,7 @@ use App\Values\UnresolvedFact;
 use App\Values\Word;
 
 /**
- * Classifies a journal command by the exact route it calls (doc 21 revision 3, section 10): journal <subject> <verb>
+ * Classifies a journal command by the exact route it calls: journal <subject> <verb>
  * runs the console command subject:verb, which reads or writes the journal and may need more. Only this installation's
  * journal is trusted; a journal executable found anywhere else is unresolved. Route guards still decide at dispatch.
  */

@@ -12,7 +12,7 @@ final readonly class StopDetails
 {
     public function __construct(
         public string $turnId,
-        public bool $isContinuation,
+        public bool $isAfterRefusedStop,
         public string $closingWords,
     ) {}
 

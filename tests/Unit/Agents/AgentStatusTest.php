@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Agents;
 
 use App\Contracts\Hosts\HostOperatorAccess;
-use App\Data\DriverRequestStatus;
+use App\Data\Agents\DriverRequestStatus;
 use App\Enums\DriverOperation;
 use App\Enums\DriverSwitchStage;
 use App\Enums\ExpectedTiming;
@@ -32,7 +32,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * An agent's status follows its evidence in the design's order, never session existence alone: each row names the
- * state, the label and the actions doc 96 gives for it.
+ * state, the label and the actions the design gives for it.
  */
 final class AgentStatusTest extends TestCase
 {
@@ -273,7 +273,7 @@ final class AgentStatusTest extends TestCase
     }
 
     /**
-     * User message 19457: a wake nobody knows the end of carried nothing of its own, so it does not leave the session
+     * A wake nobody knows the end of carried nothing of its own, so it does not leave the session
      * on Status unknown; an uncertain delivery still does, until a user settles it.
      */
     public function test_an_uncertain_wake_leaves_the_session_as_its_runtime_reports_it(): void
@@ -293,7 +293,7 @@ final class AgentStatusTest extends TestCase
     }
 
     /**
-     * User message 19457: a start that can no longer be cancelled still has a way out: its session is stopped.
+     * A start that can no longer be cancelled still has a way out: its session is stopped.
      */
     public function test_a_start_past_cancelling_offers_stop_to_an_actor_allowed_to_stop(): void
     {
@@ -323,7 +323,7 @@ final class AgentStatusTest extends TestCase
     }
 
     /**
-     * User message 19457: a session nobody can vouch for can still be ended; Status unknown was a dead end.
+     * A session nobody can vouch for can still be ended; Status unknown was a dead end.
      */
     public function test_an_unknown_state_offers_stop_beside_check_status_to_an_actor_allowed_to_stop(): void
     {

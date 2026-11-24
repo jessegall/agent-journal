@@ -7,7 +7,7 @@ namespace App\Support\Links;
 use App\Concerns\ProvidesModelRecords;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Records\RecordProvider;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Enums\AccessType;
 use App\Models\Projects\ProjectFile;
 use App\Policies\ProjectFilesPolicy;

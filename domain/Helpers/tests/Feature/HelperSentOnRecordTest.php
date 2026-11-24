@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 
 /**
- * User 15953: a helper started on a record, such as a plan to review, is announced to its parent's states with the
+ * A helper started on a record, such as a plan to review, is announced to its parent's states with the
  * helper's agent id, so a review can count the reviewers it has out.
  */
 final class HelperSentOnRecordTest extends TestCase

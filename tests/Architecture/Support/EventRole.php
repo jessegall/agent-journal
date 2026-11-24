@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 /**
- * What an event is for, which decides who may send it (doc 70, table 1).
+ * What an event is for, which decides who may send it.
  */
 enum EventRole
 {

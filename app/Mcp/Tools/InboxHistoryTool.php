@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Contracts\Chat\ConversationResolver;
-use App\Data\MessagePage;
+use App\Data\Messages\MessagePage;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;

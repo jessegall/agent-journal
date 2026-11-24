@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * Why a shell line was refused before anything started (doc 21 revision 6, section 10), as a stable code.
+ * Why a shell line was refused before anything started, as a stable code.
  */
 enum AdmissionRefusalCode: string
 {

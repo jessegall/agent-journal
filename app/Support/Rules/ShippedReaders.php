@@ -21,7 +21,7 @@ use App\Values\ShippedReader;
 
 /**
  * The readers Core ships for the checks, tests and builds it knows, each bound to the tool version its stored samples
- * were taken from (doc 21 revision 6, sections 68 and 71): a reader proven on one version never reads another.
+ * were taken from: a reader proven on one version never reads another.
  */
 final readonly class ShippedReaders
 {

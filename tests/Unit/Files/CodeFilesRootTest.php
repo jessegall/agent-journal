@@ -8,7 +8,7 @@ use App\Support\CodeFiles;
 use Tests\TestCase;
 
 /**
- * Doc 107, Foundation permissions and discovery roots: the process's code reads cover the application's base path as
+ * Foundation permissions and discovery roots: the process's code reads cover the application's base path as
  * bootstrap/app.php names it, not a path worked out from where CodeFiles itself sits, and a fixture root still
  * overrides.
  */

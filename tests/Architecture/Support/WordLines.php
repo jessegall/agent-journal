@@ -15,19 +15,19 @@ use SplFileInfo;
 final readonly class WordLines
 {
     /**
-     * Rule 46: the user is never a human, a person or people, in a name or in a text. Personal, as in a personal desk,
+     * The user is never a human, a person or people, in a name or in a text. Personal, as in a personal desk,
      * impersonate and the grammar term third-person pass.
      */
     public const string USER_WORDS = '/(?<![A-Za-z])(?<!third-)(person|people|human)(?!al)|(Person|People|Human)(?!al)'
         .'|PERSON(?!AL)|PEOPLE|HUMAN/';
 
     /**
-     * Task 2196: Claude Code, Codex and the like are drivers, never programs.
+     * Claude Code, Codex and the like are drivers, never programs.
      */
     public const string DRIVER_WORDS = '/program/i';
 
     /**
-     * Task 2207: the Go host names a driver a program only in these shapes; program alone there is an OS executable.
+     * The Go host names a driver a program only in these shapes; program alone there is an OS executable.
      */
     public const string GO_DRIVER_WORDS = '/agent programs?\b|ProgramProfile|\.Program\(\)|keyscripts\.Program\b|'
         .'flags\.String\("program"|json:"program/i';

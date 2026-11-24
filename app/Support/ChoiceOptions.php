@@ -6,12 +6,12 @@ namespace App\Support;
 
 use App\Contracts\Settings\CatalogueConstraints;
 use App\Contracts\Settings\CatalogueValue;
-use App\Data\IntegerChoiceConstraintsData;
-use App\Data\IntegerChoiceOptionData;
-use App\Data\IntegerChoiceValueData;
-use App\Data\StringChoiceConstraintsData;
-use App\Data\StringChoiceOptionData;
-use App\Data\StringChoiceValueData;
+use App\Data\Settings\IntegerChoiceConstraintsData;
+use App\Data\Settings\IntegerChoiceOptionData;
+use App\Data\Settings\IntegerChoiceValueData;
+use App\Data\Settings\StringChoiceConstraintsData;
+use App\Data\Settings\StringChoiceOptionData;
+use App\Data\Settings\StringChoiceValueData;
 use App\Declarations\IntegerSetting;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Values\Choice;

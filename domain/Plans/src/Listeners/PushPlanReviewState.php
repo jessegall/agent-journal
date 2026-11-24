@@ -21,8 +21,10 @@ final readonly class PushPlanReviewState implements Listener
 
     public function handle(PlanReviewRequested $event): void
     {
+        $reference = ReviewingPlanStateReference::forPlan($event->planId, $event->planNumber);
+
         foreach ($event->reviewers as $reviewer) {
-            $this->workStack->pushFor($reviewer, ReviewingPlanStateReference::forPlan($event->planId));
+            $this->workStack->pushFor($reviewer, $reference);
         }
     }
 }

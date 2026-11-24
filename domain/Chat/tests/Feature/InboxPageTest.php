@@ -22,7 +22,7 @@ use Tests\Support\WritesInboxMessages;
 
 /**
  * The Inbox page lists every inbox a user sits at with what waits in it, marks nothing read by being looked at,
- * and takes up the next waiting question on request.
+ * and claims the next waiting question on request.
  */
 final class InboxPageTest extends TestCase
 {

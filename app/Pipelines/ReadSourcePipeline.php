@@ -12,7 +12,7 @@ use App\Pipes\ScanTokens;
 
 /**
  * One source, the whole line or a substitution inside it: its depth checked, its tokens scanned and its list read
- * into a Sequence node through the shell grammar's nested pipelines (doc 21 revision 3, section 5).
+ * into a Sequence node through the shell grammar's nested pipelines.
  */
 final readonly class ReadSourcePipeline implements PipelineDefinition
 {

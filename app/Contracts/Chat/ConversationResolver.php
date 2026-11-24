@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Contracts\Chat;
 
-use App\Data\InboxCounts;
-use App\Data\InboxView;
-use App\Data\MessagePage;
-use App\Data\MessageView;
-use App\Data\WakeStatus;
+use App\Data\Messages\InboxCounts;
+use App\Data\Messages\InboxView;
+use App\Data\Messages\MessagePage;
+use App\Data\Messages\MessageView;
+use App\Data\Messages\WakeStatus;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\MessageMissing;
 

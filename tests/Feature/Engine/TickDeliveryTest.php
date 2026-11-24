@@ -12,6 +12,7 @@ use App\Events\StateTypesRequested;
 use App\Models\Agents\EngineFrameTime;
 use App\Support\EnginePass;
 use App\Support\FrameBaselines;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\TickDelivery;
 use App\Support\Ticks\ElapsedTime;
 use App\Support\Ticks\TickCommands;
@@ -20,8 +21,10 @@ use App\Values\FrameSettlement;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
-use Tests\Fixtures\Hooks\Ticks\ScriptedTickingLoader;
-use Tests\Fixtures\Hooks\Ticks\UnreadLoader;
+use Tests\Fixtures\Hooks\Ticks\ScriptedOccurrenceGuard;
+use Tests\Fixtures\Hooks\Ticks\ScriptedTickingState;
+use Tests\Fixtures\Hooks\Ticks\TickScript;
+use Tests\Fixtures\Hooks\Ticks\UnreadState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
@@ -43,7 +46,9 @@ final class TickDeliveryTest extends TestCase
 
     private const int SECOND = 1_000_000_000;
 
-    private ScriptedTickingLoader $loader;
+    private TickScript $script;
+
+    private ScriptedOccurrenceGuard $guard;
 
     private FakeMonotonicClock $clock;
 
@@ -55,10 +60,13 @@ final class TickDeliveryTest extends TestCase
     {
         parent::setUp();
 
-        $this->loader = new ScriptedTickingLoader();
+        $this->script = new TickScript();
+        $this->guard = new ScriptedOccurrenceGuard();
+        $this->app->instance(TickScript::class, $this->script);
+        $this->app->instance(ScriptedOccurrenceGuard::class, $this->guard);
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register('test.ticking', $this->loader);
-            $event->registry->register('test.plain', new UnreadLoader());
+            $event->registry->register(RegisteredStateType::named('test.ticking', ScriptedTickingState::class));
+            $event->registry->register(RegisteredStateType::named('test.plain', UnreadState::class));
         });
         $this->entry = CarbonImmutable::parse('2026-11-18 12:00:10');
         $this->clock = new FakeMonotonicClock(10 * self::SECOND);
@@ -93,8 +101,8 @@ final class TickDeliveryTest extends TestCase
     public function test_a_failed_tick_keeps_its_baseline_so_the_retry_is_told_the_whole_interval(): void
     {
         $this->tickingStack('test.ticking', ['a'], $this->entry);
-        $this->loader->scripts['a'] = fn (TickContext $tick) => count(
-            $this->loader->ticks['a'],
+        $this->script->scripts['a'] = fn (TickContext $tick) => count(
+            $this->script->ticks['a'],
         ) === 2 ? throw SimulatedFailure::of('The tick failed.') : TickCommands::none();
 
         $this->passAt(0.0);
@@ -125,7 +133,7 @@ final class TickDeliveryTest extends TestCase
     {
         $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
         $target = new StackTarget($stack->agent_id, $stack->session_id);
-        $this->loader->scripts['a'] = fn (TickContext $tick) => TickCommands::of(
+        $this->script->scripts['a'] = fn (TickContext $tick) => TickCommands::of(
             new SettleFrameTimesCommand([FrameSettlement::at($target, $stack->id, 'effect-of-a', $tick->now)]),
             new MarkSilentSessionsCommand(),
         );
@@ -141,22 +149,22 @@ final class TickDeliveryTest extends TestCase
     {
         $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
         $target = new StackTarget($stack->agent_id, $stack->session_id);
-        $this->loader->scripts['a'] = fn (TickContext $tick) => TickCommands::of(
+        $this->script->scripts['a'] = fn (TickContext $tick) => TickCommands::of(
             new SettleFrameTimesCommand([FrameSettlement::at($target, $stack->id, 'effect-of-a', $tick->now)]),
         );
-        $this->loader->guard->finishedSubjects = ['a'];
+        $this->guard->finishedSubjects = ['a'];
 
         $this->passAt(0.0);
 
         $this->assertSame([], EngineFrameTime::settledAtFor(['effect-of-a']));
-        $this->assertSame(['a'], array_map(fn ($subject) => $subject->subjectId, $this->loader->guard->checked));
+        $this->assertSame(['a'], array_map(fn ($subject) => $subject->subjectId, $this->guard->checked));
         $this->assertTrue($this->app->make(FrameBaselines::class)->has('a'));
     }
 
     public function test_a_failing_frame_does_not_stop_the_next_one(): void
     {
         $this->tickingStack('test.ticking', ['a', 'b'], $this->entry);
-        $this->loader->scripts['a'] = fn () => throw SimulatedFailure::of('Frame a failed.');
+        $this->script->scripts['a'] = fn () => throw SimulatedFailure::of('Frame a failed.');
 
         $this->passAt(0.0);
 
@@ -183,6 +191,6 @@ final class TickDeliveryTest extends TestCase
      */
     private function deltasOf(string $subject): array
     {
-        return array_map(fn (TickContext $tick) => $tick->delta, $this->loader->ticks[$subject] ?? []);
+        return array_map(fn (TickContext $tick) => $tick->delta, $this->script->ticks[$subject] ?? []);
     }
 }

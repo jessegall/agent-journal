@@ -6,22 +6,21 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\SendMessage\SendMessageCommand;
 use App\Contracts\Records\LinkRecordProvider;
+use App\Contracts\Records\StateProvider;
 use App\CoreCommands;
-use App\Events\StateTypesRequested;
 use App\Models\Messages\Message;
 use App\Support\CommandRegistry;
 use App\Support\LinkTypeRegistry;
-use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\Stack\StateTypes;
+use App\Support\States\AnsweringMessageState;
 use App\Support\States\Support\AnsweringMessageStateReference;
 use Domain\Chat\ChatDomain;
-use Domain\Chat\Support\States\Support\AnsweringChatStateReference;
-use Illuminate\Contracts\Events\Dispatcher;
 use Tests\TestCase;
 
 /**
  * Messaging is Core: its commands, its answering state, its link type and its numbering are registered by Core, and
- * Chat, the conversation product, registers none of them, only its own pins, docks and chat answering state, so
- * messaging works with Chat switched off.
+ * Chat, the conversation product, registers none of them and no state, only its own pins and docks, so messaging
+ * works with Chat switched off.
  */
 final class CoreMessagingWithoutChatTest extends TestCase
 {
@@ -33,7 +32,7 @@ final class CoreMessagingWithoutChatTest extends TestCase
             $chat->commands(),
             fn (string $command) => str_starts_with($command, 'App\\Communication\\'),
         )));
-        $this->assertSame([AnsweringChatStateReference::TYPE_KEY], array_keys($chat->states()));
+        $this->assertNotInstanceOf(StateProvider::class, $chat);
         $this->assertNotInstanceOf(LinkRecordProvider::class, $chat);
     }
 
@@ -43,8 +42,7 @@ final class CoreMessagingWithoutChatTest extends TestCase
         $this->assertTrue($this->app->make(CommandRegistry::class)->has(SendMessageCommand::class));
         $this->assertSame(Message::class, $this->app->make(LinkTypeRegistry::class)->modelFor(Message::LINK_TYPE));
 
-        $states = new StateTypeRegistry();
-        $this->app->make(Dispatcher::class)->dispatch(new StateTypesRequested($states));
-        $this->assertTrue($states->has(AnsweringMessageStateReference::TYPE_KEY));
+        $types = $this->app->make(StateTypes::class)->registry();
+        $this->assertSame(AnsweringMessageState::class, $types->get(AnsweringMessageStateReference::TYPE_KEY)->stateClass);
     }
 }

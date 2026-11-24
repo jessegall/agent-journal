@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Accounts\SignInProtocol;
-use App\Data\CodexAccountReadData;
-use App\Data\CodexLoginCompletedData;
-use App\Data\CodexLoginStartData;
-use App\Data\CodexMessageData;
+use App\Data\Accounts\CodexAccountReadData;
+use App\Data\Accounts\CodexLoginCompletedData;
+use App\Data\Accounts\CodexLoginStartData;
+use App\Data\Accounts\CodexMessageData;
 use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;

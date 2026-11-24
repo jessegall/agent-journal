@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * Moves a whole batch of classes from the abstract syntax tree alone (doc 107 revision 3, Batch admission; user 16627).
+ * Moves a whole batch of classes from the abstract syntax tree alone.
  * Every PHP file of the project is parsed once and held in memory with its names resolved to full classes. The batch's
  * rename map is then applied to those trees: each change is an edit at the exact position of a node, and each touched
  * file is written once. The files move with git mv afterwards.

@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartExecutor;
-use App\Data\HostRefusalData;
-use App\Data\HostStartReplyData;
-use App\Data\HostStopReplyData;
+use App\Data\Hosts\HostRefusalData;
+use App\Data\Hosts\HostStartReplyData;
+use App\Data\Hosts\HostStopReplyData;
 use App\Exceptions\HostStartRefused;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;

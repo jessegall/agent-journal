@@ -13,7 +13,7 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One plan card (doc 4, 7.3), with its task counts, whether a started plan has no unfinished task left (Ready to
+ * One plan card, with its task counts, whether a started plan has no unfinished task left (Ready to
  * finish; FinishPlan decides when asked), and the start when the server offers it. The id travels as a decimal string so a
  * bigint keeps its precision.
  *

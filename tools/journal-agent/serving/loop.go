@@ -1,6 +1,6 @@
 // Package serving carries out the requests a host claims: it files them with the scheduler, opens each runtime's
 // driver once from its start grant, runs every admission on the driver and reports each result back to the journal
-// (doc 40 revision 3, sections 10, 16, 17 and 21).
+//.
 package serving
 
 import (

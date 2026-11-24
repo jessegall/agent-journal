@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 /**
  * A record as users name it: its type and its number, and for a record numbered within a parent the parent's
- * reference too, so 'plan 12, phase 2'. One parser reads every number users type.
+ * reference too, such as 'plan 12, phase 2'. One parser reads every number users type.
  */
 final readonly class RecordReference
 {
@@ -76,7 +76,7 @@ final readonly class RecordReference
     }
 
     /**
-     * How users read it: 'plan 12', or 'plan 12, phase 2' for a record within a parent.
+     * How users read it, such as 'plan 12', or 'plan 12, phase 2' for a record within a parent.
      */
     public function label(): string
     {

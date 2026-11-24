@@ -29,8 +29,7 @@ use Tests\TestCase;
 
 /**
  * A driver that refreshes its own sign-in runs alone on its account: it is refused beside a running writer, nothing
- * starts beside it, and the writer already there keeps running (doc 103 revision 3, Binding, attempts and
- * observations, third paragraph).
+ * starts beside it, and the writer already there keeps running.
  */
 final class AccountSharingTest extends TestCase
 {

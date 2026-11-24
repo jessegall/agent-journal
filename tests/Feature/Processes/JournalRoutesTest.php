@@ -11,8 +11,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A journal command is classified by the exact route it calls, and only this installation's journal is trusted (doc 21
- * revision 3, section 10).
+ * A journal command is classified by the exact route it calls, and only this installation's journal is trusted.
  */
 final class JournalRoutesTest extends TestCase
 {

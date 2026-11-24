@@ -11,7 +11,7 @@ use App\Support\StartAdditions;
  * A host takes a session's start grant and is about to spawn its driver: listeners add the folders the start needs,
  * or refuse it when what it needs is not ready.
  */
-final readonly class StartGrantRequested implements AnsweredAtOnce
+final readonly class StartGrantRequested extends SessionEvent implements AnsweredAtOnce
 {
     public function __construct(
         public string $sessionId,

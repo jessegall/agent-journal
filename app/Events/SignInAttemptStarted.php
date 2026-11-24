@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Events;
 
 use App\Contracts\Accounts\ShownOnAccounts;
+use App\Contracts\Accounts\SignInAttemptEvent;
 
 /**
  * A sign-in attempt started, for a new account or to sign a saved one in again.
  */
-final readonly class SignInAttemptStarted implements ShownOnAccounts
+final readonly class SignInAttemptStarted extends AccountEvent implements ShownOnAccounts, SignInAttemptEvent
 {
     public function __construct(public string $driver, public string $attemptId, public string|null $accountId) {}
 

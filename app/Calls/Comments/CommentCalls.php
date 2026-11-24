@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Comments;
 
 use App\Contracts\Domains\CallSender;
-use App\Data\CommentList;
+use App\Data\Comments\CommentList;
 use App\Support\CallKey;
 
 /**

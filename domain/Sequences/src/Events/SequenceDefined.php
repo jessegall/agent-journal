@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Events;
 
-use App\Contracts\Events\Event;
-
 /**
  * A sequence was stored with its name, summary and steps.
  */
-final readonly class SequenceDefined implements Event
+final readonly class SequenceDefined extends SequenceEvent
 {
     public function __construct(public string $sequenceId) {}
 }

@@ -19,8 +19,7 @@ use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 
 /**
- * A parent's helper identities, purposes and jobs belong to that parent alone (doc 14 revision 5, section 49;
- * doc 47 section 3): another actor finds none of them, a parent has one purpose per profile and record, an identity
+ * A parent's helper identities, purposes and jobs belong to that parent alone: another actor finds none of them, a parent has one purpose per profile and record, an identity
  * keeps its profile, and a finished job takes no further change.
  */
 final class HelperRecordsTest extends TestCase

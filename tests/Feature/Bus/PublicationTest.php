@@ -90,7 +90,7 @@ final class PublicationTest extends TestCase
         Queue::assertPushed(CallQueuedListener::class, 1);
     }
 
-    // User message 19647: a failure is never swallowed. Every fact still goes out, then the failure is thrown.
+    // A failure is never swallowed. Every fact still goes out, then the failure is thrown.
     public function test_a_failing_listener_is_thrown_once_the_next_fact_went_out_too(): void
     {
         $first = RaisingRow::query()->create(['name' => 'a']);

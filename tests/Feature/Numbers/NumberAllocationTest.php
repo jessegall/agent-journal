@@ -32,7 +32,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Numbers within a group (doc 25, Books A and B): each group counts on its own, a refused command takes its number
+ * Numbers within a group: each group counts on its own, a refused command takes its number
  * back with it, a number never changes once saved, a save outside a command is refused, a held group lock ends in
  * the bus's lock timeout, and the cap refuses instead of wrapping. Every command commits for real.
  */

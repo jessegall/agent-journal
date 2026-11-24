@@ -23,7 +23,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A profile says how many helpers it may have (task 956): a single profile binds every job to its one designated
+ * A profile says how many helpers it may have: a single profile binds every job to its one designated
  * helper and never makes a second, a per-job profile makes a fresh helper for each new job while a replayed start keeps
  * it, and an unknown instances value refuses the proposal.
  */

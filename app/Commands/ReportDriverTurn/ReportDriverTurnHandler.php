@@ -17,7 +17,7 @@ final readonly class ReportDriverTurnHandler implements CommandHandler
     public function __construct(private HostRuntimes $runtimes) {}
 
     /**
-     * A started turn sets the runtime Running; a finished one closes the turn and sets it Idle (doc 40, section 12).
+     * A started turn sets the runtime Running; a finished one closes the turn and sets it Idle.
      */
     public function handle(ReportDriverTurnCommand $command): void
     {

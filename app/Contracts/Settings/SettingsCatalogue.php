@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Settings;
 
-use App\Data\SettingsCatalogueData;
+use App\Data\Settings\SettingsCatalogueData;
 use App\Exceptions\SettingsAccessDenied;
 use App\Exceptions\SettingsDocumentInvalid;
 use App\Exceptions\SettingsOwnerUnknown;

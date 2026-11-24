@@ -40,8 +40,8 @@ final class TaskWatchDomain extends Domain implements CommandProvider, PolicyPro
     public function states(): array
     {
         return [
-            'states.task_watch' => TaskWatchLoader::class,
-            'states.ordinary_task_watch' => OrdinaryTaskWatchLoader::class,
+            TaskWatchState::class,
+            OrdinaryTaskWatchState::class,
         ];
     }
 

@@ -12,7 +12,7 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\TestIds;
 
 /**
- * The bus under Octane (doc 19, story 67): each request on one booted app gets its own bus with its own actor, also
+ * The bus under Octane: each request on one booted app gets its own bus with its own actor, also
  * after a request that ended in an exception.
  */
 final class OctaneCommandBusTest extends CommandBusTestCase

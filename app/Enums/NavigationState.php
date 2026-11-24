@@ -8,7 +8,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * Where a navigation request stands: open until the main agent answers, answering while it sends rounds, proving
- * while the host looks for its proof, and then one of its ends (doc 54, section 5).
+ * while the host looks for its proof, and then one of its ends.
  */
 #[TypeScript]
 enum NavigationState: string

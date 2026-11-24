@@ -124,7 +124,7 @@ final class ProgramRepliesTest extends TestCase
     }
 
     /**
-     * User message 19438: only a call the journal admitted is answered allow; a call nobody judged gets no decision,
+     * Only a call the journal admitted is answered allow; a call nobody judged gets no decision,
      * and no reply ever asks a user or ends the driver's turn.
      */
     public function test_only_an_admitted_call_is_allowed_and_no_reply_asks_a_user_or_ends_the_turn(): void

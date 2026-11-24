@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Data\UnavailableWindow;
+use App\Data\Pages\UnavailableWindow;
 use App\Declarations\RegisteredPage;
 use App\Http\Requests\Web\DeclaredPageRequest;
 use App\Support\ActorStore;

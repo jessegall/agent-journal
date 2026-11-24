@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Data\StoredSelectedTargetData;
+use App\Data\Sharing\StoredSelectedTargetData;
 use App\Exceptions\StoredShareColumnInvalid;
 use App\Support\ShareSelectedTarget;
 use Error;

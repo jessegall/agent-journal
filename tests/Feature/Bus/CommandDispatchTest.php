@@ -18,7 +18,7 @@ use Tests\Fixtures\Modules\Notes\Commands\ClearNotes\ClearNotesCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 /**
- * Dispatching on the command bus (doc 19, Book C): every registered command reaches its handler and its result comes
+ * Dispatching on the command bus: every registered command reaches its handler and its result comes
  * back unchanged, an unregistered command is refused before anything runs, and nesting stops at eight levels.
  */
 final class CommandDispatchTest extends CommandBusTestCase

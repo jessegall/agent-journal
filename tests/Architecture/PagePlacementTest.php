@@ -9,7 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Task 2738 (user 18036): a class that builds a page from a page recipe (ListPage, DetailPage, SettingsPage or
+ * A class that builds a page from a page recipe (ListPage, DetailPage, SettingsPage or
  * PublicationPage) is a page, and lives in Http/Pages/<Subject> of Core or of its domain; the recipes themselves live in
  * app/Support/Layout.
  */

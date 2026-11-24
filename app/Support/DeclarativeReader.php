@@ -25,8 +25,7 @@ use App\Values\ReaderDefinition;
 use App\Values\ReadProgress;
 
 /**
- * Reads a part's committed output with one declarative definition under its output contract (doc 21 revision 6,
- * section 72). Each stream is decoded apart: a line is read once, when its newline arrives, so a line or a character
+ * Reads a part's committed output with one declarative definition under its output contract. Each stream is decoded apart: a line is read once, when its newline arrives, so a line or a character
  * split across chunks is never cut and stdout and stderr are never joined. Every substantive line must be accounted
  * for by a rule; any other line, encoding fault or limit becomes a problem, and all problems are kept together.
  */

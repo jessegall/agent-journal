@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 /**
  * On a server every sign-in driver goes out through the allow-list proxy; on the Mac, with none set, its clean
- * environment stays as it was (doc 61, decision 5).
+ * environment stays as it was.
  */
 final class SignInEgressTest extends TestCase
 {

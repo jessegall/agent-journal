@@ -30,7 +30,7 @@ func DockerCommandsIn(name, source string) []string {
 	return found
 }
 
-// Task 2891 (user messages 19670, 19672): the host talks to Docker through Docker's own Go client, in its tests too,
+// The host talks to Docker through Docker's own Go client, in its tests too,
 // where the stand-in daemon answers that client. No Go code runs the docker command line or reads its text.
 func TestNoGoCodeRunsTheDockerCommandLine(t *testing.T) {
 	found := []string{}

@@ -54,7 +54,7 @@ return [
         'owner' => 'Plan::requestReview',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanReviewRequested('plan', 'edition', [ActorIdentity::system()]),
+        'sample' => fn () => new PlanReviewRequested('plan', 'edition', [ActorIdentity::system()], 7),
     ],
     PlanReviewWithdrawn::class => [
         'role' => EventRole::RowFact,

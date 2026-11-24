@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * A key script run that could not be certain, put to the main agent: the stalled driver request and its runtime,
- * the goal, why it stalled, the screen it is on and where the conversation stands (doc 54, section 5). It belongs to
+ * the goal, why it stalled, the screen it is on and where the conversation stands. It belongs to
  * the user whose agent runs the script; the main agent's rounds are driver requests of their own.
  *
  * @property string $id

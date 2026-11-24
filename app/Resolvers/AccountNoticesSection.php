@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Navigation\SectionResolver;
-use App\Data\Profiles\AccountNoticesData;
+use App\Data\Accounts\AccountNoticesData;
 use App\Declarations\SlotContext;
 use App\Models\Accounts\AccountNotice;
 

@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\ReadWakeStatusCall;
 use App\Calls\Communication\WakeStatuses;
 use App\Contracts\Chat\ConversationResolver;
-use App\Data\WakeStatus;
+use App\Data\Messages\WakeStatus;
 
 /**
  * Answers whether each notified member's runtime accepted the message's wake.

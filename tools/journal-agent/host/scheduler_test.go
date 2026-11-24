@@ -30,7 +30,7 @@ func equal(left, right []int) bool {
 	return true
 }
 
-// Doc 40 section 17, one test per row of the trace table.
+// One test per row of the trace table.
 
 func TestIdleDeliverIsAdmittedWithoutAWake(t *testing.T) {
 	queue := RuntimeQueue{}

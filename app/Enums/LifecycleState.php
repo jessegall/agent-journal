@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * Where a run or one of its parts is in its life (doc 21 revision 6, section 69): queued, running, draining its
+ * Where a run or one of its parts is in its life: queued, running, draining its
  * streams after the process ended, or one of the ends.
  */
 enum LifecycleState: string

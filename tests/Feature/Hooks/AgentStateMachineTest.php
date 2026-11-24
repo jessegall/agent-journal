@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Enums\AnswerType;
-use App\Enums\NoSubject;
 use App\Enums\RewriteSupport;
 use App\Exceptions\HookDeadlineExpired;
 use App\Exceptions\HookDigestChanged;
@@ -18,7 +17,6 @@ use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\Values\CompactionDetails;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\OperationDeadline;
-use App\Support\References\StateReference;
 use App\Support\Stack\HookAnswer;
 use App\Support\Storage\WalkStep;
 use Closure;
@@ -79,7 +77,7 @@ final class AgentStateMachineTest extends TestCase
     )]
     public function test_a_supported_rewrite_answers_the_admitted_command_and_leaves_the_stack(): void
     {
-        $this->pushState(new StateReference('test.rewriting', NoSubject::None));
+        $this->pushState($this->rewriting());
 
         $reply = $this->machine()->answer(
             $this->shell('composer test'),
@@ -100,7 +98,7 @@ final class AgentStateMachineTest extends TestCase
     )]
     public function test_a_rewrite_the_program_cannot_take_is_refused_and_its_child_is_dropped(): void
     {
-        $this->pushState(new StateReference('test.rewriting', NoSubject::None));
+        $this->pushState($this->rewriting());
 
         $reply = $this->machine()->answer(
             $this->shell('composer test'),

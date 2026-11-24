@@ -14,13 +14,12 @@ use App\Models\Messages\MessageReceipt;
 use App\Models\Messages\ReceiptDelivery;
 use App\Support\ActorIdentity;
 use App\Support\MessageBatchService;
+use App\Support\States\Support\AnsweringMessageStateReference;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
-use Domain\Chat\Data\AnsweringValuesData;
 use Domain\Chat\Mcp\Tools\ReactToMessageTool;
-use Domain\Chat\Support\States\Support\AnsweringChatStateReference;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\MessagingTestCase;
@@ -31,7 +30,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * One whole conversation as the journal sees it, through the doors a session really uses: the owner posts in the pair
  * chat, the agent is asked to wake, its driver is shown the text, the agent answers with one call of the journal's own
  * reply tool, which takes its turn and confirms what it was shown, and the owner's open pages are told each time
- * (rule 83; user messages 19571, 19640 and 19642: the answer once reached the chat and no open page heard of it).
+ *.
  */
 #[TimeLimit(6, 'The conversation makes several signed tool calls.')]
 final class ChatConversationTest extends MessagingTestCase
@@ -63,7 +62,7 @@ final class ChatConversationTest extends MessagingTestCase
 
         $told = Event::dispatched(PageChanged::class)->count();
 
-        // One call answers: it takes the agent's turn and confirms what its session was shown (user message 19690).
+        // One call answers: it takes the agent's turn and confirms what its session was shown.
         $answerId = $this->useTool($agent, 'messages_reply', [
             'message_id' => $questionId,
             'body' => '2 plus 2 is 4.',
@@ -92,7 +91,7 @@ final class ChatConversationTest extends MessagingTestCase
         $secondId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'And 3 plus 3?', 'owner-asks-again'));
 
         $this->assertSame(
-            [['waitingIds' => [$firstId, $secondId], 'toolUses' => 0, 'isAnswered' => false]],
+            [['waitingIds' => [$firstId, $secondId], 'toolUses' => 0, 'refusedStops' => 0]],
             $this->answeringValuesOf($agent, $inboxId),
         );
 
@@ -111,7 +110,7 @@ final class ChatConversationTest extends MessagingTestCase
         ]);
 
         $this->assertSame(
-            [['waitingIds' => [], 'toolUses' => 0, 'isAnswered' => true]],
+            [['waitingIds' => [], 'toolUses' => 0, 'refusedStops' => 0]],
             $this->answeringValuesOf($agent, $inboxId),
         );
     }
@@ -132,7 +131,7 @@ final class ChatConversationTest extends MessagingTestCase
         ]);
 
         $this->assertSame(
-            [['waitingIds' => [], 'toolUses' => 0, 'isAnswered' => true]],
+            [['waitingIds' => [], 'toolUses' => 0, 'refusedStops' => 0]],
             $this->answeringValuesOf($agent, $inboxId),
         );
     }
@@ -178,11 +177,19 @@ final class ChatConversationTest extends MessagingTestCase
     {
         $target = new StackTarget($agent->agent->id, $agent->session->id);
         $stack = AgentStackRow::query()->withoutGlobalScopes()->forTarget($target)->sole();
-        $reference = AnsweringChatStateReference::forChat($inboxId);
+        $answering = array_filter(
+            $stack->frames->all(),
+            fn (FrameRecord $frame) => $frame->reference->typeKey === AnsweringMessageStateReference::TYPE_KEY
+                && $frame->reference->subject->id === $inboxId,
+        );
 
         return array_values(array_map(
-            fn (FrameRecord $frame) => AnsweringValuesData::from($frame->values)->toArray(),
-            array_filter($stack->frames->all(), fn (FrameRecord $frame) => $frame->reference->isSameAs($reference)),
+            fn (FrameRecord $frame) => [
+                'waitingIds' => $frame->values['waitingIds'],
+                'toolUses' => $frame->values['toolUses'],
+                'refusedStops' => $frame->values['refusedStops'],
+            ],
+            $answering,
         ));
     }
 

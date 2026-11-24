@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One approved, immutable revision of a command rule (doc 21 revision 6, sections 51 and 72): the rule with its
+ * One approved, immutable revision of a command rule: the rule with its
  * grammar, classes, purpose, contract and executable binding, the script bindings it was approved for, who wrote and
  * who approved it, and its digest. A test, check or build revision names the one reader revision and proof it was
  * approved with; any other purpose names none. It is never updated.

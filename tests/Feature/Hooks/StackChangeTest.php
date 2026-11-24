@@ -22,12 +22,14 @@ use App\Support\SignedCall;
 use App\Support\Stack\StackRestorer;
 use App\Support\StackTransaction;
 use App\Support\StartStacks;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
-use Tests\Fixtures\Hooks\Stacks\FinishableStateLoader;
+use Tests\Fixtures\Hooks\Stacks\FinishableState;
+use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -44,7 +46,7 @@ final class StackChangeTest extends TestCase
 
     private StackTarget $target;
 
-    private FinishableStateLoader $tasks;
+    private FinishedSubjects $tasks;
 
     protected function setUp(): void
     {
@@ -65,11 +67,11 @@ final class StackChangeTest extends TestCase
             ActorContext::forAgent(TestIds::of(1)),
             TestStartAuthority::forAgent(TestIds::of(1)),
         );
-        $this->tasks = new FinishableStateLoader();
-        $plans = new FinishableStateLoader();
-        Event::listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($plans): void {
-            $event->registry->register('test.tasks', $this->tasks);
-            $event->registry->register('test.plans', $plans);
+        $this->tasks = new FinishedSubjects();
+        $this->app->instance(FinishedSubjects::class, $this->tasks);
+        Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
+            $event->registry->register(RegisteredStateType::named('test.tasks', FinishableState::class));
+            $event->registry->register(RegisteredStateType::named('test.plans', FinishableState::class));
         });
         $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->open($this->target));
     }
@@ -219,14 +221,14 @@ final class StackChangeTest extends TestCase
         $this->transaction()->run(
             fn () => $this->app->make(AgentStacks::class)->push(
                 $this->target,
-                new StateReference('test.plans', new SubjectReference($subject, 1)),
+                new StateReference('test.plans', new SubjectReference($subject, 1), ['subject' => 'plan-'.$subject]),
             ),
         );
     }
 
     private function task(string $subject): StateReference
     {
-        return new StateReference('test.tasks', new SubjectReference($subject, 1));
+        return new StateReference('test.tasks', new SubjectReference($subject, 1), ['subject' => $subject]);
     }
 
     /**

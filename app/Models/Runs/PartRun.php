@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One attempt of one executable part of a run (doc 21 revision 6, sections 53 and 69): its syntax node, part and
+ * One attempt of one executable part of a run: its syntax node, part and
  * attempt, the operation it runs, its lifecycle, its process end and how far its output was kept. It ends only once
  * its process ended and its streams are drained.
  *

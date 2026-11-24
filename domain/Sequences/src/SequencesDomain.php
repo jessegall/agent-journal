@@ -35,8 +35,7 @@ use Domain\Sequences\Resolvers\SequenceRunWindowResolver;
 use Domain\Sequences\Resolvers\SequenceWindowResolver;
 use Domain\Sequences\Support\SequenceDraftProducer;
 use Domain\Sequences\Support\Skills\SequencesSkill;
-use Domain\Sequences\Support\States\Support\FollowingSequenceStateFactory;
-use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;
+use Domain\Sequences\Support\States\FollowingSequenceState;
 
 final class SequencesDomain extends Domain implements
     CommandProvider,
@@ -132,7 +131,7 @@ final class SequencesDomain extends Domain implements
 
     public function states(): array
     {
-        return [FollowingSequenceStateReference::TYPE_KEY => FollowingSequenceStateFactory::class];
+        return [FollowingSequenceState::class];
     }
 
     public function skills(): array

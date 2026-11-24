@@ -6,7 +6,7 @@ namespace App\Calls\Scripts;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Data\ProfileRunData;
+use App\Data\Profiles\ProfileRunData;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;

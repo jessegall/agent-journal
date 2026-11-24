@@ -23,7 +23,7 @@ use App\Values\ShellTree;
 use App\Values\Word;
 
 /**
- * Reads a shell line through the syntax tree and the classifier (doc 21, section 4): each executable part becomes a
+ * Reads a shell line through the syntax tree and the classifier: each executable part becomes a
  * part with its program, its arguments and the effect and type its classification gives. It reads only the line
  * itself, so no flag a program sends can make a command look saved or safe. A word only known when the line runs
  * leaves the line not fully read.

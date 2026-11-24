@@ -7,7 +7,7 @@ namespace Domain\Rules\Support;
 use App\Concerns\ProvidesModelRecords;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Records\RecordProvider;
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Support\ReadBuilder;
 use Domain\Rules\Models\Rule;
 use Illuminate\Container\Attributes\Scoped;

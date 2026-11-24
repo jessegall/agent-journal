@@ -42,7 +42,7 @@ func StartsOutsideTheFunnelIn(name, source string) []string {
 	return found
 }
 
-// User messages 19542 and 19549: a terminal start once left out the model a headless start had, because each place
+// A terminal start once left out the model a headless start had, because each place
 // filled in its own start. Every start now comes from one base, and nothing writes a start beside it.
 func TestEveryStartComesFromTheBaseStart(t *testing.T) {
 	found := []string{}

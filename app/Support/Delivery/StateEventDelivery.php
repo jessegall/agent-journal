@@ -10,17 +10,20 @@ use App\Contracts\Events\ListenerFailureLog;
 use App\Declarations\Exceptions\StateEventMethodUnregistered;
 use App\Declarations\StateEvents;
 use App\Declarations\StateMethod;
+use App\Enums\AnswerType;
 use App\Enums\CommandEntry;
 use App\Enums\StateEventStage;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\StateAnswerRefused;
 use App\Exceptions\StateEventCommandRefused;
 use App\Support\CommandRegistry;
+use App\Support\Decisions\Decision;
 use App\Support\EngineStacks;
 use App\Support\Stack\SelectedStateMethod;
 use App\Support\Stack\StateMethodSelector;
 use App\Support\StackTransaction;
 use App\Support\StateEvents\Exceptions\StateEventAfterCommitFailed;
+use App\Support\StateEvents\ListeningStacks;
 use App\Support\StateEvents\StateEventActivity;
 use App\Support\StateEvents\StateEventDispatch;
 use App\Support\StateEvents\StateEventEffects;
@@ -52,11 +55,14 @@ final readonly class StateEventDelivery
         private StateEventEffects $effects,
         private StateEventActivity $activity,
         private LoggerInterface $log,
+        private ListeningStacks $listening,
     ) {}
 
-    public function deliver(StateEventDispatch $dispatch): void
+    public function deliver(StateEventDispatch $admitted): void
     {
-        if ($dispatch->audience->isEmpty()) {
+        $dispatch = $admitted->withListening($this->listening->of($admitted->event));
+
+        if ($dispatch->targets() === []) {
             return;
         }
 
@@ -78,7 +84,7 @@ final readonly class StateEventDelivery
      */
     private function deliverToAudience(StateEventDispatch $dispatch, Closure $advance): void
     {
-        $targets = $dispatch->audience->get()->targets;
+        $targets = $dispatch->targets();
 
         $collect = fn (): array => array_map(
             fn (StackTarget $target) => $this->collect($dispatch, $target),
@@ -159,8 +165,8 @@ final readonly class StateEventDelivery
     }
 
     /**
-     * What a listener returned, as the commands and events it asks for: nothing, one of them, or several from a list
-     * or a generator, at most EFFECT_LIMIT; anything else is refused.
+     * What a listener returned, as the commands and events it asks for: nothing (void, or a delegate decision), one of
+     * them, or several from a generator, at most EFFECT_LIMIT; anything else is refused.
      *
      * @return list<Command<mixed>|Event>
      *
@@ -171,7 +177,7 @@ final readonly class StateEventDelivery
         $listener = "{$method->stateClass}::{$method->name}";
 
         $effects = match (true) {
-            $answer === null => [],
+            $answer === null, self::isDelegated($answer) => [],
             $answer instanceof Command, $answer instanceof Event => [$answer],
             is_iterable($answer) => iterator_to_array($answer, false),
             default => throw StateAnswerRefused::notAnEffect($listener, get_debug_type($answer)),
@@ -209,5 +215,13 @@ final readonly class StateEventDelivery
         }
 
         throw $failure;
+    }
+
+    /**
+     * Whether the answer is a delegate decision, the event method's way of saying the fact asks nothing of it.
+     */
+    private static function isDelegated(mixed $answer): bool
+    {
+        return $answer instanceof Decision && $answer->answerType() === AnswerType::Delegate;
     }
 }

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\ClassificationSummaryData;
-use App\Data\PartSummaryData;
+use App\Data\Processes\ClassificationSummaryData;
+use App\Data\Processes\PartSummaryData;
 use App\Enums\CommandClass;
 use App\Enums\CommandType;
 
 /**
- * The classification of one shell tree (doc 21 revision 6, section 26): every executable part with its facts, and the
+ * The classification of one shell tree: every executable part with its facts, and the
  * facts the shell syntax gives by itself, a redirect's or a background job's, which belong to no part's program. The
  * classes a command needs are the union of all of them, each traceable to the facts that gave it.
  */

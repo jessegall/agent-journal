@@ -12,7 +12,7 @@ use App\Values\ExecutionPolicy;
 use App\Values\WorkspacePreparation;
 
 /**
- * What the protected host starts a helper container with (doc 14, section 63; doc 61, decision 6): the image by
+ * What the protected host starts a helper container with: the image by
  * digest, an unprivileged user, a read-only root without capabilities, the mounts its arrangement allows, its
  * security profiles, rotated logs and the start's budgets, which size its tmpfs folders, and where a contained
  * workspace comes from. It is validated when built; anything else is refused by name.

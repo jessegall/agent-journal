@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\ReadInboxHistoryCall;
 use App\Contracts\Chat\ConversationResolver;
-use App\Data\MessagePage;
+use App\Data\Messages\MessagePage;
 
 /**
  * Reads an inbox's whole history, incoming and outgoing, older than the cursor.

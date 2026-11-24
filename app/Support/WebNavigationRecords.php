@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Navigation\NavigationRecords as NavigationRecordsContract;
-use App\Data\NavigationCountsData;
-use App\Data\NavigationData;
-use App\Data\NavigationGroupData;
-use App\Data\NavigationItemData;
+use App\Data\Navigation\NavigationCountsData;
+use App\Data\Navigation\NavigationData;
+use App\Data\Navigation\NavigationGroupData;
+use App\Data\Navigation\NavigationItemData;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;

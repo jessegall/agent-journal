@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\ShareCursorData;
+use App\Data\Sharing\ShareCursorData;
 use App\Exceptions\ShareReadRefused;
 use Illuminate\Container\Attributes\Config;
 use JsonException;

@@ -116,7 +116,7 @@ final readonly class AffectedTests
             return ['paths' => [$file], 'domains' => []];
         }
 
-        // A Core file's area is the folder it had before plan 62 moved it to its role, which the test folders mirror.
+        // A Core file's area is the folder it had before the move to Laravel's layout, which the test folders mirror.
         if (preg_match('#^app/([A-Z][A-Za-z]+)/.+$#', FormerPaths::of($file), $area) !== 1
             || in_array($area[1], self::GLOBAL_AREAS, true)) {
             return null;

@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
-
 /**
  * A check's run gave no result: its assessment found problems. Raised once per assessment after it is stored, for the
  * run's actor and the project owner, with every problem code.
  */
-final readonly class EvidenceInvalid implements Event
+final readonly class EvidenceInvalid extends ProcessEvent
 {
     /**
      * @param  list<string>  $codes

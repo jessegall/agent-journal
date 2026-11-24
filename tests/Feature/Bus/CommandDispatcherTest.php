@@ -18,7 +18,7 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\TestIds;
 
 /**
- * The bus binds the request's actor to every command it runs (doc 52): middleware and handler read it from the
+ * The bus binds the request's actor to every command it runs: middleware and handler read it from the
  * command, the caller's own object stays unbound, a replacement is bound to the same actor, and a call without an
  * actor is refused where the dispatcher is bound.
  */

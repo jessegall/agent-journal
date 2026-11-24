@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Contracts\Domains\DomainAvailability;
 use App\Events\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
-use App\Support\DomainStateType;
-use App\Support\DomainTickableStateType;
 use App\Support\EnginePass;
 use App\Support\Stack\StateTypes;
+use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\TickCandidates;
@@ -18,8 +16,9 @@ use App\Values\TickBatch;
 use App\Values\TickCandidate;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
-use Tests\Fixtures\Hooks\Ticks\CountingTickingLoader;
-use Tests\Fixtures\Hooks\Ticks\UnreadLoader;
+use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
+use Tests\Fixtures\Hooks\Ticks\TickingState;
+use Tests\Fixtures\Hooks\Ticks\UnreadState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\TickingFramePlace;
@@ -37,9 +36,7 @@ final class TickCandidatesTest extends TestCase
 
     private const array TABLES = ['agents', 'agent_sessions', 'agent_stacks'];
 
-    private CountingTickingLoader $ticking;
-
-    private CountingTickingLoader $switchable;
+    private FinishedSubjects $finished;
 
     private bool $switchedOn = false;
 
@@ -47,13 +44,14 @@ final class TickCandidatesTest extends TestCase
     {
         parent::setUp();
 
-        $this->ticking = new CountingTickingLoader();
-        $this->switchable = new CountingTickingLoader();
+        $this->finished = new FinishedSubjects();
+        $this->app->instance(FinishedSubjects::class, $this->finished);
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register('test.ticking', $this->ticking);
-            $event->registry->register('test.plain', new UnreadLoader());
-            $domainType = new DomainStateType('Switchable', $this->switchable, fn () => $this->availability());
-            $event->registry->register('test.switchable', new DomainTickableStateType($domainType, $this->switchable));
+            $event->registry->register(RegisteredStateType::named('test.ticking', TickingState::class));
+            $event->registry->register(RegisteredStateType::named('test.plain', UnreadState::class));
+            $event->registry->register(
+                RegisteredStateType::named('test.switchable', TickingState::class)->switchedBy(fn (): bool => $this->switchedOn),
+            );
         });
     }
 
@@ -75,14 +73,13 @@ final class TickCandidatesTest extends TestCase
         }
 
         $this->assertSame($this->inStackOrder($expected), $visited);
-        $this->assertLessThanOrEqual(100, max([0, ...$this->ticking->batchSizes]));
         $this->assertSame(100, $this->nextBatch(100)->count());
     }
 
     public function test_a_finished_frame_is_skipped_and_stays_stored(): void
     {
         $this->stackWith(3, 'a');
-        $this->ticking->finished = ['a-2'];
+        $this->finished->finished = ['a-2'];
 
         $batch = $this->nextBatch(100);
 
@@ -104,7 +101,6 @@ final class TickCandidatesTest extends TestCase
         $row = $this->tickingStack('test.switchable', ['b-1'], CarbonImmutable::now());
 
         $this->assertSame([], $this->nextBatch(100)->candidates);
-        $this->assertSame([], $this->switchable->batchSizes);
         $this->assertContains(
             'b-1',
             array_map(fn (FrameRecord $record) => $record->id, $row->refresh()->frames->all()),
@@ -161,19 +157,6 @@ final class TickCandidatesTest extends TestCase
         usort($frames, fn (TickingFramePlace $one, TickingFramePlace $other) => $one->compare($other));
 
         return array_map(fn (TickingFramePlace $frame) => $frame->frameId, $frames);
-    }
-
-    private function availability(): DomainAvailability
-    {
-        return new readonly class($this->switchedOn) implements DomainAvailability
-        {
-            public function __construct(private bool $switchedOn) {}
-
-            public function isEnabled(string $owner): bool
-            {
-                return $this->switchedOn;
-            }
-        };
     }
 
     private function nextBatch(int $limit): TickBatch

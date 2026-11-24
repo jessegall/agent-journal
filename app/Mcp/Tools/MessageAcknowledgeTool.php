@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('messages_acknowledge')]
 #[Dispatches(ReadMessagesCommand::class)]
-#[Description('Mark inbox messages as read and take up any unanswered questions.')]
+#[Description('Mark inbox messages as read and claim any unanswered questions.')]
 final class MessageAcknowledgeTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

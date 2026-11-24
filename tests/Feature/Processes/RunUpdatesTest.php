@@ -16,8 +16,7 @@ use Tests\TestCase;
 
 /**
  * A run's live updates carry increasing numbers, a chatty part sends at most one a second while an end goes out at
- * once, and a snapshot restores the run with the number of the last update it includes (doc 21 revision 6, sections
- * 54 and 69; stories 131, 136 and 198).
+ * once, and a snapshot restores the run with the number of the last update it includes.
  */
 final class RunUpdatesTest extends TestCase
 {

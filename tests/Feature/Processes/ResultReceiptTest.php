@@ -22,8 +22,7 @@ use Tests\TestCase;
 
 /**
  * A check's run gets a result receipt only through the evidence validator, from a valid assessment by its approved
- * reader; anything else is a stored assessment with problem codes and no result (doc 21 revision 6, sections 69 and
- * 72; stories 150, 158, 163-166, 171-173, 177, 195, 197 and 205).
+ * reader; anything else is a stored assessment with problem codes and no result.
  */
 final class ResultReceiptTest extends TestCase
 {

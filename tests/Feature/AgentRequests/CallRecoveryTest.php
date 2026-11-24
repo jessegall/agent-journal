@@ -31,7 +31,7 @@ use Tests\TestCase;
 /**
  * A write sent again gets its first answer and is made once, a key reused for another write or kept past its time is
  * refused with what to do, a lost admission answer asked again starts the run once, and a piece of output sent twice
- * is stored once, all through the real client and server (doc 50 revision 3, sections 8 and 9, Book C).
+ * is stored once, all through the real client and server.
  */
 final class CallRecoveryTest extends TestCase
 {

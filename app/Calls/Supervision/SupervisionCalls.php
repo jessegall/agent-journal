@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Calls\Supervision;
 
 use App\Contracts\Domains\CallSender;
-use App\Data\AskCard;
-use App\Data\AskInbox;
+use App\Data\Asks\AskCard;
+use App\Data\Asks\AskInbox;
 use App\Support\CallKey;
 
 /**

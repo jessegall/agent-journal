@@ -29,7 +29,7 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
 /**
- * Reads the text of a declaration file into typed proposals at the boundary (doc 21 revision 6, section 51): every
+ * Reads the text of a declaration file into typed proposals at the boundary: every
  * field is checked against its type and closed set first, and a broken file is refused naming each wrong field, so no
  * untyped array reaches Core.
  */

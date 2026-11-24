@@ -53,7 +53,7 @@
     "App\\Events\\MessageRead => App\\Listeners\\BroadcastPageChange@handle",
     "App\\Events\\MessageSent => App\\Listeners\\BroadcastPageChange@handle",
     "App\\Events\\MessageSent => App\\Listeners\\IssueQuestionNotifications@handle",
-    "App\\Events\\MessageTakenUp => App\\Listeners\\BroadcastPageChange@handle",
+    "App\\Events\\MessageClaimed => App\\Listeners\\BroadcastPageChange@handle",
     "App\\Events\\NotificationsChanged => App\\Listeners\\BroadcastNotificationChanges@handle",
     "App\\Events\\NotificationsWithdrawn => App\\Listeners\\PurgeWithdrawnNotifications@handle",
     "App\\Events\\OutputChunkCommitted => App\\Listeners\\ReadOutputLive@handle",

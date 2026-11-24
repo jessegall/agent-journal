@@ -36,6 +36,8 @@ final class ClaudeCodeTest extends TestCase
 
     private const string STOP_REASON = 'Task 42 still needs work.';
 
+    private const string CONTEXT_LINE = 'Waiting.';
+
     protected static function fixtureFolder(): string
     {
         return 'ClaudeCode';
@@ -169,6 +171,16 @@ final class ClaudeCodeTest extends TestCase
             $this->render('stop', Decision::deny(self::STOP_REASON))->stdout,
         );
         $this->assertSame('{}', $this->render('stop', Decision::allow())->stdout);
+    }
+
+    public function test_a_refusal_shows_each_context_line_once_and_never_repeats_its_reason(): void
+    {
+        $context = [self::STOP_REASON, self::CONTEXT_LINE, self::CONTEXT_LINE];
+
+        $this->assertSame(
+            json_encode(['decision' => 'block', 'reason' => self::STOP_REASON."\n".self::CONTEXT_LINE]),
+            $this->render('stop', Decision::deny(self::STOP_REASON), $context)->stdout,
+        );
     }
 
     public function test_every_core_input_is_mapped_except_the_ones_the_record_lists(): void

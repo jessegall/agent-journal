@@ -10,7 +10,7 @@ use Tests\Architecture\Support\AgentReferences;
 use Tests\TestCase;
 
 /**
- * A domain record names actors, never agents (user 3314): who holds a record is a Core assignment to an actor, and
+ * A domain record names actors, never agents: who holds a record is a Core assignment to an actor, and
  * where an agent works on it is a frame on that agent's stack. So no table a domain owns has a column for an agent or
  * an agent session, and no domain model takes or returns a stack target or an agent context. Only Core's Agents and
  * Hooks tables may name agents and sessions.
@@ -57,7 +57,7 @@ final class DomainActorColumnsTest extends TestCase
     }
 
     /**
-     * Rule 37 holds for Core's areas above Agents and Hooks too (task 955): their tables name actors, never agents.
+     * Core's areas above Agents and Hooks name actors in their tables too: name actors, never agents.
      */
     public function test_no_core_table_above_agents_and_hooks_names_an_agent_or_a_session(): void
     {

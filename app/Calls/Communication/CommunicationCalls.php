@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Calls\Communication;
 
 use App\Contracts\Domains\CallSender;
-use App\Data\InboxCounts;
-use App\Data\MessagePage;
-use App\Data\MessageView;
+use App\Data\Messages\InboxCounts;
+use App\Data\Messages\MessagePage;
+use App\Data\Messages\MessageView;
 use App\Support\CallKey;
 
 /**

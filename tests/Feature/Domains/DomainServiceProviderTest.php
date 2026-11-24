@@ -14,7 +14,6 @@ use App\Support\DomainRegistry;
 use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
-use App\Support\StateLoading\Loaders\ReadyStateLoader;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Events\Dispatcher;
@@ -129,7 +128,7 @@ final class DomainServiceProviderTest extends TestCase
     {
         $this->app->instance(StateTypes::class, new StateTypes(
             new Dispatcher($this->app),
-            $this->app->make(ReadyStateLoader::class),
+            $this->app,
         ));
         $this->app->register(new class($this->app, $classes) extends DomainServiceProvider
         {

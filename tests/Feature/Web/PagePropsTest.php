@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Contracts\Bus\CommandBus;
-use App\Data\DeniedWindow;
-use App\Data\FailedWindow;
-use App\Data\ReadyWindow;
-use App\Data\UnavailableWindow;
+use App\Data\Pages\DeniedWindow;
+use App\Data\Pages\FailedWindow;
+use App\Data\Pages\ReadyWindow;
+use App\Data\Pages\UnavailableWindow;
 use App\Declarations\Page;
 use App\Declarations\Section;
 use App\Declarations\Slot;

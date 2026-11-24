@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Attributes\RequiresTransactionListener;
-use App\Contracts\Events\Event;
+use App\Attributes\TransactionListenerConsent;
 
 /**
  * A start's journal session ended, raised inside the transaction that ended it.
  */
-#[RequiresTransactionListener('Domain\Documents\Listeners\CloseEndedSessionDraft')]
-final readonly class SessionClosed implements Event
+#[TransactionListenerConsent]
+final readonly class SessionClosed extends SessionEvent
 {
     public function __construct(
         public string $agentId,

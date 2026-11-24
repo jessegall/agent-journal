@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Resolvers\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Data\RunOutcomeSummaryData;
+use App\Data\Processes\RunOutcomeSummaryData;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\RunOutcome;
 use App\Support\ActorIdentity;

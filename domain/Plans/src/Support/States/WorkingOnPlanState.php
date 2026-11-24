@@ -4,28 +4,40 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\States;
 
+use App\Attributes\StateType;
+use App\Enums\FrameReuse;
+use App\Enums\SessionTransferType;
 use App\Support\States\AgentState;
-use Closure;
+use Domain\Plans\Events\PlanCancelled;
+use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanWork;
-use Domain\Plans\Values\PlanProgress;
+use Domain\Plans\Resolvers\PlanRecords;
+use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
 use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * An agent working on a plan. It answers no hook itself; it marks which plan the agent works on until the plan is done
- * or cancelled, so the agent's current plan is read from its stack.
+ * An agent working on a started plan. The plan stays open until the state hears it finished or cancelled; its
+ * instruction reads the plan's card, with its counts, each time it is shown.
  */
+#[StateType(WorkingOnPlanStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class WorkingOnPlanState extends AgentState
 {
-    /**
-     * @param  Closure(): PlanProgress  $progress  reads the plan's counts now, only when its instruction is rendered
-     */
-    public function __construct(public readonly PlanWork $plan, private readonly Closure $progress) {}
+    private bool $isOpen = true;
+
+    public function __construct(
+        private readonly string $planId,
+        private readonly PlanRecords $plans
+    ) {}
+
+    public function frameReuse(): FrameReuse
+    {
+        return FrameReuse::PerSubject;
+    }
 
     public function isFinished(): bool
     {
-        return $this->plan->state->hasEnded();
+        return ! $this->isOpen;
     }
 
     /**
@@ -41,10 +53,26 @@ final class WorkingOnPlanState extends AgentState
      */
     public function instruction(): Option
     {
-        $progress = ($this->progress)();
+        $card = $this->plans->cardOf(Plan::query()->whereKey($this->planId)->readExactly(1)->sole());
 
         return new Some(
-            "Continue plan {$this->plan->number}. {$progress->finished} of {$progress->total} tasks are finished.",
+            "Continue plan {$card->number}. {$card->progress->finished} of {$card->progress->total} tasks are finished.",
         );
+    }
+
+    // ----------[ Events ]----------
+
+    public function onPlanFinished(PlanFinished $event): void
+    {
+        if ($event->planId === $this->planId) {
+            $this->isOpen = false;
+        }
+    }
+
+    public function onPlanCancelled(PlanCancelled $event): void
+    {
+        if ($event->planId === $this->planId) {
+            $this->isOpen = false;
+        }
     }
 }

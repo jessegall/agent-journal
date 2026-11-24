@@ -19,7 +19,7 @@ use Tests\TestCase;
 
 /**
  * A signed-in contained start uses the protected-account profile once its driver's account isolation is proven or
- * while the trial names it; every other start stays standard (doc 78 revision 2, Delivery item 4).
+ * while the trial names it; every other start stays standard.
  */
 final class LaunchProfilesTest extends TestCase
 {

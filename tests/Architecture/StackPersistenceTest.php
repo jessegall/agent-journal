@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 /**
  * A live stack is persisted only through the shared transition path, so every change settles its frames' lifecycle
- * (doc 74, story 52). Whether a change rolls back or keeps its order is proved by the lifecycle tests, not here.
+ *. Whether a change rolls back or keeps its order is proved by the lifecycle tests, not here.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app and the domains.')]
 final class StackPersistenceTest extends TestCase

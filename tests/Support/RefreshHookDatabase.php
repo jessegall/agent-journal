@@ -54,7 +54,7 @@ trait RefreshHookDatabase
     }
 
     /**
-     * A create migration is edited in place (rule 34), so a database kept from an earlier run can hold old tables that
+     * A create migration is edited in place, so a database kept from an earlier run can hold old tables that
      * migrate never touches. The database keeps a fingerprint of the migration files it was built from; once per
      * process a differing fingerprint rebuilds it with migrate:fresh. A parallel worker's database is made new for
      * every run and Laravel has just migrated it, so one with no fingerprint yet is only stamped, not built again.

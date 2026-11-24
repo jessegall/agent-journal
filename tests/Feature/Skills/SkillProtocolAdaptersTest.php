@@ -12,7 +12,7 @@ use App\Values\DriverKey;
 use Tests\TestCase;
 
 /**
- * Doc 103, Ownership and interface examples: a skill adapter is found by the skill protocol a registration names, so
+ * Ownership and interface examples: a skill adapter is found by the skill protocol a registration names, so
  * both drivers of a family write and install skills through one adapter.
  */
 final class SkillProtocolAdaptersTest extends TestCase

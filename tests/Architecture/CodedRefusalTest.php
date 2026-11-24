@@ -12,7 +12,7 @@ use Tests\Fixtures\Architecture\Refusals\UncodedRefusal;
 use Tests\TestCase;
 
 /**
- * Every refusal a route renders carries a refusal code (doc 50, section 10), so a caller can act on it without
+ * Every refusal a route renders carries a refusal code, so a caller can act on it without
  * reading the message.
  */
 final class CodedRefusalTest extends TestCase

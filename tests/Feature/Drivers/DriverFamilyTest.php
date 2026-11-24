@@ -13,7 +13,7 @@ use App\Values\DriverRegistration;
 use Tests\TestCase;
 
 /**
- * Doc 103, Ownership and interface examples: a family's facts, such as its provider and the name the host knows it
+ * Ownership and interface examples: a family's facts, such as its provider and the name the host knows it
  * by, come from the catalogue, and a driver is registered only under a family the catalogue knows.
  */
 final class DriverFamilyTest extends TestCase

@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Calls\Supervision\ListAsksCall;
 use App\Contracts\Chat\AskReader;
-use App\Data\AskInbox;
+use App\Data\Asks\AskInbox;
 
 final readonly class ListAsksController
 {

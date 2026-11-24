@@ -15,7 +15,7 @@ use App\Values\OptionGrammar;
 use App\Values\ProgramSpellings;
 
 /**
- * Tests and checks (doc 21 revision 6, section 68): one purpose, Verification, for test runners, static analysis, the
+ * Tests and checks: one purpose, Verification, for test runners, static analysis, the
  * formatter, the commandments judge and type checks, each keeping its whole output. A check that only reads differs
  * from a fixing formatter by its classes, never by its purpose; an option not listed leaves the command unknown, never
  * an ordinary run.

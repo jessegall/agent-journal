@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Records;
 
-use App\Data\RecordCard;
+use App\Data\Pages\RecordCard;
 use App\Exceptions\RecordUnavailable;
 use App\Exceptions\UnknownLinkType;
 use App\Support\RecordIdentity;

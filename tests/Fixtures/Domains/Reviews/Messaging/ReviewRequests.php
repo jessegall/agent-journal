@@ -11,7 +11,7 @@ use App\Commands\AskMessage\AskMessageCommand;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Chat\ConversationResolver;
 use App\Contracts\Chat\InboxDestinationResolver;
-use App\Data\MessageView;
+use App\Data\Messages\MessageView;
 
 /**
  * A domain asking an assignee for a review through Core alone: the asker's own inbox, the assignee's resolved inbox,

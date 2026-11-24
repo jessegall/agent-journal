@@ -15,7 +15,7 @@ use SplFileInfo;
 
 /**
  * Attributes stacked on one declaration, each on its own line, stand shortest first; groups of the same length keep
- * their order (user message 9262).
+ * their order.
  */
 final class AttributeOrderFixer implements FixerInterface
 {

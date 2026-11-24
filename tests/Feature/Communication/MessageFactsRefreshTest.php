@@ -13,11 +13,11 @@ use App\Contracts\Chat\ConversationResolver;
 use App\Enums\MessageState;
 use App\Events\MessageAnswered;
 use App\Events\MessageAnswerRequired;
+use App\Events\MessageClaimed;
 use App\Events\MessageClaimReleased;
 use App\Events\MessageDismissed;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
-use App\Events\MessageTakenUp;
 use App\Events\PageChanged;
 use App\Models\Messages\Message;
 use App\Support\UserChannel;
@@ -63,7 +63,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
             MessageDismissed::class,
         );
 
-        $questionId = $this->takenUpByBuilder('Which port?');
+        $questionId = $this->claimedByBuilder('Which port?');
         $this->asOwner();
         $claim = $this->claimsOn($questionId)[$questionId]->reference;
 
@@ -81,7 +81,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
         $this->assertChangesPages(
             fn () => $this->runOnBus(new ReadMessagesCommand($this->inboxIdOf($this->builder), [$questionId])),
             MessageRead::class,
-            MessageTakenUp::class,
+            MessageClaimed::class,
         );
         $this->assertChangesPages(
             fn () => $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'Port 8080.')),
@@ -92,7 +92,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
 
     public function test_a_reply_in_one_transaction_leaves_the_answer_and_the_owners_unread_reply(): void
     {
-        $questionId = $this->takenUpByBuilder('Which port?');
+        $questionId = $this->claimedByBuilder('Which port?');
 
         $replyId = $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'Port 8080.'));
 
@@ -105,7 +105,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
 
     public function test_a_rolled_back_reply_changes_no_page(): void
     {
-        $questionId = $this->takenUpByBuilder('Which port?');
+        $questionId = $this->claimedByBuilder('Which port?');
         $before = Event::dispatched(PageChanged::class)->count();
 
         // The facts a reply raises, inside a transaction that rolls back, as a reply that fails after them would.
@@ -154,7 +154,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
         }
     }
 
-    private function takenUpByBuilder(string $body): string
+    private function claimedByBuilder(string $body): string
     {
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), $body);
         $this->asAgent($this->builder);
@@ -173,7 +173,7 @@ final class MessageFactsRefreshTest extends MessagingTestCase
             MessageRead::class,
             MessageAnswerRequired::class,
             MessageDismissed::class,
-            MessageTakenUp::class,
+            MessageClaimed::class,
             MessageClaimReleased::class,
             MessageAnswered::class,
         ];

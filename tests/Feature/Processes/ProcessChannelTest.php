@@ -32,7 +32,7 @@ use Throwable;
 
 /**
  * process:run fetches its admission once and reports every part over the signed event channel; repeats change
- * nothing and a lost connection is made up from the host's spool (doc 21 revision 6, section 53).
+ * nothing and a lost connection is made up from the host's spool.
  */
 final class ProcessChannelTest extends TestCase
 {

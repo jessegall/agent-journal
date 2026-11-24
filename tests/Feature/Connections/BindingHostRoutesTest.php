@@ -17,7 +17,7 @@ use Tests\TestCase;
 /**
  * Each host route admits the role it names: the shared work routes answer a relay scoped to its live binding and an
  * enrolled host alike, a relay whose binding is revoked is refused, a relay's own routes refuse an enrolled host, and
- * an enrolled host's routes refuse a relay (plan 71, task 2688).
+ * an enrolled host's routes refuse a relay.
  */
 final class BindingHostRoutesTest extends TestCase
 {

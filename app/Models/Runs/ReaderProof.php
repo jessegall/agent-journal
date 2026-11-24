@@ -20,8 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The journal's proof that one reader revision reads one declaration revision's output (doc 21 revision 6, sections
- * 71 and 72): the real sample runs it replayed the reader over, one per exit branch, with their manifests. It is never
+ * The journal's proof that one reader revision reads one declaration revision's output: the real sample runs it replayed the reader over, one per exit branch, with their manifests. It is never
  * updated; another reader or declaration revision needs a proof of its own (story 188).
  *
  * @property string $id

@@ -1525,7 +1525,7 @@
   method SpeechAllowance::handOff() (app/Communication/Support/SpeechAllowance.php:62)
   method SpeechAllowance::targetTurnFor() (app/Communication/Support/SpeechAllowance.php:91)
   method SpeechAllowance::claim() (app/Communication/Support/SpeechAllowance.php:118)
-  method SpeechAllowance::claimOnTakeUp() (app/Communication/Support/SpeechAllowance.php:138)
+  method SpeechAllowance::claimTurnForQuestion() (app/Communication/Support/SpeechAllowance.php:138)
   method SpeechAllowance::assertGrant() (app/Communication/Support/SpeechAllowance.php:166)
   method SpeechAllowance::release() (app/Communication/Support/SpeechAllowance.php:191)
   method SpeechAllowance::requireClaim() (app/Communication/Support/SpeechAllowance.php:202)

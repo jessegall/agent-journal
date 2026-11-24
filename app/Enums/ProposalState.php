@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * Where a rule proposal stands (doc 21 revision 6, section 51): a draft still misses a required field, a pending one
+ * Where a rule proposal stands: a draft still misses a required field, a pending one
  * waits for the owner's review, and the other four are ended.
  */
 enum ProposalState: string

@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 /**
- * A counted progress (doc 93, S2): a bar labelled Tasks finished, named for whose progress it is, filled by the
+ * A counted progress: a bar labelled Tasks finished, named for whose progress it is, filled by the
  * finished share of the total, and the caller's words for the counts beside it, which are also the bar's spoken
  * value. With no total there is no bar and no percentage, only the words.
  */

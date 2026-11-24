@@ -23,8 +23,7 @@ use Tests\TestCase;
 
 /**
  * Every signed agent route is a declared call with a controller that takes it and answers what it declares, the
- * agent's identity never travels in a call, and a command that only reads makes no write (doc 50 revision 3, Books
- * B, G and H). Each check also fails on a case planted for it.
+ * agent's identity never travels in a call, and a command that only reads makes no write. Each check also fails on a case planted for it.
  */
 #[TimeLimit(seconds: 15, reason: 'It reads every call, controller and command of Core and the domains.')]
 final class SignedCallRulesTest extends TestCase

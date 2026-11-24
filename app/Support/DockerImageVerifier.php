@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Files\Files;
 use App\Contracts\Hosts\DockerImageVerifier as DockerImageVerifierContract;
-use App\Data\DockerImageRecordData;
+use App\Data\Docks\DockerImageRecordData;
 use App\Exceptions\FileJsonInvalid;
 use App\Values\FilePath;
 

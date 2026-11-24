@@ -10,7 +10,7 @@ use App\Contracts\Records\StateProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
-use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;
+use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerState;
 
 /**
  * A fixture domain with due work: an agent's question waits for an answer, and the engine sends one reminder once it
@@ -37,7 +37,7 @@ final class QuestionRemindersDomain extends Domain implements CommandProvider, S
 
     public function states(): array
     {
-        return [AwaitingAnswerLoader::TYPE_KEY => AwaitingAnswerLoader::class];
+        return [AwaitingAnswerState::class];
     }
 
     public function commands(): array

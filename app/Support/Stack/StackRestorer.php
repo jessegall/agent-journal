@@ -4,28 +4,26 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
-use App\Contracts\Work\ConditionalStateType;
 use App\Declarations\StateMethods;
 use App\Exceptions\StackTooDeep;
 use App\Exceptions\StateSchemaUnknown;
-use App\Support\Decisions\StateReferences;
 use App\Support\Stack\Contracts\StateFactory;
 use App\Support\Stack\Frames\Frame;
-use App\Support\Storage\FrameRecord;
+use App\Support\StateLoading\StateBuilder;
 use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;
 
 /**
- * Rebuilds an agent's stack from its stored frames: the one ready bottom state and every state read fresh,
- * finished ones included. Restoring only reads: it removes, writes and calls nothing.
+ * Rebuilds an agent's stack from its stored frames: the one ready bottom state and every state built from the values
+ * its frame saved, finished ones included. Restoring reads no other row and removes, writes and calls nothing.
  */
 final readonly class StackRestorer
 {
     public function __construct(
         private StateTypes $types,
         private StateFactory $factory,
+        private StateBuilder $builder,
         private StateMethodSelector $selector = new StateMethodSelector(new StateMethods()),
-        private TargetStates $states = new TargetStates(),
     ) {}
 
     public function restore(FrameRecords $records, StackTarget $target): AgentStack
@@ -39,52 +37,16 @@ final readonly class StackRestorer
 
         $frames = [];
 
-        foreach ($this->positionsByType($frameRecords) as $typeKey => $positions) {
-            $type = $this->types->registry()->get($typeKey);
+        foreach ($frameRecords as $record) {
+            $type = $this->types->registry()->get($record->reference->typeKey);
 
-            $stateClass = $type->stateClass();
-
-            foreach (array_chunk($positions, StateReferences::MAXIMUM) as $batch) {
-                $typeEnabled = ! $type instanceof ConditionalStateType || $type->isEnabled();
-
-                $states = $this->states->of(
-                    $type,
-                    new StateReferences(array_map(fn (int $position) => $frameRecords[$position]->reference, $batch)),
-                    $target,
-                );
-
-                foreach ($batch as $index => $position) {
-                    $record = $frameRecords[$position];
-
-                    if ($record->schemaVersion !== $type->schemaVersion()) {
-                        throw StateSchemaUnknown::for($record->description(), $type->schemaVersion());
-                    }
-
-                    $state = $states->stateOfClassAt($index, $stateClass);
-                    $frames[$position] = Frame::restored($record, $state, $typeEnabled);
-                }
+            if ($record->schemaVersion !== $type->schemaVersion) {
+                throw StateSchemaUnknown::for($record->description(), $type->schemaVersion);
             }
+
+            $frames[] = Frame::restored($record, $this->builder->build($type, $record->values), $type->isEnabled());
         }
 
-        ksort($frames);
-
-        return new AgentStack(array_values($frames), $this->factory, $target, $this->selector);
-    }
-
-    /**
-     * The stack positions of the frames of each state type, so each type reads its subjects once per batch.
-     *
-     * @param  list<FrameRecord>  $records
-     * @return array<string, list<int>>
-     */
-    private function positionsByType(array $records): array
-    {
-        $positions = [];
-
-        foreach ($records as $position => $record) {
-            $positions[$record->reference->typeKey][] = $position;
-        }
-
-        return $positions;
+        return new AgentStack($frames, $this->factory, $target, $this->selector);
     }
 }

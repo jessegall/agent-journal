@@ -20,7 +20,7 @@ use App\Values\PlanStep;
 use App\Values\PlanWord;
 
 /**
- * Runs an execution plan step by step (doc 21 revision 6, section 53): control flow decides which parts run, builtins
+ * Runs an execution plan step by step: control flow decides which parts run, builtins
  * run in the shell context, every external part is spawned from its argv in its own process group with its own record
  * and its own end, the commands of a pipeline run at the same time, and background parts are waited for before the
  * run ends. A part that does not run because of an earlier result, or whose admission went stale, is recorded as

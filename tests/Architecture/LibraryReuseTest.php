@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\LibraryReuse;
 
 /**
- * Vue code outside the kit reuses the library's controls instead of drawing its own (user message 15814, doc 105).
+ * Vue code outside the kit reuses the library's controls instead of drawing its own.
  * Today's offenders are listed in a baseline that may only shrink: an offender outside it fails, and a listed one that
  * no longer offends fails until its line is removed.
  */

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * Freezes the expected structure of every case in tests/Fixtures/Processes/ShellCorpus (doc 21 revision 3, section 35)
+ * Freezes the expected structure of every case in tests/Fixtures/Processes/ShellCorpus
  * from independent evidence: the shell-oracle tool, which reads each line with mvdan.cc/sh, never version 6's own
  * parser. Each expected block holds the outcome, the unsupported family when there is one, and the byte span of every
  * command the shell would run. decisions.jsonl entries override the oracle where version 6 intends otherwise. The

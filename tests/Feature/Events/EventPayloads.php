@@ -30,11 +30,11 @@ use App\Events\LinksRemoved;
 use App\Events\MergeOutcomeRecorded;
 use App\Events\MessageAnswered;
 use App\Events\MessageAnswerRequired;
+use App\Events\MessageClaimed;
 use App\Events\MessageClaimReleased;
 use App\Events\MessageDismissed;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
-use App\Events\MessageTakenUp;
 use App\Events\OutputChunkCommitted;
 use App\Events\PageChanged;
 use App\Events\ProfileRevisionRevoked;
@@ -94,7 +94,7 @@ use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Events\TaskWaitChanged;
 
 /**
- * The published shape of every event of doc 70 table 1 as it is before plan 40 moves it: whether it is delivered
+ * The published shape of every event: whether it is delivered
  * after the commit, and its public fields with their types, actor fields included. Requests and projections are
  * named apart, since they do not move.
  */
@@ -238,9 +238,10 @@ final class EventPayloads
                     'destinationInboxId' => 'string',
                 ],
             ],
-            MessageTakenUp::class => [
+            MessageClaimed::class => [
                 'fields' => [
                     'messageId' => 'string',
+                    'inboxId' => 'string',
                     'claimant' => 'App\Support\ActorIdentity',
                 ],
             ],
@@ -519,6 +520,7 @@ final class EventPayloads
                     'planId' => 'string',
                     'editionId' => 'string',
                     'reviewers' => 'array',
+                    'planNumber' => 'int',
                 ],
             ],
             PlanReviewWithdrawn::class => [

@@ -104,6 +104,24 @@ final class StateEventDeliveryTest extends TestCase
         $this->assertSame(['watching', 'writing'], $effects->labels);
     }
 
+    public function test_a_fact_no_one_admitted_reaches_the_stack_holding_a_state_that_listens_for_it(): void
+    {
+        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+
+        $this->app->make(Dispatcher::class)->dispatch(new NoteWritten(marked: [new RecordNoteEffectCommand('heard')]));
+
+        $this->assertSame(['heard'], $this->app->make(NoteEffects::class)->labels);
+    }
+
+    public function test_a_fact_no_state_listens_for_reaches_no_stack(): void
+    {
+        $this->pushState(new StateReference('notes.watching', NoSubject::None));
+
+        $this->app->make(Dispatcher::class)->dispatch(new NoteAudited());
+
+        $this->assertSame([], $this->app->make(NoteEffects::class)->labels);
+    }
+
     public function test_a_closed_stack_has_no_recipient(): void
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));

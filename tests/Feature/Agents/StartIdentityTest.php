@@ -39,7 +39,7 @@ use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
- * Doc 103, First launch and exact resume: a message sent while a start's program is proving its conversation waits,
+ * First launch and exact resume: a message sent while a start's program is proving its conversation waits,
  * and goes out once only after the bootstrap proves it; another conversation refuses the start with the message
  * still held, and a report after the refusal changes nothing.
  */

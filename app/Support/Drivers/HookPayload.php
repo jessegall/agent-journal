@@ -59,8 +59,7 @@ final class HookPayload extends Data
     }
 
     /**
-     * The driver's own id of the prompt this call belongs to: Claude Code's prompt_id, Codex's turn_id (plan 26
-     * task 883). Null when the driver sent none; the journal never invents one.
+     * The driver's own id of the prompt this call belongs to: Claude Code's prompt_id, Codex's turn_id. Null when the driver sent none; the journal never invents one.
      */
     public function nativePromptId(): string|null
     {
@@ -198,7 +197,7 @@ final class HookPayload extends Data
         };
     }
 
-    public function isStopContinuation(): bool
+    public function isAfterRefusedStop(): bool
     {
         return $this->stopHookActive === true;
     }

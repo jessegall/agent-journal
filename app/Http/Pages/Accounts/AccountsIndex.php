@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Pages\Accounts;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Data\Profiles\AccountListData;
-use App\Data\Profiles\AccountRowData;
-use App\Data\Profiles\AccountUsageData;
-use App\Data\Profiles\AccountUsageWindowData;
+use App\Data\Accounts\AccountListData;
+use App\Data\Accounts\AccountRowData;
+use App\Data\Accounts\AccountUsageData;
+use App\Data\Accounts\AccountUsageWindowData;
 use App\Enums\AccountState;
 use App\Enums\ActionMethod;
 use App\Enums\UsageWindowSlot;

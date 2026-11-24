@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Tests\Support\CommitsHookRows;
 
 /**
- * Task 2728: the owner account named by the installation's settings exists with their password after every install,
+ * The owner account named by the installation's settings exists with their password after every install,
  * so its login stays the same across resets; without both settings no account is made.
  */
 final class EnsureOwnerCommandTest extends TestCase

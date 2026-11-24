@@ -15,8 +15,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Filesystem\Factory;
 
 /**
- * The generic view of every part of a run, ordinary or check, normal or evidence (doc 21 revision 6, sections 54 and
- * 69): built from the part's lifecycle and its newest committed chunk only. It is no reader: it makes no assessment
+ * The generic view of every part of a run, ordinary or check, normal or evidence: built from the part's lifecycle and its newest committed chunk only. It is no reader: it makes no assessment
  * and never claims a result, and a draining part shows finalizing however far its reader got.
  */
 final readonly class ActivityProjection

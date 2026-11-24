@@ -20,7 +20,7 @@ use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The shell lexer keeps quoting, comments and here-documents as doc 21 section 5 asks, and never runs anything.
+ * The shell lexer keeps quoting, comments and here-documents, and never runs anything.
  */
 final class ShellLexerTest extends TestCase
 {

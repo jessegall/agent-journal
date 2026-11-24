@@ -22,7 +22,7 @@ use Tests\TestCase;
 
 /**
  * Contained, a driver's arrangement is shown only by a contained host's report that every item is enforced in the
- * agent image; until then a start is refused naming what is missing (doc 61, decision 7; stories 57, 58).
+ * agent image; until then a start is refused naming what is missing.
  */
 final class ContainedProgramEvidenceTest extends TestCase
 {

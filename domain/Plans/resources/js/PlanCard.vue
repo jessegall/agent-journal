@@ -19,7 +19,7 @@ import {
 import StartPlanForm from './StartPlanForm.vue';
 
 /**
- * One plan row (doc 93, U6-U7): the record link with its number and type, the wrapping title and holder, the outlined
+ * One plan row: the record link with its number and type, the wrapping title and holder, the outlined
  * state and the progress, then a separate actions menu beside it. The server's focus shows as Focused plan; the open
  * record has the quiet selected surface and is the current link, named Selected plan. Neither looks like the
  * keyboard focus outline.

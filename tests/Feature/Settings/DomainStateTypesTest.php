@@ -7,17 +7,14 @@ namespace Tests\Feature\Settings;
 use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Work\ConditionalStateType;
 use App\Support\ActorContext;
-use App\Support\DomainStateType;
-use App\Support\DomainTickableStateType;
 use App\Support\Stack\StateTypes;
 use App\Values\GroupReference;
 use App\Values\OwnerAuthority;
 use Domain\Access\Support\AccessSettings;
-use Domain\Tasks\Support\States\Support\WorkingOnTaskStateFactory;
+use Domain\Tasks\Support\States\WorkingOnTaskState;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
-use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;
+use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerState;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\TestIds;
@@ -37,33 +34,24 @@ final class DomainStateTypesTest extends TestCase
      */
     private const array TABLES = ['settings_records'];
 
-    public function test_a_domain_state_type_carries_its_owner_and_core_ready_states_do_not(): void
+    public function test_a_domain_state_type_is_registered_from_its_state_class(): void
     {
         $types = $this->app->make(StateTypes::class)->registry();
         $working = $types->get('tasks.working');
 
-        $this->assertInstanceOf(DomainStateType::class, $working);
-        $this->assertSame('Tasks', $working->owner);
-
-        $this->assertSame(
-            $this->app->make(WorkingOnTaskStateFactory::class)->schemaVersion(),
-            $working->schemaVersion(),
-        );
-
-        $this->assertNotInstanceOf(ConditionalStateType::class, $types->get('hooks.ready'));
+        $this->assertSame(WorkingOnTaskState::class, $working->stateClass);
+        $this->assertSame(1, $working->schemaVersion);
+        $this->assertTrue($types->get('hooks.ready')->isEnabled());
     }
 
-    public function test_a_domains_ticking_state_type_is_wrapped_and_still_ticks(): void
+    public function test_a_domains_ticking_state_type_still_ticks(): void
     {
         $this->bootModules(QuestionRemindersDomain::class);
         $types = $this->app->make(StateTypes::class);
 
-        $this->assertInstanceOf(
-            DomainTickableStateType::class,
-            $types->registry()->get(AwaitingAnswerLoader::TYPE_KEY),
-        );
+        $this->assertSame(AwaitingAnswerState::class, $types->registry()->get(AwaitingAnswerState::TYPE_KEY)->stateClass);
 
-        $this->assertTrue($types->ticking()->contains(AwaitingAnswerLoader::TYPE_KEY));
+        $this->assertTrue($types->ticking()->contains(AwaitingAnswerState::TYPE_KEY));
         $this->assertFalse($types->ticking()->contains('tasks.working'));
     }
 
@@ -73,7 +61,6 @@ final class DomainStateTypesTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
         $working = $this->app->make(StateTypes::class)->registry()->get('tasks.working');
-        $this->assertInstanceOf(DomainStateType::class, $working);
         $this->assertTrue($working->isEnabled());
 
         $this->app->make(CommandBus::class)->run(

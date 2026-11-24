@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Data\DeclarationData;
-use App\Data\ProposalData;
-use App\Data\ReaderProofData;
-use App\Data\RequestRowData;
-use App\Data\RequestWindowData;
-use App\Data\SampleData;
+use App\Data\Pages\DeclarationData;
+use App\Data\Pages\RequestWindowData;
+use App\Data\Processes\ReaderProofData;
+use App\Data\Processes\RequestRowData;
+use App\Data\Processes\SampleData;
+use App\Data\Profiles\ProposalData;
 use App\Http\Requests\Processes\RequestPageRequest;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;

@@ -8,7 +8,7 @@ use App\Enums\ClaimedOutcome;
 use App\Enums\ProblemCode;
 
 /**
- * A reader's judgement of a finished part's output (doc 21 revision 6, section 72): its records, every problem found
+ * A reader's judgement of a finished part's output: its records, every problem found
  * at once, the counts and progress the output states, and the outcome it claims. It is evidence for a result, never a
  * result receipt.
  */

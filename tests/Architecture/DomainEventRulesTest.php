@@ -112,12 +112,12 @@ final class DomainEventRulesTest extends TestCase
             new CatalogueReflectorFactory(),
         );
         $methods = new StateMethods();
-        $loaders = $this->app->make(StateTypes::class)->registry()->loaders();
+        $types = $this->app->make(StateTypes::class)->registry()->types();
 
-        $this->assertArrayHasKey('hooks.ready', $loaders);
+        $this->assertArrayHasKey('hooks.ready', $types);
 
-        foreach ($loaders as $loader) {
-            foreach ($methods->forLoader($loader) as $input => $method) {
+        foreach ($types as $type) {
+            foreach ($methods->forState($type->stateClass) as $input => $method) {
                 if ($input !== $method->name) {
                     $states->ownerOf($input, $method);
                 }

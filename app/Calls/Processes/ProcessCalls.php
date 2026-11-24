@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Processes;
 
 use App\Contracts\Domains\CallSender;
-use App\Data\ExplanationData;
+use App\Data\Processes\ExplanationData;
 use App\Enums\OutputStream;
 use App\Enums\ShellDialect;
 use App\Support\CallKey;

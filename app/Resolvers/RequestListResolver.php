@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Data\BundleListPartData;
-use App\Data\BundleRowData;
-use App\Data\ClassificationRuleRowData;
-use App\Data\RequestRowData;
+use App\Data\Processes\BundleListPartData;
+use App\Data\Processes\BundleRowData;
+use App\Data\Processes\ClassificationRuleRowData;
+use App\Data\Processes\RequestRowData;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\ModuleRuleBundle;

@@ -7,7 +7,7 @@ namespace App\Commands\AcknowledgeChatMessages;
 use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RetainedActorRequestKey;
-use App\Data\MessageReadBatch;
+use App\Data\Messages\MessageReadBatch;
 use App\Enums\AccessType;
 use App\Policies\MessagePolicy;
 use App\Support\Command;

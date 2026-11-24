@@ -7,7 +7,7 @@ namespace Domain\Tasks\Support;
 use App\Support\NumberedReferenceRecognizer;
 
 /**
- * Recognizes a whole input that is a task reference, task 2241, in any case.
+ * Recognizes a whole input that is a task reference, such as task 2241, in any case.
  */
 final readonly class TaskReferenceRecognizer extends NumberedReferenceRecognizer
 {

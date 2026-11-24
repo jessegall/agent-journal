@@ -32,7 +32,7 @@ final class DirectFileAccessTest extends TestCase
     {
         $found = DirectFileAccess::across(base_path());
 
-        // The Files area's own files touch the disk: those plan 62 moved out of app/Files, and the primitives that
+        // The Files area's own files touch the disk: those that left app/Files in the move to Laravel's layout, and the primitives that
         // already sat in app/Support by role.
         foreach ([...FormerPaths::filesFrom(['app/Files/']), ...self::FILES_PRIMITIVES] as $primitive) {
             $found = $found->outside($primitive);

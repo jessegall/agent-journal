@@ -65,6 +65,19 @@ final readonly class FrameRecords
         );
     }
 
+    /**
+     * Whether a frame of one of the state types is among them.
+     *
+     * @param  list<string>  $typeKeys
+     */
+    public function holdAnyOf(array $typeKeys): bool
+    {
+        return array_any(
+            $this->records,
+            fn (FrameRecord $record) => in_array($record->reference->typeKey, $typeKeys, true),
+        );
+    }
+
     public function holdTicking(TickingTypes $ticking): bool
     {
         foreach ($this->records as $record) {

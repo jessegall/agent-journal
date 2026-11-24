@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\DriverRequestStatus;
-use App\Data\RuntimeSetting;
-use App\Data\RuntimeStatus;
+use App\Data\Agents\DriverRequestStatus;
+use App\Data\Processes\RuntimeStatus;
+use App\Data\Settings\RuntimeSetting;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use Carbon\CarbonImmutable;

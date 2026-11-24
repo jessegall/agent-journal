@@ -13,7 +13,7 @@ use App\Support\States\Contracts\StopConditionGate;
 use Tests\Fixtures\Agents\TestStart;
 
 /**
- * Asks the stop gate about a stop of the started agent and reads its answer the way the stack gathers it: no decision
+ * Asks the stop gate about a stop of the started agent and reads its answer the way the stack gathers it: a delegate
  * lets the stop through.
  */
 trait AsksTheStopGate
@@ -28,7 +28,9 @@ trait AsksTheStopGate
 
     private function typeOf(StateAnswer $answer): AnswerType
     {
-        return $answer->decision === null ? AnswerType::Allow : $answer->decision->answerType();
+        $type = $answer->decision->answerType();
+
+        return $type === AnswerType::Delegate ? AnswerType::Allow : $type;
     }
 
     /**

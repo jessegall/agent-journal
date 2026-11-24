@@ -10,7 +10,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Doc 103, section Storage identities (task 2208): every table that names a driver stores its whole key, up to the key's
+ * Section Storage identities: every table that names a driver stores its whole key, up to the key's
  * own limit, and the start, runtime, switch and agent rows keep the mode instead of a variant.
  */
 final class DriverKeyColumnsTest extends TestCase
@@ -44,7 +44,7 @@ final class DriverKeyColumnsTest extends TestCase
 
     /**
      * Binding columns nothing filled or read: the process generation fences a runtime and the start record keeps the
-     * confirmed native binding, so these were removed (task 2555).
+     * confirmed native binding, so these were removed.
      */
     private const array REMOVED_BINDING_COLUMNS = [
         ['start_records', 'binding_id'],

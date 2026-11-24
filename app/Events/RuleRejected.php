@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Events\Event;
 use App\Models\CommandRules\RuleProposal;
 
 /**
  * A project owner rejected a proposal; its author is told the reason, and the proposal and its request stay readable.
  */
-final readonly class RuleRejected implements Event
+final readonly class RuleRejected extends ProcessEvent
 {
     public function __construct(
         public string $proposalId,

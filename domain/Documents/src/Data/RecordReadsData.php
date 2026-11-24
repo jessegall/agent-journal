@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
-use App\Data\RecordCommentLocation;
-use App\Data\TextCommentLocation;
-use App\Data\TextSections;
+use App\Data\Comments\RecordCommentLocation;
+use App\Data\Comments\TextCommentLocation;
+use App\Data\Pages\TextSections;
 use App\Support\TextPart;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

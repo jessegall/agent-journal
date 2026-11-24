@@ -12,12 +12,12 @@ use App\Values\StackTarget;
 
 /**
  * Accepts a model and an effort as one settings change: the pair is validated before either is accepted, and each
- * supersedes the earlier unrun request of its own field (doc 40, section 15).
+ * supersedes the earlier unrun request of its own field.
  */
 final readonly class DriverSettings
 {
     /**
-     * The efforts every supported driver build offers (plan 26 phase 1 evidence, doc 46).
+     * The efforts every supported driver build offers.
      *
      * @var list<string>
      */

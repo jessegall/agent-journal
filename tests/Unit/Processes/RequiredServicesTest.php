@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Start-up fails by name when a service every shell command depends on is unbound; nothing falls back to a parser or
- * runner that lets commands through (doc 21 revision 6, section 73 phase 6; stories 1, 145, 193 and 194).
+ * runner that lets commands through.
  */
 final class RequiredServicesTest extends TestCase
 {

@@ -23,7 +23,7 @@ use App\Values\ReaderReference;
 use PHPUnit\Framework\TestCase;
 
 /**
- * A verification contract is built from validated parts (doc 21 revision 6, sections 68 and 72): every exit is listed
+ * A verification contract is built from validated parts: every exit is listed
  * with its evidence, anything else is an execution error, and a broken field is named.
  */
 final class VerificationContractTest extends TestCase

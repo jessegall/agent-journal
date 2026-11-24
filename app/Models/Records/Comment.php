@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use App\Data\CommentDetails;
+use App\Data\Comments\CommentDetails;
 use App\Enums\ActorType;
 use App\Enums\TextAnchorType;
 use App\Enums\WholeRecord;

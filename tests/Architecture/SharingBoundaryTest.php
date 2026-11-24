@@ -29,13 +29,6 @@ use App\Contracts\Sharing\ShareRecordProvider;
 use App\CoreApi;
 use App\CoreCommands;
 use App\Events\ShareActivated;
-use App\Events\ShareCreated;
-use App\Events\ShareExpired;
-use App\Events\ShareFailed;
-use App\Events\ShareGatewayChanged;
-use App\Events\ShareRequested;
-use App\Events\ShareRevoked;
-use App\Events\ShareScopeChanged;
 use App\Support\CommandRegistry;
 use App\Support\ReadPermit;
 use App\Support\Reflector;
@@ -44,7 +37,7 @@ use Tests\Architecture\Support\FormerPaths;
 use Tests\TestCase;
 
 /**
- * Core sharing keeps its boundary (doc 29, sections 7 and 10): no Core sharing file names a domain, every sharing
+ * Core sharing keeps its boundary: no Core sharing file names a domain, every sharing
  * command is registered through the bus grammar and none is queued, and Core exports exactly the sharing seams,
  * events and entry commands while its models, handlers, read permit and System runtime commands stay private.
  */
@@ -84,15 +77,11 @@ final class SharingBoundaryTest extends TestCase
         SharePolicy::class,
     ];
 
+    /**
+     * The sharing facts a domain hears; the others stay Core's own until a domain needs one.
+     */
     private const array EVENTS = [
-        ShareRequested::class,
-        ShareCreated::class,
         ShareActivated::class,
-        ShareFailed::class,
-        ShareScopeChanged::class,
-        ShareRevoked::class,
-        ShareExpired::class,
-        ShareGatewayChanged::class,
     ];
 
     public function test_no_core_sharing_file_names_a_domain_namespace(): void
@@ -159,7 +148,7 @@ final class SharingBoundaryTest extends TestCase
     }
 
     /**
-     * The sharing files by the folders they had before plan 62 moved them to their roles.
+     * The sharing files by the folders they had before the move to Laravel's layout.
      *
      * @return list<string>
      */

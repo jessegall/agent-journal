@@ -11,6 +11,7 @@ use App\Support\PipelineAdapter;
 use App\Support\PipelineRunner;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
+use App\Support\StateLoading\StateBuilder;
 use Illuminate\Contracts\Container\Container;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -18,7 +19,7 @@ use Tests\TestCase;
 
 /**
  * A pipeline is the definition of a run of steps, or the adapter that runs one; a pipe is one step and never runs a
- * pipeline, not even through a service it is given (user messages 5572, 5578, 5585, 5609). Nesting, repetition and
+ * pipeline, not even through a service it is given, save the state builder. Nesting, repetition and
  * choice are steps of a definition: a nested pipeline, or a Step listed inline.
  */
 #[TimeLimit(seconds: 15, reason: 'It reads every class of Core, the domains and the module fixtures.')]
@@ -28,8 +29,15 @@ final class PipelineRulesTest extends TestCase
      * The verbs a pipeline's name may start with; a new pipeline that does something else adds its verb here.
      */
     private const array VERBS = [
-        'Analyse', 'Answer', 'Build', 'Check', 'Count', 'Find', 'Read', 'Resolve', 'Run', 'Scan', 'Write',
+        'Analyse', 'Answer', 'Build', 'Cast', 'Check', 'Count', 'Find', 'Read', 'Resolve', 'Run', 'Scan', 'Write',
     ];
+
+    /**
+     * The one service a pipe may reach although it runs a pipeline: building an agent's state is a pipeline the user
+     * asked for, and restoring a stack inside the hook pipeline builds each of its states (question
+     * 43).
+     */
+    private const array STATE_BUILDING = [StateBuilder::class];
 
     public function test_every_class_named_a_pipeline_is_a_definition_and_no_pipe(): void
     {
@@ -44,7 +52,7 @@ final class PipelineRulesTest extends TestCase
     }
 
     /**
-     * A pipeline's name says what it does: a verb and its object, such as ReadListPipeline (user message 5623).
+     * A pipeline's name says what it does: a verb and its object, such as ReadListPipeline.
      */
     public function test_every_pipeline_is_named_by_what_it_does(): void
     {
@@ -146,6 +154,10 @@ final class PipelineRulesTest extends TestCase
 
             $given = $type->get()->name();
             $givenType = Reflector::find($given);
+
+            if (in_array($given, self::STATE_BUILDING, true)) {
+                continue;
+            }
 
             if ($given === PipelineRunner::class
                 || $givenType->filter(fn (Reflector $found) => $found->isSubclassOf(PipelineAdapter::class))

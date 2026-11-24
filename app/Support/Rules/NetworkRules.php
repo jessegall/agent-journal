@@ -13,7 +13,7 @@ use App\Values\OptionGrammar;
 use App\Values\ProgramSpellings;
 
 /**
- * Programs that reach the network (doc 21 revision 6, section 6): curl always, writing a file when told to save one and
+ * Programs that reach the network: curl always, writing a file when told to save one and
  * reading and writing when it uploads data; wget always saves what it fetches.
  */
 final readonly class NetworkRules

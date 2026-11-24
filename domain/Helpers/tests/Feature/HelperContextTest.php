@@ -22,7 +22,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A helper is given its whole job context every time its context starts, and a parent the notices about its
- * helpers' jobs once each (task 291).
+ * helpers' jobs once each.
  */
 #[TimeLimit(seconds: 6, reason: 'It activates profiles and starts agent sessions for a dispatch.')]
 final class HelperContextTest extends TestCase

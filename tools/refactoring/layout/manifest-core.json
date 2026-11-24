@@ -32726,10 +32726,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c46a186c3d6151e096605c26b23c0f94d55d64cb",
-        "old_path": "app/Events/MessageTakenUp.php",
-        "old_class": "App\\Events\\MessageTakenUp",
-        "final_path": "app/Events/MessageTakenUp.php",
-        "final_class": "App\\Events\\MessageTakenUp",
+        "old_path": "app/Events/MessageClaimed.php",
+        "old_class": "App\\Events\\MessageClaimed",
+        "final_path": "app/Events/MessageClaimed.php",
+        "final_class": "App\\Events\\MessageClaimed",
         "status": "stay",
         "kind": "class",
         "generator": {

@@ -15,7 +15,7 @@ import {
 /**
  * The one question a notification opened, shown passively: its text, whether it still waits, was answered or was
  * dismissed, and its answer once there is one. Only after it is shown does the reader's own receipt of it become
- * read; nothing else is read, taken up or answered. A question the reader may not see offers a retry and marks
+ * read; nothing else is read, claimed or answered. A question the reader may not see offers a retry and marks
  * nothing. While the tab is visible it is read again every lease, so a question the reader lost access to leaves
  * the screen without a push.
  */

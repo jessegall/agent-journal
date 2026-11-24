@@ -209,7 +209,7 @@ final readonly class DomainUi
     }
 
     /**
-     * Whether the class is in this owner's namespace: App for Core's page owners, laid out by role (doc 107), or the
+     * Whether the class is in this owner's namespace: App for Core's page owners, laid out by role, or the
      * package's own.
      */
     public function owns(string $className): bool

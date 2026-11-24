@@ -27,7 +27,7 @@ use Tests\TestCase;
 
 /**
  * Every byte a part writes is stored from byte zero on the private process-output disk, and the manifest tells a
- * complete capture from a gap (doc 21 revision 6, section 54).
+ * complete capture from a gap.
  */
 final class OutputCaptureTest extends TestCase
 {

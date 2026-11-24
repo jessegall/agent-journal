@@ -115,7 +115,7 @@ type KeyScriptRunner interface {
 	RunKeyScript(ctx context.Context, request KeyScriptRequest) (OperationResult, error)
 }
 
-// Progress is how far a request got, in the journal's words (doc 40, section 21).
+// Progress is how far a request got, in the journal's words.
 type Progress string
 
 const (

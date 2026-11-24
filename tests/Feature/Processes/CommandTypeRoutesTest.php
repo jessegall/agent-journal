@@ -19,8 +19,7 @@ use Tests\TestCase;
 
 /**
  * An agent explains an unknown line, gets the request that holds it and the next command, proposes through the
- * command-type routes and reads the request back; owner actions are refused for an agent (doc 21 revision 6, sections
- * 51, 71 and 72; stories 79-81, 83, 94, 96, 179 and 192).
+ * command-type routes and reads the request back; owner actions are refused for an agent.
  */
 final class CommandTypeRoutesTest extends TestCase
 {

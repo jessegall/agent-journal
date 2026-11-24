@@ -8,10 +8,7 @@ use App\Enums\AccessRuleType;
 use App\Values\AccessDecision;
 use App\Values\Operation;
 use App\Contracts\Authorization\OperationPolicy;
-use App\Support\States\Contracts\StopConditionGate;
-use App\Support\StateLoading\Loaders\ReadyStateLoader;
 use App\Enums\AccessType;
-use Illuminate\Container\Container;
 
 /**
  * An operation policy fixed for a test: it allows every operation, or every one that changes no files.
@@ -22,17 +19,6 @@ final readonly class FixedOperationPolicy implements OperationPolicy
 
     public function __construct(private bool $changesFiles = true) {}
 
-    /**
-     * A ready state loader whose container gives this policy to every ready state it builds.
-     */
-    public static function loader(bool $changesFiles = true): ReadyStateLoader
-    {
-        $container = new Container();
-        $container->instance(OperationPolicy::class, new self($changesFiles));
-        $container->instance(StopConditionGate::class, new AllowedStops());
-
-        return new ReadyStateLoader(static fn () => $container);
-    }
 
     public function assess(Operation $operation): AccessDecision
     {

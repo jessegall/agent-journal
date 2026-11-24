@@ -37,7 +37,7 @@ use Tests\TestCase;
 
 /**
  * Agents propose, revise and withdraw their own declarations through the bus, and a declaration file imports as
- * proposals only (doc 21 revision 6, sections 51 and 71; stories 79, 80, 83, 84, 87, 90, 94 and 180).
+ * proposals only.
  */
 final class RuleProposalCommandsTest extends TestCase
 {

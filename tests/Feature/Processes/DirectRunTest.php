@@ -18,8 +18,7 @@ use Tests\TestCase;
 
 /**
  * A line an agent runs directly goes through the same admission as a hook: a refusal starts nothing and names its
- * request, an admitted line runs supervised and answers its output number and results (doc 21 revision 6, sections
- * 10, 53 and 71; stories 41, 79, 117, 119, 124 and 197).
+ * request, an admitted line runs supervised and answers its output number and results.
  */
 final class DirectRunTest extends TestCase
 {

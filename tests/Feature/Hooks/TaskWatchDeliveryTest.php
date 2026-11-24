@@ -45,9 +45,9 @@ final class TaskWatchDeliveryTest extends TestCase
     {
         $taskId = TestIds::of(42);
         $this->pushState($this->task(42));
-        $this->pushState(new StateReference('states.task_watch', new SubjectReference($taskId, 1)));
-        $this->pushState(new StateReference('states.ordinary_task_watch', new SubjectReference($taskId, 2)));
-        $this->pushState(new StateReference('states.task_watch', new SubjectReference($taskId, 3)));
+        $this->pushState(new StateReference('states.task_watch', new SubjectReference($taskId, 1), ['taskId' => $taskId, 'runNumber' => 1]));
+        $this->pushState(new StateReference('states.ordinary_task_watch', new SubjectReference($taskId, 2), ['taskId' => $taskId, 'runNumber' => 2]));
+        $this->pushState(new StateReference('states.task_watch', new SubjectReference($taskId, 3), ['taskId' => $taskId, 'runNumber' => 3]));
 
         $attention = new RecordedAttention();
         $this->app->instance(ActorAttention::class, $attention);
@@ -62,8 +62,6 @@ final class TaskWatchDeliveryTest extends TestCase
         );
         $this->app->instance(LoggerInterface::class, $logger);
 
-        $dispatcher = $this->app->make(Dispatcher::class);
-        $dispatcher->dispatch(new TaskFinished($taskId, TaskState::Started, 'entry'));
         $this->dispatch(new TaskFinished(TestIds::of(43), TaskState::Started, 'entry'));
         $this->assertSame([], $this->app->make(TaskWatchLog::class)->records);
         $this->assertSame([], $attention->wakes);

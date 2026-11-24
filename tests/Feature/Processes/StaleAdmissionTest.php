@@ -37,8 +37,7 @@ use Tests\TestCase;
 
 /**
  * A change to the project's active rules leaves no unfinished run resting on the old ones: a queued admission is
- * refused on start, and a running run starts no further part while its started parts keep their records (doc 21
- * revision 6, sections 51, 68 and 71; stories 65, 85, 92, 93, 146 and 190).
+ * refused on start, and a running run starts no further part while its started parts keep their records.
  */
 final class StaleAdmissionTest extends TestCase
 {

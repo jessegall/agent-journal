@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * Why a reader could not vouch for a check's output (doc 21 revision 6, section 72); the codes are stable.
+ * Why a reader could not vouch for a check's output; the codes are stable.
  */
 enum ProblemCode: string
 {

@@ -37,7 +37,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A profile's STOP script prepares the stop before its final checks (task 962): a dirty writer's stop runs the tests
+ * A profile's STOP script prepares the stop before its final checks: a dirty writer's stop runs the tests
  * before it yields, failed tests send their diagnostics back, three returns on an unchanged workspace hold the work
  * with one notice to the owner, a changed definition holds before any instruction, and a clean one goes straight to
  * the final checks.

@@ -6,7 +6,7 @@ namespace App\Enums;
 
 /**
  * How a helper container is started: the standard way, as one unprivileged user, or protected, where a root-owned
- * init starts the driver and the shell executor as two users and then drops its rights (doc 78 revision 2).
+ * init starts the driver and the shell executor as two users and then drops its rights.
  */
 enum LaunchProfileType: string
 {

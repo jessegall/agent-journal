@@ -13,7 +13,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A model transition that raises a fact runs only inside a unit (plan 40): every caller of a transition the lists in
+ * A model transition that raises a fact runs only inside a unit: every caller of a transition the lists in
  * tests/Architecture/RaisingTransitions name is reached from a registered command's handler, is a transaction listener
  * or is a model; a public listener, a job, a console command, a controller or unreached code fails.
  */
@@ -28,7 +28,7 @@ final class ModelRaiseCallerTest extends TestCase
     private const string GUIDELINE = '.ai/guidelines/models-raise-their-events.md';
 
     /**
-     * The attribute that marks a listener required in the command's transaction (plan 40 task 1579).
+     * The attribute that marks a listener required in the command's transaction.
      */
     private const string TRANSACTION_LISTENER = 'App\Attributes\InCommandTransaction';
 

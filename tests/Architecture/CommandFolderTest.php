@@ -23,7 +23,7 @@ use Tests\TestCase;
 use Throwable;
 
 /**
- * Commands, handlers and command middleware sit where the bus finds them (doc 19, section 6.8): every class in a
+ * Commands, handlers and command middleware sit where the bus finds them: every class in a
  * Commands folder is a registered command, the command attributes sit only on registered commands, no handler or
  * middleware keeps static state, and every registered handler and middleware can be built.
  */
