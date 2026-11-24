@@ -9,7 +9,7 @@ use App\Support\Syntax\TokenCursor;
 
 /**
  * A reader of one kind of command: a pipe or pipeline the command pipeline picks when the command at the cursor is of
- * its kind. It takes a CommandToParse and hands on the NodeRead of the command it read.
+ * its kind. It takes an UnparsedCommand and hands on the NodeRead of the command it read.
  */
 interface CommandReader extends Pipable
 {

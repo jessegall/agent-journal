@@ -636,7 +636,7 @@ func (client *Client) InterruptNavigation(ctx context.Context, navigationID stri
 	return client.call(ctx, "/host/navigation/"+navigationID+"/interrupt", nil, nil)
 }
 
-// NotifyRequest, NotifyActivity, ReportTurn, NotifyHeartbeat and NotifyExit send one typed report each.
+// NotifyRequest, NotifyActivity, NotifyTurn, NotifyHeartbeat and NotifyExit send one typed report each.
 func (client *Client) NotifyRequest(ctx context.Context, report RequestReport) error {
 	return client.call(ctx, "/host/reports/request", report, nil)
 }
