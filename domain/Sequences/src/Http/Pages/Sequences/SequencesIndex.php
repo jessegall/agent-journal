@@ -73,7 +73,11 @@ final readonly class SequencesIndex extends SequencesPage
         $count = count($sequence->stepList);
         $steps = $count === 1 ? '1 step' : "{$count} steps";
 
-        return $sequence->summary === '' ? $steps : "{$steps} · {$sequence->summary}";
+        if ($sequence->summary === '') {
+            return $steps;
+        }
+
+        return "{$steps} · {$sequence->summary}";
     }
 
     /**

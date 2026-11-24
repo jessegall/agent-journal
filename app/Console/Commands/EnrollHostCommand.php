@@ -42,7 +42,11 @@ final class EnrollHostCommand extends Command
 
     private function arrangement(): ArrangementType
     {
-        return $this->option('contained') === true ? ArrangementType::Contained : ArrangementType::Local;
+        if ($this->option('contained') === true) {
+            return ArrangementType::Contained;
+        }
+
+        return ArrangementType::Local;
     }
 
     /**

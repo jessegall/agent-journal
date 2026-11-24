@@ -389,7 +389,11 @@ final readonly class TieredRecordSearch implements TieredSearch
 
         $tier = $query->words->titleTier($source->titleOf($row));
 
-        return $tier === null ? null : $source->hit($row, $tier);
+        if ($tier === null) {
+            return null;
+        }
+
+        return $source->hit($row, $tier);
     }
 
     /**

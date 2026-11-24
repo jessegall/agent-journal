@@ -31,7 +31,11 @@ final readonly class OutputRecord
     {
         $capturedOutput = $this->captures[$field] ?? '';
 
-        return ctype_digit($capturedOutput) ? (int) $capturedOutput : null;
+        if (ctype_digit($capturedOutput)) {
+            return (int) $capturedOutput;
+        }
+
+        return null;
     }
 
     /**

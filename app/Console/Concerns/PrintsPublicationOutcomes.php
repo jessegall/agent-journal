@@ -29,7 +29,11 @@ trait PrintsPublicationOutcomes
             $this->line("Publication {$publicationId}: {$state->value}.");
         }
 
-        return in_array(PublicationState::Failed, $outcomes, true) ? self::FAILURE : self::SUCCESS;
+        if (in_array(PublicationState::Failed, $outcomes, true)) {
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
     }
 
     /**

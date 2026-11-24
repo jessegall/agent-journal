@@ -25,6 +25,10 @@ final class SequenceRequest extends FormRequest
     {
         $id = (string) $this->route('sequence');
 
-        return Str::isUlid($id) ? strtolower($id) : throw new NotFoundHttpException();
+        if (Str::isUlid($id)) {
+            return strtolower($id);
+        }
+
+        throw new NotFoundHttpException();
     }
 }

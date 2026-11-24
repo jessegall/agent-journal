@@ -44,9 +44,11 @@ final readonly class SettingTargets
     {
         $setting = $this->anySetting($reference);
 
-        return $this->reflectors->make($declaration)->isInstance($setting)
-            ? $setting
-            : throw SettingValueInvalid::for($reference->owner, $reference->key, $commandType);
+        if ($this->reflectors->make($declaration)->isInstance($setting)) {
+            return $setting;
+        }
+
+        throw SettingValueInvalid::for($reference->owner, $reference->key, $commandType);
     }
 
     /**
@@ -74,7 +76,11 @@ final readonly class SettingTargets
         $this->gate->require();
         $group = $this->registry->groupAt($reference->owner, $reference->key);
 
-        return $group instanceof ToggleGroup ? $group : throw SettingValueInvalid::notToggleGroup(
+        if ($group instanceof ToggleGroup) {
+            return $group;
+        }
+
+        throw SettingValueInvalid::notToggleGroup(
             $reference->owner,
             $reference->key,
         );

@@ -195,7 +195,11 @@ final readonly class ArgumentGrammar
      */
     private function maximumOperands(): int|float
     {
-        return $this->hasRepeatingOperand() ? INF : count($this->operands);
+        if ($this->hasRepeatingOperand()) {
+            return INF;
+        }
+
+        return count($this->operands);
     }
 
     private function requiresOptionUnknownTo(self $other): bool

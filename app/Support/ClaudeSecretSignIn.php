@@ -92,7 +92,11 @@ abstract readonly class ClaudeSecretSignIn implements FirstRunSettlement, SignIn
 
         $refusal = $this->claude->modelRefusal($directory, $this->variables($directory), $this->readFiles($directory));
 
-        return $refusal === null ? $verification : SignInVerification::refused($refusal);
+        if ($refusal === null) {
+            return $verification;
+        }
+
+        return SignInVerification::refused($refusal);
     }
 
     /**

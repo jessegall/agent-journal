@@ -26,8 +26,10 @@ final readonly class RefusalReason
 
         $code = Str::kebab(class_basename($refusal));
 
-        return $refusal instanceof CodedRefusal
-            ? new self($code, $refusal->refusalCode()->status())
-            : new self($code, 403);
+        if ($refusal instanceof CodedRefusal) {
+            return new self($code, $refusal->refusalCode()->status());
+        }
+
+        return new self($code, 403);
     }
 }

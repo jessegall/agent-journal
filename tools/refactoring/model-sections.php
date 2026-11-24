@@ -46,6 +46,15 @@ function isAccessor(ClassMethod $method): bool
 }
 
 /**
+ * Whether a method sits above the sections, before the Constructors divider: the casts and the boot hooks, so the
+ * divider stands right above the first constructor (user message 22026).
+ */
+function isPreamble(ClassMethod $method): bool
+{
+    return in_array($method->name->toString(), ['casts', 'boot', 'booted'], true);
+}
+
+/**
  * The section a method belongs in, read from its name, visibility, return type and what its body does.
  */
 function sectionOf(ClassMethod $method, string $body): string
@@ -55,7 +64,6 @@ function sectionOf(ClassMethod $method, string $body): string
     $isScope = str_starts_with($name, 'scope') || str_contains($body, '#[Scope]');
 
     return match (true) {
-        in_array($name, ['casts', 'boot', 'booted'], true) => 'Constructors',
         $isScope => 'Scopes',
         isAccessor($method) => 'Accessors',
         in_array($returns, RELATIONS, true) => 'Relations',
@@ -75,7 +83,11 @@ function startOf(ClassMethod $method): int
 {
     $comments = $method->getComments();
 
-    return $comments === [] ? $method->getStartFilePos() : $comments[0]->getStartFilePos();
+    if ($comments === []) {
+        return $method->getStartFilePos();
+    }
+
+    return $comments[0]->getStartFilePos();
 }
 
 /**
@@ -101,6 +113,14 @@ function faultsOf(string $source, Class_ $class): array
     return sectionFaults($source, $class, SECTIONS, function (ClassMethod $method, string|null $section): string|null {
         $name = $method->name->toString();
 
+        if (isPreamble($method)) {
+            if ($section === null) {
+                return null;
+            }
+
+            return "method {$name} sits in {$section}; it belongs above the sections, before the Constructors divider";
+        }
+
         if ($section === null) {
             return "method {$name} is outside a section";
         }
@@ -109,9 +129,11 @@ function faultsOf(string $source, Class_ $class): array
             return null;
         }
 
-        return isAccessor($method)
-            ? "accessor {$name} sits in {$section}, not in Accessors"
-            : "method {$name} is no accessor, so it does not belong in Accessors";
+        if (isAccessor($method)) {
+            return "accessor {$name} sits in {$section}, not in Accessors";
+        }
+
+        return "method {$name} is no accessor, so it does not belong in Accessors";
     });
 }
 
@@ -175,15 +197,22 @@ function sorted(string $source, Class_ $class): string
     }
 
     $sections = array_fill_keys(SECTIONS, []);
+    $preamble = [];
     $marked = markedSections($source);
 
     foreach ($methods as $method) {
+        if (isPreamble($method)) {
+            $preamble[] = textOf($source, $method);
+
+            continue;
+        }
+
         $body = substr($source, startOf($method), $method->getEndFilePos() + 1 - startOf($method));
         $section = isAccessor($method) ? 'Accessors' : currentSectionOf($marked, $method) ?? sectionOf($method, $body);
         $sections[$section][] = textOf($source, $method);
     }
 
-    $parts = [];
+    $parts = $preamble;
 
     foreach (array_filter($sections) as $name => $texts) {
         $parts[] = "    // ----------[ {$name} ]----------\n\n".implode("\n\n", $texts);
@@ -231,7 +260,11 @@ function runModelSections(array $arguments): int
         }
     }
 
-    return $faultCount === 0 ? 0 : 1;
+    if ($faultCount === 0) {
+        return 0;
+    }
+
+    return 1;
 }
 
 // Run as a command, not when another tool loads these functions.

@@ -21,6 +21,10 @@ final class TextVersionRequest extends RecordTargetRequest
 
     public function version(): string|null
     {
-        return $this->filled('version') ? $this->string('version')->toString() : null;
+        if ($this->filled('version')) {
+            return $this->string('version')->toString();
+        }
+
+        return null;
     }
 }

@@ -20,6 +20,10 @@ final class InputRefused extends CallRefused
     {
         $fields = $this->details['fields'] ?? [];
 
-        return is_array($fields) ? $fields : [];
+        if (is_array($fields)) {
+            return $fields;
+        }
+
+        return [];
     }
 }

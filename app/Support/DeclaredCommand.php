@@ -119,9 +119,11 @@ final readonly class DeclaredCommand
             );
         }
 
-        return $requiresKey
-            ? ReceiptRetention::declaredBy($this->command, $declaration->attribute(RequiresRequestKey::class))
-            : ReceiptRetention::standard();
+        if ($requiresKey) {
+            return ReceiptRetention::declaredBy($this->command, $declaration->attribute(RequiresRequestKey::class));
+        }
+
+        return ReceiptRetention::standard();
     }
 
     /**

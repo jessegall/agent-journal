@@ -33,7 +33,11 @@ final readonly class PlanGraphChanges
     {
         $kept = $this->cache->get($this->key('suggestion', $planId, $actorId));
 
-        return $kept instanceof TaskGraphSuggestion ? new Some($kept) : None::create();
+        if ($kept instanceof TaskGraphSuggestion) {
+            return new Some($kept);
+        }
+
+        return None::create();
     }
 
     public function keepUndo(string $planId, string $actorId, PlanGraphUndo $undo): void
@@ -49,7 +53,11 @@ final readonly class PlanGraphChanges
     {
         $kept = $this->cache->get($this->key('undo', $planId, $actorId));
 
-        return $kept instanceof PlanGraphUndo ? new Some($kept) : None::create();
+        if ($kept instanceof PlanGraphUndo) {
+            return new Some($kept);
+        }
+
+        return None::create();
     }
 
     public function forgetUndo(string $planId, string $actorId): void

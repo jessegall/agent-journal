@@ -25,7 +25,11 @@ final readonly class ProjectReceipts implements ResultReceipts
             ->whereKey($receiptId)
             ->first();
 
-        return $receipt === null ? None::create() : Some::create($receipt->published());
+        if ($receipt === null) {
+            return None::create();
+        }
+
+        return Some::create($receipt->published());
     }
 
     public function forPart(string $runId): Option
@@ -36,6 +40,10 @@ final readonly class ProjectReceipts implements ResultReceipts
             ->where('part_run_id', $runId)
             ->first();
 
-        return $receipt === null ? None::create() : Some::create($receipt->published());
+        if ($receipt === null) {
+            return None::create();
+        }
+
+        return Some::create($receipt->published());
     }
 }

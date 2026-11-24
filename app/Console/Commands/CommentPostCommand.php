@@ -68,6 +68,10 @@ final class CommentPostCommand extends Command
     {
         $commentField = $this->input->getOption($name);
 
-        return is_string($commentField) && $commentField !== '' ? $commentField : null;
+        if (is_string($commentField) && $commentField !== '') {
+            return $commentField;
+        }
+
+        return null;
     }
 }

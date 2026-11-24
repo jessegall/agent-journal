@@ -28,7 +28,11 @@ final class StartPreviewRequest extends FormRequest
 
     public function family(): string|null
     {
-        return $this->filled('family') ? $this->string('family')->toString() : null;
+        if ($this->filled('family')) {
+            return $this->string('family')->toString();
+        }
+
+        return null;
     }
 
     public function driverType(): DriverType|null

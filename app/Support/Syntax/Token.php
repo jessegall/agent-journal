@@ -30,6 +30,10 @@ final readonly class Token
      */
     public function literal(): string|null
     {
-        return $this->type === TokenType::Word ? $this->word?->literal() : null;
+        if ($this->type === TokenType::Word) {
+            return $this->word?->literal();
+        }
+
+        return null;
     }
 }

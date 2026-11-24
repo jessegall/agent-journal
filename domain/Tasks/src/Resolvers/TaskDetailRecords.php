@@ -34,8 +34,10 @@ final readonly class TaskDetailRecords implements TaskDetailsResolver
 
         $execution = $this->executions->of($task->newCollection([$task]))[$task->id];
 
-        return $view->includesText()
-            ? $task->detailsWithText($holder, $execution)
-            : $task->details($holder, $execution);
+        if ($view->includesText()) {
+            return $task->detailsWithText($holder, $execution);
+        }
+
+        return $task->details($holder, $execution);
     }
 }

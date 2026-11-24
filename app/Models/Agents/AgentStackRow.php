@@ -110,7 +110,11 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     {
         $row = self::query()->forTarget($target)->first();
 
-        return $row !== null && $row->isActive() ? new Some($row) : None::create();
+        if ($row !== null && $row->isActive()) {
+            return new Some($row);
+        }
+
+        return None::create();
     }
 
     /**
@@ -122,7 +126,11 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     {
         $row = self::query()->authorizedFor($target)->first();
 
-        return $row !== null && $row->isActive() ? new Some($row) : None::create();
+        if ($row !== null && $row->isActive()) {
+            return new Some($row);
+        }
+
+        return None::create();
     }
 
     /**
@@ -132,7 +140,11 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     {
         $row = self::query()->authorizedFor($target)->lockForUpdate()->first();
 
-        return $row !== null && $row->isActive() ? new Some($row) : None::create();
+        if ($row !== null && $row->isActive()) {
+            return new Some($row);
+        }
+
+        return None::create();
     }
 
     /**
@@ -156,13 +168,9 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      */
     public static function lockFor(StackTarget $target): self
     {
-        $row = self::query()->forTarget($target)->lockForUpdate()->firstOr(fn () => throw StackMissing::forTarget(
-            $target->description(),
-        ));
-
-        if (! $row->isActive()) {
-            throw StackAlreadyClosed::forTarget($target->description());
-        }
+        $row = self::query()->forTarget($target)->lockForUpdate()->first();
+        self::assertStackFound($row, $target);
+        $row->assertOpen($target);
 
         return $row;
     }
@@ -175,7 +183,10 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      */
     public static function lockKeptFor(Builder $query, StackTarget $target): self
     {
-        return $query->lockForUpdate()->firstOr(fn () => throw StackMissing::forTarget($target->description()));
+        $row = $query->lockForUpdate()->first();
+        self::assertStackFound($row, $target);
+
+        return $row;
     }
 
     /**
@@ -184,13 +195,9 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      */
     public static function lockAuthorizedFor(StackTarget $target): self
     {
-        $row = self::query()->authorizedFor($target)->lockForUpdate()->firstOr(fn () => throw StackMissing::forTarget(
-            $target->description(),
-        ));
-
-        if (! $row->isActive()) {
-            throw StackAlreadyClosed::forTarget($target->description());
-        }
+        $row = self::query()->authorizedFor($target)->lockForUpdate()->first();
+        self::assertStackFound($row, $target);
+        $row->assertOpen($target);
 
         return $row;
     }
@@ -266,6 +273,34 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     protected function target(): Attribute
     {
         return Attribute::get(fn () => new StackTarget($this->agent_id, $this->session_id))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a target with no stack row.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws StackMissing
+     */
+    private static function assertStackFound(self|null $row, StackTarget $target): void
+    {
+        if ($row === null) {
+            throw StackMissing::forTarget($target->description());
+        }
+    }
+
+    /**
+     * Refuses a stack that is already closed.
+     *
+     * @throws StackAlreadyClosed
+     */
+    private function assertOpen(StackTarget $target): void
+    {
+        if (! $this->isActive()) {
+            throw StackAlreadyClosed::forTarget($target->description());
+        }
     }
 
     // ----------[ Scopes ]----------

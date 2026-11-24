@@ -70,7 +70,11 @@ final readonly class SessionRecords implements SessionResolver
     {
         $session = AgentSession::query()->whereKey($sessionId)->where('agent_id', $agentId)->lockForUpdate()->first();
 
-        return $session !== null && $session->isActive() ? $session : throw StackTargetRefused::forTarget(
+        if ($session !== null && $session->isActive()) {
+            return $session;
+        }
+
+        throw StackTargetRefused::forTarget(
             "session {$sessionId}",
         );
     }
@@ -83,7 +87,11 @@ final readonly class SessionRecords implements SessionResolver
         $actor = $this->actors->actor();
         $query = AgentSession::query();
 
-        return $this->inspection->seesEveryAgent() ? $query : $query->where('agent_id', $actor->id);
+        if ($this->inspection->seesEveryAgent()) {
+            return $query;
+        }
+
+        return $query->where('agent_id', $actor->id);
     }
 
     private static function optionOf(AgentSession $session): SessionOption

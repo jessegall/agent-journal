@@ -43,6 +43,10 @@ enum CommandRunState: string
             return self::Cancelled;
         }
 
-        return $exitCode === 0 ? self::Completed : self::Failed;
+        if ($exitCode === 0) {
+            return self::Completed;
+        }
+
+        return self::Failed;
     }
 }

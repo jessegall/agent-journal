@@ -41,7 +41,11 @@ final readonly class ClaudeSignIn implements FirstRunSettlement, SignInProtocol
     {
         $address = $this->addressFrom($process);
 
-        return $address === null ? null : new SignInChallenge($address, null);
+        if ($address === null) {
+            return null;
+        }
+
+        return new SignInChallenge($address, null);
     }
 
     public function canTakeAnswer(): bool
@@ -102,7 +106,11 @@ final readonly class ClaudeSignIn implements FirstRunSettlement, SignInProtocol
      */
     public function addressFrom(PrivateAccountProcess $process): string|null
     {
-        return preg_match('~https://\S+~', $process->output(), $match) === 1 ? $match[0] : null;
+        if (preg_match('~https://\S+~', $process->output(), $match) === 1) {
+            return $match[0];
+        }
+
+        return null;
     }
 
     /**

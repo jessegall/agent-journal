@@ -42,7 +42,11 @@ final readonly class StartRequest
      */
     public function neededCapabilities(): array
     {
-        return $this->conversationMode === ConversationModeType::Resume ? [DriverCapability::ExactResume] : [];
+        if ($this->conversationMode === ConversationModeType::Resume) {
+            return [DriverCapability::ExactResume];
+        }
+
+        return [];
     }
 
     public function execution(): ExecutionPolicy

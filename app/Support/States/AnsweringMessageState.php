@@ -65,12 +65,20 @@ final class AnsweringMessageState extends AgentState
 
     public function onToolRequested(ToolRequested $input): Decision
     {
-        return $input->isReadOnly() ? Decision::delegate() : $this->decide();
+        if ($input->isReadOnly()) {
+            return Decision::delegate();
+        }
+
+        return $this->decide();
     }
 
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        return $input->isReadOnly() ? Decision::delegate() : $this->decide();
+        if ($input->isReadOnly()) {
+            return Decision::delegate();
+        }
+
+        return $this->decide();
     }
 
     public function onFileEdit(FileEditRequested $input): Decision
@@ -125,7 +133,11 @@ final class AnsweringMessageState extends AgentState
 
     private function decide(): Decision
     {
-        return $this->mustAnswerNow() ? Decision::deny($this->answerNowText()) : Decision::delegate();
+        if ($this->mustAnswerNow()) {
+            return Decision::deny($this->answerNowText());
+        }
+
+        return Decision::delegate();
     }
 
     private function mustAnswerNow(): bool

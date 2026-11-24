@@ -72,6 +72,10 @@ final readonly class RuntimeRecords implements RuntimeResolver
         $actor = $this->actors->actor();
         $query = AgentRuntime::query();
 
-        return $this->inspection->seesEveryAgent() ? $query : $query->whereRelation('session', 'agent_id', $actor->id);
+        if ($this->inspection->seesEveryAgent()) {
+            return $query;
+        }
+
+        return $query->whereRelation('session', 'agent_id', $actor->id);
     }
 }

@@ -84,7 +84,11 @@ final class Psr4ClassNames
 
             $class = $namespace.str_replace(DIRECTORY_SEPARATOR, '\\', substr($path, strlen($folder) + 1, -4));
 
-            return Reflector::exists($class) ? $class : throw FileOutsideAutoload::missingClass($path, $class);
+            if (Reflector::exists($class)) {
+                return $class;
+            }
+
+            throw FileOutsideAutoload::missingClass($path, $class);
         }
 
         throw FileOutsideAutoload::for($path);

@@ -122,7 +122,11 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
             return GroupAvailability::Invalid;
         }
 
-        return $enabled ? GroupAvailability::Enabled : GroupAvailability::Disabled;
+        if ($enabled) {
+            return GroupAvailability::Enabled;
+        }
+
+        return GroupAvailability::Disabled;
     }
 
     private function setting(

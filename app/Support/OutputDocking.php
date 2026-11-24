@@ -114,6 +114,10 @@ final readonly class OutputDocking implements DockableProvider
 
         $stream = OutputStream::tryFrom($pieces[2]);
 
-        return $stream === null ? None::create() : Some::create([$pieces[0], (int) $pieces[1], $stream]);
+        if ($stream === null) {
+            return None::create();
+        }
+
+        return Some::create([$pieces[0], (int) $pieces[1], $stream]);
     }
 }

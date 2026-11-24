@@ -64,7 +64,11 @@ final readonly class PendingPart
             return AssignVariables::class;
         }
 
-        return $this->step->type === StepType::Builtin ? RunBuiltinPipeline::class : RunExternalPartPipeline::class;
+        if ($this->step->type === StepType::Builtin) {
+            return RunBuiltinPipeline::class;
+        }
+
+        return RunExternalPartPipeline::class;
     }
 
     /**

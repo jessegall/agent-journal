@@ -163,9 +163,10 @@ final class ProfileRevision extends Model implements ReadableModel
      */
     public static function currentOf(Profile $profile): self
     {
-        return self::query()->ofProfile($profile)->whereKey($profile->current_revision_id)->firstOr(
-            fn () => throw ProfileMissing::for(ProfileKey::from($profile->key)),
-        );
+        $row = self::query()->ofProfile($profile)->whereKey($profile->current_revision_id)->first();
+        self::assertCurrentFound($row, $profile);
+
+        return $row;
     }
 
     /**
@@ -251,6 +252,22 @@ final class ProfileRevision extends Model implements ReadableModel
                 new CompiledScript($this->compiled_script, $this->script_definition_digest),
             ));
         })->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a profile whose current revision is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws ProfileMissing
+     */
+    private static function assertCurrentFound(self|null $row, Profile $profile): void
+    {
+        if ($row === null) {
+            throw ProfileMissing::for(ProfileKey::from($profile->key));
+        }
     }
 
     // ----------[ Scopes ]----------

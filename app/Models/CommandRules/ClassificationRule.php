@@ -90,10 +90,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     public function retire(int $expectedRevision, string $reason): void
     {
         $this->assertExpectedRevision($expectedRevision);
-
-        if ($this->state !== ClassificationState::Active) {
-            throw ClassificationRuleRefused::notActive($this->rule_id, $this->state);
-        }
+        $this->assertActive();
 
         $this->state = ClassificationState::Retired;
         $this->state_reason = $reason;
@@ -112,10 +109,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     {
         $this->assertExpectedRevision($expectedRevision);
         $this->assertOwnRevision($revision);
-
-        if ($revision->revision <= $this->active_revision) {
-            throw ClassificationRuleRefused::notNewer($this->rule_id, $revision->revision, $this->active_revision);
-        }
+        $this->assertNewer($revision);
 
         $this->point($revision, "Revision {$revision->revision} approved.");
     }
@@ -150,6 +144,32 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     public function activeRevision(): BelongsTo
     {
         return $this->belongsTo(RuleRevision::class, 'active_revision_id');
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a rule that is not active.
+     *
+     * @throws ClassificationRuleRefused
+     */
+    private function assertActive(): void
+    {
+        if ($this->state !== ClassificationState::Active) {
+            throw ClassificationRuleRefused::notActive($this->rule_id, $this->state);
+        }
+    }
+
+    /**
+     * Refuses a revision that is not newer than the active one.
+     *
+     * @throws ClassificationRuleRefused
+     */
+    private function assertNewer(RuleRevision $revision): void
+    {
+        if ($revision->revision <= $this->active_revision) {
+            throw ClassificationRuleRefused::notNewer($this->rule_id, $revision->revision, $this->active_revision);
+        }
     }
 
     // ----------[ Internals ]----------

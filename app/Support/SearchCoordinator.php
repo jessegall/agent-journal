@@ -432,7 +432,11 @@ final readonly class SearchCoordinator implements RecordSearch
 
         $bare = $hit->withoutSnippet();
 
-        return $used + $bare->byteSize() <= self::RESPONSE_BYTE_LIMIT ? $bare : null;
+        if ($used + $bare->byteSize() <= self::RESPONSE_BYTE_LIMIT) {
+            return $bare;
+        }
+
+        return null;
     }
 
     /**
@@ -777,7 +781,11 @@ final readonly class SearchCoordinator implements RecordSearch
 
     private static function scopeOf(SearchProgress $progress): SearchScope
     {
-        return $progress->within === null ? SearchScope::everywhere() : SearchScope::within($progress->within);
+        if ($progress->within === null) {
+            return SearchScope::everywhere();
+        }
+
+        return SearchScope::within($progress->within);
     }
 
     private static function deadline(): int

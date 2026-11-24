@@ -19,9 +19,11 @@ final readonly class ClaimAccountCheckController
     {
         $claimed = $commands->run(new ClaimAccountCheckCommand($host->hostId));
 
-        return $claimed === null
-            ? new Response(status: Response::HTTP_NO_CONTENT)
-            : new JsonResponse([
+        if ($claimed === null) {
+            return new Response(status: Response::HTTP_NO_CONTENT);
+        }
+
+        return new JsonResponse([
                 'account_id' => $claimed->accountId,
                 'driver' => $claimed->driver,
                 'method' => $claimed->method->value,

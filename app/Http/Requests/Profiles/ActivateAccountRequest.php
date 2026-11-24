@@ -24,7 +24,11 @@ final class ActivateAccountRequest extends FormRequest
      */
     public function expectedChangeNumber(): int|null
     {
-        return $this->filled('expectedChangeNumber') ? $this->integer('expectedChangeNumber') : null;
+        if ($this->filled('expectedChangeNumber')) {
+            return $this->integer('expectedChangeNumber');
+        }
+
+        return null;
     }
 
     public function accountId(): string

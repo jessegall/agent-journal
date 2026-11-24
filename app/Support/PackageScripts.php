@@ -54,7 +54,11 @@ final readonly class PackageScripts
             default => '',
         };
 
-        return $name === '' ? [] : $this->bodyOf($manager, $name, $projectRoot);
+        if ($name === '') {
+            return [];
+        }
+
+        return $this->bodyOf($manager, $name, $projectRoot);
     }
 
     /**

@@ -59,7 +59,11 @@ final class LogDueState extends AgentState
 
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        return $input->command->readsOnly() ? Decision::delegate() : $this->workDecision();
+        if ($input->command->readsOnly()) {
+            return Decision::delegate();
+        }
+
+        return $this->workDecision();
     }
 
     public function onToolRequested(ToolRequested $input): Decision
@@ -95,7 +99,11 @@ final class LogDueState extends AgentState
      */
     private function workDecision(): Decision
     {
-        return $this->toolUses >= self::TOOL_USE_LIMIT ? Decision::deny($this->reason()) : Decision::delegate();
+        if ($this->toolUses >= self::TOOL_USE_LIMIT) {
+            return Decision::deny($this->reason());
+        }
+
+        return Decision::delegate();
     }
 
     private function reason(): AgentText

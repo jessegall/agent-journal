@@ -34,7 +34,11 @@ final readonly class StartRecords implements StartRecordResolver
     {
         $record = StartRecord::query()->forAgent($this->actors->actor()->id)->where('request_id', $requestId)->first();
 
-        return $record !== null ? self::detailsOf($record) : throw StartRecordMissing::forRequest($requestId);
+        if ($record !== null) {
+            return self::detailsOf($record);
+        }
+
+        throw StartRecordMissing::forRequest($requestId);
     }
 
     public function receipt(string $requestId): StartRecordDetails

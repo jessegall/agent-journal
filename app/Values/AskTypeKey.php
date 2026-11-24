@@ -29,6 +29,10 @@ final readonly class AskTypeKey
      */
     public static function routeOf(self|null $type): string
     {
-        return $type === null ? self::DEFAULT_ROUTE : $type->key;
+        if ($type === null) {
+            return self::DEFAULT_ROUTE;
+        }
+
+        return $type->key;
     }
 }

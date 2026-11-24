@@ -83,9 +83,11 @@ final readonly class ProfileAuthorization
             );
         }
 
-        return $this->grants($authorization->policy, $authorization->access)
-            ? AccessDecision::allowed(AccessRuleType::ScopeGrant, AgentText::of('core.access.profile_grants_pair'))
-            : AccessDecision::refused(
+        if ($this->grants($authorization->policy, $authorization->access)) {
+            return AccessDecision::allowed(AccessRuleType::ScopeGrant, AgentText::of('core.access.profile_grants_pair'));
+        }
+
+        return AccessDecision::refused(
                 AccessRuleType::NotGranted,
                 AgentText::of('core.access.profile_does_not_grant_pair'),
             );

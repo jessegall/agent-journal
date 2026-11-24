@@ -115,7 +115,11 @@ final readonly class MarkdownParts implements MarkdownPartsContract
             throw SkillSourceInvalid::secondTitle($file, $secondTitle->heading);
         }
 
-        return $title->heading === $name ? $title : throw SkillSourceInvalid::titleDiffers(
+        if ($title->heading === $name) {
+            return $title;
+        }
+
+        throw SkillSourceInvalid::titleDiffers(
             $file,
             $title->heading,
             $name,
@@ -169,6 +173,10 @@ final readonly class MarkdownParts implements MarkdownPartsContract
         $underlined = $next <= $lastLine && preg_match('/^ {0,3}(=+|-+)\s*$/', $markdown->lines($next, $next)) === 1;
         $start = $underlined ? $next + 1 : $next;
 
-        return $start > $lastLine ? '' : $markdown->lines($start, $lastLine);
+        if ($start > $lastLine) {
+            return '';
+        }
+
+        return $markdown->lines($start, $lastLine);
     }
 }

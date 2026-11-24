@@ -84,9 +84,7 @@ final class ProfileDraft extends Model implements ReadableModel
 
     public function sourceAt(int $expected): ScriptSource
     {
-        if ($expected !== $this->revision) {
-            throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
-        }
+        $this->assertAtRevision($expected);
 
         return $this->currentRevision->scriptSource ?? ScriptSource::empty();
     }
@@ -99,5 +97,19 @@ final class ProfileDraft extends Model implements ReadableModel
     public function currentRevision(): BelongsTo
     {
         return $this->belongsTo(ProfileDraftRevision::class, 'current_revision_id');
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a draft read against a revision it has moved past.
+     *
+     * @throws ProfileDraftRefused
+     */
+    private function assertAtRevision(int $expected): void
+    {
+        if ($expected !== $this->revision) {
+            throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
+        }
     }
 }

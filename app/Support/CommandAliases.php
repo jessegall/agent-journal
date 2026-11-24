@@ -22,8 +22,10 @@ final readonly class CommandAliases implements AliasResolver
     {
         $alias = CommandAlias::query()->named($name, $projectKey)->first();
 
-        return $alias === null
-            ? AliasLookup::missing($name)
-            : $alias->lookup;
+        if ($alias === null) {
+            return AliasLookup::missing($name);
+        }
+
+        return $alias->lookup;
     }
 }

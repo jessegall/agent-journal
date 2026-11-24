@@ -28,6 +28,12 @@ final readonly class AutoAssignmentFact
      */
     public function compareTurn(self $other): int
     {
-        return ($this->lastServedAt <=> $other->lastServedAt) ?: strcmp($this->id, $other->id);
+        $order = $this->lastServedAt <=> $other->lastServedAt;
+
+        if ($order !== 0) {
+            return $order;
+        }
+
+        return strcmp($this->id, $other->id);
     }
 }

@@ -33,6 +33,10 @@ final class CommandAdmissionRefused extends RuntimeException implements CodedRef
 
     public function refusalDetails(): array
     {
-        return $this->recovery === null ? [] : ['next_action' => $this->recovery->toArray()];
+        if ($this->recovery === null) {
+            return [];
+        }
+
+        return ['next_action' => $this->recovery->toArray()];
     }
 }

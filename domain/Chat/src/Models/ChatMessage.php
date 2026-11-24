@@ -47,8 +47,6 @@ final class ChatMessage extends Model implements EventSource
 
     public const int PAGE_SIZE = 50;
 
-    // ----------[ Constructors ]----------
-
     /**
      * @return array<string, string>
      */
@@ -58,6 +56,8 @@ final class ChatMessage extends Model implements EventSource
             'type' => ChatMessageType::class,
         ];
     }
+
+    // ----------[ Constructors ]----------
 
     /**
      * Records the source in the inbox's chat once; a replay finds the entry it made, and a replay that names another

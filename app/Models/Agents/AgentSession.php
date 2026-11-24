@@ -308,9 +308,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public function useSelection(SelectedDriver $selection, string $requestId): void
     {
-        if ($this->getAttribute('model') !== null) {
-            throw SessionSelectionFixed::forSession($this->id);
-        }
+        $this->assertSelectionOpen();
 
         $this->driver_key = $selection->driver;
         $this->model = $selection->model;
@@ -428,7 +426,11 @@ final class AgentSession extends Model implements EventSource, ReadableModel
             return WorkspaceUse::ReadOnly;
         }
 
-        return $this->parent_session_id === null ? WorkspaceUse::Shared : WorkspaceUse::OwnCheckout;
+        if ($this->parent_session_id === null) {
+            return WorkspaceUse::Shared;
+        }
+
+        return WorkspaceUse::OwnCheckout;
     }
 
     // ----------[ Accessors ]----------
@@ -494,6 +496,20 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     public function agent(): BelongsTo
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a selection for a session whose model is already fixed.
+     *
+     * @throws SessionSelectionFixed
+     */
+    private function assertSelectionOpen(): void
+    {
+        if ($this->getAttribute('model') !== null) {
+            throw SessionSelectionFixed::forSession($this->id);
+        }
     }
 
     // ----------[ Scopes ]----------

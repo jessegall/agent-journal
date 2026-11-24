@@ -236,7 +236,11 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         if ($this->consumed_at !== null) {
             $sameKey = hash_equals($this->consuming_key_hash, $keyHash);
 
-            return $sameKey && ! $this->hasHeardFromItsHost() ? $eventKey : null;
+            if ($sameKey && ! $this->hasHeardFromItsHost()) {
+                return $eventKey;
+            }
+
+            return null;
         }
 
         $this->consuming_key_hash = $keyHash;
@@ -361,7 +365,11 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
             RunLogicalResult::Stopped => false,
         };
 
-        return $isTold ? $this->outcomeAudience() : [];
+        if ($isTold) {
+            return $this->outcomeAudience();
+        }
+
+        return [];
     }
 
     /**

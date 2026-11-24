@@ -85,12 +85,10 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
             ->ofDriver($driver)
             ->lockForUpdate()
             ->first();
+        $accountId = $selection?->account_id;
+        self::assertAccountChosen($accountId, $driver);
 
-        if ($selection === null || $selection->account_id === null) {
-            throw AccountUnavailable::forStart($driver, StartUnavailableReason::NoAccount);
-        }
-
-        return Account::lockedForStart($selection->account_id);
+        return Account::lockedForStart($accountId);
     }
 
     /**
@@ -213,6 +211,22 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     {
         if ($this->account_id === $account->id) {
             $this->clear();
+        }
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a start for a driver with no account chosen.
+     *
+     * @phpstan-assert string $accountId
+     *
+     * @throws AccountUnavailable
+     */
+    private static function assertAccountChosen(string|null $accountId, string $driver): void
+    {
+        if ($accountId === null) {
+            throw AccountUnavailable::forStart($driver, StartUnavailableReason::NoAccount);
         }
     }
 

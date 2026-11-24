@@ -23,7 +23,11 @@ final readonly class CatalogueReflectorFactory implements ReflectorFactory, Type
 
     public function make(string|object $type): Reflector
     {
-        return is_object($type) ? $this->makeForInstance($type) : $this->makeForClass($type);
+        if (is_object($type)) {
+            return $this->makeForInstance($type);
+        }
+
+        return $this->makeForClass($type);
     }
 
     public function isSubclassOf(string|object $subject, string $type): bool
@@ -43,7 +47,11 @@ final readonly class CatalogueReflectorFactory implements ReflectorFactory, Type
      */
     private function found(string|object $subject): Option
     {
-        return is_object($subject) ? new Some(Reflector::of($subject)) : Reflector::find($subject);
+        if (is_object($subject)) {
+            return new Some(Reflector::of($subject));
+        }
+
+        return Reflector::find($subject);
     }
 
     /**

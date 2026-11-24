@@ -109,7 +109,11 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
      */
     public function numberHolder(): Model
     {
-        return $this->relationLoaded('document') ? $this->document : $this->document()->sole();
+        if ($this->relationLoaded('document')) {
+            return $this->document;
+        }
+
+        return $this->document()->sole();
     }
 
     // ----------[ Accessors ]----------

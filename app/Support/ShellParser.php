@@ -61,7 +61,11 @@ final readonly class ShellParser implements ShellCommandParser
             fn (ShellNode $part): bool => array_any($part->words, fn (Word $word): bool => $word->hasExpansion()),
         );
 
-        return $dynamic ? ParseOutcome::DynamicExpansion : ParseOutcome::Complete;
+        if ($dynamic) {
+            return ParseOutcome::DynamicExpansion;
+        }
+
+        return ParseOutcome::Complete;
     }
 
     private function partOf(ShellTree $tree, Classification $classification, PartClassification $part): CommandPart
@@ -114,7 +118,11 @@ final readonly class ShellParser implements ShellCommandParser
             fn (ClassFact $fact): bool => $fact->class->isFileChange(),
         );
 
-        return $changesFiles ? CommandEffect::ChangesFiles : CommandEffect::ReadsOnly;
+        if ($changesFiles) {
+            return CommandEffect::ChangesFiles;
+        }
+
+        return CommandEffect::ReadsOnly;
     }
 
     private function isLastChild(ShellNode $parent, ShellNode $node): bool

@@ -86,7 +86,11 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
     {
         $runtime = AgentRuntime::ofSession($sessionId);
 
-        return $runtime === null ? null : self::query()
+        if ($runtime === null) {
+            return null;
+        }
+
+        return self::query()
             ->where('agent_runtime_id', $runtime->id)
             ->where('process_generation', $runtime->process_generation)
             ->where('native_prompt_id', $nativePromptId)
@@ -100,7 +104,11 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
     {
         $runtime = AgentRuntime::ofSession($sessionId);
 
-        return $runtime === null ? null : self::query()
+        if ($runtime === null) {
+            return null;
+        }
+
+        return self::query()
             ->where('agent_runtime_id', $runtime->id)
             ->whereNotNull('closing_words_digest')
             ->orderByDesc('started_at')

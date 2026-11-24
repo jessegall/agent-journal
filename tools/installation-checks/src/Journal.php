@@ -82,6 +82,10 @@ final readonly class Journal
     {
         $token = $this->cookies->getCookieByName('XSRF-TOKEN')?->getValue();
 
-        return $token === null ? [] : ['X-XSRF-TOKEN' => urldecode($token)];
+        if ($token === null) {
+            return [];
+        }
+
+        return ['X-XSRF-TOKEN' => urldecode($token)];
     }
 }

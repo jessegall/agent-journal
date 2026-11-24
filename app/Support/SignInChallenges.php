@@ -67,7 +67,11 @@ final readonly class SignInChallenges
             return null;
         }
 
-        return $this->cache->pull(self::codeKey($attempt->id)) === null ? null : (string) $answer['code'];
+        if ($this->cache->pull(self::codeKey($attempt->id)) === null) {
+            return null;
+        }
+
+        return (string) $answer['code'];
     }
 
     /**

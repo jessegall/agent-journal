@@ -25,9 +25,11 @@ final readonly class IsolatedListener
         $container = Container::getInstance();
 
         try {
-            return is_string($this->listener)
-                ? $container->make(Dispatcher::class)->makeListener($this->listener)('', $eventArguments)
-                : ($this->listener)(...$eventArguments);
+            if (is_string($this->listener)) {
+                return $container->make(Dispatcher::class)->makeListener($this->listener)('', $eventArguments);
+            }
+
+            return ($this->listener)(...$eventArguments);
         } catch (Throwable $failure) {
             $listener = is_string($this->listener) ? $this->listener : $this->listener->listener;
 

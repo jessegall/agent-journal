@@ -42,7 +42,11 @@ final class PresenceRefused extends RuntimeException implements CodedRefusal, Co
 
     public function refusalCode(): RefusalCode
     {
-        return $this->status === 409 ? RefusalCode::Conflict : RefusalCode::Forbidden;
+        if ($this->status === 409) {
+            return RefusalCode::Conflict;
+        }
+
+        return RefusalCode::Forbidden;
     }
 
     protected function status(): int

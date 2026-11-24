@@ -62,7 +62,11 @@ final class SpawnedProcess
         }
 
         if (! is_resource($process)) {
-            return $error === '' ? "{$command[0]} could not be started" : $error;
+            if ($error === '') {
+                return "{$command[0]} could not be started";
+            }
+
+            return $error;
         }
 
         $status = proc_get_status($process);

@@ -33,6 +33,10 @@ final readonly class RuleList
      */
     public function selection(): Option
     {
-        return $this->selected === null ? None::create() : Some::create($this->selected);
+        if ($this->selected === null) {
+            return None::create();
+        }
+
+        return Some::create($this->selected);
     }
 }

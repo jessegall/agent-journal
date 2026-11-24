@@ -65,6 +65,10 @@ final class CallRetries
     {
         $longest = CarbonImmutable::now()->addSeconds(self::MOST_ATTEMPT_SECONDS);
 
-        return $longest->lessThan($deadline) ? $longest : $deadline;
+        if ($longest->lessThan($deadline)) {
+            return $longest;
+        }
+
+        return $deadline;
     }
 }

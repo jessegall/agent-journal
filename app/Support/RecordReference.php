@@ -72,7 +72,11 @@ final readonly class RecordReference
 
     public static function idOrNumber(string $text): int|string
     {
-        return Str::isUlid($text) ? strtolower($text) : self::number($text);
+        if (Str::isUlid($text)) {
+            return strtolower($text);
+        }
+
+        return self::number($text);
     }
 
     /**
@@ -82,6 +86,10 @@ final readonly class RecordReference
     {
         $own = "{$this->type} {$this->number}";
 
-        return $this->parent === null ? $own : "{$this->parent->label()}, {$own}";
+        if ($this->parent === null) {
+            return $own;
+        }
+
+        return "{$this->parent->label()}, {$own}";
     }
 }

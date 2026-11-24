@@ -38,6 +38,10 @@ final class ShareRequest extends FormRequest
      */
     public function auditAfter(): string|null
     {
-        return $this->filled('auditAfter') ? $this->string('auditAfter')->toString() : null;
+        if ($this->filled('auditAfter')) {
+            return $this->string('auditAfter')->toString();
+        }
+
+        return null;
     }
 }

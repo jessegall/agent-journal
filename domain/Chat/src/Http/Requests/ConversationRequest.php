@@ -39,7 +39,11 @@ final class ConversationRequest extends FormRequest
      */
     public function accountDrivers(): array
     {
-        return $this->filled('accountsFor') ? [$this->string('accountsFor')->toString()] : [];
+        if ($this->filled('accountsFor')) {
+            return [$this->string('accountsFor')->toString()];
+        }
+
+        return [];
     }
 
     /**
@@ -69,7 +73,11 @@ final class ConversationRequest extends FormRequest
      */
     public function chosenInbox(): Option
     {
-        return $this->filled('inbox') ? Some::create($this->string('inbox')->lower()->toString()) : None::create();
+        if ($this->filled('inbox')) {
+            return Some::create($this->string('inbox')->lower()->toString());
+        }
+
+        return None::create();
     }
 
     /**
@@ -77,7 +85,11 @@ final class ConversationRequest extends FormRequest
      */
     public function dockToken(): string|null
     {
-        return $this->filled('dock') ? $this->string('dock')->toString() : null;
+        if ($this->filled('dock')) {
+            return $this->string('dock')->toString();
+        }
+
+        return null;
     }
 
     /**
@@ -85,6 +97,10 @@ final class ConversationRequest extends FormRequest
      */
     public function chosenAgent(): Option
     {
-        return $this->filled('agent') ? Some::create($this->string('agent')->lower()->toString()) : None::create();
+        if ($this->filled('agent')) {
+            return Some::create($this->string('agent')->lower()->toString());
+        }
+
+        return None::create();
     }
 }

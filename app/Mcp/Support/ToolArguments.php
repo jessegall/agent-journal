@@ -118,7 +118,11 @@ final readonly class ToolArguments
      */
     public function optionalObject(string $name, array $fields): self|null
     {
-        return array_key_exists($name, $this->arguments) ? $this->object($name, $fields) : null;
+        if (array_key_exists($name, $this->arguments)) {
+            return $this->object($name, $fields);
+        }
+
+        return null;
     }
 
     public function ulid(string $name): string
@@ -128,7 +132,11 @@ final readonly class ToolArguments
 
     public function optionalUlid(string $name): string|null
     {
-        return array_key_exists($name, $this->arguments) ? $this->ulid($name) : null;
+        if (array_key_exists($name, $this->arguments)) {
+            return $this->ulid($name);
+        }
+
+        return null;
     }
 
     public function recordReference(string $name): int|string
@@ -151,7 +159,11 @@ final readonly class ToolArguments
      */
     public function optionalList(string $name): array
     {
-        return array_key_exists($name, $this->arguments) ? $this->list($name) : [];
+        if (array_key_exists($name, $this->arguments)) {
+            return $this->list($name);
+        }
+
+        return [];
     }
 
     /**
@@ -233,7 +245,11 @@ final readonly class ToolArguments
 
     public function optionalWholeNumber(string $name): int|null
     {
-        return array_key_exists($name, $this->arguments) ? $this->wholeNumber($name) : null;
+        if (array_key_exists($name, $this->arguments)) {
+            return $this->wholeNumber($name);
+        }
+
+        return null;
     }
 
     /**
@@ -243,7 +259,11 @@ final readonly class ToolArguments
      */
     public function positiveIntegerOr(string $name, int $default, int $largest = PHP_INT_MAX): int
     {
-        return array_key_exists($name, $this->arguments) ? $this->positiveInteger($name, $largest) : $default;
+        if (array_key_exists($name, $this->arguments)) {
+            return $this->positiveInteger($name, $largest);
+        }
+
+        return $default;
     }
 
     /**
@@ -253,7 +273,11 @@ final readonly class ToolArguments
      */
     public function textOr(string $name, string $default): string
     {
-        return array_key_exists($name, $this->arguments) ? $this->text($name) : $default;
+        if (array_key_exists($name, $this->arguments)) {
+            return $this->text($name);
+        }
+
+        return $default;
     }
 
     /**
@@ -402,7 +426,11 @@ final readonly class ToolArguments
      */
     public function enumOr(string $name, BackedEnum $default): BackedEnum
     {
-        return array_key_exists($name, $this->arguments) ? $this->enum($name, $default::class) : $default;
+        if (array_key_exists($name, $this->arguments)) {
+            return $this->enum($name, $default::class);
+        }
+
+        return $default;
     }
 
     /**
@@ -413,7 +441,11 @@ final readonly class ToolArguments
      */
     public function optionalEnum(string $name, string $type): BackedEnum|null
     {
-        return array_key_exists($name, $this->arguments) ? $this->enum($name, $type) : null;
+        if (array_key_exists($name, $this->arguments)) {
+            return $this->enum($name, $type);
+        }
+
+        return null;
     }
 
     /**

@@ -143,10 +143,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
         $ask->insertIfAbsent();
         $ask = self::query()->ownedBy($requester)->where('submission_key', $submissionKey)->firstOrFail();
-
-        if (! hash_equals($ask->submission_hash, $digest)) {
-            throw AskRefused::submissionChanged();
-        }
+        $ask->assertSubmittedAs($digest);
 
         return $ask;
     }
@@ -239,9 +236,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
     public function replay(AskTypeKey $type, string $body): AskReference
     {
-        if ($type->key !== $this->type_key->key || $body !== $this->body) {
-            throw AskRefused::submissionChanged();
-        }
+        $this->assertSameSubmission($type, $body);
 
         return $this->reference;
     }
@@ -253,9 +248,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
     public function requirePending(int $version): SupervisorTarget
     {
-        if (! $this->open || $this->version !== $version || $this->pending_target === null) {
-            throw AskRefused::routeChanged();
-        }
+        $this->assertPendingAt($version);
 
         return SupervisorTarget::parse($this->pending_target);
     }
@@ -292,6 +285,46 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     protected function workReference(): Attribute
     {
         return Attribute::get(fn () => new WorkReference($this->work))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a repeated submission whose content differs from the first one under its key.
+     *
+     * @throws AskRefused
+     */
+    private function assertSubmittedAs(string $digest): void
+    {
+        if (! hash_equals($this->submission_hash, $digest)) {
+            throw AskRefused::submissionChanged();
+        }
+    }
+
+    /**
+     * Refuses a replay that names another type or body than the ask holds.
+     *
+     * @throws AskRefused
+     */
+    private function assertSameSubmission(AskTypeKey $type, string $body): void
+    {
+        if ($type->key !== $this->type_key->key || $body !== $this->body) {
+            throw AskRefused::submissionChanged();
+        }
+    }
+
+    /**
+     * Refuses an ask that closed, moved on from the version named, or waits on no one.
+     *
+     * @phpstan-assert !null $this->pending_target
+     *
+     * @throws AskRefused
+     */
+    private function assertPendingAt(int $version): void
+    {
+        if (! $this->open || $this->version !== $version || $this->pending_target === null) {
+            throw AskRefused::routeChanged();
+        }
     }
 
     // ----------[ Scopes ]----------

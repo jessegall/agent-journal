@@ -35,6 +35,10 @@ final readonly class DestinationField implements PartField
     {
         $value = $part->{$this->name};
 
-        return $value instanceof DockDestination ? $destinations->encode($value) : null;
+        if ($value instanceof DockDestination) {
+            return $destinations->encode($value);
+        }
+
+        return null;
     }
 }

@@ -64,6 +64,10 @@ final class SignInReportRequest extends FormRequest
 
     private function text(string $key): string|null
     {
-        return $this->filled($key) ? $this->string($key)->toString() : null;
+        if ($this->filled($key)) {
+            return $this->string($key)->toString();
+        }
+
+        return null;
     }
 }

@@ -55,6 +55,10 @@ enum SignInMethod: string
      */
     public function billingLabel(): string
     {
-        return $this === self::ApiKey ? 'API' : 'Subscription';
+        if ($this === self::ApiKey) {
+            return 'API';
+        }
+
+        return 'Subscription';
     }
 }

@@ -45,7 +45,11 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
     {
         $row = AutoAssignment::query()->forKey($key)->first();
 
-        return $row === null ? None::create() : Some::create($row->toFact());
+        if ($row === null) {
+            return None::create();
+        }
+
+        return Some::create($row->toFact());
     }
 
     public function status(AutoAssignmentKey $key): AutoAssignmentStatus

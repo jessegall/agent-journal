@@ -21,6 +21,10 @@ final readonly class GatedCardContext implements CardContext
 
     public function permittedDestination(DockDestination $destination): Option
     {
-        return $this->gate->permits($this->viewer, $destination) ? Some::create($destination) : None::create();
+        if ($this->gate->permits($this->viewer, $destination)) {
+            return Some::create($destination);
+        }
+
+        return None::create();
     }
 }

@@ -100,7 +100,11 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
      */
     private function bindingsCursor(): string|null
     {
-        return $this->request->filled('bindings') ? $this->request->string('bindings')->toString() : null;
+        if ($this->request->filled('bindings')) {
+            return $this->request->string('bindings')->toString();
+        }
+
+        return null;
     }
 
     /**
@@ -167,6 +171,10 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
      */
     private function attemptsCursor(): string|null
     {
-        return $this->request->filled('attempts') ? $this->request->string('attempts')->toString() : null;
+        if ($this->request->filled('attempts')) {
+            return $this->request->string('attempts')->toString();
+        }
+
+        return null;
     }
 }

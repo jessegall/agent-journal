@@ -109,7 +109,11 @@ final readonly class TaskStream
         }
 
         if ($shown === []) {
-            return $before === null ? 'n' : (string) $before;
+            if ($before === null) {
+                return 'n';
+            }
+
+            return (string) $before;
         }
 
         return (string) min(array_map(fn (TaskTransition|TaskLogLine $entry) => $entry->sequence, $shown));

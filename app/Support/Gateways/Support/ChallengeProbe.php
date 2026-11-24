@@ -47,11 +47,15 @@ final readonly class ChallengeProbe
             return new GatewayHealth(['The public origin redirected the probe.']);
         }
 
-        return $response->ok() && substr(
+        if ($response->ok() && substr(
             $response->body(),
             0,
             64,
-        ) === $challenge ? GatewayHealth::healthy() : new GatewayHealth(
+        ) === $challenge) {
+            return GatewayHealth::healthy();
+        }
+
+        return new GatewayHealth(
             ['The public origin did not answer the probe with its challenge.'],
         );
     }

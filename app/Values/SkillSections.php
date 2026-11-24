@@ -36,6 +36,10 @@ final readonly class SkillSections
      */
     public function resolve(MarkdownParts $parts, SkillOwner $owner, string $name): array
     {
-        return is_string($this->source) ? $parts->sectionsOf($this->source, $owner, $name) : $this->source;
+        if (is_string($this->source)) {
+            return $parts->sectionsOf($this->source, $owner, $name);
+        }
+
+        return $this->source;
     }
 }

@@ -33,13 +33,21 @@ final readonly class InstantField implements PartField
 
     public function typeScript(): string
     {
-        return $this->isOptional ? 'string | null' : 'string';
+        if ($this->isOptional) {
+            return 'string | null';
+        }
+
+        return 'string';
     }
 
     public function encode(DockPart $part, DestinationEncoder $destinations): mixed
     {
         $value = $part->{$this->name};
 
-        return $value instanceof DateTimeInterface ? $value->format(DateTimeInterface::ATOM) : null;
+        if ($value instanceof DateTimeInterface) {
+            return $value->format(DateTimeInterface::ATOM);
+        }
+
+        return null;
     }
 }

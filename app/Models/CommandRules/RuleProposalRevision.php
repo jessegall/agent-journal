@@ -78,7 +78,7 @@ final class RuleProposalRevision extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn (self $revision) => throw RevisionImmutable::proposal($revision->id));
+        self::updating(fn (self $revision) => $revision->assertUnedited());
     }
 
     // ----------[ Accessors ]----------
@@ -101,6 +101,18 @@ final class RuleProposalRevision extends Model implements ReadableModel
     public function proposal(): BelongsTo
     {
         return $this->belongsTo(RuleProposal::class, 'rule_proposal_id');
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a revision stays as it was written.
+     *
+     * @throws RevisionImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RevisionImmutable::proposal($this->id);
     }
 
     // ----------[ Scopes ]----------

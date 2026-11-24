@@ -66,8 +66,10 @@ final readonly class ClaimAutoAssignmentHandler implements CommandHandler
         $assigner->requireCandidate($record);
         $assignmentChange = $this->commands->run(new AssignRecordForMaintenanceCommand($record, $holder));
 
-        return $assignmentChange->hasChanges()
-            ? AutoAssignmentOutcome::assigned($record)
-            : AutoAssignmentOutcome::unchanged();
+        if ($assignmentChange->hasChanges()) {
+            return AutoAssignmentOutcome::assigned($record);
+        }
+
+        return AutoAssignmentOutcome::unchanged();
     }
 }

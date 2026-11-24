@@ -99,7 +99,11 @@ final readonly class WebNavigationRecords implements NavigationRecordsContract
         $url = $this->urls->route($navigation->page->routeName(), $navigation->navigationItem->routeValues, false);
         $query = $navigation->navigationItem->queryValues;
 
-        return $query === [] ? $url : $url.'?'.http_build_query($query);
+        if ($query === []) {
+            return $url;
+        }
+
+        return $url.'?'.http_build_query($query);
     }
 
     /**

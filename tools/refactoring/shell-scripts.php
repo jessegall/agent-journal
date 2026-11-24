@@ -305,7 +305,13 @@ function awaitedScripts(array &$arguments): array
 
     array_shift($arguments);
 
-    return file((string) array_shift($arguments), FILE_IGNORE_NEW_LINES) ?: [];
+    $lines = file((string) array_shift($arguments), FILE_IGNORE_NEW_LINES);
+
+    if ($lines === false) {
+        return [];
+    }
+
+    return $lines;
 }
 
 /**
@@ -349,7 +355,11 @@ function shellFaults(array $arguments): int
 
     echo $found === [] ? '' : implode("\n", $found)."\n";
 
-    return $found === [] ? 0 : 1;
+    if ($found === []) {
+        return 0;
+    }
+
+    return 1;
 }
 
 $arguments = array_slice($argv, 1);

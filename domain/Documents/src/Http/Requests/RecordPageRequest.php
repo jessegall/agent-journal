@@ -49,7 +49,11 @@ final class RecordPageRequest extends FormRequest
      */
     public function commentIdsToLocate(): array
     {
-        return $this->filled('commentLocation') ? [$this->string('commentLocation')->toString()] : [];
+        if ($this->filled('commentLocation')) {
+            return [$this->string('commentLocation')->toString()];
+        }
+
+        return [];
     }
 
     /**
@@ -59,7 +63,11 @@ final class RecordPageRequest extends FormRequest
      */
     public function sectionsVersions(): array
     {
-        return $this->filled('sectionsVersion') ? [$this->string('sectionsVersion')->toString()] : [];
+        if ($this->filled('sectionsVersion')) {
+            return [$this->string('sectionsVersion')->toString()];
+        }
+
+        return [];
     }
 
     /**

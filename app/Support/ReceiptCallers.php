@@ -35,7 +35,11 @@ final readonly class ReceiptCallers
     {
         $sessions = $this->stackSessions->admittableSessions();
 
-        return $sessions === [] ? ReceiptCaller::withoutSession($actor) : ReceiptCaller::inSession(
+        if ($sessions === []) {
+            return ReceiptCaller::withoutSession($actor);
+        }
+
+        return ReceiptCaller::inSession(
             $actor,
             $sessions[0],
         );

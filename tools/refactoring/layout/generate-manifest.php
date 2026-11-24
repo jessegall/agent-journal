@@ -230,7 +230,11 @@ function mapInArea(string|null $area, string $inArea, array $rules, string $base
     $segments = explode('/', $inArea);
 
     if (count($segments) === 1) {
-        return $area === null ? $inArea : 'Support/'.$inArea;
+        if ($area === null) {
+            return $inArea;
+        }
+
+        return 'Support/'.$inArea;
     }
 
     $renamed = $rules['renamed_roots'];
@@ -248,10 +252,18 @@ function mapInArea(string|null $area, string $inArea, array $rules, string $base
     }
 
     if (in_array($segments[0], $rules['grouped_roots'], true)) {
-        return $area === null || $base !== 'app' ? $inArea : $segments[0].'/'.$area.'/'.implode('/', array_slice($segments, 1));
+        if ($area === null || $base !== 'app') {
+            return $inArea;
+        }
+
+        return $segments[0].'/'.$area.'/'.implode('/', array_slice($segments, 1));
     }
 
-    return $area === null ? $inArea : null;
+    if ($area === null) {
+        return $inArea;
+    }
+
+    return null;
 }
 
 /**
@@ -295,7 +307,11 @@ function phaseOf(string $new, array $rules): int
         return 4;
     }
 
-    return in_array($match[2], $rules['phase_four_roots'], true) ? 4 : 3;
+    if (in_array($match[2], $rules['phase_four_roots'], true)) {
+        return 4;
+    }
+
+    return 3;
 }
 
 /**
@@ -309,7 +325,11 @@ function batchOf(string $old, string $scope): string
 
     $segments = explode('/', $old);
 
-    return count($segments) > 2 ? $segments[1] : 'root';
+    if (count($segments) > 2) {
+        return $segments[1];
+    }
+
+    return 'root';
 }
 
 /**
@@ -370,7 +390,11 @@ function kindOf(string $root, string $path): string
     $source = (string) file_get_contents("{$root}/{$path}");
 
     if (str_contains($path, '/Migrations/') || str_contains($path, '/migrations/')) {
-        return preg_match('/return new class/', $source) === 1 ? 'anonymous migration' : 'class';
+        if (preg_match('/return new class/', $source) === 1) {
+            return 'anonymous migration';
+        }
+
+        return 'class';
     }
 
     if (str_contains($path, '/Seeders/') || str_contains($path, '/seeders/')) {

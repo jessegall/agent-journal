@@ -27,8 +27,10 @@ final readonly class CandidateQuery
      */
     public function subject(): RecordIdentity|null
     {
-        return $this->purpose->subject_type === null || $this->purpose->subject_id === null
-            ? null
-            : new RecordIdentity($this->purpose->subject_type, $this->purpose->subject_id);
+        if ($this->purpose->subject_type === null || $this->purpose->subject_id === null) {
+            return null;
+        }
+
+        return new RecordIdentity($this->purpose->subject_type, $this->purpose->subject_id);
     }
 }

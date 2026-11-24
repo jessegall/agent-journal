@@ -60,7 +60,11 @@ final readonly class AskRouter
         }
 
         if ($found->isEmpty()) {
-            return $target->isOwner() ? AskRouteStatus::NoOwner : AskRouteStatus::PendingProfile;
+            if ($target->isOwner()) {
+                return AskRouteStatus::NoOwner;
+            }
+
+            return AskRouteStatus::PendingProfile;
         }
 
         $recipient = $found->get();

@@ -33,7 +33,11 @@ final class ReadShareRequest extends FormRequest
 
     public function cursor(): string|null
     {
-        return $this->filled('cursor') ? $this->string('cursor')->toString() : null;
+        if ($this->filled('cursor')) {
+            return $this->string('cursor')->toString();
+        }
+
+        return null;
     }
 
     public function wantsHeadOnly(): bool

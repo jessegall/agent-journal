@@ -127,7 +127,11 @@ final readonly class AccessPolicy
      */
     private function scopesFor(ResourceRequest $resource): array
     {
-        return $resource->type === ResourceType::Destination ? $this->destinations : $this->paths;
+        if ($resource->type === ResourceType::Destination) {
+            return $this->destinations;
+        }
+
+        return $this->paths;
     }
 
     private static function isProtected(ResourceRequest $resource): bool

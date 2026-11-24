@@ -40,7 +40,11 @@ final readonly class InstalledVersion implements InstalledVersionContract
         if ($this->files->exists($installed)) {
             [$commit, $branch, $tag] = array_pad(explode("\n", trim($this->files->read($installed))), 3, '');
 
-            return $branch === 'main' && $tag !== '' ? $tag : substr($commit, 0, self::HASH_LENGTH);
+            if ($branch === 'main' && $tag !== '') {
+                return $tag;
+            }
+
+            return substr($commit, 0, self::HASH_LENGTH);
         }
 
         return substr($this->checkoutCommit(), 0, self::HASH_LENGTH);
@@ -53,6 +57,10 @@ final readonly class InstalledVersion implements InstalledVersionContract
     {
         $git = $this->process->newPendingProcess()->run(['git', '-C', base_path(), 'rev-parse', 'HEAD']);
 
-        return $git->successful() ? trim($git->output()) : 'unknown';
+        if ($git->successful()) {
+            return trim($git->output());
+        }
+
+        return 'unknown';
     }
 }

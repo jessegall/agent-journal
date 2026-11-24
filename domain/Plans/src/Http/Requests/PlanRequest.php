@@ -47,7 +47,11 @@ final class PlanRequest extends FormRequest
     {
         $tab = $this->string('tab')->toString();
 
-        return $tab === '' ? 'tasks' : $tab;
+        if ($tab === '') {
+            return 'tasks';
+        }
+
+        return $tab;
     }
 
     /**

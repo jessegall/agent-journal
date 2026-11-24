@@ -97,7 +97,11 @@ final readonly class SettingRegistry
     {
         $owner = array_search($definition, $this->definitions, true);
 
-        return is_string($owner) ? $owner : throw SettingHandleUnknown::definition($definition::class);
+        if (is_string($owner)) {
+            return $owner;
+        }
+
+        throw SettingHandleUnknown::definition($definition::class);
     }
 
     /**
@@ -171,7 +175,11 @@ final readonly class SettingRegistry
      */
     private function groupsOf(string $owner): array
     {
-        return array_key_exists($owner, $this->definitions) ? $this->definitions[$owner]->groups() : [];
+        if (array_key_exists($owner, $this->definitions)) {
+            return $this->definitions[$owner]->groups();
+        }
+
+        return [];
     }
 
     /**

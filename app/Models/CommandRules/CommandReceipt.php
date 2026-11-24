@@ -246,17 +246,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
      */
     public function replay(): mixed
     {
-        if ($this->isExpired()) {
-            throw RequestKeyExpired::for($this->request_key);
-        }
-
-        if ($this->state === ReceiptState::Refused) {
-            throw RefusalReplayed::of(
-                RefusalCode::from((string) $this->refusal_code),
-                (string) $this->refusal_message,
-                $this->refusal_details ?? [],
-            );
-        }
+        $this->assertReplayable();
 
         return unserialize(base64_decode((string) $this->result['php']));
     }
@@ -277,6 +267,29 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             $this->refusal_message,
             CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now()),
         ))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a replay of an expired key, and replays a refusal as the refusal it recorded.
+     *
+     * @throws RequestKeyExpired
+     * @throws RefusalReplayed
+     */
+    private function assertReplayable(): void
+    {
+        if ($this->isExpired()) {
+            throw RequestKeyExpired::for($this->request_key);
+        }
+
+        if ($this->state === ReceiptState::Refused) {
+            throw RefusalReplayed::of(
+                RefusalCode::from((string) $this->refusal_code),
+                (string) $this->refusal_message,
+                $this->refusal_details ?? [],
+            );
+        }
     }
 
     // ----------[ Internals ]----------

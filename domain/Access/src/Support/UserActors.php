@@ -22,9 +22,11 @@ final readonly class UserActors implements ActorProvider
     {
         $user = User::query()->whereKey($identity->id)->first();
 
-        return $user !== null
-            && $this->admission->admits($user)
-            ? $user
-            : throw ActorUnavailable::forIdentity($identity);
+        if ($user !== null
+            && $this->admission->admits($user)) {
+            return $user;
+        }
+
+        throw ActorUnavailable::forIdentity($identity);
     }
 }

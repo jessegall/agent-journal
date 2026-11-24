@@ -31,7 +31,11 @@ final readonly class CurrentStates implements CurrentState
     {
         $target = $this->targets->ofCaller()[0] ?? null;
 
-        return $target === null ? None::create() : $this->of($target, $typeKey);
+        if ($target === null) {
+            return None::create();
+        }
+
+        return $this->of($target, $typeKey);
     }
 
     public function top(StackTarget $target): Option

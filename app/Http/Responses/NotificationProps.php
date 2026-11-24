@@ -76,6 +76,10 @@ final readonly class NotificationProps
     {
         $cursor = $request->string($parameter)->toString();
 
-        return $cursor === '' ? null : $cursor;
+        if ($cursor === '') {
+            return null;
+        }
+
+        return $cursor;
     }
 }

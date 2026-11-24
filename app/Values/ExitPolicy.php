@@ -45,7 +45,11 @@ final readonly class ExitPolicy
             fn (ExitBranch $branch): bool => $branch->status === $status,
         ));
 
-        return $branch === [] ? Outcome::ExecutionError : $branch[0]->outcome;
+        if ($branch === []) {
+            return Outcome::ExecutionError;
+        }
+
+        return $branch[0]->outcome;
     }
 
     /**

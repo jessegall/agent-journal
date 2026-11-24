@@ -41,6 +41,10 @@ final readonly class MarkdownPart
      */
     public function selector(): string
     {
-        return $this->isWholeBody() ? $this->file : $this->file.' > '.implode(' > ', $this->headingPath);
+        if ($this->isWholeBody()) {
+            return $this->file;
+        }
+
+        return $this->file.' > '.implode(' > ', $this->headingPath);
     }
 }

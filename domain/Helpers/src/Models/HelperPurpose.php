@@ -104,9 +104,11 @@ final class HelperPurpose extends Model implements ReadableModel
     {
         $same = self::query()->acrossActors()->where('profile_key', $purpose->profile_key);
 
-        return $purpose->subject_id === null
-            ? $same->where('label', $purpose->label)
-            : $same->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
+        if ($purpose->subject_id === null) {
+            return $same->where('label', $purpose->label);
+        }
+
+        return $same->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
     }
 
     // ----------[ Accessors ]----------

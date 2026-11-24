@@ -127,9 +127,11 @@ $items[] = (function () use ($options, $statusA, $accountA, $program, $environme
     ];
     $run = run_program($command, $environment($accountA), $work);
 
-    return $run->hasSucceeded()
-        ? judged('hostile-work-settings-ignored', ! file_exists($marker), 'its hook stayed off', 'it ran', 'task 262')
-        : missing('hostile-work-settings-ignored', 'a restricted request that completes', 'task 262');
+    if ($run->hasSucceeded()) {
+        return judged('hostile-work-settings-ignored', ! file_exists($marker), 'its hook stayed off', 'it ran', 'task 262');
+    }
+
+    return missing('hostile-work-settings-ignored', 'a restricted request that completes', 'task 262');
 })();
 
 $items[] = missing('keychain-cleanup', 'removing a disposable signed-in account, then a Keychain check', 'task 246');

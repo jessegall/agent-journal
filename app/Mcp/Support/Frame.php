@@ -62,7 +62,11 @@ final readonly class Frame
 
         $requestId = $this->params()['requestId'] ?? null;
 
-        return is_int($requestId) || is_string($requestId) ? $requestId : null;
+        if (is_int($requestId) || is_string($requestId)) {
+            return $requestId;
+        }
+
+        return null;
     }
 
     public function negotiatesVersion(): bool
@@ -95,7 +99,11 @@ final readonly class Frame
             return [...$this->mirroredHeaders($method), RequestHeader::PROTOCOL_VERSION->value => $version];
         }
 
-        return $negotiatedVersion === null ? [] : [RequestHeader::PROTOCOL_VERSION->value => $negotiatedVersion];
+        if ($negotiatedVersion === null) {
+            return [];
+        }
+
+        return [RequestHeader::PROTOCOL_VERSION->value => $negotiatedVersion];
     }
 
     /**
@@ -107,9 +115,11 @@ final readonly class Frame
     {
         $id = $this->id();
 
-        return $id === null
-            ? [RequestHeader::METHOD->value => $method]
-            : new JsonRpcRequest($id, $method, $this->params())->mirroredHeaders();
+        if ($id === null) {
+            return [RequestHeader::METHOD->value => $method];
+        }
+
+        return new JsonRpcRequest($id, $method, $this->params())->mirroredHeaders();
     }
 
     /**
@@ -120,7 +130,11 @@ final readonly class Frame
         $meta = $this->params()['_meta'] ?? null;
         $version = is_array($meta) ? ($meta[MetaKey::PROTOCOL_VERSION->value] ?? null) : null;
 
-        return is_string($version) ? $version : null;
+        if (is_string($version)) {
+            return $version;
+        }
+
+        return null;
     }
 
     /**

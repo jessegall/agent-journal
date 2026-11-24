@@ -102,17 +102,7 @@ final class Question extends Model implements AuthoredModel, EventSource
      */
     public function answer(ActorIdentity $answerer, string $answer, CarbonImmutable $at): void
     {
-        if (! $this->target()->isSameAs($answerer)) {
-            throw QuestionRefused::notTheTarget($this->id);
-        }
-
-        if ($this->isAnswered()) {
-            throw QuestionRefused::alreadyAnswered($this->id);
-        }
-
-        if ($this->type === QuestionType::Choice && ! in_array($answer, $this->options, true)) {
-            throw QuestionRefused::notAnOption($this->id);
-        }
+        $this->assertAnswerable($answerer, $answer);
 
         $this->answer = $answer;
         $this->answered_at = $at;
@@ -141,5 +131,27 @@ final class Question extends Model implements AuthoredModel, EventSource
     public function isAnswered(): bool
     {
         return $this->answered_at !== null;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an answer by anyone but the target, a second answer, and a choice that is not one of the options.
+     *
+     * @throws QuestionRefused
+     */
+    private function assertAnswerable(ActorIdentity $answerer, string $answer): void
+    {
+        if (! $this->target()->isSameAs($answerer)) {
+            throw QuestionRefused::notTheTarget($this->id);
+        }
+
+        if ($this->isAnswered()) {
+            throw QuestionRefused::alreadyAnswered($this->id);
+        }
+
+        if ($this->type === QuestionType::Choice && ! in_array($answer, $this->options, true)) {
+            throw QuestionRefused::notAnOption($this->id);
+        }
     }
 }

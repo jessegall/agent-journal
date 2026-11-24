@@ -47,6 +47,10 @@ trait PrintsHelperReceipts
     {
         $optionText = $this->option($name);
 
-        return is_string($optionText) && $optionText !== '' ? $optionText : null;
+        if (is_string($optionText) && $optionText !== '') {
+            return $optionText;
+        }
+
+        return null;
     }
 }

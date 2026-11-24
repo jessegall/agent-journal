@@ -65,9 +65,11 @@ final readonly class RuleExample implements StoredValue
      */
     public function label(): string
     {
-        return $this->isPositive()
-            ? "matches {$this->line} as ".implode(', ', $this->classes->toArray())
-            : "does not match {$this->line}";
+        if ($this->isPositive()) {
+            return "matches {$this->line} as ".implode(', ', $this->classes->toArray());
+        }
+
+        return "does not match {$this->line}";
     }
 
     public function isPositive(): bool

@@ -35,9 +35,11 @@ final readonly class SettingCodec
      */
     public function encodeString(string $owner, StringSetting $setting, string $input): EncodedValue
     {
-        return $setting->accepts($input)
-            ? EncodedValue::of($input)
-            : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
+        if ($setting->accepts($input)) {
+            return EncodedValue::of($input);
+        }
+
+        throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
     public function encodeBoolean(bool $input): EncodedValue
@@ -50,9 +52,11 @@ final readonly class SettingCodec
      */
     public function encodeInteger(string $owner, IntegerSetting $setting, int $input): EncodedValue
     {
-        return $setting->accepts($input)
-            ? EncodedValue::of($input)
-            : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
+        if ($setting->accepts($input)) {
+            return EncodedValue::of($input);
+        }
+
+        throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
     /**
@@ -76,9 +80,11 @@ final readonly class SettingCodec
      */
     public function encodeOption(string $owner, OptionSetting $setting, string|int $input): EncodedValue
     {
-        return $setting->accepts($input)
-            ? EncodedValue::of($input)
-            : throw SettingValueInvalid::for($owner, $setting->key(), $setting->type());
+        if ($setting->accepts($input)) {
+            return EncodedValue::of($input);
+        }
+
+        throw SettingValueInvalid::for($owner, $setting->key(), $setting->type());
     }
 
     /**
@@ -90,9 +96,11 @@ final readonly class SettingCodec
      */
     public function encodeEnum(string $owner, EnumSetting $setting, BackedEnum $input): EncodedValue
     {
-        return Reflector::of($setting->enum)->asInstance($input)->isDefined() && $setting->accepts($input->value)
-            ? EncodedValue::of($input->value)
-            : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
+        if (Reflector::of($setting->enum)->asInstance($input)->isDefined() && $setting->accepts($input->value)) {
+            return EncodedValue::of($input->value);
+        }
+
+        throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
     /**
@@ -161,7 +169,11 @@ final readonly class SettingCodec
             throw $invalid;
         }
 
-        return $decimal->text === $text ? $decimal : throw $invalid;
+        if ($decimal->text === $text) {
+            return $decimal;
+        }
+
+        throw $invalid;
     }
 
     /**

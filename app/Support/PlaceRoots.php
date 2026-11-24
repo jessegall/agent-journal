@@ -155,6 +155,10 @@ final readonly class PlaceRoots
 
         $real = realpath($configured);
 
-        return $real !== false && is_dir($real) ? $real : null;
+        if ($real !== false && is_dir($real)) {
+            return $real;
+        }
+
+        return null;
     }
 }

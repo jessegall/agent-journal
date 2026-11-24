@@ -99,12 +99,14 @@ final readonly class PolicyReadAdmission implements ReadAdmission
      */
     private function scoped(ReadRequest $request, ProfileAuthorization $authorization): AccessDecision
     {
-        return self::holds($authorization->readTargets($request->name), $request)
-            ? AccessDecision::allowed(
-                AccessRuleType::OperationGrant,
-                AgentText::of('core.access.profile_holds_for_it', ['name' => $request->name]),
-            )
-            : AccessDecision::refused(
+        if (self::holds($authorization->readTargets($request->name), $request)) {
+            return AccessDecision::allowed(
+                    AccessRuleType::OperationGrant,
+                    AgentText::of('core.access.profile_holds_for_it', ['name' => $request->name]),
+                );
+        }
+
+        return AccessDecision::refused(
                 AccessRuleType::NotGranted,
                 AgentText::of('core.access.profile_does_not_grant', ['name' => $request->name]),
             );

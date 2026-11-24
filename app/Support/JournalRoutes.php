@@ -50,7 +50,11 @@ final readonly class JournalRoutes
      */
     public function routeOf(string $name): array
     {
-        return isset($this->routes[$name]) ? [$this->routes[$name]] : [];
+        if (isset($this->routes[$name])) {
+            return [$this->routes[$name]];
+        }
+
+        return [];
     }
 
     /**

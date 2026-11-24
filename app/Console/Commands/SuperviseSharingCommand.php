@@ -82,7 +82,11 @@ final class SuperviseSharingCommand extends Command
         $supervisor->stopAll();
         $stopped = $listener->stopGroup(self::LISTENER_GRACE_SECONDS);
 
-        return $healthy && $stopped ? self::SUCCESS : self::FAILURE;
+        if ($healthy && $stopped) {
+            return self::SUCCESS;
+        }
+
+        return self::FAILURE;
     }
 
     /**

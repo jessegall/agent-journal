@@ -219,7 +219,11 @@ final class ChannelRunEvents implements RunEvents
 
         $bytes = $this->files->read($file);
 
-        return $bytes === '' ? [] : explode("\n", rtrim($bytes, "\n"));
+        if ($bytes === '') {
+            return [];
+        }
+
+        return explode("\n", rtrim($bytes, "\n"));
     }
 
     /**

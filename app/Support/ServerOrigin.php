@@ -50,7 +50,11 @@ final readonly class ServerOrigin
         $host = (string) parse_url($this->configured, PHP_URL_HOST);
         $scheme = $this->scheme();
 
-        return is_int($port) ? "{$scheme}://{$host}:{$port}" : "{$scheme}://{$host}";
+        if (is_int($port)) {
+            return "{$scheme}://{$host}:{$port}";
+        }
+
+        return "{$scheme}://{$host}";
     }
 
     private function scheme(): string

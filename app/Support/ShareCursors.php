@@ -53,7 +53,11 @@ final readonly class ShareCursors
             throw ShareReadRefused::staleCursor(previous: $cause);
         }
 
-        return $cursor->belongsTo($expected) ? $cursor : throw ShareReadRefused::staleCursor();
+        if ($cursor->belongsTo($expected)) {
+            return $cursor;
+        }
+
+        throw ShareReadRefused::staleCursor();
     }
 
     private function signatureOf(string $encodedCursor): string

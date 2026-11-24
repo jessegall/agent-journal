@@ -51,7 +51,11 @@ final readonly class ActivityProjection
 
     private function lifecycleOf(LifecycleState $state): string
     {
-        return $state === LifecycleState::Draining ? 'finalizing' : $state->value;
+        if ($state === LifecycleState::Draining) {
+            return 'finalizing';
+        }
+
+        return $state->value;
     }
 
     private function latestLineOf(OutputChunk $chunk): string
@@ -59,6 +63,10 @@ final readonly class ActivityProjection
         $bytes = (string) $this->disks->disk(SpoolRecorder::DISK)->get($chunk->storage_path);
         $lines = array_values(array_filter(explode("\n", $bytes), fn (string $line): bool => trim($line) !== ''));
 
-        return $lines === [] ? '' : $this->output->preview($lines[array_key_last($lines)]);
+        if ($lines === []) {
+            return '';
+        }
+
+        return $this->output->preview($lines[array_key_last($lines)]);
     }
 }

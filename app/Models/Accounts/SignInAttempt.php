@@ -209,7 +209,10 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function lockedForOwner(string $attemptId): self
     {
-        return self::found($attemptId, self::query()->whereKey($attemptId)->lockForUpdate()->first());
+        $attempt = self::query()->whereKey($attemptId)->lockForUpdate()->first();
+        self::assertFound($attempt, $attemptId);
+
+        return $attempt;
     }
 
     /**
@@ -224,8 +227,9 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->whereKey($attemptId)
             ->lockForUpdate()
             ->first();
+        self::assertFound($attempt, $attemptId);
 
-        return self::found($attemptId, $attempt);
+        return $attempt;
     }
 
     /**
@@ -238,10 +242,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $driver = self::query()->withoutGlobalScope(
             AccountOwnerScope::class,
         )->whereKey($attemptId)->value('account_protocol');
-
-        if (! is_string($driver)) {
-            throw SignInAttemptMissing::for($attemptId);
-        }
+        self::assertDriverFound($driver, $attemptId);
 
         return $driver;
     }
@@ -318,8 +319,9 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->whereKey($attemptId)
             ->where('process_reference', $hostId)
             ->first();
+        self::assertFound($attempt, $attemptId);
 
-        return self::found($attemptId, $attempt);
+        return $attempt;
     }
 
     /**
@@ -664,19 +666,37 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         return $this->belongsTo(Account::class, 'result_account_id');
     }
 
-    // ----------[ Internals ]----------
+    // ----------[ Asserts ]----------
 
     /**
+     * Refuses an attempt that is not there for the caller.
+     *
+     * @phpstan-assert self $attempt
+     *
      * @throws SignInAttemptMissing
      */
-    private static function found(string $attemptId, self|null $attempt): self
+    private static function assertFound(self|null $attempt, string $attemptId): void
     {
         if ($attempt === null) {
             throw SignInAttemptMissing::for($attemptId);
         }
-
-        return $attempt;
     }
+
+    /**
+     * Refuses an attempt whose driver could not be read: the attempt is not there.
+     *
+     * @phpstan-assert string $driver
+     *
+     * @throws SignInAttemptMissing
+     */
+    private static function assertDriverFound(mixed $driver, string $attemptId): void
+    {
+        if (! is_string($driver)) {
+            throw SignInAttemptMissing::for($attemptId);
+        }
+    }
+
+    // ----------[ Internals ]----------
 
     private function begin(CarbonImmutable $expiresAt): void
     {

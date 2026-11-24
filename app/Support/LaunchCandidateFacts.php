@@ -25,6 +25,10 @@ final readonly class LaunchCandidateFacts
      */
     public function rankingFinish(): CarbonImmutable|null
     {
-        return $this->hasDoneThisPurpose ? $this->lastMatchingFinish : $this->lastFinish;
+        if ($this->hasDoneThisPurpose) {
+            return $this->lastMatchingFinish;
+        }
+
+        return $this->lastFinish;
     }
 }

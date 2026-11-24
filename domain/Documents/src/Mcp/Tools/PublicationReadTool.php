@@ -17,9 +17,11 @@ abstract class PublicationReadTool extends JournalReadTool
 
     public function readRequest(ToolArguments|null $arguments = null): ReadRequest
     {
-        return $arguments === null
-            ? ReadRequest::forDiscovery($this->name())
-            : new ReadRequest($this->name());
+        if ($arguments === null) {
+            return ReadRequest::forDiscovery($this->name());
+        }
+
+        return new ReadRequest($this->name());
     }
 
     /**

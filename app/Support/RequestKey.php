@@ -124,7 +124,11 @@ final class RequestKey implements RequestKeyContract
      */
     public function keyOfCurrentCommand(): string|null
     {
-        return $this->depth === 1 ? $this->key : null;
+        if ($this->depth === 1) {
+            return $this->key;
+        }
+
+        return null;
     }
 
     /**

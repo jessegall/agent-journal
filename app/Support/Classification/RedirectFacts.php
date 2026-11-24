@@ -125,7 +125,11 @@ final readonly class RedirectFacts
 
     private function endpoint(Redirect $redirect): string|null
     {
-        return $redirect->target instanceof HereDocument ? '' : $redirect->target->literal();
+        if ($redirect->target instanceof HereDocument) {
+            return '';
+        }
+
+        return $redirect->target->literal();
     }
 
     private function isHarmless(string $endpoint): bool

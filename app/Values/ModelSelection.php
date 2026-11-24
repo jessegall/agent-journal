@@ -50,6 +50,10 @@ final readonly class ModelSelection
             throw ModelRequired::forStart();
         }
 
-        return $input === self::DEFAULT_INPUT ? self::profileDefault() : self::named($input);
+        if ($input === self::DEFAULT_INPUT) {
+            return self::profileDefault();
+        }
+
+        return self::named($input);
     }
 }

@@ -19,9 +19,11 @@ final readonly class HostRuntimes
     {
         $runtime = AgentRuntime::query()->whereKey($runtimeId)->lockForUpdate()->first();
 
-        return $runtime !== null
-            && $runtime->host_id === $hostId
-            ? $runtime
-            : throw HostReportRefused::notOwned($runtimeId);
+        if ($runtime !== null
+            && $runtime->host_id === $hostId) {
+            return $runtime;
+        }
+
+        throw HostReportRefused::notOwned($runtimeId);
     }
 }

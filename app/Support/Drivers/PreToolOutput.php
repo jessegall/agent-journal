@@ -33,6 +33,10 @@ final class PreToolOutput extends Data
      */
     public static function contextText(array $context): string|Optional
     {
-        return $context === [] ? Optional::create() : implode("\n", $context);
+        if ($context === []) {
+            return Optional::create();
+        }
+
+        return implode("\n", $context);
     }
 }

@@ -118,9 +118,11 @@ final readonly class PagePropTypes
      */
     private function dataName(string $class): string
     {
-        return $this->reflector->make($class)->isSubclassOf(PresentsLayout::class)
-            ? 'DeclaredLayoutData'
-            : class_basename($class);
+        if ($this->reflector->make($class)->isSubclassOf(PresentsLayout::class)) {
+            return 'DeclaredLayoutData';
+        }
+
+        return class_basename($class);
     }
 
     /**
@@ -132,6 +134,10 @@ final readonly class PagePropTypes
             array_unique(array_map(fn (RegisteredPage $page) => $this->dataName($page->resolver->dataClass), $pages)),
         );
 
-        return $names === [] ? null : implode(' | ', $names);
+        if ($names === []) {
+            return null;
+        }
+
+        return implode(' | ', $names);
     }
 }

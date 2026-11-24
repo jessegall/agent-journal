@@ -38,9 +38,11 @@ final class HelperSteerCommand extends Command
             $steerReceipt = $helpers->steerHelper($call->identityId, $call->text, $call->requestKey);
             $successReport = CommandReport::ending(self::SUCCESS);
 
-            return $steerReceipt->jobId !== null
-                ? $successReport->line("Steered job {$steerReceipt->jobId}.")
-                : $successReport
+            if ($steerReceipt->jobId !== null) {
+                return $successReport->line("Steered job {$steerReceipt->jobId}.");
+            }
+
+            return $successReport
                     ->line("No live job; kept as message {$steerReceipt->messageId}.")
                     ->line("Run this to carry it: {$steerReceipt->suggestedCommand}");
         });

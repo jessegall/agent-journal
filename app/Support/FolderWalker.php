@@ -150,7 +150,11 @@ final readonly class FolderWalker
         if (strpbrk($segment, '*?[') === false) {
             $path = "{$step->realPath}/{$segment}";
 
-            return file_exists($path) || is_link($path) ? [$segment] : [];
+            if (file_exists($path) || is_link($path)) {
+                return [$segment];
+            }
+
+            return [];
         }
 
         return array_values(array_filter(

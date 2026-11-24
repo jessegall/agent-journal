@@ -337,13 +337,25 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
     }
 
-    // ----------[ Internals ]----------
+    // ----------[ Asserts ]----------
 
-    private function moveTo(NavigationState $next): void
+    /**
+     * Refuses a move its present state does not allow.
+     *
+     * @throws NavigationTransitionRefused
+     */
+    private function assertMayMoveTo(NavigationState $next): void
     {
         if (! $this->state->canMoveTo($next)) {
             throw NavigationTransitionRefused::from($this->state, $next);
         }
+    }
+
+    // ----------[ Internals ]----------
+
+    private function moveTo(NavigationState $next): void
+    {
+        $this->assertMayMoveTo($next);
 
         $this->state = $next;
         $this->change();

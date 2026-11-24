@@ -39,7 +39,11 @@ final readonly class OwnMemories implements MemoryResolver
     {
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->actors->actor()))->whereKey($memoryId)->first();
 
-        return $memory !== null ? self::cardOf($memory) : throw RecordUnavailable::forModel(Memory::class, $memoryId);
+        if ($memory !== null) {
+            return self::cardOf($memory);
+        }
+
+        throw RecordUnavailable::forModel(Memory::class, $memoryId);
     }
 
     private static function cardOf(Memory $memory): MemoryCard

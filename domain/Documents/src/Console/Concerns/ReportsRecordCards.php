@@ -27,6 +27,10 @@ trait ReportsRecordCards
             }
         }
 
-        return $next === null ? $report : $report->line("More with --after {$next}.");
+        if ($next === null) {
+            return $report;
+        }
+
+        return $report->line("More with --after {$next}.");
     }
 }

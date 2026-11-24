@@ -61,9 +61,11 @@ final readonly class ProfileRunExecution implements ScriptExecution
             return $read->unread;
         }
 
-        return $this->holds($condition, $read)
-            ? StepOutcome::completed('passed')
-            : StepOutcome::failed("CHECK {$this->subject($condition)} does not hold.");
+        if ($this->holds($condition, $read)) {
+            return StepOutcome::completed('passed');
+        }
+
+        return StepOutcome::failed("CHECK {$this->subject($condition)} does not hold.");
     }
 
     public function branch(BooleanOperand $condition): StepOutcome

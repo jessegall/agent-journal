@@ -88,7 +88,11 @@ final readonly class ClaudeDriver
             return null;
         }
 
-        return $answer->result === '' ? 'Claude Code could not reach the model.' : $answer->result;
+        if ($answer->result === '') {
+            return 'Claude Code could not reach the model.';
+        }
+
+        return $answer->result;
     }
 
     /**

@@ -46,9 +46,11 @@ final class PlanStep extends Data
     {
         $inner = array_last($this->children);
 
-        return $inner instanceof self
-            ? $inner
-            : throw ExecutionPlanRefused::unsupportedNode('shell without a source', $this->node);
+        if ($inner instanceof self) {
+            return $inner;
+        }
+
+        throw ExecutionPlanRefused::unsupportedNode('shell without a source', $this->node);
     }
 
     /**

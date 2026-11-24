@@ -41,7 +41,11 @@ final readonly class AssignmentStore implements AssignmentStorage
         $this->assertInTransaction();
         $row = AssignmentRecord::query()->forRecord($record)->lockForUpdate()->first();
 
-        return $row === null ? None::create() : Some::create($row->toAssignment);
+        if ($row === null) {
+            return None::create();
+        }
+
+        return Some::create($row->toAssignment);
     }
 
     /**

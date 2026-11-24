@@ -68,9 +68,11 @@ final readonly class CommentRecords implements CommentResolver
         $card = $this->records->card($target);
 
         if ($subject instanceof WholeRecord) {
-            return $selection->isOutlineOnly()
-                ? new RecordCommentLocation($card)
-                : throw CommentUnavailable::selectionOnWholeRecord($commentId);
+            if ($selection->isOutlineOnly()) {
+                return new RecordCommentLocation($card);
+            }
+
+            throw CommentUnavailable::selectionOnWholeRecord($commentId);
         }
 
         $text = $record instanceof TextContent ? $record->textVersion(
@@ -102,15 +104,21 @@ final readonly class CommentRecords implements CommentResolver
     {
         $record = $this->records->requireReadable($target);
 
-        return $record instanceof Commentable ? $record : throw TargetNotCommentable::for($target->type);
+        if ($record instanceof Commentable) {
+            return $record;
+        }
+
+        throw TargetNotCommentable::for($target->type);
     }
 
     private static function viewOf(RecordCard $card, Comment $comment): RecordCommentView|TextCommentView
     {
         $subject = $comment->subject();
 
-        return $subject instanceof TextAnchor
-            ? new TextCommentView($card, $comment->details, $subject)
-            : new RecordCommentView($card, $comment->details);
+        if ($subject instanceof TextAnchor) {
+            return new TextCommentView($card, $comment->details, $subject);
+        }
+
+        return new RecordCommentView($card, $comment->details);
     }
 }

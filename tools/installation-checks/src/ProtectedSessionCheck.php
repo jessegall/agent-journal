@@ -110,7 +110,11 @@ final class ProtectedSessionCheck
         $session = $this->waitFor(self::START_LIMIT, function (): string|null {
             $agent = $this->containers->read('main-agent');
 
-            return $agent['isRunning'] ? (string) $agent['session'] : null;
+            if ($agent['isRunning']) {
+                return (string) $agent['session'];
+            }
+
+            return null;
         }, 'the session to run');
 
         $this->waitFor(
@@ -132,7 +136,11 @@ final class ProtectedSessionCheck
             'generation' => $agent['processGeneration'],
         ], $requestId);
         $this->waitFor(self::START_LIMIT, function (): bool|null {
-            return $this->containers->read('main-agent')['isRunning'] ? null : true;
+            if ($this->containers->read('main-agent')['isRunning']) {
+                return null;
+            }
+
+            return true;
         }, 'the session to stop');
     }
 
@@ -256,7 +264,11 @@ final class ProtectedSessionCheck
     {
         $state = $this->containers->probe('credential-state', $session, $this->program());
 
-        return preg_match('/expiresAt (\d+)/', $state, $found) === 1 ? intdiv((int) $found[1], 1000) : 0;
+        if (preg_match('/expiresAt (\d+)/', $state, $found) === 1) {
+            return intdiv((int) $found[1], 1000);
+        }
+
+        return 0;
     }
 
     /**
@@ -274,7 +286,11 @@ final class ProtectedSessionCheck
             $entries = array_slice($this->containers->transcript($session, $this->program()), $before);
             $hasEnded = array_any($entries, fn (array $entry): bool => ($entry['message']['stop_reason'] ?? null) === 'end_turn');
 
-            return $hasEnded ? $entries : null;
+            if ($hasEnded) {
+                return $entries;
+            }
+
+            return null;
         }, 'the turn to end');
     }
 
@@ -344,7 +360,11 @@ final class ProtectedSessionCheck
     {
         $content = $entry['message']['content'] ?? [];
 
-        return is_array($content) ? array_values(array_filter($content, 'is_array')) : [];
+        if (is_array($content)) {
+            return array_values(array_filter($content, 'is_array'));
+        }
+
+        return [];
     }
 
     /**
@@ -368,9 +388,11 @@ final class ProtectedSessionCheck
             return $content;
         }
 
-        return is_array($content)
-            ? implode('', array_map(fn (mixed $part): string => is_array($part) ? (string) ($part['text'] ?? '') : '', $content))
-            : '';
+        if (is_array($content)) {
+            return implode('', array_map(fn (mixed $part): string => is_array($part) ? (string) ($part['text'] ?? '') : '', $content));
+        }
+
+        return '';
     }
 
     /**

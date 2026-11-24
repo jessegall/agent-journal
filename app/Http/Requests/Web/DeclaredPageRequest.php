@@ -71,7 +71,11 @@ final class DeclaredPageRequest extends FormRequest
     {
         $own = $this->array('window')[$key] ?? [];
 
-        return is_array($own) ? $own : [];
+        if (is_array($own)) {
+            return $own;
+        }
+
+        return [];
     }
 
     /**

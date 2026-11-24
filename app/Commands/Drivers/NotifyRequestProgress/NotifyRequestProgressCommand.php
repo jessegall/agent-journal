@@ -59,6 +59,10 @@ final readonly class NotifyRequestProgressCommand extends Command
      */
     public function outcomeOf(DriverRequest $request): RequestOutcome|null
     {
-        return $this->turnEnd === null ? $this->outcome : $this->turnEnd->outcomeOf($request);
+        if ($this->turnEnd === null) {
+            return $this->outcome;
+        }
+
+        return $this->turnEnd->outcomeOf($request);
     }
 }

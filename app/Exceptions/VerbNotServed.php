@@ -97,7 +97,11 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
 
     public function refusalCode(): RefusalCode
     {
-        return $this->status === 409 ? RefusalCode::Busy : RefusalCode::Forbidden;
+        if ($this->status === 409) {
+            return RefusalCode::Busy;
+        }
+
+        return RefusalCode::Forbidden;
     }
 
     protected function status(): int

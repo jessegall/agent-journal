@@ -60,7 +60,11 @@ function chainSteps(array $tokens, array $indexes): array
     $outermost = min(array_column($arrows, 1));
     $atOutermost = array_values(array_filter($arrows, fn (array $arrow) => $arrow[1] === $outermost));
 
-    return count($atOutermost) > 2 ? array_slice($atOutermost, 1) : [];
+    if (count($atOutermost) > 2) {
+        return array_slice($atOutermost, 1);
+    }
+
+    return [];
 }
 
 $changedFiles = 0;

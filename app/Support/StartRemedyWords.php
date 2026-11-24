@@ -16,6 +16,10 @@ final readonly class StartRemedyWords
 
     public function textOf(StartRemedy $remedy): string
     {
-        return $this->operators->isGranted() ? $remedy->operatorText() : $remedy->memberText();
+        if ($this->operators->isGranted()) {
+            return $remedy->operatorText();
+        }
+
+        return $remedy->memberText();
     }
 }

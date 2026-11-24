@@ -53,9 +53,11 @@ final readonly class ProtectionReport
      */
     private static function keyOf(string $driver, string $build, string $platform): string
     {
-        return $platform === LaunchProfileType::Standard->protectionPlatform()
-            ? "{$driver}@{$build}"
-            : "{$driver}@{$build}/{$platform}";
+        if ($platform === LaunchProfileType::Standard->protectionPlatform()) {
+            return "{$driver}@{$build}";
+        }
+
+        return "{$driver}@{$build}/{$platform}";
     }
 
     /**

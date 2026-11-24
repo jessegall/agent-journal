@@ -138,11 +138,15 @@ final readonly class TunlerGateway implements ShareGateway
             return GatewayAddressCheck::Waiting;
         }
 
-        return $this->isExpectedOrigin(
+        if ($this->isExpectedOrigin(
             $address,
             $publicOrigin,
             $providerHost,
-        ) ? GatewayAddressCheck::Confirmed : GatewayAddressCheck::Unexpected;
+        )) {
+            return GatewayAddressCheck::Confirmed;
+        }
+
+        return GatewayAddressCheck::Unexpected;
     }
 
     /**

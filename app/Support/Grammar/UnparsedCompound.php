@@ -55,6 +55,10 @@ final readonly class UnparsedCompound
 
     public function name(): string
     {
-        return $this->type === NodeType::Subshell ? 'subshell' : 'group';
+        if ($this->type === NodeType::Subshell) {
+            return 'subshell';
+        }
+
+        return 'group';
     }
 }

@@ -30,9 +30,11 @@ final readonly class SessionSkillStatus implements JsonSerializable
      */
     public function deliveryText(): string
     {
-        return $this->deliveredGeneration === null
-            ? $this->deliveryState
-            : "{$this->deliveryState} in {$this->deliveredGeneration}";
+        if ($this->deliveredGeneration === null) {
+            return $this->deliveryState;
+        }
+
+        return "{$this->deliveryState} in {$this->deliveredGeneration}";
     }
 
     /**

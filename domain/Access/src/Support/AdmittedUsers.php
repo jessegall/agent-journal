@@ -15,6 +15,10 @@ final readonly class AdmittedUsers implements AdmittedRecipients
 
     public function userIds(): array
     {
-        return $this->settings->ownerId === null ? [] : [$this->settings->ownerId];
+        if ($this->settings->ownerId === null) {
+            return [];
+        }
+
+        return [$this->settings->ownerId];
     }
 }

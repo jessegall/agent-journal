@@ -583,9 +583,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      */
     public function scriptGoal(): ScriptGoal
     {
-        if ($this->script_id === null || $this->script_version === null) {
-            throw NavigationRaiseRefused::notAKeyScript($this->id);
-        }
+        $this->assertKeyScript();
 
         return new ScriptGoal($this->script_id, $this->script_version, $this->script_parameters);
     }
@@ -640,6 +638,23 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     public function runtime(): BelongsTo
     {
         return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a request that runs no key script.
+     *
+     * @phpstan-assert !null $this->script_id
+     * @phpstan-assert !null $this->script_version
+     *
+     * @throws NavigationRaiseRefused
+     */
+    private function assertKeyScript(): void
+    {
+        if ($this->script_id === null || $this->script_version === null) {
+            throw NavigationRaiseRefused::notAKeyScript($this->id);
+        }
     }
 
     // ----------[ Internals ]----------

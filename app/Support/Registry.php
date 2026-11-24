@@ -90,7 +90,11 @@ final class Registry
      */
     public function find(string $key): Option
     {
-        return $this->has($key) ? new Some($this->registrations[$key]) : None::create();
+        if ($this->has($key)) {
+            return new Some($this->registrations[$key]);
+        }
+
+        return None::create();
     }
 
     /**

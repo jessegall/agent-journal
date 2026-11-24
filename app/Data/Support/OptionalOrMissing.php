@@ -16,6 +16,10 @@ trait OptionalOrMissing
 {
     public static function optionalOrMissing(mixed $dataSource): static|Optional
     {
-        return $dataSource === null ? Optional::create() : static::from($dataSource);
+        if ($dataSource === null) {
+            return Optional::create();
+        }
+
+        return static::from($dataSource);
     }
 }

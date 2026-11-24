@@ -35,7 +35,11 @@ final readonly class SharingAssets
     {
         $entry = $this->manifest()[self::STYLESHEET] ?? null;
 
-        return is_array($entry) && is_string($entry['file'] ?? null) ? $entry['file'] : null;
+        if (is_array($entry) && is_string($entry['file'] ?? null)) {
+            return $entry['file'];
+        }
+
+        return null;
     }
 
     public function path(string $file): string
@@ -74,6 +78,10 @@ final readonly class SharingAssets
     {
         $manifest = FilePath::in(Place::Project, 'public/'.self::FOLDER.'/manifest.json');
 
-        return $this->files->exists($manifest) ? $this->files->readJson($manifest) : [];
+        if ($this->files->exists($manifest)) {
+            return $this->files->readJson($manifest);
+        }
+
+        return [];
     }
 }

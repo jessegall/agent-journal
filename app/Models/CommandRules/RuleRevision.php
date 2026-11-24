@@ -107,14 +107,7 @@ final class RuleRevision extends Model implements ReadableModel
         array $scripts,
     ): self {
         $rule = $proposed->payload;
-
-        if ($rule->hasContract() && count($readers) !== 1) {
-            throw RuleRevisionInvalid::readerMissing($rule->id);
-        }
-
-        if (! $rule->hasContract() && $readers !== []) {
-            throw RuleRevisionInvalid::readerWithoutContract($rule->id);
-        }
+        self::assertReadersFit($rule, $readers);
 
         $latest = self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->max('revision');
         $approved = $rule->ownedBy($rule->scope, (int) $latest + 1);
@@ -138,7 +131,7 @@ final class RuleRevision extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn (self $revision) => throw RevisionImmutable::rule($revision->id));
+        self::updating(fn (self $revision) => $revision->assertUnedited());
     }
 
     // ----------[ Answers ]----------
@@ -151,6 +144,36 @@ final class RuleRevision extends Model implements ReadableModel
         return $this->project_key === $rule->project_key
             && $this->scope->isSameOwner($rule->scope)
             && $this->rule_id === $rule->rule_id;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses readers that do not fit the rule: one for a rule with a verification contract, none otherwise.
+     *
+     * @param  list<ReaderApproval>  $readers
+     *
+     * @throws RuleRevisionInvalid
+     */
+    private static function assertReadersFit(CommandRule $rule, array $readers): void
+    {
+        if ($rule->hasContract() && count($readers) !== 1) {
+            throw RuleRevisionInvalid::readerMissing($rule->id);
+        }
+
+        if (! $rule->hasContract() && $readers !== []) {
+            throw RuleRevisionInvalid::readerWithoutContract($rule->id);
+        }
+    }
+
+    /**
+     * Refuses every edit: a revision stays as it was written.
+     *
+     * @throws RevisionImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RevisionImmutable::rule($this->id);
     }
 
     // ----------[ Scopes ]----------

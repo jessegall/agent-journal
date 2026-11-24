@@ -84,9 +84,11 @@ final readonly class CommandGrammar
         $enum = Reflector::find($name)->filter(fn (Reflector $type) => $type->isEnum());
 
         if ($enum->isDefined()) {
-            return $enum->get()->implements(BackedEnum::class)
-                ? null
-                : "is the enum {$name}, which has no values";
+            if ($enum->get()->implements(BackedEnum::class)) {
+                return null;
+            }
+
+            return "is the enum {$name}, which has no values";
         }
 
         if ($this->isContract($name)) {
@@ -125,15 +127,21 @@ final readonly class CommandGrammar
         $item = Reflector::find($class);
 
         if ($item->filter(fn (Reflector $type) => $type->isEnum())->isDefined()) {
-            return $item->get()->implements(BackedEnum::class)
-                ? null
-                : "is a list of the enum {$class}, which has no values";
+            if ($item->get()->implements(BackedEnum::class)) {
+                return null;
+            }
+
+            return "is a list of the enum {$class}, which has no values";
         }
 
         if ($this->isContract($class)) {
             $problem = $this->problemWithContract($class);
 
-            return $problem === null ? null : "is a list whose item {$problem}";
+            if ($problem === null) {
+                return null;
+            }
+
+            return "is a list whose item {$problem}";
         }
 
         $problem = $item->filter(fn (Reflector $type) => $type->isClass())->isDefined() ? $this->problemWithValue(
@@ -141,7 +149,11 @@ final readonly class CommandGrammar
             $seen,
         ) : "is typed {$class}, which is no class, enum or allowed type";
 
-        return $problem === null ? null : "is a list whose item {$problem}";
+        if ($problem === null) {
+            return null;
+        }
+
+        return "is a list whose item {$problem}";
     }
 
     /**
@@ -198,7 +210,11 @@ final readonly class CommandGrammar
 
     private function problemWithContract(string $name): string|null
     {
-        return ($this->mayName)($name) ? null : "holds {$name}, which the owner neither owns nor has exported to it";
+        if (($this->mayName)($name)) {
+            return null;
+        }
+
+        return "holds {$name}, which the owner neither owns nor has exported to it";
     }
 
     /**
@@ -228,6 +244,10 @@ final readonly class CommandGrammar
 
         $problem = $this->problemWithProperties($declaration->name(), $seen);
 
-        return $problem === null ? null : "holds {$name}, whose {$problem}";
+        if ($problem === null) {
+            return null;
+        }
+
+        return "holds {$name}, whose {$problem}";
     }
 }

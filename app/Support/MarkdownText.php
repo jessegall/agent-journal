@@ -257,9 +257,13 @@ final readonly class MarkdownText
      */
     public function sectionBy(string $numberOrHeading): Section
     {
-        return ctype_digit($numberOrHeading) ? $this->section(
-            (int) $numberOrHeading,
-        ) : $this->sectionNamed($numberOrHeading);
+        if (ctype_digit($numberOrHeading)) {
+            return $this->section(
+                (int) $numberOrHeading,
+            );
+        }
+
+        return $this->sectionNamed($numberOrHeading);
     }
 
     /**
@@ -511,6 +515,10 @@ final readonly class MarkdownText
 
     private static function headingLevel(string $line): int
     {
-        return preg_match('/^ {0,3}(#{1,6})(\s|$)/', $line, $hashes) === 1 ? strlen($hashes[1]) : 0;
+        if (preg_match('/^ {0,3}(#{1,6})(\s|$)/', $line, $hashes) === 1) {
+            return strlen($hashes[1]);
+        }
+
+        return 0;
     }
 }

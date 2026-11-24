@@ -13,6 +13,10 @@ trait ChoosesChat
     {
         $chat = $this->option('chat');
 
-        return is_string($chat) && $chat !== '' ? $chat : null;
+        if (is_string($chat) && $chat !== '') {
+            return $chat;
+        }
+
+        return null;
     }
 }

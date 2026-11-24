@@ -97,9 +97,11 @@ final readonly class ScriptStopPreparation implements StopPreparer
     {
         $current = $this->checks->check($script->source)->compiled;
 
-        return $current !== null && $current->definitionDigest === $script->compiled->definitionDigest
-            ? new Some($current)
-            : None::create();
+        if ($current !== null && $current->definitionDigest === $script->compiled->definitionDigest) {
+            return new Some($current);
+        }
+
+        return None::create();
     }
 
     private function go(ProfileRun $run, CompiledScript $driver, StopPreparationRequest $request): StopPreparation

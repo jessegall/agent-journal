@@ -16,7 +16,11 @@ final readonly class LineNormalizer
         $stripped = (string) preg_replace('/\e\[[0-9;]{0,32}m/', '', rtrim($line, "\r"));
         $carriageReturn = strrpos($stripped, "\r");
 
-        return $carriageReturn === false ? $stripped : substr($stripped, $carriageReturn + 1);
+        if ($carriageReturn === false) {
+            return $stripped;
+        }
+
+        return substr($stripped, $carriageReturn + 1);
     }
 
     public function hasUnsupportedControl(string $line): bool

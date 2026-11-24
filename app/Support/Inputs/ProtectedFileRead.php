@@ -55,6 +55,10 @@ final readonly class ProtectedFileRead
             return rtrim($searchFolder, '/').'/'.$folder;
         }
 
-        return $folder === '' ? '/' : $folder;
+        if ($folder === '') {
+            return '/';
+        }
+
+        return $folder;
     }
 }

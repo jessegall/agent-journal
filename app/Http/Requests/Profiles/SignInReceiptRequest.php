@@ -41,13 +41,19 @@ final class SignInReceiptRequest extends FormRequest
      */
     public function command(): string
     {
-        return $this->isRenewal() ? BeginSignInAgainCommand::class : BeginSignInCommand::class;
+        if ($this->isRenewal()) {
+            return BeginSignInAgainCommand::class;
+        }
+
+        return BeginSignInCommand::class;
     }
 
     public function target(): string
     {
-        return $this->isRenewal()
-            ? BeginSignInAgainCommand::targetOf($this->string('account')->toString())
-            : BeginSignInCommand::targetOf($this->string('driver')->toString());
+        if ($this->isRenewal()) {
+            return BeginSignInAgainCommand::targetOf($this->string('account')->toString());
+        }
+
+        return BeginSignInCommand::targetOf($this->string('driver')->toString());
     }
 }

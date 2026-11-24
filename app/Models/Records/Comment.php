@@ -194,8 +194,11 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         return Attribute::get(function () {
             $subject = $this->subject();
 
-            return $subject instanceof TextAnchor
-                ? "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}" : 'on the whole record';
+            if ($subject instanceof TextAnchor) {
+                return "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}";
+            }
+
+            return 'on the whole record';
         });
     }
 

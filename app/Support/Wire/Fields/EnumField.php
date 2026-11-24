@@ -41,6 +41,10 @@ final readonly class EnumField implements PartField
     {
         $value = $part->{$this->name};
 
-        return $value instanceof BackedEnum ? $value->value : null;
+        if ($value instanceof BackedEnum) {
+            return $value->value;
+        }
+
+        return null;
     }
 }

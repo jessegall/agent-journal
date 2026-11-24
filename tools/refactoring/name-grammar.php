@@ -211,7 +211,11 @@ function forbiddenWordFault(DeclaredName $declared, array $forbidden): string|nu
 
     $words = array_values(array_unique(array_filter(wordsOf($declared->name), fn (string $word) => isset($forbidden[$word]))));
 
-    return $words === [] ? null : 'holds the forbidden '.implode(', ', array_map(fn (string $word) => $forbidden[$word], $words));
+    if ($words === []) {
+        return null;
+    }
+
+    return 'holds the forbidden '.implode(', ', array_map(fn (string $word) => $forbidden[$word], $words));
 }
 
 /**
@@ -223,7 +227,11 @@ function betterVerbFault(DeclaredName $declared, array $betterVerbs): string|nul
 {
     $first = firstWordOf($declared->name);
 
-    return $declared->role === 'action' && isset($betterVerbs[$first]) ? "its verb {$first}: {$betterVerbs[$first]}" : null;
+    if ($declared->role === 'action' && isset($betterVerbs[$first])) {
+        return "its verb {$first}: {$betterVerbs[$first]}";
+    }
+
+    return null;
 }
 
 /**
@@ -340,7 +348,11 @@ function eventFault(DeclaredName $declared): string|null
     $isEvent = $declared->role === 'event';
     $saysWhatHappened = array_any(array_slice(wordsOf($declared->name), 1), fn (string $word) => preg_match(PAST_FORM, $word) === 1);
 
-    return $isEvent && ! $saysWhatHappened ? 'an event says what happened, and no word of it is a past form' : null;
+    if ($isEvent && ! $saysWhatHappened) {
+        return 'an event says what happened, and no word of it is a past form';
+    }
+
+    return null;
 }
 
 /**
@@ -428,7 +440,11 @@ function commandMoodFault(DeclaredName $declared, array $verbs): string|null
     $isCommand = $declared->role === 'action' && in_array($declared->declarationType, ['method', 'function'], true);
     $stem = in_array($first, QUESTION_WORDS, true) ? null : stemOfThirdPerson($first, $verbs);
 
-    return $isCommand && $stem !== null ? "a command is imperative: {$stem}, not {$first}" : null;
+    if ($isCommand && $stem !== null) {
+        return "a command is imperative: {$stem}, not {$first}";
+    }
+
+    return null;
 }
 
 /**
@@ -466,7 +482,11 @@ function getterFault(DeclaredName $declared): string|null
 
     $isOwnName = $declared->role !== 'override';
 
-    return $isOwnName && $isFunction && count($words) > 1 && $words[0] === 'get' ? 'named for its answer, never get first' : null;
+    if ($isOwnName && $isFunction && count($words) > 1 && $words[0] === 'get') {
+        return 'named for its answer, never get first';
+    }
+
+    return null;
 }
 
 /**

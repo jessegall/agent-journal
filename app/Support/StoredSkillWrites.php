@@ -47,10 +47,14 @@ final readonly class StoredSkillWrites
         $earlier = SkillRequest::earlier($author, $requestId);
 
         if ($earlier !== null) {
-            return $earlier->sentWith($inputDigest) ? $this->resultOf(
-                SkillRevision::query()->whereKey($earlier->skill_revision_id)->firstOrFail(),
-                $requestId,
-            ) : throw SkillRequestReused::for($requestId);
+            if ($earlier->sentWith($inputDigest)) {
+                return $this->resultOf(
+                    SkillRevision::query()->whereKey($earlier->skill_revision_id)->firstOrFail(),
+                    $requestId,
+                );
+            }
+
+            throw SkillRequestReused::for($requestId);
         }
 
         $revision = $write();

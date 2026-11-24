@@ -60,6 +60,10 @@ final readonly class ReceiptRetention
      */
     public function refusesUntil(CarbonImmutable $taken): CarbonImmutable|null
     {
-        return $this->refusalDays === null ? null : $taken->addDays($this->refusalDays);
+        if ($this->refusalDays === null) {
+            return null;
+        }
+
+        return $taken->addDays($this->refusalDays);
     }
 }

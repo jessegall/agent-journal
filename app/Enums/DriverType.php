@@ -17,6 +17,10 @@ enum DriverType: string
      */
     public static function ofHeadless(bool $isHeadless): self
     {
-        return $isHeadless ? self::Headless : self::Terminal;
+        if ($isHeadless) {
+            return self::Headless;
+        }
+
+        return self::Terminal;
     }
 }

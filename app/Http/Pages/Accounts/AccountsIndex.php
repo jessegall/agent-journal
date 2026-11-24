@@ -102,7 +102,11 @@ final readonly class AccountsIndex extends AccountsPage
     {
         $type = $this->typeOf($row);
 
-        return $row->isActive ? "{$type} · default" : $type;
+        if ($row->isActive) {
+            return "{$type} · default";
+        }
+
+        return $type;
     }
 
     private function typeOf(AccountRowData $row): string
@@ -120,7 +124,11 @@ final readonly class AccountsIndex extends AccountsPage
     {
         $type = $this->typeOf($row);
 
-        return $row->expiresAt === null ? $type : "{$type} · Expires {$this->dayOf($row->expiresAt)}";
+        if ($row->expiresAt === null) {
+            return $type;
+        }
+
+        return "{$type} · Expires {$this->dayOf($row->expiresAt)}";
     }
 
     private function dayOf(string $moment): string
@@ -364,7 +372,11 @@ final readonly class AccountsIndex extends AccountsPage
      */
     private function stateToneOf(AccountRowData $row): string
     {
-        return $row->state === AccountState::NeedsSignIn ? 'waiting' : 'quiet';
+        if ($row->state === AccountState::NeedsSignIn) {
+            return 'waiting';
+        }
+
+        return 'quiet';
     }
 
     private function stateWordOf(AccountRowData $row): string

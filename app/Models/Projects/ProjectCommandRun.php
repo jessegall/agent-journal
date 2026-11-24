@@ -213,7 +213,11 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
             return $this->state;
         }
 
-        return $this->pid === null ? CommandRunState::Unknown : CommandRunState::Interrupted;
+        if ($this->pid === null) {
+            return CommandRunState::Unknown;
+        }
+
+        return CommandRunState::Interrupted;
     }
 
     /**

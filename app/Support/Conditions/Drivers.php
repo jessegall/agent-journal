@@ -31,11 +31,15 @@ final readonly class Drivers implements SkillCondition
             return ConditionResult::unavailable('driver-unavailable');
         }
 
-        return in_array(
+        if (in_array(
             $context->driver->key,
             $this->keyTexts(),
             true,
-        ) ? ConditionResult::match('driver-listed') : ConditionResult::noMatch('driver-not-listed');
+        )) {
+            return ConditionResult::match('driver-listed');
+        }
+
+        return ConditionResult::noMatch('driver-not-listed');
     }
 
     public function toArray(): array

@@ -61,6 +61,10 @@ final readonly class MergeAskNotificationTarget implements NotificationTargetRes
 
         $result = AskResult::of($ask);
 
-        return $result === AskResult::Open ? "Merge request: {$line}" : "{$result->label()}: {$line}";
+        if ($result === AskResult::Open) {
+            return "Merge request: {$line}";
+        }
+
+        return "{$result->label()}: {$line}";
     }
 }

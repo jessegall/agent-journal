@@ -25,6 +25,10 @@ final readonly class CurrentUserRecords implements CurrentUserResolver
     {
         $user = $this->auth->user();
 
-        return $user instanceof User ? new Some(new CurrentUser($user->id, $user->name)) : None::create();
+        if ($user instanceof User) {
+            return new Some(new CurrentUser($user->id, $user->name));
+        }
+
+        return None::create();
     }
 }

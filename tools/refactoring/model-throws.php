@@ -74,7 +74,11 @@ function runModelThrows(array $arguments): int
         }
     }
 
-    return $faultCount === 0 ? 0 : 1;
+    if ($faultCount === 0) {
+        return 0;
+    }
+
+    return 1;
 }
 
 // Run as a command, not when another tool loads these functions.

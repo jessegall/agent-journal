@@ -169,9 +169,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
      */
     public function resumeAfter(string $reference): void
     {
-        if ($this->state !== ProfileRunState::Suspended || $this->awaited_step !== $reference) {
-            throw ProfileRunRefused::stepNotAwaited($this->id, $reference);
-        }
+        $this->assertAwaiting($reference);
 
         $this->state = ProfileRunState::Running;
         $this->awaited_step = null;
@@ -230,7 +228,11 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     {
         $result = $this->recordedResult($stepReference);
 
-        return $result === null ? None::create() : new Some($result->outcome);
+        if ($result === null) {
+            return None::create();
+        }
+
+        return new Some($result->outcome);
     }
 
     /**
@@ -249,6 +251,20 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     public function results(): HasMany
     {
         return $this->hasMany(ProfileStepResult::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a resume of a run that is not suspended on that step.
+     *
+     * @throws ProfileRunRefused
+     */
+    private function assertAwaiting(string $reference): void
+    {
+        if ($this->state !== ProfileRunState::Suspended || $this->awaited_step !== $reference) {
+            throw ProfileRunRefused::stepNotAwaited($this->id, $reference);
+        }
     }
 
     // ----------[ Internals ]----------

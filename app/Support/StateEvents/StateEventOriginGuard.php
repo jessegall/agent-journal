@@ -38,9 +38,11 @@ final readonly class StateEventOriginGuard
         }
 
         if ($origin->listenerResult->answersAMoment()) {
-            return in_array($origin->frameId(), $stack->get()->frameIds(), true)
-                ? CommandOriginStatus::Eligible
-                : CommandOriginStatus::Stale;
+            if (in_array($origin->frameId(), $stack->get()->frameIds(), true)) {
+                return CommandOriginStatus::Eligible;
+            }
+
+            return CommandOriginStatus::Stale;
         }
 
         foreach ($this->selector->forEvent($stack->get(), $origin->dispatch->event) as $selection) {
@@ -49,9 +51,11 @@ final readonly class StateEventOriginGuard
             }
         }
 
-        return $this->settledByItsAnswer($stack->get(), $origin)
-            ? CommandOriginStatus::Eligible
-            : CommandOriginStatus::Stale;
+        if ($this->settledByItsAnswer($stack->get(), $origin)) {
+            return CommandOriginStatus::Eligible;
+        }
+
+        return CommandOriginStatus::Stale;
     }
 
     /**

@@ -198,6 +198,10 @@ final readonly class SearchProps
 
     private static function textOf(Request $request, string $parameter): string|null
     {
-        return $request->filled($parameter) ? $request->string($parameter)->toString() : null;
+        if ($request->filled($parameter)) {
+            return $request->string($parameter)->toString();
+        }
+
+        return null;
     }
 }

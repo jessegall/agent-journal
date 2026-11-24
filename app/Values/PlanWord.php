@@ -24,7 +24,11 @@ final class PlanWord extends Data
     {
         $substituted = array_any($this->pieces, fn (string|int $piece): bool => is_int($piece));
 
-        return $substituted ? null : implode('', $this->pieces);
+        if ($substituted) {
+            return null;
+        }
+
+        return implode('', $this->pieces);
     }
 
     /**

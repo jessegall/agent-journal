@@ -289,6 +289,20 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         ))->withoutObjectCaching();
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a move its present stage does not allow.
+     *
+     * @throws DriverSwitchStageRefused
+     */
+    private function assertMayMoveTo(DriverSwitchStage $next): void
+    {
+        if (! $this->stage->mayMoveTo($next)) {
+            throw DriverSwitchStageRefused::from($this->stage, $next);
+        }
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -306,9 +320,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
      */
     private function moveTo(DriverSwitchStage $next, string|null $reason = null): void
     {
-        if (! $this->stage->mayMoveTo($next)) {
-            throw DriverSwitchStageRefused::from($this->stage, $next);
-        }
+        $this->assertMayMoveTo($next);
 
         $this->stage = $next;
         $this->failure_reason = $reason;

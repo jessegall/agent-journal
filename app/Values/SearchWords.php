@@ -61,7 +61,11 @@ final readonly class SearchWords
     {
         $found = mb_stripos($text, $this->text);
 
-        return $found === false ? 0 : $found;
+        if ($found === false) {
+            return 0;
+        }
+
+        return $found;
     }
 
     public function isFoundIn(string $text): bool

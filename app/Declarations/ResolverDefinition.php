@@ -66,6 +66,10 @@ final readonly class ResolverDefinition
             ->map(fn (DeclaredType $declared) => $declared->name())
             ->getOrElse('');
 
-        return Reflector::factory()->isSubclassOf($name, FormRequest::class) ? $name : null;
+        if (Reflector::factory()->isSubclassOf($name, FormRequest::class)) {
+            return $name;
+        }
+
+        return null;
     }
 }

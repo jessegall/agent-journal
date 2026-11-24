@@ -30,7 +30,7 @@ final class SupervisorChange extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn () => throw SupervisorRouteRefused::historyEdited());
+        self::updating(fn (self $change) => $change->assertHistoryKept());
     }
 
     public static function create(
@@ -49,5 +49,17 @@ final class SupervisorChange extends Model implements ReadableModel
             'target' => $target->key,
             'version' => $link->versionFor($type),
         ]);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a change of the supervisor route is history and stays as it was written.
+     *
+     * @throws SupervisorRouteRefused
+     */
+    private function assertHistoryKept(): never
+    {
+        throw SupervisorRouteRefused::historyEdited();
     }
 }

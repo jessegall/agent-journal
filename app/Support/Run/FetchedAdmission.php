@@ -58,9 +58,11 @@ final readonly class FetchedAdmission
 
     private static function runOf(AdmissionFetched $answer): string
     {
-        return $answer instanceof AdmissionAlreadyStarted
-            ? $answer->runId
-            : throw AdmissionAnswerUnknown::for($answer::class);
+        if ($answer instanceof AdmissionAlreadyStarted) {
+            return $answer->runId;
+        }
+
+        throw AdmissionAnswerUnknown::for($answer::class);
     }
 
     public function isAlreadyStarted(): bool

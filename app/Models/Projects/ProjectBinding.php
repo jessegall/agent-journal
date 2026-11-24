@@ -152,8 +152,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function ofHostByNonce(string $hostId, string $installationNonce): self
     {
-        return self::query()->where('host_id', $hostId)->where('installation_nonce', $installationNonce)
-            ->firstOr(fn () => throw BindingUnrecoverable::generic());
+        $row = self::query()->where('host_id', $hostId)->where('installation_nonce', $installationNonce)->first();
+        self::assertRecoverable($row);
+
+        return $row;
     }
 
     /**
@@ -163,8 +165,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function ofHost(string $hostId, string $id): self
     {
-        return self::query()->whereKey($id)->where('host_id', $hostId)
-            ->firstOr(fn () => throw PresenceRefused::notReadableBy($id));
+        $row = self::query()->whereKey($id)->where('host_id', $hostId)->first();
+        self::assertOfHost($row, $id);
+
+        return $row;
     }
 
     /**
@@ -266,9 +270,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             return $this->presenceReceipt;
         }
 
-        if (! $isSameBoot && $this->hasLivePresenceAt($now) && ! $report->takesOver) {
-            throw PresenceRefused::anotherBootIsLive($this->id);
-        }
+        $this->assertNoOtherLiveBoot($isSameBoot, $now, $report);
 
         if (! $isSameBoot) {
             $this->boot_id = $report->bootId;
@@ -348,9 +350,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public function assignEnvironment(Environment $environment): void
     {
-        if ($environment->project_id !== $this->project_id) {
-            throw BindingStartRefused::otherProjectsEnvironment($this->id);
-        }
+        $this->assertOwnProjects($environment);
 
         $this->environment_id = $environment->id;
         $this->assertSaved($this->save());
@@ -516,6 +516,60 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     public function mainAgent(): BelongsTo
     {
         return $this->belongsTo(Agent::class, 'main_agent_id');
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a host and nonce that name no binding to recover.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws BindingUnrecoverable
+     */
+    private static function assertRecoverable(self|null $row): void
+    {
+        if ($row === null) {
+            throw BindingUnrecoverable::generic();
+        }
+    }
+
+    /**
+     * Refuses a binding the host does not hold.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws PresenceRefused
+     */
+    private static function assertOfHost(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw PresenceRefused::notReadableBy($id);
+        }
+    }
+
+    /**
+     * Refuses a report from another boot while the live one has not been taken over.
+     *
+     * @throws PresenceRefused
+     */
+    private function assertNoOtherLiveBoot(bool $isSameBoot, CarbonImmutable $now, PresenceReport $report): void
+    {
+        if (! $isSameBoot && $this->hasLivePresenceAt($now) && ! $report->takesOver) {
+            throw PresenceRefused::anotherBootIsLive($this->id);
+        }
+    }
+
+    /**
+     * Refuses an environment of another project.
+     *
+     * @throws BindingStartRefused
+     */
+    private function assertOwnProjects(Environment $environment): void
+    {
+        if ($environment->project_id !== $this->project_id) {
+            throw BindingStartRefused::otherProjectsEnvironment($this->id);
+        }
     }
 
     // ----------[ Internals ]----------

@@ -60,6 +60,10 @@ final class CommandStops implements CommandStopsContract
             $deadline->milliseconds,
         );
 
-        return $left === $deadline->milliseconds ? $deadline : new OperationDeadline($left);
+        if ($left === $deadline->milliseconds) {
+            return $deadline;
+        }
+
+        return new OperationDeadline($left);
     }
 }

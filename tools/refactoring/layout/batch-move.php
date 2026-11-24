@@ -492,7 +492,11 @@ function renamedBareNames(string $text, array $shortRenames, array $renames, str
 
         $sibling = $renames[ltrim("{$namespace}\\{$written}", '\\')] ?? null;
 
-        return $sibling === null || isset($imported[$local]) ? $written : shortName($sibling);
+        if ($sibling === null || isset($imported[$local])) {
+            return $written;
+        }
+
+        return shortName($sibling);
     }, $text);
 }
 
@@ -563,7 +567,11 @@ function namespaceOfMove(array $moves, string $oldNamespace, FileTree $tree): st
  */
 function lineEnd(string $source, int $end): int
 {
-    return ($source[$end + 1] ?? '') === "\n" ? $end + 1 : $end;
+    if (($source[$end + 1] ?? '') === "\n") {
+        return $end + 1;
+    }
+
+    return $end;
 }
 
 function shortName(string $class): string
@@ -575,12 +583,20 @@ function namespaceOf(string $class): string
 {
     $at = strrpos($class, '\\');
 
-    return $at === false ? '' : substr($class, 0, $at);
+    if ($at === false) {
+        return '';
+    }
+
+    return substr($class, 0, $at);
 }
 
 function relativeTo(string $class, string $prefix): string
 {
-    return str_starts_with($class, $prefix.'\\') ? substr($class, strlen($prefix) + 1) : $class;
+    if (str_starts_with($class, $prefix.'\\')) {
+        return substr($class, strlen($prefix) + 1);
+    }
+
+    return $class;
 }
 
 /**

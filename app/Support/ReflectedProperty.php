@@ -141,7 +141,11 @@ final class ReflectedProperty
     {
         $comment = $this->property->getDocComment();
 
-        return $comment === false ? None::create() : new Some($comment);
+        if ($comment === false) {
+            return None::create();
+        }
+
+        return new Some($comment);
     }
 
     /**
@@ -161,7 +165,11 @@ final class ReflectedProperty
     {
         $type = $property->getType();
 
-        return $type === null ? None::create() : new Some(new DeclaredType($type));
+        if ($type === null) {
+            return None::create();
+        }
+
+        return new Some(new DeclaredType($type));
     }
 
     private function declaredAttributes(): DeclarationAttributes

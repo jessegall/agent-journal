@@ -59,12 +59,20 @@ final class RequestProgressReportData extends Data
      */
     public function turnEnd(): TurnEnd|null
     {
-        return $this->turnEnd instanceof TurnEndData ? $this->turnEnd->turnEnd() : null;
+        if ($this->turnEnd instanceof TurnEndData) {
+            return $this->turnEnd->turnEnd();
+        }
+
+        return null;
     }
 
     public function judgedOutcome(): RequestOutcome|null
     {
-        return $this->turnEnd instanceof TurnEndData ? $this->turnEnd->turnEnd()->outcome() : $this->outcome;
+        if ($this->turnEnd instanceof TurnEndData) {
+            return $this->turnEnd->turnEnd()->outcome();
+        }
+
+        return $this->outcome;
     }
 
     /**
@@ -72,7 +80,11 @@ final class RequestProgressReportData extends Data
      */
     public function refusal(): HostWakeRefusal|null
     {
-        return $this->refusalReason === null ? null : HostWakeRefusal::fromReport($this->refusalReason);
+        if ($this->refusalReason === null) {
+            return null;
+        }
+
+        return HostWakeRefusal::fromReport($this->refusalReason);
     }
 
     /**
@@ -92,7 +104,11 @@ final class RequestProgressReportData extends Data
      */
     public function navigationReport(): NavigationRoundReport|null
     {
-        return $this->navigation instanceof NavigationRoundReportData ? $this->navigation->report() : null;
+        if ($this->navigation instanceof NavigationRoundReportData) {
+            return $this->navigation->report();
+        }
+
+        return null;
     }
 
     /**
@@ -100,6 +116,10 @@ final class RequestProgressReportData extends Data
      */
     public function scriptProgress(): ScriptProgress|null
     {
-        return $this->script instanceof ScriptProgressData ? $this->script->progress() : null;
+        if ($this->script instanceof ScriptProgressData) {
+            return $this->script->progress();
+        }
+
+        return null;
     }
 }

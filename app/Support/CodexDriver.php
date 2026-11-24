@@ -64,7 +64,11 @@ final readonly class CodexDriver
             }
 
             if ($event->type === 'turn.failed') {
-                return $event->error === null ? 'Codex could not reach the model.' : $event->error->message;
+                if ($event->error === null) {
+                    return 'Codex could not reach the model.';
+                }
+
+                return $event->error->message;
             }
         }
 

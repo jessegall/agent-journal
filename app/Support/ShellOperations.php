@@ -130,7 +130,11 @@ final readonly class ShellOperations
             }
         }
 
-        return $part->program === null ? self::UNKNOWN : 'shell:'.$part->program->family;
+        if ($part->program === null) {
+            return self::UNKNOWN;
+        }
+
+        return 'shell:'.$part->program->family;
     }
 
     /**

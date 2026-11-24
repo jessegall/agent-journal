@@ -182,7 +182,11 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
         $task = self::query()->whereKey($frame->subject->id)->first();
 
-        return $task === null ? None::create() : new Some($task->summary);
+        if ($task === null) {
+            return None::create();
+        }
+
+        return new Some($task->summary);
     }
 
     /**
@@ -443,7 +447,11 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public function currentRun(): TaskRun|null
     {
-        return $this->run_number === 0 ? null : TaskRun::ofTask($this, $this->run_number);
+        if ($this->run_number === 0) {
+            return null;
+        }
+
+        return TaskRun::ofTask($this, $this->run_number);
     }
 
     // ----------[ Accessors ]----------

@@ -62,9 +62,11 @@ final class LocalFiles implements Files
             $fingerprint = Fingerprint::of($file, $this->confinement->resolved($file));
             $loader = fn () => $this->loaded($file, $fingerprint, null);
 
-            return $file->place->isPrivate()
-                ? $this->contents->fresh($fingerprint, $loader)
-                : $this->contents->kept($fingerprint, $loader);
+            if ($file->place->isPrivate()) {
+                return $this->contents->fresh($fingerprint, $loader);
+            }
+
+            return $this->contents->kept($fingerprint, $loader);
         });
     }
 
@@ -106,9 +108,11 @@ final class LocalFiles implements Files
             $loader = fn () => $this->loaded($file, $fingerprint, null);
             $parser = fn (string $bytes) => $this->decoded($file, $bytes);
 
-            return $file->place->isPrivate()
-                ? $parser($this->contents->fresh($fingerprint, $loader))
-                : $this->contents->decoded($fingerprint, $parser, $loader);
+            if ($file->place->isPrivate()) {
+                return $parser($this->contents->fresh($fingerprint, $loader));
+            }
+
+            return $this->contents->decoded($fingerprint, $parser, $loader);
         });
     }
 
@@ -118,9 +122,11 @@ final class LocalFiles implements Files
             $fingerprint = Fingerprint::of($file, $this->confinement->resolved($file));
             $hasher = fn () => $this->hashed($file, $fingerprint);
 
-            return $file->place->isPrivate()
-                ? $this->contents->fresh($fingerprint, $hasher)
-                : $this->contents->digest($fingerprint, $hasher);
+            if ($file->place->isPrivate()) {
+                return $this->contents->fresh($fingerprint, $hasher);
+            }
+
+            return $this->contents->digest($fingerprint, $hasher);
         });
     }
 

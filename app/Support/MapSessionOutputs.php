@@ -61,7 +61,11 @@ final readonly class MapSessionOutputs
             ->where('agent_id', $session->agent_id)
             ->exists();
 
-        return $isSameAgent ? SessionOutputGrant::heldBy($predecessorId) : [];
+        if ($isSameAgent) {
+            return SessionOutputGrant::heldBy($predecessorId);
+        }
+
+        return [];
     }
 
     /**

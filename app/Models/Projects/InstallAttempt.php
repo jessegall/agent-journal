@@ -133,8 +133,10 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public static function lockOfOwner(string $userId, string $reference): self
     {
-        return self::query()->ofOwner($userId)->where('reference', $reference)->lockForUpdate()
-            ->firstOr(fn () => throw InstallAttemptRefused::unknown($reference));
+        $row = self::query()->ofOwner($userId)->where('reference', $reference)->lockForUpdate()->first();
+        self::assertFound($row, $reference);
+
+        return $row;
     }
 
     public static function lockById(string $id): self
@@ -218,7 +220,11 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
 
         $live = $this->invitations->filter(fn (ProjectInvitation $line) => $line->isRedeemableAt($now));
 
-        return $live->isEmpty() ? InstallAttemptState::Expired : InstallAttemptState::Open;
+        if ($live->isEmpty()) {
+            return InstallAttemptState::Expired;
+        }
+
+        return InstallAttemptState::Open;
     }
 
     // ----------[ Accessors ]----------
@@ -255,6 +261,22 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     public function environment(): BelongsTo
     {
         return $this->belongsTo(Environment::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a reference none of the owner's attempts holds.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws InstallAttemptRefused
+     */
+    private static function assertFound(self|null $row, string $reference): void
+    {
+        if ($row === null) {
+            throw InstallAttemptRefused::unknown($reference);
+        }
     }
 
     // ----------[ Internals ]----------

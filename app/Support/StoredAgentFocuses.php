@@ -32,7 +32,11 @@ final readonly class StoredAgentFocuses implements AgentFocuses
     {
         $focus = AgentFocus::query()->where('agent_id', $agent->id)->first();
 
-        return $focus === null ? None::create() : new Some($focus->record());
+        if ($focus === null) {
+            return None::create();
+        }
+
+        return new Some($focus->record());
     }
 
     public function focusersOf(array $records): array

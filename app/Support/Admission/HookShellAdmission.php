@@ -63,9 +63,11 @@ final readonly class HookShellAdmission
             return $answer->replacedBy($this->runnerUnavailable($limit), $stackBefore);
         }
 
-        return $isContained
-            ? $this->judgedInContainer($input, $answer, $stackBefore, $folder)
-            : $this->admitted($input, $answer, $stackBefore, $folder);
+        if ($isContained) {
+            return $this->judgedInContainer($input, $answer, $stackBefore, $folder);
+        }
+
+        return $this->admitted($input, $answer, $stackBefore, $folder);
     }
 
     /**

@@ -69,6 +69,10 @@ final readonly class AdmissionRefusal
         $text = (string) preg_replace('#://[^/\s:@]+:[^/\s@]+@#', '://***@', $text);
         $escaped = addcslashes($text, "\0..\37\177");
 
-        return strlen($escaped) > self::EXCERPT_LENGTH ? substr($escaped, 0, self::EXCERPT_LENGTH).'...' : $escaped;
+        if (strlen($escaped) > self::EXCERPT_LENGTH) {
+            return substr($escaped, 0, self::EXCERPT_LENGTH).'...';
+        }
+
+        return $escaped;
     }
 }

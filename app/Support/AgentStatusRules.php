@@ -206,7 +206,11 @@ final class AgentStatusRules
         $workingActions = $evidence->canStop ? [...$switch, StatusAction::of(StatusActionType::Interrupt)] : $switch;
 
         if ($evidence->processStart?->isStarting() === true) {
-            return self::isWakeRefused($evidence->request) ? self::unknown($evidence) : self::starting($evidence);
+            if (self::isWakeRefused($evidence->request)) {
+                return self::unknown($evidence);
+            }
+
+            return self::starting($evidence);
         }
 
         $verification = self::verification($evidence);
@@ -220,7 +224,11 @@ final class AgentStatusRules
         }
 
         if ($runtime === null) {
-            return $evidence->expectsRuntime ? self::unknown($evidence) : self::plain(
+            if ($evidence->expectsRuntime) {
+                return self::unknown($evidence);
+            }
+
+            return self::plain(
                 SessionState::Working,
                 $evidence,
                 $switch,
@@ -448,6 +456,10 @@ final class AgentStatusRules
             return 'Switch refused';
         }
 
-        return $evidence->isLaunchRefusalShown() ? 'Start refused' : null;
+        if ($evidence->isLaunchRefusalShown()) {
+            return 'Start refused';
+        }
+
+        return null;
     }
 }

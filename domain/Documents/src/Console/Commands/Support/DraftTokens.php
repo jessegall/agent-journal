@@ -25,7 +25,11 @@ final readonly class DraftTokens
     {
         $held = $this->all()["doc {$documentNumber}"] ?? null;
 
-        return is_array($held) ? ['token' => (string) $held['token'], 'version' => (int) $held['version']] : null;
+        if (is_array($held)) {
+            return ['token' => (string) $held['token'], 'version' => (int) $held['version']];
+        }
+
+        return null;
     }
 
     public function keep(int $documentNumber, string $token, int $version): void
@@ -47,7 +51,11 @@ final readonly class DraftTokens
      */
     private function all(): array
     {
-        return $this->files->exists($this->path()) ? $this->files->readJson($this->path()) : [];
+        if ($this->files->exists($this->path())) {
+            return $this->files->readJson($this->path());
+        }
+
+        return [];
     }
 
     private function path(): FilePath

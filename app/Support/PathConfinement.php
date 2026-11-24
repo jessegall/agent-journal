@@ -52,7 +52,11 @@ final readonly class PathConfinement
         $root = $this->roots->root($file->place);
         $real = $this->freshRealPath($root, $file);
 
-        return $real === null ? null : $this->confined($file, $root, $real);
+        if ($real === null) {
+            return null;
+        }
+
+        return $this->confined($file, $root, $real);
     }
 
     /**
@@ -102,7 +106,11 @@ final readonly class PathConfinement
 
         $confined = $this->confined($file, $root, $real);
 
-        return $missing === [] ? $confined : $this->confined($file, $root, $confined.'/'.implode('/', $missing));
+        if ($missing === []) {
+            return $confined;
+        }
+
+        return $this->confined($file, $root, $confined.'/'.implode('/', $missing));
     }
 
     /**
@@ -160,7 +168,11 @@ final readonly class PathConfinement
 
     private function absolutePath(#[SensitiveParameter] string $root, FilePath $file): string
     {
-        return $file->relative === '' ? $root : "{$root}/{$file->relative}";
+        if ($file->relative === '') {
+            return $root;
+        }
+
+        return "{$root}/{$file->relative}";
     }
 
     /**
@@ -172,7 +184,11 @@ final readonly class PathConfinement
         clearstatcache(true, $path);
         $real = realpath($path);
 
-        return $real === false ? null : $real;
+        if ($real === false) {
+            return null;
+        }
+
+        return $real;
     }
 
     /**

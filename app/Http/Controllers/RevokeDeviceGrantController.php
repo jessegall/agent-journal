@@ -25,6 +25,10 @@ final readonly class RevokeDeviceGrantController
     ): Response|RedirectResponse {
         $commands->run(new RevokeDeviceGrantCommand($grant));
 
-        return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
+        if ($request->expectsJson()) {
+            return new Response(status: Response::HTTP_NO_CONTENT);
+        }
+
+        return $redirect->back(303);
     }
 }

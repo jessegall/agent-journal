@@ -98,7 +98,11 @@ final class MarkdownCheck
 
     private static function isValidTableLine(int $cells, string $next, int $columns): bool
     {
-        return $columns === 0 ? self::isTableSeparator($next) : $cells === $columns;
+        if ($columns === 0) {
+            return self::isTableSeparator($next);
+        }
+
+        return $cells === $columns;
     }
 
     private static function isTableSeparator(string $line): bool
@@ -121,6 +125,12 @@ final class MarkdownCheck
      */
     private static function cells(string $line): array
     {
-        return preg_split('/(?<!\\\\)\|/', trim(trim($line), '|')) ?: [''];
+        $cells = preg_split('/(?<!\\\\)\|/', trim(trim($line), '|'));
+
+        if ($cells === false) {
+            return [''];
+        }
+
+        return $cells;
     }
 }

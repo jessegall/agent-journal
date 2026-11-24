@@ -67,7 +67,11 @@ final class StateMethods
         $eventTypes = Reflector::of($event)->typeNames();
         $group = array_find_key($events, fn (StateMethod $method, string $type) => in_array($type, $eventTypes, true));
 
-        return $group === null ? None::create() : new Some($events[$group]);
+        if ($group === null) {
+            return None::create();
+        }
+
+        return new Some($events[$group]);
     }
 
     /**

@@ -105,8 +105,10 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function redeemableFor(string $ticket): self
     {
-        return self::query()->pending()->where('ticket_digest', InstallTicket::digestOf($ticket))
-            ->firstOr(fn () => throw InvitationUnusable::forTicket());
+        $row = self::query()->pending()->where('ticket_digest', InstallTicket::digestOf($ticket))->first();
+        self::assertTicketUsable($row);
+
+        return $row;
     }
 
     /**
@@ -116,8 +118,10 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function lockRedeemableFor(string $ticket): self
     {
-        return self::query()->pending()->where('ticket_digest', InstallTicket::digestOf($ticket))->lockForUpdate()
-            ->firstOr(fn () => throw InvitationUnusable::forTicket());
+        $row = self::query()->pending()->where('ticket_digest', InstallTicket::digestOf($ticket))->lockForUpdate()->first();
+        self::assertTicketUsable($row);
+
+        return $row;
     }
 
     /**
@@ -138,8 +142,10 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function lockPending(string $id): self
     {
-        return self::query()->pending()->whereKey($id)->lockForUpdate()
-            ->firstOr(fn () => throw InvitationUnusable::forId($id));
+        $row = self::query()->pending()->whereKey($id)->lockForUpdate()->first();
+        self::assertPending($row, $id);
+
+        return $row;
     }
 
     // ----------[ Mutations ]----------
@@ -180,14 +186,54 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public function lockAttempt(): InstallAttempt
     {
-        if ($this->install_attempt_id === null) {
-            throw InvitationUnusable::forId($this->id);
-        }
+        $this->assertHasAttempt();
 
         return InstallAttempt::lockById($this->install_attempt_id);
     }
 
-    // ----------[ Accessors ]----------
+    /**
+     * Refuses a ticket no pending invitation holds.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws InvitationUnusable
+     */
+    private static function assertTicketUsable(self|null $row): void
+    {
+        if ($row === null) {
+            throw InvitationUnusable::forTicket();
+        }
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an invitation that is not pending.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws InvitationUnusable
+     */
+    private static function assertPending(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw InvitationUnusable::forId($id);
+        }
+    }
+
+    /**
+     * Refuses an invitation with no install attempt.
+     *
+     * @phpstan-assert !null $this->install_attempt_id
+     *
+     * @throws InvitationUnusable
+     */
+    private function assertHasAttempt(): void
+    {
+        if ($this->install_attempt_id === null) {
+            throw InvitationUnusable::forId($this->id);
+        }
+    }
 
     // ----------[ Scopes ]----------
 

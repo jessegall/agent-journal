@@ -77,9 +77,11 @@ final readonly class RunInTransaction implements CommandMiddleware
             }
 
             try {
-                return $attempt === 1
-                    ? $this->attempt($call, $next, $deadline)
-                    : ScopedReadMeter::ofCurrentScope()->withinSchedule(
+                if ($attempt === 1) {
+                    return $this->attempt($call, $next, $deadline);
+                }
+
+                return ScopedReadMeter::ofCurrentScope()->withinSchedule(
                         'transaction retry',
                         fn () => $this->attempt($call, $next, $deadline),
                     );

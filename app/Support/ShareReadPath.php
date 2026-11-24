@@ -74,7 +74,11 @@ final readonly class ShareReadPath
      */
     public function target(RecordIdentity $root): RecordIdentity
     {
-        return $this->hops === [] ? $root : $this->hops[array_key_last($this->hops)]->target;
+        if ($this->hops === []) {
+            return $root;
+        }
+
+        return $this->hops[array_key_last($this->hops)]->target;
     }
 
     /**

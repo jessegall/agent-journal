@@ -58,6 +58,10 @@ final class NewSequenceRequest extends FormRequest
      */
     public function draftedBy(): string|Optional
     {
-        return $this->filled('draftedBy') ? $this->string('draftedBy')->trim()->toString() : Optional::create();
+        if ($this->filled('draftedBy')) {
+            return $this->string('draftedBy')->trim()->toString();
+        }
+
+        return Optional::create();
     }
 }

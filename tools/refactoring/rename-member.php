@@ -681,7 +681,11 @@ function madeClass(Node\Expr\FuncCall|Node\Expr\MethodCall $call): string|null
     $isClassConstant = $first instanceof Node\Expr\ClassConstFetch && $first->class instanceof Node\Name
         && $first->name instanceof Node\Identifier && $first->name->toString() === 'class';
 
-    return $isClassConstant ? staticClass($first->class) : null;
+    if ($isClassConstant) {
+        return staticClass($first->class);
+    }
+
+    return null;
 }
 
 /**
@@ -689,7 +693,11 @@ function madeClass(Node\Expr\FuncCall|Node\Expr\MethodCall $call): string|null
  */
 function staticClass(Node\Name $name): string|null
 {
-    return in_array($name->toLowerString(), ['self', 'static'], true) ? enclosingClass($name) : $name->toString();
+    if (in_array($name->toLowerString(), ['self', 'static'], true)) {
+        return enclosingClass($name);
+    }
+
+    return $name->toString();
 }
 
 /**
@@ -793,7 +801,11 @@ function typeName(Node|null $type, string|null $self): string|null
 
 function classTypeName(Node\Name|Node\Identifier $type): string|null
 {
-    return $type instanceof Node\Name ? $type->toString() : null;
+    if ($type instanceof Node\Name) {
+        return $type->toString();
+    }
+
+    return null;
 }
 
 /**
@@ -1269,7 +1281,11 @@ function selfTest(): int
     printf("  %s  %s\n", $isSecondParseStopped ? 'ok  ' : 'FAIL', 'a file parsed a second time stops the run');
     printf("%d case(s), %d failed\n", count(testCases()) + 1, $failed);
 
-    return $failed > 0 ? 1 : 0;
+    if ($failed > 0) {
+        return 1;
+    }
+
+    return 0;
 }
 
 /**

@@ -87,7 +87,11 @@ class ReadBuilder extends Builder
     {
         $pageMax = Container::getInstance()->make('config')->integer('reads.page_max');
 
-        return $rows <= $pageMax ? $this->limit($rows) : $this->readLimit($rows);
+        if ($rows <= $pageMax) {
+            return $this->limit($rows);
+        }
+
+        return $this->readLimit($rows);
     }
 
     /**
@@ -364,8 +368,10 @@ class ReadBuilder extends Builder
 
     private function defaultLimit(): int
     {
-        return $this->model instanceof ReadableModel
-            ? $this->model->defaultReadLimit()
-            : Container::getInstance()->make('config')->integer('reads.default_limit');
+        if ($this->model instanceof ReadableModel) {
+            return $this->model->defaultReadLimit();
+        }
+
+        return Container::getInstance()->make('config')->integer('reads.default_limit');
     }
 }

@@ -73,9 +73,11 @@ final readonly class WorkspaceSources
         }
 
         try {
-            return array_key_exists('folder', $entry)
-                ? FolderWorkspace::from($entry)
-                : GitWorkspace::from([...$entry, 'volume' => "{$installationName}-workspace-{$environment}"]);
+            if (array_key_exists('folder', $entry)) {
+                return FolderWorkspace::from($entry);
+            }
+
+            return GitWorkspace::from([...$entry, 'volume' => "{$installationName}-workspace-{$environment}"]);
         } catch (CannotCreateData $incomplete) {
             throw WorkspaceSourcesInvalid::incomplete($environment, $incomplete);
         }

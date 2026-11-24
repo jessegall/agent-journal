@@ -57,7 +57,11 @@ final readonly class PlansShow extends PlansPage
 
     private function percentOf(PlanCardData $card): int
     {
-        return $card->totalTasks === 0 ? 0 : (int) round($card->finishedTasks / $card->totalTasks * 100);
+        if ($card->totalTasks === 0) {
+            return 0;
+        }
+
+        return (int) round($card->finishedTasks / $card->totalTasks * 100);
     }
 
     /**

@@ -372,7 +372,11 @@ function readJson(string $path): array
         fail(basename($path).' is not JSON: '.$error->getMessage());
     }
 
-    return is_array($decoded) ? $decoded : fail(basename($path).' is not a JSON array or object');
+    if (is_array($decoded)) {
+        return $decoded;
+    }
+
+    return fail(basename($path).' is not a JSON array or object');
 }
 
 /**
@@ -380,7 +384,11 @@ function readJson(string $path): array
  */
 function listOf(mixed $value, string $what): array
 {
-    return is_array($value) && array_is_list($value) ? $value : fail("{$what} is not a list");
+    if (is_array($value) && array_is_list($value)) {
+        return $value;
+    }
+
+    return fail("{$what} is not a list");
 }
 
 /**
@@ -388,7 +396,11 @@ function listOf(mixed $value, string $what): array
  */
 function stringField(array $row, string $field, string $what): string
 {
-    return is_string($row[$field] ?? null) ? $row[$field] : fail("{$what} has no {$field}");
+    if (is_string($row[$field] ?? null)) {
+        return $row[$field];
+    }
+
+    return fail("{$what} has no {$field}");
 }
 
 function encode(mixed $value): string

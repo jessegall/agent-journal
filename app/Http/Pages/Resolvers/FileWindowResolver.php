@@ -236,7 +236,11 @@ final readonly class FileWindowResolver implements PageResolver
      */
     private function markdownOf(string $path, array $lines): array
     {
-        return $this->isMarkdown($path) ? ['markdown' => LayoutBodyData::fromMarkdown(implode("\n", $lines))] : [];
+        if ($this->isMarkdown($path)) {
+            return ['markdown' => LayoutBodyData::fromMarkdown(implode("\n", $lines))];
+        }
+
+        return [];
     }
 
     private function isMarkdown(string $path): bool

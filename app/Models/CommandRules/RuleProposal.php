@@ -101,7 +101,9 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         $existing = self::query()->ofProject($projectKey)->requestedBy($author, $requestId)->first();
 
         if ($existing !== null) {
-            return $existing->sameRequest($proposed);
+            $existing->assertSameRequest($proposed);
+
+            return $existing;
         }
 
         $proposal = self::query()->create([
@@ -132,10 +134,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     public function withdraw(ActorIdentity $author): void
     {
         $this->assertAuthor($author);
-
-        if (! $this->state->canAcceptRevision()) {
-            throw RuleProposalRefused::ended($this->id, $this->state);
-        }
+        $this->assertOpen();
 
         $this->state = ProposalState::Withdrawn;
         $this->assertSaved($this->save());
@@ -240,6 +239,32 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         return $this->hasMany(RuleProposalRevision::class);
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a change to a proposal that already ended.
+     *
+     * @throws RuleProposalRefused
+     */
+    private function assertOpen(): void
+    {
+        if (! $this->state->canAcceptRevision()) {
+            throw RuleProposalRefused::ended($this->id, $this->state);
+        }
+    }
+
+    /**
+     * Refuses a request key used again for another proposal.
+     *
+     * @throws RuleProposalRefused
+     */
+    private function assertSameRequest(ProposedRule $proposed): void
+    {
+        if ($this->payload_digest !== $proposed->digest()) {
+            throw RuleProposalRefused::requestReused($this->request_id);
+        }
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -247,9 +272,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      */
     private function end(ProposalState $state): void
     {
-        if (! $this->state->canAcceptRevision()) {
-            throw RuleProposalRefused::ended($this->id, $this->state);
-        }
+        $this->assertOpen();
 
         $this->state = $state;
         $this->save();
@@ -263,18 +286,6 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         if (! $this->isAuthoredBy($actor)) {
             throw RuleProposalRefused::notTheAuthor($this->id);
         }
-    }
-
-    /**
-     * @throws RuleProposalRefused
-     */
-    private function sameRequest(ProposedRule $proposed): self
-    {
-        if ($this->payload_digest !== $proposed->digest()) {
-            throw RuleProposalRefused::requestReused($this->request_id);
-        }
-
-        return $this;
     }
 
     // ----------[ Scopes ]----------

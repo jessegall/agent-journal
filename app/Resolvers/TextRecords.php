@@ -72,8 +72,10 @@ final readonly class TextRecords implements TextResolver
     {
         $record = $this->records->requireReadable($target);
 
-        return $record instanceof TextContent
-            ? $record->textVersion($version)
-            : throw TargetHasNoText::for($target->type);
+        if ($record instanceof TextContent) {
+            return $record->textVersion($version);
+        }
+
+        throw TargetHasNoText::for($target->type);
     }
 }

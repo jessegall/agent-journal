@@ -131,6 +131,10 @@ class HandleInertiaRequests extends Middleware
     {
         $code = $request->session()->get(CommandRefusal::CODE_FLASH_KEY);
 
-        return is_string($code) ? ['refusalCode' => $code] : [];
+        if (is_string($code)) {
+            return ['refusalCode' => $code];
+        }
+
+        return [];
     }
 }

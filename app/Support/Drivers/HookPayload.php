@@ -55,7 +55,11 @@ final class HookPayload extends Data
      */
     public function closingWords(): string
     {
-        return is_string($this->lastAssistantMessage) ? trim($this->lastAssistantMessage) : '';
+        if (is_string($this->lastAssistantMessage)) {
+            return trim($this->lastAssistantMessage);
+        }
+
+        return '';
     }
 
     /**
@@ -107,7 +111,11 @@ final class HookPayload extends Data
      */
     public function workFolder(): string
     {
-        return is_string($this->cwd) ? $this->cwd : '/';
+        if (is_string($this->cwd)) {
+            return $this->cwd;
+        }
+
+        return '/';
     }
 
     /**
@@ -149,7 +157,11 @@ final class HookPayload extends Data
      */
     public function driverFailure(): DriverFailure
     {
-        return is_string($this->error) ? DriverFailure::fromCheckedCode($this->error) : DriverFailure::Unknown;
+        if (is_string($this->error)) {
+            return DriverFailure::fromCheckedCode($this->error);
+        }
+
+        return DriverFailure::Unknown;
     }
 
     public function promptText(): string
@@ -231,16 +243,28 @@ final class HookPayload extends Data
         if (is_string($this->toolResponse)) {
             $exitCode = preg_match('/^Exit code: (\d+)/', $this->toolResponse, $match) === 1 ? (int) $match[1] : 0;
 
-            return $exitCode === 0 ? ToolOutcome::Succeeded : ToolOutcome::Failed;
+            if ($exitCode === 0) {
+                return ToolOutcome::Succeeded;
+            }
+
+            return ToolOutcome::Failed;
         }
 
         $response = $this->toolResponse instanceof Optional ? [] : $this->toolResponse;
 
-        return ($response['is_error'] ?? false) === true ? ToolOutcome::Failed : ToolOutcome::Succeeded;
+        if (($response['is_error'] ?? false) === true) {
+            return ToolOutcome::Failed;
+        }
+
+        return ToolOutcome::Succeeded;
     }
 
     private function required(string|Optional $hookField, string $field): string
     {
-        return $hookField instanceof Optional ? throw UnreadablePayload::missing($field) : $hookField;
+        if ($hookField instanceof Optional) {
+            throw UnreadablePayload::missing($field);
+        }
+
+        return $hookField;
     }
 }

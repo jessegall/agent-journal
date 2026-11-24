@@ -170,7 +170,11 @@ final class WebServiceProvider extends ServiceProvider
      */
     private static function fieldOf(CommandRefusal $refusal): string
     {
-        return $refusal instanceof StartRefusal ? $refusal->reason()->remedy()->type->field() : 'command';
+        if ($refusal instanceof StartRefusal) {
+            return $refusal->reason()->remedy()->type->field();
+        }
+
+        return 'command';
     }
 
     /**
@@ -191,9 +195,11 @@ final class WebServiceProvider extends ServiceProvider
 
             $reason = RefusalReason::of($failure);
 
-            return $request->expectsJson()
-                ? $this->refusalAnswer($reason->code, $failure->getMessage(), [], $reason->status)
-                : $this->app->make(Redirector::class)
+            if ($request->expectsJson()) {
+                return $this->refusalAnswer($reason->code, $failure->getMessage(), [], $reason->status);
+            }
+
+            return $this->app->make(Redirector::class)
                     ->back(303)
                     ->withErrors([self::fieldOf($failure) => $failure->getMessage()])
                     ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
@@ -208,9 +214,11 @@ final class WebServiceProvider extends ServiceProvider
 
             $status = $refused->refusalCode()->status();
 
-            return $request->expectsJson()
-                ? $this->refusalAnswer($refused->refusalCode()->value, $refused->getMessage(), [], $status)
-                : new Response($refused->getMessage(), $status);
+            if ($request->expectsJson()) {
+                return $this->refusalAnswer($refused->refusalCode()->value, $refused->getMessage(), [], $status);
+            }
+
+            return new Response($refused->getMessage(), $status);
         });
 
         $exceptions->renderable(function (ValidationException $refused, Request $request): JsonResponse|null {

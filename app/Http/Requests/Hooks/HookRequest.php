@@ -47,7 +47,11 @@ final class HookRequest extends FormRequest
      */
     public function processGeneration(): int|null
     {
-        return $this->query('generation') === null ? null : $this->integer('generation');
+        if ($this->query('generation') === null) {
+            return null;
+        }
+
+        return $this->integer('generation');
     }
 
     public function payload(): HookPayload

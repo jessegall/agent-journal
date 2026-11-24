@@ -48,7 +48,11 @@ enum CoreAskType: string
 
     public function minutes(): int
     {
-        return $this === self::ReviewReady ? 60 : 15;
+        if ($this === self::ReviewReady) {
+            return 60;
+        }
+
+        return 15;
     }
 
     /**

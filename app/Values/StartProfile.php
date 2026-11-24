@@ -61,7 +61,11 @@ final readonly class StartProfile
      */
     public function requiredSkills(): array
     {
-        return $this->snapshot === null ? [] : $this->snapshot->requiredSkills;
+        if ($this->snapshot === null) {
+            return [];
+        }
+
+        return $this->snapshot->requiredSkills;
     }
 
     /**
@@ -69,6 +73,10 @@ final readonly class StartProfile
      */
     public function revisionText(): string|null
     {
-        return $this->snapshot === null ? null : $this->snapshot->key->key.'@'.$this->snapshot->revision;
+        if ($this->snapshot === null) {
+            return null;
+        }
+
+        return $this->snapshot->key->key.'@'.$this->snapshot->revision;
     }
 }

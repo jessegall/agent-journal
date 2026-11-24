@@ -56,6 +56,10 @@ final class ActiveEventUnits
 
     private static function nameOf(ConnectionInterface $connection): string
     {
-        return $connection instanceof Connection ? (string) $connection->getName() : $connection->getDatabaseName();
+        if ($connection instanceof Connection) {
+            return (string) $connection->getName();
+        }
+
+        return $connection->getDatabaseName();
     }
 }

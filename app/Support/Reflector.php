@@ -137,7 +137,11 @@ final class Reflector implements ReflectedType
      */
     public static function find(string $name): Option
     {
-        return self::exists($name) ? new Some(self::of($name)) : None::create();
+        if (self::exists($name)) {
+            return new Some(self::of($name));
+        }
+
+        return None::create();
     }
 
     /**
@@ -150,7 +154,11 @@ final class Reflector implements ReflectedType
     {
         $captured = new ReflectionFunction($closure)->getStaticVariables();
 
-        return array_key_exists($name, $captured) ? new Some($captured[$name]) : None::create();
+        if (array_key_exists($name, $captured)) {
+            return new Some($captured[$name]);
+        }
+
+        return None::create();
     }
 
     /**
@@ -224,7 +232,11 @@ final class Reflector implements ReflectedType
     {
         $comment = $this->type->getDocComment();
 
-        return $comment === false ? None::create() : new Some($comment);
+        if ($comment === false) {
+            return None::create();
+        }
+
+        return new Some($comment);
     }
 
     /**
@@ -305,7 +317,11 @@ final class Reflector implements ReflectedType
      */
     public function asInstance(mixed $value): Option
     {
-        return $this->isInstance($value) ? new Some($value) : None::create();
+        if ($this->isInstance($value)) {
+            return new Some($value);
+        }
+
+        return None::create();
     }
 
     /**
@@ -645,7 +661,11 @@ final class Reflector implements ReflectedType
     private static function valuesMatch(mixed $first, mixed $second, array $leftOut): bool
     {
         if (is_object($first) && is_object($second) && ! $first instanceof UnitEnum) {
-            return $leftOut === [] ? $first == $second : self::propertiesMatch($first, $second, $leftOut);
+            if ($leftOut === []) {
+                return $first == $second;
+            }
+
+            return self::propertiesMatch($first, $second, $leftOut);
         }
 
         return $first === $second;

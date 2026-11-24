@@ -33,7 +33,11 @@ final readonly class NavigationDispatch
             ->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($owner))
             ->getOrElse(false);
 
-        return $ownRuntime ? NavigationAnswerer::User : NavigationAnswerer::MainInbox;
+        if ($ownRuntime) {
+            return NavigationAnswerer::User;
+        }
+
+        return NavigationAnswerer::MainInbox;
     }
 
     /**

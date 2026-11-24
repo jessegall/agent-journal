@@ -22,9 +22,11 @@ final readonly class ClaimStartController
     {
         $claimed = $commands->run(new ClaimStartCommand($host->hostId, $request->sessionId()));
 
-        return $claimed === null
-            ? new JsonResponse(['message' => 'This start is no longer waiting for a host.'], Response::HTTP_GONE)
-            : new JsonResponse([
+        if ($claimed === null) {
+            return new JsonResponse(['message' => 'This start is no longer waiting for a host.'], Response::HTTP_GONE);
+        }
+
+        return new JsonResponse([
                 'start_key' => $claimed->startKey,
                 'session_id' => $claimed->sessionId,
                 'directory' => $claimed->directory,

@@ -333,7 +333,11 @@ final readonly class DeclarativeReader
         $failures = $field === null ? null : $summary?->count($field);
 
         if ($failures !== null) {
-            return $failures === 0 ? ClaimedOutcome::Passed : ClaimedOutcome::Failed;
+            if ($failures === 0) {
+                return ClaimedOutcome::Passed;
+            }
+
+            return ClaimedOutcome::Failed;
         }
 
         $last = $outcomes === [] ? null : $outcomes[array_key_last($outcomes)];

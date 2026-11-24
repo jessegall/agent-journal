@@ -20,9 +20,11 @@ final readonly class ClaimSignInController
     {
         $claimed = $commands->run(new ClaimSignInCommand($host->hostId));
 
-        return $claimed === null
-            ? new Response(status: Response::HTTP_NO_CONTENT)
-            : new JsonResponse([
+        if ($claimed === null) {
+            return new Response(status: Response::HTTP_NO_CONTENT);
+        }
+
+        return new JsonResponse([
                 'attempt_id' => $claimed->attemptId,
                 'driver' => $claimed->driver,
                 'method' => $claimed->method->value,

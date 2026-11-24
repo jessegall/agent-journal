@@ -218,7 +218,11 @@ final readonly class DomainEntry
      */
     public function scriptFolder(): string
     {
-        return $this->isPackage() ? dirname($this->folder).'/resources/js' : $this->folder.'/Resources/js';
+        if ($this->isPackage()) {
+            return dirname($this->folder).'/resources/js';
+        }
+
+        return $this->folder.'/Resources/js';
     }
 
     /**
@@ -238,9 +242,13 @@ final readonly class DomainEntry
     {
         // A domain package keeps Laravel's own layout beside its src (domain/<Name>/database/migrations); a flat test
         // module keeps them in its class folder.
-        return $this->isPackage() ? dirname(
-            $this->folder,
-        ).'/database/migrations' : $this->folder.'/Database/Migrations';
+        if ($this->isPackage()) {
+            return dirname(
+                $this->folder,
+            ).'/database/migrations';
+        }
+
+        return $this->folder.'/Database/Migrations';
     }
 
     /**
@@ -671,6 +679,10 @@ final readonly class DomainEntry
      */
     private function provided(string $contract): Option
     {
-        return Reflector::of($contract)->isInstance($this->domain) ? new Some($this->domain) : None::create();
+        if (Reflector::of($contract)->isInstance($this->domain)) {
+            return new Some($this->domain);
+        }
+
+        return None::create();
     }
 }

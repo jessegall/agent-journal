@@ -17,7 +17,11 @@ final readonly class GrantedSessionOutputs implements SessionOutputAccess
     {
         $start = ProcessStart::currentOf($sessionId);
 
-        return $start === null ? [] : SessionOutputGrant::currentOf($start);
+        if ($start === null) {
+            return [];
+        }
+
+        return SessionOutputGrant::currentOf($start);
     }
 
     public function mayRead(string $sessionId, string $path): bool

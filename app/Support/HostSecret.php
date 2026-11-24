@@ -46,6 +46,10 @@ final readonly class HostSecret
 
         $secret = rtrim((string) file_get_contents($path), "\n");
 
-        return $secret === '' ? throw HostSecretUnreadable::empty() : $secret;
+        if ($secret === '') {
+            throw HostSecretUnreadable::empty();
+        }
+
+        return $secret;
     }
 }

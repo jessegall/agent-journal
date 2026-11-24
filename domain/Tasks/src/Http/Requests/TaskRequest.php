@@ -53,7 +53,11 @@ final class TaskRequest extends FormRequest
             return $tab;
         }
 
-        return $section !== '' ? $section : 'waits';
+        if ($section !== '') {
+            return $section;
+        }
+
+        return 'waits';
     }
 
     /**

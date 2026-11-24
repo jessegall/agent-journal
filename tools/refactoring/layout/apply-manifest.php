@@ -227,7 +227,11 @@ function moveClasses(string $root, array $rows): string|null
     unlink($list);
     echo implode("\n", $output)."\n";
 
-    return $exit === 0 ? null : 'batch-move.php failed on the batch: '.implode(' ', array_slice($output, -8));
+    if ($exit === 0) {
+        return null;
+    }
+
+    return 'batch-move.php failed on the batch: '.implode(' ', array_slice($output, -8));
 }
 
 /**
@@ -407,7 +411,11 @@ function blobsOf(string $root, array $files): array
     )));
     unlink($list);
 
-    return $present === [] ? [] : array_combine($present, $hashes);
+    if ($present === []) {
+        return [];
+    }
+
+    return array_combine($present, $hashes);
 }
 
 /**

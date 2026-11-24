@@ -116,6 +116,24 @@ final class ChildClaim extends Model implements ReadableModel
         ));
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a claim on a workspace read with no first commit, or one that read no commit to dispatch from.
+     *
+     * @throws ChildClaimRefused
+     */
+    private static function assertReadAuthorizesDispatch(WorkspaceFacts $read): void
+    {
+        if ($read->commit->reason === CommitObservation::UNBORN) {
+            throw ChildClaimRefused::firstCommitMissing();
+        }
+
+        if (! $read->commit->authorizesCommitDispatch()) {
+            throw ChildClaimRefused::readWithoutCommit();
+        }
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -130,13 +148,7 @@ final class ChildClaim extends Model implements ReadableModel
         string|null $parentClaimId,
         string $rootRuntimeId,
     ): self {
-        if ($read->commit->reason === CommitObservation::UNBORN) {
-            throw ChildClaimRefused::firstCommitMissing();
-        }
-
-        if (! $read->commit->authorizesCommitDispatch()) {
-            throw ChildClaimRefused::readWithoutCommit();
-        }
+        self::assertReadAuthorizesDispatch($read);
 
         $claim = new self();
         $claim->parent_runtime_id = $parentRuntimeId;

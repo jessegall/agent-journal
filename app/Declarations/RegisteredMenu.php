@@ -28,6 +28,10 @@ final readonly class RegisteredMenu
      */
     public function parameters(): array
     {
-        return $this->recordParameter === null ? [] : [$this->recordParameter];
+        if ($this->recordParameter === null) {
+            return [];
+        }
+
+        return [$this->recordParameter];
     }
 }

@@ -47,7 +47,11 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
 
         $owner = ActorIdentity::of(new SystemActor());
 
-        return $owner->isSameAs(ActorIdentity::of($actor)) ? new Some($this->grant) : None::create();
+        if ($owner->isSameAs(ActorIdentity::of($actor))) {
+            return new Some($this->grant);
+        }
+
+        return None::create();
     }
 
     public function withinFrameGrant(FrameGrant $grant, Closure $work): mixed

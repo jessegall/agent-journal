@@ -25,7 +25,13 @@ final readonly class SourceHit
      */
     public function compare(self $other): int
     {
-        return $this->result->score->compare($other->result->score) ?: $this->identity()->compare($other->identity());
+        $order = $this->result->score->compare($other->result->score);
+
+        if ($order !== 0) {
+            return $order;
+        }
+
+        return $this->identity()->compare($other->identity());
     }
 
     /**

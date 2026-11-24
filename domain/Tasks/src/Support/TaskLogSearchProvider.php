@@ -124,7 +124,11 @@ final readonly class TaskLogSearchProvider implements SearchProvider
             ? self::position($nextTier, '', '', $highWater)
             : self::position($tier, $afterTask, $afterLine, $highWater);
 
-        return $hits === [] ? SearchBatch::scanning($highWater, $next) : SearchBatch::more($highWater, $hits, $next);
+        if ($hits === []) {
+            return SearchBatch::scanning($highWater, $next);
+        }
+
+        return SearchBatch::more($highWater, $hits, $next);
     }
 
     /**

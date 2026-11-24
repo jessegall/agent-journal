@@ -72,12 +72,20 @@ final class ReadingMessageState extends AgentState
 
     public function onToolRequested(ToolRequested $input): Decision
     {
-        return $input->isReadOnly() ? Decision::delegate() : $this->decide();
+        if ($input->isReadOnly()) {
+            return Decision::delegate();
+        }
+
+        return $this->decide();
     }
 
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        return $input->isReadOnly() ? Decision::delegate() : $this->decide();
+        if ($input->isReadOnly()) {
+            return Decision::delegate();
+        }
+
+        return $this->decide();
     }
 
     public function onFileEdit(FileEditRequested $input): Decision
@@ -149,7 +157,11 @@ final class ReadingMessageState extends AgentState
 
     private function decide(): Decision
     {
-        return $this->mustReadNow() ? Decision::deny($this->readNowText()) : Decision::delegate();
+        if ($this->mustReadNow()) {
+            return Decision::deny($this->readNowText());
+        }
+
+        return Decision::delegate();
     }
 
     private function mustReadNow(): bool

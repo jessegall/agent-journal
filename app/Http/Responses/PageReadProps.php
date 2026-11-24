@@ -110,7 +110,11 @@ final readonly class PageReadProps
         if (! Reflector::exists($type)) {
             $name = $parameter->name();
 
-            return array_key_exists($name, $query) ? [$name => $query[$name]] : [];
+            if (array_key_exists($name, $query)) {
+                return [$name => $query[$name]];
+            }
+
+            return [];
         }
 
         $declared = $this->reflectors->make($type);
@@ -123,7 +127,11 @@ final readonly class PageReadProps
             return [$parameter->name() => $this->formRequestOf($declared->name(), $action, $request, $query)];
         }
 
-        return array_key_exists($parameter->name(), $query) ? [$parameter->name() => $query[$parameter->name()]] : [];
+        if (array_key_exists($parameter->name(), $query)) {
+            return [$parameter->name() => $query[$parameter->name()]];
+        }
+
+        return [];
     }
 
     /**
@@ -189,6 +197,10 @@ final readonly class PageReadProps
     {
         $own = $request->array(self::QUERY)[$prop] ?? [];
 
-        return is_array($own) ? $own : [];
+        if (is_array($own)) {
+            return $own;
+        }
+
+        return [];
     }
 }

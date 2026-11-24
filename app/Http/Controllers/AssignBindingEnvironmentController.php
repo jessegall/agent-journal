@@ -25,6 +25,10 @@ final readonly class AssignBindingEnvironmentController
     ): Response|RedirectResponse {
         $commands->run(new AssignBindingEnvironmentCommand($binding, $environment));
 
-        return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
+        if ($request->expectsJson()) {
+            return new Response(status: Response::HTTP_NO_CONTENT);
+        }
+
+        return $redirect->back(303);
     }
 }

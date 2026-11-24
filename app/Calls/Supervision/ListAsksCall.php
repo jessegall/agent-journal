@@ -25,6 +25,10 @@ final class ListAsksCall extends Data implements JournalCall
 
     public function cursor(): AskReference|null
     {
-        return $this->before === null ? null : new AskReference(strtolower($this->before));
+        if ($this->before === null) {
+            return null;
+        }
+
+        return new AskReference(strtolower($this->before));
     }
 }

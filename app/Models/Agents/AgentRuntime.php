@@ -573,7 +573,11 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     private static function secondsSince(CarbonImmutable|null $moment, CarbonImmutable $now): int|null
     {
-        return $moment === null ? null : (int) $moment->diffInSeconds($now, true);
+        if ($moment === null) {
+            return null;
+        }
+
+        return (int) $moment->diffInSeconds($now, true);
     }
 
     /**

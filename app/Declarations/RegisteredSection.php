@@ -71,9 +71,11 @@ final readonly class RegisteredSection
      */
     public function visibilityChecks(): array
     {
-        return $this->section->visibility === null
-            ? $this->host->visibilityChecks()
-            : [...$this->host->visibilityChecks(), $this->section->visibility];
+        if ($this->section->visibility === null) {
+            return $this->host->visibilityChecks();
+        }
+
+        return [...$this->host->visibilityChecks(), $this->section->visibility];
     }
 
     /**

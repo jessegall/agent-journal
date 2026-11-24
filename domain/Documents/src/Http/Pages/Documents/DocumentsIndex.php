@@ -147,6 +147,10 @@ final readonly class DocumentsIndex extends DocumentsPage
      */
     private function guidedNounOf(string $type): string|Optional
     {
-        return $type === 'doc' && $this->producers->offersGuided('document') ? 'document' : Optional::create();
+        if ($type === 'doc' && $this->producers->offersGuided('document')) {
+            return 'document';
+        }
+
+        return Optional::create();
     }
 }

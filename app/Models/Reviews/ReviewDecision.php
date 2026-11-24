@@ -99,7 +99,11 @@ final class ReviewDecision extends Model implements EventSource, ReadableModel
     {
         $id = self::query()->where('merge_ask_id', $askId)->value('id');
 
-        return $id === null ? null : (string) $id;
+        if ($id === null) {
+            return null;
+        }
+
+        return (string) $id;
     }
 
     // ----------[ Mutations ]----------

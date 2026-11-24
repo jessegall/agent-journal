@@ -15,7 +15,11 @@ trait ReadsAudienceOptions
 {
     private function conditionsOption(): string|null
     {
-        return $this->option('conditions') === null ? null : (string) $this->option('conditions');
+        if ($this->option('conditions') === null) {
+            return null;
+        }
+
+        return (string) $this->option('conditions');
     }
 
     /**

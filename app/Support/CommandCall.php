@@ -96,7 +96,11 @@ final readonly class CommandCall
      */
     public function actorText(): string|null
     {
-        return $this->actor === null ? null : ActorIdentity::of($this->actor)->text();
+        if ($this->actor === null) {
+            return null;
+        }
+
+        return ActorIdentity::of($this->actor)->text();
     }
 
     /**
@@ -161,6 +165,10 @@ final readonly class CommandCall
     {
         $authorized = $this->authorized[0] ?? null;
 
-        return $authorized !== null && $authorized[0] === $this->command ? [$authorized[1]] : [];
+        if ($authorized !== null && $authorized[0] === $this->command) {
+            return [$authorized[1]];
+        }
+
+        return [];
     }
 }

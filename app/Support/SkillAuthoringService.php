@@ -53,9 +53,13 @@ final readonly class SkillAuthoringService
         if (ctype_digit($numberOrKey)) {
             $id = Skill::idOfNumber((int) $numberOrKey);
 
-            return $id === null ? throw SkillMissing::forNumber(
-                (int) $numberOrKey,
-            ) : Skill::query()->whereKey($id)->firstOrFail();
+            if ($id === null) {
+                throw SkillMissing::forNumber(
+                    (int) $numberOrKey,
+                );
+            }
+
+            return Skill::query()->whereKey($id)->firstOrFail();
         }
 
         $key = SkillKey::from($numberOrKey);
@@ -65,9 +69,11 @@ final readonly class SkillAuthoringService
             return $stored;
         }
 
-        return $this->skills->find($key)->origin === SkillOrigin::Shipped
-            ? throw ShippedSkillReadOnly::for($key->key)
-            : throw SkillMissing::for($key);
+        if ($this->skills->find($key)->origin === SkillOrigin::Shipped) {
+            throw ShippedSkillReadOnly::for($key->key);
+        }
+
+        throw SkillMissing::for($key);
     }
 
     /**
@@ -75,7 +81,11 @@ final readonly class SkillAuthoringService
      */
     public function bodyOf(string $body): string
     {
-        return $body === '-' ? (string) file_get_contents('php://stdin') : $body;
+        if ($body === '-') {
+            return (string) file_get_contents('php://stdin');
+        }
+
+        return $body;
     }
 
     /**
@@ -145,7 +155,11 @@ final readonly class SkillAuthoringService
             $children[] = ['type' => $type, 'version' => 1, 'keys' => array_values(array_unique($audienceMembers))];
         }
 
-        return $children === [] ? '' : json_encode(
+        if ($children === []) {
+            return '';
+        }
+
+        return json_encode(
             ['type' => 'all', 'version' => 1, 'children' => $children],
             JSON_THROW_ON_ERROR,
         );

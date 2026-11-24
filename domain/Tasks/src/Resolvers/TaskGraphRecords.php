@@ -77,8 +77,10 @@ final readonly class TaskGraphRecords implements TaskGraphResolver
 
     private function reasonFor(Task $task): string
     {
-        return $task->state->hasEnded()
-            ? "Task {$task->number} has ended, so its waits no longer change."
-            : 'You may not change the waits of this task.';
+        if ($task->state->hasEnded()) {
+            return "Task {$task->number} has ended, so its waits no longer change.";
+        }
+
+        return 'You may not change the waits of this task.';
     }
 }

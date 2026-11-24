@@ -29,9 +29,11 @@ trait PrintsComments
             $commentPage = $this->sendCall($call);
             $report = $this->commentsReport(CommandReport::ending(self::SUCCESS), $commentPage->comments);
 
-            return $commentPage->nextAfter === null
-                ? $report
-                : $report->line("More: --after={$commentPage->nextAfter}");
+            if ($commentPage->nextAfter === null) {
+                return $report;
+            }
+
+            return $report->line("More: --after={$commentPage->nextAfter}");
         });
     }
 

@@ -74,6 +74,10 @@ final readonly class RunWindowResolver implements PageResolver
     {
         $assessment = OutputAssessment::latestOf($part);
 
-        return $assessment === null ? [] : array_map(ProblemData::fromProblem(...), $assessment->problems);
+        if ($assessment === null) {
+            return [];
+        }
+
+        return array_map(ProblemData::fromProblem(...), $assessment->problems);
     }
 }

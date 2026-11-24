@@ -89,7 +89,11 @@ final readonly class SelectedDriver
             return $requested->model;
         }
 
-        return $profile === null ? throw DefaultUnavailable::forStart() : $family->modelAt($profile->preferredTier);
+        if ($profile === null) {
+            throw DefaultUnavailable::forStart();
+        }
+
+        return $family->modelAt($profile->preferredTier);
     }
 
     /**

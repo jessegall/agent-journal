@@ -265,7 +265,11 @@ function eachLine(string $path, Closure $read): void
  */
 function jsonRows(string $path): array
 {
-    return is_file($path) ? (json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR)['rows'] ?? []) : [];
+    if (is_file($path)) {
+        return json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR)['rows'] ?? [];
+    }
+
+    return [];
 }
 
 /**

@@ -67,6 +67,10 @@ final readonly class GateListenersByDomain implements Pipe
         $file = $listenerType->get()->fileName()->getOrElse('');
         $domain = $declarations->ownership->domainHoldingListener($file);
 
-        return $domain === null ? $listener : new AvailableListener($domain->name, $listener);
+        if ($domain === null) {
+            return $listener;
+        }
+
+        return new AvailableListener($domain->name, $listener);
     }
 }

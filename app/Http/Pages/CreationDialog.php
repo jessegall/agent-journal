@@ -29,8 +29,10 @@ final readonly class CreationDialog
      */
     public function ways(): LayoutWaysData|Optional
     {
-        return $this->guidedNoun instanceof Optional
-            ? Optional::create()
-            : new LayoutWaysData($this->plainWay, $this->guidedWay, $this->waysInHeader);
+        if ($this->guidedNoun instanceof Optional) {
+            return Optional::create();
+        }
+
+        return new LayoutWaysData($this->plainWay, $this->guidedWay, $this->waysInHeader);
     }
 }

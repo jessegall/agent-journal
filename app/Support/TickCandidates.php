@@ -78,7 +78,11 @@ final class TickCandidates
             if ($record->id === $candidate->frameId) {
                 $restored = $this->restore([new SelectedFrame($row, $record, $position)]);
 
-                return $restored === [] ? None::create() : new Some($restored[0]);
+                if ($restored === []) {
+                    return None::create();
+                }
+
+                return new Some($restored[0]);
             }
         }
 

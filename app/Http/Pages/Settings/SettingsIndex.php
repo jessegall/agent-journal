@@ -123,14 +123,16 @@ final readonly class SettingsIndex extends SettingsPage
             ? $section->savingTo($this->saving($fixed))
             : $section;
 
-        return array_any($rows, fn (SettingData $setting) => $setting->source === SettingSource::Override)
-            ? $section->resettableBy(LayoutFormData::from([
-                'method' => ActionMethod::Post,
-                'href' => route('settings.reset', [], false),
-                'fixed' => $fixed,
-                'confirmed' => "{$group->label} settings reset",
-            ]))
-            : $section;
+        if (array_any($rows, fn (SettingData $setting) => $setting->source === SettingSource::Override)) {
+            return $section->resettableBy(LayoutFormData::from([
+                    'method' => ActionMethod::Post,
+                    'href' => route('settings.reset', [], false),
+                    'fixed' => $fixed,
+                    'confirmed' => "{$group->label} settings reset",
+                ]));
+        }
+
+        return $section;
     }
 
     /**
@@ -262,7 +264,11 @@ final readonly class SettingsIndex extends SettingsPage
             ),
         };
 
-        return $setting->source === SettingSource::Override ? $row->changed() : $row;
+        if ($setting->source === SettingSource::Override) {
+            return $row->changed();
+        }
+
+        return $row;
     }
 
     /**
@@ -272,8 +278,10 @@ final readonly class SettingsIndex extends SettingsPage
     {
         $constraints = $setting->constraints;
 
-        return $constraints instanceof StringChoiceConstraintsData
-            ? array_map(fn (StringChoiceOptionData $option) => $option->optionKey, $constraints->options)
-            : [];
+        if ($constraints instanceof StringChoiceConstraintsData) {
+            return array_map(fn (StringChoiceOptionData $option) => $option->optionKey, $constraints->options);
+        }
+
+        return [];
     }
 }

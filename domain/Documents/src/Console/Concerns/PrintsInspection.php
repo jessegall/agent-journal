@@ -44,6 +44,10 @@ trait PrintsInspection
 
     private function holderOf(RecordInspection $inspection): string
     {
-        return is_string($inspection->editing->holder) ? $inspection->editing->holder : 'you';
+        if (is_string($inspection->editing->holder)) {
+            return $inspection->editing->holder;
+        }
+
+        return 'you';
     }
 }

@@ -24,9 +24,11 @@ final readonly class StateBridgeFactStaging implements FactStaging
     {
         $dispatcher = $this->dispatcher();
 
-        return $dispatcher instanceof StateEventDispatcher && $dispatcher->bridges($event::class)
-            ? $this->scope->capture($event)
-            : null;
+        if ($dispatcher instanceof StateEventDispatcher && $dispatcher->bridges($event::class)) {
+            return $this->scope->capture($event);
+        }
+
+        return null;
     }
 
     public function deliver(Event $event, object|null $staged): void

@@ -32,7 +32,11 @@ final readonly class SkillSection
      */
     public function storedText(): string
     {
-        return is_string($this->content) ? $this->content : $this->content->selector();
+        if (is_string($this->content)) {
+            return $this->content;
+        }
+
+        return $this->content->selector();
     }
 
     /**
@@ -40,6 +44,10 @@ final readonly class SkillSection
      */
     public function body(MarkdownParts $parts, SkillOwner $owner): string
     {
-        return $this->content instanceof MarkdownPart ? $parts->read($this->content, $owner) : $this->content;
+        if ($this->content instanceof MarkdownPart) {
+            return $parts->read($this->content, $owner);
+        }
+
+        return $this->content;
     }
 }

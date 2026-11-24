@@ -32,11 +32,15 @@ final readonly class Providers implements SkillCondition
             return ConditionResult::unavailable('provider-unavailable');
         }
 
-        return in_array(
+        if (in_array(
             $context->provider->key,
             $this->keyTexts(),
             true,
-        ) ? ConditionResult::match('provider-listed') : ConditionResult::noMatch('provider-not-listed');
+        )) {
+            return ConditionResult::match('provider-listed');
+        }
+
+        return ConditionResult::noMatch('provider-not-listed');
     }
 
     public function toArray(): array

@@ -37,7 +37,11 @@ final class OptionalStoredValueCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): StoredValue|null
     {
-        return $value === null ? null : $this->valueCast->get($model, $key, $value, $attributes);
+        if ($value === null) {
+            return null;
+        }
+
+        return $this->valueCast->get($model, $key, $value, $attributes);
     }
 
     /**
@@ -46,6 +50,10 @@ final class OptionalStoredValueCast implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): string|null
     {
-        return $value === null ? null : $this->valueCast->set($model, $key, $value, $attributes);
+        if ($value === null) {
+            return null;
+        }
+
+        return $this->valueCast->set($model, $key, $value, $attributes);
     }
 }

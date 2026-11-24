@@ -56,7 +56,11 @@ final readonly class Instruction
 
     public function seconds(): int
     {
-        return $this->operand instanceof NamedCommand ? $this->operand->timeoutSeconds : 0;
+        if ($this->operand instanceof NamedCommand) {
+            return $this->operand->timeoutSeconds;
+        }
+
+        return 0;
     }
 
     private function wrongOperand(): ScriptSyntaxError

@@ -180,6 +180,10 @@ final readonly class Explanations
     {
         $escaped = addcslashes($text, "\0..\37\177");
 
-        return strlen($escaped) > self::SNIPPET_BYTES ? substr($escaped, 0, self::SNIPPET_BYTES).'...' : $escaped;
+        if (strlen($escaped) > self::SNIPPET_BYTES) {
+            return substr($escaped, 0, self::SNIPPET_BYTES).'...';
+        }
+
+        return $escaped;
     }
 }

@@ -64,7 +64,10 @@ final class Profile extends Model implements EventSource, ReadableModel
      */
     public static function lockByKey(ProfileKey $key): self
     {
-        return self::query()->withKey($key)->lockForUpdate()->firstOr(fn () => throw ProfileMissing::for($key));
+        $row = self::query()->withKey($key)->lockForUpdate()->first();
+        self::assertFound($row, $key);
+
+        return $row;
     }
 
     /**
@@ -74,7 +77,10 @@ final class Profile extends Model implements EventSource, ReadableModel
      */
     public static function byKey(ProfileKey $key): self
     {
-        return self::query()->withKey($key)->firstOr(fn () => throw ProfileMissing::for($key));
+        $row = self::query()->withKey($key)->first();
+        self::assertFound($row, $key);
+
+        return $row;
     }
 
     public static function hasCurrent(ProfileKey $key): bool
@@ -109,6 +115,22 @@ final class Profile extends Model implements EventSource, ReadableModel
     public function isRetired(): bool
     {
         return $this->retired_at !== null;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a profile key no profile holds.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws ProfileMissing
+     */
+    private static function assertFound(self|null $row, ProfileKey $key): void
+    {
+        if ($row === null) {
+            throw ProfileMissing::for($key);
+        }
     }
 
     // ----------[ Scopes ]----------

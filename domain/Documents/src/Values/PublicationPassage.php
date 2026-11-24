@@ -43,7 +43,11 @@ final readonly class PublicationPassage
 
     public function id(): string
     {
-        return $this->revision === null ? "l{$this->line}" : "r{$this->revision}-l{$this->line}";
+        if ($this->revision === null) {
+            return "l{$this->line}";
+        }
+
+        return "r{$this->revision}-l{$this->line}";
     }
 
     public function location(): RecordLocation

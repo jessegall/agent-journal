@@ -26,6 +26,10 @@ final readonly class RevokeProjectInvitationController
         $seenVersion = $request->filled('seenVersion') ? $request->integer('seenVersion') : null;
         $commands->run(new RevokeProjectInvitationCommand($invitation, $seenVersion));
 
-        return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
+        if ($request->expectsJson()) {
+            return new Response(status: Response::HTTP_NO_CONTENT);
+        }
+
+        return $redirect->back(303);
     }
 }

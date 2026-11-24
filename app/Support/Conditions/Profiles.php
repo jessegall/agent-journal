@@ -31,9 +31,11 @@ final readonly class Profiles implements SkillCondition
             return ConditionResult::noMatch('profile-free');
         }
 
-        return $context->profile->hasKeyIn($this->keyTexts())
-            ? ConditionResult::match('profile-listed')
-            : ConditionResult::noMatch('profile-not-listed');
+        if ($context->profile->hasKeyIn($this->keyTexts())) {
+            return ConditionResult::match('profile-listed');
+        }
+
+        return ConditionResult::noMatch('profile-not-listed');
     }
 
     public function toArray(): array

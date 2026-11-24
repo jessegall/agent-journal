@@ -46,7 +46,11 @@ final readonly class EncodedValue implements JsonSerializable
     {
         $decoded = $this->jsonSerialize();
 
-        return is_string($decoded) ? Option::fromValue($decoded) : None::create();
+        if (is_string($decoded)) {
+            return Option::fromValue($decoded);
+        }
+
+        return None::create();
     }
 
     /**
@@ -58,7 +62,11 @@ final readonly class EncodedValue implements JsonSerializable
     {
         $decoded = $this->jsonSerialize();
 
-        return is_bool($decoded) ? Option::fromValue($decoded) : None::create();
+        if (is_bool($decoded)) {
+            return Option::fromValue($decoded);
+        }
+
+        return None::create();
     }
 
     /**
@@ -70,7 +78,11 @@ final readonly class EncodedValue implements JsonSerializable
     {
         $decoded = $this->jsonSerialize();
 
-        return is_int($decoded) ? Option::fromValue($decoded) : None::create();
+        if (is_int($decoded)) {
+            return Option::fromValue($decoded);
+        }
+
+        return None::create();
     }
 
     /**

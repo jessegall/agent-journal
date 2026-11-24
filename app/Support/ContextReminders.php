@@ -58,7 +58,11 @@ final class ContextReminders implements ReminderContribution
             $left -= mb_strlen($reminder);
         }
 
-        return $omitted === 0 ? $given : [
+        if ($omitted === 0) {
+            return $given;
+        }
+
+        return [
             ...$given,
             $this->texts->render(AgentText::of('core.reminders.more', ['count' => $omitted])),
         ];

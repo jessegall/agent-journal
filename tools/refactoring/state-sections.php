@@ -80,9 +80,11 @@ function stateFaultsOf(string $source, Class_ $class): array
             $wanted = stateSectionOf($method);
 
             if ($wanted !== $section) {
-                return $wanted === null
-                    ? "method {$name} belongs above the first section, not in {$section}"
-                    : "method {$name} belongs in {$wanted}, not in ".($section ?? 'no section');
+                if ($wanted === null) {
+                    return "method {$name} belongs above the first section, not in {$section}";
+                }
+
+                return "method {$name} belongs in {$wanted}, not in ".($section ?? 'no section');
             }
 
             $place = array_search($name, $hooks, true);

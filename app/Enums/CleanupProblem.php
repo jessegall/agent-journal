@@ -16,6 +16,10 @@ enum CleanupProblem: string
 
     public static function of(bool $isStoreRemoved): self
     {
-        return $isStoreRemoved ? self::FolderNotDeleted : self::SignInNotVerified;
+        if ($isStoreRemoved) {
+            return self::FolderNotDeleted;
+        }
+
+        return self::SignInNotVerified;
     }
 }

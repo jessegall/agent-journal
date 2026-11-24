@@ -36,9 +36,11 @@ final readonly class InboxRunClaims implements RunClaims
             $holder = $current->get()->holder();
 
             if ($proof !== null && $proof->isValidFor($holder)) {
-                return $holder->isSameAs($claimant)
-                    ? new RunClaim($current->get()->reference, $proof->sourceIds)
-                    : throw RunClaimRefused::claimedByAnother($run->id);
+                if ($holder->isSameAs($claimant)) {
+                    return new RunClaim($current->get()->reference, $proof->sourceIds);
+                }
+
+                throw RunClaimRefused::claimedByAnother($run->id);
             }
 
             $this->responsibilities->release($run, $current->get()->reference);
@@ -79,7 +81,11 @@ final readonly class InboxRunClaims implements RunClaims
     {
         $current = $this->store->lockCurrent($work);
 
-        return $current->isDefined() ? $current->get() : $this->store->assignIfUnheld($work, $claimant);
+        if ($current->isDefined()) {
+            return $current->get();
+        }
+
+        return $this->store->assignIfUnheld($work, $claimant);
     }
 
     /**

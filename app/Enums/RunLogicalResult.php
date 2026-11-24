@@ -22,7 +22,11 @@ enum RunLogicalResult: string
      */
     public static function ofRootStatus(int $status): self
     {
-        return $status === 0 ? self::Succeeded : self::Failed;
+        if ($status === 0) {
+            return self::Succeeded;
+        }
+
+        return self::Failed;
     }
 
     /**

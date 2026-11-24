@@ -70,8 +70,10 @@ final readonly class LaunchProfiles
             ExecutionModeType::RequiredContainer,
         ));
 
-        return $isolation->isSupported() || $this->isOnTrial($driver)
-            ? LaunchProfileType::ProtectedAccount
-            : LaunchProfileType::Standard;
+        if ($isolation->isSupported() || $this->isOnTrial($driver)) {
+            return LaunchProfileType::ProtectedAccount;
+        }
+
+        return LaunchProfileType::Standard;
     }
 }

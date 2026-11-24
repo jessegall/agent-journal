@@ -19,9 +19,11 @@ final readonly class ClaimCleanupController
     {
         $claimed = $commands->run(new ClaimCleanupCommand($host->hostId));
 
-        return $claimed === null
-            ? new Response(status: Response::HTTP_NO_CONTENT)
-            : new JsonResponse([
+        if ($claimed === null) {
+            return new Response(status: Response::HTTP_NO_CONTENT);
+        }
+
+        return new JsonResponse([
                 'target' => $claimed->target->value,
                 'id' => $claimed->id,
                 'driver' => $claimed->driver,

@@ -82,7 +82,11 @@ final readonly class PublishedReleases
      */
     public function currentRelease(): array
     {
-        return $this->hasCurrentManifest() ? [$this->manifestOf($this->current)] : [];
+        if ($this->hasCurrentManifest()) {
+            return [$this->manifestOf($this->current)];
+        }
+
+        return [];
     }
 
     /**

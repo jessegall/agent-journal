@@ -212,7 +212,11 @@ function textAt(string $text, string $path, string $source, int $offset): Screen
     $leading = strlen($text) - strlen(ltrim($text));
     $line = substr_count(substr($source, 0, $offset + $leading), "\n") + 1;
 
-    return readable($text) ? new ScreenText(oneLine($text), $path, $line) : null;
+    if (readable($text)) {
+        return new ScreenText(oneLine($text), $path, $line);
+    }
+
+    return null;
 }
 
 /**

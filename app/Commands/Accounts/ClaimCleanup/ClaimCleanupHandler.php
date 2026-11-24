@@ -31,7 +31,11 @@ final readonly class ClaimCleanupHandler implements CommandHandler
 
         $attempt = SignInAttempt::nextDueForCleanup();
 
-        return $attempt === null ? null : new ClaimedCleanup(
+        if ($attempt === null) {
+            return null;
+        }
+
+        return new ClaimedCleanup(
             CleanupTarget::SignInAttempt,
             $attempt->id,
             $attempt->account_protocol,

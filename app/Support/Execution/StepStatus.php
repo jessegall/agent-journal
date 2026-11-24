@@ -49,7 +49,11 @@ final readonly class StepStatus
         $failed = array_values(array_filter($statuses, fn (self $status) => ! $status->isSuccess()));
         $counted = $isPipefail ? $failed : $statuses;
 
-        return $counted === [] ? self::of(ExitStatus::Success) : $counted[array_key_last($counted)];
+        if ($counted === []) {
+            return self::of(ExitStatus::Success);
+        }
+
+        return $counted[array_key_last($counted)];
     }
 
     public function isSuccess(): bool

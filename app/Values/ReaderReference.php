@@ -37,6 +37,10 @@ final readonly class ReaderReference
 
     public function label(): string
     {
-        return $this->isProven() ? "reader {$this->revision}" : 'reader required';
+        if ($this->isProven()) {
+            return "reader {$this->revision}";
+        }
+
+        return 'reader required';
     }
 }

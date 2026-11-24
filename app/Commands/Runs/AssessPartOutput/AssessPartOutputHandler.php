@@ -20,6 +20,10 @@ final readonly class AssessPartOutputHandler implements CommandHandler
         $part = PartRun::query()->whereKey($command->partRunId)->lockForUpdate()->sole();
         $pairs = $this->assessments->pairOf($part);
 
-        return $pairs === [] ? '' : $this->assessments->assess($part, $pairs[0]);
+        if ($pairs === []) {
+            return '';
+        }
+
+        return $this->assessments->assess($part, $pairs[0]);
     }
 }

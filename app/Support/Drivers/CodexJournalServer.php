@@ -69,7 +69,11 @@ final readonly class CodexJournalServer
 
             TOML;
 
-        return $transport === TransportProfileType::Cli ? rtrim($table)."\nenabled = false\n" : $table;
+        if ($transport === TransportProfileType::Cli) {
+            return rtrim($table)."\nenabled = false\n";
+        }
+
+        return $table;
     }
 
     /**

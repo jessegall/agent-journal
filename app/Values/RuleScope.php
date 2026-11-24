@@ -42,7 +42,11 @@ final readonly class RuleScope
 
     public function name(): string
     {
-        return $this->version === '' ? $this->owner : "{$this->owner}@{$this->version}";
+        if ($this->version === '') {
+            return $this->owner;
+        }
+
+        return "{$this->owner}@{$this->version}";
     }
 
     public function isSameOwner(self $other): bool

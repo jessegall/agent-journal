@@ -147,6 +147,10 @@ final readonly class HelperCandidates
     {
         $finishes = array_values(array_filter(array_map(fn (HelperJob $job) => $job->finished_at, $jobs)));
 
-        return $finishes === [] ? null : max($finishes);
+        if ($finishes === []) {
+            return null;
+        }
+
+        return max($finishes);
     }
 }

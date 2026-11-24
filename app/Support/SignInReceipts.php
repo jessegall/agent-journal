@@ -47,7 +47,11 @@ final readonly class SignInReceipts
     {
         $attemptId = $fields['attemptId'] ?? null;
 
-        return is_string($attemptId) ? $this->started($attemptId) : SignInReceiptData::without(
+        if (is_string($attemptId)) {
+            return $this->started($attemptId);
+        }
+
+        return SignInReceiptData::without(
             SignInReceiptStatus::Unknown,
         );
     }

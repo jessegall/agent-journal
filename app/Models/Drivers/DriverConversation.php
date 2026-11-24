@@ -87,10 +87,8 @@ final class DriverConversation extends Model implements ReadableModel
         string $driver,
         string|null $contextReference,
     ): string {
-        $conversation = self::query()->whereKey($conversationId)->firstOr(
-            fn () => throw ResumeRefused::because(ResumeRefusal::ConversationMissing),
-        );
-
+        $conversation = self::query()->whereKey($conversationId)->first();
+        self::assertConversationFound($conversation);
         $conversation->assertContinuableBy($agentId, $driver, $contextReference);
 
         return $conversation->native_id;
@@ -121,6 +119,22 @@ final class DriverConversation extends Model implements ReadableModel
     public function admits(string $agentId, string|null $contextReference): bool
     {
         return $this->agent_id === $agentId && $this->context_reference === $contextReference;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a resume of a conversation that is not there.
+     *
+     * @phpstan-assert self $conversation
+     *
+     * @throws ResumeRefused
+     */
+    private static function assertConversationFound(self|null $conversation): void
+    {
+        if ($conversation === null) {
+            throw ResumeRefused::because(ResumeRefusal::ConversationMissing);
+        }
     }
 
     // ----------[ Scopes ]----------

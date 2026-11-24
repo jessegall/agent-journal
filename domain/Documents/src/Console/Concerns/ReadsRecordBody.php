@@ -26,6 +26,10 @@ trait ReadsRecordBody
             return $files->readNamed($file);
         }
 
-        return $body === '-' ? (string) stream_get_contents(STDIN) : $body;
+        if ($body === '-') {
+            return (string) stream_get_contents(STDIN);
+        }
+
+        return $body;
     }
 }

@@ -24,9 +24,11 @@ final readonly class MessageParticipants
     {
         $model = $this->actors->get(ActorIdentity::of($actor));
 
-        return $model instanceof MessageSender
-            ? $model
-            : throw MessageParticipantRefused::cannotSend($actor->actorType()->value);
+        if ($model instanceof MessageSender) {
+            return $model;
+        }
+
+        throw MessageParticipantRefused::cannotSend($actor->actorType()->value);
     }
 
     /**
@@ -36,8 +38,10 @@ final readonly class MessageParticipants
     {
         $model = $this->actors->get(ActorIdentity::of($actor));
 
-        return $model instanceof MessageSender && $model instanceof MessageReceiver
-            ? $model
-            : throw MessageParticipantRefused::cannotRead($actor->actorType()->value);
+        if ($model instanceof MessageSender && $model instanceof MessageReceiver) {
+            return $model;
+        }
+
+        throw MessageParticipantRefused::cannotRead($actor->actorType()->value);
     }
 }

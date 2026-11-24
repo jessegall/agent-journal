@@ -103,6 +103,10 @@ final class TextAnchor extends Data
     {
         $place = "on version {$this->versionLabel}, lines {$this->firstLine}-{$this->lastLine}";
 
-        return $this->quote === '' ? $place : "{$place}: \"{$this->quote}\"";
+        if ($this->quote === '') {
+            return $place;
+        }
+
+        return "{$place}: \"{$this->quote}\"";
     }
 }

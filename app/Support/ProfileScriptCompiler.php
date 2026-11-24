@@ -108,7 +108,11 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         $operation = new Operation('script', $name, $accesses, [ResourceRequest::path('.')], [], 1);
         $decision = $profile->start->decide($operation);
 
-        return $decision->isAllowed ? null : $this->texts->render($decision->reason);
+        if ($decision->isAllowed) {
+            return null;
+        }
+
+        return $this->texts->render($decision->reason);
     }
 
     private function readRefusal(ProfileDefinition $profile, string $read): string|null
@@ -121,6 +125,10 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
             ReadEntitlementType::Named => $profile->authorization->holdsRead($read, null),
         };
 
-        return $allowed ? null : "The profile does not hold the read {$read}.";
+        if ($allowed) {
+            return null;
+        }
+
+        return "The profile does not hold the read {$read}.";
     }
 }

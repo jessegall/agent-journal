@@ -95,8 +95,10 @@ final readonly class PublicationChunks
         $selected = $lastLine < count($lines) ? implode("\n", array_slice($lines, 0, $lastLine)) : $text;
         $chunk = TextChunk::of($selected, $position->offset, $position->characterOffset);
 
-        return strlen(json_encode($chunk->text, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)) <= 5000
-            ? $chunk
-            : TextChunk::of($selected, $position->offset, $position->characterOffset, self::ESCAPED_CHUNK_BYTES);
+        if (strlen(json_encode($chunk->text, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)) <= 5000) {
+            return $chunk;
+        }
+
+        return TextChunk::of($selected, $position->offset, $position->characterOffset, self::ESCAPED_CHUNK_BYTES);
     }
 }

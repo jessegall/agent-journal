@@ -75,7 +75,11 @@ final class DocEditCommand extends Command
     {
         $optionValue = $this->option($name);
 
-        return is_string($optionValue) ? $optionValue : null;
+        if (is_string($optionValue)) {
+            return $optionValue;
+        }
+
+        return null;
     }
 
     /**

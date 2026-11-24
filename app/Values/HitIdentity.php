@@ -22,10 +22,17 @@ final readonly class HitIdentity
      */
     public function compare(self $other): int
     {
-        return strcmp($this->sourceKey, $other->sourceKey)
-            ?: strcmp($this->recordType, $other->recordType)
-            ?: strcmp($this->recordId, $other->recordId)
-            ?: $this->compareLocation($other);
+        foreach ([
+            strcmp($this->sourceKey, $other->sourceKey),
+            strcmp($this->recordType, $other->recordType),
+            strcmp($this->recordId, $other->recordId),
+        ] as $order) {
+            if ($order !== 0) {
+                return $order;
+            }
+        }
+
+        return $this->compareLocation($other);
     }
 
     public function equals(self $other): bool

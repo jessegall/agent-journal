@@ -32,9 +32,11 @@ final readonly class ProfileBases implements SkillCondition
             return ConditionResult::noMatch('profile-free');
         }
 
-        return $context->profile->startsFromAnyOf($this->bases)
-            ? ConditionResult::match('profile-base-listed')
-            : ConditionResult::noMatch('profile-base-not-listed');
+        if ($context->profile->startsFromAnyOf($this->bases)) {
+            return ConditionResult::match('profile-base-listed');
+        }
+
+        return ConditionResult::noMatch('profile-base-not-listed');
     }
 
     public function toArray(): array

@@ -66,7 +66,11 @@ final readonly class RelaySettings
      */
     private static function valueOrEmpty(StartEnvironment $start, string $name): string
     {
-        return $start->has($name) ? $start->value($name) : '';
+        if ($start->has($name)) {
+            return $start->value($name);
+        }
+
+        return '';
     }
 
     /**

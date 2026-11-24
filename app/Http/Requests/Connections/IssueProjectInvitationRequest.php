@@ -51,21 +51,37 @@ final class IssueProjectInvitationRequest extends FormRequest
 
     public function environmentId(): string|null
     {
-        return $this->filled('environmentId') ? $this->string('environmentId')->toString() : null;
+        if ($this->filled('environmentId')) {
+            return $this->string('environmentId')->toString();
+        }
+
+        return null;
     }
 
     public function attemptReference(): string|null
     {
-        return $this->filled('attemptReference') ? $this->string('attemptReference')->toString() : null;
+        if ($this->filled('attemptReference')) {
+            return $this->string('attemptReference')->toString();
+        }
+
+        return null;
     }
 
     public function seenVersion(): int|null
     {
-        return $this->filled('seenVersion') ? $this->integer('seenVersion') : null;
+        if ($this->filled('seenVersion')) {
+            return $this->integer('seenVersion');
+        }
+
+        return null;
     }
 
     public function projectId(): string|null
     {
-        return $this->filled('projectId') ? $this->string('projectId')->toString() : null;
+        if ($this->filled('projectId')) {
+            return $this->string('projectId')->toString();
+        }
+
+        return null;
     }
 }

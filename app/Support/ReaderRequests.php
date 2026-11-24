@@ -41,7 +41,11 @@ final readonly class ReaderRequests implements ReaderRequestsContract
     ): PageResolver {
         $built = $this->build($resolver, $current, $query, $route);
 
-        return $built instanceof PageResolver ? $built : throw UiResolverInvalid::notA(
+        if ($built instanceof PageResolver) {
+            return $built;
+        }
+
+        throw UiResolverInvalid::notA(
             $key,
             $resolver->resolver,
             PageResolver::class,
@@ -55,7 +59,11 @@ final readonly class ReaderRequests implements ReaderRequestsContract
     {
         $built = $this->build($resolver, $current, $current->query->all(), null);
 
-        return $built instanceof SectionResolver ? $built : throw UiResolverInvalid::notA(
+        if ($built instanceof SectionResolver) {
+            return $built;
+        }
+
+        throw UiResolverInvalid::notA(
             $key,
             $resolver->resolver,
             SectionResolver::class,

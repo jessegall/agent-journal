@@ -277,6 +277,10 @@ final readonly class DocumentsShow extends DocumentsPage
 
     private function holderOf(DraftState $editing): string
     {
-        return $editing->holder instanceof Optional ? 'someone else' : $editing->holder;
+        if ($editing->holder instanceof Optional) {
+            return 'someone else';
+        }
+
+        return $editing->holder;
     }
 }

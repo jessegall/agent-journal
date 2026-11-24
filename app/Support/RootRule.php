@@ -29,9 +29,11 @@ final readonly class RootRule
         $parts = explode(':', $text, 2);
 
         try {
-            return count($parts) === 2 && $parts[1] !== ''
-                ? new self(AccessType::from($parts[0]), $parts[1])
-                : throw ProfileProposalRefused::rootRule($text);
+            if (count($parts) === 2 && $parts[1] !== '') {
+                return new self(AccessType::from($parts[0]), $parts[1]);
+            }
+
+            throw ProfileProposalRefused::rootRule($text);
         } catch (ValueError $cause) {
             throw ProfileProposalRefused::rootRule($text, previous: $cause);
         }

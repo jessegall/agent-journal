@@ -125,9 +125,11 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
      */
     public function presentationIn(DockDefinition $definition): string
     {
-        return in_array($this->presentation, $definition->presentations, true)
-            ? $this->presentation
-            : DockDefinition::DEFAULT_PRESENTATION;
+        if (in_array($this->presentation, $definition->presentations, true)) {
+            return $this->presentation;
+        }
+
+        return DockDefinition::DEFAULT_PRESENTATION;
     }
 
     // ----------[ Accessors ]----------

@@ -23,8 +23,10 @@ final readonly class SystemEntryAuthorizer implements Authorizer
 
     public function evaluate(string $policy, Actor $actor, object|string $subject, AccessType $access): Response
     {
-        return in_array($policy, $this->policies, true)
-            ? Response::allow()
-            : Response::deny("This trusted entry acts under no {$policy}.");
+        if (in_array($policy, $this->policies, true)) {
+            return Response::allow();
+        }
+
+        return Response::deny("This trusted entry acts under no {$policy}.");
     }
 }

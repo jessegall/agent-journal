@@ -34,6 +34,10 @@ final readonly class LinesField implements PartField
     {
         $value = $part->{$this->name};
 
-        return is_array($value) ? array_values(array_map(strval(...), $value)) : [];
+        if (is_array($value)) {
+            return array_values(array_map(strval(...), $value));
+        }
+
+        return [];
     }
 }

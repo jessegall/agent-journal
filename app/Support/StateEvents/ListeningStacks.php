@@ -31,7 +31,11 @@ final readonly class ListeningStacks
 
         $typeKeys = array_values(array_map(fn (RegisteredStateType $type) => $type->key, $listening));
 
-        return $typeKeys === [] ? [] : AgentStackRow::targetsHolding($typeKeys);
+        if ($typeKeys === []) {
+            return [];
+        }
+
+        return AgentStackRow::targetsHolding($typeKeys);
     }
 
     private function listens(RegisteredStateType $type, Event $event): bool

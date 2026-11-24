@@ -85,11 +85,21 @@ final readonly class GuardedFiles
      */
     private static function wordsOf(string $line): array
     {
-        return preg_split('/[\s;|&<>()`\'"=]+/', $line, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $words = preg_split('/[\s;|&<>()`\'"=]+/', $line, -1, PREG_SPLIT_NO_EMPTY);
+
+        if ($words === false) {
+            return [];
+        }
+
+        return $words;
     }
 
     private function accessOf(CommandPart $part): FileAccess
     {
-        return $part->effect->changesFiles() ? FileAccess::Write : FileAccess::Read;
+        if ($part->effect->changesFiles()) {
+            return FileAccess::Write;
+        }
+
+        return FileAccess::Read;
     }
 }

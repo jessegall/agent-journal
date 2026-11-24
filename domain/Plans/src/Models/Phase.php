@@ -215,7 +215,11 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      */
     public function numberHolder(): Model
     {
-        return $this->relationLoaded('plan') ? $this->plan : $this->plan()->sole();
+        if ($this->relationLoaded('plan')) {
+            return $this->plan;
+        }
+
+        return $this->plan()->sole();
     }
 
     /**

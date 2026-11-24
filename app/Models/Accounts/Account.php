@@ -211,10 +211,7 @@ final class Account extends Model implements EventSource, ReadableModel
     public static function lockedForChange(string $accountId): self
     {
         $account = self::query()->whereKey($accountId)->lockForUpdate()->first();
-
-        if ($account === null || $account->state === AccountState::Removed) {
-            throw AccountMissing::for($accountId);
-        }
+        self::assertPresent($account, $accountId);
 
         return $account;
     }
@@ -267,11 +264,9 @@ final class Account extends Model implements EventSource, ReadableModel
             ->whereKey($accountId)
             ->ofDriver($driver)
             ->lockForUpdate()
-            ->firstOr(fn () => throw AccountUnavailable::forStart(
-                $driver,
-                StartUnavailableReason::ChosenAccountMissing,
-            ));
+            ->first();
 
+        self::assertChosenFound($account, $driver);
         $account->assertAvailable();
         $account->assertReviewed($reviewedSignIn);
 
@@ -325,10 +320,7 @@ final class Account extends Model implements EventSource, ReadableModel
     public static function driverOf(string $accountId): string
     {
         $driver = self::query()->whereKey($accountId)->value('account_protocol');
-
-        if (! is_string($driver)) {
-            throw AccountMissing::for($accountId);
-        }
+        self::assertDriverFound($driver, $accountId);
 
         return $driver;
     }
@@ -427,9 +419,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function recheck(): void
     {
-        if (! $this->isCheckInconclusive()) {
-            throw AccountRecheckRefused::notPending($this->id);
-        }
+        $this->assertRecheckPending();
 
         $this->check_inconclusive_at = null;
         $this->assertSaved($this->save());
@@ -505,25 +495,13 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function rename(AccountLabel $label, int|null $seenRevision = null): void
     {
-        if ($seenRevision !== null && $seenRevision !== $this->name_revision) {
-            throw AccountNameChanged::meanwhile($this->label);
-        }
+        $this->assertNameUnchangedSince($seenRevision);
 
         if ($label->label === $this->label) {
             return;
         }
 
-        $taken = self::query()
-            ->where('account_protocol', $this->account_protocol)
-            ->where('label_key', $label->key())
-            ->where('state', '<>', AccountState::Removed->value)
-            ->whereKeyNot($this->id)
-            ->exists();
-
-        if ($taken) {
-            throw AccountLabelTaken::for($this->account_protocol, $label->label);
-        }
-
+        $this->assertLabelFree($label);
         $this->name($label);
         $this->name_revision++;
         $this->assertSaved($this->save());
@@ -750,9 +728,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function directoryForStart(): string
     {
-        if ($this->directory === null) {
-            throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::NoAccount);
-        }
+        $this->assertHasDirectory();
 
         return $this->directory;
     }
@@ -796,6 +772,107 @@ final class Account extends Model implements EventSource, ReadableModel
 
             return $this->state->startUnavailableReason();
         })->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an account that is not there or was removed.
+     *
+     * @phpstan-assert self $account
+     *
+     * @throws AccountMissing
+     */
+    private static function assertPresent(self|null $account, string $accountId): void
+    {
+        if ($account === null || $account->state === AccountState::Removed) {
+            throw AccountMissing::for($accountId);
+        }
+    }
+
+    /**
+     * Refuses a start whose chosen account is not one of the driver's.
+     *
+     * @phpstan-assert self $account
+     *
+     * @throws AccountUnavailable
+     */
+    private static function assertChosenFound(self|null $account, string $driver): void
+    {
+        if ($account === null) {
+            throw AccountUnavailable::forStart($driver, StartUnavailableReason::ChosenAccountMissing);
+        }
+    }
+
+    /**
+     * Refuses an account whose driver could not be read: the account is not there.
+     *
+     * @phpstan-assert string $driver
+     *
+     * @throws AccountMissing
+     */
+    private static function assertDriverFound(mixed $driver, string $accountId): void
+    {
+        if (! is_string($driver)) {
+            throw AccountMissing::for($accountId);
+        }
+    }
+
+    /**
+     * Refuses a recheck of an account whose last check was not inconclusive.
+     *
+     * @throws AccountRecheckRefused
+     */
+    private function assertRecheckPending(): void
+    {
+        if (! $this->isCheckInconclusive()) {
+            throw AccountRecheckRefused::notPending($this->id);
+        }
+    }
+
+    /**
+     * Refuses a rename made against a name that changed since the revision the caller saw.
+     *
+     * @throws AccountNameChanged
+     */
+    private function assertNameUnchangedSince(int|null $seenRevision): void
+    {
+        if ($seenRevision !== null && $seenRevision !== $this->name_revision) {
+            throw AccountNameChanged::meanwhile($this->label);
+        }
+    }
+
+    /**
+     * Refuses a label another live account of the driver already holds.
+     *
+     * @throws AccountLabelTaken
+     */
+    private function assertLabelFree(AccountLabel $label): void
+    {
+        $isTaken = self::query()
+            ->where('account_protocol', $this->account_protocol)
+            ->where('label_key', $label->key())
+            ->where('state', '<>', AccountState::Removed->value)
+            ->whereKeyNot($this->id)
+            ->exists();
+
+        if ($isTaken) {
+            throw AccountLabelTaken::for($this->account_protocol, $label->label);
+        }
+    }
+
+    /**
+     * Refuses a start of an account with no folder on the host.
+     *
+     * @phpstan-assert !null $this->directory
+     *
+     * @throws AccountUnavailable
+     */
+    private function assertHasDirectory(): void
+    {
+        if ($this->directory === null) {
+            throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::NoAccount);
+        }
     }
 
     // ----------[ Internals ]----------

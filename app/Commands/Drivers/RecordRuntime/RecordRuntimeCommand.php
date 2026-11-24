@@ -36,6 +36,10 @@ final readonly class RecordRuntimeCommand extends Command implements AgentStackC
 
     public function operation(): DriverOperation
     {
-        return $this->shouldStop ? DriverOperation::StopRecording : DriverOperation::StartRecording;
+        if ($this->shouldStop) {
+            return DriverOperation::StopRecording;
+        }
+
+        return DriverOperation::StartRecording;
     }
 }

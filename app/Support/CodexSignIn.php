@@ -64,7 +64,11 @@ final readonly class CodexSignIn implements SignInProtocol
     {
         $deviceCode = $this->deviceCodeFrom($process);
 
-        return $deviceCode === null ? null : new SignInChallenge($deviceCode['address'], $deviceCode['code']);
+        if ($deviceCode === null) {
+            return null;
+        }
+
+        return new SignInChallenge($deviceCode['address'], $deviceCode['code']);
     }
 
     public function canTakeAnswer(): bool
@@ -128,7 +132,11 @@ final readonly class CodexSignIn implements SignInProtocol
     {
         $start = self::loginStartIn($process->output());
 
-        return $start === null ? null : ['address' => $start->verificationUrl, 'code' => $start->userCode];
+        if ($start === null) {
+            return null;
+        }
+
+        return ['address' => $start->verificationUrl, 'code' => $start->userCode];
     }
 
     /**

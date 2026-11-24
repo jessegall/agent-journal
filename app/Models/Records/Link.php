@@ -143,7 +143,11 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     {
         $isSource = $this->source_type === $type && $this->source_id === $id;
 
-        return $isSource ? [$this->target_type, $this->target_id] : [$this->source_type, $this->source_id];
+        if ($isSource) {
+            return [$this->target_type, $this->target_id];
+        }
+
+        return [$this->source_type, $this->source_id];
     }
 
     // ----------[ Relations ]----------

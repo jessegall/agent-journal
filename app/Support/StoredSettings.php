@@ -83,9 +83,11 @@ final readonly class StoredSettings
             ))
             ->getOrElse($group->isDefaultEnabled);
 
-        return $enabled
-            ? new StoredEnabledSettingsGroup($group, $this, $this->registry)
-            : new DisabledSettingsGroup($this->owner, $group->key, $this->revision);
+        if ($enabled) {
+            return new StoredEnabledSettingsGroup($group, $this, $this->registry);
+        }
+
+        return new DisabledSettingsGroup($this->owner, $group->key, $this->revision);
     }
 
     /**

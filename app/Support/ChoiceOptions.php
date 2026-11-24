@@ -96,9 +96,11 @@ final readonly class ChoiceOptions
      */
     public static function valueData(string|bool|int|Decimal|BackedEnum $optionKey): CatalogueValue
     {
-        return is_int($optionKey)
-            ? IntegerChoiceValueData::from(['value' => $optionKey])
-            : StringChoiceValueData::from(['value' => $optionKey]);
+        if (is_int($optionKey)) {
+            return IntegerChoiceValueData::from(['value' => $optionKey]);
+        }
+
+        return StringChoiceValueData::from(['value' => $optionKey]);
     }
 
     /**
@@ -110,8 +112,10 @@ final readonly class ChoiceOptions
     {
         $shown = array_map(fn (Choice $option) => ['value' => $option->optionKey, 'label' => $option->label], $options);
 
-        return is_int($options[0]->optionKey)
-            ? IntegerChoiceConstraintsData::from(['options' => IntegerChoiceOptionData::collect($shown)])
-            : StringChoiceConstraintsData::from(['options' => StringChoiceOptionData::collect($shown)]);
+        if (is_int($options[0]->optionKey)) {
+            return IntegerChoiceConstraintsData::from(['options' => IntegerChoiceOptionData::collect($shown)]);
+        }
+
+        return StringChoiceConstraintsData::from(['options' => StringChoiceOptionData::collect($shown)]);
     }
 }

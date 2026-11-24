@@ -33,7 +33,11 @@ final class DockCards
     {
         $key = self::keyOf($identity);
 
-        return isset($this->cards[$key]) ? Some::create($this->cards[$key]) : None::create();
+        if (isset($this->cards[$key])) {
+            return Some::create($this->cards[$key]);
+        }
+
+        return None::create();
     }
 
     private static function keyOf(DockIdentity $identity): string

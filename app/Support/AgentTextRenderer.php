@@ -52,6 +52,10 @@ final readonly class AgentTextRenderer implements AgentTexts
         $line = $owner === 'core' ? "agent.{$name}" : "{$owner}::agent.{$name}";
         $registered = $this->translator->get($line);
 
-        return is_string($registered) && $registered !== $line ? $registered : throw AgentTextUnknown::forKey($key);
+        if (is_string($registered) && $registered !== $line) {
+            return $registered;
+        }
+
+        throw AgentTextUnknown::forKey($key);
     }
 }

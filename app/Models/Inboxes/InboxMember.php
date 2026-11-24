@@ -101,7 +101,11 @@ final class InboxMember extends Model implements EventSource
      */
     public static function activeIdsAmong(array $memberIds): array
     {
-        return $memberIds === [] ? [] : array_values(self::query()->active()->whereKey($memberIds)->pluck('id')->all());
+        if ($memberIds === []) {
+            return [];
+        }
+
+        return array_values(self::query()->active()->whereKey($memberIds)->pluck('id')->all());
     }
 
     /**

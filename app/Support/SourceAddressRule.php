@@ -35,6 +35,10 @@ final readonly class SourceAddressRule
 
         $address = trim((string) $request->headers->get($this->header));
 
-        return filter_var($address, FILTER_VALIDATE_IP) === false ? null : $address;
+        if (filter_var($address, FILTER_VALIDATE_IP) === false) {
+            return null;
+        }
+
+        return $address;
     }
 }

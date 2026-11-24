@@ -81,7 +81,11 @@ final readonly class SessionProvenance implements SessionProvenanceContract
     {
         $parent = $this->parentSessionOf($record);
 
-        return $parent === null ? null : ActorContext::forAgent($parent->agent_id);
+        if ($parent === null) {
+            return null;
+        }
+
+        return ActorContext::forAgent($parent->agent_id);
     }
 
     public function doesParentHaveGrant(Model $record, Operation $operation): bool
@@ -115,6 +119,10 @@ final readonly class SessionProvenance implements SessionProvenanceContract
 
         $parent = AgentSession::query()->whereKey($origin->id)->value('parent_session_id');
 
-        return $parent === null ? null : AgentSession::query()->whereKey($parent)->first();
+        if ($parent === null) {
+            return null;
+        }
+
+        return AgentSession::query()->whereKey($parent)->first();
     }
 }

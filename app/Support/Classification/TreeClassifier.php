@@ -520,7 +520,11 @@ final readonly class TreeClassifier implements CommandClassifier
     {
         $first = strtok($reference, ' ');
 
-        return in_array($first, ['php', 'composer'], true) ? $reference : "{$manager} {$reference}";
+        if (in_array($first, ['php', 'composer'], true)) {
+            return $reference;
+        }
+
+        return "{$manager} {$reference}";
     }
 
     /**
@@ -773,7 +777,11 @@ final readonly class TreeClassifier implements CommandClassifier
             array_filter($parts, fn (PartClassification $part): bool => $part->purpose !== CommandType::Ordinary),
         );
 
-        return $special === [] ? CommandType::Ordinary : $special[0]->purpose;
+        if ($special === []) {
+            return CommandType::Ordinary;
+        }
+
+        return $special[0]->purpose;
     }
 
     private function unknown(
@@ -853,13 +861,17 @@ final readonly class TreeClassifier implements CommandClassifier
      */
     private function backgroundFacts(ShellNode $node): array
     {
-        return $node->type === NodeType::Background ? [
-            new ClassFact(
-                CommandClass::ProcessControl,
-                $node->id,
-                new SyntaxOrigin('background'),
-                'A background job keeps running after the line ends.',
-            ),
-        ] : [];
+        if ($node->type === NodeType::Background) {
+            return [
+                new ClassFact(
+                    CommandClass::ProcessControl,
+                    $node->id,
+                    new SyntaxOrigin('background'),
+                    'A background job keeps running after the line ends.',
+                ),
+            ];
+        }
+
+        return [];
     }
 }

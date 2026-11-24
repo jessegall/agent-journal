@@ -92,7 +92,11 @@ final readonly class SignedCall
         $parts = parse_url($url);
         $path = $parts['path'] ?? '/';
 
-        return isset($parts['query']) ? "{$path}?{$parts['query']}" : $path;
+        if (isset($parts['query'])) {
+            return "{$path}?{$parts['query']}";
+        }
+
+        return $path;
     }
 
     public static function digestOf(string $body): string

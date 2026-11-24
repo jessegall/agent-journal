@@ -127,12 +127,10 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public static function forSecret(string $secret): self
     {
-        $host = self::query()->where(
-            'credential_hash',
-            self::hashOf($secret),
-        )->firstOr(fn () => throw HostCredentialRejected::unknown());
+        $host = self::query()->where('credential_hash', self::hashOf($secret))->first();
+        self::assertCredentialLive($host);
 
-        return $host->isRevoked() ? throw HostCredentialRejected::revoked() : $host;
+        return $host;
     }
 
     /**
@@ -183,13 +181,13 @@ final class Host extends Model implements EventSource, ReadableModel
         ExecutionModeType $placement,
         DriverType $driverType,
     ): self {
-        foreach (self::servingEnrolled() as $host) {
-            if ($host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $driverType)) {
-                return $host;
-            }
-        }
+        $host = array_find(
+            self::servingEnrolled(),
+            fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $driverType),
+        );
+        self::assertServesStart($host, $driver, $driverType);
 
-        throw HostUnavailable::forStart($driver, $driverType);
+        return $host;
     }
 
     // ----------[ Mutations ]----------
@@ -467,10 +465,59 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public function startFolder(): string
     {
-        return $this->start_roots[0] ?? throw HostUnavailable::withoutStartFolder($this->id);
+        $folder = $this->start_roots[0] ?? null;
+        $this->assertStartFolder($folder);
+
+        return $folder;
     }
 
-    // ----------[ Accessors ]----------
+    /**
+     * Refuses a secret no host holds, and the secret of a revoked host.
+     *
+     * @phpstan-assert self $host
+     *
+     * @throws HostCredentialRejected
+     */
+    private static function assertCredentialLive(self|null $host): void
+    {
+        if ($host === null) {
+            throw HostCredentialRejected::unknown();
+        }
+
+        if ($host->isRevoked()) {
+            throw HostCredentialRejected::revoked();
+        }
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a start no serving host can run.
+     *
+     * @phpstan-assert self $host
+     *
+     * @throws HostUnavailable
+     */
+    private static function assertServesStart(self|null $host, string $driver, DriverType $driverType): void
+    {
+        if ($host === null) {
+            throw HostUnavailable::forStart($driver, $driverType);
+        }
+    }
+
+    /**
+     * Refuses a host with no start folder declared.
+     *
+     * @phpstan-assert string $folder
+     *
+     * @throws HostUnavailable
+     */
+    private function assertStartFolder(string|null $folder): void
+    {
+        if ($folder === null) {
+            throw HostUnavailable::withoutStartFolder($this->id);
+        }
+    }
 
     // ----------[ Scopes ]----------
 

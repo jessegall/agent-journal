@@ -123,7 +123,11 @@ class User extends Authenticatable implements
     {
         $id = self::query()->where('email', $email)->value('id');
 
-        return is_string($id) ? $id : null;
+        if (is_string($id)) {
+            return $id;
+        }
+
+        return null;
     }
 
     // ----------[ Mutations ]----------

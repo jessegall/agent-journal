@@ -43,7 +43,11 @@ final class RenameAccountRequest extends FormRequest
      */
     public function seenRevision(): int|null
     {
-        return $this->filled('seenRevision') ? $this->integer('seenRevision') : null;
+        if ($this->filled('seenRevision')) {
+            return $this->integer('seenRevision');
+        }
+
+        return null;
     }
 
     public function label(): string

@@ -20,8 +20,10 @@ final readonly class StartGrantController
     {
         $grant = $commands->run(new ClaimStartGrantCommand($host->hostId, $runtime));
 
-        return $grant === null
-            ? new JsonResponse(['message' => 'This start was already granted.'], Response::HTTP_GONE)
-            : new JsonResponse($grant->toArray());
+        if ($grant === null) {
+            return new JsonResponse(['message' => 'This start was already granted.'], Response::HTTP_GONE);
+        }
+
+        return new JsonResponse($grant->toArray());
     }
 }

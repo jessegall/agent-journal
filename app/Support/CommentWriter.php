@@ -47,9 +47,11 @@ final readonly class CommentWriter
         $earlier = Comment::query()->submittedAs($author, $sessionId, $submissionKey)->first();
 
         if ($earlier !== null) {
-            return $earlier->submission_hash === $hash
-                ? $earlier->id
-                : throw SubmissionKeyConflict::for($submissionKey);
+            if ($earlier->submission_hash === $hash) {
+                return $earlier->id;
+            }
+
+            throw SubmissionKeyConflict::for($submissionKey);
         }
 
         $comment = $subject instanceof TextRange
@@ -69,7 +71,11 @@ final readonly class CommentWriter
 
     private static function textOf(Model $target, RecordIdentity $targetIdentity): TextContent
     {
-        return $target instanceof TextContent ? $target : throw TargetHasNoText::for($targetIdentity->type);
+        if ($target instanceof TextContent) {
+            return $target;
+        }
+
+        throw TargetHasNoText::for($targetIdentity->type);
     }
 
     /**

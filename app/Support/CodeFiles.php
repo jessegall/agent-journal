@@ -65,7 +65,11 @@ final class CodeFiles
     {
         $container = Container::getInstance();
 
-        return $container instanceof Application ? $container->basePath() : self::composerRoot();
+        if ($container instanceof Application) {
+            return $container->basePath();
+        }
+
+        return self::composerRoot();
     }
 
     private static function composerRoot(): string

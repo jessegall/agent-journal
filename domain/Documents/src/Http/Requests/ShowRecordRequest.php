@@ -45,12 +45,20 @@ final class ShowRecordRequest extends FormRequest
 
     public function revision(): int|null
     {
-        return $this->filled('revision') ? $this->integer('revision') : null;
+        if ($this->filled('revision')) {
+            return $this->integer('revision');
+        }
+
+        return null;
     }
 
     public function expectedRevision(): int|null
     {
-        return $this->filled('at_revision') ? $this->integer('at_revision') : null;
+        if ($this->filled('at_revision')) {
+            return $this->integer('at_revision');
+        }
+
+        return null;
     }
 
     public function number(): int

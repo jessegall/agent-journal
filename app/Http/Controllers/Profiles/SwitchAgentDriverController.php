@@ -26,7 +26,11 @@ final readonly class SwitchAgentDriverController
 
         $back = $redirect->back(303);
 
-        return $receipt->failureReason === null ? $back : $back->withErrors(['switch' => $receipt->failureReason]);
+        if ($receipt->failureReason === null) {
+            return $back;
+        }
+
+        return $back->withErrors(['switch' => $receipt->failureReason]);
     }
 
     public static function answer(DriverSwitchReceipt $receipt): JsonResponse

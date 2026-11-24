@@ -172,9 +172,11 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function lockPendingByUserCode(string $code): self
     {
-        return self::query()->with('binding')->where('user_code', $code)->where('state', DeviceGrantState::Pending)
-            ->where('code_expires_at', '>', CarbonImmutable::now())->lockForUpdate()
-            ->firstOr(fn () => throw DeviceGrantRefused::unknownCode());
+        $row = self::query()->with('binding')->where('user_code', $code)->where('state', DeviceGrantState::Pending)
+            ->where('code_expires_at', '>', CarbonImmutable::now())->lockForUpdate()->first();
+        self::assertCodeKnown($row);
+
+        return $row;
     }
 
     /**
@@ -184,8 +186,10 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function lockByDeviceCode(string $digest): self
     {
-        return self::query()->with('binding')->where('device_code_digest', $digest)->lockForUpdate()
-            ->firstOr(fn () => throw DeviceGrantRefused::unknownCode());
+        $row = self::query()->with('binding')->where('device_code_digest', $digest)->lockForUpdate()->first();
+        self::assertCodeKnown($row);
+
+        return $row;
     }
 
     /**
@@ -195,11 +199,14 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function usableByDigest(string $digest): self
     {
-        return self::query()->with('binding')->where('grant_digest', $digest)
+        $usable = self::query()->with('binding')->where('grant_digest', $digest)
             ->where('state', DeviceGrantState::Issued)->where('grant_expires_at', '>', CarbonImmutable::now())
             ->whereNotNull('approved_by_user_id')
-            ->whereHas('binding', fn ($binding) => $binding->where('readiness', '!=', BindingReadiness::Revoked))
-            ->firstOr(fn () => throw DeviceGrantRefused::notUsable());
+            ->whereHas('binding', fn ($binding) => $binding->where('readiness', '!=', BindingReadiness::Revoked));
+        $row = $usable->first();
+        self::assertUsable($row);
+
+        return $row;
     }
 
     /**
@@ -243,14 +250,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     public function recordPoll(): void
     {
         $now = CarbonImmutable::now();
-
-        $tooSoon = $this->last_polled_at !== null
-            && $this->last_polled_at->addSeconds(self::POLL_SECONDS_MINIMUM)->isAfter($now);
-
-        // A poll sooner than the interval leaves the last one as it was, so polling fast never moves it on.
-        if ($tooSoon) {
-            throw DeviceGrantRefused::pollingTooFast();
-        }
+        $this->assertPollDue($now);
 
         $this->last_polled_at = $now;
         $this->assertSaved($this->save());
@@ -334,5 +334,50 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     public function environment(): BelongsTo
     {
         return $this->belongsTo(Environment::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a code no pending grant holds.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws DeviceGrantRefused
+     */
+    private static function assertCodeKnown(self|null $row): void
+    {
+        if ($row === null) {
+            throw DeviceGrantRefused::unknownCode();
+        }
+    }
+
+    /**
+     * Refuses a grant that is not issued, approved, unexpired and on a live binding.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws DeviceGrantRefused
+     */
+    private static function assertUsable(self|null $row): void
+    {
+        if ($row === null) {
+            throw DeviceGrantRefused::notUsable();
+        }
+    }
+
+    /**
+     * Refuses a poll sooner than the interval; it leaves the last poll as it was, so polling fast never moves it on.
+     *
+     * @throws DeviceGrantRefused
+     */
+    private function assertPollDue(CarbonImmutable $now): void
+    {
+        $isTooSoon = $this->last_polled_at !== null
+            && $this->last_polled_at->addSeconds(self::POLL_SECONDS_MINIMUM)->isAfter($now);
+
+        if ($isTooSoon) {
+            throw DeviceGrantRefused::pollingTooFast();
+        }
     }
 }

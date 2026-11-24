@@ -149,7 +149,11 @@ final class TaskCheckTest extends TestCase
 
             public function callerOf(string $runId): Option
             {
-                return isset($this->callers[$runId]) ? Some::create($this->callers[$runId]) : None::create();
+                if (isset($this->callers[$runId])) {
+                    return Some::create($this->callers[$runId]);
+                }
+
+                return None::create();
             }
         });
     }
@@ -168,7 +172,11 @@ final class TaskCheckTest extends TestCase
 
             public function find(string $receiptId): Option
             {
-                return isset($this->receipts[$receiptId]) ? Some::create($this->receipts[$receiptId]) : None::create();
+                if (isset($this->receipts[$receiptId])) {
+                    return Some::create($this->receipts[$receiptId]);
+                }
+
+                return None::create();
             }
 
             public function forPart(string $runId): Option

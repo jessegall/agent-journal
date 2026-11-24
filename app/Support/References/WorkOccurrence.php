@@ -23,9 +23,11 @@ final readonly class WorkOccurrence
     {
         $subject = $reference->subject;
 
-        return $subject instanceof SubjectReference
-            ? new self($reference->typeKey, $subject->id, $subject->runNumber)
-            : new self($reference->typeKey, '', 0);
+        if ($subject instanceof SubjectReference) {
+            return new self($reference->typeKey, $subject->id, $subject->runNumber);
+        }
+
+        return new self($reference->typeKey, '', 0);
     }
 
     /**

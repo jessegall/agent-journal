@@ -85,7 +85,11 @@ final readonly class PlanReviewView
 
     private static function receiptOrMissing(PlanReviewEdition|null $edition): PlanReviewReceiptData|Optional
     {
-        return $edition === null ? Optional::create() : self::receiptOf($edition);
+        if ($edition === null) {
+            return Optional::create();
+        }
+
+        return self::receiptOf($edition);
     }
 
     private static function receiptOf(PlanReviewEdition $edition): PlanReviewReceiptData

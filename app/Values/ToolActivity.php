@@ -69,7 +69,11 @@ final readonly class ToolActivity
      */
     private static function named(ActivityType $type, array $texts): Option
     {
-        return $texts === [] ? None::create() : new Some(new self($type, $texts[0]));
+        if ($texts === []) {
+            return None::create();
+        }
+
+        return new Some(new self($type, $texts[0]));
     }
 
     /**

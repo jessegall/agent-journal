@@ -39,6 +39,10 @@ abstract readonly class PublicationSearchAccess extends ReadToolSearchAccess
 
         $revision = PublicationPassage::fromId($location->id)->revision;
 
-        return $revision === null ? [] : ['revision' => (string) $revision];
+        if ($revision === null) {
+            return [];
+        }
+
+        return ['revision' => (string) $revision];
     }
 }

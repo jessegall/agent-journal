@@ -164,7 +164,11 @@ final readonly class AuthenticateHost
     private function servingContext(HostContext $context, HostRouteRole $role): HostContext
     {
         if (! Host::query()->findOrFail($context->hostId)->isConnectedFolderRelay()) {
-            return $role->isForEnrolledHosts() ? $context : throw HostRoleRefused::forRelayOnly($context->hostId);
+            if ($role->isForEnrolledHosts()) {
+                return $context;
+            }
+
+            throw HostRoleRefused::forRelayOnly($context->hostId);
         }
 
         if (! $role->isForRelays()) {

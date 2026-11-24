@@ -103,7 +103,11 @@ final class BlankLineAroundMultilineStatementFixer implements FixerInterface
             }
 
             if ($block['isStart']) {
-                return $token->equals('{') ? $tokens->getNextMeaningfulToken($index) : null;
+                if ($token->equals('{')) {
+                    return $tokens->getNextMeaningfulToken($index);
+                }
+
+                return null;
             }
 
             if ($token->equals('}') && ! $this->continuesTheStatement($tokens, $index)) {

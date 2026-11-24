@@ -37,7 +37,11 @@ final readonly class DriverToolInput
     {
         $argument = $this->arguments[$name] ?? null;
 
-        return is_string($argument) ? $argument : null;
+        if (is_string($argument)) {
+            return $argument;
+        }
+
+        return null;
     }
 
     /**

@@ -203,6 +203,10 @@ final readonly class SignedSignInHost implements SignInHost
     {
         $accountId = $response->json('account_id');
 
-        return $accountId === null ? null : (string) $accountId;
+        if ($accountId === null) {
+            return null;
+        }
+
+        return (string) $accountId;
     }
 }

@@ -30,6 +30,10 @@ final readonly class LayoutShape
     {
         $shape = json_decode($this->json, true, flags: JSON_THROW_ON_ERROR);
 
-        return is_array($shape) ? $shape : [];
+        if (is_array($shape)) {
+            return $shape;
+        }
+
+        return [];
     }
 }

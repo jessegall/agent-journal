@@ -25,7 +25,11 @@ final readonly class SignInIdentity
      */
     public function expiry(): CarbonImmutable|null
     {
-        return $this->expiresAt === null ? null : CarbonImmutable::parse($this->expiresAt);
+        if ($this->expiresAt === null) {
+            return null;
+        }
+
+        return CarbonImmutable::parse($this->expiresAt);
     }
 
     /**

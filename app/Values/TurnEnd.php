@@ -46,9 +46,11 @@ final readonly class TurnEnd
             return $this->progress();
         }
 
-        return $request->operation === DriverOperation::ChangeModel && $this->showsModel((string) $request->model)
-            ? RequestProgress::Applied
-            : RequestProgress::DeliveryUncertain;
+        if ($request->operation === DriverOperation::ChangeModel && $this->showsModel((string) $request->model)) {
+            return RequestProgress::Applied;
+        }
+
+        return RequestProgress::DeliveryUncertain;
     }
 
     public function progress(): RequestProgress
@@ -57,7 +59,11 @@ final readonly class TurnEnd
             return RequestProgress::Failed;
         }
 
-        return $this->isUnread() ? RequestProgress::DeliveryUncertain : RequestProgress::Applied;
+        if ($this->isUnread()) {
+            return RequestProgress::DeliveryUncertain;
+        }
+
+        return RequestProgress::Applied;
     }
 
     /**
@@ -66,7 +72,11 @@ final readonly class TurnEnd
      */
     public function outcomeOf(DriverRequest $request): RequestOutcome|null
     {
-        return $this->isSettledByEvidence($request) ? null : $this->outcome();
+        if ($this->isSettledByEvidence($request)) {
+            return null;
+        }
+
+        return $this->outcome();
     }
 
     /**
@@ -74,7 +84,11 @@ final readonly class TurnEnd
      */
     public function outcome(): RequestOutcome|null
     {
-        return $this->failed() ? RequestOutcome::TurnFailed : null;
+        if ($this->failed()) {
+            return RequestOutcome::TurnFailed;
+        }
+
+        return null;
     }
 
     /**

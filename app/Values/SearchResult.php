@@ -73,7 +73,13 @@ final readonly class SearchResult
      */
     public function compare(self $other): int
     {
-        return $this->score->compare($other->score) ?: $this->identity('')->compare($other->identity(''));
+        $order = $this->score->compare($other->score);
+
+        if ($order !== 0) {
+            return $order;
+        }
+
+        return $this->identity('')->compare($other->identity(''));
     }
 
     /**

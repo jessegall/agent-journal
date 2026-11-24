@@ -88,6 +88,10 @@ final class CommandSubjects
     {
         $held = $this->handedOver[array_key_last($this->handedOver) ?? -1] ?? null;
 
-        return $held !== null && $held[0] === $command ? [$held[1]] : [];
+        if ($held !== null && $held[0] === $command) {
+            return [$held[1]];
+        }
+
+        return [];
     }
 }

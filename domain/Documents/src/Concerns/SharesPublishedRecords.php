@@ -109,7 +109,11 @@ trait SharesPublishedRecords
             return null;
         }
 
-        return str_contains($body, $quote) ? $quote : ShareRecordCard::QUOTE_NOT_IN_VERSION;
+        if (str_contains($body, $quote)) {
+            return $quote;
+        }
+
+        return ShareRecordCard::QUOTE_NOT_IN_VERSION;
     }
 
     /**

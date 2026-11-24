@@ -32,6 +32,10 @@ final class RelayedToolCall extends Data
     {
         $path = $this->toolInput['file_path'] ?? null;
 
-        return is_string($path) ? $path : null;
+        if (is_string($path)) {
+            return $path;
+        }
+
+        return null;
     }
 }

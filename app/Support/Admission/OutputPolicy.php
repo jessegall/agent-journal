@@ -104,7 +104,11 @@ final readonly class OutputPolicy
             fn ($contract) => $contract->output->streams === StreamUse::Separate,
         );
 
-        return $merged && $requiresSeparateStreams ? ["{$stream} kept apart"] : [];
+        if ($merged && $requiresSeparateStreams) {
+            return ["{$stream} kept apart"];
+        }
+
+        return [];
     }
 
     private function isBeforeTheLastCommand(ShellTree $tree, ShellNode $pipeline, ShellNode $command): bool

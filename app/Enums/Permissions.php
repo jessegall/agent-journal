@@ -17,7 +17,11 @@ enum Permissions: string
      */
     public static function of(Place $place): self
     {
-        return $place->isPrivate() ? self::OwnerOnly : self::Shared;
+        if ($place->isPrivate()) {
+            return self::OwnerOnly;
+        }
+
+        return self::Shared;
     }
 
     /**

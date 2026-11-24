@@ -34,6 +34,10 @@ final class SignInChallengeRequest extends FormRequest
 
     public function code(): string|null
     {
-        return $this->filled('code') ? $this->string('code')->toString() : null;
+        if ($this->filled('code')) {
+            return $this->string('code')->toString();
+        }
+
+        return null;
     }
 }

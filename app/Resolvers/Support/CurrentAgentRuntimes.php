@@ -26,6 +26,10 @@ final readonly class CurrentAgentRuntimes
     {
         $resolved = $this->actors->get($actor);
 
-        return $resolved instanceof Agent ? $resolved->currentRuntime() : None::create();
+        if ($resolved instanceof Agent) {
+            return $resolved->currentRuntime();
+        }
+
+        return None::create();
     }
 }

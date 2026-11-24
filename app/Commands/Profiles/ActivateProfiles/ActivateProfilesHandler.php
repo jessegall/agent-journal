@@ -166,9 +166,11 @@ final readonly class ActivateProfilesHandler implements CommandHandler
             return ProfileChangeType::Added;
         }
 
-        return $definition->differsFrom($this->profiles->snapshotFor($definition->key))
-            ? ProfileChangeType::Changed
-            : ProfileChangeType::Unchanged;
+        if ($definition->differsFrom($this->profiles->snapshotFor($definition->key))) {
+            return ProfileChangeType::Changed;
+        }
+
+        return ProfileChangeType::Unchanged;
     }
 
     private function assertContainerSupport(ProfileDefinition $definition): void

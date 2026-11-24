@@ -54,9 +54,11 @@ final readonly class OutageReply
 
     private function neutral(string $nativeEvent): DriverReply
     {
-        return HookEvent::tryFrom($nativeEvent)?->isToolCall() === true
-            ? DriverReplies::undecidedTool()
-            : DriverReply::emptyObject();
+        if (HookEvent::tryFrom($nativeEvent)?->isToolCall() === true) {
+            return DriverReplies::undecidedTool();
+        }
+
+        return DriverReply::emptyObject();
     }
 
     private function refusal(string $nativeEvent, AgentText $refusal): DriverReply

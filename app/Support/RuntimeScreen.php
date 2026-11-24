@@ -60,7 +60,11 @@ final readonly class RuntimeScreen
     {
         $stored = $this->cache->get($this->key($runtimeId));
 
-        return is_array($stored) ? ScreenSlot::fromStored(StoredScreenData::from($stored)) : null;
+        if (is_array($stored)) {
+            return ScreenSlot::fromStored(StoredScreenData::from($stored));
+        }
+
+        return null;
     }
 
     private function keep(string $runtimeId, ScreenSlot $slot): void

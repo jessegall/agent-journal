@@ -55,6 +55,10 @@ final readonly class ProfileRecords implements ProfileResolver, ProfileScripts
     {
         $profile = Profile::byKey($key);
 
-        return $profile->isRetired() ? throw ProfileRetired::for($key) : $profile;
+        if ($profile->isRetired()) {
+            throw ProfileRetired::for($key);
+        }
+
+        return $profile;
     }
 }

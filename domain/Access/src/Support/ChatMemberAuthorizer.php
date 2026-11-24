@@ -20,8 +20,10 @@ final readonly class ChatMemberAuthorizer implements Authorizer
 
     public function evaluate(string $policy, Actor $actor, object|string $subject, AccessType $access): Response
     {
-        return $this->policies->allows($policy)
-            ? Response::allow()
-            : Response::deny('A chat member may only use the chats it is in.');
+        if ($this->policies->allows($policy)) {
+            return Response::allow();
+        }
+
+        return Response::deny('A chat member may only use the chats it is in.');
     }
 }

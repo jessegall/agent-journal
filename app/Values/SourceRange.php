@@ -19,7 +19,11 @@ final readonly class SourceRange
      */
     public function shiftedBy(int $bytes): self
     {
-        return $bytes === 0 ? $this : new self($this->start + $bytes, $this->end + $bytes);
+        if ($bytes === 0) {
+            return $this;
+        }
+
+        return new self($this->start + $bytes, $this->end + $bytes);
     }
 
     public function slice(string $source): string

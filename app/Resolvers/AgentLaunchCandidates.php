@@ -79,7 +79,11 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
             return LaunchCandidateRank::OtherPurpose;
         }
 
-        return $isLastOnExactModel ? LaunchCandidateRank::ExactConversation : LaunchCandidateRank::SamePurpose;
+        if ($isLastOnExactModel) {
+            return LaunchCandidateRank::ExactConversation;
+        }
+
+        return LaunchCandidateRank::SamePurpose;
     }
 
     /**

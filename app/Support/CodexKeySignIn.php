@@ -68,7 +68,11 @@ final readonly class CodexKeySignIn implements SignInProtocol
 
         $refusal = $this->codex->modelRefusal($directory);
 
-        return $refusal === null ? $verification : SignInVerification::refused($refusal);
+        if ($refusal === null) {
+            return $verification;
+        }
+
+        return SignInVerification::refused($refusal);
     }
 
     public function verify(string $directory): SignInVerification

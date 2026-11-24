@@ -71,7 +71,11 @@ final readonly class RegisteredPage
      */
     public function visibilityChecks(): array
     {
-        return $this->page->visibility === null ? [] : [$this->page->visibility];
+        if ($this->page->visibility === null) {
+            return [];
+        }
+
+        return [$this->page->visibility];
     }
 
     /**
@@ -114,7 +118,11 @@ final readonly class RegisteredPage
      */
     public function routeName(): string
     {
-        return $this->isHome() ? 'home' : $this->key;
+        if ($this->isHome()) {
+            return 'home';
+        }
+
+        return $this->key;
     }
 
     /**
@@ -122,6 +130,10 @@ final readonly class RegisteredPage
      */
     public function address(): string
     {
-        return $this->isHome() ? '/' : $this->uri;
+        if ($this->isHome()) {
+            return '/';
+        }
+
+        return $this->uri;
     }
 }
