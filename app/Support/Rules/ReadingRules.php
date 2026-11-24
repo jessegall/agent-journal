@@ -86,6 +86,12 @@ final readonly class ReadingRules
                 $read,
             ),
             $this->reader('pwd', ArgumentGrammar::options(['-L', '-P']), $read),
+            $this->reader('id', $nameOperands->withOptions(...$this->flags('-u', '-g', '-G', '-n', '-r')), $read),
+            $this->reader(
+                'test',
+                $pathOperands->withOptions(...$this->flags('-e', '-f', '-d', '-r', '-w', '-x', '-s', '-L', '-h')),
+                $read,
+            ),
             $this->reader('wc', $this->paths()->withOptions(...$this->flags('-l', '-w', '-c', '-m', '-L')), $read),
             $this->reader(
                 'stat',

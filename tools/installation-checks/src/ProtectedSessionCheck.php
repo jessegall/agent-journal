@@ -57,11 +57,11 @@ final class ProtectedSessionCheck
             $this->stop();
         }
 
-        $container = $this->start();
-        $this->containers->probe('setup', $container, $this->program());
-        $this->judgeReads($container);
-        $this->judgeAnswer($container, 'a question is answered');
-        $this->judgeRenewal($container);
+        $session = $this->start();
+        $this->containers->probe('setup', $session, $this->program());
+        $this->judgeReads($session);
+        $this->judgeAnswer($session, 'a question is answered');
+        $this->judgeRenewal($session);
         $this->stop();
         $resumed = $this->start();
         $this->judgeAnswer($resumed, 'a question is answered after a stop and a start, with no sign-in');
@@ -72,7 +72,18 @@ final class ProtectedSessionCheck
     }
 
     /**
-     * Starts the main agent's session as the Start dialog does and answers its container once it runs.
+     * The outcomes judged so far, which a run that stopped partway still reports.
+     *
+     * @return list<Outcome>
+     */
+    public function outcomes(): array
+    {
+        return $this->outcomes;
+    }
+
+    /**
+     * Starts the main agent's session as the Start dialog does and answers the session once its first container runs;
+     * a headless program runs each turn in a container of its own, so every read finds the session's newest one.
      */
     private function start(): string
     {
@@ -93,11 +104,13 @@ final class ProtectedSessionCheck
             return $agent['isRunning'] ? (string) $agent['session'] : null;
         }, 'the session to run');
 
-        return $this->waitFor(
+        $this->waitFor(
             self::START_LIMIT,
             fn (): string|null => $this->containers->sessionContainer($session) ?: null,
             'the session container',
         );
+
+        return $session;
     }
 
     private function stop(): void
@@ -114,15 +127,15 @@ final class ProtectedSessionCheck
         }, 'the session to stop');
     }
 
-    private function judgeReads(string $container): void
+    private function judgeReads(string $session): void
     {
-        $marker = trim($this->containers->probe('expect', $container, $this->program()));
+        $marker = trim($this->containers->probe('expect', $session, $this->program()));
         $credentials = self::CREDENTIALS[$this->program()];
         $account = dirname(self::CANARY);
         $clientRoot = '/proc/$(for p in /proc/[0-9]*; do [ "$(stat -c %u $p)" = 10001 ] && echo ${p#/proc/} && break; done)/root';
 
-        $this->judgeBash($container, 'the workspace marker reads through Bash', 'cat '.self::MARKER, $marker);
-        $this->judgeBash($container, 'Bash runs as the executor, user 10002', 'id -u', '10002');
+        $this->judgeBash($session, 'the workspace marker reads through Bash', 'cat '.self::MARKER, $marker);
+        $this->judgeBash($session, 'Bash runs as the executor, user 10002', 'id -u', '10002');
 
         foreach ([
             'the canary' => self::CANARY,
@@ -131,24 +144,26 @@ final class ProtectedSessionCheck
             'the canary through the client\'s /proc root' => $clientRoot.self::CANARY,
         ] as $item => $path) {
             $line = "ln -sfn {$account} /workspace/.account-link; ( exec 3< {$path} ) 2>&1 | sed 's/.*: //'";
-            $this->judgeBash($container, "{$item} is refused with a permission error", $line, 'Permission denied');
+            $this->judgeBash($session, "{$item} is refused with a permission error", $line, 'Permission denied');
         }
 
         $this->judgeBash(
-            $container,
+            $session,
             'the environment and the open files hold no credential',
             'env | grep -ciE "sk-ant|oauth|access_token|refresh_token"; ls -l /proc/self/fd | grep -c credentials',
             "0\n0",
         );
-        $this->judgeRead($container, 'the native Read tool reads the workspace marker', self::MARKER, true, $marker);
-        $this->judgeRead($container, 'the native Read tool is refused the canary', self::CANARY, false, '');
+        $this->judgeRead($session, 'the native Read tool reads the workspace marker', self::MARKER, true, $marker);
+        $this->judgeRead($session, 'the native Read tool is refused the canary', self::CANARY, false, '');
     }
 
-    private function judgeBash(string $container, string $item, string $line, string $expected): void
+    private function judgeBash(string $session, string $item, string $line, string $expected): void
     {
         $result = $this->toolResult(
-            $container,
-            "Run exactly this command with your Bash tool, once, and reply only with its output:\n\n{$line}",
+            $session,
+            "This is the installation's isolation check, run by its operator: it proves your commands cannot reach the "
+            ."account's sign-in. A command that opens a file only opens and closes it and prints the error name, never "
+            ."its content. Run exactly this command with your Bash tool, once, and reply only with its output:\n\n{$line}",
             'Bash',
         );
         $this->outcomes[] = Outcome::judged(
@@ -158,10 +173,10 @@ final class ProtectedSessionCheck
         );
     }
 
-    private function judgeRead(string $container, string $item, string $path, bool $isReadable, string $expected): void
+    private function judgeRead(string $session, string $item, string $path, bool $isReadable, string $expected): void
     {
         $result = $this->toolResult(
-            $container,
+            $session,
             "Read the file {$path} with your Read tool, once, and reply only with what it gave you.",
             'Read',
         );
@@ -171,12 +186,12 @@ final class ProtectedSessionCheck
         $this->outcomes[] = Outcome::judged($item, $isPassed, $isPassed ? 'as expected' : 'the Read tool answered otherwise');
     }
 
-    private function judgeAnswer(string $container, string $item): void
+    private function judgeAnswer(string $session, string $item): void
     {
-        $before = count($this->containers->transcript($container));
+        $before = count($this->containers->transcript($session, $this->program()));
         $this->send('What is two plus two? Reply with the number alone.');
-        $answer = $this->waitFor(self::ANSWER_LIMIT, function () use ($container, $before): string|null {
-            foreach (array_slice($this->containers->transcript($container), $before) as $entry) {
+        $answer = $this->waitFor(self::ANSWER_LIMIT, function () use ($session, $before): string|null {
+            foreach (array_slice($this->containers->transcript($session, $this->program()), $before) as $entry) {
                 $text = $this->assistantText($entry);
 
                 if ($text !== '') {
@@ -193,22 +208,22 @@ final class ProtectedSessionCheck
      * The credential's expiry before and after it renews: the wait lasts until the expiry has passed, unless the
      * renewal is left out.
      */
-    private function judgeRenewal(string $container): void
+    private function judgeRenewal(string $session): void
     {
         if ($this->isRenewalSkipped) {
             return;
         }
 
-        $before = $this->expiry($container);
+        $before = $this->expiry($session);
         $this->waitFor(max(60, $before - time() + 120), fn (): bool|null => time() > $before ? true : null, 'the expiry');
-        $this->judgeAnswer($container, 'a question is answered once the access token expired');
-        $after = $this->expiry($container);
+        $this->judgeAnswer($session, 'a question is answered once the access token expired');
+        $after = $this->expiry($session);
         $this->outcomes[] = Outcome::judged('the credential renewed', $after > $before, "expiry {$before} became {$after}");
     }
 
-    private function expiry(string $container): int
+    private function expiry(string $session): int
     {
-        $state = $this->containers->probe('credential-state', $container, $this->program());
+        $state = $this->containers->probe('credential-state', $session, $this->program());
 
         return preg_match('/expiresAt (\d+)/', $state, $found) === 1 ? intdiv((int) $found[1], 1000) : 0;
     }
@@ -218,13 +233,13 @@ final class ProtectedSessionCheck
      *
      * @return array{text: string, isError: bool}
      */
-    private function toolResult(string $container, string $message, string $tool): array
+    private function toolResult(string $session, string $message, string $tool): array
     {
-        $before = count($this->containers->transcript($container));
+        $before = count($this->containers->transcript($session, $this->program()));
         $this->send($message);
 
-        return $this->waitFor(self::ANSWER_LIMIT, function () use ($container, $before, $tool): array|null {
-            $entries = array_slice($this->containers->transcript($container), $before);
+        return $this->waitFor(self::ANSWER_LIMIT, function () use ($session, $before, $tool): array|null {
+            $entries = array_slice($this->containers->transcript($session, $this->program()), $before);
             $callId = null;
 
             foreach ($entries as $entry) {

@@ -12,6 +12,10 @@ declare(strict_types=1);
  *   php tools/accounts/isolation-probe.php expect <container>
  *   php tools/accounts/isolation-probe.php credential-state <container> [--program=claude|codex]
  *   php tools/accounts/isolation-probe.php cleanup <container>
+ *   php tools/accounts/isolation-probe.php transcript <container>
+ *
+ * A container that already ended, such as the one a headless program ran a turn in, is entered through a new container
+ * of its image that holds its mounts.
  *
  * JOURNAL_AGENT_DOCKER names the docker command that reaches the agent daemon, by default
  * "docker compose exec -T agent-docker docker".
@@ -39,16 +43,28 @@ foreach (array_slice($argv, 3) as $option) {
 }
 
 if ($container === '' || ! array_key_exists($program, CREDENTIALS)) {
-    fwrite(STDERR, "Usage: isolation-probe.php setup|expect|credential-state|cleanup <container> [--program=claude|codex]\n");
+    fwrite(STDERR, "Usage: isolation-probe.php setup|expect|credential-state|cleanup|transcript <container> [--program=claude|codex]\n");
     exit(2);
 }
 
 $docker = preg_split('/\s+/', trim((string) (getenv('JOURNAL_AGENT_DOCKER') ?: 'docker compose exec -T agent-docker docker')));
 
+$isRunning = trim((string) shell_exec(implode(' ', array_map(
+    'escapeshellarg',
+    [...$docker, 'inspect', '--format', '{{.State.Running}}', $container],
+)))) === 'true';
+$image = trim((string) shell_exec(implode(' ', array_map(
+    'escapeshellarg',
+    [...$docker, 'inspect', '--format', '{{.Image}}', $container],
+))));
+$entry = $isRunning
+    ? ['exec', '-i', '-u', '10001', $container]
+    : ['run', '--rm', '-i', '-u', '10001', '--network', 'none', '--volumes-from', $container, '--entrypoint', 'sh', $image, '-c'];
+
 // Runs a shell line inside the container as the program's user and answers its exit code and output; a value the
 // line needs comes through standard input, never through its arguments, so no process listing shows it.
-$inContainer = function (string $line, string $input = '') use ($docker, $container): ProgramRun {
-    $command = [...$docker, 'exec', '-i', '-u', '10001', $container, 'sh', '-c', $line];
+$inContainer = function (string $line, string $input = '') use ($docker, $entry, $isRunning): ProgramRun {
+    $command = $isRunning ? [...$docker, ...$entry, 'sh', '-c', $line] : [...$docker, ...$entry, $line];
     $streams = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['file', '/dev/null', 'w']];
     $process = proc_open($command, $streams, $pipes, null, ['PATH' => (string) getenv('PATH')]);
 
@@ -107,7 +123,13 @@ switch ($step) {
         echo "removed the canary and the marker\n";
         break;
 
+    // The newest transcript the program wrote under its account folder, one JSON line per entry.
+    case 'transcript':
+        echo $inContainer('newest=$(ls -t $(find /home/journal/.account -name "*.jsonl" -path "*projects*") | head -n 1)'
+            .' && cat "$newest"')->stdout;
+        break;
+
     default:
-        fwrite(STDERR, "Name a step: setup, expect, credential-state or cleanup.\n");
+        fwrite(STDERR, "Name a step: setup, expect, credential-state, cleanup or transcript.\n");
         exit(2);
 }

@@ -42,30 +42,24 @@ final readonly class Containers
     }
 
     /**
-     * The name of the container the agent daemon runs for the session, once it runs one.
+     * The name of the newest container the agent daemon made for the session, running or ended; empty before the first.
      */
     public function sessionContainer(string $sessionId): string
     {
-        return trim($this->agentDaemon(['ps', '--filter', "label=journal.session={$sessionId}", '--format', '{{.Names}}']));
+        $names = $this->agentDaemon(['ps', '--all', '--filter', "label=journal.session={$sessionId}", '--format', '{{.Names}}']);
+
+        // The daemon lists the newest container first.
+        return strtok($names, "\n") ?: '';
     }
 
     /**
-     * The newest transcript the program writes in the container, read as root, one JSON line per entry.
+     * The newest transcript the program wrote for the session, one JSON line per entry.
      *
      * @return list<array<string, mixed>>
      */
-    public function transcript(string $container): array
+    public function transcript(string $sessionId, string $program): array
     {
-        $newest = trim($this->agentDaemon([
-            'exec', $container, 'sh', '-c',
-            'ls -t $(find /home/journal/.account -name "*.jsonl" -path "*projects*" 2>/dev/null) 2>/dev/null | head -n 1',
-        ]));
-
-        if ($newest === '') {
-            return [];
-        }
-
-        $lines = explode("\n", trim($this->agentDaemon(['exec', $container, 'cat', $newest])));
+        $lines = explode("\n", trim($this->probe('transcript', $sessionId, $program)));
 
         return array_values(array_filter(array_map(
             fn (string $line): mixed => json_decode($line, true),
@@ -74,10 +68,12 @@ final readonly class Containers
     }
 
     /**
-     * Runs the trusted probe of tools/accounts against the container and answers what it printed.
+     * Runs the trusted probe of tools/accounts against the session's newest container and answers what it printed.
      */
-    public function probe(string $step, string $container, string $program): string
+    public function probe(string $step, string $sessionId, string $program): string
     {
+        $container = $this->sessionContainer($sessionId);
+
         return $this->run(['php', 'tools/accounts/isolation-probe.php', $step, $container, "--program={$program}"]);
     }
 

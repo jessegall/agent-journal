@@ -38,11 +38,13 @@ $journal = new Journal((string) ($options['origin'] ?? 'http://localhost:54700')
 $containers = new Containers($checkout);
 $startedAt = gmdate('Ymd-His');
 
+$sessionCheck = new ProtectedSessionCheck($journal, $containers, $driver, isset($options['skip-renewal']));
+
 try {
     $journal->signIn((string) ($options['email'] ?? 'owner@journal.local'), (string) ($options['password'] ?? 'password'));
-    $outcomes = new ProtectedSessionCheck($journal, $containers, $driver, isset($options['skip-renewal']))->run();
+    $outcomes = $sessionCheck->run();
 } catch (RuntimeException $stopped) {
-    $outcomes = [Outcome::judged('the check ran to its end', false, $stopped->getMessage())];
+    $outcomes = [...$sessionCheck->outcomes(), Outcome::judged('the check ran to its end', false, $stopped->getMessage())];
 }
 
 foreach ($outcomes as $outcome) {
