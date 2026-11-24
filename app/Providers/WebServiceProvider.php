@@ -32,6 +32,10 @@ use App\Policies\PresencePolicy;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;
 use App\Support\DraftProducerRegistry;
+use App\Contracts\Files\Files;
+use App\Enums\Place;
+use App\Values\FilePath;
+use App\Support\InstallationFaults;
 use App\Support\InstalledVersion;
 use App\Support\LinkTypeRegistry;
 use App\Support\OwnerAutoAssignmentAccess;
@@ -81,6 +85,13 @@ final class WebServiceProvider extends ServiceProvider
         $this->app->singleton(DraftProducerRegistry::class);
         $this->app->alias(DraftProducerRegistry::class, DraftProducers::class);
         $this->app->bind(InstalledVersionContract::class, InstalledVersion::class);
+        $this->app->bind(
+            InstallationFaults::class,
+            fn () => new InstallationFaults(
+                $this->app->make(Files::class),
+                FilePath::in(Place::Project, 'storage/installation/faults'),
+            ),
+        );
         $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
         $this->app->bind(WindowResultsContract::class, WindowResults::class);
         $this->app->bind(UiOwnerAvailabilityContract::class, UiOwnerAvailability::class);

@@ -10,6 +10,7 @@ answers=$here/../answers
 main() {
     record_call "$@"
     fail_when_asked "$@"
+    fail_once_as_docker "$@"
     case "$1" in
         version) echo linux/amd64 ;;
         info) echo x86_64 ;;
@@ -20,6 +21,7 @@ main() {
         image) answer_image "$@" ;;
         load) load_archive "$@" ;;
         container) answer_container "$@" ;;
+        wait) cat "$STAND_IN/step-exit" 2>/dev/null || echo 0 ;;
         compose) shift; answer_compose "$@" ;;
     esac
 }
@@ -34,6 +36,21 @@ fail_when_asked() {
     while IFS= read -r part; do
         case "$*" in *"$part"*) echo "stand-in docker: told to fail a call that holds: $part" >&2; exit 1 ;; esac
     done < "$STAND_IN/failing"
+}
+
+# A call that holds a line of $STAND_IN/docker-errors fails once as Docker itself fails, and the line goes.
+fail_once_as_docker() {
+    local part
+    [ -f "$STAND_IN/docker-errors" ] || return 0
+    while IFS= read -r part; do
+        case "$*" in
+            *"$part"*)
+                grep -vxF "$part" "$STAND_IN/docker-errors" > "$STAND_IN/docker-errors.next" || true
+                mv "$STAND_IN/docker-errors.next" "$STAND_IN/docker-errors"
+                echo "stand-in docker: a passing daemon error on a call that holds: $part" >&2
+                exit 125 ;;
+        esac
+    done < "$STAND_IN/docker-errors"
 }
 
 # A build counts, so each one gives an image of its own digest, unless the test said its layers are all cached; it
@@ -167,6 +184,8 @@ answer_compose() {
         *"config --format json"*) fill_template "$answers/compose-config.json" "root=$JOURNAL_ROOT" ;;
         *"config --images"*) echo "journal-$(read_last "$@")" ;;
         *" build "* | "build "*) count_service_builds "$@" ;;
+        *"ps --all --format json"*) cat "$STAND_IN/containers.json" 2>/dev/null || cat "$answers/containers.json" ;;
+        *"ps --all -q"*) echo "container-$(read_last "$@")" ;;
         *"ps -q app"*) cat "$STAND_IN/app-containers" 2>/dev/null || true ;;
         *"--scale app=2"*) start_new_app ;;
         *"--scale app=1"*) keep_newest_app ;;

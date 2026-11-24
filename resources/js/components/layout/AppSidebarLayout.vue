@@ -47,6 +47,14 @@ const title = computed(() =>
           <TextLink @click="retryLiveConnection()">Retry</TextLink>
         </p>
       </template>
+      <template v-for="fault in page.props.installationFaults" :key="fault">
+        <p
+          role="alert"
+          class="border-b border-border px-4 py-1 text-small text-danger"
+        >
+          {{ fault }}
+        </p>
+      </template>
       <main class="min-h-0 flex-1 overflow-hidden"><slot /></main>
     </div>
     <ToastRegion />

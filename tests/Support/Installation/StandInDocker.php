@@ -33,6 +33,14 @@ final readonly class StandInDocker
     }
 
     /**
+     * Makes the next Docker call that holds the part fail once as Docker itself fails, with exit code 125.
+     */
+    public function failOnceAsDocker(string $part): void
+    {
+        File::append("{$this->folder}/docker-errors", $part."\n");
+    }
+
+    /**
      * Makes every later build come out of Docker's cache: the same image as the build before it.
      */
     public function buildFromCache(): void

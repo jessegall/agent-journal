@@ -210,6 +210,24 @@ pinned images are loaded again from `images/`. After changing `.env`, run `docke
 --wait` again. To keep the installation on the newest commit of its branch, see "Updating automatically" in the
 README.
 
+## 10. How the installation heals itself
+
+The updater (`.docker/updater/loop.sh`) runs `.docker/updater/heal.sh` after every round, once a minute:
+
+1. It lists the containers of every service of the installation's profiles.
+2. A service that keeps running (restart `unless-stopped`) and is not running, or is unhealthy, is started again and
+   waited on until healthy.
+3. A step that runs once (restart `no`: `accounts-volume`, `agent-images`, `agent-host-enroll`) that ended with an
+   error runs again in a new container and must end well. Each of these steps is safe to run again: the images are
+   loaded only when missing, and the enrolment does nothing when the host already holds it.
+4. A service that does not come back is tried five times, the pause before each try doubling from a minute; each
+   try is in the updater's log (`docker compose --profile updater logs updater`).
+5. A service whose five tries failed is written to `storage/installation/faults`, and every page of the journal shows
+   it with its reason until the service is well again. A service that comes back by itself is forgotten.
+
+An image check during a build (`.docker/helper/build.sh`) that meets a passing Docker error (exit code 125) is tried
+again twice; the program's own failure is never tried again.
+
 ## What does not run yet
 
 - Codex starts in containers are refused until the provider transport exists (task 1503); Codex accounts sign in and

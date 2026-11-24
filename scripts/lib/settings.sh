@@ -7,6 +7,11 @@ setting() {
     sed -n "s/^$1=//p" .env | tail -n 1
 }
 
+# The option that turns on the arrangement's services: a contained installation also runs the contained profile.
+compose_profiles() {
+    [ "$(setting AGENTS_ARRANGEMENT)" != contained ] || echo "--profile contained"
+}
+
 # Writes a setting into .env, replacing the line that sets it or adding one.
 set_setting() {
     if grep -q "^$1=" .env; then

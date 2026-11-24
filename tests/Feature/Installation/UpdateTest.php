@@ -241,6 +241,18 @@ final class UpdateTest extends TestCase
         $this->assertSame($recorded + 1, $this->installation->recordedImages());
     }
 
+    public function test_an_image_check_that_meets_a_passing_docker_error_is_tried_again(): void
+    {
+        $this->installation->docker->failOnceAsDocker(self::SANDBOX_TOOL_CHECK);
+        $pushed = $this->installation->push(['README.md' => 'first']);
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
+        $this->assertSame($pushed, $this->installation->installedCommit());
+        $this->assertCount(2, $this->installation->docker->callsHolding(self::SANDBOX_TOOL_CHECK));
+    }
+
     public function test_an_agent_image_whose_mcp_relay_does_not_answer_is_not_pinned(): void
     {
         $this->installation->update();

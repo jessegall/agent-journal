@@ -1,12 +1,13 @@
 #!/bin/sh
-# The updater's loop: every minute it fetches update.sh of the branch's newest commit and runs it.
-# A failed fetch or run is logged and tried again a minute later.
+# The updater's loop: every minute it fetches update.sh of the branch's newest commit and runs it, then heals what
+# stopped or failed (heal.sh). A failed fetch or run is logged and tried again a minute later.
 set -u
 
 main() {
     trap 'exit 0' TERM INT
     while :; do
         update_once
+        heal_once
         pause
     done
 }
@@ -26,6 +27,11 @@ update_once() {
     else
         echo "$(date -u +%FT%TZ) could not fetch update.sh of $JOURNAL_BRANCH ($newest)"
     fi
+}
+
+# The installed heal.sh, so a broken push cannot stop the healing of what runs.
+heal_once() {
+    sh "$JOURNAL_ROOT/.docker/updater/heal.sh" || true
 }
 
 # The script is fetched by commit, never by branch name: a cache can serve a branch's file stale for minutes.

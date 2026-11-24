@@ -5,6 +5,7 @@
 set -eu
 
 main() {
+    . scripts/lib/docker.sh
     claude_code=2.1.323
     codex=0.165.0
     architecture="${1:?name the architecture, such as linux/arm64}"
@@ -61,7 +62,7 @@ run_in_image() {
     done
     program=$1
     shift
-    docker run --rm $options --entrypoint "$program" "$tag" "$@"
+    retry_docker docker run --rm $options --entrypoint "$program" "$tag" "$@"
 }
 
 check_clients() {

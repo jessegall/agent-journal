@@ -82,6 +82,40 @@ final readonly class StandInInstallation
     }
 
     /**
+     * Runs the supervisor's heal step once, as the updater's loop does after each round, with no pause between tries.
+     */
+    public function heal(): Process
+    {
+        return $this->run('heal.sh', ['JOURNAL_HEAL_PAUSE_SECONDS' => '0']);
+    }
+
+    /**
+     * Makes Docker list the installation's containers as given: each a service, its state, health and exit code.
+     *
+     * @param  list<array{Service: string, State: string, Health: string, ExitCode: int}>  $containers
+     */
+    public function containersAre(array $containers): void
+    {
+        File::put("{$this->folder}/stand-in/containers.json", json_encode($containers, JSON_THROW_ON_ERROR));
+    }
+
+    /**
+     * Makes every step the supervisor runs again end with the exit code.
+     */
+    public function endStepsWith(int $code): void
+    {
+        File::put("{$this->folder}/stand-in/step-exit", (string) $code);
+    }
+
+    /**
+     * What the installation could not heal, as the journal shows it.
+     */
+    public function faults(): string
+    {
+        return $this->recorded('storage/installation/faults');
+    }
+
+    /**
      * Whether a download was asked for whose address holds the part.
      */
     public function wasFetched(string $part): bool
@@ -91,7 +125,10 @@ final readonly class StandInInstallation
         return File::exists($log) && str_contains(File::get($log), $part);
     }
 
-    private function run(string $script): Process
+    /**
+     * @param  array<string, string>  $environment
+     */
+    private function run(string $script, array $environment = []): Process
     {
         $update = new Process(['sh', base_path(".docker/updater/{$script}")], $this->root(), [
             'JOURNAL_ROOT' => $this->root(),
@@ -100,6 +137,7 @@ final readonly class StandInInstallation
             'JOURNAL_UPDATER_STATE' => "{$this->folder}/state",
             'JOURNAL_UPDATER_LOOP' => "{$this->folder}/state/journal-updater",
             ...$this->docker->environment(),
+            ...$environment,
         ]);
         $update->run();
 

@@ -71,11 +71,6 @@ write_version_file() {
     printf '%s\n%s\n%s\n' "$newest" "$branch" "$tag" > storage/installation/installed-version
 }
 
-# A contained installation also runs the services of the contained profile.
-compose_profiles() {
-    [ "$arrangement" != contained ] || echo "--profile contained"
-}
-
 has_installed_commit() {
     [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null
 }

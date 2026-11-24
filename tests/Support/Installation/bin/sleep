@@ -1,9 +1,10 @@
 #!/bin/sh
-# A stand-in for sleep in tests: a script that starts to wait is ended, so a loop runs one round and no test waits.
+# A stand-in for sleep in tests: the updater loop's minute wait ends the loop, so it runs one round, and any shorter
+# pause, such as a retry's, passes at once; no test waits.
 set -eu
 
 main() {
-    kill -TERM "$PPID"
+    [ "$1" != 60 ] || kill -TERM "$PPID"
 }
 
 main "$@"
