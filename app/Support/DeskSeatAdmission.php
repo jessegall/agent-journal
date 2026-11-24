@@ -30,7 +30,7 @@ final readonly class DeskSeatAdmission
     public function seat(string $deskId, ActorIdentity $actor): AdmittedSeat
     {
         $this->locks->lockExclusive([AssigneeIdentity::ofActorIdentity($actor)]);
-        $desk = DeskRecord::lockedForSeating($deskId);
+        $desk = DeskRecord::ownForUpdate($deskId);
         $held = $this->heldSeat($desk, $actor);
 
         if ($held->isDefined()) {
@@ -49,7 +49,7 @@ final readonly class DeskSeatAdmission
     public function replace(SeatChange $change): AdmittedSeatChange
     {
         $this->locks->lockExclusive([$change->expected->holder, AssigneeIdentity::ofActorIdentity($change->actor)]);
-        $desk = DeskRecord::lockedForSeating($change->deskId);
+        $desk = DeskRecord::ownForUpdate($change->deskId);
         $seat = DeskSeat::ofDeskById($desk, $change->seatId);
         $before = $this->expectedOn($seat, $change->expected);
         $admitted = new AdmittedSeatChange($desk, $seat, $before, SeatOccupant::of($before), $change->actor);
@@ -64,7 +64,7 @@ final readonly class DeskSeatAdmission
     public function release(SeatRelease $release): AdmittedRelease
     {
         $this->locks->lockExclusive([$release->expected->holder]);
-        $desk = DeskRecord::lockedForSeating($release->deskId);
+        $desk = DeskRecord::ownForUpdate($release->deskId);
         $seat = DeskSeat::ofDeskById($desk, $release->seatId);
 
         return new AdmittedRelease($desk, $seat, $this->expectedOn($seat, $release->expected));

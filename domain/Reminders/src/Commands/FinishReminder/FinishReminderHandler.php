@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Reminders\Commands\FinishReminder;
 
+use App\Exceptions\ModelMissing;
 use Domain\Reminders\Commands\Support\ReminderCommandHandler;
 use Domain\Reminders\Exceptions\ReminderEnded;
-use Domain\Reminders\Exceptions\ReminderUnavailable;
 use Domain\Reminders\Models\Reminder;
 
 final readonly class FinishReminderHandler extends ReminderCommandHandler
 {
     /**
      * @throws ReminderEnded
-     * @throws ReminderUnavailable
+     * @throws ModelMissing
      */
     public function handle(FinishReminderCommand $command): void
     {

@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Exceptions\ModelMissing;
+use App\Exceptions\RecordUnavailable;
+use App\Support\TraitRequirements;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -18,7 +22,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(TraitRequirements::class);
+
+        // A row a model could not find answers as an unavailable record outside a command too.
+        $this->app->afterResolving(Handler::class, function (Handler $handler): void {
+            $handler->map(ModelMissing::class, RecordUnavailable::forMissing(...));
+        });
+
+        $this->app->resolving(function (mixed $resolved): void {
+            if (is_object($resolved)) {
+                $this->app->make(TraitRequirements::class)->assertMetBy($resolved::class);
+            }
+        });
     }
 
     /**

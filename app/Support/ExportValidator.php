@@ -50,6 +50,7 @@ final class ExportValidator
         'App\Concerns\CountsLoads',
         'App\Concerns\CountsPivotLoads',
         'App\Concerns\BoundedReads',
+        'App\Models\Concerns\FindsForUpdate',
         'App\Support\ReadBuilder',
         'App\Mcp\Tools\JournalTool',
         'App\Mcp\Tools\JournalReadTool',

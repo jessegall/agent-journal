@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Memory\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
+use App\Exceptions\RecordUnavailable;
 use App\Support\ActorIdentity;
 use Domain\Memory\Contracts\MemoryResolver;
-use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Values\MemoryCard;
 use Domain\Memory\Values\MemoryPage;
@@ -39,7 +39,7 @@ final readonly class OwnMemories implements MemoryResolver
     {
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->actors->actor()))->whereKey($memoryId)->first();
 
-        return $memory !== null ? self::cardOf($memory) : throw MemoryUnavailable::forId($memoryId);
+        return $memory !== null ? self::cardOf($memory) : throw RecordUnavailable::forModel(Memory::class, $memoryId);
     }
 
     private static function cardOf(Memory $memory): MemoryCard

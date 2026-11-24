@@ -16,19 +16,14 @@ use Illuminate\Contracts\Container\Container;
 /**
  * Runs a pipeline definition: every step in turn takes the output of the step before it. A step is a pipe, another
  * pipeline run as one step, or a Step listed inline: steps repeated while a condition holds, or a step chosen for each
- * value. Each pipe and pipeline is built once per process by the container, with the input a pipe takes read by
- * reflection, and kept for every later run; a step therefore holds only services that are the same for every request,
- * never request data. A pipe handed an input it does not take, or a run that ends on an output the caller does not
- * read, throws StepOutOfOrder.
+ * value. Each pipe and pipeline is built once per request by the container, with the input a pipe takes read by
+ * reflection, and kept in BuiltSteps for the rest of that request, so a pipe may take services that hold the request
+ * in hand. A pipe handed an input it does not take, or a run that ends on an output the caller does not read, throws
+ * StepOutOfOrder.
  */
 #[Singleton]
 final class PipelineRunner implements PipelineRunnerContract
 {
-    /**
-     * @var array<class-string<Pipable>, Closure(object): object>
-     */
-    private array $steps = [];
-
     public function __construct(private readonly Container $container, private readonly ReflectorFactory $reflectors) {}
 
     /**
@@ -72,14 +67,17 @@ final class PipelineRunner implements PipelineRunnerContract
     }
 
     /**
-     * The pipe or pipeline a class names, built the first time it runs.
+     * The pipe or pipeline a class names, built the first time it runs in the request in hand.
      *
      * @param  class-string<Pipable>  $class
      * @return Closure(object): object
      */
     private function step(string $class): Closure
     {
-        return $this->steps[$class] ??= $this->build($this->container->make($class));
+        return $this->container->make(BuiltSteps::class)->remember(
+            $class,
+            fn () => $this->build($this->container->make($class)),
+        );
     }
 
     /**

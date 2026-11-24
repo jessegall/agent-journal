@@ -22,7 +22,7 @@ final readonly class RevokeShareHandler implements CommandHandler
     {
         $owner = $command->dispatchedBy();
         $this->policy->assertManager($owner);
-        $share = Share::lockForChange($command->shareId);
+        $share = Share::ownForUpdate($command->shareId);
         $this->endings->revoke($share, ActorIdentity::of($owner));
 
         return $share->summary();

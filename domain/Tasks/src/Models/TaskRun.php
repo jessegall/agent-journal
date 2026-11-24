@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
-use App\Exceptions\RecordUnavailable;
+use App\Models\Concerns\FindsForUpdate;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Enums\TaskRunState;
@@ -40,6 +40,7 @@ use PhpOption\Option;
 final class TaskRun extends Model implements Assignable, ReadableModel
 {
     use BoundedReads;
+    use FindsForUpdate;
     use HasUlids;
     use Linkable;
 
@@ -87,18 +88,6 @@ final class TaskRun extends Model implements Assignable, ReadableModel
     {
         return self::ofTask($task, $task->run_number)
             ?? self::create($task, $task->run_number, $starter, $replyInboxId);
-    }
-
-    /**
-     * The run under its row lock.
-     *
-     * @throws RecordUnavailable
-     */
-    public static function lockedById(string $runId): self
-    {
-        return self::query()->whereKey($runId)->lockForUpdate()->firstOr(
-            fn () => throw RecordUnavailable::for(new RecordIdentity(self::LINK_TYPE, $runId)),
-        );
     }
 
     /**

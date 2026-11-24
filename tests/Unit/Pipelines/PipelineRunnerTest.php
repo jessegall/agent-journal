@@ -16,8 +16,8 @@ use Tests\Fixtures\Pipelines\CountWordsPipeline;
 use Tests\Fixtures\Pipelines\Words;
 
 /**
- * A pipeline hands each step's stage to the next, nests pipelines, repeats rounds and chooses steps, is resolved once,
- * runs steps listed inline, and names a step that stands out of order.
+ * A pipeline hands each step's stage to the next, nests pipelines, repeats rounds and chooses steps, is resolved once
+ * per request, runs steps listed inline, and names a step that stands out of order.
  */
 final class PipelineRunnerTest extends TestCase
 {
@@ -31,6 +31,20 @@ final class PipelineRunnerTest extends TestCase
 
         $this->assertSame([3, 2], [$first->count, $second->count]);
         $this->assertSame(1, CountWords::$built);
+    }
+
+    public function test_a_new_request_builds_its_pipes_anew_so_no_pipe_carries_one_request_into_the_next(): void
+    {
+        CountWords::$built = 0;
+        $container = new Container();
+        $pipelines = new PipelineRunner($container, new CatalogueReflectorFactory());
+
+        $pipelines->run(CountWordsPipeline::class, new Words('one'), Counted::class);
+        $pipelines->run(CountWordsPipeline::class, new Words('two'), Counted::class);
+        $container->forgetScopedInstances();
+        $pipelines->run(CountWordsPipeline::class, new Words('three'), Counted::class);
+
+        $this->assertSame(2, CountWords::$built);
     }
 
     public function test_steps_listed_inline_run_in_order_with_no_definition_class(): void

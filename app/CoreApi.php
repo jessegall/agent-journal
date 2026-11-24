@@ -309,6 +309,7 @@ use App\Contracts\Chat\Answer;
 use App\Contracts\Chat\ChatAnswer;
 use App\Contracts\Chat\ChatDepartures;
 use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Chat\ChatLines;
 use App\Contracts\Chat\ChatMemberPolicies;
 use App\Contracts\Chat\ChatParticipationEnding;
@@ -318,6 +319,7 @@ use App\Contracts\Chat\Desk;
 use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxAccess;
 use App\Contracts\Chat\InboxDestinationResolver;
+use App\Contracts\Chat\InboxIntervalWriter;
 use App\Contracts\Chat\InboxNotices;
 use App\Contracts\Chat\InboxProvider;
 use App\Contracts\Chat\InboxRegistration;
@@ -886,6 +888,7 @@ use App\Exceptions\MiddlewareDeclarationInvalid;
 use App\Exceptions\MiddlewareListedTwice;
 use App\Exceptions\MiddlewareSkippedCommand;
 use App\Exceptions\MiddlewareSwallowedFailure;
+use App\Exceptions\ModelMissing;
 use App\Exceptions\ModelReadAllRefused;
 use App\Exceptions\ModelRequired;
 use App\Exceptions\ModelUnavailable;
@@ -1021,6 +1024,7 @@ use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
+use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\AssignableListing;
 use App\Models\Support\BelongsToOneActor;
 use App\Policies\CommentPolicy;
@@ -1661,6 +1665,8 @@ final class CoreApi
                 InboxRegistration::class,
                 InboxProvider::class,
                 InboxAccess::class,
+                ChatInboxStore::class,
+                InboxIntervalWriter::class,
                 ActorDesks::class,
                 ActorProvisioning::class,
                 RunClaims::class,
@@ -2844,6 +2850,7 @@ final class CoreApi
                 ActorNotAllowed::class,
                 GrantNotRegistered::class,
                 ConsoleOwnerMissing::class,
+                ModelMissing::class,
                 InboxUnavailable::class,
                 AnswerImpossible::class,
                 MessageBodyTooLong::class,
@@ -2995,6 +3002,7 @@ final class CoreApi
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,
+                FindsForUpdate::class,
                 ReadBuilder::class,
                 CountsLoads::class,
                 CountsPivotLoads::class,

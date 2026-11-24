@@ -23,7 +23,7 @@
  *    "app": {"url": "http://localhost:54700/settings", "steps": [{"login": "owner@journal.local"}],
  *            "part": "section[aria-label='General']"}}
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import pixelmatch from 'pixelmatch';
@@ -87,6 +87,8 @@ if (viewPath === undefined) {
 
 const view = JSON.parse(readFileSync(viewPath, 'utf8')) as View;
 const folder = resolve('storage/design-compare', view.name);
+// One signed-in session kept across views, so a run of many views does not sign in often enough to be throttled.
+const sessionPath = resolve('storage/design-compare/session.json');
 mkdirSync(folder, { recursive: true });
 
 const browser = await chromium.launch();
@@ -119,6 +121,7 @@ async function capture(side: Side, labels: Record<string, string>): Promise<{ el
     const page = await browser.newPage({
         viewport: { width: view.width ?? 1440, height: view.height ?? 900 },
         colorScheme: view.theme ?? 'dark',
+        storageState: existsSync(sessionPath) ? sessionPath : undefined,
     });
 
     await page.goto(addressOf(side.url));
@@ -165,6 +168,9 @@ async function take(page: Page, step: Step): Promise<void> {
         await page.goto(addressOf(step.goto));
     } else if ('evaluate' in step) {
         await page.evaluate(step.evaluate);
+    } else if ((await page.locator('input[type=password]').count()) === 0) {
+        // The kept session is still signed in, so the sign-in page sent it on.
+        return;
     } else {
         await page.locator('input[type=email], input[name=email]').first().fill(withEnvironment(step.login));
         await page.locator('input[type=password]').first().fill(withEnvironment(step.password ?? '${COMPARE_PASSWORD}'));
@@ -172,6 +178,7 @@ async function take(page: Page, step: Step): Promise<void> {
         await page.locator('button[type=submit], form button').last().click();
         await page.waitForURL((address) => address.href !== signInPage);
         await page.waitForLoadState('networkidle');
+        await page.context().storageState({ path: sessionPath });
         return;
     }
 

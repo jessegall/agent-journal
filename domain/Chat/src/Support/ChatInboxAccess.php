@@ -6,11 +6,11 @@ namespace Domain\Chat\Support;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Chat\Inbox;
 use App\Contracts\Chat\InboxAccess;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
-use App\Support\ChatInboxes;
 use App\Support\ChatInterval;
 use App\Support\InboxMembers;
 use App\Support\InboxMembership;
@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 final readonly class ChatInboxAccess implements InboxAccess
 {
     public function __construct(
-        private ChatInboxes $chats,
+        private ChatInboxStore $chats,
         private ChatEligibility $eligibility,
         private ChatRevocation $revocation,
     ) {}

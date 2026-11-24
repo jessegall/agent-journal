@@ -9,9 +9,9 @@ use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
-use Domain\Memory\Exceptions\MemoryUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +38,7 @@ final class Memory extends Model implements Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
+    use FindsForUpdate;
     use HasNumber;
     use HasUlids;
     use Linkable;
@@ -79,18 +80,6 @@ final class Memory extends Model implements Numbered, ReadableModel
     }
 
     // ----------[ Queries ]----------
-
-    /**
-     * One of the calling actor's own memories, locked for a change; another actor's answers as unavailable.
-     *
-     * @throws MemoryUnavailable
-     */
-    public static function ownForUpdate(string $memoryId): self
-    {
-        return self::query()->whereKey($memoryId)->lockForUpdate()->firstOr(
-            fn () => throw MemoryUnavailable::forId($memoryId),
-        );
-    }
 
     // ----------[ Mutations ]----------
 

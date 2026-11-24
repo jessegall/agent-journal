@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Chat\Inbox;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Chats\InboxInterval;
@@ -14,10 +15,8 @@ use Illuminate\Database\Eloquent\Builder;
  * Core's side of a chat inbox for the domain that provides it: making the inbox row, locking it while membership must
  * stay still, and reading its active intervals as plain data.
  */
-final readonly class ChatInboxes
+final readonly class ChatInboxes implements ChatInboxStore
 {
-    public const string PROVIDER_KEY = 'chat';
-
     /**
      * Makes the chat inbox row under the provider's own id for it, and answers the new inbox id.
      */

@@ -19,7 +19,7 @@ final class OwnerSeeder extends Seeder
 {
     public function run(JournalCommands $commands): void
     {
-        $owner = User::installOwner('Owner', 'owner@journal.local', 'password');
+        $owner = $this->owner();
 
         if ($owner->wasRecentlyCreated) {
             $commands->runAsJournal(
@@ -28,5 +28,13 @@ final class OwnerSeeder extends Seeder
                 new ProvisionActorDeskCommand(ActorIdentity::of($owner), $owner->name),
             );
         }
+    }
+
+    /**
+     * The local owner, made the first time it is asked for.
+     */
+    public function owner(): User
+    {
+        return User::installOwner('Owner', 'owner@journal.local', 'password');
     }
 }

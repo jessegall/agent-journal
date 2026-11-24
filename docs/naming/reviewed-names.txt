@@ -2214,6 +2214,7 @@ class	BuiltInProfileMissing
 class	BuiltInProfilePins
 class	BuiltInProfiles
 class	BuiltState
+class	BuiltSteps
 class	BuiltinResult
 class	BuiltinSteps
 class	BundleActivated
@@ -2305,7 +2306,6 @@ class	CanonicalRenderer
 class	CapabilitiesReadTool
 class	CapabilitiesResolver
 class	CapabilityMatrixInvalid
-class	CapabilityWithoutTrait
 class	CapacityCheck
 class	CapacityRelease
 class	CapacityReservation
@@ -4065,7 +4065,6 @@ class	MemorySearchAccess
 class	MemorySearchProvider
 class	MemoryServiceProvider
 class	MemorySkill
-class	MemoryUnavailable
 class	MemoryWriteTool
 class	Menu
 class	MenuEntry
@@ -4166,6 +4165,7 @@ class	MiddlewareStep
 class	MiddlewareSwallowedFailure
 class	MissingBottomState
 class	ModelConventions
+class	ModelMissing
 class	ModelReadAllRefused
 class	ModelRequired
 class	ModelSelection
@@ -5276,6 +5276,7 @@ class	RefusalMapper
 class	RefusalReason
 class	RefusalReplayed
 class	RefuseArrayAssignment
+class	RefuseMissingModels
 class	RefuseRunnerOfOtherArrangement
 class	RefuseStaleRuns
 class	RefuseTaskChangeUnderReview
@@ -5363,7 +5364,6 @@ class	ReminderCommandHandler
 class	ReminderEnded
 class	ReminderPage
 class	ReminderPolicy
-class	ReminderUnavailable
 class	RemindersDomain
 class	RemindersRequest
 class	RemindersServiceProvider
@@ -5560,6 +5560,7 @@ class	RequireMessageAnswerRequest
 class	RequiredDomainMissing
 class	RequiredDomainTwice
 class	RequiredServices
+class	RequiresInterface
 class	RequiresRequestKey
 class	ReserveStarts
 class	ReservedWordReader
@@ -7104,6 +7105,8 @@ class	ToolRequested
 class	ToolResult
 class	ToolRules
 class	ToolVersions
+class	TraitInterfaceMissing
+class	TraitRequirements
 class	TraitsUsed
 class	TransactionListenerConsent
 class	TransactionListenerDrain
@@ -7443,7 +7446,7 @@ constant	ChatAccessEnded::NAME
 constant	ChatAdmissionPolicy::CANDIDATE_LIMIT
 constant	ChatExcerpt::MESSAGE_LIMIT
 constant	ChatInboxProvider::UNTITLED
-constant	ChatInboxes::PROVIDER_KEY
+constant	ChatInboxStore::PROVIDER_KEY
 constant	ChatRevocation::INLINE_CHAT_LIMIT
 constant	ChatWindowResolver::INBOX_MISSING
 constant	ChatWindowResolver::PAGE
@@ -7604,7 +7607,6 @@ constant	DocumentSearchProvider::SNIPPET_CONTEXT_CHARACTERS
 constant	DocumentType::VALUE
 constant	DocumentsDomain::DOCUMENT_ACTIONS
 constant	DocumentsDomain::SHARE_LINKED_RECORD
-constant	Domain::TRAIT_OF_CAPABILITY
 constant	DomainEventServiceProvider::LANES
 constant	DomainEventServiceProvider::LANES_VERSION
 constant	DomainEventServiceProvider::STATE_EVENTS
@@ -8947,6 +8949,7 @@ interface	ChatAnswer
 interface	ChatDeliveryEvent
 interface	ChatDepartures
 interface	ChatEligibility
+interface	ChatInboxStore
 interface	ChatLineSource
 interface	ChatLines
 interface	ChatMemberPolicies
@@ -9045,6 +9048,7 @@ interface	IdentityLinks
 interface	Inbox
 interface	InboxAccess
 interface	InboxDestinationResolver
+interface	InboxIntervalWriter
 interface	InboxNotices
 interface	InboxProvider
 interface	InboxRegistration
@@ -11391,6 +11395,7 @@ method	BuiltInStartProfiles::defaultVariantOf()
 method	BuiltInStartProfiles::pin()
 method	BuiltInStartProfiles::policyFor()
 method	BuiltState::__construct()
+method	BuiltSteps::remember()
 method	BuiltinResult::__construct()
 method	BuiltinSteps::assignmentsIn()
 method	BuiltinSteps::changeFolder()
@@ -11569,7 +11574,6 @@ method	CapabilitiesResolver::read()
 method	CapabilityMatrixInvalid::row()
 method	CapabilityMatrixInvalid::unreadable()
 method	CapabilityMatrixInvalid::withoutRows()
-method	CapabilityWithoutTrait::for()
 method	CapacityCheck::__construct()
 method	CapacityCheck::shortageFor()
 method	CapacityRelease::releaseFor()
@@ -11752,6 +11756,13 @@ method	ChatInboxProvider::labelOf()
 method	ChatInboxRefused::forDeskPosting()
 method	ChatInboxRefused::forInbox()
 method	ChatInboxRefused::refusalCode()
+method	ChatInboxStore::activeInterval()
+method	ChatInboxStore::activeIntervals()
+method	ChatInboxStore::isActiveMember()
+method	ChatInboxStore::lockExclusive()
+method	ChatInboxStore::lockShared()
+method	ChatInboxStore::memberInboxIds()
+method	ChatInboxStore::open()
 method	ChatInboxes::activeInterval()
 method	ChatInboxes::activeIntervals()
 method	ChatInboxes::isActiveMember()
@@ -13596,7 +13607,6 @@ method	DeskRecord::forwarding()
 method	DeskRecord::inboxId()
 method	DeskRecord::inboxLabel()
 method	DeskRecord::isPersonal()
-method	DeskRecord::lockedForSeating()
 method	DeskRecord::named()
 method	DeskRecord::occupiedBy()
 method	DeskRecord::preferredBy()
@@ -15380,6 +15390,7 @@ method	FindNextSubstitution::isTest()
 method	FindNextSubstitution::substitutionOf()
 method	FindNextSubstitution::wordsInside()
 method	FindReplay::handle()
+method	FindsForUpdate::ownForUpdate()
 method	Fingerprint::__construct()
 method	Fingerprint::isSettled()
 method	Fingerprint::key()
@@ -16223,6 +16234,10 @@ method	InboxInterval::isActive()
 method	InboxInterval::isHeldBy()
 method	InboxInterval::stillOpen()
 method	InboxInterval::takeRole()
+method	InboxIntervalWriter::enter()
+method	InboxIntervalWriter::leave()
+method	InboxIntervalWriter::recordClosed()
+method	InboxIntervalWriter::transfer()
 method	InboxIntervals::enter()
 method	InboxIntervals::leave()
 method	InboxIntervals::lock()
@@ -17312,7 +17327,6 @@ method	MemoriesListTool::schema()
 method	Memory::casts()
 method	Memory::create()
 method	Memory::isAtRevision()
-method	Memory::ownForUpdate()
 method	Memory::revise()
 method	Memory::saveFor()
 method	MemoryCalls::__construct()
@@ -17365,8 +17379,6 @@ method	MemorySkill::description()
 method	MemorySkill::key()
 method	MemorySkill::name()
 method	MemorySkill::sections()
-method	MemoryUnavailable::forId()
-method	MemoryUnavailable::refusalCode()
 method	MemoryWriteTool::present()
 method	Menu::__construct()
 method	Menu::general()
@@ -17811,6 +17823,8 @@ method	ModelConventions::modelsIn()
 method	ModelConventions::openingCalls()
 method	ModelConventions::readPolicyViolations()
 method	ModelConventions::violationsOf()
+method	ModelMissing::__construct()
+method	ModelMissing::for()
 method	ModelReadAllRefused::for()
 method	ModelRequired::forStart()
 method	ModelRequired::reason()
@@ -21186,6 +21200,8 @@ method	RecordThreadTokensHandler::__construct()
 method	RecordThreadTokensHandler::handle()
 method	RecordUnavailable::for()
 method	RecordUnavailable::forActor()
+method	RecordUnavailable::forMissing()
+method	RecordUnavailable::forModel()
 method	RecordUnavailable::numbered()
 method	RecordUnavailable::refusalCode()
 method	RecordUnavailable::status()
@@ -21361,6 +21377,7 @@ method	ReflectionSources::isOwnFolder()
 method	ReflectionSources::isPhpSource()
 method	ReflectionSources::opensAsPhp()
 method	Reflector::__construct()
+method	Reflector::allTraits()
 method	Reflector::asInstance()
 method	Reflector::backingType()
 method	Reflector::cases()
@@ -21471,6 +21488,7 @@ method	RefusalReplayed::refusalCode()
 method	RefusalReplayed::refusalDetails()
 method	RefusalReplayed::status()
 method	RefuseArrayAssignment::handle()
+method	RefuseMissingModels::handle()
 method	RefuseRunnerOfOtherArrangement::__construct()
 method	RefuseRunnerOfOtherArrangement::handle()
 method	RefuseStaleRuns::__construct()
@@ -21718,7 +21736,6 @@ method	Reminder::casts()
 method	Reminder::create()
 method	Reminder::finish()
 method	Reminder::inDueOrder()
-method	Reminder::ownForUpdate()
 method	ReminderCard::__construct()
 method	ReminderContribution::add()
 method	ReminderEnded::as()
@@ -21727,7 +21744,6 @@ method	ReminderPage::lastPage()
 method	ReminderPolicy::model()
 method	ReminderStatus::isWaiting()
 method	ReminderStatus::label()
-method	ReminderUnavailable::forId()
 method	RemindersDomain::commands()
 method	RemindersDomain::description()
 method	RemindersDomain::exports()
@@ -22152,6 +22168,8 @@ method	RequireMessageAnswerRequest::rules()
 method	RequiredDomainMissing::for()
 method	RequiredDomainTwice::for()
 method	RequiredServices::check()
+method	RequiresInterface::__construct()
+method	RequiresInterface::isMetBy()
 method	RequiresRequestKey::__construct()
 method	ReserveStarts::__construct()
 method	ReserveStarts::hasRetired()
@@ -23980,7 +23998,6 @@ method	Share::liveFor()
 method	Share::liveNow()
 method	Share::liveScopeVersions()
 method	Share::lockAwaitingGatewayOf()
-method	Share::lockForChange()
 method	Share::lockForRead()
 method	Share::lockPastDeadline()
 method	Share::lockPendingOf()
@@ -26683,7 +26700,6 @@ method	TaskRun::create()
 method	TaskRun::currentFor()
 method	TaskRun::finish()
 method	TaskRun::isFinished()
-method	TaskRun::lockedById()
 method	TaskRun::ofPairs()
 method	TaskRun::ofTask()
 method	TaskRun::replyInboxId()
@@ -27327,6 +27343,9 @@ method	ToolVersions::__construct()
 method	ToolVersions::hasInstalled()
 method	ToolVersions::lockOf()
 method	ToolVersions::ofProject()
+method	TraitInterfaceMissing::for()
+method	TraitRequirements::assertMetBy()
+method	TraitRequirements::hasChecked()
 method	TraitsUsed::findingsIn()
 method	TraitsUsed::key()
 method	TransactionListenerDrain::__construct()
@@ -27740,6 +27759,7 @@ method	WakeStatusController::__invoke()
 method	WakeStatusRequest::messageId()
 method	WakeStatusRequest::rules()
 method	WakeStatuses::__construct()
+method	WalkStack::__construct()
 method	WalkStack::answerOf()
 method	WalkStack::handle()
 method	WalkStep::__construct()
@@ -29265,6 +29285,7 @@ parameter	$intents
 parameter	$interest
 parameter	$interestId
 parameter	$interface
+parameter	$interfaces
 parameter	$interval
 parameter	$intervalId
 parameter	$intervalMs
@@ -32437,6 +32458,7 @@ property	BuiltInDesks::$desks
 property	BuiltInProfilePins::$dispatchers
 property	BuiltInProfilePins::$profiles
 property	BuiltState::$state
+property	BuiltSteps::$steps
 property	BuiltinResult::$context
 property	BuiltinResult::$status
 property	BuiltinResult::$stderr
@@ -36147,6 +36169,8 @@ property	MiddlewareRunner::$registry
 property	MiddlewareRunner::$subjects
 property	MiddlewareStep::$entry
 property	MiddlewareStep::$middleware
+property	ModelMissing::$id
+property	ModelMissing::$model
 property	ModelSelection::$model
 property	ModelSelection::$type
 property	ModelWrite::$evidence
@@ -36921,7 +36945,6 @@ property	PipedCommandsToParse::$toParse
 property	PipelineAdapter::$pipelines
 property	PipelineRunner::$container
 property	PipelineRunner::$reflectors
-property	PipelineRunner::$steps
 property	PlaceRoots::$config
 property	PlacedChatEnvelope::$envelope
 property	PlacedChatEnvelope::$event
@@ -39054,6 +39077,7 @@ property	RequireMessageAnswerCommand::$messageId
 property	RequireMessageAnswerCommand::$signature
 property	RequireMessageAnswerHandler::$inboxes
 property	RequireMessageAnswerHandler::$responsibilities
+property	RequiresInterface::$interfaces
 property	RequiresRequestKey::$retentionDays
 property	RequiresRequestKey::$tombstoneDays
 property	ReserveStarts::$sessions
@@ -42168,6 +42192,7 @@ property	ToolResult::$responseFields
 property	ToolResult::$status
 property	ToolResult::$toolName
 property	ToolVersions::$versions
+property	TraitRequirements::$checked
 property	TransactionListenerDrain::$container
 property	TransactionListenerDrain::$registry
 property	TransactionalIdentityLinks::$transaction
@@ -42379,6 +42404,8 @@ property	WakeStatus::$actorType
 property	WakeStatus::$requestId
 property	WakeStatus::$state
 property	WakeStatuses::$members
+property	WalkStack::$admission
+property	WalkStack::$rewrite
 property	WalkStep::$answer
 property	WalkStep::$contextCount
 property	WalkStep::$denialReason
@@ -42525,6 +42552,7 @@ trait	ComparesTypeAndId
 trait	CountsLoads
 trait	CountsPivotLoads
 trait	CreatedWithAttention
+trait	FindsForUpdate
 trait	GrantedInEnvironment
 trait	HasActorColumns
 trait	HasAssignables

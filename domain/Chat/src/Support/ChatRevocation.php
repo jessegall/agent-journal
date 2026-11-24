@@ -6,15 +6,15 @@ namespace Domain\Chat\Support;
 
 use App\Contracts\Chat\ChatDepartures;
 use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Chat\ChatParticipationEnding;
 use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxIntervalWriter;
 use App\Contracts\Chat\InboxResolver;
 use App\Enums\ChatPermission;
 use App\Enums\LeaveReason;
 use App\Support\ActorIdentity;
-use App\Support\ChatInboxes;
 use App\Support\ChatInterval;
-use App\Support\InboxIntervals;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ConversationState;
 use Domain\Chat\Models\Conversation;
@@ -34,9 +34,9 @@ final readonly class ChatRevocation implements ChatParticipationEnding
     public const int INLINE_CHAT_LIMIT = 100;
 
     public function __construct(
-        private ChatInboxes $chats,
+        private ChatInboxStore $chats,
         private InboxResolver $inboxes,
-        private InboxIntervals $intervals,
+        private InboxIntervalWriter $intervals,
         private ChatDepartures $departures,
         private ChatEligibility $eligibility,
         private int $inlineChatLimit = self::INLINE_CHAT_LIMIT,

@@ -13,6 +13,7 @@ use App\CommandMiddleware\GuardCommandOrigin;
 use App\CommandMiddleware\LogCommand;
 use App\CommandMiddleware\RecordReceipt;
 use App\CommandMiddleware\RecordRefusalReceipt;
+use App\CommandMiddleware\RefuseMissingModels;
 use App\CommandMiddleware\RunInTransaction;
 use App\CommandMiddleware\ValidateCommand;
 use App\Contracts\Bus\CommandMiddleware;
@@ -34,6 +35,7 @@ final class CommandFrame
         ValidateCommand::class,
         AdmitStack::class,
         RecordRefusalReceipt::class,
+        RefuseMissingModels::class,
     ];
 
     /**

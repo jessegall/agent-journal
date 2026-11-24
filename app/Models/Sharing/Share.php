@@ -24,7 +24,7 @@ use App\Exceptions\ShareEndInvalid;
 use App\Exceptions\ShareGatewayUnavailable;
 use App\Exceptions\ShareProposalUnavailable;
 use App\Exceptions\ShareRetryRefused;
-use App\Exceptions\ShareUnavailable;
+use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneRoot;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
@@ -91,6 +91,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
 {
     use BelongsToOneRoot;
     use BoundedReads;
+    use FindsForUpdate;
     use HasNumber;
     use HasUlids;
     use Linkable;
@@ -174,16 +175,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     }
 
     // ----------[ Queries ]----------
-
-    /**
-     * The share of this id, locked until the transaction ends.
-     *
-     * @throws ShareUnavailable
-     */
-    public static function lockForChange(string $id): self
-    {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw ShareUnavailable::for($id));
-    }
 
     /**
      * The proposals and live shares whose deadline has passed but whose state has not caught up, oldest first and

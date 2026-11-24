@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Chat\Desk;
 use App\Contracts\Records\ReadableModel;
-use App\Exceptions\DeskUnavailable;
+use App\Models\Concerns\FindsForUpdate;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
@@ -37,6 +37,7 @@ use PhpOption\Option;
 final class DeskRecord extends Model implements Desk, ReadableModel
 {
     use BoundedReads;
+    use FindsForUpdate;
     use HasUlids;
     use Linkable;
 
@@ -96,18 +97,6 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     public static function withName(string $name): Option
     {
         return self::query()->named($name)->firstOption();
-    }
-
-    /**
-     * The desk under an exclusive lock, so its seating cannot change under a seat change.
-     *
-     * @throws DeskUnavailable
-     */
-    public static function lockedForSeating(string $deskId): self
-    {
-        return self::query()->whereKey($deskId)->lockForUpdate()->firstOr(
-            fn () => throw DeskUnavailable::forId($deskId),
-        );
     }
 
     /**

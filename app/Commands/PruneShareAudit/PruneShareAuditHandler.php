@@ -42,7 +42,7 @@ final readonly class PruneShareAuditHandler implements CommandHandler
         foreach ($rowsOfShare as $shareId => $types) {
             $allowed = count(array_filter($types, fn (ShareAuditType $type) => $type === ShareAuditType::ReadAllowed));
             $denied = count(array_filter($types, fn (ShareAuditType $type) => $type === ShareAuditType::ReadDenied));
-            Share::lockForChange($shareId)->countPruned($allowed, $denied, count($types) - $allowed - $denied, $now);
+            Share::ownForUpdate($shareId)->countPruned($allowed, $denied, count($types) - $allowed - $denied, $now);
         }
 
         $this->removeAll(array_map(fn (ShareAudit $audit) => $audit->id, $batch));

@@ -1,18 +1,23 @@
 {
     "accounts-reader": {
-        "ranAt": "2026-11-24T04:25:17.502Z",
+        "ranAt": "2026-11-24T05:00:04.901Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 115
     },
     "accounts-row": {
-        "ranAt": "2026-11-24T04:24:54.838Z",
+        "ranAt": "2026-11-24T04:55:32.557Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 30
     },
     "documents-header": {
-        "ranAt": "2026-11-24T04:23:39.205Z",
+        "ranAt": "2026-11-24T04:59:39.030Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 16
+    },
+    "documents-reader": {
+        "ranAt": "2026-11-24T05:00:01.172Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 177
     },
     "empty-page": {
         "ranAt": "2026-11-24T04:23:42.936Z",
@@ -20,48 +25,88 @@
         "differencesLeft": 9
     },
     "home-agent-bar": {
-        "ranAt": "2026-11-24T04:21:06.374Z",
+        "ranAt": "2026-11-24T04:52:12.781Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 43
     },
     "home-chat": {
-        "ranAt": "2026-11-24T04:21:10.645Z",
+        "ranAt": "2026-11-24T04:52:17.882Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 814
     },
     "home-composer": {
-        "ranAt": "2026-11-24T04:21:14.693Z",
+        "ranAt": "2026-11-24T04:52:21.908Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 15
     },
     "home-docked-activity": {
-        "ranAt": "2026-11-24T04:21:21.491Z",
+        "ranAt": "2026-11-24T04:52:28.869Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 9227
     },
     "home-floating-activity": {
-        "ranAt": "2026-11-24T04:21:27.568Z",
+        "ranAt": "2026-11-24T04:52:35.805Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 9448
     },
     "plans-header": {
-        "ranAt": "2026-11-24T04:22:43.338Z",
+        "ranAt": "2026-11-24T04:53:51.127Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 7
     },
+    "plans-reader": {
+        "ranAt": "2026-11-24T04:53:58.539Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 50
+    },
+    "plans-row": {
+        "ranAt": "2026-11-24T04:53:54.665Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 30
+    },
+    "profiles-reader": {
+        "ranAt": "2026-11-24T04:56:27.217Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 62
+    },
+    "sequences-reader": {
+        "ranAt": "2026-11-24T04:55:28.982Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 161
+    },
+    "sequences-row": {
+        "ranAt": "2026-11-24T04:55:24.970Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 5
+    },
     "settings": {
-        "ranAt": "2026-11-24T04:25:40.066Z",
+        "ranAt": "2026-11-24T04:56:31.198Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 52
     },
+    "settings-connect": {
+        "ranAt": "2026-11-24T05:01:28.078Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 26
+    },
     "sidebar": {
-        "ranAt": "2026-11-24T04:21:31.797Z",
+        "ranAt": "2026-11-24T04:59:32.075Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 13
     },
     "tasks-header": {
-        "ranAt": "2026-11-24T04:21:35.572Z",
+        "ranAt": "2026-11-24T04:59:35.561Z",
         "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
         "differencesLeft": 46
+    },
+    "tasks-reader": {
+        "ranAt": "2026-11-24T04:53:47.536Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 361
+    },
+    "tasks-row": {
+        "ranAt": "2026-11-24T04:53:43.650Z",
+        "designHash": "b5e2d2e6cd18e944e32ce7b07a27321547d4c636ca84e7875963b06c5336b6c7",
+        "differencesLeft": 30
     }
 }

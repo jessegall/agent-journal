@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Chat\Support;
 
 use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Chat\InboxResolver;
 use App\Enums\ActorType;
 use App\Enums\ChatPermission;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAdmission;
-use App\Support\ChatInboxes;
 use Domain\Chat\Models\Conversation;
 
 /**
@@ -26,7 +26,7 @@ final readonly class ChatAdmissionPolicy
     public function __construct(
         private ChatEligibility $eligibility,
         private AgentChatAdmission $agents,
-        private ChatInboxes $chats,
+        private ChatInboxStore $chats,
         private InboxResolver $inboxes,
     ) {}
 

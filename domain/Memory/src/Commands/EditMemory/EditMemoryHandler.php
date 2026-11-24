@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Commands\EditMemory;
 
+use App\Exceptions\ModelMissing;
 use Domain\Memory\Commands\Support\MemoryCommandHandler;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
-use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 
 /**
@@ -15,7 +15,7 @@ use Domain\Memory\Models\Memory;
 final readonly class EditMemoryHandler extends MemoryCommandHandler
 {
     /**
-     * @throws MemoryUnavailable
+     * @throws ModelMissing
      * @throws MemoryRevisionChanged
      */
     public function handle(EditMemoryCommand $command): string

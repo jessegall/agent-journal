@@ -7,6 +7,7 @@ namespace Domain\Chat\Resolvers\Support;
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Chat\ChatLines;
 use App\Contracts\Chat\ConversationResolver;
 use App\Contracts\Chat\InboxResolver;
@@ -20,7 +21,6 @@ use App\Resolvers\Support\ChatDeliveries;
 use App\Support\ActorIdentity;
 use App\Support\AgentDrivers;
 use App\Support\AgentOption;
-use App\Support\ChatInboxes;
 use App\Support\ChatInterval;
 use App\Values\ChatLine;
 use Domain\Chat\Data\ChatCapabilitiesData;
@@ -49,7 +49,7 @@ final readonly class ChatConversations
         private ConversationResolver $messages,
         private ChatLines $lines,
         private InboxResolver $inboxes,
-        private ChatInboxes $chats,
+        private ChatInboxStore $chats,
         private ActorLabels $labels,
         private DockProjection $dock,
         private ChatEligibility $eligibility,

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
+use App\Contracts\Chat\ChatInboxStore;
+use App\Contracts\Chat\InboxIntervalWriter;
 use App\Enums\ActorType;
 use App\Enums\IntervalRole;
 use App\Support\ActorIdentity;
 use App\Support\AgentOption;
-use App\Support\ChatInboxes;
-use App\Support\InboxIntervals;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DirectChat;
 use Illuminate\Support\Str;
@@ -21,8 +21,8 @@ use Illuminate\Support\Str;
 final readonly class PairChats
 {
     public function __construct(
-        private ChatInboxes $chats,
-        private InboxIntervals $intervals,
+        private ChatInboxStore $chats,
+        private InboxIntervalWriter $intervals,
     ) {}
 
     public function open(ActorIdentity $user, AgentOption $agent): Conversation

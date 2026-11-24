@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxIntervalWriter;
 use App\Enums\IntervalRole;
 use App\Enums\LeaveReason;
 use App\Enums\TimelineEventType;
@@ -19,7 +20,7 @@ use Carbon\CarbonImmutable;
  * Joining and leaving a chat inbox under its row lock: each change takes the inbox's next timeline position, opens or
  * ends the member's interval and writes the event at that position. Joining an actor already active changes nothing.
  */
-final readonly class InboxIntervals
+final readonly class InboxIntervals implements InboxIntervalWriter
 {
     /**
      * The actor's active interval, opened at the next position with its joined event, or the one it already holds.

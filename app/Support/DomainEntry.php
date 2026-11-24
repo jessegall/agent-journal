@@ -39,6 +39,7 @@ use App\Exceptions\NotADomain;
 use App\Exceptions\RequiredDomainTwice;
 use App\Exceptions\SkillConditionRefused;
 use App\Exceptions\SkillDeclarationRefused;
+use App\Exceptions\TraitInterfaceMissing;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\ExportValidator as ExportsCheck;
@@ -555,10 +556,15 @@ final readonly class DomainEntry
     }
 
     /**
-     * Runs this domain's bootstrappers one by one, each built by the container.
+     * Runs this domain's bootstrappers one by one, each built by the container, once its traits found what they
+     * need of it.
+     *
+     * @throws TraitInterfaceMissing
      */
     public function boot(Container $container): void
     {
+        $container->make(TraitRequirements::class)->assertMetBy($this->domain::class);
+
         foreach ($this->domain->bootSteps() as $bootstrapper) {
             $container->make($bootstrapper)($this);
         }

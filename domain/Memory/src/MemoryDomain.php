@@ -18,7 +18,6 @@ use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
-use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Mcp\Resources\MemoryResource;
 use Domain\Memory\Policies\MemoryPolicy;
 use Domain\Memory\Support\MemorySearchAccess;
@@ -51,7 +50,7 @@ final class MemoryDomain extends Domain implements
         return Exports::make()
             ->contracts(MemoryResolver::class)
             ->values(MemoryPage::class, MemoryCard::class)
-            ->exceptions(MemoryUnavailable::class, MemoryRevisionChanged::class)
+            ->exceptions(MemoryRevisionChanged::class)
             ->build();
     }
 

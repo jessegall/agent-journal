@@ -6,13 +6,13 @@ namespace Domain\Memory\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\RecordUnavailable;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
 use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Contracts\MemoryResolver;
-use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
@@ -111,7 +111,7 @@ final class MemoryCommandsTest extends TestCase
         $this->artisan('memory:save', ['text' => self::MEMORY_TEXT])->assertExitCode(0);
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
 
-        $notYours = "Memory {$memory->id} is not one of yours.";
+        $notYours = "Memory {$memory->id} does not exist or is not available to you.";
         $edit = ['memory_id' => $memory->id, 'revision' => 1, 'text' => 'Taken.', 'weight' => null];
 
         $this->signed($this->other, '/agent/memory/edit', [...$edit, 'request_key' => bin2hex(random_bytes(8))])
@@ -207,7 +207,7 @@ final class MemoryCommandsTest extends TestCase
         $this->app->forgetScopedInstances();
         $this->startRequestAs($this->other->agent->id, $this->other->session->id);
 
-        $this->expectException(MemoryUnavailable::class);
+        $this->expectException(RecordUnavailable::class);
 
         $this->app->make(MemoryResolver::class)->memory($memory->id);
     }

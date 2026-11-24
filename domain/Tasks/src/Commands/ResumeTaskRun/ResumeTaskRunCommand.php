@@ -28,6 +28,6 @@ final readonly class ResumeTaskRunCommand extends Command implements RecordComma
 
     public function subject(): Task
     {
-        return Task::lockedById(TaskRun::lockedById($this->runId)->task_id);
+        return Task::lockedById(TaskRun::ownForUpdate($this->runId)->task_id);
     }
 }

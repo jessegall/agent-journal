@@ -7,7 +7,7 @@ defineProps<{ title: string; abstract?: string }>();
 </script>
 
 <template>
-    <article class="flex max-w-190 flex-col">
+    <article data-reader class="flex max-w-190 flex-col">
         <header class="px-5.5 pt-4.5">
             <template v-if="$slots.meta">
                 <div

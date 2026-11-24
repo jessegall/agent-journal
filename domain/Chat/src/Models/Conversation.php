@@ -7,11 +7,11 @@ namespace Domain\Chat\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
-use App\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ConversationState;
 use Domain\Chat\Events\ChatReconciled;
@@ -52,7 +52,7 @@ final class Conversation extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string CHAT_INBOX_PROVIDER = ChatInboxes::PROVIDER_KEY;
+    public const string CHAT_INBOX_PROVIDER = ChatInboxStore::PROVIDER_KEY;
 
     // ----------[ Constructors ]----------
 

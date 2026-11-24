@@ -6,15 +6,15 @@ namespace Domain\Chat\Support;
 
 use App\Contracts\Chat\ChatDepartures;
 use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxIntervalWriter;
 use App\Contracts\Chat\InboxResolver;
 use App\Enums\IntervalRole;
 use App\Enums\LeaveReason;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAdmission;
-use App\Support\ChatInboxes;
 use App\Support\ChatInterval;
-use App\Support\InboxIntervals;
 use App\Support\InboxMembers;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Exceptions\ChatMembershipRefused;
@@ -34,8 +34,8 @@ final readonly class ChatMembership
         private AgentChatAdmission $agents,
         private ChatAdmissionPolicy $policy,
         private InboxResolver $inboxes,
-        private ChatInboxes $chats,
-        private InboxIntervals $intervals,
+        private ChatInboxStore $chats,
+        private InboxIntervalWriter $intervals,
         private ChatDepartures $departures,
     ) {}
 

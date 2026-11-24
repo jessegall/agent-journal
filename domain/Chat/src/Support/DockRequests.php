@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Support;
 
 use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Chat\InboxResolver;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Exceptions\DockDefinitionInvalid;
@@ -12,7 +13,6 @@ use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\StackTargetRefused;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
-use App\Support\ChatInboxes;
 use App\Support\InboxMembers;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\Contracts\DockRegistration;
@@ -33,7 +33,7 @@ final readonly class DockRequests
         private AgentDirectory $agents,
         private PairChats $pairs,
         private AuthorizedConversations $conversations,
-        private ChatInboxes $chats,
+        private ChatInboxStore $chats,
         private InboxResolver $inboxes,
         private CurrentActor $actors,
         private DockRegistration $registry,

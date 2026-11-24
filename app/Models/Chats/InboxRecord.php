@@ -6,9 +6,9 @@ namespace App\Models\Chats;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Contracts\Chat\ChatInboxStore;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\InboxUnavailable;
-use App\Support\ChatInboxes;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -62,7 +62,7 @@ final class InboxRecord extends Model implements ReadableModel
      */
     public static function isChatInbox(string $id): bool
     {
-        return self::query()->whereKey($id)->where('provider_key', ChatInboxes::PROVIDER_KEY)->exists();
+        return self::query()->whereKey($id)->where('provider_key', ChatInboxStore::PROVIDER_KEY)->exists();
     }
 
     // ----------[ Mutations ]----------

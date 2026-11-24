@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Commands\RemoveMemory;
 
+use App\Exceptions\ModelMissing;
 use Domain\Memory\Commands\Support\MemoryCommandHandler;
-use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 
 /**
@@ -14,7 +14,7 @@ use Domain\Memory\Models\Memory;
 final readonly class RemoveMemoryHandler extends MemoryCommandHandler
 {
     /**
-     * @throws MemoryUnavailable
+     * @throws ModelMissing
      */
     public function handle(RemoveMemoryCommand $command): string
     {

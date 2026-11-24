@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Contracts;
 
-use Domain\Memory\Exceptions\MemoryUnavailable;
+use App\Exceptions\RecordUnavailable;
 use Domain\Memory\Values\MemoryCard;
 use Domain\Memory\Values\MemoryPage;
 
@@ -20,7 +20,7 @@ interface MemoryResolver
     /**
      * The caller's own memory with its revision; a missing or another actor's memory is unavailable.
      *
-     * @throws MemoryUnavailable
+     * @throws RecordUnavailable
      */
     public function memory(string $memoryId): MemoryCard;
 }

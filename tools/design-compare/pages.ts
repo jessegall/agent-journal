@@ -4,8 +4,10 @@
  *   node --experimental-strip-types tools/design-compare/pages.ts run [page]   runs every view, or one page's views
  *   node --experimental-strip-types tools/design-compare/pages.ts again        names the pages to look at again
  *
- * A page is looked at again when one of its views never ran, ran against an older design or left differences. The
- * list is information for whoever closes a page's work or changes the design; it never fails a build.
+ * A run first seeds the local journal with the sample tasks, plans, document and sequence the row and reader views
+ * open; the seeders skip what is already there. A page is looked at again when one of its views never ran, ran
+ * against an older design or left differences. The list is information for whoever closes a page's work or changes
+ * the design; it never fails a build.
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -31,12 +33,23 @@ function viewsOf(entry: PageEntry): string[] {
 
 // A view that cannot be compared is named and left without a new record, and the others still run.
 function runViews(page: string | undefined): void {
+    seedSampleRecords();
     const chosen = page === undefined ? Object.values(pages) : [pages[page] ?? missingPage(page)];
     const failed = chosen.flatMap(viewsOf).filter((view) => !compared(view));
 
     if (failed.length > 0) {
         console.error(`Not compared: ${failed.join(', ')}`);
         process.exitCode = 1;
+    }
+}
+
+function seedSampleRecords(): void {
+    const seeding = spawnSync('sh', ['tools/container-run.sh', 'app', '--', 'php', 'artisan', 'db:seed', '--force'], {
+        stdio: 'inherit',
+    });
+
+    if (seeding.status !== 0) {
+        console.error('The local journal could not be seeded, so the row and reader views may find nothing.');
     }
 }
 

@@ -99,7 +99,7 @@ final readonly class ShareGrants
     public function refresh(Actor $owner, string $shareId, string $previewId, string $previewChecksum): Share
     {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
-        $share = Share::lockForChange($shareId);
+        $share = Share::ownForUpdate($shareId);
 
         if (! $share->state->isLive() || ! $share->expires_at->isFuture()) {
             throw ShareRefreshRefused::notLive($shareId, $share->state);

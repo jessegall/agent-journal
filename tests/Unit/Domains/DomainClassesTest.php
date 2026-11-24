@@ -130,7 +130,6 @@ final class DomainClassesTest extends TestCase
             'MemoryResolver',
             'MemoryPage',
             'MemoryCard',
-            'MemoryUnavailable',
             'MemoryRevisionChanged',
         ]];
 

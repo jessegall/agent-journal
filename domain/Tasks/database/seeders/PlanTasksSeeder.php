@@ -9,7 +9,8 @@ use Illuminate\Database\Seeder;
 
 /**
  * The example tasks of the local plans, created by Tasks and handed on by id, grouped by the example phase they
- * belong in, so the plans seeder never creates a task itself.
+ * belong in, so the plans seeder never creates a task itself. A task already seeded is handed on again, so seeding
+ * twice adds nothing.
  */
 final class PlanTasksSeeder extends Seeder
 {
@@ -42,6 +43,11 @@ final class PlanTasksSeeder extends Seeder
      */
     private function tasks(string ...$titles): array
     {
-        return array_map(fn (string $title) => Task::factory()->create(['title' => $title])->id, array_values($titles));
+        return array_map(
+            fn (string $title) => Task::query()->where('title', $title)->firstOr(
+                fn () => Task::factory()->create(['title' => $title]),
+            )->id,
+            array_values($titles),
+        );
     }
 }

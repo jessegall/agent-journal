@@ -29,6 +29,6 @@
                 "click": "li:has(a[data-row-key]) >> nth=0"
             }
         ],
-        "part": "[data-layout-box='reader']"
+        "part": "[data-layout-box='stack']:has(> [data-layout-box='header'])"
     }
 }

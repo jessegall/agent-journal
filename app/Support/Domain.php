@@ -4,18 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Concerns\HasAssignables;
-use App\Concerns\HasStates;
-use App\Contracts\Assignments\AssignableContributor;
-use App\Contracts\Assignments\AssigneeContributor;
-use App\Contracts\Assignments\AutoAssignmentProvider;
-use App\Contracts\Assignments\InternalAssignableContributor;
 use App\Contracts\Domains\DomainBootstrapper;
 use App\Contracts\Navigation\DraftProducerProvider;
-use App\Contracts\Records\StateProvider;
 use App\Contracts\Scripts\ScriptKeywordProvider;
 use App\Contracts\Scripts\ScriptObjectProvider;
-use App\Exceptions\CapabilityWithoutTrait;
 use App\Mcp\Support\McpToolDirectory;
 use App\Mcp\Tools\JournalTool;
 use App\Support\Bootstrappers\LoadMigrations;
@@ -29,17 +21,6 @@ use App\Support\Bootstrappers\RegisterScriptDefinitions;
  */
 abstract class Domain
 {
-    /**
-     * The capability interfaces that need a trait to boot, each with that trait.
-     */
-    private const array TRAIT_OF_CAPABILITY = [
-        AssignableContributor::class => HasAssignables::class,
-        AssigneeContributor::class => HasAssignables::class,
-        AutoAssignmentProvider::class => HasAssignables::class,
-        InternalAssignableContributor::class => HasAssignables::class,
-        StateProvider::class => HasStates::class,
-    ];
-
     abstract public function description(): string;
 
     /**
@@ -105,19 +86,11 @@ abstract class Domain
      * Every step the domain's boot runs, in order: its migrations, its traits' steps, then its own.
      *
      * @return list<class-string<DomainBootstrapper>>
-     *
-     * @throws CapabilityWithoutTrait
      */
     final public function bootSteps(): array
     {
         $traits = class_uses_recursive(static::class);
         $fromTraits = [];
-
-        foreach (self::TRAIT_OF_CAPABILITY as $capability => $trait) {
-            if (Reflector::of($capability)->isInstance($this) && ! in_array($trait, $traits, true)) {
-                throw CapabilityWithoutTrait::for(static::class, $capability, $trait);
-            }
-        }
 
         foreach ($traits as $trait) {
             $method = 'bootstrappers'.class_basename($trait);

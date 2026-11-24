@@ -553,6 +553,28 @@ final class Reflector implements ReflectedType
     }
 
     /**
+     * Every trait the class uses: its own, its parents' and those its traits use, each once.
+     *
+     * @return list<Reflector<object>>
+     */
+    public function allTraits(): array
+    {
+        $traits = [];
+
+        foreach ($this->lineage() as $type) {
+            foreach ($type->traits() as $trait) {
+                $traits[$trait->name()] = $trait;
+
+                foreach ($trait->allTraits() as $used) {
+                    $traits[$used->name()] = $used;
+                }
+            }
+        }
+
+        return array_values($traits);
+    }
+
+    /**
      * The traits the class itself uses, in the order it names them; not those of its parents or of other traits.
      *
      * @return list<Reflector<object>>
