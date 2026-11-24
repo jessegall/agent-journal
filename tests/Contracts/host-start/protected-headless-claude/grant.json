@@ -13,7 +13,17 @@
         "folder": "/work/project",
         "process_generation": 1,
         "model": "claude-opus-5-5",
-        "effort": null
+        "effort": null,
+        "limits": {
+            "ready_wait_ms": 10000,
+            "echo_wait_ms": 5000,
+            "unsent_look_ms": 2000,
+            "unsent_enters": 3,
+            "turn_start_window_ms": 10000,
+            "stranded_settle_ms": 5000,
+            "stop_grace_ms": 5000,
+            "stop_force_ms": 2000
+        }
     },
     "container": {
         "image": "journal-agent@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

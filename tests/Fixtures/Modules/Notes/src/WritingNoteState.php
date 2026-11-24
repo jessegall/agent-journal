@@ -38,7 +38,11 @@ final class WritingNoteState extends AgentState
             throw NoteWorkFailed::whileListening();
         }
 
-        return $event->asksForGuide ? [...$event->marked, new StateReference('guide', NoSubject::None)] : $event->marked;
+        yield from $event->marked;
+
+        if ($event->asksForGuide) {
+            yield new StateReference('guide', NoSubject::None);
+        }
     }
 
     /**
@@ -46,7 +50,7 @@ final class WritingNoteState extends AgentState
      */
     public function onNotePublished(NotePublished $event): iterable
     {
-        return $this->onNoteWritten($event->note);
+        yield from $this->onNoteWritten($event->note);
     }
 
     public function onNoteAudited(NoteAudited $event): never

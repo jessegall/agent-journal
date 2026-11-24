@@ -26,6 +26,8 @@ parameters:
         - tests/Fixtures/StaticFactories/*
         # The affected tests' fixture is a small code tree read only for its syntax; AffectedTestsTest reads it.
         - tests/Fixtures/AffectedTests/*
+        # The state return check's fixture answers with arrays on purpose; StateReturnsTest reads it.
+        - tests/Fixtures/StateReturns/*
 
     level: 7
 

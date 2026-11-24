@@ -62,19 +62,19 @@ final class HelperJobState extends AgentState
     // ----------[ Hooks ]----------
 
     /**
-     * @return list<ContextLine>
+     * @return iterable<ContextLine>
      */
-    public function onSessionStart(SessionStarted $input): array
+    public function onSessionStart(SessionStarted $input): iterable
     {
-        return $this->contextLines();
+        yield from $this->contextLines();
     }
 
     /**
-     * @return list<ContextLine>
+     * @return iterable<ContextLine>
      */
-    public function onCompaction(ContextCompacted $input): array
+    public function onCompaction(ContextCompacted $input): iterable
     {
-        return $this->contextLines();
+        yield from $this->contextLines();
     }
 
     // ----------[ Events ]----------
@@ -129,9 +129,9 @@ final class HelperJobState extends AgentState
      * What the helper must be told when its context starts: who it is, the purpose, the whole brief, the steering so
      * far and the records it was given.
      *
-     * @return list<ContextLine>
+     * @return iterable<ContextLine>
      */
-    private function contextLines(): array
+    private function contextLines(): iterable
     {
         $texts = [
             AgentText::of('helpers.identity', [
@@ -152,6 +152,8 @@ final class HelperJobState extends AgentState
             ),
         ];
 
-        return array_map(fn (AgentText $text) => new ContextLine($text), $texts);
+        foreach ($texts as $text) {
+            yield new ContextLine($text);
+        }
     }
 }

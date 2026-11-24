@@ -2,7 +2,7 @@
 
 A started agent does its journal work through the journal MCP tools: it reads `overview_read` first, follows each
 `next_action`, sends every write with a `request_key` and asks `operations_read` when a write's outcome is unknown.
-At every start, clear, resume and compaction it is told so, together with the journeys below that still go through
+At every start, clear, resume and compaction it is told so, together with the flows below that still go through
 the CLI or the web (`app/Mcp/Support/McpInstructions.php`, added by `app/Mcp/Listeners/AddMcpInstructions.php`).
 
 | Journey | Entry point | Who has it |
@@ -17,4 +17,4 @@ the CLI or the web (`app/Mcp/Support/McpInstructions.php`, added by `app/Mcp/Lis
 | Account work: sign in, switch or remove a Claude Code or Codex account | the Accounts page | an agent whose profile dispatches work, for the user |
 | A decision only the user makes | `journal question ask`, then the user answers in the web | every agent asks; only the user decides |
 
-A read-only helper such as a reviewer is told only the journeys it has. Nothing here names a token or a path.
+A read-only helper such as a reviewer is told only the flows it has. Nothing here names a token or a path.

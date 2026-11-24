@@ -71,8 +71,12 @@ final class HelperContextTest extends TestCase
         $hook = new HookIdentity('agent', 'session', 'hook', 'digest');
 
         $start = new SessionStartDetails('vendor', ContextStartType::Start, null);
-        $started = $state->onSessionStart(new SessionStarted($hook, $start));
-        $compacted = $state->onCompaction(new ContextCompacted($hook, new CompactionDetails('compaction')));
+        $started = iterator_to_array($state->onSessionStart(new SessionStarted($hook, $start)), false);
+
+        $compacted = iterator_to_array(
+            $state->onCompaction(new ContextCompacted($hook, new CompactionDetails('compaction'))),
+            false,
+        );
 
         foreach ([$started, $compacted] as $lines) {
             $context = implode("\n", array_map(

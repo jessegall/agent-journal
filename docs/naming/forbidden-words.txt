@@ -18,13 +18,13 @@ foo	placeholder
 baz	placeholder
 dummy	vague: say what it stands in for
 hack	say what it does
-lastShown	poetry: say which item it is (the last shown)
-flowsOutsideMcp	poetry: say what is done (tasks, flows)
+frontier	poetry: say which item it is (the last shown)
+journeys	poetry: say what is done (tasks, flows)
 tombstone	poetry: say what is kept (a refused key, a retention end)
 survivors	poetry: say what is left running
-escapesItsRoot	poetry: say what the path does (escapes its root)
+climbs	poetry: say what the path does (escapes its root)
 foot	poetry: say where (bottom)
-leadingSource	poetry: say what it is (the first, the leading source)
+leader	poetry: say what it is (the first, the leading source)
 currency	ambiguous: say whether it is current
 mine	not a coding word: say whose (own, the caller's)
 yours	not a coding word: say whose (another actor's, not the caller's)

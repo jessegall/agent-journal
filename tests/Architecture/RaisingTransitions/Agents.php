@@ -62,6 +62,7 @@ return [
     'StopAttempt::certify',
     'DriverRequest::accept',
     'DriverRequest::recordScriptProgress',
+    'DriverRequest::giveBack',
     'DriverRequest::stage',
     'DriverRequest::beginApplying',
     'DriverRequest::markApplied',

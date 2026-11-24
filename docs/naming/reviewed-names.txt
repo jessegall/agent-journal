@@ -3245,6 +3245,7 @@ class	DriverFamilyUnknown
 class	DriverHeartbeatSource
 class	DriverKey
 class	DriverKeyInvalid
+class	DriverLimits
 class	DriverMethodsData
 class	DriverNotContainable
 class	DriverReceipt
@@ -3260,6 +3261,7 @@ class	DriverRequestAccepted
 class	DriverRequestApplied
 class	DriverRequestAttemptStarted
 class	DriverRequestEndings
+class	DriverRequestGivenBack
 class	DriverRequestHeld
 class	DriverRequestMismatch
 class	DriverRequestPayload
@@ -6931,6 +6933,8 @@ class	StateMethods
 class	StatePush
 class	StateReference
 class	StateReferenceFactory
+class	StateReturnScan
+class	StateReturnedParts
 class	StateSchemaUnknown
 class	StateTransferUnknown
 class	StateType
@@ -8427,6 +8431,7 @@ constant	ReportNotificationTarget::REPORT_PAGE
 constant	ReportPages::KEY
 constant	ReportPages::TOOL
 constant	ReportPartResults::READ_OUTPUT_LINE
+constant	ReportRequestProgressHandler::OFFER_AGAIN_WAIT_MS
 constant	ReportRuntimeScreenHandler::BYTE_LIMIT
 constant	ReportRuntimeScreenHandler::FRAMES_PER_SECOND_LIMIT
 constant	ReportSearchProvider::SNIPPET_CONTEXT_CHARACTERS
@@ -8677,6 +8682,7 @@ constant	StateEventBridge::LISTENER
 constant	StateEventDelivery::EFFECT_LIMIT
 constant	StateMethods::HOOK_ANSWER_TYPES
 constant	StateReferenceFactory::TYPE_KEY
+constant	StateReturnScan::LISTENERS
 constant	StateTypes::CORE_STATES
 constant	StatementDeadline::CANCELLED
 constant	StaticFactoryScan::FRESH_EACH_CALL
@@ -10622,7 +10628,7 @@ method	AgentStack::frames()
 method	AgentStack::framesMissingFrom()
 method	AgentStack::holdsLive()
 method	AgentStack::instruction()
-method	AgentStack::lifecycleCommandsSince()
+method	AgentStack::lifecycleEffectsSince()
 method	AgentStack::lift()
 method	AgentStack::permission()
 method	AgentStack::poppedOf()
@@ -14985,6 +14991,8 @@ method	DriverKey::from()
 method	DriverKey::isSameAs()
 method	DriverKey::isThirdParty()
 method	DriverKeyInvalid::for()
+method	DriverLimits::__construct()
+method	DriverLimits::toArray()
 method	DriverMethodsData::__construct()
 method	DriverMethodsData::fromProtocols()
 method	DriverNotContainable::because()
@@ -15050,6 +15058,7 @@ method	DriverRequest::create()
 method	DriverRequest::fail()
 method	DriverRequest::finish()
 method	DriverRequest::forgetPayload()
+method	DriverRequest::giveBack()
 method	DriverRequest::hold()
 method	DriverRequest::isAtRowVersion()
 method	DriverRequest::isInitialWakeOf()
@@ -15060,6 +15069,7 @@ method	DriverRequest::markPossibleDuplicateOf()
 method	DriverRequest::markUnavailable()
 method	DriverRequest::markUncertain()
 method	DriverRequest::moveTo()
+method	DriverRequest::offerable()
 method	DriverRequest::partList()
 method	DriverRequest::receipt()
 method	DriverRequest::recordRefusal()
@@ -15090,6 +15100,7 @@ method	DriverRequestEndings::closeAfterExit()
 method	DriverRequestEndings::expire()
 method	DriverRequestEndings::interrupt()
 method	DriverRequestEndings::settleAfterExit()
+method	DriverRequestGivenBack::__construct()
 method	DriverRequestHeld::__construct()
 method	DriverRequestMismatch::for()
 method	DriverRequestMismatch::notResume()
@@ -16040,7 +16051,7 @@ method	FrameGrant::allowsTarget()
 method	FrameGrant::description()
 method	FrameLiveness::of()
 method	FrameMoment::__construct()
-method	FrameMoment::commands()
+method	FrameMoment::effects()
 method	FrameNotHeld::for()
 method	FrameNotHeld::refusalCode()
 method	FrameNotHeld::status()
@@ -26362,6 +26373,7 @@ method	StateAnswer::of()
 method	StateAnswer::with()
 method	StateAnswer::withDecision()
 method	StateAnswer::withLine()
+method	StateAnswerRefused::anArray()
 method	StateAnswerRefused::notAnEffect()
 method	StateAnswerRefused::notApplicationCommand()
 method	StateAnswerRefused::tooMany()
@@ -26512,6 +26524,14 @@ method	StateReference::isSameAs()
 method	StateReference::workReference()
 method	StateReferenceFactory::about()
 method	StateRegistration::register()
+method	StateReturnScan::faultsOf()
+method	StateReturnScan::findingsIn()
+method	StateReturnScan::isBoolean()
+method	StateReturnScan::isJudged()
+method	StateReturnScan::key()
+method	StateReturnScan::namesArray()
+method	StateReturnScan::ownNodes()
+method	StateReturnedParts::of()
 method	StateSchemaUnknown::for()
 method	StateTransferUnknown::for()
 method	StateType::__construct()
@@ -29613,6 +29633,7 @@ parameter	$durationMilliseconds
 parameter	$durationMinutes
 parameter	$each
 parameter	$earlier
+parameter	$echoWaitMs
 parameter	$edge
 parameter	$edges
 parameter	$editing
@@ -30161,6 +30182,7 @@ parameter	$isKeyed
 parameter	$isKnown
 parameter	$isLeading
 parameter	$isLimit
+parameter	$isListener
 parameter	$isLive
 parameter	$isLoading
 parameter	$isLoggedIn
@@ -30200,6 +30222,7 @@ parameter	$isSelected
 parameter	$isSignedIn
 parameter	$isSingleton
 parameter	$isStale
+parameter	$isState
 parameter	$isStateListenerUse
 parameter	$isStatic
 parameter	$isStillBound
@@ -30626,6 +30649,8 @@ parameter	$occurrenceKey
 parameter	$occurrences
 parameter	$ofType
 parameter	$offer
+parameter	$offerAfter
+parameter	$offerable
 parameter	$offered
 parameter	$offers
 parameter	$offlineReply
@@ -31080,6 +31105,7 @@ parameter	$reading
 parameter	$readings
 parameter	$reads
 parameter	$readyToFinish
+parameter	$readyWaitMs
 parameter	$real
 parameter	$realDirectory
 parameter	$realPath
@@ -31685,6 +31711,8 @@ parameter	$steps
 parameter	$stop
 parameter	$stopConditions
 parameter	$stopEvidenceReference
+parameter	$stopForceMs
+parameter	$stopGraceMs
 parameter	$stopHookActive
 parameter	$stopNanoseconds
 parameter	$stopOutputDays
@@ -31702,6 +31730,7 @@ parameter	$storedCode
 parameter	$storedDetails
 parameter	$storedRevision
 parameter	$storedValue
+parameter	$strandedSettleMs
 parameter	$stream
 parameter	$streams
 parameter	$stripsTabs
@@ -31883,6 +31912,7 @@ parameter	$trust
 parameter	$trustedEntry
 parameter	$trustedExecutable
 parameter	$turnId
+parameter	$turnStartWindowMs
 parameter	$turns
 parameter	$type
 parameter	$typeEnabled
@@ -31917,6 +31947,8 @@ parameter	$unreported
 parameter	$unresolved
 parameter	$unresolvedRedirects
 parameter	$unsampledStatuses
+parameter	$unsentEnters
+parameter	$unsentLookMs
 parameter	$unsupported
 parameter	$until
 parameter	$updatedInput
@@ -35216,6 +35248,14 @@ property	DriverFamily::$provider
 property	DriverHeartbeatSource::$beats
 property	DriverHeartbeatSource::$heartbeats
 property	DriverKey::$key
+property	DriverLimits::$echoWaitMs
+property	DriverLimits::$readyWaitMs
+property	DriverLimits::$stopForceMs
+property	DriverLimits::$stopGraceMs
+property	DriverLimits::$strandedSettleMs
+property	DriverLimits::$turnStartWindowMs
+property	DriverLimits::$unsentEnters
+property	DriverLimits::$unsentLookMs
 property	DriverMethodsData::$driver
 property	DriverMethodsData::$methods
 property	DriverReceipt::$expectedTiming
@@ -35248,6 +35288,7 @@ property	DriverRequestAccepted::$requestId
 property	DriverRequestApplied::$requestId
 property	DriverRequestAttemptStarted::$attempt
 property	DriverRequestAttemptStarted::$requestId
+property	DriverRequestGivenBack::$requestId
 property	DriverRequestHeld::$reason
 property	DriverRequestHeld::$requestId
 property	DriverRequestPayload::$effort
@@ -40793,6 +40834,7 @@ property	RuntimeStart::$driverBuild
 property	RuntimeStart::$driverKey
 property	RuntimeStart::$effort
 property	RuntimeStart::$folder
+property	RuntimeStart::$limits
 property	RuntimeStart::$model
 property	RuntimeStart::$processGeneration
 property	RuntimeStart::$sessionId
@@ -44625,7 +44667,7 @@ variable	$fix
 variable	$fixed
 variable	$flag
 variable	$flags
-variable	$flowsOutsideMcp
+variable	$flows
 variable	$focusers
 variable	$folder
 variable	$folders
@@ -45832,6 +45874,8 @@ variable	$strings
 variable	$stripped
 variable	$stripsTabs
 variable	$structured
+variable	$sub
+variable	$subName
 variable	$subcommand
 variable	$subcommands
 variable	$subject

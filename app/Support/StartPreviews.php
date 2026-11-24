@@ -34,12 +34,14 @@ final readonly class StartPreviews
     ): StartPreview {
         $selection = SelectedDriver::resolve($family, $model, $profile, $parentFamily, $this->drivers);
         $offered = $this->driverTypesOf($selection->driver);
+
         [$chosen, $source] = $this->chosenDriverType(
             $agent,
             $selection->driver,
             $driverType,
             $profile->defaultDriverType,
         );
+
         $label = $this->drivers->family($selection->driver)->label;
 
         return new StartPreview(

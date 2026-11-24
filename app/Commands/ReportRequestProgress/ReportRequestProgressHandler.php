@@ -20,9 +20,16 @@ use App\Support\InitialWakeSettlement;
 use App\Support\NavigationRoundReports;
 use App\Support\StartIdentity;
 use App\Support\TerminalGrantReports;
+use Carbon\CarbonImmutable;
 
 final readonly class ReportRequestProgressHandler implements CommandHandler
 {
+    /**
+     * How long a request its host could not start yet waits before it is offered again, such as a prompt the screen
+     * did not let in while the program comes up.
+     */
+    private const int OFFER_AGAIN_WAIT_MS = 2_000;
+
     public function __construct(
         private HostRuntimes $runtimes,
         private NavigationRoundReports $navigationReports,
@@ -57,8 +64,10 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             RequestProgress::DeliveryUncertain => $request->markUncertain(),
             RequestProgress::Failed => $request->fail($command->outcome ?? RequestOutcome::Refused),
             RequestProgress::Unavailable => $request->markUnavailable($command->outcome ?? RequestOutcome::Refused),
+            RequestProgress::Staged => $request->giveBack(
+                CarbonImmutable::now()->addMilliseconds(self::OFFER_AGAIN_WAIT_MS),
+            ),
             RequestProgress::Accepted,
-            RequestProgress::Staged,
             RequestProgress::Cancelled => $request->cancel(),
             RequestProgress::Superseded => $request->hold(
                 $request->hold_reason,

@@ -46,7 +46,7 @@ final readonly class ResourceRequest
     }
 
     /**
-     * Whether the operand cannot be judged: an empty target, or a path that escapesItsRoot out with '..'.
+     * Whether the operand cannot be judged: an empty target, or a path that escapes its root with '..'.
      */
     public function isUnknown(): bool
     {

@@ -21,30 +21,14 @@ const interruptKey = "\x1b"
 // stopKeys end the program from its composer: the interrupt, then the end of input both programs exit on.
 const stopKeys = "\x1b\x04"
 
-// readyDeadline is how long a delivery waits for an empty, still composer before it stays staged for later.
-const readyDeadline = 10 * time.Second
-
-// echoDeadline is how long a typed line waits to be drawn in the composer before its delivery is uncertain.
-const echoDeadline = 5 * time.Second
-
 // echoQuiet is how long the driver waits after the program drew a typed line before it presses Enter.
 const echoQuiet = 150 * time.Millisecond
 
-// unsentLook is how long the driver watches the composer after an Enter before it takes the line as still unsent,
-// and unsentEnters is how many more Enters such a line gets: a busy program can read the first Enter as part of the
-// paste and keep the line in its box.
-const (
-	unsentLook   = 2 * time.Second
-	unsentEnters = 3
-	enterKey     = "\r"
-)
+// enterKey submits the composer's line.
+const enterKey = "\r"
 
 // pollInterval is how often the driver reads the screen again while it waits.
 const pollInterval = 50 * time.Millisecond
-
-// turnStartDeadline is how long a submitted prompt waits for its turn to take the composer away; a turn that ends
-// sooner than the screen is read is over already.
-const turnStartDeadline = 10 * time.Second
 
 // TerminalRuntime is what the terminal driver drives: the screen read from the program, the gate every key passes,
 // the program build's registered key scripts, the clock its waits run on, the process generation its reports carry,
@@ -68,6 +52,8 @@ type TerminalRuntime struct {
 	Clock             keyscripts.Clock
 	ProcessGeneration int
 	Progress          *ProgressRelay
+	// Limits are the waits the journal sent with the start; the driver waits no longer than they say.
+	Limits contracts.Limits
 }
 
 // TerminalDriver carries out the six operations on one persistent program in one process generation: every delivered
@@ -325,7 +311,7 @@ func (driver *TerminalDriver) prompt(
 			Hold:     contracts.HoldInterrupted,
 		}, nil
 	}
-	if driver.waitUntil(readyDeadline, driver.screenDecided); !driver.promptReady() {
+	if driver.waitUntil(driver.runtime.Limits.ReadyWait(), driver.screenDecided); !driver.promptReady() {
 		return driver.stagedBehindScreen(request)
 	}
 
@@ -342,7 +328,7 @@ func (driver *TerminalDriver) prompt(
 
 	// The program has read the paste once it drew it; the Enter then follows as a key of its own, after the screen
 	// had a moment to go still, never in the same read as the paste.
-	if driver.waitUntil(echoDeadline, func() bool { return driver.runtime.Gate.Shows(line) }) {
+	if driver.waitUntil(driver.runtime.Limits.EchoWait(), func() bool { return driver.runtime.Gate.Shows(line) }) {
 		driver.runtime.Clock.Sleep(echoQuiet)
 	}
 	entered := driver.runtime.Generation(driver.runtime.Composer)
@@ -363,13 +349,13 @@ func (driver *TerminalDriver) prompt(
 }
 
 // tookLine is whether the program took the entered line: its composer changed after the Enter. A composer that
-// stays exactly as it was when Enter was pressed still holds the line, so it gets Enter again, unsentEnters times
-// at most; a user or a browser writer who holds the input by then ends it.
+// stays exactly as it was when Enter was pressed still holds the line, so it gets Enter again as many times as the
+// journal's limits allow; a user or a browser writer who holds the input by then ends it.
 func (driver *TerminalDriver) tookLine(entered uint64) bool {
 	changed := func() bool { return driver.runtime.Generation(driver.runtime.Composer) != entered }
 
-	for again := 0; again < unsentEnters; again++ {
-		if driver.waitUntil(unsentLook, changed) {
+	for again := 0; again < driver.runtime.Limits.UnsentEnters; again++ {
+		if driver.waitUntil(driver.runtime.Limits.UnsentLook(), changed) {
 			return true
 		}
 		if err := driver.runtime.Gate.Keys(enterKey); err != nil {
@@ -377,11 +363,8 @@ func (driver *TerminalDriver) tookLine(entered uint64) bool {
 		}
 	}
 
-	return driver.waitUntil(unsentLook, changed)
+	return driver.waitUntil(driver.runtime.Limits.UnsentLook(), changed)
 }
-
-// strandedSettleWait is how long a driver waits for a browser take to settle its stranded line.
-const strandedSettleWait = 5 * time.Second
 
 // strandedResult is how a line a browser take stranded ended: cancelled before submit only on the take's proven
 // settlement, otherwise uncertain, never replayed.
@@ -389,7 +372,7 @@ func (driver *TerminalDriver) strandedResult(
 	request contracts.RequestIdentity,
 	line *terminal.TypedLine,
 ) contracts.OperationResult {
-	if driver.runtime.Gate.Settlement(line, strandedSettleWait) {
+	if driver.runtime.Gate.Settlement(line, driver.runtime.Limits.StrandedSettle()) {
 		return contracts.OperationResult{Request: request, Progress: contracts.ProgressCancelled}
 	}
 
@@ -398,7 +381,7 @@ func (driver *TerminalDriver) strandedResult(
 
 // awaitTurnEnd waits for the turn to take the composer away and then for an empty, still composer again.
 func (driver *TerminalDriver) awaitTurnEnd(current *turnEnd) {
-	driver.waitUntil(turnStartDeadline, func() bool { return !driver.promptReady() })
+	driver.waitUntil(driver.runtime.Limits.TurnStartWindow(), func() bool { return !driver.promptReady() })
 	for !driver.promptReady() {
 		driver.runtime.Clock.Sleep(pollInterval)
 	}

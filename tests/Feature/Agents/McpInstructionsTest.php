@@ -56,7 +56,7 @@ final class McpInstructionsTest extends TestCase
         $this->assertStringContainsString(self::ACCOUNT_JOURNEY, implode("\n", $context));
     }
 
-    public function test_a_reviewer_hears_only_its_own_journeys(): void
+    public function test_a_reviewer_hears_only_its_own_flows(): void
     {
         $instructions = TestText::words(new McpInstructions(new FixedCurrentAuthorizer())->forCaller());
 

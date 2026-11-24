@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\Agents\AgentRuntime;
+use App\Values\DriverLimits;
 
 /**
  * What a host needs to start a runtime's driver: the session it runs, the driver and the build it was opened for,
- * the folder it works in, the process generation to start under and the model and effort asked for.
+ * the folder it works in, the process generation to start under, the model and effort asked for and the waits its
+ * driver keeps.
  */
 final readonly class RuntimeStart
 {
@@ -21,6 +23,7 @@ final readonly class RuntimeStart
         public int $processGeneration,
         public string|null $model,
         public string|null $effort,
+        public DriverLimits $limits = new DriverLimits(),
     ) {}
 
     public static function of(AgentRuntime $runtime): self
@@ -39,7 +42,7 @@ final readonly class RuntimeStart
 
     /**
      * @return array{session_id: string, driver: string, driver_key: string, driver_build: string, folder: string,
-     *     process_generation: int, model: string|null, effort: string|null}
+     *     process_generation: int, model: string|null, effort: string|null, limits: array<string, int>}
      */
     public function toArray(): array
     {
@@ -52,6 +55,7 @@ final readonly class RuntimeStart
             'process_generation' => $this->processGeneration,
             'model' => $this->model,
             'effort' => $this->effort,
+            'limits' => $this->limits->toArray(),
         ];
     }
 }

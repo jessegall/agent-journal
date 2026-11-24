@@ -221,7 +221,10 @@ final class AgentStackTest extends TestCase
         $stack = $this->stack(
             $this->ready(),
             $this->frame('below', $below),
-            $this->frame('denier', new StopAnswerState([$before, $denial])),
+            $this->frame('denier', new StopAnswerState((function () use ($before, $denial) {
+                yield $before;
+                yield $denial;
+            })())),
             $this->frame('top', new StopAnswerState($above)),
         );
 
@@ -278,9 +281,14 @@ final class AgentStackTest extends TestCase
         return [
             'an allow' => [fn () => Decision::allow()],
             'a yield after the decision' => [
-                fn () => [Decision::deny(TestText::of('Held.')), new ContextLine(TestText::of('Too late.'))],
+                function () {
+                    yield Decision::deny(TestText::of('Held.'));
+                    yield new ContextLine(TestText::of('Too late.'));
+                },
             ],
-            'a yielded thing that is no answer' => [fn () => [3]],
+            'a yielded thing that is no answer' => [function () {
+                yield 3;
+            }],
         ];
     }
 

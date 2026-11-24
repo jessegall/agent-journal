@@ -6,6 +6,7 @@ namespace App\Support\Stack;
 
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\Command;
+use App\Contracts\Events\Event;
 use App\Declarations\StateMethods;
 use App\Enums\AnswerType;
 use App\Exceptions\BottomStateCannotFinish;
@@ -106,7 +107,7 @@ final readonly class AgentStack
             if ($decision->answerType() === AnswerType::Deny) {
                 return new HookAnswer($decision, $context, $steps, $stack, $messages, [
                     ...$effects,
-                    ...$stack->lifecycleCommandsSince($before),
+                    ...$stack->lifecycleEffectsSince($before),
                 ]);
             }
 
@@ -115,7 +116,7 @@ final readonly class AgentStack
 
         return new HookAnswer($highest ?? Decision::allow(), $context, $steps, $stack, $messages, [
             ...$effects,
-            ...$stack->lifecycleCommandsSince($before),
+            ...$stack->lifecycleEffectsSince($before),
         ]);
     }
 
@@ -265,16 +266,16 @@ final readonly class AgentStack
     }
 
     /**
-     * The commands the states answer the moments of the change since the snapshot with: exits, entries, then the
-     * resume.
+     * The commands and events the states answer the moments of the change since the snapshot with: exits, entries,
+     * then the resume.
      *
-     * @return list<Command<mixed>>
+     * @return list<Command<mixed>|Event>
      */
-    public function lifecycleCommandsSince(StackSnapshot $before): array
+    public function lifecycleEffectsSince(StackSnapshot $before): array
     {
-        $commands = array_map(fn (FrameMoment $moment) => $moment->commands(), $before->momentsOf($this));
+        $effects = array_map(fn (FrameMoment $moment) => $moment->effects(), $before->momentsOf($this));
 
-        return array_merge([], ...$commands);
+        return array_merge([], ...$effects);
     }
 
     /**

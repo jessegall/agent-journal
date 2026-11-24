@@ -109,7 +109,7 @@ func openedTerminal(t *testing.T) (*host.AttachSocket, host.Terminal, *fakeProgr
 
 func TestAKeyScriptOfAServedTerminalRunsOnTheLiveScreenAndGate(t *testing.T) {
 	_, opened, program := openedTerminal(t)
-	driver := terminalDriverOf(profiles.ClaudeCode{}, opened, 3, "conversation-1")
+	driver := terminalDriverOf(profiles.ClaudeCode{}, opened, client.RuntimeStart{ProcessGeneration: 3, Limits: journalLimits}, "conversation-1")
 	var mutex sync.Mutex
 	var steps []string
 	driver.ReportProgressTo(func(progress keyscripts.Progress) {

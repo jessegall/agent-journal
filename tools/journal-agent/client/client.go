@@ -559,6 +559,8 @@ type RuntimeStart struct {
 	ProcessGeneration int     `json:"process_generation"`
 	Model             *string `json:"model"`
 	Effort            *string `json:"effort"`
+	// Limits are the waits the journal decided for this runtime's driver.
+	Limits contracts.Limits `json:"limits"`
 }
 
 // RequestedModel is the model the journal asked this start to run on; empty when it leaves the choice to the program.

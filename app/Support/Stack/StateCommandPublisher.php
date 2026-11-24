@@ -7,6 +7,7 @@ namespace App\Support\Stack;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Events\Event;
 use App\Events\StateCommandAnswered;
 use App\Values\StackTarget;
 
@@ -29,12 +30,18 @@ final readonly class StateCommandPublisher
     }
 
     /**
-     * Publishes the commands the states answer the lifecycle moments of a change with.
+     * Publishes the commands and raises the events the states answer the lifecycle moments of a change with.
      */
     public function publishMoments(StackTarget $target, StackSnapshot $before, AgentStack $after): void
     {
-        foreach ($after->lifecycleCommandsSince($before) as $command) {
-            $this->publish($target, $command);
+        foreach ($after->lifecycleEffectsSince($before) as $effect) {
+            if ($effect instanceof Event) {
+                $this->facts->publishAfterCommit($effect);
+
+                continue;
+            }
+
+            $this->publish($target, $effect);
         }
     }
 }

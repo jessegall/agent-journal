@@ -187,7 +187,7 @@ final class AgentStacksTest extends TestCase
 
         $this->assertSame(['values' => ['count' => 2]], $this->storedFrames()[1]->values);
         $this->assertSame(2, $this->countingStateOf($this->reloadedStack())->counted());
-        $this->assertSame([], $this->storedFrames()[0]->values);
+        $this->assertSame(['openAttempts' => [], 'settledAttempts' => []], $this->storedFrames()[0]->values);
     }
 
     public function test_a_failed_push_rolls_the_domain_write_back(): void

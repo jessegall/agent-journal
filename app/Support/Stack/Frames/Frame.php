@@ -9,12 +9,14 @@ use App\Contracts\Events\Event;
 use App\Contracts\Work\ConditionalState;
 use App\Declarations\StateMethod;
 use App\Enums\StackMoment;
+use App\Exceptions\StateAnswerRefused;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
 use App\Support\Reflector;
 use App\Support\StateLoading\StateValues;
 use App\Support\States\AgentState;
+use App\Support\States\StateReturnedParts;
 use App\Support\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
 
@@ -126,17 +128,30 @@ final readonly class Frame
     }
 
     /**
-     * The commands the state answers a moment of its frame's life with.
+     * The commands and events the state answers a moment of its frame's life with: nothing, one returned straight, or
+     * each it yielded.
      *
-     * @return list<Command<mixed>>
+     * @return list<Command<mixed>|Event>
+     *
+     * @throws StateAnswerRefused when it answered an array or anything but a command or an event
      */
     public function answerMoment(StackMoment $moment): array
     {
-        return match ($moment) {
+        $method = $this->state::class.'::'.$moment->value;
+
+        $effects = StateReturnedParts::of(match ($moment) {
             StackMoment::Enter => $this->state->onEnter(),
             StackMoment::Resume => $this->state->onResume(),
             StackMoment::Exit => $this->state->onExit(),
-        };
+        }, $method);
+
+        foreach ($effects as $effect) {
+            if (! $effect instanceof Command && ! $effect instanceof Event) {
+                throw StateAnswerRefused::notAnEffect($method, $effect);
+            }
+        }
+
+        return $effects;
     }
 
     /**

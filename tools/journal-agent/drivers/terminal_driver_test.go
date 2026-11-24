@@ -87,6 +87,7 @@ func recordedWith(
 		func(keyscripts.Progress) {})
 
 	runtime := TerminalRuntime{
+		Limits: journalLimits,
 		Profile:    "claude@2.1.323",
 		Classifier: classifier,
 		Gate:       gate,
@@ -120,7 +121,7 @@ func TestAPromptThatMeetsAKnownMenuHandlesItAtOnceInsteadOfWaitingOutTheDeadline
 	if err != nil || result.Progress != contracts.ProgressStaged || result.IsHeld() {
 		t.Fatalf("the prompt behind the welcome screen ended %+v, %v", result, err)
 	}
-	if waited := clock.Now().Sub(met); waited >= readyDeadline/2 {
+	if waited := clock.Now().Sub(met); waited >= journalLimits.ReadyWait()/2 {
 		t.Fatalf("the welcome screen was handled after %s, not the moment it was read", waited)
 	}
 	if program.String() != "\r" {
@@ -179,8 +180,45 @@ func TestALineThatStaysInTheComposerGetsEnterAgainAndIsUncertainOnlyAfterThat(t 
 	if err != nil || result.Progress != contracts.ProgressDeliveryUncertain {
 		t.Fatalf("the prompt ended %+v, %v", result, err)
 	}
-	if program.String() != pasted(firstPrompt)+strings.Repeat("\r", 1+unsentEnters) {
-		t.Fatalf("the program got %q, want the paste, its Enter and %d more", program.String(), unsentEnters)
+	if program.String() != pasted(firstPrompt)+strings.Repeat("\r", 1+journalLimits.UnsentEnters) {
+		t.Fatalf("the program got %q, want the paste, its Enter and %d more", program.String(), journalLimits.UnsentEnters)
+	}
+}
+
+// The journal decides how many more Enters an unsent line gets: the driver presses exactly as many as it was sent.
+func TestAnUnsentLineGetsAsManyMoreEntersAsTheJournalSent(t *testing.T) {
+	driver, _, program := recordedWith(t, "turns/terminal-turn", 11*time.Second, func(runtime *TerminalRuntime) {
+		still := runtime.Generation(runtime.Composer)
+		runtime.Generation = func(string) uint64 { return still }
+		runtime.Limits.UnsentEnters = 1
+	})
+
+	result, err := driver.Deliver(context.Background(),
+		contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)})
+
+	if err != nil || result.Progress != contracts.ProgressDeliveryUncertain {
+		t.Fatalf("the prompt ended %+v, %v", result, err)
+	}
+	if program.String() != pasted(firstPrompt)+"\r\r" {
+		t.Fatalf("the program got %q, want the paste, its Enter and the one more the journal allowed", program.String())
+	}
+}
+
+// The journal decides how long a delivery waits for a ready composer: the driver gives up after the wait it was sent.
+func TestADeliveryWaitsForAReadyComposerOnlyAsLongAsTheJournalSent(t *testing.T) {
+	driver, clock, _ := recordedWith(t, "turns/terminal-turn", time.Second, func(runtime *TerminalRuntime) {
+		runtime.Limits.ReadyWaitMs = 300
+	})
+	asked := clock.Now()
+
+	result, err := driver.Deliver(context.Background(),
+		contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)})
+
+	if err != nil || result.Progress != contracts.ProgressStaged {
+		t.Fatalf("the prompt before the composer was ready ended %+v, %v", result, err)
+	}
+	if waited := clock.Now().Sub(asked); waited < 300*time.Millisecond || waited >= journalLimits.ReadyWait() {
+		t.Fatalf("the delivery waited %s, not the 300ms the journal sent", waited)
 	}
 }
 
@@ -242,7 +280,7 @@ func TestSettingChangesStayStagedWithoutARecordedLivePath(t *testing.T) {
 }
 
 func TestAKeyScriptToAHeadlessRuntimeNeedsATerminal(t *testing.T) {
-	driver := NewHeadlessDriver(HeadlessRuntime{}, 1)
+	driver := NewHeadlessDriver(HeadlessRuntime{Limits: journalLimits}, 1)
 
 	script := contracts.KeyScriptRequest{Request: request("s"), Script: "ChangeModel"}
 	result, err := driver.RunKeyScript(context.Background(), script)
@@ -280,7 +318,7 @@ func TestAKeyScriptStepGoesToTheReceiverTheLoopSet(t *testing.T) {
 	relay := &ProgressRelay{}
 	relay.Report(keyscripts.Progress{Step: 0, Name: "before anyone listens"})
 	var received []string
-	driver := NewTerminalDriver(TerminalRuntime{Progress: relay, ProcessGeneration: 2})
+	driver := NewTerminalDriver(TerminalRuntime{Limits: journalLimits, Progress: relay, ProcessGeneration: 2})
 
 	driver.ReportProgressTo(func(progress keyscripts.Progress) { received = append(received, progress.Name) })
 	relay.Report(keyscripts.Progress{Step: 1, Name: "type /model"})

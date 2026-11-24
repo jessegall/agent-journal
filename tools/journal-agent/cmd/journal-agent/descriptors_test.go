@@ -77,6 +77,7 @@ func TestAGrantForAnAdvertisedKeyWithNoRegistrationStartsNothing(t *testing.T) {
 	opener := runtimeOpener{stateFolder: t.TempDir(), declared: declared}
 	prepared := host.PreparedStart{Grant: client.Grant{Runtime: client.RuntimeStart{
 		Driver: "claude-code", DriverKey: "acme/reader", DriverBuild: profiles.ClaudeCode{}.Build(),
+		Limits: journalLimits,
 	}}}
 
 	_, err := opener.open("runtime-1", prepared)

@@ -56,6 +56,8 @@ type HeadlessRuntime struct {
 	Confinement TurnConfinement
 	// Usage takes the limit windows and result costs a Claude account start's program reports; nil reads none.
 	Usage UsageObserver
+	// Limits are the waits the journal sent with the start; a stop gives the turn no longer than they say.
+	Limits contracts.Limits
 }
 
 // TurnContainer gives one turn of the program, at the process generation given, as its session container's own
@@ -198,7 +200,7 @@ func (driver *HeadlessDriver) Stop(_ context.Context, stop contracts.StopRequest
 		return contracts.OperationResult{Request: stop.Request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed, Hold: contracts.HoldNone}, nil
 	}
 
-	return stopResult(stop.Request, turn.Stop(host.DefaultStopStages)), nil
+	return stopResult(stop.Request, turn.Stop(host.StopStagesOf(driver.runtime.Limits.StopGrace(), driver.runtime.Limits.StopForce()))), nil
 }
 
 // pendingWorkPrompt is the one prompt a wake sends: it asks the agent to look at its own scoped work.

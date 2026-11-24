@@ -22,6 +22,7 @@ use App\Enums\RequestProgress;
 use App\Events\DriverRequestAccepted;
 use App\Events\DriverRequestApplied;
 use App\Events\DriverRequestAttemptStarted;
+use App\Events\DriverRequestGivenBack;
 use App\Events\DriverRequestHeld;
 use App\Events\DriverRequestRetried;
 use App\Events\DriverRequestScriptProgressed;
@@ -79,6 +80,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $wake_acknowledged
  * @property int|null $wake_claimed
  * @property CarbonImmutable|null $staged_at
+ * @property CarbonImmutable|null $offer_after
  * @property string|null $script_id
  * @property int|null $script_version
  * @property int|null $script_step
@@ -133,6 +135,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
             'expected_timing' => ExpectedTiming::class,
             'expected_observed_at' => 'immutable_datetime',
             'staged_at' => 'immutable_datetime',
+            'offer_after' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
             'hold_reason' => HoldReason::class,
         ];
@@ -184,6 +187,20 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * Takes back a request its host could not start yet, such as a prompt the screen did not let in, to offer it
+     * again from the time given.
+     */
+    public function giveBack(CarbonImmutable $offerAfter): void
+    {
+        $this->moveTo(RequestProgress::Accepted);
+        $this->wake_claimed = null;
+        $this->staged_at = null;
+        $this->offer_after = $offerAfter;
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestGivenBack($this->id));
+    }
+
+    /**
      * Hands the request to its host; a wake keeps the watermark the host claims, so a later wake stays pending.
      */
     public function stage(CarbonImmutable $at): void
@@ -191,6 +208,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         $this->moveTo(RequestProgress::Staged);
         $this->wake_claimed = $this->wake_requested;
         $this->staged_at = $at;
+        $this->offer_after = null;
         $this->assertSaved($this->save());
         $this->raise(new DriverRequestStaged($this->id));
     }
@@ -632,6 +650,19 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Scopes ]----------
+
+    /**
+     * The requests that may be offered to their host at the time given: none given back to wait past it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function offerable(Builder $query, CarbonImmutable $at): void
+    {
+        $query->where(
+            fn (Builder $offerable) => $offerable->whereNull('offer_after')->orWhere('offer_after', '<=', $at),
+        );
+    }
 
     /**
      * The requests a runtime is still carrying out.

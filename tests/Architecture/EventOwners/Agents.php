@@ -40,6 +40,7 @@ use App\Events\DriverFailed;
 use App\Events\DriverRequestAccepted;
 use App\Events\DriverRequestApplied;
 use App\Events\DriverRequestAttemptStarted;
+use App\Events\DriverRequestGivenBack;
 use App\Events\DriverRequestHeld;
 use App\Events\DriverRequestRecovered;
 use App\Events\DriverRequestRetried;
@@ -721,6 +722,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DriverRequestScriptProgressed('request'),
+    ],
+    DriverRequestGivenBack::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::giveBack',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestGivenBack('request'),
     ],
     DriverRequestStaged::class => [
         'role' => EventRole::RowFact,

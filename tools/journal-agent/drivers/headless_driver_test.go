@@ -16,7 +16,7 @@ import (
 )
 
 func TestAnInterruptWithNoRunningTurnIsAlreadyIdleAndKeepsTheHold(t *testing.T) {
-	driver := NewHeadlessDriver(HeadlessRuntime{}, 1)
+	driver := NewHeadlessDriver(HeadlessRuntime{Limits: journalLimits}, 1)
 
 	interrupt, err := driver.Interrupt(context.Background(), contracts.InterruptRequest{Request: request("late"), Turn: 1})
 
@@ -26,7 +26,7 @@ func TestAnInterruptWithNoRunningTurnIsAlreadyIdleAndKeepsTheHold(t *testing.T) 
 }
 
 func TestAStopWithNoRunningChildIsConfirmedAtOnce(t *testing.T) {
-	driver := NewHeadlessDriver(HeadlessRuntime{}, 1)
+	driver := NewHeadlessDriver(HeadlessRuntime{Limits: journalLimits}, 1)
 
 	stop, err := driver.Stop(context.Background(), contracts.StopRequest{Request: request("stop")})
 
@@ -52,6 +52,7 @@ func containedTurn(t *testing.T, container printingContainer) (*recordedUsage, e
 	t.Helper()
 	usage := &recordedUsage{}
 	driver := NewHeadlessDriver(HeadlessRuntime{
+		Limits: journalLimits,
 		Start: profilecontracts.BaseStart{SessionID: "conversation"}, Profile: profiles.ClaudeCode{},
 		Container: container, Usage: usage,
 	}, 1)
@@ -103,6 +104,7 @@ func TestAConfinedChildTurnRunsUnderItsConfinementInPlaceOfTheSessionSandbox(t *
 	runtime := turn
 	runtime.WorkFolder, runtime.Account = t.TempDir(), &profilecontracts.AccountStart{Folder: t.TempDir()}
 	driver := NewHeadlessDriver(HeadlessRuntime{
+		Limits: journalLimits,
 		Start: runtime, Profile: profiles.ClaudeCode{}, Executable: "/opt/claude", Confinement: recordingConfinement{},
 	}, 1)
 

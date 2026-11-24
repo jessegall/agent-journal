@@ -31,6 +31,7 @@ use App\Support\StateEvents\StateEventEffects;
 use App\Support\StateEvents\StateEventResult;
 use App\Support\StateEvents\StateEventResults;
 use App\Support\StateEvents\StateEventStacks;
+use App\Support\States\StateReturnedParts;
 use App\Values\StackTarget;
 use Closure;
 use Psr\Log\LoggerInterface;
@@ -190,16 +191,11 @@ final readonly class StateEventDelivery
     {
         $listener = "{$method->stateClass}::{$method->name}";
 
-        $effects = match (true) {
-            $answer === null, self::isDelegated($answer) => [],
-            $answer instanceof Command, $answer instanceof Event, $answer instanceof StateReference => [$answer],
-            is_iterable($answer) => iterator_to_array($answer, false),
-            default => throw StateAnswerRefused::notAnEffect($listener, get_debug_type($answer)),
-        };
+        $effects = self::isDelegated($answer) ? [] : StateReturnedParts::of($answer, $listener);
 
         foreach ($effects as $effect) {
             if (! $effect instanceof Command && ! $effect instanceof Event && ! $effect instanceof StateReference) {
-                throw StateAnswerRefused::notAnEffect($listener, get_debug_type($effect));
+                throw StateAnswerRefused::notAnEffect($listener, $effect);
             }
         }
 

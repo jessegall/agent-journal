@@ -30,8 +30,13 @@ type StopStages struct {
 	Poll  time.Duration
 }
 
-// DefaultStopStages are the bounds a driver's stop uses.
-var DefaultStopStages = StopStages{Grace: 5 * time.Second, Force: 2 * time.Second, Poll: 50 * time.Millisecond}
+// stopPoll is how often a stop looks whether the group has ended.
+const stopPoll = 50 * time.Millisecond
+
+// StopStagesOf bounds a stop by the grace and force waits the journal sent.
+func StopStagesOf(grace, force time.Duration) StopStages {
+	return StopStages{Grace: grace, Force: force, Poll: stopPoll}
+}
 
 // OwnedGroup is a child the host started, known by its process id and the start time the system recorded for it, so a
 // reused process id is never taken for the child.

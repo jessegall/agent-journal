@@ -25,7 +25,12 @@ final readonly class FocusTaskHandler extends TaskCommandHandler
     public function handle(FocusTaskCommand $command, Task $task): void
     {
         $agentId = $command->dispatchedBy()->id;
-        $others = Task::query()->focusedBy($agentId)->whereKeyNot($task->id)->lockForUpdate()->limit(10)->get();
+
+        $others = Task::query()->focusedBy($agentId)
+            ->whereKeyNot($task->id)
+            ->lockForUpdate()
+            ->limit(10)
+            ->get();
 
         foreach ($others as $other) {
             $other->unfocus();

@@ -347,44 +347,35 @@ func (runtime *menuRuntime) Wake(ctx context.Context, wake contracts.WakeRequest
 	return runtime.fakeRuntime.Wake(ctx, wake)
 }
 
-func TestAStartThatMeetsAMenuIsReportedHeldByItAndItsWakeGetsInOnceTheMenuIsAnswered(t *testing.T) {
+// The host decides nothing about a turn the screen refuses: it reports the screen's hold once and the turn staged,
+// tries no more, and the wake gets in when the journal offers it again after the menu was answered.
+func TestATurnTheScreenRefusesIsReportedOnceAndGetsInWhenTheJournalOffersItAgain(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &menuRuntime{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
-	loop.screenRetryPause = 5 * time.Millisecond
 
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
-	waitFor(t, func() bool { return runtime.asked.Load() > 2 })
+	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
 	if held := journal.activities(); len(held) != 1 || held[0] != "idle onboarding_required" {
 		t.Fatalf("the held start was reported as %v, not once as idle and held by the menu", held)
 	}
-	if reported := journal.progressOf("a"); len(reported) != 0 {
-		t.Fatalf("the waiting wake was reported %v: a staged report gives the start up", reported)
+	if reported := journal.progressOf("a"); reported[0] != string(contracts.ProgressStaged) {
+		t.Fatalf("the refused wake was reported %v, not staged", reported)
+	}
+	time.Sleep(50 * time.Millisecond)
+	if asked := runtime.asked.Load(); asked != 1 {
+		t.Fatalf("the host tried the refused wake %d times on its own", asked)
 	}
 
 	runtime.answered.Store(true)
-	waitFor(t, func() bool { return len(journal.activities()) == 2 })
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 2, "wake", "")})
+	waitFor(t, func() bool { return len(journal.progressOf("a")) == 2 })
 
 	if started := journal.activities()[1]; started != "running "+string(contracts.HoldNone) {
 		t.Fatalf("the turn after the menu was reported as %q", started)
 	}
-	if reported := journal.progressOf("a"); len(reported) != 1 || reported[0] != string(contracts.ProgressApplying) {
-		t.Fatalf("the wake that got in was reported %v", reported)
-	}
-}
-
-func TestAWakeWaitingBehindAScreenIsGivenUpWhenItsRuntimeEnds(t *testing.T) {
-	journal := &fakeJournal{}
-	runtime := &menuRuntime{}
-	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
-	loop.screenRetryPause = 5 * time.Millisecond
-
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("stop", 2, "stop", "")})
-
-	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
-	if reported := journal.progressOf("a"); reported[0] != string(contracts.ProgressStaged) {
-		t.Fatalf("the wake of the ended runtime was reported %v", reported)
+	if reported := journal.progressOf("a"); reported[1] != string(contracts.ProgressApplying) {
+		t.Fatalf("the wake the journal offered again was reported %v", reported)
 	}
 }
 
@@ -407,20 +398,19 @@ type endingRuntime struct {
 
 func (runtime *endingRuntime) Ended() <-chan string { return runtime.ended }
 
-// A session container removed under a waiting wake left the host trying that wake on the dead runtime for ever.
+// A session container removed under a refused wake leaves the loop and is never tried again.
 func TestARuntimeWhoseProgramEndsOnItsOwnLeavesTheLoopAndItsWaitingWakeIsGivenUp(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &endingRuntime{ended: make(chan string, 1)}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
-	loop.screenRetryPause = 5 * time.Millisecond
 
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
-	waitFor(t, func() bool { return runtime.asked.Load() > 1 })
+	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
 	runtime.ended <- "the session container's program exited with 137"
 
-	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
+	waitFor(t, func() bool { return journal.exitsReported() == 1 })
 	asked := runtime.asked.Load()
-	time.Sleep(10 * loop.screenRetryPause)
+	time.Sleep(50 * time.Millisecond)
 
 	if journal.exitsReported() != 1 || runtime.stopped {
 		t.Fatalf("%d exits reported, stopped %v", journal.exitsReported(), runtime.stopped)

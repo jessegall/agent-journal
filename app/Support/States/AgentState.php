@@ -82,45 +82,36 @@ abstract class AgentState implements HookAnswerer
     // ----------[ Lifecycle ]----------
 
     /**
-     * The commands to run once the state's frame first went live on its stack; none by default.
+     * The commands and events to answer once the state's frame first went live on its stack; none by default.
      *
-     * @return list<Command<mixed>>
+     * @return Command<mixed>|Event|iterable<Command<mixed>|Event>|void
      */
-    public function onEnter(): array
-    {
-        return [];
-    }
+    public function onEnter() {}
 
     /**
-     * The commands to run once the state's frame is the top live frame again after the frames above it went; none by
-     * default.
+     * The commands and events to answer once the state's frame is the top live frame again after the frames above
+     * it went; none by default.
      *
-     * @return list<Command<mixed>>
+     * @return Command<mixed>|Event|iterable<Command<mixed>|Event>|void
      */
-    public function onResume(): array
-    {
-        return [];
-    }
+    public function onResume() {}
 
     /**
-     * The commands to run once the state's frame stopped being live: its work finished, it was popped or its type was
-     * switched off; none by default.
+     * The commands and events to answer once the state's frame stopped being live: its work finished, it was popped or
+     * its type was switched off; none by default.
      *
-     * @return list<Command<mixed>>
+     * @return Command<mixed>|Event|iterable<Command<mixed>|Event>|void
      */
-    public function onExit(): array
-    {
-        return [];
-    }
+    public function onExit() {}
 
     // ----------[ Hooks ]----------
 
     /**
      * The agent's session started.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onSessionStart(SessionStarted $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onSessionStart(SessionStarted $input)
     {
         return Decision::delegate();
     }
@@ -128,9 +119,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * A prompt was handed to the agent, before it starts its turn on it.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onPrompt(PromptSubmitted $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onPrompt(PromptSubmitted $input)
     {
         return Decision::delegate();
     }
@@ -138,9 +129,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * The agent is about to run a shell line: deny it, rewrite it, or pass it on.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onShellCommand(ShellCommandRequested $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onShellCommand(ShellCommandRequested $input)
     {
         return Decision::delegate();
     }
@@ -148,9 +139,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * The agent is about to create, change or remove files: deny it or pass it on.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onFileEdit(FileEditRequested $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onFileEdit(FileEditRequested $input)
     {
         return Decision::delegate();
     }
@@ -158,9 +149,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * The agent is about to call a tool that is no shell line, file edit or journal tool: deny it or pass it on.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onToolRequested(ToolRequested $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onToolRequested(ToolRequested $input)
     {
         return Decision::delegate();
     }
@@ -168,9 +159,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * The agent wants to end its turn: a deny sends it back to work with the reason.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onStop(StopRequested $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onStop(StopRequested $input)
     {
         return Decision::delegate();
     }
@@ -178,9 +169,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * The agent's context was compacted, so what it was told before may be gone.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onCompaction(ContextCompacted $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onCompaction(ContextCompacted $input)
     {
         return Decision::delegate();
     }
@@ -188,9 +179,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * A tool call of the agent ended; nothing can be refused any more, only noted or answered with lines.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onToolFinished(ToolFinished $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onToolFinished(ToolFinished $input)
     {
         return Decision::delegate();
     }
@@ -198,9 +189,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * The agent's session ended.
      *
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>|void
      */
-    public function onSessionEnd(SessionEnded $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onSessionEnd(SessionEnded $input)
     {
         return Decision::delegate();
     }

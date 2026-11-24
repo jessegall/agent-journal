@@ -1,6 +1,6 @@
 // Package serving carries out the requests a host claims: it files them with the scheduler, opens each runtime's
 // driver once from its start grant, runs every admission on the driver and reports each result back to the journal
-//.
+// .
 package serving
 
 import (
@@ -71,8 +71,6 @@ type Loop struct {
 	opening map[string]*sync.Mutex
 	// raiseRetryDelay is how long a raise whose answer was lost waits before it is sent again.
 	raiseRetryDelay time.Duration
-	// screenRetryPause is how long a turn the screen did not let in waits before it is tried again.
-	screenRetryPause time.Duration
 	// sequences is the number of the last report sent for each runtime: its reports are numbered in the order sent.
 	sequences map[string]uint64
 }
@@ -97,15 +95,14 @@ type liveRuntime struct {
 // NewLoop returns a loop that reports to the journal and opens drivers with open.
 func NewLoop(journal Journal, prepare Preparer, open Opener) *Loop {
 	return &Loop{
-		journal:          journal,
-		prepare:          prepare,
-		open:             open,
-		scheduler:        host.NewScheduler(),
-		runtimes:         map[string]*liveRuntime{},
-		sequences:        map[string]uint64{},
-		opening:          map[string]*sync.Mutex{},
-		raiseRetryDelay:  time.Second,
-		screenRetryPause: 2 * time.Second,
+		journal:         journal,
+		prepare:         prepare,
+		open:            open,
+		scheduler:       host.NewScheduler(),
+		runtimes:        map[string]*liveRuntime{},
+		sequences:       map[string]uint64{},
+		opening:         map[string]*sync.Mutex{},
+		raiseRetryDelay: time.Second,
 	}
 }
 
@@ -303,8 +300,7 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 		result, err = runtime.driver.Wake(ctx, contracts.WakeRequest{Request: first, Prompt: wakePrompt(admission.Wakes)})
 	}
 	if err == nil && result.Progress == contracts.ProgressStaged && result.Hold != contracts.HoldInterrupted {
-		loop.retryBehindScreen(ctx, runtime, admission, result.Hold)
-		return
+		loop.holdBehindScreen(ctx, runtime, result.Hold)
 	}
 	if err != nil || result.Progress != contracts.ProgressApplying {
 		loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
@@ -671,11 +667,9 @@ func (loop *Loop) exited(ctx context.Context, runtime *liveRuntime, evidence str
 	}
 }
 
-// retryBehindScreen keeps a turn the screen did not let in instead of giving it up: the turn is tried again after a
-// pause, nothing else starts on the runtime meanwhile, and what the screen holds the runtime with is told to the
-// journal once per change. So a start's first prompt waits for its program to come up, and a menu a user answers in
-// the terminal lets the waiting prompt in. A runtime that ended meanwhile has its waiting requests reported staged.
-func (loop *Loop) retryBehindScreen(ctx context.Context, runtime *liveRuntime, admission host.Admission, hold contracts.Hold) {
+// holdBehindScreen tells the journal, once per change, what the screen holds the runtime with when it did not let a
+// turn in; the turn's requests are then reported staged, and the journal decides when to offer them again.
+func (loop *Loop) holdBehindScreen(ctx context.Context, runtime *liveRuntime, hold contracts.Hold) {
 	loop.mutex.Lock()
 	told := runtime.screenHold && runtime.hold == hold
 	runtime.hold, runtime.screenHold = hold, true
@@ -683,15 +677,6 @@ func (loop *Loop) retryBehindScreen(ctx context.Context, runtime *liveRuntime, a
 	if !told {
 		loop.activity(ctx, runtime, "idle")
 	}
-	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
-	time.AfterFunc(loop.screenRetryPause, func() {
-		if ctx.Err() == nil && loop.isLive(runtime) {
-			loop.startTurn(ctx, runtime, admission)
-			return
-		}
-		loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
-		loop.failAll(ctx, admission, contracts.ProgressStaged)
-	})
 }
 
 // isLive is whether the runtime is still the one the loop serves under its id.

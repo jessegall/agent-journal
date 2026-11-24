@@ -119,7 +119,7 @@ return [
     'mcp' => [
         'instructions' => 'Use the journal MCP tools for journal work: call overview_read first and follow its '
             ."next_action. Send each write with a request_key and keep it; when a write's outcome is unknown, call "
-            .'operations_read with that key before trying again. These stay on the CLI or the web: {flowsOutsideMcp}. '
+            .'operations_read with that key before trying again. These stay on the CLI or the web: {flows}. '
             .'Every decision only the user makes stays theirs: ask with messages_question',
     ],
     'scripts' => [

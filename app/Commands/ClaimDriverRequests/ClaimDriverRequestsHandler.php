@@ -66,6 +66,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         $pending = DriverRequest::query()
             ->whereIn('agent_runtime_id', $runtimeIds)
             ->where('progress', RequestProgress::Accepted)
+            ->offerable(CarbonImmutable::now())
             ->whereNotIn('operation', DriverOperation::control())
             ->orderBy('sequence')
             ->lockForUpdate()

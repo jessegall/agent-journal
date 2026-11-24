@@ -8,11 +8,13 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Enums\AnswerType;
 use App\Exceptions\HookAnswerRefused;
+use App\Exceptions\StateAnswerRefused;
 use App\Support\Decisions\ContextLine;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\References\StateReference;
+use App\Support\States\StateReturnedParts;
 
 /**
  * What one state answered a hook: its decision, delegate unless it made one as its last part, the lines it added,
@@ -38,16 +40,14 @@ final readonly class StateAnswer
      * The answer from what the state's method returned: one part, or several yielded with the decision last. A
      * delegate is the part that passes the hook on.
      *
-     * @param  AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>  $returned
+     * @param  mixed  $returned  nothing, one part, or the parts it yielded
      *
      * @throws HookAnswerRefused
+     * @throws StateAnswerRefused when the method returned an array
      */
-    public static function of(
-        AnswerPart|Command|Event|StateReference|iterable $returned,
-        string $state,
-        string $hook,
-    ): self {
-        $parts = is_iterable($returned) ? $returned : [$returned];
+    public static function of(mixed $returned, string $state, string $hook): self
+    {
+        $parts = StateReturnedParts::of($returned, "{$state}::{$hook}");
 
         $answer = new self($state, $hook, Decision::delegate());
 

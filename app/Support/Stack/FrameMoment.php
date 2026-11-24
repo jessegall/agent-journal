@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Stack;
 
 use App\Contracts\Bus\Command;
+use App\Contracts\Events\Event;
 use App\Enums\StackMoment;
 use App\Support\Stack\Frames\Frame;
 
@@ -16,9 +17,9 @@ final readonly class FrameMoment
     public function __construct(public Frame $frame, public StackMoment $moment) {}
 
     /**
-     * @return list<Command<mixed>>
+     * @return list<Command<mixed>|Event>
      */
-    public function commands(): array
+    public function effects(): array
     {
         return $this->frame->answerMoment($this->moment);
     }

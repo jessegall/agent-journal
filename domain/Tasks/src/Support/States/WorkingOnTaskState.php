@@ -93,28 +93,19 @@ final class WorkingOnTaskState extends AgentState
 
     // ----------[ Lifecycle ]----------
 
-    /**
-     * @return list<FocusTaskCommand>
-     */
-    public function onEnter(): array
+    public function onEnter(): FocusTaskCommand
     {
-        return [new FocusTaskCommand($this->taskId)];
+        return new FocusTaskCommand($this->taskId);
     }
 
-    /**
-     * @return list<FocusTaskCommand>
-     */
-    public function onResume(): array
+    public function onResume(): FocusTaskCommand
     {
-        return [new FocusTaskCommand($this->taskId)];
+        return new FocusTaskCommand($this->taskId);
     }
 
-    /**
-     * @return list<UnfocusTaskCommand>
-     */
-    public function onExit(): array
+    public function onExit(): UnfocusTaskCommand
     {
-        return [new UnfocusTaskCommand($this->taskId)];
+        return new UnfocusTaskCommand($this->taskId);
     }
 
     // ----------[ Hooks ]----------

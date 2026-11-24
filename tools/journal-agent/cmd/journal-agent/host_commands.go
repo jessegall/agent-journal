@@ -278,6 +278,9 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if err := pinnedBuild(profile, grant.Runtime.DriverBuild); err != nil {
 		return nil, drivercontracts.RefuseStart(drivercontracts.RefusalPinnedBuildMissing, fmt.Errorf("runtime %s: %w", runtimeID, err))
 	}
+	if err := grant.Runtime.Limits.Problem(); err != nil {
+		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
+	}
 	var confined *host.ChildConfinement
 	if prepared.Claim.ChildCheckout != nil && opener.worktrees != nil {
 		child, confinement, err := opener.inChildWorktree(runtimeID, prepared)
@@ -479,6 +482,7 @@ func (opener runtimeOpener) headlessRuntime(
 		return nil, err
 	}
 	headless := drivers.HeadlessRuntime{
+		Limits:     grant.Runtime.Limits,
 		JournalURL: opener.journalURL,
 		Credential: grant.Token,
 		ProfilePin: grant.ProfileEnvironment(),
@@ -529,7 +533,7 @@ func (opener runtimeOpener) terminalRuntime(
 		return nil, err
 	}
 
-	return terminalDriverOf(profile, opened, grant.Runtime.ProcessGeneration, request.ConversationID), nil
+	return terminalDriverOf(profile, opened, grant.Runtime, request.ConversationID), nil
 }
 
 // instanceRunsOn answers whether a container instance still runs, for telling a lost attachment from an ended
@@ -547,7 +551,7 @@ func instanceRunsOn(containers host.Containers) func(instance string) bool {
 func terminalDriverOf(
 	profile contracts.DriverProfile,
 	opened host.Terminal,
-	generation int,
+	runtime client.RuntimeStart,
 	conversationID string,
 ) *drivers.TerminalDriver {
 	layout := profile.Screens()
@@ -558,6 +562,7 @@ func terminalDriverOf(
 	driver := keyscripts.Driver{Name: profile.Driver(), Layout: layout}
 
 	return drivers.NewTerminalDriver(drivers.TerminalRuntime{
+		Limits:            runtime.Limits,
 		Profile:           profile.Driver() + "@" + profile.Build(),
 		Classifier:        classifier,
 		Gate:              opened.Gate,
@@ -571,7 +576,7 @@ func terminalDriverOf(
 		Scripts:           scripts.Registered(),
 		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Report),
 		Clock:             clock,
-		ProcessGeneration: generation,
+		ProcessGeneration: runtime.ProcessGeneration,
 		ConversationID:    conversationID,
 		Progress:          relay,
 	})

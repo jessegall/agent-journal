@@ -7,7 +7,7 @@ namespace App\Exceptions;
 use InvalidArgumentException;
 
 /**
- * A path inside a place that could reach outside it: it escapesItsRoot with '..', starts at the root, or holds a NUL byte.
+ * A path inside a place that could reach outside it: it escapes its root with '..', starts at the root, or holds a NUL byte.
  */
 final class FilePathInvalid extends InvalidArgumentException
 {

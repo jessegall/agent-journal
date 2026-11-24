@@ -136,9 +136,9 @@ final class WorkingOnTaskTest extends TestCase
     {
         $working = $this->working();
 
-        $this->assertEquals([new FocusTaskCommand('task-42')], $working->onEnter());
-        $this->assertEquals([new FocusTaskCommand('task-42')], $working->onResume());
-        $this->assertEquals([new UnfocusTaskCommand('task-42')], $working->onExit());
+        $this->assertEquals(new FocusTaskCommand('task-42'), $working->onEnter());
+        $this->assertEquals(new FocusTaskCommand('task-42'), $working->onResume());
+        $this->assertEquals(new UnfocusTaskCommand('task-42'), $working->onExit());
     }
 
     #[DataProvider('otherHooks')]

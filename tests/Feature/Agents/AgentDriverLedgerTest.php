@@ -392,6 +392,30 @@ final class AgentDriverLedgerTest extends TestCase
         );
     }
 
+    /**
+     * A host that could not start a turn, such as a prompt its screen did not let in, reports it staged and tries no
+     * more: the journal takes the request back and offers it again once its wait has passed.
+     */
+    public function test_a_staged_report_gives_the_request_back_to_be_offered_again_after_a_wait(): void
+    {
+        [$host, $opened] = $this->openRuntime(firstMessage: 'Behind a menu');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+
+        $this->reportProgress($host->hostId, $opened->firstRequestId, RequestProgress::Staged);
+
+        $this->assertSame(RequestProgress::Accepted, DriverRequest::query()->findOrFail($opened->firstRequestId)->progress);
+        $tooSoon = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->assertSame([], $tooSoon->requests);
+
+        $this->travel(3)->seconds();
+        $again = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+
+        $this->assertSame(
+            [$opened->firstRequestId],
+            array_map(fn ($request): string => $request->requestId, $again->requests),
+        );
+    }
+
     public function test_an_interrupt_holds_the_runtime_at_once(): void
     {
         [, $opened] = $this->openRuntime();

@@ -21,6 +21,6 @@ final class WatchingNoteState extends AgentState
      */
     public function onNoteWritten(NoteWritten $event): iterable
     {
-        return $event->ordinary;
+        yield from $event->ordinary;
     }
 }

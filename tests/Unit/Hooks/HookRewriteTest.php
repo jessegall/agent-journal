@@ -109,9 +109,15 @@ final class HookRewriteTest extends TestCase
 
     public function test_an_accepted_rewrite_keeps_both_walks_context_and_messages(): void
     {
-        $rewriter = new ShellAnswerState(fn (ShellCommandRequested $input) => match ($input->command->source) {
-            'composer test' => [new MessageLine(TestText::of(self::ORIGINAL)), Decision::rewrite('git status')],
-            default => new MessageLine(TestText::of(self::ACCEPTED)),
+        $rewriter = new ShellAnswerState(function (ShellCommandRequested $input) {
+            if ($input->command->source === 'composer test') {
+                yield new MessageLine(TestText::of(self::ORIGINAL));
+                yield Decision::rewrite('git status');
+
+                return;
+            }
+
+            yield new MessageLine(TestText::of(self::ACCEPTED));
         });
 
         $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
@@ -139,9 +145,16 @@ final class HookRewriteTest extends TestCase
 
     private function refusingStack(RewritingState $rewriter): AgentStack
     {
-        $guard = new ShellAnswerState(fn (ShellCommandRequested $input) => match ($input->command->source) {
-            'composer test' => [new MessageLine(TestText::of(self::ORIGINAL)), Decision::rewrite('journal run tests --write')],
-            default => [new MessageLine(TestText::of(self::REFUSAL_CONTEXT)), Decision::deny(TestText::of(self::REFUSAL))],
+        $guard = new ShellAnswerState(function (ShellCommandRequested $input) {
+            if ($input->command->source === 'composer test') {
+                yield new MessageLine(TestText::of(self::ORIGINAL));
+                yield Decision::rewrite('journal run tests --write');
+
+                return;
+            }
+
+            yield new MessageLine(TestText::of(self::REFUSAL_CONTEXT));
+            yield Decision::deny(TestText::of(self::REFUSAL));
         });
 
         return $this->stack($rewriter, $guard);

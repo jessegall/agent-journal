@@ -93,7 +93,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	}
 
 	runtime := &containedRuntime{
-		Runtime:   terminalDriverOf(profile, opened, prepared.Grant.Runtime.ProcessGeneration, conversationID),
+		Runtime:   terminalDriverOf(profile, opened, prepared.Grant.Runtime, conversationID),
 		container: container,
 		manifest:  manifest,
 		ended:     make(chan string, 1),
@@ -124,6 +124,7 @@ func (opener runtimeOpener) containedHeadlessRuntime(
 	container := opener.sessionContainer(runtimeID, prepared, manifest)
 	grant := prepared.Grant
 	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
+		Limits:  grant.Runtime.Limits,
 		Start:   startInContainer(grant, conversationID, manifest),
 		Profile: profile,
 		Container: containedTurns{

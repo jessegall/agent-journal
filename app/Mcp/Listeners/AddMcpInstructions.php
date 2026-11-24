@@ -11,7 +11,7 @@ use App\Mcp\Support\McpInstructions;
 use App\Models\Starts\ProcessStart;
 
 /**
- * Tells an agent how to use the journal's MCP tools, and which of its flowsOutsideMcp stay on the CLI or the web, every time
+ * Tells an agent how to use the journal's MCP tools, and which of its flows stay on the CLI or the web, every time
  * its context starts again; a required reminder, so no budget leaves it out.
  */
 final readonly class AddMcpInstructions implements Listener

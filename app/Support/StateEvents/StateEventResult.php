@@ -58,7 +58,7 @@ final readonly class StateEventResult
         return new self(
             $moment->frame->record(),
             $moment->frame->momentMethod($moment->moment),
-            $moment->commands(),
+            $moment->effects(),
         );
     }
 
