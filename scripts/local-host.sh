@@ -39,8 +39,20 @@ read_source_state() {
     case "$1" in
         agent) git ls-files -co --exclude-standard -z -- .docker/helper tools/journal-check \
             | xargs -0 shasum 2>/dev/null | shasum | cut -d' ' -f1 ;;
-        runner) echo "$(git rev-parse HEAD) $(git status --porcelain | shasum | cut -d' ' -f1)" ;;
+        runner) read_checkout_tree ;;
     esac
+}
+
+# The tree git would commit from the checkout as it is now, less the image record each build writes into it.
+read_checkout_tree() {
+    local index tree
+    index=$(mktemp)
+    cp "$(git rev-parse --git-path index)" "$index"
+    GIT_INDEX_FILE=$index git add -A
+    GIT_INDEX_FILE=$index git rm -q --cached --ignore-unmatch docs/accounts/docker-images.json
+    tree=$(GIT_INDEX_FILE=$index git write-tree)
+    rm -f "$index"
+    echo "$tree"
 }
 
 write_contained_settings() {
@@ -61,7 +73,7 @@ write_contained_settings() {
 
 # An image's pin is the id the agent daemon gives it once loaded, read from the saved archive.
 read_image_pin() {
-    tar -xOf "images/$1-$2.tar" manifest.json | sed -n 's#.*"Config":"blobs/sha256/\([0-9a-f]*\)".*#sha256:\1#p'
+    tar -xOf "images/$1-$2.tar" manifest.json | python3 .docker/helper/image-id.py
 }
 
 remove_local_installation() {

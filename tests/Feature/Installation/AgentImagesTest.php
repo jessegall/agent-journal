@@ -6,7 +6,7 @@ namespace Tests\Feature\Installation;
 
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Process;
-use Tests\Support\Installation\StandInInstallation;
+use Tests\Support\Installation\StandInDocker;
 use Tests\TestCase;
 
 /**
@@ -22,6 +22,8 @@ final class AgentImagesTest extends TestCase
 
     private string $folder;
 
+    private StandInDocker $docker;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -31,6 +33,7 @@ final class AgentImagesTest extends TestCase
         File::ensureDirectoryExists("{$this->folder}/stand-in");
         File::ensureDirectoryExists("{$this->folder}/images");
         File::put("{$this->folder}/stand-in/daemon-images", '');
+        $this->docker = new StandInDocker("{$this->folder}/stand-in");
     }
 
     protected function tearDown(): void
@@ -48,7 +51,7 @@ final class AgentImagesTest extends TestCase
         $run = $this->load(self::AGENT, self::RUNNER);
 
         $this->assertSame(0, $run->getExitCode(), $run->getErrorOutput());
-        $this->assertSame([], $this->callsHolding('load --quiet'));
+        $this->assertSame([], $this->docker->callsHolding('load --quiet'));
     }
 
     public function test_a_missing_pin_loads_every_archive(): void
@@ -59,7 +62,7 @@ final class AgentImagesTest extends TestCase
         $run = $this->load(self::AGENT, self::RUNNER);
 
         $this->assertSame(0, $run->getExitCode(), $run->getErrorOutput());
-        $this->assertCount(2, $this->callsHolding('load --quiet'));
+        $this->assertCount(2, $this->docker->callsHolding('load --quiet'));
     }
 
     public function test_an_archive_without_the_pinned_image_fails_with_a_plain_line(): void
@@ -79,7 +82,7 @@ final class AgentImagesTest extends TestCase
 
         $this->assertSame(1, $run->getExitCode());
         $this->assertStringContainsString('Name AGENT_IMAGE and RUNNER_IMAGE', $run->getErrorOutput());
-        $this->assertSame([], $this->callsHolding(''));
+        $this->assertSame([], $this->docker->callsHolding(''));
     }
 
     public function test_an_old_image_goes_unless_a_container_still_runs_on_it(): void
@@ -102,9 +105,7 @@ final class AgentImagesTest extends TestCase
             'AGENT_IMAGE' => $agent,
             'RUNNER_IMAGE' => $runner,
             'AGENT_IMAGE_ARCHIVES' => "{$this->folder}/images",
-            'STAND_IN' => "{$this->folder}/stand-in",
-            'PATH' => base_path('tests/Support/Installation/bin').':'.getenv('PATH'),
-            'DOCKER_HOST' => StandInInstallation::NO_REAL_DOCKER,
+            ...$this->docker->environment(),
         ]);
         $process->run();
 
@@ -122,16 +123,5 @@ final class AgentImagesTest extends TestCase
         $content = [['Config' => "blobs/sha256/{$digest}", 'RepoTags' => ["{$name}:latest"]]];
         File::put($manifest, json_encode($content, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
         new Process(['tar', '-cf', "{$this->folder}/images/{$name}.tar", '-C', $this->folder, 'manifest.json'])->mustRun();
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function callsHolding(string $part): array
-    {
-        $log = "{$this->folder}/stand-in/calls.log";
-        $calls = File::exists($log) ? array_filter(explode("\n", File::get($log))) : [];
-
-        return array_values(array_filter($calls, fn (string $call) => str_contains($call, $part)));
     }
 }

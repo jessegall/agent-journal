@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Installation;
 
+use Dotenv\Dotenv;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Process;
 
@@ -14,19 +15,14 @@ use Symfony\Component\Process\Process;
  */
 final readonly class StandInInstallation
 {
-    /**
-     * The Docker address a script under test is given: a docker program that is not the stand-in fails on it at once,
-     * so the normal suite never reaches a real Docker.
-     */
-    public const string NO_REAL_DOCKER = 'unix:///nonexistent/stand-in-only.sock';
-
     private const string BRANCH = 'version-6';
 
-    private const string BUILD_CALL = 'buildx build';
+    public StandInDocker $docker;
 
-    private const string BUILD_TAG = '--tag journal-%s:build';
-
-    private function __construct(private string $folder) {}
+    private function __construct(private string $folder)
+    {
+        $this->docker = new StandInDocker("{$folder}/stand-in");
+    }
 
     /**
      * A contained installation that has installed nothing yet, following a repository with the project's own Docker
@@ -103,9 +99,7 @@ final readonly class StandInInstallation
             'JOURNAL_REPOSITORY' => $this->repository(),
             'JOURNAL_UPDATER_STATE' => "{$this->folder}/state",
             'JOURNAL_UPDATER_LOOP' => "{$this->folder}/state/journal-updater",
-            'STAND_IN' => "{$this->folder}/stand-in",
-            'PATH' => __DIR__.'/bin:'.getenv('PATH'),
-            'DOCKER_HOST' => self::NO_REAL_DOCKER,
+            ...$this->docker->environment(),
         ]);
         $update->run();
 
@@ -113,71 +107,11 @@ final readonly class StandInInstallation
     }
 
     /**
-     * Makes every later Docker call that holds the part fail.
-     */
-    public function failCallsHolding(string $part): void
-    {
-        File::append("{$this->folder}/stand-in/failing", $part."\n");
-    }
-
-    /**
-     * Makes every later build come out of Docker's cache: the same image as the build before it.
-     */
-    public function buildFromCache(): void
-    {
-        File::put("{$this->folder}/stand-in/cached", '');
-    }
-
-    public function hasBuilt(string $image): bool
-    {
-        $tag = sprintf(self::BUILD_TAG, $image);
-
-        return array_any(
-            $this->calls(),
-            fn (string $call): bool => str_starts_with($call, self::BUILD_CALL) && str_contains($call, $tag),
-        );
-    }
-
-    /**
-     * Whether Docker was asked for something that holds every part given, in one call.
-     */
-    public function wasAsked(string ...$parts): bool
-    {
-        return array_any(
-            $this->calls(),
-            fn (string $call): bool => array_all($parts, fn (string $part): bool => str_contains($call, $part)),
-        );
-    }
-
-    /**
-     * Forgets the calls so far, so a test reads only those of its next update.
-     */
-    public function forgetCalls(): void
-    {
-        File::delete("{$this->folder}/stand-in/calls.log");
-    }
-
-    /**
-     * @return list<string>
-     */
-    public function calls(): array
-    {
-        $log = "{$this->folder}/stand-in/calls.log";
-
-        return File::exists($log) ? array_values(array_filter(explode("\n", File::get($log)))) : [];
-    }
-
-    /**
      * The value .env gives the setting.
      */
     public function setting(string $name): string
     {
-        $line = array_find(
-            explode("\n", File::get($this->root().'/.env')),
-            fn (string $line): bool => str_starts_with($line, $name.'='),
-        );
-
-        return substr((string) $line, strlen($name) + 1);
+        return Dotenv::parse(File::get($this->root().'/.env'))[$name] ?? '';
     }
 
     /**

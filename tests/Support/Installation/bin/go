@@ -1,0 +1,23 @@
+#!/bin/sh
+# A stand-in for the go program in tests: it records each call in $STAND_IN/go-calls.log and writes an empty program
+# where a build names its output, a file or a folder.
+set -eu
+here=$(dirname "$0")
+. "$here/../../../../scripts/lib/arguments.sh"
+
+main() {
+    local output
+    printf '%s\n' "$*" >> "$STAND_IN/go-calls.log"
+    output=$(read_option -o "$@")
+    [ -n "$output" ] || return 0
+    write_program "$output"
+}
+
+write_program() {
+    case "$1" in
+        */) mkdir -p "$1" ;;
+        *) mkdir -p "$(dirname "$1")" && : > "$1" ;;
+    esac
+}
+
+main "$@"

@@ -77,8 +77,8 @@ final class UpdateTest extends TestCase
 
         $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
         $this->assertSame($pushed, $this->installation->installedCommit());
-        $this->assertTrue($this->installation->hasBuilt(self::AGENT));
-        $this->assertTrue($this->installation->hasBuilt(self::RUNNER));
+        $this->assertTrue($this->installation->docker->hasBuilt(self::AGENT));
+        $this->assertTrue($this->installation->docker->hasBuilt(self::RUNNER));
         $this->assertNotSame($earlierAgent, $this->installation->setting(self::AGENT_PIN));
         $this->assertNotSame($earlierRunner, $this->installation->setting(self::RUNNER_PIN));
         $this->assertNotSame(
@@ -127,14 +127,14 @@ final class UpdateTest extends TestCase
     {
         $this->installation->update();
         $pinned = $this->installation->setting(self::AGENT_PIN);
-        $this->installation->forgetCalls();
+        $this->installation->docker->forgetCalls();
         $pushed = $this->installation->push(['tools/journal-agent/relay.go' => 'package relay']);
 
         $update = $this->installation->update();
 
         $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
         $this->assertSame($pushed, $this->installation->installedCommit());
-        $this->assertTrue($this->installation->hasBuilt(self::AGENT));
+        $this->assertTrue($this->installation->docker->hasBuilt(self::AGENT));
         $this->assertNotSame($pinned, $this->installation->setting(self::AGENT_PIN));
     }
 
@@ -147,17 +147,17 @@ final class UpdateTest extends TestCase
         $this->installation->update();
         $pinned = $this->installation->setting(self::AGENT_PIN);
         $recorded = $this->installation->recordedImages();
-        $this->installation->forgetCalls();
-        $this->installation->buildFromCache();
+        $this->installation->docker->forgetCalls();
+        $this->installation->docker->buildFromCache();
         $pushed = $this->installation->push(['tools/journal-agent/relay_test.go' => 'package relay']);
 
         $update = $this->installation->update();
 
         $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
         $this->assertSame($pushed, $this->installation->installedCommit());
-        $this->assertTrue($this->installation->hasBuilt(self::AGENT));
-        $this->assertFalse($this->installation->wasAsked(self::SAVE_CALL));
-        $this->assertFalse($this->installation->wasAsked(self::RUN_IN_IMAGE_CALL));
+        $this->assertTrue($this->installation->docker->hasBuilt(self::AGENT));
+        $this->assertFalse($this->installation->docker->wasAsked(self::SAVE_CALL));
+        $this->assertFalse($this->installation->docker->wasAsked(self::RUN_IN_IMAGE_CALL));
         $this->assertSame($pinned, $this->installation->setting(self::AGENT_PIN));
         $this->assertSame($recorded, $this->installation->recordedImages());
     }
@@ -166,15 +166,15 @@ final class UpdateTest extends TestCase
     {
         $this->installation->update();
         $pinned = $this->installation->setting(self::AGENT_PIN);
-        $this->installation->forgetCalls();
+        $this->installation->docker->forgetCalls();
         $pushed = $this->installation->push(['app/Models/Task.php' => '<?php']);
 
         $update = $this->installation->update();
 
         $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
         $this->assertSame($pushed, $this->installation->installedCommit());
-        $this->assertFalse($this->installation->hasBuilt(self::AGENT));
-        $this->assertTrue($this->installation->hasBuilt(self::RUNNER));
+        $this->assertFalse($this->installation->docker->hasBuilt(self::AGENT));
+        $this->assertTrue($this->installation->docker->hasBuilt(self::RUNNER));
         $this->assertSame($pinned, $this->installation->setting(self::AGENT_PIN));
     }
 
@@ -184,7 +184,7 @@ final class UpdateTest extends TestCase
         $installed = $this->installation->installedCommit();
         $pinned = $this->installation->setting(self::AGENT_PIN);
         $pushed = $this->installation->push(['tools/journal-agent/relay.go' => 'package relay']);
-        $this->installation->failCallsHolding('--file .docker/helper/Dockerfile');
+        $this->installation->docker->failCallsHolding('--file .docker/helper/Dockerfile');
 
         $update = $this->installation->update();
 
@@ -200,7 +200,7 @@ final class UpdateTest extends TestCase
         $pinned = $this->installation->setting(self::AGENT_PIN);
         $recorded = $this->installation->recordedImages();
         $this->installation->push(['tools/journal-agent/relay.go' => 'package relay']);
-        $this->installation->failCallsHolding(self::SANDBOX_TOOL_CHECK);
+        $this->installation->docker->failCallsHolding(self::SANDBOX_TOOL_CHECK);
 
         $update = $this->installation->update();
 
@@ -214,7 +214,7 @@ final class UpdateTest extends TestCase
         $this->installation->update();
         $pinned = $this->installation->setting(self::AGENT_PIN);
         $this->installation->push(['tools/journal-agent/relay.go' => 'package relay']);
-        $this->installation->failCallsHolding(self::MCP_RELAY_CHECK);
+        $this->installation->docker->failCallsHolding(self::MCP_RELAY_CHECK);
 
         $update = $this->installation->update();
 
@@ -227,7 +227,7 @@ final class UpdateTest extends TestCase
         $this->installation->update();
         $installed = $this->installation->installedCommit();
         $pushed = $this->installation->push(['database/migrations/2026_01_01_000000_create_notes_table.php' => '<?php']);
-        $this->installation->failCallsHolding(self::MIGRATE);
+        $this->installation->docker->failCallsHolding(self::MIGRATE);
 
         $update = $this->installation->update();
 
@@ -239,24 +239,24 @@ final class UpdateTest extends TestCase
     public function test_a_push_without_a_migration_runs_none(): void
     {
         $this->installation->update();
-        $this->installation->forgetCalls();
+        $this->installation->docker->forgetCalls();
         $this->installation->push(['app/Models/Task.php' => '<?php']);
 
         $this->installation->update();
 
-        $this->assertFalse($this->installation->wasAsked(self::MIGRATE));
+        $this->assertFalse($this->installation->docker->wasAsked(self::MIGRATE));
     }
 
     public function test_the_updater_replaces_itself_only_when_its_loop_changed(): void
     {
         $this->installation->update();
-        $replacedBefore = $this->installation->wasAsked(self::UPDATER_PROFILE, self::BUILD);
+        $replacedBefore = $this->installation->docker->wasAsked(self::UPDATER_PROFILE, self::BUILD);
         $this->installation->push(['.docker/updater/loop.sh' => '#!/bin/sh']);
 
         $this->installation->update();
 
         $this->assertFalse($replacedBefore);
-        $this->assertTrue($this->installation->wasAsked(self::UPDATER_PROFILE, self::BUILD));
+        $this->assertTrue($this->installation->docker->wasAsked(self::UPDATER_PROFILE, self::BUILD));
     }
 
     public function test_a_changed_migration_rebuilds_the_database_and_enrolls_the_contained_host_again(): void
@@ -265,15 +265,15 @@ final class UpdateTest extends TestCase
         $this->installation->push([$migration => '<?php']);
         $this->installation->update();
         $earlierHost = $this->installation->setting(self::HOST);
-        $this->installation->forgetCalls();
+        $this->installation->docker->forgetCalls();
         $pushed = $this->installation->push([$migration => '<?php // changed']);
 
         $update = $this->installation->update();
 
         $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
         $this->assertSame($pushed, $this->installation->installedCommit());
-        $this->assertTrue($this->installation->wasAsked(self::REBUILD));
-        $this->assertTrue($this->installation->wasAsked(self::ENROLL));
+        $this->assertTrue($this->installation->docker->wasAsked(self::REBUILD));
+        $this->assertTrue($this->installation->docker->wasAsked(self::ENROLL));
         $this->assertNotSame($earlierHost, $this->installation->setting(self::HOST));
         $this->assertNotSame('', $this->installation->hostSecret());
     }
@@ -281,17 +281,17 @@ final class UpdateTest extends TestCase
     public function test_a_service_is_restarted_when_a_file_mounted_into_it_changed(): void
     {
         $this->installation->update();
-        $this->installation->forgetCalls();
+        $this->installation->docker->forgetCalls();
         $this->installation->push(['.docker/web/Caddyfile' => 'changed']);
 
         $this->installation->update();
-        $restartedForItsFile = $this->installation->wasAsked(self::RESTART, self::MOUNTING_SERVICE);
-        $this->installation->forgetCalls();
+        $restartedForItsFile = $this->installation->docker->wasAsked(self::RESTART, self::MOUNTING_SERVICE);
+        $this->installation->docker->forgetCalls();
         $this->installation->push(['app/Models/Task.php' => '<?php']);
         $this->installation->update();
 
         $this->assertTrue($restartedForItsFile);
-        $this->assertFalse($this->installation->wasAsked(self::RESTART));
+        $this->assertFalse($this->installation->docker->wasAsked(self::RESTART));
     }
 
     public function test_a_round_of_the_loop_fetches_the_update_script_of_the_newest_commit_and_runs_it(): void
@@ -310,7 +310,7 @@ final class UpdateTest extends TestCase
     private function releaseBuilds(): array
     {
         return array_values(array_filter(
-            $this->installation->calls(),
+            $this->installation->docker->calls(),
             fn (string $call) => str_contains($call, self::RELEASE_BUILD),
         ));
     }

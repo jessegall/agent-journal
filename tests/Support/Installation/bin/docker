@@ -12,6 +12,7 @@ main() {
     fail_when_asked "$@"
     case "$1" in
         version) echo linux/amd64 ;;
+        info) echo x86_64 ;;
         buildx) remember_build "$@" ;;
         run) answer_run "$@" ;;
         save) save_archive "$@" ;;
@@ -151,7 +152,13 @@ answer_compose() {
         *"--scale app=2"*) printf 'app-old\napp-new\n' > "$STAND_IN/app-containers" ;;
         *"--scale app=1"*) echo app-new > "$STAND_IN/app-containers" ;;
         *agents:host-enroll*) fill_template "$answers/host-enrolled.txt" host=01standinhost secret=stand-in-secret ;;
+        *"artisan tinker"*) answer_host_known ;;
     esac
+}
+
+# The database knows the enrolled host until the test said it was made again ($STAND_IN/host-gone).
+answer_host_known() {
+    if [ -f "$STAND_IN/host-gone" ]; then echo gone; else echo known; fi
 }
 
 main "$@"
