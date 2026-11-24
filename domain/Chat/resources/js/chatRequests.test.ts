@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { describe, it, vi } from 'vitest';
 import type { ConversationData } from '@generated/types/chat';
 import { holdsContract, RECORDED } from '@kit/testing/pageRequests';
@@ -9,6 +9,10 @@ const sent: SentRequest[] = vi.hoisted(() => []);
 
 vi.mock('@inertiajs/vue3', async () => (await import('@kit/testing/pageRequests')).recordingInertia(sent));
 vi.mock('@kit/requestId', () => ({ newRequestId: () => 'request-1' }));
+// The roster's search for users to add answers with one candidate who is not in the chat yet.
+vi.mock('@kit/pageReads', () => ({
+    readPage: async () => ({ candidates: [{ actor: `user:${RECORDED.candidate}`, label: 'Cy', driver: null }] }),
+}));
 
 const { default: ChatRoster } = await import('./pages/chat/partials/ChatRoster.vue');
 const { default: CreateChatForm } = await import('./pages/chat/partials/CreateChatForm.vue');
@@ -24,7 +28,7 @@ const conversation = {
         { actor: 'user:owner', label: 'Ada', driver: null, role: 'owner' },
         { actor: member, label: 'Bea', driver: null, role: 'member' },
     ],
-    capabilities: { add: true, remove: true, transfer: true, leave: false, close: true },
+    capabilities: { canAdd: true, canRemove: true, canTransfer: true, canLeave: false, canClose: true },
 } as unknown as ConversationData;
 
 function last(): SentRequest | undefined {
@@ -71,5 +75,26 @@ describe('the Inertia posts of the chat, as the page sends them', () => {
         holdsContract('chat-transfer', last());
         await press('Close chat');
         holdsContract('chat-close', last());
+    });
+
+    it('adds a user the search found', async () => {
+        const roster = mount(ChatRoster, { props: { conversation, conversationProp: 'conversation' } });
+        await roster.findAll('button').find((button) => button.text() === 'Add users')?.trigger('click');
+        await flushPromises();
+        await roster.findAll('a, button').find((link) => link.text() === 'Add')?.trigger('click');
+
+        holdsContract('chat-add-member', last());
+    });
+
+    it('leaves the chat as a member', async () => {
+        const asMember = {
+            ...conversation,
+            viewer: member,
+            capabilities: { canAdd: false, canRemove: false, canTransfer: false, canLeave: true, canClose: false },
+        } as unknown as ConversationData;
+        const roster = mount(ChatRoster, { props: { conversation: asMember, conversationProp: 'conversation' } });
+        await roster.findAll('button').find((button) => button.text() === 'Leave')?.trigger('click');
+
+        holdsContract('chat-leave', { ...last()!, as: 'member' });
     });
 });

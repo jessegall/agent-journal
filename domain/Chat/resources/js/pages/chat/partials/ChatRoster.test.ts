@@ -35,11 +35,11 @@ function conversationWith(owner: boolean): ConversationData {
       },
     ],
     capabilities: {
-      add: owner,
-      remove: owner,
-      transfer: owner,
-      leave: !owner,
-      close: owner,
+      canAdd: owner,
+      canRemove: owner,
+      canTransfer: owner,
+      canLeave: !owner,
+      canClose: owner,
     },
   } as unknown as ConversationData;
 }

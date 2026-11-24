@@ -14,11 +14,15 @@ export const RECORDED = {
     message: '01JPAGEREQUESTMESSAGE00000',
     member: '01JPAGEREQUESTMEMBER000000',
     account: '01JPAGEREQUESTACCOUNT00000',
+    candidate: '01JPAGEREQUESTCANDIDATE000',
+    question: '01JPAGEREQUESTQUESTION0000',
+    attempt: '01JPAGEREQUESTATTEMPT00000',
 } as const;
 
 export const CONTRACTS = 'tests/Contracts/page-requests';
 
-export type SentRequest = { method: string; url: string; body: unknown; headers?: Record<string, string> };
+// as names who sends it when it is not the owner, such as a member leaving a chat.
+export type SentRequest = { method: string; url: string; body: unknown; headers?: Record<string, string>; as?: 'member' };
 
 // The options of an Inertia visit the record keeps: the headers it adds, such as the Idempotency-Key of a keyed post.
 type VisitOptions = { headers?: Record<string, string> };
@@ -48,6 +52,7 @@ type FormRoute = { url: string; method: string };
  */
 export function recordingInertia(sent: SentRequest[]) {
     return {
+        usePage: () => ({ props: { currentUser: { id: 'owner' } } }),
         router: {
             post: (url: string, body: unknown, options: VisitOptions = {}) =>
                 sent.push({ method: 'POST', url, body: body ?? null, headers: options.headers ?? {} }),
@@ -67,8 +72,15 @@ export function recordingInertia(sent: SentRequest[]) {
                     return form;
                 },
                 optimistic: () => form,
-                submit: (route: FormRoute, options: VisitOptions = {}) =>
-                    sent.push({ method: route.method.toUpperCase(), url: route.url, body: body(), headers: options.headers ?? {} }),
+                // a route helper's { url, method } and options, or a layout form's method, url and options
+                submit: (route: FormRoute | string, ...rest: unknown[]) => {
+                    const [method, url, options] = typeof route === 'string'
+                        ? [route, rest[0] as string, (rest[1] ?? {}) as VisitOptions]
+                        : [route.method, route.url, (rest[0] ?? {}) as VisitOptions];
+
+                    sent.push({ method: method.toUpperCase(), url, body: body(), headers: options.headers ?? {} });
+                },
+                reset: () => undefined,
             });
             const current = () => Object.fromEntries(names.map((name) => [name, (form as Record<string, unknown>)[name]]));
             let body: () => unknown = current;

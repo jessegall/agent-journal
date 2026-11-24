@@ -47,12 +47,12 @@ vi.mock("../../../composables/useChatTimeline", async () => {
 
   return {
     useChatTimeline: (conversation: {
-      value?: { messages?: { id: string; readByMe: boolean }[] };
+      value?: { messages?: { id: string; isReadByMe: boolean }[] };
     }) => ({
       messages: computed(() => conversation.value?.messages ?? []),
       unreadShown: computed(() =>
         (conversation.value?.messages ?? [])
-          .filter((row) => !row.readByMe)
+          .filter((row) => !row.isReadByMe)
           .map((row) => row.id),
       ),
       lines: ref([]),
@@ -89,7 +89,7 @@ function chatWith(inboxId: string): ChatData {
   return {
     agents: [{ id: "agent-1", name: "Main agent" }],
     selectedAgentId: "agent-1",
-    setupRequired: false,
+    isSetupRequired: false,
     dockSections: [],
     chats: [],
     canCreateChats: false,
@@ -99,15 +99,15 @@ function chatWith(inboxId: string): ChatData {
       viewer: "user:user-1",
       participants: [],
       capabilities: {
-        add: false,
-        remove: false,
-        transfer: false,
-        leave: true,
-        close: false,
+        canAdd: false,
+        canRemove: false,
+        canTransfer: false,
+        canLeave: true,
+        canClose: false,
       },
       sessionId: null,
       sessionGeneration: 0,
-      dock: { cards: [], more: null },
+      dock: { cards: [], hasMore: null },
       messages: [
         {
           id: `${inboxId}-unread`,
@@ -116,7 +116,7 @@ function chatWith(inboxId: string): ChatData {
             label: "Main agent",
             driver: null,
           },
-          readByMe: false,
+          isReadByMe: false,
         },
       ],
     },

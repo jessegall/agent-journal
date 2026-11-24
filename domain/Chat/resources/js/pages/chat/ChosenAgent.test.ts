@@ -24,7 +24,7 @@ function chatWith(agent: Partial<AgentOptionData>): ChatData {
     ],
     selectedAgentId: "agent-1",
     mainAgentId: "agent-1",
-    setupRequired: false,
+    isSetupRequired: false,
   } as unknown as ChatData;
 }
 

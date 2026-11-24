@@ -4,6 +4,7 @@ import type { VueWrapper } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, reactive } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
+import { holdsContract, RECORDED } from "@kit/testing/pageRequests";
 
 const posted: { url: string; body: Record<string, unknown> }[] = [];
 type PostOptions = {
@@ -559,5 +560,32 @@ describe("SessionForm", () => {
 
     expect(window.sessionStorage.length).toBe(0);
     form.unmount();
+  });
+});
+
+describe("the start a session form sends", () => {
+  it("is the start the start route takes", async () => {
+    const ready = accountsAnswer.accounts[1];
+    const readyId = ready.id;
+    ready.id = RECORDED.account;
+    posted.length = 0;
+    const form = mount(SessionForm, { props: { agent: idle, mode: "start" } });
+    await flushPromises();
+
+    await form.find("form").trigger("submit");
+    await flushPromises();
+    const start = posted.at(-1)!;
+    ready.id = readyId;
+    form.unmount();
+
+    // The request id, sent in the body and as the Idempotency-Key, is the form's own random one; the contract holds
+    // one fixed id in its place.
+    expect(postOptions.at(-1)?.headers).toEqual({ "Idempotency-Key": start.body.requestId });
+    holdsContract("session-start", {
+      method: "POST",
+      url: start.url,
+      body: { ...start.body, requestId: "recorded-session-start" },
+      headers: { "Idempotency-Key": "recorded-session-start" },
+    });
   });
 });

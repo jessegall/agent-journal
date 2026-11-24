@@ -29,4 +29,14 @@ describe('the Inertia submits of the accounts, as the page sends them', () => {
         actions.beginAgain(RECORDED.account);
         holdsContract('account-sign-in-again', sent.at(-1));
     });
+
+    it('sends the code a sign-in waits for, and cancels a sign-in', () => {
+        const actions = signInActions(ref(undefined));
+        actions.answer.code = '123456';
+        actions.send(RECORDED.attempt);
+        holdsContract('account-sign-in-code', sent.at(-1));
+
+        actions.cancel(RECORDED.attempt);
+        holdsContract('account-sign-in-cancel', sent.at(-1));
+    });
 });
